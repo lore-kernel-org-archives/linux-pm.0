@@ -1,13 +1,14 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] Hibernation: Fix lockdep report (v2)
-Date: Wed, 14 Nov 2007 22:54:33 +0100
-Message-ID: <1195077273.22457.7.camel__43620.7866449424$1195077517$gmane$org@lappy>
-References: <200711142225.58033.rjw@sisk.pl>  <20071114224200.GB7367@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] Freezer: Make freezing failures less
+	verbose by default
+Date: Thu, 15 Nov 2007 00:38:06 +0100
+Message-ID: <200711150038.07538.rjw__1096.05000257051$1195082562$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071114224200.GB7367@ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Wed, 2007-11-14 at 22:42 +0000, Pavel Machek wrote:
-> On Wed 2007-11-14 22:25:57, Rafael J. Wysocki wrote:
-> > [Andrew, please consider this as 2.6.24 material, thanks.]
-> > ---
-> > From: Johannes Berg <johannes@sipsolutions.net>
-> > 
-> > Lockdep reports a circular locking dependency in the hibernate code
-> > because
-> >  - during system boot hibernate code (from an initcall) locks pm_mutex
-> >    and then a sysfs buffer mutex via name_to_dev_t
-> >  - during regular operation hibernate code locks pm_mutex under a
-> >    sysfs buffer mutex because it's called from sysfs methods.
-> > 
-> > The deadlock can never happen because during initcall invocation nothing
-> > can write to sysfs yet. This removes the lockdep report by marking the
-> > initcall locking as being in a different class.
-> > 
-> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> > Cc: Alan Stern <stern@rowland.harvard.edu>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Currently freezing failures are extremely verbose which sometimes is
+unnecessary and prevents the user from seeing which task could not be frozen.
 
-I guess mine got lost too :-)
+Make them less verbose by default (ie. if CONFIG_PM_VERBOSE is unset).
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/process.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> 
-> ACK...
-> 
+Index: linux-2.6/kernel/power/process.c
+===================================================================
+--- linux-2.6.orig/kernel/power/process.c
++++ linux-2.6/kernel/power/process.c
+@@ -163,6 +163,15 @@ static void cancel_freezing(struct task_
+ 	}
+ }
+ 
++#ifdef CONFIG_PM_VERBOSE
++static inline void freezer_show_state(void)
++{
++	show_state();
++}
++#else /* !CONFIG_PM_VERBOSE */
++static inline void freezer_show_state(void) {}
++#endif /* !CONFIG_PM_VERBOSE */
++
+ static int try_to_freeze_tasks(int freeze_user_space)
+ {
+ 	struct task_struct *g, *p;
+@@ -214,7 +223,7 @@ static int try_to_freeze_tasks(int freez
+ 		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
+ 				"(%d tasks refusing to freeze):\n",
+ 				elapsed_csecs / 100, elapsed_csecs % 100, todo);
+-		show_state();
++		freezer_show_state();
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+ 			task_lock(p);
