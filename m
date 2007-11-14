@@ -1,13 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] PM: make freezer optional for suspend
-Date: Wed, 14 Nov 2007 15:38:59 +0100
-Message-ID: <1195051139.4091.12.camel@johannes.berg>
-References: <1194980670.6695.1.camel@johannes.berg>
-	<200711141421.15812.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] Hibernation: Fix lockdep report (v2)
+Date: Wed, 14 Nov 2007 22:25:57 +0100
+Message-ID: <200711142225.58033.rjw__18710.0332150751$1195074595$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8191940501539675072=="
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711141421.15812.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,65 +15,58 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+[Andrew, please consider this as 2.6.24 material, thanks.]
+---
+From: Johannes Berg <johannes@sipsolutions.net>
 
---===============8191940501539675072==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0gz82CwPAbUkHJd84s3n"
+Lockdep reports a circular locking dependency in the hibernate code
+because
+=A0- during system boot hibernate code (from an initcall) locks pm_mutex
+=A0 =A0and then a sysfs buffer mutex via name_to_dev_t
+=A0- during regular operation hibernate code locks pm_mutex under a
+=A0 =A0sysfs buffer mutex because it's called from sysfs methods.
 
+The deadlock can never happen because during initcall invocation nothing
+can write to sysfs yet. This removes the lockdep report by marking the
+initcall locking as being in a different class.
 
---=-0gz82CwPAbUkHJd84s3n
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-
-> > +config SUSPEND_FREEZER
-> > +	bool "Enable freezer for suspend to RAM/standby" if ADB_PMU || BROKEN
->=20
-> Hm, is ADB_PMU specific to powerpc?
-
-Yes, and it's the only code that allows you to suspend w/o the freezer
-right now (via PMU specific ioctls)
-
-johannes
-
---=-0gz82CwPAbUkHJd84s3n
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzsIgqVg1VMiehFYAQJcXw//V3hl3DdFOUWsmk58n7iph+Kr5IVBbIAy
-StSnGoKYpcKcNF9fTtSGacIUjj/sWBhJ2fgWDCvce+9CHxfBT1WFlfkz9t2PJPLi
-vCe5tRFTwqqhqn44+hfg9w9UOvyrnQT39v2/Ym2KG6zN2FEP2yX+jKAANV8AypYU
-xELQkZ6cZ95jYG3g7GVWV57RNsxPa4opcfHR3e9p25Cp8A5hA/61G+pSyHBTzKI2
-Z2aEDO2j+LVYDiofeOzcO+T+APSwVwXzYB4p/0LqfKiSH7BVEgs2mWmfIKSkit7l
-7PJydbEeIuoHAfBSnw8UGqMAI0WfULosskQwayHzvqCIMJmMCCYQ/WadHGNL7Tna
-0hU/Q7UxxlSovQDMcn55OkiHDhfdFlEHq3CpVp7R+YhUA4tlQyudRAQ9/5UpROsb
-ExwLxGoYhwSfhw9EgsohmxH+swM26WyDPYaKPtiiTQ2GxJFG3G2gttEf/kb6PyIo
-NuqmQf/0CR2POxU3NwfY/0UPb0l9zDaHYQDCRUUKtBrPCEpurqnkK8xOVHMJvvSs
-qFJ7NtE9Z18lUewsMuJ9uFL5KLdCeNCO3goy6jm0PR49JbDXLX80QgjvU7ncWQs2
-EibS3mCEwZX33zWMnJTegMWskpyU9NviX4SelFHpZBi8Oj94lQsOqAy9R5Mktspr
-ORxkfuptVnA=
-=lQBm
------END PGP SIGNATURE-----
-
---=-0gz82CwPAbUkHJd84s3n--
-
-
---===============8191940501539675072==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8191940501539675072==--
+Index: linux-2.6/kernel/power/disk.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -456,7 +456,17 @@ static int software_resume(void)
+ 	int error;
+ 	unsigned int flags;
+=20
+-	mutex_lock(&pm_mutex);
++	/*
++	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
++	 * is configured into the kernel. Since the regular hibernate
++	 * trigger path is via sysfs which takes a buffer mutex before
++	 * calling hibernate functions (which take pm_mutex) this can
++	 * cause lockdep to complain about a possible ABBA deadlock
++	 * which cannot happen since we're in the boot code here and
++	 * sysfs can't be invoked yet. Therefore, we use a subclass
++	 * here to avoid lockdep complaining.
++	 */
++	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
+ 	if (!swsusp_resume_device) {
+ 		if (!strlen(resume_file)) {
+ 			mutex_unlock(&pm_mutex);
