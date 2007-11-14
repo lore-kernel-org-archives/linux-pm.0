@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Hibernation: Fix lockdep report (v2)
-Date: Wed, 14 Nov 2007 14:11:29 +0100
-Message-ID: <200711141411.30879.rjw@sisk.pl>
-References: <200711041459.23082.rjw@sisk.pl>
-	<1194979533.4299.5.camel@johannes.berg>
+Subject: Re: [PATCH] PM: make freezer optional for suspend
+Date: Wed, 14 Nov 2007 14:21:15 +0100
+Message-ID: <200711141421.15812.rjw@sisk.pl>
+References: <1194980670.6695.1.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1194979533.4299.5.camel@johannes.berg>
+In-Reply-To: <1194980670.6695.1.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,30 +20,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, 13 of November 2007, Johannes Berg wrote:
+> This patch makes the freezer optional for suspend to allow the
+> system to work (or not work) like the original PMU suspend.
 > 
-> On Sun, 2007-11-04 at 14:59 +0100, Rafael J. Wysocki wrote:
-> > [Len, please add this patch to the suspend branch, thanks.]
-> > ---
-> > From: Johannes Berg <johannes@sipsolutions.net>
-> > 
-> > Lockdep reports a circular locking dependency in the hibernate code
-> > because
-> >  - during system boot hibernate code (from an initcall) locks pm_mutex
-> >    and then a sysfs buffer mutex via name_to_dev_t
-> >  - during regular operation hibernate code locks pm_mutex under a
-> >    sysfs buffer mutex because it's called from sysfs methods.
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+> In a quick test, playing sound across suspend failed to work,
+> it usually works when the freezer is enabled (unless you use
+> gstreamer.)
 > 
-> Ping? Do I need to follow this or will somebody take care to merge it
-> before .24 closes?
+>  kernel/power/Kconfig |   10 ++++++++++
+>  kernel/power/main.c  |    6 ++++++
+>  2 files changed, 16 insertions(+)
+> 
+> --- everything.orig/kernel/power/main.c	2007-11-13 20:00:16.406263508 +0100
+> +++ everything/kernel/power/main.c	2007-11-13 20:00:17.626268174 +0100
+> @@ -79,10 +79,12 @@ static int suspend_prepare(void)
+>  
+>  	pm_prepare_console();
+>  
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>  	if (freeze_processes()) {
+>  		error = -EAGAIN;
+>  		goto Thaw;
+>  	}
+> +#endif
+>  
+>  	free_pages = global_page_state(NR_FREE_PAGES);
+>  	if (free_pages < FREE_PAGE_NUMBER) {
+> @@ -96,8 +98,10 @@ static int suspend_prepare(void)
+>  	if (!error)
+>  		return 0;
+>  
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>   Thaw:
+>  	thaw_processes();
+> +#endif
+>  	pm_restore_console();
+>   Finish:
+>  	pm_notifier_call_chain(PM_POST_SUSPEND);
+> @@ -191,7 +195,9 @@ int suspend_devices_and_enter(suspend_st
+>   */
+>  static void suspend_finish(void)
+>  {
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>  	thaw_processes();
+> +#endif
+>  	pm_restore_console();
+>  	pm_notifier_call_chain(PM_POST_SUSPEND);
+>  }
+> --- everything.orig/kernel/power/Kconfig	2007-11-13 20:00:16.476274685 +0100
+> +++ everything/kernel/power/Kconfig	2007-11-13 20:01:10.186257269 +0100
+> @@ -97,6 +97,16 @@ config SUSPEND
+>  	  powered and thus its contents are preserved, such as the
+>  	  suspend-to-RAM state (i.e. the ACPI S3 state).
+>  
+> +config SUSPEND_FREEZER
+> +	bool "Enable freezer for suspend to RAM/standby" if ADB_PMU || BROKEN
 
-I wanted it to go via Len's tree, but unfortunately Len has not been responsive
-recently.
+Hm, is ADB_PMU specific to powerpc?
 
-I'll push it to Andrew later today.
+> +	depends on SUSPEND
+> +	default y
+> +	help
+> +	  This allows you to turn off the freezer for suspend. If this is
+> +	  done, no tasks are frozen for suspend to RAM/standby.
+> +
+> +	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+> +
+>  config HIBERNATION_UP_POSSIBLE
+>  	bool
+>  	depends on X86 || PPC64_SWSUSP || PPC32
 
-Thanks,
+Greetings,
 Rafael
