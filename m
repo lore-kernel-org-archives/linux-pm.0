@@ -1,19 +1,15 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Date: Fri, 16 Nov 2007 14:06:50 -0500
-Message-ID: <473DEA4A.2030606__1270.1369626031$1195240090$gmane$org@rtr.ca>
-References: <4739ADA2.4060604@rtr.ca>
-	<alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
-	<4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca>
-	<20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca>
-	<20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu>
-	<473CC6D4.2010909@rtr.ca> <20071116055531.GA16273@elte.hu>
-	<20071116071522.GA1453@elte.hu>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] PM: make freezer optional for suspend
+Date: Fri, 16 Nov 2007 16:58:32 +0100
+Message-ID: <1195228712.8147.151.camel@johannes.berg>
+References: <1194980670.6695.1.camel@johannes.berg>
+	<200711142230.14662.rjw@sisk.pl>
+	<1195145246.13846.68.camel@johannes.berg>
+	<200711152124.25136.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0484778863018811742=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071116071522.GA1453@elte.hu>
+In-Reply-To: <200711152124.25136.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,35 +17,74 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: len.brown@intel.com, linux-kernel@vger.kernel.org, Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->>> Is there a version of these that works with 2.6.23.1 ?
->> yes, i've backported it and have uploaded the v2.6.23 version to:
->>
->>   http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.23.1-combo.patch
-..
 
-> ok, i experimented around with the latency tracer, trying to capture the 
-> trace of a full suspend+resume cycle, and it needed the tracer fix below 
-> (GTOD clocksource suspend/resume would otherwise confuse the tracer and 
-> you'd get no trace output as a result).
-> 
-> once that tracer bug was fixed, the best method to generate a trace was 
-> to do this:
-> 
->    echo 1 > /proc/sys/kernel/stackframe_tracing
->    echo 1 > /proc/sys/kernel/syscall_tracing
->    ./trace-cmd bash -c "echo mem > /sys/power/state" > trace.txt
-..
+--===============0484778863018811742==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-lC1fgYmncSVnNtI8eO9k"
 
-I've applied the tracer for 2.6.23.1 patch, plus the bugfix,
-and now I just get blinking-LEDs (black screen of death) on resume.
 
-Cheers
+--=-lC1fgYmncSVnNtI8eO9k
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+> > > It's a bit confusing for someone who doesn't know what ADB_PMU is.
+> > >=20
+> > > Perhaps it might depend on something like ARCH_CAN_DO_WITHOUT_FREEZER=
+ instead?
+> >=20
+> > It can't really. Things break. Ben and Paul just don't want to hear
+> > about it. I made it depend on BROKEN so people can take it out and see
+> > what breaks (to possibly fix it), and depend on ADB_PMU so they can hav=
+e
+> > their favourite setting without enabling BROKEN.
+>=20
+> I understand that, but it's a bit confusing to put ADB_PMU, which is spec=
+ific
+> to powerpc, into the generic configuration file.
+
+Alright, I'll give it some thought and repost later. Maybe
+ARCH_DOESNT_WANT_FREEZER ;)
+
+johannes
+
+--=-lC1fgYmncSVnNtI8eO9k
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARz2+J6Vg1VMiehFYAQLJTw/9FxRgzb0b+2xGdYCKJOnOLBAoZIrNZ2xH
+a/1C5MnG49snkdKoyrDRocZbXiAMN/d6eB1bF0awUDvXCfJW6DImxAeCkmB3Xl4Z
+sUfmEy1b1067b8g1y54Hb+OiR1sAXbyBG+4Y4/V1FsoDPcJXOhE5qaq/mT8QWx+K
+bLReptbLsjhx9f214ZpYtDZu2vqzOcG/6LinjVZLVZJ9MZfAZs54BYNVGg4vtdF+
+jbGc7hpo9KjU4Rv5PB6gA4yd1k3zrm7lZqV2dY8B3yiUEZ2Y4T0J4N9N5fcPXuKv
+l/+xoOA5jl7HcgjlRUAZeOLzXoDqd5ZXz81h/5ExwotQVyOA8OUkxRcCALqOmQgS
+KoWltUHNSmL12j/n5dhi4GoICEp/B4/CUN59FpT/j+rTA3GVRLDPNprz+9OahBd6
+VdWNr24Up3UxMpVmCVlFl7nN0KfEazkgtz9Bvu0s8abBK+Rc81SdgKJ1fyT/XOFD
+EdFJdVpuUW+jZ4Znmv+8pROk5h/x3qUktlRjJI8vUtEMZLOqfSVaTtcAjnxhtDVy
+I4+A0501yRxME9l8o5pf8bj5ud017L7O/Di9oX12vaNpkSxFbzy1HySFtVP3ZKhP
+Ze1ORDPEIJLvw6mKFpqXoAj3lBOzzlslQISv95pmzMGkBURW1+5+h+Xri7bxCtaT
+vUprw+kXuQ4=
+=cUhb
+-----END PGP SIGNATURE-----
+
+--=-lC1fgYmncSVnNtI8eO9k--
+
+
+--===============0484778863018811742==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0484778863018811742==--
