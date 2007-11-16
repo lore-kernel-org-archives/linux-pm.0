@@ -1,15 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] PM: make freezer optional for suspend
-Date: Fri, 16 Nov 2007 16:58:32 +0100
-Message-ID: <1195228712.8147.151.camel@johannes.berg>
-References: <1194980670.6695.1.camel@johannes.berg>
-	<200711142230.14662.rjw@sisk.pl>
-	<1195145246.13846.68.camel@johannes.berg>
-	<200711152124.25136.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: apm emulation driver broken ?
+Date: Fri, 16 Nov 2007 22:20:55 +0100
+Message-ID: <200711162220.56494.rjw__9058.41794233329$1195247169$gmane$org@sisk.pl>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
+	<200711161720.50313.rjw@sisk.pl>
+	<cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0484778863018811742=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711152124.25136.rjw@sisk.pl>
+In-Reply-To: <cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,74 +19,76 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 16 of November 2007, Franck Bui-Huu wrote:
+> On Nov 16, 2007 5:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >
+> > The freezer doesn't regard the current task as freezable.
+> >
+> 
+> 
+> Hmm, I don't get your point.
+> 
+> If I understood this driver correctly, several processes can be
+> waiting for a suspend event by reading /dev/apm_bios, apmd (the _user_
+> space daemon) can be one of them.
+> 
+> Then another process asks to suspend the system by calling 'apm -s',
+> which results in a apm_ioctl() call. This process will basically
+> execute:
+> 
+> 	err = queue_suspend_event(APM_USER_SUSPEND, as);
+> 	flags = current->flags;
+> 	wait_event_interruptible(apm_suspend_waitqueue,
+> 			as->suspend_state == SUSPEND_DONE);
+> 
+> It's basically waiting for the waiters to ack the event. But it won't
+> be the process that is going to suspend the system, right ?
+> 
+> So now all waiting processes are waken up and need to acknolwedge the
+> event for the system to actually suspend. So they need to call
+> apm_ioctl(). They'll basically do:
+> 
+> 	flags = current->flags;
+> 	wait_event(apm_suspend_waitqueue,
+> 			as->suspend_state == SUSPEND_DONE);
+> 
+> Except for the last acknowledging process which will do instead:
+> 
+> 	apm_suspend();
+> 
+> It's a call to pm_suspend().
+> 
+> So you can see that the process which initiates the suspend, the one
+> that calls 'apm -s', is not the current process but is going to be
+> waken up by the fake signal sent by freeze_task().
+> 
+> One of the consequence I can see is at this time 'as->result' won't be
+> setup, so the return value of apm_ioctl() may be wrong.
 
---===============0484778863018811742==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-lC1fgYmncSVnNtI8eO9k"
+Ah, that.  Yes, I see your point.
 
+However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
+a good idea.
 
---=-lC1fgYmncSVnNtI8eO9k
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'd probably use wait_event_freezable() (defined in include/linux/freezer.h)
+for that.
 
-> > > It's a bit confusing for someone who doesn't know what ADB_PMU is.
-> > >=20
-> > > Perhaps it might depend on something like ARCH_CAN_DO_WITHOUT_FREEZER=
- instead?
-> >=20
-> > It can't really. Things break. Ben and Paul just don't want to hear
-> > about it. I made it depend on BROKEN so people can take it out and see
-> > what breaks (to possibly fix it), and depend on ADB_PMU so they can hav=
-e
-> > their favourite setting without enabling BROKEN.
->=20
-> I understand that, but it's a bit confusing to put ADB_PMU, which is spec=
-ific
-> to powerpc, into the generic configuration file.
+> As I said, I'm not familiar with this code, so please correct me if
+> I'm wrong.
 
-Alright, I'll give it some thought and repost later. Maybe
-ARCH_DOESNT_WANT_FREEZER ;)
+No, you're not wrong and I have overlooked the problem.
 
-johannes
+> BTW, how does try_to_freeze_tasks() deal with user land thread waiting
+> in the UNINTERRUPTIBLE state ?
 
---=-lC1fgYmncSVnNtI8eO9k
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+It tries to send them fake signals and waits for them to freeze.  If they don't
+freeze within the timeout, it fails and clears their TIF_FREEZE bits.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARz2+J6Vg1VMiehFYAQLJTw/9FxRgzb0b+2xGdYCKJOnOLBAoZIrNZ2xH
-a/1C5MnG49snkdKoyrDRocZbXiAMN/d6eB1bF0awUDvXCfJW6DImxAeCkmB3Xl4Z
-sUfmEy1b1067b8g1y54Hb+OiR1sAXbyBG+4Y4/V1FsoDPcJXOhE5qaq/mT8QWx+K
-bLReptbLsjhx9f214ZpYtDZu2vqzOcG/6LinjVZLVZJ9MZfAZs54BYNVGg4vtdF+
-jbGc7hpo9KjU4Rv5PB6gA4yd1k3zrm7lZqV2dY8B3yiUEZ2Y4T0J4N9N5fcPXuKv
-l/+xoOA5jl7HcgjlRUAZeOLzXoDqd5ZXz81h/5ExwotQVyOA8OUkxRcCALqOmQgS
-KoWltUHNSmL12j/n5dhi4GoICEp/B4/CUN59FpT/j+rTA3GVRLDPNprz+9OahBd6
-VdWNr24Up3UxMpVmCVlFl7nN0KfEazkgtz9Bvu0s8abBK+Rc81SdgKJ1fyT/XOFD
-EdFJdVpuUW+jZ4Znmv+8pROk5h/x3qUktlRjJI8vUtEMZLOqfSVaTtcAjnxhtDVy
-I4+A0501yRxME9l8o5pf8bj5ud017L7O/Di9oX12vaNpkSxFbzy1HySFtVP3ZKhP
-Ze1ORDPEIJLvw6mKFpqXoAj3lBOzzlslQISv95pmzMGkBURW1+5+h+Xri7bxCtaT
-vUprw+kXuQ4=
-=cUhb
------END PGP SIGNATURE-----
-
---=-lC1fgYmncSVnNtI8eO9k--
-
-
---===============0484778863018811742==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0484778863018811742==--
+Greetings,
+Rafael
