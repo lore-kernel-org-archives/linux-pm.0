@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: apm emulation driver broken ?
-Date: Fri, 16 Nov 2007 17:20:49 +0100
-Message-ID: <200711161720.50313.rjw__19600.921116262$1195229105$gmane$org@sisk.pl>
-References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Fri, 16 Nov 2007 11:10:27 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711161058170.2738-100000__21337.8211287365$1195229510$gmane$org@iolanthe.rowland.org>
+References: <20071116003836.GA24490@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <20071116003836.GA24490@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +16,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, 15 Nov 2007, Greg KH wrote:
 
-On Friday, 16 of November 2007, Franck Bui-Huu wrote:
-> Rafael,
+> > The offending -mm patch is
+> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
+> > 
+> > 2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
+> > the patch is applied.
 > 
-> Looking at commit:
-> 
-> 	831441862956fffa17b9801db37e6ea1650b0f69
-> 	Freezer: make kernel threads nonfreezable by default
-> 
-> it seems that you broke the apm emulation driver.
-> 
-> You removed PF_NOFREEZE flag setting in apm_ioctl(), which is
-> definitely not part of the apm kernel daemon but instead is called by
-> user space proccesses...
+> Thanks for tracking this down.  Alan, any thoughts?
 
-Yes ...
+It's a driver problem somewhere.  Probably not one of the most common 
+drivers because I don't see the same problem here (but then I'm not 
+testing -mm).
 
-> I'm just reading this code for the first time so I can be wrong but it
-> looks like it's not going to work anymore.
-> 
-> Could you confirm ?
+The thing to do is figure out which driver is causing the problem.
+Jiri, try enabling CONFIG_DEBUG_DRIVER.  If there's also a config 
+option to prevent the console from being suspended, set it as well.  
+Then you should be able to tell which driver is making trouble.
 
-Well, no, AFAICS.
-
-The freezer doesn't regard the current task as freezable.
-
-Greetings,
-Rafael
+Alan Stern
