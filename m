@@ -1,15 +1,19 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Thu, 15 Nov 2007 16:38:36 -0800
-Message-ID: <20071116003836.GA24490__23853.4579672434$1195174006$gmane$org@kroah.com>
-References: <20071113175906.497a1a6a.akpm@linux-foundation.org>
-	<473B5987.60904@gmail.com> <200711142248.59547.rjw@sisk.pl>
-	<473CDD6D.8080008@gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Date: Fri, 16 Nov 2007 06:55:31 +0100
+Message-ID: <20071116055531.GA16273__41271.59569548$1195192616$gmane$org@elte.hu>
+References: <20071113031553.3c7b5c16.akpm@linux-foundation.org>
+	<4739ADA2.4060604@rtr.ca>
+	<alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
+	<4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca>
+	<20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca>
+	<20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu>
+	<473CC6D4.2010909@rtr.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <473CDD6D.8080008@gmail.com>
+In-Reply-To: <473CC6D4.2010909@rtr.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +23,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: len.brown@intel.com, linux-kernel@vger.kernel.org, Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 16, 2007 at 12:59:41AM +0100, Jiri Slaby wrote:
-> On 11/14/2007 10:48 PM, Rafael J. Wysocki wrote:
-> > On Wednesday, 14 of November 2007, Jiri Slaby wrote:
-> >> On 11/14/2007 02:59 AM, Andrew Morton wrote:
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc2/2.6.24-rc2-mm1/
-> >> Doesn't suspend for me (neither broken-out-2007-11-13-04-14 did) on x86_64.
-> >> echo mem >/sys/power/state
-> >> causes shut down of disk(s) and blinking cursor on 1,1 position.
-> >> The last working was 2.6.23-rc8-mm2. I haven't tested
-> >> 2.6.23-mm1, since it didn't work for me.
-> > 
-> > Does the current mainline work?
-> 
-> Yes.
-> 
-> The offending -mm patch is
-> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> 
-> 2.6.24-rc2-mm1 minus it works just fine; PROVE_LOCKING shows nothing new when
-> the patch is applied.
 
-Thanks for tracking this down.  Alan, any thoughts?
+* Mark Lord <lkml@rtr.ca> wrote:
 
-thanks,
+>> sorry, wrong URLs, the correct links are:
+>>
+>>    http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.24-rc2-git5-combo.patch
+>>    http://redhat.com/~mingo/latency-tracing-patches/trace-cmd.c
+> ..
+>
+> Is there a version of these that works with 2.6.23.1 ?
 
-greg k-h
+yes, i've backported it and have uploaded the v2.6.23 version to:
+
+  http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.23.1-combo.patch
+
+	Ingo
