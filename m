@@ -1,16 +1,16 @@
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: apm emulation driver broken ?
-Date: Sat, 17 Nov 2007 09:53:46 +0100
-Message-ID: <473EAC1A.1000205__25180.0463804559$1195289710$gmane$org@gmail.com>
+Date: Sat, 17 Nov 2007 10:59:56 +0100
+Message-ID: <200711171059.57462.rjw__17456.1648084365$1195292629$gmane$org@sisk.pl>
 References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
-	<200711161720.50313.rjw@sisk.pl>
-	<cda58cb80711160929i4dbac6b7xb9d1bcc9223ddd7b@mail.gmail.com>
-	<200711162220.56494.rjw@sisk.pl>
+	<200711162220.56494.rjw@sisk.pl> <473EAC1A.1000205@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711162220.56494.rjw@sisk.pl>
+In-Reply-To: <473EAC1A.1000205@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
 Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
-> a good idea.
+On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
+> Rafael J. Wysocki wrote:
+> > However, using PF_NOFREEZE to prevent this from happening doesn't seem to be
+> > a good idea.
+> > 
 > 
+> Indeed but...
+> 
+> > I'd probably use wait_event_freezable() (defined in
+> > include/linux/freezer.h) for that.
+> 
+> ...I would just revert this bits from now to make sure this driver
+> work again for v2.6.24.
 
-Indeed but...
+I'd prefer not to.
 
-> I'd probably use wait_event_freezable() (defined in
-> include/linux/freezer.h) for that.
+The PF_NOFREEZE was not present in 2.6.23 already and I wouldn't like to
+reintroduce it now.
 
-...I would just revert this bits from now to make sure this driver
-work again for v2.6.24.
- 
-> It tries to send them fake signals and waits for them to freeze.  If
-> they don't freeze within the timeout, it fails and clears their
-> TIF_FREEZE bits.
+Why do you think that using wait_event_freezable() would not work, BTW?
 
-But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
-only. Looking at signal_wake_up(), it basically do:
+> > It tries to send them fake signals and waits for them to freeze.  If
+> > they don't freeze within the timeout, it fails and clears their
+> > TIF_FREEZE bits.
+> 
+> But send_fake_signal() seems to wake up task in INTERRUPTIBLE state
+> only. Looking at signal_wake_up(), it basically do:
+> 
+> 	wake_up_state(t, TASK_INTERRUPTIBLE);
+> 
+> What am I missing ?
 
-	wake_up_state(t, TASK_INTERRUPTIBLE);
+Nothing. :-)
 
-What am I missing ?
+I didn't remember the change that made the freezer use TASK_INTERRUPTIBLE
+explicitly in there (should have looked at the current code before replying).
 
-		Franck
+Greetings,
+Rafael
