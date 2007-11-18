@@ -1,13 +1,15 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Sun, 18 Nov 2007 20:09:51 +0100
-Message-ID: <47408DFF.9070701@gmail.com>
-References: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org>
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: Re: apm emulation driver broken ?
+Date: Sun, 18 Nov 2007 20:57:33 +0100
+Message-ID: <4740992D.9030906__49654.3726920665$1195415947$gmane$org@gmail.com>
+References: <cda58cb80711160706l2cfac2b1p81c7a1090f228f2e@mail.gmail.com>
+	<200711171059.57462.rjw@sisk.pl> <473ED715.9000004@gmail.com>
+	<200711171346.51363.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711181203220.5712-100000@netrider.rowland.org>
+In-Reply-To: <200711171346.51363.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,45 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/18/2007 06:07 PM, Alan Stern wrote:
-> You'll get more useful results if you redo your changes to 
-> notifier_call_chain().  Have it print out the address of the routine 
-> _before_ making the call, and don't limit it to 20.  That way you'll 
-> know exactly which notifier routine ends up hanging.
+Rafael J. Wysocki wrote:
+> On Saturday, 17 of November 2007, Franck Bui-Huu wrote:
+>> ok so now we agreed on this point, can we assert that a user
+>> land thread waiting for an event in an UNINTERRUPTIBLE state
+>> will prevent a suspend to happen ?
+> 
+> Yes.
+> 
 
-The problem is, that notifier_call_chain is called again and again zillion times
-by somebody else...
+So this driver seems really broken and actually I'm wondering if
+it's used by anyone...
 
-Anyway you led me to another idea:
-* _cpu_down
-        printk("%s: u\n", __func__);
-        BUBAK=1;
-        /* CPU is completely dead: tell everyone.  Too late to complain. */
-        if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD | 0x88000 | mod,
-                                    hcpu) == NOTIFY_BAD)
-                BUG();
-        BUBAK=0;
------
-* notifier_call_chain
-        unsigned int a = val & 0x88000;
-        unsigned int yes = a == 0x88000;
+See the call to wait_even() made by apm_ioctl(). If any processes
+run this, it will prevent the system to suspend...
 
-        nb = rcu_dereference(*nl);
+And no, I don't know why call wait_event() is called.
 
-        if (a && a != 0x88000)
-                printk("Somebody calls with val: %lx\n", val);
-        else
-                val &= ~0x88000;
-
-        while (nb && nr_to_call) {
-                next_nb = rcu_dereference(nb->next);
-                if (unlikely(BUBAK && yes))
-                        printk("%s: %p\n", __func__, nb->notifier_call);
-                ret = nb->notifier_call(nb, val, v);
------
-gives coretemp_cpu_callback -> coretemp_device_remove ->
-platform_device_unregister, so coretemp seems to be what I have and you don't.
+		Franck
