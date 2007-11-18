@@ -1,19 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [PATCH] PM: make freezer optional for suspend
-Date: Mon, 19 Nov 2007 17:25:03 +0100
-Message-ID: <20071119162503.GA5147@elf.ucw.cz>
-References: <1194980670.6695.1.camel@johannes.berg>
-	<200711142230.14662.rjw@sisk.pl>
-	<1195145246.13846.68.camel@johannes.berg>
-	<200711152124.25136.rjw@sisk.pl>
-	<1195228712.8147.151.camel@johannes.berg>
-	<20071118182107.GA5474@ucw.cz>
-	<1195483246.8642.3.camel@johannes.berg>
+From: "=?utf-8?q?Rafa=C5=82_J=2E?= Wysocki" <rjwysocki@sisk.pl>
+Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Sun, 18 Nov 2007 16:23:19 +0100
+Message-ID: <200711181623.20029.rjwysocki__20949.2893809967$1195493061$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0711171649100.7748-100000@netrider.rowland.org>
+	<200711181603.26522.rjw@sisk.pl> <474050EC.5080507@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <474050EC.5080507@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <1195483246.8642.3.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,35 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > > > It can't really. Things break. Ben and Paul just don't want to hear
-> > > > > about it. I made it depend on BROKEN so people can take it out and see
-> > > > > what breaks (to possibly fix it), and depend on ADB_PMU so they can have
-> > > > > their favourite setting without enabling BROKEN.
-> > > > 
-> > > > I understand that, but it's a bit confusing to put ADB_PMU, which is specific
-> > > > to powerpc, into the generic configuration file.
-> > > 
-> > > Alright, I'll give it some thought and repost later. Maybe
-> > > ARCH_DOESNT_WANT_FREEZER ;)
-> > 
-> > What about just 
-> > 
-> > a) reverse the logic, so that it is C_SUSPEND_NO_FREEZER
-> > 
-> > b) hardcode it in ppc-specific config?
+On Sunday, 18 of November 2007, Jiri Slaby wrote:
+> On 11/18/2007 04:03 PM, Rafael J. Wysocki wrote:
+> > Can you also make the new System-map available, please?
 > 
-> I also wanted people interested in debugging things w/o the freezer to
-> use it.
+> Sure:
+> http://www.fi.muni.cz/~xslaby/sklad/System.map1
 
-I'd say that people interested in debugging can just edit the config
-manually :-).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The last notifier called in http://www.fi.muni.cz/~xslaby/sklad/susp_hang2.png
+is apparently cpu_swap_callback() which is not called in
+http://www.fi.muni.cz/~xslaby/sklad/susp_hang1.png .
+
+Can you verify that cpu_swap_callback() gets called if the patch is not
+applied?
