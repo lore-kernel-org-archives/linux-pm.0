@@ -1,18 +1,17 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Date: Sun, 18 Nov 2007 12:37:14 -0500
-Message-ID: <4740784A.7090405__29097.9013815106$1195407503$gmane$org@rtr.ca>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
-	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<4739ADA2.4060604@rtr.ca>
-	<alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
-	<4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca>
-	<47406400.5070804@rtr.ca> <20071118162126.GA29080@elte.hu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Re: [PATCH] PM: make freezer optional for suspend
+Date: Sun, 18 Nov 2007 18:21:08 +0000
+Message-ID: <20071118182107.GA5474@ucw.cz>
+References: <1194980670.6695.1.camel@johannes.berg>
+	<200711142230.14662.rjw@sisk.pl>
+	<1195145246.13846.68.camel@johannes.berg>
+	<200711152124.25136.rjw@sisk.pl>
+	<1195228712.8147.151.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071118162126.GA29080@elte.hu>
+Content-Disposition: inline
+In-Reply-To: <1195228712.8147.151.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,28 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Mark Lord <liml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mark Lord <lkml@rtr.ca> wrote:
+Hi!
+
+> > > It can't really. Things break. Ben and Paul just don't want to hear
+> > > about it. I made it depend on BROKEN so people can take it out and see
+> > > what breaks (to possibly fix it), and depend on ADB_PMU so they can have
+> > > their favourite setting without enabling BROKEN.
+> > 
+> > I understand that, but it's a bit confusing to put ADB_PMU, which is specific
+> > to powerpc, into the generic configuration file.
 > 
->> Since Ingo's latency trace patches lock up the machine on resume, the 
->> next thing I'll try instead is to re-enable CONFIG_IRQBALANCE=y.
-> 
-> hm, which patch did you try? Could you check whether all chunks from the 
-> patch below are applied? (these are the fixed i did when i was doing 
-> cross-suspend traces - this is not something i've done before, so the 
-> tracer had to be adjusted)
-..
+> Alright, I'll give it some thought and repost later. Maybe
+> ARCH_DOESNT_WANT_FREEZER ;)
 
-Hi Ingo!
+What about just 
 
-I was using your 2.6.23.1 version of the patches, plus the fix you posted.
+a) reverse the logic, so that it is C_SUSPEND_NO_FREEZER
 
-The new patch you gave just now is for 2.6.24, which won't apply to
-the older kernel.  I'm not switching kernels yet, as doing so might mask
-the problem without actually resolving it for good.
+b) hardcode it in ppc-specific config?
 
-Cheers
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
