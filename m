@@ -1,11 +1,15 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: [PATCH 0/3 -mm] kexec based hibernation -v6
-Date: Mon, 19 Nov 2007 15:02:38 +0800
-Message-ID: <1195455758.10291.23.camel__16572.1474717886$1195455720$gmane$org@caritas-dev.intel.com>
+From: "Francis Moreau" <francis.moro@gmail.com>
+Subject: Re: Suspend ops on x86 architectures.
+Date: Mon, 19 Nov 2007 10:02:50 +0100
+Message-ID: <38b2ab8a0711190102x105f1905u64be6758a6b5f36c@mail.gmail.com>
+References: <38b2ab8a0711181319y6d29b1dt1e8014cb3c5f4424@mail.gmail.com>
+	<200711182312.22689.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200711182312.22689.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,251 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundatio>
-Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-khibernation - kexec based hibernation
-
-
-Kexec base hibernation has some potential advantages over u/swsusp and
-TuxOnIce (suspend2). Some of them are as follow:
-
-1. The hibernation image size can exceed half of memory size
-   easily. This is possible with TuxOnIce, but impossible with
-   u/swsusp.
-
-2. It is possible to eliminate freezer from kexec based hibernation
-   implementation, after corresponding changes to device drivers are
-   done.
-
-3. Based on kexec/kdump implementation, the kernel code needed is
-   less.
-
-
-Now, only the i386 architecture is supported. The patchset is based on
-Linux kernel 2.6.24-rc2-mm1, and has been tested on IBM T42 with ACPI
-on and off.
-
-
-The following user-space tools are needed to implement hibernation and
-resume.
-
-1. kexec-tools needs to be patched to support khibernation. The patches
-   and the precompiled kexec can be download from the following URL:
-       source: http://khibernation.sourceforge.net/download/release_v6/kexec-tools/kexec-tools-src_git_kh6.tar.bz2
-       patches: http://khibernation.sourceforge.net/download/release_v6/kexec-tools/kexec-tools-patches_git_kh6.tar.bz2
-       binary: http://khibernation.sourceforge.net/download/release_v6/kexec-tools/kexec_git_kh6
-
-2. makedumpfile with patches are used as memory image saving tool, it
-   can exclude free pages from hibernation image file. The patches and
-   the precompiled makedumpfile can be download from the following
-   URL:
-       source: http://khibernation.sourceforge.net/download/release_v6/makedumpfile/makedumpfile-src_cvs_kh6.tar.bz2
-       patches: http://khibernation.sourceforge.net/download/release_v6/makedumpfile/makedumpfile-patches_cvs_kh6.tar.bz2
-       binary: http://khibernation.sourceforge.net/download/release_v6/makedumpfile/makedumpfile_cvs_kh6
-
-3. A simplest memory image restoring tool named "krestore" is
-   implemented. It can be downloaded from the following URL:
-       source: http://khibernation.sourceforge.net/download/release_v6/krestore/krestore-src_cvs_kh6.tar.bz2
-       binary: http://khibernation.sourceforge.net/download/release_v6/krestore/krestore_cvs_kh6
-
-4. A simplest jumping back image (hibernation image is a kind of
-   jumping back image) parameter dump tool name "kjump_back_param" is
-   implemented. It can be download from the following URL:
-       source: http://khibernation.sourceforge.net/download/release_v6/kjump_back_param/kjump_back_param-src_cvs_kh6.tar.bz2
-       source: http://khibernation.sourceforge.net/download/release_v6/kjump_back_param/kjump_back_param_cvs_kh6
-
-
-Usage:
-
-1. Compile and install patched kernel with following options selected:
-
-CONFIG_X86_32=y
-CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
-CONFIG_KEXEC=y
-CONFIG_CRASH_DUMP=y # only needed by kexeced kernel to save/restore memory image
-CONFIG_PM=y
-CONFIG_HIBERNATION=y
-
-2. Download, compile and install needed user-space tools. You can
-   download the git/cvs version and apply the patches, or download the
-   source tar ball directly. Required user-space tool include
-   kexec-tools, makedumpfile, krestore and kjump_back_param.
-
-3. Prepare 2 root partition used by kernel A and kernel B/C, referred
-   to as /dev/hda, /dev/hdb in following text. This is not strictly
-   necessary, I use this setup for testing during development.
-
-4. Boot kernel compiled for normal usage (kernel A).
-
-5. Load kernel compiled for hibernating/resuming usage (kernel B) with
-   kexec, the same kernel as that of 4 can be used if
-   CONFIG_RELOCATABLE=y and CONFIG_CRASH_DUMP=y are selected.
-
-   The --elf64-core-headers should be specified in command line of
-   kexec, because only the 64bit ELF is supported by krestore tool.
-
-   For example, the shell command line can be as follow:
-
-   kexec --load-jump-back /boot/bzImage --mem-min=0x100000 --mem-max=0xffffff
-       --elf64-core-headers --append="root=/dev/hdb single"
-
-6. Jump to the hibernating kernel (kernel B) with following shell
-   command line:
-
-   kexec -e
-
-7. In the hibernating kernel (kernel B), jump back to hibernated
-   kernel (kernel A) with following shell command line:
-
-   cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '=' -f 2 > kexec_jump_back_entry
-   kexec --load-jump-back-helper --jump-back-entry=`cat kexec_jump_back_entry`
-   kexec -e
-
-   In step 6 and 7, the hibernating kernel (kernel B) is booted
-   without disturbing the ACPI state.
-
-8. In the to be hibernated kernel (kernel A), start the real
-   hibernating process with following shell command line:
-
-   kexec --hibernate
-
-   The to be hibernated kernel will execute necessary ACPI methods and
-   jump to hibernating kernel (kernel B) again.
-
-9. In the hibernating kernel (kernel B), the memory image of
-   hibernated kernel (kernel A) can be saved as follow:
-
-   kjump_back_param -j `cat kexec_jump_back_entry` /proc/vmcore > jump_back_param
-   grep arg2 jump_back_param | cut -d '=' -f 2 > backup_pages_map_root_entry
-   vmcoreinfo_addr=`grep arg3 jump_back_param | cut -d '=' -f 2`
-   vmcoreinfo_size=`grep arg4 jump_back_param | cut -d '=' -f 2`
-   ./makedumpfile -D -E -d 16 -o $vmcoreinfo_size@$vmcoreinfo_addr -j `cat kexec_jump_back_entry` -M `cat backup_pages_map_root_entry` /proc/vmcore dump.elf
-
-10. Entering ACPI S4 state with following command line:
-
-    kexec -e -c 0x6b630002
-
-    The hibernating kernel (kernel B) will jump back to hibernated
-    kernel again with a special command (0x6b630002: hibernate shut
-    down), and the hibernated kernel (kernel A) will entering ACPI S4
-    state.
-
-11. Boot kernel (kernel C) compiled for hibernating/resuming usage on
-    the root file system /dev/hdb in memory range of kernel B.
-
-    For example, the following kernel command line parameters can be
-    used:
-
-    root=/dev/hdb single memmap=exactmap memmap=640K@0K memmap=15M@1M
-
-12. In resuming kernel (kernel C), the memory image of kernel A can be
-    restored as follow:
-
-    krestore dump.elf
-
-13. Resume the hibernated kernel (kernel A)
-
-    kexec --load-jump-back-helper --jump-back-entry=`cat kexec_jump_back_entry`
-    kexec --resume
-
-    The resuming kernel (kernel C) will jump back to hibernating
-    kernel (kernel A), and necessary ACPI methods will be executed.
-
-
-Known issues:
-
-- The suspend/resume callback of device drivers are used to put
-  devices into quiescent state. This will unnecessarily (possibly
-  harmfully) put devices into low power state. This is intended to be
-  solved by separating device quiesce/unquiesce callback from the
-  device suspend/resume callback.
-
-- The memory image of hibernated kernel must be saved in a separate
-  partition not used by hibernated kernel. This is planned to be
-  solved through make hibernating/resuming kernel work on initramfs
-  and write the memory image to a file in partition used by hibernated
-  kernel through block list instead of ordinary file system operating.
-
-- The setup of hibernate/resume is fairly complex. I will continue
-  working on simplifying.
-
-
-TODO:
-
-- Implement sys_kexec_store, that is, store the memory image of
-  kexeced kernel.
-
-- Write the memory image to a file through block list instead of
-  ordinary file system operating.
-
-- Simplify hibernate/resume setup.
-
-- Resume from hibernation with bootloader.
-
-
-ChangeLog:
-
-v6:
-
-- Add ACPI support.
-
-- Refactor kexec jump to be a general facility to call real mode code.
-
-v5:
-
-- A flag (KEXEC_JUMP_BACK) is added to indicate the loaded kernel
-  image is used for jumping back. The reboot command for jumping back
-  is removed. This interface is more stable (proposed by Eric
-  Biederman).
-
-- NX bit handling support for kexec is added.
-
-- Merge machine_kexec and machine_kexec_jump, remove NO_RET attribute
-  from machine_kexec.
-
-- Passing jump back entry to kexeced kernel via kernel command line
-  (parsed by user space tool via /proc/cmdline instead of
-  kernel). Original corresponding boot parameter and sysfs code is
-  removed.
-
-v4:
-
-- Two reboot command are merged back to one because the underlying
-  implementation is same.
-
-- Jumping without reserving memory is implemented. As a side effect,
-  two direction jumping is implemented.
-
-- A jump back protocol is defined and documented. The original kernel
-  and kexeced kernel are more independent from each other.
-
-- The CPU state save/restore code are merged into relocate_kernel.S.
-
-v3:
-
-- The reboot command LINUX_REBOOT_CMD_KJUMP is split into to two
-  reboot command to reflect the different function.
-
-- Document is added for added kernel parameters.
-
-- /sys/kernel/kexec_jump_buf_pfn is made writable, it is used for
-  memory image restoring.
-
-- Console restoring after jumping back is implemented.
-
-- Writing support is added for /dev/oldmem, to restore memory contents
-  of hibernated system.
-
-v2:
-
-- The kexec jump implementation is put into the kexec/kdump framework
-  instead of software suspend framework. The device and CPU state
-  save/restore code of software suspend is called when needed.
-
-- The same code path is used for both kexec a new kernel and jump back
-  to original kernel.
-
-Best Regards,
-Huang Ying
+Hello,
+
+On Nov 18, 2007 11:12 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Hi,
+>
+> On Sunday, 18 of November 2007, Francis Moreau wrote:
+> > Hello,
+> >
+> > I'm trying to get an idea on how suspend works on Linux. I already looked at
+> > Documentation/power, but I'm clueless about x86 architectures. They don't
+> > seem to define any suspend ops.
+>
+> Yes, they do, via ACPI.  Please see drivers/acpi/sleep/main.c .
+>
+> > Can anyone give me some pointers or some hints, I'd like to look at the
+> > low level part of the suspend on these architectures also I'd like to know
+> > what kind of events wake up the system once it's suspended. I guess
+> > interrupts are used but which ones exactly.
+>
+> This also is controlled by ACPI.  The ACPI platform firmware handles the
+> wake-up events and transfers control to the kernel by jumping to an address
+> specified before the suspend.
+>
+> > Also I'm wondering how jiffies or system clock are updated correctly after
+> > resuming.
+>
+> AFAICS, we use the pre-suspend value of jiffies.  The generic clocksource
+> timekeeping is handled by timekeeping_resume() in kernel/time/timekeeping.c .
+>
+
+Thanks the hints, I'm going to take a look to ACPI then.
+
+-- 
+Francis
