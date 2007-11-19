@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/8] Hibernation: Move function prototypes to
-	header
-Date: Mon, 19 Nov 2007 23:36:20 +0100
-Message-ID: <200711192336.21264.rjw__49140.5042856515$1195512124$gmane$org@sisk.pl>
+Subject: [PATCH 3/8] Hibernation: Add PM_RESTORE_PREPARE and
+	PM_POST_RESTORE notifiers (rev. 2)
+Date: Mon, 19 Nov 2007 23:38:25 +0100
+Message-ID: <200711192338.26378.rjw__23252.1184989766$1195512126$gmane$org@sisk.pl>
 References: <200711192332.15078.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -24,65 +24,148 @@ To: Len Brown <lenb@kernel.org>
 Cc: Adrian Bunk <bunk@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch moves the prototypes of count_highmem_pages() and 
-restore_highmem() to kernel/power/power.h
+Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers to the PM core, to be used
+in analogy with the existing PM_HIBERNATION_PREPARE and PM_POST_HIBERNATION
+notifiers.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/power/power.h    |    8 ++++++++
- kernel/power/snapshot.c |    1 -
- kernel/power/swsusp.c   |    8 --------
- 3 files changed, 8 insertions(+), 9 deletions(-)
+ Documentation/power/notifiers.txt |    8 ++++++++
+ include/linux/notifier.h          |    2 ++
+ kernel/power/disk.c               |    5 +++++
+ kernel/power/user.c               |   31 +++++++++++++++++++------------
+ 4 files changed, 34 insertions(+), 12 deletions(-)
 
-20af06052a0203d9e60b4937282793900c756182 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 195dc46..3fe1e7f 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -211,3 +211,11 @@ static inline int pm_notifier_call_chain(unsigned long val)
- 	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
+Index: linux-2.6/Documentation/power/notifiers.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/notifiers.txt
++++ linux-2.6/Documentation/power/notifiers.txt
+@@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory st
+ 			hibernation.  Device drivers' .resume() callbacks have
+ 			been executed and tasks have been thawed.
+ 
++PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
++			If all goes well the restored kernel will issue a
++			PM_POST_HIBERNATION notification.
 +
-+#ifdef CONFIG_HIGHMEM
-+unsigned int count_highmem_pages(void);
-+int restore_highmem(void);
-+#else
-+static inline unsigned int count_highmem_pages(void) { return 0; }
-+static inline int restore_highmem(void) { return 0; }
-+#endif
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 78039b4..d9ed1ff 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -872,7 +872,6 @@ unsigned int count_highmem_pages(void)
++PM_POST_RESTORE		An error occurred during the hibernation restore.
++			Device drivers' .resume() callbacks have been executed
++			and tasks have been thawed.
++
+ PM_SUSPEND_PREPARE	The system is preparing for a suspend.
+ 
+ PM_POST_SUSPEND		The system has just resumed or an error occured during
+Index: linux-2.6/include/linux/notifier.h
+===================================================================
+--- linux-2.6.orig/include/linux/notifier.h
++++ linux-2.6/include/linux/notifier.h
+@@ -230,6 +230,8 @@ static inline int notifier_to_errno(int 
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+ #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
++#define PM_POST_RESTORE		0x0006 /* Restore failed */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -499,6 +499,10 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++	if (error)
++		goto Finish;
++
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -522,6 +526,7 @@ static int software_resume(void)
+  Done:
+ 	free_basic_memory_bitmaps();
+  Finish:
++	pm_notifier_call_chain(PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -67,6 +67,7 @@ atomic_t snapshot_device_available = ATO
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
++	int error;
+ 
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+ 		return -EBUSY;
+@@ -87,9 +88,19 @@ static int snapshot_open(struct inode *i
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
++		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
++		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
++	}
++	if (error) {
++		atomic_inc(&snapshot_device_available);
++		return error;
+ 	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+@@ -111,6 +122,8 @@ static int snapshot_release(struct inode
+ 		thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 	}
++	pm_notifier_call_chain(data->mode == O_WRONLY ?
++			PM_POST_HIBERNATION : PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	return 0;
  }
- #else
- static inline void *saveable_highmem_page(unsigned long pfn) { return NULL; }
--static inline unsigned int count_highmem_pages(void) { return 0; }
- #endif /* CONFIG_HIGHMEM */
- 
- /**
-diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-index e1722d3..605c536 100644
---- a/kernel/power/swsusp.c
-+++ b/kernel/power/swsusp.c
-@@ -64,14 +64,6 @@ unsigned long image_size = 500 * 1024 * 1024;
- 
- int in_suspend __nosavedata = 0;
- 
--#ifdef CONFIG_HIGHMEM
--unsigned int count_highmem_pages(void);
--int restore_highmem(void);
--#else
--static inline int restore_highmem(void) { return 0; }
--static inline unsigned int count_highmem_pages(void) { return 0; }
--#endif
+@@ -174,18 +187,13 @@ static int snapshot_ioctl(struct inode *
+ 		if (data->frozen)
+ 			break;
+ 		mutex_lock(&pm_mutex);
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-		if (!error) {
+-			printk("Syncing filesystems ... ");
+-			sys_sync();
+-			printk("done.\n");
 -
- /**
-  *	The following functions are used for tracing the allocated
-  *	swap pages, so that they can be freed in case of an error.
+-			error = freeze_processes();
+-			if (error)
+-				thaw_processes();
+-		}
++		printk("Syncing filesystems ... ");
++		sys_sync();
++		printk("done.\n");
++
++		error = freeze_processes();
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen = 1;
+@@ -196,7 +204,6 @@ static int snapshot_ioctl(struct inode *
+ 			break;
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
