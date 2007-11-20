@@ -1,13 +1,14 @@
-From: Rudolf Marek <r.marek@assembler.cz>
-Subject: Re: broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Mon, 19 Nov 2007 21:01:21 +0100
-Message-ID: <4741EB91.9080000__19107.4796872728$1195581740$gmane$org@assembler.cz>
-References: <Pine.LNX.4.44L0.0711182156330.22727-100000@netrider.rowland.org>
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Tue, 20 Nov 2007 08:15:21 -0500
+Message-ID: <20071120131520.GC12077__816.462320699607$1195581751$gmane$org@jupiter.solarsys.private>
+References: <4741EB91.9080000@assembler.cz>
+	<Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711182156330.22727-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +19,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Rudolf Marek <r.marek@assembler.cz>, Jiri Slaby <jirislaby@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello all,
->>> gives coretemp_cpu_callback -> coretemp_device_remove ->
->>> platform_device_unregister, so coretemp seems to be what I have and you don't.
+Hi all:
+
+* Alan Stern <stern@rowland.harvard.edu> [2007-11-19 15:27:14 -0500]:
+> On Mon, 19 Nov 2007, Rudolf Marek wrote:
 > 
-> Yes.
+> > Hello all,
+> > >>> gives coretemp_cpu_callback -> coretemp_device_remove ->
+> > >>> platform_device_unregister, so coretemp seems to be what I have and you don't.
+> > > 
+> > > Yes.
+> > > 
+> > > For the coretemp developers: coretemp_cpu_callback() needs to be more 
+> > > careful about what it does.  During a system sleep transition (suspend, 
+> > > hibernate, resume) it isn't possible to register or unregister a 
+> > > device.  Attempts to register will fail and attempts to unregister will 
+> > > block until the system sleep is over -- and for this callback that 
+> > > means hanging.
+> > 
+> > Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
+> > looked how this part should be done from others drivers. Now while checking
+> > what happened to the file, seems Rafael added something related.
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
 > 
-> For the coretemp developers: coretemp_cpu_callback() needs to be more 
-> careful about what it does.  During a system sleep transition (suspend, 
-> hibernate, resume) it isn't possible to register or unregister a 
-> device.  Attempts to register will fail and attempts to unregister will 
-> block until the system sleep is over -- and for this callback that 
-> means hanging.
+> That does look like it was meant for exactly this sort of situation.
+> 
+> > > It's not clear what the best way is to fix this.  Perhaps the CPU 
+> > > notification should be sent along with a special flag indicating that 
+> > > the CPU transition is part of a system sleep (although this seems 
+> > > racy).  Perhaps the driver should notice when a system sleep begins, 
+> > > and defer all CPU-change handling until after the sleep is over.
+> > 
+> > maybe it does exist?  CPU_DOWN_PREPARE ?
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
+> > 
+> > Unfortunately I'm not very familiar with this, calling the 
+> > coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
+> > driver, seems it just hide sysfs interface from user.
 
-Well I wrote the driver. Thanks for the clarification. If I recall correctly I 
-looked how this part should be done from others drivers. Now while checking
-what happened to the file, seems Rafael added something related.
+AFAICT from that documentation, it would have been better to unregister
+the device on CPU_DOWN_PREPARE anyway.  CPU_DEAD seems to be too late -
+it's already gone by then.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8bb7844286fb8c9fce6f65d8288aeb09d03a5e0d
+> I'm not sure exactly what you want to do here.  But it seems like a 
+> waste to unregister the coretemp devices at the start of a system sleep 
+> and then register them back at the end.
+> 
+> Could you simply leave the devices registered throughout the entire
+> sleep?  Of course, at the end you would have to check that all the CPUs
+> really did come back up, and unregister the devices for the CPUs that
+> are still offline.
 
-> It's not clear what the best way is to fix this.  Perhaps the CPU 
-> notification should be sent along with a special flag indicating that 
-> the CPU transition is part of a system sleep (although this seems 
-> racy).  Perhaps the driver should notice when a system sleep begins, 
-> and defer all CPU-change handling until after the sleep is over.
+Is it possible to unregister a driver on CPU_DOWN_PREPARE_FROZEN?  If
+so, then the simplest fix would be the patch below (Jiri: feel free to
+try it). Otherwise it would take a bit of refactoring to bring the sysfs
+interface down/up for suspend/resume.
 
-maybe it does exist?  CPU_DOWN_PREPARE ?
+commit ce9c7b78c839a6304696d90083eac08baad524ce
+Author: Mark M. Hoffman <mhoffman@lightlink.com>
+Date:   Tue Nov 20 07:51:50 2007 -0500
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/cpu-hotplug.txt;hb=HEAD
+    hwmon: (coretemp) fix suspend/resume hang
+    
+    Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
 
-Unfortunately I'm not very familiar with this, calling the 
-coretemp_device_remove from CPU_DOWN_PREPARE would help? Looking at microcode 
-driver, seems it just hide sysfs interface from user.
-
-Thanks,
-Rudolf
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 5c82ec7..afe2d31 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -338,10 +338,12 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
++	case CPU_DOWN_FAILED:
++	case CPU_DOWN_FAILED_FROZEN:
+ 		coretemp_device_add(cpu);
+ 		break;
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
+ 		coretemp_device_remove(cpu);
+ 		break;
+ 	}
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
