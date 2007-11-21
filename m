@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
-Date: Wed, 21 Nov 2007 20:19:43 +0100
-Message-ID: <200711212019.45071.rjw__33735.6140291833$1195671976$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 0/2] Freezer fixes for 2.6.24
+Date: Wed, 21 Nov 2007 20:21:51 +0100
+Message-ID: <200711212021.51968.rjw@sisk.pl>
+References: <200711210244.37965.rjw@sisk.pl> <4743E38D.60205@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711211053140.3226-100000@iolanthe.rowland.org>
+In-Reply-To: <4743E38D.60205@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,28 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rudolf Marek <r.marek@assembler.cz>, Jiri Slaby <jirislaby@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, "Mark M. Hoffman" <mhoffman@lightlink.com>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 21 of November 2007, Alan Stern wrote:
-> On Wed, 21 Nov 2007, Rafael J. Wysocki wrote:
+On Wednesday, 21 of November 2007, Franck Bui-Huu wrote:
+> Rafael J. Wysocki wrote:
+> > The second one is intended to fix the APM emulation breakage caused before
+> > 2.6.23, but unfortunately I can't test it.
 > 
-> > > Is it possible to unregister a driver on CPU_DOWN_PREPARE_FROZEN?
-> > 
-> > No.  In that case the suspend core is holding the device's mutex and your
-> > attempt to unregister it will deadlock with it.
-> > 
-> > Do you _have_ _to_ unregister the device at all?  Why don't you just leave
-> > it registered on CPU_DOWN_PREPARE_FROZEN?  The CPU is not going away
-> > physically in this case and it's _guaranteed_ that _cpu_up() will be called on
-> > it as soon as the hibernation image is ready or we are back from suspend.
+> Why not ?
 > 
-> This leaves the device registered if for some reason the number of CPUs 
-> after resuming from hibernation is smaller than the number of CPUs 
-> before hibernation.  Of course, in theory that's never supposed to 
-> happen...
+> Just hack Kconfig to be able to select this driver on x86 architecture
+> and it should work fine, no ?
 
-Yes, that clearly would be a bug.
+Well, I'm afraid I have no suitable userland here ...
+
+> I'll give it a test today.
+
+OK, thanks!
 
 Rafael
