@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend/hibernation patches for 2.6.25
-Date: Wed, 21 Nov 2007 00:59:53 +0100
-Message-ID: <200711210059.54210.rjw__27683.5827077322$1195602309$gmane$org@sisk.pl>
-References: <200711192332.15078.rjw@sisk.pl>
-	<200711200141.06595.lenb@kernel.org>
+Subject: Re: [PATCH 3/3 -mm] kexec based hibernation -v6: kexec
+	hibernate/resume
+Date: Wed, 21 Nov 2007 01:00:31 +0100
+Message-ID: <200711210100.32631.rjw__29880.4436032244$1195602433$gmane$org@sisk.pl>
+References: <1195455769.10291.26.camel@caritas-dev.intel.com>
+	<200711200324.31180.rjw@sisk.pl>
+	<1195527033.11955.50.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711200141.06595.lenb@kernel.org>
+In-Reply-To: <1195527033.11955.50.camel@caritas-dev.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,32 +22,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Adrian Bunk <bunk@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 20 of November 2007, Len Brown wrote:
-> thanks for re-sending, Rafael.
+On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> On Tue, 2007-11-20 at 03:24 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 20 of November 2007, Huang, Ying wrote:
+> > > On Mon, 2007-11-19 at 19:22 +0100, Rafael J. Wysocki wrote:
+> > > > > +#ifdef CONFIG_KEXEC
+> > > > > +static void kexec_hibernate_power_down(void)
+> > > > > +{
+> > > > > +	switch (hibernation_mode) {
+> > > > > +	case HIBERNATION_TEST:
+> > > > > +	case HIBERNATION_TESTPROC:
+> > > > > +		break;
+> > > > > +	case HIBERNATION_REBOOT:
+> > > > > +		machine_restart(NULL);
+> > > > > +		break;
+> > > > > +	case HIBERNATION_PLATFORM:
+> > > > > +		if (!hibernation_ops)
+> > > > > +			break;
+> > > > > +		hibernation_ops->enter();
+> > > > 
+> > > > hibernation_platform_enter() should be used here (as of the current mainline).
+> > > 
+> > > The power_down will be called with interrupt disabled, device suspended,
+> > > non-boot CPU disabled. But the latest hibernate_platform_enter calls the
+> > > device_suspend, disable_nonboot_cpus etc function. So, I use
+> > > hibernation_ops->enter() directly instead of
+> > > hibernation_platform_enter().
+> > 
+> > Hm, you need to call device_power_down(PMSG_SUSPEND) before
+> > hibernation_ops->enter().
+> > 
+> > Also, all of the ACPI global calls need to be carried out before that and the
+> > devices should be suspended rather than shut down in that case.
+> > 
+> > That's why hibernation_platform_enter() has been introduced, BTW.
 > 
-> I've created a new "suspend" branch -- currently
-> rooted on Linus' latest.
+> Situation is a little different between u/swsusp and khiberantion.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git suspend
+> u/swsusp:
 > 
-> I've re-based the older hibernate patches onto
-> the new branch, and added the batch you just sent.
+> platform_start();
+> suspend console();
+> device_suspend(PMSG_FREEZE);
+> platform_pre_snapshot();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* create snapshot */
+> device_power_up();
+> local_irq_enable();
+> enable_nonboot_cpus();
+> platform_finish();
+> device_resume();
+> resume_console();
+> /* write the image out */
+> hibernation_ops->start();
+> suspend_console();
+> device_suspend(PMSG_SUSPEND);
+> hibernation_ops->prepare();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_SUSPEND);
+> hibernation_ops->enter();
 > 
-> Note that the suspend branch is included in my test branch,
-> which akpm pulls into -mm.
+> khibernation:
+> 
+> suspend_console();
+> platform_start();
+> device_suspend(PMSG_FREEZE);
+> platform_pre_snapshot();
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* jump to kexeced (hibernating) kernel */
+> /* in kexeced kernel */
+> device_power_up();
+> local_irq_eanble();
+> enable_nonboot_cpus();
 
-Thanks for all that!
+You should call platform_finish() here, or device_resume() will not work
+appropriately on some systems.
 
-I'm now seeing the suspend branch on gitweb, but when I do
+However, after platform_finish() has been executed, the ACPI firmware will
+assume that the hibernation has been canceled, so you need to tell it that
+you'd like to go into the low power state after all.
 
-$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
+> device_resume();
+> resume_console();
+> /* write the image */
 
-I get a repository with only one branch which is "test" and indeed
-.git/refs/heads contains this one only.  What should I do to get the suspend
-branch (and the others) too with git clone (or git fetch)?
+For this reason, you have to call hibernation_ops->start() once again
+and the other functions like in the swsusp case, in that order.
+
+> suspend_console();
+> device_suspend(PMSG_FREEZE);
+> disable_nonboot_cpus();
+> local_irq_disable();
+> device_power_down(PMSG_FREEZE);
+> /* jump to original (hibernated) kernel */
+
+This looks too fragile to my eyes.
+
+Why don't you call hibernation_ops->enter() directly from the "kexeced" kernel?
 
 Rafael
