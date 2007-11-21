@@ -1,13 +1,13 @@
 From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: Question about process freezing
-Date: Wed, 21 Nov 2007 08:46:26 +0100
-Message-ID: <4743E252.2010805@gmail.com>
-References: <Pine.LNX.4.44L0.0711201036340.3931-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 0/2] Freezer fixes for 2.6.24
+Date: Wed, 21 Nov 2007 08:51:41 +0100
+Message-ID: <4743E38D.60205@gmail.com>
+References: <200711210244.37965.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711201036340.3931-100000@iolanthe.rowland.org>
+In-Reply-To: <200711210244.37965.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +17,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern wrote:
-> On Tue, 20 Nov 2007, Franck Bui-Huu wrote:
->> Instead of freezing every single user land processes by sending them a
->> fake signal and waiting for them to go to the refrigerator, why not
->> freezing the scheduler ?
-> 
-> Because processes can't simply be frozen immediately.  They need to 
-> have a chance to release any important locks or mutexes they may be 
-> holding.
-> 
+Rafael J. Wysocki wrote:
+> The second one is intended to fix the APM emulation breakage caused before
+> 2.6.23, but unfortunately I can't test it.
 
-You mean any locks held by a frozen process and needed by the suspend
-code path ?
+Why not ?
 
-thanks,
+Just hack Kconfig to be able to select this driver on x86 architecture
+and it should work fine, no ?
+
+I'll give it a test today.
+
 		Franck
