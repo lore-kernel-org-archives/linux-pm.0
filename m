@@ -1,17 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3 -mm] kexec based hibernation -v6: kexec
+Subject: Re: Re: [PATCH 3/3 -mm] kexec based hibernation -v6: kexec
 	hibernate/resume
-Date: Wed, 21 Nov 2007 01:00:31 +0100
-Message-ID: <200711210100.32631.rjw__29880.4436032244$1195602433$gmane$org@sisk.pl>
-References: <1195455769.10291.26.camel@caritas-dev.intel.com>
-	<200711200324.31180.rjw@sisk.pl>
-	<1195527033.11955.50.camel@caritas-dev.intel.com>
+Date: Wed, 21 Nov 2007 01:00:35 +0100
+Message-ID: <200711210100.36884.rjw__23741.4612704471$1195602552$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0711200949590.3931-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1195527033.11955.50.camel@caritas-dev.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0711200949590.3931-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,111 +20,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>, "Huang, Ying" <ying.huang@intel.com>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 20 of November 2007, Huang, Ying wrote:
-> On Tue, 2007-11-20 at 03:24 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 20 of November 2007, Huang, Ying wrote:
-> > > On Mon, 2007-11-19 at 19:22 +0100, Rafael J. Wysocki wrote:
-> > > > > +#ifdef CONFIG_KEXEC
-> > > > > +static void kexec_hibernate_power_down(void)
-> > > > > +{
-> > > > > +	switch (hibernation_mode) {
-> > > > > +	case HIBERNATION_TEST:
-> > > > > +	case HIBERNATION_TESTPROC:
-> > > > > +		break;
-> > > > > +	case HIBERNATION_REBOOT:
-> > > > > +		machine_restart(NULL);
-> > > > > +		break;
-> > > > > +	case HIBERNATION_PLATFORM:
-> > > > > +		if (!hibernation_ops)
-> > > > > +			break;
-> > > > > +		hibernation_ops->enter();
-> > > > 
-> > > > hibernation_platform_enter() should be used here (as of the current mainline).
-> > > 
-> > > The power_down will be called with interrupt disabled, device suspended,
-> > > non-boot CPU disabled. But the latest hibernate_platform_enter calls the
-> > > device_suspend, disable_nonboot_cpus etc function. So, I use
-> > > hibernation_ops->enter() directly instead of
-> > > hibernation_platform_enter().
-> > 
-> > Hm, you need to call device_power_down(PMSG_SUSPEND) before
-> > hibernation_ops->enter().
-> > 
-> > Also, all of the ACPI global calls need to be carried out before that and the
-> > devices should be suspended rather than shut down in that case.
-> > 
-> > That's why hibernation_platform_enter() has been introduced, BTW.
+On Tuesday, 20 of November 2007, Alan Stern wrote:
+> On Tue, 20 Nov 2007, Huang, Ying wrote:
 > 
-> Situation is a little different between u/swsusp and khiberantion.
+> > - What is the difference between PMSG_SUSPEND and PMSG_FREEZE?
 > 
-> u/swsusp:
+> SUSPEND means that the system is about to go into a low-power state, so 
+> the driver should take the appropriate action to reduce the device's 
+> power consumption.  It should also stop all I/O and DMA to the device.  
+> Interrupts can remain enabled if the device is supposed to be a wakeup 
+> source; otherwise they should be disabled.
 > 
-> platform_start();
-> suspend console();
-> device_suspend(PMSG_FREEZE);
-> platform_pre_snapshot();
-> disable_nonboot_cpus();
-> local_irq_disable();
-> device_power_down(PMSG_FREEZE);
-> /* create snapshot */
-> device_power_up();
-> local_irq_enable();
-> enable_nonboot_cpus();
-> platform_finish();
-> device_resume();
-> resume_console();
-> /* write the image out */
-> hibernation_ops->start();
-> suspend_console();
-> device_suspend(PMSG_SUSPEND);
-> hibernation_ops->prepare();
-> disable_nonboot_cpus();
-> local_irq_disable();
-> device_power_down(PMSG_SUSPEND);
-> hibernation_ops->enter();
+> FREEZE means that the system is going to hibernate, and devices need to
+> be quiescent (no I/O, no DMA, and no interrupts) so that an atomic
+> memory snapshot can be captured.  The driver should take the
+> appropriate action to quiesce the device but the power level doesn't
+> need to change.
 > 
-> khibernation:
-> 
-> suspend_console();
-> platform_start();
-> device_suspend(PMSG_FREEZE);
-> platform_pre_snapshot();
-> disable_nonboot_cpus();
-> local_irq_disable();
-> device_power_down(PMSG_FREEZE);
-> /* jump to kexeced (hibernating) kernel */
-> /* in kexeced kernel */
-> device_power_up();
-> local_irq_eanble();
-> enable_nonboot_cpus();
+> PRETHAW means that the system is going to resume from hibernation by
+> loading a previously-saved memory snapshot.  The driver should take the
+> appropriate action to quiesce the device (no I/O, no DMA, and no
+> interrupts) so that the snapshot can be safely restored, but the power
+> level doesn't need to change.  The driver may also want to put the
+> device into a special state so that the saved kernel's resume method
+> will recognize the device has undergone a hibernation cycle and needs
+> to be reinitialized.
 
-You should call platform_finish() here, or device_resume() will not work
-appropriately on some systems.
+Exactly.
 
-However, after platform_finish() has been executed, the ACPI firmware will
-assume that the hibernation has been canceled, so you need to tell it that
-you'd like to go into the low power state after all.
+For this reason, PMSG_SUSPEND should be used right before calling
+hibernation_ops->enter() .
 
-> device_resume();
-> resume_console();
-> /* write the image */
-
-For this reason, you have to call hibernation_ops->start() once again
-and the other functions like in the swsusp case, in that order.
-
-> suspend_console();
-> device_suspend(PMSG_FREEZE);
-> disable_nonboot_cpus();
-> local_irq_disable();
-> device_power_down(PMSG_FREEZE);
-> /* jump to original (hibernated) kernel */
-
-This looks too fragile to my eyes.
-
-Why don't you call hibernation_ops->enter() directly from the "kexeced" kernel?
-
+Greetings,
 Rafael
