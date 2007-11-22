@@ -1,13 +1,16 @@
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 2/2] Freezer: Fix APM emulation breakage
-Date: Thu, 22 Nov 2007 21:33:35 +0100
-Message-ID: <4745E79F.50808@gmail.com>
+Date: Thu, 22 Nov 2007 22:29:48 +0100
+Message-ID: <200711222229.48693.rjw@sisk.pl>
 References: <200711212322.02340.rjw@sisk.pl> <200711212326.34531.rjw@sisk.pl>
+	<4745E79F.50808@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711212326.34531.rjw@sisk.pl>
+In-Reply-To: <4745E79F.50808@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,22 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
 Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thursday, 22 of November 2007, Franck Bui-Huu wrote:
+> Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The APM emulation is currently broken as a result of commit
+> > 831441862956fffa17b9801db37e6ea1650b0f69
+> > "Freezer: make kernel threads nonfreezable by default"
+> > that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
+> > the appropriate freezer hooks.  Fix it and remove the unnecessary variable flags
+> > from apm_ioctl().
+> > 
 > 
-> The APM emulation is currently broken as a result of commit
-> 831441862956fffa17b9801db37e6ea1650b0f69
-> "Freezer: make kernel threads nonfreezable by default"
-> that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
-> the appropriate freezer hooks.  Fix it and remove the unnecessary variable flags
-> from apm_ioctl().
-> 
+> This patch should probably go to the 2.6.23 stable tree as
+> well, shouldn't it ?
 
-This patch should probably go to the 2.6.23 stable tree as
-well, shouldn't it ?
+Yes, it should, but first it needs to get to the Linus' tree.
 
-		Franck
+Greetings,
+Rafael
