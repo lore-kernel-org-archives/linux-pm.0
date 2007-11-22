@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] Freezer: Fix APM emulation breakage
-Date: Wed, 21 Nov 2007 23:26:33 +0100
-Message-ID: <200711212326.34531.rjw@sisk.pl>
-References: <200711212322.02340.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] Freezer: Fix s2disk resume from initrd
+	(rev. 2)
+Date: Thu, 22 Nov 2007 10:50:59 +0100
+Message-ID: <20071122095059.GA9860@elf.ucw.cz>
+References: <200711212322.02340.rjw@sisk.pl> <200711212325.32964.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711212322.02340.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <200711212325.32964.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,78 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Chris Friedhoff <chris@friedhoff.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi!
 
-The APM emulation is currently broken as a result of commit
-831441862956fffa17b9801db37e6ea1650b0f69
-"Freezer: make kernel threads nonfreezable by default"
-that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
-the appropriate freezer hooks. =A0Fix it and remove the unnecessary varia=
-ble flags
-from apm_ioctl().
+> Add appropriate freezer annotations to handle_initrd(), so that it's possible
+> to resume from disk from an initrd.
+> 
+> This patch fixes Bug #9345: http://bugzilla.kernel.org/show_bug.cgi?id=9345
 
-Special thanks to Franck Bui-Huu <vagabon.xyz@gmail.com> for pointing out=
- the
-problem.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
----
- drivers/char/apm-emulation.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+Unfortunately, bugzilla does not help me in understanding this.
 
-Index: linux-2.6/drivers/char/apm-emulation.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/drivers/char/apm-emulation.c
-+++ linux-2.6/drivers/char/apm-emulation.c
-@@ -295,7 +295,6 @@ static int
- apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg=
-)
- {
- 	struct apm_user *as =3D filp->private_data;
--	unsigned long flags;
- 	int err =3D -EINVAL;
-=20
- 	if (!as->suser || !as->writer)
-@@ -331,10 +330,16 @@ apm_ioctl(struct inode * inode, struct f
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			flags =3D current->flags;
-+			freezer_do_not_count();
-=20
- 			wait_event(apm_suspend_waitqueue,
- 				   as->suspend_state =3D=3D SUSPEND_DONE);
-+
-+			/*
-+			 * Since we are waiting until the suspend is done, the
-+			 * try_to_freeze() in freezer_count() will not trigger
-+			 */
-+			freezer_count();
- 		} else {
- 			as->suspend_state =3D SUSPEND_WAIT;
- 			mutex_unlock(&state_lock);
-@@ -362,14 +367,10 @@ apm_ioctl(struct inode * inode, struct f
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			flags =3D current->flags;
--
--			wait_event_interruptible(apm_suspend_waitqueue,
-+			wait_event_freezable(apm_suspend_waitqueue,
- 					 as->suspend_state =3D=3D SUSPEND_DONE);
- 		}
-=20
--		current->flags =3D flags;
--
- 		mutex_lock(&state_lock);
- 		err =3D as->suspend_result;
- 		as->suspend_state =3D SUSPEND_NONE;
+> Index: linux-2.6/init/do_mounts_initrd.c
+> ===================================================================
+> --- linux-2.6.orig/init/do_mounts_initrd.c
+> +++ linux-2.6/init/do_mounts_initrd.c
+> @@ -55,12 +55,18 @@ static void __init handle_initrd(void)
+>  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
+>  	sys_chroot(".");
+>  
+> +	/*
+> +	 * In case that a resume from disk is carried out by linuxrc or one of
+> +	 * its children, we need to tell the freezer not to wait for us.
+> +	 */
+> +	current->flags |= PF_FREEZER_SKIP;
+> +
+>  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+>  	if (pid > 0)
+> -		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
+> -			try_to_freeze();
+> +		while (pid != sys_wait4(-1, NULL, 0, NULL))
+>  			yield();
+> -		}
+> +
+> +	current->flags &= ~PF_FREEZER_SKIP;
+
+New code should work (but it is uglier than the old one). What was
+wrong with the old one? Refrigerator should make sys_wait4() return,
+and that it turn should put handle_initrd() into refrigerator...
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
