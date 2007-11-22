@@ -1,14 +1,13 @@
 From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: Re: [PATCH 0/2] Freezer fixes for 2.6.24
-Date: Thu, 22 Nov 2007 21:29:58 +0100
-Message-ID: <4745E6C6.4060401@gmail.com>
-References: <200711210244.37965.rjw@sisk.pl> <200711212021.51968.rjw@sisk.pl>
-	<47457EA5.60302@gmail.com> <200711221710.42294.rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] Freezer: Fix APM emulation breakage
+Date: Thu, 22 Nov 2007 21:33:35 +0100
+Message-ID: <4745E79F.50808@gmail.com>
+References: <200711212322.02340.rjw@sisk.pl> <200711212326.34531.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711221710.42294.rjw@sisk.pl>
+In-Reply-To: <200711212326.34531.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +18,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 Rafael J. Wysocki wrote:
-> On Thursday, 22 of November 2007, Franck Bui-Huu wrote:
->> Anyway I just verified that the current code is broken. I put 2
->> processes waiting for a suspend evetn by reading the /dev/apm_bios
->> device and a third process that does the suspend event by doing an
->> ioctl() on the apm device. The system doesn't suspend (the kernel
->> dumped a list of the current tasks, instead of printing "Freezing of
->> tasks failed after..." BTW) and eventually the third process exits
->> with an incorrect value: -EINTR.
->>
->> Applying your patch makes the previous test case work.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> IOW, the patch helps?
+> The APM emulation is currently broken as a result of commit
+> 831441862956fffa17b9801db37e6ea1650b0f69
+> "Freezer: make kernel threads nonfreezable by default"
+> that removed the PF_NOFREEZE annotations from apm_ioctl() without adding
+> the appropriate freezer hooks.  Fix it and remove the unnecessary variable flags
+> from apm_ioctl().
+> 
 
-yes.
+This patch should probably go to the 2.6.23 stable tree as
+well, shouldn't it ?
 
 		Franck
