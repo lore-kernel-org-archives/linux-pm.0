@@ -1,15 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] Freezer: Fix s2disk resume from initrd
-	(rev. 2)
-Date: Fri, 23 Nov 2007 13:21:33 +0100
-Message-ID: <20071123122133.GB2055@elf.ucw.cz>
-References: <200711212322.02340.rjw@sisk.pl> <200711212325.32964.rjw@sisk.pl>
-	<20071122095059.GA9860@elf.ucw.cz> <200711221709.21175.rjw@sisk.pl>
+From: "Leo L. Schwab" <ewhac@best.com>
+Subject: Weird Resume Problem
+Date: Fri, 23 Nov 2007 17:30:14 -0800
+Message-ID: <20071124013014.GA4605@best.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200711221709.21175.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +15,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Chris Friedhoff <chris@friedhoff.org>, Ingo Molnar <mingo@elte.hu>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+	Today I saw a resume-from-RAM problem that I've never witnessed
+before.
 
-> > > +	/*
-> > > +	 * In case that a resume from disk is carried out by linuxrc or one of
-> > > +	 * its children, we need to tell the freezer not to wait for us.
-> > > +	 */
-> > > +	current->flags |= PF_FREEZER_SKIP;
-> > > +
-> > >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
-> > >  	if (pid > 0)
-> > > -		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
-> > > -			try_to_freeze();
-> > > +		while (pid != sys_wait4(-1, NULL, 0, NULL))
-> > >  			yield();
-> > > -		}
-> > > +
-> > > +	current->flags &= ~PF_FREEZER_SKIP;
-> > 
-> > New code should work (but it is uglier than the old one).
-> 
-> Well, the old code plain doesn't work ...
-> 
-> > What was wrong with the old one? Refrigerator should make sys_wait4() return,
-> 
-> It doesn't, because the task as no mm and is therefore considered as a kernel
-> thread and not sent a signal.
-> 
-> This _really_ is an exceptional case.
+	I have a ThinkPad Z61t running the Debian version of kernel
+2.6.22.10 (linux-source-2.6.22.6).  I normally avoid suspend-to-RAM, as
+there's a bug in the Intel graphics code that can lock up the machine when
+switching virtual terminals.  But with the latest xserver-xorg-video-intel,
+in which this bug is reputedly fixed, I've been trying it more often.
 
-Ok, ACK.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	I suspended-to-RAM yesterday afternoon, and attempted to resume
+roughly 24 hours later.  It's the longest I've ever left the machine in a
+suspend-to-RAM state.  Up until this point, resume-from-RAM has always
+worked.
+
+	Normally, when resuming from RAM, I see the display wake up to a text
+console.  At the top of the display in yellow text appears, "inu".  I never
+gave much thought to this, assuming it was some sort of glitched attempt to
+print "Linux" to the console.  After that, I normally see kernel resume
+messages appear, followed by the restoration of the X display.
+
+	Today, when I resumed, I got the text console, but instead of a
+yellow "inu" at the top, only "i" appeared.  A few moments later, the
+ThinkPad BIOS/boot screen appeared, and the machine proceeded with a fresh
+reboot (praise be to journalled filesystems).
+
+	Moments before I attempted the resume, I had plugged the machine
+into mains power.  I don't think this is relevant, as the battery had 70%
+capacity remaining.
+
+	Sadly, there is no further data other that this account as
+(obviously) no logs survive, and I haven't (yet) enabled the RTC-destroying
+suspend debugging option.
+
+	I was idly curious if anyone had seen anything like this before, and
+whether the yellow "inu" I've been seeing at resume has any significance at
+all.
+
+					Thanks,
+					Schwab
