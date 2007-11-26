@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/6] Hibernation: Move low level resume to disk.c
-Date: Tue, 27 Nov 2007 00:29:10 +0100
-Message-ID: <200711270029.11185.rjw__43021.8690461063$1196119415$gmane$org@sisk.pl>
+Subject: [PATCH 6/6] Hibernation: Move extern definition to
+	header file
+Date: Tue, 27 Nov 2007 00:33:04 +0100
+Message-ID: <200711270033.04999.rjw__11576.41122486$1196119533$gmane$org@sisk.pl>
 References: <200711270025.08128.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,136 +26,35 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move the low level restore code to kernel/power/disk.c , since the
-corresponding low level hibernation code is already there.
-
-Make restore fail if device_power_down(PMSG_PRETHAW) returns an
-error.
+Move the extern definition of resume_file[] from kernel/power/swap.c
+to kernel/power/power.h .
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/disk.c   |   47 ++++++++++++++++++++++++++++++++++++++++++++++-
- kernel/power/power.h  |    1 -
- kernel/power/swsusp.c |   35 -----------------------------------
- 3 files changed, 46 insertions(+), 37 deletions(-)
+ kernel/power/power.h |    2 ++
+ kernel/power/swap.c  |    2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -275,6 +275,51 @@ int hibernation_snapshot(int platform_mo
- }
- 
- /**
-+ *	resume_target_kernel - prepare devices that need to be suspended with
-+ *	interrupts off, restore the contents of highmem that have not been
-+ *	restored yet from the image and run the low level code that will restore
-+ *	the remaining contents of memory and switch to the just restored target
-+ *	kernel.
-+ */
-+
-+static int resume_target_kernel(void)
-+{
-+	int error;
-+
-+	local_irq_disable();
-+	error = device_power_down(PMSG_PRETHAW);
-+	if (error) {
-+		printk(KERN_ERR "Some devices failed to power down, "
-+			KERN_ERR "aborting resume\n");
-+		goto Enable_irqs;
-+	}
-+	/* We'll ignore saved state, but this gets preempt count (etc) right */
-+	save_processor_state();
-+	error = restore_highmem();
-+	if (!error) {
-+		error = swsusp_arch_resume();
-+		/* The code below is only ever reached in case of a failure.
-+		 * Otherwise execution continues at place where
-+		 * swsusp_arch_suspend() was called
-+        	 */
-+		BUG_ON(!error);
-+		/* This call to restore_highmem() undos the previous one */
-+		restore_highmem();
-+	}
-+	/* The only reason why swsusp_arch_resume() can fail is memory being
-+	 * very tight, so we have to free it as soon as we can to avoid
-+	 * subsequent failures
-+	 */
-+	swsusp_free();
-+	restore_processor_state();
-+	touch_softlockup_watchdog();
-+	device_power_up();
-+ Enable_irqs:
-+	local_irq_enable();
-+	return error;
-+}
-+
-+/**
-  *	hibernation_restore - quiesce devices and restore the hibernation
-  *	snapshot image.  If successful, control returns in hibernation_snaphot()
-  *	@platform_mode - if set, use the platform driver, if available, to
-@@ -297,7 +342,7 @@ int hibernation_restore(int platform_mod
- 	if (!error) {
- 		error = disable_nonboot_cpus();
- 		if (!error)
--			error = swsusp_resume();
-+			error = resume_target_kernel();
- 		enable_nonboot_cpus();
- 	}
- 	platform_restore_cleanup(platform_mode);
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -261,38 +261,3 @@ int swsusp_shrink_memory(void)
- 
- 	return 0;
- }
--
--int swsusp_resume(void)
--{
--	int error;
--
--	local_irq_disable();
--	/* NOTE:  device_power_down() is just a suspend() with irqs off;
--	 * it has no special "power things down" semantics
--	 */
--	if (device_power_down(PMSG_PRETHAW))
--		printk(KERN_ERR "Some devices failed to power down, very bad\n");
--	/* We'll ignore saved state, but this gets preempt count (etc) right */
--	save_processor_state();
--	error = restore_highmem();
--	if (!error) {
--		error = swsusp_arch_resume();
--		/* The code below is only ever reached in case of a failure.
--		 * Otherwise execution continues at place where
--		 * swsusp_arch_suspend() was called
--        	 */
--		BUG_ON(!error);
--		/* This call to restore_highmem() undos the previous one */
--		restore_highmem();
--	}
--	/* The only reason why swsusp_arch_resume() can fail is memory being
--	 * very tight, so we have to free it as soon as we can to avoid
--	 * subsequent failures
--	 */
--	swsusp_free();
--	restore_processor_state();
--	touch_softlockup_watchdog();
--	device_power_up();
--	local_irq_enable();
--	return error;
--}
 Index: linux-2.6/kernel/power/power.h
 ===================================================================
 --- linux-2.6.orig/kernel/power/power.h
 +++ linux-2.6/kernel/power/power.h
-@@ -154,7 +154,6 @@ extern int swsusp_swap_in_use(void);
- extern int swsusp_check(void);
- extern int swsusp_shrink_memory(void);
- extern void swsusp_free(void);
--extern int swsusp_resume(void);
- extern int swsusp_read(unsigned int *flags_p);
- extern int swsusp_write(unsigned int flags);
- extern void swsusp_close(void);
+@@ -207,3 +207,5 @@ enum {
+ #define TEST_MAX	(__TEST_AFTER_LAST - 1)
+ 
+ extern int pm_test_level;
++
++extern char resume_file[];
+Index: linux-2.6/kernel/power/swap.c
+===================================================================
+--- linux-2.6.orig/kernel/power/swap.c
++++ linux-2.6/kernel/power/swap.c
+@@ -28,8 +28,6 @@
+ 
+ #include "power.h"
+ 
+-extern char resume_file[];
+-
+ #define SWSUSP_SIG	"S1SUSPEND"
+ 
+ struct swsusp_header {
