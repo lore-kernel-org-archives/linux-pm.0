@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/6] Suspend: Use common prefix in messages
-Date: Tue, 27 Nov 2007 00:30:10 +0100
-Message-ID: <200711270030.10561.rjw__21844.7806699716$1196119265$gmane$org@sisk.pl>
+Subject: [PATCH 2/6] Hibernation: Move low level resume to disk.c
+Date: Tue, 27 Nov 2007 00:29:10 +0100
+Message-ID: <200711270029.11185.rjw__43021.8690461063$1196119415$gmane$org@sisk.pl>
 References: <200711270025.08128.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,90 +25,136 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make suspend messages start with one common prefix "PM: ".
+Move the low level restore code to kernel/power/disk.c , since the
+corresponding low level hibernation code is already there.
+
+Make restore fail if device_power_down(PMSG_PRETHAW) returns an
+error.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/main.c  |   19 ++++++++++---------
- kernel/power/power.h |    2 ++
- 2 files changed, 12 insertions(+), 9 deletions(-)
+ kernel/power/disk.c   |   47 ++++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/power/power.h  |    1 -
+ kernel/power/swsusp.c |   35 -----------------------------------
+ 3 files changed, 46 insertions(+), 37 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -183,11 +183,11 @@ static int suspend_prepare(void)
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -275,6 +275,51 @@ int hibernation_snapshot(int platform_mo
+ }
  
- 	free_pages = global_page_state(NR_FREE_PAGES);
- 	if (free_pages < FREE_PAGE_NUMBER) {
--		pr_debug("PM: free some memory\n");
-+		pr_debug(PREFIX "Free some memory\n");
- 		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
- 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
- 			error = -ENOMEM;
--			printk(KERN_ERR "PM: No enough memory\n");
-+			printk(KERN_ERR PREFIX "No enough memory\n");
- 		}
+ /**
++ *	resume_target_kernel - prepare devices that need to be suspended with
++ *	interrupts off, restore the contents of highmem that have not been
++ *	restored yet from the image and run the low level code that will restore
++ *	the remaining contents of memory and switch to the just restored target
++ *	kernel.
++ */
++
++static int resume_target_kernel(void)
++{
++	int error;
++
++	local_irq_disable();
++	error = device_power_down(PMSG_PRETHAW);
++	if (error) {
++		printk(KERN_ERR "Some devices failed to power down, "
++			KERN_ERR "aborting resume\n");
++		goto Enable_irqs;
++	}
++	/* We'll ignore saved state, but this gets preempt count (etc) right */
++	save_processor_state();
++	error = restore_highmem();
++	if (!error) {
++		error = swsusp_arch_resume();
++		/* The code below is only ever reached in case of a failure.
++		 * Otherwise execution continues at place where
++		 * swsusp_arch_suspend() was called
++        	 */
++		BUG_ON(!error);
++		/* This call to restore_highmem() undos the previous one */
++		restore_highmem();
++	}
++	/* The only reason why swsusp_arch_resume() can fail is memory being
++	 * very tight, so we have to free it as soon as we can to avoid
++	 * subsequent failures
++	 */
++	swsusp_free();
++	restore_processor_state();
++	touch_softlockup_watchdog();
++	device_power_up();
++ Enable_irqs:
++	local_irq_enable();
++	return error;
++}
++
++/**
+  *	hibernation_restore - quiesce devices and restore the hibernation
+  *	snapshot image.  If successful, control returns in hibernation_snaphot()
+  *	@platform_mode - if set, use the platform driver, if available, to
+@@ -297,7 +342,7 @@ int hibernation_restore(int platform_mod
+ 	if (!error) {
+ 		error = disable_nonboot_cpus();
+ 		if (!error)
+-			error = swsusp_resume();
++			error = resume_target_kernel();
+ 		enable_nonboot_cpus();
  	}
- 	if (!error)
-@@ -227,7 +227,7 @@ static int suspend_enter(suspend_state_t
- 	BUG_ON(!irqs_disabled());
+ 	platform_restore_cleanup(platform_mode);
+Index: linux-2.6/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.orig/kernel/power/swsusp.c
++++ linux-2.6/kernel/power/swsusp.c
+@@ -261,38 +261,3 @@ int swsusp_shrink_memory(void)
  
- 	if ((error = device_power_down(PMSG_SUSPEND))) {
--		printk(KERN_ERR "Some devices failed to power down\n");
-+		printk(KERN_ERR PREFIX "Some devices failed to power down\n");
- 		goto Done;
- 	}
- 
-@@ -261,7 +261,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_console();
- 	error = device_suspend(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "Some devices failed to suspend\n");
-+		printk(KERN_ERR PREFIX "Some devices failed to suspend\n");
- 		goto Resume_console;
- 	}
- 
-@@ -344,11 +344,12 @@ static int enter_state(suspend_state_t s
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
- 
--	printk("Syncing filesystems ... ");
-+	printk(KERN_INFO PREFIX "Syncing filesystems ... ");
- 	sys_sync();
--	printk("done.\n");
-+	printk(KERN_INFO "done.\n");
- 
--	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
-+	pr_debug(PREFIX "Preparing system to enter %s sleep state\n",
-+			pm_states[state]);
- 	error = suspend_prepare();
- 	if (error)
- 		goto Unlock;
-@@ -356,11 +357,11 @@ static int enter_state(suspend_state_t s
- 	if (suspend_test(TEST_FREEZER))
- 		goto Finish;
- 
--	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
-+	pr_debug(PREFIX "Entering %s sleep state\n", pm_states[state]);
- 	error = suspend_devices_and_enter(state);
- 
-  Finish:
--	pr_debug("PM: Finishing wakeup.\n");
-+	pr_debug(PREFIX "Finishing wakeup.\n");
- 	suspend_finish();
-  Unlock:
- 	mutex_unlock(&pm_mutex);
+ 	return 0;
+ }
+-
+-int swsusp_resume(void)
+-{
+-	int error;
+-
+-	local_irq_disable();
+-	/* NOTE:  device_power_down() is just a suspend() with irqs off;
+-	 * it has no special "power things down" semantics
+-	 */
+-	if (device_power_down(PMSG_PRETHAW))
+-		printk(KERN_ERR "Some devices failed to power down, very bad\n");
+-	/* We'll ignore saved state, but this gets preempt count (etc) right */
+-	save_processor_state();
+-	error = restore_highmem();
+-	if (!error) {
+-		error = swsusp_arch_resume();
+-		/* The code below is only ever reached in case of a failure.
+-		 * Otherwise execution continues at place where
+-		 * swsusp_arch_suspend() was called
+-        	 */
+-		BUG_ON(!error);
+-		/* This call to restore_highmem() undos the previous one */
+-		restore_highmem();
+-	}
+-	/* The only reason why swsusp_arch_resume() can fail is memory being
+-	 * very tight, so we have to free it as soon as we can to avoid
+-	 * subsequent failures
+-	 */
+-	swsusp_free();
+-	restore_processor_state();
+-	touch_softlockup_watchdog();
+-	device_power_up();
+-	local_irq_enable();
+-	return error;
+-}
 Index: linux-2.6/kernel/power/power.h
 ===================================================================
 --- linux-2.6.orig/kernel/power/power.h
 +++ linux-2.6/kernel/power/power.h
-@@ -2,6 +2,8 @@
- #include <linux/suspend_ioctls.h>
- #include <linux/utsname.h>
- 
-+#define PREFIX	"PM: "
-+
- struct swsusp_info {
- 	struct new_utsname	uts;
- 	u32			version_code;
+@@ -154,7 +154,6 @@ extern int swsusp_swap_in_use(void);
+ extern int swsusp_check(void);
+ extern int swsusp_shrink_memory(void);
+ extern void swsusp_free(void);
+-extern int swsusp_resume(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+ extern void swsusp_close(void);
