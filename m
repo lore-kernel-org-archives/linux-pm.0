@@ -1,17 +1,16 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [PATCH 1/2] Freezer: Fix s2disk resume from initrd
-	(rev. 2)
-Date: Mon, 26 Nov 2007 10:10:32 +1100
-Message-ID: <200711261010.34383.nigel@nigel.suspend2.net>
-References: <200711212322.02340.rjw@sisk.pl> <200711212325.32964.rjw@sisk.pl>
-Reply-To: nigel@suspend2.net
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [lm-sensors] broken suspend [Was: 2.6.24-rc2-mm1]
+Date: Mon, 26 Nov 2007 09:57:38 +0100
+Message-ID: <474A8A82.6040303__34699.7747933075$1196067542$gmane$org@gmail.com>
+References: <4741EB91.9080000@assembler.cz>
+	<Pine.LNX.4.44L0.0711191521170.3129-100000@iolanthe.rowland.org>
+	<20071120131520.GC12077@jupiter.solarsys.private>
+	<200711210100.43049.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711212325.32964.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200711210100.43049.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,61 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Chris Friedhoff <chris@friedhoff.org>, Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Rudolf Marek <r.marek@assembler.cz>, Kernel development list <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, "Mark M. Hoffman" <mhoffman@lightlink.com>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On 11/21/2007 01:00 AM, Rafael J. Wysocki wrote:
+> On Tuesday, 20 of November 2007, Mark M. Hoffman wrote:
+>> commit ce9c7b78c839a6304696d90083eac08baad524ce
+>> Author: Mark M. Hoffman <mhoffman@lightlink.com>
+>> Date:   Tue Nov 20 07:51:50 2007 -0500
+>>
+>>     hwmon: (coretemp) fix suspend/resume hang
+>>     
+>>     Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
+> 
+> I'd do it like this:
+> 
+>> diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+>> index 5c82ec7..afe2d31 100644
+>> --- a/drivers/hwmon/coretemp.c
+>> +++ b/drivers/hwmon/coretemp.c
+>> @@ -338,10 +338,12 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+>>  	switch (action) {
+>>  	case CPU_ONLINE:
+>>  	case CPU_ONLINE_FROZEN:
+>> +	case CPU_DOWN_FAILED:
+>>  		coretemp_device_add(cpu);
+> +	case CPU_DOWN_FAILED_FROZEN: 
+>>  		break;
+>> -	case CPU_DEAD:
+>> -	case CPU_DEAD_FROZEN:
+>> +	case CPU_DOWN_PREPARE:
+>>  		coretemp_device_remove(cpu);
+> +	case CPU_DOWN_PREPARE_FROZEN:
+>>  		break;
+>>  	}
 
-On Thursday 22 November 2007 09:25:32 Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Add appropriate freezer annotations to handle_initrd(), so that it's 
-possible
-> to resume from disk from an initrd.
-> 
-> This patch fixes Bug #9345: http://bugzilla.kernel.org/show_bug.cgi?id=9345
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Nigel Cunningham <nigel@suspend2.net>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Chris Friedhoff <chris@friedhoff.org>
-> ---
->  init/do_mounts_initrd.c |   12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/init/do_mounts_initrd.c
-> ===================================================================
-> --- linux-2.6.orig/init/do_mounts_initrd.c
-> +++ linux-2.6/init/do_mounts_initrd.c
-> @@ -55,12 +55,18 @@ static void __init handle_initrd(void)
->  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
->  	sys_chroot(".");
->  
-> +	/*
-> +	 * In case that a resume from disk is carried out by linuxrc or one of
-> +	 * its children, we need to tell the freezer not to wait for us.
-> +	 */
-> +	current->flags |= PF_FREEZER_SKIP;
-> +
->  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
->  	if (pid > 0)
-> -		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
-> -			try_to_freeze();
-> +		while (pid != sys_wait4(-1, NULL, 0, NULL))
->  			yield();
-> -		}
-> +
-> +	current->flags &= ~PF_FREEZER_SKIP;
->  
->  	/* move initrd to rootfs' /old */
->  	sys_fchdir(old_fd);
-> 
-> 
+Sorry for the delay, this (trimmed version) solves the problem!
 
-Ack. This fixes the issue for me, too.
-
-Nigel
+thanks,
 -- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
