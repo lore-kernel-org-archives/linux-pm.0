@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/6] Hibernation: Move extern definition to
-	header file
-Date: Tue, 27 Nov 2007 00:33:04 +0100
-Message-ID: <200711270033.04999.rjw__11576.41122486$1196119533$gmane$org@sisk.pl>
+Subject: [PATCH 1/6] Suspend: Fix compilation warning for
+	CONFIG_SUSPEND unset
+Date: Tue, 27 Nov 2007 00:27:23 +0100
+Message-ID: <200711270027.24230.rjw__47688.13128253$1196119636$gmane$org@sisk.pl>
 References: <200711270025.08128.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -24,37 +24,37 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Suspend: Make debug facility depend on CONFIG_SUSPEND
 
-Move the extern definition of resume_file[] from kernel/power/swap.c
-to kernel/power/power.h .
+Make the new suspend debug facility code depend on CONFIG_SUSPEND,
+as appropriate, to remove the compiler warning printed when CONFIG_PM is set
+and CONFIG_SUSPEND is not set.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/power.h |    2 ++
- kernel/power/swap.c  |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/power/main.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/kernel/power/power.h
+Index: linux-2.6/kernel/power/main.c
 ===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -207,3 +207,5 @@ enum {
- #define TEST_MAX	(__TEST_AFTER_LAST - 1)
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -52,6 +52,8 @@ int pm_notifier_call_chain(unsigned long
  
- extern int pm_test_level;
+ #endif /* CONFIG_PM_SLEEP */
+ 
++#ifdef CONFIG_SUSPEND
 +
-+extern char resume_file[];
-Index: linux-2.6/kernel/power/swap.c
-===================================================================
---- linux-2.6.orig/kernel/power/swap.c
-+++ linux-2.6/kernel/power/swap.c
-@@ -28,8 +28,6 @@
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
  
- #include "power.h"
+@@ -125,9 +127,6 @@ power_attr(pm_test);
+ static inline int suspend_test(int level) { return 0; }
+ #endif /* !CONFIG_PM_DEBUG */
  
--extern char resume_file[];
 -
- #define SWSUSP_SIG	"S1SUSPEND"
+-#ifdef CONFIG_SUSPEND
+-
+ /* This is just an arbitrary number */
+ #define FREE_PAGE_NUMBER (100)
  
- struct swsusp_header {
