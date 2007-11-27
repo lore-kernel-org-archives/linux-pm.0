@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 6/6] Hibernation: Move extern definition to
-	header file
-Date: Tue, 27 Nov 2007 01:23:39 +0100
-Message-ID: <20071127002339.GE9759__43936.502809129$1196123054$gmane$org@elf.ucw.cz>
-References: <200711270025.08128.rjw@sisk.pl> <200711270033.04999.rjw@sisk.pl>
+Subject: Re: [PATCH 2/6] Hibernation: Move low level resume to
+	disk.c
+Date: Tue, 27 Nov 2007 01:29:29 +0100
+Message-ID: <20071127002929.GF9759__5456.78815474293$1196123399$gmane$org@elf.ucw.cz>
+References: <200711270025.08128.rjw@sisk.pl> <200711270029.11185.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200711270033.04999.rjw@sisk.pl>
+In-Reply-To: <200711270029.11185.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,26 +26,42 @@ Hi!
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Move the extern definition of resume_file[] from kernel/power/swap.c
-> to kernel/power/power.h .
+> Move the low level restore code to kernel/power/disk.c , since the
+> corresponding low level hibernation code is already there.
+> 
+> Make restore fail if device_power_down(PMSG_PRETHAW) returns an
+> error.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-can we just get rid of extern? It does not seem to be used. (at least
-in very quick grep over 2.6.24-rc3):
+Move looks ok to me.
 
-pavel@amd:/data/l/linux/kernel/power$ grep resume_file *.c
-disk.c:char resume_file[256] = CONFIG_PM_STD_PARTITION;
-disk.c:         if (!strlen(resume_file)) {
-disk.c:         swsusp_resume_device = name_to_dev_t(resume_file);
-disk.c:         pr_debug("swsusp: Resume From Partition %s\n",
-resume_file);
-disk.c: strncpy( resume_file, str, 255 );
-swap.c:extern char resume_file[];
-pavel@amd:/data/l/linux/kernel/power$
 
+>  /**
+> + *	resume_target_kernel - prepare devices that need to be suspended with
+> + *	interrupts off, restore the contents of highmem that have not been
+> + *	restored yet from the image and run the low level code that will restore
+> + *	the remaining contents of memory and switch to the just restored target
+> + *	kernel.
+> + */
+> +
+> +static int resume_target_kernel(void)
+> +{
+> +	int error;
+> +
+> +	local_irq_disable();
+> +	error = device_power_down(PMSG_PRETHAW);
+> +	if (error) {
+> +		printk(KERN_ERR "Some devices failed to power down, "
+> +			KERN_ERR "aborting resume\n");
+> +		goto Enable_irqs;
+
+Too many KERN_ERR's ;-). Plus... are you sure this does the right
+thing? ... .. ... yes, it does. If one device fails,
+device_power_down() powers up the rest using dpm_power_up(). Good.
+
+ACK... modulo double KERN_ERR.
 								Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
