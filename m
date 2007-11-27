@@ -1,14 +1,17 @@
-From: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
-Date: Tue, 27 Nov 2007 05:38:52 -0700
-Message-ID: <20071127123852.GB3230__25312.2337664992$1196178321$gmane$org@parisc-linux.org>
-References: <4745F77C.7040402@gmail.com>
-	<20071126220538.1aed9c33.akpm@linux-foundation.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/6] Hibernation: Move low level resume to
+	disk.c
+Date: Tue, 27 Nov 2007 17:06:04 +0100
+Message-ID: <200711271706.05259.rjw@sisk.pl>
+References: <200711270025.08128.rjw@sisk.pl> <200711270029.11185.rjw@sisk.pl>
+	<20071127002929.GF9759@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20071127002929.GF9759@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <20071126220538.1aed9c33.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +21,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Greg KH <gregkh@suse.de>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-usb-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 26, 2007 at 10:05:38PM -0800, Andrew Morton wrote:
-> On Thu, 22 Nov 2007 22:41:16 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
-> > Step aside. What's the purpose of having two similar patches for one issue,
-> > it then warns about the same thing twice:
-> > make-sure-nobodys-leaking-resources.patch
-> > releasing-resources-with-children.patch
+On Tuesday, 27 of November 2007, Pavel Machek wrote:
+> Hi!
 > 
-> Oh well.  It's better than having none.  Matthew, could you have think
-> about something for mainline please?
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Move the low level restore code to kernel/power/disk.c , since the
+> > corresponding low level hibernation code is already there.
+> > 
+> > Make restore fail if device_power_down(PMSG_PRETHAW) returns an
+> > error.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Move looks ok to me.
+> 
+> 
+> >  /**
+> > + *	resume_target_kernel - prepare devices that need to be suspended with
+> > + *	interrupts off, restore the contents of highmem that have not been
+> > + *	restored yet from the image and run the low level code that will restore
+> > + *	the remaining contents of memory and switch to the just restored target
+> > + *	kernel.
+> > + */
+> > +
+> > +static int resume_target_kernel(void)
+> > +{
+> > +	int error;
+> > +
+> > +	local_irq_disable();
+> > +	error = device_power_down(PMSG_PRETHAW);
+> > +	if (error) {
+> > +		printk(KERN_ERR "Some devices failed to power down, "
+> > +			KERN_ERR "aborting resume\n");
+> > +		goto Enable_irqs;
+> 
+> Too many KERN_ERR's ;-)
 
-I submitted it for mainline.  I was never quite sure why you only took
-it into -mm.  I'll take a look at what you have in -mm these days.
+Yeah, will fix.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> . Plus... are you sure this does the right 
+> thing? ... .. ... yes, it does. If one device fails,
+> device_power_down() powers up the rest using dpm_power_up(). Good.
+> 
+> ACK... modulo double KERN_ERR.
+
+OK, thanks!
+
+Rafael
