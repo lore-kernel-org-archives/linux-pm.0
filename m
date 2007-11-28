@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/7] Hibernation: Remove unnecessary variable
-	declaration
-Date: Wed, 28 Nov 2007 01:29:21 +0100
-Message-ID: <200711280129.22243.rjw@sisk.pl>
+Subject: [PATCH 1/7] Suspend: Fix compilation warning for
+	CONFIG_SUSPEND unset
+Date: Wed, 28 Nov 2007 01:15:19 +0100
+Message-ID: <200711280115.19936.rjw__46327.2652276375$1196210173$gmane$org@sisk.pl>
 References: <200711280113.36941.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,24 +26,36 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the unnecessary extern declaration of resume_file[]
-from kernel/power/swap.c .
+Make the new suspend debug facility code depend on CONFIG_SUSPEND,
+as appropriate, to remove the compiler warning printed when CONFIG_PM is set
+and CONFIG_SUSPEND is not set.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/swap.c |    2 --
- 1 file changed, 2 deletions(-)
+ kernel/power/main.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/kernel/power/swap.c
+Index: linux-2.6/kernel/power/main.c
 ===================================================================
---- linux-2.6.orig/kernel/power/swap.c
-+++ linux-2.6/kernel/power/swap.c
-@@ -28,8 +28,6 @@
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -52,6 +52,8 @@ int pm_notifier_call_chain(unsigned long
  
- #include "power.h"
+ #endif /* CONFIG_PM_SLEEP */
  
--extern char resume_file[];
++#ifdef CONFIG_SUSPEND
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
+ 
+@@ -125,9 +127,6 @@ power_attr(pm_test);
+ static inline int suspend_test(int level) { return 0; }
+ #endif /* !CONFIG_PM_DEBUG */
+ 
 -
- #define SWSUSP_SIG	"S1SUSPEND"
+-#ifdef CONFIG_SUSPEND
+-
+ /* This is just an arbitrary number */
+ #define FREE_PAGE_NUMBER (100)
  
- struct swsusp_header {
