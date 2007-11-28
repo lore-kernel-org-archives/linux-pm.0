@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/7] Suspend: Fix comment in main.c
-Date: Wed, 28 Nov 2007 01:27:20 +0100
-Message-ID: <200711280127.21432.rjw__3333.7542241954$1196210201$gmane$org@sisk.pl>
+Subject: [PATCH 4/7] Hibernation: Fix comment in disk.c
+Date: Wed, 28 Nov 2007 01:28:18 +0100
+Message-ID: <200711280128.18716.rjw@sisk.pl>
 References: <200711280113.36941.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,27 +25,26 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Fix a comment in kernel/power/main.c so that it doesn't contain lines
+Fix a comment in kernel/power/disk.c so that it doesn't contain lines
 longer that 80 characters.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/main.c |    4 ++--
+ kernel/power/disk.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -242,8 +242,8 @@ static int suspend_enter(suspend_state_t
- }
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -568,8 +568,8 @@ static int software_resume(void)
  
- /**
-- *	suspend_devices_and_enter - suspend devices and enter the desired system sleep
-- *			  state.
-+ *	suspend_devices_and_enter - suspend devices and enter the desired system
-+ *				    sleep state.
-  *	@state:		  state to enter
-  */
- int suspend_devices_and_enter(suspend_state_t state)
+ 	if (noresume) {
+ 		/**
+-		 * FIXME: If noresume is specified, we need to find the partition
+-		 * and reset it back to normal swap space.
++		 * FIXME: If noresume is specified, we need to find the
++		 * partition and reset it back to normal swap space.
+ 		 */
+ 		mutex_unlock(&pm_mutex);
+ 		return 0;
