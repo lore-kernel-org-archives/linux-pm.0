@@ -1,13 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 7/7] Hibernation: Update messages
-Date: Wed, 28 Nov 2007 11:14:55 +0100
-Message-ID: <20071128101455.GD1957__42112.0090912611$1196250092$gmane$org@elf.ucw.cz>
-References: <200711280113.36941.rjw@sisk.pl> <200711280137.25481.rjw@sisk.pl>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
+Date: Thu, 29 Nov 2007 16:40:37 -0700
+Message-ID: <200711291640.38158.bjorn.helgaas__14126.268195878$1196379818$gmane$org@hp.com>
+References: <4745F77C.7040402@gmail.com>
+	<20071126220538.1aed9c33.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20071126220538.1aed9c33.akpm@linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200711280137.25481.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,22 +20,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Matthew Wilcox <matthew@wil.cx>, Greg KH <gregkh@suse.de>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus@drzeus.cx>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Make hibernation messages start with one common prefix "PM: " and use
-> the word "hibernation" in messages as a synonym of "suspend to disk".
+On Monday 26 November 2007 11:05:38 pm Andrew Morton wrote:
+> On Thu, 22 Nov 2007 22:41:16 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+> > Ok, I hit the bug, suspend of 00:06 device complains about it:
+> > WARNING: at .../kernel/resource.c:185 __release_resource()
+> > 
+> > Call Trace:
+> >  [<ffffffff8023f7b5>] release_resource+0xb5/0xf0
+> >  [<ffffffff8036cda0>] pnp_release_resources+0x70/0x130
+> >  [<ffffffff8036db85>] pnp_stop_dev+0x45/0x90
+> >  [<ffffffff8036c942>] pnp_bus_suspend+0x92/0xb0
+> >  [<ffffffff803b9f73>] suspend_device+0x113/0x180
+> >  [<ffffffff803ba330>] device_suspend+0x200/0x320
+> >  [<ffffffff80266905>] suspend_devices_and_enter+0xa5/0x170
+> >  [<ffffffff80266bd9>] enter_state+0x209/0x270
+> >  [<ffffffff80266cef>] state_store+0xaf/0xf0
+> >  [<ffffffff8032ca67>] kobj_attr_store+0x17/0x20
+> >  [<ffffffff802e459e>] sysfs_write_file+0xce/0x140
+> >  [<ffffffff80299cc7>] vfs_write+0xc7/0x170
+> >  [<ffffffff8029a360>] sys_write+0x50/0x90
+> >  [<ffffffff8020bcde>] system_call+0x7e/0x83
+> > 
+> > # LANG=en ll /sys/devices/pnp0/00:06/
+> > total 0
+> > lrwxrwxrwx 1 root root    0 Nov 22 22:35 driver -> ../../../bus/pnp/drivers/serial
+> > -r--r--r-- 1 root root 4096 Nov 22 22:35 id
+> > -r--r--r-- 1 root root 4096 Nov 22 22:35 options
+> > drwxr-xr-x 2 root root    0 Nov 22 22:35 power
+> > -rw-r--r-- 1 root root 4096 Nov 22 22:35 resources
+> > lrwxrwxrwx 1 root root    0 Nov 22 22:35 subsystem -> ../../../bus/pnp
+> > drwxr-xr-x 3 root root    0 Nov 22 22:35 tty
+> > -rw-r--r-- 1 root root 4096 Nov 22 22:35 uevent
 > 
-> Turn some KERN_INFO messages into debug ones.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> I suppose that's a genuine leak, presumably in 8250_pnp.
 
-ACK. Whole series looks good.
+We used to have only the serial driver resource reservation.  We now
+have an additional 00:06 resource that is the parent of the serial
+resource, e.g.,
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  03f8-03ff : 00:06
+    03f8-03ff : serial
+
+I think this problem happens because pnp_bus_suspend() calls
+serial_pnp_suspend(), which suspends the driver but does nothing
+with the resources.  Then it calls pnp_stop_dev(), which releases
+the 00:06 resource, which still has a serial child resource.
+
+The corresponding PCI code in pci_device_suspend() does not do
+any generic device disable or resource release.  I don't know
+why PNP disables the device on suspend.  I glanced through the
+ACPI spec but didn't see a requirement for it.  Maybe Pierre [1]
+remembers.
+
+Maybe we could either remove the pnp_{stop,start}_dev() calls
+from the suspend/resume path, or move the PNP resource management
+out of pnp_{start,stop}_dev().
+
+Bjorn
+
+[1] http://lkml.org/lkml/2005/11/30/39
