@@ -1,20 +1,17 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Date: Fri, 30 Nov 2007 15:12:10 -0500
-Message-ID: <47506E9A.7080500__29279.5928697617$1196453694$gmane$org@rtr.ca>
-References: <32209efe0711122242m3a5f081asf1c11a38b24db10c@mail.gmail.com>
-	<20071113031553.3c7b5c16.akpm@linux-foundation.org>
-	<4739ADA2.4060604@rtr.ca>
-	<alpine.LFD.0.9999.0711131521590.3265@localhost.localdomain>
-	<4739E347.30406@rtr.ca> <473C7495.40805@rtr.ca>
-	<20071115181418.GA6603@ucw.cz> <473C825E.3030307@rtr.ca>
-	<20071115193424.GA31691@elte.hu> <20071115193612.GA751@elte.hu>
-	<473CC6D4.2010909@rtr.ca>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
+Date: Fri, 30 Nov 2007 14:08:12 -0700
+Message-ID: <200711301408.13422.bjorn.helgaas__4624.4585574188$1196457016$gmane$org@hp.com>
+References: <4745F77C.7040402@gmail.com>
+	<200711291640.38158.bjorn.helgaas@hp.com>
+	<20071129164207.fd7bcd30.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <473CC6D4.2010909@rtr.ca>
+In-Reply-To: <20071129164207.fd7bcd30.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,37 +21,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jirislaby@gmail.com, matthew@wil.cx, gregkh@suse.de, linux-kernel@vger.kernel.org, drzeus@drzeus.cx, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-Mark Lord wrote:
-> Ingo Molnar wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> pick up the latest latency tracer patch from:
->>
->> sorry, wrong URLs, the correct links are:
->>
->>    
->> http://redhat.com/~mingo/latency-tracing-patches/latency-tracer-v2.6.24-rc2-git5-combo.patch 
->>
->>    http://redhat.com/~mingo/latency-tracing-patches/trace-cmd.c
-> ..
+On Thursday 29 November 2007 05:42:07 pm Andrew Morton wrote:
+> On Thu, 29 Nov 2007 16:40:37 -0700
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 > 
-> Is there a version of these that works with 2.6.23.1 ?
+> > On Monday 26 November 2007 11:05:38 pm Andrew Morton wrote:
+> > > On Thu, 22 Nov 2007 22:41:16 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+> > > > Ok, I hit the bug, suspend of 00:06 device complains about it:
+> > > > WARNING: at .../kernel/resource.c:185 __release_resource()
+> > > > 
+> > > > Call Trace:
+> > > >  [<ffffffff8023f7b5>] release_resource+0xb5/0xf0
+> > > >  [<ffffffff8036cda0>] pnp_release_resources+0x70/0x130
+> > > >  [<ffffffff8036db85>] pnp_stop_dev+0x45/0x90
+> > > >  [<ffffffff8036c942>] pnp_bus_suspend+0x92/0xb0
+> > > >  [<ffffffff803b9f73>] suspend_device+0x113/0x180
+> > > >  [<ffffffff803ba330>] device_suspend+0x200/0x320
+> > > >  [<ffffffff80266905>] suspend_devices_and_enter+0xa5/0x170
+> > > >  [<ffffffff80266bd9>] enter_state+0x209/0x270
+> > > >  [<ffffffff80266cef>] state_store+0xaf/0xf0
+> > > >  [<ffffffff8032ca67>] kobj_attr_store+0x17/0x20
+> > > >  [<ffffffff802e459e>] sysfs_write_file+0xce/0x140
+> > > >  [<ffffffff80299cc7>] vfs_write+0xc7/0x170
+> > > >  [<ffffffff8029a360>] sys_write+0x50/0x90
+> > > >  [<ffffffff8020bcde>] system_call+0x7e/0x83
+> > > > 
+> > > > # LANG=en ll /sys/devices/pnp0/00:06/
+> > > > total 0
+> > > > lrwxrwxrwx 1 root root    0 Nov 22 22:35 driver -> ../../../bus/pnp/drivers/serial
+> > > > -r--r--r-- 1 root root 4096 Nov 22 22:35 id
+> > > > -r--r--r-- 1 root root 4096 Nov 22 22:35 options
+> > > > drwxr-xr-x 2 root root    0 Nov 22 22:35 power
+> > > > -rw-r--r-- 1 root root 4096 Nov 22 22:35 resources
+> > > > lrwxrwxrwx 1 root root    0 Nov 22 22:35 subsystem -> ../../../bus/pnp
+> > > > drwxr-xr-x 3 root root    0 Nov 22 22:35 tty
+> > > > -rw-r--r-- 1 root root 4096 Nov 22 22:35 uevent
+> > > 
+> > > I suppose that's a genuine leak, presumably in 8250_pnp.
+> > 
+> > We used to have only the serial driver resource reservation.  We now
+> > have an additional 00:06 resource that is the parent of the serial
+> > resource, e.g.,
+> > 
+> >   03f8-03ff : 00:06
+> >     03f8-03ff : serial
+> > 
+> > I think this problem happens because pnp_bus_suspend() calls
+> > serial_pnp_suspend(), which suspends the driver but does nothing
+> > with the resources.  Then it calls pnp_stop_dev(), which releases
+> > the 00:06 resource, which still has a serial child resource.
+> > 
+> > The corresponding PCI code in pci_device_suspend() does not do
+> > any generic device disable or resource release.  I don't know
+> > why PNP disables the device on suspend.  I glanced through the
+> > ACPI spec but didn't see a requirement for it.  Maybe Pierre [1]
+> > remembers.
+> > 
+> > Maybe we could either remove the pnp_{stop,start}_dev() calls
+> > from the suspend/resume path, or move the PNP resource management
+> > out of pnp_{start,stop}_dev().
+> > 
+> > Bjorn
+> > 
+> > [1] http://lkml.org/lkml/2005/11/30/39
 > 
-> I'm not using 2.6.24-* on this machine because:
->  (a) behaviour may be different, and
->  (b) something broke VMware compatibility again.
-..
+> So was this particular problem caused/exposed by
+> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch, or is
+> it in mainline?
 
-An update:
+I'm pretty sure this problem is caused by that patch, so we
+we shouldn't see this in mainline.
 
-Ingo's 2.6.23 version of the latency-tracing-patches only lock-up on resume here.
+Jiri, can you try the additional patch below, please?
 
-But now that I've hacked vmware to work on 2.6.24,
-my notebook is now running the newer kernels.
-
-So now to see if the "strange 1-second pauses" ever happen here,
-and if they do I'll patch in Ingo's stuff to try and find out why.
+Index: linux-mm/drivers/pnp/driver.c
+===================================================================
+--- linux-mm.orig/drivers/pnp/driver.c	2007-11-30 13:58:25.000000000 -0700
++++ linux-mm/drivers/pnp/driver.c	2007-11-30 13:59:37.000000000 -0700
+@@ -161,13 +161,6 @@
+ 			return error;
+ 	}
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+-	    pnp_can_disable(pnp_dev)) {
+-		error = pnp_stop_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+ 		pnp_dev->protocol->suspend(pnp_dev, state);
+ 	return 0;
+@@ -185,12 +178,6 @@
+ 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+ 		pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
+-		error = pnp_start_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_drv->resume)
+ 		return pnp_drv->resume(pnp_dev);
+ 
