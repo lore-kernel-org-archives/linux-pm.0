@@ -1,23 +1,10 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Date: Sun, 2 Dec 2007 16:47:46 +0100
-Message-ID: <20071202154746.GA27069__14690.5421898284$1196610555$gmane$org@elte.hu>
-References: <20071130184625.GB9928@elte.hu>
-	<20071201151650.GA5031@lazybastard.org>
-	<20071201183256.GA14052@elte.hu>
-	<20071201204747.GA6458@lazybastard.org>
-	<20071201205456.GA8231@elte.hu>
-	<20071201234112.GA7209@lazybastard.org>
-	<20071202085607.GA28966@elte.hu>
-	<20071202113143.GA9378@lazybastard.org>
-	<20071202135711.GA20434@elte.hu>
-	<20071202141117.GB9516@lazybastard.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Need lockdep help
+Date: Sun, 2 Dec 2007 14:45:32 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712021430140.4185-100000__43439.6670818844$1196624809$gmane$org@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071202141117.GB9516@lazybastard.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,32 +14,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: len.brown@intel.com, linux-kernel@vger.kernel.org, Mark Lord <liml@rtr.ca>, Mark Lord <lkml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Ingo:
 
-* J=F6rn Engel <joern@logfs.org> wrote:
+I ran into a lockdep reporting issue just now with some new code under 
+development.  I think it's a false positive; the question is how best 
+to deal with it.
 
-> I do.  Went through 10odd runs and annotated the function right below=20
-> mcount each time.  Seems to work now.
->=20
-> Trouble is that it doesn't solve my real problem at hand.  Something=20
-> is causing significant delays when writing to logfs.  Core logfs code=20
-> is not running, but may cause whatever other code is running and=20
-> burning up all the cpu time.  Wasting 100ms of "qemu-time" to write a=20
-> single page happens fairly frequently.
->=20
-> With the latency tracer the problem appears to have become worse.  Now=20
-> the loftlockup code triggers quite frequently.  Which makes a bit of=20
-> sense, as the problem is a busy CPU, rather than an idle one.
+Here's the situation.  The new code runs during a system sleep (i.e., 
+suspend or hibernation).  Certain activities have to be deferred during 
+a system sleep, so I defined an rwsem: system_sleep_in_progress_rwsem.
 
-well what does the trace say, where do the delays come from? To get a=20
-quick overview you can make tracing lighter weight by doing:
+Subroutines carrying out these activities acquire a read lock on the
+rwsem, so normally they proceed with no hindrance.  During a sleep
+transition, I acquire a write lock -- this is done via a PM-notifier
+callout routine.  That is, during a PM_HIBERNATION_PREPARE or
+PM_SUSPEND_PREPARE notification the routine does down_write(), and
+during a PM_POST_HIBERNATION or PM_POST_SUSPEND notification the
+routine does up_write().
 
- echo 0 > /proc/sys/kernel/mcount_enabled
- echo 1 > /proc/sys/kernel/trace_syscalls
+The problem is that the notifier chain itself is under the control of 
+an rwsem (to prevent the chain from being modified while it is in use).  
+The resulting actions look like this:
 
-(this turns the latency tracer into a "global strace" kind of tracer)
+System sleep start:
+		down_read(notifier-chain rwsem);
+		call the notifier routine
+			down_write(&system_sleep_in_progress_rwsem);
+		up_read(notifier-chain rwsem);
 
-	Ingo
+System sleep end:
+		down_read(notifier-chain rwsem);
+		call the notifier routine
+			up_write(&system_sleep_in_progress_rwsem);
+		up_read(notifier-chain rwsem);
+
+This creates a lockdep violation; each rwsem in turn is locked while 
+the other is being held.  However the only way this could lead to 
+deadlock would be if there was already a bug in the system Power 
+Management code (overlapping notifications).
+
+Perhaps the system_sleep_in_progress_rwsem could be replaced by some 
+other sort of synchronizing mechanism, but I don't want to change it -- 
+an rwsem really does seem to be the correct thing to use here.
+
+What do you suggest?
+
+Alan Stern
