@@ -1,14 +1,13 @@
-From: Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: WARNING: at kernel/resource.c:189 __release_resource
-Date: Sat, 1 Dec 2007 22:01:20 +0100
-Message-ID: <20071201220120.15f4fd49__8095.26353045857$1196697459$gmane$org@poseidon.drzeus.cx>
-References: <4745F77C.7040402@gmail.com>
-	<20071126220538.1aed9c33.akpm@linux-foundation.org>
-	<200711291640.38158.bjorn.helgaas@hp.com>
+From: Jarek Poplawski <jarkao2@o2.pl>
+Subject: Re: Need lockdep help
+Date: Mon, 3 Dec 2007 11:36:30 +0100
+Message-ID: <20071203103630.GB2429__2917.89037078178$1196697460$gmane$org@ff.dom.local>
+References: <Pine.LNX.4.44L0.0712021430140.4185-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3958203080348811517=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711291640.38158.bjorn.helgaas@hp.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0712021430140.4185-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,66 +15,62 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Matthew Wilcox <matthew@wil.cx>, Greg KH <gregkh@suse.de>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On 02-12-2007 20:45, Alan Stern wrote:
+> Ingo:
+> 
+> I ran into a lockdep reporting issue just now with some new code under 
+> development.  I think it's a false positive; the question is how best 
+> to deal with it.
+> 
+> Here's the situation.  The new code runs during a system sleep (i.e., 
+> suspend or hibernation).  Certain activities have to be deferred during 
+> a system sleep, so I defined an rwsem: system_sleep_in_progress_rwsem.
+> 
+> Subroutines carrying out these activities acquire a read lock on the
+> rwsem, so normally they proceed with no hindrance.  During a sleep
+> transition, I acquire a write lock -- this is done via a PM-notifier
+> callout routine.  That is, during a PM_HIBERNATION_PREPARE or
+> PM_SUSPEND_PREPARE notification the routine does down_write(), and
+> during a PM_POST_HIBERNATION or PM_POST_SUSPEND notification the
+> routine does up_write().
+> 
+> The problem is that the notifier chain itself is under the control of 
+> an rwsem (to prevent the chain from being modified while it is in use).  
+> The resulting actions look like this:
+> 
+> System sleep start:
+> 		down_read(notifier-chain rwsem);
+> 		call the notifier routine
+> 			down_write(&system_sleep_in_progress_rwsem);
+> 		up_read(notifier-chain rwsem);
+> 
+> System sleep end:
+> 		down_read(notifier-chain rwsem);
+> 		call the notifier routine
+> 			up_write(&system_sleep_in_progress_rwsem);
+> 		up_read(notifier-chain rwsem);
+> 
+> This creates a lockdep violation; each rwsem in turn is locked while 
+> the other is being held.  However the only way this could lead to 
+> deadlock would be if there was already a bug in the system Power 
+> Management code (overlapping notifications).
 
---===============3958203080348811517==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1;
-	boundary="=_hera.drzeus.cx-3439-1196542881-0001-2"
+Actually, IMHO, there is no reason for any lockdep violation:
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+thread #1: has down_read(A); waits for #2 to down_write(B)
+thread #2: has down_write(B); never waits for #1 to down_read(A)
 
---=_hera.drzeus.cx-3439-1196542881-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+So, deadlock isn't possible here. If lockdep reports something else it
+should be fixed (and you'd be right to omit lockdep until this is
+done).
 
-On Thu, 29 Nov 2007 16:40:37 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Regards,
+Jarek P.
 
->=20
-> The corresponding PCI code in pci_device_suspend() does not do
-> any generic device disable or resource release.  I don't know
-> why PNP disables the device on suspend.  I glanced through the
-> ACPI spec but didn't see a requirement for it.  Maybe Pierre [1]
-> remembers.
->=20
-
-Afraid not. There was a reason for it, but my mind draws a blank as to what=
- that was... I have a slight recollection of bad BIOS interaction during ST=
-R, but I'm not sure it was related to this specific patch.
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-3439-1196542881-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHUcug7b8eESbyJLgRAvw+AKDvTib2vHpkDdXwiz8ay9SmtVUW2QCfbE0c
-bjqMg+x+TzV3lu/mygu89xI=
-=uxzS
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-3439-1196542881-0001-2--
-
---===============3958203080348811517==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3958203080348811517==--
+PS: Peter Zijlstra added to CC
