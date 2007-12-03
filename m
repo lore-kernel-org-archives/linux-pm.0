@@ -1,23 +1,12 @@
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
-Date: Mon, 3 Dec 2007 01:57:02 +0100
-Message-ID: <20071203005702.GA12215__20449.3544916206$1196643971$gmane$org@lazybastard.org>
-References: <20071202113143.GA9378@lazybastard.org>
-	<20071202135711.GA20434@elte.hu>
-	<20071202141117.GB9516@lazybastard.org>
-	<20071202154746.GA27069@elte.hu>
-	<20071202195501.GB10657@lazybastard.org>
-	<20071202200722.GA12101@elte.hu>
-	<20071202203016.GC10657@lazybastard.org>
-	<20071202204559.GA28550@elte.hu>
-	<20071202211026.GB11522@lazybastard.org>
-	<20071202211900.GB7439@elte.hu>
+From: irfan shaikh <irfan_shaikh2266@yahoo.com>
+Subject: Re: linux-pm Digest, Vol 39, Issue 4
+Date: Sun, 2 Dec 2007 19:02:33 -0800 (PST)
+Message-ID: <980480.69622.qm@web39713.mail.mud.yahoo.com>
+References: <200712022000.lB2K0JHt008593@smtp2.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============7151623383729241738=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071202211900.GB7439@elte.hu>
+In-Reply-To: <200712022000.lB2K0JHt008593@smtp2.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,25 +14,48 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: len.brown@intel.com, =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-kernel@vger.kernel.org, Mark Lord <liml@rtr.ca>, Mark Lord <lkml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2 December 2007 22:19:00 +0100, Ingo Molnar wrote:
-> * J=C3=B6rn Engel <joern@logfs.org> wrote:
->=20
-> > Maybe one more thing: can you send me the config you used for the=20
-> > setup above?  I'd like to know whether qemu or my config is to blame.
->=20
-> sure - attached.
+--===============7151623383729241738==
+Content-Type: multipart/alternative; boundary="0-682279351-1196650953=:69622"
+Content-Transfer-Encoding: 8bit
 
-After an eternity of compile time, this config does generate some useful
-output.  qemu is not to blame.
+--0-682279351-1196650953=:69622
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-J=C3=B6rn
 
---=20
-Joern's library part 9:
-http://www.scl.ameslab.gov/Publications/Gus/TwelveWays.html
+    I want to know what are the steps and issues  taken for implementing linux power management.
+  I m beginner!!
+   
+  thanking u!!!
+   
+  regards,
+  Irfan
+
+       
+---------------------------------
+Never miss a thing.   Make Yahoo your homepage.
+--0-682279351-1196650953=:69622
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<BR>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">  <div>I want to know what are the steps and issues&nbsp;&nbsp;taken for implementing linux power management.</div>  <div>I m&nbsp;beginner!!</div>  <div>&nbsp;</div>  <div>thanking u!!!</div>  <div>&nbsp;</div>  <div>regards,</div>  <div>Irfan</div></BLOCKQUOTE><p>&#32;
+
+      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
+
+
+--0-682279351-1196650953=:69622--
+
+--===============7151623383729241738==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7151623383729241738==--
