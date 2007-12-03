@@ -1,12 +1,12 @@
-From: irfan shaikh <irfan_shaikh2266@yahoo.com>
-Subject: Re: linux-pm Digest, Vol 39, Issue 4
-Date: Sun, 2 Dec 2007 19:02:33 -0800 (PST)
-Message-ID: <980480.69622.qm@web39713.mail.mud.yahoo.com>
-References: <200712022000.lB2K0JHt008593@smtp2.linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Need lockdep help
+Date: Mon, 3 Dec 2007 10:08:43 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712031000480.3630-100000__14211.3321031959$1196694731$gmane$org@iolanthe.rowland.org>
+References: <20071203103630.GB2429@ff.dom.local>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7151623383729241738=="
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712022000.lB2K0JHt008593@smtp2.linux-foundation.org>
+In-Reply-To: <20071203103630.GB2429@ff.dom.local>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,48 +14,50 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7151623383729241738==
-Content-Type: multipart/alternative; boundary="0-682279351-1196650953=:69622"
-Content-Transfer-Encoding: 8bit
+On Mon, 3 Dec 2007, Jarek Poplawski wrote:
 
---0-682279351-1196650953=:69622
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+> > System sleep start:
+> > 		down_read(notifier-chain rwsem);
+> > 		call the notifier routine
+> > 			down_write(&system_sleep_in_progress_rwsem);
+> > 		up_read(notifier-chain rwsem);
+> > 
+> > System sleep end:
+> > 		down_read(notifier-chain rwsem);
+> > 		call the notifier routine
+> > 			up_write(&system_sleep_in_progress_rwsem);
+> > 		up_read(notifier-chain rwsem);
+> > 
+> > This creates a lockdep violation; each rwsem in turn is locked while 
+> > the other is being held.  However the only way this could lead to 
+> > deadlock would be if there was already a bug in the system Power 
+> > Management code (overlapping notifications).
+> 
+> Actually, IMHO, there is no reason for any lockdep violation:
+> 
+> thread #1: has down_read(A); waits for #2 to down_write(B)
+> thread #2: has down_write(B); never waits for #1 to down_read(A)
+> 
+> So, deadlock isn't possible here. If lockdep reports something else it
+> should be fixed (and you'd be right to omit lockdep until this is
+> done).
 
+I think the reasoning goes the way Arjan described.  Suppose in between
+#1 and #2 there is thread #3 trying to do down_write(A) and waiting for
+#1.  Then thread #2 doesn't have to wait for #1 directly, but it would
+have to wait for #3.
 
-    I want to know what are the steps and issues  taken for implementing linux power management.
-  I m beginner!!
-   
-  thanking u!!!
-   
-  regards,
-  Irfan
+In my case the simplest answer appears to be the replace the rwsem
+with something slightly more complicated (a mutex plus a boolean flag 
+-- the loss of concurrency won't matter much since it isn't on a hot 
+path).
 
-       
----------------------------------
-Never miss a thing.   Make Yahoo your homepage.
---0-682279351-1196650953=:69622
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Thanks for the comment.
 
-<BR>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">  <div>I want to know what are the steps and issues&nbsp;&nbsp;taken for implementing linux power management.</div>  <div>I m&nbsp;beginner!!</div>  <div>&nbsp;</div>  <div>thanking u!!!</div>  <div>&nbsp;</div>  <div>regards,</div>  <div>Irfan</div></BLOCKQUOTE><p>&#32;
-
-      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
-
-
---0-682279351-1196650953=:69622--
-
---===============7151623383729241738==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7151623383729241738==--
+Alan Stern
