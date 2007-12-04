@@ -1,7 +1,7 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH v2] hibernation: clean up Kconfig
-Date: Tue, 04 Dec 2007 14:57:08 +0100
-Message-ID: <1196776628.6060.57.camel@johannes.berg>
+Subject: [PATCH v2] suspend: clean up Kconfig
+Date: Tue, 04 Dec 2007 14:58:27 +0100
+Message-ID: <1196776707.6060.60.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -19,94 +19,162 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This cleans up the hibernation Kconfig and removes the need to
-declare centrally which architectures support hibernation. All
-architectures that currently support hibernation are modified
+This cleans up the suspend Kconfig and removes the need to
+declare centrally which architectures support suspend. All
+architectures that currently support suspend are modified
 accordingly.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Russell King <rmk@arm.linux.org.uk>
 Acked-by: Paul Mackerras <paulus@samba.org>
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-pm@lists.linux-foundation.org
 ---
-Rafael, does the x86 bit look ok to you? If so, I'll send to Andrew.
+this comes with an updated x86 version.
 
- arch/powerpc/Kconfig |   14 ++++++++++++--
- arch/x86/Kconfig     |    6 +++---
- kernel/power/Kconfig |   18 +++---------------
- 3 files changed, 18 insertions(+), 20 deletions(-)
+ arch/arm/Kconfig      |    3 +++
+ arch/blackfin/Kconfig |    4 ++++
+ arch/frv/Kconfig      |    5 +++++
+ arch/mips/Kconfig     |    4 ++++
+ arch/powerpc/Kconfig  |    4 ++++
+ arch/sh/Kconfig       |    4 ++++
+ arch/x86/Kconfig      |    4 ++++
+ kernel/power/Kconfig  |   21 +++------------------
+ 8 files changed, 31 insertions(+), 18 deletions(-)
 
---- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:52:29.536409993 +0100
-+++ everything/arch/powerpc/Kconfig	2007-12-04 14:55:01.686411513 +0100
-@@ -140,9 +140,19 @@ config DEFAULT_UIMAGE
- 	  Used to allow a board to specify it wants a uImage built by default
- 	default n
+--- everything.orig/arch/x86/Kconfig	2007-12-04 14:55:01.256411079 +0100
++++ everything/arch/x86/Kconfig	2007-12-04 14:55:34.806408366 +0100
+@@ -116,6 +116,10 @@ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool y
+ 	depends on !SMP || !X86_VOYAGER
  
--config PPC64_SWSUSP
-+config HIBERNATE_32
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++	depends on !X86_VOYAGER
++
+ config ZONE_DMA32
  	bool
--	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
-+	depends on (PPC_PMAC && !SMP) || BROKEN
-+	default y
-+
-+config HIBERNATE_64
-+	bool
-+	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
-+	default y
-+
-+config ARCH_HIBERNATION_POSSIBLE
-+	bool
-+	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
- 	default y
- 
- config PPC_DCR_NATIVE
---- everything.orig/kernel/power/Kconfig	2007-12-04 14:52:29.536409993 +0100
-+++ everything/kernel/power/Kconfig	2007-12-04 14:55:01.756411892 +0100
-@@ -63,7 +63,8 @@ config PM_TRACE
- 
+ 	default X86_64
+--- everything.orig/kernel/power/Kconfig	2007-12-04 14:55:01.756411892 +0100
++++ everything/kernel/power/Kconfig	2007-12-04 14:55:03.016421929 +0100
+@@ -64,7 +64,7 @@ config PM_TRACE
  config PM_SLEEP_SMP
  	bool
--	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-+	depends on SMP
-+	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+ 	depends on SMP
+-	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
++	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
  	depends on PM_SLEEP
  	select HOTPLUG_CPU
  	default y
-@@ -108,22 +109,9 @@ config SUSPEND_FREEZER
+@@ -74,29 +74,14 @@ config PM_SLEEP
+ 	depends on SUSPEND || HIBERNATION
+ 	default y
  
- 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
- 
--config HIBERNATION_UP_POSSIBLE
+-config SUSPEND_UP_POSSIBLE
 -	bool
--	depends on X86 || PPC64_SWSUSP || PPC32
+-	depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
+-		   || SUPERH || FRV
 -	depends on !SMP
 -	default y
 -
--config HIBERNATION_SMP_POSSIBLE
+-config SUSPEND_SMP_POSSIBLE
 -	bool
--	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
+-	depends on (X86 && !X86_VOYAGER) \
+-		   || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
 -	depends on SMP
 -	default y
 -
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
--	depends on PM && SWAP
--	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-+	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+ config SUSPEND
+ 	bool "Suspend to RAM and standby"
+-	depends on PM
+-	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
++	depends on PM && ARCH_SUSPEND_POSSIBLE
+ 	default y
  	---help---
- 	  Enable the suspend to disk (STD) functionality, which is usually
- 	  called "hibernation" in user interfaces.  STD checkpoints the
---- everything.orig/arch/x86/Kconfig	2007-12-04 14:52:14.626416667 +0100
-+++ everything/arch/x86/Kconfig	2007-12-04 14:55:01.256411079 +0100
-@@ -112,9 +112,9 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default X86_64
+ 	  Allow the system to enter sleep states in which main memory is
+ 	  powered and thus its contents are preserved, such as the
+-	  suspend-to-RAM state (i.e. the ACPI S3 state).
++	  suspend-to-RAM state (e.g. the ACPI S3 state).
  
--
--
--
-+config ARCH_HIBERNATION_POSSIBLE
+ config SUSPEND_FREEZER
+ 	bool "Enable freezer for suspend to RAM/standby" \
+--- everything.orig/arch/blackfin/Kconfig	2007-12-04 14:55:01.376411296 +0100
++++ everything/arch/blackfin/Kconfig	2007-12-04 14:55:03.016421929 +0100
+@@ -1004,6 +1004,10 @@ endmenu
+ menu "Power management options"
+ source "kernel/power/Kconfig"
+ 
++config ARCH_SUSPEND_POSSIBLE
 +	def_bool y
-+	depends on !SMP || !X86_VOYAGER
++	depends on !SMP
++
+ choice
+ 	prompt "Select PM Wakeup Event Source"
+ 	default PM_WAKEUP_GPIO_BY_SIC_IWR
+--- everything.orig/arch/arm/Kconfig	2007-12-04 14:55:01.486409615 +0100
++++ everything/arch/arm/Kconfig	2007-12-04 14:55:03.026410645 +0100
+@@ -977,6 +977,9 @@ menu "Power management options"
  
- config ZONE_DMA32
+ source "kernel/power/Kconfig"
+ 
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++
+ endmenu
+ 
+ source "net/Kconfig"
+--- everything.orig/arch/mips/Kconfig	2007-12-04 14:55:01.536412056 +0100
++++ everything/arch/mips/Kconfig	2007-12-04 14:55:03.026410645 +0100
+@@ -2009,6 +2009,10 @@ endmenu
+ 
+ menu "Power management options"
+ 
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++	depends on !SMP
++
+ source "kernel/power/Kconfig"
+ 
+ endmenu
+--- everything.orig/arch/sh/Kconfig	2007-12-04 14:55:01.576429199 +0100
++++ everything/arch/sh/Kconfig	2007-12-04 14:55:03.026410645 +0100
+@@ -746,6 +746,10 @@ endmenu
+ menu "Power management options (EXPERIMENTAL)"
+ depends on EXPERIMENTAL && SYS_SUPPORTS_PM
+ 
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++	depends on !SMP
++
+ source kernel/power/Kconfig
+ 
+ endmenu
+--- everything.orig/arch/frv/Kconfig	2007-12-04 14:55:01.636409614 +0100
++++ everything/arch/frv/Kconfig	2007-12-04 14:55:03.026410645 +0100
+@@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
+ #	  should probably wait a while.
+ 
+ menu "Power management options"
++
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++	depends on !SMP
++
+ source kernel/power/Kconfig
+ endmenu
+ 
+--- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:55:01.686411513 +0100
++++ everything/arch/powerpc/Kconfig	2007-12-04 14:55:03.026410645 +0100
+@@ -155,6 +155,10 @@ config ARCH_HIBERNATION_POSSIBLE
+ 	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
+ 	default y
+ 
++config ARCH_SUSPEND_POSSIBLE
++	def_bool y
++	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
++
+ config PPC_DCR_NATIVE
  	bool
+ 	default n
