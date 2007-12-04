@@ -1,16 +1,23 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 1/2] HWMON: coretemp, suspend fix
-Date: Tue, 4 Dec 2007 01:29:56 -0500
-Message-ID: <200712040129.56505.lenb__46100.4878780388$1196749908$gmane$org@kernel.org>
-References: <1196624925-17220-1-git-send-email-lenb@kernel.org>
-	<200712031755.44441.rjw@sisk.pl> <200712031801.51513.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] Strange 1-second pauses during Resume-from-RAM
+Date: Tue, 4 Dec 2007 10:34:51 +0100
+Message-ID: <20071204093451.GA4541__25456.7509437495$1196760997$gmane$org@elte.hu>
+References: <20071202141117.GB9516@lazybastard.org>
+	<20071202154746.GA27069@elte.hu>
+	<20071202195501.GB10657@lazybastard.org>
+	<20071202200722.GA12101@elte.hu>
+	<20071202203016.GC10657@lazybastard.org>
+	<20071202204559.GA28550@elte.hu>
+	<20071202211026.GB11522@lazybastard.org>
+	<20071202211900.GB7439@elte.hu>
+	<20071203005702.GA12215@lazybastard.org>
+	<20071204000655.GA17212@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712031801.51513.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <20071204000655.GA17212@lazybastard.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +27,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: len.brown@intel.com, linux-kernel@vger.kernel.org, Mark Lord <liml@rtr.ca>, Mark Lord <lkml@rtr.ca>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Applied to suspend branch.
 
-thanks,
--Len
+* J=F6rn Engel <joern@logfs.org> wrote:
 
-On Monday 03 December 2007 12:01, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> =A0
-> It's not permitted to unregister a device after devices have been suspe=
-nded.
-> It causes deadlocks to appear on systems with coretemp hwmon loaded. =A0=
-To avoid
-> this, we can make coretemp_cpu_callback() do nothing if the _FROZEN bit=
- is set
-> in action.
-> =A0
-> Also, in other cases it's generally too late to unregister the coretemp=
- device
-> if the CPU is already dead, so it should be unregistered on CPU_DOWN_PR=
-EPARE.
-> =A0
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Mark M. Hoffman <mhoffman@lightlink.com>
-> Cc: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  drivers/hwmon/coretemp.c |    5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+> On Mon, 3 December 2007 01:57:02 +0100, J=F6rn Engel wrote:
+> >=20
+> > After an eternity of compile time, this config does generate some use=
+ful
+> > output.  qemu is not to blame.
 >=20
-> Index: linux-2.6/drivers/hwmon/coretemp.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/drivers/hwmon/coretemp.c
-> +++ linux-2.6/drivers/hwmon/coretemp.c
-> @@ -337,11 +337,10 @@ static int coretemp_cpu_callback(struct=20
-> =20
->  	switch (action) {
->  	case CPU_ONLINE:
-> -	case CPU_ONLINE_FROZEN:
-> +	case CPU_DOWN_FAILED:
->  		coretemp_device_add(cpu);
->  		break;
-> -	case CPU_DEAD:
-> -	case CPU_DEAD_FROZEN:
-> +	case CPU_DOWN_PREPARE:
->  		coretemp_device_remove(cpu);
->  		break;
->  	}
+> Or is it?  The output definitely looks suspicious.  Large amounts of=20
+> code get processed within a microsecond, while update_wall_time()=20
+> appears to cause huge delays every time it is called:=20
+> http://logfs.org/~joern/trace
 >=20
->=20
+> Does this output make sense or does it rather indicate some sloppiness=20
+> wrt. time in the qemu virtual machine?
+
+not sure. It could be qemu being scheduled away? You could try to run=20
+qemu with nice -20 or so, to avoid getting preempted. If time lapses=20
+like this still show up:
+
+ trace-cm 434   0D.h. 1008us!: do_timer (tick_periodic)
+ trace-cm 434   0D.h. 1972us+: update_wall_time (do_timer)
+
+ trace-cm 434   0D.h. 1008us!: do_timer (tick_periodic)
+ trace-cm 434   0D.h. 1972us+: update_wall_time (do_timer)
+
+then that could indicate a timekeeping weirdness, OR it could mean that=20
+qemu is simply very slow. (there could be timer hw access between those=20
+two function calls)
+
+	Ingo
