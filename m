@@ -1,7 +1,7 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH v2] suspend: clean up Kconfig
-Date: Tue, 04 Dec 2007 14:58:27 +0100
-Message-ID: <1196776707.6060.60.camel@johannes.berg>
+Subject: [PATCH v2] PM: make freezer optional for suspend
+Date: Tue, 04 Dec 2007 15:02:13 +0100
+Message-ID: <1196776933.6060.62.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -19,162 +19,86 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This cleans up the suspend Kconfig and removes the need to
-declare centrally which architectures support suspend. All
-architectures that currently support suspend are modified
-accordingly.
+This patch makes the freezer optional for suspend to allow the
+system to work (or not work) like the original PMU suspend.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Russell King <rmk@arm.linux.org.uk>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-pm@lists.linux-foundation.org
 ---
-this comes with an updated x86 version.
+In a quick test, playing sound across suspend failed to work,
+it usually works when the freezer is enabled (unless you use
+gstreamer.)
 
- arch/arm/Kconfig      |    3 +++
- arch/blackfin/Kconfig |    4 ++++
- arch/frv/Kconfig      |    5 +++++
- arch/mips/Kconfig     |    4 ++++
- arch/powerpc/Kconfig  |    4 ++++
- arch/sh/Kconfig       |    4 ++++
- arch/x86/Kconfig      |    4 ++++
- kernel/power/Kconfig  |   21 +++------------------
- 8 files changed, 31 insertions(+), 18 deletions(-)
+ arch/powerpc/Kconfig |    4 ++++
+ kernel/power/Kconfig |   11 +++++++++++
+ kernel/power/main.c  |    6 ++++++
+ 3 files changed, 21 insertions(+)
 
---- everything.orig/arch/x86/Kconfig	2007-12-04 14:55:01.256411079 +0100
-+++ everything/arch/x86/Kconfig	2007-12-04 14:55:34.806408366 +0100
-@@ -116,6 +116,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y
- 	depends on !SMP || !X86_VOYAGER
+--- everything.orig/kernel/power/main.c	2007-12-04 14:59:03.126410862 +0100
++++ everything/kernel/power/main.c	2007-12-04 15:00:19.226410156 +0100
+@@ -79,10 +79,12 @@ static int suspend_prepare(void)
  
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !X86_VOYAGER
-+
- config ZONE_DMA32
- 	bool
- 	default X86_64
---- everything.orig/kernel/power/Kconfig	2007-12-04 14:55:01.756411892 +0100
-+++ everything/kernel/power/Kconfig	2007-12-04 14:55:03.016421929 +0100
-@@ -64,7 +64,7 @@ config PM_TRACE
- config PM_SLEEP_SMP
- 	bool
- 	depends on SMP
--	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-+	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
- 	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 	default y
-@@ -74,29 +74,14 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION
- 	default y
+ 	pm_prepare_console();
  
--config SUSPEND_UP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
--		   || SUPERH || FRV
--	depends on !SMP
--	default y
--
--config SUSPEND_SMP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) \
--		   || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
--	depends on SMP
--	default y
--
- config SUSPEND
- 	bool "Suspend to RAM and standby"
--	depends on PM
--	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-+	depends on PM && ARCH_SUSPEND_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
++#ifdef CONFIG_SUSPEND_FREEZER
+ 	if (freeze_processes()) {
+ 		error = -EAGAIN;
+ 		goto Thaw;
+ 	}
++#endif
+ 
+ 	free_pages = global_page_state(NR_FREE_PAGES);
+ 	if (free_pages < FREE_PAGE_NUMBER) {
+@@ -96,8 +98,10 @@ static int suspend_prepare(void)
+ 	if (!error)
+ 		return 0;
+ 
++#ifdef CONFIG_SUSPEND_FREEZER
+  Thaw:
+ 	thaw_processes();
++#endif
+ 	pm_restore_console();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -191,7 +195,9 @@ int suspend_devices_and_enter(suspend_st
+  */
+ static void suspend_finish(void)
+ {
++#ifdef CONFIG_SUSPEND_FREEZER
+ 	thaw_processes();
++#endif
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+ }
+--- everything.orig/kernel/power/Kconfig	2007-12-04 14:59:03.176410807 +0100
++++ everything/kernel/power/Kconfig	2007-12-04 15:00:19.226410156 +0100
+@@ -97,6 +97,17 @@ config SUSPEND
  	  powered and thus its contents are preserved, such as the
--	  suspend-to-RAM state (i.e. the ACPI S3 state).
-+	  suspend-to-RAM state (e.g. the ACPI S3 state).
+ 	  suspend-to-RAM state (i.e. the ACPI S3 state).
  
- config SUSPEND_FREEZER
- 	bool "Enable freezer for suspend to RAM/standby" \
---- everything.orig/arch/blackfin/Kconfig	2007-12-04 14:55:01.376411296 +0100
-+++ everything/arch/blackfin/Kconfig	2007-12-04 14:55:03.016421929 +0100
-@@ -1004,6 +1004,10 @@ endmenu
- menu "Power management options"
- source "kernel/power/Kconfig"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
++config SUSPEND_FREEZER
++	bool "Enable freezer for suspend to RAM/standby" \
++		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
++	depends on SUSPEND
++	default y
++	help
++	  This allows you to turn off the freezer for suspend. If this is
++	  done, no tasks are frozen for suspend to RAM/standby.
 +
- choice
- 	prompt "Select PM Wakeup Event Source"
- 	default PM_WAKEUP_GPIO_BY_SIC_IWR
---- everything.orig/arch/arm/Kconfig	2007-12-04 14:55:01.486409615 +0100
-+++ everything/arch/arm/Kconfig	2007-12-04 14:55:03.026410645 +0100
-@@ -977,6 +977,9 @@ menu "Power management options"
- 
- source "kernel/power/Kconfig"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
++	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
 +
- endmenu
- 
- source "net/Kconfig"
---- everything.orig/arch/mips/Kconfig	2007-12-04 14:55:01.536412056 +0100
-+++ everything/arch/mips/Kconfig	2007-12-04 14:55:03.026410645 +0100
-@@ -2009,6 +2009,10 @@ endmenu
- 
- menu "Power management options"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source "kernel/power/Kconfig"
- 
- endmenu
---- everything.orig/arch/sh/Kconfig	2007-12-04 14:55:01.576429199 +0100
-+++ everything/arch/sh/Kconfig	2007-12-04 14:55:03.026410645 +0100
-@@ -746,6 +746,10 @@ endmenu
- menu "Power management options (EXPERIMENTAL)"
- depends on EXPERIMENTAL && SYS_SUPPORTS_PM
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- 
- endmenu
---- everything.orig/arch/frv/Kconfig	2007-12-04 14:55:01.636409614 +0100
-+++ everything/arch/frv/Kconfig	2007-12-04 14:55:03.026410645 +0100
-@@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
- #	  should probably wait a while.
- 
- menu "Power management options"
-+
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- endmenu
- 
---- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:55:01.686411513 +0100
-+++ everything/arch/powerpc/Kconfig	2007-12-04 14:55:03.026410645 +0100
-@@ -155,6 +155,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
- 	default y
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-+
- config PPC_DCR_NATIVE
+ config HIBERNATION_UP_POSSIBLE
  	bool
- 	default n
+ 	depends on X86 || PPC64_SWSUSP || PPC32
+--- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:59:03.266409342 +0100
++++ everything/arch/powerpc/Kconfig	2007-12-04 15:00:19.226410156 +0100
+@@ -365,6 +365,10 @@ config CMDLINE
+ 	  most cases you will need to specify the root device here.
+ 
+ if !44x || BROKEN
++config ARCH_WANTS_FREEZER_CONTROL
++	def_bool y
++	depends on ADB_PMU
++
+ source kernel/power/Kconfig
+ endif
+ 
