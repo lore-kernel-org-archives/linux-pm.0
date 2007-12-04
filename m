@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] HWMON: coretemp, suspend fix
-Date: Tue, 4 Dec 2007 20:59:30 +0100
-Message-ID: <200712042059.31229.rjw__2093.65872801772$1196797500$gmane$org@sisk.pl>
-References: <1196624925-17220-1-git-send-email-lenb@kernel.org>
-	<200712031801.51513.rjw@sisk.pl>
-	<200712040129.56505.lenb@kernel.org>
+From: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: Need lockdep help
+Date: Tue, 04 Dec 2007 21:14:00 +0100
+Message-ID: <4755B508.9020806__4218.3663732887$1196799545$gmane$org@gmail.com>
+References: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712040129.56505.lenb@kernel.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0712041424270.13516-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,72 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Kernel development list <linux-kernel@vger.kernel.org>, Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 4 of December 2007, Len Brown wrote:
-> Applied to suspend branch.
+Alan Stern wrote, On 12/04/2007 08:28 PM:
 
-Thanks!
+> On Tue, 4 Dec 2007, Jarek Poplawski wrote:
 
-BTW, the 4 topmost non-merge commits from the suspend branch are supposed=
- to go
-to Linus ASAP.  Any chance to push them upstream?
+...
 
-Rafael
-
-=20
-> On Monday 03 December 2007 12:01, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > =A0
-> > It's not permitted to unregister a device after devices have been sus=
-pended.
-> > It causes deadlocks to appear on systems with coretemp hwmon loaded. =
-=A0To avoid
-> > this, we can make coretemp_cpu_callback() do nothing if the _FROZEN b=
-it is set
-> > in action.
-> > =A0
-> > Also, in other cases it's generally too late to unregister the corete=
-mp device
-> > if the CPU is already dead, so it should be unregistered on CPU_DOWN_=
-PREPARE.
-> > =A0
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Acked-by: Mark M. Hoffman <mhoffman@lightlink.com>
-> > Cc: Jiri Slaby <jirislaby@gmail.com>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> >  drivers/hwmon/coretemp.c |    5 ++---
-> >  1 file changed, 2 insertions(+), 3 deletions(-)
-> >=20
-> > Index: linux-2.6/drivers/hwmon/coretemp.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-2.6.orig/drivers/hwmon/coretemp.c
-> > +++ linux-2.6/drivers/hwmon/coretemp.c
-> > @@ -337,11 +337,10 @@ static int coretemp_cpu_callback(struct=20
-> > =20
-> >  	switch (action) {
-> >  	case CPU_ONLINE:
-> > -	case CPU_ONLINE_FROZEN:
-> > +	case CPU_DOWN_FAILED:
-> >  		coretemp_device_add(cpu);
-> >  		break;
-> > -	case CPU_DEAD:
-> > -	case CPU_DEAD_FROZEN:
-> > +	case CPU_DOWN_PREPARE:
-> >  		coretemp_device_remove(cpu);
-> >  		break;
-> >  	}
-> >=20
-> >=20
->=20
->=20
+> But you have to consider hypothetical kernel bugs.  That's exactly what 
+> lockdep is for -- to warn you about possible deadlocks that could be 
+> caused by bugs.
+> 
+> As a simple example, if thread #1 does "lock(A); lock(B)" and thread 
+> #2 does "lock(B); lock(A)" then there's a possible bug.  Lockdep should 
+> warn about you, and it does -- even if those two threads can never run 
+> at the same time.
+> 
+> If lockdep warned about deadlocks only when they actually happened, it 
+> wouldn't be nearly so useful.
 
 
+Sure! I probably missed your point... Lockdep always names reported locks,
+so I meant 'hypothetical' only trying to explain lockdep with some other,
+unknown or unnamed bugs.
 
---=20
-"Premature optimization is the root of all evil." - Donald Knuth
+So, depending on the code, above example with A & B could be a real bug
+(even if very improbable but logically justified) or a false alarm (eg.
+when we know both threads could never work at the same).
+
+Jarek P.
