@@ -1,14 +1,17 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Need lockdep help
-Date: Tue, 4 Dec 2007 22:00:06 +0100
-Message-ID: <20071204210006.GE32018__46652.2599490874$1196803509$gmane$org@elte.hu>
-References: <4754907E.9060203@gmail.com>
-	<Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: RFC: PNP: do not stop/start devices in suspend/resume
+	path
+Date: Wed, 5 Dec 2007 11:24:18 -0700
+Message-ID: <200712051124.18852.bjorn.helgaas__18936.2713871107$1196879177$gmane$org@hp.com>
+References: <4745F77C.7040402@gmail.com> <47511751.2010707@gmail.com>
+	<47514CE2.3000600@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <47514CE2.3000600@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0712041000540.4321-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +21,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jarek Poplawski <jarkao2@o2.pl>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jarek Poplawski <jarkao2@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Re: warning on suspend-to-RAM caused by
+pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch,
+thread here: http://lkml.org/lkml/2007/11/22/110
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+On Saturday 01 December 2007 05:00:34 am Jiri Slaby wrote:
+> I didn't get it. Maybe some trolls poking around or something (maybe the
+> ext3 breakage which fsck fixed). It works after recompilation of the
+> whole tree. And the important part -- the warning has gone.
 
-> > I'm not sure I can understand your plan, but I doubt there should be 
-> > such problems with taking rwsem for sleeping, so maybe it would be 
-> > better to figure out what really scares lockdep, to fix the right 
-> > place?
-> 
-> The real problem is that lockdep has to make some generalizations.  It 
-> can't be aware of the details of every possible situation, and it 
-> doesn't have a global view of the entire kernel, so it doesn't know 
-> when special circumstances make deadlock impossible.
-> 
-> Furthermore, in this case deadlock isn't really impossible -- it could 
-> occur if there were a bug somewhere else in the kernel.  So lockdep 
-> was correct to warn that deadlock might occur.
+Good.  It's not clear to me whether it is safe to leave devices
+enabled while we sleep.  I don't see an actual problem, but there
+might be something related to hotplug while we're asleep or something.
+So I'll cc: some additional people who might have some insight.
 
-ok. Thanks for resolving this by working it around - i _think_ in the 
-long run we'd like to make all locking "simpler" - not just for the sake 
-of lockdep, but also for the sake of human reviewability. So in that 
-sense, even though in this particular case you are fully right that 
-lockdep was wrong, we benefit long-term.
 
-	Ingo
+
+RFC: PNP: do not stop/start devices in suspend/resume path
+
+Do not disable PNP devices in the suspend path.  We still call
+the driver's suspend method, which should prevent further use of
+the device, and the protocol suspend method, which may put the
+device in a low-power state.
+
+This means we will not disable the device and release its
+resources.  The driver suspend method typically does not release
+its resources in the suspend path.  For example, if we have:
+
+  03f8-03ff : 00:06
+    03f8-03ff : serial
+
+pnp_stop_dev() would release the 00:06 region, which still
+has a child.  This causes a warning from __release_resource
+and corrupts /proc/ioports.
+
+However, we should do this the same way Windows does, so if
+Windows disables devices before going to sleep, we should, too.
+It doesn't *look* necessary to me because
+
+  - In the ACPI 3.0b spec, I can't find any mention of _DIS in
+    connection with sleep.  And Device Object Notifications,
+    Section 5.6.3, Table 5-43, says we should get a bus check
+    after awakening if hardware was removed while we slept.
+
+    This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
+    makes a similar point about how the OS re-enumerates devices
+    as a result of a power state change (3rd last paragraph of
+    text).
+
+  - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
+    suggests that Windows only stops a device to rebalance hardware
+    resources.
+
+[This should go before
+pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch
+for best bisect-ability.]
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: linux-mm/drivers/pnp/driver.c
+===================================================================
+--- linux-mm.orig/drivers/pnp/driver.c	2007-11-30 13:58:25.000000000 -0700
++++ linux-mm/drivers/pnp/driver.c	2007-12-03 09:58:35.000000000 -0700
+@@ -161,13 +161,6 @@
+ 			return error;
+ 	}
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+-	    pnp_can_disable(pnp_dev)) {
+-		error = pnp_stop_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+ 		pnp_dev->protocol->suspend(pnp_dev, state);
+ 	return 0;
+@@ -177,7 +170,6 @@
+ {
+ 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+ 	struct pnp_driver *pnp_drv = pnp_dev->driver;
+-	int error;
+ 
+ 	if (!pnp_drv)
+ 		return 0;
+@@ -185,12 +177,6 @@
+ 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+ 		pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
+-		error = pnp_start_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_drv->resume)
+ 		return pnp_drv->resume(pnp_dev);
+ 
