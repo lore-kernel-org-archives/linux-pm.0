@@ -1,12 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PATCH] suspend patches for 2.6.24-rc4
-Date: Thu, 6 Dec 2007 17:01:22 -0500
-Message-ID: <200712061701.22736.lenb__7036.54856556586$1196978599$gmane$org@kernel.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: PNP: do not stop/start devices in suspend/resume path
+Date: Thu, 6 Dec 2007 16:25:57 -0700
+Message-ID: <200712061625.57660.bjorn.helgaas@hp.com>
+References: <4745F77C.7040402@gmail.com> <47514CE2.3000600@gmail.com>
+	<200712051124.18852.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200712051124.18852.bjorn.helgaas@hp.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,163 +20,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Wednesday 05 December 2007 11:24:18 am Bjorn Helgaas wrote:
+> Re: warning on suspend-to-RAM caused by
+> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch,
+> thread here: http://lkml.org/lkml/2007/11/22/110
+> 
+> On Saturday 01 December 2007 05:00:34 am Jiri Slaby wrote:
+> > I didn't get it. Maybe some trolls poking around or something (maybe the
+> > ext3 breakage which fsck fixed). It works after recompilation of the
+> > whole tree. And the important part -- the warning has gone.
+> 
+> Good.  It's not clear to me whether it is safe to leave devices
+> enabled while we sleep.  I don't see an actual problem, but there
+> might be something related to hotplug while we're asleep or something.
+> So I'll cc: some additional people who might have some insight.
 
-please pull from:=20
+I checked with a Windows kernel person, who said that when preparing
+to sleep, Windows puts devices in S3 state (I think he meant D3)
+and does not use _DIS.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git rel=
-ease
+I think this patch is the right thing to do.  It's possible we'll
+trip over some BIOS issue, but in the long term, we should try to
+do it the same way Windows does.  Andrew, can you add this before
+pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch?
 
-These fix 2.6.24 regressions,
-and will update the files shown below.
+Thanks,
+  Bjorn
 
-thanks!
 
--Len
+PNP: do not stop/start devices in suspend/resume path
 
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.=
-6.24/acpi-release-20070126-2.6.24-rc4.diff.gz
+Do not disable PNP devices in the suspend path.  We still call
+the driver's suspend method, which should prevent further use of
+the device, and the protocol suspend method, which may put the
+device in a low-power state.
 
- arch/x86/kernel/acpi/wakeup_32.S |    4 ----
- drivers/char/apm-emulation.c     |   15 ++++++++-------
- drivers/hwmon/coretemp.c         |    5 ++---
- fs/jffs2/background.c            |    2 +-
- init/do_mounts_initrd.c          |   12 +++++++++---
- 5 files changed, 20 insertions(+), 18 deletions(-)
+I'm told that Windows puts devices in a low-power state (Linux
+does this in the protocol suspend method), but does not use _DIS
+in the suspend path.  Other relevant references:
 
-through these commits:
+  - In the ACPI 3.0b spec, I can't find any mention of _DIS in
+    connection with sleep.  And Device Object Notifications,
+    Section 5.6.3, Table 5-43, says we should get a bus check
+    after awakening if hardware was removed while we slept.
 
-Pavel Machek (1):
-      ACPI: suspend: old debugging hacks sneaked back
+  - This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
+    makes a similar point about how the OS re-enumerates devices
+    as a result of a power state change (3rd last paragraph of
+    text).
 
-Rafael J. Wysocki (4):
-      Freezer: Fix s2disk resume from initrd
-      Freezer: Fix APM emulation breakage
-      HWMON: coretemp, suspend fix
-      Freezer: Fix JFFS2 garbage collector freezing issue (rev. 2)
+  - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
+    suggests that Windows only stops a device to rebalance hardware
+    resources.
 
-with this log:
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-commit 982286d1b8e438f595cdc9304cc4c185c7b90a39
-Merge: 9213148... 8baabde...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 6 16:52:00 2007 -0500
-
-    Pull bugzilla-9345 into release branch
-
-commit 921314811be704252ad2caa8dde507d4c421ddc4
-Merge: f7a5274... cb43c54...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 6 16:51:29 2007 -0500
-
-    Pull apm-freeze-fix into release branch
-
-commit f7a5274d7dde0022dedfb6bca5b4438bbf30e9ce
-Merge: ceaeee6... 74d0f33...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 6 16:26:52 2007 -0500
-
-    Pull suspend-2.6.24 into release branch
-
-commit 74d0f3338fbb3c69894968df1fedaf10c88cd0e4
-Author: Pavel Machek <pavel@ucw.cz>
-Date:   Thu Dec 6 09:50:40 2007 +0100
-
-    ACPI: suspend: old debugging hacks sneaked back
-   =20
-    Old debugging hack sneaked back during x86 merge, this removes it.
-   =20
-    Signed-off-by: Pavel Machek <pavel@suse.cz>
-    Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit e136e769d471e7f3d24a8f6bf9c91dcb372bd0ab
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Tue Dec 4 01:11:09 2007 +0100
-
-    Freezer: Fix JFFS2 garbage collector freezing issue (rev. 2)
-   =20
-    Fix breakage caused by commit d5d8c5976d6adeddb8208c240460411e2198b39=
-3
-    "freezer: do not send signals to kernel threads" in
-    jffs2_garbage_collect_thread() that assumed it would be sent signals
-    by the freezer.
-   =20
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Cc: David Woodhouse <dwmw2@infradead.org>
-    Cc: Pete MacKay <armlinux@architechnical.net>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 561d9a969455cb009bb15b63e1d925dc527e7a9d
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Mon Dec 3 18:01:50 2007 +0100
-
-    HWMON: coretemp, suspend fix
-   =20
-    It's not permitted to unregister a device after devices have been sus=
-pended.
-    It causes deadlocks to appear on systems with coretemp hwmon loaded. =
-=A0To avoid
-    this, we can make coretemp_cpu_callback() do nothing if the _FROZEN b=
-it is set
-    in action.
-    =A0
-    Also, in other cases it's generally too late to unregister the corete=
-mp device
-    if the CPU is already dead, so it should be unregistered on CPU_DOWN_=
-PREPARE.
-    =A0
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Acked-by: Mark M. Hoffman <mhoffman@lightlink.com>
-    Cc: Jiri Slaby <jirislaby@gmail.com>
-    Cc: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit cb43c54ca05c01533c45e4d3abfe8f99b7acf624
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Nov 21 02:53:14 2007 +0100
-
-    Freezer: Fix APM emulation breakage
-   =20
-    The APM emulation is currently broken as a result of commit
-    831441862956fffa17b9801db37e6ea1650b0f69
-    "Freezer: make kernel threads nonfreezable by default"
-    that removed the PF_NOFREEZE annotations from apm_ioctl() without add=
-ing
-    the appropriate freezer hooks.  Fix it and remove the unnecessary var=
-iable flags
-    from apm_ioctl().
-   =20
-    Special thanks to Franck Bui-Huu <vagabon.xyz@gmail.com> for pointing=
- out the
-    problem.
-   =20
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Cc: Pavel Machek <pavel@ucw.cz>
-    Cc: Franck Bui-Huu <vagabon.xyz@gmail.com>
-    Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 8baabde66c60a84781c718c28fe283ed411a7bd0
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Nov 21 02:50:17 2007 +0100
-
-    Freezer: Fix s2disk resume from initrd
-   =20
-    Add appropriate freezer annotations to handle_initrd(), so that it's =
-possible
-    to resume from disk from an initrd.
-   =20
-    http://bugzilla.kernel.org/show_bug.cgi?id=3D9345
-   =20
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Cc: Pavel Machek <pavel@ucw.cz>
-    Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Cc: Chris Friedhoff <chris@friedhoff.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Index: linux-mm/drivers/pnp/driver.c
+===================================================================
+--- linux-mm.orig/drivers/pnp/driver.c	2007-11-30 13:58:25.000000000 -0700
++++ linux-mm/drivers/pnp/driver.c	2007-12-03 09:58:35.000000000 -0700
+@@ -161,13 +161,6 @@
+ 			return error;
+ 	}
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+-	    pnp_can_disable(pnp_dev)) {
+-		error = pnp_stop_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+ 		pnp_dev->protocol->suspend(pnp_dev, state);
+ 	return 0;
+@@ -177,7 +170,6 @@
+ {
+ 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+ 	struct pnp_driver *pnp_drv = pnp_dev->driver;
+-	int error;
+ 
+ 	if (!pnp_drv)
+ 		return 0;
+@@ -185,12 +177,6 @@
+ 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+ 		pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
+-		error = pnp_start_dev(pnp_dev);
+-		if (error)
+-			return error;
+-	}
+-
+ 	if (pnp_drv->resume)
+ 		return pnp_drv->resume(pnp_dev);
+ 
