@@ -1,15 +1,11 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: RFC: PNP: do not stop/start devices in
-	suspend/resume path
-Date: Fri, 07 Dec 2007 15:13:35 +0800
-Message-ID: <1197011615.21100.1.camel__2779.53144764087$1197012149$gmane$org@sli10-desk.sh.intel.com>
-References: <4745F77C.7040402@gmail.com> <47511751.2010707@gmail.com>
-	<47514CE2.3000600@gmail.com> <200712051124.18852.bjorn.helgaas@hp.com>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: [PATCH 0/4 -mm] kexec based hibernation -v7
+Date: Fri, 07 Dec 2007 15:53:25 +0000
+Message-ID: <1197042805.24045.60.camel__111.317242454056$1197014151$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712051124.18852.bjorn.helgaas@hp.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,108 +15,260 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundatio>
+Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+khibernation - kexec based hibernation
 
-On Thu, 2007-12-06 at 02:24 +0800, Bjorn Helgaas wrote:
-> Re: warning on suspend-to-RAM caused by
-> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch,
-> thread here: http://lkml.org/lkml/2007/11/22/110
-> 
-> On Saturday 01 December 2007 05:00:34 am Jiri Slaby wrote:
-> > I didn't get it. Maybe some trolls poking around or something (maybe
-> the
-> > ext3 breakage which fsck fixed). It works after recompilation of the
-> > whole tree. And the important part -- the warning has gone.
-> 
-> Good.  It's not clear to me whether it is safe to leave devices
-> enabled while we sleep.  I don't see an actual problem, but there
-> might be something related to hotplug while we're asleep or something.
-> So I'll cc: some additional people who might have some insight.
-> 
-> 
-> 
-> RFC: PNP: do not stop/start devices in suspend/resume path
-> 
-> Do not disable PNP devices in the suspend path.  We still call
-> the driver's suspend method, which should prevent further use of
-> the device, and the protocol suspend method, which may put the
-> device in a low-power state.
-> 
-> This means we will not disable the device and release its
-> resources.  The driver suspend method typically does not release
-> its resources in the suspend path.  For example, if we have:
-> 
->   03f8-03ff : 00:06
->     03f8-03ff : serial
-> 
-> pnp_stop_dev() would release the 00:06 region, which still
-> has a child.  This causes a warning from __release_resource
-> and corrupts /proc/ioports.
-> 
-> However, we should do this the same way Windows does, so if
-> Windows disables devices before going to sleep, we should, too.
-> It doesn't *look* necessary to me because
-> 
->   - In the ACPI 3.0b spec, I can't find any mention of _DIS in
->     connection with sleep.  And Device Object Notifications,
->     Section 5.6.3, Table 5-43, says we should get a bus check
->     after awakening if hardware was removed while we slept.
-> 
->     This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
->     makes a similar point about how the OS re-enumerates devices
->     as a result of a power state change (3rd last paragraph of
->     text).
-> 
->   - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
->     suggests that Windows only stops a device to rebalance hardware
->     resources.
-> 
-> [This should go before
-> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch
-> for best bisect-ability.]
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> Index: linux-mm/drivers/pnp/driver.c
-> ===================================================================
-> --- linux-mm.orig/drivers/pnp/driver.c  2007-11-30 13:58:25.000000000
-> -0700
-> +++ linux-mm/drivers/pnp/driver.c       2007-12-03 09:58:35.000000000
-> -0700
-> @@ -161,13 +161,6 @@
->                         return error;
->         }
-> 
-> -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
-> -           pnp_can_disable(pnp_dev)) {
-> -               error = pnp_stop_dev(pnp_dev);
-> -               if (error)
-> -                       return error;
-> -       }
-> -
->         if (pnp_dev->protocol && pnp_dev->protocol->suspend)
->                 pnp_dev->protocol->suspend(pnp_dev, state);
->         return 0;
-> @@ -177,7 +170,6 @@
->  {
->         struct pnp_dev *pnp_dev = to_pnp_dev(dev);
->         struct pnp_driver *pnp_drv = pnp_dev->driver;
-> -       int error;
-> 
->         if (!pnp_drv)
->                 return 0;
-> @@ -185,12 +177,6 @@
->         if (pnp_dev->protocol && pnp_dev->protocol->resume)
->                 pnp_dev->protocol->resume(pnp_dev);
-> 
-> -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
-> -               error = pnp_start_dev(pnp_dev);
-> -               if (error)
-> -                       return error;
-> -       }
-> -
-I'd suggest keep pnp_start_dev here to prevent BIOS not or assign
-different resources after a resume.
+
+Kexec base hibernation has some potential advantages over u/swsusp and
+TuxOnIce (suspend2). Some of them are as follow:
+
+1. The hibernation image size can exceed half of memory size
+   easily. This is possible with TuxOnIce, but impossible with
+   u/swsusp.
+
+2. It is possible to eliminate freezer from kexec based hibernation
+   implementation, after corresponding changes to device drivers are
+   done.
+
+3. Based on kexec/kdump implementation, the kernel code needed is
+   less.
+
+
+Now, only the i386 architecture is supported. The patchset is based on
+Linux kernel 2.6.24-rc4-mm1, and has been tested on IBM T42 with ACPI
+on and off.
+
+
+The following user-space tools are needed to implement hibernation and
+resume.
+
+1. kexec-tools needs to be patched to support khibernation. The patches
+   and the precompiled kexec can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v7/kexec-tools/kexec-tools-src_git_kh7.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v7/kexec-tools/kexec-tools-patches_git_kh7.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v7/kexec-tools/kexec_git_kh7
+
+2. makedumpfile with patches are used as memory image saving tool, it
+   can exclude free pages from hibernation image file. The patches and
+   the precompiled makedumpfile can be download from the following
+   URL:
+       source: http://khibernation.sourceforge.net/download/release_v7/makedumpfile/makedumpfile-src_cvs_kh7.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v7/makedumpfile/makedumpfile-patches_cvs_kh7.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v7/makedumpfile/makedumpfile_cvs_kh7
+
+3. A simplest memory image restoring tool named "krestore" is
+   implemented. It can be downloaded from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v7/krestore/krestore-src_cvs_kh7.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v7/krestore/krestore_cvs_kh7
+
+4. A simplest jumping back image (hibernation image is a kind of
+   jumping back image) parameter dump tool name "kjump_back_param" is
+   implemented. It can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v7/kjump_back_param/kjump_back_param-src_cvs_kh7.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v7/kjump_back_param/kjump_back_param_cvs_kh7
+
+
+An initramfs image is used as the root file system of
+hibernating/resuming kernel. So, all user space tools above are needed
+in initramfs. An initramfs image built with "BuildRoot" can be
+downloaded from the following URL:
+    initramfs image: http://khibernation.sourceforge.net/download/release_v7/initramfs/rootfs_cvs_kh7.gz
+
+
+Usage:
+
+1. Compile and install patched kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y # only needed by kexeced kernel to save/restore memory image
+CONFIG_PM=y
+CONFIG_HIBERNATION=y
+
+2. Build an initramfs image contains all needed user space tools. Or,
+   download the pre-built initramfs image.
+
+3. Prepare a raw partition (without file system, called hibernating
+   partition in following text) used to store memory image of
+   hibernated kernel. Caution!!! The contents of the partition will be
+   overwritten during hibernating.
+
+4. Build a memory image of hibernating kernel. This memory image need
+   only to be built once unless the hardware configuration is changed.
+
+   4.1. Boot kernel compiled for normal usage (kernel A).
+
+   4.2. Load kernel compiled for hibernating/resuming usage (kernel B)
+        with kexec, the same kernel as that of 4 can be used if
+        CONFIG_RELOCATABLE=y and CONFIG_CRASH_DUMP=y are selected.
+
+        The --elf64-core-headers should be specified in command line
+        of kexec, because only the 64bit ELF is supported by krestore
+        tool. The "go_to_hibernate" should be specified in kernel
+        command line to trigger the hibernating automatically. The
+        major and minor device number of hibernating partition should
+        be specified in kernel command line through "khdev=<ma>:<mi>".
+
+        For example, the shell command line can be as follow:
+
+        kexec --load-jump-back /boot/bzImage --mem-min=0x100000
+        --mem-max=0xffffff --elf64-core-headers --append="khdev=3:7 go_to_hibernate"
+
+   4.3. Jump to the hibernating kernel (kernel B) with following shell
+       	command line:
+
+       	kexec -e
+
+   4.4. After normal boot process, the hibernation kernel will jump
+   	back to hibernated kernel automatically. Then, the memory
+   	image of hibernating kernel can be built with following shell
+   	command line.
+
+	cp /proc/kimgcore .
+
+5. Boot kernel compiled for normal usage (kernel A).
+
+6. Load the memory image of hibernating kernel with following shell
+   command line:
+
+   kexec -l --args-none --flags=0x3e kimgcore
+
+7. Start the real hibernating process with following shell command line:
+
+   kexec -e -c 0x6b630001
+
+   The hibernating kernel will write the memory image of hibernated
+   kernel and go to ACPI S4 state automatically.
+
+8. Boot kernel (kernel C) compiled for hibernating/resuming usage in
+   memory range of kernel B.
+
+   The "go_to_resume" should be specified in kernel command line to
+   trigger the resuming process automatically. For example, the
+   following kernel command line parameters can be used:
+
+   memmap=exactmap memmap=640K@0K memmap=15M@1M mem=16M go_to_resume khdev=3:7
+
+   The initramfs should be used too. In GRUB, this can be specified
+   with following grub command:
+
+   initrd /boot/rootfs.gz
+
+   The resuming kernel will restore the memory image of hibernated
+   kernel and jump back to hibernated kernel automatically.
+
+
+Known issues:
+
+- The suspend/resume callback of device drivers are used to put
+  devices into quiescent state. This will unnecessarily (possibly
+  harmfully) put devices into low power state. This is intended to be
+  solved by separating device quiesce/unquiesce callback from the
+  device suspend/resume callback.
+
+- The memory image of hibernated kernel must be saved in a separate
+  partition not used by hibernated kernel. This is planned to be
+  solved through making hibernating/resuming kernel write the memory
+  image to a file in partition used by hibernated kernel through block
+  list instead.
+
+- The hibernating/resuming code are duplicated with current u/swsusp
+  code. They will be merged when kexec based hibernation goes more
+  stable.
+
+- The setup of hibernate/resume is fairly complex. I will continue
+  working on simplifying.
+
+
+TODO:
+
+- Write the memory image to a file through block list instead of
+  ordinary file system operating.
+
+- Merge duplicated code between kexec based hibernation and u/swsusp.
+
+- Simplify hibernate/resume setup.
+
+- Resume from hibernation with bootloader.
+
+
+ChangeLog:
+
+v7:
+
+- Add an interface to dump the loaded kexec_image, which may contains
+  the memory image of kexeced system. This is used to accelerate kexec
+  based hibernation.
+
+- Refactor kexec jump to be a command driven programming model.
+
+- Adjust ACPI support to mimic the ACPI support of u/swsusp.
+
+- Use kexec_lock to do synchronization.
+
+v6:
+
+- Add ACPI support.
+
+- Refactor kexec jump to be a general facility to call real mode code.
+
+v5:
+
+- A flag (KEXEC_JUMP_BACK) is added to indicate the loaded kernel
+  image is used for jumping back. The reboot command for jumping back
+  is removed. This interface is more stable (proposed by Eric
+  Biederman).
+
+- NX bit handling support for kexec is added.
+
+- Merge machine_kexec and machine_kexec_jump, remove NO_RET attribute
+  from machine_kexec.
+
+- Passing jump back entry to kexeced kernel via kernel command line
+  (parsed by user space tool via /proc/cmdline instead of
+  kernel). Original corresponding boot parameter and sysfs code is
+  removed.
+
+v4:
+
+- Two reboot command are merged back to one because the underlying
+  implementation is same.
+
+- Jumping without reserving memory is implemented. As a side effect,
+  two direction jumping is implemented.
+
+- A jump back protocol is defined and documented. The original kernel
+  and kexeced kernel are more independent from each other.
+
+- The CPU state save/restore code are merged into relocate_kernel.S.
+
+v3:
+
+- The reboot command LINUX_REBOOT_CMD_KJUMP is split into to two
+  reboot command to reflect the different function.
+
+- Document is added for added kernel parameters.
+
+- /sys/kernel/kexec_jump_buf_pfn is made writable, it is used for
+  memory image restoring.
+
+- Console restoring after jumping back is implemented.
+
+- Writing support is added for /dev/oldmem, to restore memory contents
+  of hibernated system.
+
+v2:
+
+- The kexec jump implementation is put into the kexec/kdump framework
+  instead of software suspend framework. The device and CPU state
+  save/restore code of software suspend is called when needed.
+
+- The same code path is used for both kexec a new kernel and jump back
+  to original kernel.
+
+Best Regards,
+Huang Ying
