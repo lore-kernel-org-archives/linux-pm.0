@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 4/4 -mm] kexec based hibernation -v7 :
-	kimgcore
-Date: Fri, 7 Dec 2007 13:33:05 +0100
-Message-ID: <200712071333.06836.rjw__37888.83473394$1197029748$gmane$org@sisk.pl>
-References: <1197042824.24045.64.camel@caritas-dev.intel.com>
+Subject: Re: [PATCH 3/4 -mm] kexec based hibernation -v7 : kexec
+	hibernate/resume
+Date: Fri, 7 Dec 2007 13:52:33 +0100
+Message-ID: <200712071352.34475.rjw__4247.69265014238$1197031003$gmane$org@sisk.pl>
+References: <1197042820.24045.63.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1197042824.24045.64.camel@caritas-dev.intel.com>
+In-Reply-To: <1197042820.24045.63.camel@caritas-dev.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,298 +25,358 @@ Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, li
 List-Id: linux-pm@vger.kernel.org
 
 On Friday, 7 of December 2007, Huang, Ying wrote:
-> This patch adds a file in proc file system to access the loaded
-> kexec_image, which may contains the memory image of kexeced
-> system. This can be used by kexec based hibernation to create a file
-> image of hibernating kernel, so that a kernel booting process is not
-> needed for each hibernating.
+> This patch implements kexec based hibernate/resume. This is based on
+> the facility provided by kexec_jump. The states save/restore code of
+> ordinary kexec_jump is overridden by hibernate/resume specific
+> code.
 
-Hm, I'm not sure what you mean.
+Can you explain in more details how this works?
 
-Can you explain a bit, please?
+> The ACPI methods are called at specified environment to conform 
+> the ACPI specification. A new reboot command is added to go to ACPI S4
+> state from user space.
 
+Well, I still don't like the amount of duplicated code introduced by this patch.
+
+Also, IMO it should be using the mutual exclusion mechanisms used by the
+existing hibernation code, ie. pm_mutex and the snapshot_device_available
+atomic variable.
 
 > Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
 > ---
->  fs/proc/Makefile      |    1 
->  fs/proc/kimgcore.c    |  204 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  fs/proc/proc_misc.c   |    5 +
->  include/linux/kexec.h |    7 +
->  kernel/kexec.c        |    5 -
->  5 files changed, 217 insertions(+), 5 deletions(-)
+>  include/linux/kexec.h   |    4 
+>  include/linux/reboot.h  |    1 
+>  include/linux/suspend.h |    1 
+>  kernel/power/disk.c     |  244 +++++++++++++++++++++++++++++++++++++++++++++++-
+>  kernel/sys.c            |    5 
+>  5 files changed, 251 insertions(+), 4 deletions(-)
 > 
-> --- /dev/null
-> +++ b/fs/proc/kimgcore.c
-> @@ -0,0 +1,204 @@
-> +/*
-> + * fs/proc/kimgcore.c - Interface for accessing the loaded
-> + * kexec_image, which may contains the memory image of kexeced system.
-> + * Heavily borrowed from fs/proc/kcore.c
-> + *
-> + * Copyright (C) 2007, Intel Corp.
-> + *      Huang Ying <ying.huang@intel.com>
-> + *
-> + * This file is released under the GPLv2
-> + */
-> +
-> +#include <linux/mm.h>
-> +#include <linux/proc_fs.h>
-> +#include <linux/user.h>
-> +#include <linux/elf.h>
-> +#include <linux/init.h>
+> --- a/kernel/power/disk.c
+> +++ b/kernel/power/disk.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/console.h>
+>  #include <linux/cpu.h>
+>  #include <linux/freezer.h>
 > +#include <linux/kexec.h>
-> +#include <linux/io.h>
-> +#include <linux/highmem.h>
-> +#include <asm/uaccess.h>
-> +
-> +struct proc_dir_entry *proc_root_kimgcore;
-> +
-> +static u32 kimgcore_size;
-> +
-> +static char *elfcorebuf;
-> +static size_t elfcorebuf_sz;
-> +
-> +static void *buf_page;
-> +
-> +static ssize_t kimage_copy_to_user(struct kimage *image, char __user *buf,
-> +				  unsigned long offset, size_t count)
+>  
+>  #include "power.h"
+>  
+> @@ -365,13 +366,13 @@ int hibernation_platform_enter(void)
+>  }
+>  
+>  /**
+> - *	power_down - Shut the machine down for hibernation.
+> + *	hibernate_power_down - Shut the machine down for hibernation.
+>   *
+>   *	Use the platform driver, if configured so; otherwise try
+>   *	to power off or reboot.
+>   */
+>  
+> -static void power_down(void)
+> +void hibernate_power_down(void)
+>  {
+>  	switch (hibernation_mode) {
+>  	case HIBERNATION_TEST:
+> @@ -461,7 +462,7 @@ int hibernate(void)
+>  		error = swsusp_write(flags);
+>  		swsusp_free();
+>  		if (!error)
+> -			power_down();
+> +			hibernate_power_down();
+>  	} else {
+>  		pr_debug("PM: Image restored successfully.\n");
+>  		swsusp_free();
+> @@ -478,6 +479,243 @@ int hibernate(void)
+>  	return error;
+>  }
+>  
+> +#ifdef CONFIG_KEXEC
+> +static int kexec_snapshot(struct notifier_block *nb,
+> +			  unsigned long cmd, void *arg)
 > +{
-> +	kimage_entry_t *ptr, entry;
-> +	unsigned long off = 0, offinp, trunk;
-> +	struct page *page;
-> +	void *vaddr;
+> +	int error;
+> +	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
 > +
-> +	for_each_kimage_entry(image, ptr, entry) {
-> +		if (!(entry & IND_SOURCE))
-> +			continue;
-> +		if (off + PAGE_SIZE > offset) {
-> +			offinp = offset - off;
-> +			if (count > PAGE_SIZE - offinp)
-> +				trunk = PAGE_SIZE - offinp;
-> +			else
-> +				trunk = count;
-> +			page = pfn_to_page(entry >> PAGE_SHIFT);
-> +			if (PageHighMem(page)) {
-> +				vaddr = kmap(page);
-> +				memcpy(buf_page, vaddr+offinp, trunk);
-> +				kunmap(page);
-> +				vaddr = buf_page;
-> +			} else
-> +				vaddr = __va(entry & PAGE_MASK) + offinp;
-> +			if (copy_to_user(buf, vaddr, trunk))
-> +				return -EFAULT;
-> +			buf += trunk;
-> +			offset += trunk;
-> +			count -= trunk;
-> +			if (!count)
-> +				break;
-> +		}
-> +		off += PAGE_SIZE;
-> +	}
-> +	return count;
-> +}
+> +	if (cmd != KJUMP_CMD_HIBERNATE_WRITE_IMAGE)
+> +		return NOTIFY_DONE;
 > +
-> +static ssize_t read_kimgcore(struct file *file, char __user *buffer,
-> +			     size_t buflen, loff_t *fpos)
-> +{
-> +	size_t acc = 0;
-> +	size_t tsz;
-> +	ssize_t ssz;
+> +	pm_prepare_console();
 > +
-> +	if (buflen == 0 || *fpos >= kimgcore_size)
-> +		return 0;
+> +	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+> +	if (error)
+> +		goto Exit;
 > +
-> +	/* trim buflen to not go beyond EOF */
-> +	if (buflen > kimgcore_size - *fpos)
-> +		buflen = kimgcore_size - *fpos;
-> +	/* Read ELF core header */
-> +	if (*fpos < elfcorebuf_sz) {
-> +		tsz = elfcorebuf_sz - *fpos;
-> +		if (buflen < tsz)
-> +			tsz = buflen;
-> +		if (copy_to_user(buffer, elfcorebuf + *fpos, tsz))
-> +			return -EFAULT;
-> +		buflen -= tsz;
-> +		*fpos += tsz;
-> +		buffer += tsz;
-> +		acc += tsz;
-> +
-> +		/* leave now if filled buffer already */
-> +		if (buflen == 0)
-> +			return acc;
+> +	error = freeze_processes();
+> +	if (error) {
+> +		error = -EBUSY;
+> +		goto Exit;
 > +	}
 > +
-> +	ssz = kimage_copy_to_user(kexec_image, buffer,
-> +				  *fpos - elfcorebuf_sz, buflen);
-> +	if (ssz < 0)
-> +		return ssz;
-> +
-> +	*fpos += (buflen - ssz);
-> +	acc += (buflen - ssz);
-> +
-> +	return acc;
-> +}
-> +
-> +static int init_kimgcore(void)
-> +{
-> +	Elf64_Ehdr *ehdr;
-> +	Elf64_Phdr *phdr;
-> +	struct kexec_segment *seg;
-> +	Elf64_Off off;
-> +	unsigned long i;
-> +
-> +	elfcorebuf_sz = sizeof(Elf64_Ehdr) +
-> +		kexec_image->nr_segments * sizeof(Elf64_Phdr);
-> +	elfcorebuf = kzalloc(elfcorebuf_sz, GFP_KERNEL);
-> +	if (!elfcorebuf)
-> +		return -ENOMEM;
-> +	ehdr = (Elf64_Ehdr *)elfcorebuf;
-> +	memcpy(ehdr->e_ident, ELFMAG, SELFMAG);
-> +	ehdr->e_ident[EI_CLASS] = ELFCLASS64;
-> +	ehdr->e_ident[EI_DATA]	= ELFDATA2LSB;
-> +	ehdr->e_ident[EI_VERSION] = EV_CURRENT;
-> +	ehdr->e_ident[EI_OSABI] = ELFOSABI_NONE;
-> +	memset(ehdr->e_ident+EI_PAD, 0, EI_NIDENT-EI_PAD);
-> +	ehdr->e_type = ET_CORE;
-> +	ehdr->e_machine = ELF_ARCH;
-> +	ehdr->e_version = EV_CURRENT;
-> +	ehdr->e_entry = kexec_image->start;
-> +	ehdr->e_phoff = sizeof(Elf64_Ehdr);
-> +	ehdr->e_shoff = 0;
-> +	ehdr->e_flags = 0;
-> +	ehdr->e_ehsize = sizeof(Elf64_Ehdr);
-> +	ehdr->e_phentsize = sizeof(Elf64_Phdr);
-> +	ehdr->e_phnum = kexec_image->nr_segments;
-> +	ehdr->e_shentsize = 0;
-> +	ehdr->e_shnum = 0;
-> +	ehdr->e_shstrndx = 0;
-> +
-> +	off = elfcorebuf_sz;
-> +	phdr = (Elf64_Phdr *)(elfcorebuf + sizeof(Elf64_Ehdr));
-> +	seg = kexec_image->segment;
-> +	for (i = 0; i < kexec_image->nr_segments; i++, phdr++, seg++) {
-> +		phdr->p_type = PT_LOAD;
-> +		phdr->p_flags = PF_R|PF_W|PF_X;
-> +		phdr->p_offset = off;
-> +		phdr->p_paddr = seg->mem;
-> +		phdr->p_filesz = seg->memsz;
-> +		phdr->p_memsz = seg->memsz;
-> +		phdr->p_align = PAGE_SIZE;
-> +		off += seg->memsz;
+> +	if (hibernation_test(TEST_FREEZER) ||
+> +	    hibernation_testmode(HIBERNATION_TESTPROC)) {
+> +		error = -EAGAIN;
+> +		goto Resume_process;
 > +	}
-> +	kimgcore_size = off;
 > +
-> +	buf_page = (void *)__get_free_page(GFP_KERNEL);
-> +	if (!buf_page) {
-> +		kfree(elfcorebuf);
-> +		return -ENOMEM;
+> +	error = platform_start(platform_mode);
+> +	if (error)
+> +		goto Resume_process;
+> +
+> +	suspend_console();
+> +	error = device_suspend(PMSG_FREEZE);
+> +	if (error)
+> +		goto Resume_console;
+> +
+> +	if (hibernation_test(TEST_DEVICES)) {
+> +		error = -EAGAIN;
+> +		goto Resume_devices;
 > +	}
-> +	return 0;
+> +
+> +	error = platform_pre_snapshot(platform_mode);
+> +	if (error)
+> +		goto Resume_devices;
+> +
+> +	if (hibernation_test(TEST_PLATFORM)) {
+> +		error = -EAGAIN;
+> +		goto Resume_devices;
+> +	}
+> +
+> +	error = disable_nonboot_cpus();
+> +	if (error)
+> +		goto Resume_devices;
+> +
+> +	if (hibernation_test(TEST_CPUS) ||
+> +	    hibernation_testmode(HIBERNATION_TEST)) {
+> +		error = -EAGAIN;
+> +		goto Enable_cpus;
+> +	}
+> +
+> +	local_irq_disable();
+> +	/* At this point, device_suspend() has been called, but *not*
+> +	 * device_power_down(). We *must* device_power_down() now.
+> +	 * Otherwise, drivers for some devices (e.g. interrupt
+> +	 * controllers) become desynchronized with the actual state of
+> +	 * the hardware at resume time, and evil weirdness ensues.
+> +	 */
+> +	error = device_power_down(PMSG_FREEZE);
+> +	if (error)
+> +		goto Enable_irqs;
+> +
+> +	if (hibernation_test(TEST_CORE)) {
+> +		error = -EAGAIN;
+> +		goto Power_up;
+> +	}
+> +
+> +	return NOTIFY_STOP;
+> +
+> + Power_up:
+> +	device_power_up();
+> + Enable_irqs:
+> +	local_irq_enable();
+> + Enable_cpus:
+> +	enable_nonboot_cpus();
+> + Resume_devices:
+> +	platform_finish(platform_mode);
+> +	device_resume();
+> + Resume_console:
+> +	resume_console();
+> + Resume_process:
+> +	thaw_processes();
+> + Exit:
+> +	pm_notifier_call_chain(PM_POST_HIBERNATION);
+> +	pm_restore_console();
+> +	return notifier_from_errno(error);
 > +}
 > +
-> +static void destroy_kimgcore(void)
+> +static int kexec_prepare_write_image(struct notifier_block *nb,
+> +				     unsigned long cmd, void *arg)
 > +{
-> +	kfree(elfcorebuf);
-> +	free_page((unsigned long)buf_page);
-> +	elfcorebuf_sz = 0;
-> +	kimgcore_size = 0;
+> +	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
+> +
+> +	if (cmd != KJUMP_CMD_HIBERNATE_WRITE_IMAGE)
+> +		return NOTIFY_DONE;
+> +
+> +	device_power_up();
+> +	local_irq_enable();
+> +	enable_nonboot_cpus();
+> +	platform_finish(platform_mode);
+> +	device_resume();
+> +	resume_console();
+> +	thaw_processes();
+> +	pm_restore_console();
+> +	return NOTIFY_STOP;
 > +}
 > +
-> +static int open_kimgcore(struct inode *inode, struct file *filp)
+> +static int kexec_prepare_resume(struct notifier_block *nb,
+> +				unsigned long cmd, void *arg)
+> +{
+> +	int error;
+> +	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
+> +
+> +	if (cmd != KJUMP_CMD_HIBERNATE_RESUME)
+> +		return NOTIFY_DONE;
+> +
+> +	pm_prepare_console();
+> +	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+> +	if (error)
+> +		goto Exit;
+> +
+> +	error = freeze_processes();
+> +	if (error) {
+> +		error = -EBUSY;
+> +		goto Exit;
+> +	}
+> +
+> +	suspend_console();
+> +	error = device_suspend(PMSG_PRETHAW);
+> +	if (error)
+> +		goto Resume_console;
+> +
+> +	error = platform_pre_restore(platform_mode);
+> +	if (error)
+> +		goto Resume_devices;
+> +
+> +	error = disable_nonboot_cpus();
+> +	if (error)
+> +		goto Resume_devices;
+> +	local_irq_disable();
+> +	/* At this point, device_suspend() has been called, but *not*
+> +	 * device_power_down(). We *must* device_power_down() now.
+> +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+> +	 * become desynchronized with the actual state of the hardware
+> +	 * at resume time, and evil weirdness ensues.
+> +	 */
+> +	error = device_power_down(PMSG_PRETHAW);
+> +	if (error)
+> +		goto Enable_irqs;
+> +
+> +	return NOTIFY_STOP;
+> +
+> + Enable_irqs:
+> +	local_irq_enable();
+> +	enable_nonboot_cpus();
+> + Resume_devices:
+> +	platform_restore_cleanup(platform_mode);
+> +	device_resume();
+> + Resume_console:
+> +	resume_console();
+> +	thaw_processes();
+> + Exit:
+> +	pm_notifier_call_chain(PM_POST_RESTORE);
+> +	pm_restore_console();
+> +	return notifier_from_errno(error);
+> +}
+> +
+> +static int kexec_resume(struct notifier_block *nb,
+> +			unsigned long cmd, void *arg)
+> +{
+> +	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
+> +
+> +	if (cmd != KJUMP_CMD_HIBERNATE_RESUME)
+> +		return NOTIFY_DONE;
+> +
+> +	platform_leave(platform_mode);
+> +	device_power_up();
+> +	local_irq_enable();
+> +	enable_nonboot_cpus();
+> +	platform_finish(platform_mode);
+> +	device_resume();
+> +	resume_console();
+> +	thaw_processes();
+> +	pm_notifier_call_chain(PM_POST_HIBERNATION);
+> +	pm_restore_console();
+> +	return NOTIFY_STOP;
+> +}
+> +
+> +static struct notifier_block nb_kexec_snapshot = {
+> +	.notifier_call = kexec_snapshot,
+> +};
+> +
+> +static struct notifier_block nb_kexec_prepare_write_image = {
+> +	.notifier_call = kexec_prepare_write_image,
+> +};
+> +
+> +static struct notifier_block nb_kexec_prepare_resume = {
+> +	.notifier_call = kexec_prepare_resume,
+> +};
+> +
+> +static struct notifier_block nb_kexec_resume = {
+> +	.notifier_call = kexec_resume,
+> +};
+> +
+> +static int kexec_hibernation_register(void)
 > +{
 > +	int ret;
-> +	if (xchg(&kexec_lock, 1))
-> +		return -EBUSY;
-> +	if (!kexec_image) {
-> +		ret = -ENOENT;
-> +		goto unlock;
-> +	}
-> +	ret = init_kimgcore();
+> +
+> +	ret = blocking_notifier_chain_register(&kjump_chain_pre,
+> +					       &nb_kexec_snapshot);
 > +	if (ret)
-> +		goto unlock;
-> +	return 0;
-> +unlock:
-> +	xchg(&kexec_lock, 0);
+> +		return ret;
+> +	ret = blocking_notifier_chain_register(&kjump_chain_post,
+> +					       &nb_kexec_prepare_write_image);
+> +	if (ret)
+> +		return ret;
+> +	ret = blocking_notifier_chain_register(&kjump_chain_pre,
+> +					       &nb_kexec_prepare_resume);
+> +	if (ret)
+> +		return ret;
+> +	ret = blocking_notifier_chain_register(&kjump_chain_post,
+> +					       &nb_kexec_resume);
 > +	return ret;
 > +}
 > +
-> +static int release_kimgcore(struct inode *inode, struct file *filp)
-> +{
-> +	destroy_kimgcore();
-> +	xchg(&kexec_lock, 0);
-> +	return 0;
-> +}
+> +late_initcall(kexec_hibernation_register);
+> +#endif
+>  
+>  /**
+>   *	software_resume - Resume from a saved image.
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -198,6 +198,7 @@ extern unsigned long get_safe_page(gfp_t
+>  
+>  extern void hibernation_set_ops(struct platform_hibernation_ops *ops);
+>  extern int hibernate(void);
+> +extern void hibernate_power_down(void);
+>  #else /* CONFIG_HIBERNATION */
+>  static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+>  static inline void swsusp_set_page_free(struct page *p) {}
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -442,6 +442,11 @@ asmlinkage long sys_reboot(int magic1, i
+>  			unlock_kernel();
+>  			return ret;
+>  		}
 > +
-> +const struct file_operations proc_kimgcore_operations = {
-> +	.read = read_kimgcore,
-> +	.open = open_kimgcore,
-> +	.release = release_kimgcore,
-> +};
+> +	case LINUX_REBOOT_CMD_HIBERNATE_POWER_DOWN:
+> +		hibernate_power_down();
+> +		unlock_kernel();
+> +		return -EINVAL;
+>  #endif
+>  
+>  	default:
+> --- a/include/linux/reboot.h
+> +++ b/include/linux/reboot.h
+> @@ -33,6 +33,7 @@
+>  #define	LINUX_REBOOT_CMD_RESTART2	0xA1B2C3D4
+>  #define	LINUX_REBOOT_CMD_SW_SUSPEND	0xD000FCE2
+>  #define	LINUX_REBOOT_CMD_KEXEC		0x45584543
+> +#define LINUX_REBOOT_CMD_HIBERNATE_POWER_DOWN 0xE4390DF3
+>  
+>  
+>  #ifdef __KERNEL__
 > --- a/include/linux/kexec.h
 > +++ b/include/linux/kexec.h
-> @@ -10,6 +10,7 @@
->  #include <linux/elfcore.h>
->  #include <linux/elf.h>
->  #include <linux/notifier.h>
-> +#include <linux/proc_fs.h>
->  #include <asm/kexec.h>
->  
->  /* Verify architecture specific macros are defined */
-> @@ -108,6 +109,10 @@ struct kimage {
->  };
->  
->  
-> +#define for_each_kimage_entry(image, ptr, entry) \
-> +	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
-> +		ptr = (entry & IND_INDIRECTION)? \
-> +			phys_to_virt((entry & PAGE_MASK)): ptr + 1)
->  
->  /* kexec interface functions */
->  extern void machine_kexec(struct kimage *image);
-> @@ -228,6 +233,8 @@ extern size_t vmcoreinfo_max_size;
->  int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
->  		unsigned long long *crash_size, unsigned long long *crash_base);
->  
-> +extern const struct file_operations proc_kimgcore_operations;
-> +extern struct proc_dir_entry *proc_root_kimgcore;
->  #else /* !CONFIG_KEXEC */
->  struct pt_regs;
->  struct task_struct;
-> --- a/fs/proc/Makefile
-> +++ b/fs/proc/Makefile
-> @@ -14,5 +14,6 @@ proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysct
->  proc-$(CONFIG_NET)		+= proc_net.o
->  proc-$(CONFIG_PROC_KCORE)	+= kcore.o
->  proc-$(CONFIG_PROC_VMCORE)	+= vmcore.o
-> +proc-$(CONFIG_KEXEC)		+= kimgcore.o
->  proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
->  proc-$(CONFIG_PRINTK)	+= kmsg.o
-> --- a/fs/proc/proc_misc.c
-> +++ b/fs/proc/proc_misc.c
-> @@ -1034,6 +1034,11 @@ void __init proc_misc_init(void)
->  	if (proc_vmcore)
->  		proc_vmcore->proc_fops = &proc_vmcore_operations;
->  #endif
-> +#ifdef CONFIG_KEXEC
-> +	proc_root_kimgcore = create_proc_entry("kimgcore", S_IRUSR, NULL);
-> +	if (proc_root_kimgcore)
-> +		proc_root_kimgcore->proc_fops = &proc_kimgcore_operations;
-> +#endif
->  #ifdef CONFIG_MAGIC_SYSRQ
->  	{
->  		struct proc_dir_entry *entry;
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -614,11 +614,6 @@ static int kimage_terminate(struct kimag
->  	return 0;
->  }
->  
-> -#define for_each_kimage_entry(image, ptr, entry) \
-> -	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
-> -		ptr = (entry & IND_INDIRECTION)? \
-> -			phys_to_virt((entry & PAGE_MASK)): ptr +1)
-> -
->  static void kimage_free_entry(kimage_entry_t entry)
->  {
->  	struct page *page;
+> @@ -127,7 +127,9 @@ extern int kexec_vcall(struct kimage *im
+>  		       unsigned int argc, va_list args);
+>  extern int kexec_jump(struct kimage *image, unsigned long *cmd_ret,
+>  		      unsigned long cmd);
+> -#define KJUMP_CMD_NONE 0
+> +#define KJUMP_CMD_NONE			0x0
+> +#define KJUMP_CMD_HIBERNATE_WRITE_IMAGE	0x6b630001
+> +#define KJUMP_CMD_HIBERNATE_RESUME	0x6b630002
+>  #ifdef CONFIG_COMPAT
+>  extern asmlinkage long compat_sys_kexec_load(unsigned long entry,
+>  				unsigned long nr_segments,
+> 
+> 
