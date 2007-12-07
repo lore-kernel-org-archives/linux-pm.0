@@ -1,16 +1,15 @@
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: PNP: do not stop/start devices in suspend/resume path
-Date: Thu, 6 Dec 2007 16:25:57 -0700
-Message-ID: <200712061625.57660.bjorn.helgaas@hp.com>
-References: <4745F77C.7040402@gmail.com> <47514CE2.3000600@gmail.com>
-	<200712051124.18852.bjorn.helgaas@hp.com>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: RFC: PNP: do not stop/start devices in
+	suspend/resume path
+Date: Fri, 07 Dec 2007 15:13:35 +0800
+Message-ID: <1197011615.21100.1.camel__2779.53144764087$1197012149$gmane$org@sli10-desk.sh.intel.com>
+References: <4745F77C.7040402@gmail.com> <47511751.2010707@gmail.com>
+	<47514CE2.3000600@gmail.com> <200712051124.18852.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <200712051124.18852.bjorn.helgaas@hp.com>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,17 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 05 December 2007 11:24:18 am Bjorn Helgaas wrote:
+
+On Thu, 2007-12-06 at 02:24 +0800, Bjorn Helgaas wrote:
 > Re: warning on suspend-to-RAM caused by
 > pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch,
 > thread here: http://lkml.org/lkml/2007/11/22/110
 > 
 > On Saturday 01 December 2007 05:00:34 am Jiri Slaby wrote:
-> > I didn't get it. Maybe some trolls poking around or something (maybe the
+> > I didn't get it. Maybe some trolls poking around or something (maybe
+> the
 > > ext3 breakage which fsck fixed). It works after recompilation of the
 > > whole tree. And the important part -- the warning has gone.
 > 
@@ -38,83 +39,88 @@ On Wednesday 05 December 2007 11:24:18 am Bjorn Helgaas wrote:
 > enabled while we sleep.  I don't see an actual problem, but there
 > might be something related to hotplug while we're asleep or something.
 > So I'll cc: some additional people who might have some insight.
-
-I checked with a Windows kernel person, who said that when preparing
-to sleep, Windows puts devices in S3 state (I think he meant D3)
-and does not use _DIS.
-
-I think this patch is the right thing to do.  It's possible we'll
-trip over some BIOS issue, but in the long term, we should try to
-do it the same way Windows does.  Andrew, can you add this before
-pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch?
-
-Thanks,
-  Bjorn
-
-
-PNP: do not stop/start devices in suspend/resume path
-
-Do not disable PNP devices in the suspend path.  We still call
-the driver's suspend method, which should prevent further use of
-the device, and the protocol suspend method, which may put the
-device in a low-power state.
-
-I'm told that Windows puts devices in a low-power state (Linux
-does this in the protocol suspend method), but does not use _DIS
-in the suspend path.  Other relevant references:
-
-  - In the ACPI 3.0b spec, I can't find any mention of _DIS in
-    connection with sleep.  And Device Object Notifications,
-    Section 5.6.3, Table 5-43, says we should get a bus check
-    after awakening if hardware was removed while we slept.
-
-  - This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
-    makes a similar point about how the OS re-enumerates devices
-    as a result of a power state change (3rd last paragraph of
-    text).
-
-  - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
-    suggests that Windows only stops a device to rebalance hardware
-    resources.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: linux-mm/drivers/pnp/driver.c
-===================================================================
---- linux-mm.orig/drivers/pnp/driver.c	2007-11-30 13:58:25.000000000 -0700
-+++ linux-mm/drivers/pnp/driver.c	2007-12-03 09:58:35.000000000 -0700
-@@ -161,13 +161,6 @@
- 			return error;
- 	}
- 
--	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
--	    pnp_can_disable(pnp_dev)) {
--		error = pnp_stop_dev(pnp_dev);
--		if (error)
--			return error;
--	}
--
- 	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
- 		pnp_dev->protocol->suspend(pnp_dev, state);
- 	return 0;
-@@ -177,7 +170,6 @@
- {
- 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
- 	struct pnp_driver *pnp_drv = pnp_dev->driver;
--	int error;
- 
- 	if (!pnp_drv)
- 		return 0;
-@@ -185,12 +177,6 @@
- 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
- 		pnp_dev->protocol->resume(pnp_dev);
- 
--	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
--		error = pnp_start_dev(pnp_dev);
--		if (error)
--			return error;
--	}
--
- 	if (pnp_drv->resume)
- 		return pnp_drv->resume(pnp_dev);
- 
+> 
+> 
+> 
+> RFC: PNP: do not stop/start devices in suspend/resume path
+> 
+> Do not disable PNP devices in the suspend path.  We still call
+> the driver's suspend method, which should prevent further use of
+> the device, and the protocol suspend method, which may put the
+> device in a low-power state.
+> 
+> This means we will not disable the device and release its
+> resources.  The driver suspend method typically does not release
+> its resources in the suspend path.  For example, if we have:
+> 
+>   03f8-03ff : 00:06
+>     03f8-03ff : serial
+> 
+> pnp_stop_dev() would release the 00:06 region, which still
+> has a child.  This causes a warning from __release_resource
+> and corrupts /proc/ioports.
+> 
+> However, we should do this the same way Windows does, so if
+> Windows disables devices before going to sleep, we should, too.
+> It doesn't *look* necessary to me because
+> 
+>   - In the ACPI 3.0b spec, I can't find any mention of _DIS in
+>     connection with sleep.  And Device Object Notifications,
+>     Section 5.6.3, Table 5-43, says we should get a bus check
+>     after awakening if hardware was removed while we slept.
+> 
+>     This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
+>     makes a similar point about how the OS re-enumerates devices
+>     as a result of a power state change (3rd last paragraph of
+>     text).
+> 
+>   - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
+>     suggests that Windows only stops a device to rebalance hardware
+>     resources.
+> 
+> [This should go before
+> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch
+> for best bisect-ability.]
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> 
+> Index: linux-mm/drivers/pnp/driver.c
+> ===================================================================
+> --- linux-mm.orig/drivers/pnp/driver.c  2007-11-30 13:58:25.000000000
+> -0700
+> +++ linux-mm/drivers/pnp/driver.c       2007-12-03 09:58:35.000000000
+> -0700
+> @@ -161,13 +161,6 @@
+>                         return error;
+>         }
+> 
+> -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+> -           pnp_can_disable(pnp_dev)) {
+> -               error = pnp_stop_dev(pnp_dev);
+> -               if (error)
+> -                       return error;
+> -       }
+> -
+>         if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+>                 pnp_dev->protocol->suspend(pnp_dev, state);
+>         return 0;
+> @@ -177,7 +170,6 @@
+>  {
+>         struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+>         struct pnp_driver *pnp_drv = pnp_dev->driver;
+> -       int error;
+> 
+>         if (!pnp_drv)
+>                 return 0;
+> @@ -185,12 +177,6 @@
+>         if (pnp_dev->protocol && pnp_dev->protocol->resume)
+>                 pnp_dev->protocol->resume(pnp_dev);
+> 
+> -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
+> -               error = pnp_start_dev(pnp_dev);
+> -               if (error)
+> -                       return error;
+> -       }
+> -
+I'd suggest keep pnp_start_dev here to prevent BIOS not or assign
+different resources after a resume.
