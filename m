@@ -1,8 +1,8 @@
 From: "Huang, Ying" <ying.huang@intel.com>
-Subject: [PATCH 3/4 -mm] kexec based hibernation -v7 : kexec
-	hibernate/resume
-Date: Fri, 07 Dec 2007 15:53:40 +0000
-Message-ID: <1197042820.24045.63.camel__5930.50362444973$1197014163$gmane$org@caritas-dev.intel.com>
+Subject: [PATCH 2/4 -mm] kexec based hibernation -v7 : kexec
+	restore
+Date: Fri, 07 Dec 2007 15:53:34 +0000
+Message-ID: <1197042814.24045.62.camel__21689.0468881049$1197014169$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -20,346 +20,109 @@ To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, ni
 Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch implements kexec based hibernate/resume. This is based on
-the facility provided by kexec_jump. The states save/restore code of
-ordinary kexec_jump is overridden by hibernate/resume specific
-code. The ACPI methods are called at specified environment to conform
-the ACPI specification. A new reboot command is added to go to ACPI S4
-state from user space.
+This patch adds writing support for /dev/oldmem. This is used to
+restore the memory contents of hibernated system.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- include/linux/kexec.h   |    4 
- include/linux/reboot.h  |    1 
- include/linux/suspend.h |    1 
- kernel/power/disk.c     |  244 +++++++++++++++++++++++++++++++++++++++++++++++-
- kernel/sys.c            |    5 
- 5 files changed, 251 insertions(+), 4 deletions(-)
+ arch/x86/kernel/crash_dump_32.c |   27 +++++++++++++++++++++++++++
+ drivers/char/mem.c              |   32 ++++++++++++++++++++++++++++++++
+ include/linux/crash_dump.h      |    2 ++
+ 3 files changed, 61 insertions(+)
 
---- a/kernel/power/disk.c
-+++ b/kernel/power/disk.c
-@@ -21,6 +21,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <linux/kexec.h>
- 
- #include "power.h"
- 
-@@ -365,13 +366,13 @@ int hibernation_platform_enter(void)
+--- a/arch/x86/kernel/crash_dump_32.c
++++ b/arch/x86/kernel/crash_dump_32.c
+@@ -59,6 +59,33 @@ ssize_t copy_oldmem_page(unsigned long p
+ 	return csize;
  }
  
- /**
-- *	power_down - Shut the machine down for hibernation.
-+ *	hibernate_power_down - Shut the machine down for hibernation.
-  *
-  *	Use the platform driver, if configured so; otherwise try
-  *	to power off or reboot.
-  */
- 
--static void power_down(void)
-+void hibernate_power_down(void)
++ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
++			  size_t csize, unsigned long offset, int userbuf)
++{
++	void  *vaddr;
++
++	if (!csize)
++		return 0;
++
++	if (!userbuf) {
++		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
++		memcpy(vaddr + offset, buf, csize);
++	} else {
++		if (!kdump_buf_page) {
++			printk(KERN_WARNING "Kdump: Kdump buffer page not"
++				" allocated\n");
++			return -EFAULT;
++		}
++		if (copy_from_user(kdump_buf_page, buf, csize))
++			return -EFAULT;
++		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
++		memcpy(vaddr + offset, kdump_buf_page, csize);
++	}
++	kunmap_atomic(vaddr, KM_PTE0);
++
++	return csize;
++}
++
+ static int __init kdump_buf_page_init(void)
  {
- 	switch (hibernation_mode) {
- 	case HIBERNATION_TEST:
-@@ -461,7 +462,7 @@ int hibernate(void)
- 		error = swsusp_write(flags);
- 		swsusp_free();
- 		if (!error)
--			power_down();
-+			hibernate_power_down();
- 	} else {
- 		pr_debug("PM: Image restored successfully.\n");
- 		swsusp_free();
-@@ -478,6 +479,243 @@ int hibernate(void)
- 	return error;
+ 	int ret = 0;
+--- a/include/linux/crash_dump.h
++++ b/include/linux/crash_dump.h
+@@ -11,6 +11,8 @@
+ extern unsigned long long elfcorehdr_addr;
+ extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
+ 						unsigned long, int);
++extern ssize_t write_oldmem_page(unsigned long, const char *, size_t,
++				 unsigned long, int);
+ extern const struct file_operations proc_vmcore_operations;
+ extern struct proc_dir_entry *proc_vmcore;
+ 
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -348,6 +348,37 @@ static ssize_t read_oldmem(struct file *
+ 	}
+ 	return read;
  }
- 
-+#ifdef CONFIG_KEXEC
-+static int kexec_snapshot(struct notifier_block *nb,
-+			  unsigned long cmd, void *arg)
++
++/*
++ * Write memory corresponding to the old kernel.
++ */
++static ssize_t write_oldmem(struct file *file, const char __user *buf,
++			    size_t count, loff_t *ppos)
 +{
-+	int error;
-+	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
++	unsigned long pfn, offset;
++	size_t write = 0, csize;
++	int rc = 0;
 +
-+	if (cmd != KJUMP_CMD_HIBERNATE_WRITE_IMAGE)
-+		return NOTIFY_DONE;
++	while (count) {
++		pfn = *ppos / PAGE_SIZE;
++		if (pfn > saved_max_pfn)
++			return write;
 +
-+	pm_prepare_console();
-+
-+	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-+	if (error)
-+		goto Exit;
-+
-+	error = freeze_processes();
-+	if (error) {
-+		error = -EBUSY;
-+		goto Exit;
++		offset = (unsigned long)(*ppos % PAGE_SIZE);
++		if (count > PAGE_SIZE - offset)
++			csize = PAGE_SIZE - offset;
++		else
++			csize = count;
++		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
++		if (rc < 0)
++			return rc;
++		buf += csize;
++		*ppos += csize;
++		write += csize;
++		count -= csize;
 +	}
-+
-+	if (hibernation_test(TEST_FREEZER) ||
-+	    hibernation_testmode(HIBERNATION_TESTPROC)) {
-+		error = -EAGAIN;
-+		goto Resume_process;
-+	}
-+
-+	error = platform_start(platform_mode);
-+	if (error)
-+		goto Resume_process;
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_FREEZE);
-+	if (error)
-+		goto Resume_console;
-+
-+	if (hibernation_test(TEST_DEVICES)) {
-+		error = -EAGAIN;
-+		goto Resume_devices;
-+	}
-+
-+	error = platform_pre_snapshot(platform_mode);
-+	if (error)
-+		goto Resume_devices;
-+
-+	if (hibernation_test(TEST_PLATFORM)) {
-+		error = -EAGAIN;
-+		goto Resume_devices;
-+	}
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Resume_devices;
-+
-+	if (hibernation_test(TEST_CPUS) ||
-+	    hibernation_testmode(HIBERNATION_TEST)) {
-+		error = -EAGAIN;
-+		goto Enable_cpus;
-+	}
-+
-+	local_irq_disable();
-+	/* At this point, device_suspend() has been called, but *not*
-+	 * device_power_down(). We *must* device_power_down() now.
-+	 * Otherwise, drivers for some devices (e.g. interrupt
-+	 * controllers) become desynchronized with the actual state of
-+	 * the hardware at resume time, and evil weirdness ensues.
-+	 */
-+	error = device_power_down(PMSG_FREEZE);
-+	if (error)
-+		goto Enable_irqs;
-+
-+	if (hibernation_test(TEST_CORE)) {
-+		error = -EAGAIN;
-+		goto Power_up;
-+	}
-+
-+	return NOTIFY_STOP;
-+
-+ Power_up:
-+	device_power_up();
-+ Enable_irqs:
-+	local_irq_enable();
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	platform_finish(platform_mode);
-+	device_resume();
-+ Resume_console:
-+	resume_console();
-+ Resume_process:
-+	thaw_processes();
-+ Exit:
-+	pm_notifier_call_chain(PM_POST_HIBERNATION);
-+	pm_restore_console();
-+	return notifier_from_errno(error);
++	return write;
 +}
-+
-+static int kexec_prepare_write_image(struct notifier_block *nb,
-+				     unsigned long cmd, void *arg)
-+{
-+	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
-+
-+	if (cmd != KJUMP_CMD_HIBERNATE_WRITE_IMAGE)
-+		return NOTIFY_DONE;
-+
-+	device_power_up();
-+	local_irq_enable();
-+	enable_nonboot_cpus();
-+	platform_finish(platform_mode);
-+	device_resume();
-+	resume_console();
-+	thaw_processes();
-+	pm_restore_console();
-+	return NOTIFY_STOP;
-+}
-+
-+static int kexec_prepare_resume(struct notifier_block *nb,
-+				unsigned long cmd, void *arg)
-+{
-+	int error;
-+	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
-+
-+	if (cmd != KJUMP_CMD_HIBERNATE_RESUME)
-+		return NOTIFY_DONE;
-+
-+	pm_prepare_console();
-+	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-+	if (error)
-+		goto Exit;
-+
-+	error = freeze_processes();
-+	if (error) {
-+		error = -EBUSY;
-+		goto Exit;
-+	}
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_PRETHAW);
-+	if (error)
-+		goto Resume_console;
-+
-+	error = platform_pre_restore(platform_mode);
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Resume_devices;
-+	local_irq_disable();
-+	/* At this point, device_suspend() has been called, but *not*
-+	 * device_power_down(). We *must* device_power_down() now.
-+	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-+	 * become desynchronized with the actual state of the hardware
-+	 * at resume time, and evil weirdness ensues.
-+	 */
-+	error = device_power_down(PMSG_PRETHAW);
-+	if (error)
-+		goto Enable_irqs;
-+
-+	return NOTIFY_STOP;
-+
-+ Enable_irqs:
-+	local_irq_enable();
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	platform_restore_cleanup(platform_mode);
-+	device_resume();
-+ Resume_console:
-+	resume_console();
-+	thaw_processes();
-+ Exit:
-+	pm_notifier_call_chain(PM_POST_RESTORE);
-+	pm_restore_console();
-+	return notifier_from_errno(error);
-+}
-+
-+static int kexec_resume(struct notifier_block *nb,
-+			unsigned long cmd, void *arg)
-+{
-+	int platform_mode = (hibernation_mode == HIBERNATION_PLATFORM);
-+
-+	if (cmd != KJUMP_CMD_HIBERNATE_RESUME)
-+		return NOTIFY_DONE;
-+
-+	platform_leave(platform_mode);
-+	device_power_up();
-+	local_irq_enable();
-+	enable_nonboot_cpus();
-+	platform_finish(platform_mode);
-+	device_resume();
-+	resume_console();
-+	thaw_processes();
-+	pm_notifier_call_chain(PM_POST_HIBERNATION);
-+	pm_restore_console();
-+	return NOTIFY_STOP;
-+}
-+
-+static struct notifier_block nb_kexec_snapshot = {
-+	.notifier_call = kexec_snapshot,
-+};
-+
-+static struct notifier_block nb_kexec_prepare_write_image = {
-+	.notifier_call = kexec_prepare_write_image,
-+};
-+
-+static struct notifier_block nb_kexec_prepare_resume = {
-+	.notifier_call = kexec_prepare_resume,
-+};
-+
-+static struct notifier_block nb_kexec_resume = {
-+	.notifier_call = kexec_resume,
-+};
-+
-+static int kexec_hibernation_register(void)
-+{
-+	int ret;
-+
-+	ret = blocking_notifier_chain_register(&kjump_chain_pre,
-+					       &nb_kexec_snapshot);
-+	if (ret)
-+		return ret;
-+	ret = blocking_notifier_chain_register(&kjump_chain_post,
-+					       &nb_kexec_prepare_write_image);
-+	if (ret)
-+		return ret;
-+	ret = blocking_notifier_chain_register(&kjump_chain_pre,
-+					       &nb_kexec_prepare_resume);
-+	if (ret)
-+		return ret;
-+	ret = blocking_notifier_chain_register(&kjump_chain_post,
-+					       &nb_kexec_resume);
-+	return ret;
-+}
-+
-+late_initcall(kexec_hibernation_register);
-+#endif
- 
- /**
-  *	software_resume - Resume from a saved image.
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -198,6 +198,7 @@ extern unsigned long get_safe_page(gfp_t
- 
- extern void hibernation_set_ops(struct platform_hibernation_ops *ops);
- extern int hibernate(void);
-+extern void hibernate_power_down(void);
- #else /* CONFIG_HIBERNATION */
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
- static inline void swsusp_set_page_free(struct page *p) {}
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -442,6 +442,11 @@ asmlinkage long sys_reboot(int magic1, i
- 			unlock_kernel();
- 			return ret;
- 		}
-+
-+	case LINUX_REBOOT_CMD_HIBERNATE_POWER_DOWN:
-+		hibernate_power_down();
-+		unlock_kernel();
-+		return -EINVAL;
  #endif
  
- 	default:
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -33,6 +33,7 @@
- #define	LINUX_REBOOT_CMD_RESTART2	0xA1B2C3D4
- #define	LINUX_REBOOT_CMD_SW_SUSPEND	0xD000FCE2
- #define	LINUX_REBOOT_CMD_KEXEC		0x45584543
-+#define LINUX_REBOOT_CMD_HIBERNATE_POWER_DOWN 0xE4390DF3
- 
- 
- #ifdef __KERNEL__
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -127,7 +127,9 @@ extern int kexec_vcall(struct kimage *im
- 		       unsigned int argc, va_list args);
- extern int kexec_jump(struct kimage *image, unsigned long *cmd_ret,
- 		      unsigned long cmd);
--#define KJUMP_CMD_NONE 0
-+#define KJUMP_CMD_NONE			0x0
-+#define KJUMP_CMD_HIBERNATE_WRITE_IMAGE	0x6b630001
-+#define KJUMP_CMD_HIBERNATE_RESUME	0x6b630002
- #ifdef CONFIG_COMPAT
- extern asmlinkage long compat_sys_kexec_load(unsigned long entry,
- 				unsigned long nr_segments,
+ extern long vread(char *buf, char *addr, unsigned long count);
+@@ -783,6 +814,7 @@ static const struct file_operations full
+ #ifdef CONFIG_CRASH_DUMP
+ static const struct file_operations oldmem_fops = {
+ 	.read	= read_oldmem,
++	.write	= write_oldmem,
+ 	.open	= open_oldmem,
+ };
+ #endif
