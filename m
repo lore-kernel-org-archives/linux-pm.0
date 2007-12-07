@@ -1,15 +1,15 @@
 From: "huang ying" <huang.ying.caritas@gmail.com>
-Subject: Re: [PATCH 3/4 -mm] kexec based hibernation -v7 : kexec
-	hibernate/resume
-Date: Fri, 7 Dec 2007 21:28:55 +0800
-Message-ID: <851fc09e0712070528w6701505cr999371ca5ac77307__8460.37628730318$1197034221$gmane$org@mail.gmail.com>
-References: <1197042820.24045.63.camel@caritas-dev.intel.com>
-	<200712071352.34475.rjw@sisk.pl>
+Subject: Re: [PATCH 4/4 -mm] kexec based hibernation -v7 :
+	kimgcore
+Date: Fri, 7 Dec 2007 21:56:18 +0800
+Message-ID: <851fc09e0712070556g13741a0vc56348ffbbb57a1d__44137.069831095$1197035857$gmane$org@mail.gmail.com>
+References: <1197042824.24045.64.camel@caritas-dev.intel.com>
+	<200712071333.06836.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712071352.34475.rjw@sisk.pl>
+In-Reply-To: <200712071333.06836.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,58 +24,50 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Dec 7, 2007 8:52 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Dec 7, 2007 8:33 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > On Friday, 7 of December 2007, Huang, Ying wrote:
-> > This patch implements kexec based hibernate/resume. This is based on
-> > the facility provided by kexec_jump. The states save/restore code of
-> > ordinary kexec_jump is overridden by hibernate/resume specific
-> > code.
+> > This patch adds a file in proc file system to access the loaded
+> > kexec_image, which may contains the memory image of kexeced
+> > system. This can be used by kexec based hibernation to create a file
+> > image of hibernating kernel, so that a kernel booting process is not
+> > needed for each hibernating.
 >
-> Can you explain in more details how this works?
-
-Two blocking notifier chain named kjump_chain_pre and kjump_chain_post
-are defined, the basic procedure of kexec jump is as follow:
-
-call functions in kjump_chain_pre
-jump to peer kernel
-call functions in kjump_chain_post
-
-A command is the first parameter of functions in chain. If A command
-is processed in a function, the function will execute and stop the
-chain (return NOTIFY_STOP), otherwise it will do nothing (return
-NOTIFY_DONE). If no function has interest in the command, the default
-behavior will be executed (kexec_vcall_pre, kexec_vcall_post).
-
-So for each command the procedure is as follow:
-
-KJUMP_CMD_HIBERNATE_WRITE_IMAGE:
-[chain] kexec_snapshot
-jump to kexeced kernel
-[chain] kexec_prepare_write_image /* in kexeced kernel */
-
-KJUMP_HIBERNATE_RESUME:
-[chain] kexec_prepare_resume /* in kexeced kernel */
-jump to kexec kernel
-[chain] kexec_resume
-
-> > The ACPI methods are called at specified environment to conform
-> > the ACPI specification. A new reboot command is added to go to ACPI S4
-> > state from user space.
+> Hm, I'm not sure what you mean.
 >
-> Well, I still don't like the amount of duplicated code introduced by this patch.
+> Can you explain a bit, please?
 
-Yes, there are too many duplicated code. They should be merged. But I
-want to delay the merging until the kexec based hibernation code goes
-more stable.
+The normal kexec based hibernation procedure is as follow:
 
-> Also, IMO it should be using the mutual exclusion mechanisms used by the
-> existing hibernation code, ie. pm_mutex and the snapshot_device_available
-> atomic variable.
+1. kexec_load the kernel image and initramfs
+2. jump to hibernating kernel
+3. the normal boot process of kexeced kernel
+4. jump back to hibernated kernel
+5. execute ACPI methods
+6. jump to hibernating kernel
+7. write memory image of hibernated kernel
+8. go to ACPI S4 state
 
-Now the kexec_lock is used as a mutex between kexec related
-operations. It seems reasonable to use pm_mutex and maybe
-snapshot_device_available to eliminate potential conflict between
-kexec based hibernation and u/swsusp.
+With kimgcore:
+
+A. Prepare a memory image of hibernation kernel:
+
+A.1 kexec_load the kernel image and initramfs
+A.2 jump to hibernating kernel
+A.3 the normal boot process of kexeced kernel
+A.4 jump back to hibernated kernel
+A.5 save the memory image of hibernating kernel via kimgcore
+
+The normal hibernate process is as follow:
+
+1. kexec load the kimgcore of hibernatin kernel
+2. jump to the hibernating kernel
+3. execute ACPI methods
+4. jump to hibernating kernel
+5. write memory image of hibernated kernel
+6. go to ACPI S4 state
+
+So the boot process of hibernating kernel needs only once unless the
+hardware configuration is changed.
 
 Best Regards,
 Huang Ying
