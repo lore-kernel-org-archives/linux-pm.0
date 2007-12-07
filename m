@@ -1,14 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Date: Fri, 7 Dec 2007 18:51:34 +0100
-Message-ID: <20071207175134.GA18916@elte.hu>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: parallel suspend/resume
+Date: Fri, 07 Dec 2007 10:01:12 -0800
+Message-ID: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <Pine.LNX.4.44L0.0712071120400.4209-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071207151150.GB24254@elte.hu>
+In-Reply-To: <Pine.LNX.4.44L0.0712071120400.4209-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,49 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: stern@rowland.harvard.edu, pavel@ucw.cz, marcelo@kvack.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+> What about ordering constraints?  A lot of them aren't explicit.  We 
+> just depend on the fact that devices get suspended in reverse order of 
+> registration.  You can't do that in parallel.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Those constraints should *become* explicit ... not stay implicit!
 
-> thanks for tracking it down. Does the patch below help?
+FWIW the appended patch removes that rude "order of registration"
+policy, so that the suspend/resume list matches the device tree.
+It's behaved OK on PCs and, in light duty, a few development boards;
+I've carried it around most of this year.
 
-oops, that should be the patch below. Otherwise the watchdog kernel 
-threads will just loop around.
+I'd expect this to eventually turn up some cases where Linux is
+right now doing a bad job of exposing devices with multiple such
+ordering constraint ... power management via I2C seems likely to
+turn up a few of them.  We'd need some automatic way to detect
+and report such problems so that they could be fixed.
 
-	Ingo
+- Dave
+
+
+============= SNIP!
+Change how the PM list is constructed, so that devices are added right
+after their parents (when they have one) rather than at the end of the
+list.  This preserves sequencing guarantees, but enables sequencing of
+suspend/resume operations by more important characteristics than "when
+device happened to enumerate" ... e.g. clocksources and clockevents
+at a clearly defined point during suspend and resume, power management
+chips nearer their I2C parent.
+
+This patch has a potential downside for devices that have multiple
+power dependencies and which "just happened to work" before.  Or
+looking at it the other way around:  a potential upside for devices
+that didn't work before.
 
 ---
- kernel/softlockup.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/base/power/main.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux/kernel/softlockup.c
-===================================================================
---- linux.orig/kernel/softlockup.c
-+++ linux/kernel/softlockup.c
-@@ -101,7 +101,11 @@ void softlockup_tick(void)
+--- g26.orig/drivers/base/power/main.c	2007-11-29 20:06:04.000000000 -0800
++++ g26/drivers/base/power/main.c	2007-11-29 20:11:38.000000000 -0800
+@@ -40,11 +40,17 @@ int (*platform_enable_wakeup)(struct dev
  
- 	now = get_timestamp(this_cpu);
- 
--	/* Warn about unreasonable delays: */
-+	/* Wake up the high-prio watchdog task every second: */
-+	if (now > (touch_timestamp + 1))
-+		wake_up_process(per_cpu(watchdog_task, this_cpu));
+ void device_pm_add(struct device *dev)
+ {
+-	pr_debug("PM: Adding info for %s:%s\n",
++	struct device *parent = dev->parent;
 +
-+	/* Warn about unreasonable 10+ seconds delays: */
- 	if (now <= (touch_timestamp + softlockup_thresh))
- 		return;
++	pr_debug("PM: Adding info for %s:%s after %s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+-		 kobject_name(&dev->kobj));
++		 kobject_name(&dev->kobj),
++		 parent ? parent->bus_id : "(no parent)");
+ 	mutex_lock(&dpm_list_mtx);
+-	list_add_tail(&dev->power.entry, &dpm_active);
++	if (parent)
++		list_add(&dev->power.entry, &parent->power.entry);
++	else
++		list_add_tail(&dev->power.entry, &dpm_active);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
  
-@@ -213,8 +217,9 @@ static int watchdog(void *__bind_cpu)
- 	 * debug-printout triggers in softlockup_tick().
- 	 */
- 	while (!kthread_should_stop()) {
-+		set_current_state(TASK_INTERRUPTIBLE);
- 		touch_softlockup_watchdog();
--		msleep_interruptible(10000);
-+		schedule();
- 
- 		/*
- 		 * Only do the hung-tasks check on one CPU:
