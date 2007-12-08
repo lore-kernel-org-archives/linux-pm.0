@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: parallel suspend/resume
-Date: Sat, 8 Dec 2007 10:43:25 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0712081037001.28689-100000@netrider.rowland.org>
-References: <200712080900.45623.oliver@neukum.org>
+Date: Sat, 8 Dec 2007 11:26:08 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712081119080.29812-100000@netrider.rowland.org>
+References: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712080900.45623.oliver@neukum.org>
+In-Reply-To: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,31 +16,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 8 Dec 2007, Oliver Neukum wrote:
+On Fri, 7 Dec 2007, David Brownell wrote:
 
-> Am Freitag, 7. Dezember 2007 19:01:12 schrieb David Brownell:
-> > FWIW the appended patch removes that rude "order of registration"
-> > policy, so that the suspend/resume list matches the device tree.
-> > It's behaved OK on PCs and, in light duty, a few development boards;
-> > I've carried it around most of this year.
-> 
-> As it is a tree, why not store it as such?
+> FWIW the appended patch removes that rude "order of registration"
+> policy, so that the suspend/resume list matches the device tree.
+> It's behaved OK on PCs and, in light duty, a few development boards;
+> I've carried it around most of this year.
 
-There's no need to "store" the tree ordering specially, since all the
-pointers already exist.  The question is: In what order should the tree
-be traversed?  About the only explicit constraint we have now is that
-children must be suspended before their parents, but there undoubtedly
-are plenty of undocumented implicit constraints (maybe some of them
-aren't known to anybody at all).
+Actually I'm surprised that it works with USB devices.
 
-Given the vast number of possible orders, and given that the only order 
-we _know_ works correctly is reverse order of registration, I don't see 
-any big reason to change.  Speeding things up by parallel suspension 
-would be a valid reason, but it needs to be done with a great deal of 
-care.
+As they are registered, you patch adds new devices to the list
+immediately after their parents.  This means that the children of a
+particular device will be listed in reverse order of registration,
+right?
+
+So if you have a USB hub, the hub's children will be added following 
+the hub, and the hub's interface will come after all the children since 
+it gets registered before them.  Hence during suspend, the interface's 
+suspend method will be called before any of the children are suspended.  
+But hub_suspend() will fail if there are unsuspended children.
+
+This is an example of another implicit order dependency: A hub's 
+interface must be suspended after all the other children of that hub.  
+It's an artifact of the way USB devices are represented in the device 
+hierarchy; strictly speaking they should be children of the hub's 
+interface, not of the hub itself.
 
 Alan Stern
