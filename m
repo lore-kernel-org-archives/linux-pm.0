@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/9] Suspend: Clean up Kconfig (V2)
-Date: Sat, 8 Dec 2007 02:14:00 +0100
-Message-ID: <200712080214.01044.rjw__20121.2515974932$1197075462$gmane$org@sisk.pl>
+Subject: [PATCH 7/9] Hibernation: Update messages
+Date: Sat, 8 Dec 2007 02:09:43 +0100
+Message-ID: <200712080209.44501.rjw__27894.9791253128$1197075464$gmane$org@sisk.pl>
 References: <200712080201.40661.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -20,181 +20,367 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This cleans up the suspend Kconfig and removes the need to
-declare centrally which architectures support suspend. All
-architectures that currently support suspend are modified
-accordingly.
+Make hibernation messages start with one common prefix "PM: " and use
+the word "hibernation" in the messages as a synonym of "suspend to
+disk".
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Russell King <rmk@arm.linux.org.uk>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Pavel Machek <pavel@suse.cz>
+Turn some KERN_INFO messages into debug ones.
+
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- arch/arm/Kconfig      |    3 +++
- arch/blackfin/Kconfig |    4 ++++
- arch/frv/Kconfig      |    5 +++++
- arch/mips/Kconfig     |    4 ++++
- arch/powerpc/Kconfig  |    4 ++++
- arch/sh/Kconfig       |    4 ++++
- arch/x86/Kconfig      |    4 ++++
- kernel/power/Kconfig  |   21 +++------------------
- 8 files changed, 31 insertions(+), 18 deletions(-)
+ kernel/power/disk.c     |   28 +++++++++++++++-------------
+ kernel/power/snapshot.c |   23 ++++++++++++-----------
+ kernel/power/swap.c     |   31 +++++++++++++++++--------------
+ kernel/power/swsusp.c   |    5 +++--
+ 4 files changed, 47 insertions(+), 40 deletions(-)
 
-Index: linux-2.6/arch/x86/Kconfig
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -119,6 +119,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y
- 	depends on !SMP || !X86_VOYAGER
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -191,8 +191,8 @@ int create_image(int platform_mode)
+ 	 */
+ 	error = device_power_down(PMSG_FREEZE);
+ 	if (error) {
+-		printk(KERN_ERR "Some devices failed to power down, "
+-			KERN_ERR "aborting suspend\n");
++		printk(KERN_ERR "PM: Some devices failed to power down, "
++			"aborting hibernation\n");
+ 		goto Enable_irqs;
+ 	}
  
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !X86_VOYAGER
-+
- config ZONE_DMA32
- 	bool
- 	default X86_64
-Index: linux-2.6/kernel/power/Kconfig
+@@ -203,7 +203,8 @@ int create_image(int platform_mode)
+ 	save_processor_state();
+ 	error = swsusp_arch_suspend();
+ 	if (error)
+-		printk(KERN_ERR "Error %d while creating the image\n", error);
++		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
++			error);
+ 	/* Restore control flow magically appears here */
+ 	restore_processor_state();
+ 	if (!in_suspend)
+@@ -289,7 +290,7 @@ static int resume_target_kernel(void)
+ 	local_irq_disable();
+ 	error = device_power_down(PMSG_PRETHAW);
+ 	if (error) {
+-		printk(KERN_ERR "Some devices failed to power down, "
++		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting resume\n");
+ 		goto Enable_irqs;
+ 	}
+@@ -438,7 +439,7 @@ static void power_down(void)
+ 	 * Valid image is on the disk, if we continue we risk serious data
+ 	 * corruption after resume.
+ 	 */
+-	printk(KERN_CRIT "Please power me down manually\n");
++	printk(KERN_CRIT "PM: Please power down manually\n");
+ 	while(1);
+ }
+ 
+@@ -484,7 +485,7 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
+-	printk("Syncing filesystems ... ");
++	printk(KERN_INFO "PM: Syncing filesystems ... ");
+ 	sys_sync();
+ 	printk("done.\n");
+ 
+@@ -560,10 +561,11 @@ static int software_resume(void)
+ 			return -ENOENT;
+ 		}
+ 		swsusp_resume_device = name_to_dev_t(resume_file);
+-		pr_debug("swsusp: Resume From Partition %s\n", resume_file);
++		pr_debug("PM: Resume from partition %s\n", resume_file);
+ 	} else {
+-		pr_debug("swsusp: Resume From Partition %d:%d\n",
+-			 MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
++		pr_debug("PM: Resume from partition %d:%d\n",
++				MAJOR(swsusp_resume_device),
++				MINOR(swsusp_resume_device));
+ 	}
+ 
+ 	if (noresume) {
+@@ -575,7 +577,7 @@ static int software_resume(void)
+ 		return 0;
+ 	}
+ 
+-	pr_debug("PM: Checking swsusp image.\n");
++	pr_debug("PM: Checking hibernation image.\n");
+ 	error = swsusp_check();
+ 	if (error)
+ 		goto Unlock;
+@@ -601,7 +603,7 @@ static int software_resume(void)
+ 		goto Done;
+ 	}
+ 
+-	pr_debug("PM: Reading swsusp image.\n");
++	pr_debug("PM: Reading hibernation image.\n");
+ 
+ 	error = swsusp_read(&flags);
+ 	if (!error)
+@@ -726,7 +728,7 @@ static ssize_t disk_store(struct kset *k
+ 		error = -EINVAL;
+ 
+ 	if (!error)
+-		pr_debug("PM: suspend-to-disk mode set to '%s'\n",
++		pr_debug("PM: Hibernation mode set to '%s'\n",
+ 			 hibernation_modes[mode]);
+ 	mutex_unlock(&pm_mutex);
+ 	return error ? error : n;
+@@ -756,7 +758,7 @@ static ssize_t resume_store(struct kset 
+ 	mutex_lock(&pm_mutex);
+ 	swsusp_resume_device = res;
+ 	mutex_unlock(&pm_mutex);
+-	printk("Attempting manual resume\n");
++	printk(KERN_INFO "PM: Starting manual resume from disk\n");
+ 	noresume = 0;
+ 	software_resume();
+ 	ret = n;
+Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -85,7 +85,7 @@ config PM_TRACE_RTC
- config PM_SLEEP_SMP
- 	bool
- 	depends on SMP
--	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-+	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
- 	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 	default y
-@@ -95,29 +95,14 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION
- 	default y
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -635,7 +635,7 @@ __register_nosave_region(unsigned long s
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
+  Report:
+-	printk("swsusp: Registered nosave memory region: %016lx - %016lx\n",
++	printk(KERN_INFO "PM: Registered nosave memory: %016lx - %016lx\n",
+ 		start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
+ }
  
--config SUSPEND_UP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
--		   || SUPERH || FRV
--	depends on !SMP
--	default y
--
--config SUSPEND_SMP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) \
--		   || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
--	depends on SMP
--	default y
--
- config SUSPEND
- 	bool "Suspend to RAM and standby"
--	depends on PM
--	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-+	depends on PM && ARCH_SUSPEND_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
- 	  powered and thus its contents are preserved, such as the
--	  suspend-to-RAM state (i.e. the ACPI S3 state).
-+	  suspend-to-RAM state (e.g. the ACPI S3 state).
+@@ -704,7 +704,7 @@ static void mark_nosave_pages(struct mem
+ 	list_for_each_entry(region, &nosave_regions, list) {
+ 		unsigned long pfn;
  
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
-Index: linux-2.6/arch/blackfin/Kconfig
+-		printk("swsusp: Marking nosave pages: %016lx - %016lx\n",
++		pr_debug("PM: Marking nosave pages: %016lx - %016lx\n",
+ 				region->start_pfn << PAGE_SHIFT,
+ 				region->end_pfn << PAGE_SHIFT);
+ 
+@@ -749,7 +749,7 @@ int create_basic_memory_bitmaps(void)
+ 	free_pages_map = bm2;
+ 	mark_nosave_pages(forbidden_pages_map);
+ 
+-	printk("swsusp: Basic memory bitmaps created\n");
++	pr_debug("PM: Basic memory bitmaps created\n");
+ 
+ 	return 0;
+ 
+@@ -784,7 +784,7 @@ void free_basic_memory_bitmaps(void)
+ 	memory_bm_free(bm2, PG_UNSAFE_CLEAR);
+ 	kfree(bm2);
+ 
+-	printk("swsusp: Basic memory bitmaps freed\n");
++	pr_debug("PM: Basic memory bitmaps freed\n");
+ }
+ 
+ /**
+@@ -1088,7 +1088,7 @@ static int enough_free_mem(unsigned int 
+ 	}
+ 
+ 	nr_pages += count_pages_for_highmem(nr_highmem);
+-	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
++	pr_debug("PM: Normal pages needed: %u + %u + %u, available pages: %u\n",
+ 		nr_pages, PAGES_FOR_IO, meta, free);
+ 
+ 	return free > nr_pages + PAGES_FOR_IO + meta;
+@@ -1201,20 +1201,20 @@ asmlinkage int swsusp_save(void)
+ {
+ 	unsigned int nr_pages, nr_highmem;
+ 
+-	printk("swsusp: critical section: \n");
++	printk(KERN_INFO "PM: Creating hibernation image: \n");
+ 
+ 	drain_local_pages();
+ 	nr_pages = count_data_pages();
+ 	nr_highmem = count_highmem_pages();
+-	printk("swsusp: Need to copy %u pages\n", nr_pages + nr_highmem);
++	printk(KERN_INFO "PM: Need to copy %u pages\n", nr_pages + nr_highmem);
+ 
+ 	if (!enough_free_mem(nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "swsusp: Not enough free memory\n");
++		printk(KERN_ERR "PM: Not enough free memory\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	if (swsusp_alloc(&orig_bm, &copy_bm, nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "swsusp: Memory allocation failed\n");
++		printk(KERN_ERR "PM: Memory allocation failed\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1234,7 +1234,8 @@ asmlinkage int swsusp_save(void)
+ 	nr_copy_pages = nr_pages;
+ 	nr_meta_pages = DIV_ROUND_UP(nr_pages * sizeof(long), PAGE_SIZE);
+ 
+-	printk("swsusp: critical section: done (%d pages copied)\n", nr_pages);
++	printk(KERN_INFO "PM: Hibernation image created (%d pages copied)\n",
++		nr_pages);
+ 
+ 	return 0;
+ }
+@@ -1433,7 +1434,7 @@ static int check_header(struct swsusp_in
+ 	if (!reason && info->num_physpages != num_physpages)
+ 		reason = "memory size";
+ 	if (reason) {
+-		printk(KERN_ERR "swsusp: Resume mismatch: %s\n", reason);
++		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
+ 		return -EPERM;
+ 	}
+ 	return 0;
+Index: linux-2.6/kernel/power/swap.c
 ===================================================================
---- linux-2.6.orig/arch/blackfin/Kconfig
-+++ linux-2.6/arch/blackfin/Kconfig
-@@ -925,6 +925,10 @@ endmenu
- menu "Power management options"
- source "kernel/power/Kconfig"
+--- linux-2.6.orig/kernel/power/swap.c
++++ linux-2.6/kernel/power/swap.c
+@@ -71,7 +71,8 @@ static int submit(int rw, pgoff_t page_o
+ 	bio->bi_end_io = end_swap_bio_read;
  
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- choice
- 	prompt "Select PM Wakeup Event Source"
- 	default PM_WAKEUP_GPIO_BY_SIC_IWR
-Index: linux-2.6/arch/arm/Kconfig
+ 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+-		printk("swsusp: ERROR: adding page to bio at %ld\n", page_off);
++		printk(KERN_ERR "PM: Adding page to bio failed at %ld\n",
++			page_off);
+ 		bio_put(bio);
+ 		return -EFAULT;
+ 	}
+@@ -151,7 +152,7 @@ static int mark_swapfiles(sector_t start
+ 		error = bio_write_page(swsusp_resume_block,
+ 					swsusp_header, NULL);
+ 	} else {
+-		printk(KERN_ERR "swsusp: Swap header not found!\n");
++		printk(KERN_ERR "PM: Swap header not found!\n");
+ 		error = -ENODEV;
+ 	}
+ 	return error;
+@@ -323,7 +324,8 @@ static int save_image(struct swap_map_ha
+ 	struct timeval start;
+ 	struct timeval stop;
+ 
+-	printk("Saving image data pages (%u pages) ...     ", nr_to_write);
++	printk(KERN_INFO "PM: Saving image data pages (%u pages) ...     ",
++		nr_to_write);
+ 	m = nr_to_write / 100;
+ 	if (!m)
+ 		m = 1;
+@@ -363,7 +365,7 @@ static int enough_swap(unsigned int nr_p
+ {
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 
+-	pr_debug("swsusp: free swap pages: %u\n", free_swap);
++	pr_debug("PM: Free swap pages: %u\n", free_swap);
+ 	return free_swap > nr_pages + PAGES_FOR_IO;
+ }
+ 
+@@ -386,7 +388,7 @@ int swsusp_write(unsigned int flags)
+ 
+ 	error = swsusp_swap_check();
+ 	if (error) {
+-		printk(KERN_ERR "swsusp: Cannot find swap device, try "
++		printk(KERN_ERR "PM: Cannot find swap device, try "
+ 				"swapon -a.\n");
+ 		return error;
+ 	}
+@@ -400,7 +402,7 @@ int swsusp_write(unsigned int flags)
+ 	}
+ 	header = (struct swsusp_info *)data_of(snapshot);
+ 	if (!enough_swap(header->pages)) {
+-		printk(KERN_ERR "swsusp: Not enough free swap\n");
++		printk(KERN_ERR "PM: Not enough free swap\n");
+ 		error = -ENOSPC;
+ 		goto out;
+ 	}
+@@ -415,7 +417,7 @@ int swsusp_write(unsigned int flags)
+ 
+ 		if (!error) {
+ 			flush_swap_writer(&handle);
+-			printk("S");
++			printk(KERN_INFO "PM: S");
+ 			error = mark_swapfiles(start, flags);
+ 			printk("|\n");
+ 		}
+@@ -505,7 +507,8 @@ static int load_image(struct swap_map_ha
+ 	int err2;
+ 	unsigned nr_pages;
+ 
+-	printk("Loading image data pages (%u pages) ...     ", nr_to_read);
++	printk(KERN_INFO "PM: Loading image data pages (%u pages) ...     ",
++		nr_to_read);
+ 	m = nr_to_read / 100;
+ 	if (!m)
+ 		m = 1;
+@@ -556,7 +559,7 @@ int swsusp_read(unsigned int *flags_p)
+ 
+ 	*flags_p = swsusp_header->flags;
+ 	if (IS_ERR(resume_bdev)) {
+-		pr_debug("swsusp: block device not initialised\n");
++		pr_debug("PM: Image device not initialised\n");
+ 		return PTR_ERR(resume_bdev);
+ 	}
+ 
+@@ -575,9 +578,9 @@ int swsusp_read(unsigned int *flags_p)
+ 	blkdev_put(resume_bdev);
+ 
+ 	if (!error)
+-		pr_debug("swsusp: Reading resume file was successful\n");
++		pr_debug("PM: Image successfully loaded\n");
+ 	else
+-		pr_debug("swsusp: Error %d resuming\n", error);
++		pr_debug("PM: Error %d resuming\n", error);
+ 	return error;
+ }
+ 
+@@ -609,13 +612,13 @@ int swsusp_check(void)
+ 		if (error)
+ 			blkdev_put(resume_bdev);
+ 		else
+-			pr_debug("swsusp: Signature found, resuming\n");
++			pr_debug("PM: Signature found, resuming\n");
+ 	} else {
+ 		error = PTR_ERR(resume_bdev);
+ 	}
+ 
+ 	if (error)
+-		pr_debug("swsusp: Error %d check for resume file\n", error);
++		pr_debug("PM: Error %d checking image file\n", error);
+ 
+ 	return error;
+ }
+@@ -627,7 +630,7 @@ int swsusp_check(void)
+ void swsusp_close(void)
+ {
+ 	if (IS_ERR(resume_bdev)) {
+-		pr_debug("swsusp: block device not initialised\n");
++		pr_debug("PM: Image device not initialised\n");
+ 		return;
+ 	}
+ 
+Index: linux-2.6/kernel/power/swsusp.c
 ===================================================================
---- linux-2.6.orig/arch/arm/Kconfig
-+++ linux-2.6/arch/arm/Kconfig
-@@ -977,6 +977,9 @@ menu "Power management options"
+--- linux-2.6.orig/kernel/power/swsusp.c
++++ linux-2.6/kernel/power/swsusp.c
+@@ -188,7 +188,8 @@ void swsusp_show_speed(struct timeval *s
+ 		centisecs = 1;	/* avoid div-by-zero */
+ 	k = nr_pages * (PAGE_SIZE / 1024);
+ 	kps = (k * 100) / centisecs;
+-	printk("%s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n", msg, k,
++	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
++			msg, k,
+ 			centisecs / 100, centisecs % 100,
+ 			kps / 1000, (kps % 1000) / 10);
+ }
+@@ -219,7 +220,7 @@ int swsusp_shrink_memory(void)
+ 	char *p = "-\\|/";
+ 	struct timeval start, stop;
  
- source "kernel/power/Kconfig"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+
- endmenu
- 
- source "net/Kconfig"
-Index: linux-2.6/arch/mips/Kconfig
-===================================================================
---- linux-2.6.orig/arch/mips/Kconfig
-+++ linux-2.6/arch/mips/Kconfig
-@@ -2046,6 +2046,10 @@ endmenu
- 
- menu "Power management options"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source "kernel/power/Kconfig"
- 
- endmenu
-Index: linux-2.6/arch/sh/Kconfig
-===================================================================
---- linux-2.6.orig/arch/sh/Kconfig
-+++ linux-2.6/arch/sh/Kconfig
-@@ -746,6 +746,10 @@ endmenu
- menu "Power management options (EXPERIMENTAL)"
- depends on EXPERIMENTAL && SYS_SUPPORTS_PM
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- 
- endmenu
-Index: linux-2.6/arch/frv/Kconfig
-===================================================================
---- linux-2.6.orig/arch/frv/Kconfig
-+++ linux-2.6/arch/frv/Kconfig
-@@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
- #	  should probably wait a while.
- 
- menu "Power management options"
-+
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- endmenu
- 
-Index: linux-2.6/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -155,6 +155,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
- 	default y
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-+
- config PPC_DCR_NATIVE
- 	bool
- 	default n
+-	printk("Shrinking memory...  ");
++	printk(KERN_INFO "PM: Shrinking memory...  ");
+ 	do_gettimeofday(&start);
+ 	do {
+ 		long size, highmem_size;
