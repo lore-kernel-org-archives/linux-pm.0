@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/9] Suspend: Fix comment in main.c
-Date: Sat, 8 Dec 2007 02:06:00 +0100
-Message-ID: <200712080206.01182.rjw__135.681025176559$1197075441$gmane$org@sisk.pl>
+Subject: [PATCH 6/9] Suspend: Use common prefix in messages
+Date: Sat, 8 Dec 2007 02:08:38 +0100
+Message-ID: <200712080208.39104.rjw__13389.6623542116$1197075446$gmane$org@sisk.pl>
 References: <200712080201.40661.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,27 +25,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Fix a comment in kernel/power/main.c so that it doesn't contain lines
-longer that 80 characters.
+Make suspend messages start with one common prefix "PM: ".
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/main.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/power/main.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/kernel/power/main.c
 ===================================================================
 --- linux-2.6.orig/kernel/power/main.c
 +++ linux-2.6/kernel/power/main.c
-@@ -242,8 +242,8 @@ static int suspend_enter(suspend_state_t
- }
+@@ -227,7 +227,7 @@ static int suspend_enter(suspend_state_t
+ 	BUG_ON(!irqs_disabled());
  
- /**
-- *	suspend_devices_and_enter - suspend devices and enter the desired system sleep
-- *			  state.
-+ *	suspend_devices_and_enter - suspend devices and enter the desired system
-+ *				    sleep state.
-  *	@state:		  state to enter
-  */
- int suspend_devices_and_enter(suspend_state_t state)
+ 	if ((error = device_power_down(PMSG_SUSPEND))) {
+-		printk(KERN_ERR "Some devices failed to power down\n");
++		printk(KERN_ERR "PM: Some devices failed to power down\n");
+ 		goto Done;
+ 	}
+ 
+@@ -261,7 +261,7 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_console();
+ 	error = device_suspend(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "Some devices failed to suspend\n");
++		printk(KERN_ERR "PM: Some devices failed to suspend\n");
+ 		goto Resume_console;
+ 	}
+ 
+@@ -344,7 +344,7 @@ static int enter_state(suspend_state_t s
+ 	if (!mutex_trylock(&pm_mutex))
+ 		return -EBUSY;
+ 
+-	printk("Syncing filesystems ... ");
++	printk(KERN_INFO "PM: Syncing filesystems ... ");
+ 	sys_sync();
+ 	printk("done.\n");
+ 
