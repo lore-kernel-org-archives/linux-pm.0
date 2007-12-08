@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: parallel suspend/resume
-Date: Sat, 8 Dec 2007 21:43:25 +0100
-Message-ID: <200712082143.26388.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0712081037001.28689-100000@netrider.rowland.org>
+Date: Sat, 8 Dec 2007 21:46:46 +0100
+Message-ID: <200712082146.47165.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0712071414210.27132-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712081037001.28689-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0712071414210.27132-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,34 +23,39 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 8 of December 2007, Alan Stern wrote:
-> On Sat, 8 Dec 2007, Oliver Neukum wrote:
+On Friday, 7 of December 2007, Alan Stern wrote:
+> On Fri, 7 Dec 2007, David Brownell wrote:
 > 
-> > Am Freitag, 7. Dezember 2007 19:01:12 schrieb David Brownell:
-> > > FWIW the appended patch removes that rude "order of registration"
-> > > policy, so that the suspend/resume list matches the device tree.
-> > > It's behaved OK on PCs and, in light duty, a few development boards;
-> > > I've carried it around most of this year.
+> > > What about ordering constraints?  A lot of them aren't explicit.  We 
+> > > just depend on the fact that devices get suspended in reverse order of 
+> > > registration.  You can't do that in parallel.
 > > 
-> > As it is a tree, why not store it as such?
+> > Those constraints should *become* explicit ... not stay implicit!
 > 
-> There's no need to "store" the tree ordering specially, since all the
-> pointers already exist.  The question is: In what order should the tree
-> be traversed?  About the only explicit constraint we have now is that
-> children must be suspended before their parents, but there undoubtedly
-> are plenty of undocumented implicit constraints (maybe some of them
-> aren't known to anybody at all).
+> Why do I get the feeling we've gone through this before?  :-)
+> 
+> > FWIW the appended patch removes that rude "order of registration"
+> 
+> "Rude"?  What's rude about it?  It seems most logical to me: Since the
+> devices obviously worked in the intermediate stages of registration,
+> when the early-to-register devices were available and the
+> late-to-register devices weren't, duplicating those same intermediate
+> stages (with the same sets of devices available) should also work
+> during suspend.
+> 
+> > policy, so that the suspend/resume list matches the device tree.
+> 
+> In what respect doesn't it match the device tree now?
+> 
+> As far as I know, the only way in which the list wouldn't match the
+> tree is when the tree gets reorganized by device_move(), which doesn't
+> change the list at all.  (This is quite possibly a bug.)
 
-Yes, that makes me nervous every time someone suggests to change the ordering
-of suspending devices.
+IMO, this _is_ a bug.  I think device_move() should move the device in question
+to the end of the list along with its children.
 
-> Given the vast number of possible orders, and given that the only order 
-> we _know_ works correctly is reverse order of registration, I don't see 
-> any big reason to change.  Speeding things up by parallel suspension 
-> would be a valid reason, but it needs to be done with a great deal of 
-> care.
-
-Agreed.
+That might cause some breakage in the short run, but we'll have to do it at one
+point.
 
 Greetings,
 Rafael
