@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/9] Suspend: Use common prefix in messages
-Date: Sat, 8 Dec 2007 02:08:38 +0100
-Message-ID: <200712080208.39104.rjw__13389.6623542116$1197075446$gmane$org@sisk.pl>
+Subject: [PATCH 1/9] Suspend: Fix compilation warning for
+	CONFIG_SUSPEND unset
+Date: Sat, 8 Dec 2007 02:03:26 +0100
+Message-ID: <200712080203.26752.rjw__10162.1159505614$1197075448$gmane$org@sisk.pl>
 References: <200712080201.40661.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -23,44 +24,38 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Suspend: Make debug facility depend on CONFIG_SUSPEND
 
-Make suspend messages start with one common prefix "PM: ".
+Make the new suspend debug facility code depend on CONFIG_SUSPEND,
+as appropriate, to remove the compiler warning printed when CONFIG_PM is set
+and CONFIG_SUSPEND is not set.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/main.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ kernel/power/main.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/kernel/power/main.c
 ===================================================================
 --- linux-2.6.orig/kernel/power/main.c
 +++ linux-2.6/kernel/power/main.c
-@@ -227,7 +227,7 @@ static int suspend_enter(suspend_state_t
- 	BUG_ON(!irqs_disabled());
+@@ -52,6 +52,8 @@ int pm_notifier_call_chain(unsigned long
  
- 	if ((error = device_power_down(PMSG_SUSPEND))) {
--		printk(KERN_ERR "Some devices failed to power down\n");
-+		printk(KERN_ERR "PM: Some devices failed to power down\n");
- 		goto Done;
- 	}
+ #endif /* CONFIG_PM_SLEEP */
  
-@@ -261,7 +261,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_console();
- 	error = device_suspend(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "Some devices failed to suspend\n");
-+		printk(KERN_ERR "PM: Some devices failed to suspend\n");
- 		goto Resume_console;
- 	}
++#ifdef CONFIG_SUSPEND
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
  
-@@ -344,7 +344,7 @@ static int enter_state(suspend_state_t s
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
+@@ -125,9 +127,6 @@ power_attr(pm_test);
+ static inline int suspend_test(int level) { return 0; }
+ #endif /* !CONFIG_PM_DEBUG */
  
--	printk("Syncing filesystems ... ");
-+	printk(KERN_INFO "PM: Syncing filesystems ... ");
- 	sys_sync();
- 	printk("done.\n");
+-
+-#ifdef CONFIG_SUSPEND
+-
+ /* This is just an arbitrary number */
+ #define FREE_PAGE_NUMBER (100)
  
