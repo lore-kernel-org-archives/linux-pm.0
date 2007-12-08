@@ -1,7 +1,7 @@
 From: Jiri Slaby <jirislaby@gmail.com>
 Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Date: Sat, 08 Dec 2007 18:34:23 +0100
-Message-ID: <475AD59F.3010509__26983.2171769396$1197135351$gmane$org@gmail.com>
+Date: Sat, 08 Dec 2007 18:43:44 +0100
+Message-ID: <475AD7D0.8040905__2149.25355180657$1197135904$gmane$org@gmail.com>
 References: <20071204211701.994dfce6.akpm@linux-foundation.org>
 	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
 	<20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com>
@@ -27,48 +27,7 @@ List-Id: linux-pm@vger.kernel.org
 
 On 12/08/2007 04:24 PM, Ingo Molnar wrote:
 > i'm wondering why it had no effect now - the new code is in essence a 
-> NOP over what we had. Could you send me your current (modified) 
-> kernel/softlockup.c code?
+> NOP over what we had.
 
-Only these changes:
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index e50b44a..7011549 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -25,7 +25,7 @@ static DEFINE_PER_CPU(unsigned long, print_timestamp);
- static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
-
- static int did_panic;
--int softlockup_thresh = 60;
-+int softlockup_thresh = 10;
-
- static int
- softlock_panic(struct notifier_block *this, unsigned long event, void *ptr)
-@@ -101,7 +101,11 @@ void softlockup_tick(void)
-
-        now = get_timestamp(this_cpu);
-
--       /* Warn about unreasonable delays: */
-+       /* Wake up the high-prio watchdog task every second: */
-+       if (now > (touch_timestamp + 1))
-+               wake_up_process(per_cpu(watchdog_task, this_cpu));
-+
-+       /* Warn about unreasonable 10+ seconds delays: */
-        if (now <= (touch_timestamp + softlockup_thresh))
-                return;
-
-@@ -213,8 +217,9 @@ static int watchdog(void *__bind_cpu)
-         * debug-printout triggers in softlockup_tick().
-         */
-        while (!kthread_should_stop()) {
-+               set_current_state(TASK_INTERRUPTIBLE);
-                touch_softlockup_watchdog();
--               msleep_interruptible(10000);
-+               schedule();
-
-                /*
-                 * Only do the hung-tasks check on one CPU:
-
-
-Whole file:
-http://www.fi.muni.cz/~xslaby/sklad/softlockup.c
+Maybe a dumb question. Why those changes in process_32.c in the patch and not in
+process_64.c?
