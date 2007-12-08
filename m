@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/9] Suspend: Fix compilation warning for
-	CONFIG_SUSPEND unset
-Date: Sat, 8 Dec 2007 02:03:26 +0100
-Message-ID: <200712080203.26752.rjw__10162.1159505614$1197075448$gmane$org@sisk.pl>
+Subject: [PATCH 4/9] Hibernation: Fix comment in disk.c
+Date: Sat, 8 Dec 2007 02:06:57 +0100
+Message-ID: <200712080206.58285.rjw__39784.3192950406$1197075449$gmane$org@sisk.pl>
 References: <200712080201.40661.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -24,38 +23,29 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Suspend: Make debug facility depend on CONFIG_SUSPEND
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make the new suspend debug facility code depend on CONFIG_SUSPEND,
-as appropriate, to remove the compiler warning printed when CONFIG_PM is set
-and CONFIG_SUSPEND is not set.
+Fix a comment in kernel/power/disk.c so that it doesn't contain lines
+longer that 80 characters.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/main.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ kernel/power/disk.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -52,6 +52,8 @@ int pm_notifier_call_chain(unsigned long
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -568,8 +568,8 @@ static int software_resume(void)
  
- #endif /* CONFIG_PM_SLEEP */
- 
-+#ifdef CONFIG_SUSPEND
-+
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
- 
-@@ -125,9 +127,6 @@ power_attr(pm_test);
- static inline int suspend_test(int level) { return 0; }
- #endif /* !CONFIG_PM_DEBUG */
- 
--
--#ifdef CONFIG_SUSPEND
--
- /* This is just an arbitrary number */
- #define FREE_PAGE_NUMBER (100)
- 
+ 	if (noresume) {
+ 		/**
+-		 * FIXME: If noresume is specified, we need to find the partition
+-		 * and reset it back to normal swap space.
++		 * FIXME: If noresume is specified, we need to find the
++		 * partition and reset it back to normal swap space.
+ 		 */
+ 		mutex_unlock(&pm_mutex);
+ 		return 0;
