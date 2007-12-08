@@ -1,16 +1,12 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Date: Sat, 8 Dec 2007 16:24:47 +0100
-Message-ID: <20071208152447.GA30270@elte.hu>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
-	<20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com>
-	<20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: parallel suspend/resume
+Date: Sat, 8 Dec 2007 10:43:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712081037001.28689-100000@netrider.rowland.org>
+References: <200712080900.45623.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <475A629C.7010408@gmail.com>
+In-Reply-To: <200712080900.45623.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +16,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Sat, 8 Dec 2007, Oliver Neukum wrote:
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 12/08/2007 09:39 AM, Ingo Molnar wrote:
-> > * Jiri Slaby <jirislaby@gmail.com> wrote:
-> > 
-> >> Unfortunately no change here.
-> > 
-> > could you try to revert this change:
-> > 
-> > -int softlockup_thresh = 10;
-> > +int softlockup_thresh = 60;
-> > 
-> > i.e. change the value of softlockup_thresh back to 10. You should be 
-> > able to tweak this runtime as well, without patching the kernel:
-> > 
-> >   echo 10 > /proc/sys/kernel/softlockup_thresh
+> Am Freitag, 7. Dezember 2007 19:01:12 schrieb David Brownell:
+> > FWIW the appended patch removes that rude "order of registration"
+> > policy, so that the suspend/resume list matches the device tree.
+> > It's behaved OK on PCs and, in light duty, a few development boards;
+> > I've carried it around most of this year.
 > 
-> What should have this changed? I can't see any difference.
+> As it is a tree, why not store it as such?
 
-it changes the wakeup frequency of the softlockup thread.
+There's no need to "store" the tree ordering specially, since all the
+pointers already exist.  The question is: In what order should the tree
+be traversed?  About the only explicit constraint we have now is that
+children must be suspended before their parents, but there undoubtedly
+are plenty of undocumented implicit constraints (maybe some of them
+aren't known to anybody at all).
 
-i'm wondering why it had no effect now - the new code is in essence a 
-NOP over what we had. Could you send me your current (modified) 
-kernel/softlockup.c code?
+Given the vast number of possible orders, and given that the only order 
+we _know_ works correctly is reverse order of registration, I don't see 
+any big reason to change.  Speeding things up by parallel suspension 
+would be a valid reason, but it needs to be done with a great deal of 
+care.
 
-	Ingo
+Alan Stern
