@@ -1,17 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: parallel suspend/resume
-Date: Sat, 8 Dec 2007 13:26:01 +0100
-Message-ID: <200712081326.02042.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0712071120400.4209-100000@iolanthe.rowland.org>
-	<20071208102143.GA7195@elf.ucw.cz>
-	<475A7B39.7030106@superbug.co.uk>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+Date: Sat, 8 Dec 2007 16:24:47 +0100
+Message-ID: <20071208152447.GA30270@elte.hu>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
+	<20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com>
+	<20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <475A7B39.7030106@superbug.co.uk>
 Content-Disposition: inline
+In-Reply-To: <475A629C.7010408@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Courtier-Dutton <James@superbug.co.uk>
-Cc: linux-pm@lists.linux-foundation.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag, 8. Dezember 2007 12:08:41 schrieb James Courtier-Dutton:
-> Pavel Machek wrote:
-> > On Sat 2007-12-08 09:00:44, Oliver Neukum wrote:
-> >   
-> >> Am Freitag, 7. Dezember 2007 19:01:12 schrieb David Brownell:
-> >>     
-> >>> FWIW the appended patch removes that rude "order of registration"
-> >>> policy, so that the suspend/resume list matches the device tree.
-> >>> It's behaved OK on PCs and, in light duty, a few development boards;
-> >>> I've carried it around most of this year.
-> >>>       
-> >> As it is a tree, why not store it as such?
-> >>     
-> >
-> > IIRC because we do not want recursive tree walkers in the kernel --
-> > stack limits.
-> >
-> >   
+
+* Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> On 12/08/2007 09:39 AM, Ingo Molnar wrote:
+> > * Jiri Slaby <jirislaby@gmail.com> wrote:
+> > 
+> >> Unfortunately no change here.
+> > 
+> > could you try to revert this change:
+> > 
+> > -int softlockup_thresh = 10;
+> > +int softlockup_thresh = 60;
+> > 
+> > i.e. change the value of softlockup_thresh back to 10. You should be 
+> > able to tweak this runtime as well, without patching the kernel:
+> > 
+> >   echo 10 > /proc/sys/kernel/softlockup_thresh
 > 
-> Surely it is possible to code a tree walker that is not a recursive 
-> function?
-> I believe you can use a simple loop and the heap to store state that 
-> would otherwise be stored on the stack in a recursive function.
+> What should have this changed? I can't see any difference.
 
-If you store a pointer to the parent in each node, you can do with
-static memory of only the current node and the previous node.
+it changes the wakeup frequency of the softlockup thread.
 
-	Regards
-		Oliver
+i'm wondering why it had no effect now - the new code is in essence a 
+NOP over what we had. Could you send me your current (modified) 
+kernel/softlockup.c code?
+
+	Ingo
