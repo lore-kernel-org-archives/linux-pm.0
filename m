@@ -1,16 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: parallel suspend/resume
-Date: Sat, 8 Dec 2007 09:00:44 +0100
-Message-ID: <200712080900.45623.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0712071120400.4209-100000@iolanthe.rowland.org>
-	<20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+Date: Sat, 08 Dec 2007 09:10:48 +0100
+Message-ID: <475A5188.6070809__4741.31660671464$1197101531$gmane$org@gmail.com>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
+	<20071207175134.GA18916@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Content-Disposition: inline
+In-Reply-To: <20071207175134.GA18916@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,16 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag, 7. Dezember 2007 19:01:12 schrieb David Brownell:
-> FWIW the appended patch removes that rude "order of registration"
-> policy, so that the suspend/resume list matches the device tree.
-> It's behaved OK on PCs and, in light duty, a few development boards;
-> I've carried it around most of this year.
+On 12/07/2007 06:51 PM, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> thanks for tracking it down. Does the patch below help?
+> 
+> oops, that should be the patch below. Otherwise the watchdog kernel 
+> threads will just loop around.
+> 
+> 	Ingo
+> 
+> ---
+>  kernel/softlockup.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> Index: linux/kernel/softlockup.c
+> ===================================================================
+> --- linux.orig/kernel/softlockup.c
+> +++ linux/kernel/softlockup.c
+> @@ -101,7 +101,11 @@ void softlockup_tick(void)
+>  
+>  	now = get_timestamp(this_cpu);
+>  
+> -	/* Warn about unreasonable delays: */
+> +	/* Wake up the high-prio watchdog task every second: */
+> +	if (now > (touch_timestamp + 1))
+> +		wake_up_process(per_cpu(watchdog_task, this_cpu));
+> +
+> +	/* Warn about unreasonable 10+ seconds delays: */
+>  	if (now <= (touch_timestamp + softlockup_thresh))
+>  		return;
+>  
+> @@ -213,8 +217,9 @@ static int watchdog(void *__bind_cpu)
+>  	 * debug-printout triggers in softlockup_tick().
+>  	 */
+>  	while (!kthread_should_stop()) {
+> +		set_current_state(TASK_INTERRUPTIBLE);
+>  		touch_softlockup_watchdog();
+> -		msleep_interruptible(10000);
+> +		schedule();
+>  
+>  		/*
+>  		 * Only do the hung-tasks check on one CPU:
 
-As it is a tree, why not store it as such?
-
-	Regards
-		Oliver
+Unfortunately no change here.
