@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH v2] PM: make freezer optional for suspend
-Date: Sat, 8 Dec 2007 01:27:58 +0100
-Message-ID: <200712080127.59128.rjw@sisk.pl>
+Date: Sat, 08 Dec 2007 01:12:34 +0100
+Message-ID: <1197072754.4171.39.camel@johannes.berg>
 References: <1196776933.6060.62.camel@johannes.berg>
+	<200712080127.59128.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1070910789141291150=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1196776933.6060.62.camel@johannes.berg>
-Content-Disposition: inline
+In-Reply-To: <200712080127.59128.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,113 +15,76 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 4 of December 2007, Johannes Berg wrote:
-> This patch makes the freezer optional for suspend to allow the
-> system to work (or not work) like the original PMU suspend.
 
-Generally looks good to me, but I'd probably define suspend_freeze_processes()
-and suspend_thaw_processes() to be identical to freeze_processes() and
-thaw_processes(), respectively, if CONFIG_SUSPEND_FREEZER is set, or to be no
-ops otherwise (power.h seems to be the right place).
-
-The other two patches are fine, I'll push them to Len in a while.
-
-Thanks,
-Rafael
+--===============1070910789141291150==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-siRpzFmY2GFlY2w92P7V"
 
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
-> In a quick test, playing sound across suspend failed to work,
-> it usually works when the freezer is enabled (unless you use
-> gstreamer.)
-> 
->  arch/powerpc/Kconfig |    4 ++++
->  kernel/power/Kconfig |   11 +++++++++++
->  kernel/power/main.c  |    6 ++++++
->  3 files changed, 21 insertions(+)
-> 
-> --- everything.orig/kernel/power/main.c	2007-12-04 14:59:03.126410862 +0100
-> +++ everything/kernel/power/main.c	2007-12-04 15:00:19.226410156 +0100
-> @@ -79,10 +79,12 @@ static int suspend_prepare(void)
->  
->  	pm_prepare_console();
->  
-> +#ifdef CONFIG_SUSPEND_FREEZER
->  	if (freeze_processes()) {
->  		error = -EAGAIN;
->  		goto Thaw;
->  	}
-> +#endif
->  
->  	free_pages = global_page_state(NR_FREE_PAGES);
->  	if (free_pages < FREE_PAGE_NUMBER) {
-> @@ -96,8 +98,10 @@ static int suspend_prepare(void)
->  	if (!error)
->  		return 0;
->  
-> +#ifdef CONFIG_SUSPEND_FREEZER
->   Thaw:
->  	thaw_processes();
-> +#endif
->  	pm_restore_console();
->   Finish:
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
-> @@ -191,7 +195,9 @@ int suspend_devices_and_enter(suspend_st
->   */
->  static void suspend_finish(void)
->  {
-> +#ifdef CONFIG_SUSPEND_FREEZER
->  	thaw_processes();
-> +#endif
->  	pm_restore_console();
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
->  }
-> --- everything.orig/kernel/power/Kconfig	2007-12-04 14:59:03.176410807 +0100
-> +++ everything/kernel/power/Kconfig	2007-12-04 15:00:19.226410156 +0100
-> @@ -97,6 +97,17 @@ config SUSPEND
->  	  powered and thus its contents are preserved, such as the
->  	  suspend-to-RAM state (i.e. the ACPI S3 state).
->  
-> +config SUSPEND_FREEZER
-> +	bool "Enable freezer for suspend to RAM/standby" \
-> +		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
-> +	depends on SUSPEND
-> +	default y
-> +	help
-> +	  This allows you to turn off the freezer for suspend. If this is
-> +	  done, no tasks are frozen for suspend to RAM/standby.
-> +
-> +	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-> +
->  config HIBERNATION_UP_POSSIBLE
->  	bool
->  	depends on X86 || PPC64_SWSUSP || PPC32
-> --- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:59:03.266409342 +0100
-> +++ everything/arch/powerpc/Kconfig	2007-12-04 15:00:19.226410156 +0100
-> @@ -365,6 +365,10 @@ config CMDLINE
->  	  most cases you will need to specify the root device here.
->  
->  if !44x || BROKEN
-> +config ARCH_WANTS_FREEZER_CONTROL
-> +	def_bool y
-> +	depends on ADB_PMU
-> +
->  source kernel/power/Kconfig
->  endif
->  
-> 
-> 
-> 
-> 
+--=-siRpzFmY2GFlY2w92P7V
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
+On Sat, 2007-12-08 at 01:27 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, 4 of December 2007, Johannes Berg wrote:
+> > This patch makes the freezer optional for suspend to allow the
+> > system to work (or not work) like the original PMU suspend.
+>=20
+> Generally looks good to me, but I'd probably define suspend_freeze_proces=
+ses()
+> and suspend_thaw_processes() to be identical to freeze_processes() and
+> thaw_processes(), respectively, if CONFIG_SUSPEND_FREEZER is set, or to b=
+e no
+> ops otherwise (power.h seems to be the right place).
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Didn't think it was worth it, but I can do that. Will repost when I get
+around to it.
+
+> The other two patches are fine, I'll push them to Len in a while.
+
+Thanks!
+
+johannes
+
+--=-siRpzFmY2GFlY2w92P7V
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR1nhcaVg1VMiehFYAQKcFg/8CKBnjTki1bUUTcqR0IELIfu2DPVB/7Sa
+Gps4tv1+pneZZXPoZOE+jLmL7qZ//RuOOcqLadhkTerpRWvLTnzvc+Z67kYxFBls
+/YwlNfafCTHR5BFOCtrnhRCVYqTWA4DQrnpHzuzfgfRcIywkbZ18bLcuawppH2gj
+TTQtnJhfkI7EQV8dII9SokDVDzULN1rJcxU1mAPI3Xvah20W8Dm7F7T/q0LGuyew
+rJ4KG9HIr03EYNIiZevVeIs/nqFn4Ev7PTdx8VQIEiPon1K3KW4qBDGZGSFmSR/s
+TpuNuHpo5d2W+yxahkr/HT7clc3vf0sjvdAf5gNfc0pSuLjg2CV88qjQcZbdSJhI
+iygaH4Kn8xyOolNJzpvMZIHvTSY6G/QNNKrtXN6+hSTLsffo2c4nuUj375WlSfRk
+fkkVQWiAvPfGDUSiH47eb8smpSfUShYlYeFD994sTvZWOVEqpeBWuQxUdqjpzvSS
+m2U5PrDn/YWfyjoHBYW4JkP/0hWYBmJlz6BsgdFsNS213NdlJQYEVK95JxDAKf0X
+yae9nrtQ8E1h9inQUwqBCTIFMDHc3VafoFMg9b2CdLkuobr0QtkijbCC16cAp/0u
+Vh3eRLI2hzdK1BouIi+OIj6yFq1eR3+6wjVE8kMNquJFnM9UDVmtPAy4FmMUl9fP
+mmgagxvKoxs=
+=sola
+-----END PGP SIGNATURE-----
+
+--=-siRpzFmY2GFlY2w92P7V--
+
+
+--===============1070910789141291150==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1070910789141291150==--
