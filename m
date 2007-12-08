@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: parallel suspend/resume
-Date: Fri, 7 Dec 2007 14:33:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0712071414210.27132-100000@netrider.rowland.org>
-References: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2] PM: make freezer optional for suspend
+Date: Sat, 8 Dec 2007 01:27:58 +0100
+Message-ID: <200712080127.59128.rjw@sisk.pl>
+References: <1196776933.6060.62.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071207180112.8C68B1E3692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <1196776933.6060.62.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,63 +19,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 7 Dec 2007, David Brownell wrote:
+On Tuesday, 4 of December 2007, Johannes Berg wrote:
+> This patch makes the freezer optional for suspend to allow the
+> system to work (or not work) like the original PMU suspend.
 
-> > What about ordering constraints?  A lot of them aren't explicit.  We 
-> > just depend on the fact that devices get suspended in reverse order of 
-> > registration.  You can't do that in parallel.
+Generally looks good to me, but I'd probably define suspend_freeze_processes()
+and suspend_thaw_processes() to be identical to freeze_processes() and
+thaw_processes(), respectively, if CONFIG_SUSPEND_FREEZER is set, or to be no
+ops otherwise (power.h seems to be the right place).
+
+The other two patches are fine, I'll push them to Len in a while.
+
+Thanks,
+Rafael
+
+
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+> In a quick test, playing sound across suspend failed to work,
+> it usually works when the freezer is enabled (unless you use
+> gstreamer.)
 > 
-> Those constraints should *become* explicit ... not stay implicit!
+>  arch/powerpc/Kconfig |    4 ++++
+>  kernel/power/Kconfig |   11 +++++++++++
+>  kernel/power/main.c  |    6 ++++++
+>  3 files changed, 21 insertions(+)
+> 
+> --- everything.orig/kernel/power/main.c	2007-12-04 14:59:03.126410862 +0100
+> +++ everything/kernel/power/main.c	2007-12-04 15:00:19.226410156 +0100
+> @@ -79,10 +79,12 @@ static int suspend_prepare(void)
+>  
+>  	pm_prepare_console();
+>  
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>  	if (freeze_processes()) {
+>  		error = -EAGAIN;
+>  		goto Thaw;
+>  	}
+> +#endif
+>  
+>  	free_pages = global_page_state(NR_FREE_PAGES);
+>  	if (free_pages < FREE_PAGE_NUMBER) {
+> @@ -96,8 +98,10 @@ static int suspend_prepare(void)
+>  	if (!error)
+>  		return 0;
+>  
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>   Thaw:
+>  	thaw_processes();
+> +#endif
+>  	pm_restore_console();
+>   Finish:
+>  	pm_notifier_call_chain(PM_POST_SUSPEND);
+> @@ -191,7 +195,9 @@ int suspend_devices_and_enter(suspend_st
+>   */
+>  static void suspend_finish(void)
+>  {
+> +#ifdef CONFIG_SUSPEND_FREEZER
+>  	thaw_processes();
+> +#endif
+>  	pm_restore_console();
+>  	pm_notifier_call_chain(PM_POST_SUSPEND);
+>  }
+> --- everything.orig/kernel/power/Kconfig	2007-12-04 14:59:03.176410807 +0100
+> +++ everything/kernel/power/Kconfig	2007-12-04 15:00:19.226410156 +0100
+> @@ -97,6 +97,17 @@ config SUSPEND
+>  	  powered and thus its contents are preserved, such as the
+>  	  suspend-to-RAM state (i.e. the ACPI S3 state).
+>  
+> +config SUSPEND_FREEZER
+> +	bool "Enable freezer for suspend to RAM/standby" \
+> +		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
+> +	depends on SUSPEND
+> +	default y
+> +	help
+> +	  This allows you to turn off the freezer for suspend. If this is
+> +	  done, no tasks are frozen for suspend to RAM/standby.
+> +
+> +	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+> +
+>  config HIBERNATION_UP_POSSIBLE
+>  	bool
+>  	depends on X86 || PPC64_SWSUSP || PPC32
+> --- everything.orig/arch/powerpc/Kconfig	2007-12-04 14:59:03.266409342 +0100
+> +++ everything/arch/powerpc/Kconfig	2007-12-04 15:00:19.226410156 +0100
+> @@ -365,6 +365,10 @@ config CMDLINE
+>  	  most cases you will need to specify the root device here.
+>  
+>  if !44x || BROKEN
+> +config ARCH_WANTS_FREEZER_CONTROL
+> +	def_bool y
+> +	depends on ADB_PMU
+> +
+>  source kernel/power/Kconfig
+>  endif
+>  
+> 
+> 
+> 
+> 
 
-Why do I get the feeling we've gone through this before?  :-)
 
-> FWIW the appended patch removes that rude "order of registration"
 
-"Rude"?  What's rude about it?  It seems most logical to me: Since the
-devices obviously worked in the intermediate stages of registration,
-when the early-to-register devices were available and the
-late-to-register devices weren't, duplicating those same intermediate
-stages (with the same sets of devices available) should also work
-during suspend.
-
-> policy, so that the suspend/resume list matches the device tree.
-
-In what respect doesn't it match the device tree now?
-
-As far as I know, the only way in which the list wouldn't match the
-tree is when the tree gets reorganized by device_move(), which doesn't
-change the list at all.  (This is quite possibly a bug.)  Your patch 
-doesn't affect that.
-
-> It's behaved OK on PCs and, in light duty, a few development boards;
-> I've carried it around most of this year.
-
-I predict it will cause failure of the USB-Persist mechanism when a 
-non-high-speed device is plugged into a dual high/full-speed port.  
-This is because when an EHCI root hub is resumed after a loss of power, 
-the driver looks for ports that had been owned by the companion 
-controllers and tries to hand them over again -- but if the companion 
-controllers haven't been resumed yet the handover won't work.
-
-However to be fair, about the best one can say for the current way this 
-situation is handled is that it works more or less by coincidence (EHCI 
-controllers are required by the spec to have higher function numbers 
-than their companion controllers on a PCI board, and PCI devices are 
-enumerated in increasing order by function number).  I have to agree 
-that this ordering dependency really should be made explicit.
-
-> I'd expect this to eventually turn up some cases where Linux is
-> right now doing a bad job of exposing devices with multiple such
-> ordering constraint ... power management via I2C seems likely to
-> turn up a few of them.  We'd need some automatic way to detect
-> and report such problems so that they could be fixed.
-
-If you really want to sniff out dependencies, you should add each new
-device to the list at a _random_ position, subject only to the
-constraint that it must not precede its parent!
-
-Alan Stern
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
