@@ -1,17 +1,14 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Date: Sun, 09 Dec 2007 00:12:52 +0100
-Message-ID: <475B24F4.3090904__32113.8900043026$1197155664$gmane$org@gmail.com>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
-	<20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com>
-	<20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com>
-	<20071208152447.GA30270@elte.hu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec
+	jump
+Date: Sun, 9 Dec 2007 00:53:44 +0100
+Message-ID: <20071208235344.GA17005__618.711525067006$1197158152$gmane$org@elf.ucw.cz>
+References: <1197042810.24045.61.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071208152447.GA30270@elte.hu>
+Content-Disposition: inline
+In-Reply-To: <1197042810.24045.61.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/08/2007 04:24 PM, Ingo Molnar wrote:
-> i'm wondering why it had no effect now
+Hi!
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index e0d3a4f..a46c252 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -47,15 +47,21 @@ void __init cpu_hotplug_init(void)
- }
+> This patch implements the functionality of jumping between the kexeced
+> kernel and the original kernel.
+> 
+> To support jumping between two kernels, before jumping to (executing)
+> the new kernel and jumping back to the original kernel, the devices
+> are put into quiescent state, and the state of devices and CPU is
+> saved. After jumping back from kexeced kernel and jumping to the new
+> kernel, the state of devices and CPU are restored accordingly. The
+> devices/CPU state save/restore code of software suspend is called to
+> implement corresponding function.
+> 
+> To support jumping without reserving memory. One shadow backup page
+> (source page) is allocated for each page used by new (kexeced) kernel
+> (destination page). When do kexec_load, the image of new kernel is
+> loaded into source pages, and before executing, the destination pages
+> and the source pages are swapped, so the contents of destination pages
+> are backupped. Before jumping to the new (kexeced) kernel and after
+> jumping back to the original kernel, the destination pages and the
+> source pages are swapped too.
+> 
+> A jump back protocol for kexec is defined and documented. It is an
+> extension to ordinary function calling protocol. So, the facility
+> provided by this patch can be used to call ordinary C function in real
+> mode.
+> 
+> A set of flags for sys_kexec_load are added to control which state are
+> saved/restored before/after real mode code executing. For example, you
+> can specify the device state and FPU state are saved/restored
+> before/after real mode code executing.
+> 
+> The states (exclude CPU state) save/restore code can be overridden
+> based on the "command" parameter of kexec jump. Because more states
+> need to be saved/restored by hibernating/resuming.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
- #ifdef CONFIG_HOTPLUG_CPU
--
-+#include <asm/io.h>
- void get_online_cpus(void)
- {
-+       outb(0x20, 0x80);
-        might_sleep();
-+       outb(0x21, 0x80);
-        if (cpu_hotplug.active_writer == current)
-                return;
-+       outb(0x22, 0x80);
-        mutex_lock(&cpu_hotplug.lock);
-+       outb(0x23, 0x80);
-        cpu_hotplug.refcount++;
-+       outb(0x24, 0x80);
-        mutex_unlock(&cpu_hotplug.lock);
-+       outb(0x25, 0x80);
+I'm not kexec hacker... but maybe this is in good enough state to be
+merged? It is useful on its own: kexec jump and back means we can dump
+system then continue running, for example...
 
- }
- EXPORT_SYMBOL_GPL(get_online_cpus);
+								Pavel
 
-produces 0x22 on the LCD (called from watchdog kthread).
-
-Going to catch some sleep,
---js
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
