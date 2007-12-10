@@ -1,14 +1,18 @@
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec
-	jump
-Date: Mon, 10 Dec 2007 17:31:17 -0500
-Message-ID: <20071210223117.GC27124__12660.9987150461$1197326052$gmane$org@redhat.com>
-References: <1197042810.24045.61.camel@caritas-dev.intel.com>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: RFC: PNP: do not stop/start devices in
+	suspend/resume path
+Date: Mon, 10 Dec 2007 16:26:34 -0700
+Message-ID: <200712101626.35491.bjorn.helgaas__32499.2682705217$1197329396$gmane$org@hp.com>
+References: <4745F77C.7040402@gmail.com>
+	<200712051124.18852.bjorn.helgaas@hp.com>
+	<1197011615.21100.1.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1197011615.21100.1.camel@sli10-desk.sh.intel.com>
 Content-Disposition: inline
-In-Reply-To: <1197042810.24045.61.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +22,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, matthew@wil.cx, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, drzeus@drzeus.cx, Matthieu Castet <castet.matthieu@free.fr>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 03:53:30PM +0000, Huang, Ying wrote:
-> This patch implements the functionality of jumping between the kexeced
-> kernel and the original kernel.
-> 
-> To support jumping between two kernels, before jumping to (executing)
-> the new kernel and jumping back to the original kernel, the devices
-> are put into quiescent state, and the state of devices and CPU is
-> saved. After jumping back from kexeced kernel and jumping to the new
-> kernel, the state of devices and CPU are restored accordingly. The
-> devices/CPU state save/restore code of software suspend is called to
-> implement corresponding function.
-> 
-> To support jumping without reserving memory. One shadow backup page
-> (source page) is allocated for each page used by new (kexeced) kernel
-> (destination page). When do kexec_load, the image of new kernel is
-> loaded into source pages, and before executing, the destination pages
-> and the source pages are swapped, so the contents of destination pages
-> are backupped. Before jumping to the new (kexeced) kernel and after
-> jumping back to the original kernel, the destination pages and the
-> source pages are swapped too.
-> 
-> A jump back protocol for kexec is defined and documented. It is an
-> extension to ordinary function calling protocol. So, the facility
-> provided by this patch can be used to call ordinary C function in real
-> mode.
-> 
-> A set of flags for sys_kexec_load are added to control which state are
-> saved/restored before/after real mode code executing. For example, you
-> can specify the device state and FPU state are saved/restored
-> before/after real mode code executing.
-> 
-> The states (exclude CPU state) save/restore code can be overridden
-> based on the "command" parameter of kexec jump. Because more states
-> need to be saved/restored by hibernating/resuming.
-> 
+On Friday 07 December 2007 12:13:35 am Shaohua Li wrote:
+> On Thu, 2007-12-06 at 02:24 +0800, Bjorn Helgaas wrote:
+> > Index: linux-mm/drivers/pnp/driver.c
+> > ===================================================================
+> > --- linux-mm.orig/drivers/pnp/driver.c  2007-11-30 13:58:25.000000000
+> > -0700
+> > +++ linux-mm/drivers/pnp/driver.c       2007-12-03 09:58:35.000000000
+> > -0700
+> > @@ -161,13 +161,6 @@
+> >                         return error;
+> >         }
+> > 
+> > -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+> > -           pnp_can_disable(pnp_dev)) {
+> > -               error = pnp_stop_dev(pnp_dev);
+> > -               if (error)
+> > -                       return error;
+> > -       }
+> > -
+> >         if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+> >                 pnp_dev->protocol->suspend(pnp_dev, state);
+> >         return 0;
+> > @@ -177,7 +170,6 @@
+> >  {
+> >         struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+> >         struct pnp_driver *pnp_drv = pnp_dev->driver;
+> > -       int error;
+> > 
+> >         if (!pnp_drv)
+> >                 return 0;
+> > @@ -185,12 +177,6 @@
+> >         if (pnp_dev->protocol && pnp_dev->protocol->resume)
+> >                 pnp_dev->protocol->resume(pnp_dev);
+> > 
+> > -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
+> > -               error = pnp_start_dev(pnp_dev);
+> > -               if (error)
+> > -                       return error;
+> > -       }
+> > -
+> I'd suggest keep pnp_start_dev here to prevent BIOS not or assign
+> different resources after a resume.
 
+The patch I currently have in -mm (http://lkml.org/lkml/2007/10/29/412)
+merely requests resources in pnp_start_dev() and releases them in
+pnp_stop_dev().  So if we remove pnp_stop_dev() but keep pnp_start_dev(),
+I have to fix that patch to deal with things that may already be
+reserved.
 
-[..]
->  
-> -#define KEXEC_ON_CRASH  0x00000001
-> -#define KEXEC_ARCH_MASK 0xffff0000
-> +#define KEXEC_ON_CRASH		0x00000001
-> +#define KEXEC_PRESERVE_CPU	0x00000002
-> +#define KEXEC_PRESERVE_CPU_EXT	0x00000004
-> +#define KEXEC_SINGLE_CPU	0x00000008
-> +#define KEXEC_PRESERVE_DEVICE	0x00000010
-> +#define KEXEC_PRESERVE_CONSOLE	0x00000020
+But I don't see any mention in the spec of running _SRS in the
+sleep/wakup path, so I'm not convinced it's really necessary.
+Section 7.4 mentions _TTS, _PTS, _GTS, etc., but not _SRS.
 
-Hi,
+For devices, it looks like the intent is that BIOS should generate
+notifications that cause OSPM to re-enumerate devices that might
+have changed.  I'm pretty sure Linux is missing some of that code,
+though, so I could believe that _SRS might help paper over that
+deficiency.
 
-Why do we need so many different flags for preserving different types
-of state (CPU, CPU_EXT, Device, console) ? To keep things simple,
-can't we can create just one flag KEXEC_PRESERVE_CONTEXT, which will
-indicate any special action required for preserving the previous kernel's
-context so that one can swith back to old kernel?
+What I'd really like to do is figure out how Windows uses _SRS and
+do the same thing.
 
-Thanks
-Vivek
+Bjorn
