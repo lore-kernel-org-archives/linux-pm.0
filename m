@@ -1,15 +1,19 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: parallel suspend/resume
-Date: Sun, 9 Dec 2007 21:10:23 -0800
-Message-ID: <200712092110.23528.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0712071414210.27132-100000@netrider.rowland.org>
+From: Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+Date: Mon, 10 Dec 2007 13:49:52 +0530
+Message-ID: <20071210081952.GA7215@in.ibm.com>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu>
+	<20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com>
+	<20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com>
+	<20071208152447.GA30270@elte.hu> <475B24F4.3090904@gmail.com>
+	<20071209074647.GE22981@elte.hu>
+Reply-To: ego@in.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712071414210.27132-100000@netrider.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <20071209074647.GE22981@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +23,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 07 December 2007, Alan Stern wrote:
-> On Fri, 7 Dec 2007, David Brownell wrote:
+On Sun, Dec 09, 2007 at 08:46:47AM +0100, Ingo Molnar wrote:
 > 
-> > > What about ordering constraints?  A lot of them aren't explicit.  We 
-> > > just depend on the fact that devices get suspended in reverse order of 
-> > > registration.  You can't do that in parallel.
+> * Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+> > On 12/08/2007 04:24 PM, Ingo Molnar wrote:
+> > > i'm wondering why it had no effect now
 > > 
-> > Those constraints should *become* explicit ... not stay implicit!
+> > diff --git a/kernel/cpu.c b/kernel/cpu.c
+> > index e0d3a4f..a46c252 100644
+> > --- a/kernel/cpu.c
+> > +++ b/kernel/cpu.c
+> > @@ -47,15 +47,21 @@ void __init cpu_hotplug_init(void)
+> >  }
+> > 
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> > -
+> > +#include <asm/io.h>
+> >  void get_online_cpus(void)
+> >  {
+> > +       outb(0x20, 0x80);
+> >         might_sleep();
+> > +       outb(0x21, 0x80);
 > 
-> Why do I get the feeling we've gone through this before?  :-)
-
-Why indeed.
-
-
-> > FWIW the appended patch removes that rude "order of registration"
+> ah. If you comment out get_online_cpus()/put_online_cpus() from 
+> kernel/softlockup.c, does it start working?
 > 
-> "Rude"?  What's rude about it?  It seems most logical to me: Since the
-> devices obviously worked in the intermediate stages of registration,
-> ...
+> Gautham, any ideas?
+Hi Ingo, 
 
-Rude because it keeps things implicit which should be explicit.
+>From the code I fail to see how get_online_cpus() can help us. 
 
++		/*
++		 * Only do the hung-tasks check on one CPU:
++		 */
++		get_online_cpus();
++		check_cpu = any_online_cpu(cpu_online_map);
++		put_online_cpus();
 
-> > policy, so that the suspend/resume list matches the device tree.
-> 
-> In what respect doesn't it match the device tree now?
+check_cpu can go offline here, no?
 
-It's neither a depth-first nor a breadth-first traversal; it's
-more of a random node visitation based on what devices were
-initialized when.
++
++		if (this_cpu != check_cpu)
++			continue;
++
++		if (sysctl_hung_task_timeout_secs)
++			check_hung_uninterruptible_tasks(this_cpu);
 
-Such a random visitation seems like a clear problem when a
-goal is to introduce parallelism ...
+Further more this can cause a deadlock since we're calling 
+get_online_cpus() from the watchdog thread's context, 
+which is going to be kthread_stop'ed from a cpu-hotplug context.
+This is what I think was happening in the case reported by Jiri.
 
+Please find the patch below.
 
-> As far as I know, the only way in which the list wouldn't match the
-> tree is when the tree gets reorganized by device_move(), which doesn't
-> change the list at all.  (This is quite possibly a bug.)  Your patch 
-> doesn't affect that.
+Thanks and Regards
+gautham.
 
-Right, device_move() should update the list.  Different issue.
+commit 15bfb662b35c609490185fba2fd4713d230b9374
+Author: Gautham R Shenoy <ego@in.ibm.com>
+Date:   Mon Dec 10 13:41:45 2007 +0530
 
+softlockup: remove get_online_cpus() which doesn't help here.
 
-> > It's behaved OK on PCs and, in light duty, a few development boards;
-> > I've carried it around most of this year.
-> 
-> ...  I have to agree 
-> that this ordering dependency really should be made explicit.
+The get_online_cpus() protection seems to be bogus
+in kernel/softlockup.c as cpu cached in check_cpu can go offline
+once we do a put_online_cpus().
 
-Good.  :)
+This can also cause deadlock during a cpu offline as follows:
 
+WATCHDOG_THREAD:		OFFLINE_CPU:
+				mutex_down(&cpu_hotplug.lock);
+				/* All subsequent get_online_cpus
+				 * will be blocked till we're
+				 * done with this cpu-hotplug
+				 * operation.
+				 */
 
-> > I'd expect this to eventually turn up some cases where Linux is
-> > right now doing a bad job of exposing devices with multiple such
-> > ordering constraint ... power management via I2C seems likely to
-> > turn up a few of them.  We'd need some automatic way to detect
-> > and report such problems so that they could be fixed.
-> 
-> If you really want to sniff out dependencies, you should add each new
-> device to the list at a _random_ position, subject only to the
-> constraint that it must not precede its parent!
+get_online_cpus();
+/* watchdog is blocked
+   Thus we cannot
+   go further until
+   the cpu-hotplug
+   operation completes
+ */
+ 				CPU_DEAD:
+    				kthread_stop(watchdog_thread);
 
-Nope; what we need is the ability to finger "this specific device
-has dependencies that aren't explicit".  Being able to introduce
-random failures isn't really helpful.  It's the difference between
-being able to use lockdep vs. having to wait until a random locking
-failure crops up in a way that can usefully be diagnosed.
+    				/* we're trying to stop a
+    				 * thread which is blocked
+    				 * waiting for us to finish.
+    				 *
+    				 * Since we cannot finish until
+    				 * the thread stops, we deadlock here!
+    				 */
+    
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linuxtronix.de>
+Cc: Arjan van de Van <arjan@linux.intel.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>
 
-- Dave
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index e50b44a..576eb9c 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -219,9 +219,7 @@ static int watchdog(void *__bind_cpu)
+ 		/*
+ 		 * Only do the hung-tasks check on one CPU:
+ 		 */
+-		get_online_cpus();
+ 		check_cpu = any_online_cpu(cpu_online_map);
+-		put_online_cpus();
+ 
+ 		if (this_cpu != check_cpu)
+ 			continue;
+
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
