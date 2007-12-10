@@ -1,14 +1,12 @@
-From: Kirill Korotaev <dev@sw.ru>
-Subject: Re: [PATCH][RFC] freezer : add the TIF_FREEZE flag to
-	all archs
-Date: Mon, 10 Dec 2007 19:42:21 +0300
-Message-ID: <475D6C6D.5010903__32535.46751007$1197304667$gmane$org@sw.ru>
-References: <47594F8C.7070900@fr.ibm.com> <200712101736.29676.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: parallel suspend/resume
+Date: Mon, 10 Dec 2007 12:57:29 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712101247120.5111-100000@iolanthe.rowland.org>
+References: <200712092110.23528.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712101736.29676.rjw@sisk.pl>
+In-Reply-To: <200712092110.23528.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +16,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-arch@vger.kernel.org, Linux Containers <containers@lists.osdl.org>, linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
->>From: Cedric Le Goater <clg@fr.ibm.com>
-> 
-> 
-> Sorry for the delay, I somehow managed to overlook your message.
-> 
-> 
->>This patch is the first step in making the refrigerator() available 
->>to all architectures, even for those without power management. 
->>
->>The purpose of such a change is to be able to use the refrigerator() 
->>in a new control group subsystem which will implement a control group
->>freezer.
-> 
-> 
-> Hm, sounds interesting, but ...
->  
-> 
->>If you think this is safe and not utterly stupid, I'll send the rest
->>of the patchset exporting the refrigerator to all arches.
-> 
-> 
-> ... you will need to provide some details, I think.
-> 
-> I also think that it's safe to define TIF_FREEZE for all architectures, but
-> the usefulness of it will very much depend on the purpose. :-)
+On Sun, 9 Dec 2007, David Brownell wrote:
 
-refrigerator() can be used (and is actually used in OpenVZ containers) to freeze
-container processes for checkpointing (live migration).
-So this can be used regardless system suspend and on all archs.
+> > > FWIW the appended patch removes that rude "order of registration"
+> > 
+> > "Rude"?  What's rude about it?  It seems most logical to me: Since the
+> > devices obviously worked in the intermediate stages of registration,
+> > ...
+> 
+> Rude because it keeps things implicit which should be explicit.
 
-Thanks,
-Kirill
+Your patch isn't really much better (IMHO).  While its order may be
+less "random" in the sense that it is determined by the device tree,
+the tree itself is somewhat random and not fully determined by the
+physical hardware layout.  It is affected by the order in which drivers
+are loaded, or the order in which PCI cards are probed, and so on.
+
+And in any case, having a fixed order doesn't move us any closer to the 
+goal of making all the dependencies explicit.
+
+> Such a random visitation seems like a clear problem when a
+> goal is to introduce parallelism ...
+
+So does a strict depth-first visitation.  Or indeed, any fixed 
+ordering, since parallelism will involve indeterminacy.
+
+> Nope; what we need is the ability to finger "this specific device
+> has dependencies that aren't explicit".  Being able to introduce
+> random failures isn't really helpful.  It's the difference between
+> being able to use lockdep vs. having to wait until a random locking
+> failure crops up in a way that can usefully be diagnosed.
+
+I agree.  Even better would be to say "this specific device has this 
+specific dependency".  But it's not easy to come up with strategies for 
+finding this information.  There's no clear-cut analog to lockdep.
+
+Alan Stern
