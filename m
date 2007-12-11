@@ -1,15 +1,11 @@
-From: Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [PATCH][RFC] freezer : add the TIF_FREEZE flag to
-	all archs
-Date: Tue, 11 Dec 2007 13:31:40 +0100
-Message-ID: <475E832C.2010601@fr.ibm.com>
-References: <47594F8C.7070900@fr.ibm.com> <200712101736.29676.rjw@sisk.pl>
-	<475D6C6D.5010903@sw.ru>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH v3] PM: make freezer optional for suspend
+Date: Tue, 11 Dec 2007 15:19:16 +0100
+Message-ID: <1197382756.4037.17.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <475D6C6D.5010903@sw.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +15,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kirill Korotaev <dev@sw.ru>
-Cc: linux-arch@vger.kernel.org, Linux Containers <containers@lists.osdl.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Kirill Korotaev wrote:
->>> From: Cedric Le Goater <clg@fr.ibm.com>
->>
->> Sorry for the delay, I somehow managed to overlook your message.
->>
->>
->>> This patch is the first step in making the refrigerator() available 
->>> to all architectures, even for those without power management. 
->>>
->>> The purpose of such a change is to be able to use the refrigerator() 
->>> in a new control group subsystem which will implement a control group
->>> freezer.
->>
->> Hm, sounds interesting, but ...
->>  
->>
->>> If you think this is safe and not utterly stupid, I'll send the rest
->>> of the patchset exporting the refrigerator to all arches.
->>
->> ... you will need to provide some details, I think.
->>
->> I also think that it's safe to define TIF_FREEZE for all architectures, but
->> the usefulness of it will very much depend on the purpose. :-)
+This patch makes the freezer optional for suspend to allow the
+system to work (or not work) like the original PMU suspend.
 
-I'm sending the full patchset, asap
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+In a quick test, playing sound across suspend failed to work,
+it usually works when the freezer is enabled (unless you use
+gstreamer.)
 
-> refrigerator() can be used (and is actually used in OpenVZ containers) to freeze
-> container processes for checkpointing (live migration).
-> So this can be used regardless system suspend and on all archs.
+ arch/powerpc/Kconfig |    4 ++++
+ kernel/power/Kconfig |   11 +++++++++++
+ kernel/power/main.c  |    6 +++---
+ kernel/power/power.h |   22 ++++++++++++++++++++++
+ 4 files changed, 40 insertions(+), 3 deletions(-)
 
-Exactly !
-
-Thanks,
-
-C.
+--- everything.orig/kernel/power/main.c	2007-12-11 15:13:05.726937988 +0100
++++ everything/kernel/power/main.c	2007-12-11 15:16:21.816910590 +0100
+@@ -79,7 +79,7 @@ static int suspend_prepare(void)
+ 
+ 	pm_prepare_console();
+ 
+-	if (freeze_processes()) {
++	if (suspend_freeze_processes()) {
+ 		error = -EAGAIN;
+ 		goto Thaw;
+ 	}
+@@ -97,7 +97,7 @@ static int suspend_prepare(void)
+ 		return 0;
+ 
+  Thaw:
+-	thaw_processes();
++	suspend_thaw_processes();
+ 	pm_restore_console();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -191,7 +191,7 @@ int suspend_devices_and_enter(suspend_st
+  */
+ static void suspend_finish(void)
+ {
+-	thaw_processes();
++	suspend_thaw_processes();
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+ }
+--- everything.orig/kernel/power/Kconfig	2007-12-11 15:13:05.856915473 +0100
++++ everything/kernel/power/Kconfig	2007-12-11 15:13:40.306913303 +0100
+@@ -97,6 +97,17 @@ config SUSPEND
+ 	  powered and thus its contents are preserved, such as the
+ 	  suspend-to-RAM state (i.e. the ACPI S3 state).
+ 
++config SUSPEND_FREEZER
++	bool "Enable freezer for suspend to RAM/standby" \
++		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
++	depends on SUSPEND
++	default y
++	help
++	  This allows you to turn off the freezer for suspend. If this is
++	  done, no tasks are frozen for suspend to RAM/standby.
++
++	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
++
+ config HIBERNATION_UP_POSSIBLE
+ 	bool
+ 	depends on X86 || PPC64_SWSUSP || PPC32
+--- everything.orig/arch/powerpc/Kconfig	2007-12-11 15:13:05.926915907 +0100
++++ everything/arch/powerpc/Kconfig	2007-12-11 15:13:40.316913954 +0100
+@@ -365,6 +365,10 @@ config CMDLINE
+ 	  most cases you will need to specify the root device here.
+ 
+ if !44x || BROKEN
++config ARCH_WANTS_FREEZER_CONTROL
++	def_bool y
++	depends on ADB_PMU
++
+ source kernel/power/Kconfig
+ endif
+ 
+--- everything.orig/kernel/power/power.h	2007-12-11 15:14:02.066914117 +0100
++++ everything/kernel/power/power.h	2007-12-11 15:17:10.136910319 +0100
+@@ -1,5 +1,6 @@
+ #include <linux/suspend.h>
+ #include <linux/utsname.h>
++#include <linux/freezer.h>
+ 
+ struct swsusp_info {
+ 	struct new_utsname	uts;
+@@ -211,3 +212,24 @@ static inline int pm_notifier_call_chain
+ 	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
++
++#ifdef CONFIG_SUSPEND_FREEZER
++static inline int suspend_freeze_processes(void)
++{
++	return freeze_processes();
++}
++
++static inline void suspend_thaw_processes(void)
++{
++	thaw_processes();
++}
++#else
++static inline int suspend_freeze_processes(void)
++{
++	return 0;
++}
++
++static inline void suspend_thaw_processes(void)
++{
++}
++#endif
