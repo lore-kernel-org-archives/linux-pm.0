@@ -1,16 +1,15 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec
-	jump
-Date: Tue, 11 Dec 2007 02:27:44 -0700
-Message-ID: <m163z51sz3.fsf__8250.61111613668$1197365445$gmane$org@ebiederm.dsl.xmission.com>
-References: <1197042810.24045.61.camel@caritas-dev.intel.com>
-	<m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
-	<1197388219.11506.32.camel@caritas-dev.intel.com>
+From: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [PATCH][RFC] freezer : add the TIF_FREEZE flag to
+	all archs
+Date: Tue, 11 Dec 2007 13:31:40 +0100
+Message-ID: <475E832C.2010601@fr.ibm.com>
+References: <47594F8C.7070900@fr.ibm.com> <200712101736.29676.rjw@sisk.pl>
+	<475D6C6D.5010903@sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1197388219.11506.32.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Tue, 11 Dec 2007 15:50:19 +0000")
+In-Reply-To: <475D6C6D.5010903@sw.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,162 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Kirill Korotaev <dev@sw.ru>
+Cc: linux-arch@vger.kernel.org, Linux Containers <containers@lists.osdl.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+Kirill Korotaev wrote:
+>>> From: Cedric Le Goater <clg@fr.ibm.com>
+>>
+>> Sorry for the delay, I somehow managed to overlook your message.
+>>
+>>
+>>> This patch is the first step in making the refrigerator() available 
+>>> to all architectures, even for those without power management. 
+>>>
+>>> The purpose of such a change is to be able to use the refrigerator() 
+>>> in a new control group subsystem which will implement a control group
+>>> freezer.
+>>
+>> Hm, sounds interesting, but ...
+>>  
+>>
+>>> If you think this is safe and not utterly stupid, I'll send the rest
+>>> of the patchset exporting the refrigerator to all arches.
+>>
+>> ... you will need to provide some details, I think.
+>>
+>> I also think that it's safe to define TIF_FREEZE for all architectures, but
+>> the usefulness of it will very much depend on the purpose. :-)
 
-> On Mon, 2007-12-10 at 19:25 -0700, Eric W. Biederman wrote:
->> "Huang, Ying" <ying.huang@intel.com> writes:
-> [...]
->> >  /*
->> >   * Do not allocate memory (or fail in any way) in machine_kexec().
->> >   * We are past the point of no return, committed to rebooting now.
->> >   */
->> > -NORET_TYPE void machine_kexec(struct kimage *image)
->> > +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
->> > +			 unsigned int argc, va_list args)
->> >  {
->> 
->> Why do we need var arg support?
->> Can't we do that with a shim we load from user space?
->
-> If all parameters are provided in user space, the usage model may be as
-> follow:
->
-> - sys_kexec_load() /* with executable/data/parameters(A) loaded */
-> - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
-> parameters(A)*/
-> - /* jump back */
-> - sys_kexec_load() /* with executable/data/parameters(B) loaded */
-> - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
-> parameters(B)*/
-> - /* jump back */
->
-> That is, the kexec image should be re-loaded if the parameters are
-> different, and there can be no state reserved in kexec image. This is OK
-> for original kexec implementation, because there is no jumping back.
-> But, for kexec with jumping back, another usage model may be useful too.
->
-> - sys_kexec_load() /* with executable/data loaded */
-> - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(A)) /* execute physical mode
-> code with parameters(A)*/
-> - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(B)) /* execute physical mode
-> code with parameters(B)*/
->
-> This way the kexec image need not to be re-loaded, and the state of
-> kexec image can be reserved across several invoking.
+I'm sending the full patchset, asap
 
-Interesting.  We wind up preserving the code in between invocations.
+> refrigerator() can be used (and is actually used in OpenVZ containers) to freeze
+> container processes for checkpointing (live migration).
+> So this can be used regardless system suspend and on all archs.
 
-I don't know about your particular issue, but I can see that clearly
-we need a way to read values back from our target image.
+Exactly !
 
-And if we can read everything back one way to proceed is to read
-everything out modify it and then write it back.
+Thanks,
 
-Amending a kexec image that is already stored may also make sense.
-
-I'm not convinced that the var arg parameters make sense, but you
-added them because of a real need.
-
-The kexec function is split into two separate calls so that we can
-unmount the filesystem the kexec image comes from before actually
-doing the kexec.
-
-If extensive user space shutdown or startup is needed I will argue
-that doing the work in the sys_reboot call is the wrong place to
-do it.  Although if a jump back is happening we should not need
-much restart.
-
-Can you generate a minimal patch with just the minimal necessary
-support to return from a kexec operation?
-
-> Another usage model may be useful is invoking the kexec image (such as
-> firmware) from kernel space.
->
-> - kmalloc the needed memory and loaded the firmware image (if needed)
-> - sys_kexec_load() with a fake image (one segment with size 0), the
-> entry point of the fake image is the entry point of the firmware image.
-> - kexec_call(fake_image, ...) /* maybe change entry point if needed */
->
-> This way, some kernel code can invoke the firmware in physical mode just
-> like invoking an ordinary function.
-
-That certainly seems interesting.  But that doesn't justify the vararg
-part of this.
-
-> [...]
->> > -	/* The segment registers are funny things, they have both a
->> > -	 * visible and an invisible part.  Whenever the visible part is
->> > -	 * set to a specific selector, the invisible part is loaded
->> > -	 * with from a table in memory.  At no other time is the
->> > -	 * descriptor table in memory accessed.
->> > -	 *
->> > -	 * I take advantage of this here by force loading the
->> > -	 * segments, before I zap the gdt with an invalid value.
->> > -	 */
->> > -	load_segments();
->> > -	/* The gdt & idt are now invalid.
->> > -	 * If you want to load them you must set up your own idt & gdt.
->> > -	 */
->> > -	set_gdt(phys_to_virt(0),0);
->> > -	set_idt(phys_to_virt(0),0);
->> > +	if (image->preserve_cpu_ext) {
->> > +		/* The segment registers are funny things, they have
->> > +		 * both a visible and an invisible part.  Whenever the
->> > +		 * visible part is set to a specific selector, the
->> > +		 * invisible part is loaded with from a table in
->> > +		 * memory.  At no other time is the descriptor table
->> > +		 * in memory accessed.
->> > +		 *
->> > +		 * I take advantage of this here by force loading the
->> > +		 * segments, before I zap the gdt with an invalid
->> > +		 * value.
->> > +		 */
->> > +		load_segments();
->> > +		/* The gdt & idt are now invalid.  If you want to load
->> > +		 * them you must set up your own idt & gdt.
->> > +		 */
->> > +		set_gdt(phys_to_virt(0), 0);
->> > +		set_idt(phys_to_virt(0), 0);
->> > +	}
->> 
->> We can't keep the same idt and gdt as the pages they are on will be
->> overwritten/reused.  So explictily stomping on them sounds better
->> so they never work.  We can restore them on kernel reentry.
->
-> The original idea about this code is:
->
-> If the kexec image is claimed that it need not to "perserving extensive
-> CPU state" (such as FPU/MMX/GDT/LDT/IDT/CS/DS/ES/FS/GS/SS etc), the
-> IDT/GDT/CS/DS/ES/FS/GS/SS are not touched in kexec image code. So the
-> segment registers need not to be set.
->
-> But this is not clear. At least more description should be provided for
-> each preserve flag.
-
-yes.
-
->> >  	/* now call it */
->> > -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
->> > -			image->start, cpu_has_pae);
->> > +	relocate_kernel_ptr((unsigned long)image->head,
->> > +			    (unsigned long)page_list,
->> > +			    image->start, cpu_has_pae);
->> 
->> Why rename relocate_kernel?
->> Ah.  I see.  You need to make it into a pointer again.  The crazy don't
->> stop the pgd support strikes again.  It used to be named rnk.
->
-> You mean I should change the function pointer name to rnk to keep
-> consistency? I find rnk in IA64 implementation.
-
-You were changing something that used to be a pointer back to a pointer
-and I found that confusing.    See the last one or two commits to
-machine_kexec_32.c for when this happened.  I get the feeling that we
-need to put the page table creation logic into machine_kexec_prepare,
-instead of in assembly.
-
-Eric
+C.
