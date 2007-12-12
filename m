@@ -1,11 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH v3] PM: make freezer optional for suspend
-Date: Tue, 11 Dec 2007 15:19:16 +0100
-Message-ID: <1197382756.4037.17.camel@johannes.berg>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec
+	jump
+Date: Wed, 12 Dec 2007 14:27:36 +0800
+Message-ID: <1197440856.14443.53.camel__22284.3641684905$1197441092$gmane$org@caritas-dev.intel.com>
+References: <1197042810.24045.61.camel@caritas-dev.intel.com>
+	<m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
+	<1197388219.11506.32.camel@caritas-dev.intel.com>
+	<m163z51sz3.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <m163z51sz3.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,118 +21,232 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-This patch makes the freezer optional for suspend to allow the
-system to work (or not work) like the original PMU suspend.
+On Tue, 2007-12-11 at 02:27 -0700, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
+> 
+> > On Mon, 2007-12-10 at 19:25 -0700, Eric W. Biederman wrote:
+> >> "Huang, Ying" <ying.huang@intel.com> writes:
+> > [...]
+> >> >  /*
+> >> >   * Do not allocate memory (or fail in any way) in machine_kexec().
+> >> >   * We are past the point of no return, committed to rebooting now.
+> >> >   */
+> >> > -NORET_TYPE void machine_kexec(struct kimage *image)
+> >> > +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
+> >> > +			 unsigned int argc, va_list args)
+> >> >  {
+> >> 
+> >> Why do we need var arg support?
+> >> Can't we do that with a shim we load from user space?
+> >
+> > If all parameters are provided in user space, the usage model may be as
+> > follow:
+> >
+> > - sys_kexec_load() /* with executable/data/parameters(A) loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
+> > parameters(A)*/
+> > - /* jump back */
+> > - sys_kexec_load() /* with executable/data/parameters(B) loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
+> > parameters(B)*/
+> > - /* jump back */
+> >
+> > That is, the kexec image should be re-loaded if the parameters are
+> > different, and there can be no state reserved in kexec image. This is OK
+> > for original kexec implementation, because there is no jumping back.
+> > But, for kexec with jumping back, another usage model may be useful too.
+> >
+> > - sys_kexec_load() /* with executable/data loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(A)) /* execute physical mode
+> > code with parameters(A)*/
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(B)) /* execute physical mode
+> > code with parameters(B)*/
+> >
+> > This way the kexec image need not to be re-loaded, and the state of
+> > kexec image can be reserved across several invoking.
+> 
+> Interesting.  We wind up preserving the code in between invocations.
+> 
+> I don't know about your particular issue, but I can see that clearly
+> we need a way to read values back from our target image.
+> 
+> And if we can read everything back one way to proceed is to read
+> everything out modify it and then write it back.
+> 
+> Amending a kexec image that is already stored may also make sense.
+> 
+> I'm not convinced that the var arg parameters make sense, but you
+> added them because of a real need.
+> 
+> The kexec function is split into two separate calls so that we can
+> unmount the filesystem the kexec image comes from before actually
+> doing the kexec.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-In a quick test, playing sound across suspend failed to work,
-it usually works when the freezer is enabled (unless you use
-gstreamer.)
+Yes. Reading/Modifying the loaded kexec image is another way to do
+necessary communication between the first kernel and the second kernel.
+In fact, the patch [4/4] of this series with title:
 
- arch/powerpc/Kconfig |    4 ++++
- kernel/power/Kconfig |   11 +++++++++++
- kernel/power/main.c  |    6 +++---
- kernel/power/power.h |   22 ++++++++++++++++++++++
- 4 files changed, 40 insertions(+), 3 deletions(-)
+[PATCH 4/4 -mm] kexec based hibernation -v7 : kimgcore
 
---- everything.orig/kernel/power/main.c	2007-12-11 15:13:05.726937988 +0100
-+++ everything/kernel/power/main.c	2007-12-11 15:16:21.816910590 +0100
-@@ -79,7 +79,7 @@ static int suspend_prepare(void)
- 
- 	pm_prepare_console();
- 
--	if (freeze_processes()) {
-+	if (suspend_freeze_processes()) {
- 		error = -EAGAIN;
- 		goto Thaw;
- 	}
-@@ -97,7 +97,7 @@ static int suspend_prepare(void)
- 		return 0;
- 
-  Thaw:
--	thaw_processes();
-+	suspend_thaw_processes();
- 	pm_restore_console();
-  Finish:
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
-@@ -191,7 +191,7 @@ int suspend_devices_and_enter(suspend_st
-  */
- static void suspend_finish(void)
- {
--	thaw_processes();
-+	suspend_thaw_processes();
- 	pm_restore_console();
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
- }
---- everything.orig/kernel/power/Kconfig	2007-12-11 15:13:05.856915473 +0100
-+++ everything/kernel/power/Kconfig	2007-12-11 15:13:40.306913303 +0100
-@@ -97,6 +97,17 @@ config SUSPEND
- 	  powered and thus its contents are preserved, such as the
- 	  suspend-to-RAM state (i.e. the ACPI S3 state).
- 
-+config SUSPEND_FREEZER
-+	bool "Enable freezer for suspend to RAM/standby" \
-+		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
-+	depends on SUSPEND
-+	default y
-+	help
-+	  This allows you to turn off the freezer for suspend. If this is
-+	  done, no tasks are frozen for suspend to RAM/standby.
-+
-+	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-+
- config HIBERNATION_UP_POSSIBLE
- 	bool
- 	depends on X86 || PPC64_SWSUSP || PPC32
---- everything.orig/arch/powerpc/Kconfig	2007-12-11 15:13:05.926915907 +0100
-+++ everything/arch/powerpc/Kconfig	2007-12-11 15:13:40.316913954 +0100
-@@ -365,6 +365,10 @@ config CMDLINE
- 	  most cases you will need to specify the root device here.
- 
- if !44x || BROKEN
-+config ARCH_WANTS_FREEZER_CONTROL
-+	def_bool y
-+	depends on ADB_PMU
-+
- source kernel/power/Kconfig
- endif
- 
---- everything.orig/kernel/power/power.h	2007-12-11 15:14:02.066914117 +0100
-+++ everything/kernel/power/power.h	2007-12-11 15:17:10.136910319 +0100
-@@ -1,5 +1,6 @@
- #include <linux/suspend.h>
- #include <linux/utsname.h>
-+#include <linux/freezer.h>
- 
- struct swsusp_info {
- 	struct new_utsname	uts;
-@@ -211,3 +212,24 @@ static inline int pm_notifier_call_chain
- 	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
-+
-+#ifdef CONFIG_SUSPEND_FREEZER
-+static inline int suspend_freeze_processes(void)
-+{
-+	return freeze_processes();
-+}
-+
-+static inline void suspend_thaw_processes(void)
-+{
-+	thaw_processes();
-+}
-+#else
-+static inline int suspend_freeze_processes(void)
-+{
-+	return 0;
-+}
-+
-+static inline void suspend_thaw_processes(void)
-+{
-+}
-+#endif
+provide a ELF CORE file in /proc (/proc/kimgcore) to read the loaded
+kexec image. The writing function can be added easily.
+
+But I think communication between the first kernel and the second kernel
+via reading/modifying the loaded kernel image is not very convenient
+way. The usage mode may be as follow:
+
+- sys_kexec_load() /* with executable/data loaded */
+- modify the loaded kexec image to set the parameters (A)
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(A)*/
+- In physical mode code, check the parameters A and executing accordingly
+- modify the loaded kexec image to set the parameters (B)
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(B)*/
+- In physical mode code, check the parameters B and executing accordingly
+
+There are some issues with this usage model:
+
+- Some parameters in kernel needed to be exported (such as the
+kimage->head to let the second kernel to read the memory contents of
+backupped memory).
+
+- The physical mode code invoker (the first kernel) need to know where
+to write the parameters. A common protocol or a protocol case by case
+should be defined. For example, the memory address after the entry point
+of kexec image is a good candidate. But for Linux kernel, there are two
+types of entry point, the "jump back entry" or "purgatory". Maybe
+different protocol should be defined for these two types of entry point.
+
+- For the user space of the second kernel to get the parameters. A
+interface (maybe a file in /proc or /sys) should be provided to export
+the parameters to user space.
+
+So I think the current parameters passing mechanism may be more simple
+and convenient (defined in Document/i386/jump_back_protocol.txt in the
+patch).
+
+There is only one user of var args. But I think it is simple to be
+implemented and may be used by others.
+
+> If extensive user space shutdown or startup is needed I will argue
+> that doing the work in the sys_reboot call is the wrong place to
+> do it.  Although if a jump back is happening we should not need
+> much restart.
+
+Now, the user space is not shut down or started up across kexec/jump
+back, just the sys_reboot call is used to trigger the kexec/jump back.
+Maybe sys_reboot is not the right place to do this. Can you recommended
+a more suitable place?
+
+> Can you generate a minimal patch with just the minimal necessary
+> support to return from a kexec operation?
+
+I plan to reduce the KEXEC_PRESERVE_XXX flags into one
+KEXEC_PRESERVE_CONTEXT. The var args part may be changed if we have the
+consensus.
+
+> > Another usage model may be useful is invoking the kexec image (such as
+> > firmware) from kernel space.
+> >
+> > - kmalloc the needed memory and loaded the firmware image (if needed)
+> > - sys_kexec_load() with a fake image (one segment with size 0), the
+> > entry point of the fake image is the entry point of the firmware image.
+> > - kexec_call(fake_image, ...) /* maybe change entry point if needed */
+> >
+> > This way, some kernel code can invoke the firmware in physical mode just
+> > like invoking an ordinary function.
+> 
+> That certainly seems interesting.  But that doesn't justify the vararg
+> part of this.
+> 
+> > [...]
+> >> > -	/* The segment registers are funny things, they have both a
+> >> > -	 * visible and an invisible part.  Whenever the visible part is
+> >> > -	 * set to a specific selector, the invisible part is loaded
+> >> > -	 * with from a table in memory.  At no other time is the
+> >> > -	 * descriptor table in memory accessed.
+> >> > -	 *
+> >> > -	 * I take advantage of this here by force loading the
+> >> > -	 * segments, before I zap the gdt with an invalid value.
+> >> > -	 */
+> >> > -	load_segments();
+> >> > -	/* The gdt & idt are now invalid.
+> >> > -	 * If you want to load them you must set up your own idt & gdt.
+> >> > -	 */
+> >> > -	set_gdt(phys_to_virt(0),0);
+> >> > -	set_idt(phys_to_virt(0),0);
+> >> > +	if (image->preserve_cpu_ext) {
+> >> > +		/* The segment registers are funny things, they have
+> >> > +		 * both a visible and an invisible part.  Whenever the
+> >> > +		 * visible part is set to a specific selector, the
+> >> > +		 * invisible part is loaded with from a table in
+> >> > +		 * memory.  At no other time is the descriptor table
+> >> > +		 * in memory accessed.
+> >> > +		 *
+> >> > +		 * I take advantage of this here by force loading the
+> >> > +		 * segments, before I zap the gdt with an invalid
+> >> > +		 * value.
+> >> > +		 */
+> >> > +		load_segments();
+> >> > +		/* The gdt & idt are now invalid.  If you want to load
+> >> > +		 * them you must set up your own idt & gdt.
+> >> > +		 */
+> >> > +		set_gdt(phys_to_virt(0), 0);
+> >> > +		set_idt(phys_to_virt(0), 0);
+> >> > +	}
+> >> 
+> >> We can't keep the same idt and gdt as the pages they are on will be
+> >> overwritten/reused.  So explictily stomping on them sounds better
+> >> so they never work.  We can restore them on kernel reentry.
+> >
+> > The original idea about this code is:
+> >
+> > If the kexec image is claimed that it need not to "perserving extensive
+> > CPU state" (such as FPU/MMX/GDT/LDT/IDT/CS/DS/ES/FS/GS/SS etc), the
+> > IDT/GDT/CS/DS/ES/FS/GS/SS are not touched in kexec image code. So the
+> > segment registers need not to be set.
+> >
+> > But this is not clear. At least more description should be provided for
+> > each preserve flag.
+> 
+> yes.
+> 
+> >> >  	/* now call it */
+> >> > -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
+> >> > -			image->start, cpu_has_pae);
+> >> > +	relocate_kernel_ptr((unsigned long)image->head,
+> >> > +			    (unsigned long)page_list,
+> >> > +			    image->start, cpu_has_pae);
+> >> 
+> >> Why rename relocate_kernel?
+> >> Ah.  I see.  You need to make it into a pointer again.  The crazy don't
+> >> stop the pgd support strikes again.  It used to be named rnk.
+> >
+> > You mean I should change the function pointer name to rnk to keep
+> > consistency? I find rnk in IA64 implementation.
+> 
+> You were changing something that used to be a pointer back to a pointer
+> and I found that confusing.    See the last one or two commits to
+> machine_kexec_32.c for when this happened.
+
+After checking the history of machine_kexec_32.c, I find the pointer is
+removed because a specific PGD is used. My reason is a little different.
+I need save some information (the preserving registers, some control
+registers, swap page address etc) in control_page, it is more convenient
+to execute on identity map of control_page. I think it is not a big
+issue. In fact, my code can work without making relocate_kernel to
+pointer with some changes.
+
+> I get the feeling that we
+> need to put the page table creation logic into machine_kexec_prepare,
+> instead of in assembly.
+
+Yes. I think this is a good idea, and the kexec_pgd, kexec_pmd0/1,
+kexec_pte0/1 can be allocated in machine_kexec_prepare too to save the
+static memory usage.
+
+Best Regards,
+Huang Ying
