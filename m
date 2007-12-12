@@ -1,90 +1,103 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: cpu frequency governor regression (?)
-Date: Wed, 12 Dec 2007 18:35:43 +0100
-Message-ID: <1197480944.6558.132.camel__7867.31278426505$1197481336$gmane$org@johannes.berg>
-References: <1197399165.2214.15.camel@johannes.berg>
-	<20071212173001.GA18973@redhat.com>
+Subject: Re: apm_emulation regression
+Date: Wed, 12 Dec 2007 19:03:07 +0100
+Message-ID: <1197482587.6558.145.camel@johannes.berg>
+References: <1197427530.8385.59.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6616644671255160058=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071212173001.GA18973@redhat.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Content-Type: multipart/mixed; boundary="===============1839284649=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <1197427530.8385.59.camel@pasglop>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 Mime-version: 1.0
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@redhat.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.linux-foundation.org>, cpufreq <cpufreq@lists.linux.org.uk>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: benh@kernel.crashing.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============6616644671255160058==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-xRJEQZucJZe0bkqiWDtV"
+--===============1839284649==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SlHN4jmI+M9LGbW4DOrO"
 
 
---=-xRJEQZucJZe0bkqiWDtV
+--=-SlHN4jmI+M9LGbW4DOrO
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
 
-> bizarre. It should default back to whatever CONFIG_CPU_FREQ_DEFAULT_* opt=
-ion
-> was set.  (Arguably a bug in itself, as we don't track & restore them
-> on resume, so if you changed from the default after booting: splat)
+On Wed, 2007-12-12 at 13:45 +1100, Benjamin Herrenschmidt wrote:
+> I only just noticed a huge regression that was introduced when we moved
+> PowerPC to the generic APM emulation code instead of our own. I'm in
+> large part to blame since I acked the patch...
+>=20
+> Basically, what we lost is the mechanism for notifying user applications
+> and waiting for their ACK before proceeding to system suspend. The new
+> generic code will still do that ... only when the actual suspend request
+> initiates from an APM suspend ioctl.
 
-Hah ok, but it's still odd that it changes to a different one.
+Indeed.
 
-> Why you're getting the performance governor is puzzling though.
-> Can you enable CONFIG_CPU_FREQ_DEBUG=3Dy, and boot with cpufreq.debug=3D7
-> and send the log from a transition across hibernate?
+> For any other suspend (via our private PMU ioctl or via the sysfs
+> interface), userspace will -not- be notified.
 
-Sure. I'll do it tonight and send it tomorrow.
+Right.
 
-> Also, does /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor=20
-> have performance in *all* the cpus?
+> That basically means X will break. That's why X broke on the latest
+> ubuntu until I whacked some new scripts in them to force console
+> switching, among other things. Possibly other apps that relied
+> on /dev/apm_bios to be notified of system suspend/resume broke as well.
 
-My four CPUs can only change together so I don't think that is relevant.
+Ah. I guess I never noticed because I had the scripts to do console
+switching all along.
+
+> Now the question is that is it still work trying to fix it ? That would
+> probably require APM emulation hooking at a fairly high level into the
+> generic PM code to trigger the signaling & waiting of processes before
+> freeze & device suspend among others...
+
+Yeah, bit icky... but doable. Rafael, any ideas?
 
 johannes
 
---=-xRJEQZucJZe0bkqiWDtV
+--=-SlHN4jmI+M9LGbW4DOrO
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUAR2Ab7qVg1VMiehFYAQKs6hAAks9cBP0FO8t/HSpv3TFBr+ZfSGsMht+v
-gfKFD6yrx60druZrCQcRBvdszn1b3YrcsOaxJdC3fGOKlEzC8Ax6gWm17a/9iL+j
-5AePB6LyAR1iklbRJgnRp7oFfYcubOi+FZM30V/ZYYSz1WJ6xGByg82txkl/eny9
-3ryB6P1EouCoc7rgmvaBJb1Tq9M+KHyBOZRlQsq8vIqsUFWbgVA3idMpiZ6hgI74
-9D+tZlE1p6HO7fyWnjTaanIQfv6QnlkGSs459A1GY1/PzYAvLoDFsxbjlWW/xHOg
-PN8ZsF8Ztmo/PpKa77lzIgDypn9e86HvPGcpTRJaYPg9/VixlPHg/jd+3txMycX3
-0NCe0sr6m+waFDnQxZ0XykFVVKrEVWxh6NIJpe2nVdpNQQik1KWrCwve9Hu3yzC3
-MfE9HxRpPzsY0X2GiO5dXB8Mod5WDb7Bbjg1ghjJcBt7RWiUMrw1TeWFocoBT/Zi
-sc8Yy2RN9wPW2/GXRaNsoTd8F8cnPWSful2TMh1iqcBkWyYFG3+uPXQmFEKp4FSO
-v7MAFFICdgRo08euaiectRWW4BmZ/MAuOK9twxBH6RziL1QNISchAmwaK/81/M83
-6UKJNiur9KKTPwiWTcmzx2/3yzrcW4CjHwGcKiD0HWuSUJvMbi1h2ALFSiMgPG6v
-Amw7qvO7dQQ=
-=6WvO
+iQIVAwUAR2AiWaVg1VMiehFYAQLTkBAAsOIzqkCf4GXPRnMOWXyW28PqUqTVfU4D
+PclFsePxu+Fj750ZbxodWmXvIurhiWPIyH5Eqy4BbrP/T9aj5Gb/1L4v+kIJ/IV3
+Jye/Fk/Uk1XW3bFSjjOHM4BLTnb90ZkvkFjBTrNUDb32i9TghjKVAQGkM4w8V1dE
+tFfIxXEVHiCOBH9D0W5vEIqN8m6Zy0dcU6KyZBmHFuT+becXNq5HjOmPdnsz9DcM
+Ol4223/PozVPGIEd5htPyJjCnPiKmkd+3MLSjwk/4GirGP/t3MCGaCAYw0eq3Leg
+uGFgXOkepkQG7yhPCPI2HHJOUeJr8JUfpxhTeEmhRpdcCLxvUvPacHevdwHrM2Ae
+1UMQrhYr0IwC7RxapOPaYfYhb17cfWTl5mhCxNOMeb9ELSb9zDJxnss4WNryD3j5
+GjyJzZPJek2n+z79/8AQZnjSUQlmYsE/2aO0GPa75knPPNbJATJDiI8z673s1pGz
+o8IkTjqhZ62yeWzwjJGlEZMdxzgycK/qqBKbbYJ1gBuUbau/npUogqfhxVU1/FuA
+XmHCKiDYMBxaqUToBYz8eaMtjdM+KuPMavjXyLn6hgy8ofeN3RLe9WQ41ZaZ2kyX
+lbS9Hz4gk/pGfRC2x+Io6T5uQnuZgtc4CJNA5VHxo+2Hbho3T2c8ug5ivCGM1TjQ
+xjzlvKzMHv8=
+=YwC8
 -----END PGP SIGNATURE-----
 
---=-xRJEQZucJZe0bkqiWDtV--
+--=-SlHN4jmI+M9LGbW4DOrO--
 
 
---===============6616644671255160058==
+--===============1839284649==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-
---===============6616644671255160058==--
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============1839284649==--
