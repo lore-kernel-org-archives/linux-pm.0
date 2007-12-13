@@ -1,16 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] [Bugme-new] [Bug 9555] New: Suspend to RAM
-	horks keyboard autorepeat, system bell, trackpad
-Date: Wed, 12 Dec 2007 23:03:36 -0800
-Message-ID: <20071213070336.GA12252@kroah.com>
-References: <bug-9555-10286@http.bugzilla.kernel.org/>
-	<20071212183349.f81464bf.akpm@linux-foundation.org>
-	<20071213064532.GA7618@shallowsky.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM: acquire device locks prior to suspending
+Date: Wed, 12 Dec 2007 23:42:01 -0800
+Message-ID: <20071212234201.a8932915.akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211536570.5816-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071213064532.GA7618@shallowsky.com>
+In-Reply-To: <Pine.LNX.4.44L0.0709211536570.5816-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +17,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Akkana Peck <akkana@shallowsky.com>
-Cc: Dmitry Torokhov <dtor@mail.ru>, stable@kernel.org, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 10:45:32PM -0800, Akkana Peck wrote:
-> The problem seems fixed in 2.6.24-rc5 (and I'd like to apologize for
-> wasting everyone's time by not checking for a new version first).
-> So the bug appeared in the patches that took 2.6.23.1 to 2.6.23.8, and
-> was fixed by something between .23.8 and .24-rc5.
-> 
-> I'm fine with closing the bug since it's working fine in .24-rc5,
-> but if anyone is curious what the problem was, I'm happy to help
-> with tracking it down. It's very easily reproducible on this machine.
+On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Yes, it would be nice to find out the 2.6.23 patch that caused this, so
-we can revert it as people are still using the 2.6.23 tree :)
+> This patch (as994) reorganizes the way suspend and resume
+> notifications are sent to drivers.  The major changes are that now the
+> PM core acquires every device semaphore before calling the methods,
+> and calls to device_add() during suspends will fail.
 
-Can you do a bisection with the releases between 2.6.23.1 and 2.6.23.8
-and see which release and then which patch caused this to happen?
-
-thanks,
-
-greg k-h
+Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
+moon symbol has started to flash but the LCD is still powered and the
+cursor still blinks.  Only a poweroff restores control.
