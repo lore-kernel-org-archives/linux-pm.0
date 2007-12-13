@@ -1,103 +1,88 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: apm_emulation regression
-Date: Wed, 12 Dec 2007 19:03:07 +0100
-Message-ID: <1197482587.6558.145.camel@johannes.berg>
-References: <1197427530.8385.59.camel@pasglop>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 9555] New: Suspend to RAM horks
+ keyboard autorepeat, system bell, trackpad
+Date: Wed, 12 Dec 2007 18:33:49 -0800
+Message-ID: <20071212183349.f81464bf.akpm__26869.0375415192$1197513325$gmane$org@linux-foundation.org>
+References: <bug-9555-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1839284649=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1197427530.8385.59.camel@pasglop>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: benh@kernel.crashing.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <bug-9555-10286@http.bugzilla.kernel.org/>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: stable@kernel.org
+Cc: akkzilla@shallowsky.com, Torokhov <dtor@mail.ru>, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Dmitry@smtp2.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1839284649==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SlHN4jmI+M9LGbW4DOrO"
+(switching to email - please respond via emailed reply-to-all, not via the
+bugzilla web interface)
 
+On Wed, 12 Dec 2007 18:18:05 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
 
---=-SlHN4jmI+M9LGbW4DOrO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> http://bugzilla.kernel.org/show_bug.cgi?id=9555
+> 
+>            Summary: Suspend to RAM horks keyboard autorepeat, system bell,
+>                     trackpad
+>            Product: Power Management
+>            Version: 2.5
+>      KernelVersion: 2.6.23.8
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Hibernation/Suspend
+>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>         ReportedBy: akkzilla@shallowsky.com
+> 
+> 
+> Most recent kernel where this bug did not occur: 2.6.23.1
+> Distribution: Ubuntu feisty
+> Hardware Environment: Sony Vaio SR71
+> Software Environment:
+> Problem Description:
+> 
+> With 2.6.23.8, when I suspend to RAM (using /usr/sbin/hibernate -F
+> /etc/hibernate/ram.conf) from within X, when I resume I see the following odd
+> behavior:
+> 
+> 1. The system bell is now half a second long.
+> 2. Keyboard autorepeat has a very long delay -- like 7 seconds before the first
+> repeated character shows up.
+> 3. If I configure X to use the (Alps) trackpad via the synaptics driver, after
+> resuming, clicks from the trackpad don't work at all -- not only are taps
+> ignored (which is how I've configured xorg.conf) but the physical buttons don't
+> generate click events either. If I configure X to use the trackpad just as a
+> PS/2 mouse, though, it still works normally after resuming.
+> 
+> 2.6.23.1 with the same .config (I took the .config from 23.8, copied it into
+> the 23.1 directory, and ran make oldconfig) does NOT exhibit any of these
+> problems -- it resumes from suspend normally and everything still works.
+> 
+> Steps to reproduce:
+> Boot 2.6.23.8. Log in, start X, suspend, resume. Hold down the return key and
+> observe no autorepeat (at least for a long time). echo ^G and hear the long
+> bell. xorg.conf to test the trackpad part available upon request.
+> 
+> I will attach my .configs from 23.1 and 23.8. I've tried with and without
+> evdev, and with and without tickless, so neither of those is to blame. I wanted
+> to try turning off the synaptic driver, but it seems to be a mandatory part of
+> the PS/2 mouse driver now. I'm happy to try other configuration options.
+> 
+> It's possible this is related to bug 7977, but that one is from 2.6.21 and is
+> supposedly fixed now, and nobody there mentioned the keyboard or bell aspects.
+> 
 
+A regression in the -stable series.
 
-On Wed, 2007-12-12 at 13:45 +1100, Benjamin Herrenschmidt wrote:
-> I only just noticed a huge regression that was introduced when we moved
-> PowerPC to the generic APM emulation code instead of our own. I'm in
-> large part to blame since I acked the patch...
->=20
-> Basically, what we lost is the mechanism for notifying user applications
-> and waiting for their ACK before proceeding to system suspend. The new
-> generic code will still do that ... only when the actual suspend request
-> initiates from an APM suspend ioctl.
-
-Indeed.
-
-> For any other suspend (via our private PMU ioctl or via the sysfs
-> interface), userspace will -not- be notified.
-
-Right.
-
-> That basically means X will break. That's why X broke on the latest
-> ubuntu until I whacked some new scripts in them to force console
-> switching, among other things. Possibly other apps that relied
-> on /dev/apm_bios to be notified of system suspend/resume broke as well.
-
-Ah. I guess I never noticed because I had the scripts to do console
-switching all along.
-
-> Now the question is that is it still work trying to fix it ? That would
-> probably require APM emulation hooking at a fairly high level into the
-> generic PM code to trigger the signaling & waiting of processes before
-> freeze & device suspend among others...
-
-Yeah, bit icky... but doable. Rafael, any ideas?
-
-johannes
-
---=-SlHN4jmI+M9LGbW4DOrO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR2AiWaVg1VMiehFYAQLTkBAAsOIzqkCf4GXPRnMOWXyW28PqUqTVfU4D
-PclFsePxu+Fj750ZbxodWmXvIurhiWPIyH5Eqy4BbrP/T9aj5Gb/1L4v+kIJ/IV3
-Jye/Fk/Uk1XW3bFSjjOHM4BLTnb90ZkvkFjBTrNUDb32i9TghjKVAQGkM4w8V1dE
-tFfIxXEVHiCOBH9D0W5vEIqN8m6Zy0dcU6KyZBmHFuT+becXNq5HjOmPdnsz9DcM
-Ol4223/PozVPGIEd5htPyJjCnPiKmkd+3MLSjwk/4GirGP/t3MCGaCAYw0eq3Leg
-uGFgXOkepkQG7yhPCPI2HHJOUeJr8JUfpxhTeEmhRpdcCLxvUvPacHevdwHrM2Ae
-1UMQrhYr0IwC7RxapOPaYfYhb17cfWTl5mhCxNOMeb9ELSb9zDJxnss4WNryD3j5
-GjyJzZPJek2n+z79/8AQZnjSUQlmYsE/2aO0GPa75knPPNbJATJDiI8z673s1pGz
-o8IkTjqhZ62yeWzwjJGlEZMdxzgycK/qqBKbbYJ1gBuUbau/npUogqfhxVU1/FuA
-XmHCKiDYMBxaqUToBYz8eaMtjdM+KuPMavjXyLn6hgy8ofeN3RLe9WQ41ZaZ2kyX
-lbS9Hz4gk/pGfRC2x+Io6T5uQnuZgtc4CJNA5VHxo+2Hbho3T2c8ug5ivCGM1TjQ
-xjzlvKzMHv8=
-=YwC8
------END PGP SIGNATURE-----
-
---=-SlHN4jmI+M9LGbW4DOrO--
-
-
---===============1839284649==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============1839284649==--
+IT'd be interesting to see if this has gone into 2.6.24-rc5 too.
