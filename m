@@ -1,85 +1,59 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: apm_emulation regression
-Date: Thu, 13 Dec 2007 12:40:19 +0100
-Message-ID: <1197546020.6558.247.camel@johannes.berg>
-References: <1197427530.8385.59.camel@pasglop>
-	<1197482587.6558.145.camel@johannes.berg>
+From: Akkana Peck <akkana@shallowsky.com>
+Subject: Re: [Bugme-new] [Bug 9555] New: Suspend to RAM horks
+	keyboard autorepeat, system bell, trackpad
+Date: Wed, 12 Dec 2007 22:45:32 -0800
+Message-ID: <20071213064532.GA7618__20085.5138632052$1197560799$gmane$org@shallowsky.com>
+References: <bug-9555-10286@http.bugzilla.kernel.org/>
+	<20071212183349.f81464bf.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1615590179=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1197482587.6558.145.camel@johannes.berg>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: benh@kernel.crashing.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20071212183349.f81464bf.akpm@linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, stable@kernel.org, bugme-daemon@bugzilla.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+[Replying again with all CCs]
 
---===============1615590179==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BjBf60fkoRVO6/FBFkz8"
+Andrew Morton writes:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9555
+> > 
+> >            Summary: Suspend to RAM horks keyboard autorepeat, system bell,
+> >                     trackpad
+[ ... ]
+> > With 2.6.23.8, when I suspend to RAM (using /usr/sbin/hibernate -F
+> > /etc/hibernate/ram.conf) from within X, when I resume I see the
+> > following odd behavior:
+> > 
+> > 1. The system bell is now half a second long.
+> > 2. Keyboard autorepeat has a very long delay -- like 7 seconds before the first
+> > repeated character shows up.
+> > 3. If I configure X to use the (Alps) trackpad via the synaptics  driver, after
+> > resuming, clicks from the trackpad don't work at all -- not only are taps
+> > ignored (which is how I've configured xorg.conf) but the physical buttons don't
+> > generate click events either. If I configure X to use the trackpad just as a
+> > PS/2 mouse, though, it still works normally after resuming.
+[ ... ]
+> 
+> A regression in the -stable series.
+> 
+> IT'd be interesting to see if this has gone into 2.6.24-rc5 too.
 
+The problem seems fixed in 2.6.24-rc5 (and I'd like to apologize for
+wasting everyone's time by not checking for a new version first).
+So the bug appeared in the patches that took 2.6.23.1 to 2.6.23.8, and
+was fixed by something between .23.8 and .24-rc5.
 
---=-BjBf60fkoRVO6/FBFkz8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-> > That basically means X will break. That's why X broke on the latest
-> > ubuntu until I whacked some new scripts in them to force console
-> > switching, among other things. Possibly other apps that relied
-> > on /dev/apm_bios to be notified of system suspend/resume broke as well.
->=20
-> Ah. I guess I never noticed because I had the scripts to do console
-> switching all along.
-
-Actually, it just occurred to me that the *kernel* does a console switch
-when we use /sys/power/state, so maybe that is why I never had a problem
-rather than userspace doing a console switch (which it only started
-doing very recently)
-
-johannes
-
---=-BjBf60fkoRVO6/FBFkz8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR2EaIqVg1VMiehFYAQLp5g/8CpRxNqjq5SD+qp/mcHC5nbga/hIRQGRa
-AmX84groIYTlh4PyGqg1FyTWHhpjw/ZAMyqQdJkWjrnb6WxiH2uoPFSo6tmx53J7
-1npbhtzSBXImO6nkDpTYGzdf2EjfbNYsZUXtWffT79ab5bQh+u/JMcrYERO14ohS
-b7QSd3NKphVEZMyVqO01tVYhweC9c4Em1/xdhedCOdWBEh4Kk1+1EZYyu9v16EhE
-qIuwAYbIvpjU2WAhjDGsKvE+OhPPoQ4td42eSfl3Z4R0F6Ix30NaCqD9r1NgIm2z
-VZ9XdSbTGvxD7WNyIAhcsputzjgzY7VI1ExJ3GK/k2KClwn/OYm/XUhkTYx65O40
-WfpRMrVgn/Bxte3iOXOpc+1trdGLgYqE46bGldPKpQzWwPjHKwO3ThgXzt53plNw
-aNbxI2S4YksYG2WaDlxWnkODPi+7hfsaLq869hj2KlLp/C3DMkeJuK31MIoUNj+q
-Nwp/Rr0ARBAauBTRQ+YfYfYiy2IG97LNSifOxqaGyqBIoH2HXDHWRnTBHN0U7KPp
-3WQXxgXde8wSdmpEeJy8Sc420Ws3llBd/XH7coeOIxevYeNwqREeCKWqp04QQmqT
-VYahvX6Tt0IbsF9/2aug6uMtnqWZfXT3iQ6k9oZwFAUKD+f2Yh6dx53AiZWA/8cs
-CFLfF48WphE=
-=dhmp
------END PGP SIGNATURE-----
-
---=-BjBf60fkoRVO6/FBFkz8--
-
-
---===============1615590179==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============1615590179==--
+I'm fine with closing the bug since it's working fine in .24-rc5,
+but if anyone is curious what the problem was, I'm happy to help
+with tracking it down. It's very easily reproducible on this machine.
