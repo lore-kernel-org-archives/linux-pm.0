@@ -1,51 +1,55 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: apm_emulation regression
-Date: Fri, 14 Dec 2007 07:31:32 +1100
-Message-ID: <1197577892.15741.143.camel@pasglop>
-References: <1197427530.8385.59.camel@pasglop>
-	<1197482587.6558.145.camel@johannes.berg>
-	<1197546020.6558.247.camel@johannes.berg>
-Reply-To: benh@kernel.crashing.org
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM: acquire device locks prior to suspending
+Date: Thu, 13 Dec 2007 13:38:29 -0800
+Message-ID: <20071213133829.6d850a1d.akpm@linux-foundation.org>
+References: <20071212234201.a8932915.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0712131055570.4414-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1197546020.6558.247.camel@johannes.berg>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0712131055570.4414-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 13 Dec 2007 11:02:36 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-On Thu, 2007-12-13 at 12:40 +0100, Johannes Berg wrote:
-> > > That basically means X will break. That's why X broke on the latest
-> > > ubuntu until I whacked some new scripts in them to force console
-> > > switching, among other things. Possibly other apps that relied
-> > > on /dev/apm_bios to be notified of system suspend/resume broke as well.
-> > 
-> > Ah. I guess I never noticed because I had the scripts to do console
-> > switching all along.
+> On Wed, 12 Dec 2007, Andrew Morton wrote:
 > 
-> Actually, it just occurred to me that the *kernel* does a console switch
-> when we use /sys/power/state, so maybe that is why I never had a problem
-> rather than userspace doing a console switch (which it only started
-> doing very recently)
+> > On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+> > 
+> > > This patch (as994) reorganizes the way suspend and resume
+> > > notifications are sent to drivers.  The major changes are that now the
+> > > PM core acquires every device semaphore before calling the methods,
+> > > and calls to device_add() during suspends will fail.
+> > 
+> > Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
+> > moon symbol has started to flash but the LCD is still powered and the
+> > cursor still blinks.  Only a poweroff restores control.
+> 
+> Is there any chance of debugging this?
 
-The kernel console switching can be disabled and -is- by some distros.
-For example, the problem I was having was when testing Gutsy before it
-was final, the script to console switch wasn't in the right place for
-powermac and didn't work. X wouldn't be suspended properly and the
-machine would lockup.
+Spose so, although debugging 2.6.24-rc5 regressions seems a more useful way
+to spend one's time.
 
-In general, we should try to fix that, as other things might rely
-on /dev/apm_bios doing the right thing.
+>  You have removed the patch from 
+> the current -mm source.  Does anybody else report a similar problem?
+> 
+> Proper debugging would require, to begin with, enabling 
+> CONFIG_PM_VERBOSE and booting with no_console_suspend.
 
-Ben.
+Will try to remember to take a look this evening.
+
+Speaking of efficient use of resources: how many other people have tested
+suspend-to-disk with this patch applied?  And on how many machines?
