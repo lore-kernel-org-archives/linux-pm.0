@@ -1,14 +1,15 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] PM: acquire device locks prior to suspending
-Date: Thu, 13 Dec 2007 13:38:29 -0800
-Message-ID: <20071213133829.6d850a1d.akpm@linux-foundation.org>
-References: <20071212234201.a8932915.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0712131055570.4414-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: + git-acpi-build-fix.patch added to -mm tree
+Date: Fri, 14 Dec 2007 01:07:13 +0100
+Message-ID: <200712140107.13630.rjw__48598.928974434$1197589772$gmane$org@sisk.pl>
+References: <200712130343.lBD3hAmY011894@imap1.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712131055570.4414-100000@iolanthe.rowland.org>
+In-Reply-To: <200712130343.lBD3hAmY011894@imap1.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +19,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: akpm@linux-foundation.org, lenb@kernel.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 Dec 2007 11:02:36 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Wed, 12 Dec 2007, Andrew Morton wrote:
+On Thursday, 13 of December 2007, akpm@linux-foundation.org wrote:
 > 
-> > On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > This patch (as994) reorganizes the way suspend and resume
-> > > notifications are sent to drivers.  The major changes are that now the
-> > > PM core acquires every device semaphore before calling the methods,
-> > > and calls to device_add() during suspends will fail.
-> > 
-> > Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
-> > moon symbol has started to flash but the LCD is still powered and the
-> > cursor still blinks.  Only a poweroff restores control.
+> The patch titled
+>      git-acpi build fix
+> has been added to the -mm tree.  Its filename is
+>      git-acpi-build-fix.patch
 > 
-> Is there any chance of debugging this?
-
-Spose so, although debugging 2.6.24-rc5 regressions seems a more useful way
-to spend one's time.
-
->  You have removed the patch from 
-> the current -mm source.  Does anybody else report a similar problem?
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
 > 
-> Proper debugging would require, to begin with, enabling 
-> CONFIG_PM_VERBOSE and booting with no_console_suspend.
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> ------------------------------------------------------
+> Subject: git-acpi build fix
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> ia64 allmodconfig:
+> 
+> kernel/power/main.c:493: error: `pm_test_attr' undeclared here (not in a function)
+> 
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  kernel/power/main.c |    3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> diff -puN kernel/power/main.c~git-acpi-build-fix kernel/power/main.c
+> --- a/kernel/power/main.c~git-acpi-build-fix
+> +++ a/kernel/power/main.c
+> @@ -489,9 +489,6 @@ static struct attribute * g[] = {
+>  #ifdef CONFIG_PM_TRACE
+>  	&pm_trace_attr.attr,
+>  #endif
+> -#ifdef CONFIG_PM_DEBUG
+> -	&pm_test_attr.attr,
+> -#endif
 
-Will try to remember to take a look this evening.
+Doesn't it kill pm_test_attr on all architectures?
 
-Speaking of efficient use of resources: how many other people have tested
-suspend-to-disk with this patch applied?  And on how many machines?
+The proper (hopefully) fix is appended (Len, please add it to the suspend
+branch).
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Fix compilation problems related to the /sys/power/pm_test attribute.
+Namely, this attribute should also be available when
+CONFIG_HIBERNATION is set and CONFIG_SUSPEND is unset and it should
+not break compilation when neither of them is set.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -50,10 +50,6 @@ int pm_notifier_call_chain(unsigned long
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
+ 
+-#endif /* CONFIG_PM_SLEEP */
+-
+-#ifdef CONFIG_SUSPEND
+-
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
+ 
+@@ -127,6 +123,10 @@ power_attr(pm_test);
+ static inline int suspend_test(int level) { return 0; }
+ #endif /* !CONFIG_PM_DEBUG */
+ 
++#endif /* CONFIG_PM_SLEEP */
++
++#ifdef CONFIG_SUSPEND
++
+ /* This is just an arbitrary number */
+ #define FREE_PAGE_NUMBER (100)
+ 
+@@ -484,7 +484,7 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_TRACE
+ 	&pm_trace_attr.attr,
+ #endif
+-#ifdef CONFIG_PM_DEBUG
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
+ 	&pm_test_attr.attr,
+ #endif
+ 	NULL,
