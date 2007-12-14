@@ -1,15 +1,12 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: + git-acpi-build-fix.patch added to -mm tree
-Date: Thu, 13 Dec 2007 20:27:31 -0500
-Message-ID: <200712132027.31477.lenb__2872.45790609649$1197595753$gmane$org@kernel.org>
-References: <200712130343.lBD3hAmY011894@imap1.linux-foundation.org>
-	<200712140107.13630.rjw@sisk.pl>
+Subject: [GIT PATCH] ACPI patches for 2.6.24-rc5
+Date: Fri, 14 Dec 2007 01:26:11 -0500
+Message-ID: <200712140126.12182.lenb__20229.86574234$1197613793$gmane$org@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712140107.13630.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,111 +17,126 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 13 December 2007 19:07, Rafael J. Wysocki wrote:
-> On Thursday, 13 of December 2007, akpm@linux-foundation.org wrote:
-> > 
-> > The patch titled
-> >      git-acpi build fix
-> > has been added to the -mm tree.  Its filename is
-> >      git-acpi-build-fix.patch
-> > 
-> > *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> > 
-> > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> > out what to do about this
-> > 
-> > ------------------------------------------------------
-> > Subject: git-acpi build fix
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> > 
-> > ia64 allmodconfig:
+Hi Linus,
 
-ah, good to know that ia64 allmodconfig is supposed to build.
-A while back it looked so hopeless that I deleted it from
-my test builds and it never got back onto my list.
+please pull from: 
 
-I guess I should kick off an ia64 allyesconfig and see how that does too...
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
-> > kernel/power/main.c:493: error: `pm_test_attr' undeclared here (not in a function)
-> > 
-> > Cc: Len Brown <lenb@kernel.org>
-> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> > 
-> >  kernel/power/main.c |    3 ---
-> >  1 file changed, 3 deletions(-)
-> > 
-> > diff -puN kernel/power/main.c~git-acpi-build-fix kernel/power/main.c
-> > --- a/kernel/power/main.c~git-acpi-build-fix
-> > +++ a/kernel/power/main.c
-> > @@ -489,9 +489,6 @@ static struct attribute * g[] = {
-> >  #ifdef CONFIG_PM_TRACE
-> >  	&pm_trace_attr.attr,
-> >  #endif
-> > -#ifdef CONFIG_PM_DEBUG
-> > -	&pm_test_attr.attr,
-> > -#endif
-> 
-> Doesn't it kill pm_test_attr on all architectures?
-> 
-> The proper (hopefully) fix is appended (Len, please add it to the suspend
-> branch).
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Fix compilation problems related to the /sys/power/pm_test attribute.
-> Namely, this attribute should also be available when
-> CONFIG_HIBERNATION is set and CONFIG_SUSPEND is unset and it should
-> not break compilation when neither of them is set.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/main.c |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -50,10 +50,6 @@ int pm_notifier_call_chain(unsigned long
->  			== NOTIFY_BAD) ? -EINVAL : 0;
->  }
->  
-> -#endif /* CONFIG_PM_SLEEP */
-> -
-> -#ifdef CONFIG_SUSPEND
-> -
->  #ifdef CONFIG_PM_DEBUG
->  int pm_test_level = TEST_NONE;
->  
-> @@ -127,6 +123,10 @@ power_attr(pm_test);
->  static inline int suspend_test(int level) { return 0; }
->  #endif /* !CONFIG_PM_DEBUG */
->  
-> +#endif /* CONFIG_PM_SLEEP */
-> +
-> +#ifdef CONFIG_SUSPEND
-> +
->  /* This is just an arbitrary number */
->  #define FREE_PAGE_NUMBER (100)
->  
-> @@ -484,7 +484,7 @@ static struct attribute * g[] = {
->  #ifdef CONFIG_PM_TRACE
->  	&pm_trace_attr.attr,
->  #endif
-> -#ifdef CONFIG_PM_DEBUG
-> +#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
->  	&pm_test_attr.attr,
->  #endif
->  	NULL,
-> 
+This will update the files shown below.
 
-Applied.
-thanks,
+thanks!
+
 -Len
+
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc5.diff.gz
+
+ drivers/acpi/battery.c       |    2 +-
+ drivers/acpi/numa.c          |    4 ++--
+ drivers/acpi/video.c         |    4 ++--
+ drivers/misc/thinkpad_acpi.c |    4 ++--
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+through these commits:
+
+Andrey Borzenkov (1):
+      ACPI: battery: fix ACPI battery technology reporting
+
+Henrique de Moraes Holschuh (1):
+      ACPI: thinkpad-acpi: fix lenovo keymap for brightness
+
+Jan Beulich (1):
+      ACPI: fix modpost warnings
+
+William Lee Irwin III (1):
+      ACPI: video_device_list corruption
+
+with this log:
+
+commit d020c36685a35f66be89700e911c7d77a67bdc43
+Merge: 6790acb... ad40e68...
+Author: Len Brown <len.brown@intel.com>
+Date:   Thu Dec 13 22:16:14 2007 -0500
+
+    Pull battery-2.6.24 into release branch
+
+commit 6790acb14d264d874ff8cbae1a72e72883ec3678
+Merge: ffada89... 56a185b...
+Author: Len Brown <len.brown@intel.com>
+Date:   Thu Dec 13 22:12:38 2007 -0500
+
+    Pull thinkpad-2.6.24 into release branch
+
+commit 56a185b43be05e48da7428e6a1d3e2585b232b1d
+Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date:   Thu Dec 13 12:14:09 2007 -0200
+
+    ACPI: thinkpad-acpi: fix lenovo keymap for brightness
+    
+    Starting in 2.6.23...
+    
+    Several reports from X60 users complained that the default Lenovo keymap
+    issuing EV_KEY KEY_BRIGHTNESS_UP/DOWN input events caused major issues when
+    the proper brightness support through ACPI video.c was loaded.
+    
+    Therefore, remove the generation of these events by default, which is the
+    right thing for T60, X60, R60, T61, X61 and R61 with their latest BIOSes.
+    
+    Distros that want to misuse these events into OSD reporting (which requires
+    an ugly hack from hell in HAL) are welcome to set up the key map they need
+    through HAL.  That way, we don't break everyone else's systems.
+    
+    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit ffada8913e39e6fd35e95d7040ccac57b45812c9
+Author: Jan Beulich <jbeulich@novell.com>
+Date:   Thu Dec 13 08:32:26 2007 +0000
+
+    ACPI: fix modpost warnings
+    
+    for sn2_defconfig:
+    
+    WARNING: vmlinux.o(.text+0x4b8601): Section mismatch: reference to .init.data:node_to_pxm_map (between '__acpi_map_pxm_to_node' and 'acpi_get_pxm')
+    WARNING: vmlinux.o(.text+0x4b8741): Section mismatch: reference to .init.data:pxm_to_node_map (between 'acpi_map_pxm_to_node' and 'acpi_get_node')
+    
+    Signed-off-by: Jan Beulich <jbeulich@novell.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 98934def70b48dac74fac3738b78ab2d1a28edda
+Author: William Lee Irwin III <wli@holomorphy.com>
+Date:   Wed Dec 12 03:56:55 2007 -0800
+
+    ACPI: video_device_list corruption
+    
+    The ->cap fields of struct acpi_video_device and struct acpi_video_bus
+    are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
+    list_head fields. This resulted in silent corruption without
+    CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
+    the proper bounds to the memset() calls and thereby correct the bugs.
+    
+    Signed-off-by: William Irwin <wli@holomorphy.com>
+    Acked-by: Mikael Pettersson <mikpe@it.uu.se>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit ad40e68bf5c54831cd6b2199fd24d616bac179f7
+Author: Andrey Borzenkov <arvidjaar@mail.ru>
+Date:   Sat Nov 10 20:02:49 2007 +0300
+
+    ACPI: battery: fix ACPI battery technology reporting
+    
+    At least some systems report technology information with trailing spaces:
+    
+    {pts/1}% cat -E /var/tmp/bat/2.6.23 | grep type
+    battery type:            Li-ION  $
+    
+    Use strncasecmp to compare model string to skip trailing part
+    
+    Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+    Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
