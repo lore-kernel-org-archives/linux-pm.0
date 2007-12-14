@@ -1,16 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: apm_emulation regression
-Date: Fri, 14 Dec 2007 11:04:35 +1100
-Message-ID: <1197590675.15741.195.camel@pasglop>
-References: <1197427530.8385.59.camel@pasglop>
-	<1197482587.6558.145.camel@johannes.berg>
-	<200712140110.44406.rjw@sisk.pl>
-Reply-To: benh@kernel.crashing.org
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM: acquire device locks prior to suspending
+Date: Thu, 13 Dec 2007 16:22:24 -0800
+Message-ID: <20071213162224.ea5aec25.akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211536570.5816-100000@iolanthe.rowland.org>
+	<20071212234201.a8932915.akpm@linux-foundation.org>
+	<200712131758.38116.rjw@sisk.pl> <200712140108.37609.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712140110.44406.rjw@sisk.pl>
+In-Reply-To: <200712140108.37609.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,22 +20,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 14 Dec 2007 01:08:37 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-On Fri, 2007-12-14 at 01:10 +0100, Rafael J. Wysocki wrote:
+> On Thursday, 13 of December 2007, Rafael J. Wysocki wrote:
+> > On Thursday, 13 of December 2007, Andrew Morton wrote:
+> > > On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > 
+> > > > This patch (as994) reorganizes the way suspend and resume
+> > > > notifications are sent to drivers.  The major changes are that now the
+> > > > PM core acquires every device semaphore before calling the methods,
+> > > > and calls to device_add() during suspends will fail.
+> > > 
+> > > Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
+> > > moon symbol has started to flash but the LCD is still powered and the
+> > > cursor still blinks.  Only a poweroff restores control.
+> > 
+> > Most probably, one of the drivers or a CPU hotplug notifier unregisters a
+> > device during suspend (wrong).
+> > 
+> > Please boot with no_console_suspend and check if the box survives (with this
+> > patch applied):
+> > 
+> > # echo 8 > /proc/sys/kernel/printk
+> > # echo processors > /sys/power/pm_test
+> > # echo mem > /sys/power/state
+> > 
+> > If it doesn't, you can try 
+> > 
+> > # echo platform > /sys/power/pm_test
+> > # echo mem > /sys/power/state
+> > 
+> > and
+> > 
+> > # echo devices > /sys/power/pm_test
+> > # echo mem > /sys/power/state
 > 
-> Hmm.
-> 
-> I'm not that familiar with the APM emulation code, but the description
-> of the
-> problem above suggests that the APM emulation can install a suspend
-> notifier for this purpose.
+> Ah, that won't work, because git-acpi-build-fix.patch killed
+> /sys/power/pm_test altogether.  Sorry.
 
-It can use the new notifier that happens before freezing yes. Johannes,
-I think that's pretty much what my old powermac implementation did
-(using my private notifier scheme I had there), might be worth reviving
-that bit and sticking it into the generic apm_emu ...
+I was wondering..
 
-Ben.
+What's going on with git-acpi-build-fix.patch anyway?  Is there
+something different we should do?
