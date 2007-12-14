@@ -1,163 +1,86 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] PM: acquire device locks prior to suspending
-Date: Thu, 13 Dec 2007 23:31:31 -0800
-Message-ID: <20071213233131.733c2438.akpm@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0709211536570.5816-100000@iolanthe.rowland.org>
-	<20071212234201.a8932915.akpm@linux-foundation.org>
-	<200712131758.38116.rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: apm_emulation regression
+Date: Fri, 14 Dec 2007 13:18:28 +0100
+Message-ID: <1197634708.16079.46.camel@johannes.berg>
+References: <1197427530.8385.59.camel@pasglop>
+	<1197482587.6558.145.camel@johannes.berg>
+	<200712140110.44406.rjw@sisk.pl>
+	<1197590675.15741.195.camel@pasglop>
+	<1197590712.15741.197.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712131758.38116.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: multipart/mixed; boundary="===============2039893659=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <1197590712.15741.197.camel@pasglop>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: benh@kernel.crashing.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 Dec 2007 17:58:37 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Thursday, 13 of December 2007, Andrew Morton wrote:
-> > On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > This patch (as994) reorganizes the way suspend and resume
-> > > notifications are sent to drivers.  The major changes are that now the
-> > > PM core acquires every device semaphore before calling the methods,
-> > > and calls to device_add() during suspends will fail.
-> > 
-> > Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
-> > moon symbol has started to flash but the LCD is still powered and the
-> > cursor still blinks.  Only a poweroff restores control.
-> 
-> Most probably, one of the drivers or a CPU hotplug notifier unregisters a
-> device during suspend (wrong).
-> 
-> Please boot with no_console_suspend and check if the box survives (with this
-> patch applied):
-> 
-> # echo 8 > /proc/sys/kernel/printk
-> # echo processors > /sys/power/pm_test
-> # echo mem > /sys/power/state
-> 
-> If it doesn't, you can try 
-> 
-> # echo platform > /sys/power/pm_test
-> # echo mem > /sys/power/state
-> 
-> and
-> 
-> # echo devices > /sys/power/pm_test
-> # echo mem > /sys/power/state
+--===============2039893659==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nCs1fOMHqIS+krGW+M/L"
 
-hm, that was all fairly helpful.  <looks at the document> <erk, long>
 
-This:
+--=-nCs1fOMHqIS+krGW+M/L
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---- a/drivers/base/power/main.c~a
-+++ a/drivers/base/power/main.c
-@@ -58,13 +58,36 @@ static DECLARE_RWSEM(pm_sleep_rwsem);
- 
- int (*platform_enable_wakeup)(struct device *dev, int is_on);
- 
-+static void __do_down(struct semaphore *s, const char *file, int line)
-+{
-+	printk("%s:%d\n", file, line);
-+	dump_stack();
-+	down(s);
-+}
-+#define do_down(s) __do_down(s, __FILE__, __LINE__)
-+
-+static void __do_mutex_lock(struct mutex *m, const char *file, int line)
-+{
-+	printk("%s:%d\n", file, line);
-+	dump_stack();
-+	mutex_lock(m);
-+}
-+#define do_mutex_lock(m) __do_mutex_lock(m, __FILE__, __LINE__)
-+
-+static void __do_down_write(struct rw_semaphore *s, const char *file, int line)
-+{
-+	printk("%s:%d\n", file, line);
-+	dump_stack();
-+	down_write(s);
-+}
-+#define do_down_write(s) __do_down_write(s, __FILE__, __LINE__)
- 
- void device_pm_add(struct device *dev)
- {
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
--	mutex_lock(&dpm_list_mtx);
-+	do_mutex_lock(&dpm_list_mtx);
- 	list_add_tail(&dev->power.entry, &dpm_active);
- 	mutex_unlock(&dpm_list_mtx);
- }
-@@ -76,8 +99,8 @@ void device_pm_remove(struct device *dev
- 		 kobject_name(&dev->kobj));
- 
- 	/* Don't remove a device while the PM core has it locked for suspend */
--	down(&dev->sem);
--	mutex_lock(&dpm_list_mtx);
-+	do_down(&dev->sem);
-+	do_mutex_lock(&dpm_list_mtx);
- 	dpm_sysfs_remove(dev);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
-@@ -229,7 +252,7 @@ static void dpm_resume(void)
-  */
- static void unlock_all_devices(void)
- {
--	mutex_lock(&dpm_list_mtx);
-+	do_mutex_lock(&dpm_list_mtx);
-  	while (!list_empty(&dpm_locked)) {
-  		struct list_head *entry = dpm_locked.prev;
-  		struct device *dev = to_device(entry);
-@@ -412,7 +435,7 @@ static int dpm_suspend(pm_message_t stat
-  */
- static void lock_all_devices(void)
- {
--	mutex_lock(&dpm_list_mtx);
-+	do_mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_active)) {
- 		struct list_head *entry = dpm_active.next;
- 		struct device *dev = to_device(entry);
-@@ -422,8 +445,8 @@ static void lock_all_devices(void)
- 		 */
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
--		down(&dev->sem);
--		mutex_lock(&dpm_list_mtx);
-+		do_down(&dev->sem);
-+		do_mutex_lock(&dpm_list_mtx);
- 
- 		if (list_empty(entry))
- 			up(&dev->sem);		/* Device was removed */
-@@ -445,7 +468,7 @@ int device_suspend(pm_message_t state)
- 	int error;
- 
- 	might_sleep();
--	down_write(&pm_sleep_rwsem);
-+	do_down_write(&pm_sleep_rwsem);
- 	lock_all_devices();
- 	error = dpm_suspend(state);
- 	if (error) {
-_
 
-gives me this:
+> > It can use the new notifier that happens before freezing yes. Johannes,
+> > I think that's pretty much what my old powermac implementation did
+> > (using my private notifier scheme I had there), might be worth reviving
+> > that bit and sticking it into the generic apm_emu ...
+>=20
+> Note that you may want to improve on it with a timeout in case userspace
+> doesn't ack...
 
-http://userweb.kernel.org/~akpm/pc131699.jpg
+Yeah heh. I'll take a look, shouldn't be too hard. Except I'm not
+exactly sure how to test it.
 
-which identifies your culprit: msr.
+johannes
 
-I'd suggest that the above debug patch be turned into some
-boot-option-enabled thing and that it be rolled out with this locking
-change for a while at least.
+--=-nCs1fOMHqIS+krGW+M/L
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR2J0k6Vg1VMiehFYAQJUiw/+IILaLAb6tcHM+BQNEdo1tIxbrfW/ZfTQ
+0H4kxHi35w7bbzWn6fyMI1kroaSuyOXNNlHy7LRTwy5ozJsvIUO8d+l9YjiuSnZT
+KAIEJcQ4V4aOAVzgk8Tw2qr97RdzM1LZi2Lf7QQiuX4RxJekU12fVvmTw8+lomnw
+6TZlA40LPPpZDEbooXnlou6FH5QdC3IlC2wOUAwtSXB5PEhZMl0s+nxv3rd7uIjl
+lF97rWfew9QcJzty4U9ofRYnZfNWVbFCrs247IVP2o6LzsNIt8IN2MvlB8z1qTTE
+ycEOMlqvMSvgyrmz6jmjh8sgSpGnCL2swc8+g6P7W7c6ggBhtoa9aoRzuebl7RRl
+eZTCKg+W+JC51rILiHPjqwdqEj4j2zeHvZEenADmFtHAvdRt4uiVvrc16yH5PyBe
+0fMbfGYhIk68upySpCrIGOPy/3DtJZ/iF1XsvbDM0x26xTxZY+SbzUyoJyEB7mUh
+ztfj6BqgT1Ek31kKEFrsue2iZTJ7ftZR7XSmHPkSuiAs/oJ2dD2FECcCcOSL+yFL
+Lf8p05Pri3GAI3WUWjHKy5aeD1Aw042rkR5ZKGTF2vmHlTb3x1l5QIbRqQD3CoVW
+9ZkQAZsM2n/eKDeYEsdvC4YllyEFzpqz4hh+WYE/tR81W+RSw/x6fVBPJYTWin3/
+NptJsp4sPh4=
+=1bkV
+-----END PGP SIGNATURE-----
+
+--=-nCs1fOMHqIS+krGW+M/L--
+
+
+--===============2039893659==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============2039893659==--
