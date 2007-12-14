@@ -1,13 +1,15 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.24-rc5
-Date: Thu, 13 Dec 2007 23:06:43 -0800
-Message-ID: <20071213230643.76d196dd.akpm__23350.8284240544$1197616084$gmane$org@linux-foundation.org>
-References: <200712140126.12182.lenb@kernel.org>
+Subject: Re: [PATCH] PM: acquire device locks prior to suspending
+Date: Thu, 13 Dec 2007 23:20:15 -0800
+Message-ID: <20071213232015.3e58936e.akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211536570.5816-100000@iolanthe.rowland.org>
+	<20071212234201.a8932915.akpm@linux-foundation.org>
+	<200712131758.38116.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712140126.12182.lenb@kernel.org>
+In-Reply-To: <200712131758.38116.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 Dec 2007 01:26:11 -0500 Len Brown <lenb@kernel.org> wrote:
+On Thu, 13 Dec 2007 17:58:37 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> please pull from: 
+> On Thursday, 13 of December 2007, Andrew Morton wrote:
+> > On Fri, 21 Sep 2007 15:37:40 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+> > 
+> > > This patch (as994) reorganizes the way suspend and resume
+> > > notifications are sent to drivers.  The major changes are that now the
+> > > PM core acquires every device semaphore before calling the methods,
+> > > and calls to device_add() during suspends will fail.
+> > 
+> > Causes my t61p to deadlock during suspend-to-RAM.  Really late - the little
+> > moon symbol has started to flash but the LCD is still powered and the
+> > cursor still blinks.  Only a poweroff restores control.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> 
-> This will update the files shown below.
-> 
-> thanks!
-> 
-> -Len
-> 
-> ps. individual patches are available on linux-acpi@vger.kernel.org
-> and a consolidated plain patch is available here:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc5.diff.gz
-> 
->  drivers/acpi/battery.c       |    2 +-
->  drivers/acpi/numa.c          |    4 ++--
->  drivers/acpi/video.c         |    4 ++--
->  drivers/misc/thinkpad_acpi.c |    4 ++--
->  4 files changed, 7 insertions(+), 7 deletions(-)
+> Most probably, one of the drivers or a CPU hotplug notifier unregisters a
+> device during suspend (wrong).
 
-What's happening with Alexey's sbs regression fixes?
+Not much is coming out over netconsole.
+
+Disabling netconsole doesn't work around this bug.
+
+> Please boot with no_console_suspend and check if the box survives (with this
+> patch applied):
+> 
+> # echo 8 > /proc/sys/kernel/printk
+> # echo processors > /sys/power/pm_test
+> # echo mem > /sys/power/state
+
+http://userweb.kernel.org/~akpm/pc131696.jpg
+
+It hangs in the same way.
+
+> If it doesn't, you can try 
+> 
+> # echo platform > /sys/power/pm_test
+> # echo mem > /sys/power/state
+
+It gets here: http://userweb.kernel.org/~akpm/pc131697.jpg then locks up.
+
+> and
+> 
+> # echo devices > /sys/power/pm_test
+> # echo mem > /sys/power/state
+
+It gets here: http://userweb.kernel.org/~akpm/pc131698.jpg then locks up.
+
+I spent a bit of time ding crude debugging hacks but ran out of patience..
