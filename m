@@ -1,12 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PATCH] ACPI patches for 2.6.24-rc5 (take 2)
-Date: Fri, 14 Dec 2007 16:20:21 -0500
-Message-ID: <200712141620.21559.lenb__47106.6142934889$1197667421$gmane$org@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: acquire device locks prior to suspending
+Date: Sat, 15 Dec 2007 01:17:21 +0100
+Message-ID: <200712150117.21895.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0712141129200.4768-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0712141129200.4768-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,211 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Friday, 14 of December 2007, Alan Stern wrote:
+> On Thu, 13 Dec 2007, Andrew Morton wrote:
+> 
+> > hm, that was all fairly helpful.  <looks at the document> <erk, long>
+> > 
+> > This:
+> 
+> > gives me this:
+> > 
+> > http://userweb.kernel.org/~akpm/pc131699.jpg
+> > 
+> > which identifies your culprit: msr.
+> > 
+> > I'd suggest that the above debug patch be turned into some
+> > boot-option-enabled thing and that it be rolled out with this locking
+> > change for a while at least.
+> 
+> Rafael, that looks like exactly the same sort of problem as we saw 
+> before.  Global searching for CPU_DEAD_FROZEN shows several other 
+> places that perhaps also could be simplified; the actions they take may 
+> or may not be needed for hibernation.
+> 
+> The following three seem definitely dangerous:
+> 
+> 	arch/x86/kernel/cpu/mcheck/mce_64.c
+> 	arch/x86/kernel/cpuid.c
+> 	arch/x86/kernel/msr.c
+> 
+> And of course the third is the one that Andrew spotted.  Would you like 
+> to address them?
 
-please pull from: 
+Yes, I think I can take care of them, but not earlier than on Sunday.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> I can package up Andrew's debugging changes into a real patch.
 
-This augments the pull request I made yesterday with a fix
-for the 2.6.24 SBS regression and some dmesg spam removal.
+Yes, that certainly is worth doing. :-)
 
-This will update the files shown below.
-
-thanks!
-
--Len
-
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc5.diff.gz
-
- drivers/acpi/battery.c       |    2 +-
- drivers/acpi/numa.c          |    4 ++--
- drivers/acpi/pci_bind.c      |    3 ---
- drivers/acpi/sbs.c           |   27 ++++++++++++---------------
- drivers/acpi/sbshc.c         |   17 +++++++++++++----
- drivers/acpi/sbshc.h         |    6 ++++++
- drivers/acpi/video.c         |    4 ++--
- drivers/misc/thinkpad_acpi.c |    4 ++--
- 8 files changed, 38 insertions(+), 29 deletions(-)
-
-through these commits:
-
-Alexey Starikovskiy (3):
-      ACPI: SBS: Reset alarm bit
-      ACPI: SBS: Ignore alarms coming from unknown devices
-      ACPI: SBS: Return rate in mW if capacity in mWh
-
-Andrey Borzenkov (1):
-      ACPI: battery: fix ACPI battery technology reporting
-
-Gary Hade (1):
-      ACPI: acpiphp: Remove dmesg spam on device remove
-
-Henrique de Moraes Holschuh (1):
-      ACPI: thinkpad-acpi: fix lenovo keymap for brightness
-
-Jan Beulich (1):
-      ACPI: fix modpost warnings
-
-William Lee Irwin III (1):
-      ACPI: video_device_list corruption
-
-with this log:
-
-commit 6e3013932e97a0e034d55419c60ae4a8a229ceb8
-Merge: 5889ba0... 5a21e4f...
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Dec 14 15:14:52 2007 -0500
-
-    Pull bugzilla-9362 into release branch
-
-commit 5a21e4fe587ebb793bf3a1c02755f8a845170328
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:46 2007 +0300
-
-    ACPI: SBS: Return rate in mW if capacity in mWh
-    
-    klaptopd assumes rate to be in same units as capacity.
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit c2d00f2d1bf8dd721f5557b0df23729addc1898d
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:40 2007 +0300
-
-    ACPI: SBS: Ignore alarms coming from unknown devices
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 09f1fb41ad45bc18abe07c62f7b56560571584d1
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:33 2007 +0300
-
-    ACPI: SBS: Reset alarm bit
-    
-    Alarm bit should be cleared in order for other alarms to be sent.
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 5889ba0a6a1174ac38d7045824a2d2ed8e93d756
-Merge: d020c36... 6ce7641...
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Dec 14 14:54:09 2007 -0500
-
-    Pull hotplug into release branch
-
-commit d020c36685a35f66be89700e911c7d77a67bdc43
-Merge: 6790acb... ad40e68...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 13 22:16:14 2007 -0500
-
-    Pull battery-2.6.24 into release branch
-
-commit 6790acb14d264d874ff8cbae1a72e72883ec3678
-Merge: ffada89... 56a185b...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 13 22:12:38 2007 -0500
-
-    Pull thinkpad-2.6.24 into release branch
-
-commit 56a185b43be05e48da7428e6a1d3e2585b232b1d
-Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Date:   Thu Dec 13 12:14:09 2007 -0200
-
-    ACPI: thinkpad-acpi: fix lenovo keymap for brightness
-    
-    Starting in 2.6.23...
-    
-    Several reports from X60 users complained that the default Lenovo keymap
-    issuing EV_KEY KEY_BRIGHTNESS_UP/DOWN input events caused major issues when
-    the proper brightness support through ACPI video.c was loaded.
-    
-    Therefore, remove the generation of these events by default, which is the
-    right thing for T60, X60, R60, T61, X61 and R61 with their latest BIOSes.
-    
-    Distros that want to misuse these events into OSD reporting (which requires
-    an ugly hack from hell in HAL) are welcome to set up the key map they need
-    through HAL.  That way, we don't break everyone else's systems.
-    
-    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit ffada8913e39e6fd35e95d7040ccac57b45812c9
-Author: Jan Beulich <jbeulich@novell.com>
-Date:   Thu Dec 13 08:32:26 2007 +0000
-
-    ACPI: fix modpost warnings
-    
-    for sn2_defconfig:
-    
-    WARNING: vmlinux.o(.text+0x4b8601): Section mismatch: reference to .init.data:node_to_pxm_map (between '__acpi_map_pxm_to_node' and 'acpi_get_pxm')
-    WARNING: vmlinux.o(.text+0x4b8741): Section mismatch: reference to .init.data:pxm_to_node_map (between 'acpi_map_pxm_to_node' and 'acpi_get_node')
-    
-    Signed-off-by: Jan Beulich <jbeulich@novell.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 98934def70b48dac74fac3738b78ab2d1a28edda
-Author: William Lee Irwin III <wli@holomorphy.com>
-Date:   Wed Dec 12 03:56:55 2007 -0800
-
-    ACPI: video_device_list corruption
-    
-    The ->cap fields of struct acpi_video_device and struct acpi_video_bus
-    are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
-    list_head fields. This resulted in silent corruption without
-    CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
-    the proper bounds to the memset() calls and thereby correct the bugs.
-    
-    Signed-off-by: William Irwin <wli@holomorphy.com>
-    Acked-by: Mikael Pettersson <mikpe@it.uu.se>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit ad40e68bf5c54831cd6b2199fd24d616bac179f7
-Author: Andrey Borzenkov <arvidjaar@mail.ru>
-Date:   Sat Nov 10 20:02:49 2007 +0300
-
-    ACPI: battery: fix ACPI battery technology reporting
-    
-    At least some systems report technology information with trailing spaces:
-    
-    {pts/1}% cat -E /var/tmp/bat/2.6.23 | grep type
-    battery type:            Li-ION  $
-    
-    Use strncasecmp to compare model string to skip trailing part
-    
-    Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-    Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 6ce7641b879e4b9ead46e14275d9d3645b47fa63
-Author: Gary Hade <garyhade@us.ibm.com>
-Date:   Tue Nov 20 12:19:12 2007 -0800
-
-    ACPI: acpiphp: Remove dmesg spam on device remove
-    
-    In cases where acpi_pci_bind() does not
-    attach device data, acpi_pci_unbind()
-    complains via an ACPI exception about the missing data when
-    the device is removed.  For example, acpi_pci_bind() does not
-    attach data for non-existent device functions so when the device
-    is removed using the ACPI PCI hotplug driver 'acpiphp' an ACPI
-    exception is logged for every non-existent function.  This patch
-    avoids the confusing log messages by removing the unnecessary
-    ACPI exception.
-    
-    Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Thanks,
+Rafael
