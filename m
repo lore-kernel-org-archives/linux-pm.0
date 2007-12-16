@@ -1,14 +1,12 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: broken suspend,
-	sometimes (drm related) [Was: 2.6.24-rc5-mm1]
-Date: Sun, 16 Dec 2007 00:59:40 +0100
-Message-ID: <47646A6C.7070007__47763.3287584924$1197763297$gmane$org@gmail.com>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [RFC] apm-emulation: implement notify/ack for
+	/sys/power/state events
+Date: Sun, 16 Dec 2007 18:58:26 +0100
+Message-ID: <1197827906.6769.7.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,317 +16,215 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: airlied@linux.ie, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Jamey Hicks <jamey@crl.dec.com>, Ralf Baechle <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/13/2007 11:40 AM, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+Currently, apm-emulation only implements notify/ack for events that are
+initiated by the apm-emulation code itself. That doesn't work out quite
+so well when X relies on the apm-emulation and you use scripts to
+suspend that simply use /sys/power/state. Ultimately, those scripts
+ought to notify userspace themselves, but currently X relies on apm
+notifications.
 
-Broken @#$%^ suspend, again (and maybe still for a longer time). Unable to
-reproduce this with netconsole.
+This patch implements the required notification.
 
-trace led to i915_suspend
-        call    pci_bus_read_config_byte        #
-        movq    8(%rbx), %rdi   # <variable>.mmio_map, <variable>.mmio_map
-        movq    24(%rdi), %rax  # <variable>.handle, D.24395
-        movl    458760(%rax), %eax      #, D.24397
+Rafael already told me that the EXPORT_SYMBOL_GPL() this patch adds will
+no longer be required. If this patch is merged before the suspend tree
+(though it probably should go through the suspend tree), that is
+required, otherwise it should be removed.
 
-address in rax (i.e. dev_priv->mmio_map->handle) is broken, at least it seems so
-from the part of the trace and RIP.
+I have *NOT* tested this patch with X, only with a simple dummy program
+that does the apm emulation code, available here:
+http://johannes.sipsolutions.net/files/test-apm-emu.c.txt
 
-        movl    %eax, 408(%rbx) # D.24397, <variable>.savePIPEACONF
-        movq    24(%rdi), %rax  # <variable>.handle, temp.676
-        movl    393244(%rax), %eax      #, D.24399
+Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ drivers/char/apm-emulation.c |  108 ++++++++++++++++++++++++++++++++++++++++---
+ kernel/power/main.c          |    1 
+ 2 files changed, 102 insertions(+), 7 deletions(-)
 
-in
-        pci_save_state(dev->pdev);
-        pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
-
-        /* Pipe & plane A info */
--->     dev_priv->savePIPEACONF = I915_READ(PIPEACONF);
-
-I use distro pm-utils and it chvt's to some terminal, write out the output,
-suspend, resume, switch back to X.
-
-The patch I'm currently using for debugging:
-Index: BH/drivers/char/drm/i915_drv.c
-===================================================================
---- BH.orig/drivers/char/drm/i915_drv.c
-+++ BH/drivers/char/drm/i915_drv.c
-@@ -274,9 +274,18 @@ static int i915_suspend(struct drm_devic
-                return -ENODEV;
-        }
-
-+       if (!dev_priv->mmio_map || !dev_priv->mmio_map->handle) {
-+               printk(KERN_ERR "BAD BAD BAD %p %p\n", dev_priv->mmio_map,
-+                       dev_priv->mmio_map ? dev_priv->mmio_map->handle : NULL);
-+               return -EIO;
-+       }
-+
-        pci_save_state(dev->pdev);
-        pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
-
-+       printk(KERN_ERR "\n\n\nmap %p, HANDLE: %p\n\n\n", dev_priv->mmio_map,
-+                       dev_priv->mmio_map->handle);
-+       msleep(5000);
-        /* Pipe & plane A info */
-        dev_priv->savePIPEACONF = I915_READ(PIPEACONF);
-        dev_priv->savePIPEASRC = I915_READ(PIPEASRC);
-Index: BH/drivers/char/drm/drm_bufs.c
-===================================================================
---- BH.orig/drivers/char/drm/drm_bufs.c
-+++ BH/drivers/char/drm/drm_bufs.c
-@@ -136,6 +136,7 @@ static int drm_addmap_core(struct drm_de
-                return -EINVAL;
-        }
-        map->mtrr = -1;
-+       printk("BLE %s a: map %p, handle %p\n", __func__, map, map->handle);
-        map->handle = NULL;
-
-        switch (map->type) {
-@@ -183,6 +184,7 @@ static int drm_addmap_core(struct drm_de
-                                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-                                return -ENOMEM;
-                        }
-+       printk("BLE %s b: map %p, handle %p\n", __func__, map, map->handle);
-                }
-
-                break;
-@@ -201,6 +203,7 @@ static int drm_addmap_core(struct drm_de
-                        return 0;
-                }
-                map->handle = vmalloc_user(map->size);
-+       printk("BLE %s c: map %p, handle %p\n", __func__, map, map->handle);
-                DRM_DEBUG("%lu %d %p\n",
-                          map->size, drm_order(map->size), map->handle);
-                if (!map->handle) {
-@@ -211,6 +214,7 @@ static int drm_addmap_core(struct drm_de
-                if (map->flags & _DRM_CONTAINS_LOCK) {
-                        /* Prevent a 2nd X Server from creating a 2nd lock */
-                        if (dev->lock.hw_lock != NULL) {
-+       printk("BLE %s d: map %p, handle %p\n", __func__, map, map->handle);
-                                vfree(map->handle);
-                                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-                                return -EBUSY;
-@@ -281,6 +285,7 @@ static int drm_addmap_core(struct drm_de
-                        return -ENOMEM;
-                }
-                map->handle = dmah->vaddr;
-+       printk("BLE %s f: map %p, handle %p\n", __func__, map, map->handle);
-                map->offset = (unsigned long)dmah->busaddr;
-                kfree(dmah);
-                break;
-@@ -291,6 +296,7 @@ static int drm_addmap_core(struct drm_de
-
-        list = drm_alloc(sizeof(*list), DRM_MEM_MAPS);
-        if (!list) {
-+       printk("BLE %s g: map %p, handle %p\n", __func__, map, map->handle);
-                if (map->type == _DRM_REGISTERS)
-                        iounmap(map->handle);
-                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-@@ -308,6 +314,7 @@ static int drm_addmap_core(struct drm_de
-                map->offset;
-        ret = drm_map_handle(dev, &list->hash, user_token, 0);
-        if (ret) {
-+       printk("BLE %s h: map %p, handle %p\n", __func__, map, map->handle);
-                if (map->type == _DRM_REGISTERS)
-                        iounmap(map->handle);
-                drm_free(map, sizeof(*map), DRM_MEM_MAPS);
-@@ -355,6 +362,7 @@ int drm_addmap_ioctl(struct drm_device *
-                return err;
-
-        /* avoid a warning on 64-bit, this casting isn't very nice, but the API
-is set so too late */
-+       printk("BLE %s a: map %p, handle %p\n", __func__, map, map->handle);
-        map->handle = (void *)(unsigned long)maplist->user_token;
-        return 0;
- }
-@@ -398,6 +406,9 @@ int drm_rmmap_locked(struct drm_device *
-
-        switch (map->type) {
-        case _DRM_REGISTERS:
-+       printk("BLE %s a: map %p, handle %p\n", __func__, map, map->handle);
-+       dump_stack();
-+       msleep(1);
-                iounmap(map->handle);
-                /* FALLTHROUGH */
-        case _DRM_FRAME_BUFFER:
-@@ -408,12 +419,14 @@ int drm_rmmap_locked(struct drm_device *
-                }
-                break;
-        case _DRM_SHM:
-+       printk("BLE %s b: map %p, handle %p\n", __func__, map, map->handle);
-                vfree(map->handle);
-                break;
-        case _DRM_AGP:
-        case _DRM_SCATTER_GATHER:
-                break;
-        case _DRM_CONSISTENT:
-+       printk("BLE %s c: map %p, handle %p\n", __func__, map, map->handle);
-                dmah.vaddr = map->handle;
-                dmah.busaddr = map->offset;
-                dmah.size = map->size;
-Index: BH/drivers/char/drm/drm_memory.c
-===================================================================
---- BH.orig/drivers/char/drm/drm_memory.c
-+++ BH/drivers/char/drm/drm_memory.c
-@@ -233,11 +233,13 @@ void drm_core_ioremap(struct drm_map *ma
-                map->handle = agp_remap(map->offset, map->size, dev);
-        else
-                map->handle = ioremap(map->offset, map->size);
-+       printk("BLE %s: map %p, handle %p\n", __func__, map, map->handle);
- }
- EXPORT_SYMBOL(drm_core_ioremap);
-
- void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
+--- everything.orig/drivers/char/apm-emulation.c	2007-12-16 15:22:49.889513942 +0100
++++ everything/drivers/char/apm-emulation.c	2007-12-16 18:57:54.555874295 +0100
+@@ -171,6 +171,8 @@ static void queue_event(apm_event_t even
+  * return -EBUSY.  Otherwise, queue an event to all "writer"
+  * users.  If there are no "writer" users, return '1' to
+  * indicate that we can immediately suspend.
++ *
++ * @sender can be NULL when the event is queued from /sys/power/state
+  */
+ static int queue_suspend_event(apm_event_t event, struct apm_user *sender)
  {
-+       printk("BLE %s a: map %p, handle %p\n", __func__, map, map->handle);
-        if (!map->handle || !map->size)
-                return;
-
-@@ -246,5 +248,6 @@ void drm_core_ioremapfree(struct drm_map
-                vunmap(map->handle);
-        else
-                iounmap(map->handle);
-+       printk("BLE %s b: map %p, handle %p\n", __func__, map, map->handle);
+@@ -207,10 +209,9 @@ static int queue_suspend_event(apm_event
+ 	return ret;
  }
- EXPORT_SYMBOL(drm_core_ioremapfree);
-Index: BH/drivers/char/drm/drm_vm.c
-===================================================================
---- BH.orig/drivers/char/drm/drm_vm.c
-+++ BH/drivers/char/drm/drm_vm.c
-@@ -245,15 +245,18 @@ static void drm_vm_shm_close(struct vm_a
-                                                           map->size);
-                                        DRM_DEBUG("mtrr_del = %d\n", retcode);
-                                }
-+       printk("BLE %s a: map %p, handle %p\n", __func__, map, map->handle);
-                                iounmap(map->handle);
-                                break;
-                        case _DRM_SHM:
-+       printk("BLE %s b: map %p, handle %p\n", __func__, map, map->handle);
-                                vfree(map->handle);
-                                break;
-                        case _DRM_AGP:
-                        case _DRM_SCATTER_GATHER:
-                                break;
-                        case _DRM_CONSISTENT:
-+       printk("BLE %s c: map %p, handle %p\n", __func__, map, map->handle);
-                                dmah.vaddr = map->handle;
-                                dmah.busaddr = map->offset;
-                                dmah.size = map->size;
-
-
-
-
-And the output:
-
-BLE drm_addmap_core a: map ffff81007bd7de40, handle ffff81007bd7de00
-BLE drm_addmap_core c: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_rmmap_locked b: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_rmmap_locked a: map ffff81007d02c940, handle ffffc20010380000
-BLE drm_addmap_core a: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_addmap_core c: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_rmmap_locked b: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_addmap_core a: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_addmap_core c: map ffff81007bd7de40, handle ffffc20010092000
-BLE drm_addmap_core a: map ffff81007bd7da00, handle ffff81007bd7da80
-BLE drm_addmap_ioctl a: map ffff81007bd7dc00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7da00, handle 0000000000000000
-BLE drm_addmap_ioctl a: map ffff81007bd7dc00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7df80, handle ffff81007cc33e10
-BLE drm_addmap_core b: map ffff81007bd7df80, handle ffffc20010380000
-BLE drm_addmap_ioctl a: map ffff81007bd7dc00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7d840, handle ffff81007cc33e10
-BLE drm_addmap_ioctl a: map ffff81007bd7dc00, handle 0000000000000000
-BLE drm_core_ioremap: map ffff81007d0ab050, handle ffffc20010240000
-set status page addr 0x00033000
-BLE drm_core_ioremap: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_addmap_core a: map ffff81007bd7dbc0, handle 0000000000000000
-BLE drm_addmap_ioctl a: map ffff81007bd7df00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7d5c0, handle 0000000000001000
-BLE drm_addmap_ioctl a: map ffff81007bd7df00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7d740, handle 0000000000000000
-BLE drm_addmap_ioctl a: map ffff81007bd7df00, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7d080, handle 0000000000001000
-BLE drm_addmap_ioctl a: map ffff81007bd7df00, handle 0000000000000000
-BLE drm_core_ioremapfree a: map ffff81007d0ab050, handle ffffc20010240000
-BLE drm_core_ioremapfree b: map ffff81007d0ab050, handle ffffc20010240000
-BLE drm_core_ioremapfree a: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_core_ioremapfree b: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_rmmap_locked a: map ffff81007bd7df80, handle ffffc20010380000
-BLE drm_rmmap_locked b: map ffff81007bd7de40, handle ffffc20010092000
-PM: Syncing filesystems ... done.
-PM: Preparing system for mem sleep
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-PM: Entering mem sleep
-sd 2:0:0:0: [sdc] Synchronizing SCSI cache
-sd 2:0:0:0: [sdc] Stopping disk
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Stopping disk
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Stopping disk
-drm_sysfs_suspend
-map ffff81007bd7df80, HANDLE: ffff81007cc33e10
-
-What's this HANDLE address, it has probably nothing to do with the mapping --
-note that "BLE drm_addmap_core a" is _between_ "map = drm_alloc" and map->handle
-= NULL;". How this address leaked to the i915 handle? Maybe some other place I
-haven't spotted which changes handle? Anyway, the mapping ffff81007bd7df80 seems
-to be removed in last but one line ("BLE drm_rmmap_locked a").
-
-next suspend/resume try:
-BLE drm_addmap_core a: map ffff81007c2d9b00, handle 0000000000000000
-BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_addmap_core a: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_addmap_core a: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
-BLE drm_addmap_core a: map ffff81007c2d90c0, handle 8000000000000000
-BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007c2d90c0, handle 0000000000000000
-BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007c2d9800, handle 0000000000000000
-BLE drm_addmap_core b: map ffff81007c2d9800, handle ffffc20010380000
-BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007c2d9e80, handle ffff81007c2d9d40
-BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
-BLE drm_core_ioremap: map ffff81007d0ab050, handle ffffc20010240000
-set status page addr 0x00033000
-BLE drm_core_ioremap: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_addmap_core a: map ffff81007bd7d440, handle 6632785c63766632
-BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007bd7d700, handle 6632785c63766632
-BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007c16f840, handle ffff81007c16f680
-BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
-BLE drm_addmap_core a: map ffff81007c16f2c0, handle ffff81007cc33e10
-BLE drm_addmap_ioctl a: map ffff81007c16f640, handle 0000000000000000
-BLE drm_core_ioremapfree a: map ffff81007d0ab050, handle ffffc20010240000
-BLE drm_core_ioremapfree b: map ffff81007d0ab050, handle ffffc20010240000
-BLE drm_core_ioremapfree a: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_core_ioremapfree b: map ffff81007d0ab098, handle ffffc20010096000
-BLE drm_rmmap_locked a: map ffff81007c2d9800, handle ffffc20010380000
-BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
-PM: Syncing filesystems ... done.
-PM: Preparing system for mem sleep
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-PM: Entering mem sleep
-sd 2:0:0:0: [sdc] Synchronizing SCSI cache
-sd 2:0:0:0: [sdc] Stopping disk
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Stopping disk
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Stopping disk
-drm_sysfs_suspend
-BAD BAD BAD ffff81007c2d9800 0000000000000000
-suspend_device(): drm_sysfs_suspend+0x0/0x40() returns -5
-Could not suspend device card0: error -5
-sd 0:0:0:0: [sda] Starting disk
-
-I;m out of ideas, please give me a clue.
+ 
+-static void apm_suspend(void)
++static void apm_after_resume(int err)
+ {
+ 	struct apm_user *as;
+-	int err = pm_suspend(PM_SUSPEND_MEM);
+ 
+ 	/*
+ 	 * Anyone on the APM queues will think we're still suspended.
+@@ -236,6 +237,13 @@ static void apm_suspend(void)
+ 	wake_up(&apm_suspend_waitqueue);
+ }
+ 
++static void apm_suspend(void)
++{
++	int err = pm_suspend(PM_SUSPEND_MEM);
++
++	apm_after_resume(err);
++}
++
+ static ssize_t apm_read(struct file *fp, char __user *buf, size_t count, loff_t *ppos)
+ {
+ 	struct apm_user *as = fp->private_data;
+@@ -320,6 +328,12 @@ apm_ioctl(struct inode * inode, struct f
+ 			mutex_unlock(&state_lock);
+ 
+ 			/*
++			 * suspends_pending changed, the notifier needs to be
++			 * woken up for this
++			 */
++			wake_up(&apm_suspend_waitqueue);
++
++			/*
+ 			 * If there are no further acknowledges required,
+ 			 * suspend the system.
+ 			 */
+@@ -404,6 +418,8 @@ static int apm_release(struct inode * in
+ 		pending = suspends_pending == 0;
+ 	}
+ 	mutex_unlock(&state_lock);
++	wake_up(&apm_suspend_waitqueue);
++
+ 	if (pending)
+ 		apm_suspend();
+ 
+@@ -575,6 +591,73 @@ static int kapmd(void *arg)
+ 	return 0;
+ }
+ 
++int apm_suspend_notifier(struct notifier_block *nb,
++			 unsigned long event,
++			 void *dummy)
++{
++	int err;
++
++	switch (event) {
++	case PM_SUSPEND_PREPARE:
++		/*
++		 * This is a bit of a hack. We tell the rest of the code that we
++		 * still have a suspend pending and then go suspend ourselves.
++		 * We have to do it this way because otherwise we'll call
++		 * pm_sleep() when suspend_pending drops to zero which would
++		 * return -EBUSY and confuse everything.
++		 */
++		mutex_lock(&state_lock);
++		suspends_pending++;
++		mutex_unlock(&state_lock);
++
++		err = queue_suspend_event(APM_SYS_SUSPEND, NULL);
++		if (err < 0)
++			return NOTIFY_BAD;
++
++		/* all's well, nobody to wait for */
++		if (err > 0)
++			return NOTIFY_OK;
++
++		/*
++		 * Wait for the the suspends_pending variable to drop to 1,
++		 * meaning everybody else acked the suspend event (or the
++		 * process was killed.)
++		 *
++		 * Unfortunately we cannot do a timeout because then we'd
++		 * suspend again right away if the process that had apm_bios
++		 * open and that we timed out waiting for "acknowledges" the
++		 * event after we have resumed. If suspend doesn't work because
++		 * of a rogue process, just kill that process.
++		 *
++		 * FIXME: is the suspends_pending == 1 test racy?
++		 */
++		err = wait_event_interruptible(apm_suspend_waitqueue,
++					       suspends_pending == 1);
++
++		mutex_lock(&state_lock);
++		suspends_pending--;
++		mutex_unlock(&state_lock);
++
++		if (!err)
++			return NOTIFY_OK;
++
++		/* interrupted by signal */
++		return NOTIFY_BAD;
++
++	case PM_POST_SUSPEND:
++		/* TODO: maybe grab error code, needs core changes */
++		apm_after_resume(0);
++		return NOTIFY_OK;
++
++	default:
++		return NOTIFY_DONE;
++	}
++}
++
++struct notifier_block apm_notif_block = {
++	.notifier_call = apm_suspend_notifier,
++};
++
+ static int __init apm_init(void)
+ {
+ 	int ret;
+@@ -588,7 +671,7 @@ static int __init apm_init(void)
+ 	if (IS_ERR(kapmd_tsk)) {
+ 		ret = PTR_ERR(kapmd_tsk);
+ 		kapmd_tsk = NULL;
+-		return ret;
++		goto out;
+ 	}
+ 	wake_up_process(kapmd_tsk);
+ 
+@@ -597,16 +680,27 @@ static int __init apm_init(void)
+ #endif
+ 
+ 	ret = misc_register(&apm_device);
+-	if (ret != 0) {
+-		remove_proc_entry("apm", NULL);
+-		kthread_stop(kapmd_tsk);
+-	}
++	if (ret)
++		goto out_stop;
++
++	ret = register_pm_notifier(&apm_notif_block);
++	if (ret)
++		goto out_unregister;
+ 
++	return 0;
++
++ out_unregister:
++	misc_deregister(&apm_device);
++ out_stop:
++	remove_proc_entry("apm", NULL);
++	kthread_stop(kapmd_tsk);
++ out:
+ 	return ret;
+ }
+ 
+ static void __exit apm_exit(void)
+ {
++	unregister_pm_notifier(&apm_notif_block);
+ 	misc_deregister(&apm_device);
+ 	remove_proc_entry("apm", NULL);
+ 
+--- everything.orig/kernel/power/main.c	2007-12-16 15:23:18.689514811 +0100
++++ everything/kernel/power/main.c	2007-12-16 15:31:06.179512207 +0100
+@@ -25,6 +25,7 @@
+ #include "power.h"
+ 
+ BLOCKING_NOTIFIER_HEAD(pm_chain_head);
++EXPORT_SYMBOL_GPL(pm_chain_head);
+ 
+ DEFINE_MUTEX(pm_mutex);
+ 
