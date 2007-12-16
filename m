@@ -1,11 +1,16 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/2] DRM: i915, suspend oops fix
-Date: Sun, 16 Dec 2007 10:45:09 -0800
-Message-ID: <9008147453061115361.slaby@pripojeni.net>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	<47646A6C.7070007@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] apm-emulation: implement notify/ack for
+	/sys/power/state events
+Date: Sun, 16 Dec 2007 20:15:59 +0100
+Message-ID: <200712162015.59963.rjw@sisk.pl>
+References: <1197827906.6769.7.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <47646A6C.7070007@gmail.com>
+In-Reply-To: <1197827906.6769.7.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,153 +20,221 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wang Zhenyu <zhenyu.z.wang@intel.com>, airlied@linux.ie, linux-kernel@vger.kernel.org, Eric Anholt <eric@anholt.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Jamey Hicks <jamey@crl.dec.com>, Ralf Baechle <ralf@linux-mips.org>
 List-Id: linux-pm@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 12/13/2007 11:40 AM, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+On Sunday, 16 of December 2007, Johannes Berg wrote:
+> Currently, apm-emulation only implements notify/ack for events that are
+> initiated by the apm-emulation code itself. That doesn't work out quite
+> so well when X relies on the apm-emulation and you use scripts to
+> suspend that simply use /sys/power/state. Ultimately, those scripts
+> ought to notify userspace themselves, but currently X relies on apm
+> notifications.
 > 
-> Broken @#$%^ suspend, again (and maybe still for a longer time). Unable to
-> reproduce this with netconsole.
+> This patch implements the required notification.
 > 
-> trace led to i915_suspend
->         call    pci_bus_read_config_byte        #
->         movq    8(%rbx), %rdi   # <variable>.mmio_map, <variable>.mmio_map
->         movq    24(%rdi), %rax  # <variable>.handle, D.24395
->         movl    458760(%rax), %eax      #, D.24397
+> Rafael already told me that the EXPORT_SYMBOL_GPL() this patch adds will
+> no longer be required. If this patch is merged before the suspend tree
+> (though it probably should go through the suspend tree), that is
+> required, otherwise it should be removed.
+
+Yes, I think it should go through the suspend tree, so that we can avoid adding
+this export.  It would be confusing otherwise.
+
+> I have *NOT* tested this patch with X, only with a simple dummy program
+> that does the apm emulation code, available here:
+> http://johannes.sipsolutions.net/files/test-apm-emu.c.txt
 > 
-> address in rax (i.e. dev_priv->mmio_map->handle) is broken, at least it seems so
-> from the part of the trace and RIP.
+> Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+>  drivers/char/apm-emulation.c |  108 ++++++++++++++++++++++++++++++++++++++++---
+>  kernel/power/main.c          |    1 
+>  2 files changed, 102 insertions(+), 7 deletions(-)
 > 
->         movl    %eax, 408(%rbx) # D.24397, <variable>.savePIPEACONF
->         movq    24(%rdi), %rax  # <variable>.handle, temp.676
->         movl    393244(%rax), %eax      #, D.24399
-> 
-> in
->         pci_save_state(dev->pdev);
->         pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
-> 
->         /* Pipe & plane A info */
-> -->     dev_priv->savePIPEACONF = I915_READ(PIPEACONF);
+> --- everything.orig/drivers/char/apm-emulation.c	2007-12-16 15:22:49.889513942 +0100
+> +++ everything/drivers/char/apm-emulation.c	2007-12-16 18:57:54.555874295 +0100
+> @@ -171,6 +171,8 @@ static void queue_event(apm_event_t even
+>   * return -EBUSY.  Otherwise, queue an event to all "writer"
+>   * users.  If there are no "writer" users, return '1' to
+>   * indicate that we can immediately suspend.
+> + *
+> + * @sender can be NULL when the event is queued from /sys/power/state
+>   */
+>  static int queue_suspend_event(apm_event_t event, struct apm_user *sender)
+>  {
+> @@ -207,10 +209,9 @@ static int queue_suspend_event(apm_event
+>  	return ret;
+>  }
+>  
+> -static void apm_suspend(void)
+> +static void apm_after_resume(int err)
+>  {
+>  	struct apm_user *as;
+> -	int err = pm_suspend(PM_SUSPEND_MEM);
+>  
+>  	/*
+>  	 * Anyone on the APM queues will think we're still suspended.
+> @@ -236,6 +237,13 @@ static void apm_suspend(void)
+>  	wake_up(&apm_suspend_waitqueue);
+>  }
+>  
+> +static void apm_suspend(void)
+> +{
+> +	int err = pm_suspend(PM_SUSPEND_MEM);
+> +
+> +	apm_after_resume(err);
+> +}
+> +
+>  static ssize_t apm_read(struct file *fp, char __user *buf, size_t count, loff_t *ppos)
+>  {
+>  	struct apm_user *as = fp->private_data;
+> @@ -320,6 +328,12 @@ apm_ioctl(struct inode * inode, struct f
+>  			mutex_unlock(&state_lock);
+>  
+>  			/*
+> +			 * suspends_pending changed, the notifier needs to be
+> +			 * woken up for this
+> +			 */
+> +			wake_up(&apm_suspend_waitqueue);
+> +
+> +			/*
+>  			 * If there are no further acknowledges required,
+>  			 * suspend the system.
+>  			 */
+> @@ -404,6 +418,8 @@ static int apm_release(struct inode * in
+>  		pending = suspends_pending == 0;
+>  	}
+>  	mutex_unlock(&state_lock);
+> +	wake_up(&apm_suspend_waitqueue);
+> +
+>  	if (pending)
+>  		apm_suspend();
+>  
+> @@ -575,6 +591,73 @@ static int kapmd(void *arg)
+>  	return 0;
+>  }
+>  
+> +int apm_suspend_notifier(struct notifier_block *nb,
+> +			 unsigned long event,
+> +			 void *dummy)
+> +{
+> +	int err;
+> +
+> +	switch (event) {
+> +	case PM_SUSPEND_PREPARE:
+> +		/*
+> +		 * This is a bit of a hack. We tell the rest of the code that we
+> +		 * still have a suspend pending and then go suspend ourselves.
+> +		 * We have to do it this way because otherwise we'll call
+> +		 * pm_sleep() when suspend_pending drops to zero which would
+> +		 * return -EBUSY and confuse everything.
+> +		 */
+> +		mutex_lock(&state_lock);
+> +		suspends_pending++;
+> +		mutex_unlock(&state_lock);
+> +
+> +		err = queue_suspend_event(APM_SYS_SUSPEND, NULL);
+> +		if (err < 0)
+> +			return NOTIFY_BAD;
+> +
+> +		/* all's well, nobody to wait for */
+> +		if (err > 0)
+> +			return NOTIFY_OK;
+> +
+> +		/*
+> +		 * Wait for the the suspends_pending variable to drop to 1,
+> +		 * meaning everybody else acked the suspend event (or the
+> +		 * process was killed.)
+> +		 *
+> +		 * Unfortunately we cannot do a timeout because then we'd
+> +		 * suspend again right away if the process that had apm_bios
+> +		 * open and that we timed out waiting for "acknowledges" the
+> +		 * event after we have resumed. If suspend doesn't work because
+> +		 * of a rogue process, just kill that process.
+> +		 *
+> +		 * FIXME: is the suspends_pending == 1 test racy?
 
-I think, the "problem" is, that something randomizes ioremapped addresses.
-Old userspace driver closes drm when X starts and the mapping is lost. The
-problem dismissed after X userspace driver update, anyway I think that the
-patch still might be needed. Anyway, it's not enough, the same problem for
-sarea (next patch).
+Make suspends_pending atomic?  Then, you'd not need the locking around it.
 
-BTW the new driver (also without both patches) breaks killing of X. Screen
-becomes black and console is not shown.
-
---
-
-i915, suspend oops fix
-
-Register mmio_map space when suspending, it might be lost due to DRM device
-closing with older X userspace drivers (it closes drm device and frees
-resources after X starts) and then it accesses bad address and oopses while
-suspending.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>
-
----
-commit f2e573d8a1b391584c76e95f287010b38867de64
-tree cf24a5949513ed8ad03b3920d7213bcebfd9ce99
-parent 39dc99d1618c5b3f96ad741cadeccaba055f4b72
-author Jiri Slaby <jirislaby@gmail.com> Sun, 16 Dec 2007 17:56:47 +0100
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 16 Dec 2007 17:56:47 +0100
-
- drivers/char/drm/i915_dma.c |   24 +++++++++++++++---------
- drivers/char/drm/i915_drv.c |   10 +++++++++-
- drivers/char/drm/i915_drv.h |    1 +
- 3 files changed, 25 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/char/drm/i915_dma.c b/drivers/char/drm/i915_dma.c
-index 9e5adca..b274554 100644
---- a/drivers/char/drm/i915_dma.c
-+++ b/drivers/char/drm/i915_dma.c
-@@ -1276,11 +1276,23 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
- 	return 0;
- }
- 
--int i915_driver_load(struct drm_device *dev, unsigned long flags)
-+int i915_register_mmio_map(struct drm_device *dev)
- {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
- 	unsigned long base, size;
--	int ret = 0, mmio_bar = IS_I9XX(dev) ? 0 : 1;
-+	int mmio_bar = IS_I9XX(dev) ? 0 : 1;
-+
-+	/* Add register map (needed for suspend/resume) */
-+	base = drm_get_resource_start(dev, mmio_bar);
-+	size = drm_get_resource_len(dev, mmio_bar);
-+
-+	return drm_addmap(dev, base, size, _DRM_REGISTERS, _DRM_KERNEL,
-+			 &dev_priv->mmio_map);
-+}
-+
-+int i915_driver_load(struct drm_device *dev, unsigned long flags)
-+{
-+	struct drm_i915_private *dev_priv = dev->dev_private;
- 
- 	/* i915 has 4 more counters */
- 	dev->counters += 4;
-@@ -1297,13 +1309,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
- 
- 	dev->dev_private = (void *)dev_priv;
- 
--	/* Add register map (needed for suspend/resume) */
--	base = drm_get_resource_start(dev, mmio_bar);
--	size = drm_get_resource_len(dev, mmio_bar);
--
--	ret = drm_addmap(dev, base, size, _DRM_REGISTERS, _DRM_KERNEL,
--			 &dev_priv->mmio_map);
--	return ret;
-+	return i915_register_mmio_map(dev);
- }
- 
- int i915_driver_unload(struct drm_device *dev)
-diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
-index 0f9c1f1..a8c87f0 100644
---- a/drivers/char/drm/i915_drv.c
-+++ b/drivers/char/drm/i915_drv.c
-@@ -266,7 +266,7 @@ static void i915_restore_vga(struct drm_device *dev)
- static int i915_suspend(struct drm_device *dev)
- {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
--	int i;
-+	int i, ret;
- 
- 	if (!dev || !dev_priv) {
- 		printk(KERN_ERR "dev: %p, dev_priv: %p\n", dev, dev_priv);
-@@ -274,6 +274,14 @@ static int i915_suspend(struct drm_device *dev)
- 		return -ENODEV;
- 	}
- 
-+	/* Every lastclose will destroy this mapping, we need it for suspend.
-+	 * It doesn't matter if it exists already, it will return the existing
-+	 * one. Also it will be surely destroyed; either on next lastclose or
-+	 * on lastclose called from drm unload path. -js */
-+	ret = i915_register_mmio_map(dev);
-+	if (ret)
-+		return ret;
-+	
- 	pci_save_state(dev->pdev);
- 	pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
- 
-diff --git a/drivers/char/drm/i915_drv.h b/drivers/char/drm/i915_drv.h
-index 6ddcba4..09024a1 100644
---- a/drivers/char/drm/i915_drv.h
-+++ b/drivers/char/drm/i915_drv.h
-@@ -216,6 +216,7 @@ extern int i915_max_ioctl;
- 
- 				/* i915_dma.c */
- extern void i915_kernel_lost_context(struct drm_device * dev);
-+extern int i915_register_mmio_map(struct drm_device *dev);
- extern int i915_driver_load(struct drm_device *, unsigned long flags);
- extern int i915_driver_unload(struct drm_device *);
- extern void i915_driver_lastclose(struct drm_device * dev);
+> +		 */
+> +		err = wait_event_interruptible(apm_suspend_waitqueue,
+> +					       suspends_pending == 1);
+> +
+> +		mutex_lock(&state_lock);
+> +		suspends_pending--;
+> +		mutex_unlock(&state_lock);
+> +
+> +		if (!err)
+> +			return NOTIFY_OK;
+> +
+> +		/* interrupted by signal */
+> +		return NOTIFY_BAD;
+> +
+> +	case PM_POST_SUSPEND:
+> +		/* TODO: maybe grab error code, needs core changes */
+> +		apm_after_resume(0);
+> +		return NOTIFY_OK;
+> +
+> +	default:
+> +		return NOTIFY_DONE;
+> +	}
+> +}
+> +
+> +struct notifier_block apm_notif_block = {
+> +	.notifier_call = apm_suspend_notifier,
+> +};
+> +
+>  static int __init apm_init(void)
+>  {
+>  	int ret;
+> @@ -588,7 +671,7 @@ static int __init apm_init(void)
+>  	if (IS_ERR(kapmd_tsk)) {
+>  		ret = PTR_ERR(kapmd_tsk);
+>  		kapmd_tsk = NULL;
+> -		return ret;
+> +		goto out;
+>  	}
+>  	wake_up_process(kapmd_tsk);
+>  
+> @@ -597,16 +680,27 @@ static int __init apm_init(void)
+>  #endif
+>  
+>  	ret = misc_register(&apm_device);
+> -	if (ret != 0) {
+> -		remove_proc_entry("apm", NULL);
+> -		kthread_stop(kapmd_tsk);
+> -	}
+> +	if (ret)
+> +		goto out_stop;
+> +
+> +	ret = register_pm_notifier(&apm_notif_block);
+> +	if (ret)
+> +		goto out_unregister;
+>  
+> +	return 0;
+> +
+> + out_unregister:
+> +	misc_deregister(&apm_device);
+> + out_stop:
+> +	remove_proc_entry("apm", NULL);
+> +	kthread_stop(kapmd_tsk);
+> + out:
+>  	return ret;
+>  }
+>  
+>  static void __exit apm_exit(void)
+>  {
+> +	unregister_pm_notifier(&apm_notif_block);
+>  	misc_deregister(&apm_device);
+>  	remove_proc_entry("apm", NULL);
+>  
+> --- everything.orig/kernel/power/main.c	2007-12-16 15:23:18.689514811 +0100
+> +++ everything/kernel/power/main.c	2007-12-16 15:31:06.179512207 +0100
+> @@ -25,6 +25,7 @@
+>  #include "power.h"
+>  
+>  BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+> +EXPORT_SYMBOL_GPL(pm_chain_head);
+>  
+>  DEFINE_MUTEX(pm_mutex);
