@@ -1,11 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: USB storage powersaving patches
-Date: Mon, 17 Dec 2007 15:20:58 +0100
-Message-ID: <20071217142058.GA11929@elf.ucw.cz>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec
+	jump
+Date: Tue, 18 Dec 2007 16:34:22 +0800
+Message-ID: <1197966862.12999.68.camel__15850.7168795497$1197967219$gmane$org@caritas-dev.intel.com>
+References: <1197042810.24045.61.camel@caritas-dev.intel.com>
+	<m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
+	<1197388219.11506.32.camel@caritas-dev.intel.com>
+	<m163z51sz3.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <m163z51sz3.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,12 +21,131 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-...are they available somewhere? I'd like to do something similar for
-AHCI, but so far SCSI seems to be winning...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Tue, 2007-12-11 at 02:27 -0700, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
+> 
+> > On Mon, 2007-12-10 at 19:25 -0700, Eric W. Biederman wrote:
+> >> "Huang, Ying" <ying.huang@intel.com> writes:
+> > [...]
+> >> >  /*
+> >> >   * Do not allocate memory (or fail in any way) in machine_kexec().
+> >> >   * We are past the point of no return, committed to rebooting now.
+> >> >   */
+> >> > -NORET_TYPE void machine_kexec(struct kimage *image)
+> >> > +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
+> >> > +			 unsigned int argc, va_list args)
+> >> >  {
+> >> 
+> >> Why do we need var arg support?
+> >> Can't we do that with a shim we load from user space?
+> >
+> > If all parameters are provided in user space, the usage model may be as
+> > follow:
+> >
+> > - sys_kexec_load() /* with executable/data/parameters(A) loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
+> > parameters(A)*/
+> > - /* jump back */
+> > - sys_kexec_load() /* with executable/data/parameters(B) loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
+> > parameters(B)*/
+> > - /* jump back */
+> >
+> > That is, the kexec image should be re-loaded if the parameters are
+> > different, and there can be no state reserved in kexec image. This is OK
+> > for original kexec implementation, because there is no jumping back.
+> > But, for kexec with jumping back, another usage model may be useful too.
+> >
+> > - sys_kexec_load() /* with executable/data loaded */
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(A)) /* execute physical mode
+> > code with parameters(A)*/
+> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(B)) /* execute physical mode
+> > code with parameters(B)*/
+> >
+> > This way the kexec image need not to be re-loaded, and the state of
+> > kexec image can be reserved across several invoking.
+> 
+> Interesting.  We wind up preserving the code in between invocations.
+> 
+> I don't know about your particular issue, but I can see that clearly
+> we need a way to read values back from our target image.
+> 
+> And if we can read everything back one way to proceed is to read
+> everything out modify it and then write it back.
+> 
+> Amending a kexec image that is already stored may also make sense.
+> 
+> I'm not convinced that the var arg parameters make sense, but you
+> added them because of a real need.
+> 
+> The kexec function is split into two separate calls so that we can
+> unmount the filesystem the kexec image comes from before actually
+> doing the kexec.
+
+My real issue is that I need a kind of "kernel to kernel" communication
+method. The var args is just a convenient way to pass an array of
+unsigned longs between two kernels. The reason is as follow:
+
+The kexec based hibernating process is as follow:
+
+h1. put devices in quiescent state
+h2. save devices/CPU state
+h3. jump to kexeced kernel (kernel B)
+*h4. normal kernel boot of kernel B
+*h5. save devices/CPU state
+*h6. jump back to original kernel (kernel A)
+h7. restore devices/CPU state
+h8. put devices in quiescent state
+h9. put devices in low power state
+h10. execute necessary ACPI method (prepare to sleep)
+h11. save devices/CPU state
+h12. jump to kernel B
+*h13. execute necessary ACPI method (wake up)
+*h14. restore devices/CPU state
+*h15. put devices in normal power state
+*h16. write memory image of kernel A into disk
+*h17. put system into ACPI S4 state
+
+The kexec based resuming process is as follow:
+
+*r1. boot the resuming kernel (kernel C)
+*r2. restore the memory image of kernel A
+*r3. put devices in quiescent state
+*r4. execute necessary ACPI method (prepare to resume)
+*r5. jump to kernel A
+r6. execute necessary ACPI method (wake up)
+r7. restore devices/CPU state
+
+Where, line begin with "*" is executed in kernel B and kernel C, others
+are executed in kernel A.
+
+The kernel A need to distinguish the difference between h7 and r6, while
+the kernel B/C need to distinguish between *h13 and normal jump back.
+The different kernel action need to be taken depends on the action of
+peer kernel. Now, this is solved by kernel-kernel communication, a
+command word is passed to peer kernel to inform the action required.
+
+I remember you have said before that you think it is better to use only
+"user space to user space" communication between kernel A and kernel B.
+This is OK for normal kexec. But if the kexec jump is used for multiple
+functions with early kernel action involved (normal kexec jump, kexec
+jump to hibernate, kexec jump to resume), it is necessary to use "kernel
+to kernel" communication.
+
+The var args in the patch is just an array of unsigned longs, it can be
+expresses as follow too.
+
+int kexec_call(struct kimage *image, unsigned long *ret, unsigned int
+argc, unsigned long argv[]);
+
+The var args version is as follow.
+
+int kexec_call(struct kimage *image, unsigned long *ret, unsigned int
+argc, ...);
+
+Best Regards,
+Huang Ying
