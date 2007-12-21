@@ -1,18 +1,11 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: OOPS: 2.6.24-rc5-mm1 -- EIP is at r_show+0x2a/0x70 --
- (triggered by "cat /proc/iomem" AFTER suspend-to-disk/resume)
-Date: Thu, 20 Dec 2007 22:29:13 -0800
-Message-ID: <20071220222913.92a2c19f.akpm__34720.1800942004$1198218711$gmane$org@linux-foundation.org>
-References: <a44ae5cd0712192040k7480682eoa29f33d70a91c618@mail.gmail.com>
-	<4769F409.6030300@gmail.com> <4769FF37.5060308@gmail.com>
-	<476A703B.50804@gmail.com>
-	<20071220093206.22f319b0.akpm@linux-foundation.org>
-	<a44ae5cd0712202158u31c8b4e1lf5b0df89dde20e7e@mail.gmail.com>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: [PATCH 0/3 -mm] kexec jump -v8
+Date: Fri, 21 Dec 2007 15:33:19 +0800
+Message-ID: <1198222399.1965.15.camel__16779.7558046461$1198222838$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <a44ae5cd0712202158u31c8b4e1lf5b0df89dde20e7e@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,63 +15,228 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 21 Dec 2007 00:58:19 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+This patchset provides an enhancement to kexec/kdump. It implements
+the following features:
 
-> On Dec 20, 2007 12:32 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 20 Dec 2007 08:38:03 -0500 Miles Lane <miles.lane@gmail.com>
-> > wrote:
-> >
-> > > On further investigation, "cat /proc/iomem" does not trigger the stack
-> > > trace until after a suspend-to-disk/resume cycle has occurred.
-> >
-> > I still can't reproduce this.
-> >
-> > Could you please try this?
-> >
-> > - cat /proc/iomem
-> > - suspend/resume
-> > - do
-> >
-> > while read i
-> > do
-> > echo $i
-> > sleep 1
-> > done < /proc/iomem
-> >
-> > then, with luck, we'll be able to work out which /proc/iomem record
-> > immediately precedes the corrupted one.
-> >
-> 
-> miles@syntropy:~$ cat > test.sh
-> while read i
-> do
-> echo $i
-> sleep 1
-> done < /proc/iomem
-> ^C
-> miles@syntropy:~$ sh test.sh
-> 00000000-0009f7ff : System RAM
-> 0009f800-0009ffff : reserved
-> 000a0000-000bffff : Video RAM area
-> 000c0000-000c7fff : Video ROM
-> 000f0000-000fffff : System ROM
-> 00100000-7f68ffff : System RAM
-> 00100000-0039e4b7 : Kernel code
-> 0039e4b8-004f0983 : Kernel data
-> 00553000-007ecdfb : Kernel bss
-> 7f690000-7f698fff : ACPI Tables
-> 7f699000-7f6fffff : ACPI Non-volatile Storage
-> 7f700000-7fffffff : reserved
-> 88000000-8bffffff : PCI CardBus #05
-> 8c000000-8fffffff : PCI CardBus #05
-> Segmentation fault
-> 
-> How do I determine what comes next?
-> 
+- Backup/restore memory used both by the original kernel and the
+  kexeced kernel.
 
-By comparing it with the /proc/iomem from prior to suspending the machine.
+- Jumping between the original kernel and the kexeced kernel.
+
+- Read/write memory image of the kexeced kernel in the original kernel
+  and write memory image of the original kernel in the kexeced
+  kernel. This can be used as a communication method between the
+  kexeced kernel and the original kernel.
+
+
+The features of this patchset can be used as follow:
+
+- Kernel/system debug through making system snapshot. You can make
+  system snapshot, jump back, do some thing and make another system
+  snapshot.
+
+- A simple hibernation implementation without ACPI support. You can
+  kexec a hibernating kernel, save the memory image of original system
+  and shutdown the system. When resuming, you boot a resuming kernel
+  in memory range of kexeced kernel, restore the memory image of
+  original system and jump back.
+
+- Cooperative multi-kernel/system. With kexec jump, you can switch
+  between several kernels/systems quickly without boot process except
+  the first time. This appears like swap a whole kernel/system out/in.
+
+- A general method to call program in physical mode. This can be used
+  to invoke some BIOS code under Linux.
+
+- The basis of a full kexec based hibernation implementation with ACPI
+  support. The full kexec based hibernation implementation is provided
+  in another patchset named kexec based hibernation.
+
+
+Now, only the i386 architecture is supported. The patchset is based on
+Linux kernel 2.6.24-rc5-mm1, and has been tested on IBM T42 with ACPI
+on and off.
+
+
+The following user-space tools can be used with kexec jump.
+
+1. kexec-tools needs to be patched to support kexec jump. The patches
+   and the precompiled kexec can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v8/kexec-tools/kexec-tools-src_git_kh8.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v8/kexec-tools/kexec-tools-patches_git_kh8.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v8/kexec-tools/kexec_git_kh8
+
+2. makedumpfile with patches are used as memory image saving tool, it
+   can exclude free pages from original kernel memory image file. The
+   patches and the precompiled makedumpfile can be download from the
+   following URL:
+       source: http://khibernation.sourceforge.net/download/release_v8/makedumpfile/makedumpfile-src_cvs_kh8.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v8/makedumpfile/makedumpfile-patches_cvs_kh8.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v8/makedumpfile/makedumpfile_cvs_kh8
+
+3. A simplest memory image restoring tool named "krestore" is
+   implemented. It can be downloaded from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v8/krestore/krestore-src_cvs_kh8.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v8/krestore/krestore_cvs_kh8
+
+An initramfs image can be used as the root file system of kexeced
+kernel. An initramfs image built with "BuildRoot" can be downloaded
+from the following URL:
+    initramfs image: http://khibernation.sourceforge.net/download/release_v8/initramfs/rootfs_cvs_kh8.gz
+All user space tools above are included in the initramfs image.
+
+
+Usage example of jumping between original and kexeced kernel:
+
+1. Compile and install patched kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y
+CONFIG_PM=y
+
+2. Build an initramfs image contains kexec-tool, or download the
+   pre-built initramfs image, called rootfs.gz in following text.
+
+3. Boot kernel compiled in step 1.
+
+4. Load kernel compiled in step 1 with /sbin/kexec. If You want to use
+   "krestore" tool, the --elf64-core-headers should be specified in
+   command line of /sbin/kexec. The shell command line can be as
+   follow:
+
+   /sbin/kexec --load-jump-back /boot/bzImage --mem-min=0x100000
+     --mem-max=0xffffff --elf64-core-headers --initrd=rootfs.gz
+
+5. Boot the kexeced kernel with following shell command line:
+
+   /sbin/kexec -e
+
+6. The kexeced kernel will boot as normal kexec. In kexeced kernel the
+   memory image of original kernel can read via /proc/vmcore or
+   /dev/oldmem, and can be written via /dev/oldmem. You can
+   save/restore/modify it as you want to.
+
+7. Prepare jumping back from kexeced kernel with following shell
+   command lines:
+
+   jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
+   /sbin/kexec --load-jump-back-helper=$jump_back_entry
+
+8. Jump back to the original kernel with following shell command line:
+
+   /sbin/kexec -e
+
+9. Now, you are in the original kernel again. You can read/write the
+   memory image of kexeced kernel via /proc/kimgcore.
+
+10. You can jump between the original kernel and kexeced kernel as you
+    want to via the following shell command line:
+
+    /sbin/kexec -e
+
+
+Known issues:
+
+- The suspend/resume callback of device drivers are used to put
+  devices into quiescent state. This will unnecessarily (possibly
+  harmfully) put devices into low power state. This is intended to be
+  solved by separating device quiesce/unquiesce callback from the
+  device suspend/resume callback.
+
+
+ChangeLog:
+
+v8:
+
+- Split kexec jump patchset from kexec based hibernation patchset.
+
+- Add writing support to kimgcore. This can be used as a communication
+  method between kexeced kernel and original kernel.
+
+- Merge various KEXEC_PRESERVE_* flags into one KEXEC_PRESERVE_CONTEXT
+  because there is no need for such subtle control.
+
+- Delete variable argument based "kernel to kernel" communication
+  mechanism from basic kexec jump patchset.
+
+v7:
+
+- Add an interface to dump the loaded kexec_image, which may contains
+  the memory image of kexeced system. This is used to accelerate kexec
+  based hibernation.
+
+- Refactor kexec jump to be a command driven programming model.
+
+- Adjust ACPI support to mimic the ACPI support of u/swsusp.
+
+- Use kexec_lock to do synchronization.
+
+v6:
+
+- Add ACPI support.
+
+- Refactor kexec jump to be a general facility to call real mode code.
+
+v5:
+
+- A flag (KEXEC_JUMP_BACK) is added to indicate the loaded kernel
+  image is used for jumping back. The reboot command for jumping back
+  is removed. This interface is more stable (proposed by Eric
+  Biederman).
+
+- NX bit handling support for kexec is added.
+
+- Merge machine_kexec and machine_kexec_jump, remove NO_RET attribute
+  from machine_kexec.
+
+- Passing jump back entry to kexeced kernel via kernel command line
+  (parsed by user space tool via /proc/cmdline instead of
+  kernel). Original corresponding boot parameter and sysfs code is
+  removed.
+
+v4:
+
+- Two reboot command are merged back to one because the underlying
+  implementation is same.
+
+- Jumping without reserving memory is implemented. As a side effect,
+  two direction jumping is implemented.
+
+- A jump back protocol is defined and documented. The original kernel
+  and kexeced kernel are more independent from each other.
+
+- The CPU state save/restore code are merged into relocate_kernel.S.
+
+v3:
+
+- The reboot command LINUX_REBOOT_CMD_KJUMP is split into to two
+  reboot command to reflect the different function.
+
+- Document is added for added kernel parameters.
+
+- /sys/kernel/kexec_jump_buf_pfn is made writable, it is used for
+  memory image restoring.
+
+- Console restoring after jumping back is implemented.
+
+- Writing support is added for /dev/oldmem, to restore memory contents
+  of hibernated system.
+
+v2:
+
+- The kexec jump implementation is put into the kexec/kdump framework
+  instead of software suspend framework. The device and CPU state
+  save/restore code of software suspend is called when needed.
+
+- The same code path is used for both kexec a new kernel and jump back
+  to original kernel.
+
+
+Best Regards,
+Huang Ying
