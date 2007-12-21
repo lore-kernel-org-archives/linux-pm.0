@@ -1,14 +1,14 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
-Date: Fri, 21 Dec 2007 16:53:27 +0800
-Message-ID: <1198227207.25346.11.camel__43959.4792006121$1198227658$gmane$org@caritas-dev.intel.com>
-References: <1198222399.1965.15.camel@caritas-dev.intel.com>
-	<476B7ACF.8020602@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/3 -mm] kexec jump -v8 : add write support
+	to oldmem device
+Date: Fri, 21 Dec 2007 11:17:10 +0100
+Message-ID: <20071221101710.GB10573__27003.4462366768$1198232354$gmane$org@elf.ucw.cz>
+References: <1198222420.1965.21.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <476B7ACF.8020602@nigel.suspend2.net>
+Content-Disposition: inline
+In-Reply-To: <1198222420.1965.21.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-12-21 at 19:35 +1100, Nigel Cunningham wrote:
-> Hi.
-> 
-> Huang, Ying wrote:
-> > This patchset provides an enhancement to kexec/kdump. It implements
-> > the following features:
-> > 
-> > - Backup/restore memory used both by the original kernel and the
-> >   kexeced kernel.
-> 
-> Why the kexeced kernel as well?
+Hi!
 
-The memory range used by kexeced kernel is also the usable memory range
-in original kernel. Maybe should be: backup/restore memory used by both
-the original kernel and the kexeced kernel. My English is poor.
-
-> [...]
+> This patch adds writing support for /dev/oldmem. This can be used to
 > 
-> > The features of this patchset can be used as follow:
-> > 
-> > - Kernel/system debug through making system snapshot. You can make
-> >   system snapshot, jump back, do some thing and make another system
-> >   snapshot.
+> - Communicate between original kernel and kexeced kernel through write
+>   to some pages in original kernel.
 > 
-> Are you somehow recording all the filesystem changes after the first
-> snapshot? If not, this is pointless (you'll end up with filesystem
-> corruption).
-
-This snapshot is not used for restore/resume. It is just used for
-debugging. You can check the system state with these snapshots. So I
-think it is useful even without recording filesystem changes.
-
-> [...]
+> - Restore the memory contents of hibernated system in kexec based
+>   hibernation.
 > 
-> > - Cooperative multi-kernel/system. With kexec jump, you can switch
-> >   between several kernels/systems quickly without boot process except
-> >   the first time. This appears like swap a whole kernel/system out/in.
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
-> How is this useful to the end user?
+> --- a/arch/x86/kernel/crash_dump_32.c
+> +++ b/arch/x86/kernel/crash_dump_32.c
+> +ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
+> +			  size_t csize, unsigned long offset, int
+> userbuf)
 
-I am not sure how useful is this. Maybe I can run a Redhat and a Debian
-on my machine and switch between them.
+> --- a/drivers/char/mem.c
+> +++ b/drivers/char/mem.c
+> @@ -348,6 +348,37 @@ static ssize_t read_oldmem(struct file *
+>  	}
+>  	return read;
+>  }
+> +
+> +/*
+> + * Write memory corresponding to the old kernel.
+> + */
+> +static ssize_t write_oldmem(struct file *file, const char __user *buf,
+> +			    size_t count, loff_t *ppos)
+> +{
+...
+> +		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
 
-Best Regards,
-Huang Ying
+I believe this is going to break compilation on non-32bit
+machines. Or is crashdump only supported on i386?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
