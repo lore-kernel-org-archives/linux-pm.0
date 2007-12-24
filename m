@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] PM: Do not destroy/create devices while
-	suspended in cpuid.c
-Date: Mon, 24 Dec 2007 01:57:57 +0100
-Message-ID: <200712240157.58560.rjw__28531.056646216$1198456879$gmane$org@sisk.pl>
-References: <200712240155.14765.rjw@sisk.pl>
+Subject: [PATCH 0/3] PM: Do not destroy/create devices while
+	suspended
+Date: Mon, 24 Dec 2007 01:55:13 +0100
+Message-ID: <200712240155.14765.rjw__21592.9320351735$1198456883$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712240155.14765.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,31 +22,24 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-The cpuid driver should not attempt to destroy/create a suspended
-device.
+Some device drivers register CPU hotplug notifiers and use them to destroy
+device objects when removing the corresponding CPUs and to create these objects
+when adding the CPUs back.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/cpuid.c |    3 ---
- 1 file changed, 3 deletions(-)
+Unfortunately, this is not the right thing to do during suspend/hibernation,
+since in that cases the CPU hotplug notifiers are called after suspending
+devices and before resuming them, so the operations in question are carried
+out on the objects representing suspended devices which shouldn't be
+unregistered behing the PM core's back.  Although right now it usually doesn't
+lead to any practical complications, it will predictably deadlock if
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is applied.
 
-Index: linux-2.6/arch/x86/kernel/cpuid.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpuid.c
-+++ linux-2.6/arch/x86/kernel/cpuid.c
-@@ -157,13 +157,10 @@ static int __cpuinit cpuid_class_cpu_cal
- 
- 	switch (action) {
- 	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
- 		err = cpuid_device_create(cpu);
- 		break;
- 	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
- 		cpuid_device_destroy(cpu);
- 		break;
- 	}
+The solution is to prevent drivers from removing/adding devices from within
+CPU hotplug notifiers during suspend/hibernation using the FROZEN bit
+in the notifier's action argument.  The following three patches modify the
+MSR, x86-64 MCE and cpuid drivers along these lines.
+
+Thanks,
+Rafael
