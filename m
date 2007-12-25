@@ -1,17 +1,17 @@
 From: Carlos Corbacho <carlos@strangeworlds.co.uk>
 Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce
 	4 suspend-to-RAM
-Date: Mon, 24 Dec 2007 21:53:47 +0000
-Message-ID: <200712242153.48906.carlos__19399.5321206332$1198781849$gmane$org@strangeworlds.co.uk>
-References: <200712231419.40207.carlos@strangeworlds.co.uk>
-	<200712241444.24031.rjw@sisk.pl>
-	<alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+Date: Tue, 25 Dec 2007 13:12:41 +0000
+Message-ID: <200712251312.43478.carlos__8499.62659781358$1198781851$gmane$org@strangeworlds.co.uk>
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
+	<200712250003.27570.carlos@strangeworlds.co.uk>
+	<200712251426.14024.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+In-Reply-To: <200712251426.14024.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,40 +22,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockr@shaw.ca>, Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 December 2007 18:34:21 Linus Torvalds wrote:
-> On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
-> > Well, having considered that for a longer while, I think the AML code is
-> > referring to a device that we have suspended already, and since it's in a
-> > low power state, it just can't handle the reference.
-> >
-> > If that is the case, we'll have to find the device (that should be
-> > possible using some code instrumentation) and move the suspending of it
-> > into the late stage.
+On Tuesday 25 December 2007 13:26:12 Rafael J. Wysocki wrote:
+> Well, citing from the ACPI 2.0 specification, section 9.1.6 Transitioning
+> from the Working to the Sleeping State (which is what we're discussing
+> here):
 >
-> Yes.
+> 3. OSPM places all device drivers into their respective Dx state. If the
+> device is enabled for wake, it enters the Dx state associated with the wake
+> capability. If the device is not enabled to wake the system, it enters the
+> D3 state.
+> 4. OSPM executes the _PTS control method, passing an argument that
+> indicates the desired sleeping state (1, 2, 3, or 4 representing S1, S2,
+> S3, and S4).
+>
+> My opinion is that we should follow this part of the specification and so
+> we do.
 
-My own experimentation (in device_suspend(), calling _PTS() in the AML after 
-each suspend_device() runs, until one device causes it to hang) points to 
-ohci_hcd being the culprit here (with or without any devices attached). With 
-the ohci_hcd module unloaded, the machine suspends just fine[1].
+This is that same section from ACPI 1.0B:
 
-Of course, I'm at a complete loss as to why suspending OHCI would cause a 
-problem for an IO port write.
+3. The OS executes the Prepare To Sleep (_PTS) control method, passing an
+argument that indicates the desired sleeping state (1, 2, 3, or 4 representing
+S1, S2, S3, and S4).
 
-> NOTE! This following patch is just for discussion, and while I think it's
-> conceptually a good thing to try, I don't think it will help Carlos'
-> problem. But removing the "pci_set_power_state()" in agp_nvidia_suspend()
-> might.
+4. The OS places all device drivers into their respective Dx state. If the
+device is enabled for wakeup, it enters the Dx state associated with the 
+wakeup capability. If the device is not enabled to wakeup the system, it 
+enters the D3 state.
 
-nvidia-agp cannot be built on x86-64, so it's not the culprit in this case.
+The DSDTs in question also claim ACPI 1.0 compatiblity.
+
+> You're wrong, sorry.
+
+No, I'm not entirely wrong - read the 1.0 spec, and read section 7.3.2 of the 
+ACPI 2.0 spec.
+
+* ACPI 1.0 is very clear - we are breaking the 1.0 spec
+
+* ACPI 2.0 is contradictory - section 7.3.2 repeats 1.0 ad verbatim (which is 
+what I quote in reply to Robert Hancock), but as you point out, 9.3.2 says 
+the opposite.
+
+So, 1.0 and 3.0 are very clear and rather different on this, and 2.0 is 
+contradictory (and I presume this is one of the points ACPI 3.0 set out to 
+clean up).
+
+I will rescind my point on ACPI 2.0 - I don't know what we should or shouldn't 
+be doing there, the spec is unclear.
+
+But for ACPI 1.0, we are doing the wrong thing.
 
 -Carlos
-
-[1] And yes, I double checked the custom DSDT is not loaded this time.
 -- 
 E-Mail: carlos@strangeworlds.co.uk
 Web: strangeworlds.co.uk
