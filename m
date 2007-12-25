@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce
-	4 suspend-to-RAM
-Date: Tue, 25 Dec 2007 15:11:40 +0100
-Message-ID: <200712251511.41296.rjw__18541.1586230204$1198590983$gmane$org@sisk.pl>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
-	<200712251426.14024.rjw@sisk.pl>
-	<200712251312.43478.carlos@strangeworlds.co.uk>
+Subject: Suspend code ordering (again) (was: Re: x86: Increase
+	PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
+Date: Tue, 25 Dec 2007 17:13:11 +0100
+Message-ID: <200712251713.13223.rjw__4158.28390182487$1198598146$gmane$org@sisk.pl>
+References: <200712231419.40207.carlos@strangeworlds.co.uk>
+	<200712241444.24031.rjw@sisk.pl>
+	<alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712251312.43478.carlos@strangeworlds.co.uk>
+In-Reply-To: <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,69 +22,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>, Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 25 of December 2007, Carlos Corbacho wrote:
-> On Tuesday 25 December 2007 13:26:12 Rafael J. Wysocki wrote:
-> > Well, citing from the ACPI 2.0 specification, section 9.1.6 Transitioning
-> > from the Working to the Sleeping State (which is what we're discussing
-> > here):
-> >
-> > 3. OSPM places all device drivers into their respective Dx state. If the
-> > device is enabled for wake, it enters the Dx state associated with the wake
-> > capability. If the device is not enabled to wake the system, it enters the
-> > D3 state.
-> > 4. OSPM executes the _PTS control method, passing an argument that
-> > indicates the desired sleeping state (1, 2, 3, or 4 representing S1, S2,
-> > S3, and S4).
-> >
-> > My opinion is that we should follow this part of the specification and so
-> > we do.
+On Monday, 24 of December 2007, Linus Torvalds wrote:
 > 
-> This is that same section from ACPI 1.0B:
+> On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+> > 
+> > Well, having considered that for a longer while, I think the AML code is
+> > referring to a device that we have suspended already, and since it's in a low
+> > power state, it just can't handle the reference.
+> > 
+> > If that is the case, we'll have to find the device (that should be possible
+> > using some code instrumentation) and move the suspending of it into the late
+> > stage.
 > 
-> 3. The OS executes the Prepare To Sleep (_PTS) control method, passing an
-> argument that indicates the desired sleeping state (1, 2, 3, or 4 representing
-> S1, S2, S3, and S4).
+> Yes. 
 > 
-> 4. The OS places all device drivers into their respective Dx state. If the
-> device is enabled for wakeup, it enters the Dx state associated with the 
-> wakeup capability. If the device is not enabled to wakeup the system, it 
-> enters the D3 state.
+> In general, I'm personally of the opinion that drivers should *not* 
+> actually go into D3 at all in the regular "->suspend()" phase. It should 
+> be done in ->suspend_late. The early suspend is for saving state and 
+> returning errors.
 > 
-> The DSDTs in question also claim ACPI 1.0 compatiblity.
+> Sadly, we've made it a bit too inconvenient to actually do that. Almost 
+> all drivers only do the "->suspend" thing, and the default PCI behaviour 
+> doesn't help us in any way either.
 > 
-> > You're wrong, sorry.
+> Anyway, I wonder if a patch like this could make it easier for driver 
+> writers to handle things. It basically does:
 > 
-> No, I'm not entirely wrong - read the 1.0 spec, and read section 7.3.2 of the 
-> ACPI 2.0 spec.
+>  - if you don't have a regular "suspend()" function, we'll just save state 
+>    at suspend time.
 > 
-> * ACPI 1.0 is very clear - we are breaking the 1.0 spec
+>  - if you don't have a "suspend_late()" function, we'll look at the 
+>    current state, and if it's still in PCI_D0, we'll suspend to PCI_D3hot 
+>    if it's a regular PCI device (ie not a bridge or something else odd).
+> 
+>  - then, at resume time, by default we don't do anything in the early 
+>    resume, but in the late resume we'll undo everything, of course.
+> 
+> Anyway, with this, most drivers could just remove the 
+> "pci_set_power_state()" call *entirely*, and let the default 
+> suspend_late action power the device down. But if you want to override 
+> that default action, you can either:
+> 
+>  - set the power state in your own ->suspend() routine (either by using 
+>    pci_set_power_state(), or by just explicitly setting the state to 
+>    unknown with "dev->current_state =  PCI_UNKNOWN"
+> 
+>  - have a "late_suspend()" action, which obviously will override the 
+>    default action entirely.
+> 
+> Hmm?
 
-By following the 2.0 and later ones.  Well ...
+Well, as Carlos correctly noticed, the problem is related to the change in
+the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+2.0 and later wants us to put devices into low power states before calling
+_PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+the 2.0 and later specifications right now, we're not doing the right thing for
+the (strictly) ACPI 1.0x-compliant systems.
 
-> * ACPI 2.0 is contradictory - section 7.3.2 repeats 1.0 ad verbatim (which is 
-> what I quote in reply to Robert Hancock), but as you point out, 9.3.2 says 
-> the opposite.
-> 
-> So, 1.0 and 3.0 are very clear and rather different on this, and 2.0 is 
-> contradictory (and I presume this is one of the points ACPI 3.0 set out to 
-> clean up).
-> 
-> I will rescind my point on ACPI 2.0 - I don't know what we should or shouldn't 
-> be doing there, the spec is unclear.
+We ought to be able to fix things on the high level, by calling _PTS earlier on
+systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+the generic susped code quite a bit and will need to be tested for some time.
 
-I think we should follow section 9.3.2 that is explicit and has been reiterated
-in the 3.0 specification.
+I'm going to prepare patches to implement this idea targeted for the 2.6.25
+time frame.
 
-> But for ACPI 1.0, we are doing the wrong thing.
-
-Yes, we are.
-
-OK, I think we can rearrange things to call _PTS early for ACPI 1.0x-compliant
-systems.
-
-Thanks,
+Greetings,
 Rafael
