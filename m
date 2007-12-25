@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while
-	suspended
-Date: Tue, 25 Dec 2007 17:21:41 +0100
-Message-ID: <200712251721.42233.rjw__23369.4005561576$1198598596$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0712241045150.25920-100000@netrider.rowland.org>
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce
+ 4 suspend-to-RAM
+Date: Tue, 25 Dec 2007 11:17:31 -0600
+Message-ID: <47713B2B.3000105__48353.9519519129$1198603173$gmane$org@shaw.ca>
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
+	<200712250003.27570.carlos@strangeworlds.co.uk>
+	<200712251426.14024.rjw@sisk.pl>
+	<200712251312.43478.carlos@strangeworlds.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712241045150.25920-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-reply-to: <200712251312.43478.carlos@strangeworlds.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +21,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 24 of December 2007, Alan Stern wrote:
-> On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+Carlos Corbacho wrote:
+> On Tuesday 25 December 2007 13:26:12 Rafael J. Wysocki wrote:
+>> Well, citing from the ACPI 2.0 specification, section 9.1.6 Transitioning
+>> from the Working to the Sleeping State (which is what we're discussing
+>> here):
+>>
+>> 3. OSPM places all device drivers into their respective Dx state. If the
+>> device is enabled for wake, it enters the Dx state associated with the wake
+>> capability. If the device is not enabled to wake the system, it enters the
+>> D3 state.
+>> 4. OSPM executes the _PTS control method, passing an argument that
+>> indicates the desired sleeping state (1, 2, 3, or 4 representing S1, S2,
+>> S3, and S4).
+>>
+>> My opinion is that we should follow this part of the specification and so
+>> we do.
 > 
-> > Hi,
-> > 
-> > Some device drivers register CPU hotplug notifiers and use them to destroy
-> > device objects when removing the corresponding CPUs and to create these objects
-> > when adding the CPUs back.
-> > 
-> > Unfortunately, this is not the right thing to do during suspend/hibernation,
-> > since in that cases the CPU hotplug notifiers are called after suspending
-> > devices and before resuming them, so the operations in question are carried
-> > out on the objects representing suspended devices which shouldn't be
-> > unregistered behing the PM core's back.  Although right now it usually doesn't
-> > lead to any practical complications, it will predictably deadlock if
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is applied.
-> > 
-> > The solution is to prevent drivers from removing/adding devices from within
-> > CPU hotplug notifiers during suspend/hibernation using the FROZEN bit
-> > in the notifier's action argument.  The following three patches modify the
-> > MSR, x86-64 MCE and cpuid drivers along these lines.
+> This is that same section from ACPI 1.0B:
 > 
-> Do we need to worry about the possibility that when the system wakes up 
-> from hibernation, the set of usable CPUs might be smaller than it was 
-> beforehand?
+> 3. The OS executes the Prepare To Sleep (_PTS) control method, passing an
+> argument that indicates the desired sleeping state (1, 2, 3, or 4 representing
+> S1, S2, S3, and S4).
+> 
+> 4. The OS places all device drivers into their respective Dx state. If the
+> device is enabled for wakeup, it enters the Dx state associated with the 
+> wakeup capability. If the device is not enabled to wakeup the system, it 
+> enters the D3 state.
+> 
+> The DSDTs in question also claim ACPI 1.0 compatiblity.
+> 
+>> You're wrong, sorry.
+> 
+> No, I'm not entirely wrong - read the 1.0 spec, and read section 7.3.2 of the 
+> ACPI 2.0 spec.
+> 
+> * ACPI 1.0 is very clear - we are breaking the 1.0 spec
+> 
+> * ACPI 2.0 is contradictory - section 7.3.2 repeats 1.0 ad verbatim (which is 
+> what I quote in reply to Robert Hancock), but as you point out, 9.3.2 says 
+> the opposite.
+> 
+> So, 1.0 and 3.0 are very clear and rather different on this, and 2.0 is 
+> contradictory (and I presume this is one of the points ACPI 3.0 set out to 
+> clean up).
+> 
+> I will rescind my point on ACPI 2.0 - I don't know what we should or shouldn't 
+> be doing there, the spec is unclear.
+> 
+> But for ACPI 1.0, we are doing the wrong thing.
 
-This is possible in error conditions.
+Correct me if I'm wrong, but it appears ACPI 1.0 wants _PTS called 
+before any devices are suspended, ACPI 2.0 is contradictory, and ACPI 
+3.0 says that you can't assume anything about device state. My guess is 
+that unless Windows has different behavior depending on ACPI version, it 
+probably has called _PTS before suspending devices all along. Therefore 
+it would likely be safest to emulate that behavior, no?
 
-> Is any special handling needed for this, or is it already accounted for?
-
-Hm, well.  The cleanest thing would be to allow the drivers to remove the
-device objects on CPU_UP_CANCELED_FROZEN, which means that we weren't able to
-bring the CPU up during a resume, but still that will deadlock with
-gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.
-
-Greetings,
-Rafael
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
