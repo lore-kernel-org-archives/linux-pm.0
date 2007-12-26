@@ -1,78 +1,34 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [RFC] sleepy linux
-Date: Wed, 26 Dec 2007 21:32:58 +0100
-Message-ID: <20071226203258.GE8094@elf.ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz>
-	<200712261828.04671.oliver@neukum.org>
-	<20071226201722.GC8844@elf.ucw.cz>
-	<200712262123.37152.oliver@neukum.org>
+Date: Wed, 26 Dec 2007 12:43:56 -0800
+Message-ID: <4772BD0C.3040609@zytor.com>
+References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com> <200712262108.35643.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200712262123.37152.oliver@neukum.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752981AbXLZUpN@vger.kernel.org>
+In-Reply-To: <200712262108.35643.oliver@neukum.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Oliver Neukum <oliver@neukum.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-12-26 21:23:37, Oliver Neukum wrote:
-> Am Mittwoch, 26. Dezember 2007 21:17:22 schrieb Pavel Machek:
-> > On Wed 2007-12-26 18:28:04, Oliver Neukum wrote:
-> > > Am Mittwoch, 26. Dezember 2007 00:07:31 schrieb Pavel Machek:
-> > > > Heute 00:07:31
-> > > >   =A0
-> > > > This is RFC. It does not even work for me... it sleeps but it wil=
-l not
-> > > > wake up, because SATA wakeup code is missing. Code attached for i=
-llustration.
-> > > >=20
-> > > > I wonder if this is the right approach? What is right interface t=
-o the
-> > > > drivers?
-> > >=20
-> > > IMHO you are making to many special cases. The system can be "sleep=
-y"
-> > > if all devices can be runtime suspended and all CPUs are idle.
-> >=20
-> > Is there an easy way to tell if all the devices are runtime suspended=
-?
->=20
-> Do you really want to know whether they are suspended or whether they
-> could be suspended?
+Oliver Neukum wrote:
+> Am Mittwoch, 26. Dezember 2007 19:56:59 schrieb H. Peter Anvin:
+>>> 3) Network card that is either down
+>>>    or can wake up system on any packet (and not loose too many packets)
+>>>
+>> This is the big crux I see.  You're going to constantly wake up the 
+>> machine due to broadcast packets, and spend a lot of power just going in 
+>> and out of S3.
+> 
+> How many machines care a lot about saving power while they are connected
+> to an ethernet? Wlan might be more of a problem.
 
-If they are suspended.
+A lot of them should.  An inordinate amount of machines sit there 
+burning power for no reason.  You can argue that S3 isn't needed -- that 
+nohz + C3/C4 + turning off the screen would be enough, and that might be 
+legit.  Heck, I'm constantly frustrated by every distro upgrade breaking 
+power management for my monitor.
 
-My plan is: let the drivers autosuspend on their own. If I see all of
-them are autosuspended, then it looks like great time to put whole
-system into s2ram...
-
-> > I guess I need to know from atomic context :-(.
->=20
-> Urgh. suspend() must be able to sleep and can fail.
-
-That's ok.
-
-... I also don't need to call any suspend() routines, because all the
-drivers are already suspended, right?
-
-And yes, I want device activity to prevent s2ram. If user is burning
-CD, machine should not sleep. If user is actively typing, machine
-should not sleep. My vision is: screen saver tells kernel keyboard
-need not be very responsive, at that point keyboard driver can
-autosuspend the keyboard, and if that was the last device, whole
-system sleeps.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
+	-hpa
