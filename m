@@ -1,52 +1,101 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] sleepy linux
-Date: Wed, 26 Dec 2007 21:23:37 +0100
-Message-ID: <200712262123.37152.oliver@neukum.org>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712261828.04671.oliver@neukum.org> <20071226201722.GC8844@elf.ucw.cz>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Re: [linux-pm] [RFC] sleepy linux
+Date: Wed, 26 Dec 2007 22:09:59 +0200
+Message-ID: <1198699799.21629.13.camel@mort>
+References: <20071225230731.GA29030@elf.ucw.cz>
+Reply-To: igor.stoppa@nokia.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752704AbXLZUXW@vger.kernel.org>
-In-Reply-To: <20071226201722.GC8844@elf.ucw.cz>
-Content-Disposition: inline
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752140AbXLZUZI@vger.kernel.org>
+In-Reply-To: <20071225230731.GA29030@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ext Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 26. Dezember 2007 21:17:22 schrieb Pavel Machek:
-> On Wed 2007-12-26 18:28:04, Oliver Neukum wrote:
-> > Am Mittwoch, 26. Dezember 2007 00:07:31 schrieb Pavel Machek:
-> > > Heute 00:07:31
-> > >   =A0
-> > > This is RFC. It does not even work for me... it sleeps but it wil=
-l not
-> > > wake up, because SATA wakeup code is missing. Code attached for i=
-llustration.
-> > >=20
-> > > I wonder if this is the right approach? What is right interface t=
-o the
-> > > drivers?
-> >=20
-> > IMHO you are making to many special cases. The system can be "sleep=
-y"
-> > if all devices can be runtime suspended and all CPUs are idle.
->=20
-> Is there an easy way to tell if all the devices are runtime suspended=
-?
+Hi,
+On Wed, 2007-12-26 at 00:07 +0100, ext Pavel Machek wrote:
+> This is RFC. It does not even work for me... it sleeps but it will not
+> wake up, because SATA wakeup code is missing. Code attached for illustration.
+> 
+> I wonder if this is the right approach? What is right interface to the
+> drivers?
+> 
+> 
+> 		Sleepy Linux
+> 		~~~~~~~~~~~~
+> 
+> Copyright 2007 Pavel Machek <pavel@suse.cz>
+> 	  GPLv2
+> 
+> Current Linux versions can enter suspend-to-RAM just fine, but only
+> can do it on explicit request. But suspend-to-RAM is important, eating
+> something like 10% of power needed for idle system. Starting suspend
+> manually is not too convinient; it is not an option on multiuser
+> machine, and even on single user machine, some things are not easy:
+> 
+> 1) Download this big chunk in mozilla, then go to sleep
+> 
+> 2) Compile this, then go to sleep
 
-Do you really want to know whether they are suspended or whether they
-could be suspended?
+Why can't these cases be based on CPUIdle?
 
-> I guess I need to know from atomic context :-(.
+> 3) You can sleep now, but wake me up in 8:30 with mp3 player
 
-Urgh. suspend() must be able to sleep and can fail.
+This is about setting up properly the wakeup sources which means:
 
-	Regards
-		Oliver
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+- the wakeup source is really capable of generating wakeups for the
+target idle state
+
+- the wakeup source is not actually capable of genrating wakeups from
+the target idle state, which can be solved in 2 ways:
+
+	- if the duration of the activity is known, set up an alarm 
+	  (assuming alarms are proper wakeup sources) so that the
+	   system is ready just in time, in a less efficient but more
+	   responsive power saving state
+
+	- if the duration of the activity is unknown choose the more 
+	  efficient amongst the following solutions:
+
+		- go to deep sleep state and periodically wakeup and
+		  poll, with a period compatible with the timing 
+		  of the event source
+
+		- prevent too deep sleep states till the event happens
+
+> Todays hardware is mostly capable of doing better: with correctly set
+> up wakeups, machine can sleep and successfully pretend it is not
+> sleeping -- by waking up whenever something interesting happens. Of
+> course, it is easier on machines not connected to the network, and on
+> notebook computers.
+
+It might be that some hw doesn't provide deep power saving state for
+some devices, but if the only missing feature is the wakeup capability,
+it could be effectively replaced by some HW timer.
+
+
+> Requirements:
+> 
+> 0) Working suspend-to-RAM, with kernel being able to bring video back.
+> 
+> 1) RTC clock that can wake up system
+> 
+> 2) Lid that can wake up a system,
+>    or keyboard that can wake up system and does not loose keypress
+>    or special screensaver setup
+> 
+> 3) Network card that is either down
+>    or can wake up system on any packet (and not loose too many packets)
+
+These are just few system specific case, but if you start including USB
+devices, the situation is going to get quite complicated very soon, if
+you explicitly include certain HW devices in your model.
+
+
+-- 
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
