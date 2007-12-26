@@ -1,17 +1,16 @@
-From: Avi Kivity <avi@qumranet.com>
-Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce
-	4 suspend-to-RAM
-Date: Wed, 26 Dec 2007 09:23:25 +0200
-Message-ID: <4772016D.30900__10758.235367439$1198781858$gmane$org@qumranet.com>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
-	<200712251312.43478.carlos@strangeworlds.co.uk>
-	<47713B2B.3000105@shaw.ca> <200712251926.51628.rjw@sisk.pl>
-	<alpine.LFD.0.9999.0712252023290.21557@woody.linux-foundation.org>
+From: "H. Peter Anvin" <hpa@kernel.org>
+Subject: Re: Suspend code ordering (again)
+Date: Wed, 26 Dec 2007 09:50:12 -0800
+Message-ID: <47729454.40303__29779.4767808684$1198781875$gmane$org@kernel.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk>
+	<200712251713.13223.rjw@sisk.pl>
+	<alpine.LFD.0.9999.0712252006330.21557@woody.linux-foundation.org>
+	<200712261607.18429.rjw@sisk.pl> <47727216.4050003@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712252023290.21557@woody.linux-foundation.org>
+In-Reply-To: <47727216.4050003@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +20,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Linus Torvalds wrote:
->
->> IMO, we should check which version of the specification we're supposed to
->> follow, on the basis of FADT contents, for example, and follow this one.
->>     
->
-> No, we should try to figure out what Windows does. *If* windows checks the 
-> version, we should do that too. But we should absolutely *not* just assume 
-> that the documentation is an accurate picture of reality.
->
-> Does anybody know how we could find out? 
->
->   
+Alexey Starikovskiy wrote:
+>>
+>> I don't know.
+>>   
+> Windows was compliant only with 1.x spec until Vista.
+> With Vista claims are 3.x compliance.
+> 
 
-Run it in a virtual machine, with the ACPI methods of interest wired to
-output to some port, and log that I/O port in the monitor/emulator.
+In other words, the 1.x spec is the only thing that matters, at least in 
+the short term (*noone* is giving up XP compatibility at this point.)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+	-hpa
