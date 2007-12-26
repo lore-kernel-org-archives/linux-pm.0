@@ -1,40 +1,47 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC] sleepy linux
-Date: Wed, 26 Dec 2007 20:00:45 +0100
-Message-ID: <20071226190045.GB8094@elf.ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com>
+Date: Wed, 26 Dec 2007 20:02:52 +0100
+Message-ID: <20071226190252.GC8094@elf.ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712261828.04671.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752539AbXLZTBS@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752592AbXLZTDS@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4772A3FB.8080108@zytor.com>
+In-Reply-To: <200712261828.04671.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
+To: Oliver Neukum <oliver@neukum.org>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-12-26 10:56:59, H. Peter Anvin wrote:
-> Pavel Machek wrote:
->> This is RFC. It does not even work for me... it sleeps but it will not
->> wake up, because SATA wakeup code is missing. Code attached for 
->> illustration.
->> I wonder if this is the right approach? What is right interface to the
->> drivers?
->> 3) Network card that is either down
->>    or can wake up system on any packet (and not loose too many packets)
->
-> This is the big crux I see.  You're going to constantly wake up the machine 
-> due to broadcast packets, and spend a lot of power just going in and out of 
-> S3.
+On Wed 2007-12-26 18:28:04, Oliver Neukum wrote:
+> Am Mittwoch, 26. Dezember 2007 00:07:31 schrieb Pavel Machek:
+> > Heute 00:07:31
+> >   =A0
+> > This is RFC. It does not even work for me... it sleeps but it will =
+not
+> > wake up, because SATA wakeup code is missing. Code attached for ill=
+ustration.
+> >=20
+> > I wonder if this is the right approach? What is right interface to =
+the
+> > drivers?
+>=20
+> IMHO you are making to many special cases. The system can be "sleepy"
+> if all devices can be runtime suspended and all CPUs are idle.
 
-Yep... for the first version, I'll be very happy if it autosleeps when
-I'm traveling by bus or something. Working with ethernet plugged in is
-quite a distant goal.
+Pretty much, except that "timer device" needs to be runtime suspended,
+too... We probably should not sleep if wakeup is scheduled 1 second in
+future.
 
-(But I guess some cleverness could be done on the router or
-something. Automagically converting "interesting" packets into WoL
-enabled ones, or...?)
-									Pavel
--- 
+								Pavel
+--=20
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
