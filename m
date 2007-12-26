@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while
-	suspended
-Date: Tue, 25 Dec 2007 22:33:53 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0712252229050.25960-100000__27041.0963836641$1198640136$gmane$org@netrider.rowland.org>
-References: <200712252021.14540.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Suspend code ordering (again) (was: Re: x86:
+ Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
+Date: Tue, 25 Dec 2007 20:11:58 -0800 (PST)
+Message-ID: <alpine.LFD.0.9999.0712252006330.21557@woody.linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk>
+	<200712241444.24031.rjw@sisk.pl>
+	<alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+	<200712251713.13223.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712252021.14540.rjw@sisk.pl>
+In-Reply-To: <200712251713.13223.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
+
+
 On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
-
-> > > Do we need to worry about the possibility that when the system wakes up 
-> > > from hibernation, the set of usable CPUs might be smaller than it was 
-> > > beforehand?
-> > 
-> > This is possible in error conditions.
-> > 
-> > > Is any special handling needed for this, or is it already accounted for?
-> > 
-> > Hm, well.  The cleanest thing would be to allow the drivers to remove the
-> > device objects on CPU_UP_CANCELED_FROZEN, which means that we weren't able to
-> > bring the CPU up during a resume, but still that will deadlock with
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.
+>
+> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+> 2.0 and later wants us to put devices into low power states before calling
+> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+> the 2.0 and later specifications right now, we're not doing the right thing for
+> the (strictly) ACPI 1.0x-compliant systems.
 > 
-> Hmm.  In principle, device objects may be destroyed on CPU_UP_CANCELED_FROZEN
-> without acquiring the device locks, since in fact we know these objects won't
-> be accessed concurrently at that time (the locks are already held by the PM
-> core, but the PM core is not going to actually access the devices before the
-> subsequent resume).
+> We ought to be able to fix things on the high level, by calling _PTS earlier on
+> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+> the generic susped code quite a bit and will need to be tested for some time.
 
-How about delaying the CPU_UP_CANCELED_FROZEN announcements until it's 
-really safe to send them out?  That is, after all devices have been 
-resumed and the PM core no longer holds any of their locks.  (Should 
-this be before or after tasks leave the freezer? -- I'm not sure.)
+That's insane. Are you really saying that ACPI wants totally different 
+orderings for different versions of the spec? And does Windows really do 
+that?
 
-So the idea is send appropriate announcements at the usual time for
-CPUs that do come back up normally, and don't send anything right away
-for CPUs that fail to come up.  Just keep track of which ones failed,
-and then later take care of them.
+Please don't make lots of modifications to the generic suspend code. The 
+only thing that is worth doing is to just have a firmware callback before 
+the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
+*there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
 
-Alan Stern
+Still, the fact is, some (most, I think) drivers *should* put themselves 
+into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
+called after that, we're just screwed. That's when the system is really 
+down, interrupts disabled etc, we don't want to call anything but the 
+final ACPI "turn us off" stuff there!
+
+			Linus
