@@ -1,47 +1,33 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [RFC] sleepy linux
-Date: Wed, 26 Dec 2007 20:02:52 +0100
-Message-ID: <20071226190252.GC8094@elf.ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712261828.04671.oliver@neukum.org>
+Date: Wed, 26 Dec 2007 11:22:59 -0800
+Message-ID: <4772AA13.4030004@zytor.com>
+References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com> <20071226190045.GB8094@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752592AbXLZTDS@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200712261828.04671.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752319AbXLZTXU@vger.kernel.org>
+In-Reply-To: <20071226190045.GB8094@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-12-26 18:28:04, Oliver Neukum wrote:
-> Am Mittwoch, 26. Dezember 2007 00:07:31 schrieb Pavel Machek:
-> > Heute 00:07:31
-> >   =A0
-> > This is RFC. It does not even work for me... it sleeps but it will =
-not
-> > wake up, because SATA wakeup code is missing. Code attached for ill=
-ustration.
-> >=20
-> > I wonder if this is the right approach? What is right interface to =
-the
-> > drivers?
->=20
-> IMHO you are making to many special cases. The system can be "sleepy"
-> if all devices can be runtime suspended and all CPUs are idle.
+Pavel Machek wrote:
+> 
+> Yep... for the first version, I'll be very happy if it autosleeps when
+> I'm traveling by bus or something. Working with ethernet plugged in is
+> quite a distant goal.
+> 
+> (But I guess some cleverness could be done on the router or
+> something. Automagically converting "interesting" packets into WoL
+> enabled ones, or...?)
+> 									Pavel
 
-Pretty much, except that "timer device" needs to be runtime suspended,
-too... We probably should not sleep if wakeup is scheduled 1 second in
-future.
+You've just eliminated 90%+ of the available Ethernet infrastructure.
 
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+However, there may be Ethernet controllers which can do something smart 
+with incoming packets, and perhaps more importantly, we can always write 
+a spec and try to push it to Intel, Broadcom, Realtek and Nvidia.
+
+	-hpa
