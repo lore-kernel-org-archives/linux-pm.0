@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 4/7] Suspend: Call _PTS early on ACPI 1.0x
-	systems
-Date: Thu, 27 Dec 2007 19:17:32 +0100
-Message-ID: <200712271917.32982.rjw@sisk.pl>
+Subject: [RFC][PATCH 6/7] Hibernation: Call _PTS early on ACPI
+	1.0x systems
+Date: Thu, 27 Dec 2007 19:19:10 +0100
+Message-ID: <200712271919.12184.rjw@sisk.pl>
 References: <200712271903.53961.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -30,60 +30,56 @@ From: Rafael J. Wysocki <rjw@sisk.pl>
 The ACPI 1.0 specification wants us to put devices into low power
 states after executing the _PTS global control methods, while ACPI
 2.0 and later want us to do that in the reverse order.  The current
-suspend code follows ACPI 2.0 in that respect which causes some
-ACPI 1.0x systems to hang during suspend (ref.
+hibernation code follows ACPI 2.0 in that respect which may cause some
+ACPI 1.0x systems to hang during hibernation (ref.
 http://bugzilla.kernel.org/show_bug.cgi?id=9528).
 
-Make the suspend code execute _PTS before putting devices into low
+Make the hibernation code execute _PTS before putting devices into low
 power states on ACPI 1.0x systems (i.e. on systems for which the
 revision in the FADT header is lesser than 3).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep/main.c |   38 +++++++++++++++++++++++++-------------
- 1 file changed, 25 insertions(+), 13 deletions(-)
+ drivers/acpi/sleep/main.c |   38 +++++++++++++++++++++++++++-----------
+ 1 file changed, 27 insertions(+), 11 deletions(-)
 
 Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep/main.c
 +++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -26,6 +26,7 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
- 
- #ifdef CONFIG_PM_SLEEP
- static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-+static bool acpi_sleep_finish_wake_up;
- #endif
- 
- int acpi_sleep_prepare(u32 acpi_state)
-@@ -74,6 +75,14 @@ static int acpi_pm_open(suspend_state_t 
- 
- 	if (sleep_states[acpi_state]) {
- 		acpi_target_sleep_state = acpi_state;
-+		/* On ACPI 1.0x systems _PTS has to be executed right now. */
-+		if (acpi_gbl_FADT.header.revision < 3) {
-+			error = acpi_sleep_prepare(acpi_state);
-+			if (error)
-+				acpi_target_sleep_state = ACPI_STATE_S0;
-+			else
-+				acpi_sleep_finish_wake_up = true;
+@@ -271,21 +271,35 @@ static struct dmi_system_id __initdata a
+ static int acpi_hibernation_open(void)
+ {
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
++
++	/* On ACPI 1.0x systems _PTS has to be executed right now. */
++	if (acpi_gbl_FADT.header.revision < 3) {
++		int error = acpi_sleep_prepare(ACPI_STATE_S4);
++
++		if (error) {
++			acpi_target_sleep_state = ACPI_STATE_S0;
++			return error;
 +		}
- 	} else {
- 		printk(KERN_ERR "ACPI does not support this state: %d\n",
- 			pm_state);
-@@ -91,15 +100,18 @@ static int acpi_pm_open(suspend_state_t 
++		acpi_sleep_finish_wake_up = true;
++	}
++
+ 	return 0;
+ }
  
- static int acpi_pm_prepare(void)
+ static int acpi_hibernation_prepare(void)
  {
 -	int error;
-+	/* On ACPI 1.0x systems_PTS global is executed earlier. */
-+	if (acpi_gbl_FADT.header.revision >= 3) {
-+		int error = acpi_sleep_prepare(acpi_target_sleep_state);
- 
--	error = acpi_sleep_prepare(acpi_target_sleep_state);
+-
+-	error = acpi_sleep_prepare(ACPI_STATE_S4);
 -	if (error)
--		acpi_target_sleep_state = ACPI_STATE_S0;
--	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
+-		return error;
+-
+-	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
 -		error = -EFAULT;
++	/* On ACPI 1.0x systems _PTS global is executed earlier. */
++	if (acpi_gbl_FADT.header.revision >= 3) {
++		int error = acpi_sleep_prepare(ACPI_STATE_S4);
++
 +		if (error) {
 +			acpi_target_sleep_state = ACPI_STATE_S0;
 +			return error;
@@ -95,39 +91,24 @@ Index: linux-2.6/drivers/acpi/sleep/main.c
 +	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
  }
  
- /**
-@@ -123,10 +135,8 @@ static int acpi_pm_enter(suspend_state_t
- 	if (acpi_state == ACPI_STATE_S3) {
- 		int error = acpi_save_state_mem();
- 
--		if (error) {
--			acpi_target_sleep_state = ACPI_STATE_S0;
-+		if (error)
- 			return error;
--		}
- 	}
- 
- 	local_irq_save(flags);
-@@ -187,6 +197,7 @@ static void acpi_pm_finish(void)
+ static int acpi_hibernation_enter(void)
+@@ -326,15 +340,17 @@ static void acpi_hibernation_finish(void
  	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
  
  	acpi_target_sleep_state = ACPI_STATE_S0;
 +	acpi_sleep_finish_wake_up = false;
+ }
  
- #ifdef CONFIG_X86
- 	if (init_8259A_after_S1) {
-@@ -203,10 +214,11 @@ static void acpi_pm_finish(void)
- static void acpi_pm_close(void)
+ static void acpi_hibernation_close(void)
  {
  	/*
--	 * This is necessary in case acpi_pm_finish() is not called during a
--	 * failing transition to a sleep state.
-+	 * This is necessary in case acpi_pm_finish() is not called directly
-+	 * during a failing transition to a sleep state.
+ 	 * This is necessary in case acpi_hibernation_finish() is not called
+-	 * during a failing transition to the sleep state.
++	 * directly during a failing transition to the sleep state.
  	 */
 -	acpi_target_sleep_state = ACPI_STATE_S0;
 +	if (acpi_sleep_finish_wake_up)
-+		acpi_pm_finish();
++		acpi_hibernation_finish();
  }
  
- static int acpi_pm_state_valid(suspend_state_t pm_state)
+ static int acpi_hibernation_pre_restore(void)
