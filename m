@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/7] Fix the ACPI 1.0 vs ACPI 2.0 suspend
-	ordering issue
-Date: Thu, 27 Dec 2007 19:03:52 +0100
-Message-ID: <200712271903.53961.rjw__20382.5086392046$1198778628$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 7/7] ACPI: Print message before calling _PTS
+Date: Thu, 27 Dec 2007 19:20:01 +0100
+Message-ID: <200712271920.02207.rjw@sisk.pl>
+References: <200712271903.53961.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200712271903.53961.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,26 +24,47 @@ Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel
 	Robert" <robert.moore@intel.com>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The following patchset is intended to fix the ACPI 1.0 vs ACPI 2.0 suspend
-ordering issue described at http://bugzilla.kernel.org/show_bug.cgi?id=9528 and
-in a recent LKML thread (http://lkml.org/lkml/2007/12/25/37).
+Make acpi_sleep_prepare() static and cause it to print a message
+specifying the ACPI system sleep state to be entered (helpful for
+debugging the suspend/hibernation code).
 
-The patches actually do more than that, as I think it's reasonable to untangle
-some ACPI-specific suspend code by the way.  The details are described in the
-changelogs.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c  |    4 +++-
+ drivers/acpi/sleep/sleep.h |    2 --
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-The patches apply on top of the suspend branch of the ACPI tree
-(git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6 suspend),
-but they are also included in the quilt patch series at:
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.24-rc6/patches/ .
-
-Please review (and test, if possible).
-
-Thanks,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -29,7 +29,7 @@ static u32 acpi_target_sleep_state = ACP
+ static bool acpi_sleep_finish_wake_up;
+ #endif
+ 
+-int acpi_sleep_prepare(u32 acpi_state)
++static int acpi_sleep_prepare(u32 acpi_state)
+ {
+ #ifdef CONFIG_ACPI_SLEEP
+ 	/* do we have a wakeup address for S2 and S3? */
+@@ -45,6 +45,8 @@ int acpi_sleep_prepare(u32 acpi_state)
+ 	ACPI_FLUSH_CPU_CACHE();
+ 	acpi_enable_wakeup_device_prep(acpi_state);
+ #endif
++	printk(KERN_INFO PREFIX "Preparing to enter system sleep state S%d\n",
++		acpi_state);
+ 	acpi_enter_sleep_state_prep(acpi_state);
+ 	return 0;
+ }
+Index: linux-2.6/drivers/acpi/sleep/sleep.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/sleep.h
++++ linux-2.6/drivers/acpi/sleep/sleep.h
+@@ -5,5 +5,3 @@ extern int acpi_suspend (u32 state);
+ extern void acpi_enable_wakeup_device_prep(u8 sleep_state);
+ extern void acpi_enable_wakeup_device(u8 sleep_state);
+ extern void acpi_disable_wakeup_device(u8 sleep_state);
+-
+-extern int acpi_sleep_prepare(u32 acpi_state);
