@@ -1,48 +1,45 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
-Date: Thu, 27 Dec 2007 10:33:13 +0800
-Message-ID: <1198722793.7320.15.camel__12377.2060186186$1198722873$gmane$org@caritas-dev.intel.com>
-References: <1198222399.1965.15.camel@caritas-dev.intel.com>
-	<20071227015716.GA6718@redhat.com>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC] sleepy linux
+Date: Thu, 27 Dec 2007 10:41:29 +0100
+Message-ID: <200712271041.30923.oliver@neukum.org>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071227015716.GA6718@redhat.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753539AbXL0KAa@vger.kernel.org>
+In-Reply-To: <20071226203258.GE8094@elf.ucw.cz>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2007-12-26 at 20:57 -0500, Vivek Goyal wrote:
-[...]
-> > 9. Now, you are in the original kernel again. You can read/write the
-> >    memory image of kexeced kernel via /proc/kimgcore.
-> > 
-> 
-> Why do we need two interfaces, /proc/vmcore and /proc/kimgcore? Can't
-> we have just one say /proc/vmcore. Irrespective of what kernel you are
-> in /proc/vmcore gives you the access to the memory of kernel which was
-> previously booted.
+Am Mittwoch, 26. Dezember 2007 21:32:58 schrieb Pavel Machek:
+ 
+> ... I also don't need to call any suspend() routines, because all the
+> drivers are already suspended, right?
 
-In theory we can kexec another kernel even in a kexeced kernel, that is,
-in kernel A kexec kernel B, and in kernel B kexec another kernel C. In
-this situation, both /proc/vmcore and /proc/kimgcore has valid contents.
-So I think, it may be better to keep two interfaces.
+Well, you have a number of devices which cannot do runtime pm.
+They can do suspend/resume with the whole system. For them these
+operations mean saving/restoring state.
+So for these devices implementing autosuspend makes no sense.
+They would sensibly do only idle/busy detection.
+ 
+> And yes, I want device activity to prevent s2ram. If user is burning
+> CD, machine should not sleep. If user is actively typing, machine
 
-In fact, current kexec jump implementation use a dummy "jump back helper
-image" in kexeced kernel to jump back to the original kernel. The "jump
-back helper image" has no PT_LOAD segment, it is used to provide a
-struct kimage (including control page, swap page) and entry point to
-jump back.
+In these cases the devices involved should report themselves busy,
+shouldn't they?
 
-Best Regards,
-Huang Ying
+> should not sleep. My vision is: screen saver tells kernel keyboard
+> need not be very responsive, at that point keyboard driver can
+> autosuspend the keyboard, and if that was the last device, whole
+> system sleeps.
+
+We lack a notion of telling devices that they are opened only for
+detecting wakeups. Currently a driver has to assume that an opened
+device has to be fully functional.
+
+	Regards
+		Oliver
