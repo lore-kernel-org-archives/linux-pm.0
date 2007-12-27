@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 5/7] Hibernation: Introduce open() and
-	close() callbacks
-Date: Thu, 27 Dec 2007 19:18:26 +0100
-Message-ID: <200712271918.27682.rjw@sisk.pl>
-References: <200712271903.53961.rjw@sisk.pl>
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Suspend code ordering (again)
+Date: Thu, 27 Dec 2007 12:07:42 -0600
+Message-ID: <4773E9EE.40107__27844.7091499858$1198778988$gmane$org@shaw.ca>
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
+	<fa.WvaVh83zJOh/eZUrjQOZy4J8JFk@ifi.uio.no>
+	<fa.VsyhBr+FAHB0bTb9poSZS80xN/0@ifi.uio.no>
+	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200712271903.53961.rjw@sisk.pl>
-Content-Disposition: inline
+In-reply-to: <fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,174 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, "Moore,
-	Robert" <robert.moore@intel.com>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Rafael J. Wysocki wrote:
+> On Wednesday, 26 of December 2007, Linus Torvalds wrote:
+>> On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
+>>> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+>>> 2.0 and later wants us to put devices into low power states before calling
+>>> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+>>> the 2.0 and later specifications right now, we're not doing the right thing for
+>>> the (strictly) ACPI 1.0x-compliant systems.
+>>>
+>>> We ought to be able to fix things on the high level, by calling _PTS earlier on
+>>> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+>>> the generic susped code quite a bit and will need to be tested for some time.
+>> That's insane. Are you really saying that ACPI wants totally different 
+>> orderings for different versions of the spec?
+> 
+> Yes, I am.
+> 
+>> And does Windows really do that?
+> 
+> I don't know.
+> 
+>> Please don't make lots of modifications to the generic suspend code. The 
+>> only thing that is worth doing is to just have a firmware callback before 
+>> the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
+>> *there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
+> 
+> Yes, that's what I'm going to do, but I need to untangle some ACPI code for
+> this purpose.
+> 
+>> Still, the fact is, some (most, I think) drivers *should* put themselves 
+>> into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
+>> called after that, we're just screwed.
+> 
+> Well, section 9.1.6 of ACPI 2.0 specifies the suspend ordering directly and
+> says exactly that _PTS is to be executed after putting devices into respective
+> D states.
 
-Introduce global hibernation callback .close() and rename global
-hibernation callback .start() to .open(), in analogy with the
-recent modifications of the global suspend callbacks.
+I would not take those sections as gospel, they're really an example 
+only. It's quite possible that Windows does not follow that ordering.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep/main.c |   14 ++++++++++++--
- include/linux/suspend.h   |    8 ++++++--
- kernel/power/disk.c       |   33 ++++++++++++++++++++++++---------
- 3 files changed, 42 insertions(+), 13 deletions(-)
+Also, as was pointed out, pre-Vista versions of Windows follow ACPI 1.0 
+and Vista follows 3.0, so 2.0 doesn't really matter since BIOS people 
+won't test against it. 1.0 specifies that _PTS is to be called before 
+suspending devices and 3.0 says that the AML must not depend on any 
+specific device power state, so in both cases it should be safe to call 
+_PTS before suspending, no?
 
-Index: linux-2.6/include/linux/suspend.h
-===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -138,9 +138,12 @@ extern void mark_free_pages(struct zone 
-  *
-  * All three methods must be assigned.
-  *
-- * @start: Tell the platform driver that we're starting hibernation.
-+ * @open: Tell the platform driver that we're starting hibernation.
-  *	Called right after shrinking memory and before freezing devices.
-  *
-+ * @close: Called by the PM core right after resuming devices, to indicate to
-+ *	the platform that the system has returned to the working state.
-+ *
-  * @pre_snapshot: Prepare the platform for creating the hibernation image.
-  *	Called right after devices have been frozen and before the nonboot
-  *	CPUs are disabled (runs with IRQs on).
-@@ -175,7 +178,8 @@ extern void mark_free_pages(struct zone 
-  *	thawing devices (runs with IRQs on).
-  */
- struct platform_hibernation_ops {
--	int (*start)(void);
-+	int (*open)(void);
-+	void (*close)(void);
- 	int (*pre_snapshot)(void);
- 	void (*finish)(void);
- 	int (*prepare)(void);
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -54,8 +54,8 @@ static struct platform_hibernation_ops *
- 
- void hibernation_set_ops(struct platform_hibernation_ops *ops)
- {
--	if (ops && !(ops->start && ops->pre_snapshot && ops->finish
--	    && ops->prepare && ops->enter && ops->pre_restore
-+	if (ops && !(ops->open && ops->close &&  ops->pre_snapshot
-+	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
- 	    && ops->restore_cleanup)) {
- 		WARN_ON(1);
- 		return;
-@@ -100,14 +100,25 @@ static int hibernation_test(int level) {
- #endif /* !CONFIG_PM_DEBUG */
- 
- /**
-- *	platform_start - tell the platform driver that we're starting
-+ *	platform_open - tell the platform driver that we're starting
-  *	hibernation
-  */
- 
--static int platform_start(int platform_mode)
-+static int platform_open(int platform_mode)
- {
- 	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->start() : 0;
-+		hibernation_ops->open() : 0;
-+}
-+
-+/**
-+ *	platform_close - tell the platform driver that we've entered the
-+ *	working state
-+ */
-+
-+static void platform_close(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->close();
- }
- 
- /**
-@@ -237,9 +248,9 @@ int hibernation_snapshot(int platform_mo
- 	if (error)
- 		return error;
- 
--	error = platform_start(platform_mode);
-+	error = platform_open(platform_mode);
- 	if (error)
--		return error;
-+		goto Close;
- 
- 	suspend_console();
- 	error = device_suspend(PMSG_FREEZE);
-@@ -272,6 +283,8 @@ int hibernation_snapshot(int platform_mo
- 	device_resume();
-  Resume_console:
- 	resume_console();
-+ Close:
-+	platform_close(platform_mode);
- 	return error;
- }
- 
-@@ -373,9 +386,9 @@ int hibernation_platform_enter(void)
- 	 * hibernation_ops->finish() before saving the image, so we should let
- 	 * the firmware know that we're going to enter the sleep state after all
- 	 */
--	error = hibernation_ops->start();
-+	error = hibernation_ops->open();
- 	if (error)
--		return error;
-+		goto Close;
- 
- 	suspend_console();
- 	error = device_suspend(PMSG_SUSPEND);
-@@ -409,6 +422,8 @@ int hibernation_platform_enter(void)
- 	device_resume();
-  Resume_console:
- 	resume_console();
-+ Close:
-+	hibernation_ops->close();
- 	return error;
- }
- 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -268,7 +268,7 @@ static struct dmi_system_id __initdata a
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
--static int acpi_hibernation_start(void)
-+static int acpi_hibernation_open(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
- 	return 0;
-@@ -328,6 +328,15 @@ static void acpi_hibernation_finish(void
- 	acpi_target_sleep_state = ACPI_STATE_S0;
- }
- 
-+static void acpi_hibernation_close(void)
-+{
-+	/*
-+	 * This is necessary in case acpi_hibernation_finish() is not called
-+	 * during a failing transition to the sleep state.
-+	 */
-+	acpi_target_sleep_state = ACPI_STATE_S0;
-+}
-+
- static int acpi_hibernation_pre_restore(void)
- {
- 	acpi_status status;
-@@ -343,7 +352,8 @@ static void acpi_hibernation_restore_cle
- }
- 
- static struct platform_hibernation_ops acpi_hibernation_ops = {
--	.start = acpi_hibernation_start,
-+	.open = acpi_hibernation_open,
-+	.close = acpi_hibernation_close,
- 	.pre_snapshot = acpi_hibernation_prepare,
- 	.finish = acpi_hibernation_finish,
- 	.prepare = acpi_hibernation_prepare,
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
