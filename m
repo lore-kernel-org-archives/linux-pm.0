@@ -1,15 +1,15 @@
-From: Robert Hancock <hancockr@shaw.ca>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Suspend code ordering (again)
-Date: Thu, 27 Dec 2007 18:25:53 -0600
-Message-ID: <47744291.30100__844.123893375759$1198801654$gmane$org@shaw.ca>
+Date: Thu, 27 Dec 2007 21:41:32 -0800 (PST)
+Message-ID: <alpine.LFD.0.9999.0712272138110.21557@woody.linux-foundation.org>
 References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
-	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no> <4773E9EE.40107@shaw.ca>
-	<200712272100.20282.rjw@sisk.pl>
+	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
+	<4773E9EE.40107@shaw.ca> <200712272100.20282.rjw@sisk.pl>
+	<47744291.30100@shaw.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200712272100.20282.rjw@sisk.pl>
+In-Reply-To: <47744291.30100@shaw.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +19,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
->> Also, as was pointed out, pre-Vista versions of Windows follow ACPI 1.0 
->> and Vista follows 3.0, so 2.0 doesn't really matter since BIOS people 
->> won't test against it. 1.0 specifies that _PTS is to be called before 
->> suspending devices and 3.0 says that the AML must not depend on any 
->> specific device power state, so in both cases it should be safe to call 
->> _PTS before suspending, no?
+
+
+On Thu, 27 Dec 2007, Robert Hancock wrote:
 > 
-> Well, IMO, if we take one option only (whichever that is) and there are systems
-> that follow the other one, they will likely break.
-> 
-> Apart from this, there are BIOSes that openly claim ACPI 2.0 support (for
-> example, the one in my HP nx6325 does that) and they may actually prefer the
-> post-ACPI-1.0 ordering even if they work with the pre-ACPI-2.0 one.
+> I doubt they would prefer the later ordering in any way that matters, if the
+> Windows version they were designed for uses the earlier ordering.
 
-I doubt they would prefer the later ordering in any way that matters, if 
-the Windows version they were designed for uses the earlier ordering.
+Well, I wouldn't say it's abotu "preferring" one over the other. It's very 
+possible that the BIOS writers were *intending* to prefer ACPI 2.0, and it 
+may even be likely that they thought that they wrote it that way, but the 
+real issue is that it has apparently never ever been *tested* that way.
 
-It would be best if somebody could manage to find out what ordering 
-Windows XP (and Windows Vista, for good measure) actually use, then we 
-could just use that. Virtual machine trickery might be an option - the 
-only complication being that it'll be using the DSDT for the fake 
-machine and not the real one..
+So yes, maybe the vendors actually thought they were a good ACPI-2.0 
+implementation, but if Windows doesn't do the ordering that the 2.0 spec 
+expects, then that is pretty much just a theoretical thing.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+But yeah, it would be really nice to have this verified some way. Somebody 
+must already know (whether it's a VM person or a BIOS writer, and whether 
+they'd tell us, is obviously another issue).
+
+		Linus
