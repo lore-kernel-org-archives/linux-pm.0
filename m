@@ -1,15 +1,16 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Suspend code ordering (again)
-Date: Thu, 27 Dec 2007 21:41:32 -0800 (PST)
-Message-ID: <alpine.LFD.0.9999.0712272138110.21557@woody.linux-foundation.org>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
-	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
-	<4773E9EE.40107@shaw.ca> <200712272100.20282.rjw@sisk.pl>
-	<47744291.30100@shaw.ca>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
+Date: Fri, 28 Dec 2007 15:30:53 +0800
+Message-ID: <1198827053.7320.33.camel__6717.50749829716$1198827316$gmane$org@caritas-dev.intel.com>
+References: <1198222399.1965.15.camel@caritas-dev.intel.com>
+	<20071227015716.GA6718@redhat.com>
+	<1198722793.7320.15.camel@caritas-dev.intel.com>
+	<20071227181218.GA15084@redhat.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47744291.30100@shaw.ca>
+In-Reply-To: <20071227181218.GA15084@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Ingo Molnar <mingo@elte.hu>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Thu, 27 Dec 2007, Robert Hancock wrote:
+On Thu, 2007-12-27 at 13:12 -0500, Vivek Goyal wrote:
+> On Thu, Dec 27, 2007 at 10:33:13AM +0800, Huang, Ying wrote:
+> > On Wed, 2007-12-26 at 20:57 -0500, Vivek Goyal wrote:
+> > [...]
+> > > > 9. Now, you are in the original kernel again. You can read/write the
+> > > >    memory image of kexeced kernel via /proc/kimgcore.
+> > > > 
+> > > 
+> > > Why do we need two interfaces, /proc/vmcore and /proc/kimgcore? Can't
+> > > we have just one say /proc/vmcore. Irrespective of what kernel you are
+> > > in /proc/vmcore gives you the access to the memory of kernel which was
+> > > previously booted.
+> > 
+> > In theory we can kexec another kernel even in a kexeced kernel, that is,
+> > in kernel A kexec kernel B, and in kernel B kexec another kernel C. In
+> > this situation, both /proc/vmcore and /proc/kimgcore has valid contents.
+> > So I think, it may be better to keep two interfaces.
+> > 
 > 
-> I doubt they would prefer the later ordering in any way that matters, if the
-> Windows version they were designed for uses the earlier ordering.
+> In those situations I think only one interface is better. For example, 
+> above will be broken if somebody kexec 4 kernels.
+> 
+> A-->B--->C--->D
 
-Well, I wouldn't say it's abotu "preferring" one over the other. It's very 
-possible that the BIOS writers were *intending* to prefer ACPI 2.0, and it 
-may even be likely that they thought that they wrote it that way, but the 
-real issue is that it has apparently never ever been *tested* that way.
+I don't think the two interfaces will be broken if somebody kexec 4
+kernels. For example, when kexec D from C, the /proc/vmcore is contents
+of B, /proc/kimgcore is contents of D. To jump back from C to B, the D
+is unloaded, and a jump back helper image is loaded.
 
-So yes, maybe the vendors actually thought they were a good ACPI-2.0 
-implementation, but if Windows doesn't do the ordering that the 2.0 spec 
-expects, then that is pretty much just a theoretical thing.
+> I think better option might be if it is stack like situation. A kernel
+> shows you only the previous kernel's memory contents through /proc/vmcore
+> interface. So If I am in kernel D, I see only kernel C's memory image.
+> To see kernel B's memory image, one shall have to go back to kernel C.
 
-But yeah, it would be really nice to have this verified some way. Somebody 
-must already know (whether it's a VM person or a BIOS writer, and whether 
-they'd tell us, is obviously another issue).
+Maybe it is not sufficient to only show the previous kernel's memory
+contents. In kernel C, you maybe need to access the memory image of
+kernel B and memory image of kernel D.
 
-		Linus
+That is, /proc/vmcore is the memory image of the previous kernel,
+and /proc/kimgcore is the memory image of the next kernel.
+
+Best Regards,
+Huang Ying
