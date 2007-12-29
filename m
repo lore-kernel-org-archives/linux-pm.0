@@ -1,72 +1,39 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Hibernation: Document
-	__save_processor_state() on x86-64
-Date: Sat, 29 Dec 2007 23:43:26 +0000
-Message-ID: <20071229234326.GA17807__24255.0485687845$1198968432$gmane$org@ucw.cz>
-References: <200712281353.37976.rjw@sisk.pl>
+Subject: Re: [RFC] sleepy linux
+Date: Sat, 29 Dec 2007 23:48:20 +0000
+Message-ID: <20071229234820.GB17823@ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz> <200712270015.40165.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756067AbXL2WuX@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200712281353.37976.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200712270015.40165.oliver@neukum.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > Is there an easy way to tell if all the devices are runtime suspended?
+> > > 
+> > > Do you really want to know whether they are suspended or whether they
+> > > could be suspended?
+> > 
+> > If they are suspended.
+> > 
+> > My plan is: let the drivers autosuspend on their own. If I see all of
+> > them are autosuspended, then it looks like great time to put whole
+> > system into s2ram...
 > 
-> Document the fact that __save_processor_state() has to save all CPU
-> registers referred to by the kernel in case a different kernel is
-> used to load and restore a hibernation image containing it. 
+> Your calculation of cost/benefit will be wrong. A driver will have timeouts
+> based on the cost of a suspend/resume cycle of that device only.
+> You'd have to calculate of keeping the whole system awake against that.
 
+Hmm, right. Driver probably should have chance to autosuspend but tell
+the core that whole system probably should not sleep... Hmm....
 
-> Sigend-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/x86/kernel/suspend_64.c |   20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> Index: linux-2.6/arch/x86/kernel/suspend_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/suspend_64.c
-> +++ linux-2.6/arch/x86/kernel/suspend_64.c
-> @@ -19,6 +19,21 @@ extern const void __nosave_begin, __nosa
->  
->  struct saved_context saved_context;
->  
-> +/**
-> + *	__save_processor_state - save CPU registers before creating a
-> + *		hibernation image and before restoring the memory state from it
-> + *	@ctxt - structure to store the registers contents in
-> + *
-> + *	NOTE: If there is a CPU register the modification of which by the
-> + *	boot kernel (ie. the kernel used for loading the hibernation image)
-> + *	might affect the operations of the restored target kernel (ie. the one
-> + *	saved in the hibernation image), then its contents must be saved by this
-> + *	function.  In other words, if kernel A is hibernated and different
-> + *	kernel B is used for loading the hibernation image into memory, the
-> + *	kernel A's __save_processor_state() function must save all registers
-> + *	needed by kernel A, so that it can operate correctly after the resume
-> + *	regardless of what kernel B does in the meantime.
-> + */
-
-Maybe this warning should be appended to struct saved_context
-definition? Reordering its fields (etc) would be bad news, too, and
-documentation near data structures is easier to find...
-
-Thanks,
 								Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
