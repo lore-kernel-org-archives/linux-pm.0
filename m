@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Hibernation: Document
 	__save_processor_state() on x86-64
-Date: Sun, 30 Dec 2007 22:48:02 +0100
-Message-ID: <200712302248.03567.rjw__15929.8828839839$1199051429$gmane$org@sisk.pl>
-References: <200712281353.37976.rjw@sisk.pl> <200712302204.56977.rjw@sisk.pl>
-	<20071230205104.GB26120@elte.hu>
+Date: Sun, 30 Dec 2007 23:08:50 +0100
+Message-ID: <200712302308.51562.rjw__4677.48872838474$1199051439$gmane$org@sisk.pl>
+References: <200712281353.37976.rjw@sisk.pl> <200712302248.03567.rjw@sisk.pl>
+	<20071230213126.GB14654@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071230205104.GB26120@elte.hu>
+In-Reply-To: <20071230213126.GB14654@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -29,25 +29,30 @@ On Sunday, 30 of December 2007, Ingo Molnar wrote:
 > 
 > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> > > But i'm wondering - are we really ever resuming to a different 
-> > > kernel version, for this to be an issue?
+> > > how different can it be, for resume to work? I mean, we'll have 
+> > > deeply kernel version dependent variables in RAM. Am i missing 
+> > > something obvious?
 > > 
-> > The boot kernel may be different from the kernel within the image, if 
-> > that's what you're asking for.
+> > On x86-64 it can be almost totally different (by restoring a 
+> > hibernation image we replace the entire contents of RAM with almost no 
+> > constraints).
+> > 
+> > [Well, using a relocatable kernel for restoring an image with 
+> > nonrelocatable one or vice versa is rather not the best idea, but 
+> > everything else should work in theory.]
+> > 
+> > On i386 the boot kernel is still required to be the same as the one in 
+> > the image.
 > 
-> how different can it be, for resume to work? I mean, we'll have deeply 
-> kernel version dependent variables in RAM. Am i missing something 
-> obvious?
+> what's exactly in the hibernation image? Dirty data i suppose
 
-On x86-64 it can be almost totally different (by restoring a hibernation image
-we replace the entire contents of RAM with almost no constraints).
+No, everything, including the kernel code, page tables etc. :-)
 
-[Well, using a relocatable kernel for restoring an image with nonrelocatable one
-or vice versa is rather not the best idea, but everything else should work in
-theory.]
+> - but what about kernel-internal pages. What if we go from SLAB to SLUB?
+> What if the size of a structure changes? Etc.
 
-On i386 the boot kernel is still required to be the same as the one in the
-image.
+We can go from SLAB to SLUB just fine, it doesn't matter.  The only thing
+that matters is we have to jump to the right address at the end of
+core_restore_code() (defined in arch/x86/kernel/suspend_asm_64.S).
 
-Greetings,
 Rafael
