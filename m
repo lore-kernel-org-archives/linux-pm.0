@@ -1,55 +1,46 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [RFC] sleepy linux
-Date: Sat, 29 Dec 2007 23:51:34 +0000
-Message-ID: <20071229235134.GC17823@ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz> <200712271041.30923.oliver@neukum.org>
+Date: Sun, 30 Dec 2007 12:15:52 +0100
+Message-ID: <20071230111552.GA8578@elte.hu>
+References: <20071225230731.GA29030@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756237AbXL2Wx3@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754657AbXL3LSz@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200712271041.30923.oliver@neukum.org>
+In-Reply-To: <20071225230731.GA29030@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > ... I also don't need to call any suspend() routines, because all the
-> > drivers are already suspended, right?
+* Pavel Machek <pavel@ucw.cz> wrote:
+
+> Todays hardware is mostly capable of doing better: with correctly set 
+> up wakeups, machine can sleep and successfully pretend it is not 
+> sleeping -- by waking up whenever something interesting happens. Of 
+> course, it is easier on machines not connected to the network, and on 
+> notebook computers.
 > 
-> Well, you have a number of devices which cannot do runtime pm.
-> They can do suspend/resume with the whole system. For them these
-> operations mean saving/restoring state.
-> So for these devices implementing autosuspend makes no sense.
-> They would sensibly do only idle/busy detection.
-
-Yep... Let's call busy/idle detection and save/restore state
-"autosuspend" for those devices. It does not save any power, but it
-can be viewed as "kind-of-suspend". (No, I do not have this kind of
-details ready).
-
-> > And yes, I want device activity to prevent s2ram. If user is burning
-> > CD, machine should not sleep. If user is actively typing, machine
+> Requirements:
 > 
-> In these cases the devices involved should report themselves busy,
-> shouldn't they?
-
-Yes.
-
-> > should not sleep. My vision is: screen saver tells kernel keyboard
-> > need not be very responsive, at that point keyboard driver can
-> > autosuspend the keyboard, and if that was the last device, whole
-> > system sleeps.
+> 0) Working suspend-to-RAM, with kernel being able to bring video back.
 > 
-> We lack a notion of telling devices that they are opened only for
-> detecting wakeups. Currently a driver has to assume that an opened
-> device has to be fully functional.
+> 1) RTC clock that can wake up system
 
-Yes, we'll need to add some userland interfaces. No, this will not be
-easy.
+very nice approach! It might require smarter hardware to be really 
+efficient, but the generic ability for Linux to utilize S3 automatically 
+would _quickly_ drive the creation of smarter hardware i'm sure - so i'd 
+propose to include this even if it wastes power in some cases.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+a quick feature request: could you please make the wake-on-RTC 
+capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config option 
+(disabled by default) that does a short 1-second suspend-to-RAM sequence 
+upon bootup? That way we could test s2ram automatically (which is a MUCH 
+needed feature for automated regression testing and automatic 
+bisection). In addition, some sort of 'suspend for N seconds' /sys or 
+/dev/rtc capability would be nice as well.
+
+btw., how far are you from having a working prototype?
+
+	Ingo
