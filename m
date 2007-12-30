@@ -1,46 +1,53 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hibernation: Document
-	__save_processor_state() on x86-64
-Date: Sun, 30 Dec 2007 15:21:09 +0100
-Message-ID: <20071230142109.GK16946__23775.3094443635$1199024578$gmane$org@elte.hu>
-References: <200712281353.37976.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC] sleepy linux
+Date: Sun, 30 Dec 2007 17:39:42 +0100
+Message-ID: <200712301739.42192.oliver@neukum.org>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712271041.30923.oliver@neukum.org> <20071229235134.GC17823@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758081AbXL3Quf@vger.kernel.org>
+In-Reply-To: <20071229235134.GC17823@ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200712281353.37976.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Am Sonntag, 30. Dezember 2007 00:51:34 schrieb Pavel Machek:
+> Hi!
 > 
-> Document the fact that __save_processor_state() has to save all CPU 
-> registers referred to by the kernel in case a different kernel is used 
-> to load and restore a hibernation image containing it.
+> > > ... I also don't need to call any suspend() routines, because all the
+> > > drivers are already suspended, right?
+> > 
+> > Well, you have a number of devices which cannot do runtime pm.
+> > They can do suspend/resume with the whole system. For them these
+> > operations mean saving/restoring state.
+> > So for these devices implementing autosuspend makes no sense.
+> > They would sensibly do only idle/busy detection.
+> 
+> Yep... Let's call busy/idle detection and save/restore state
+> "autosuspend" for those devices. It does not save any power, but it
+> can be viewed as "kind-of-suspend". (No, I do not have this kind of
+> details ready).
 
-ok - so i guess i should drop this from x86.git:
+Well, you probably would have to walk through all devices and check
+all devices are either suspended or can be suspended. That would mean
+struct device has to be extended to show common attributes.
 
- @@ -53,7 +53,6 @@ void __save_processor_state(struct saved
-         ctxt->cr2 = read_cr2();
-         ctxt->cr3 = read_cr3();
-         ctxt->cr4 = read_cr4();
- -       ctxt->cr8 = read_cr8();
-  }
+But what's wrong with calling suspend() the conventional way once you've
+decided to go into sleepy mode?
 
-right? But i'm wondering - are we really ever resuming to a different 
-kernel version, for this to be an issue?
+[..]
+> > We lack a notion of telling devices that they are opened only for
+> > detecting wakeups. Currently a driver has to assume that an opened
+> > device has to be fully functional.
+> 
+> Yes, we'll need to add some userland interfaces. No, this will not be
+> easy.
 
-	Ingo
+This mainly means input devices.
+
+	Regards
+		Oliver
