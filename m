@@ -1,53 +1,86 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] sleepy linux
-Date: Sun, 30 Dec 2007 17:39:42 +0100
-Message-ID: <200712301739.42192.oliver@neukum.org>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712271041.30923.oliver@neukum.org> <20071229235134.GC17823@ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Hibernation: Document
+	__save_processor_state() on x86-64
+Date: Sun, 30 Dec 2007 20:17:34 +0000
+Message-ID: <20071230201734.GA5535__44255.8732619092$1199042512$gmane$org@ucw.cz>
+References: <200712281353.37976.rjw@sisk.pl> <20071229234326.GA17807@ucw.cz>
+	<200712301430.08274.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758081AbXL3Quf@vger.kernel.org>
-In-Reply-To: <20071229235134.GC17823@ucw.cz>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200712301430.08274.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Sonntag, 30. Dezember 2007 00:51:34 schrieb Pavel Machek:
-> Hi!
-> 
-> > > ... I also don't need to call any suspend() routines, because all the
-> > > drivers are already suspended, right?
+On Sun 2007-12-30 14:30:07, Rafael J. Wysocki wrote:
+> On Sunday, 30 of December 2007, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Well, you have a number of devices which cannot do runtime pm.
-> > They can do suspend/resume with the whole system. For them these
-> > operations mean saving/restoring state.
-> > So for these devices implementing autosuspend makes no sense.
-> > They would sensibly do only idle/busy detection.
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Document the fact that __save_processor_state() has to save all CPU
+> > > registers referred to by the kernel in case a different kernel is
+> > > used to load and restore a hibernation image containing it. 
+> > 
+> > 
+> > > Sigend-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  arch/x86/kernel/suspend_64.c |   20 ++++++++++++++++++++
+> > >  1 file changed, 20 insertions(+)
+> > > 
+> > > Index: linux-2.6/arch/x86/kernel/suspend_64.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/arch/x86/kernel/suspend_64.c
+> > > +++ linux-2.6/arch/x86/kernel/suspend_64.c
+> > > @@ -19,6 +19,21 @@ extern const void __nosave_begin, __nosa
+> > >  
+> > >  struct saved_context saved_context;
+> > >  
+> > > +/**
+> > > + *	__save_processor_state - save CPU registers before creating a
+> > > + *		hibernation image and before restoring the memory state from it
+> > > + *	@ctxt - structure to store the registers contents in
+> > > + *
+> > > + *	NOTE: If there is a CPU register the modification of which by the
+> > > + *	boot kernel (ie. the kernel used for loading the hibernation image)
+> > > + *	might affect the operations of the restored target kernel (ie. the one
+> > > + *	saved in the hibernation image), then its contents must be saved by this
+> > > + *	function.  In other words, if kernel A is hibernated and different
+> > > + *	kernel B is used for loading the hibernation image into memory, the
+> > > + *	kernel A's __save_processor_state() function must save all registers
+> > > + *	needed by kernel A, so that it can operate correctly after the resume
+> > > + *	regardless of what kernel B does in the meantime.
+> > > + */
+> > 
+> > Maybe this warning should be appended to struct saved_context
+> > definition? Reordering its fields (etc) would be bad news, too,
 > 
-> Yep... Let's call busy/idle detection and save/restore state
-> "autosuspend" for those devices. It does not save any power, but it
-> can be viewed as "kind-of-suspend". (No, I do not have this kind of
-> details ready).
+> Hmm, I think they can be reordered without any problem.  It's always the same
+> kernel using them, although at different times.
 
-Well, you probably would have to walk through all devices and check
-all devices are either suspended or can be suspended. That would mean
-struct device has to be extended to show common attributes.
+Aha... ok, then. I misunderstood how it works.
 
-But what's wrong with calling suspend() the conventional way once you've
-decided to go into sleepy mode?
-
-[..]
-> > We lack a notion of telling devices that they are opened only for
-> > detecting wakeups. Currently a driver has to assume that an opened
-> > device has to be fully functional.
+> > and documentation near data structures is easier to find...
 > 
-> Yes, we'll need to add some userland interfaces. No, this will not be
-> easy.
+> Well, I'll add a coment next to the definition of struct saved_context to
+> explain what it's for, but IMO the behavior of __save_processor_state() is what
+> _really_ matters (ie. it doesn't matter how and where exactly it saves the
+> registers as long as __restore_processor_state() can restore their "old"
+> values).
 
-This mainly means input devices.
+Yep, right.
 
-	Regards
-		Oliver
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
