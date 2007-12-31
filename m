@@ -1,17 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Hibernation: Document
-	__save_processor_state() on x86-64
-Date: Mon, 31 Dec 2007 18:57:33 +0100
-Message-ID: <200712311857.34445.rjw__35000.4436601468$1199122776$gmane$org@sisk.pl>
-References: <200712281353.37976.rjw@sisk.pl> <200712302337.23896.rjw@sisk.pl>
-	<20071231104311.GA30003@elte.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] Warn about attempts to register/unregister
+ devices during system suspend
+Date: Mon, 31 Dec 2007 13:40:20 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0712311335360.10555-100000__15805.8927314871$1199126519$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071231104311.GA30003@elte.hu>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +15,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 31 of December 2007, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > ok, just to make sure we are talking about the same thing. Do you 
-> > > mean we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 
-> > > 2.6.24 kernel will be able to run a 2.6.12 kernel's hibernation 
-> > > image, with all the kernel internal data from v2.6.12, etc? No way 
-> > > can that work.
-> > 
-> > Well, not exactly.  The support for different boot and image kernels 
-> > has only been merged recently, but we can use the current git to 
-> > restore 2.6.24-rc6-mm1, for example.
-> > 
-> > The trick is to pass a little additional information in the image 
-> > header that can be used by the boot kernel to locate the entry point 
-> > to the image kernel and the image kernel's page tables.
-> 
-> ok - i thought you meant that there's a general capability to resume 
-> across kernel versions. (which would be close to impossible without some 
-> major surgery.)
+This patch (as1030) prints warning messages in the system log when
+drivers try to register or unregister devices during a system sleep
+transition.  These actions are now illegal and will either fail or
+block (likely leading to deadlock).
 
-Well, there will be one. :-)  For example, one should be able to use a 2.6.25+
-boot kernel to load the image containing 2.6.24-rc6 and restore the memory
-state from it.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-> btw., in what way is this different from kexec?
+---
 
-Not that much different indeed.  The hibernation code is more focused on
-restoring the pre-hibernation state of the system rather than anything else,
-plus on ACPI systems we try to handle the platform in accordance with the
-specification (to some extent - you'd have to use a non-ACPI boot kernel to
-follow the specification literally, which is possible but not straightforward).
+This patch applies on top of
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.  The
+new locking arrangement can cause deadlocks or other errors if drivers
+try to do the wrong thing.  With this patch we should easily be able to
+tell where the problems are.
 
-Rafael
+Alan Stern
+
+
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -789,8 +789,11 @@ int device_add(struct device *dev)
+ 	int error;
+ 
+ 	error = pm_sleep_lock();
+-	if (error)
++	if (error) {
++		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
++		dump_stack();
+ 		return error;
++	}
+ 
+ 	dev = get_device(dev);
+ 	if (!dev || !strlen(dev->bus_id)) {
+@@ -953,6 +956,13 @@ void device_del(struct device * dev)
+ 	struct device * parent = dev->parent;
+ 	struct class_interface *class_intf;
+ 
++	if (pm_sleep_lock()) {
++		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
++		dump_stack();
++	} else {
++		pm_sleep_unlock();
++	}
++
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt))
