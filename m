@@ -1,16 +1,16 @@
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Hibernation: Document
 	__save_processor_state() on x86-64
-Date: Mon, 31 Dec 2007 10:29:10 +0100
-Message-ID: <64bb37e0712310129s5b03b490wc1a8a4f9ec9da529__47285.4073196233$1199122005$gmane$org@mail.gmail.com>
-References: <200712281353.37976.rjw@sisk.pl> <200712302248.03567.rjw@sisk.pl>
-	<20071230213126.GB14654@elte.hu> <200712302308.51562.rjw@sisk.pl>
-	<20071230215745.GB31386@elte.hu>
+Date: Mon, 31 Dec 2007 18:57:33 +0100
+Message-ID: <200712311857.34445.rjw__35000.4436601468$1199122776$gmane$org@sisk.pl>
+References: <200712281353.37976.rjw@sisk.pl> <200712302337.23896.rjw@sisk.pl>
+	<20071231104311.GA30003@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071230215745.GB31386@elte.hu>
+In-Reply-To: <20071231104311.GA30003@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,47 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Dec 30, 2007 10:57 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
+On Monday, 31 of December 2007, Ingo Molnar wrote:
+> 
 > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> > > what's exactly in the hibernation image? Dirty data i suppose
-> >
-> > No, everything, including the kernel code, page tables etc. :-)
-> >
-> > > - but what about kernel-internal pages. What if we go from SLAB to
-> > > SLUB? What if the size of a structure changes? Etc.
-> >
-> > We can go from SLAB to SLUB just fine, it doesn't matter.  The only
-> > thing that matters is we have to jump to the right address at the end
-> > of core_restore_code() (defined in arch/x86/kernel/suspend_asm_64.S).
->
-> ok, just to make sure we are talking about the same thing. Do you mean
-> we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 2.6.24
-> kernel will be able to run a 2.6.12 kernel's hibernation image, with all
-> the kernel internal data from v2.6.12, etc? No way can that work.
+> 
+> > > ok, just to make sure we are talking about the same thing. Do you 
+> > > mean we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 
+> > > 2.6.24 kernel will be able to run a 2.6.12 kernel's hibernation 
+> > > image, with all the kernel internal data from v2.6.12, etc? No way 
+> > > can that work.
+> > 
+> > Well, not exactly.  The support for different boot and image kernels 
+> > has only been merged recently, but we can use the current git to 
+> > restore 2.6.24-rc6-mm1, for example.
+> > 
+> > The trick is to pass a little additional information in the image 
+> > header that can be used by the boot kernel to locate the entry point 
+> > to the image kernel and the image kernel's page tables.
+> 
+> ok - i thought you meant that there's a general capability to resume 
+> across kernel versions. (which would be close to impossible without some 
+> major surgery.)
 
-I suspect here is a slight misunderstanding: It will never be possible
-to switch a kernel with a hibernation/resume cycle.
-The new thing is, that you can use a 2.6.24-SLUB-kernel to load a
-2.6.12-SLAB-kernel(*) and then have the *2.6.12* kernel continue to
-run.
+Well, there will be one. :-)  For example, one should be able to use a 2.6.25+
+boot kernel to load the image containing 2.6.24-rc6 and restore the memory
+state from it.
 
-The jump that Rafael talks about is a complete switchover from the
-kernel doing the resume to the old kernel (and all of its data
-structures) from the hibernation image. The now again running old
-kernel will discard any internal data from the resuming kernel and so
-it is not important if there was a SLAB vs SLUB difference.
+> btw., in what way is this different from kexec?
 
-In some way you could see the kernel loading the image as a gigantic
-bootloader and just as is does not matter if you use lilo or grub it
-should no longer matter what bootloader/kernel was used for resuming,
-now that a ABI for the resume has been defined.
+Not that much different indeed.  The hibernation code is more focused on
+restoring the pre-hibernation state of the system rather than anything else,
+plus on ACPI systems we try to handle the platform in accordance with the
+specification (to some extent - you'd have to use a non-ACPI boot kernel to
+follow the specification literally, which is possible but not straightforward).
 
-Torsten
-
-(*): 2.6.12 might not work, as Rafael said the feature supporting
-different kernel versions was only merge recently.
+Rafael
