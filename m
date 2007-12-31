@@ -1,49 +1,49 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hibernation: Document
-	__save_processor_state() on x86-64
-Date: Mon, 31 Dec 2007 11:43:11 +0100
-Message-ID: <20071231104311.GA30003__24313.2280688316$1199097909$gmane$org@elte.hu>
-References: <200712281353.37976.rjw@sisk.pl> <200712302308.51562.rjw@sisk.pl>
-	<20071230215745.GB31386@elte.hu> <200712302337.23896.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Mon, 31 Dec 2007 14:44:47 +0000
+Message-ID: <20071231144447.GD26339@ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712271041.30923.oliver@neukum.org> <20071229235134.GC17823@ucw.cz> <200712301739.42192.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759497AbXLaNrT@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200712302337.23896.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200712301739.42192.oliver@neukum.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> > ok, just to make sure we are talking about the same thing. Do you 
-> > mean we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 
-> > 2.6.24 kernel will be able to run a 2.6.12 kernel's hibernation 
-> > image, with all the kernel internal data from v2.6.12, etc? No way 
-> > can that work.
+On Sun 2007-12-30 17:39:42, Oliver Neukum wrote:
+> Am Sonntag, 30. Dezember 2007 00:51:34 schrieb Pavel Machek:
+> > Hi!
+> > 
+> > > > ... I also don't need to call any suspend() routines, because all the
+> > > > drivers are already suspended, right?
+> > > 
+> > > Well, you have a number of devices which cannot do runtime pm.
+> > > They can do suspend/resume with the whole system. For them these
+> > > operations mean saving/restoring state.
+> > > So for these devices implementing autosuspend makes no sense.
+> > > They would sensibly do only idle/busy detection.
+> > 
+> > Yep... Let's call busy/idle detection and save/restore state
+> > "autosuspend" for those devices. It does not save any power, but it
+> > can be viewed as "kind-of-suspend". (No, I do not have this kind of
+> > details ready).
 > 
-> Well, not exactly.  The support for different boot and image kernels 
-> has only been merged recently, but we can use the current git to 
-> restore 2.6.24-rc6-mm1, for example.
+> Well, you probably would have to walk through all devices and check
+> all devices are either suspended or can be suspended. That would mean
+> struct device has to be extended to show common attributes.
 > 
-> The trick is to pass a little additional information in the image 
-> header that can be used by the boot kernel to locate the entry point 
-> to the image kernel and the image kernel's page tables.
+> But what's wrong with calling suspend() the conventional way once you've
+> decided to go into sleepy mode?
 
-ok - i thought you meant that there's a general capability to resume 
-across kernel versions. (which would be close to impossible without some 
-major surgery.)
+I'm not sure if it can be done in non-racy way. It is different from
+"conventional" suspend(): you can still have userland requests after
+this suspend(), and you should abort auto-sleep if you get one. (As
+opposed to blocking in system suspend case).
+								Pavel
 
-btw., in what way is this different from kexec?
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
