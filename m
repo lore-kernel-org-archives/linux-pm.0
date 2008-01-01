@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Hibernation: Document
-	__save_processor_state() on x86-64 (rev. 2)
-Date: Wed, 2 Jan 2008 00:23:57 +0100
-Message-ID: <200801020023.58040.rjw@sisk.pl>
-References: <200712302313.52483.rjw@sisk.pl> <20080102000222.GA2404@ucw.cz>
+Subject: [PATCH 0/4] PM: Do not destroy/create devices while
+	suspended (rev. 2)
+Date: Wed, 2 Jan 2008 00:32:44 +0100
+Message-ID: <200801020032.45529.rjw__31429.2707633742$1199230932$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080102000222.GA2404@ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,24 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 2 of January 2008, Pavel Machek wrote:
-> On Sun 2007-12-30 23:13:51, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Document the fact that __save_processor_state() has to save all CPU
-> > registers referred to by the kernel in case a different kernel is
-> > used to load and restore a hibernation image containing it. 
-> > 
-> > Sigend-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACK.
+Hi,
 
-Thanks!
+Some device drivers register CPU hotplug notifiers and use them to destro=
+y
+device objects when removing the corresponding CPUs and to create these o=
+bjects
+when adding the CPUs back.
 
-Ingo, can you please take this patch for 2.6.25 or should I forward it to Len?
+Unfortunately, this is not the right thing to do during suspend/hibernati=
+on,
+since in that cases the CPU hotplug notifiers are called after suspending
+devices and before resuming them, so the operations in question are carri=
+ed
+out on the objects representing suspended devices which shouldn't be
+unregistered behing the PM core's back. =A0Although right now it usually =
+doesn't
+lead to any practical complications, it will predictably deadlock if
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is applie=
+d.
 
+The solution is to prevent drivers from removing/adding devices from with=
+in
+CPU hotplug notifiers during suspend/hibernation using the FROZEN bit
+in the notifier's action argument.  However, this has to be done with car=
+e,
+since the devices objects related to the nonboot CPUs that failed to go o=
+nline
+during resume should not be present in the system.  For this reason, it s=
+eems
+reasonable to introduce a mechanism allowing drivers to ask the PM core t=
+o
+remove device objects corresponding to suspended devices on their behalf.
+
+The first patch in the series introduces such a mechanism.  The remaining=
+ three
+patches modify the MSR, x86-64 MCE and cpuid drivers in accordance with t=
+he
+above approach.
+
+Thanks,
 Rafael
