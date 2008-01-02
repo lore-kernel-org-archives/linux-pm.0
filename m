@@ -1,16 +1,16 @@
-From: Theodore Tso <tytso@MIT.EDU>
-Subject: Re: [Suspend2-devel] Freezing filesystems (Was Re:
-	What's in store for 2008 for TuxOnIce?)
-Date: Tue, 1 Jan 2008 20:03:25 -0500
-Message-ID: <20080102010325.GC13288__11881.7981136546$1199289214$gmane$org@mit.edu>
-References: <477AC060.5040004@nigel.suspend2.net>
-	<200801020021.37259.rjw@sisk.pl>
-	<477AD2AA.4070707@nigel.suspend2.net>
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while
+	suspended (rev. 2)
+Date: Wed, 2 Jan 2008 15:55:00 +0100
+Message-ID: <3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad__31915.9904764549$1199289230$gmane$org@mail.gmail.com>
+References: <200801020032.45529.rjw@sisk.pl> <20080102105217.GA14731@elte.hu>
+	<200801021356.59865.rjw@sisk.pl> <20080102131529.GA32160@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080102131529.GA32160@elte.hu>
 Content-Disposition: inline
-In-Reply-To: <477AD2AA.4070707@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, The place to get help! <suspend2-users@lists.tuxonice.net>, suspend2-devel@lists.tuxonice.net, LKML <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 10:54:18AM +1100, Nigel Cunningham wrote:
-> > I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
-> > one of the kernel-related lists, but I think linux-pm may be better for that
-> > due to the much lower traffic.
-> 
-> I guess that makes sense. I guess people can always be referred to LKML
-> for the issues where the appropriate person isn't on linux-pm.
+On Jan 2, 2008 2:15 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> A stupid question. The old RTC driver is in
+> drivers/char/rtc.c, and maps to:
+>
+>   crw-r--r-- 1 root root  10, 135 Oct 25 18:02 /dev/rtc
+>
+> the new driver is in drivers/rtc/*, and maps to:
+>
+>   crw-r--r-- 1 root root 254,   0 Dec 12 02:30 /dev/rtc0
+>
+> but all the x86 distro boxes i have access to make use of /dev/rtc.
+> There's no symlink set up from /dev/rtc to /dev/rtc0 either. So it
+> appears to me that the new RTC driver isnt actually utilized on most
+> distributions.
+>
+> shouldnt we provide a Kconfig way of replacing dev 10:135 with the new
+> driver's 254:0 device? (while keeping all the current modes of operation
+> as well, of course.) It's all supposed to be 100% ioctl ABI compatible
+> with the old driver, right?
 
-Hi Nigel,
+It's not compatible enough to "fake" only the old major/minor. Userspace
+must be fixed not to depend on stuff like:  /proc/sys/dev/rtc/max-user-freq:
+  http://lkml.org/lkml/2007/8/4/183
 
-I'd really recommend pushing the TuxOnIce discussions to LKML.  That
-way people can see the size of the user community and Andrew and Linus
-can see how many people are using TuxOnIce.  They can also see how
-well the TuxOnIce community helps address user problems, which is a
-big consideration when Linus decides whether or not to merge a
-particular technology. 
+> That way distros could start migrating to it
+> as well, without depending on any udev hackery.
 
-If the goal is eventual merger of TuxOnIce, LKML is really the best
-place to have the discussions.  Examples such as Realtime, CFS, and
-others have shown that you really want to keep the discussion front
-and center.  When one developer says, "not my problem; my code is
-perfect", and the other developer is working with users who report
-problems, guess which technology generally ends up getting merged by
-Linus?
+It's in the default udev setup:
+  KERNEL=="rtc|rtc0",             MODE="0644"
+  KERNEL=="rtc0",                 SYMLINK+="rtc"
 
-Regards,
-
-						- Ted
+Kay
