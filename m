@@ -1,16 +1,12 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while
-	suspended (rev. 2)
-Date: Wed, 2 Jan 2008 17:01:37 +0100
-Message-ID: <20080102160137.GA21046__33323.4109021307$1199289960$gmane$org@elte.hu>
-References: <200801020032.45529.rjw@sisk.pl> <20080102105217.GA14731@elte.hu>
-	<200801021356.59865.rjw@sisk.pl> <20080102131529.GA32160@elte.hu>
-	<3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
+Date: Wed, 2 Jan 2008 11:41:36 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801021122070.5062-100000__4623.65729404173$1199292467$gmane$org@iolanthe.rowland.org>
+References: <200801021433.47651.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
+In-Reply-To: <200801021433.47651.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,67 +16,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
 
-* Kay Sievers <kay.sievers@vrfy.org> wrote:
-
-> > shouldnt we provide a Kconfig way of replacing dev 10:135 with the 
-> > new driver's 254:0 device? (while keeping all the current modes of 
-> > operation as well, of course.) It's all supposed to be 100% ioctl 
-> > ABI compatible with the old driver, right?
+> On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > It sometimes is necessary to destroy a device object during a suspend or
+> > hibernation, but the PM core is supposed to control all device objects in that
+> > cases.  For this reason, it is necessary to introduce a mechanism allowing one
+> > to ask the PM core to remove a device object corresponding to a suspended
+> > device on one's behalf.
+> > 
+> > Define function destroy_suspended_device() that will schedule the removal of
+> > a device object corresponding to a suspended device by the PM core during the
+> > subsequent resume.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> It's not compatible enough to "fake" only the old major/minor. Userspace
-> must be fixed not to depend on stuff like:  /proc/sys/dev/rtc/max-user-freq:
->   http://lkml.org/lkml/2007/8/4/183
+> Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
+> should not be called by device_pm_schedule_removal(), because it will be called
+> anyway from device_pm_remove() when the device object is finally unregistered
+> (we're talking here about unlikely error paths only, but still).
 
-i think that should be fixed by providing a compatible 
-/proc/sys/dev/rtc/max-user-freq implementation in the new driver too.
+The situation is a little confusing, because the source files under 
+drivers/base/power are maintained in Greg's tree and he already has 
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
+installed.  That patch conflicts with this one.
 
-> > That way distros could start migrating to it
-> > as well, without depending on any udev hackery.
-> 
-> It's in the default udev setup:
->   KERNEL=="rtc|rtc0",             MODE="0644"
->   KERNEL=="rtc0",                 SYMLINK+="rtc"
+One of the these two patches will have to be rewritten to apply on top 
+of the other.  Which do you think should be changed?
 
-but if it breaks max-user-freq (which is needed by qemu for example) 
-then distros would likely disable it, right?
-
-or this rule might be broken in some way. For example my Fedora 8 box 
-has this in /etc/udev/rules.d/50-udev-default.rules:
-
- # miscellaneous
- KERNEL=="fuse",                 MODE="0666"
- KERNEL=="rtc|rtc0",             MODE="0644"
- KERNEL=="rtc0",                 SYMLINK+="rtc"
-
-still i've got:
-
- crw------- 1 root root  10, 135 Dec 28 08:13 /dev/rtc
- crw-r--r-- 1 root root 254,   0 Dec 28 08:13 /dev/rtc0
-
-_and_ my distro kernel doesnt even have CONFIG_RTC enabled - i run the 
-Fedora 9 devel/rawhide kernel on this box:
-
- # CONFIG_RTC is not set
- # CONFIG_GEN_RTC is not set
- # CONFIG_HPET_RTC_IRQ is not set
- CONFIG_RTC_LIB=y
- CONFIG_RTC_CLASS=y
- # CONFIG_RTC_HCTOSYS is not set
- # CONFIG_RTC_DEBUG is not set
- # RTC interfaces
- CONFIG_RTC_INTF_SYSFS=y
- CONFIG_RTC_INTF_PROC=y
- CONFIG_RTC_INTF_DEV=y
- # CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
- # CONFIG_RTC_DRV_TEST is not set
-
-udev-116-3.fc8. Maybe i just misunderstood what the grand plan was here 
-- i assumed it was to smoothly convert from old driver to new driver, 
-without forcing any changes on user-space.
-
-	Ingo
+Alan Stern
