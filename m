@@ -1,16 +1,18 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while
  suspended (rev. 2)
-Date: Wed, 02 Jan 2008 09:26:25 -0800
-Message-ID: <20080102172625.CE0C2F6DFE__22031.6948289566$1199294965$gmane$org@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Date: Wed, 02 Jan 2008 09:54:00 -0800
+Message-ID: <20080102175400.3C2E0EF588__6460.20077770135$1199296619$gmane$org@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 References: <200801020032.45529.rjw@sisk.pl>
 	<20080102105217.GA14731@elte.hu> <200801021356.59865.rjw@sisk.pl>
 	<20080102131529.GA32160@elte.hu>
+	<3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
+	<20080102160137.GA21046@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080102131529.GA32160@elte.hu>
+In-Reply-To: <20080102160137.GA21046@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,82 +22,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, mingo@elte.hu
+To: mingo@elte.hu, kay.sievers@vrfy.org
 Cc: a.zummo@towertech.it, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, pavel@suse.cz, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-(Alessandro Zummo Cc:-ed too -- RTC subsystem maintainer)
-
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> > Well, we have the following test script in the userland suspend 
-> > package that is supposed to work right now:
+> > > shouldnt we provide a Kconfig way of replacing dev 10:135 with the 
+> > > new driver's 254:0 device? (while keeping all the current modes of 
+> > > operation as well, of course.) It's all supposed to be 100% ioctl 
+> > > ABI compatible with the old driver, right?
 > > 
-> > #!/bin/bash
-> > date
-> > cd /sys/class/rtc/rtc0
-> > echo $(( $(cat since_epoch) + 20 )) > wakealarm
-> > s2ram
-> > date
+> > It's not compatible enough to "fake" only the old major/minor. Userspace
+> > must be fixed not to depend on stuff like:  /proc/sys/dev/rtc/max-user-freq:
+> >   http://lkml.org/lkml/2007/8/4/183
+>
+> i think that should be fixed by providing a compatible 
+> /proc/sys/dev/rtc/max-user-freq implementation in the new driver too.
+
+I see /sys/class/rtc/rtc0/max_user_freq, fwiw ...
+
+
+> > > That way distros could start migrating to it
+> > > as well, without depending on any udev hackery.
 > > 
-> > provided that the new rtc driver code is compiled (and the old one is not).
-
-Eventually, swapping driver modules ought to work too.  The
-legacy /proc/acpi/wakeup files would ISTR cause problems in
-current code.
-
-Of course, one reason to want to use the RTC framework code
-is to stop depending on x86-isms like ACPI or "s2ram", and
-thus to work on more Linux platforms.  ;)
-
-
-> ok, will try that. A stupid question. The old RTC driver is in 
-> drivers/char/rtc.c, and maps to:
+> > It's in the default udev setup:
+> >   KERNEL=="rtc|rtc0",             MODE="0644"
+> >   KERNEL=="rtc0",                 SYMLINK+="rtc"
 >
->   crw-r--r-- 1 root root  10, 135 Oct 25 18:02 /dev/rtc
+> but if it breaks max-user-freq (which is needed by qemu for example) 
+> then distros would likely disable it, right?
 >
-> the new driver is in drivers/rtc/*, and maps to:
+> or this rule might be broken in some way. For example my Fedora 8 box 
+> has this in /etc/udev/rules.d/50-udev-default.rules:
 >
->   crw-r--r-- 1 root root 254,   0 Dec 12 02:30 /dev/rtc0
+>  # miscellaneous
+>  KERNEL=="fuse",                 MODE="0666"
+>  KERNEL=="rtc|rtc0",             MODE="0644"
+>  KERNEL=="rtc0",                 SYMLINK+="rtc"
 >
-> but all the x86 distro boxes i have access to make use of /dev/rtc. 
-> There's no symlink set up from /dev/rtc to /dev/rtc0 either.
+> still i've got:
+>
+>  crw------- 1 root root  10, 135 Dec 28 08:13 /dev/rtc
+>  crw-r--r-- 1 root root 254,   0 Dec 28 08:13 /dev/rtc0
 
-Current util-linux-ng code uses either RTC device file; and udev
-sets up /dev/rtc0 as needed.  (But not /dev/rtc, as I recall...)
-Have distros switched away from the old unmaintained util-linux?
-
-
->	So it 
-> appears to me that the new RTC driver isnt actually utilized on most 
-> distributions.
-
-That might be so.  There are some HPET issues, but those show up with
-both drivers.
-
-The main other issue I know about which would seem to argue for using
-the legacy driver, instead of the RTC framework, is that some BIOSes
-don't seem to provide PNPACPI entries for their RTCs.  I got one report
-of a newish HP Opteron system that doesn't.  I have no idea how common
-that is.  The drivers/acpi/glue.c code could detect that, but maybe a
-better place to address that would be in PNP code; in that case, ISTR
-that PNP0c01 claimed the RTC ioports, and so would be the natural place
-to make provide a real driver model node for that hardware.
+I suspect the /dev/rtc node was provided by the distro, so those
+udev rules won't trigger.
 
 
+> _and_ my distro kernel doesnt even have CONFIG_RTC enabled - i run the 
+> Fedora 9 devel/rawhide kernel on this box:
+>
+>  # CONFIG_RTC is not set
+>  # CONFIG_GEN_RTC is not set
+>  # CONFIG_HPET_RTC_IRQ is not set
+>  CONFIG_RTC_LIB=y
+>  CONFIG_RTC_CLASS=y
+>  # CONFIG_RTC_HCTOSYS is not set
+>  # CONFIG_RTC_DEBUG is not set
+>  # RTC interfaces
+>  CONFIG_RTC_INTF_SYSFS=y
+>  CONFIG_RTC_INTF_PROC=y
+>  CONFIG_RTC_INTF_DEV=y
+>  # CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+>  # CONFIG_RTC_DRV_TEST is not set
+>
+> udev-116-3.fc8.
 
-> shouldnt we provide a Kconfig way of replacing dev 10:135 with the new 
-> driver's 254:0 device? (while keeping all the current modes of operation 
-> as well, of course.)
-
-The major number 254 is not statically allocated, ISTR; that should
-be managed only by udev.
+I run my x86 systems like that (also with RTC_DRV_CMOS), but
+the ARM systems usually have RTC_HCTOSYS set too (plus some
+RTC driver other than rtc-cmos).  The x86 system init code
+pokes directly at the legacy RTC hardware in several cases.
 
 
-> 			 It's all supposed to be 100% ioctl ABI compatible 
-> with the old driver, right? That way distros could start migrating to it 
-> as well, without depending on any udev hackery.
+>	Maybe i just misunderstood what the grand plan was here 
+> - i assumed it was to smoothly convert from old driver to new driver, 
+> without forcing any changes on user-space.
 
-I don't know of any ioctl differences userspace would care about.
+If there was a Grand Plan, I never heard of it. :)
+
+It'd need to have some NTP sync solution for RTC_LIB devices, but
+ISTR the gentime stuff still assumes an update_persistent_clock()
+that doesn't sleep ... and hence can't be used with I2C based RTCs.
+
+
+I've been trying to make sure the x86 world could realistically
+switch to the RTC framework used by other Linux platforms, hence
+e.g. the util-unix-ng updates, but never assumed there would be
+no userspace changes.  After all, userspace was using a mishmash
+of tools that were far from platform-agnostic, and moving away
+from x86-dependency implies such things will change.
+
+However I *do* think that symlinking rtc to /dev/rtc0 should
+make it practical to use most older binaries.
 
 - Dave
