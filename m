@@ -1,18 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [patch] hibernation: utilize ACPI hardware
-	signature
-Date: Wed, 2 Jan 2008 23:18:58 +0100
-Message-ID: <200801022318.59392.rjw__39251.9764871851$1199312398$gmane$org@sisk.pl>
-References: <1199257162.14632.4.camel@sli10-desk.sh.intel.com>
-	<200801021512.54140.rjw@sisk.pl>
-	<477C0155.70902@nigel.suspend2.net>
+From: Bernd Steinhauser <linux@bernd-steinhauser.de>
+Subject: Re: [Suspend2-devel] Freezing filesystems (Was Re:
+ What's in store for 2008 for TuxOnIce?)
+Date: Thu, 03 Jan 2008 01:39:06 +0100
+Message-ID: <477C2EAA.9000904__44379.7339838513$1199321927$gmane$org@bernd-steinhauser.de>
+References: <477AC060.5040004@nigel.suspend2.net>	<200801021401.23492.rjw@sisk.pl>	<477BFD7A.3060403@nigel.suspend2.net>	(sfid-20080102_221641_303169_6193472F)
+	<200801022235.05476.Martin@lichtvoll.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============3525311717389485993=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <477C0155.70902@nigel.suspend2.net>
-Content-Disposition: inline
+In-Reply-To: <200801022235.05476.Martin@lichtvoll.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,75 +16,147 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Erik =?iso-8859-15?q?Andr=E9n?= <erik.andren@gmail.com>
+To: suspend2-devel@lists.tuxonice.net
+Cc: pm list <linux-pm@lists.linux-foundation.org>, The place to get help! <suspend2-users@lists.tuxonice.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 2 of January 2008, Nigel Cunningham wrote:
-> Hi.
->=20
-> Rafael J. Wysocki wrote:
-> > On Wednesday, 2 of January 2008, Erik Andr=E9n wrote:
-> >> Hi,
-> >>
-> >> 2008/1/2, Shaohua Li <shaohua.li@intel.com>:
-> >>> ACPI defines a hardware signature. BIOS calculates the signature
-> >>> according to hardware configure, if hardware changes, the signature=
- will
-> >>> change, in this case, S4 resume should fail.
-> >>>
-> >>> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> >>> ---
-> >>
-> >> Would it be possible to extend this mechanism to prevent the followi=
-ng
-> >> scenario:
-> >>
-> >> 1. Linux image A is suspended to disk
-> >> 2. Linux image B is booted and various changes to the system are don=
-e.
-> >> 3. Linux image B is shut down
-> >> 4. Linux image A is booted, restoring the suspend to disk image.
-> >> 5. Chaos is ensured as the file system state is changed in regard to=
- how
-> >> linux image A expects it.
-> >>
-> >> Correct behaviour would naturally be that image A detects that chang=
-es have
-> >> been made under its feet and proceed to perform a normal boot instea=
-d of
-> >> resuming the stored suspend-to-disk image.
-> >=20
-> > It should be possible in theory.
-> >=20
-> >> Is there another mechanism preventing this?
-> >=20
-> > Not at the kernel level, but you can prevent this from happening by r=
-unning
-> > mkswap on all swap spaces that refuse to come up after a fresh boot.
->=20
-> We really should do something about this. It should be possible to
-> handle this properly if something along the following lines was impleme=
-nted:
->=20
-> 1) Each filesystem implements a function taking a pointer to a struct
-> block_device and returns a mount count for that filesystem without
-> making any modifications to the filesystem.
-> 2) Hibernation implementations store the major & minor numbers and moun=
-t
-> counts for each mounted filesystem in the image header when hibernating=
-,
-> and recheck those values at resume time. If the mount count on any
-> filesystem has changes, we warn the user, invalidate the image and boot
-> normally.
+This is a multi-part message in MIME format.
+--===============3525311717389485993==
+Content-Type: multipart/alternative;
+	boundary="------------040800020508080003020300"
 
-That may quickly become complicated.
+This is a multi-part message in MIME format.
+--------------040800020508080003020300
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-For example, boot kernel need not contain all drivers used by the hiberna=
-ted
-ones, so some filesystems may be physically inaccessible to them.
+Martin Steigerwald schrieb:
+> Am Mittwoch 02 Januar 2008 schrieb Nigel Cunningham:
+>   
+>> Hi.
+>>     
+>
+> Hi,
+>   
+Hi,
+> This has been refreshingly different on tuxonice mailing lists. I am also 
+> a bit reluctant about the traffic. I already have some quite high traffic 
+> mailinglists with 30000-40000 mails a year, but LKML would top these 
+> easily I guess and I am not that sure I want to put that load on my mail 
+> infrastructure to follow TuxOnIce developments. I think this is a generic 
+> problem for testers of specific kernel subsystems...
+>   
+Yep, for me, too.
+LKML's traffic is way too high, but I understand, that Nigel wants to push
+TuxOnIce a little bit closer to the main kernel.
+So I would actually be happy if it goes on LKML and there is some way to
+filter the TOI mails out. Like for example you drop mails, that don't have
+[TuxOnIce] in their subject (or similar). I could live with that.
+Actually the people on the LKML should use those more often, some do use
+tags like that already, but a lot of people don't and that makes it look
+like just
+a huge amount of email without any structure in it.
 
-Greetings,
-Rafael
+> But then LKML is were TuxOnIce is visible to the kernel developer 
+> community.
+>
+> I would appreciate linux-pm I think maybe with a guideline to CC to LKML 
+> in usual cases...
+>
+> BTW: toi-3.0-rc3 is rocking along nicely on my two ThinkPads (T42 and 
+> T23)... I am using 2.6.23.12 with cfs-v24.1...
+>   
+Yep, 3.0-rc3 is definitely the most reliable toi/suspend2 version I've
+ever had.
+I've done around 30-50 hibernate/resume cycles without any problems.
+I only stopped, because my touchpad stops working after resume with the
+Elantech driver, but I normally don't use it a lot, so I can live with that.
+
+Greets
+
+--------------040800020508080003020300
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-15"
+ http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Martin Steigerwald schrieb:
+<blockquote cite="mid:200801022235.05476.Martin@lichtvoll.de"
+ type="cite">
+  <pre wrap="">Am Mittwoch 02 Januar 2008 schrieb Nigel Cunningham:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Hi,
+  </pre>
+</blockquote>
+Hi,<br>
+<blockquote cite="mid:200801022235.05476.Martin@lichtvoll.de"
+ type="cite">
+  <pre wrap="">This has been refreshingly different on tuxonice mailing lists. I am also 
+a bit reluctant about the traffic. I already have some quite high traffic 
+mailinglists with 30000-40000 mails a year, but LKML would top these 
+easily I guess and I am not that sure I want to put that load on my mail 
+infrastructure to follow TuxOnIce developments. I think this is a generic 
+problem for testers of specific kernel subsystems...
+  </pre>
+</blockquote>
+Yep, for me, too.<br>
+LKML's traffic is way too high, but I understand, that Nigel wants to
+push<br>
+TuxOnIce a little bit closer to the main kernel.<br>
+So I would actually be happy if it goes on LKML and there is some way to<br>
+filter the TOI mails out. Like for example you drop mails, that don't
+have<br>
+[TuxOnIce] in their subject (or similar). I could live with that.<br>
+Actually the people on the LKML should use those more often, some do use<br>
+tags like that already, but a lot of people don't and that makes it
+look like just<br>
+a huge amount of email without any structure in it.<br>
+<br>
+<blockquote cite="mid:200801022235.05476.Martin@lichtvoll.de"
+ type="cite">
+  <pre wrap="">
+But then LKML is were TuxOnIce is visible to the kernel developer 
+community.
+
+I would appreciate linux-pm I think maybe with a guideline to CC to LKML 
+in usual cases...
+
+BTW: toi-3.0-rc3 is rocking along nicely on my two ThinkPads (T42 and 
+T23)... I am using 2.6.23.12 with cfs-v24.1...
+  </pre>
+</blockquote>
+Yep, 3.0-rc3 is definitely the most reliable toi/suspend2 version I've
+ever had.<br>
+I've done around 30-50 hibernate/resume cycles without any problems.<br>
+I only stopped, because my touchpad stops working after resume with the<br>
+Elantech driver, but I normally don't use it a lot, so I can live with
+that.<br>
+<br>
+Greets<br>
+</body>
+</html>
+
+--------------040800020508080003020300--
+
+--===============3525311717389485993==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3525311717389485993==--
