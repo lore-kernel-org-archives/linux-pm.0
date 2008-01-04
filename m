@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
-Date: Fri, 4 Jan 2008 23:05:33 +0100
-Message-ID: <200801042305.35089.rjw__22794.1443249167$1199484415$gmane$org@sisk.pl>
+Subject: [RFC][PATCH] PM: Acquire device locks on suspend (was:
+	Re: [PATCH 1/4] PM: Introduce destroy_suspended_device())
+Date: Sat, 5 Jan 2008 00:29:52 +0100
+Message-ID: <200801050029.53915.rjw__3.1942189254508$1199489474$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0801021122070.5062-100000@iolanthe.rowland.org>
-	<200801021750.16359.rjw@sisk.pl>
+	<200801021750.16359.rjw@sisk.pl> <200801042305.35089.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801021750.16359.rjw@sisk.pl>
+In-Reply-To: <200801042305.35089.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,45 +25,60 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 2 of January 2008, Alan Stern wrote:
-> > On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
-> > 
-> > > On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > It sometimes is necessary to destroy a device object during a suspend or
-> > > > hibernation, but the PM core is supposed to control all device objects in that
-> > > > cases.  For this reason, it is necessary to introduce a mechanism allowing one
-> > > > to ask the PM core to remove a device object corresponding to a suspended
-> > > > device on one's behalf.
-> > > > 
-> > > > Define function destroy_suspended_device() that will schedule the removal of
-> > > > a device object corresponding to a suspended device by the PM core during the
-> > > > subsequent resume.
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday, 4 of January 2008, Rafael J. Wysocki wrote:
+> On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
+> > On Wednesday, 2 of January 2008, Alan Stern wrote:
+> > > On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
 > > > 
-> > > Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
-> > > should not be called by device_pm_schedule_removal(), because it will be called
-> > > anyway from device_pm_remove() when the device object is finally unregistered
-> > > (we're talking here about unlikely error paths only, but still).
+> > > > On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > 
+> > > > > It sometimes is necessary to destroy a device object during a suspend or
+> > > > > hibernation, but the PM core is supposed to control all device objects in that
+> > > > > cases.  For this reason, it is necessary to introduce a mechanism allowing one
+> > > > > to ask the PM core to remove a device object corresponding to a suspended
+> > > > > device on one's behalf.
+> > > > > 
+> > > > > Define function destroy_suspended_device() that will schedule the removal of
+> > > > > a device object corresponding to a suspended device by the PM core during the
+> > > > > subsequent resume.
+> > > > > 
+> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
+> > > > should not be called by device_pm_schedule_removal(), because it will be called
+> > > > anyway from device_pm_remove() when the device object is finally unregistered
+> > > > (we're talking here about unlikely error paths only, but still).
+> > > 
+> > > The situation is a little confusing, because the source files under 
+> > > drivers/base/power are maintained in Greg's tree and he already has 
+> > > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
+> > > installed.  That patch conflicts with this one.
+> > > 
+> > > One of the these two patches will have to be rewritten to apply on top 
+> > > of the other.  Which do you think should be changed?
 > > 
-> > The situation is a little confusing, because the source files under 
-> > drivers/base/power are maintained in Greg's tree and he already has 
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
-> > installed.  That patch conflicts with this one.
-> > 
-> > One of the these two patches will have to be rewritten to apply on top 
-> > of the other.  Which do you think should be changed?
+> > Well, from the bisectability point of view, it would be better to adjust
+> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch and let the
+> > $subject patch series go first, if you don't mind.
 > 
-> Well, from the bisectability point of view, it would be better to adjust
-> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch and let the
-> $subject patch series go first, if you don't mind.
+> I have rebased gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
+> on top of the $subject series, the result is appended.  It has only been
+> compilation tested for now, but I'll be testing it for the next couple of days.
+> 
+> Please review.
 
-I have rebased gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-on top of the $subject series, the result is appended.  It has only been
-compilation tested for now, but I'll be testing it for the next couple of days.
+Actually, please scratch that.  We can do better.
+
+The appended patch (compilation tested) combines patch [1/4] with the
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch in such a way
+that it is now possible to remove a suspended device at once via the PM core
+using the destroy_suspended_device() callback.
+
+Thus, the drivers that need to remove device objects while suspended (eg.
+from the CPU hotplug notifiers) can use destroy_suspended_device() for this
+purpose without deadlocking, but using device_destroy() to remove suspended
+devices is prohibited.
 
 Please review.
 
@@ -76,11 +92,18 @@ This patch reorganizes the way suspend and resume notifications are
 sent to drivers.  The major changes are that now the PM core acquires
 every device semaphore before calling the methods, and calls to
 device_add() during suspends will fail.
+
+It also provides a way to safely remove a suspended device with the help of
+the PM core, by using the destroy_suspended_device() callback introduced
+specifically for this purpose. 
+
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/core.c        |   13 -
+ drivers/base/core.c        |   57 ++++-
  drivers/base/power/main.c  |  452 ++++++++++++++++++++++++++-------------------
- drivers/base/power/power.h |   11 +
- 3 files changed, 290 insertions(+), 186 deletions(-)
+ drivers/base/power/power.h |   12 +
+ include/linux/device.h     |    8 
+ 4 files changed, 336 insertions(+), 193 deletions(-)
 
 Index: linux-2.6/drivers/base/core.c
 ===================================================================
@@ -115,11 +138,127 @@ Index: linux-2.6/drivers/base/core.c
  	return error;
   BusError:
  	device_pm_remove(dev);
+@@ -1156,14 +1163,11 @@ error:
+ EXPORT_SYMBOL_GPL(device_create);
+ 
+ /**
+- * device_destroy - removes a device that was created with device_create()
++ * find_device - finds a device that was created with device_create()
+  * @class: pointer to the struct class that this device was registered with
+  * @devt: the dev_t of the device that was previously registered
+- *
+- * This call unregisters and cleans up a device that was created with a
+- * call to device_create().
+  */
+-void device_destroy(struct class *class, dev_t devt)
++static struct device *find_device(struct class *class, dev_t devt)
+ {
+ 	struct device *dev = NULL;
+ 	struct device *dev_tmp;
+@@ -1176,12 +1180,49 @@ void device_destroy(struct class *class,
+ 		}
+ 	}
+ 	up(&class->sem);
++	return dev;
++}
+ 
++/**
++ * device_destroy - removes a device that was created with device_create()
++ * @class: pointer to the struct class that this device was registered with
++ * @devt: the dev_t of the device that was previously registered
++ *
++ * This call unregisters and cleans up a device that was created with a
++ * call to device_create().
++ */
++void device_destroy(struct class *class, dev_t devt)
++{
++	struct device *dev;
++
++	dev = find_device(class, devt);
+ 	if (dev)
+ 		device_unregister(dev);
+ }
+ EXPORT_SYMBOL_GPL(device_destroy);
+ 
++#ifdef CONFIG_PM_SLEEP
++/**
++ * destroy_suspended_device - asks the PM core to remove a suspended device
++ * @class: pointer to the struct class that this device was registered with
++ * @devt: the dev_t of the device that was previously registered
++ *
++ * This call causes the PM core to release and unregister a suspended device
++ * created with a call to device_create() (devices cannot be unregistered
++ * directly while suspended, since the PM core holds their semaphores at that
++ * time).
++ */
++void destroy_suspended_device(struct class *class, dev_t devt)
++{
++	struct device *dev;
++
++	dev = find_device(class, devt);
++	if (dev)
++		device_pm_destroy_suspended(dev);
++}
++EXPORT_SYMBOL_GPL(destroy_suspended_device);
++#endif /* CONFIG_PM_SLEEP */
++
+ /**
+  * device_rename - renames a device
+  * @dev: the pointer to the struct device to be renamed
+Index: linux-2.6/include/linux/device.h
+===================================================================
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -521,6 +521,14 @@ extern struct device *device_create(stru
+ 				    dev_t devt, const char *fmt, ...)
+ 				    __attribute__((format(printf,4,5)));
+ extern void device_destroy(struct class *cls, dev_t devt);
++#ifdef CONFIG_PM_SLEEP
++extern void destroy_suspended_device(struct class *cls, dev_t devt);
++#else /* !CONFIG_PM_SLEEP */
++static inline void destroy_suspended_device(struct class *cls, dev_t devt)
++{
++	device_destroy(cls, devt);
++}
++#endif /* !CONFIG_PM_SLEEP */
+ 
+ /*
+  * Platform "fixup" functions - allow the platform to have their say
+Index: linux-2.6/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -20,6 +20,9 @@ static inline struct device *to_device(s
+ 
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
++extern void device_pm_destroy_suspended(struct device *);
++extern int pm_sleep_lock(void);
++extern void pm_sleep_unlock(void);
+ 
+ #else /* CONFIG_PM_SLEEP */
+ 
+@@ -32,6 +35,15 @@ static inline void device_pm_remove(stru
+ {
+ }
+ 
++static inline int pm_sleep_lock(void)
++{
++	return 0;
++}
++
++static inline void pm_sleep_unlock(void)
++{
++}
++
+ #endif
+ 
+ #ifdef CONFIG_PM
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -24,18 +24,39 @@
+@@ -24,17 +24,38 @@
  #include <linux/mutex.h>
  #include <linux/pm.h>
  #include <linux/resume-trace.h>
@@ -150,7 +289,6 @@ Index: linux-2.6/drivers/base/power/main.c
 +static LIST_HEAD(dpm_locked);
  static LIST_HEAD(dpm_off);
  static LIST_HEAD(dpm_off_irq);
- static LIST_HEAD(dpm_destroy);
  
 -static DEFINE_MUTEX(dpm_mtx);
  static DEFINE_MUTEX(dpm_list_mtx);
@@ -160,7 +298,7 @@ Index: linux-2.6/drivers/base/power/main.c
  int (*platform_enable_wakeup)(struct device *dev, int is_on);
  
  
-@@ -54,12 +75,23 @@ void device_pm_remove(struct device *dev
+@@ -53,29 +74,124 @@ void device_pm_remove(struct device *dev
  	pr_debug("PM: Removing info for %s:%s\n",
  		 dev->bus ? dev->bus->name : "No Bus",
  		 kobject_name(&dev->kobj));
@@ -172,22 +310,20 @@ Index: linux-2.6/drivers/base/power/main.c
  	list_del_init(&dev->power.entry);
  	mutex_unlock(&dpm_list_mtx);
 +	up(&dev->sem);
- }
- 
-+/**
-+ *	device_pm_schedule_removal - Schedule device for removal
-+ *
-+ *	Move the device to the list of devices to be removed during the
-+ *	subsequent resume.  To be called when pm_sleep_rwsem is held for
-+ *	writing and all devices' semaphores are locked.
-+ */
- void device_pm_schedule_removal(struct device *dev)
- {
- 	pr_debug("PM: Removing info for %s:%s\n",
-@@ -70,23 +102,102 @@ void device_pm_schedule_removal(struct d
- 	mutex_unlock(&dpm_list_mtx);
- }
- 
++}
++
++void device_pm_destroy_suspended(struct device *dev)
++{
++	pr_debug("PM: Removing suspended device %s:%s\n",
++		 dev->bus ? dev->bus->name : "No Bus",
++		 kobject_name(&dev->kobj));
++	mutex_lock(&dpm_list_mtx);
++	list_del_init(&dev->power.entry);
++	mutex_unlock(&dpm_list_mtx);
++	up(&dev->sem);
++	device_unregister(dev);
++}
++
 +/**
 + *	pm_sleep_lock - mutual exclusion for registration and suspend
 + *
@@ -210,8 +346,8 @@ Index: linux-2.6/drivers/base/power/main.c
 +void pm_sleep_unlock(void)
 +{
 +	up_read(&pm_sleep_rwsem);
-+}
-+
+ }
+ 
  
  /*------------------------- Resume routines -------------------------*/
  
@@ -291,50 +427,62 @@ Index: linux-2.6/drivers/base/power/main.c
  
  	if (dev->bus && dev->bus->resume) {
  		dev_dbg(dev,"resuming\n");
-@@ -103,132 +214,83 @@ static int resume_device(struct device *
+@@ -92,126 +208,68 @@ static int resume_device(struct device *
  		error = dev->class->resume(dev);
  	}
  
 -	up(&dev->sem);
 -
--	TRACE_RESUME(error);
--	return error;
--}
--
--
--static int resume_device_early(struct device * dev)
--{
--	int error = 0;
--
--	TRACE_DEVICE(dev);
--	TRACE_RESUME(0);
--	if (dev->bus && dev->bus->resume_early) {
--		dev_dbg(dev,"EARLY resume\n");
--		error = dev->bus->resume_early(dev);
--	}
  	TRACE_RESUME(error);
  	return error;
  }
  
- /**
-- *	dpm_resume - Restore state of each device in system.
+-
+-static int resume_device_early(struct device * dev)
++/**
 + *	dpm_resume - Resume every device.
 + *
 + *	Resume the devices that have either not gone through
 + *	the late suspend, or that did go through it but also
 + *	went through the early resume.
-  *
-- *	Walk the dpm_off list, remove each entry, resume the device,
-- *	then add it to the dpm_active list.  Unregister devices scheduled for
-- *	removal.
++ *
 + *	Take devices from the dpm_off_list, resume them,
 + *	and put them on the dpm_locked list.
-  */
--
- static void dpm_resume(void)
++ */
++static void dpm_resume(void)
  {
--	mutex_lock(&dpm_list_mtx);
- 	while(!list_empty(&dpm_off)) {
+-	int error = 0;
++	while(!list_empty(&dpm_off)) {
++		struct list_head *entry = dpm_off.next;
++		struct device *dev = to_device(entry);
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-	if (dev->bus && dev->bus->resume_early) {
+-		dev_dbg(dev,"EARLY resume\n");
+-		error = dev->bus->resume_early(dev);
++		resume_device(dev);
++		list_move_tail(entry, &dpm_locked);
+ 	}
+-	TRACE_RESUME(error);
+-	return error;
+ }
+ 
+-/*
+- * Resume the devices that have either not gone through
+- * the late suspend, or that did go through it but also
+- * went through the early resume
++/**
++ *	unlock_all_devices - Release each device's semaphore
++ *
++ *	Go through the dpm_off list.  Put each device on the dpm_active
++ *	list and unlock it.
+  */
+-static void dpm_resume(void)
++static void unlock_all_devices(void)
+ {
+ 	mutex_lock(&dpm_list_mtx);
+-	while(!list_empty(&dpm_off)) {
 -		struct list_head * entry = dpm_off.next;
 -		struct device * dev = to_device(entry);
 -
@@ -346,35 +494,6 @@ Index: linux-2.6/drivers/base/power/main.c
 -		mutex_lock(&dpm_list_mtx);
 -		put_device(dev);
 -	}
--	mutex_unlock(&dpm_list_mtx);
--	/* Unregister devices scheduled for removal */
--	while (!list_empty(&dpm_destroy)) {
--		struct list_head *entry = dpm_destroy.next;
-+		struct list_head *entry = dpm_off.next;
- 		struct device *dev = to_device(entry);
- 
--		device_unregister(dev);
-+		resume_device(dev);
-+		list_move_tail(entry, &dpm_locked);
- 	}
- }
- 
- /**
-- *	device_resume - Invoke dpm_resume() under dpm_mtx.
-+ *	unlock_all_devices - Release each device's semaphore
-+ *
-+ *	Go through the dpm_off list.  Put each device on the dpm_active
-+ *	list and unlock it.
-  */
--
--void device_resume(void)
-+static void unlock_all_devices(void)
- {
--	might_sleep();
--	mutex_lock(&dpm_mtx);
--	dpm_resume();
--	mutex_unlock(&dpm_mtx);
-+	mutex_lock(&dpm_list_mtx);
 + 	while (!list_empty(&dpm_locked)) {
 + 		struct list_head *entry = dpm_locked.prev;
 + 		struct device *dev = to_device(entry);
@@ -382,13 +501,33 @@ Index: linux-2.6/drivers/base/power/main.c
 + 		list_move(entry, &dpm_active);
 + 		up(&dev->sem);
 + 	}
-+	mutex_unlock(&dpm_list_mtx);
+ 	mutex_unlock(&dpm_list_mtx);
  }
  
--EXPORT_SYMBOL_GPL(device_resume);
--
 -
  /**
+  *	device_resume - Restore state of each device in system.
+  *
+- *	Walk the dpm_off list, remove each entry, resume the device,
+- *	then add it to the dpm_active list.
++ *	Resume all the devices, unlock them all, and allow new
++ *	devices to be registered once again.
+  */
+-
+ void device_resume(void)
+ {
+ 	might_sleep();
+-	mutex_lock(&dpm_mtx);
+ 	dpm_resume();
+-	mutex_unlock(&dpm_mtx);
++	unlock_all_devices();
++	up_write(&pm_sleep_rwsem);
+ }
+-
+ EXPORT_SYMBOL_GPL(device_resume);
+ 
+ 
+-/**
 - *	dpm_power_up - Power on some devices.
 - *
 - *	Walk the dpm_off_irq list and power each device up. This
@@ -397,54 +536,37 @@ Index: linux-2.6/drivers/base/power/main.c
 - *	to the dpm_active list.
 - *
 - *	Interrupts must be disabled when calling this.
-+ *	unregister_dropped_devices - Unregister devices scheduled for removal
-  */
+- */
 -
 -static void dpm_power_up(void)
-+static void unregister_dropped_devices(void)
- {
+-{
 -	while(!list_empty(&dpm_off_irq)) {
 -		struct list_head * entry = dpm_off_irq.next;
 -		struct device * dev = to_device(entry);
-+	while (!list_empty(&dpm_destroy)) {
-+		struct list_head *entry = dpm_destroy.next;
-+		struct device *dev = to_device(entry);
- 
+-
 -		list_move_tail(entry, &dpm_off);
 -		resume_device_early(dev);
-+ 		up(&dev->sem);
-+		device_unregister(dev);
- 	}
- }
- 
+-	}
+-}
 -
- /**
+-
+-/**
 - *	device_power_up - Turn on all devices that need special attention.
-+ *	device_resume - Restore state of each device in system.
-  *
+- *
 - *	Power on system devices then devices that required we shut them down
 - *	with interrupts disabled.
 - *	Called with interrupts disabled.
-+ *	Resume all the devices, unlock them all, and allow new
-+ *	devices to be registered once again.
-  */
+- */
 -
 -void device_power_up(void)
-+void device_resume(void)
- {
+-{
 -	sysdev_resume();
 -	dpm_power_up();
-+	might_sleep();
-+	dpm_resume();
-+	unlock_all_devices();
-+	unregister_dropped_devices();
-+	up_write(&pm_sleep_rwsem);
- }
+-}
 -
 -EXPORT_SYMBOL_GPL(device_power_up);
-+EXPORT_SYMBOL_GPL(device_resume);
- 
- 
+-
+-
  /*------------------------- Suspend routines -------------------------*/
  
 -/*
@@ -465,7 +587,7 @@ Index: linux-2.6/drivers/base/power/main.c
  static inline char *suspend_verb(u32 event)
  {
  	switch (event) {
-@@ -239,7 +301,6 @@ static inline char *suspend_verb(u32 eve
+@@ -222,7 +280,6 @@ static inline char *suspend_verb(u32 eve
  	}
  }
  
@@ -473,7 +595,7 @@ Index: linux-2.6/drivers/base/power/main.c
  static void
  suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
  {
-@@ -249,16 +310,69 @@ suspend_device_dbg(struct device *dev, p
+@@ -232,16 +289,69 @@ suspend_device_dbg(struct device *dev, p
  }
  
  /**
@@ -483,7 +605,7 @@ Index: linux-2.6/drivers/base/power/main.c
   *	@state:	Power state device is entering.
 + *
 + *	This is called with interrupts off and only a single CPU running.
-+ */
+  */
 +static int suspend_device_late(struct device *dev, pm_message_t state)
 +{
 +	int error = 0;
@@ -495,7 +617,8 @@ Index: linux-2.6/drivers/base/power/main.c
 +	}
 +	return error;
 +}
-+
+ 
+-static int suspend_device(struct device * dev, pm_message_t state)
 +/**
 + *	device_power_down - Shut down special devices.
 + *	@state:		Power state to enter.
@@ -505,7 +628,7 @@ Index: linux-2.6/drivers/base/power/main.c
 + *	Then power down system devices.
 + *
 + *	Must be called with interrupts disabled and only one CPU running.
-  */
++ */
 +int device_power_down(pm_message_t state)
 +{
 +	int error = 0;
@@ -513,8 +636,7 @@ Index: linux-2.6/drivers/base/power/main.c
 +	while (!list_empty(&dpm_off)) {
 +		struct list_head *entry = dpm_off.prev;
 +		struct device *dev = to_device(entry);
- 
--static int suspend_device(struct device * dev, pm_message_t state)
++
 +		error = suspend_device_late(dev, state);
 +		if (error) {
 +			printk(KERN_ERR "Could not power down device %s: "
@@ -546,7 +668,7 @@ Index: linux-2.6/drivers/base/power/main.c
  	if (dev->power.power_state.event) {
  		dev_dbg(dev, "PM: suspend %d-->%d\n",
  			dev->power.power_state.event, state.event);
-@@ -281,123 +395,95 @@ static int suspend_device(struct device 
+@@ -264,123 +374,95 @@ static int suspend_device(struct device 
  		error = dev->bus->suspend(dev, state);
  		suspend_report_result(dev->bus->suspend, error);
  	}
@@ -634,10 +756,11 @@ Index: linux-2.6/drivers/base/power/main.c
 -	while (!list_empty(&dpm_active) && error == 0) {
 -		struct list_head * entry = dpm_active.prev;
 -		struct device * dev = to_device(entry);
+-
 +	while (!list_empty(&dpm_active)) {
 +		struct list_head *entry = dpm_active.next;
 +		struct device *dev = to_device(entry);
- 
++
 +		/* Required locking order is dev->sem first,
 +		 * then dpm_list_mutex.  Hence this awkward code.
 +		 */
@@ -726,32 +849,3 @@ Index: linux-2.6/drivers/base/power/main.c
  
  void __suspend_report_result(const char *function, void *fn, int ret)
  {
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -21,6 +21,8 @@ static inline struct device *to_device(s
- extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
- extern void device_pm_schedule_removal(struct device *);
-+extern int pm_sleep_lock(void);
-+extern void pm_sleep_unlock(void);
- 
- #else /* CONFIG_PM_SLEEP */
- 
-@@ -33,6 +35,15 @@ static inline void device_pm_remove(stru
- {
- }
- 
-+static inline int pm_sleep_lock(void)
-+{
-+	return 0;
-+}
-+
-+static inline void pm_sleep_unlock(void)
-+{
-+}
-+
- #endif
- 
- #ifdef CONFIG_PM
