@@ -1,17 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [PATCH] base: Change power/wakeup output from "" to
-	"unsupported" if wakeup feature isn't supported by a device
-Date: Fri, 4 Jan 2008 18:20:23 +0100
-Message-ID: <200801041820.24819.oliver@neukum.org>
-References: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<Pine.LNX.4.44L0.0801041136490.4078-100000@iolanthe.rowland.org>
-	<20080104165214.GA30672@dspnet.fr.eu.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] hibernation: utilize ACPI hardware signature
+Date: Fri, 4 Jan 2008 21:44:19 +0100
+Message-ID: <200801042144.20279.rjw__33263.6794112206$1199479445$gmane$org@sisk.pl>
+References: <1199257162.14632.4.camel@sli10-desk.sh.intel.com>
+	<200801031804.30947.rjw@sisk.pl>
+	<1199425291.20053.2.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080104165214.GA30672@dspnet.fr.eu.org>
+In-Reply-To: <1199425291.20053.2.camel@sli10-desk.sh.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,18 +21,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: yi.y.yang@intel.com, Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag, 4. Januar 2008 17:52:14 schrieb Olivier Galibert:
-> On Fri, Jan 04, 2008 at 11:38:29AM -0500, Alan Stern wrote:
-> > How about changing it to say "unavailable"?  That doesn't imply 
-> > permanence.
+On Friday, 4 of January 2008, Shaohua Li wrote:
 > 
-> How about not changing a userland-visible interface gratuitously?
+> On Fri, 2008-01-04 at 01:04 +0800, Rafael J. Wysocki wrote:
+> > On Thursday, 3 of January 2008, Shaohua Li wrote:
+> > >
+> > > On Wed, 2008-01-02 at 22:05 +0800, Rafael J. Wysocki wrote:
+> > > > On Wednesday, 2 of January 2008, Shaohua Li wrote:
+> > > > > ACPI defines a hardware signature. BIOS calculates the signature
+> > > > > according to hardware configure, if hardware changes, the
+> > signature
+> > > > will
+> > > > > change, in this case, S4 resume should fail.
+> > > >
+> > > > The idea is fine, but I'd prefer to do that in a more
+> > straightforward
+> > > > way.
+> > > > Namely, we can just:
+> > > > * write the signature into a variable in, for example,
+> > > >   acpi_hibernation_prepare() (then, the "old" signature value will
+> > be
+> > > >   automatically saved in the image)
+> > > > * compare it with a the "new" value read from the BIOS in
+> > > >   acpi_hibernation_leave() and panic if there's a mismatch
+> > > > * add a configuration option to disable this behavior (just in
+> > case)
+> > > > This way we can avoid modifying the entire generic interface to
+> > add
+> > > > the feature
+> > > > specific to ACPI.
+> > > it would be better we do the check in boot kernel.
+> > Franky, I think we should also check in the image kernel, in case the
+> > boot
+> > one doesn't support ACPI as I said.
+> Ok, makes sense. I changed to check the signature in .higberation_leave
 
-Very good idea.
+Thanks, comments below.
 
-	Regards
-		Oliver
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> ---
+>  drivers/acpi/sleep/main.c |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> Index: linux/drivers/acpi/sleep/main.c
+> ===================================================================
+> --- linux.orig/drivers/acpi/sleep/main.c	2008-01-03 13:37:08.000000000 +0800
+> +++ linux/drivers/acpi/sleep/main.c	2008-01-04 13:36:10.000000000 +0800
+> @@ -256,6 +256,17 @@ static int acpi_hibernation_enter(void)
+>  	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+>  }
+>  
+> +static unsigned long s4_hardware_signature;
+> +static struct acpi_table_facs *facs;
+> +static int nosigcheck;
+
+Use bool perhaps?
+
+> +
+> +static int __init acpi_s4_nosigcheck(char *str)
+> +{
+> +	nosigcheck = 1;
+
+And "true" here?
+
+> +	return 1;
+> +}
+> +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
+> +
+
+Please put this function at the end of the file.  Also, I'd call it
+"acpi_s4_nosig", but whatever.
+
+>  static void acpi_hibernation_leave(void)
+>  {
+>  	/*
+> @@ -263,6 +274,11 @@ static void acpi_hibernation_leave(void)
+>  	 * enable it here.
+>  	 */
+>  	acpi_enable();
+> +	if (facs && s4_hardware_signature != facs->hardware_signature) {
+
+I think we don't need to evaluate the condition if nosigcheck is true, but ...
+
+> +		printk(KERN_EMERG"PM: Hardware changed in the S4 circle, can't resume\n");
+> +		if (!nosigcheck)
+> +			panic("S4 resume error");
+> +	}
+>  }
+>  
+>  static void acpi_hibernation_finish(void)
+> @@ -449,6 +465,10 @@ int __init acpi_sleep_init(void)
+>  		sleep_states[ACPI_STATE_S4] = 1;
+>  		printk(" S4");
+>  	}
+
+... I'd put "if (!nosigcheck)" around the following 4 lines and then we
+wouldn't need to check nosigcheck in acpi_hibernation_leave(), because facs
+would be NULL.
+
+Also, please put that into the block that contains the 'printk(" S4")' above.
+
+> +	acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
+> +		(struct acpi_table_header **)&facs);
+> +	if (facs)
+> +		s4_hardware_signature = facs->hardware_signature;
+>  #endif
+>  	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+>  	if (ACPI_SUCCESS(status)) {
+
+Greetings,
+Rafael
