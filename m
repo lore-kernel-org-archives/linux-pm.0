@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 5/7] Hibernation: Introduce open() and
-	close() callbacks
-Date: Sat, 5 Jan 2008 23:50:01 +0100
-Message-ID: <200801052350.02234.rjw__3076.39363823018$1199575214$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 6/7] ACPI hibernation: Call _PTS before
+	suspending devices
+Date: Sat, 5 Jan 2008 23:56:39 +0100
+Message-ID: <200801052356.41065.rjw__21867.2985247851$1199575217$gmane$org@sisk.pl>
 References: <200801052332.44500.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -27,168 +27,88 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce global hibernation callback .close() and rename global
-hibernation callback .start() to .open(), in analogy with the
-recent modifications of the global suspend callbacks.
+The ACPI 1.0 specification wants us to put devices into low power
+states after executing the _PTS global control methods, while ACPI
+2.0 and later want us to do that in the reverse order.  The current
+hibernation code follows ACPI 2.0 in that respect which may cause some
+ACPI 1.0x systems to hang during hibernation (ref.
+http://bugzilla.kernel.org/show_bug.cgi?id=9528).
+
+Make the hibernation code execute _PTS before putting devices into
+low power (ie. in accordance with ACPI 1.0x) with the possibility to
+override that using the 'acpi_new_pts_ordering' kernel command line
+option.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/acpi/sleep/main.c |   14 ++++++++++++--
- include/linux/suspend.h   |    8 ++++++--
- kernel/power/disk.c       |   33 ++++++++++++++++++++++++---------
- 3 files changed, 42 insertions(+), 13 deletions(-)
+ drivers/acpi/sleep/main.c |   36 +++++++++++++++++++++++++-----------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/include/linux/suspend.h
-===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -138,9 +138,12 @@ extern void mark_free_pages(struct zone 
-  *
-  * All three methods must be assigned.
-  *
-- * @start: Tell the platform driver that we're starting hibernation.
-+ * @open: Tell the platform driver that we're starting hibernation.
-  *	Called right after shrinking memory and before freezing devices.
-  *
-+ * @close: Called by the PM core right after resuming devices, to indicate to
-+ *	the platform that the system has returned to the working state.
-+ *
-  * @pre_snapshot: Prepare the platform for creating the hibernation image.
-  *	Called right after devices have been frozen and before the nonboot
-  *	CPUs are disabled (runs with IRQs on).
-@@ -175,7 +178,8 @@ extern void mark_free_pages(struct zone 
-  *	thawing devices (runs with IRQs on).
-  */
- struct platform_hibernation_ops {
--	int (*start)(void);
-+	int (*open)(void);
-+	void (*close)(void);
- 	int (*pre_snapshot)(void);
- 	void (*finish)(void);
- 	int (*prepare)(void);
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -54,8 +54,8 @@ static struct platform_hibernation_ops *
- 
- void hibernation_set_ops(struct platform_hibernation_ops *ops)
- {
--	if (ops && !(ops->start && ops->pre_snapshot && ops->finish
--	    && ops->prepare && ops->enter && ops->pre_restore
-+	if (ops && !(ops->open && ops->close &&  ops->pre_snapshot
-+	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
- 	    && ops->restore_cleanup)) {
- 		WARN_ON(1);
- 		return;
-@@ -100,14 +100,25 @@ static int hibernation_test(int level) {
- #endif /* !CONFIG_PM_DEBUG */
- 
- /**
-- *	platform_start - tell the platform driver that we're starting
-+ *	platform_open - tell the platform driver that we're starting
-  *	hibernation
-  */
- 
--static int platform_start(int platform_mode)
-+static int platform_open(int platform_mode)
- {
- 	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->start() : 0;
-+		hibernation_ops->open() : 0;
-+}
-+
-+/**
-+ *	platform_close - tell the platform driver that we've entered the
-+ *	working state
-+ */
-+
-+static void platform_close(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->close();
- }
- 
- /**
-@@ -237,9 +248,9 @@ int hibernation_snapshot(int platform_mo
- 	if (error)
- 		return error;
- 
--	error = platform_start(platform_mode);
-+	error = platform_open(platform_mode);
- 	if (error)
--		return error;
-+		goto Close;
- 
- 	suspend_console();
- 	error = device_suspend(PMSG_FREEZE);
-@@ -272,6 +283,8 @@ int hibernation_snapshot(int platform_mo
- 	device_resume();
-  Resume_console:
- 	resume_console();
-+ Close:
-+	platform_close(platform_mode);
- 	return error;
- }
- 
-@@ -373,9 +386,9 @@ int hibernation_platform_enter(void)
- 	 * hibernation_ops->finish() before saving the image, so we should let
- 	 * the firmware know that we're going to enter the sleep state after all
- 	 */
--	error = hibernation_ops->start();
-+	error = hibernation_ops->open();
- 	if (error)
--		return error;
-+		goto Close;
- 
- 	suspend_console();
- 	error = device_suspend(PMSG_SUSPEND);
-@@ -409,6 +422,8 @@ int hibernation_platform_enter(void)
- 	device_resume();
-  Resume_console:
- 	resume_console();
-+ Close:
-+	hibernation_ops->close();
- 	return error;
- }
- 
 Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep/main.c
 +++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -281,7 +281,7 @@ static struct dmi_system_id __initdata a
- #endif /* CONFIG_SUSPEND */
- 
+@@ -283,22 +283,34 @@ static struct dmi_system_id __initdata a
  #ifdef CONFIG_HIBERNATION
--static int acpi_hibernation_start(void)
-+static int acpi_hibernation_open(void)
+ static int acpi_hibernation_open(void)
  {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
- 	return 0;
-@@ -341,6 +341,15 @@ static void acpi_hibernation_finish(void
- 	acpi_target_sleep_state = ACPI_STATE_S0;
- }
- 
-+static void acpi_hibernation_close(void)
-+{
-+	/*
-+	 * This is necessary in case acpi_hibernation_finish() is not called
-+	 * during a failing transition to the sleep state.
-+	 */
-+	acpi_target_sleep_state = ACPI_STATE_S0;
-+}
++	int error;
 +
- static int acpi_hibernation_pre_restore(void)
- {
- 	acpi_status status;
-@@ -356,7 +365,8 @@ static void acpi_hibernation_restore_cle
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+-	return 0;
++	if (new_pts_ordering)
++		return 0;
++
++	error = acpi_sleep_prepare(ACPI_STATE_S4);
++	if (error)
++		acpi_target_sleep_state = ACPI_STATE_S0;
++	else
++		acpi_sleep_finish_wake_up = true;
++
++	return error;
  }
  
- static struct platform_hibernation_ops acpi_hibernation_ops = {
--	.start = acpi_hibernation_start,
-+	.open = acpi_hibernation_open,
-+	.close = acpi_hibernation_close,
- 	.pre_snapshot = acpi_hibernation_prepare,
- 	.finish = acpi_hibernation_finish,
- 	.prepare = acpi_hibernation_prepare,
+ static int acpi_hibernation_prepare(void)
+ {
+-	int error;
+-
+-	error = acpi_sleep_prepare(ACPI_STATE_S4);
+-	if (error)
+-		return error;
++	if (new_pts_ordering) {
++		int error = acpi_sleep_prepare(ACPI_STATE_S4);
+ 
+-	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
+-		error = -EFAULT;
++		if (error) {
++			acpi_target_sleep_state = ACPI_STATE_S0;
++			return error;
++		}
++		acpi_sleep_finish_wake_up = true;
++	}
+ 
+-	return error;
++	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
+ }
+ 
+ static int acpi_hibernation_enter(void)
+@@ -339,15 +351,17 @@ static void acpi_hibernation_finish(void
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+ 
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
++	acpi_sleep_finish_wake_up = false;
+ }
+ 
+ static void acpi_hibernation_close(void)
+ {
+ 	/*
+ 	 * This is necessary in case acpi_hibernation_finish() is not called
+-	 * during a failing transition to the sleep state.
++	 * directly during a failing transition to the sleep state.
+ 	 */
+-	acpi_target_sleep_state = ACPI_STATE_S0;
++	if (acpi_sleep_finish_wake_up)
++		acpi_hibernation_finish();
+ }
+ 
+ static int acpi_hibernation_pre_restore(void)
