@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/7] Fix the ACPI 1.0 vs ACPI 2.0 suspend
-	ordering issue (rev. 2)
-Date: Sat, 5 Jan 2008 23:32:43 +0100
-Message-ID: <200801052332.44500.rjw__31920.6634922468$1199575202$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 3/7] ACPI: Separate disabling of GPEs from
+	_PTS
+Date: Sat, 5 Jan 2008 23:42:45 +0100
+Message-ID: <200801052342.46488.rjw__5009.19578266821$1199575202$gmane$org@sisk.pl>
+References: <200801052332.44500.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200801052332.44500.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,29 +25,78 @@ Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds
 	Robert" <robert.moore@intel.com>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The following patchset is intended to fix the ACPI 1.0 vs ACPI 2.0 suspen=
-d
-ordering issue described at http://bugzilla.kernel.org/show_bug.cgi?id=3D=
-9528 and
-in a recent LKML thread (http://lkml.org/lkml/2007/12/25/37).
+The preparation to enter an ACPI system sleep state is now tied to
+the disabling of GPEs, but the GPEs should not be disabled before
+suspending devices.  Since on ACPI 1.0x systems the _PTS global
+control method should be executed before suspending devices, we
+need to disable GPEs separately.
 
-The patches actually do more than that, as I think it's reasonable to unt=
-angle
-some ACPI-specific suspend code by the way. =A0The details are described =
-in the
-changelogs.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@suse.cz>
+---
+ drivers/acpi/hardware/hwsleep.c |    4 ----
+ drivers/acpi/sleep/main.c       |   17 +++++++++++++++--
+ 2 files changed, 15 insertions(+), 6 deletions(-)
 
-The patches apply on top of the suspend branch of the ACPI tree
-(git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6 suspen=
-d).
-
-The previous (slightly different) iteration was tested on several systems=
- and
-it was confirmed that it fixed the issues at hand.
-
-Please review.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
++++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+@@ -229,10 +229,6 @@ acpi_status acpi_enter_sleep_state_prep(
+ 				"While executing method _SST"));
+ 	}
+ 
+-	/* Disable/Clear all GPEs */
+-
+-	status = acpi_hw_disable_all_gpes();
+-
+ 	return_ACPI_STATUS(status);
+ }
+ 
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -91,10 +91,13 @@ static int acpi_pm_open(suspend_state_t 
+ 
+ static int acpi_pm_prepare(void)
+ {
+-	int error = acpi_sleep_prepare(acpi_target_sleep_state);
++	int error;
+ 
++	error = acpi_sleep_prepare(acpi_target_sleep_state);
+ 	if (error)
+ 		acpi_target_sleep_state = ACPI_STATE_S0;
++	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
++		error = -EFAULT;
+ 
+ 	return error;
+ }
+@@ -261,7 +264,16 @@ static int acpi_hibernation_start(void)
+ 
+ static int acpi_hibernation_prepare(void)
+ {
+-	return acpi_sleep_prepare(ACPI_STATE_S4);
++	int error;
++
++	error = acpi_sleep_prepare(ACPI_STATE_S4);
++	if (error)
++		return error;
++
++	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
++		error = -EFAULT;
++
++	return error;
+ }
+ 
+ static int acpi_hibernation_enter(void)
+@@ -432,6 +444,7 @@ static void acpi_power_off_prepare(void)
+ {
+ 	/* Prepare to power off the system */
+ 	acpi_sleep_prepare(ACPI_STATE_S5);
++	acpi_hw_disable_all_gpes();
+ }
+ 
+ static void acpi_power_off(void)
