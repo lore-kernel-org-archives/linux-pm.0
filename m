@@ -1,59 +1,56 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Sat, 5 Jan 2008 16:41:09 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801051634500.29588-100000__26018.005985725$1199569346$gmane$org@netrider.rowland.org>
-References: <200801052213.39891.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Sat, 5 Jan 2008 22:51:23 +0100
+Message-ID: <20080105215123.GA21565@elf.ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <20071230111552.GA8578@elte.hu>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801052213.39891.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758448AbYAEVvY@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20071230111552.GA8578@elte.hu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
-
-> On Saturday, 5 of January 2008, Alan Stern wrote:
-> > On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
-> > 
-> > > > Another thing to watch out for: Just in case somebody ends up calling
-> > > > destroy_suspended_device(dev) from within dev's own resume method, you 
-> > > > should interchange the resume_device() and the list_move_tail() 
-> > > > calls in dpm_resume().
-> > > 
-> > > However, if we unregister them all at once after releasing pm_sleep_rwsem,
-> > > that shouldn't be necessary, right?
-> > 
-> > It's still necessary, because destroy_suspended_device() still has to
-> > move the device from one list to another.  You don't want it to end up 
-> > on the dpm_locked list.
+On Sun 2007-12-30 12:15:52, Ingo Molnar wrote:
 > 
-> Hmm.  That means we'd have to do the same thing in dpm_power_up() in case
-> someone calls destroy_suspended_device() from resume_device_early(dev).
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > Todays hardware is mostly capable of doing better: with correctly set 
+> > up wakeups, machine can sleep and successfully pretend it is not 
+> > sleeping -- by waking up whenever something interesting happens. Of 
+> > course, it is easier on machines not connected to the network, and on 
+> > notebook computers.
+> > 
+> > Requirements:
+> > 
+> > 0) Working suspend-to-RAM, with kernel being able to bring video back.
+> > 
+> > 1) RTC clock that can wake up system
+> 
+> very nice approach! It might require smarter hardware to be really 
+> efficient, but the generic ability for Linux to utilize S3 automatically 
+> would _quickly_ drive the creation of smarter hardware i'm sure - so i'd 
+> propose to include this even if it wastes power in some cases.
+> 
+> a quick feature request: could you please make the wake-on-RTC 
+> capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config option 
+> (disabled by default) that does a short 1-second suspend-to-RAM sequence 
+> upon bootup? That way we could test s2ram automatically (which is a MUCH 
+> needed feature for automated regression testing and automatic 
+> bisection). In addition, some sort of 'suspend for N seconds' /sys or 
+> /dev/rtc capability would be nice as well.
 
-Yes.
+Hmm, are you sure it is good idea to do this from kernel? I guess this
+is better done from script... 
 
-> Still, even doing that is not enough, since someone can call
-> destroy_suspended_device() from a .suspend() routine and then the device
-> will end up on a wrong list just as well.
+> btw., how far are you from having a working prototype?
 
-That should never happen.  The whole idea of destroy_suspended_device()
-is that the device couldn't be resumed and in fact should be
-unregistered because it is no longer working or no longer present.  A
-suspend routine won't detect this sort of thing since it doesn't try to
-resume the device.
-
-But it wouldn't hurt to mention in the kerneldoc that 
-destroy_suspended_device() is meant to be called only during a system 
-resume.
-
-Alan Stern
+SCSI/SATA issues stop me just now, but even if I get that to work, it
+will be extremely disgusting hack... and it is unclear how to do it
+nicely :-(.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
