@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Sun, 6 Jan 2008 17:11:50 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801061710140.19222-100000__10942.6844785505$1199657597$gmane$org@netrider.rowland.org>
-References: <200801062005.12097.rjw@sisk.pl>
+Date: Sun, 6 Jan 2008 23:19:36 +0100
+Message-ID: <200801062319.37698.rjw__27817.9857101806$1199658057$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
+	<200801062005.12097.rjw@sisk.pl> <200801062057.01677.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801062005.12097.rjw@sisk.pl>
+In-Reply-To: <200801062057.01677.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,18 +20,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
+On Sunday, 6 of January 2008, Rafael J. Wysocki wrote:
+> On Sunday, 6 of January 2008, Rafael J. Wysocki wrote:
+> > On Sunday, 6 of January 2008, Alan Stern wrote:
+> > > On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > > If you can figure out a way to disable the warning in device_del() for 
+> > > > > just the one device being unregistered by 
+> > > > > device_pm_destroy_suspended(),
+> > > > 
+> > > > Something like this, perhaps:
+> > > > 
+> > > > @@ -905,6 +915,18 @@ void device_del(struct device * dev)
+> > > >  	struct device * parent = dev->parent;
+> > > >  	struct class_interface *class_intf;
+> > > >  
+> > > > +	if (down_trylock(&dev->sem)) {
+> > > > +		if (pm_sleep_lock()) {
+> > > > +			dev_warn(dev, "Illegal %s during suspend\n",
+> > > > +				__FUNCTION__);
+> > > > +			dump_stack();
+> > > > +		} else {
+> > > > +			pm_sleep_unlock();
+> > > > +		}
+> > > > +	} else {
+> > > > +		up(&dev->sem);
+> > > > +	}
+> > > > +
+> > > >  	if (parent)
+> > > >  		klist_del(&dev->knode_parent);
+> > > >  	if (MAJOR(dev->devt))
+> > > 
+> > > Bizarre, but it should work.
+> > 
+> > OK
+> > 
+> > Still, shouldn't we fail the removal of the device apart from giving the
+> > warning?
+> 
+> Actually, having thought about it a bit more, I don't see the point in
+> preventing the removal of the device from the list in device_pm_remove() if
+> we allow all of the operations in device_del() preceding it to be performed.
+> 
+> Shouldn't we just take pm_sleep_rwsem in device_del() upfront and block on that
+> if locked?
 
-> On Sunday, 6 of January 2008, Alan Stern wrote:
+Ugh, the $subject patch looks like a city of races.  I'm struggling to close
+them all, but it's getting complicated.
 
-> Still, shouldn't we fail the removal of the device apart from giving the
-> warning?
+I'll post the result in a new thread.
 
-We can't.  device_del() can't fail -- it returns void.  Besides, how 
-can a driver hope to deal with an unregistration failure?
-
-Alan Stern
+Thanks,
+Rafael
