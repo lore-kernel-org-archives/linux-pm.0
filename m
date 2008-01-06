@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB PM suspend/resume problems with Marvell Orion SoC
-Date: Sun, 6 Jan 2008 19:50:52 +0100
-Message-ID: <200801061950.53317.rjw@sisk.pl>
-References: <4780F8FC.4070309@marvell.com>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Sun, 6 Jan 2008 20:05:11 +0100
+Message-ID: <200801062005.12097.rjw__5635.84681735865$1199646237$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4780F8FC.4070309@marvell.com>
+In-Reply-To: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,50 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tawfik Bayyouk <tawfik@marvell.com>
-Cc: linux-pm@lists.linux-foundation.org, Tzachi Perelstein <tzachi@marvell.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Added some relevant CCs.
-
-On Sunday, 6 of January 2008, Tawfik Bayyouk wrote:
-> Hi,
+On Sunday, 6 of January 2008, Alan Stern wrote:
+> On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
 > 
-> I am working with Linux version 2.6.24-rc4 for adding the power
-> management capabilities to the USB ehci driver for Orion SoC 
-> device of Marvell.
+> > > If you can figure out a way to disable the warning in device_del() for 
+> > > just the one device being unregistered by 
+> > > device_pm_destroy_suspended(),
+> > 
+> > Something like this, perhaps:
+> > 
+> > @@ -905,6 +915,18 @@ void device_del(struct device * dev)
+> >  	struct device * parent = dev->parent;
+> >  	struct class_interface *class_intf;
+> >  
+> > +	if (down_trylock(&dev->sem)) {
+> > +		if (pm_sleep_lock()) {
+> > +			dev_warn(dev, "Illegal %s during suspend\n",
+> > +				__FUNCTION__);
+> > +			dump_stack();
+> > +		} else {
+> > +			pm_sleep_unlock();
+> > +		}
+> > +	} else {
+> > +		up(&dev->sem);
+> > +	}
+> > +
+> >  	if (parent)
+> >  		klist_del(&dev->knode_parent);
+> >  	if (MAJOR(dev->devt))
 > 
-> I need help in 2 issues:
-> 
-> 1- The SoC device supports 2 levels of power management and I'd 
-> like to reflect this at the driver level. 
-> The first is "standby" where only clocks are halted while 
-> preserving the registers values. The second is "mem" where the 
-> whole SoC (including the USB HC) are powered off.
-> What is the correct way to distinguish between the 2 modes in 
-> the .suspend and .resume routines of the platform_driver?
-> I believe that the parameter I am looking for is the PM target 
-> state which is usually passed in the .set_target of the 
-> platform_suspend_ops routine.
+> Bizarre, but it should work.
 
-That is correct.
+OK
 
-Note, however, that (most probably) .set_target() is going to be
-changed to .open() and a complementary callback .close() is to be added.
+Still, shouldn't we fail the removal of the device apart from giving the
+warning?
 
-> 2- After resuming from "mem" suspend, the USB can no longer 
-> detect plugging in and out of USB devices.
-> I have investigate the problem and found that 4 registers where 
-> not configured correctly. Saving the values of these registers 
-> in the .suspend routine and loading them back in the .resume 
-> routine resolves the problem. 
-> The following are the 4 problematic registers:
->     USBCMD (0x140)
->     USBINTR (0x148)
->     PORTSC1 (0x184)
->     USBMODE (0x1A8)
-> 
-> I would be very thankful for any clue in either of the 2 problems.
+> Be sure to include plenty of explanatory comments
 
-Greetings,
+I will.
+
+I think that code can be moved to its own function in
+drivers/base/power/main.c, btw.
+
+> -- otherwise nobody will be able to figure it out!  :-) 
+
+Well, I guess so. :-)
+
+Thanks,
 Rafael
