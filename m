@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 7/7] ACPI: Print message before calling _PTS
-Date: Sat, 5 Jan 2008 23:58:07 +0100
-Message-ID: <200801052358.08877.rjw__3492.14109960503$1199575223$gmane$org@sisk.pl>
-References: <200801052332.44500.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH 1/7] Suspend: Introduce open() and
+	close() callbacks
+Date: Sat, 5 Jan 2008 16:31:18 -0800
+Message-ID: <200801051631.19629.david-b__30972.4663886756$1199579566$gmane$org@pacbell.net>
+References: <200801052332.44500.rjw@sisk.pl> <200801052338.52923.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801052332.44500.rjw@sisk.pl>
+In-Reply-To: <200801052338.52923.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,53 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, "Moore,
-	Robert" <robert.moore@intel.com>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Saturday 05 January 2008, Rafael J. Wysocki wrote:
+> + * @open: Initialise a transition to given system sleep state.
+> + *=A0=A0=A0=A0=A0@open() is executed right prior to suspending devices=
+. =A0The information
+> + *=A0=A0=A0=A0=A0conveyed to the platform code by @open() should be di=
+sregarded by it as
+> + *=A0=A0=A0=A0=A0soon as @close() is executed. =A0If @open() fails (ie=
+. returns nonzero),
+> =A0 *=A0=A0=A0=A0=A0@prepare(), @enter() and @finish() will not be call=
+ed by the PM core.
+> =A0 *=A0=A0=A0=A0=A0This callback is optional. =A0However, if it is imp=
+lemented, the argument
+> =A0 *=A0=A0=A0=A0=A0passed to @enter() is meaningless and should be ign=
+ored.
+                                ^^^^^^^^^^^
+Surely this should say "redundant", not "meaningless"?  =20
 
-Make acpi_sleep_prepare() static and cause it to print a message
-specifying the ACPI system sleep state to be entered (helpful for
-debugging the suspend/hibernation code).
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
----
- drivers/acpi/sleep/main.c  |    4 +++-
- drivers/acpi/sleep/sleep.h |    2 --
- 2 files changed, 3 insertions(+), 3 deletions(-)
+> + * @close: Called by the PM core right after resuming devices, to indi=
+cate to
+> + *=A0=A0=A0=A0=A0the platform that the system has returned to the work=
+ing state.
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -43,7 +43,7 @@ static int __init acpi_new_pts_ordering(
- __setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
- #endif
- 
--int acpi_sleep_prepare(u32 acpi_state)
-+static int acpi_sleep_prepare(u32 acpi_state)
- {
- #ifdef CONFIG_ACPI_SLEEP
- 	/* do we have a wakeup address for S2 and S3? */
-@@ -59,6 +59,8 @@ int acpi_sleep_prepare(u32 acpi_state)
- 	ACPI_FLUSH_CPU_CACHE();
- 	acpi_enable_wakeup_device_prep(acpi_state);
- #endif
-+	printk(KERN_INFO PREFIX "Preparing to enter system sleep state S%d\n",
-+		acpi_state);
- 	acpi_enter_sleep_state_prep(acpi_state);
- 	return 0;
- }
-Index: linux-2.6/drivers/acpi/sleep/sleep.h
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/sleep.h
-+++ linux-2.6/drivers/acpi/sleep/sleep.h
-@@ -5,5 +5,3 @@ extern int acpi_suspend (u32 state);
- extern void acpi_enable_wakeup_device_prep(u8 sleep_state);
- extern void acpi_enable_wakeup_device(u8 sleep_state);
- extern void acpi_disable_wakeup_device(u8 sleep_state);
--
--extern int acpi_sleep_prepare(u32 acpi_state);
+Or the state transition has aborted ...
+
+> + *=A0=A0=A0=A0=A0This callback is optional, but should be implemented =
+by the platforms
+> + *=A0=A0=A0=A0=A0that implement @open().
+
+"..., but platforms which implement @open() should also provide a @close(=
+)
+which cleans up transitions which aborted before @enter()."
+
+Otherwise it seems rather unclear why this exists, since all platforms kn=
+ow
+that things are "normal" as soon as enter() gets back from its transition.
+(What can I say ... I like to see things be clear!)  Yes, systems may do =
+more
+than that when it gets this call; but the minimum involves just that clea=
+nup.
+
+- Dave
