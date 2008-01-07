@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/7] ACPI hibernation: Call _PTS before
-	suspending devices
-Date: Tue, 8 Jan 2008 00:09:58 +0100
-Message-ID: <200801080009.59516.rjw__2862.28517438776$1199747659$gmane$org@sisk.pl>
+Subject: [PATCH 4/7] ACPI suspend: Call _PTS before suspending
+	devices
+Date: Tue, 8 Jan 2008 00:07:39 +0100
+Message-ID: <200801080007.40193.rjw__42817.4547887922$1199747660$gmane$org@sisk.pl>
 References: <200801080002.25044.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -30,55 +30,73 @@ From: Rafael J. Wysocki <rjw@sisk.pl>
 The ACPI 1.0 specification wants us to put devices into low power
 states after executing the _PTS global control method, while ACPI
 2.0 and later want us to do that in the reverse order.  The current
-hibernation code follows ACPI 2.0 in that respect which may cause some
-ACPI 1.0x systems to hang during hibernation (ref.
+suspend code follows ACPI 2.0 in that respect which causes some
+ACPI 1.0x systems to hang during suspend (ref.
 http://bugzilla.kernel.org/show_bug.cgi?id=9528).
 
-Make the hibernation code execute _PTS before putting devices into
-low power states (ie. in accordance with ACPI 1.0x) with the
-possibility to override that using the 'acpi_new_pts_ordering' kernel
-command line option.
+Make the suspend code execute _PTS before putting devices into low
+power states (ie. in accordance with ACPI 1.0x) and provide a command
+line option to override the default if need be.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep/main.c |   36 +++++++++++++++++++++++++-----------
- 1 file changed, 25 insertions(+), 11 deletions(-)
+ Documentation/kernel-parameters.txt |    5 +++
+ drivers/acpi/sleep/main.c           |   51 ++++++++++++++++++++++++++----------
+ 2 files changed, 43 insertions(+), 13 deletions(-)
 
 Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep/main.c
 +++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -283,22 +283,34 @@ static struct dmi_system_id __initdata a
- #ifdef CONFIG_HIBERNATION
- static int acpi_hibernation_begin(void)
- {
-+	int error;
-+
- 	acpi_target_sleep_state = ACPI_STATE_S4;
--	return 0;
-+	if (new_pts_ordering)
-+		return 0;
-+
-+	error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	if (error)
-+		acpi_target_sleep_state = ACPI_STATE_S0;
-+	else
-+		acpi_sleep_finish_wake_up = true;
-+
-+	return error;
- }
+@@ -26,6 +26,21 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
  
- static int acpi_hibernation_prepare(void)
+ #ifdef CONFIG_PM_SLEEP
+ static u32 acpi_target_sleep_state = ACPI_STATE_S0;
++static bool acpi_sleep_finish_wake_up;
++
++/*
++ * ACPI 2.0 and later want us to execute _PTS after suspending devices, so we
++ * allow the user to request that behavior by using the 'acpi_new_pts_ordering'
++ * kernel command line option that causes the following variable to be set.
++ */
++static bool new_pts_ordering;
++
++static int __init acpi_new_pts_ordering(char *str)
++{
++	new_pts_ordering = true;
++	return 1;
++}
++__setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
+ #endif
+ 
+ int acpi_sleep_prepare(u32 acpi_state)
+@@ -74,6 +89,14 @@ static int acpi_pm_begin(suspend_state_t
+ 
+ 	if (sleep_states[acpi_state]) {
+ 		acpi_target_sleep_state = acpi_state;
++		if (new_pts_ordering)
++			return 0;
++
++		error = acpi_sleep_prepare(acpi_state);
++		if (error)
++			acpi_target_sleep_state = ACPI_STATE_S0;
++		else
++			acpi_sleep_finish_wake_up = true;
+ 	} else {
+ 		printk(KERN_ERR "ACPI does not support this state: %d\n",
+ 			pm_state);
+@@ -91,15 +114,17 @@ static int acpi_pm_begin(suspend_state_t
+ 
+ static int acpi_pm_prepare(void)
  {
 -	int error;
--
--	error = acpi_sleep_prepare(ACPI_STATE_S4);
--	if (error)
--		return error;
 +	if (new_pts_ordering) {
-+		int error = acpi_sleep_prepare(ACPI_STATE_S4);
++		int error = acpi_sleep_prepare(acpi_target_sleep_state);
  
--	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
+-	error = acpi_sleep_prepare(acpi_target_sleep_state);
+-	if (error)
+-		acpi_target_sleep_state = ACPI_STATE_S0;
+-	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
 -		error = -EFAULT;
 +		if (error) {
 +			acpi_target_sleep_state = ACPI_STATE_S0;
@@ -91,24 +109,55 @@ Index: linux-2.6/drivers/acpi/sleep/main.c
 +	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
  }
  
- static int acpi_hibernation_enter(void)
-@@ -339,15 +351,17 @@ static void acpi_hibernation_finish(void
+ /**
+@@ -123,10 +148,8 @@ static int acpi_pm_enter(suspend_state_t
+ 	if (acpi_state == ACPI_STATE_S3) {
+ 		int error = acpi_save_state_mem();
+ 
+-		if (error) {
+-			acpi_target_sleep_state = ACPI_STATE_S0;
++		if (error)
+ 			return error;
+-		}
+ 	}
+ 
+ 	local_irq_save(flags);
+@@ -187,6 +210,7 @@ static void acpi_pm_finish(void)
  	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
  
  	acpi_target_sleep_state = ACPI_STATE_S0;
 +	acpi_sleep_finish_wake_up = false;
- }
  
- static void acpi_hibernation_end(void)
+ #ifdef CONFIG_X86
+ 	if (init_8259A_after_S1) {
+@@ -203,10 +227,11 @@ static void acpi_pm_finish(void)
+ static void acpi_pm_end(void)
  {
  	/*
- 	 * This is necessary in case acpi_hibernation_finish() is not called
--	 * during a failing transition to the sleep state.
-+	 * directly during a failing transition to the sleep state.
+-	 * This is necessary in case acpi_pm_finish() is not called during a
+-	 * failing transition to a sleep state.
++	 * This is necessary in case acpi_pm_finish() is not called directly
++	 * during a failing transition to a sleep state.
  	 */
 -	acpi_target_sleep_state = ACPI_STATE_S0;
 +	if (acpi_sleep_finish_wake_up)
-+		acpi_hibernation_finish();
++		acpi_pm_finish();
  }
  
- static int acpi_hibernation_pre_restore(void)
+ static int acpi_pm_state_valid(suspend_state_t pm_state)
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -167,6 +167,11 @@ and is between 256 and 4096 characters. 
+ 	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
+ 			Format: <irq>,<irq>...
+ 
++	acpi_new_pts_ordering [HW,ACPI]
++			Enforce the ACPI 2.0 ordering of the _PTS control
++			method wrt putting devices into low power states
++			default: pre ACPI 2.0 ordering of _PTS
++
+ 	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
+ 
+ 	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
