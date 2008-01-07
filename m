@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/7] ACPI: Separate invocations of _GTS and _BFS
-	from _PTS and _WAK
-Date: Tue, 8 Jan 2008 00:05:21 +0100
-Message-ID: <200801080005.22543.rjw__4781.142602633$1199747668$gmane$org@sisk.pl>
+Subject: [PATCH 5/7] Hibernation: Introduce begin() and end()
+	callbacks
+Date: Tue, 8 Jan 2008 00:08:44 +0100
+Message-ID: <200801080008.45569.rjw__42654.5059112415$1199747672$gmane$org@sisk.pl>
 References: <200801080002.25044.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -27,208 +27,175 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The execution of ACPI global control methods _GTS and _BFS is
-currently tied to the preparation to enter a sleep state and to the
-leaving of the sleep state, respectively.  However, these functions
-are called before disabling the nonboot CPUs and after enabling
-them, respectively (in fact, on ACPI 1.0x systems the first of them
-ought to be called before suspending devices), while according to the
-ACPI specification, _GTS is to be executed right prior to entering
-the system sleep state and _BFS is to be executed right after the
-platfor firmware has returned control to the OS on wake up.
-
-Move the execution of _GTS and _BFS to the right places.
+Introduce global hibernation callback .end() and rename global
+hibernation callback .start() to .begin(), in analogy with the
+recent modifications of the global suspend callbacks.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/acpi/hardware/hwsleep.c |   75 ++++++++++++++++++++++++++++++----------
- drivers/acpi/sleep/main.c       |    7 +++
- include/acpi/acpixf.h           |    2 +
- 3 files changed, 66 insertions(+), 18 deletions(-)
+ drivers/acpi/sleep/main.c |   14 ++++++++++++--
+ include/linux/suspend.h   |   14 +++++++++-----
+ kernel/power/disk.c       |   33 ++++++++++++++++++++++++---------
+ 3 files changed, 45 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+Index: linux-2.6/include/linux/suspend.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -192,18 +192,13 @@ acpi_status acpi_enter_sleep_state_prep(
- 	arg.type = ACPI_TYPE_INTEGER;
- 	arg.integer.value = sleep_state;
- 
--	/* Run the _PTS and _GTS methods */
-+	/* Run the _PTS method */
- 
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		return_ACPI_STATUS(status);
- 	}
- 
--	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		return_ACPI_STATUS(status);
--	}
--
- 	/* Setup the argument to _SST */
- 
- 	switch (sleep_state) {
-@@ -262,6 +257,8 @@ acpi_status asmlinkage acpi_enter_sleep_
- 	struct acpi_bit_register_info *sleep_type_reg_info;
- 	struct acpi_bit_register_info *sleep_enable_reg_info;
- 	u32 in_value;
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
- 	acpi_status status;
- 
- 	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state);
-@@ -307,6 +304,18 @@ acpi_status asmlinkage acpi_enter_sleep_
- 		return_ACPI_STATUS(status);
- 	}
- 
-+	/* Execute the _GTS method */
-+
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
-+
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		return_ACPI_STATUS(status);
-+	}
-+
- 	/* Get current value of PM1A control */
- 
- 	status = acpi_hw_register_read(ACPI_REGISTER_PM1_CONTROL, &PM1Acontrol);
-@@ -473,17 +482,18 @@ ACPI_EXPORT_SYMBOL(acpi_enter_sleep_stat
- 
- /*******************************************************************************
+--- linux-2.6.orig/include/linux/suspend.h
++++ linux-2.6/include/linux/suspend.h
+@@ -136,14 +136,17 @@ extern void mark_free_pages(struct zone 
+ /**
+  * struct platform_hibernation_ops - hibernation platform support
   *
-- * FUNCTION:    acpi_leave_sleep_state
-+ * FUNCTION:    acpi_leave_sleep_state_prep
+- * The methods in this structure allow a platform to override the default
+- * mechanism of shutting down the machine during a hibernation transition.
++ * The methods in this structure allow a platform to carry out special
++ * operations required by it during a hibernation transition.
   *
-- * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ * PARAMETERS:  sleep_state         - Which sleep state we are exiting
+- * All three methods must be assigned.
++ * All the methods below must be implemented.
   *
-  * RETURN:      Status
+- * @start: Tell the platform driver that we're starting hibernation.
++ * @begin: Tell the platform driver that we're starting hibernation.
+  *	Called right after shrinking memory and before freezing devices.
   *
-- * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep
-- *              Called with interrupts ENABLED.
-+ * DESCRIPTION: Perform the first state of OS-independent ACPI cleanup after a
-+ *              sleep.
-+ *              Called with interrupts DISABLED.
-  *
-  ******************************************************************************/
--acpi_status acpi_leave_sleep_state(u8 sleep_state)
-+acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
++ * @end: Called by the PM core right after resuming devices, to indicate to
++ *	the platform that the system has returned to the working state.
++ *
+  * @pre_snapshot: Prepare the platform for creating the hibernation image.
+  *	Called right after devices have been frozen and before the nonboot
+  *	CPUs are disabled (runs with IRQs on).
+@@ -178,7 +181,8 @@ extern void mark_free_pages(struct zone 
+  *	thawing devices (runs with IRQs on).
+  */
+ struct platform_hibernation_ops {
+-	int (*start)(void);
++	int (*begin)(void);
++	void (*end)(void);
+ 	int (*pre_snapshot)(void);
+ 	void (*finish)(void);
+ 	int (*prepare)(void);
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -54,8 +54,8 @@ static struct platform_hibernation_ops *
+ 
+ void hibernation_set_ops(struct platform_hibernation_ops *ops)
  {
- 	struct acpi_object_list arg_list;
- 	union acpi_object arg;
-@@ -493,7 +503,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 	u32 PM1Acontrol;
- 	u32 PM1Bcontrol;
+-	if (ops && !(ops->start && ops->pre_snapshot && ops->finish
+-	    && ops->prepare && ops->enter && ops->pre_restore
++	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
++	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
+ 	    && ops->restore_cleanup)) {
+ 		WARN_ON(1);
+ 		return;
+@@ -100,14 +100,25 @@ static int hibernation_test(int level) {
+ #endif /* !CONFIG_PM_DEBUG */
  
--	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state_prep);
+ /**
+- *	platform_start - tell the platform driver that we're starting
++ *	platform_begin - tell the platform driver that we're starting
+  *	hibernation
+  */
  
- 	/*
- 	 * Set SLP_TYPE and SLP_EN to state S0.
-@@ -540,6 +550,41 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		}
- 	}
- 
-+	/* Execute the _BFS method */
-+
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
-+
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
-+	}
-+
-+	return_ACPI_STATUS(status);
+-static int platform_start(int platform_mode)
++static int platform_begin(int platform_mode)
+ {
+ 	return (platform_mode && hibernation_ops) ?
+-		hibernation_ops->start() : 0;
++		hibernation_ops->begin() : 0;
 +}
 +
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_leave_sleep_state
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep
-+ *              Called with interrupts ENABLED.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_leave_sleep_state(u8 sleep_state)
++/**
++ *	platform_end - tell the platform driver that we've entered the
++ *	working state
++ */
++
++static void platform_end(int platform_mode)
 +{
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+
- 	/* Ensure enter_sleep_state_prep -> enter_sleep_state ordering */
++	if (platform_mode && hibernation_ops)
++		hibernation_ops->end();
+ }
  
- 	acpi_gbl_sleep_type_a = ACPI_SLEEP_TYPE_INVALID;
-@@ -558,12 +603,6 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
- 	}
+ /**
+@@ -237,9 +248,9 @@ int hibernation_snapshot(int platform_mo
+ 	if (error)
+ 		return error;
  
--	arg.integer.value = sleep_state;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
--	}
--
- 	/*
- 	 * GPEs must be enabled before _WAK is called as GPEs
- 	 * might get fired there
+-	error = platform_start(platform_mode);
++	error = platform_begin(platform_mode);
+ 	if (error)
+-		return error;
++		goto Close;
+ 
+ 	suspend_console();
+ 	error = device_suspend(PMSG_FREEZE);
+@@ -272,6 +283,8 @@ int hibernation_snapshot(int platform_mo
+ 	device_resume();
+  Resume_console:
+ 	resume_console();
++ Close:
++	platform_end(platform_mode);
+ 	return error;
+ }
+ 
+@@ -373,9 +386,9 @@ int hibernation_platform_enter(void)
+ 	 * hibernation_ops->finish() before saving the image, so we should let
+ 	 * the firmware know that we're going to enter the sleep state after all
+ 	 */
+-	error = hibernation_ops->start();
++	error = hibernation_ops->begin();
+ 	if (error)
+-		return error;
++		goto Close;
+ 
+ 	suspend_console();
+ 	error = device_suspend(PMSG_SUSPEND);
+@@ -409,6 +422,8 @@ int hibernation_platform_enter(void)
+ 	device_resume();
+  Resume_console:
+ 	resume_console();
++ Close:
++	hibernation_ops->end();
+ 	return error;
+ }
+ 
 Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep/main.c
 +++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -139,6 +139,9 @@ static int acpi_pm_enter(suspend_state_t
- 		break;
- 	}
+@@ -281,7 +281,7 @@ static struct dmi_system_id __initdata a
+ #endif /* CONFIG_SUSPEND */
  
-+	/* Reprogram control registers and execute _BFS */
-+	acpi_leave_sleep_state_prep(acpi_state);
-+
- 	/* ACPI 3.0 specs (P62) says that it's the responsabilty
- 	 * of the OSPM to clear the status bit [ implying that the
- 	 * POWER_BUTTON event should not reach userspace ]
-@@ -272,6 +275,8 @@ static int acpi_hibernation_enter(void)
- 	acpi_enable_wakeup_device(ACPI_STATE_S4);
- 	/* This shouldn't return.  If it returns, we have a problem */
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
-+	/* Reprogram control registers and execute _BFS */
-+	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
- 	local_irq_restore(flags);
- 
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-@@ -284,6 +289,8 @@ static void acpi_hibernation_leave(void)
- 	 * enable it here.
- 	 */
- 	acpi_enable();
-+	/* Reprogram control registers and execute _BFS */
-+	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
+ #ifdef CONFIG_HIBERNATION
+-static int acpi_hibernation_start(void)
++static int acpi_hibernation_begin(void)
+ {
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+ 	return 0;
+@@ -341,6 +341,15 @@ static void acpi_hibernation_finish(void
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
  }
  
- static void acpi_hibernation_finish(void)
-Index: linux-2.6/include/acpi/acpixf.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpixf.h
-+++ linux-2.6/include/acpi/acpixf.h
-@@ -335,6 +335,8 @@ acpi_status asmlinkage acpi_enter_sleep_
- 
- acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void);
- 
-+acpi_status acpi_leave_sleep_state_prep(u8 sleep_state);
++static void acpi_hibernation_end(void)
++{
++	/*
++	 * This is necessary in case acpi_hibernation_finish() is not called
++	 * during a failing transition to the sleep state.
++	 */
++	acpi_target_sleep_state = ACPI_STATE_S0;
++}
 +
- acpi_status acpi_leave_sleep_state(u8 sleep_state);
+ static int acpi_hibernation_pre_restore(void)
+ {
+ 	acpi_status status;
+@@ -356,7 +365,8 @@ static void acpi_hibernation_restore_cle
+ }
  
- #endif				/* __ACXFACE_H__ */
+ static struct platform_hibernation_ops acpi_hibernation_ops = {
+-	.start = acpi_hibernation_start,
++	.begin = acpi_hibernation_begin,
++	.end = acpi_hibernation_end,
+ 	.pre_snapshot = acpi_hibernation_prepare,
+ 	.finish = acpi_hibernation_finish,
+ 	.prepare = acpi_hibernation_prepare,
