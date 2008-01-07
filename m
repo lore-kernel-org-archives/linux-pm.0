@@ -1,14 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] Implementation of SCSI dynamic power management
-Date: Mon, 7 Jan 2008 21:31:04 +0100
-Message-ID: <200801072131.05755.oliver__26773.9048962996$1199738012$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0801071244180.2748-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Mon, 7 Jan 2008 21:37:42 +0100
+Message-ID: <200801072137.43401.rjw__19078.7271516912$1199738287$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0801071412530.6739-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801071244180.2748-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801071412530.6739-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,15 +20,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, 7. Januar 2008 20:42:23 schrieb Alan Stern:
-> When all the devices under a host are suspended, the LLD is informed 
-> (via a new "autosuspend" method in the host template) so that it can
+On Monday, 7 of January 2008, Alan Stern wrote:
+> On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+> 
+> > On Monday, 7 of January 2008, Alan Stern wrote:
+> > > On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > Please see the patch at: http://lkml.org/lkml/2008/1/6/298 .  It represents my
+> > > > current idea about how to do that.
+> > > 
+> > > It has some problems.
+> > > 
+> > > First, note that the list manipulations in dpm_suspend(), 
+> > > device_power_down(), and so on aren't protected by dpm_list_mtx.  So 
+> > > your patch could corrupt the list pointers.
+> > 
+> > Yes, they need the locking.  I have overlooked that, mostly because the locking
+> > was removed by gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
+> > too (because you assumed there woundn't be any need to remove a device during
+> > a suspend, right?).
+> 
+> Right.
+> 
+> > > Are you assuming that no other threads can be running at this time?
+> > 
+> > No, I'm not.
+> > 
+> > > Note also that device_pm_destroy_suspended() does up(&dev->sem), but it 
+> > > doesn't know whether or not dev->sem was locked to begin with.
+> > 
+> > Do you mean it might have been released already by another thread
+> > calling device_pm_destroy_suspended() on the same device?
+> 
+> I was thinking that it might be called before lock_all_devices().
 
-That is most certainly a mistake. Is there a good reason to not modify
-to extend suspend() to take an extra argument for the reason it is called?
+I've added pm_sleep_start_end_mtx and the locking dance in
+device_pm_destroy_suspended() specifically to prevent this from happening.
 
-	Regards
-		Oliver
+> However let's ignore that possibility and simplify the discussion by 
+> assuming that destroy_suspended_device() is never called except by a 
+> suspend or resume method for that device or one of its ancestors.  
+
+It may also be called by one of the CPU hotplug notifiers.
+
+> (This still leaves the possibility that it might get called by mistake 
+> during a runtime suspend or resume...)
+> 
+> > > Do you want to rule out the possibility of a driver's suspend or remove 
+> > > methods calling destroy_suspended_device() on its own device?  With 
+> > > your synchronous approach, this would mean that the suspend/resume 
+> > > method would indirectly end up calling the remove method.  This is 
+> > > dangerous at best; with USB it would be a lockdep violation.  With an 
+> > > asynchronous approach, on the other hand, this wouldn't be a problem.
+> > 
+> > Well, the asynchronous apprach has the problem that the device may end up
+> > on a wrong list when removed by one of the .suspend() callbacks (and I don't
+> > see how to avoid that without extra complexity).  Perhaps that's something we
+> > can live with, though.
+> 
+> The same problem affects the synchronous approach.
+
+No, it doesn't as of the $subject patch (the list_empty() tests should help).
+
+> We can fix it by having dpm_suspend() do the list_move() before calling
+> suspend_device().  Then if the suspend fails move the device back.
+
+Yes, we can.
+
+> > One more question: is there any particular reason not to call
+> > device_pm_remove() at the beginning of device_del()?
+> 
+> I think it's done this way to avoid having a window where the device 
+> isn't on a PM list and is still owned by the bus and the driver.  But 
+> if a suspend occurs during that window, it shouldn't matter that the 
+> device will be left unsuspended.  After all, the same thing would have 
+> happened if the suspend occurred after bus_remove_device().
+> 
+> So no, there shouldn't be a problem with moving the call.
+
+Okay, well, now I'm leaning towards the asynchronous approach.
+
+I'll prepare a new patch and send it later today.
+
+Thanks,
+Rafael
