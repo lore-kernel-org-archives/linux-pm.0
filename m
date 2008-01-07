@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/7] ACPI: Separate disabling of GPEs from _PTS
-Date: Tue, 8 Jan 2008 00:06:16 +0100
-Message-ID: <200801080006.17378.rjw__8825.16150963983$1199747647$gmane$org@sisk.pl>
+Subject: [PATCH 6/7] ACPI hibernation: Call _PTS before
+	suspending devices
+Date: Tue, 8 Jan 2008 00:09:58 +0100
+Message-ID: <200801080009.59516.rjw__2862.28517438776$1199747659$gmane$org@sisk.pl>
 References: <200801080002.25044.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,76 +27,88 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The preparation to enter an ACPI system sleep state is now tied to
-the disabling of GPEs, but the GPEs should not be disabled before
-suspending devices.  Since on ACPI 1.0x systems the _PTS global
-control method should be executed before suspending devices, we
-need to disable GPEs separately.
+The ACPI 1.0 specification wants us to put devices into low power
+states after executing the _PTS global control method, while ACPI
+2.0 and later want us to do that in the reverse order.  The current
+hibernation code follows ACPI 2.0 in that respect which may cause some
+ACPI 1.0x systems to hang during hibernation (ref.
+http://bugzilla.kernel.org/show_bug.cgi?id=9528).
+
+Make the hibernation code execute _PTS before putting devices into
+low power states (ie. in accordance with ACPI 1.0x) with the
+possibility to override that using the 'acpi_new_pts_ordering' kernel
+command line option.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/acpi/hardware/hwsleep.c |    4 ----
- drivers/acpi/sleep/main.c       |   17 +++++++++++++++--
- 2 files changed, 15 insertions(+), 6 deletions(-)
+ drivers/acpi/sleep/main.c |   36 +++++++++++++++++++++++++-----------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -229,10 +229,6 @@ acpi_status acpi_enter_sleep_state_prep(
- 				"While executing method _SST"));
- 	}
- 
--	/* Disable/Clear all GPEs */
--
--	status = acpi_hw_disable_all_gpes();
--
- 	return_ACPI_STATUS(status);
- }
- 
 Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep/main.c
 +++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -91,10 +91,13 @@ static int acpi_pm_open(suspend_state_t 
- 
- static int acpi_pm_prepare(void)
+@@ -283,22 +283,34 @@ static struct dmi_system_id __initdata a
+ #ifdef CONFIG_HIBERNATION
+ static int acpi_hibernation_begin(void)
  {
--	int error = acpi_sleep_prepare(acpi_target_sleep_state);
 +	int error;
- 
-+	error = acpi_sleep_prepare(acpi_target_sleep_state);
- 	if (error)
- 		acpi_target_sleep_state = ACPI_STATE_S0;
-+	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
- 
- 	return error;
- }
-@@ -261,7 +264,16 @@ static int acpi_hibernation_start(void)
- 
- static int acpi_hibernation_prepare(void)
- {
--	return acpi_sleep_prepare(ACPI_STATE_S4);
-+	int error;
++
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+-	return 0;
++	if (new_pts_ordering)
++		return 0;
 +
 +	error = acpi_sleep_prepare(ACPI_STATE_S4);
 +	if (error)
-+		return error;
-+
-+	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
++		acpi_target_sleep_state = ACPI_STATE_S0;
++	else
++		acpi_sleep_finish_wake_up = true;
 +
 +	return error;
  }
  
- static int acpi_hibernation_enter(void)
-@@ -432,6 +444,7 @@ static void acpi_power_off_prepare(void)
+ static int acpi_hibernation_prepare(void)
  {
- 	/* Prepare to power off the system */
- 	acpi_sleep_prepare(ACPI_STATE_S5);
-+	acpi_hw_disable_all_gpes();
+-	int error;
+-
+-	error = acpi_sleep_prepare(ACPI_STATE_S4);
+-	if (error)
+-		return error;
++	if (new_pts_ordering) {
++		int error = acpi_sleep_prepare(ACPI_STATE_S4);
+ 
+-	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
+-		error = -EFAULT;
++		if (error) {
++			acpi_target_sleep_state = ACPI_STATE_S0;
++			return error;
++		}
++		acpi_sleep_finish_wake_up = true;
++	}
+ 
+-	return error;
++	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
  }
  
- static void acpi_power_off(void)
+ static int acpi_hibernation_enter(void)
+@@ -339,15 +351,17 @@ static void acpi_hibernation_finish(void
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+ 
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
++	acpi_sleep_finish_wake_up = false;
+ }
+ 
+ static void acpi_hibernation_end(void)
+ {
+ 	/*
+ 	 * This is necessary in case acpi_hibernation_finish() is not called
+-	 * during a failing transition to the sleep state.
++	 * directly during a failing transition to the sleep state.
+ 	 */
+-	acpi_target_sleep_state = ACPI_STATE_S0;
++	if (acpi_sleep_finish_wake_up)
++		acpi_hibernation_finish();
+ }
+ 
+ static int acpi_hibernation_pre_restore(void)
