@@ -1,18 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Yi Yang <yi.y.yang@intel.com>
 Subject: Re: [PATCH] base: Change power/wakeup output from "" to
 	"unsupported" if wakeup feature isn't supported by a device
-Date: Mon, 7 Jan 2008 02:57:58 +0100
-Message-ID: <200801070257.58884.rjw__6873.91189062527$1199670997$gmane$org@sisk.pl>
+Date: Mon, 07 Jan 2008 09:51:32 +0800
+Message-ID: <1199670692.3551.5.camel__4334.06745219163$1199671073$gmane$org@yangyi-dev.bj.intel.com>
 References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	<20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<1199669879.19185.20.camel@yangyi-dev.bj.intel.com>
+	<20080104163101.EDC02115203@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Reply-To: yi.y.yang@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1199669879.19185.20.camel@yangyi-dev.bj.intel.com>
-Content-Disposition: inline
+In-Reply-To: <20080104163101.EDC02115203@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,33 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: yi.y.yang@intel.com
+To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 of January 2008, Yi Yang wrote:
-> On Fri, 2008-01-04 at 08:09 -0800, David Brownell wrote:
-> > > > This patch changes empty output to "unsupported" in order that a user knows
-> > > > wakeup feature isn't supported by this device when he/she
-> > > > 'cat /sys/devices/.../power/wakeup', please consider to apply,
-> > > > thanks.
-> > >
-> > > What about simply removing "wakuep" file if wakeup is not supported?
-> > 
-> > It may not *stay* unsupported, so I think changing it in either
-> > of those permanent ways would be confusing/misleading.
-> > 
-> > For example, USB devices have multiple states ... minimally, an
-> > unconfigured state, and a configured state.  Some have multiple
-> > configurations.  Only configured states can be wakeup-capable.
-> > So a given device might have three states, but support wakeup
-> > except in one of them...
-> If so, we can change "unsupported" to "unconfigurable" or "inoperable"
-> which can cover the states "unconfigured", "unsupported" and other
-> unknown states. :-).
-
-The main problem with your patch is that is changes a documented behavior
-visible by the user space.  That should be done very cautiously.
-
-Thanks,
-Rafael
+On Fri, 2008-01-04 at 08:31 -0800, David Brownell wrote:
+> > This patch changes empty output to "unsupported" in order that a user knows
+> > wakeup feature isn't supported by this device when he/she
+> > 'cat /sys/devices/.../power/wakeup', please consider to apply, thanks.
+> 
+> I don't much like this patch.  Not just for the technical reasons
+> mentioned in my previous note ... but also because it doesn't update
+> the documention at the top, which clearly states that "\n" is
+> returned for "temporary or permanent inability to issue wakeup".
+> And then it gives the example I gave before ...
+> 
+> Though I suppose a patch that changes the *entire* userspace interface,
+> (which includes its documentation, and all out-of-tree users) would have
+> shown more clearly why it wasn't a good idea.  ;)
+Really, "\n" should be changed to show that change.
+Anyway, "\n" isn't a good indicator for that state. :-)
+> 
+> 
+> > --- a/drivers/base/power/sysfs.c	2008-01-04 16:50:54.000000000 +0800
+> > +++ b/drivers/base/power/sysfs.c	2008-01-04 17:14:42.000000000 +0800
+> > @@ -49,7 +49,7 @@ wake_show(struct device * dev, struct de
+> >  {
+> >  	return sprintf(buf, "%s\n", device_can_wakeup(dev)
+> >  		? (device_may_wakeup(dev) ? enabled : disabled)
+> > -		: "");
+> > +		: "unsupported");
+> >  }
+> >  
+> >  static ssize_t
+> >
+> >
