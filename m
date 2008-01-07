@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Mon, 7 Jan 2008 16:32:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801071622560.6739-100000__8700.1126063571$1199741609$gmane$org@iolanthe.rowland.org>
-References: <200801072137.43401.rjw@sisk.pl>
+Subject: Re: [RFC] Implementation of SCSI dynamic power management
+Date: Mon, 7 Jan 2008 16:34:52 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801071632180.6739-100000__26525.7043684416$1199741768$gmane$org@iolanthe.rowland.org>
+References: <200801072131.05755.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801072137.43401.rjw@sisk.pl>
+In-Reply-To: <200801072131.05755.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,46 +16,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+On Mon, 7 Jan 2008, Oliver Neukum wrote:
 
-> > > Do you mean it might have been released already by another thread
-> > > calling device_pm_destroy_suspended() on the same device?
-> > 
-> > I was thinking that it might be called before lock_all_devices().
+> Am Montag, 7. Januar 2008 20:42:23 schrieb Alan Stern:
+> > When all the devices under a host are suspended, the LLD is informed 
+> > (via a new "autosuspend" method in the host template) so that it can
 > 
-> I've added pm_sleep_start_end_mtx and the locking dance in
-> device_pm_destroy_suspended() specifically to prevent this from happening.
+> That is most certainly a mistake.
 
-Yes, I see.  What about the fact that device_suspend() locks 
-pm_sleep_start_end_mtx first and pm_sleep_rwsem second, whereas 
-device_pm_destroy_suspended() locks pm_sleep_start_end_mtx while 
-holding pm_sleep_rwsem?  That should produce a lockdep warning.
+Why?
 
-> > However let's ignore that possibility and simplify the discussion by 
-> > assuming that destroy_suspended_device() is never called except by a 
-> > suspend or resume method for that device or one of its ancestors.  
-> 
-> It may also be called by one of the CPU hotplug notifiers.
+> Is there a good reason to not modify
+> to extend suspend() to take an extra argument for the reason it is called?
 
-This suggests another approach, simpler but not as general.  So far all
-the problems we've seen have been associated with those CPU notifiers.  
-Suppose the notifications about CPUs that failed to come back up were
-delayed until after the resume was complete?  Drivers like msr would
-then have to check in their resume handler whether the CPU was actually 
-up, but no other changes would be needed.
-
-In this way we could fix the immediate problem.  It wouldn't help with 
-other sorts of devices that need to be unregistered during a suspend, 
-though.
-
-> Okay, well, now I'm leaning towards the asynchronous approach.
-> 
-> I'll prepare a new patch and send it later today.
-
-Okay.
+In fact suspend methods already do take an argument specifying the
+reason they were called.  It wouldn't be hard to add a couple of extra 
+PM_EVENT_* values for manual suspend and autosuspend.  The problem is 
+that resume methods don't take a corresponding argument.
 
 Alan Stern
