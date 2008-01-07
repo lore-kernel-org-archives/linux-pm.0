@@ -1,353 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Unify arch/x86/kernel/acpi/sleep*.c
-Date: Mon, 7 Jan 2008 17:41:01 +0100
-Message-ID: <200801071741.02577.rjw@sisk.pl>
-References: <20080107122305.GA11062@elf.ucw.cz>
+Subject: Re: [PATCH] base: Change power/wakeup output from "" to
+	"unsupported" if wakeup feature isn't supported by a device
+Date: Mon, 7 Jan 2008 17:46:02 +0100
+Message-ID: <200801071746.02915.rjw__16533.4396566779$1199724294$gmane$org@sisk.pl>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	<200801070257.58884.rjw@sisk.pl>
+	<1199671545.3551.16.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758768AbYAGQjM@vger.kernel.org>
-In-Reply-To: <20080107122305.GA11062@elf.ucw.cz>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1199671545.3551.16.camel@yangyi-dev.bj.intel.com>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Ingo Molnar <mingo@elte.hu>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: yi.y.yang@intel.com
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 of January 2008, Pavel Machek wrote:
-> Unify arch/x86/kernel/acpi/sleep*.c
-> 
-> Pretty trivial unification; when two functions differed, it was
-> usually in error handling, and better of the two was picked up.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
+On Monday, 7 of January 2008, Yi Yang wrote:
+> On Mon, 2008-01-07 at 02:57 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 7 of January 2008, Yi Yang wrote:
+> > > On Fri, 2008-01-04 at 08:09 -0800, David Brownell wrote:
+> > > > > > This patch changes empty output to "unsupported" in order that a user knows
+> > > > > > wakeup feature isn't supported by this device when he/she
+> > > > > > 'cat /sys/devices/.../power/wakeup', please consider to apply,
+> > > > > > thanks.
+> > > > >
+> > > > > What about simply removing "wakuep" file if wakeup is not supported?
+> > > > 
+> > > > It may not *stay* unsupported, so I think changing it in either
+> > > > of those permanent ways would be confusing/misleading.
+> > > > 
+> > > > For example, USB devices have multiple states ... minimally, an
+> > > > unconfigured state, and a configured state.  Some have multiple
+> > > > configurations.  Only configured states can be wakeup-capable.
+> > > > So a given device might have three states, but support wakeup
+> > > > except in one of them...
+> > > If so, we can change "unsupported" to "unconfigurable" or "inoperable"
+> > > which can cover the states "unconfigured", "unsupported" and other
+> > > unknown states. :-).
+> > 
+> > The main problem with your patch is that is changes a documented behavior
+> > visible by the user space.  That should be done very cautiously.
+> Which applications are using this interface? if they assume "\n" means
+> the unconfigurable or unavailable state, this is very fragile.
 
-Looks-okay-to: Rafael J. Wysocki <rjw@sisk.pl>
+I can't give you examples right now, but since the behavior has been
+documented for quite some time, it's safe to assume there are some unless
+proven otherwise.
 
-> ---
-> 
-> (Seems to work on i386, but needs some x86-64 testing.)
+Also, fragile or not, it is the user space's right to rely on documented
+behavior of the kernel.
 
-I'll test it later today.
-
-> commit f540777f36d35da3ac43a76f73d66400e4024763
-> tree 28b02babaf0c597e1ea25bda9df96825ae94ef9e
-> parent dc9f39b93dc9e4ddddeaa25c2f7ec3e0a4ec830a
-> author Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 13:21:49 +0100
-> committer Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 13:21:49 +0100
-> 
->  arch/x86/kernel/acpi/Makefile   |    2 -
->  arch/x86/kernel/acpi/sleep.c    |   87 +++++++++++++++++++++++++++++
->  arch/x86/kernel/acpi/sleep_32.c |   70 -----------------------
->  arch/x86/kernel/acpi/sleep_64.c |  117 ---------------------------------------
->  4 files changed, 88 insertions(+), 188 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
-> index 1351c39..19d3d6e 100644
-> --- a/arch/x86/kernel/acpi/Makefile
-> +++ b/arch/x86/kernel/acpi/Makefile
-> @@ -1,5 +1,5 @@
->  obj-$(CONFIG_ACPI)		+= boot.o
-> -obj-$(CONFIG_ACPI_SLEEP)	+= sleep_$(BITS).o wakeup_$(BITS).o
-> +obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
->  
->  ifneq ($(CONFIG_ACPI_PROCESSOR),)
->  obj-y				+= cstate.o processor.o
-> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-> new file mode 100644
-> index 0000000..26db0c1
-> --- /dev/null
-> +++ b/arch/x86/kernel/acpi/sleep.c
-> @@ -0,0 +1,87 @@
-> +/*
-> + * sleep.c - x86-specific ACPI sleep support.
-> + *
-> + *  Copyright (C) 2001-2003 Patrick Mochel
-> + *  Copyright (C) 2001-2003 Pavel Machek <pavel@suse.cz>
-> + */
-> +
-> +#include <linux/acpi.h>
-> +#include <linux/bootmem.h>
-> +#include <linux/dmi.h>
-> +#include <linux/cpumask.h>
-> +
-> +#include <asm/smp.h>
-> +
-> +/* address in low memory of the wakeup routine. */
-> +unsigned long acpi_wakeup_address = 0;
-> +unsigned long acpi_realmode_flags;
-> +extern char wakeup_start, wakeup_end;
-> +
-> +extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
-> +
-> +/**
-> + * acpi_save_state_mem - save kernel state
-> + *
-> + * Create an identity mapped page table and copy the wakeup routine to
-> + * low memory.
-> + */
-> +int acpi_save_state_mem(void)
-> +{
-> +	if (!acpi_wakeup_address) {
-> +		printk(KERN_ERR "Could not allocate memory during boot, S3 disabled\n");
-> +		return -ENOMEM;
-> +	}
-> +	memcpy((void *)acpi_wakeup_address, &wakeup_start,
-> +	       &wakeup_end - &wakeup_start);
-> +	acpi_copy_wakeup_routine(acpi_wakeup_address);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * acpi_restore_state - undo effects of acpi_save_state_mem
-> + */
-> +void acpi_restore_state_mem(void)
-> +{
-> +}
-> +
-> +
-> +/**
-> + * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> + *
-> + * We allocate a page from the first 1MB of memory for the wakeup
-> + * routine for when we come back from a sleep state. The
-> + * runtime allocator allows specification of <16MB pages, but not
-> + * <1MB pages.
-> + */
-> +void __init acpi_reserve_bootmem(void)
-> +{
-> +	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE*2) {
-> +		printk(KERN_ERR
-> +		       "ACPI: Wakeup code way too big, S3 disabled.\n");
-> +		return;
-> +	}
-> +
-> +	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
-> +	if (!acpi_wakeup_address)
-> +		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
-> +}
-> +
-> +
-> +static int __init acpi_sleep_setup(char *str)
-> +{
-> +	while ((str != NULL) && (*str != '\0')) {
-> +		if (strncmp(str, "s3_bios", 7) == 0)
-> +			acpi_realmode_flags |= 1;
-> +		if (strncmp(str, "s3_mode", 7) == 0)
-> +			acpi_realmode_flags |= 2;
-> +		if (strncmp(str, "s3_beep", 7) == 0)
-> +			acpi_realmode_flags |= 4;
-> +		str = strchr(str, ',');
-> +		if (str != NULL)
-> +			str += strspn(str, ", \t");
-> +	}
-> +	return 1;
-> +}
-> +
-> +__setup("acpi_sleep=", acpi_sleep_setup);
-> diff --git a/arch/x86/kernel/acpi/sleep_32.c b/arch/x86/kernel/acpi/sleep_32.c
-> index 1069948..63fe552 100644
-> --- a/arch/x86/kernel/acpi/sleep_32.c
-> +++ b/arch/x86/kernel/acpi/sleep_32.c
-> @@ -12,76 +12,6 @@ #include <linux/cpumask.h>
->  
->  #include <asm/smp.h>
->  
-> -/* address in low memory of the wakeup routine. */
-> -unsigned long acpi_wakeup_address = 0;
-> -unsigned long acpi_realmode_flags;
-> -extern char wakeup_start, wakeup_end;
-> -
-> -extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
-> -
-> -/**
-> - * acpi_save_state_mem - save kernel state
-> - *
-> - * Create an identity mapped page table and copy the wakeup routine to
-> - * low memory.
-> - */
-> -int acpi_save_state_mem(void)
-> -{
-> -	if (!acpi_wakeup_address)
-> -		return 1;
-> -	memcpy((void *)acpi_wakeup_address, &wakeup_start,
-> -	       &wakeup_end - &wakeup_start);
-> -	acpi_copy_wakeup_routine(acpi_wakeup_address);
-> -
-> -	return 0;
-> -}
-> -
-> -/*
-> - * acpi_restore_state - undo effects of acpi_save_state_mem
-> - */
-> -void acpi_restore_state_mem(void)
-> -{
-> -}
-> -
-> -/**
-> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> - *
-> - * We allocate a page from the first 1MB of memory for the wakeup
-> - * routine for when we come back from a sleep state. The
-> - * runtime allocator allows specification of <16MB pages, but not
-> - * <1MB pages.
-> - */
-> -void __init acpi_reserve_bootmem(void)
-> -{
-> -	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE) {
-> -		printk(KERN_ERR
-> -		       "ACPI: Wakeup code way too big, S3 disabled.\n");
-> -		return;
-> -	}
-> -
-> -	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
-> -	if (!acpi_wakeup_address)
-> -		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
-> -}
-> -
-> -static int __init acpi_sleep_setup(char *str)
-> -{
-> -	while ((str != NULL) && (*str != '\0')) {
-> -		if (strncmp(str, "s3_bios", 7) == 0)
-> -			acpi_realmode_flags |= 1;
-> -		if (strncmp(str, "s3_mode", 7) == 0)
-> -			acpi_realmode_flags |= 2;
-> -		if (strncmp(str, "s3_beep", 7) == 0)
-> -			acpi_realmode_flags |= 4;
-> -		str = strchr(str, ',');
-> -		if (str != NULL)
-> -			str += strspn(str, ", \t");
-> -	}
-> -	return 1;
-> -}
-> -
-> -__setup("acpi_sleep=", acpi_sleep_setup);
-> -
->  /* Ouch, we want to delete this. We already have better version in userspace, in
->     s2ram from suspend.sf.net project */
->  static __init int reset_videomode_after_s3(const struct dmi_system_id *d)
-> diff --git a/arch/x86/kernel/acpi/sleep_64.c b/arch/x86/kernel/acpi/sleep_64.c
-> deleted file mode 100644
-> index da42de2..0000000
-> --- a/arch/x86/kernel/acpi/sleep_64.c
-> +++ /dev/null
-> @@ -1,117 +0,0 @@
-> -/*
-> - *  acpi.c - Architecture-Specific Low-Level ACPI Support
-> - *
-> - *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
-> - *  Copyright (C) 2001 Jun Nakajima <jun.nakajima@intel.com>
-> - *  Copyright (C) 2001 Patrick Mochel <mochel@osdl.org>
-> - *  Copyright (C) 2002 Andi Kleen, SuSE Labs (x86-64 port)
-> - *  Copyright (C) 2003 Pavel Machek, SuSE Labs
-> - *
-> - * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> - *
-> - *  This program is free software; you can redistribute it and/or modify
-> - *  it under the terms of the GNU General Public License as published by
-> - *  the Free Software Foundation; either version 2 of the License, or
-> - *  (at your option) any later version.
-> - *
-> - *  This program is distributed in the hope that it will be useful,
-> - *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> - *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> - *  GNU General Public License for more details.
-> - *
-> - *  You should have received a copy of the GNU General Public License
-> - *  along with this program; if not, write to the Free Software
-> - *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> - *
-> - * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> - */
-> -
-> -#include <linux/kernel.h>
-> -#include <linux/init.h>
-> -#include <linux/types.h>
-> -#include <linux/stddef.h>
-> -#include <linux/slab.h>
-> -#include <linux/pci.h>
-> -#include <linux/bootmem.h>
-> -#include <linux/acpi.h>
-> -#include <linux/cpumask.h>
-> -
-> -#include <asm/mpspec.h>
-> -#include <asm/io.h>
-> -#include <asm/apic.h>
-> -#include <asm/apicdef.h>
-> -#include <asm/page.h>
-> -#include <asm/pgtable.h>
-> -#include <asm/pgalloc.h>
-> -#include <asm/io_apic.h>
-> -#include <asm/proto.h>
-> -#include <asm/tlbflush.h>
-> -
-> -/* --------------------------------------------------------------------------
-> -                              Low-Level Sleep Support
-> -   -------------------------------------------------------------------------- */
-> -
-> -/* address in low memory of the wakeup routine. */
-> -unsigned long acpi_wakeup_address = 0;
-> -unsigned long acpi_realmode_flags;
-> -extern char wakeup_start, wakeup_end;
-> -
-> -extern unsigned long acpi_copy_wakeup_routine(unsigned long);
-> -
-> -/**
-> - * acpi_save_state_mem - save kernel state
-> - *
-> - * Create an identity mapped page table and copy the wakeup routine to
-> - * low memory.
-> - */
-> -int acpi_save_state_mem(void)
-> -{
-> -	memcpy((void *)acpi_wakeup_address, &wakeup_start,
-> -	       &wakeup_end - &wakeup_start);
-> -	acpi_copy_wakeup_routine(acpi_wakeup_address);
-> -
-> -	return 0;
-> -}
-> -
-> -/*
-> - * acpi_restore_state
-> - */
-> -void acpi_restore_state_mem(void)
-> -{
-> -}
-> -
-> -/**
-> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> - *
-> - * We allocate a page in low memory for the wakeup
-> - * routine for when we come back from a sleep state. The
-> - * runtime allocator allows specification of <16M pages, but not
-> - * <1M pages.
-> - */
-> -void __init acpi_reserve_bootmem(void)
-> -{
-> -	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
-> -	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
-> -		printk(KERN_CRIT
-> -		       "ACPI: Wakeup code way too big, will crash on attempt"
-> -		       " to suspend\n");
-> -}
-> -
-> -static int __init acpi_sleep_setup(char *str)
-> -{
-> -	while ((str != NULL) && (*str != '\0')) {
-> -		if (strncmp(str, "s3_bios", 7) == 0)
-> -			acpi_realmode_flags |= 1;
-> -		if (strncmp(str, "s3_mode", 7) == 0)
-> -			acpi_realmode_flags |= 2;
-> -		if (strncmp(str, "s3_beep", 7) == 0)
-> -			acpi_realmode_flags |= 4;
-> -		str = strchr(str, ',');
-> -		if (str != NULL)
-> -			str += strspn(str, ", \t");
-> -	}
-> -	return 1;
-> -}
-> -
-> -__setup("acpi_sleep=", acpi_sleep_setup);
-> -
+Thanks,
+Rafael
