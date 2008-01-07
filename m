@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Mon, 7 Jan 2008 01:49:47 +0100
-Message-ID: <200801070149.47958.rjw__43057.8925334432$1199667019$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0801061734150.20032-100000@netrider.rowland.org>
-	<49505.::ffff:91.5.86.36.1199663162.squirrel@secure.sipsolutions.net>
-	<200801070059.16741.rjw@sisk.pl>
+From: Yi Yang <yi.y.yang@intel.com>
+Subject: Re: [PATCH] base: Change power/wakeup output from "" to
+	"unsupported" if wakeup feature isn't supported by a device
+Date: Mon, 07 Jan 2008 09:21:59 +0800
+Message-ID: <1199668919.19185.16.camel__4187.93099602244$1199669322$gmane$org@yangyi-dev.bj.intel.com>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	<20080104114832.GA4114@elf.ucw.cz>
+Reply-To: yi.y.yang@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801070059.16741.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <20080104114832.GA4114@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 of January 2008, Rafael J. Wysocki wrote:
-> On Monday, 7 of January 2008, Johannes Berg wrote:
-> > Rafael J. Wysocki wrote:
-> > 
-> > >> I don't see anything wrong with it.  All that will happen is that the
-> > >> removal will start before the suspend and finish after the resume.
-> > >
-> > > In that case, we'll attempt to call the device's .suspend() and .resume()
-> > > routines, but we shouldn't do that, IMHO.
-> > 
-> > I don't see anything wrong with that since the driver must be prepared to
-> > handle that even in the regular case, it's the only thing you can
-> > guarantee: no more method calls after removal finishes. Am I totally
-> > misunderstanding things?
+On Fri, 2008-01-04 at 12:48 +0100, Pavel Machek wrote:
+> Hi!
 > 
-> Well, we are towards the end of device removal at this point, having called
-> bus_remove_device(dev) for example, but still we've got it on dpm_active ...
+> > If a device can't support wakeup, its /sys/devices/.../power/wakeup output is
+> > empty, this is confusing, a user doesn't know if it supports wakeup feature
+> > unless he/she read the ralated source code, for this case, it is more
+> > reasonable to output "unsupported". Otherwise, no matter what value the user
+> > sets to /sys/devices/.../power/wakeup, the result is the same:  Invalid argument,
+> > so the user doesn't know why.
+> > 
+> > This patch changes empty output to "unsupported" in order that a user knows
+> > wakeup feature isn't supported by this device when he/she
+> > 'cat /sys/devices/.../power/wakeup', please consider to apply,
+> > thanks.
 > 
-> This may not be technically wrong (ie. we should be able to recover from
-> that), but it seems conceptually wrong and with pm_sleep_rwsem in place it
-> can be avoided.
-
-No, it can't, without major complications.
-
-Well, I think I'll just send a patch that should work most of the time ...
-
-Rafael
+> What about simply removing "wakuep" file if wakeup is not supported?
+> 									Pavel
+At the beginning, i did that as you said, but it can't work, some
+power/wakeup will disappear although they can be disabled or enabled, so
+it is only one feasible way to make it exist permanently.
+> 
