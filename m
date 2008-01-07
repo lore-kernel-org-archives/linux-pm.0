@@ -1,12 +1,11 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Mon, 7 Jan 2008 14:29:57 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801071412530.6739-100000__26016.8656976477$1199734380$gmane$org@iolanthe.rowland.org>
-References: <200801071901.24926.rjw@sisk.pl>
+Subject: [RFC] Autosuspend for usb-storage (based on SCSI dynamic
+	PM)
+Date: Mon, 7 Jan 2008 14:42:26 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801071438110.6739-100000__2278.11532463438$1199735026$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801071901.24926.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,74 +15,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
+To: USB list <linux-usb@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+This patch implements autosuspend and autoresume for usb-storage.  It 
+is based on the SCSI Dynamic PM patch just posted on linux-scsi and 
+linux-pm.
 
-> On Monday, 7 of January 2008, Alan Stern wrote:
-> > On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
-> > 
-> > > Please see the patch at: http://lkml.org/lkml/2008/1/6/298 .  It represents my
-> > > current idea about how to do that.
-> > 
-> > It has some problems.
-> > 
-> > First, note that the list manipulations in dpm_suspend(), 
-> > device_power_down(), and so on aren't protected by dpm_list_mtx.  So 
-> > your patch could corrupt the list pointers.
-> 
-> Yes, they need the locking.  I have overlooked that, mostly because the locking
-> was removed by gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> too (because you assumed there woundn't be any need to remove a device during
-> a suspend, right?).
-
-Right.
-
-> > Are you assuming that no other threads can be running at this time?
-> 
-> No, I'm not.
-> 
-> > Note also that device_pm_destroy_suspended() does up(&dev->sem), but it 
-> > doesn't know whether or not dev->sem was locked to begin with.
-> 
-> Do you mean it might have been released already by another thread
-> calling device_pm_destroy_suspended() on the same device?
-
-I was thinking that it might be called before lock_all_devices().
-
-However let's ignore that possibility and simplify the discussion by 
-assuming that destroy_suspended_device() is never called except by a 
-suspend or resume method for that device or one of its ancestors.  
-(This still leaves the possibility that it might get called by mistake 
-during a runtime suspend or resume...)
-
-> > Do you want to rule out the possibility of a driver's suspend or remove 
-> > methods calling destroy_suspended_device() on its own device?  With 
-> > your synchronous approach, this would mean that the suspend/resume 
-> > method would indirectly end up calling the remove method.  This is 
-> > dangerous at best; with USB it would be a lockdep violation.  With an 
-> > asynchronous approach, on the other hand, this wouldn't be a problem.
-> 
-> Well, the asynchronous apprach has the problem that the device may end up
-> on a wrong list when removed by one of the .suspend() callbacks (and I don't
-> see how to avoid that without extra complexity).  Perhaps that's something we
-> can live with, though.
-
-The same problem affects the synchronous approach.  We can fix it by
-having dpm_suspend() do the list_move() before calling
-suspend_device().  Then if the suspend fails move the device back.
-
-> One more question: is there any particular reason not to call
-> device_pm_remove() at the beginning of device_del()?
-
-I think it's done this way to avoid having a window where the device 
-isn't on a PM list and is still owned by the bus and the driver.  But 
-if a suspend occurs during that window, it shouldn't matter that the 
-device will be left unsuspended.  After all, the same thing would have 
-happened if the suspend occurred after bus_remove_device().
-
-So no, there shouldn't be a problem with moving the call.
+Note: For testing, you will have to set the power/level attribute (and 
+possibly also power/autosuspend) for both the SCSI device and the USB 
+device.
 
 Alan Stern
+
+
+
+Index: usb-2.6/drivers/usb/storage/usb.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/storage/usb.c
++++ usb-2.6/drivers/usb/storage/usb.c
+@@ -184,16 +184,14 @@ static int storage_suspend(struct usb_in
+ {
+ 	struct us_data *us = usb_get_intfdata(iface);
+ 
++	US_DEBUGP("%s\n", __FUNCTION__);
++
+ 	/* Wait until no command is running */
+ 	mutex_lock(&us->dev_mutex);
+ 
+-	US_DEBUGP("%s\n", __FUNCTION__);
+ 	if (us->suspend_resume_hook)
+ 		(us->suspend_resume_hook)(us, US_SUSPEND);
+ 
+-	/* When runtime PM is working, we'll set a flag to indicate
+-	 * whether we should autoresume when a SCSI request arrives. */
+-
+ 	mutex_unlock(&us->dev_mutex);
+ 	return 0;
+ }
+@@ -202,13 +200,10 @@ static int storage_resume(struct usb_int
+ {
+ 	struct us_data *us = usb_get_intfdata(iface);
+ 
+-	mutex_lock(&us->dev_mutex);
+-
+ 	US_DEBUGP("%s\n", __FUNCTION__);
+ 	if (us->suspend_resume_hook)
+ 		(us->suspend_resume_hook)(us, US_RESUME);
+ 
+-	mutex_unlock(&us->dev_mutex);
+ 	return 0;
+ }
+ 
+@@ -928,6 +923,7 @@ static int usb_stor_scan_thread(void * _
+ 		/* Should we unbind if no devices were detected? */
+ 	}
+ 
++	usb_autopm_put_interface(us->pusb_intf);
+ 	complete_and_exit(&us->scanning_done, 0);
+ }
+ 
+@@ -957,6 +953,9 @@ static int storage_probe(struct usb_inte
+ 		return -ENOMEM;
+ 	}
+ 
++	/* Don't autosuspend until the SCSI core tells us */
++	usb_autopm_get_interface(intf);
++
+ 	/*
+ 	 * Allow 16-byte CDBs and thus > 2TB
+ 	 */
+@@ -1017,6 +1016,7 @@ static int storage_probe(struct usb_inte
+ 		goto BadDevice;
+ 	}
+ 
++	usb_autopm_get_interface(intf); /* dropped in the scanning thread */
+ 	wake_up_process(th);
+ 
+ 	return 0;
+@@ -1054,6 +1054,7 @@ static struct usb_driver usb_storage_dri
+ 	.pre_reset =	storage_pre_reset,
+ 	.post_reset =	storage_post_reset,
+ 	.id_table =	storage_usb_ids,
++	.supports_autosuspend = 1,
+ };
+ 
+ static int __init usb_stor_init(void)
+Index: usb-2.6/drivers/usb/storage/scsiglue.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/storage/scsiglue.c
++++ usb-2.6/drivers/usb/storage/scsiglue.c
+@@ -295,10 +295,15 @@ static int device_reset(struct scsi_cmnd
+ 
+ 	US_DEBUGP("%s called\n", __FUNCTION__);
+ 
+-	/* lock the device pointers and do the reset */
+-	mutex_lock(&(us->dev_mutex));
+-	result = us->transport_reset(us);
+-	mutex_unlock(&us->dev_mutex);
++	result = usb_autopm_get_interface(us->pusb_intf);
++	if (result == 0) {
++
++		/* lock the device pointers and do the reset */
++		mutex_lock(&(us->dev_mutex));
++		result = us->transport_reset(us);
++		mutex_unlock(&us->dev_mutex);
++		usb_autopm_put_interface(us->pusb_intf);
++	}
+ 
+ 	return result < 0 ? FAILED : SUCCESS;
+ }
+@@ -341,6 +346,24 @@ void usb_stor_report_bus_reset(struct us
+ 	scsi_unlock(host);
+ }
+ 
++/* The host and its devices are all idle so we can autosuspend */
++static int autosuspend(struct Scsi_Host *host)
++{
++	struct us_data *us = host_to_us(host);
++
++	usb_autopm_put_interface(us->pusb_intf);
++	return 0;
++}
++
++/* The host needs to be autoresumed */
++static int autoresume(struct Scsi_Host *host)
++{
++	struct us_data *us = host_to_us(host);
++
++	return usb_autopm_get_interface(us->pusb_intf);
++}
++
++
+ /***********************************************************************
+  * /proc/scsi/ functions
+  ***********************************************************************/
+@@ -467,6 +490,10 @@ struct scsi_host_template usb_stor_host_
+ 	.eh_device_reset_handler =	device_reset,
+ 	.eh_bus_reset_handler =		bus_reset,
+ 
++	/* dynamic power management */
++	.autosuspend =			autosuspend,
++	.autoresume =			autoresume,
++
+ 	/* queue commands only, only one command per LUN */
+ 	.can_queue =			1,
+ 	.cmd_per_lun =			1,
