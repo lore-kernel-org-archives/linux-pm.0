@@ -1,187 +1,342 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
-Date: Mon, 07 Jan 2008 16:12:55 +0800
-Message-ID: <1199693575.8224.50.camel__14973.9293651239$1199693638$gmane$org@caritas-dev.intel.com>
-References: <1198222399.1965.15.camel@caritas-dev.intel.com>
-	<20071228213331.GB4560@redhat.com>
-	<1198893644.17317.36.camel@caritas-dev.intel.com>
-	<20071231192621.GD27060@redhat.com>
-	<1199349746.6288.119.camel@caritas-dev.intel.com>
-	<20080106204925.GA19601@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Unify arch/x86/kernel/acpi/sleep*.c
+Date: Mon, 7 Jan 2008 13:23:05 +0100
+Message-ID: <20080107122305.GA11062@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080106204925.GA19601@redhat.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757007AbYAGMno@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2008-01-06 at 15:49 -0500, Vivek Goyal wrote:
-> > > Why should we exchange backup page map information between two kernels?
-> > > What data has been swapped and how to restore it back should be known
-> > > to the kernel who did it. I think the memory info and address of ELF
-> > > headers we can still pass to second kernel the same way we do for
-> > > /proc/vmcore. The only difference is that purgatory shall have to modify 
-> > > the command line to reflect the new address of ELF headers just before
-> > > jumping to new kernel (because of swapping).
-> > > 
-> > > We can also modify the actual ELF headers in purgatory to reflect the
-> > > right data (because of swapping) and new kernel will not have to know
-> > > anything about swapping.
-> > >
-[...]
->  
-> > In addition to revising the ELF headers in purgatory, the /proc/kimgcore
-> > interface can also be used to revise the ELF headers in kernel A. But
-> > this needs to export backup pages map information to user space (another
-> > sysfs/procfs file?).
-> 
-> This is kind of two step load process. Load image, then export backup
-> page info to user space and then readjust the headers through
-> /proc/kimgcore. I think purgatory doing it is cleaner.
-[...] 
-> > I think there may be no difference between two kinds of files. Nothing
-> > prevents hibernated image produced through /proc/vmcore loaded with
-> > normal kexec -l. I have just tested it. This means we need not use
-> > krestore to resume the hibernated kernel after enhancing /sbin/kexec
-> > (because it uses too much anonymous memory). And, the resuming process
-> > will be more smooth.
-> > 
-> 
-> Ok. So in a nutshell, any resumable image (be it is generated through
-> /proc/vmcore or /proc/kimgcore) can be launched in the same way  (I think
-> kexec --load-preserve-context). ?
-> 
-> In fact, if we are modifying the ELF headers in purgatory to reflect the
-> swapped page action, then we don't require /proc/kimgcore interface
-> at all?
+Unify arch/x86/kernel/acpi/sleep*.c
 
-But, how can purgatory get the "backup pages map" information? Which is
-not available when purgatory is loaded. I think there are two methods:
+Pretty trivial unification; when two functions differed, it was
+usually in error handling, and better of the two was picked up.
 
-Method1:
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-- A setup page is setup by original kernel, and the address of setup
-page is passed to purgatory using a pre-defined protocol (such as in a
-register). The "backup pages map" is in setup page.
-- Purgatory uses the information in setup page to modify ELF headers
-- kexeced kernel use ELF headers to build /proc/vmcore
+---
 
-Method2:
+(Seems to work on i386, but needs some x86-64 testing.)
 
-- A setup page is setup by /sbin/kexec
-- The "backup pages map" information is written to purgatory
-via /proc/kimgcore.
-- Purgatory uses the information to modify ELF headers
-- kexeced kernel use ELF headers to build /proc/vmcore
+commit f540777f36d35da3ac43a76f73d66400e4024763
+tree 28b02babaf0c597e1ea25bda9df96825ae94ef9e
+parent dc9f39b93dc9e4ddddeaa25c2f7ec3e0a4ec830a
+author Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 13:21:49 +0100
+committer Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 13:21:49 +0100
 
+ arch/x86/kernel/acpi/Makefile   |    2 -
+ arch/x86/kernel/acpi/sleep.c    |   87 +++++++++++++++++++++++++++++
+ arch/x86/kernel/acpi/sleep_32.c |   70 -----------------------
+ arch/x86/kernel/acpi/sleep_64.c |  117 ---------------------------------------
+ 4 files changed, 88 insertions(+), 188 deletions(-)
 
-But, why not just exchanging the "backup pages map" information between
-two kernels via the "setup page"? It is as follow:
-
-- A setup page is setup by original kernel, and the address of setup
-page is passed to kexeced kernel using a pre-defined protocol (such as
-in a register). The "backup pages map" is in setup page.
-- kexec kernel use "backup pages map" to build /proc/vmcore.
-
-To keep it simple, another choice is not passing this "backup pages map"
-information between two kernels now. The biggest issue is makedumpfile
-can not exclude free pages without it, resulting in big hibernated
-image. Another issue is that the information in /proc/vmcore is not
-accurate, but that does not affect the hibernation implementation.
-
-> In fact, if we are modifying the ELF headers in purgatory to reflect the
-> swapped page action, then we don't require /proc/kimgcore interface
-> at all?
-
-/proc/kimgcore is mainly used to save the memory image of the kexeced
-kernel. If this is not to be supported, /proc/kimgcore is not needed.
-But, I think this is useful to accelerate the hibernating (no another
-boot is needed for each hibernating).
-
-> > For completion (although may be not a big issue now):
-> > 
-> > Whether using "krestore" or normal "kexec -l" depends on the memory used
-> > by current kernel (/proc/iomem) and memory in image file (PT_LOAD
-> > headers). If all memory in image file is outside memory used by current
-> > kernel, "krestore" should be used. If all memory in image file is inside
-> > memory used by current kernel, normal "kexec -l" should be used. If
-> > there is intersection set between memory in image file and memory of
-> > current kernel, the image file can not be loaded.
-> > 
-> 
-> I think kexec should mask that difference. A user should be able to load
-> a resumable image either by using "kexec -l" or "kexec
-> --load-preserve-context" depending on whether user wants to come back to
-> orignal kernel in future or not. Kexec-tools should recognize the image
-> as resumable. Any page outside the current kernel can be written to
-> final location through /dev/oldmem. And any pages which overlap with the
-> current kernel, should be moved to destination when actual kexec 
-> happens (existing functionality).
-> 
-> This will require merging krestore and kexec user space functionality
-> so that resuming a hibernated image is effectively a "Kexec -l"
-> operation.
-> 
-> So a user will not worry about whether he is kexecing a fresh kernel
-> (bzImage or vmlinux) or resuming a already booted kernel. Kexec tools
-> should determine that and setup the entry point accordingly (might
-> require some purgatory changes to take care of transition while jumping
-> to resume hibernated image).
-
-Yes. This is a good idea. I will do it.
-
-> > And, it is more useful for "invoking some code in physical mode". The
-> > procedure is something as follow:
-> > 
-> > 1. load some code executing in physical mode via kexec --load-preserve-context.
-> > 2. setup the parameters via amending /proc/kimgcore
-> > 3. execute the code in physical mode via kexec -e
-> > 4. get the result via reading /proc/kimgcore
-> > 5. setup another groups of parameters via amending /proc/kimgcore
-> > ...
-> 
-> This seems to be extended functionlity. If your focus is "Kexec based
-> hibernation" then I would think of initially keeping the implementation
-> simple and keeping patches small. Make kexec based hibernation work
-> and then extend functionality for other purposes.
-
-I think this is a important use case of "kexec jump" besides "kexec
-based hibernation". But it can be separated from initial "kexec jump"
-patchset if necessary.
+diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
+index 1351c39..19d3d6e 100644
+--- a/arch/x86/kernel/acpi/Makefile
++++ b/arch/x86/kernel/acpi/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_ACPI)		+= boot.o
+-obj-$(CONFIG_ACPI_SLEEP)	+= sleep_$(BITS).o wakeup_$(BITS).o
++obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
  
-[...]
-> > The main issue of this mechanism is that: it is a kernel-to-kernel
-> > communication mechanism, while Eric Biederman thinks we should use only
-> > user-to-user communication mechanism. And he is not persuaded now.
-> > 
-> > Because kernel operations such as re-initialize/re-construct
-> > the /proc/vmcore, etc are needed for kexec jump or resuming. I think a
-> > "kernel-to-kernel" mechanism may be needed. But I don't know if Eric
-> > Biederman will agree with this.
-> 
-> Hmm... Personally I am more inclined to exchanging information between
-> two kernels on setup page, in a standard format (using ELF headers etc).
-> This information can be prepared by kexec-tools in user space and be). 
-> modified by purgatory (during transition to reflect the swapped pages.
-> Alternatively, one can modify this setup page info from user space through
-> some /proc/kimgcore like interface.  I prefer the first one...
-
-Some information (such as "backup pages map") is not available
-when /sbin/kexec is executed. So there should be a method to pass such
-information to purgatory from original kernel. So why not change the
-information between two kernel via "setup page" directly (need not
-purgatory).
-
-Best Regards,
-Huang Ying
+ ifneq ($(CONFIG_ACPI_PROCESSOR),)
+ obj-y				+= cstate.o processor.o
+diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+new file mode 100644
+index 0000000..26db0c1
+--- /dev/null
++++ b/arch/x86/kernel/acpi/sleep.c
+@@ -0,0 +1,87 @@
++/*
++ * sleep.c - x86-specific ACPI sleep support.
++ *
++ *  Copyright (C) 2001-2003 Patrick Mochel
++ *  Copyright (C) 2001-2003 Pavel Machek <pavel@suse.cz>
++ */
++
++#include <linux/acpi.h>
++#include <linux/bootmem.h>
++#include <linux/dmi.h>
++#include <linux/cpumask.h>
++
++#include <asm/smp.h>
++
++/* address in low memory of the wakeup routine. */
++unsigned long acpi_wakeup_address = 0;
++unsigned long acpi_realmode_flags;
++extern char wakeup_start, wakeup_end;
++
++extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
++
++/**
++ * acpi_save_state_mem - save kernel state
++ *
++ * Create an identity mapped page table and copy the wakeup routine to
++ * low memory.
++ */
++int acpi_save_state_mem(void)
++{
++	if (!acpi_wakeup_address) {
++		printk(KERN_ERR "Could not allocate memory during boot, S3 disabled\n");
++		return -ENOMEM;
++	}
++	memcpy((void *)acpi_wakeup_address, &wakeup_start,
++	       &wakeup_end - &wakeup_start);
++	acpi_copy_wakeup_routine(acpi_wakeup_address);
++
++	return 0;
++}
++
++/*
++ * acpi_restore_state - undo effects of acpi_save_state_mem
++ */
++void acpi_restore_state_mem(void)
++{
++}
++
++
++/**
++ * acpi_reserve_bootmem - do _very_ early ACPI initialisation
++ *
++ * We allocate a page from the first 1MB of memory for the wakeup
++ * routine for when we come back from a sleep state. The
++ * runtime allocator allows specification of <16MB pages, but not
++ * <1MB pages.
++ */
++void __init acpi_reserve_bootmem(void)
++{
++	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE*2) {
++		printk(KERN_ERR
++		       "ACPI: Wakeup code way too big, S3 disabled.\n");
++		return;
++	}
++
++	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
++	if (!acpi_wakeup_address)
++		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
++}
++
++
++static int __init acpi_sleep_setup(char *str)
++{
++	while ((str != NULL) && (*str != '\0')) {
++		if (strncmp(str, "s3_bios", 7) == 0)
++			acpi_realmode_flags |= 1;
++		if (strncmp(str, "s3_mode", 7) == 0)
++			acpi_realmode_flags |= 2;
++		if (strncmp(str, "s3_beep", 7) == 0)
++			acpi_realmode_flags |= 4;
++		str = strchr(str, ',');
++		if (str != NULL)
++			str += strspn(str, ", \t");
++	}
++	return 1;
++}
++
++__setup("acpi_sleep=", acpi_sleep_setup);
+diff --git a/arch/x86/kernel/acpi/sleep_32.c b/arch/x86/kernel/acpi/sleep_32.c
+index 1069948..63fe552 100644
+--- a/arch/x86/kernel/acpi/sleep_32.c
++++ b/arch/x86/kernel/acpi/sleep_32.c
+@@ -12,76 +12,6 @@ #include <linux/cpumask.h>
+ 
+ #include <asm/smp.h>
+ 
+-/* address in low memory of the wakeup routine. */
+-unsigned long acpi_wakeup_address = 0;
+-unsigned long acpi_realmode_flags;
+-extern char wakeup_start, wakeup_end;
+-
+-extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
+-
+-/**
+- * acpi_save_state_mem - save kernel state
+- *
+- * Create an identity mapped page table and copy the wakeup routine to
+- * low memory.
+- */
+-int acpi_save_state_mem(void)
+-{
+-	if (!acpi_wakeup_address)
+-		return 1;
+-	memcpy((void *)acpi_wakeup_address, &wakeup_start,
+-	       &wakeup_end - &wakeup_start);
+-	acpi_copy_wakeup_routine(acpi_wakeup_address);
+-
+-	return 0;
+-}
+-
+-/*
+- * acpi_restore_state - undo effects of acpi_save_state_mem
+- */
+-void acpi_restore_state_mem(void)
+-{
+-}
+-
+-/**
+- * acpi_reserve_bootmem - do _very_ early ACPI initialisation
+- *
+- * We allocate a page from the first 1MB of memory for the wakeup
+- * routine for when we come back from a sleep state. The
+- * runtime allocator allows specification of <16MB pages, but not
+- * <1MB pages.
+- */
+-void __init acpi_reserve_bootmem(void)
+-{
+-	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE) {
+-		printk(KERN_ERR
+-		       "ACPI: Wakeup code way too big, S3 disabled.\n");
+-		return;
+-	}
+-
+-	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
+-	if (!acpi_wakeup_address)
+-		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
+-}
+-
+-static int __init acpi_sleep_setup(char *str)
+-{
+-	while ((str != NULL) && (*str != '\0')) {
+-		if (strncmp(str, "s3_bios", 7) == 0)
+-			acpi_realmode_flags |= 1;
+-		if (strncmp(str, "s3_mode", 7) == 0)
+-			acpi_realmode_flags |= 2;
+-		if (strncmp(str, "s3_beep", 7) == 0)
+-			acpi_realmode_flags |= 4;
+-		str = strchr(str, ',');
+-		if (str != NULL)
+-			str += strspn(str, ", \t");
+-	}
+-	return 1;
+-}
+-
+-__setup("acpi_sleep=", acpi_sleep_setup);
+-
+ /* Ouch, we want to delete this. We already have better version in userspace, in
+    s2ram from suspend.sf.net project */
+ static __init int reset_videomode_after_s3(const struct dmi_system_id *d)
+diff --git a/arch/x86/kernel/acpi/sleep_64.c b/arch/x86/kernel/acpi/sleep_64.c
+deleted file mode 100644
+index da42de2..0000000
+--- a/arch/x86/kernel/acpi/sleep_64.c
++++ /dev/null
+@@ -1,117 +0,0 @@
+-/*
+- *  acpi.c - Architecture-Specific Low-Level ACPI Support
+- *
+- *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
+- *  Copyright (C) 2001 Jun Nakajima <jun.nakajima@intel.com>
+- *  Copyright (C) 2001 Patrick Mochel <mochel@osdl.org>
+- *  Copyright (C) 2002 Andi Kleen, SuSE Labs (x86-64 port)
+- *  Copyright (C) 2003 Pavel Machek, SuSE Labs
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; either version 2 of the License, or
+- *  (at your option) any later version.
+- *
+- *  This program is distributed in the hope that it will be useful,
+- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *  GNU General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License
+- *  along with this program; if not, write to the Free Software
+- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/types.h>
+-#include <linux/stddef.h>
+-#include <linux/slab.h>
+-#include <linux/pci.h>
+-#include <linux/bootmem.h>
+-#include <linux/acpi.h>
+-#include <linux/cpumask.h>
+-
+-#include <asm/mpspec.h>
+-#include <asm/io.h>
+-#include <asm/apic.h>
+-#include <asm/apicdef.h>
+-#include <asm/page.h>
+-#include <asm/pgtable.h>
+-#include <asm/pgalloc.h>
+-#include <asm/io_apic.h>
+-#include <asm/proto.h>
+-#include <asm/tlbflush.h>
+-
+-/* --------------------------------------------------------------------------
+-                              Low-Level Sleep Support
+-   -------------------------------------------------------------------------- */
+-
+-/* address in low memory of the wakeup routine. */
+-unsigned long acpi_wakeup_address = 0;
+-unsigned long acpi_realmode_flags;
+-extern char wakeup_start, wakeup_end;
+-
+-extern unsigned long acpi_copy_wakeup_routine(unsigned long);
+-
+-/**
+- * acpi_save_state_mem - save kernel state
+- *
+- * Create an identity mapped page table and copy the wakeup routine to
+- * low memory.
+- */
+-int acpi_save_state_mem(void)
+-{
+-	memcpy((void *)acpi_wakeup_address, &wakeup_start,
+-	       &wakeup_end - &wakeup_start);
+-	acpi_copy_wakeup_routine(acpi_wakeup_address);
+-
+-	return 0;
+-}
+-
+-/*
+- * acpi_restore_state
+- */
+-void acpi_restore_state_mem(void)
+-{
+-}
+-
+-/**
+- * acpi_reserve_bootmem - do _very_ early ACPI initialisation
+- *
+- * We allocate a page in low memory for the wakeup
+- * routine for when we come back from a sleep state. The
+- * runtime allocator allows specification of <16M pages, but not
+- * <1M pages.
+- */
+-void __init acpi_reserve_bootmem(void)
+-{
+-	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
+-	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
+-		printk(KERN_CRIT
+-		       "ACPI: Wakeup code way too big, will crash on attempt"
+-		       " to suspend\n");
+-}
+-
+-static int __init acpi_sleep_setup(char *str)
+-{
+-	while ((str != NULL) && (*str != '\0')) {
+-		if (strncmp(str, "s3_bios", 7) == 0)
+-			acpi_realmode_flags |= 1;
+-		if (strncmp(str, "s3_mode", 7) == 0)
+-			acpi_realmode_flags |= 2;
+-		if (strncmp(str, "s3_beep", 7) == 0)
+-			acpi_realmode_flags |= 4;
+-		str = strchr(str, ',');
+-		if (str != NULL)
+-			str += strspn(str, ", \t");
+-	}
+-	return 1;
+-}
+-
+-__setup("acpi_sleep=", acpi_sleep_setup);
