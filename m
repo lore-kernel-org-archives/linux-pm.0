@@ -1,18 +1,18 @@
-From: Yi Yang <yi.y.yang@intel.com>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] base: Change power/wakeup output from "" to
 	"unsupported" if wakeup feature isn't supported by a device
-Date: Mon, 07 Jan 2008 10:05:45 +0800
-Message-ID: <1199671545.3551.16.camel__27052.8803150684$1199672571$gmane$org@yangyi-dev.bj.intel.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	<20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<1199669879.19185.20.camel@yangyi-dev.bj.intel.com>
-	<200801070257.58884.rjw@sisk.pl>
-Reply-To: yi.y.yang@intel.com
+Date: Sun, 6 Jan 2008 19:49:43 -0800
+Message-ID: <200801061949.44408.david-b__31000.162222381$1199677871$gmane$org@pacbell.net>
+References: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20080104165214.GA30672@dspnet.fr.eu.org>
+	<1199670923.3551.10.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801070257.58884.rjw@sisk.pl>
+In-Reply-To: <1199670923.3551.10.camel@yangyi-dev.bj.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: yi.y.yang@intel.com
+Cc: linux-pm@lists.linux-foundation.org, Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2008-01-07 at 02:57 +0100, Rafael J. Wysocki wrote:
-> On Monday, 7 of January 2008, Yi Yang wrote:
-> > On Fri, 2008-01-04 at 08:09 -0800, David Brownell wrote:
-> > > > > This patch changes empty output to "unsupported" in order that a user knows
-> > > > > wakeup feature isn't supported by this device when he/she
-> > > > > 'cat /sys/devices/.../power/wakeup', please consider to apply,
-> > > > > thanks.
-> > > >
-> > > > What about simply removing "wakuep" file if wakeup is not supported?
-> > > 
-> > > It may not *stay* unsupported, so I think changing it in either
-> > > of those permanent ways would be confusing/misleading.
-> > > 
-> > > For example, USB devices have multiple states ... minimally, an
-> > > unconfigured state, and a configured state.  Some have multiple
-> > > configurations.  Only configured states can be wakeup-capable.
-> > > So a given device might have three states, but support wakeup
-> > > except in one of them...
-> > If so, we can change "unsupported" to "unconfigurable" or "inoperable"
-> > which can cover the states "unconfigured", "unsupported" and other
-> > unknown states. :-).
+On Sunday 06 January 2008, Yi Yang wrote:
 > 
-> The main problem with your patch is that is changes a documented behavior
-> visible by the user space.  That should be done very cautiously.
-Which applications are using this interface? if they assume "\n" means
-the unconfigurable or unavailable state, this is very fragile.
-> 
-> Thanks,
-> Rafael
+> > How about not changing a userland-visible interface gratuitously?
+>
+> "empty" can't tell a user the state of wakeup of a device, so it is
+> necessary to change it.
+
+Words don't say anything at all in isolation.  For example,
+here the current tristate behavior has been documented for
+several years now ... and that's the only thing that could
+have conveyed any meaning whatever.
+
+I can't agree that it's even slightly "necessary" to make
+such a grutuitous and backwards-incompatible change.
