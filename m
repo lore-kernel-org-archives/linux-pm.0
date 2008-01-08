@@ -1,42 +1,55 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] Implementation of SCSI dynamic power management
-Date: Tue, 8 Jan 2008 16:30:48 +0100
-Message-ID: <200801081630.49376.oliver__7450.81140562451$1199806313$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0801081013090.2643-100000@iolanthe.rowland.org>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC] sleepy linux
+Date: Tue, 8 Jan 2008 17:37:44 +0100
+Message-ID: <20080108163744.GB13746@elte.hu>
+References: <20071225230731.GA29030@elf.ucw.cz> <20071230111552.GA8578@elte.hu> <20080105215123.GA21565@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801081013090.2643-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762050AbYAHQiY@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+In-Reply-To: <20080105215123.GA21565@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 8. Januar 2008 16:16:43 schrieb Alan Stern:
-> > What about the SG_IO ioctl() ? It seems to me that you must not autos=
-uspend
-> > a device after that ioctl() has been used until the file handle is cl=
-osed.
->=20
-> That's an open problem. =A0The patch does block autosuspends as long as=
-=20
-> an sg file handle is open, but that won't help with ioctl requests=20
-> through the block device.
->=20
-> Can you write an additional patch to fix this?
 
-I'll work on that.
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-	Regards
-		Oliver
+> > a quick feature request: could you please make the wake-on-RTC 
+> > capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config 
+> > option (disabled by default) that does a short 1-second 
+> > suspend-to-RAM sequence upon bootup? That way we could test s2ram 
+> > automatically (which is a MUCH needed feature for automated 
+> > regression testing and automatic bisection). In addition, some sort 
+> > of 'suspend for N seconds' /sys or /dev/rtc capability would be nice 
+> > as well.
+> 
+> Hmm, are you sure it is good idea to do this from kernel? I guess this 
+> is better done from script...
+
+i have this low-prio effort to make all self-checks automatically 
+available via 'make randconfig' as well, for all features that have no 
+natural exposure during normal bootup. So far we've got rcutorture, 
+kprobes-check, locking/lockdep-self-test and a handful of others. 
+External scripts tend to go out of sync and LTP takes way too much time 
+to finish.
+
+> > btw., how far are you from having a working prototype?
+> 
+> SCSI/SATA issues stop me just now, but even if I get that to work, it 
+> will be extremely disgusting hack... and it is unclear how to do it 
+> nicely :-(.
+
+as long as the sleep periods are within say 10-20 seconds, and our s2ram 
+cycle is fast and optimal enough, we could do this with networking 
+enabled too, without dropping/stalling TCP connections left and right.
+
+(Perhaps if we could notify routers that they should batch packets for N 
+seconds and we could turn off PHY during that time, it would be even 
+nicer - is there any such router extension in existence?)
+
+but if it's nothing else but a s2ram debug/stress utility, that alone 
+would be great too :-)
+
+	Ingo
