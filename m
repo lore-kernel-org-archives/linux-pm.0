@@ -1,55 +1,201 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] sleepy linux
-Date: Tue, 8 Jan 2008 17:37:44 +0100
-Message-ID: <20080108163744.GB13746@elte.hu>
-References: <20071225230731.GA29030@elf.ucw.cz> <20071230111552.GA8578@elte.hu> <20080105215123.GA21565@elf.ucw.cz>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Analysis of sched_mc_power_savings
+Date: Tue, 8 Jan 2008 23:08:15 +0530
+Message-ID: <20080108173815.GA7793__9489.37255093387$1199814083$gmane$org@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762050AbYAHQiY@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080105215123.GA21565@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: discuss@LessWatts.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Chanda Sethia <chanda.sethia@in.ibm.com>, suresh.b.siddha@intel.com, Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+The following experiments were conducted on a two socket dual core
+intel processor based machine in order to understand the impact of
+sched_mc_power_savings scheduler heuristics.
 
-> > a quick feature request: could you please make the wake-on-RTC 
-> > capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config 
-> > option (disabled by default) that does a short 1-second 
-> > suspend-to-RAM sequence upon bootup? That way we could test s2ram 
-> > automatically (which is a MUCH needed feature for automated 
-> > regression testing and automatic bisection). In addition, some sort 
-> > of 'suspend for N seconds' /sys or /dev/rtc capability would be nice 
-> > as well.
-> 
-> Hmm, are you sure it is good idea to do this from kernel? I guess this 
-> is better done from script...
+Kernel linux-2.6.24-rc6:
 
-i have this low-prio effort to make all self-checks automatically 
-available via 'make randconfig' as well, for all features that have no 
-natural exposure during normal bootup. So far we've got rcutorture, 
-kprobes-check, locking/lockdep-self-test and a handful of others. 
-External scripts tend to go out of sync and LTP takes way too much time 
-to finish.
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
 
-> > btw., how far are you from having a working prototype?
-> 
-> SCSI/SATA issues stop me just now, but even if I get that to work, it 
-> will be extremely disgusting hack... and it is unclear how to do it 
-> nicely :-(.
+tick-sched.c has been instrumented to collect idle entry and exit time
+stamps.
 
-as long as the sleep periods are within say 10-20 seconds, and our s2ram 
-cycle is fast and optimal enough, we could do this with networking 
-enabled too, without dropping/stalling TCP connections left and right.
+Instrumentation patch:
 
-(Perhaps if we could notify routers that they should batch packets for N 
-seconds and we could turn off PHY during that time, it would be even 
-nicer - is there any such router extension in existence?)
+Instrument tick-sched nohz code and generate time stamp trace data.
 
-but if it's nothing else but a s2ram debug/stress utility, that alone 
-would be great too :-)
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
+ kernel/time/tick-sched.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-	Ingo
+--- linux-2.6.24-rc6.orig/kernel/time/tick-sched.c
++++ linux-2.6.24-rc6/kernel/time/tick-sched.c
+@@ -20,6 +20,7 @@
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+ #include <linux/tick.h>
++#include <linux/ktrace.h>
+ 
+ #include <asm/irq_regs.h>
+ 
+@@ -200,7 +201,10 @@ void tick_nohz_stop_sched_tick(void)
+ 	if (ts->tick_stopped) {
+ 		delta = ktime_sub(now, ts->idle_entrytime);
+ 		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
+-	}
++		ktrace_log2(KT_FUNC_tick_nohz_stop_sched_tick, KT_EVENT_INFO1,
++					ktime_to_ns(now), ts->idle_calls);
+>>>>>>>>>>>>>>>>Tracepoint A
+
++	} else
++		ktrace_log2(KT_FUNC_tick_nohz_stop_sched_tick,
+				KT_EVENT_FUNC_ENTER, ktime_to_ns(now), 0);
+ 
+>>>>>>>>>>>>>>>>Tracepoint B
+
+ 	ts->idle_entrytime = now;
+ 	ts->idle_calls++;
+@@ -391,6 +395,8 @@ void tick_nohz_restart_sched_tick(void)
+ 		tick_do_update_jiffies64(now);
+ 		now = ktime_get();
+ 	}
++	ktrace_log2(KT_FUNC_tick_nohz_restart_sched_tick, KT_EVENT_FUNC_EXIT,
++				ktime_to_ns(now), ts->idle_calls);
+>>>>>>>>>>>>>>>>Tracepoint C
+ 	local_irq_enable();
+ }
+
+The idle time collected are time stamp at (C) minus (B). This is the
+time interval between stopping ticks and restarting ticks in an idle
+system.
+
+Complete patch series:
+http://svaidy.googlepages.com/1-klog.patch
+http://svaidy.googlepages.com/1-trace-sched.patch
+
+Userspace program to extract trace data:
+http://svaidy.googlepages.com/1-klog.c
+
+Python script to post process binary trace data:
+http://svaidy.googlepages.com/1-sched-stats.py
+
+Gnuplot scripts that was used to generate the graphs:
+http://svaidy.googlepages.com/1-multiplot.gp
+
+The scheduler heuristics for multi core system
+/sys/devices/system/cpu/sched_mc_power_savings should ideally extend
+the cpu tickless idle time atleast on few CPU in an SMP machine.
+
+However in the experiment it was found that turning on
+sched_mc_power_savings marginally increased the idle time in only some
+of the CPUs.
+
+Experiment 1:
+-------------
+
+Setup:
+
+* yum-updated and irqbalance daemon was stopped to reduce the idle
+  wakeup rate
+* All irqs manually routed to CPU0 only (hoping this will keep other
+  CPUs idle) (http://svaidy.googlepages.com/1-irq-config.txt)
+* Powertop shows around 35 wakeups per second during idle
+  (http://svaidy.googlepages.com/1-powertop-screen.txt)
+* The trace of idle time stamps was collected for 120 seconds with the
+  system in idle state
+
+Results:
+
+There are 4 png files that plots the idle time for each CPU in the
+system.  
+
+Please get the graphs from the following URLs
+
+http://svaidy.googlepages.com/1-idle-cpu0.png
+http://svaidy.googlepages.com/1-idle-cpu1.png
+http://svaidy.googlepages.com/1-idle-cpu2.png
+http://svaidy.googlepages.com/1-idle-cpu3.png
+
+Each png file has 4 graphs plotted that is relevant to one CPU
+
+* Right-top plot is the idle time sample obtained during the
+  experiment
+* Left-top graph is histogram of right top plot
+* The bottom graphs corresponding to idle times when
+  sched_mc_power_savings=1
+
+Observations with sched_mc_power_savings=1:
+
+* No major impact of sched_mc_power_savings on CPU0 and CPU1
+* Significant idle time improvement on CPU2
+* However, significant idle time reduction on CPU3
+
+Experiment 2:
+-------------
+
+Setup:
+
+* USB stopped
+* Most daemons like yum-updatesd, hal, autofs, syslog, crond, irqbalance,
+  sendmail, pcscd were stopped  
+* Interrupt routing left to default but irqbalance daemon stopped  
+* Powertop shows around 4 wakeups per second during idle
+  (http://svaidy.googlepages.com/2-powertop-screen.txt) 
+* The trace of idle time stamps was collected for 120 seconds with the
+  system in idle state
+
+Results:
+
+There are 4 png files that plots the idle time for each CPU in the
+system.  
+
+http://svaidy.googlepages.com/2-idle-cpu0.png
+http://svaidy.googlepages.com/2-idle-cpu1.png
+http://svaidy.googlepages.com/2-idle-cpu2.png
+http://svaidy.googlepages.com/2-idle-cpu3.png
+
+The details of the plot are same as the previous experiment.
+
+Observations with sched_mc_power_savings=1:
+
+* No major impact of sched_mc_power_savings on CPU0 and CPU1
+* Good idle time improvement on CPU2 and CPU3
+
+Please review the experiment and comment on how the effectiveness of
+sched_mc_power_savings can be analysed.  
+
+At very very low wakeup count of ~4 per second on 4 CPU system gave
+good idle time result when sched_mc_power_savings is enabled.
+
+However the results are not as expected even at a marginal wakeup
+count of ~35 per second.  
+
+Please let us know your comments and suggestions on the experiment or
+results.  
+
+Do we have similar analysis and data on scheduler heuristics for power
+savings.
+
+Thanks,
+Vaidy
