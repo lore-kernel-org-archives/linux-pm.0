@@ -1,38 +1,69 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Implementation of SCSI dynamic power management
-Date: Tue, 8 Jan 2008 13:51:04 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801081349510.4804-100000__4534.25223608992$1199819178$gmane$org@iolanthe.rowland.org>
-References: <4783BBC0.2070802@s5r6.in-berlin.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Tue, 8 Jan 2008 20:15:20 +0100
+Message-ID: <20080108191519.GA1690@elf.ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <20071230111552.GA8578@elte.hu> <20080105215123.GA21565@elf.ucw.cz> <20080108163744.GB13746@elte.hu>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4783BBC0.2070802@s5r6.in-berlin.de>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755775AbYAHTPd@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080108163744.GB13746@elte.hu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Jan 2008, Stefan Richter wrote:
-
-> > How about something more like this:
-> > 
-> > *	Resume (return to an operational power level) the specified host,
-> > *	and prevent autosuspends from other software layers until the
-> > *	template autosuspend method has been called again.
-> > *	Return 0 if the resume was successful, otherwise a negative
-> > *	error code.
+Hi!
 > 
-> Who prevents them?  The autoresume() implementation, or its caller?
+> > > a quick feature request: could you please make the wake-on-RTC 
+> > > capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config 
+> > > option (disabled by default) that does a short 1-second 
+> > > suspend-to-RAM sequence upon bootup? That way we could test s2ram 
+> > > automatically (which is a MUCH needed feature for automated 
+> > > regression testing and automatic bisection). In addition, some sort 
+> > > of 'suspend for N seconds' /sys or /dev/rtc capability would be nice 
+> > > as well.
+> > 
+> > Hmm, are you sure it is good idea to do this from kernel? I guess this 
+> > is better done from script...
+> 
+> i have this low-prio effort to make all self-checks automatically 
+> available via 'make randconfig' as well, for all features that have no 
+> natural exposure during normal bootup. So far we've got rcutorture, 
+> kprobes-check, locking/lockdep-self-test and a handful of others. 
+> External scripts tend to go out of sync and LTP takes way too much time 
+> to finish.
 
-The autoresume implementation.  This comment explains what the function 
-is supposed to do, not what its caller does.
+Well, I can give you a three liner, and if it stops working, I'll
+treat is as a regression, because userland ABI changed...?
 
-Alan Stern
+Or you can get about 10 lines of C, no problem, but I do not think
+that should be merged to Linus.
+
+> > > btw., how far are you from having a working prototype?
+> > 
+> > SCSI/SATA issues stop me just now, but even if I get that to work, it 
+> > will be extremely disgusting hack... and it is unclear how to do it 
+> > nicely :-(.
+> 
+> as long as the sleep periods are within say 10-20 seconds, and our s2ram 
+> cycle is fast and optimal enough, we could do this with networking 
+> enabled too, without dropping/stalling TCP connections left and
+> right.
+
+I do not think TCP would survive "10 seconds sleep, 1 second up". But...
+
+> (Perhaps if we could notify routers that they should batch packets for N 
+> seconds and we could turn off PHY during that time, it would be even 
+> nicer - is there any such router extension in existence?)
+
+...yes, we should probably play with the routers.
+
+> but if it's nothing else but a s2ram debug/stress utility, that alone 
+> would be great too :-)
+
+ I expect to stress s2ram way too much ;-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
