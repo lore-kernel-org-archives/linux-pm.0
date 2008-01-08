@@ -1,43 +1,53 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: USB D3 vs system S3
-Date: Tue, 8 Jan 2008 13:55:30 -0800
-Message-ID: <200801081355.31154.david-b@pacbell.net>
-References: <200801081547.00473.lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Re: [RFC] Implementation of SCSI dynamic power
+	management
+Date: Tue, 8 Jan 2008 21:24:30 +0000
+Message-ID: <20080108212430.GB5050__89.0620322481439$1199830159$gmane$org@ucw.cz>
+References: <200801072131.05755.oliver@neukum.org>
+	<Pine.LNX.4.44L0.0801071632180.6739-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200801081547.00473.lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, gregkh@suse.de, linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0801071632180.6739-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 08 January 2008, Len Brown wrote:
-> FYI,
-> I think we may have an issue here where the entire Linux suspend order
-> is being proposed to change, when in fact the underlying issue
-> may really be that USB is in D3 on S3 for this box when it is
-> not supposed to be deeper below D1.
+
+> > > When all the devices under a host are suspended, the LLD is informed 
+> > > (via a new "autosuspend" method in the host template) so that it can
+> > 
+> > That is most certainly a mistake.
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9528
+> Why?
 > 
+> > Is there a good reason to not modify
+> > to extend suspend() to take an extra argument for the reason it is called?
+> 
+> In fact suspend methods already do take an argument specifying the
+> reason they were called.  It wouldn't be hard to add a couple of extra 
+> PM_EVENT_* values for manual suspend and autosuspend.  The problem is 
+> that resume methods don't take a corresponding argument.
 
-I still run my system with those patches to hook up PCI and USB
-wakeup mechanisms to the ACPI tables.  ISTR that they got pulled
-at some point because they caused some system to wake up immediately
-instead of suspending ... sound familiar?
+Well, you could store the value in struct device or something.
 
-If that immediate-wake problem is now otherwise resolved, maybe it's
-time to revisit the merge of those patches.  (From *LAST* January
-I think, in at least one otherwise-mergeable incarnation ...)
+There's other problem: if autosuspend is != NULL, you know device
+supports autosuspend.
 
-In the absense of those patches, nothing is hooking up USB to
-the relevant ACPI tables.
+If you call existing suspend(PMSG_AUTOSUSPEND), and driver does not
+support it, it will crash and burn.
+							Pavel
 
-Want I should repost my latest version of those patches?  They
-apply cleanly against RC7.
-
-- Dave
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
