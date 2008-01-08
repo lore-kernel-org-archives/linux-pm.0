@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [RFC] Implementation of SCSI dynamic power management
-Date: Tue, 8 Jan 2008 10:06:53 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801081004400.2643-100000__4200.79717082462$1199804893$gmane$org@iolanthe.rowland.org>
-References: <200801081442.09354.oliver@neukum.org>
+Date: Tue, 8 Jan 2008 16:10:48 +0100
+Message-ID: <200801081610.48901.oliver__26362.7383312725$1199805103$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0801081004400.2643-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801081442.09354.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801081004400.2643-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Jan 2008, Oliver Neukum wrote:
+Am Dienstag, 8. Januar 2008 16:06:53 schrieb Alan Stern:
+> Eventually parts of the autosuspend mechanism will go there. =A0But fir=
+st
+> I thought we should have a proof-of-concept version working for at
+> least two different subsystems (such as SCSI and USB), so that we can
+> understand what should go into the generic layer and what should stay
+> out.
 
-> Am Dienstag, 8. Januar 2008 04:56:03 schrieb Alan Stern:
-> > > You'll have to add this method whenever a new subsystem is affected
-> > > by power management.
-> >=20
-> > Sorry, I don't understand your point. =A0If you mean that we'll have =
-to
-> > add autosuspend and autoresume code to every driver that wants to
-> > support autosuspend, I agree. =A0There doesn't seem to be any way aro=
-und
-> > it. =A0Note that the code added by the companion usb-storage patch is=
-=20
-> > pretty small.
->=20
-> OK, you've convinced me.
-> But I'd be happier if you put the notification into the generic device =
-code.
+Fine by me.
 
-Eventually parts of the autosuspend mechanism will go there.  But first
-I thought we should have a proof-of-concept version working for at
-least two different subsystems (such as SCSI and USB), so that we can
-understand what should go into the generic layer and what should stay
-out.
-
-Alan Stern
+	Regards
+		Oliver
