@@ -1,38 +1,167 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Re: Unify arch/x86/kernel/acpi/sleep*.c
-Date: Tue, 8 Jan 2008 01:48:13 +0100
-Message-ID: <200801080148.14208.rjw@sisk.pl>
-References: <20080107122305.GA11062@elf.ucw.cz> <200801071741.02577.rjw@sisk.pl>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: Suspend code ordering (again)
+Date: Tue, 08 Jan 2008 11:03:14 +0800
+Message-ID: <1199761394.28914.1.camel__1141.11672523922$1199761459$gmane$org@sli10-desk.sh.intel.com>
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
+	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no> <4773E9EE.40107@shaw.ca>
+	<200712272100.20282.rjw@sisk.pl>  <47744291.30100@shaw.ca>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755968AbYAHAq3@vger.kernel.org>
-In-Reply-To: <200801071741.02577.rjw@sisk.pl>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-vOebPy0ZK62EbU+isXKW"
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <47744291.30100@shaw.ca>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 of January 2008, Rafael J. Wysocki wrote:
-> On Monday, 7 of January 2008, Pavel Machek wrote:
-> > Unify arch/x86/kernel/acpi/sleep*.c
-> > 
-> > Pretty trivial unification; when two functions differed, it was
-> > usually in error handling, and better of the two was picked up.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> Looks-okay-to: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> > ---
-> > 
-> > (Seems to work on i386, but needs some x86-64 testing.)
-> 
-> I'll test it later today.
 
-Tested, works.
+--=-vOebPy0ZK62EbU+isXKW
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+
+On Fri, 2007-12-28 at 08:25 +0800, Robert Hancock wrote:
+> Rafael J. Wysocki wrote: 
+> >> Also, as was pointed out, pre-Vista versions of Windows follow ACPI
+> 1.0 
+> >> and Vista follows 3.0, so 2.0 doesn't really matter since BIOS
+> people 
+> >> won't test against it. 1.0 specifies that _PTS is to be called
+> before 
+> >> suspending devices and 3.0 says that the AML must not depend on
+> any 
+> >> specific device power state, so in both cases it should be safe to
+> call 
+> >> _PTS before suspending, no? 
+> > 
+> > Well, IMO, if we take one option only (whichever that is) and there
+> are systems 
+> > that follow the other one, they will likely break. 
+> > 
+> > Apart from this, there are BIOSes that openly claim ACPI 2.0 support
+> (for 
+> > example, the one in my HP nx6325 does that) and they may actually
+> prefer the 
+> > post-ACPI-1.0 ordering even if they work with the pre-ACPI-2.0 one.
+> 
+> I doubt they would prefer the later ordering in any way that matters,
+> if 
+> the Windows version they were designed for uses the earlier ordering.
+> 
+> It would be best if somebody could manage to find out what ordering 
+> Windows XP (and Windows Vista, for good measure) actually use, then
+> we 
+> could just use that. Virtual machine trickery might be an option -
+> the 
+> only complication being that it'll be using the DSDT for the fake 
+> machine and not the real one..
+I modified Qemu and use it to observe how winxp does suspend/resume. So
+far, I just get some data for s4 suspend. I did have some interesting
+finding.
+
+1. xp seems not save pci config space. Or it appears just save config
+PCICMD.
+2. the order winxp does looks like
+	a. save config (PCICMD), put device to D3 (it appears only for ne2000
+NIC)
+	b. _PTS
+	c. write mem to disk
+	d. write ACPI PM1_control register, then system shutdown
+3. xp write ACPI GBL_EN bit just after _PTS (for both S4/S5), don't know
+why
+
+Attached is the log winxp does s4 suspend, it only includes pci config
+read/write and ACPI register read/write.
+
+I managed to make xp enter S3, but fails, so can't get the data for S3
+so far. Anybody has other ideas which need to verify winxp, pls let me
+know.
 
 Thanks,
-Rafael
+Shaohua
+
+--=-vOebPy0ZK62EbU+isXKW
+Content-Disposition: attachment; filename=xplog
+Content-Type: text/plain; name=xplog; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+PCI NE2000 read addr 4, val 7
+PCI NE2000 read addr 50, val 1
+PCI NE2000 read addr 52, val c9c2
+PCI NE2000 read addr 54, val 8000
+PCI NE2000 write addr 54, val 8003
+PCI NE2000 read addr 54, val 8003
+PCI NE2000 read addr 4, val 7
+PCI NE2000 write addr 4, val 0
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 0, val 71138086
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 64, val 8000000
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 0, val 71138086
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 64, val 8000000
+PCI Cirrus VGA read addr 4, val 7
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PIIX3 IDE read addr 4, val 7
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 0, val 71138086
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 5c, val 90000000
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 0, val 71138086
+PCI PIIX3 read addr 0, val 70008086
+PCI PIIX3 read addr 4, val 7
+PCI PIIX3 read addr 8, val 6010000
+PCI PIIX3 read addr c, val 800000
+PCI PM read addr 5c, val 90000000
+ACPI: DBG: 0x00000002
+PM readw port=0x0002 val=0xb002
+PM writew port=0x0002 val=0x0020
+PM readw port=0x0002 val=0xb002
+PM readw port=0x0004 val=0xb004
+PM readw port=0x0004 val=0xb004
+PM writew port=0x0004 val=0x2801
+type 2
+
+--=-vOebPy0ZK62EbU+isXKW
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--=-vOebPy0ZK62EbU+isXKW--
