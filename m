@@ -1,14 +1,12 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: Suspend code ordering (again)
-Date: Tue, 08 Jan 2008 11:03:14 +0800
-Message-ID: <1199761394.28914.1.camel__1141.11672523922$1199761459$gmane$org@sli10-desk.sh.intel.com>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
-	<fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no> <4773E9EE.40107@shaw.ca>
-	<200712272100.20282.rjw@sisk.pl>  <47744291.30100@shaw.ca>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Implementation of SCSI dynamic power management
+Date: Mon, 7 Jan 2008 22:56:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801072235110.30331-100000__12010.8455922038$1199764640$gmane$org@netrider.rowland.org>
+References: <200801072306.56227.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-vOebPy0ZK62EbU+isXKW"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47744291.30100@shaw.ca>
+In-Reply-To: <200801072306.56227.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,150 +16,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 7 Jan 2008, Oliver Neukum wrote:
 
---=-vOebPy0ZK62EbU+isXKW
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-
-On Fri, 2007-12-28 at 08:25 +0800, Robert Hancock wrote:
-> Rafael J. Wysocki wrote: 
-> >> Also, as was pointed out, pre-Vista versions of Windows follow ACPI
-> 1.0 
-> >> and Vista follows 3.0, so 2.0 doesn't really matter since BIOS
-> people 
-> >> won't test against it. 1.0 specifies that _PTS is to be called
-> before 
-> >> suspending devices and 3.0 says that the AML must not depend on
-> any 
-> >> specific device power state, so in both cases it should be safe to
-> call 
-> >> _PTS before suspending, no? 
+> Am Montag, 7. Januar 2008 22:34:52 schrieb Alan Stern:
+> > On Mon, 7 Jan 2008, Oliver Neukum wrote:
 > > 
-> > Well, IMO, if we take one option only (whichever that is) and there
-> are systems 
-> > that follow the other one, they will likely break. 
+> > > Am Montag, 7. Januar 2008 20:42:23 schrieb Alan Stern:
+> > > > When all the devices under a host are suspended, the LLD is informed 
+> > > > (via a new "autosuspend" method in the host template) so that it can
+> > > 
+> > > That is most certainly a mistake.
 > > 
-> > Apart from this, there are BIOSes that openly claim ACPI 2.0 support
-> (for 
-> > example, the one in my HP nx6325 does that) and they may actually
-> prefer the 
-> > post-ACPI-1.0 ordering even if they work with the pre-ACPI-2.0 one.
+> > Why?
 > 
-> I doubt they would prefer the later ordering in any way that matters,
-> if 
-> the Windows version they were designed for uses the earlier ordering.
-> 
-> It would be best if somebody could manage to find out what ordering 
-> Windows XP (and Windows Vista, for good measure) actually use, then
-> we 
-> could just use that. Virtual machine trickery might be an option -
-> the 
-> only complication being that it'll be using the DSDT for the fake 
-> machine and not the real one..
-I modified Qemu and use it to observe how winxp does suspend/resume. So
-far, I just get some data for s4 suspend. I did have some interesting
-finding.
+> You'll have to add this method whenever a new subsystem is affected
+> by power management.
 
-1. xp seems not save pci config space. Or it appears just save config
-PCICMD.
-2. the order winxp does looks like
-	a. save config (PCICMD), put device to D3 (it appears only for ne2000
-NIC)
-	b. _PTS
-	c. write mem to disk
-	d. write ACPI PM1_control register, then system shutdown
-3. xp write ACPI GBL_EN bit just after _PTS (for both S4/S5), don't know
-why
+Sorry, I don't understand your point.  If you mean that we'll have to
+add autosuspend and autoresume code to every driver that wants to
+support autosuspend, I agree.  There doesn't seem to be any way around
+it.  Note that the code added by the companion usb-storage patch is 
+pretty small.
 
-Attached is the log winxp does s4 suspend, it only includes pci config
-read/write and ACPI register read/write.
+> Besides what are the semantics of this method?
 
-I managed to make xp enter S3, but fails, so can't get the data for S3
-so far. Anybody has other ideas which need to verify winxp, pls let me
-know.
+The semantics are simple.  The SCSI midlayer calls the autosuspend
+method when all the host's devices are suspended and the host's usage
+count becomes <= 0 (redundant, since each non-suspended device
+contributes to the usage count).  The midlayer calls the autoresume
+method whenever the host's usage count rises from 0 to 1.
 
-Thanks,
-Shaohua
+(There are a few exceptions, such as when the host is being removed.  
+We don't have to worry about them now.)
 
---=-vOebPy0ZK62EbU+isXKW
-Content-Disposition: attachment; filename=xplog
-Content-Type: text/plain; name=xplog; charset=utf-8
-Content-Transfer-Encoding: 7bit
+To put it another way, the autosuspend method tells the LLD that it 
+_may_ autosuspend the host adapter, not that it _must_.  However the 
+autoresume method does mean that the LLD _must_ attempt an immediate 
+autoresume (the attempt is allowed to fail).
 
-PCI NE2000 read addr 4, val 7
-PCI NE2000 read addr 50, val 1
-PCI NE2000 read addr 52, val c9c2
-PCI NE2000 read addr 54, val 8000
-PCI NE2000 write addr 54, val 8003
-PCI NE2000 read addr 54, val 8003
-PCI NE2000 read addr 4, val 7
-PCI NE2000 write addr 4, val 0
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 0, val 71138086
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 64, val 8000000
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 0, val 71138086
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 64, val 8000000
-PCI Cirrus VGA read addr 4, val 7
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PIIX3 IDE read addr 4, val 7
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 0, val 71138086
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 5c, val 90000000
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 0, val 71138086
-PCI PIIX3 read addr 0, val 70008086
-PCI PIIX3 read addr 4, val 7
-PCI PIIX3 read addr 8, val 6010000
-PCI PIIX3 read addr c, val 800000
-PCI PM read addr 5c, val 90000000
-ACPI: DBG: 0x00000002
-PM readw port=0x0002 val=0xb002
-PM writew port=0x0002 val=0x0020
-PM readw port=0x0002 val=0xb002
-PM readw port=0x0004 val=0xb004
-PM readw port=0x0004 val=0xb004
-PM writew port=0x0004 val=0x2801
-type 2
+> May suspend() be called after autosuspend() ?
 
---=-vOebPy0ZK62EbU+isXKW
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Your question contains a layering violation: The SCSI host template 
+doesn't contain a suspend method.
 
+Do you mean to ask whether, for example, a PCI host adapter driver's 
+PCI-suspend method could be called after its SCSI-autosuspend method?  
+In general yes, but it depends on exactly what the autosuspend method 
+does.
 
---=-vOebPy0ZK62EbU+isXKW--
+> If not, will resume() be
+> called or autoresume() ?
+
+Let's take USB as a representative example (since it is the _only_
+example at the moment).  The SCSI core will call usb-storage's
+autosuspend method when the SCSI device is suspended.  In turn, the
+method calls usb_autopm_put_interface().  This starts a timer that
+will, after 2 seconds, call usb-storage's suspend method and actually
+suspend the USB port.
+
+Or consider what happens during a system resume.  The PM core will
+first resume the USB device, which causes usb-storage's resume method
+to be invoked.  A little later the PM core will resume the SCSI device,
+which is lower in the device tree.  This will cause the SCSI midlayer
+to call usb-storage's autoresume method, which will call
+usb_autopm_get_interface() -- thereby preventing the USB device from
+autosuspending 2 seconds after it was resumed.
+
+Does that answer your questions?
+
+Alan Stern
