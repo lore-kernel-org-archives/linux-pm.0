@@ -1,15 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [RFC] Implementation of SCSI dynamic power
-	management
-Date: Tue, 8 Jan 2008 21:24:30 +0000
-Message-ID: <20080108212430.GB5050__89.0620322481439$1199830159$gmane$org@ucw.cz>
-References: <200801072131.05755.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0801071632180.6739-100000@iolanthe.rowland.org>
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: Analysis of sched_mc_power_savings
+Date: Tue, 8 Jan 2008 13:24:00 -0800
+Message-ID: <20080108212400.GA8903__9732.76517256654$1199836141$gmane$org@linux-os.sc.intel.com>
+References: <20080108173815.GA7793@dirshya.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0801071632180.6739-100000@iolanthe.rowland.org>
+In-Reply-To: <20080108173815.GA7793@dirshya.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +17,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: discuss@LessWatts.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Dipankar Sarma <dipankar@in.ibm.c>
 List-Id: linux-pm@vger.kernel.org
 
-
-> > > When all the devices under a host are suspended, the LLD is informed 
-> > > (via a new "autosuspend" method in the host template) so that it can
-> > 
-> > That is most certainly a mistake.
+On Tue, Jan 08, 2008 at 11:08:15PM +0530, Vaidyanathan Srinivasan wrote:
+> Hi,
 > 
-> Why?
+> The following experiments were conducted on a two socket dual core
+> intel processor based machine in order to understand the impact of
+> sched_mc_power_savings scheduler heuristics.
+
+Thanks for these experiments. sched_mc_power_savings is mainly for
+the reasonably long(which can be caught by periodic load balance) running
+light load(when number of tasks < number of logical cpus).  This tunable
+will minimize the number of packages carrying load, enabling the other
+completely idle packages to go to the available deepest P and C states.
+
 > 
-> > Is there a good reason to not modify
-> > to extend suspend() to take an extra argument for the reason it is called?
+> The scheduler heuristics for multi core system
+> /sys/devices/system/cpu/sched_mc_power_savings should ideally extend
+> the cpu tickless idle time atleast on few CPU in an SMP machine.
+
+Not really. Ideally sched_mc_power_savings re-distributes the load(in
+the scenarios mentioned above) to different logical cpus in the system, so
+as to minimize the busy packages in the system.
+
+> Experiment 1:
+> -------------
+...
+> Observations with sched_mc_power_savings=1:
 > 
-> In fact suspend methods already do take an argument specifying the
-> reason they were called.  It wouldn't be hard to add a couple of extra 
-> PM_EVENT_* values for manual suspend and autosuspend.  The problem is 
-> that resume methods don't take a corresponding argument.
+> * No major impact of sched_mc_power_savings on CPU0 and CPU1
+> * Significant idle time improvement on CPU2
+> * However, significant idle time reduction on CPU3
 
-Well, you could store the value in struct device or something.
+In your setup, CPU0 and 3 are the core siblings? If so, this is probably
+expected. Previously there was some load distribution happening between
+packages. With sched_mc_power_savings, load is now getting distributed
+between cores in the same package. But on my systems, typically CPU0 and 2
+are core siblings. I will let you confirm your system topology, before we
+come to conclusions.
 
-There's other problem: if autosuspend is != NULL, you know device
-supports autosuspend.
+> Experiment 2:
+> -------------
+...
+> 
+> Observations with sched_mc_power_savings=1:
+> 
+> * No major impact of sched_mc_power_savings on CPU0 and CPU1
+> * Good idle time improvement on CPU2 and CPU3
 
-If you call existing suspend(PMSG_AUTOSUSPEND), and driver does not
-support it, it will crash and burn.
-							Pavel
+I would have expected similar results like in experiment-1. CPU3 data
+seems almost same with and without sched_mc_power_savings. Atleast the
+data is not significantly different as in other cases like CPU2 for ex.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Please review the experiment and comment on how the effectiveness of
+> sched_mc_power_savings can be analysed.  
+
+While we should see a no change or a simple redistribution(to minimize 
+busy packages) in your experiments, for evaluating sched_mc_power_savings,
+we can also use some lightly loaded system (like kernel-compilation or
+specjbb with 2 threads on  a DP with dual-core, for example and see how the
+load is distributed with and without MC power savings.)
+
+Similarly it will be interesting to see how this data varies with and without
+tickless.
+
+For some loads which can't be caught by periodic load balancer, we may
+not see any difference. But atleast we should not see any scheduling
+anomalies.
+
+thanks,
+suresh
