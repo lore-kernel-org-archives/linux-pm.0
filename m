@@ -1,91 +1,74 @@
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: Analysis of sched_mc_power_savings
-Date: Tue, 8 Jan 2008 13:24:00 -0800
-Message-ID: <20080108212400.GA8903__9732.76517256654$1199836141$gmane$org@linux-os.sc.intel.com>
-References: <20080108173815.GA7793@dirshya.in.ibm.com>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: USB D3 vs system S3
+Date: Wed, 9 Jan 2008 00:09:21 +0000
+Message-ID: <200801090009.22447.carlos@strangeworlds.co.uk>
+References: <200801081547.00473.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <200801081547.00473.lenb@kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20080108173815.GA7793@dirshya.in.ibm.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: discuss@LessWatts.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Dipankar Sarma <dipankar@in.ibm.c>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Len Brown <lenb@kernel.org>
+Cc: USB development list <linux-usb-devel@lists.sourceforge.net>, gregkh@suse.de, Linux-pm mailing list <linux-pm@lists.osdl.org>, David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 11:08:15PM +0530, Vaidyanathan Srinivasan wrote:
-> Hi,
-> 
-> The following experiments were conducted on a two socket dual core
-> intel processor based machine in order to understand the impact of
-> sched_mc_power_savings scheduler heuristics.
+On Tuesday 08 January 2008 20:47:00 Len Brown wrote:
+> FYI,
+> I think we may have an issue here where the entire Linux suspend order
+> is being proposed to change, when in fact the underlying issue
+> may really be that USB is in D3 on S3 for this box when it is
+> not supposed to be deeper below D1.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=9528
 
-Thanks for these experiments. sched_mc_power_savings is mainly for
-the reasonably long(which can be caught by periodic load balance) running
-light load(when number of tasks < number of logical cpus).  This tunable
-will minimize the number of packages carrying load, enabling the other
-completely idle packages to go to the available deepest P and C states.
+I respectfully disagree. The USB device that exhibits this behaviour (USB2, 
+the device that gets bound to ehci-hcd) is not the offender - the system will 
+suspend and resume just fine even after Linux has put it into D3.
 
-> 
-> The scheduler heuristics for multi core system
-> /sys/devices/system/cpu/sched_mc_power_savings should ideally extend
-> the cpu tickless idle time atleast on few CPU in an SMP machine.
+USB0 (the device that gets bound to ohci-hcd), does not have this requirement 
+that it can be only put into D1 when going to S3 - the DSDT here says it's 
+just fine to put this device into D3 when we advertise XP compatibility.
 
-Not really. Ideally sched_mc_power_savings re-distributes the load(in
-the scenarios mentioned above) to different logical cpus in the system, so
-as to minimize the busy packages in the system.
+As I pointed out in the bug:
 
-> Experiment 1:
-> -------------
-...
-> Observations with sched_mc_power_savings=1:
-> 
-> * No major impact of sched_mc_power_savings on CPU0 and CPU1
-> * Significant idle time improvement on CPU2
-> * However, significant idle time reduction on CPU3
+1) The ACPI suspend ordering is still wrong for suspend on ACPI 1.0 systems
 
-In your setup, CPU0 and 3 are the core siblings? If so, this is probably
-expected. Previously there was some load distribution happening between
-packages. With sched_mc_power_savings, load is now getting distributed
-between cores in the same package. But on my systems, typically CPU0 and 2
-are core siblings. I will let you confirm your system topology, before we
-come to conclusions.
+2) Based on poking around in Vista, it may also be required to disable 
+autosuspend for OHCI on CK804 (nForce 4), since Vista here apparently does 
+not enable USB autosuspend on the USB hubs on this board (yet enabling 
+autosuspend is supposedly the default Vista behaviour, and I've certainly 
+never touched the USB settings in Vista).
 
-> Experiment 2:
-> -------------
-...
-> 
-> Observations with sched_mc_power_savings=1:
-> 
-> * No major impact of sched_mc_power_savings on CPU0 and CPU1
-> * Good idle time improvement on CPU2 and CPU3
+Given we have two different BIOS's from different manufacturers for the same 
+chipset, that both have a similar SMI trap, and are both breaking here, I 
+wonder if this is a known problem with the reference nVidia BIOS; so Windows 
+will not put USB devices into D3 early on this chipset, to ensure that USB0 
+is not in a low power state before _PTS() is called (unfortunately, on point 
+2, I don't have enough to back it up either way, besides my own observations 
+here).
 
-I would have expected similar results like in experiment-1. CPU3 data
-seems almost same with and without sched_mc_power_savings. Atleast the
-data is not significantly different as in other cases like CPU2 for ex.
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
 
-> Please review the experiment and comment on how the effectiveness of
-> sched_mc_power_savings can be analysed.  
-
-While we should see a no change or a simple redistribution(to minimize 
-busy packages) in your experiments, for evaluating sched_mc_power_savings,
-we can also use some lightly loaded system (like kernel-compilation or
-specjbb with 2 threads on  a DP with dual-core, for example and see how the
-load is distributed with and without MC power savings.)
-
-Similarly it will be interesting to see how this data varies with and without
-tickless.
-
-For some loads which can't be caught by periodic load balancer, we may
-not see any difference. But atleast we should not see any scheduling
-anomalies.
-
-thanks,
-suresh
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
