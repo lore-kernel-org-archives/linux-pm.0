@@ -1,44 +1,40 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [RFC] Implementation of SCSI dynamic power
-	management
-Date: Wed, 9 Jan 2008 10:25:27 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801091022100.4468-100000__13921.4747622193$1199892581$gmane$org@iolanthe.rowland.org>
-References: <20080108212430.GB5050@ucw.cz>
+Subject: Re: USB D3 vs system S3
+Date: Wed, 9 Jan 2008 11:07:04 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801091105220.4652-100000@iolanthe.rowland.org>
+References: <200801091251.55883.carlos@strangeworlds.co.uk>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080108212430.GB5050@ucw.cz>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200801091251.55883.carlos@strangeworlds.co.uk>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Len Brown <lenb@kernel.org>, David Brownell <david-b@pacbell.net>, gregkh@suse.de, linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Jan 2008, Pavel Machek wrote:
+On Wed, 9 Jan 2008, Carlos Corbacho wrote:
 
-> > In fact suspend methods already do take an argument specifying the
-> > reason they were called.  It wouldn't be hard to add a couple of extra 
-> > PM_EVENT_* values for manual suspend and autosuspend.  The problem is 
-> > that resume methods don't take a corresponding argument.
+> I've had confirmation from another nForce 4 box that Vista also disables 
+> autosuspend/ selective suspend on the root hubs there, so I'm pretty 
+> confident in saying now that this will also be needed in Linux (definitely 
+> for OHCI. I don't think we need to stop autosuspend on EHCI, even though 
+> Windows does appear to disable it for that as well), to avoid inadvertently 
+> triggering the suspend-to-RAM hang on these broken BIOSs.
 > 
-> Well, you could store the value in struct device or something.
+> (Testing also shows that putting the OHCI controller into D2 is no good 
+> either - having it in any state other than D1 before we call the ACPI _PTS() 
+> method will reliably hang the box on suspend).
 > 
-> There's other problem: if autosuspend is != NULL, you know device
-> supports autosuspend.
-> 
-> If you call existing suspend(PMSG_AUTOSUSPEND), and driver does not
-> support it, it will crash and burn.
+> What's the best way to go about doing this? I've been glancing over the OHCI 
+> code and I can't see how to easily do this (unless 'broken_suspend' is the 
+> correct option here?)
 
-That's right.  The problem doesn't arise in SCSI because there only the
-sd driver supports suspend at all -- and now it supports autosuspend as
-well.  In USB I had to add an extra "supports_autosuspend" bitflag to
-the usb_driver structure.
+Currently there's no need to change anything.
+
+The USB autosuspend code affects only the controller's USB interface -- 
+it doesn't touch the PCI side.  An autosuspended controller will remain 
+in D0.  Until somebody tries writing autosuspend code for PCI 
+devices...
 
 Alan Stern
+
