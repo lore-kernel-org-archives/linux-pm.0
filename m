@@ -1,17 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Analysis of sched_mc_power_savings
-Date: Wed, 9 Jan 2008 14:20:14 +0100
-Message-ID: <20080109132014.GF27196@elte.hu>
-References: <20080108173815.GA7793@dirshya.in.ibm.com>
-	<20080108212400.GA8903@linux-os.sc.intel.com>
-	<20080109111302.GC7793@dirshya.in.ibm.com>
-	<20080109113507.GA29721@elte.hu>
-	<20080109122847.GA28955@dirshya.in.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [RFC] Implementation of SCSI dynamic power
+	management
+Date: Wed, 9 Jan 2008 10:25:27 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801091022100.4468-100000__13921.4747622193$1199892581$gmane$org@iolanthe.rowland.org>
+References: <20080108212430.GB5050@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080109122847.GA28955@dirshya.in.ibm.com>
+In-Reply-To: <20080108212430.GB5050@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +17,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, discuss@LessWatts.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 8 Jan 2008, Pavel Machek wrote:
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-
-> I will watch this during the experiments.  I have been using klog 
-> application to dump relayfs data.  I did run powertop and top as well, 
-> I will bind them to certain CPUs and isolate their impact.
+> > In fact suspend methods already do take an argument specifying the
+> > reason they were called.  It wouldn't be hard to add a couple of extra 
+> > PM_EVENT_* values for manual suspend and autosuspend.  The problem is 
+> > that resume methods don't take a corresponding argument.
 > 
-> I believe the margin of error would be less since all the measurement 
-> tasks sleep for long duration.
+> Well, you could store the value in struct device or something.
+> 
+> There's other problem: if autosuspend is != NULL, you know device
+> supports autosuspend.
+> 
+> If you call existing suspend(PMSG_AUTOSUSPEND), and driver does not
+> support it, it will crash and burn.
 
-ok, long duration ought to be enough.
+That's right.  The problem doesn't arise in SCSI because there only the
+sd driver supports suspend at all -- and now it supports autosuspend as
+well.  In USB I had to add an extra "supports_autosuspend" bitflag to
+the usb_driver structure.
 
-i think a possible explanation of your observtions would be this: sleepy 
-workloads are affected more by the wakeup logic, and most of the 
-power-savings works via runtime balancing.
-
-So perhaps try to add some SD_POWERSAVINGS_BALANCE logic to 
-try_to_wake_up()? I think waking up on the same CPU where it went to 
-sleep is the most power-efficient approach in general. (or always waking 
-up where the wakee runs - this should be measured.) Right now 
-try_to_wake_up() tries to spread out load opportunistically, which is 
-throughput-maximizing but it's arguably not very power conscious.
-
-	Ingo
+Alan Stern
