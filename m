@@ -1,40 +1,42 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: USB D3 vs system S3
-Date: Wed, 9 Jan 2008 11:07:04 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801091105220.4652-100000@iolanthe.rowland.org>
-References: <200801091251.55883.carlos@strangeworlds.co.uk>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC] Implementation of SCSI dynamic power management
+Date: Wed, 9 Jan 2008 17:11:32 +0100
+Message-ID: <200801091711.33394.oliver__8420.45491231165$1199895205$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0801071244180.2748-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200801091251.55883.carlos@strangeworlds.co.uk>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Len Brown <lenb@kernel.org>, David Brownell <david-b@pacbell.net>, gregkh@suse.de, linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801071244180.2748-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 Jan 2008, Carlos Corbacho wrote:
+Am Montag, 7. Januar 2008 20:42:23 schrieb Alan Stern:
+> When all the devices under a host are suspended, the LLD is informed=20
+> (via a new "autosuspend" method in the host template) so that it can=20
+> put the host adapter in a low-power state. =A0Likewise, a new=20
+> "autoresume" method is called when the host adapter needs to return to=20
+> full power. =A0An implementation of these methods for the usb-storage=20
+> driver will be posted in a followup patch.
 
-> I've had confirmation from another nForce 4 box that Vista also disables 
-> autosuspend/ selective suspend on the root hubs there, so I'm pretty 
-> confident in saying now that this will also be needed in Linux (definitely 
-> for OHCI. I don't think we need to stop autosuspend on EHCI, even though 
-> Windows does appear to disable it for that as well), to avoid inadvertently 
-> triggering the suspend-to-RAM hang on these broken BIOSs.
-> 
-> (Testing also shows that putting the OHCI controller into D2 is no good 
-> either - having it in any state other than D1 before we call the ACPI _PTS() 
-> method will reliably hang the box on suspend).
-> 
-> What's the best way to go about doing this? I've been glancing over the OHCI 
-> code and I can't see how to easily do this (unless 'broken_suspend' is the 
-> correct option here?)
+This has an interesting implication. As the storage driver can share
+a device with in principle any other usb driver, we must audit all usb
+drivers if we wish to adopt this patch.
+All a device's interfaces must be resumed when the storage interface
+is resumed. To resume a storage device no memory must be allocated
+because that could deadlock.
 
-Currently there's no need to change anything.
-
-The USB autosuspend code affects only the controller's USB interface -- 
-it doesn't touch the PCI side.  An autosuspended controller will remain 
-in D0.  Until somebody tries writing autosuspend code for PCI 
-devices...
-
-Alan Stern
-
+	Regards
+		Oliver
