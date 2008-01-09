@@ -1,36 +1,37 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: USB D3 vs system S3
-Date: Wed, 9 Jan 2008 12:16:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801091213250.2880-100000@iolanthe.rowland.org>
-References: <200801091638.46706.carlos@strangeworlds.co.uk>
+Subject: Re: [RFC] Implementation of SCSI dynamic power management
+Date: Wed, 9 Jan 2008 12:22:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801091216400.2880-100000__8156.74905102259$1199899448$gmane$org@iolanthe.rowland.org>
+References: <200801091711.33394.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200801091638.46706.carlos@strangeworlds.co.uk>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Len Brown <lenb@kernel.org>, David Brownell <david-b@pacbell.net>, gregkh@suse.de, linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200801091711.33394.oliver@neukum.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 Jan 2008, Carlos Corbacho wrote:
+On Wed, 9 Jan 2008, Oliver Neukum wrote:
 
-> On Wednesday 09 January 2008 16:07:04 Alan Stern wrote:
-> > Currently there's no need to change anything.
-> 
-> Ok.
-> 
-> > The USB autosuspend code affects only the controller's USB interface --
-> > it doesn't touch the PCI side.  An autosuspended controller will remain
-> > in D0.  Until somebody tries writing autosuspend code for PCI
-> > devices...
-> 
-> Is this likely to happen?
+> This has an interesting implication. As the storage driver can share
+> a device with in principle any other usb driver, we must audit all usb
+> drivers if we wish to adopt this patch.
+> All a device's interfaces must be resumed when the storage interface
+> is resumed. To resume a storage device no memory must be allocated
+> because that could deadlock.
 
-I don't know of anybody working on it.  A minimal prerequisite is that 
-PCI runtime wakeup processing needs to work right -- which it doesn't.  
-See 
+Maybe people shouldn't enable autosuspend for their swap device...
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=6892
+What happens during normal system resume if a driver (not just USB!)  
+needs to allocate memory before the swap device has been resumed?
 
 Alan Stern
-
