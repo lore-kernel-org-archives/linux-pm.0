@@ -1,13 +1,12 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] PM: invoke suspend notifications after
-	console switch
-Date: Thu, 10 Jan 2008 14:14:36 +0100
-Message-ID: <1199970876.3861.66.camel@johannes.berg>
-References: <1197853799.4885.7.camel@johannes.berg>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Thu, 10 Jan 2008 10:35:19 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801101033390.4267-100000__23451.6182485551$1199979407$gmane$org@iolanthe.rowland.org>
+References: <200801100029.26465.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2810112638074927485=="
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1197853799.4885.7.camel@johannes.berg>
+In-Reply-To: <200801100029.26465.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,118 +14,53 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 10 Jan 2008, Rafael J. Wysocki wrote:
 
---===============2810112638074927485==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-LQoyjSrNruQlQiFFY8/R"
+> On Wednesday, 9 of January 2008, Alan Stern wrote:
+> > On Wed, 9 Jan 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > In dpm_resume() you shouldn't need to use dpm_list_mtx at all, because
+> > > > the list_move_tail() comes before the resume_device().  It's the same
+> > > > as in dpm_power_up().
+> > > 
+> > > Still, device_pm_schedule_removal() can (in theory) be called concurrently
+> > > with dpm_resume() by another thread and this might corrupt the list without
+> > > the locking.
+> > 
+> > Any thread doing that would be in violation of the restrictions you're 
+> > going to add to the kerneldoc for destroy_suspended_device().
+> > 
+> > However the overhead for the locking isn't critical.  There won't be
+> > any contention (if everything is working right) and it isn't a hot path
+> > anyway.  So you can leave the extra locking in if you want.  But then
+> > you should put it in all the routines where the lists get manipulated,
+> > not just some of them.  That is: device_power_down(), dpm_power_up(),
+> > and even unregister_dropped_devices().
+> 
+> Except for those run on one CPU with interrupts disabled, I think.
 
+Not unregister_dropped_devices()!
 
---=-LQoyjSrNruQlQiFFY8/R
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > > Also, the kerneldoc for destroy_suspended_device() should contain an 
+> > > > extra paragraph warning that the routine should never be called except 
+> > > > within the scope of a system sleep transition.  In practice this means 
+> > > > it has to be directly or indirectly invoked by a suspend or resume 
+> > > > method.
+> > > 
+> > > Or by a CPU hotplug notifier (that will be the majority of cases, IMO).
+> > 
+> > In your patch the call is made in response to a CPU_UP_CANCELED_FROZEN
+> > notification.  Isn't it true that this notification is issued only as
+> > part of a system sleep transition?
+> 
+> Yes, it is.
 
+So it counts as being indirectly invoked by a resume method.
 
-On Mon, 2007-12-17 at 02:09 +0100, Johannes Berg wrote:
-> A subsequent patch will enable apm-emulation notification for suspends
-> triggered in any way by using the suspend notifications. This causes
-> the system to lock up between X being needed to switch away from the
-> VT and X already waiting for resume in the apm ioctl.
->=20
-> This patch moves the console switch (if enabled) before the suspend
-> notification (and after the resume notification) to avoid this issue.
-
-I don't see this in the suspend git tree yet, anything wrong with it?
-
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
->  kernel/power/main.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> --- everything.orig/kernel/power/main.c	2007-12-17 01:52:29.617085178 +01=
-00
-> +++ everything/kernel/power/main.c	2007-12-17 01:53:23.547064887 +0100
-> @@ -73,12 +73,12 @@ static int suspend_prepare(void)
->  	if (!suspend_ops || !suspend_ops->enter)
->  		return -EPERM;
-> =20
-> +	pm_prepare_console();
-> +
->  	error =3D pm_notifier_call_chain(PM_SUSPEND_PREPARE);
->  	if (error)
->  		goto Finish;
-> =20
-> -	pm_prepare_console();
-> -
->  	if (suspend_freeze_processes()) {
->  		error =3D -EAGAIN;
->  		goto Thaw;
-> @@ -98,9 +98,9 @@ static int suspend_prepare(void)
-> =20
->   Thaw:
->  	suspend_thaw_processes();
-> -	pm_restore_console();
->   Finish:
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
-> +	pm_restore_console();
->  	return error;
->  }
-> =20
-> @@ -192,8 +192,8 @@ int suspend_devices_and_enter(suspend_st
->  static void suspend_finish(void)
->  {
->  	suspend_thaw_processes();
-> -	pm_restore_console();
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
-> +	pm_restore_console();
->  }
-> =20
->=20
->=20
->=20
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->=20
-
---=-LQoyjSrNruQlQiFFY8/R
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR4YaO6Vg1VMiehFYAQKJaBAAtHjXw3hc/ETnwQzL0wTqYZAnX6JHoyMM
-1Uv52j/sWwxsAR37N56SqnXwTaeN6oP4U4itMs88kVnp5nWG6hkhD3H1eXBg76X0
-PSuon41JltmI6yccJejE3wDs8irj4tx5tzSIq86HCYruyDBaSYn+60jAhIT/sqSs
-tuAmu4BajmJXs2e4HRkB1+AwlAlyivhZIPLVi8D7ys1+L1Y8LBqvyif7cy6fQpLO
-+qLr7d9glmAzEx+rJCkXV7O4vyIQZYG12+0jktwmkLiFcwdccDbas+NXs/hN6SWl
-jnoIzGxo+sDkclBT+6NQCS5A2nPd5oJ2XFo2BebKXwARVxHiKJp+84dzFWH7CkpT
-BqJ5KN+YXGVJakmZ6mKguUlCZHdKI5zlcsl9FHHodgsXWtmfIXa0mNhkxU/C4CCn
-STLYgIlGFXN/0c5Z6Op4Dkx4q4pKHCCGIlYy0E8ICoNAPmDYJ2UdpqslwpfFZUGS
-gSSe2U1nlKQ27uyKuNnQU+PrXx5mRvdOQJkC2w8qon01On0H7U6znPABqwyeKShx
-zG2uqbSkSlLQ6S6LbScx7Mki98ljnbPT8sYO4GFj0CTDUQ54jVlgEy+eOHgyldfz
-XfhH/qwztJ4Z/GIJ1TM9SI29pockJWAF120WY72KbvevfFg9zuRT1w7d/k3RnKzX
-fva0yab0FIE=
-=qHWY
------END PGP SIGNATURE-----
-
---=-LQoyjSrNruQlQiFFY8/R--
-
-
---===============2810112638074927485==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2810112638074927485==--
+Alan Stern
