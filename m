@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] hibernation: utilize ACPI hardware signature
-Date: Fri, 11 Jan 2008 18:20:47 +0100
-Message-ID: <200801111820.48462.rjw__3325.60560568727$1200071999$gmane$org@sisk.pl>
-References: <1199257162.14632.4.camel@sli10-desk.sh.intel.com>
-	<200801110039.40523.rjw@sisk.pl>
-	<1200013632.21533.1.camel@sli10-desk.sh.intel.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC v4] apm-emulation: notify about all suspend
+	events, not just apm invoked ones
+Date: Sat, 12 Jan 2008 08:55:19 +1100
+Message-ID: <1200088519.6896.52.camel@pasglop>
+References: <1199970729.3861.64.camel@johannes.berg>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1200013632.21533.1.camel@sli10-desk.sh.intel.com>
-Content-Disposition: inline
+In-Reply-To: <1199970729.3861.64.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,151 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@suse.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 11 of January 2008, Shaohua Li wrote:
+
+On Thu, 2008-01-10 at 14:12 +0100, Johannes Berg wrote:
+> This revamps the apm-emulation code (adding comments while at it) to
+> get suspend notifications regardless of what way pm_suspend()
+> was invoked, whether via the apm ioctl or via /sys/power/state.
 > 
-> On Fri, 2008-01-11 at 07:39 +0800, Rafael J. Wysocki wrote:
-> > On Monday, 7 of January 2008, Shaohua Li wrote:
-> > >
-> > > On Sat, 2008-01-05 at 04:44 +0800, Rafael J. Wysocki wrote:
-> > > > On Friday, 4 of January 2008, Shaohua Li wrote:
-> > > > >
-> > > > > On Fri, 2008-01-04 at 01:04 +0800, Rafael J. Wysocki wrote:
-> > > > > > On Thursday, 3 of January 2008, Shaohua Li wrote:
-> > > > > > >
-> > > > > > > On Wed, 2008-01-02 at 22:05 +0800, Rafael J. Wysocki wrote:
-> > > > > > > > On Wednesday, 2 of January 2008, Shaohua Li wrote:
-> > > > > > > > > ACPI defines a hardware signature. BIOS calculates the
-> > > > signature
-> > > > > > > > > according to hardware configure, if hardware changes,
-> > the
-> > > > > > signature
-> > > > > > > > will
-> > > > > > > > > change, in this case, S4 resume should fail.
-> > > > > > > >
-> > > > > > > > The idea is fine, but I'd prefer to do that in a more
-> > > > > > straightforward
-> > > > > > > > way.
-> > > > > > > > Namely, we can just:
-> > > > > > > > * write the signature into a variable in, for example,
-> > > > > > > >   acpi_hibernation_prepare() (then, the "old" signature
-> > value
-> > > > will
-> > > > > > be
-> > > > > > > >   automatically saved in the image)
-> > > > > > > > * compare it with a the "new" value read from the BIOS in
-> > > > > > > >   acpi_hibernation_leave() and panic if there's a mismatch
-> > > > > > > > * add a configuration option to disable this behavior
-> > (just in
-> > > > > > case)
-> > > > > > > > This way we can avoid modifying the entire generic
-> > interface
-> > > > to
-> > > > > > add
-> > > > > > > > the feature
-> > > > > > > > specific to ACPI.
-> > > > > > > it would be better we do the check in boot kernel.
-> > > > > > Franky, I think we should also check in the image kernel, in
-> > case
-> > > > the
-> > > > > > boot
-> > > > > > one doesn't support ACPI as I said.
-> > > > > Ok, makes sense. I changed to check the signature
-> > > > in .higberation_leave
-> > > >
-> > > > Thanks, comments below.
-> > > >
-> > > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > > > ---
-> > > > >  drivers/acpi/sleep/main.c |   20 ++++++++++++++++++++
-> > > > >  1 file changed, 20 insertions(+)
-> > > > >
-> > > > > Index: linux/drivers/acpi/sleep/main.c
-> > > > >
-> > ===================================================================
-> > > > > --- linux.orig/drivers/acpi/sleep/main.c      2008-01-03
-> > > > 13:37:08.000000000 +0800
-> > > > > +++ linux/drivers/acpi/sleep/main.c   2008-01-04
-> > 13:36:10.000000000
-> > > > +0800
-> > > > > @@ -256,6 +256,17 @@ static int acpi_hibernation_enter(void)
-> > > > >       return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-> > > > >  }
-> > > > >
-> > > > > +static unsigned long s4_hardware_signature;
-> > > > > +static struct acpi_table_facs *facs;
-> > > > > +static int nosigcheck;
-> > > >
-> > > > Use bool perhaps?
-> > > >
-> > > > > +
-> > > > > +static int __init acpi_s4_nosigcheck(char *str)
-> > > > > +{
-> > > > > +     nosigcheck = 1;
-> > > >
-> > > > And "true" here?
-> > > >
-> > > > > +     return 1;
-> > > > > +}
-> > > > > +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-> > > > > +
-> > > >
-> > > > Please put this function at the end of the file.  Also, I'd call
-> > it
-> > > > "acpi_s4_nosig", but whatever.
-> > > Fixed all except this one, the routine is defined with HIBERATION
-> > > configed.
-> > 
-> > I've just realized that we're not doing the right thing here ...
-> > 
-> > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > ---
-> > >  drivers/acpi/sleep/main.c |   22 ++++++++++++++++++++++
-> > >  1 file changed, 22 insertions(+)
-> > >
-> > > Index: linux/drivers/acpi/sleep/main.c
-> > > ===================================================================
-> > > --- linux.orig/drivers/acpi/sleep/main.c      2008-01-04
-> > 13:44:40.000000000 +0800
-> > > +++ linux/drivers/acpi/sleep/main.c   2008-01-07 09:31:42.000000000
-> > +0800
-> > > @@ -256,6 +256,17 @@ static int acpi_hibernation_enter(void)
-> > >       return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-> > >  }
-> > > 
-> > > +static unsigned long s4_hardware_signature;
-> > > +static struct acpi_table_facs *facs;
-> > > +static bool nosigcheck;
-> > > +
-> > > +static int __init acpi_s4_nosigcheck(char *str)
-> > > +{
-> > > +     nosigcheck = true;
-> > > +     return 1;
-> > > +}
-> > > +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-> > > +
-> > >  static void acpi_hibernation_leave(void)
-> > >  {
-> > >       /*
-> > > @@ -263,6 +274,10 @@ static void acpi_hibernation_leave(void)
-> > >        * enable it here.
-> > >        */
-> > >       acpi_enable();
-> > > +     if (facs && s4_hardware_signature != facs->hardware_signature)
-> > {
-> > 
-> > ... because we should read the signature from the hardware here, while
-> > we're
-> > comparing two values read from memory.  They will always be equal. :-)
-> No, facs isn't a copy of ACPI FACS table (imagine how we sets
-> facs->waking_vector). It's mapped to BIOS table.
+> This patch still contains the pm_chain_head export so that you can
+> test it on 2.6.24-rc5 rather than only the suspend tree. If using
+> the suspend tree just delete that hunk of the patch.
+> 
+> Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+> Somehow I forgot about this. What do we want to do with it? I think it
+> should be fine this way w/o the symbol export.
 
-Ah, ok.  Thanks for the clarification.
+I haven't had time to test or review in details yet, sorry, I'm pretty
+over-commited at the moment, but I agree with the approach.
 
-I'll rebase your patch on top of the suspend branch.
-
-Greetings,
-Rafael
+Cheers,
+Ben.
