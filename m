@@ -1,15 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC v4] apm-emulation: notify about all suspend
-	events, not just apm invoked ones
-Date: Sat, 12 Jan 2008 08:55:19 +1100
-Message-ID: <1200088519.6896.52.camel@pasglop>
-References: <1199970729.3861.64.camel@johannes.berg>
-Reply-To: benh@kernel.crashing.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI: Make sleep/main.c compile with
+	CONFIG_PM_SLEEP unset
+Date: Fri, 11 Jan 2008 23:59:55 +0100
+Message-ID: <200801112359.55832.rjw__15709.4665607021$1200092356$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1199970729.3861.64.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+[Len, this patch applies on top of the suspend branch, please add.]
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Thu, 2008-01-10 at 14:12 +0100, Johannes Berg wrote:
-> This revamps the apm-emulation code (adding comments while at it) to
-> get suspend notifications regardless of what way pm_suspend()
-> was invoked, whether via the apm ioctl or via /sys/power/state.
-> 
-> This patch still contains the pm_chain_head export so that you can
-> test it on 2.6.24-rc5 rather than only the suspend tree. If using
-> the suspend tree just delete that hunk of the patch.
-> 
-> Not-yet-signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
-> Somehow I forgot about this. What do we want to do with it? I think it
-> should be fine this way w/o the symbol export.
+Make drivers/acpi/sleep/main.c compile with CONFIG_PM_SLEEP unset
 
-I haven't had time to test or review in details yet, sorry, I'm pretty
-over-commited at the moment, but I agree with the approach.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cheers,
-Ben.
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -23,9 +23,9 @@
+ #include "sleep.h"
+ 
+ u8 sleep_states[ACPI_S_STATE_COUNT];
++static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+ 
+ #ifdef CONFIG_PM_SLEEP
+-static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+ static bool acpi_sleep_finish_wake_up;
+ 
+ /*
