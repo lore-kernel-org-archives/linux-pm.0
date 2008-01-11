@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] hibernation: utilize ACPI hardware signature
-Date: Fri, 11 Jan 2008 00:39:39 +0100
-Message-ID: <200801110039.40523.rjw__4745.79995866424$1200008325$gmane$org@sisk.pl>
-References: <1199257162.14632.4.camel@sli10-desk.sh.intel.com>
-	<200801042144.20279.rjw@sisk.pl>
-	<1199670409.13339.2.camel@sli10-desk.sh.intel.com>
+Subject: [PATCH 1/3] Suspend: Invoke suspend notifications after
+	console switch
+Date: Fri, 11 Jan 2008 01:22:23 +0100
+Message-ID: <200801110122.23791.rjw__14927.743926137$1200011195$gmane$org@sisk.pl>
+References: <200801110118.46106.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1199670409.13339.2.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <200801110118.46106.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,154 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@suse.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 of January 2008, Shaohua Li wrote:
-> 
-> On Sat, 2008-01-05 at 04:44 +0800, Rafael J. Wysocki wrote:
-> > On Friday, 4 of January 2008, Shaohua Li wrote:
-> > >
-> > > On Fri, 2008-01-04 at 01:04 +0800, Rafael J. Wysocki wrote:
-> > > > On Thursday, 3 of January 2008, Shaohua Li wrote:
-> > > > >
-> > > > > On Wed, 2008-01-02 at 22:05 +0800, Rafael J. Wysocki wrote:
-> > > > > > On Wednesday, 2 of January 2008, Shaohua Li wrote:
-> > > > > > > ACPI defines a hardware signature. BIOS calculates the
-> > signature
-> > > > > > > according to hardware configure, if hardware changes, the
-> > > > signature
-> > > > > > will
-> > > > > > > change, in this case, S4 resume should fail.
-> > > > > >
-> > > > > > The idea is fine, but I'd prefer to do that in a more
-> > > > straightforward
-> > > > > > way.
-> > > > > > Namely, we can just:
-> > > > > > * write the signature into a variable in, for example,
-> > > > > >   acpi_hibernation_prepare() (then, the "old" signature value
-> > will
-> > > > be
-> > > > > >   automatically saved in the image)
-> > > > > > * compare it with a the "new" value read from the BIOS in
-> > > > > >   acpi_hibernation_leave() and panic if there's a mismatch
-> > > > > > * add a configuration option to disable this behavior (just in
-> > > > case)
-> > > > > > This way we can avoid modifying the entire generic interface
-> > to
-> > > > add
-> > > > > > the feature
-> > > > > > specific to ACPI.
-> > > > > it would be better we do the check in boot kernel.
-> > > > Franky, I think we should also check in the image kernel, in case
-> > the
-> > > > boot
-> > > > one doesn't support ACPI as I said.
-> > > Ok, makes sense. I changed to check the signature
-> > in .higberation_leave
-> > 
-> > Thanks, comments below.
-> > 
-> > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > ---
-> > >  drivers/acpi/sleep/main.c |   20 ++++++++++++++++++++
-> > >  1 file changed, 20 insertions(+)
-> > >
-> > > Index: linux/drivers/acpi/sleep/main.c
-> > > ===================================================================
-> > > --- linux.orig/drivers/acpi/sleep/main.c      2008-01-03
-> > 13:37:08.000000000 +0800
-> > > +++ linux/drivers/acpi/sleep/main.c   2008-01-04 13:36:10.000000000
-> > +0800
-> > > @@ -256,6 +256,17 @@ static int acpi_hibernation_enter(void)
-> > >       return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-> > >  }
-> > > 
-> > > +static unsigned long s4_hardware_signature;
-> > > +static struct acpi_table_facs *facs;
-> > > +static int nosigcheck;
-> > 
-> > Use bool perhaps?
-> > 
-> > > +
-> > > +static int __init acpi_s4_nosigcheck(char *str)
-> > > +{
-> > > +     nosigcheck = 1;
-> > 
-> > And "true" here?
-> > 
-> > > +     return 1;
-> > > +}
-> > > +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-> > > +
-> > 
-> > Please put this function at the end of the file.  Also, I'd call it
-> > "acpi_s4_nosig", but whatever.
-> Fixed all except this one, the routine is defined with HIBERATION
-> configed.
+From: Johannes Berg <johannes@sipsolutions.net>
 
-I've just realized that we're not doing the right thing here ...
+In order to fix APM emulation it is necessary to enable apm-emulation
+notifications for suspends triggered in various ways via the suspend
+notifiers.  However, this will cause the systems using APM emulation
+to lock up between X being needed to switch away from the VT and X
+already waiting for resume in the APM ioctl.
+
+This patch moves the console switch (if enabled) before the suspend
+notification (and after the resume notification) to avoid this issue.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -173,12 +173,12 @@ static int suspend_prepare(void)
+ 	if (!suspend_ops || !suspend_ops->enter)
+ 		return -EPERM;
  
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> ---
->  drivers/acpi/sleep/main.c |   22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
-> 
-> Index: linux/drivers/acpi/sleep/main.c
-> ===================================================================
-> --- linux.orig/drivers/acpi/sleep/main.c	2008-01-04 13:44:40.000000000 +0800
-> +++ linux/drivers/acpi/sleep/main.c	2008-01-07 09:31:42.000000000 +0800
-> @@ -256,6 +256,17 @@ static int acpi_hibernation_enter(void)
->  	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
->  }
->  
-> +static unsigned long s4_hardware_signature;
-> +static struct acpi_table_facs *facs;
-> +static bool nosigcheck;
-> +
-> +static int __init acpi_s4_nosigcheck(char *str)
-> +{
-> +	nosigcheck = true;
-> +	return 1;
-> +}
-> +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-> +
->  static void acpi_hibernation_leave(void)
->  {
->  	/*
-> @@ -263,6 +274,10 @@ static void acpi_hibernation_leave(void)
->  	 * enable it here.
->  	 */
->  	acpi_enable();
-> +	if (facs && s4_hardware_signature != facs->hardware_signature) {
-
-... because we should read the signature from the hardware here, while we're
-comparing two values read from memory.  They will always be equal. :-)
-
-> +		printk(KERN_EMERG"PM: Hardware changed in the S4 circle, can't resume\n");
-> +		panic("S4 resume error");
-> +	}
->  }
->  
->  static void acpi_hibernation_finish(void)
-> @@ -448,6 +463,13 @@ int __init acpi_sleep_init(void)
->  		hibernation_set_ops(&acpi_hibernation_ops);
->  		sleep_states[ACPI_STATE_S4] = 1;
->  		printk(" S4");
-> +		if (!nosigcheck) {
-> +			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
-> +				(struct acpi_table_header **)&facs);
-> +			if (facs)
-> +				s4_hardware_signature =
-> +					facs->hardware_signature;
-> +		}
->  	}
->  #endif
->  	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
-> 
-> 
-> -
-
-Greetings,
-Rafael
++	pm_prepare_console();
++
+ 	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+ 	if (error)
+ 		goto Finish;
+ 
+-	pm_prepare_console();
+-
+ 	if (suspend_freeze_processes()) {
+ 		error = -EAGAIN;
+ 		goto Thaw;
+@@ -198,9 +198,9 @@ static int suspend_prepare(void)
+ 
+  Thaw:
+ 	suspend_thaw_processes();
+-	pm_restore_console();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
++	pm_restore_console();
+ 	return error;
+ }
+ 
+@@ -307,8 +307,8 @@ int suspend_devices_and_enter(suspend_st
+ static void suspend_finish(void)
+ {
+ 	suspend_thaw_processes();
+-	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
++	pm_restore_console();
+ }
+ 
+ 
