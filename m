@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Andi Kleen <ak@suse.de>
 Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while
- suspended (rev. 2)
-Date: Fri, 11 Jan 2008 22:11:52 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0801112208030.21411-100000__26432.030023034$1200107591$gmane$org@netrider.rowland.org>
-References: <20080112005619.GA4665@suse.de>
+	suspended (rev. 2)
+Date: Sat, 12 Jan 2008 04:15:06 +0100
+Message-ID: <200801120415.07176.ak__35784.2919337147$1200107793$gmane$org@suse.de>
+References: <Pine.LNX.4.44L0.0801112208030.21411-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080112005619.GA4665@suse.de>
+In-Reply-To: <Pine.LNX.4.44L0.0801112208030.21411-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, ak@suse.de, linux-acpi@vger.kernel.org, pavel@suse.cz, tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, pavel@suse.cz, tglx@linutronix.de, mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Jan 2008, Greg KH wrote:
 
-> On Fri, Jan 11, 2008 at 04:49:04PM -0800, Andrew Morton wrote:
+> The real problem is that our current email workflow patterns don't 
+> provide a standardized way for maintainers to tell when a new patch 
+> submission is meant to override or replace an earlier submission (or 
+> even a set of earlier submissions).  Does anybody have some suggestions 
+> for a good way to do this?
 
-> > err, no.  pm-introduce-destroy_suspended_device.patch demolishes
-> > pm-acquire-device-locks-on-suspend-rev-3.patch
-> > 
-> > Confused, giving up.
-> 
-> I'm confused too, I have no idea what the proper order of things should
-> be either.  Anyone want to give me a hint?
+The versioning approach pioneered by Christoph Lameter seems to work
+reasonably well.
 
-Sorry for the confusion.  The correct patch to apply is 
-pm-acquire-device-locks-on-suspend-rev-3 (plus the attending 
-style-fixups).  It encompasses those earlier patches.
+If you post a new version increase a version number and add it with "vXXX" to the
+Subject.
 
-The real problem is that our current email workflow patterns don't 
-provide a standardized way for maintainers to tell when a new patch 
-submission is meant to override or replace an earlier submission (or 
-even a set of earlier submissions).  Does anybody have some suggestions 
-for a good way to do this?
+Also add a short change log between versions at the bottom; e.g. v1->v2: .... etc.
 
-Alan Stern
+Then it is always clear what is the latest'n'greatest.
+
+-Andi
