@@ -1,15 +1,17 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while
-	suspended (rev. 2)
-Date: Fri, 11 Jan 2008 20:29:46 -0800
-Message-ID: <20080112042946.GA30093__31940.3741894805$1200112172$gmane$org@suse.de>
-References: <20080112005619.GA4665@suse.de>
-	<Pine.LNX.4.44L0.0801112208030.21411-100000@netrider.rowland.org>
+From: Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at
+ least with snd_cs4236
+Date: Sat, 12 Jan 2008 12:12:56 +0100
+Message-ID: <20080112121256.0f2e96ad__21696.9448062175$1200136473$gmane$org@poseidon.drzeus.cx>
+References: <200801092343.48726.linux@rainbow-software.org>
+	<20080111080141.75aaad5f@poseidon.drzeus.cx>
+	<47877B83.5040604@keyaccess.nl>
+	<200801111940.22023.linux@rainbow-software.org>
+	<4788168F.8070403@keyaccess.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============6050576293923477803=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0801112208030.21411-100000@netrider.rowland.org>
+In-Reply-To: <4788168F.8070403@keyaccess.nl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +19,64 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, ak@suse.de, linux-acpi@vger.kernel.org, pavel@suse.cz, tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andrew Morton <akpm@osdl.org>, ALSA development <alsa-devel@alsa-project.org>, Ondrej Zary <linux@rainbow-software.org>, Takashi Iwai <tiwai@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, Jaroslav Kysela <perex@perex.cz>, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 10:11:52PM -0500, Alan Stern wrote:
-> On Fri, 11 Jan 2008, Greg KH wrote:
-> 
-> > On Fri, Jan 11, 2008 at 04:49:04PM -0800, Andrew Morton wrote:
-> 
-> > > err, no.  pm-introduce-destroy_suspended_device.patch demolishes
-> > > pm-acquire-device-locks-on-suspend-rev-3.patch
-> > > 
-> > > Confused, giving up.
-> > 
-> > I'm confused too, I have no idea what the proper order of things should
-> > be either.  Anyone want to give me a hint?
-> 
-> Sorry for the confusion.  The correct patch to apply is 
-> pm-acquire-device-locks-on-suspend-rev-3 (plus the attending 
-> style-fixups).  It encompasses those earlier patches.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Can someone resend this to me?  Do I need to drop the patch I currently
-have in my tree as well?  Or put it before/after that one?
+--===============6050576293923477803==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1;
+	boundary="=_hera.drzeus.cx-2038-1200136380-0001-2"
 
-> The real problem is that our current email workflow patterns don't 
-> provide a standardized way for maintainers to tell when a new patch 
-> submission is meant to override or replace an earlier submission (or 
-> even a set of earlier submissions).  Does anybody have some suggestions 
-> for a good way to do this?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Yeah, just tell me what you want me to do with it (drop an old one,
-replace it, add it, etc.)  We usually can handle this pretty well :)
+--=_hera.drzeus.cx-2038-1200136380-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
+On Sat, 12 Jan 2008 02:23:27 +0100
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-greg k-h
+>=20
+> Pavel, Rafael -- the attached fixes snd-cs4236 not coming back to life fo=
+r=20
+> Ondrej after hibernation due to the PNP_DRIVER_RES_DO_NOT_CHANGE test=20
+> triggering in pnp_bus_resume() and keeping the card in a suspended state.
+>=20
+
+I'm a bit confused here. Bjorn Helgaas wanted to remove the pnp_start/stop_=
+dev() calls completely, and you want them called all the time. :)
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-2038-1200136380-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkeIoLgACgkQ7b8eESbyJLj/VgCfSrl42/rrBKsA/+nRBO1yzxVE
+A3kAn3pJcADnfR1Py/DHdfz825zIOdqe
+=UYs2
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-2038-1200136380-0001-2--
+
+--===============6050576293923477803==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6050576293923477803==--
