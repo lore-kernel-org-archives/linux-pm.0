@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: b43_suspend problem
-Date: Sun, 13 Jan 2008 01:52:31 +0100
-Message-ID: <200801130152.31724.rjw__42389.9124180481$1200185511$gmane$org@sisk.pl>
-References: <200801130008.29996.rjw@sisk.pl> <200801130030.45119.mb@bu3sch.de>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: -mm:
+	pnp-do-not-stop-start-devices-in-suspend-resume-path.patch
+	breaks resuming isapnp cards
+Date: Sat, 12 Jan 2008 22:50:42 -0700
+Message-ID: <200801122250.44220.bjorn.helgaas__23494.0020055094$1200203696$gmane$org@hp.com>
+References: <200801092343.48726.linux@rainbow-software.org>
+	<200801122008.10313.rjw@sisk.pl> <47891E21.8060209@keyaccess.nl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801130030.45119.mb@bu3sch.de>
+In-Reply-To: <47891E21.8060209@keyaccess.nl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,35 +22,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michael Buesch <mb@bu3sch.de>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, bcm43xx-dev@lists.berlios.de, Larry Finger <larry.finger@lwfinger.net>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andrew Morton <akpm@osdl.org>, ALSA development <alsa-devel@alsa-project.org>, Ondrej Zary <linux@rainbow-software.org>, Takashi Iwai <tiwai@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, Jaroslav Kysela <perex@perex.cz>, Pavel Machek <pavel@suse.cz>, Pierre Ossman <drzeus@drzeus.cx>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 13 of January 2008, Michael Buesch wrote:
-> On Sunday 13 January 2008 00:08:29 Rafael J. Wysocki wrote:
-> > There is a problem with b43_suspend() that it (indirectly) causes
-> > b43_leds_exit() to be called, which attempts to unregister the leds device
-> > objects, which is forbidden (ie. you can't unregister and/or register devices
-> > during a suspend or resume).
-> 
-> Why?
+On Saturday 12 January 2008 1:08:01 pm Rene Herman wrote:
+> pnp-do-not-stop-start-devices-in-suspend-resume-path.patch in current -mm
+> breaks resuming isapnp cards from hibernation. They need the pnp_start_dev
+> to enable the device again after hibernation.
+>
+> They don't really need the pnp_stop_dev() which the above mentioned patch
+> also removes but with the pnp_start_dev() restored it seems pnp_stop_dev()
+> should also stay. Bjorn Helgaas should decide  -- currently the patch as
+> you have it breaks drivers though. Could you drop it?
 
-Well, the unregistering itself is not really harmful, provided that the device
-is not registered back during the subsequent resume.
+Yes, please drop pnp-do-not-stop-start-devices-in-suspend-resume-path.patch
+for now.
 
-The PM core uses a list of active devices that are added to the list in
-device_add().  The ordering of this list is important, because it is expected
-to reflect the order in which the devices are to be suspended.
+When the PNP core requested resources for active devices, the
+pnp_stop_dev() in the suspend path released the PNP core resources,
+leaving the underlying driver resources orphaned.  But the patch
+that made the PNP core request those resource is also gone, so
+we can leave the start/stop alone.
 
-This list is manipulated during suspend/resume and devices are moved from it
-and back to it, so unregistering devices during a suspend and registering them
-during the subsequent resume generally changes its ordering and may lead to
-problems during the next suspend/resume cycle.
+> On 12-01-08 20:08, Rafael J. Wysocki wrote:
+> > On Saturday, 12 of January 2008, Rene Herman wrote:
+> >> It seems all PnP drivers would need to stick a pnp_start_dev in their
+> >> resume method
+> >
+> > Yes.
+> >
+> >> then which means it really belongs in core.
+> >
+> > Yes, if practical.
+> >
+> >> One important point where PnP and PCI differ is that PnP allows to
+> >> change the resources on a protocol level and I don't see how it could
+> >> ever not be necessary to restore the state a user may have set if power
+> >> has been removed. Hibernate is just that, isn't it?
 
-This is also undesirable if we're going to stop using the freezer for
-suspend/resume at one point in the future.
+That's a good point, thanks for pointing that out.
 
-I'm sure Alan can add some more details.
-
-Greetings,
-Rafael
+Bjorn
