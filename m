@@ -1,15 +1,15 @@
-From: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at
- least with snd_cs4236
-Date: Sat, 12 Jan 2008 14:39:47 +0100
-Message-ID: <4788C323.6090206__17798.180707223$1200325248$gmane$org@keyaccess.nl>
-References: <200801092343.48726.linux@rainbow-software.org>	<20080111080141.75aaad5f@poseidon.drzeus.cx>	<47877B83.5040604@keyaccess.nl>	<200801111940.22023.linux@rainbow-software.org>	<4788168F.8070403@keyaccess.nl>
-	<20080112121256.0f2e96ad@poseidon.drzeus.cx>
+From: Michael Buesch <mb@bu3sch.de>
+Subject: Re: b43_suspend problem
+Date: Sun, 13 Jan 2008 18:16:14 +0100
+Message-ID: <200801131816.15278.mb__16602.6811268695$1200325251$gmane$org@bu3sch.de>
+References: <Pine.LNX.4.44L0.0801131157290.20625-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080112121256.0f2e96ad@poseidon.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.44L0.0801131157290.20625-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Andrew Morton <akpm@osdl.org>, ALSA development <alsa-devel@alsa-project.org>, Ondrej Zary <linux@rainbow-software.org>, Takashi Iwai <tiwai@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, Jaroslav Kysela <perex@perex.cz>, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, bcm43xx-dev@lists.berlios.de, Larry Finger <larry.finger@lwfinger.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-01-08 12:12, Pierre Ossman wrote:
-
-> On Sat, 12 Jan 2008 02:23:27 +0100
-> Rene Herman <rene.herman@keyaccess.nl> wrote:
+On Sunday 13 January 2008 18:08:57 Alan Stern wrote:
+> On Sun, 13 Jan 2008, Rafael J. Wysocki wrote:
 > 
->> Pavel, Rafael -- the attached fixes snd-cs4236 not coming back to life for 
->> Ondrej after hibernation due to the PNP_DRIVER_RES_DO_NOT_CHANGE test 
->> triggering in pnp_bus_resume() and keeping the card in a suspended state.
->>
+> > On Sunday, 13 of January 2008, Michael Buesch wrote:
+> > > On Sunday 13 January 2008 00:08:29 Rafael J. Wysocki wrote:
+> > > > There is a problem with b43_suspend() that it (indirectly) causes
+> > > > b43_leds_exit() to be called, which attempts to unregister the leds device
+> > > > objects, which is forbidden (ie. you can't unregister and/or register devices
+> > > > during a suspend or resume).
+> > > 
+> > > Why?
+> > 
+> > Well, the unregistering itself is not really harmful, provided that the device
+> > is not registered back during the subsequent resume.
+> > 
+> > The PM core uses a list of active devices that are added to the list in
+> > device_add().  The ordering of this list is important, because it is expected
+> > to reflect the order in which the devices are to be suspended.
+> > 
+> > This list is manipulated during suspend/resume and devices are moved from it
+> > and back to it, so unregistering devices during a suspend and registering them
+> > during the subsequent resume generally changes its ordering and may lead to
+> > problems during the next suspend/resume cycle.
+> > 
+> > This is also undesirable if we're going to stop using the freezer for
+> > suspend/resume at one point in the future.
+> > 
+> > I'm sure Alan can add some more details.
 > 
-> I'm a bit confused here. Bjorn Helgaas wanted to remove the pnp_start/stop_dev() calls completely, and you want them called all the time. :)
+> Indeed.  A system suspend is a delicate operation, and the PM core
+> needs to access all the devices in the system.  To have devices being
+> registered and unregistered at the same time would cause a lot of
+> confusion.  In self defense, the PM core starts out by acquiring all 
+> the device semaphores before calling the suspend routines.  This means 
+> that if a suspend routine tries to unregister anything, it will 
+> deadlock at the point where the driver core tries to acquire the device 
+> semaphore prior to invoking the driver's remove method.
+> 
+> Besides, if you're going to register the device right back again during 
+> the subsequent resume, then why go to the trouble of unregistering it 
+> during suspend?  Why not just leave it registered the whole time and 
+> avoid all the complication (and excess meaningless uevents)?
 
-Wanted where? Haven't seen a coment from Bjorn? But -- while removing them 
-both looks (as) sensible from a mirror-image viewpoint, this wouldn't fix 
-the problem.
+Well, because not doing it complicates code :)
+Currently suspend/resume calls the same code as init/exit.
+The b43 init/exit code is really complicated, compared to other
+drivers, due to dozens of hardware versions. So I just avoided
+having yet other codepaths for suspend/resume. But I will add
+a flag to the device structure that's used to avoid unregistering stuff.
 
-As fas as I understand things, "hibernation" is basically "save state, shut 
-down machine" where the latter step is going to disable the card inevitably. 
-On resume, you're going to need to restore the resources (that were saved in 
-pnp_dev->res) that it was using to the card, which is what pnp_start_dev() 
-does -- it not being called is the current problem of the card not coming 
-back to life.
-
-pnp_stop_dev() could go in this specific situation. Not much point in first 
-disabling the thing it seems if a subsequent shutdown is going to take care 
-of that anyway. However, suspend/resume isn't just called in the case of 
-complete hibernation I guess and I know nothing about it all -- hence my 
-request to the hiberhation people for how this is designed to be.
-
-But we certainly need the pnp_start_dev() in the current flow of things. It 
-not being called is the problem this fixes...
-
-Rene.
+-- 
+Greetings Michael.
