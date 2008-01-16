@@ -1,17 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] More updates for 2.6.25
-Date: Wed, 16 Jan 2008 13:37:18 +0100
-Message-ID: <200801161337.19070.rjw__11335.9157382094$1200486996$gmane$org@sisk.pl>
-References: <200801110118.46106.rjw@sisk.pl>
-	<200801152322.33984.lenb@kernel.org>
-	<20080116114446.GB22460@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: SCSI power management for AHCI
+Date: Wed, 16 Jan 2008 10:21:35 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0801161020190.4431-100000__35843.1243141696$1200496983$gmane$org@iolanthe.rowland.org>
+References: <20080115201114.GA7219@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080116114446.GB22460@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <20080115201114.GA7219@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,22 +17,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-scsi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 16 of January 2008, Pavel Machek wrote:
-> On Tue 2008-01-15 23:22:33, Len Brown wrote:
-> > On Thursday 10 January 2008 19:18, Rafael J. Wysocki wrote:
-> > > Len,
-> > > 
-> > > Please add the following three patches to the suspend branch.
-> > 
-> > Applied (and suspend branch has been re-based to latest linus tree)
+On Tue, 15 Jan 2008, Pavel Machek wrote:
+
+> Hi!
 > 
-> Was that "lets reorder notifications, old order was more logical, but
-> it fixes apm?" series?
+> This is my first attempt at ahci autosuspend. It is _very_ hacky at
+> this moment, I'll seriously need to clean it up. But it seems to work
+> here.
 
-Yes, plus the docs update from Dave Brownell.
+How does this interact with Link Power Management?  Should there be 
+a stronger connection between the two?
 
-Greetings,
-Rafael
+Alan Stern
