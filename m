@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 7/10] ACPI: attach thermal zone info
-Date: Thu, 17 Jan 2008 15:51:21 +0800
-Message-ID: <1200556281.2935.121.camel__32493.9665072181$1200556488$gmane$org@acpi-sony.sh.intel.com>
+Subject: [PATCH 10/10] ACPI: thermal fixup
+Date: Thu, 17 Jan 2008 15:51:18 +0800
+Message-ID: <1200556279.2935.119.camel__30752.6275552393$1200556564$gmane$org@acpi-sony.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -21,100 +21,83 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Intel menlow driver needs to get the pointer of themal_zone_device
-structure of an ACPI thermal zone.
-Attach this to each ACPI thermal zone device object.
+The alias name may be used in _PSL, _ALx and _TZD,
+so we bind the cooling device only if the acpi_device node matches.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
 ---
- drivers/acpi/bus.c      |   25 +++++++++++++++++++++++++
- drivers/acpi/thermal.c  |   11 +++++++++++
- include/acpi/acpi_bus.h |    2 ++
- 3 files changed, 38 insertions(+)
+ drivers/acpi/thermal.c |   42 ++++++++++++++++++++++++------------------
+ 1 file changed, 24 insertions(+), 18 deletions(-)
 
-Index: linux-2.6/drivers/acpi/bus.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/bus.c
-+++ linux-2.6/drivers/acpi/bus.c
-@@ -122,6 +122,31 @@ int acpi_bus_get_status(struct acpi_devi
- 
- EXPORT_SYMBOL(acpi_bus_get_status);
- 
-+void acpi_bus_private_data_handler(acpi_handle handle,
-+				   u32 function, void *context)
-+{
-+	return;
-+}
-+EXPORT_SYMBOL(acpi_bus_private_data_handler);
-+
-+int acpi_bus_get_private_data(acpi_handle handle, void **data)
-+{
-+	acpi_status status = AE_OK;
-+
-+	if (!*data)
-+		return -EINVAL;
-+
-+	status = acpi_get_data(handle, acpi_bus_private_data_handler, data);
-+	if (ACPI_FAILURE(status) || !*data) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No context for object [%p]\n",
-+				handle));
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(acpi_bus_get_private_data);
-+
- /* --------------------------------------------------------------------------
-                                  Power Management
-    -------------------------------------------------------------------------- */
 Index: linux-2.6/drivers/acpi/thermal.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/thermal.c
 +++ linux-2.6/drivers/acpi/thermal.c
-@@ -1101,6 +1101,7 @@ static int acpi_thermal_register_thermal
+@@ -1015,7 +1015,9 @@ static int acpi_thermal_cooling_device_c
  {
- 	int trips = 0;
- 	int result;
+ 	struct acpi_device *device = cdev->devdata;
+ 	struct acpi_thermal *tz = thermal->devdata;
+-	acpi_handle handle = device->handle;
++	struct acpi_device *dev;
 +	acpi_status status;
++	acpi_handle handle;
  	int i;
+ 	int j;
+ 	int trip = -1;
+@@ -1031,12 +1033,13 @@ static int acpi_thermal_cooling_device_c
+ 		trip++;
+ 		for (i = 0; i < tz->trips.passive.devices.count;
+ 		    i++) {
+-			if (tz->trips.passive.devices.handles[i] !=
+-				handle)
+-				continue;
+-			result = action(thermal, trip, cdev);
+-			if (result)
+-				goto failed;
++			handle = tz->trips.passive.devices.handles[i];
++			status = acpi_bus_get_device(handle, &dev);
++			if (ACPI_SUCCESS(status) && (dev == device)) {
++				result = action(thermal, trip, cdev);
++				if (result)
++					goto failed;
++			}
+ 		}
+ 	}
  
- 	if (tz->trips.critical.flags.valid)
-@@ -1129,6 +1130,15 @@ static int acpi_thermal_register_thermal
- 	if (result)
- 		return result;
+@@ -1047,21 +1050,24 @@ static int acpi_thermal_cooling_device_c
+ 		for (j = 0;
+ 		    j < tz->trips.active[i].devices.count;
+ 		    j++) {
+-			if (tz->trips.active[i].devices.
+-						handles[j] != handle)
+-				continue;
+-			result = action(thermal, trip, cdev);
+-			if (result)
+-				goto failed;
++			handle = tz->trips.active[i].devices.handles[j];
++			status = acpi_bus_get_device(handle, &dev);
++			if (ACPI_SUCCESS(status) && (dev == device)) {
++				result = action(thermal, trip, cdev);
++				if (result)
++					goto failed;
++			}
+ 		}
+ 	}
  
-+	status = acpi_attach_data(tz->device->handle,
-+				  acpi_bus_private_data_handler,
-+				  tz->thermal_zone);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				"Error attaching device data\n"));
-+		return -ENODEV;
-+	}
-+
- 	tz->tz_enabled = 1;
+ 	for (i = 0; i < tz->devices.count; i++) {
+-		if (tz->devices.handles[i] != handle)
+-			continue;
+-		result = action(thermal, -1, cdev);
+-		if (result)
+-			goto failed;
++		handle = tz->devices.handles[i];
++		status = acpi_bus_get_device(handle, &dev);
++		if (ACPI_SUCCESS(status) && (dev == device)) {
++			result = action(thermal, -1, cdev);
++			if (result)
++				goto failed;
++		}
+ 	}
  
- 	printk(KERN_INFO PREFIX "%s is registered as thermal_zone%d\n",
-@@ -1142,6 +1152,7 @@ static void acpi_thermal_unregister_ther
- 	sysfs_remove_link(&tz->thermal_zone->device.kobj, "device");
- 	thermal_zone_device_unregister(tz->thermal_zone);
- 	tz->thermal_zone = NULL;
-+	acpi_detach_data(tz->device->handle, acpi_bus_private_data_handler);
- }
- 
- 
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -320,6 +320,8 @@ struct acpi_bus_event {
- 
- extern struct kset acpi_subsys;
- extern int acpi_bus_generate_netlink_event(const char*, const char*, u8, int);
-+void acpi_bus_private_data_handler(acpi_handle, u32, void *);
-+int acpi_bus_get_private_data(acpi_handle, void **);
- /*
-  * External Functions
-  */
+ failed:
