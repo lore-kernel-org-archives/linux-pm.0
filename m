@@ -1,8 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 6/10] ACPI: register ACPI Video LCD as generic
+Subject: [PATCH 5/10] ACPI: register ACPI Processor as generic
 	thermal cooling device
-Date: Thu, 17 Jan 2008 15:51:22 +0800
-Message-ID: <1200556282.2935.122.camel__12950.0984134667$1200556675$gmane$org@acpi-sony.sh.intel.com>
+Date: Thu, 17 Jan 2008 15:51:23 +0800
+Message-ID: <1200556283.2935.123.camel__28291.0545742654$1200556706$gmane$org@acpi-sony.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -17,142 +17,314 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, sujith.thomas@intel.com, linux-kernel@vger.kernel.org
+Cc: sujith.thomas@intel.com, linux-kernel@vger.kernel.org, yakui.zhao@intel.com, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Register ACPI video device as thermal cooling devices as they may be listed
-in _TZD method and the backlight control can be used for throttling.
+Register ACPI processor as thermal cooling devices.
+A combination of processor T-state and P-state are used for thermal throttling.
+the processor will reduce the frequency first and then set the T-state.
+
+we use cpufreq_thermal_reduction_pctg to calculate the cpufreq limit,
+and call cpufreq_verify_with_limit to set the cpufreq limit.
+if cpufreq driver is loaded, then we have four cooling state for cpufreq control.
+cooling state 0: cpufreq limit == max_freq
+cooling state 1: cpufreq limit == max_freq * 80%
+cooling state 2: cpufreq limit == max_freq * 60%
+cooling state 3: cpufreq limit == max_freq * 40%
+
+after the cpufreq limit is set to 40 percentage of the max_freq,
+we use T-state for cooling.
+
+eg. a processor has P-state support, and it has 8 T-state (T0-T7),
+the max_state of the proceesor is 10:
+
+state	cpufreq-limit  T-state
+0:	max_freq	T0
+1:	max_freq * 80%	T0
+2:	max_freq * 60%	T0
+3:	max_freq * 40%	T0
+4:	max_freq * 40%	T1
+5:	max_freq * 40%	T2
+6:	max_freq * 40%	T3
+7:	max_freq * 40%	T4
+8:	max_freq * 40%	T5
+9:	max_freq * 40%	T6
+10:	max_freq * 40%	T7
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
 ---
- drivers/acpi/video.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 77 insertions(+), 1 deletion(-)
+ drivers/acpi/processor_core.c    |   23 ++++++
+ drivers/acpi/processor_thermal.c |  134 +++++++++++++++++++++++++++++++++++++--
+ include/acpi/processor.h         |    6 -
+ 3 files changed, 155 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/drivers/acpi/video.c
+Index: linux-2.6/drivers/acpi/processor_thermal.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/video.c
-+++ linux-2.6/drivers/acpi/video.c
-@@ -34,6 +34,7 @@
+--- linux-2.6.orig/drivers/acpi/processor_thermal.c
++++ linux-2.6/drivers/acpi/processor_thermal.c
+@@ -32,6 +32,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/proc_fs.h>
  #include <linux/seq_file.h>
- #include <linux/input.h>
- #include <linux/backlight.h>
-+#include <linux/thermal.h>
- #include <linux/video_output.h>
++#include <linux/sysdev.h>
+ 
  #include <asm/uaccess.h>
  
-@@ -179,6 +180,7 @@ struct acpi_video_device {
- 	struct acpi_device *dev;
- 	struct acpi_video_device_brightness *brightness;
- 	struct backlight_device *backlight;
-+	struct thermal_cooling_device *cdev;
- 	struct output_device *output_dev;
+@@ -93,6 +94,9 @@ static int acpi_processor_apply_limit(st
+  * _any_ cpufreq driver and not only the acpi-cpufreq driver.
+  */
+ 
++#define CPUFREQ_THERMAL_MIN_STEP 0
++#define CPUFREQ_THERMAL_MAX_STEP 3
++
+ static unsigned int cpufreq_thermal_reduction_pctg[NR_CPUS];
+ static unsigned int acpi_thermal_cpufreq_is_init = 0;
+ 
+@@ -109,8 +113,9 @@ static int acpi_thermal_cpufreq_increase
+ 	if (!cpu_has_cpufreq(cpu))
+ 		return -ENODEV;
+ 
+-	if (cpufreq_thermal_reduction_pctg[cpu] < 60) {
+-		cpufreq_thermal_reduction_pctg[cpu] += 20;
++	if (cpufreq_thermal_reduction_pctg[cpu] <
++		CPUFREQ_THERMAL_MAX_STEP) {
++		cpufreq_thermal_reduction_pctg[cpu]++;
+ 		cpufreq_update_policy(cpu);
+ 		return 0;
+ 	}
+@@ -123,8 +128,9 @@ static int acpi_thermal_cpufreq_decrease
+ 	if (!cpu_has_cpufreq(cpu))
+ 		return -ENODEV;
+ 
+-	if (cpufreq_thermal_reduction_pctg[cpu] > 20)
+-		cpufreq_thermal_reduction_pctg[cpu] -= 20;
++	if (cpufreq_thermal_reduction_pctg[cpu] >
++		(CPUFREQ_THERMAL_MIN_STEP + 1))
++		cpufreq_thermal_reduction_pctg[cpu]--;
+ 	else
+ 		cpufreq_thermal_reduction_pctg[cpu] = 0;
+ 	cpufreq_update_policy(cpu);
+@@ -143,7 +149,7 @@ static int acpi_thermal_cpufreq_notifier
+ 
+ 	max_freq =
+ 	    (policy->cpuinfo.max_freq *
+-	     (100 - cpufreq_thermal_reduction_pctg[policy->cpu])) / 100;
++	     (100 - cpufreq_thermal_reduction_pctg[policy->cpu] * 20)) / 100;
+ 
+ 	cpufreq_verify_within_limits(policy, 0, max_freq);
+ 
+@@ -155,6 +161,32 @@ static struct notifier_block acpi_therma
+ 	.notifier_call = acpi_thermal_cpufreq_notifier,
  };
  
-@@ -334,6 +336,54 @@ static struct output_properties acpi_out
- 	.set_state = acpi_video_output_set,
- 	.get_status = acpi_video_output_get,
- };
-+
-+
-+/* thermal cooling device callbacks */
-+static int video_get_max_state(struct thermal_cooling_device *cdev, char *buf)
++static int cpufreq_get_max_state(unsigned int cpu)
 +{
-+	struct acpi_device *device = cdev->devdata;
-+	struct acpi_video_device *video = acpi_driver_data(device);
++	if (!cpu_has_cpufreq(cpu))
++		return 0;
 +
-+	return sprintf(buf, "%d\n", video->brightness->count - 3);
++	return CPUFREQ_THERMAL_MAX_STEP;
 +}
 +
-+static int video_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
++static int cpufreq_get_cur_state(unsigned int cpu)
++{
++	if (!cpu_has_cpufreq(cpu))
++		return 0;
++
++	return cpufreq_thermal_reduction_pctg[cpu];
++}
++
++static int cpufreq_set_cur_state(unsigned int cpu, int state)
++{
++	if (!cpu_has_cpufreq(cpu))
++		return 0;
++
++	cpufreq_thermal_reduction_pctg[cpu] = state;
++	cpufreq_update_policy(cpu);
++	return 0;
++}
++
+ void acpi_thermal_cpufreq_init(void)
+ {
+ 	int i;
+@@ -179,6 +211,20 @@ void acpi_thermal_cpufreq_exit(void)
+ }
+ 
+ #else				/* ! CONFIG_CPU_FREQ */
++static int cpufreq_get_max_state(unsigned int cpu)
++{
++	return 0;
++}
++
++static int cpufreq_get_cur_state(unsigned int cpu)
++{
++	return 0;
++}
++
++static int cpufreq_set_cur_state(unsigned int cpu, int state)
++{
++	return 0;
++}
+ 
+ static int acpi_thermal_cpufreq_increase(unsigned int cpu)
+ {
+@@ -310,6 +356,84 @@ int acpi_processor_get_limit_info(struct
+ 	return 0;
+ }
+ 
++/* thermal coolign device callbacks */
++static int acpi_processor_max_state(struct acpi_processor *pr)
++{
++	int max_state = 0;
++
++	/*
++	 * There exists four states according to
++	 * cpufreq_thermal_reduction_ptg. 0, 1, 2, 3
++	 */
++	max_state += cpufreq_get_max_state(pr->id);
++	if (pr->flags.throttling)
++		max_state += (pr->throttling.state_count -1);
++
++	return max_state;
++}
++static int
++processor_get_max_state(struct thermal_cooling_device *cdev, char *buf)
 +{
 +	struct acpi_device *device = cdev->devdata;
-+	struct acpi_video_device *video = acpi_driver_data(device);
-+	unsigned long level;
-+	int state;
++	struct acpi_processor *pr = acpi_driver_data(device);
 +
-+	acpi_video_device_lcd_get_level_current(video, &level);
-+	for (state = 2; state < video->brightness->count; state++)
-+		if (level == video->brightness->levels[state])
-+			return sprintf(buf, "%d\n",
-+				       video->brightness->count - state - 1);
++	if (!device || !pr)
++		return -EINVAL;
 +
-+	return -EINVAL;
++	return sprintf(buf, "%d\n", acpi_processor_max_state(pr));
 +}
 +
 +static int
-+video_set_cur_state(struct thermal_cooling_device *cdev, unsigned int state)
++processor_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
 +{
 +	struct acpi_device *device = cdev->devdata;
-+	struct acpi_video_device *video = acpi_driver_data(device);
-+	int level;
++	struct acpi_processor *pr = acpi_driver_data(device);
++	int cur_state;
 +
-+	if ( state >= video->brightness->count - 2)
++	if (!device || !pr)
 +		return -EINVAL;
 +
-+	state = video->brightness->count - state;
-+	level = video->brightness->levels[state -1];
-+	return acpi_video_device_lcd_set_level(video, level);
++	cur_state = cpufreq_get_cur_state(pr->id);
++	if (pr->flags.throttling)
++		cur_state += pr->throttling.state;
++
++	return sprintf(buf, "%d\n", cur_state);
 +}
 +
-+static struct thermal_cooling_device_ops video_cooling_ops = {
-+	.get_max_state = video_get_max_state,
-+	.get_cur_state = video_get_cur_state,
-+	.set_cur_state = video_set_cur_state,
++static int
++processor_set_cur_state(struct thermal_cooling_device *cdev, unsigned int state)
++{
++	struct acpi_device *device = cdev->devdata;
++	struct acpi_processor *pr = acpi_driver_data(device);
++	int result = 0;
++	int max_pstate;
++
++	if (!device || !pr)
++		return -EINVAL;
++
++	max_pstate = cpufreq_get_max_state(pr->id);
++
++	if (state > acpi_processor_max_state(pr))
++		return -EINVAL;
++
++	if (state <= max_pstate) {
++		if (pr->flags.throttling && pr->throttling.state)
++			result = acpi_processor_set_throttling(pr, 0);
++		cpufreq_set_cur_state(pr->id, state);
++	} else {
++		cpufreq_set_cur_state(pr->id, max_pstate);
++		result = acpi_processor_set_throttling(pr,
++				state - max_pstate);
++	}
++	return result;
++}
++
++struct thermal_cooling_device_ops processor_cooling_ops = {
++	.get_max_state = processor_get_max_state,
++	.get_cur_state = processor_get_cur_state,
++	.set_cur_state = processor_set_cur_state,
 +};
 +
- /* --------------------------------------------------------------------------
-                                Video Management
-    -------------------------------------------------------------------------- */
-@@ -653,6 +703,7 @@ static void acpi_video_device_find_cap(s
+ /* /proc interface */
  
- 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
- 		unsigned long tmp;
-+		int result;
- 		static int count = 0;
- 		char *name;
- 		name = kzalloc(MAX_NAME_LEN, GFP_KERNEL);
-@@ -666,8 +717,25 @@ static void acpi_video_device_find_cap(s
- 		device->backlight->props.max_brightness = max_level;
- 		device->backlight->props.brightness = (int)tmp;
- 		backlight_update_status(device->backlight);
+ static int acpi_processor_limit_seq_show(struct seq_file *seq, void *offset)
+Index: linux-2.6/include/acpi/processor.h
+===================================================================
+--- linux-2.6.orig/include/acpi/processor.h
++++ linux-2.6/include/acpi/processor.h
+@@ -4,7 +4,7 @@
+ #include <linux/kernel.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
 -
- 		kfree(name);
-+
-+		device->cdev = thermal_cooling_device_register("LCD",
-+					device->dev, &video_cooling_ops);
-+		if (device->cdev) {
-+			printk(KERN_INFO PREFIX
-+				"%s is registered as cooling_device%d\n",
-+				device->dev->dev.bus_id, device->cdev->id);
-+			result = sysfs_create_link(&device->dev->dev.kobj,
-+					  &device->cdev->device.kobj,
-+					  "thermal_cooling");
-+			if (result)
-+				printk(KERN_ERR PREFIX "Create sysfs link\n");
-+			result = sysfs_create_link(&device->cdev->device.kobj,
-+					  &device->dev->dev.kobj,
-+					  "device");
-+                        if (result)
-+				printk(KERN_ERR PREFIX "Create sysfs link\n");
-+		}
- 	}
- 	if (device->cap._DCS && device->cap._DSS){
- 		static int count = 0;
-@@ -1729,6 +1797,14 @@ static int acpi_video_bus_put_one_device
- 					    ACPI_DEVICE_NOTIFY,
- 					    acpi_video_device_notify);
- 	backlight_device_unregister(device->backlight);
-+	if (device->cdev) {
-+		sysfs_remove_link(&device->dev->dev.kobj,
-+				  "thermal_cooling");
-+		sysfs_remove_link(&device->cdev->device.kobj,
-+				  "device");
-+		thermal_cooling_device_unregister(device->cdev);
-+		device->cdev = NULL;
-+	}
- 	video_output_unregister(device->output_dev);
++#include <linux/thermal.h>
+ #include <asm/acpi.h>
  
- 	return 0;
+ #define ACPI_PROCESSOR_BUSY_METRIC	10
+@@ -218,7 +218,7 @@ struct acpi_processor {
+ 	struct acpi_processor_performance *performance;
+ 	struct acpi_processor_throttling throttling;
+ 	struct acpi_processor_limit limit;
+-
++	struct thermal_cooling_device *cdev;
+ 	/* the _PDC objects for this processor, if any */
+ 	struct acpi_object_list *pdc;
+ };
+@@ -330,7 +330,7 @@ extern struct cpuidle_driver acpi_idle_d
+ /* in processor_thermal.c */
+ int acpi_processor_get_limit_info(struct acpi_processor *pr);
+ extern struct file_operations acpi_processor_limit_fops;
+-
++extern struct thermal_cooling_device_ops processor_cooling_ops;
+ #ifdef CONFIG_CPU_FREQ
+ void acpi_thermal_cpufreq_init(void);
+ void acpi_thermal_cpufreq_exit(void);
+Index: linux-2.6/drivers/acpi/processor_core.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/processor_core.c
++++ linux-2.6/drivers/acpi/processor_core.c
+@@ -668,6 +668,24 @@ static int __cpuinit acpi_processor_star
+ 
+ 	acpi_processor_power_init(pr, device);
+ 
++	pr->cdev = thermal_cooling_device_register("Processor", device,
++						&processor_cooling_ops);
++	if (pr->cdev)
++		printk(KERN_INFO PREFIX
++			"%s is registered as cooling_device%d\n",
++			device->dev.bus_id, pr->cdev->id);
++	else
++		goto end;
++
++	result = sysfs_create_link(&device->dev.kobj, &pr->cdev->device.kobj,
++					"thermal_cooling");
++	if (result)
++		return result;
++	result = sysfs_create_link(&pr->cdev->device.kobj, &device->dev.kobj,
++					"device");
++	if (result)
++		return result;
++
+ 	if (pr->flags.throttling) {
+ 		printk(KERN_INFO PREFIX "%s [%s] (supports",
+ 		       acpi_device_name(device), acpi_device_bid(device));
+@@ -791,6 +809,11 @@ static int acpi_processor_remove(struct 
+ 
+ 	acpi_processor_remove_fs(device);
+ 
++	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
++	sysfs_remove_link(&pr->cdev->device.kobj, "device");
++	thermal_cooling_device_unregister(pr->cdev);
++	pr->cdev = NULL;
++
+ 	processors[pr->id] = NULL;
+ 
+ 	kfree(pr);
