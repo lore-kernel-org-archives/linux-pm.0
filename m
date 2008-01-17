@@ -1,7 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 1/10] the generic thermal sysfs driver
-Date: Thu, 17 Jan 2008 15:51:08 +0800
-Message-ID: <1200556268.2935.116.camel__161.681421059434$1200556128$gmane$org@acpi-sony.sh.intel.com>
+Subject: [PATCH 9/10] introduce intel_menlow platform specific
+	driver
+Date: Thu, 17 Jan 2008 15:51:17 +0800
+Message-ID: <1200556278.2935.118.camel__18107.2185784162$1200556406$gmane$org@acpi-sony.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -19,1142 +20,575 @@ To: lenb@kernel.org
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, sujith.thomas@intel.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Thomas Sujith <sujith.thomas@intel.com>
 
-The Generic Thermal sysfs driver for thermal management.
+Intel menlow platform specific driver for thermal management.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- Documentation/thermal/sysfs-api.txt |  247 ++++++++++++
- drivers/Kconfig                     |    2 
- drivers/Makefile                    |    1 
- drivers/thermal/Kconfig             |   16 
- drivers/thermal/Makefile            |    6 
- drivers/thermal/thermal.c           |  714 ++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h             |   90 ++++
- 7 files changed, 1076 insertions(+)
+ drivers/misc/Kconfig        |   10 
+ drivers/misc/Makefile       |    1 
+ drivers/misc/intel_menlow.c |  527 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 538 insertions(+)
 
-Index: linux-2.6/drivers/thermal/thermal.c
+Index: linux-2.6/drivers/misc/intel_menlow.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/thermal/thermal.c
-@@ -0,0 +1,714 @@
++++ linux-2.6/drivers/misc/intel_menlow.c
+@@ -0,0 +1,527 @@
 +/*
-+ *  thermal.c - Generic Thermal Management Sysfs support.
-+ *
-+ *  Copyright (C) 2008 Intel Corp
-+ *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
-+ *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
-+ *
-+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
++*  intel_menlow.c - Intel menlow Driver for thermal management extension
++*
++*  Copyright (C) 2008 Intel Corp
++*  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
++*  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
++*  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++*
++*  This program is free software; you can redistribute it and/or modify
++*  it under the terms of the GNU General Public License as published by
++*  the Free Software Foundation; version 2 of the License.
++*
++*  This program is distributed in the hope that it will be useful, but
++*  WITHOUT ANY WARRANTY; without even the implied warranty of
++*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++*  General Public License for more details.
++*
++*  You should have received a copy of the GNU General Public License along
++*  with this program; if not, write to the Free Software Foundation, Inc.,
++*  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++*
++* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++*
++*  This driver creates the sys I/F for programming the sensors.
++*  It also implements the driver for intel menlow memory controller (hardware
++*  id is INT0002) which makes use of the platform specific ACPI methods
++*  to get/set bandwidth.
++*/
 +
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/kdev_t.h>
-+#include <linux/idr.h>
-+#include <linux/thermal.h>
-+#include <linux/spinlock.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/pci.h>
++#include <linux/pm.h>
 +
-+MODULE_AUTHOR("Zhang Rui")
-+MODULE_DESCRIPTION("Generic thermal management sysfs support");
++#include <linux/thermal.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/acpi_drivers.h>
++
++MODULE_AUTHOR("Thomas Sujith");
++MODULE_AUTHOR("Zhang Rui");
++MODULE_DESCRIPTION("Intel Menlow platform specific driver");
 +MODULE_LICENSE("GPL");
 +
-+#define PREFIX "Thermal: "
++/*
++ * Memory controller device control
++ */
 +
-+struct thermal_cooling_device_instance {
-+	int id;
-+	char name[THERMAL_NAME_LENGTH];
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *cdev;
-+	int trip;
-+	char attr_name[THERMAL_NAME_LENGTH];
-+	struct device_attribute attr;
-+	struct list_head node;
-+};
++#define MEMORY_GET_BANDWIDTH "GTHS"
++#define MEMORY_SET_BANDWIDTH "STHS"
++#define MEMORY_ARG_CUR_BANDWIDTH 1
++#define MEMORY_ARG_MAX_BANDWIDTH 0
 +
-+static DEFINE_IDR(thermal_tz_idr);
-+static DEFINE_IDR(thermal_cdev_idr);
-+static DEFINE_MUTEX(thermal_idr_lock);
-+
-+static LIST_HEAD(thermal_tz_list);
-+static LIST_HEAD(thermal_cdev_list);
-+static DEFINE_MUTEX(thermal_list_lock);
-+
-+static int get_idr(struct idr *idr, struct mutex *lock, int *id)
++static int
++memory_get_int_max_bandwidth(struct thermal_cooling_device *cdev,
++			     unsigned long *max_state)
 +{
-+	int err;
++	struct acpi_device *device = cdev->devdata;
++	acpi_handle handle = device->handle;
++	unsigned long value;
++	struct acpi_object_list arg_list;
++	union acpi_object arg;
++	acpi_status status = AE_OK;
 +
-+      again:
-+	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
-+		return -ENOMEM;
++	arg_list.count = 1;
++	arg_list.pointer = &arg;
++	arg.type = ACPI_TYPE_INTEGER;
++	arg.integer.value = MEMORY_ARG_MAX_BANDWIDTH;
++	status = acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
++				       &arg_list, &value);
++	if (ACPI_FAILURE(status))
++		return -EFAULT;
 +
-+	if (lock)
-+		mutex_lock(lock);
-+	err = idr_get_new(idr, NULL, id);
-+	if (lock)
-+		mutex_unlock(lock);
-+	if (unlikely(err == -EAGAIN))
-+		goto again;
-+	else if (unlikely(err))
-+		return err;
-+
-+	*id = *id & MAX_ID_MASK;
++	*max_state = value - 1;
 +	return 0;
 +}
 +
-+static void release_idr(struct idr *idr, struct mutex *lock, int id)
++static int
++memory_get_max_bandwidth(struct thermal_cooling_device *cdev, char *buf)
 +{
-+	if (lock)
-+		mutex_lock(lock);
-+	idr_remove(idr, id);
-+	if (lock)
-+		mutex_unlock(lock);
-+}
-+
-+/* sys I/F for thermal zone */
-+
-+#define to_thermal_zone(_dev) \
-+	container_of(_dev, struct thermal_zone_device, device)
-+
-+static ssize_t
-+type_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+
-+	return sprintf(buf, "%s\n", tz->type);
-+}
-+
-+static ssize_t
-+temp_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+
-+	if (!tz->ops->get_temp)
-+		return -EPERM;
-+
-+	return tz->ops->get_temp(tz, buf);
-+}
-+
-+static ssize_t
-+mode_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+
-+	if (!tz->ops->get_mode)
-+		return -EPERM;
-+
-+	return tz->ops->get_mode(tz, buf);
-+}
-+
-+static ssize_t
-+mode_store(struct device *dev, struct device_attribute *attr,
-+	   const char *buf, size_t count)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int result;
-+
-+	if (!tz->ops->set_mode)
-+		return -EPERM;
-+
-+	result = tz->ops->set_mode(tz, buf);
-+	if (result)
-+		return result;
-+
-+	return count;
-+}
-+
-+static ssize_t
-+trip_point_type_show(struct device *dev, struct device_attribute *attr,
-+		     char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int trip;
-+
-+	if (!tz->ops->get_trip_type)
-+		return -EPERM;
-+
-+	if (!sscanf(attr->attr.name, "trip_point_%d_type", &trip))
++	unsigned long value;
++	if (memory_get_int_max_bandwidth(cdev,&value))
 +		return -EINVAL;
 +
-+	return tz->ops->get_trip_type(tz, trip, buf);
++	return sprintf(buf, "%ld\n", value);
 +}
 +
-+static ssize_t
-+trip_point_temp_show(struct device *dev, struct device_attribute *attr,
-+		     char *buf)
++static int
++memory_get_cur_bandwidth(struct thermal_cooling_device *cdev, char *buf)
 +{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int trip;
++	struct acpi_device *device = cdev->devdata;
++	acpi_handle handle = device->handle;
++	unsigned long value;
++	struct acpi_object_list arg_list;
++	union acpi_object arg;
++	acpi_status status = AE_OK;
 +
-+	if (!tz->ops->get_trip_temp)
-+		return -EPERM;
++	arg_list.count = 1;
++	arg_list.pointer = &arg;
++	arg.type = ACPI_TYPE_INTEGER;
++	arg.integer.value = MEMORY_ARG_CUR_BANDWIDTH;
++	status = acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
++				       &arg_list, &value);
++	if (ACPI_FAILURE(status))
++		return -EFAULT;
 +
-+	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
++	return sprintf(buf, "%ld\n", value);
++}
++
++static int
++memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
++			 unsigned int state)
++{
++	struct acpi_device *device = cdev->devdata;
++	acpi_handle handle = device->handle;
++	struct acpi_object_list arg_list;
++	union acpi_object arg;
++	acpi_status status;
++	int temp;
++	unsigned long max_state;
++
++	if (memory_get_int_max_bandwidth(cdev,&max_state))
++		return -EFAULT;
++
++	if (max_state < 0 || state > max_state)
 +		return -EINVAL;
 +
-+	return tz->ops->get_trip_temp(tz, trip, buf);
++	arg_list.count = 1;
++	arg_list.pointer = &arg;
++	arg.type = ACPI_TYPE_INTEGER;
++	arg.integer.value = state;
++
++	status =
++	    acpi_evaluate_integer(handle, MEMORY_SET_BANDWIDTH, &arg_list,
++				  (unsigned long *)&temp);
++
++	printk(KERN_INFO
++		"Bandwidth value was %d: status is %d\n", state, status);
++	if (ACPI_FAILURE(status))
++		return -EFAULT;
++
++	return 0;
 +}
 +
-+static DEVICE_ATTR(type, 0444, type_show, NULL);
-+static DEVICE_ATTR(temp, 0444, temp_show, NULL);
-+static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-+
-+static struct device_attribute trip_point_attrs[] = {
-+	__ATTR(trip_point_0_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_0_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_1_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_1_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_2_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_2_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_3_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_3_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_4_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_4_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_5_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_5_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_6_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_6_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_7_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_7_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_8_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_8_temp, 0444, trip_point_temp_show, NULL),
-+	__ATTR(trip_point_9_type, 0444, trip_point_type_show, NULL),
-+	__ATTR(trip_point_9_temp, 0444, trip_point_temp_show, NULL),
++static struct thermal_cooling_device_ops memory_cooling_ops = {
++	.get_max_state = memory_get_max_bandwidth,
++	.get_cur_state = memory_get_cur_bandwidth,
++	.set_cur_state = memory_set_cur_bandwidth,
 +};
 +
-+#define TRIP_POINT_ATTR_ADD(_dev, _index, result)     \
-+do {    \
-+	result = device_create_file(_dev,	\
-+				&trip_point_attrs[_index * 2]);	\
-+	if (result)	\
-+		break;	\
-+	result = device_create_file(_dev,	\
-+			&trip_point_attrs[_index * 2 + 1]);	\
-+} while (0)
++/*
++ * Memory Device Management
++ */
++static int intel_menlow_memory_add(struct acpi_device *device)
++{
++	int result = -ENODEV;
++	acpi_status status = AE_OK;
++	acpi_handle dummy;
++	struct thermal_cooling_device *cdev;
 +
-+#define TRIP_POINT_ATTR_REMOVE(_dev, _index)	\
-+do {	\
-+	device_remove_file(_dev, &trip_point_attrs[_index * 2]);	\
-+	device_remove_file(_dev, &trip_point_attrs[_index * 2 + 1]);	\
-+} while (0)
++	if (!device)
++		return -EINVAL;
 +
-+/* sys I/F for cooling device */
-+#define to_cooling_device(_dev)	\
-+	container_of(_dev, struct thermal_cooling_device, device)
++	status = acpi_get_handle(device->handle, MEMORY_GET_BANDWIDTH, &dummy);
++	if (ACPI_FAILURE(status))
++		goto end;
 +
-+static ssize_t
-+thermal_cooling_device_type_show(struct device *dev,
++	status = acpi_get_handle(device->handle, MEMORY_SET_BANDWIDTH, &dummy);
++	if (ACPI_FAILURE(status))
++		goto end;
++
++	cdev = thermal_cooling_device_register("Memory controller", device,
++					       &memory_cooling_ops);
++	acpi_driver_data(device) = cdev;
++	if (!cdev)
++		result = -ENODEV;
++	else {
++		result =
++		    sysfs_create_link(&device->dev.kobj, &cdev->device.kobj,
++				      "thermal_cooling");
++		if (result)
++			goto end;
++		result =
++		    sysfs_create_link(&cdev->device.kobj, &device->dev.kobj,
++				      "device");
++		if (result)
++			goto end;
++	}
++
++      end:
++	return result;
++}
++
++static int intel_menlow_memory_remove(struct acpi_device *device, int type)
++{
++	struct thermal_cooling_device *cdev = acpi_driver_data(device);
++
++	if (!device || !cdev)
++		return -EINVAL;
++
++	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
++	sysfs_remove_link(&cdev->device.kobj, "device");
++	thermal_cooling_device_unregister(cdev);
++
++	return 0;
++}
++
++const static struct acpi_device_id intel_menlow_memory_ids[] = {
++	{"INT0002", 0},
++	{"", 0},
++};
++
++static struct acpi_driver intel_menlow_memory_driver = {
++	.name = "intel_menlow_thermal_control",
++	.ids = intel_menlow_memory_ids,
++	.ops = {
++		.add = intel_menlow_memory_add,
++		.remove = intel_menlow_memory_remove,
++		},
++};
++
++/*
++ * Sensor control on menlow platform
++ */
++
++#define THERMAL_AUX0 0
++#define THERMAL_AUX1 1
++#define GET_AUX0 "GAX0"
++#define GET_AUX1 "GAX1"
++#define SET_AUX0 "SAX0"
++#define SET_AUX1 "SAX1"
++
++struct intel_menlow_attribute {
++	struct device_attribute attr;
++	struct device *device;
++	acpi_handle handle;
++	struct list_head node;
++};
++
++static LIST_HEAD(intel_menlow_attr_list);
++static DEFINE_MUTEX(intel_menlow_attr_lock);
++
++/*
++ * sensor_get_auxtrip
++ * -----------------
++ * get the current auxtrip value from sensor through proprietory ACPI methods
++ * name: Thermalzone name
++ * auxtype : AUX0/AUX1
++ * buf: syfs buffer
++ */
++static int sensor_get_auxtrip(acpi_handle handle, int index, int *value)
++{
++	acpi_status status;
++
++	if ((index != 0 && index != 1) || !value)
++		return -EINVAL;
++
++	status = acpi_evaluate_integer(handle, index ? GET_AUX1 : GET_AUX0,
++				       NULL, (unsigned long *)value);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	return 0;
++}
++
++/*
++ * sensor_set_auxtrip
++ * -----------------
++ * set the new auxtrip value to sensor through proprietory ACPI methods
++ * name: Thermalzone name
++ * auxtype : AUX0/AUX1
++ * buf: syfs buffer
++ */
++static int sensor_set_auxtrip(acpi_handle handle, int index, int value)
++{
++	acpi_status status;
++	union acpi_object arg = {
++		ACPI_TYPE_INTEGER
++	};
++	struct acpi_object_list args = {
++		1, &arg
++	};
++	int temp;
++
++	if (index != 0 && index != 1)
++		return -EINVAL;
++
++	status = acpi_evaluate_integer(handle, index ? GET_AUX0 : GET_AUX1,
++				       NULL, (unsigned long *)&temp);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++	if ((index && value < temp) || (!index && value > temp))
++		return -EINVAL;
++
++	arg.integer.value = value;
++	status = acpi_evaluate_integer(handle, index ? SET_AUX1 : SET_AUX0,
++				       &args, (unsigned long *)&temp);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	/* do we need to check the return value of SAX0/SAX1 ? */
++
++	return 0;
++}
++
++#define to_intel_menlow_attr(_attr)	\
++	container_of(_attr, struct intel_menlow_attribute, attr)
++
++static ssize_t aux0_show(struct device *dev,
++			 struct device_attribute *dev_attr, char *buf)
++{
++	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
++	int value;
++	int result;
++
++	result = sensor_get_auxtrip(attr->handle, 0, &value);
++
++	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
++}
++
++static ssize_t aux1_show(struct device *dev,
++			 struct device_attribute *dev_attr, char *buf)
++{
++	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
++	int value;
++	int result;
++
++	result = sensor_get_auxtrip(attr->handle, 1, &value);
++
++	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
++}
++
++static ssize_t aux0_store(struct device *dev,
++			  struct device_attribute *dev_attr,
++			  const char *buf, size_t count)
++{
++	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
++	int value;
++	int result;
++
++	/*Sanity check; should be a positive integer */
++	if (!sscanf(buf, "%d", &value))
++		return -EINVAL;
++
++	if (value < 0)
++		return -EINVAL;
++
++	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_KELVIN(value));
++	return result ? result : count;
++}
++
++static ssize_t aux1_store(struct device *dev,
++			  struct device_attribute *dev_attr,
++			  const char *buf, size_t count)
++{
++	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
++	int value;
++	int result;
++
++	/*Sanity check; should be a positive integer */
++	if (!sscanf(buf, "%d", &value))
++		return -EINVAL;
++
++	if (value < 0)
++		return -EINVAL;
++
++	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_KELVIN(value));
++	return result ? result : count;
++}
++
++/* BIOS can enable/disable the thermal user application in dabney platform */
++#define BIOS_ENABLED "\\_TZ.GSTS"
++static ssize_t bios_enabled_show(struct device *dev,
 +				 struct device_attribute *attr, char *buf)
 +{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
++	acpi_status status;
++	unsigned long bios_enabled;
 +
-+	return sprintf(buf, "%s\n", cdev->type);
++	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &bios_enabled);
++	if (ACPI_FAILURE(status))
++		return -ENODEV;
++
++	return sprintf(buf, "%s\n", bios_enabled ? "enabled" : "disabled");
 +}
 +
-+static ssize_t
-+thermal_cooling_device_max_state_show(struct device *dev,
-+				      struct device_attribute *attr, char *buf)
++static int intel_menlow_add_one_attribute(char *name, int mode, void *show,
++					  void *store, struct device *dev,
++					  acpi_handle handle)
 +{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+
-+	return cdev->ops->get_max_state(cdev, buf);
-+}
-+
-+static ssize_t
-+thermal_cooling_device_cur_state_show(struct device *dev,
-+				      struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+
-+	return cdev->ops->get_cur_state(cdev, buf);
-+}
-+
-+static ssize_t
-+thermal_cooling_device_cur_state_store(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-+{
-+	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	int state;
++	struct intel_menlow_attribute *attr;
 +	int result;
 +
-+	if (!sscanf(buf, "%d\n", &state))
-+		return -EINVAL;
++	attr = kzalloc(sizeof(struct intel_menlow_attribute), GFP_KERNEL);
++	if (!attr)
++		return -ENOMEM;
 +
-+	if (state < 0)
-+		return -EINVAL;
++	attr->attr.attr.name = name;
++	attr->attr.attr.mode = mode;
++	attr->attr.show = show;
++	attr->attr.store = store;
++	attr->device = dev;
++	attr->handle = handle;
 +
-+	result = cdev->ops->set_cur_state(cdev, state);
++	result = device_create_file(dev, &attr->attr);
 +	if (result)
 +		return result;
-+	return count;
-+}
 +
-+static struct device_attribute dev_attr_cdev_type =
-+		__ATTR(type, 0444, thermal_cooling_device_type_show, NULL);
-+static DEVICE_ATTR(max_state, 0444,
-+		   thermal_cooling_device_max_state_show, NULL);
-+static DEVICE_ATTR(cur_state, 0644,
-+		   thermal_cooling_device_cur_state_show,
-+		   thermal_cooling_device_cur_state_store);
++	mutex_lock(&intel_menlow_attr_lock);
++	list_add_tail(&attr->node, &intel_menlow_attr_list);
++	mutex_unlock(&intel_menlow_attr_lock);
 +
-+static ssize_t
-+thermal_cooling_device_trip_point_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_cooling_device_instance *instance;
-+
-+	instance =
-+	    container_of(attr, struct thermal_cooling_device_instance, attr);
-+
-+	if (instance->trip == THERMAL_TRIPS_NONE)
-+		return sprintf(buf, "-1\n");
-+	else
-+		return sprintf(buf, "%d\n", instance->trip);
-+}
-+
-+/* Device management */
-+
-+/**
-+ * thermal_zone_bind_cooling_device - bind a cooling device to a thermal zone
-+ * this function is usually called in the thermal zone device .bind callback.
-+ * @tz:		thermal zone device
-+ * @trip:	indicates which trip point the cooling devices is
-+ *		associated with in this thermal zone.
-+ * @cdev:	thermal cooling device
-+ */
-+int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
-+				     int trip,
-+				     struct thermal_cooling_device *cdev)
-+{
-+	struct thermal_cooling_device_instance *dev;
-+	struct thermal_cooling_device_instance *pos;
-+	int result;
-+
-+	if (trip >= tz->trips ||
-+	    (trip < 0 && trip != THERMAL_TRIPS_NONE))
-+		return -EINVAL;
-+
-+	if (!tz || !cdev)
-+		return -EINVAL;
-+
-+	dev =
-+	    kzalloc(sizeof(struct thermal_cooling_device_instance), GFP_KERNEL);
-+	if (!dev)
-+		return -ENOMEM;
-+	dev->tz = tz;
-+	dev->cdev = cdev;
-+	dev->trip = trip;
-+	result = get_idr(&tz->idr, &tz->lock, &dev->id);
-+	if (result)
-+		goto free_mem;
-+
-+	sprintf(dev->name, "cdev%d", dev->id);
-+	result =
-+	    sysfs_create_link(&tz->device.kobj, &cdev->device.kobj, dev->name);
-+	if (result)
-+		goto release_idr;
-+
-+	sprintf(dev->attr_name, "cdev%d_trip_point", dev->id);
-+	dev->attr.attr.name = dev->attr_name;
-+	dev->attr.attr.mode = 0444;
-+	dev->attr.show = thermal_cooling_device_trip_point_show;
-+	result = device_create_file(&tz->device, &dev->attr);
-+	if (result)
-+		goto remove_symbol_link;
-+
-+	mutex_lock(&tz->lock);
-+	list_for_each_entry(pos, &tz->cooling_devices, node)
-+	    if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
-+		result = -EEXIST;
-+		break;
-+	}
-+	if (!result)
-+		list_add_tail(&dev->node, &tz->cooling_devices);
-+	mutex_unlock(&tz->lock);
-+
-+	if (!result)
-+		return 0;
-+
-+	device_remove_file(&tz->device, &dev->attr);
-+      remove_symbol_link:
-+	sysfs_remove_link(&tz->device.kobj, dev->name);
-+      release_idr:
-+	release_idr(&tz->idr, &tz->lock, dev->id);
-+      free_mem:
-+	kfree(dev);
-+	return result;
-+}
-+EXPORT_SYMBOL(thermal_zone_bind_cooling_device);
-+
-+/**
-+ * thermal_zone_unbind_cooling_device - unbind a cooling device from a thermal zone
-+ * this function is usually called in the thermal zone device .unbind callback.
-+ * @tz:		thermal zone device
-+ * @trip:	indicates which trip point the cooling devices is
-+ *		associated with in this thermal zone.
-+ * @cdev:	thermal cooling device
-+ */
-+int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
-+				       int trip,
-+				       struct thermal_cooling_device *cdev)
-+{
-+	struct thermal_cooling_device_instance *pos, *next;
-+
-+	mutex_lock(&tz->lock);
-+	list_for_each_entry_safe(pos, next, &tz->cooling_devices, node) {
-+		if (pos->tz == tz && pos->trip == trip
-+		    && pos->cdev == cdev) {
-+			list_del(&pos->node);
-+			mutex_unlock(&tz->lock);
-+			goto unbind;
-+		}
-+	}
-+	mutex_unlock(&tz->lock);
-+
-+	return -ENODEV;
-+
-+      unbind:
-+	device_remove_file(&tz->device, &pos->attr);
-+	sysfs_remove_link(&tz->device.kobj, pos->name);
-+	release_idr(&tz->idr, &tz->lock, pos->id);
-+	kfree(pos);
 +	return 0;
 +}
-+EXPORT_SYMBOL(thermal_zone_unbind_cooling_device);
 +
-+static void thermal_release(struct device *dev)
++static acpi_status
++intel_menlow_register_sensor(acpi_handle handle, u32 lvl,
++			     void *context, void **rv)
 +{
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *cdev;
-+
-+	if (!strncmp(dev->bus_id, "thermal_zone", sizeof "thermal_zone" - 1)) {
-+		tz = to_thermal_zone(dev);
-+		kfree(tz);
-+	} else {
-+		cdev = to_cooling_device(dev);
-+		kfree(cdev);
-+	}
-+}
-+
-+static struct class thermal_class = {
-+	.name = "thermal",
-+	.dev_release = thermal_release,
-+};
-+
-+/**
-+ * thermal_cooling_device_register - register a new thermal cooling device
-+ * @type:	the thermal cooling device type.
-+ * @devdata:	device private data.
-+ * @ops:		standard thermal cooling devices callbacks.
-+ */
-+struct thermal_cooling_device *thermal_cooling_device_register(char *type,
-+		       void *devdata, struct thermal_cooling_device_ops *ops)
-+{
-+	struct thermal_cooling_device *cdev;
-+	struct thermal_zone_device *pos;
++	acpi_status status;
++	acpi_handle dummy;
++	struct thermal_zone_device *thermal;
 +	int result;
 +
-+	if (strlen(type) >= THERMAL_NAME_LENGTH)
-+		return NULL;
-+
-+	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
-+		!ops->set_cur_state)
-+		return NULL;
-+
-+	cdev = kzalloc(sizeof(struct thermal_cooling_device), GFP_KERNEL);
-+	if (!cdev)
-+		return NULL;
-+
-+	result = get_idr(&thermal_cdev_idr, &thermal_idr_lock, &cdev->id);
-+	if (result) {
-+		kfree(cdev);
-+		return NULL;
-+	}
-+
-+	strcpy(cdev->type, type);
-+	cdev->ops = ops;
-+	cdev->device.class = &thermal_class;
-+	cdev->devdata = devdata;
-+	sprintf(cdev->device.bus_id, "cooling_device%d", cdev->id);
-+	result = device_register(&cdev->device);
-+	if (result) {
-+		release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
-+		kfree(cdev);
-+		return NULL;
-+	}
-+
-+	/* sys I/F */
-+	if (type) {
-+		result = device_create_file(&cdev->device,
-+					    &dev_attr_cdev_type);
-+		if (result)
-+			goto unregister;
-+	}
-+
-+	result = device_create_file(&cdev->device, &dev_attr_max_state);
++	result = acpi_bus_get_private_data(handle, (void **)&thermal);
 +	if (result)
-+		goto unregister;
++		return 0;
 +
-+	result = device_create_file(&cdev->device, &dev_attr_cur_state);
++	/* _TZ must have the AUX0/1 methods */
++	status = acpi_get_handle(handle, GET_AUX0, &dummy);
++	if (ACPI_FAILURE(status))
++		goto not_found;
++
++	status = acpi_get_handle(handle, SET_AUX0, &dummy);
++	if (ACPI_FAILURE(status))
++		goto not_found;
++
++	result = intel_menlow_add_one_attribute("aux0", 0644,
++						aux0_show, aux0_store,
++						&thermal->device, handle);
 +	if (result)
-+		goto unregister;
++		return AE_ERROR;
 +
-+	mutex_lock(&thermal_list_lock);
-+	list_add(&cdev->node, &thermal_cdev_list);
-+	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		if (!pos->ops->bind)
-+			continue;
-+		result = pos->ops->bind(pos, cdev);
-+		if (result)
-+			break;
++	status = acpi_get_handle(handle, GET_AUX1, &dummy);
++	if (ACPI_FAILURE(status))
++		goto not_found;
 +
-+	}
-+	mutex_unlock(&thermal_list_lock);
++	status = acpi_get_handle(handle, SET_AUX1, &dummy);
++	if (ACPI_FAILURE(status))
++		goto not_found;
 +
-+	if (!result)
-+		return cdev;
++	result = intel_menlow_add_one_attribute("aux1", 0644,
++						aux1_show, aux1_store,
++						&thermal->device, handle);
++	if (result)
++		return AE_ERROR;
 +
-+      unregister:
-+	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
-+	device_unregister(&cdev->device);
-+	return NULL;
++	/*
++	 * create the "dabney_enabled" attribute which means the user app
++	 * should be loaded or not
++	 */
++
++	result = intel_menlow_add_one_attribute("bios_enabled", 0444,
++						bios_enabled_show, NULL,
++						&thermal->device, handle);
++	if (result)
++		return AE_ERROR;
++
++      not_found:
++	if (status == AE_NOT_FOUND)
++		return AE_OK;
++	else
++		return status;
 +}
-+EXPORT_SYMBOL(thermal_cooling_device_register);
 +
-+/**
-+ * thermal_cooling_device_unregister - removes the registered thermal cooling device
-+ *
-+ * @cdev:	the thermal cooling device to remove.
-+ *
-+ * thermal_cooling_device_unregister() must be called when the device is no
-+ * longer needed.
-+ */
-+void thermal_cooling_device_unregister(struct
-+				       thermal_cooling_device
-+				       *cdev)
++static void intel_menlow_unregister_sensor(void)
 +{
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *pos = NULL;
++	struct intel_menlow_attribute *pos, *next;
 +
-+	if (!cdev)
-+		return;
-+
-+	mutex_lock(&thermal_list_lock);
-+	list_for_each_entry(pos, &thermal_cdev_list, node)
-+	    if (pos == cdev)
-+		break;
-+	if (pos != cdev) {
-+		/* thermal cooling device not found */
-+		mutex_unlock(&thermal_list_lock);
-+		return;
++	mutex_lock(&intel_menlow_attr_lock);
++	list_for_each_entry_safe(pos, next, &intel_menlow_attr_list, node) {
++		list_del(&pos->node);
++		device_remove_file(pos->device, &pos->attr);
++		kfree(pos);
 +	}
-+	list_del(&cdev->node);
-+	list_for_each_entry(tz, &thermal_tz_list, node) {
-+		if (!tz->ops->unbind)
-+			continue;
-+		tz->ops->unbind(tz, cdev);
-+	}
-+	mutex_unlock(&thermal_list_lock);
-+	if (cdev->type[0])
-+		device_remove_file(&cdev->device,
-+				   &dev_attr_cdev_type);
-+	device_remove_file(&cdev->device, &dev_attr_max_state);
-+	device_remove_file(&cdev->device, &dev_attr_cur_state);
++	mutex_unlock(&intel_menlow_attr_lock);
 +
-+	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
-+	device_unregister(&cdev->device);
 +	return;
 +}
-+EXPORT_SYMBOL(thermal_cooling_device_unregister);
 +
-+/**
-+ * thermal_zone_device_register - register a new thermal zone device
-+ * @type:	the thermal zone device type
-+ * @trips:	the number of trip points the thermal zone support
-+ * @devdata:	private device data
-+ * @ops:	standard thermal zone device callbacks
-+ *
-+ * thermal_zone_device_unregister() must be called when the device is no
-+ * longer needed.
-+ */
-+struct thermal_zone_device *thermal_zone_device_register(char *type,
-+					int trips, void *devdata,
-+					struct thermal_zone_device_ops *ops)
++static int __init intel_menlow_module_init(void)
 +{
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *pos;
-+	int result;
-+	int count;
++	int result = -ENODEV;
++	acpi_status status;
++	unsigned long enable;
 +
-+	if (strlen(type) >= THERMAL_NAME_LENGTH)
-+		return NULL;
++	if (acpi_disabled)
++		return result;
 +
-+	if (trips > THERMAL_MAX_TRIPS || trips < 0)
-+		return NULL;
++	/* Looking for the \_TZ.GSTS method */
++	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &enable);
++	if (ACPI_FAILURE(status) || !enable)
++		return -ENODEV;
 +
-+	if (!ops || !ops->get_temp)
-+		return NULL;
-+
-+	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
-+	if (!tz)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&tz->cooling_devices);
-+	idr_init(&tz->idr);
-+	mutex_init(&tz->lock);
-+	result = get_idr(&thermal_tz_idr, &thermal_idr_lock, &tz->id);
-+	if (result) {
-+		kfree(tz);
-+		return NULL;
-+	}
-+
-+	strcpy(tz->type, type);
-+	tz->ops = ops;
-+	tz->device.class = &thermal_class;
-+	tz->devdata = devdata;
-+	tz->trips = trips;
-+	sprintf(tz->device.bus_id, "thermal_zone%d", tz->id);
-+	result = device_register(&tz->device);
-+	if (result) {
-+		release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-+		kfree(tz);
-+		return NULL;
-+	}
-+
-+	/* sys I/F */
-+	if (type) {
-+		result = device_create_file(&tz->device, &dev_attr_type);
-+		if (result)
-+			goto unregister;
-+	}
-+
-+	result = device_create_file(&tz->device, &dev_attr_temp);
++	/* Looking for ACPI device MEM0 with hardware id INT0002 */
++	result = acpi_bus_register_driver(&intel_menlow_memory_driver);
 +	if (result)
-+		goto unregister;
++		return result;
 +
-+	if (ops->get_mode) {
-+		result = device_create_file(&tz->device, &dev_attr_mode);
-+		if (result)
-+			goto unregister;
-+	}
++	/* Looking for sensors in each ACPI thermal zone */
++	status = acpi_walk_namespace(ACPI_TYPE_THERMAL, ACPI_ROOT_OBJECT,
++				     ACPI_UINT32_MAX,
++				     intel_menlow_register_sensor, NULL, NULL);
++	if (ACPI_FAILURE(status))
++		result = -ENODEV;
 +
-+	for (count = 0; count < trips; count++) {
-+		TRIP_POINT_ATTR_ADD(&tz->device, count, result);
-+		if (result)
-+			goto unregister;
-+	}
-+
-+	mutex_lock(&thermal_list_lock);
-+	list_add_tail(&tz->node, &thermal_tz_list);
-+	if (ops->bind)
-+		list_for_each_entry(pos, &thermal_cdev_list, node) {
-+			result = ops->bind(tz, pos);
-+			if (result)
-+				break;
-+		}
-+	mutex_unlock(&thermal_list_lock);
-+
-+	if (!result)
-+		return tz;
-+
-+      unregister:
-+	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-+	device_unregister(&tz->device);
-+	return NULL;
++	return 0;
 +}
-+EXPORT_SYMBOL(thermal_zone_device_register);
 +
-+/**
-+ * thermal_device_unregister - removes the registered thermal zone device
-+ *
-+ * @tz: the thermal zone device to remove
-+ */
-+void thermal_zone_device_unregister(struct thermal_zone_device *tz)
++static void __exit intel_menlow_module_exit(void)
 +{
-+	struct thermal_cooling_device *cdev;
-+	struct thermal_zone_device *pos = NULL;
-+	int count;
-+
-+	if (!tz)
-+		return;
-+
-+	mutex_lock(&thermal_list_lock);
-+	list_for_each_entry(pos, &thermal_tz_list, node)
-+	    if (pos == tz)
-+		break;
-+	if (pos != tz) {
-+		/* thermal zone device not found */
-+		mutex_unlock(&thermal_list_lock);
-+		return;
-+	}
-+	list_del(&tz->node);
-+	if (tz->ops->unbind)
-+		list_for_each_entry(cdev, &thermal_cdev_list, node)
-+		    tz->ops->unbind(tz, cdev);
-+	mutex_unlock(&thermal_list_lock);
-+
-+	if (tz->type[0])
-+		device_remove_file(&tz->device, &dev_attr_type);
-+	device_remove_file(&tz->device, &dev_attr_temp);
-+	if (tz->ops->get_mode)
-+		device_remove_file(&tz->device, &dev_attr_mode);
-+
-+	for (count = 0; count < tz->trips; count++)
-+		TRIP_POINT_ATTR_REMOVE(&tz->device, count);
-+
-+	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-+	idr_destroy(&tz->idr);
-+	mutex_destroy(&tz->lock);
-+	device_unregister(&tz->device);
-+	return;
-+}
-+EXPORT_SYMBOL(thermal_zone_device_unregister);
-+
-+static int __init thermal_init(void)
-+{
-+	int result = 0;
-+
-+	result = class_register(&thermal_class);
-+	if (result) {
-+		idr_destroy(&thermal_tz_idr);
-+		idr_destroy(&thermal_cdev_idr);
-+		mutex_destroy(&thermal_idr_lock);
-+		mutex_destroy(&thermal_list_lock);
-+	}
-+	return result;
++	acpi_bus_unregister_driver(&intel_menlow_memory_driver);
++	intel_menlow_unregister_sensor();
 +}
 +
-+static void __exit thermal_exit(void)
-+{
-+	class_unregister(&thermal_class);
-+	idr_destroy(&thermal_tz_idr);
-+	idr_destroy(&thermal_cdev_idr);
-+	mutex_destroy(&thermal_idr_lock);
-+	mutex_destroy(&thermal_list_lock);
-+}
-+
-+subsys_initcall(thermal_init);
-+module_exit(thermal_exit);
-Index: linux-2.6/include/linux/thermal.h
++module_init(intel_menlow_module_init);
++module_exit(intel_menlow_module_exit);
+Index: linux-2.6/drivers/misc/Kconfig
 ===================================================================
---- /dev/null
-+++ linux-2.6/include/linux/thermal.h
-@@ -0,0 +1,90 @@
-+/*
-+ *  thermal.h  ($Revision: 0 $)
-+ *
-+ *  Copyright (C) 2008  Intel Corp
-+ *  Copyright (C) 2008  Zhang Rui <rui.zhang@intel.com>
-+ *  Copyright (C) 2008  Sujith Thomas <sujith.thomas@intel.com>
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#ifndef __THERMAL_H__
-+#define __THERMAL_H__
-+
-+#include <linux/idr.h>
-+#include <linux/device.h>
-+
-+struct thermal_zone_device;
-+struct thermal_cooling_device;
-+
-+struct thermal_zone_device_ops {
-+	int (*bind) (struct thermal_zone_device *,
-+		     struct thermal_cooling_device *);
-+	int (*unbind) (struct thermal_zone_device *,
-+		       struct thermal_cooling_device *);
-+	int (*get_temp) (struct thermal_zone_device *, char *);
-+	int (*get_mode) (struct thermal_zone_device *, char *);
-+	int (*set_mode) (struct thermal_zone_device *, const char *);
-+	int (*get_trip_type) (struct thermal_zone_device *, int, char *);
-+	int (*get_trip_temp) (struct thermal_zone_device *, int, char *);
-+};
-+
-+struct thermal_cooling_device_ops {
-+	int (*get_max_state) (struct thermal_cooling_device *, char *);
-+	int (*get_cur_state) (struct thermal_cooling_device *, char *);
-+	int (*set_cur_state) (struct thermal_cooling_device *, unsigned int);
-+};
-+
-+#define THERMAL_TRIPS_NONE -1
-+#define THERMAL_MAX_TRIPS 10
-+#define THERMAL_NAME_LENGTH 20
-+struct thermal_cooling_device {
-+	int id;
-+	char type[THERMAL_NAME_LENGTH];
-+	struct device device;
-+	void *devdata;
-+	struct thermal_cooling_device_ops *ops;
-+	struct list_head node;
-+};
-+
-+struct thermal_zone_device {
-+	int id;
-+	char type[THERMAL_NAME_LENGTH];
-+	struct device device;
-+	void *devdata;
-+	int trips;
-+	struct thermal_zone_device_ops *ops;
-+	struct list_head cooling_devices;
-+	struct idr idr;
-+	struct mutex lock;	/* protect cooling devices list */
-+	struct list_head node;
-+};
-+
-+struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
-+					struct thermal_zone_device_ops *);
-+void thermal_zone_device_unregister(struct thermal_zone_device *);
-+
-+int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
-+				     struct thermal_cooling_device *);
-+int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
-+				       struct thermal_cooling_device *);
-+
-+struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
-+					struct thermal_cooling_device_ops *);
-+void thermal_cooling_device_unregister(struct thermal_cooling_device *);
-+
-+#endif				/* __THERMAL_H__ */
-Index: linux-2.6/drivers/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/Kconfig
-+++ linux-2.6/drivers/Kconfig
-@@ -58,6 +58,8 @@ source "drivers/power/Kconfig"
+--- linux-2.6.orig/drivers/misc/Kconfig
++++ linux-2.6/drivers/misc/Kconfig
+@@ -232,4 +232,14 @@ config ATMEL_SSC
  
- source "drivers/hwmon/Kconfig"
+ 	  If unsure, say N.
  
-+source "drivers/thermal/Kconfig"
++config INTEL_MENLOW
++        tristate "Thermal Management driver for Intel menlow platform"
++        depends on ACPI_THERMAL
++	default n
++        ---help---
++          ACPI thermal management enhancement driver on
++	  Intel Menlow platform.
 +
- source "drivers/watchdog/Kconfig"
- 
- source "drivers/ssb/Kconfig"
-Index: linux-2.6/drivers/thermal/Kconfig
++          If you are not sure, say N here.
++
+ endif # MISC_DEVICES
+Index: linux-2.6/drivers/misc/Makefile
 ===================================================================
---- /dev/null
-+++ linux-2.6/drivers/thermal/Kconfig
-@@ -0,0 +1,16 @@
-+#
-+# Generic thermal sysfs drivers configuration
-+#
-+
-+menuconfig THERMAL
-+	bool "Generic Thermal sysfs driver"
-+	default y
-+	help
-+	  Generic Thermal Sysfs driver offers a generic mechanism for
-+	  thermal management. Usually it's made up of one or more thermal
-+	  zone and cooling device.
-+	  each thermal zone contains its own temperature, trip points,
-+	  cooling devices.
-+	  All platforms with ACPI thermal support can use this driver.
-+	  If you want this support, you should say Y here
-+
-Index: linux-2.6/drivers/thermal/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/thermal/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for sensor chip drivers.
-+#
-+
-+obj-$(CONFIG_THERMAL)		+= thermal.o
-+
-Index: linux-2.6/drivers/Makefile
-===================================================================
---- linux-2.6.orig/drivers/Makefile
-+++ linux-2.6/drivers/Makefile
-@@ -65,6 +65,7 @@ obj-y				+= i2c/
- obj-$(CONFIG_W1)		+= w1/
- obj-$(CONFIG_POWER_SUPPLY)	+= power/
- obj-$(CONFIG_HWMON)		+= hwmon/
-+obj-$(CONFIG_THERMAL)		+= thermal/
- obj-$(CONFIG_WATCHDOG)		+= watchdog/
- obj-$(CONFIG_PHONE)		+= telephony/
- obj-$(CONFIG_MD)		+= md/
-Index: linux-2.6/Documentation/thermal/sysfs-api.txt
-===================================================================
---- /dev/null
-+++ linux-2.6/Documentation/thermal/sysfs-api.txt
-@@ -0,0 +1,247 @@
-+Generic Thermal Sysfs driver How To
-+=========================
-+
-+Written by Sujith Thomas <sujith.thomas@intel.com>, Zhang Rui <rui.zhang@intel.com>
-+
-+Updated: 2 January 2008
-+
-+Copyright (c)  2008 Intel Corporation
-+
-+
-+0. Introduction
-+
-+The generic thermal sysfs provides a set of interfaces for thermal zone devices (sensors)
-+and thermal cooling devices (fan, processor...) to register with the thermal management
-+solution and to be a part of it.
-+
-+This how-to focusses on enabling new thermal zone and cooling devices to participate
-+in thermal management.
-+This solution is platform independent and any type of thermal zone devices and
-+cooling devices should be able to make use of the infrastructure.
-+
-+The main task of the thermal sysfs driver is to expose thermal zone attributes as well
-+as cooling device attributes to the user space.
-+An intelligent thermal management application can make decisions based on inputs
-+from thermal zone attributes (the current temperature and trip point temperature)
-+and throttle appropriate devices.
-+
-+[0-*]	denotes any positive number starting from 0
-+[1-*]	denotes any positive number starting from 1
-+
-+1. thermal sysfs driver interface functions
-+
-+1.1 thermal zone device interface
-+1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *name, int trips,
-+				void *devdata, struct thermal_zone_device_ops *ops)
-+
-+	This interface function adds a new thermal zone device (sensor) to
-+	/sys/class/thermal folder as thermal_zone[0-*].
-+	It tries to bind all the thermal cooling devices registered at the same time.
-+
-+	name: the thermal zone name.
-+	trips: the total number of trip points this thermal zone supports.
-+	devdata: device private data
-+	ops: thermal zone device callbacks.
-+		.bind: bind the thermal zone device with a thermal cooling device.
-+		.unbind: unbing the thermal zone device with a thermal cooling device.
-+		.get_temp: get the current temperature of the thermal zone.
-+		.get_mode: get the current mode (user/kernel) of the thermal zone.
-+			   "kernel" means thermal management is done in kernel.
-+			   "user" will prevent kernel thermal driver actions upon trip points
-+			   so that user applications can take charge of thermal management.
-+		.set_mode: set the mode (user/kernel) of the thermal zone.
-+		.get_trip_type: get the type of certain trip point.
-+		.get_trip_temp: get the temperature above which the certain trip point
-+				will be fired.
-+
-+1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
-+
-+	This interface function removes the thermal zone device.
-+	It deletes the corresponding entry form /sys/class/thermal folder and unbind all
-+	the thermal cooling devices it uses.
-+
-+1.2 thermal cooling device interface
-+1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
-+					void *devdata, struct thermal_cooling_device_ops *)
-+
-+	This interface function adds a new thermal cooling device (fan/processor/...) to
-+	/sys/class/thermal/ folder as cooling_device[0-*].
-+	It tries to bind itself to all the thermal zone devices register at the same time.
-+	name: the cooling device name.
-+	devdata: device private data.
-+	ops: thermal cooling devices callbacks.
-+		.get_max_state: get the Maximum throttle state of the cooling device.
-+		.get_cur_state: get the Current throttle state of the cooling device.
-+		.set_cur_state: set the Current throttle state of the cooling device.
-+
-+1.2.2 void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
-+
-+	This interface function remove the thermal cooling device.
-+	It deletes the corresponding entry form /sys/class/thermal folder and unbind
-+	itself from all	the thermal zone devices using it.
-+
-+1.3 interface for binding a thermal zone device with a thermal cooling device
-+1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
-+			int trip, struct thermal_cooling_device *cdev);
-+
-+	This interface function bind a thermal cooling device to the certain trip point
-+	of a thermal zone device.
-+	This function is usually called in the thermal zone device .bind callback.
-+	tz: the thermal zone device
-+	cdev: thermal cooling device
-+	trip: indicates which trip point the cooling devices is associated with
-+		 in this thermal zone.
-+
-+1.3.2 int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
-+				int trip, struct thermal_cooling_device *cdev);
-+
-+	This interface function unbind a thermal cooling device from the certain trip point
-+	of a thermal zone device.
-+	This function is usually called in the thermal zone device .unbind callback.
-+	tz: the thermal zone device
-+	cdev: thermal cooling device
-+	trip: indicates which trip point the cooling devices is associated with
-+		in this thermal zone.
-+
-+2. sysfs attributes structure
-+
-+RO	read only value
-+RW	read/write value
-+
-+All thermal sysfs attributes will be represented under /sys/class/thermal
-+/sys/class/thermal/
-+
-+Thermal zone device sys I/F, created once it's registered:
-+|thermal_zone[0-*]:
-+	|-----type:			Type of the thermal zone
-+	|-----temp:			Current temperature
-+	|-----mode:			Working mode of the thermal zone
-+	|-----trip_point_[0-*]_temp:	Trip point temperature
-+	|-----trip_point_[0-*]_type:	Trip point type
-+
-+Thermal cooling device sys I/F, created once it's registered:
-+|cooling_device[0-*]:
-+	|-----type :			Type of the cooling device(processor/fan/...)
-+	|-----max_state:		Maximum cooling state of the cooling device
-+	|-----cur_state:		Current cooling state of the cooling device
-+
-+
-+These two dynamic attributes are created/removed in pairs.
-+They represent the relationship between a thermal zone and its associated cooling device.
-+They are created/removed for each
-+thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device successful exection.
-+
-+|thermal_zone[0-*]
-+	|-----cdev[0-*]:		The [0-*]th cooling device in the current thermal zone
-+	|-----cdev[0-*]_trip_point:	Trip point that cdev[0-*] is associated with
-+
-+
-+***************************
-+* Thermal zone attributes *
-+***************************
-+
-+type				Strings which represent the thermal zone type.
-+				This is given by thermal zone driver as part of registration.
-+				Eg: "ACPI thermal zone" indicates it's a ACPI thermal device
-+				RO
-+				Optional
-+
-+temp				Current temperature as reported by thermal zone (sensor)
-+				Unit: degree celsius
-+				RO
-+				Required
-+
-+mode				One of the predifned values in [kernel, user]
-+				This file gives information about the algorithm
-+				that is currently managing the thermal zone.
-+				It can be either default kernel based algorithm
-+				or user space application.
-+				RW
-+				Optional
-+				kernel	= Thermal management in kernel thermal zone driver.
-+				user	= Preventing kernel thermal zone driver actions upon
-+					  trip points so that user application can take full
-+					  charge of the thermal management.
-+
-+trip_point_[0-*]_temp		The temperature above which trip point will be fired
-+				Unit: degree celsius
-+				RO
-+				Optional
-+
-+trip_point_[0-*]_type 		Strings which indicate the type of the trip point
-+				Eg. it can be one of critical, hot, passive,
-+				    active[0-*] for ACPI thermal zone.
-+				RO
-+				Optional
-+
-+cdev[0-*]			Sysfs link to the thermal cooling device node where the sys I/F
-+				for cooling device throttling control represents.
-+				RO
-+				Optional
-+
-+cdev[0-*]_trip_point		The trip point with which cdev[0-*] is assocated in this thermal zone
-+				-1 means the cooling device is not associated with any trip point.
-+				RO
-+				Optional
-+
-+******************************
-+* Cooling device  attributes *
-+******************************
-+
-+type				String which represents the type of device
-+				eg: For generic ACPI: this should be "Fan",
-+				"Processor" or "LCD"
-+				eg. For memory controller device on intel_menlow platform:
-+				this should be "Memory controller"
-+				RO
-+				Optional
-+
-+max_state			The maximum permissible cooling state of this cooling device.
-+				RO
-+				Required
-+
-+cur_state			The current cooling state of this cooling device.
-+				the value can any integer numbers between 0 and max_state,
-+				cur_state == 0 means no cooling
-+				cur_state == max_state means the maximum cooling.
-+				RW
-+				Required
-+
-+3. A simple implementation
-+
-+ACPI thermal zone may support multiple trip points like critical/hot/passive/active.
-+If an ACPI thermal zone supports critical, passive, active[0] and active[1] at the same time,
-+it may register itself as a thermale_zone_device (thermal_zone1) with 4 trip points in all.
-+It has one processor and one fan, which are both registered as thermal_cooling_device.
-+If the processor is listed in _PSL method, and the fan is listed in _AL0 method,
-+the sys I/F structure will be built like this:
-+
-+/sys/class/thermal:
-+
-+|thermal_zone1:
-+	|-----type:			ACPI thermal zone
-+	|-----temp:			37
-+	|-----mode:			kernel
-+	|-----trip_point_0_temp:	100
-+	|-----trip_point_0_type:	critical
-+	|-----trip_point_1_temp:	80
-+	|-----trip_point_1_type:	passive
-+	|-----trip_point_2_temp:	70
-+	|-----trip_point_2_type:	active[0]
-+	|-----trip_point_3_temp:	60
-+	|-----trip_point_3_type:	active[1]
-+	|-----cdev0:			--->/sys/class/thermal/cooling_device0
-+	|-----cdev0_trip_point:		1	/* cdev0 can be used for passive */
-+	|-----cdev1:			--->/sys/class/thermal/cooling_device3
-+	|-----cdev1_trip_point:		2	/* cdev1 can be used for active[0]*/
-+
-+|cooling_device0:
-+	|-----type:			Processor
-+	|-----max_state:		8
-+	|-----cur_state:		0
-+
-+|cooling_device3:
-+	|-----type:			Fan
-+	|-----max_state:		2
-+	|-----cur_state:		0
-+
+--- linux-2.6.orig/drivers/misc/Makefile
++++ linux-2.6/drivers/misc/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop
+ obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
+ obj-$(CONFIG_FUJITSU_LAPTOP)	+= fujitsu-laptop.o
+ obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
++obj-$(CONFIG_INTEL_MENLOW)	+= intel_menlow.o
