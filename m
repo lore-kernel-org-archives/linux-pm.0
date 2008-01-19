@@ -1,16 +1,11 @@
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 9/10] introduce intel_menlow platform
-	specific driver
-Date: Fri, 18 Jan 2008 11:55:08 +0800
-Message-ID: <4790231C.1040805__24673.8428286791$1200672928$gmane$org@cn.fujitsu.com>
-References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com>	
-	<20080117092030.a9dfe528.randy.dunlap@oracle.com>
-	<1200627175.2935.174.camel@acpi-sony.sh.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+From: <gregkh@suse.de>
+Subject: patch pm-acquire-device-locks-on-suspend.patch added to
+	gregkh-2.6 tree
+Date: Fri, 18 Jan 2008 16:32:56 -0800
+Message-ID: <1200702776130__13366.4387082264$1200702888$gmane$org@kroah.org>
+References: <200801122040.47642.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1200627175.2935.174.camel@acpi-sony.sh.intel.com>
+In-Reply-To: <200801122040.47642.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,666 +15,934 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Thomas,
-	Sujith" <sujith.thomas@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, sam@ravnborg.org
+To: rjw@sisk.pl, akpm@linux-foundation.org, gregkh@suse.de, johannes@sipsolutions.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lis
 List-Id: linux-pm@vger.kernel.org
 
-Zhang Rui =E5=86=99=E9=81=93:
-> Hi, Randy and Sam,
->=20
->>> +             if (result)
->>> +                     goto end;acpi_bus_get_private_data
->>> +     }
->>> +
->>> +      end:
-> Hah, Lindent always does this for me,
->> Labels should begin in column 0 or 1.  Only.
-> yes, and checkpatch.pl begins to complain about this
-> after using Lindent...
-> I think we should change one of them, :)
->=20
->>> +     return result;
->>> +}
->>> +
->>> +
->>> +const static struct acpi_device_id intel_menlow_memory_ids[] =3D {
->>> +     {"INT0002", 0},
->>> +     {"", 0},
->> or just {} for the terminating entry, right?
-> Yes, I use this just to be consistent with other ACPI device drivers.
->=20
-> Thanks for your comments, please review the patch below,
->=20
-> From: Thomas Sujith <sujith.thomas@intel.com>
->=20
-> Intel menlow platform specific driver for thermal management extension.
->=20
-> Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/misc/Kconfig        |    9=20
->  drivers/misc/Makefile       |    1=20
->  drivers/misc/intel_menlow.c |  520 +++++++++++++++++++++++++++++++++++=
-+++++++++
->  3 files changed, 530 insertions(+)
->=20
-> Index: linux-2.6/drivers/misc/intel_menlow.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- /dev/null
-> +++ linux-2.6/drivers/misc/intel_menlow.c
-> @@ -0,0 +1,520 @@
-> +/*
-> +*  intel_menlow.c - Intel menlow Driver for thermal management extensi=
-on
-> +*
-> +*  Copyright (C) 2008 Intel Corp
-> +*  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
-> +*  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
-> +*  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~~~
-> +*
-> +*  This program is free software; you can redistribute it and/or modif=
-y
-> +*  it under the terms of the GNU General Public License as published b=
-y
-> +*  the Free Software Foundation; version 2 of the License.
-> +*
-> +*  This program is distributed in the hope that it will be useful, but
-> +*  WITHOUT ANY WARRANTY; without even the implied warranty of
-> +*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> +*  General Public License for more details.
-> +*
-> +*  You should have received a copy of the GNU General Public License a=
-long
-> +*  with this program; if not, write to the Free Software Foundation, I=
-nc.,
-> +*  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-> +*
-> +* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~~
-> +*
-> +*  This driver creates the sys I/F for programming the sensors.
-> +*  It also implements the driver for intel menlow memory controller (h=
-ardware
-> +*  id is INT0002) which makes use of the platform specific ACPI method=
-s
-> +*  to get/set bandwidth.
-> +*/
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/types.h>
-> +#include <linux/pci.h>
-> +#include <linux/pm.h>
-> +
-> +#include <linux/thermal.h>
-> +#include <acpi/acpi_bus.h>
-> +#include <acpi/acpi_drivers.h>
-> +
-> +MODULE_AUTHOR("Thomas Sujith");
-> +MODULE_AUTHOR("Zhang Rui");
-> +MODULE_DESCRIPTION("Intel Menlow platform specific driver");
-> +MODULE_LICENSE("GPL");
-> +
-> +/*
-> + * Memory controller device control
-> + */
-> +
-> +#define MEMORY_GET_BANDWIDTH "GTHS"
-> +#define MEMORY_SET_BANDWIDTH "STHS"
-> +#define MEMORY_ARG_CUR_BANDWIDTH 1
-> +#define MEMORY_ARG_MAX_BANDWIDTH 0
-> +
-> +static int memory_get_int_max_bandwidth(struct thermal_cooling_device =
-*cdev,
-> +					unsigned long *max_state)
-> +{
-> +	struct acpi_device *device =3D cdev->devdata;
-> +	acpi_handle handle =3D device->handle;
-> +	unsigned long value;
-> +	struct acpi_object_list arg_list;
-> +	union acpi_object arg;
-> +	acpi_status status =3D AE_OK;
-> +
-> +	arg_list.count =3D 1;
-> +	arg_list.pointer =3D &arg;
-> +	arg.type =3D ACPI_TYPE_INTEGER;
-> +	arg.integer.value =3D MEMORY_ARG_MAX_BANDWIDTH;
-> +	status =3D acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
-> +				       &arg_list, &value);
-> +	if (ACPI_FAILURE(status))
-> +		return -EFAULT;
-> +
-> +	*max_state =3D value - 1;
-> +	return 0;
-> +}
-> +
-> +static int memory_get_max_bandwidth(struct thermal_cooling_device *cde=
-v,
-> +				    char *buf)
-> +{
-> +	unsigned long value;
-> +	if (memory_get_int_max_bandwidth(cdev, &value))
-> +		return -EINVAL;
-> +
-> +	return sprintf(buf, "%ld\n", value);
-> +}
-> +
 
-<...>
+This is a note to let you know that I've just added the patch titled
 
-> +static int memory_get_cur_bandwidth(struct thermal_cooling_device *cde=
-v,
-> +				    char *buf)
-> +{
-> +	struct acpi_device *device =3D cdev->devdata;
-> +	acpi_handle handle =3D device->handle;
-> +	unsigned long value;
-> +	struct acpi_object_list arg_list;
-> +	union acpi_object arg;
-> +	acpi_status status =3D AE_OK;
-> +
-> +	arg_list.count =3D 1;
-> +	arg_list.pointer =3D &arg;
-> +	arg.type =3D ACPI_TYPE_INTEGER;
-> +	arg.integer.value =3D MEMORY_ARG_CUR_BANDWIDTH;
-> +	status =3D acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
-> +				       &arg_list, &value);
-> +	if (ACPI_FAILURE(status))
-> +		return -EFAULT;
-> +
-> +	return sprintf(buf, "%ld\n", value);
-> +}
-> +
-> +static int memory_set_cur_bandwidth(struct thermal_cooling_device *cde=
-v,
-> +				    unsigned int state)
-> +{
-> +	struct acpi_device *device =3D cdev->devdata;
-> +	acpi_handle handle =3D device->handle;
-> +	struct acpi_object_list arg_list;
-> +	union acpi_object arg;
-> +	acpi_status status;
-> +	int temp;
-> +	unsigned long max_state;
-> +
-> +	if (memory_get_int_max_bandwidth(cdev, &max_state))
-> +		return -EFAULT;
-> +
-> +	if (max_state < 0 || state > max_state)
-> +		return -EINVAL;
-> +
-> +	arg_list.count =3D 1;
-> +	arg_list.pointer =3D &arg;
-> +	arg.type =3D ACPI_TYPE_INTEGER;
-> +	arg.integer.value =3D state;
-> +
-> +	status =3D
-> +	    acpi_evaluate_integer(handle, MEMORY_SET_BANDWIDTH, &arg_list,
-> +				  (unsigned long *)&temp);
-> +
-> +	printk(KERN_INFO
-> +	       "Bandwidth value was %d: status is %d\n", state, status);
-> +	if (ACPI_FAILURE(status))
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_cooling_device_ops memory_cooling_ops =3D {
-> +	.get_max_state =3D memory_get_max_bandwidth,
-> +	.get_cur_state =3D memory_get_cur_bandwidth,
-> +	.set_cur_state =3D memory_set_cur_bandwidth,
-> +};
-> +
+     Subject: PM: Acquire device locks on suspend
 
-<...>
+to my gregkh-2.6 tree.  Its filename is
 
-> +/*
-> + * Memory Device Management
-> + */
-> +static int intel_menlow_memory_add(struct acpi_device *device)
-> +{
-> +	int result =3D -ENODEV;
-> +	acpi_status status =3D AE_OK;
-> +	acpi_handle dummy;
-> +	struct thermal_cooling_device *cdev;
-> +
-> +	if (!device)
-> +		return -EINVAL;
-> +
-> +	status =3D acpi_get_handle(device->handle, MEMORY_GET_BANDWIDTH, &dum=
-my);
-> +	if (ACPI_FAILURE(status))
-> +		goto end;
-> +
-> +	status =3D acpi_get_handle(device->handle, MEMORY_SET_BANDWIDTH, &dum=
-my);
-> +	if (ACPI_FAILURE(status))
-> +		goto end;
-> +
-> +	cdev =3D thermal_cooling_device_register("Memory controller", device,
-> +					       &memory_cooling_ops);
-> +	acpi_driver_data(device) =3D cdev;
-> +	if (!cdev)
-> +		result =3D -ENODEV;
-> +	else {
-> +		result =3D
-> +		    sysfs_create_link(&device->dev.kobj, &cdev->device.kobj,
-> +				      "thermal_cooling");
-> +		if (result)
-> +			goto end;
-> +		result =3D
-> +		    sysfs_create_link(&cdev->device.kobj, &device->dev.kobj,
-> +				      "device");
-> +		if (result)
-> +			goto end;
+     pm-acquire-device-locks-on-suspend.patch
 
-This if condition is needless.
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-> +	}
-> +
-> + end:
-> +	return result;
 
-No need to call thermal_cooling_device_unregister() and sysfs_remove_link=
-() in
-some error routines ?
+>From rjw@sisk.pl  Fri Jan 18 16:29:07 2008
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sat, 12 Jan 2008 20:40:46 +0100
+Subject: PM: Acquire device locks on suspend
+To: Greg KH <gregkh@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <200801122040.47642.rjw@sisk.pl>
+Content-Disposition: inline
 
-> +}
-> +
-> +static int intel_menlow_memory_remove(struct acpi_device *device, int =
-type)
-> +{
-> +	struct thermal_cooling_device *cdev =3D acpi_driver_data(device);
-> +
-> +	if (!device || !cdev)
-> +		return -EINVAL;
-> +
-> +	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
-> +	sysfs_remove_link(&cdev->device.kobj, "device");
-> +	thermal_cooling_device_unregister(cdev);
-> +
-> +	return 0;
-> +}
-> +
-> +const static struct acpi_device_id intel_menlow_memory_ids[] =3D {
-> +	{"INT0002", 0},
-> +	{"", 0},
-> +};
-> +
-> +static struct acpi_driver intel_menlow_memory_driver =3D {
-> +	.name =3D "intel_menlow_thermal_control",
-> +	.ids =3D intel_menlow_memory_ids,
-> +	.ops =3D {
-> +		.add =3D intel_menlow_memory_add,
-> +		.remove =3D intel_menlow_memory_remove,
-> +		},
-> +};
-> +
-> +/*
-> + * Sensor control on menlow platform
-> + */
-> +
-> +#define THERMAL_AUX0 0
-> +#define THERMAL_AUX1 1
-> +#define GET_AUX0 "GAX0"
-> +#define GET_AUX1 "GAX1"
-> +#define SET_AUX0 "SAX0"
-> +#define SET_AUX1 "SAX1"
-> +
-> +struct intel_menlow_attribute {
-> +	struct device_attribute attr;
-> +	struct device *device;
-> +	acpi_handle handle;
-> +	struct list_head node;
-> +};
-> +
-> +static LIST_HEAD(intel_menlow_attr_list);
-> +static DEFINE_MUTEX(intel_menlow_attr_lock);
-> +
-> +/*
-> + * sensor_get_auxtrip - get the current auxtrip value from sensor
-> + * @name: Thermalzone name
-> + * @auxtype : AUX0/AUX1
-> + * @buf: syfs buffer
-> + */
-> +static int sensor_get_auxtrip(acpi_handle handle, int index, int *valu=
-e)
-> +{
-> +	acpi_status status;
-> +
-> +	if ((index !=3D 0 && index !=3D 1) || !value)
-> +		return -EINVAL;
-> +
-> +	status =3D acpi_evaluate_integer(handle, index ? GET_AUX1 : GET_AUX0,
-> +				       NULL, (unsigned long *)value);
-> +	if (ACPI_FAILURE(status))
-> +		return -EIO;
-> +
-> +	return 0;
-> +}
-> +
 
-<...>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> +/*
-> + * sensor_set_auxtrip - set the new auxtrip value to sensor
-> + * @name: Thermalzone name
-> + * @auxtype : AUX0/AUX1
-> + * @buf: syfs buffer
-> + */
-> +static int sensor_set_auxtrip(acpi_handle handle, int index, int value=
-)
-> +{
-> +	acpi_status status;
-> +	union acpi_object arg =3D {
-> +		ACPI_TYPE_INTEGER
-> +	};
-> +	struct acpi_object_list args =3D {
-> +		1, &arg
-> +	};
-> +	int temp;
-> +
-> +	if (index !=3D 0 && index !=3D 1)
-> +		return -EINVAL;
-> +
-> +	status =3D acpi_evaluate_integer(handle, index ? GET_AUX0 : GET_AUX1,
-> +				       NULL, (unsigned long *)&temp);
-> +	if (ACPI_FAILURE(status))
-> +		return -EIO;
-> +	if ((index && value < temp) || (!index && value > temp))
-> +		return -EINVAL;
-> +
-> +	arg.integer.value =3D value;
-> +	status =3D acpi_evaluate_integer(handle, index ? SET_AUX1 : SET_AUX0,
-> +				       &args, (unsigned long *)&temp);
-> +	if (ACPI_FAILURE(status))
-> +		return -EIO;
-> +
-> +	/* do we need to check the return value of SAX0/SAX1 ? */
-> +
-> +	return 0;
-> +}
-> +
-> +#define to_intel_menlow_attr(_attr)	\
-> +	container_of(_attr, struct intel_menlow_attribute, attr)
-> +
-> +static ssize_t aux0_show(struct device *dev,
-> +			 struct device_attribute *dev_attr, char *buf)
-> +{
-> +	struct intel_menlow_attribute *attr =3D to_intel_menlow_attr(dev_attr=
-);
-> +	int value;
-> +	int result;
-> +
-> +	result =3D sensor_get_auxtrip(attr->handle, 0, &value);
-> +
-> +	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value)=
-);
-> +}
-> +
-> +static ssize_t aux1_show(struct device *dev,
-> +			 struct device_attribute *dev_attr, char *buf)
-> +{
-> +	struct intel_menlow_attribute *attr =3D to_intel_menlow_attr(dev_attr=
-);
-> +	int value;
-> +	int result;
-> +
-> +	result =3D sensor_get_auxtrip(attr->handle, 1, &value);
-> +
-> +	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value)=
-);
-> +}
-> +
-> +static ssize_t aux0_store(struct device *dev,
-> +			  struct device_attribute *dev_attr,
-> +			  const char *buf, size_t count)
-> +{
-> +	struct intel_menlow_attribute *attr =3D to_intel_menlow_attr(dev_attr=
-);
-> +	int value;
-> +	int result;
-> +
-> +	/*Sanity check; should be a positive integer */
-> +	if (!sscanf(buf, "%d", &value))
-> +		return -EINVAL;
-> +
-> +	if (value < 0)
-> +		return -EINVAL;
-> +
-> +	result =3D sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_KELVIN(valu=
-e));
-> +	return result ? result : count;
-> +}
-> +
 
-<...>
+This patch reorganizes the way suspend and resume notifications are
+sent to drivers.  The major changes are that now the PM core acquires
+every device semaphore before calling the methods, and calls to
+device_add() during suspends will fail, while calls to device_del()
+during suspends will block.
 
-> +static ssize_t aux1_store(struct device *dev,
-> +			  struct device_attribute *dev_attr,
-> +			  const char *buf, size_t count)
-> +{
-> +	struct intel_menlow_attribute *attr =3D to_intel_menlow_attr(dev_attr=
-);
-> +	int value;
-> +	int result;
-> +
-> +	/*Sanity check; should be a positive integer */
-> +	if (!sscanf(buf, "%d", &value))
-> +		return -EINVAL;
-> +
-> +	if (value < 0)
-> +		return -EINVAL;
-> +
-> +	result =3D sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_KELVIN(valu=
-e));
-> +	return result ? result : count;
-> +}
-> +
-> +/* BIOS can enable/disable the thermal user application in dabney plat=
-form */
-> +#define BIOS_ENABLED "\\_TZ.GSTS"
-> +static ssize_t bios_enabled_show(struct device *dev,
-> +				 struct device_attribute *attr, char *buf)
-> +{
-> +	acpi_status status;
-> +	unsigned long bios_enabled;
-> +
-> +	status =3D acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &bios_enab=
-led);
-> +	if (ACPI_FAILURE(status))
-> +		return -ENODEV;
-> +
-> +	return sprintf(buf, "%s\n", bios_enabled ? "enabled" : "disabled");
-> +}
-> +
-> +static int intel_menlow_add_one_attribute(char *name, int mode, void *=
-show,
-> +					  void *store, struct device *dev,
-> +					  acpi_handle handle)
-> +{
-> +	struct intel_menlow_attribute *attr;
-> +	int result;
-> +
-> +	attr =3D kzalloc(sizeof(struct intel_menlow_attribute), GFP_KERNEL);
-> +	if (!attr)
-> +		return -ENOMEM;
-> +
-> +	attr->attr.attr.name =3D name;
-> +	attr->attr.attr.mode =3D mode;
-> +	attr->attr.show =3D show;
-> +	attr->attr.store =3D store;
-> +	attr->device =3D dev;
-> +	attr->handle =3D handle;
-> +
-> +	result =3D device_create_file(dev, &attr->attr);
-> +	if (result)
-> +		return result;
-> +
-> +	mutex_lock(&intel_menlow_attr_lock);
-> +	list_add_tail(&attr->node, &intel_menlow_attr_list);
-> +	mutex_unlock(&intel_menlow_attr_lock);
-> +
-> +	return 0;
-> +}
-> +
+It also provides a way to safely remove a suspended device with the
+help of the PM core, by using the device_pm_schedule_removal() callback
+introduced specifically for this purpose, and updates two drivers (msr
+and cpuid) that need to use it.
 
-<...>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> +static acpi_status intel_menlow_register_sensor(acpi_handle handle, u3=
-2 lvl,
-> +						void *context, void **rv)
-> +{
-> +	acpi_status status;
-> +	acpi_handle dummy;
-> +	struct thermal_zone_device *thermal;
-> +	int result;
-> +
-> +	result =3D acpi_bus_get_private_data(handle, (void **)&thermal);
-> +	if (result)
-> +		return 0;
-> +
-> +	/* _TZ must have the AUX0/1 methods */
-> +	status =3D acpi_get_handle(handle, GET_AUX0, &dummy);
-> +	if (ACPI_FAILURE(status))
-> +		goto not_found;
-> +
-> +	status =3D acpi_get_handle(handle, SET_AUX0, &dummy);
-> +	if (ACPI_FAILURE(status))
-> +		goto not_found;
-> +
-> +	result =3D intel_menlow_add_one_attribute("aux0", 0644,
-> +						aux0_show, aux0_store,
-> +						&thermal->device, handle);
-> +	if (result)
-> +		return AE_ERROR;
-> +
-> +	status =3D acpi_get_handle(handle, GET_AUX1, &dummy);
-> +	if (ACPI_FAILURE(status))
-> +		goto not_found;
-> +
-> +	status =3D acpi_get_handle(handle, SET_AUX1, &dummy);
-> +	if (ACPI_FAILURE(status))
-> +		goto not_found;
-> +
-> +	result =3D intel_menlow_add_one_attribute("aux1", 0644,
-> +						aux1_show, aux1_store,
-> +						&thermal->device, handle);
-> +	if (result)
-> +		return AE_ERROR;
-> +
-> +	/*
-> +	 * create the "dabney_enabled" attribute which means the user app
-> +	 * should be loaded or not
-> +	 */
-> +
-> +	result =3D intel_menlow_add_one_attribute("bios_enabled", 0444,
-> +						bios_enabled_show, NULL,
-> +						&thermal->device, handle);
-> +	if (result)
-> +		return AE_ERROR;
-> +
-> + not_found:
-> +	if (status =3D=3D AE_NOT_FOUND)
-> +		return AE_OK;
-> +	else
-> +		return status;
-> +}
-> +
-> +static void intel_menlow_unregister_sensor(void)
-> +{
-> +	struct intel_menlow_attribute *pos, *next;
-> +
-> +	mutex_lock(&intel_menlow_attr_lock);
-> +	list_for_each_entry_safe(pos, next, &intel_menlow_attr_list, node) {
-> +		list_del(&pos->node);
-> +		device_remove_file(pos->device, &pos->attr);
-> +		kfree(pos);
-> +	}
-> +	mutex_unlock(&intel_menlow_attr_lock);
-> +
-> +	return;
-> +}
-> +
-> +static int __init intel_menlow_module_init(void)
-> +{
-> +	int result =3D -ENODEV;
-> +	acpi_status status;
-> +	unsigned long enable;
-> +
-> +	if (acpi_disabled)
-> +		return result;
-> +
-> +	/* Looking for the \_TZ.GSTS method */
-> +	status =3D acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &enable);
-> +	if (ACPI_FAILURE(status) || !enable)
-> +		return -ENODEV;
-> +
-> +	/* Looking for ACPI device MEM0 with hardware id INT0002 */
-> +	result =3D acpi_bus_register_driver(&intel_menlow_memory_driver);
-> +	if (result)
-> +		return result;
-> +
-> +	/* Looking for sensors in each ACPI thermal zone */
-> +	status =3D acpi_walk_namespace(ACPI_TYPE_THERMAL, ACPI_ROOT_OBJECT,
-> +				     ACPI_UINT32_MAX,
-> +				     intel_menlow_register_sensor, NULL, NULL);
-> +	if (ACPI_FAILURE(status))
-> +		result =3D -ENODEV;
-> +
+---
+ arch/x86/kernel/cpuid.c    |    6 
+ arch/x86/kernel/msr.c      |    6 
+ drivers/base/core.c        |   65 +++++
+ drivers/base/power/main.c  |  504 +++++++++++++++++++++++++++++----------------
+ drivers/base/power/power.h |   12 +
+ include/linux/device.h     |    8 
+ 6 files changed, 414 insertions(+), 187 deletions(-)
 
-It seems to me this should be 'return -ENODEV;'
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -157,15 +157,15 @@ static int __cpuinit cpuid_class_cpu_cal
+ 
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 		err = cpuid_device_create(cpu);
+ 		break;
+ 	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+ 		cpuid_device_destroy(cpu);
+ 		break;
++	case CPU_UP_CANCELED_FROZEN:
++		destroy_suspended_device(cpuid_class, MKDEV(CPUID_MAJOR, cpu));
++		break;
+ 	}
+ 	return err ? NOTIFY_BAD : NOTIFY_OK;
+ }
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -155,15 +155,15 @@ static int __cpuinit msr_class_cpu_callb
+ 
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 		err = msr_device_create(cpu);
+ 		break;
+ 	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+ 		msr_device_destroy(cpu);
+ 		break;
++	case CPU_UP_CANCELED_FROZEN:
++		destroy_suspended_device(msr_class, MKDEV(MSR_MAJOR, cpu));
++		break;
+ 	}
+ 	return err ? NOTIFY_BAD : NOTIFY_OK;
+ }
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -726,11 +726,20 @@ int device_add(struct device *dev)
+ {
+ 	struct device *parent = NULL;
+ 	struct class_interface *class_intf;
+-	int error = -EINVAL;
++	int error;
++
++	error = pm_sleep_lock();
++	if (error) {
++		dev_warn(dev, "Suspicious %s during suspend\n", __FUNCTION__);
++		dump_stack();
++		return error;
++	}
+ 
+ 	dev = get_device(dev);
+-	if (!dev || !strlen(dev->bus_id))
++	if (!dev || !strlen(dev->bus_id)) {
++		error = -EINVAL;
+ 		goto Error;
++	}
+ 
+ 	pr_debug("DEV: registering device: ID = '%s'\n", dev->bus_id);
+ 
+@@ -795,6 +804,7 @@ int device_add(struct device *dev)
+ 	}
+  Done:
+ 	put_device(dev);
++	pm_sleep_unlock();
+ 	return error;
+  BusError:
+ 	device_pm_remove(dev);
+@@ -905,6 +915,7 @@ void device_del(struct device * dev)
+ 	struct device * parent = dev->parent;
+ 	struct class_interface *class_intf;
+ 
++	device_pm_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt))
+@@ -981,7 +992,6 @@ void device_del(struct device * dev)
+ 	if (dev->bus)
+ 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+-	device_pm_remove(dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+ 	kobject_del(&dev->kobj);
+ 	if (parent)
+@@ -1156,14 +1166,11 @@ error:
+ EXPORT_SYMBOL_GPL(device_create);
+ 
+ /**
+- * device_destroy - removes a device that was created with device_create()
++ * find_device - finds a device that was created with device_create()
+  * @class: pointer to the struct class that this device was registered with
+  * @devt: the dev_t of the device that was previously registered
+- *
+- * This call unregisters and cleans up a device that was created with a
+- * call to device_create().
+  */
+-void device_destroy(struct class *class, dev_t devt)
++static struct device *find_device(struct class *class, dev_t devt)
+ {
+ 	struct device *dev = NULL;
+ 	struct device *dev_tmp;
+@@ -1176,12 +1183,54 @@ void device_destroy(struct class *class,
+ 		}
+ 	}
+ 	up(&class->sem);
++	return dev;
++}
++
++/**
++ * device_destroy - removes a device that was created with device_create()
++ * @class: pointer to the struct class that this device was registered with
++ * @devt: the dev_t of the device that was previously registered
++ *
++ * This call unregisters and cleans up a device that was created with a
++ * call to device_create().
++ */
++void device_destroy(struct class *class, dev_t devt)
++{
++	struct device *dev;
+ 
++	dev = find_device(class, devt);
+ 	if (dev)
+ 		device_unregister(dev);
+ }
+ EXPORT_SYMBOL_GPL(device_destroy);
+ 
++#ifdef CONFIG_PM_SLEEP
++/**
++ * destroy_suspended_device - asks the PM core to remove a suspended device
++ * @class: pointer to the struct class that this device was registered with
++ * @devt: the dev_t of the device that was previously registered
++ *
++ * This call notifies the PM core of the necessity to unregister a suspended
++ * device created with a call to device_create() (devices cannot be
++ * unregistered directly while suspended, since the PM core holds their
++ * semaphores at that time).
++ *
++ * It can only be called within the scope of a system sleep transition.  In
++ * practice this means it has to be directly or indirectly invoked either by
++ * a suspend or resume method, or by the PM core (e.g. via
++ * disable_nonboot_cpus() or enable_nonboot_cpus()).
++ */
++void destroy_suspended_device(struct class *class, dev_t devt)
++{
++	struct device *dev;
++
++	dev = find_device(class, devt);
++	if (dev)
++		device_pm_schedule_removal(dev);
++}
++EXPORT_SYMBOL_GPL(destroy_suspended_device);
++#endif /* CONFIG_PM_SLEEP */
++
+ /**
+  * device_rename - renames a device
+  * @dev: the pointer to the struct device to be renamed
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -24,20 +24,45 @@
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
+ #include <linux/resume-trace.h>
++#include <linux/rwsem.h>
+ 
+ #include "../base.h"
+ #include "power.h"
+ 
++/*
++ * The entries in the dpm_active list are in a depth first order, simply
++ * because children are guaranteed to be discovered after parents, and
++ * are inserted at the back of the list on discovery.
++ *
++ * All the other lists are kept in the same order, for consistency.
++ * However the lists aren't always traversed in the same order.
++ * Semaphores must be acquired from the top (i.e., front) down
++ * and released in the opposite order.  Devices must be suspended
++ * from the bottom (i.e., end) up and resumed in the opposite order.
++ * That way no parent will be suspended while it still has an active
++ * child.
++ *
++ * Since device_pm_add() may be called with a device semaphore held,
++ * we must never try to acquire a device semaphore while holding
++ * dpm_list_mutex.
++ */
++
+ LIST_HEAD(dpm_active);
++static LIST_HEAD(dpm_locked);
+ static LIST_HEAD(dpm_off);
+ static LIST_HEAD(dpm_off_irq);
++static LIST_HEAD(dpm_destroy);
+ 
+-static DEFINE_MUTEX(dpm_mtx);
+ static DEFINE_MUTEX(dpm_list_mtx);
+ 
+-int (*platform_enable_wakeup)(struct device *dev, int is_on);
++static DECLARE_RWSEM(pm_sleep_rwsem);
+ 
++int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ 
++/**
++ *	device_pm_add - add a device to the list of active devices
++ *	@dev:	Device to be added to the list
++ */
+ void device_pm_add(struct device *dev)
+ {
+ 	pr_debug("PM: Adding info for %s:%s\n",
+@@ -48,8 +73,36 @@ void device_pm_add(struct device *dev)
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ 
++/**
++ *	device_pm_remove - remove a device from the list of active devices
++ *	@dev:	Device to be removed from the list
++ *
++ *	This function also removes the device's PM-related sysfs attributes.
++ */
+ void device_pm_remove(struct device *dev)
+ {
++	/*
++	 * If this function is called during a suspend, it will be blocked,
++	 * because we're holding the device's semaphore at that time, which may
++	 * lead to a deadlock.  In that case we want to print a warning.
++	 * However, it may also be called by unregister_dropped_devices() with
++	 * the device's semaphore released, in which case the warning should
++	 * not be printed.
++	 */
++	if (down_trylock(&dev->sem)) {
++		if (down_read_trylock(&pm_sleep_rwsem)) {
++			/* No suspend in progress, wait on dev->sem */
++			down(&dev->sem);
++			up_read(&pm_sleep_rwsem);
++		} else {
++			/* Suspend in progress, we may deadlock */
++			dev_warn(dev, "Suspicious %s during suspend\n",
++				__FUNCTION__);
++			dump_stack();
++			/* The user has been warned ... */
++			down(&dev->sem);
++		}
++	}
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+@@ -57,25 +110,124 @@ void device_pm_remove(struct device *dev
+ 	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
++	up(&dev->sem);
++}
++
++/**
++ *	device_pm_schedule_removal - schedule the removal of a suspended device
++ *	@dev:	Device to destroy
++ *
++ *	Moves the device to the dpm_destroy list for further processing by
++ *	unregister_dropped_devices().
++ */
++void device_pm_schedule_removal(struct device *dev)
++{
++	pr_debug("PM: Preparing for removal: %s:%s\n",
++		dev->bus ? dev->bus->name : "No Bus",
++		kobject_name(&dev->kobj));
++	mutex_lock(&dpm_list_mtx);
++	list_move_tail(&dev->power.entry, &dpm_destroy);
++	mutex_unlock(&dpm_list_mtx);
++}
++
++/**
++ *	pm_sleep_lock - mutual exclusion for registration and suspend
++ *
++ *	Returns 0 if no suspend is underway and device registration
++ *	may proceed, otherwise -EBUSY.
++ */
++int pm_sleep_lock(void)
++{
++	if (down_read_trylock(&pm_sleep_rwsem))
++		return 0;
++
++	return -EBUSY;
++}
++
++/**
++ *	pm_sleep_unlock - mutual exclusion for registration and suspend
++ *
++ *	This routine undoes the effect of device_pm_add_lock
++ *	when a device's registration is complete.
++ */
++void pm_sleep_unlock(void)
++{
++	up_read(&pm_sleep_rwsem);
+ }
+ 
+ 
+ /*------------------------- Resume routines -------------------------*/
+ 
+ /**
+- *	resume_device - Restore state for one device.
++ *	resume_device_early - Power on one device (early resume).
+  *	@dev:	Device.
+  *
++ *	Must be called with interrupts disabled.
+  */
+-
+-static int resume_device(struct device * dev)
++static int resume_device_early(struct device *dev)
+ {
+ 	int error = 0;
+ 
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+ 
+-	down(&dev->sem);
++	if (dev->bus && dev->bus->resume_early) {
++		dev_dbg(dev, "EARLY resume\n");
++		error = dev->bus->resume_early(dev);
++	}
++
++	TRACE_RESUME(error);
++	return error;
++}
++
++/**
++ *	dpm_power_up - Power on all regular (non-sysdev) devices.
++ *
++ *	Walk the dpm_off_irq list and power each device up. This
++ *	is used for devices that required they be powered down with
++ *	interrupts disabled. As devices are powered on, they are moved
++ *	to the dpm_off list.
++ *
++ *	Must be called with interrupts disabled and only one CPU running.
++ */
++static void dpm_power_up(void)
++{
++
++	while (!list_empty(&dpm_off_irq)) {
++		struct list_head *entry = dpm_off_irq.next;
++		struct device *dev = to_device(entry);
++
++		list_move_tail(entry, &dpm_off);
++		resume_device_early(dev);
++	}
++}
++
++/**
++ *	device_power_up - Turn on all devices that need special attention.
++ *
++ *	Power on system devices, then devices that required we shut them down
++ *	with interrupts disabled.
++ *
++ *	Must be called with interrupts disabled.
++ */
++void device_power_up(void)
++{
++	sysdev_resume();
++	dpm_power_up();
++}
++EXPORT_SYMBOL_GPL(device_power_up);
++
++/**
++ *	resume_device - Restore state for one device.
++ *	@dev:	Device.
++ *
++ */
++static int resume_device(struct device *dev)
++{
++	int error = 0;
++
++	TRACE_DEVICE(dev);
++	TRACE_RESUME(0);
+ 
+ 	if (dev->bus && dev->bus->resume) {
+ 		dev_dbg(dev,"resuming\n");
+@@ -92,126 +244,94 @@ static int resume_device(struct device *
+ 		error = dev->class->resume(dev);
+ 	}
+ 
+-	up(&dev->sem);
+-
+-	TRACE_RESUME(error);
+-	return error;
+-}
+-
+-
+-static int resume_device_early(struct device * dev)
+-{
+-	int error = 0;
+-
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-	if (dev->bus && dev->bus->resume_early) {
+-		dev_dbg(dev,"EARLY resume\n");
+-		error = dev->bus->resume_early(dev);
+-	}
+ 	TRACE_RESUME(error);
+ 	return error;
+ }
+ 
+-/*
+- * Resume the devices that have either not gone through
+- * the late suspend, or that did go through it but also
+- * went through the early resume
++/**
++ *	dpm_resume - Resume every device.
++ *
++ *	Resume the devices that have either not gone through
++ *	the late suspend, or that did go through it but also
++ *	went through the early resume.
++ *
++ *	Take devices from the dpm_off_list, resume them,
++ *	and put them on the dpm_locked list.
+  */
+ static void dpm_resume(void)
+ {
+ 	mutex_lock(&dpm_list_mtx);
+ 	while(!list_empty(&dpm_off)) {
+-		struct list_head * entry = dpm_off.next;
+-		struct device * dev = to_device(entry);
+-
+-		get_device(dev);
+-		list_move_tail(entry, &dpm_active);
++		struct list_head *entry = dpm_off.next;
++		struct device *dev = to_device(entry);
+ 
++		list_move_tail(entry, &dpm_locked);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		resume_device(dev);
+ 		mutex_lock(&dpm_list_mtx);
+-		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ 
+-
+ /**
+- *	device_resume - Restore state of each device in system.
++ *	unlock_all_devices - Release each device's semaphore
+  *
+- *	Walk the dpm_off list, remove each entry, resume the device,
+- *	then add it to the dpm_active list.
++ *	Go through the dpm_off list.  Put each device on the dpm_active
++ *	list and unlock it.
+  */
+-
+-void device_resume(void)
++static void unlock_all_devices(void)
+ {
+-	might_sleep();
+-	mutex_lock(&dpm_mtx);
+-	dpm_resume();
+-	mutex_unlock(&dpm_mtx);
+-}
+-
+-EXPORT_SYMBOL_GPL(device_resume);
++	mutex_lock(&dpm_list_mtx);
++	while (!list_empty(&dpm_locked)) {
++		struct list_head *entry = dpm_locked.prev;
++		struct device *dev = to_device(entry);
+ 
++		list_move(entry, &dpm_active);
++		up(&dev->sem);
++	}
++	mutex_unlock(&dpm_list_mtx);
++}
+ 
+ /**
+- *	dpm_power_up - Power on some devices.
+- *
+- *	Walk the dpm_off_irq list and power each device up. This
+- *	is used for devices that required they be powered down with
+- *	interrupts disabled. As devices are powered on, they are moved
+- *	to the dpm_active list.
++ *	unregister_dropped_devices - Unregister devices scheduled for removal
+  *
+- *	Interrupts must be disabled when calling this.
++ *	Unregister all devices on the dpm_destroy list.
+  */
+-
+-static void dpm_power_up(void)
++static void unregister_dropped_devices(void)
+ {
+-	while(!list_empty(&dpm_off_irq)) {
+-		struct list_head * entry = dpm_off_irq.next;
+-		struct device * dev = to_device(entry);
++	mutex_lock(&dpm_list_mtx);
++	while (!list_empty(&dpm_destroy)) {
++		struct list_head *entry = dpm_destroy.next;
++		struct device *dev = to_device(entry);
+ 
+-		list_move_tail(entry, &dpm_off);
+-		resume_device_early(dev);
++		up(&dev->sem);
++		mutex_unlock(&dpm_list_mtx);
++		/* This also removes the device from the list */
++		device_unregister(dev);
++		mutex_lock(&dpm_list_mtx);
+ 	}
++	mutex_unlock(&dpm_list_mtx);
+ }
+ 
+-
+ /**
+- *	device_power_up - Turn on all devices that need special attention.
++ *	device_resume - Restore state of each device in system.
+  *
+- *	Power on system devices then devices that required we shut them down
+- *	with interrupts disabled.
+- *	Called with interrupts disabled.
++ *	Resume all the devices, unlock them all, and allow new
++ *	devices to be registered once again.
+  */
+-
+-void device_power_up(void)
++void device_resume(void)
+ {
+-	sysdev_resume();
+-	dpm_power_up();
++	might_sleep();
++	dpm_resume();
++	unlock_all_devices();
++	unregister_dropped_devices();
++	up_write(&pm_sleep_rwsem);
+ }
+-
+-EXPORT_SYMBOL_GPL(device_power_up);
++EXPORT_SYMBOL_GPL(device_resume);
+ 
+ 
+ /*------------------------- Suspend routines -------------------------*/
+ 
+-/*
+- * The entries in the dpm_active list are in a depth first order, simply
+- * because children are guaranteed to be discovered after parents, and
+- * are inserted at the back of the list on discovery.
+- *
+- * All list on the suspend path are done in reverse order, so we operate
+- * on the leaves of the device tree (or forests, depending on how you want
+- * to look at it ;) first. As nodes are removed from the back of the list,
+- * they are inserted into the front of their destintation lists.
+- *
+- * Things are the reverse on the resume path - iterations are done in
+- * forward order, and nodes are inserted at the back of their destination
+- * lists. This way, the ancestors will be accessed before their descendents.
+- */
+-
+ static inline char *suspend_verb(u32 event)
+ {
+ 	switch (event) {
+@@ -222,7 +342,6 @@ static inline char *suspend_verb(u32 eve
+ 	}
+ }
+ 
+-
+ static void
+ suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
+ {
+@@ -232,16 +351,73 @@ suspend_device_dbg(struct device *dev, p
+ }
+ 
+ /**
+- *	suspend_device - Save state of one device.
++ *	suspend_device_late - Shut down one device (late suspend).
+  *	@dev:	Device.
+  *	@state:	Power state device is entering.
++ *
++ *	This is called with interrupts off and only a single CPU running.
+  */
++static int suspend_device_late(struct device *dev, pm_message_t state)
++{
++	int error = 0;
+ 
+-static int suspend_device(struct device * dev, pm_message_t state)
++	if (dev->bus && dev->bus->suspend_late) {
++		suspend_device_dbg(dev, state, "LATE ");
++		error = dev->bus->suspend_late(dev, state);
++		suspend_report_result(dev->bus->suspend_late, error);
++	}
++	return error;
++}
++
++/**
++ *	device_power_down - Shut down special devices.
++ *	@state:		Power state to enter.
++ *
++ *	Power down devices that require interrupts to be disabled
++ *	and move them from the dpm_off list to the dpm_off_irq list.
++ *	Then power down system devices.
++ *
++ *	Must be called with interrupts disabled and only one CPU running.
++ */
++int device_power_down(pm_message_t state)
++{
++	int error = 0;
++
++	while (!list_empty(&dpm_off)) {
++		struct list_head *entry = dpm_off.prev;
++		struct device *dev = to_device(entry);
++
++		list_del_init(&dev->power.entry);
++		error = suspend_device_late(dev, state);
++		if (error) {
++			printk(KERN_ERR "Could not power down device %s: "
++					"error %d\n",
++					kobject_name(&dev->kobj), error);
++			if (list_empty(&dev->power.entry))
++				list_add(&dev->power.entry, &dpm_off);
++			break;
++		}
++		if (list_empty(&dev->power.entry))
++			list_add(&dev->power.entry, &dpm_off_irq);
++	}
++
++	if (!error)
++		error = sysdev_suspend(state);
++	if (error)
++		dpm_power_up();
++	return error;
++}
++EXPORT_SYMBOL_GPL(device_power_down);
++
++/**
++ *	suspend_device - Save state of one device.
++ *	@dev:	Device.
++ *	@state:	Power state device is entering.
++ */
++int suspend_device(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+-	down(&dev->sem);
+ 	if (dev->power.power_state.event) {
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
+@@ -264,123 +440,105 @@ static int suspend_device(struct device 
+ 		error = dev->bus->suspend(dev, state);
+ 		suspend_report_result(dev->bus->suspend, error);
+ 	}
+-	up(&dev->sem);
+-	return error;
+-}
+-
+-
+-/*
+- * This is called with interrupts off, only a single CPU
+- * running. We can't acquire a mutex or semaphore (and we don't
+- * need the protection)
+- */
+-static int suspend_device_late(struct device *dev, pm_message_t state)
+-{
+-	int error = 0;
+-
+-	if (dev->bus && dev->bus->suspend_late) {
+-		suspend_device_dbg(dev, state, "LATE ");
+-		error = dev->bus->suspend_late(dev, state);
+-		suspend_report_result(dev->bus->suspend_late, error);
+-	}
+ 	return error;
+ }
+ 
+ /**
+- *	device_suspend - Save state and stop all devices in system.
+- *	@state:		Power state to put each device in.
++ *	dpm_suspend - Suspend every device.
++ *	@state:	Power state to put each device in.
+  *
+- *	Walk the dpm_active list, call ->suspend() for each device, and move
+- *	it to the dpm_off list.
++ *	Walk the dpm_locked list.  Suspend each device and move it
++ *	to the dpm_off list.
+  *
+  *	(For historical reasons, if it returns -EAGAIN, that used to mean
+  *	that the device would be called again with interrupts disabled.
+  *	These days, we use the "suspend_late()" callback for that, so we
+  *	print a warning and consider it an error).
+- *
+- *	If we get a different error, try and back out.
+- *
+- *	If we hit a failure with any of the devices, call device_resume()
+- *	above to bring the suspended devices back to life.
+- *
+  */
+-
+-int device_suspend(pm_message_t state)
++static int dpm_suspend(pm_message_t state)
+ {
+ 	int error = 0;
+ 
+-	might_sleep();
+-	mutex_lock(&dpm_mtx);
+ 	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_active) && error == 0) {
+-		struct list_head * entry = dpm_active.prev;
+-		struct device * dev = to_device(entry);
++	while (!list_empty(&dpm_locked)) {
++		struct list_head *entry = dpm_locked.prev;
++		struct device *dev = to_device(entry);
+ 
+-		get_device(dev);
++		list_del_init(&dev->power.entry);
+ 		mutex_unlock(&dpm_list_mtx);
+-
+ 		error = suspend_device(dev, state);
+-
+-		mutex_lock(&dpm_list_mtx);
+-
+-		/* Check if the device got removed */
+-		if (!list_empty(&dev->power.entry)) {
+-			/* Move it to the dpm_off list */
+-			if (!error)
+-				list_move(&dev->power.entry, &dpm_off);
+-		}
+-		if (error)
++		if (error) {
+ 			printk(KERN_ERR "Could not suspend device %s: "
+-				"error %d%s\n",
+-				kobject_name(&dev->kobj), error,
+-				error == -EAGAIN ? " (please convert to suspend_late)" : "");
+-		put_device(dev);
++					"error %d%s\n",
++					kobject_name(&dev->kobj),
++					error,
++					(error == -EAGAIN ?
++					" (please convert to suspend_late)" :
++					""));
++			mutex_lock(&dpm_list_mtx);
++			if (list_empty(&dev->power.entry))
++				list_add(&dev->power.entry, &dpm_locked);
++			mutex_unlock(&dpm_list_mtx);
++			break;
++		}
++		mutex_lock(&dpm_list_mtx);
++		if (list_empty(&dev->power.entry))
++			list_add(&dev->power.entry, &dpm_off);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	if (error)
+-		dpm_resume();
+ 
+-	mutex_unlock(&dpm_mtx);
+ 	return error;
+ }
+ 
+-EXPORT_SYMBOL_GPL(device_suspend);
+-
+ /**
+- *	device_power_down - Shut down special devices.
+- *	@state:		Power state to enter.
++ *	lock_all_devices - Acquire every device's semaphore
+  *
+- *	Walk the dpm_off_irq list, calling ->power_down() for each device that
+- *	couldn't power down the device with interrupts enabled. When we're
+- *	done, power down system devices.
++ *	Go through the dpm_active list. Carefully lock each device's
++ *	semaphore and put it in on the dpm_locked list.
+  */
+-
+-int device_power_down(pm_message_t state)
++static void lock_all_devices(void)
+ {
+-	int error = 0;
+-	struct device * dev;
+-
+-	while (!list_empty(&dpm_off)) {
+-		struct list_head * entry = dpm_off.prev;
++	mutex_lock(&dpm_list_mtx);
++	while (!list_empty(&dpm_active)) {
++		struct list_head *entry = dpm_active.next;
++		struct device *dev = to_device(entry);
++
++		/* Required locking order is dev->sem first,
++		 * then dpm_list_mutex.  Hence this awkward code.
++		 */
++		get_device(dev);
++		mutex_unlock(&dpm_list_mtx);
++		down(&dev->sem);
++		mutex_lock(&dpm_list_mtx);
+ 
+-		dev = to_device(entry);
+-		error = suspend_device_late(dev, state);
+-		if (error)
+-			goto Error;
+-		list_move(&dev->power.entry, &dpm_off_irq);
++		if (list_empty(entry))
++			up(&dev->sem);		/* Device was removed */
++		else
++			list_move_tail(entry, &dpm_locked);
++		put_device(dev);
+ 	}
++	mutex_unlock(&dpm_list_mtx);
++}
++
++/**
++ *	device_suspend - Save state and stop all devices in system.
++ *
++ *	Prevent new devices from being registered, then lock all devices
++ *	and suspend them.
++ */
++int device_suspend(pm_message_t state)
++{
++	int error;
+ 
+-	error = sysdev_suspend(state);
+- Done:
++	might_sleep();
++	down_write(&pm_sleep_rwsem);
++	lock_all_devices();
++	error = dpm_suspend(state);
++	if (error)
++		device_resume();
+ 	return error;
+- Error:
+-	printk(KERN_ERR "Could not power down device %s: "
+-		"error %d\n", kobject_name(&dev->kobj), error);
+-	dpm_power_up();
+-	goto Done;
+ }
+-
+-EXPORT_SYMBOL_GPL(device_power_down);
++EXPORT_SYMBOL_GPL(device_suspend);
+ 
+ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -20,6 +20,9 @@ static inline struct device *to_device(s
+ 
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
++extern void device_pm_schedule_removal(struct device *);
++extern int pm_sleep_lock(void);
++extern void pm_sleep_unlock(void);
+ 
+ #else /* CONFIG_PM_SLEEP */
+ 
+@@ -32,6 +35,15 @@ static inline void device_pm_remove(stru
+ {
+ }
+ 
++static inline int pm_sleep_lock(void)
++{
++	return 0;
++}
++
++static inline void pm_sleep_unlock(void)
++{
++}
++
+ #endif
+ 
+ #ifdef CONFIG_PM
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -521,6 +521,14 @@ extern struct device *device_create(stru
+ 				    dev_t devt, const char *fmt, ...)
+ 				    __attribute__((format(printf,4,5)));
+ extern void device_destroy(struct class *cls, dev_t devt);
++#ifdef CONFIG_PM_SLEEP
++extern void destroy_suspended_device(struct class *cls, dev_t devt);
++#else /* !CONFIG_PM_SLEEP */
++static inline void destroy_suspended_device(struct class *cls, dev_t devt)
++{
++	device_destroy(cls, devt);
++}
++#endif /* !CONFIG_PM_SLEEP */
+ 
+ /*
+  * Platform "fixup" functions - allow the platform to have their say
 
-You can just eliminate variable result, because result will be
--ENODEV only.
 
-> +	return 0;
-> +}
-> +
-> +static void __exit intel_menlow_module_exit(void)
-> +{
-> +	acpi_bus_unregister_driver(&intel_menlow_memory_driver);
-> +	intel_menlow_unregister_sensor();
-> +}
-> +
-> +module_init(intel_menlow_module_init);
-> +module_exit(intel_menlow_module_exit);
-> Index: linux-2.6/drivers/misc/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/drivers/misc/Kconfig
-> +++ linux-2.6/drivers/misc/Kconfig
-> @@ -232,4 +232,13 @@ config ATMEL_SSC
-> =20
->  	  If unsure, say N.
-> =20
-> +config INTEL_MENLOW
-> +	tristate "Thermal Management driver for Intel menlow platform"
-> +	depends on ACPI_THERMAL
-> +	---help---
-> +	  ACPI thermal management enhancement driver on
-> +	  Intel Menlow platform.
-> +
-> +	  If unsure, say N.
-> +
->  endif # MISC_DEVICES
-> Index: linux-2.6/drivers/misc/Makefile
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/drivers/misc/Makefile
-> +++ linux-2.6/drivers/misc/Makefile
-> @@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+=3D sony-laptop
->  obj-$(CONFIG_THINKPAD_ACPI)	+=3D thinkpad_acpi.o
->  obj-$(CONFIG_FUJITSU_LAPTOP)	+=3D fujitsu-laptop.o
->  obj-$(CONFIG_EEPROM_93CX6)	+=3D eeprom_93cx6.o
-> +obj-$(CONFIG_INTEL_MENLOW)	+=3D intel_menlow.o
->=20
->=20
+Patches currently in gregkh-2.6 which might be from rjw@sisk.pl are
+
+driver/pm-acquire-device-locks-on-suspend.patch
