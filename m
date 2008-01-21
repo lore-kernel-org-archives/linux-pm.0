@@ -1,13 +1,15 @@
-From: Manuel Arguelles <manuel.arguelles@gmail.com>
-Subject: ACPI Sleep problem
-Date: Mon, 21 Jan 2008 09:12:08 -0500
-Message-ID: <200801210912.08733.manuel.arguelles@gmail.com>
-Reply-To: manuel.arguelles@gmail.com
+From: Michael Buesch <mb@bu3sch.de>
+Subject: Re: b43_suspend problem
+Date: Mon, 21 Jan 2008 16:05:10 +0100
+Message-ID: <200801211605.10446.mb__26455.5892827504$1200928071$gmane$org@bu3sch.de>
+References: <Pine.LNX.4.44L0.0801131634380.28667-100000@netrider.rowland.org>
+	<200801202110.36556.mb@bu3sch.de> <200801210109.57359.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200801210109.57359.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,133 +20,169 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, bcm43xx-dev@lists.berlios.de, Larry Finger <larry.finger@lwfinger.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hello list,
+On Monday 21 January 2008, Rafael J. Wysocki wrote:
+> I modified the patch to implement something like this.  This still is one big
+> patch against everything what's necessary.  [BTW, in the current version
+> of the code, b43_resume() may leave wl->mutex locked in the error paths,
+> which also is fixed by the patch.]
 
-I have a laptop, dell latitude d810, running slackware linux 12.0, kernel: 
-2.6.21.5 (vanilla as far as i know).
+Whoopsy, thanks for catching this.
 
-I can put it into sleep mode, but it doesn't came up, and I'm not sure how to 
-debug it, I supposed it doesn't come up fully and not only the video, since 
-if I wake it up, and type my loggin in and pass and type restart or similar 
-nothing happends....
+> Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/main.c
+> ===================================================================
+> --- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/main.c
+> +++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/main.c
+> @@ -2470,10 +2470,10 @@ static int b43_rng_read(struct hwrng *rn
+>  	return (sizeof(u16));
+>  }
+>  
+> -static void b43_rng_exit(struct b43_wl *wl)
+> +static void b43_rng_exit(struct b43_wl *wl, bool suspended)
+>  {
+>  	if (wl->rng_initialized)
+> -		hwrng_unregister(&wl->rng);
+> +		__hwrng_unregister(&wl->rng, suspended);
+>  }
+>  
+>  static int b43_rng_init(struct b43_wl *wl)
+> @@ -3298,8 +3298,10 @@ static void b43_wireless_core_exit(struc
+>  		return;
+>  	b43_set_status(dev, B43_STAT_UNINIT);
+>  
+> -	b43_leds_exit(dev);
+> -	b43_rng_exit(dev->wl);
+> +	if (!dev->suspend_in_progress) {
+> +		b43_leds_exit(dev);
+> +		b43_rng_exit(dev->wl, false);
+> +	}
+>  	b43_pio_free(dev);
+>  	b43_dma_free(dev);
+>  	b43_chip_exit(dev);
+> @@ -3420,11 +3422,13 @@ static int b43_wireless_core_init(struct
+>  	memset(wl->mac_addr, 0, ETH_ALEN);
+>  	b43_upload_card_macaddress(dev);
+>  	b43_security_init(dev);
+> -	b43_rng_init(wl);
+> +	if (!dev->suspend_in_progress)
+> +		b43_rng_init(wl);
+>  
+>  	b43_set_status(dev, B43_STAT_INITIALIZED);
+>  
+> -	b43_leds_init(dev);
+> +	if (!dev->suspend_in_progress)
+> +		b43_leds_init(dev);
+>  out:
+>  	return err;
+>  
+> @@ -4024,6 +4028,7 @@ static int b43_suspend(struct ssb_device
+>  	b43dbg(wl, "Suspending...\n");
+>  
+>  	mutex_lock(&wl->mutex);
+> +	wldev->suspend_in_progress = true;
+>  	wldev->suspend_init_status = b43_status(wldev);
+>  	if (wldev->suspend_init_status >= B43_STAT_STARTED)
+>  		b43_wireless_core_stop(wldev);
+> @@ -4055,15 +4060,17 @@ static int b43_resume(struct ssb_device 
+>  	if (wldev->suspend_init_status >= B43_STAT_STARTED) {
+>  		err = b43_wireless_core_start(wldev);
+>  		if (err) {
+> +			b43_leds_resume_exit(wldev);
+> +			b43_rng_exit(wldev->wl, true);
+>  			b43_wireless_core_exit(wldev);
+>  			b43err(wl, "Resume failed at core start\n");
+>  			goto out;
+>  		}
+>  	}
+> -	mutex_unlock(&wl->mutex);
+> -
+>  	b43dbg(wl, "Device resumed.\n");
+> -      out:
+> + out:
+> +	wldev->suspend_in_progress = false;
+> +	mutex_unlock(&wl->mutex);
+>  	return err;
+>  }
+>
 
-I have read that it's good to update teh dsdt, but from 
-http://acpi.sourceforge.net/ there's only one:
+This part looks OK.
 
-Dell Latitude D810
-Last Modified  2007-07-15 06:22 by inktvis75  
-S4 Bios  no
-Original  yes  
-SMP  no
-Bios Revision  09-30-2005  
-APIC Table  no
-Board Revision  A04  
-Boot Table  no
-DSDT Vendor  
-C2 Latency  0
-DSDT Product  
-C3 Latency  0
-DSDT Revision  0  
-Dutywidth  0
-Interpreter Fix
-Features
-Supersedes  none  Superseded By  none
+> Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/leds.h
+> ===================================================================
+> --- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/leds.h
+> +++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/leds.h
+> @@ -43,8 +43,15 @@ enum b43_led_behaviour {
+>  };
+>  
+>  void b43_leds_init(struct b43_wldev *dev);
+> -void b43_leds_exit(struct b43_wldev *dev);
+> -
+> +void __b43_leds_exit(struct b43_wldev *dev, bool suspended);
+> +static inline void b43_leds_exit(struct b43_wldev *dev)
+> +{
+> +	__b43_leds_exit(dev, false);
+> +}
+> +static inline void b43_leds_resume_exit(struct b43_wldev *dev)
+> +{
+> +	__b43_leds_exit(dev, true);
+> +}
 
-Not sure if this will help, also the file is a .asl not sure how to handle or 
-compile it (if needed?)
+I still don't like this function wrapping.
+I'm pretty sure the additional parameter to the function is not
+needed. We can check dev->suspend_in_progress to find out
+if we are in a up/down or in a suspend/resume cycle.
 
-my cpu info is:
+> -static void b43_unregister_led(struct b43_led *led)
+> +static void b43_unregister_led(struct b43_led *led, bool suspended)
+>  {
+>  	if (!led->dev)
+>  		return;
+> -	led_classdev_unregister(&led->led_dev);
+> +	if (suspended)
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 13
-model name      : Intel(R) Pentium(R) M processor 1.73GHz
-stepping        : 8
-cpu MHz         : 1729.200
-cache size      : 2048 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx est tm2
-bogomips        : 3461.65
-clflush size    : 64
+You can check led->dev->suspend_in_progress here.
 
+> +		led_classdev_unregister_suspended(&led->led_dev);
+> +	else
+> +		led_classdev_unregister(&led->led_dev);
+>  	b43_led_turn_off(led->dev, led->index, led->activelow);
+>  	led->dev = NULL;
+>  }
+> @@ -230,10 +233,10 @@ void b43_leds_init(struct b43_wldev *dev
+>  	}
+>  }
+>  
+> -void b43_leds_exit(struct b43_wldev *dev)
+> +void __b43_leds_exit(struct b43_wldev *dev, bool suspended)
+>  {
+> -	b43_unregister_led(&dev->led_tx);
+> -	b43_unregister_led(&dev->led_rx);
+> -	b43_unregister_led(&dev->led_assoc);
+> -	b43_unregister_led(&dev->led_radio);
+> +	b43_unregister_led(&dev->led_tx, suspended);
+> +	b43_unregister_led(&dev->led_rx, suspended);
+> +	b43_unregister_led(&dev->led_assoc, suspended);
+> +	b43_unregister_led(&dev->led_radio, suspended);
+>  }
 
-and my hard disk information:
+Don't need this hunk. Check led->dev->suspend_in_progress in
+b43_unregister_led.
 
-/dev/sda:
+>  #endif /* __KERNEL__ */
+>  #endif /* LINUX_HWRANDOM_H_ */
+> Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/b43.h
+> ===================================================================
+> --- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/b43.h
+> +++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/b43.h
+> @@ -706,6 +706,7 @@ struct b43_wldev {
+>  	bool short_preamble;	/* TRUE, if short preamble is enabled. */
+>  	bool short_slot;	/* TRUE, if short slot timing is enabled. */
+>  	bool radio_hw_enable;	/* saved state of radio hardware enabled state */
+> +	bool suspend_in_progress;
 
-ATA device, with non-removable media
-        Model Number:       SAMSUNG MP0402H
-        Serial Number:      S03WJ20YB44676
-        Firmware Revision:  UC200-16
-Standards:
-        Used: ATA/ATAPI-7 T13 1532D revision 0
-        Supported: 7 6 5 4
-Configuration:
-        Logical         max     current
-        cylinders       16383   16383
-        heads           16      16
-        sectors/track   63      63
-        --
-        CHS current addressable sectors:   16514064
-        LBA    user addressable sectors:   78140160
-        LBA48  user addressable sectors:   78140160
-        device size with M = 1024*1024:       38154 MBytes
-        device size with M = 1000*1000:       40007 MBytes (40 GB)
-Capabilities:
-        LBA, IORDY(can be disabled)
-        Standby timer values: spec'd by Standard, no device specific minimum
-        R/W multiple sector transfer: Max = 16  Current = 8
-        Advanced power management level: unknown setting (0x0080)
-        Recommended acoustic management value: 254, current value: 128
-        DMA: mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 udma4 *udma5
-             Cycle time: min=120ns recommended=120ns
-        PIO: pio0 pio1 pio2 pio3 pio4
-             Cycle time: no flow control=120ns  IORDY flow control=120ns
-Commands/features:
-        Enabled Supported:
-           *    SMART feature set
-                Security Mode feature set
-           *    Power Management feature set
-           *    Write cache
-           *    Look-ahead
-           *    Host Protected Area feature set
-           *    WRITE_BUFFER command
-           *    READ_BUFFER command
-           *    DOWNLOAD_MICROCODE
-                Advanced Power Management feature set
-                SET_MAX security extension
-           *    Automatic Acoustic Management feature set
-           *    48-bit Address feature set
-           *    Device Configuration Overlay feature set
-           *    Mandatory FLUSH_CACHE
-           *    FLUSH_CACHE_EXT
-           *    SMART error logging
-           *    SMART self-test
-           *    IDLE_IMMEDIATE with UNLOAD
-Security:
-        Master password revision code = 65534
-                supported
-        not     enabled
-        not     locked
-                frozen
-        not     expired: security count
-                supported: enhanced erase
-        44min for SECURITY ERASE UNIT. 44min for ENHANCED SECURITY ERASE UNIT.
-HW reset results:
-        CBLID- above Vih
-        Device num = 0 determined by the jumper
-Checksum: correct
+Please add a comment like: /* TRUE, if we are in a suspend/resume cycle */
 
-any tips or help will be appreciated, thanks for your time
+I like comments. Can never have enough of them. _Especially_ for data structures. :)
