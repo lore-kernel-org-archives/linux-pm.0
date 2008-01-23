@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] More updates for 2.6.25
-Date: Wed, 23 Jan 2008 16:05:39 +0100
-Message-ID: <200801231605.39598.rjw__35857.0904507816$1201101044$gmane$org@sisk.pl>
-References: <200801110118.46106.rjw@sisk.pl> <200801161337.19070.rjw@sisk.pl>
-	<20080123083010.GB11223@elf.ucw.cz>
+Subject: Re: [PATCH] PM: invoke suspend notifications after console
+	switch
+Date: Wed, 23 Jan 2008 16:07:45 +0100
+Message-ID: <200801231607.46112.rjw@sisk.pl>
+References: <1197853799.4885.7.camel@johannes.berg>
+	<1199970876.3861.66.camel@johannes.berg>
+	<20080111182042.GC4016@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080123083010.GB11223@elf.ucw.cz>
+In-Reply-To: <20080111182042.GC4016@ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,30 +23,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 23 of January 2008, Pavel Machek wrote:
-> On Wed 2008-01-16 13:37:18, Rafael J. Wysocki wrote:
-> > On Wednesday, 16 of January 2008, Pavel Machek wrote:
-> > > On Tue 2008-01-15 23:22:33, Len Brown wrote:
-> > > > On Thursday 10 January 2008 19:18, Rafael J. Wysocki wrote:
-> > > > > Len,
-> > > > > 
-> > > > > Please add the following three patches to the suspend branch.
-> > > > 
-> > > > Applied (and suspend branch has been re-based to latest linus tree)
-> > > 
-> > > Was that "lets reorder notifications, old order was more logical, but
-> > > it fixes apm?" series?
+On Friday, 11 of January 2008, Pavel Machek wrote:
+> On Thu 2008-01-10 14:14:36, Johannes Berg wrote:
 > > 
-> > Yes, plus the docs update from Dave Brownell.
+> > On Mon, 2007-12-17 at 02:09 +0100, Johannes Berg wrote:
+> > > A subsequent patch will enable apm-emulation notification for suspends
+> > > triggered in any way by using the suspend notifications. This causes
+> > > the system to lock up between X being needed to switch away from the
+> > > VT and X already waiting for resume in the apm ioctl.
+> > > 
+> > > This patch moves the console switch (if enabled) before the suspend
+> > > notification (and after the resume notification) to avoid this issue.
+> > 
+> > I don't see this in the suspend git tree yet, anything wrong with it?
 > 
-> Can we stop that reordering? I do not think it is such a good idea.
+> Its pretty intrusive I'd say. And it is wrong; we'd prefer userspace
+> to know what we are doing; if they are told we are suspending,
+> userspace may be able to do something more clever than long console
+> switch.
+> 
+> I'd prefer this not to go into mainline.
 
-In this particular case it's needed to unbreak the APM emulation and it
-certainly is not a good idea to have two different orderings of the notifiers
-vs the freezer (hence the second patch in the series).
+Well, in uswsusp we do the console switch before the suspend notifiers
+(although from the user land).
 
-Thanks,
 Rafael
