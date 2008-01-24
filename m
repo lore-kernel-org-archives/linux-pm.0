@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: invoke suspend notifications after console
-	switch
-Date: Wed, 23 Jan 2008 19:03:29 +0100
-Message-ID: <200801231903.30293.rjw@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PM: invoke suspend notifications after
+	console switch
+Date: Thu, 24 Jan 2008 11:46:32 +1100
+Message-ID: <1201135592.6815.14.camel@pasglop>
 References: <1197853799.4885.7.camel@johannes.berg>
-	<20080111182042.GC4016@ucw.cz> <200801231607.46112.rjw@sisk.pl>
+	<1199970876.3861.66.camel@johannes.berg> <20080111182042.GC4016@ucw.cz>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801231607.46112.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <20080111182042.GC4016@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 23 of January 2008, Rafael J. Wysocki wrote:
-> On Friday, 11 of January 2008, Pavel Machek wrote:
-> > On Thu 2008-01-10 14:14:36, Johannes Berg wrote:
-> > > 
-> > > On Mon, 2007-12-17 at 02:09 +0100, Johannes Berg wrote:
-> > > > A subsequent patch will enable apm-emulation notification for suspends
-> > > > triggered in any way by using the suspend notifications. This causes
-> > > > the system to lock up between X being needed to switch away from the
-> > > > VT and X already waiting for resume in the apm ioctl.
-> > > > 
-> > > > This patch moves the console switch (if enabled) before the suspend
-> > > > notification (and after the resume notification) to avoid this issue.
-> > > 
-> > > I don't see this in the suspend git tree yet, anything wrong with it?
-> > 
-> > Its pretty intrusive I'd say.
 
-How so?  There's only one user of the suspend notifiers right now, AFAICS.
+> Its pretty intrusive I'd say. And it is wrong; we'd prefer userspace
+> to know what we are doing; if they are told we are suspending,
+> userspace may be able to do something more clever than long console
+> switch.
+> 
+> I'd prefer this not to go into mainline.
 
-> > And it is wrong; we'd prefer userspace 
-> > to know what we are doing; if they are told we are suspending,
-> > userspace may be able to do something more clever than long console
-> > switch.
+So you'd prefer mainline to be broken and X to lock up ? nice !
 
-Well, we're not telling the userspace that we're suspending right now.
+The console switch happens -anyway- with the current code right ? So we
+aren't changing that.
 
-Also, the patch only reorders the console switch vs the suspend notifiers.
-The console switch still happens before the freezer is run.
+However, (even today I believe), users of /dev/apm_bios, such as X, will
+deadlock the VT subsystem if they get notified of the suspend before the
+kernel initiated console switch happen (which can happen today if the
+suspend is triggered by an APM application I -think- (to be verified)
+and will happen more once Johannes next patch gets in which fixes a
+regression of current APM emulation which doesn't notify user space when
+the suspend isn't APM originated.
 
-Thanks,
-Rafael
+So this patch will fix it by console switching before notifying them,
+which is by far the right way to go for now. In the future, we may have
+smarter ways to handle that graphic subsystem (and smarter gfx drivers)
+and may want to provide ways to totally disable the console switching,
+but that's a separate issue. In fact, some distro already disable the
+console switch in their kernels for various reasons.
+
+But if we keep the console switch we have today, we need this patch to
+make it work properly and not potentially deadlock with X.
+
+Ben.
