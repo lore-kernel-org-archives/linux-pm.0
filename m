@@ -1,15 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] PM: invoke suspend notifications after
-	console switch
-Date: Thu, 24 Jan 2008 19:32:11 +0100
-Message-ID: <1201199531.3454.141.camel@johannes.berg>
-References: <1197853799.4885.7.camel@johannes.berg>
-	<1199970876.3861.66.camel@johannes.berg> <20080111182042.GC4016@ucw.cz>
-	<1201135592.6815.14.camel@pasglop>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 9/10] introduce intel_menlow platform
+	specific driver
+Date: Thu, 24 Jan 2008 16:39:33 -0500
+Message-ID: <200801241639.33898.lenb__12209.8443833695$1201210917$gmane$org@kernel.org>
+References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com>
+	<20080121095331.GA5333@infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1939398537922100142=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1201135592.6815.14.camel@pasglop>
+In-Reply-To: <20080121095331.GA5333@infradead.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,82 +19,53 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: benh@kernel.crashing.org
-Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-acpi@vger.kernel.org, sujith.thomas@intel.com, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Monday 21 January 2008 04:53, Christoph Hellwig wrote:
+> On Thu, Jan 17, 2008 at 03:51:17PM +0800, Zhang Rui wrote:
+> > From: Thomas Sujith <sujith.thomas@intel.com>
+> > 
+> > Intel menlow platform specific driver for thermal management.
+> > 
+> > Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/misc/Kconfig        |   10 
+> >  drivers/misc/Makefile       |    1 
+> >  drivers/misc/intel_menlow.c |  527 ++++++++++++++++++++++++++++++++++++++++++++
+> 
+> Why is this in drivers/misc?  I don't have a thermal.h in mainline, but
+> if this is a new subsystem your adding care to create a directory under
+> drivers/ for it?
 
---===============1939398537922100142==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ELfdYUUiM902NlBMmf+b"
+Hi Christoph,
 
+I'm sure it was me who suggested putting intel_menlo.c under drivers/misc.
 
---=-ELfdYUUiM902NlBMmf+b
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+A while back I refused to let any new platform specific drivers under
+drivers/acpi, and asked that the ones here already move out.
+This is because they happne to use ACPI, but are not actually
+part of the ACPI sub-system (any more than ATA is).
+Also, I wanted the maintainer roles to be clear -- these
+drivers have primary maintainers other than me, and those
+guys are in the heroic, but tragic, business of writing
+platform-specific drivers for systems with no documentation or vendor support.
 
+drivers/misc/asus-laptop.c
+drivers/misc/fujitsu-laptop.c
+drivers/misc/msi-laptop.c
+drivers/misc/sony-laptop.c
+drivers/misc/thinkpad_acpi.c
+drivers/misc/sony-laptop.c
 
-On Thu, 2008-01-24 at 11:46 +1100, Benjamin Herrenschmidt wrote:
-> > Its pretty intrusive I'd say. And it is wrong; we'd prefer userspace
-> > to know what we are doing; if they are told we are suspending,
-> > userspace may be able to do something more clever than long console
-> > switch.
-> >=20
-> > I'd prefer this not to go into mainline.
->=20
-> So you'd prefer mainline to be broken and X to lock up ? nice !
->=20
-> The console switch happens -anyway- with the current code right ? So we
-> aren't changing that.
+intel_menlo.c fits in with this group, the only difference is that
+its primary maintainers actually have documentation:-)
 
-Mind you, that's the (only!) other alternative: removing the in-kernel
-console switch completely which is the only way to allow userspace to do
-something "more clever than long console switch".
+is there a better place than drivers/misc for this group?
 
-> However, (even today I believe), users of /dev/apm_bios, such as X, will
-> deadlock the VT subsystem if they get notified of the suspend before the
-> kernel initiated console switch happen (which can happen today if the
-> suspend is triggered by an APM application I -think- (to be verified)
-
-Yeah I'm pretty sure that can happen, but in fact, that will happen
-regardless of this patch until my other patch is applied.
-
-johannes
-
---=-ELfdYUUiM902NlBMmf+b
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR5jZqqVg1VMiehFYAQLcRBAArFTRdsLWZTCFAI7c5CO0ZddB/y5cil8m
-8h2lKRL7QfF20xcDMC/JCZcCZXsfMiQKrA1zUy+UXlGvDl9yH+fK+RWYSsC172k2
-5BIipVyfD6xsTpLgk8KeqHBYaPrkXbDO2gD/v17WbAtG/b7Cs6Fj5AKSmeY6/WjH
-POAJLPghyOVmzUlkNUhVIZRCXCaMn+ZYwNY1w27Zuhhn1Q0pWZ89FS16fEjhlRcR
-VoKFycFmFKriCAAsZ2MShxtb7nZ4DCUoXPiwL/XpMzmbpaDmlQ+822QBUsPEcXzd
-bu1wKn0eAXblWAg4mIrrqNFIvwAhJdWg0+V556UsDADXEJXm8Oaq9RI1+QRpe6XI
-E5o9ui9TJj2F0t+OlWzwLiokHX6/KT1P2N8n0cLLJHP/A2+HRZo1XUQiemgONf1l
-LLnwn2bXefxUzAxo6bhP3KfpEzRlPS898EqTdy0Qa19IT7Df125TZ+yFhN56TPwj
-AC8DOumjs2dDQ7ESGpBGwgJejpCkh3LN1xmJNN4H8Pt0H+xfSIN5M7j+puP66Wsb
-70t2WFSc/qwhaBjsQbY3PvCKJEUsOnJoQ9RSVGKKec3tDD1BuR9PvH9kQBxLJBa2
-Jx8CtZ8QCFinq8i2f+qgG/u0ZVL01g5YLTshS8+jQlXkCDkiOpUj+KmzdS7tt6BP
-EbS/sIaRj0o=
-=4Mek
------END PGP SIGNATURE-----
-
---=-ELfdYUUiM902NlBMmf+b--
-
-
---===============1939398537922100142==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1939398537922100142==--
+thanks,
+-Len
