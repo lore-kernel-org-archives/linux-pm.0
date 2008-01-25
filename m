@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 4/5] Leds: Add possibility to remove leds
-	classdevs during suspend/resume
-Date: Fri, 25 Jan 2008 01:36:29 +0100
-Message-ID: <200801250136.30292.rjw@sisk.pl>
+Subject: [PATCH -mm 2/5] Misc: Add possibility to remove misc
+	devices during suspend/resume
+Date: Fri, 25 Jan 2008 01:31:49 +0100
+Message-ID: <200801250131.50924.rjw@sisk.pl>
 References: <200801250127.21966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,73 +26,79 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make it possible to unregister a led classdev object in a safe way
+Make it possible to unregister a misc device object in a safe way
 during a suspend/resume cycle.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/leds/led-class.c |   13 +++++++++----
- include/linux/leds.h     |   10 +++++++++-
+ drivers/char/misc.c        |   13 +++++++++----
+ include/linux/miscdevice.h |   10 +++++++++-
  2 files changed, 18 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
+Index: linux-2.6.24-rc8-mm1/include/linux/miscdevice.h
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/leds/led-class.c
-+++ linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
-@@ -137,12 +137,14 @@ err_out:
- EXPORT_SYMBOL_GPL(led_classdev_register);
+--- linux-2.6.24-rc8-mm1.orig/include/linux/miscdevice.h
++++ linux-2.6.24-rc8-mm1/include/linux/miscdevice.h
+@@ -43,7 +43,15 @@ struct miscdevice  {
+ };
+ 
+ extern int misc_register(struct miscdevice * misc);
+-extern int misc_deregister(struct miscdevice * misc);
++extern int __misc_deregister(struct miscdevice *misc, bool suspended);
++static inline int misc_deregister(struct miscdevice *misc)
++{
++	return __misc_deregister(misc, false);
++}
++static inline int misc_deregister_suspended(struct miscdevice *misc)
++{
++	return __misc_deregister(misc, true);
++}
+ 
+ #define MODULE_ALIAS_MISCDEV(minor)				\
+ 	MODULE_ALIAS("char-major-" __stringify(MISC_MAJOR)	\
+Index: linux-2.6.24-rc8-mm1/drivers/char/misc.c
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/drivers/char/misc.c
++++ linux-2.6.24-rc8-mm1/drivers/char/misc.c
+@@ -232,8 +232,9 @@ int misc_register(struct miscdevice * mi
+ }
  
  /**
-- * led_classdev_unregister - unregisters a object of led_properties class.
-+ * __led_classdev_unregister - unregisters a object of led_properties class.
-  * @led_cdev: the led device to unregister
-+ * @suspended: indicates whether system-wide suspend or resume is in progress
+- *	misc_deregister - unregister a miscellaneous device
++ *	__misc_deregister - unregister a miscellaneous device
+  *	@misc: device to unregister
++ *	@suspended: to be set if the function is used during suspend/resume
   *
-  * Unregisters a previously registered via led_classdev_register object.
+  *	Unregister a miscellaneous device that was previously
+  *	successfully registered with misc_register(). Success
+@@ -241,7 +242,7 @@ int misc_register(struct miscdevice * mi
+  *	indicates an error.
   */
--void led_classdev_unregister(struct led_classdev *led_cdev)
-+void __led_classdev_unregister(struct led_classdev *led_cdev,
-+				      bool suspended)
- {
- 	device_remove_file(led_cdev->dev, &dev_attr_brightness);
- #ifdef CONFIG_LEDS_TRIGGERS
-@@ -153,13 +155,16 @@ void led_classdev_unregister(struct led_
- 	up_write(&led_cdev->trigger_lock);
- #endif
  
--	device_unregister(led_cdev->dev);
+-int misc_deregister(struct miscdevice * misc)
++int __misc_deregister(struct miscdevice *misc, bool suspended)
+ {
+ 	int i = misc->minor;
+ 
+@@ -250,7 +251,11 @@ int misc_deregister(struct miscdevice * 
+ 
+ 	mutex_lock(&misc_mtx);
+ 	list_del(&misc->list);
+-	device_destroy(misc_class, MKDEV(MISC_MAJOR, misc->minor));
 +	if (suspended)
-+		device_pm_schedule_removal(led_cdev->dev);
++		destroy_suspended_device(misc_class,
++					MKDEV(MISC_MAJOR, misc->minor));
 +	else
-+		device_unregister(led_cdev->dev);
- 
- 	down_write(&leds_list_lock);
- 	list_del(&led_cdev->node);
- 	up_write(&leds_list_lock);
++		device_destroy(misc_class, MKDEV(MISC_MAJOR, misc->minor));
+ 	if (i < DYNAMIC_MINORS && i>0) {
+ 		misc_minors[i>>3] &= ~(1 << (misc->minor & 7));
+ 	}
+@@ -259,7 +264,7 @@ int misc_deregister(struct miscdevice * 
  }
--EXPORT_SYMBOL_GPL(led_classdev_unregister);
-+EXPORT_SYMBOL_GPL(__led_classdev_unregister);
  
- static int __init leds_init(void)
+ EXPORT_SYMBOL(misc_register);
+-EXPORT_SYMBOL(misc_deregister);
++EXPORT_SYMBOL(__misc_deregister);
+ 
+ static int __init misc_init(void)
  {
-Index: linux-2.6.24-rc8-mm1/include/linux/leds.h
-===================================================================
---- linux-2.6.24-rc8-mm1.orig/include/linux/leds.h
-+++ linux-2.6.24-rc8-mm1/include/linux/leds.h
-@@ -59,7 +59,15 @@ struct led_classdev {
- 
- extern int led_classdev_register(struct device *parent,
- 				 struct led_classdev *led_cdev);
--extern void led_classdev_unregister(struct led_classdev *led_cdev);
-+extern void __led_classdev_unregister(struct led_classdev *led_cdev, bool sus);
-+static inline void led_classdev_unregister(struct led_classdev *lcd)
-+{
-+	__led_classdev_unregister(lcd, false);
-+}
-+static inline void led_classdev_unregister_suspended(struct led_classdev *lcd)
-+{
-+	__led_classdev_unregister(lcd, true);
-+}
- extern void led_classdev_suspend(struct led_classdev *led_cdev);
- extern void led_classdev_resume(struct led_classdev *led_cdev);
- 
