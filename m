@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 2/5] Misc: Add possibility to remove misc
-	devices during suspend/resume
-Date: Fri, 25 Jan 2008 01:31:49 +0100
-Message-ID: <200801250131.50924.rjw@sisk.pl>
+Subject: [PATCH -mm 1/5] PM: Export device_pm_schedule_removal
+Date: Fri, 25 Jan 2008 01:30:25 +0100
+Message-ID: <200801250130.26591.rjw@sisk.pl>
 References: <200801250127.21966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,79 +25,61 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make it possible to unregister a misc device object in a safe way
-during a suspend/resume cycle.
+Move the declaration of device_pm_schedule_removal() to device.h
+and make it exported, as it will be used directly by some drivers
+for unregistering device objects during suspend/resume cycles in a
+safe way.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/char/misc.c        |   13 +++++++++----
- include/linux/miscdevice.h |   10 +++++++++-
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ drivers/base/power/main.c  |    1 +
+ drivers/base/power/power.h |    1 -
+ include/linux/device.h     |    6 ++++++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.24-rc8-mm1/include/linux/miscdevice.h
+Index: linux-2.6.24-rc8-mm1/drivers/base/power/main.c
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/include/linux/miscdevice.h
-+++ linux-2.6.24-rc8-mm1/include/linux/miscdevice.h
-@@ -43,7 +43,15 @@ struct miscdevice  {
- };
- 
- extern int misc_register(struct miscdevice * misc);
--extern int misc_deregister(struct miscdevice * misc);
-+extern int __misc_deregister(struct miscdevice *misc, bool suspended);
-+static inline int misc_deregister(struct miscdevice *misc)
-+{
-+	return __misc_deregister(misc, false);
-+}
-+static inline int misc_deregister_suspended(struct miscdevice *misc)
-+{
-+	return __misc_deregister(misc, true);
-+}
- 
- #define MODULE_ALIAS_MISCDEV(minor)				\
- 	MODULE_ALIAS("char-major-" __stringify(MISC_MAJOR)	\
-Index: linux-2.6.24-rc8-mm1/drivers/char/misc.c
-===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/char/misc.c
-+++ linux-2.6.24-rc8-mm1/drivers/char/misc.c
-@@ -232,8 +232,9 @@ int misc_register(struct miscdevice * mi
+--- linux-2.6.24-rc8-mm1.orig/drivers/base/power/main.c
++++ linux-2.6.24-rc8-mm1/drivers/base/power/main.c
+@@ -129,6 +129,7 @@ void device_pm_schedule_removal(struct d
+ 	list_move_tail(&dev->power.entry, &dpm_destroy);
+ 	mutex_unlock(&dpm_list_mtx);
  }
++EXPORT_SYMBOL_GPL(device_pm_schedule_removal);
  
  /**
-- *	misc_deregister - unregister a miscellaneous device
-+ *	__misc_deregister - unregister a miscellaneous device
-  *	@misc: device to unregister
-+ *	@suspended: to be set if the function is used during suspend/resume
-  *
-  *	Unregister a miscellaneous device that was previously
-  *	successfully registered with misc_register(). Success
-@@ -241,7 +242,7 @@ int misc_register(struct miscdevice * mi
-  *	indicates an error.
-  */
- 
--int misc_deregister(struct miscdevice * misc)
-+int __misc_deregister(struct miscdevice *misc, bool suspended)
+  *	pm_sleep_lock - mutual exclusion for registration and suspend
+Index: linux-2.6.24-rc8-mm1/include/linux/device.h
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/include/linux/device.h
++++ linux-2.6.24-rc8-mm1/include/linux/device.h
+@@ -532,11 +532,17 @@ extern struct device *device_create(stru
+ extern void device_destroy(struct class *cls, dev_t devt);
+ #ifdef CONFIG_PM_SLEEP
+ extern void destroy_suspended_device(struct class *cls, dev_t devt);
++extern void device_pm_schedule_removal(struct device *);
+ #else /* !CONFIG_PM_SLEEP */
+ static inline void destroy_suspended_device(struct class *cls, dev_t devt)
  {
- 	int i = misc->minor;
- 
-@@ -250,7 +251,11 @@ int misc_deregister(struct miscdevice * 
- 
- 	mutex_lock(&misc_mtx);
- 	list_del(&misc->list);
--	device_destroy(misc_class, MKDEV(MISC_MAJOR, misc->minor));
-+	if (suspended)
-+		destroy_suspended_device(misc_class,
-+					MKDEV(MISC_MAJOR, misc->minor));
-+	else
-+		device_destroy(misc_class, MKDEV(MISC_MAJOR, misc->minor));
- 	if (i < DYNAMIC_MINORS && i>0) {
- 		misc_minors[i>>3] &= ~(1 << (misc->minor & 7));
- 	}
-@@ -259,7 +264,7 @@ int misc_deregister(struct miscdevice * 
+ 	device_destroy(cls, devt);
  }
++
++static inline void device_pm_schedule_removal(struct device *dev)
++{
++	device_unregister(dev);
++}
+ #endif /* !CONFIG_PM_SLEEP */
  
- EXPORT_SYMBOL(misc_register);
--EXPORT_SYMBOL(misc_deregister);
-+EXPORT_SYMBOL(__misc_deregister);
+ /*
+Index: linux-2.6.24-rc8-mm1/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/drivers/base/power/power.h
++++ linux-2.6.24-rc8-mm1/drivers/base/power/power.h
+@@ -13,7 +13,6 @@ static inline struct device *to_device(s
  
- static int __init misc_init(void)
- {
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+-extern void device_pm_schedule_removal(struct device *);
+ extern int pm_sleep_lock(void);
+ extern void pm_sleep_unlock(void);
+ 
