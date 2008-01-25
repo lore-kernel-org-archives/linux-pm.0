@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 3/5] HWRNG: Add possibility to remove hwrng
-	devices during suspend/resume
-Date: Fri, 25 Jan 2008 01:35:24 +0100
-Message-ID: <200801250135.26009.rjw__38362.7449548387$1201222271$gmane$org@sisk.pl>
+Subject: [PATCH -mm 5/5] b43: Avoid unregistering device objects
+	during suspend
+Date: Fri, 25 Jan 2008 01:37:33 +0100
+Message-ID: <200801250137.34275.rjw@sisk.pl>
 References: <200801250127.21966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,75 +26,120 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make it possible to unregister a Hardware Random Number Generator
-device object in a safe way during a suspend/resume cycle.
+Modify the b43 driver to avoid deadlocking suspend and resume,
+which happens as a result of attempting to unregister device objects
+locked by the PM core during suspend/resume cycles.  Also, make it
+use a suspend-safe method of unregistering device object in the
+resume error path.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Michael Buesch <mb@bu3sch.de>
 ---
- drivers/char/hw_random/core.c |   10 +++++-----
- include/linux/hw_random.h     |   10 +++++++++-
- 2 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/net/wireless/b43/b43.h  |    1 +
+ drivers/net/wireless/b43/leds.c |    5 ++++-
+ drivers/net/wireless/b43/main.c |   25 ++++++++++++++++---------
+ 3 files changed, 21 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.24-rc8-mm1/drivers/char/hw_random/core.c
+Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/b43.h
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/char/hw_random/core.c
-+++ linux-2.6.24-rc8-mm1/drivers/char/hw_random/core.c
-@@ -234,11 +234,11 @@ static DEVICE_ATTR(rng_available, S_IRUG
- 		   NULL);
+--- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/b43.h
++++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/b43.h
+@@ -706,6 +706,7 @@ struct b43_wldev {
+ 	bool short_preamble;	/* TRUE, if short preamble is enabled. */
+ 	bool short_slot;	/* TRUE, if short slot timing is enabled. */
+ 	bool radio_hw_enable;	/* saved state of radio hardware enabled state */
++	bool suspend_in_progress;	/* TRUE, if we are in a suspend/resume cycle */
  
- 
--static void unregister_miscdev(void)
-+static void unregister_miscdev(bool suspended)
- {
- 	device_remove_file(rng_miscdev.this_device, &dev_attr_rng_available);
- 	device_remove_file(rng_miscdev.this_device, &dev_attr_rng_current);
--	misc_deregister(&rng_miscdev);
-+	__misc_deregister(&rng_miscdev, suspended);
+ 	/* PHY/Radio device. */
+ 	struct b43_phy phy;
+Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/main.c
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/main.c
++++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/main.c
+@@ -2470,10 +2470,10 @@ static int b43_rng_read(struct hwrng *rn
+ 	return (sizeof(u16));
  }
  
- static int register_miscdev(void)
-@@ -313,7 +313,7 @@ out:
- }
- EXPORT_SYMBOL_GPL(hwrng_register);
- 
--void hwrng_unregister(struct hwrng *rng)
-+void __hwrng_unregister(struct hwrng *rng, bool suspended)
+-static void b43_rng_exit(struct b43_wl *wl)
++static void b43_rng_exit(struct b43_wl *wl, bool suspended)
  {
- 	int err;
+ 	if (wl->rng_initialized)
+-		hwrng_unregister(&wl->rng);
++		__hwrng_unregister(&wl->rng, suspended);
+ }
  
-@@ -332,11 +332,11 @@ void hwrng_unregister(struct hwrng *rng)
+ static int b43_rng_init(struct b43_wl *wl)
+@@ -3298,8 +3298,10 @@ static void b43_wireless_core_exit(struc
+ 		return;
+ 	b43_set_status(dev, B43_STAT_UNINIT);
+ 
+-	b43_leds_exit(dev);
+-	b43_rng_exit(dev->wl);
++	if (!dev->suspend_in_progress) {
++		b43_leds_exit(dev);
++		b43_rng_exit(dev->wl, false);
++	}
+ 	b43_pio_free(dev);
+ 	b43_dma_free(dev);
+ 	b43_chip_exit(dev);
+@@ -3420,11 +3422,13 @@ static int b43_wireless_core_init(struct
+ 	memset(wl->mac_addr, 0, ETH_ALEN);
+ 	b43_upload_card_macaddress(dev);
+ 	b43_security_init(dev);
+-	b43_rng_init(wl);
++	if (!dev->suspend_in_progress)
++		b43_rng_init(wl);
+ 
+ 	b43_set_status(dev, B43_STAT_INITIALIZED);
+ 
+-	b43_leds_init(dev);
++	if (!dev->suspend_in_progress)
++		b43_leds_init(dev);
+ out:
+ 	return err;
+ 
+@@ -4024,6 +4028,7 @@ static int b43_suspend(struct ssb_device
+ 	b43dbg(wl, "Suspending...\n");
+ 
+ 	mutex_lock(&wl->mutex);
++	wldev->suspend_in_progress = true;
+ 	wldev->suspend_init_status = b43_status(wldev);
+ 	if (wldev->suspend_init_status >= B43_STAT_STARTED)
+ 		b43_wireless_core_stop(wldev);
+@@ -4055,15 +4060,17 @@ static int b43_resume(struct ssb_device 
+ 	if (wldev->suspend_init_status >= B43_STAT_STARTED) {
+ 		err = b43_wireless_core_start(wldev);
+ 		if (err) {
++			b43_leds_exit(wldev);
++			b43_rng_exit(wldev->wl, true);
+ 			b43_wireless_core_exit(wldev);
+ 			b43err(wl, "Resume failed at core start\n");
+ 			goto out;
  		}
  	}
- 	if (list_empty(&rng_list))
--		unregister_miscdev();
-+		unregister_miscdev(suspended);
- 
- 	mutex_unlock(&rng_mutex);
+-	mutex_unlock(&wl->mutex);
+-
+ 	b43dbg(wl, "Device resumed.\n");
+-      out:
++ out:
++	wldev->suspend_in_progress = false;
++	mutex_unlock(&wl->mutex);
+ 	return err;
  }
--EXPORT_SYMBOL_GPL(hwrng_unregister);
-+EXPORT_SYMBOL_GPL(__hwrng_unregister);
  
- 
- MODULE_DESCRIPTION("H/W Random Number Generator (RNG) driver");
-Index: linux-2.6.24-rc8-mm1/include/linux/hw_random.h
+Index: linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/leds.c
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/include/linux/hw_random.h
-+++ linux-2.6.24-rc8-mm1/include/linux/hw_random.h
-@@ -44,7 +44,15 @@ struct hwrng {
- /** Register a new Hardware Random Number Generator driver. */
- extern int hwrng_register(struct hwrng *rng);
- /** Unregister a Hardware Random Number Generator driver. */
--extern void hwrng_unregister(struct hwrng *rng);
-+extern void __hwrng_unregister(struct hwrng *rng, bool suspended);
-+static inline void hwrng_unregister(struct hwrng *rng)
-+{
-+	__hwrng_unregister(rng, false);
-+}
-+static inline void hwrng_unregister_suspended(struct hwrng *rng)
-+{
-+	__hwrng_unregister(rng, true);
-+}
- 
- #endif /* __KERNEL__ */
- #endif /* LINUX_HWRANDOM_H_ */
+--- linux-2.6.24-rc8-mm1.orig/drivers/net/wireless/b43/leds.c
++++ linux-2.6.24-rc8-mm1/drivers/net/wireless/b43/leds.c
+@@ -116,7 +116,10 @@ static void b43_unregister_led(struct b4
+ {
+ 	if (!led->dev)
+ 		return;
+-	led_classdev_unregister(&led->led_dev);
++	if (led->dev->suspend_in_progress)
++		led_classdev_unregister_suspended(&led->led_dev);
++	else
++		led_classdev_unregister(&led->led_dev);
+ 	b43_led_turn_off(led->dev, led->index, led->activelow);
+ 	led->dev = NULL;
+ }
