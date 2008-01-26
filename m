@@ -1,81 +1,33 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: factor out common s2ram wakeup code
-Date: Fri, 25 Jan 2008 15:36:09 -0800
-Message-ID: <479A7269.1060007@zytor.com>
-References: <20080122193719.GA3791@elf.ucw.cz> <4796519C.6040501@zytor.com> <20080122205625.GC4317@elf.ucw.cz> <47965B13.9080705@zytor.com> <20080122212440.GF4317@elf.ucw.cz> <47966546.6040002@zytor.com> <20080122220301.GA8019@elf.ucw.cz> <47969BB2.2020409@zytor.com> <20080125231215.GA2146@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Q: x86 suspend/hibernation code consolidation
+Date: Sat, 26 Jan 2008 01:32:08 +0100
+Message-ID: <200801260132.09529.rjw__37943.9698918306$1201307827$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758603AbYAYXha@vger.kernel.org>
-In-Reply-To: <20080125231215.GA2146@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> diff --git a/arch/x86/kernel/acpi/rm/wakemain.c b/arch/x86/kernel/acpi/rm/wakemain.c
-> new file mode 100644
-> index 0000000..d3173cc
-> --- /dev/null
-> +++ b/arch/x86/kernel/acpi/rm/wakemain.c
-> @@ -0,0 +1,18 @@
-> +#include "wakeup.h"
-> +#include "boot.h"
-> +
-> +extern struct wakeup_header wakeup_header;
-> +
-> +void main(void)
-> +{
-> +	asm volatile("lcallw   $0xc000,$3;	movw    %cs, %ax;	movw    %ax, %ds;	movw	%ax, %es; movw    %ax, %ss");
-> +
-> +//	asm volatile("inb	$97, %al; 		outb	%al, $0x80; 		movb	$3, %al; 		outb	%al, $97; 		outb	%al, $0x80; 		movb	$-74, %al; 		outb	%al, $67; 		outb	%al, $0x80; 		movb	$-119, %al; 		outb	%al, $66; 		outb	%al, $0x80; 		movb	$15, %al; 		outb	%al, $66");
-> +
-> +	/* Need to call BIOS */
-> +	probe_cards(0);
-> +//	set_mode(wakeup_header.video_mode);
-> +	set_mode(6);
-> +
-> +	/* Set up GDT and IDT here, possibly CR4 and EFER */
-> +}
+Hi,
 
-Surely this needs some cleaning up?  ;)
+I'd like to move the 64-bit suspend/hibernation files from arch/x86/kernel to
+arch/x86/power, modify the names of the 32-bit files already in
+arch/x86/power and update the Makefiles accordingly, but there are some changes
+queued for merging that touch the files in question.
 
-> diff --git a/arch/x86/kernel/acpi/rm/wakeup.S b/arch/x86/kernel/acpi/rm/wakeup.S
-> new file mode 100644
-> index 0000000..bfa348c
-> --- /dev/null
-> +++ b/arch/x86/kernel/acpi/rm/wakeup.S
-> @@ -0,0 +1,129 @@
-> +/*
-> + * ACPI wakeup real mode startup stub
-> + */
-> +#include <asm/segment.h>
-> +#include <asm/msr-index.h>
-> +
-> +	
-> +#define BEEP \
-> +	inb	$97, %al; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$3, %al; 	\
-> +	outb	%al, $97; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-74, %al; 	\
-> +	outb	%al, $67; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-119, %al; 	\
-> +	outb	%al, $66; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$15, %al; 	\
-> +	outb	%al, $66;
-> +
+When is the right time for making changes like that?
 
-BEEP isn't actually used here and should probably be a C function if 
-needed.  Note: in real mode you can also produce a beep by calling
-int $0x10 with %ax = 0x0e07.  Please note that some int $0x10 
-implementations clobber certain registers... see the INT10 macro in the 
-bootup code.
-
-Seriously cool, though, that you're getting this far.
-
-	-hpa
+Rafael
