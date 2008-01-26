@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Q: x86 suspend/hibernation code consolidation
-Date: Sun, 27 Jan 2008 00:36:39 +0100
-Message-ID: <200801270036.41249.rjw__11520.2316818342$1201391004$gmane$org@sisk.pl>
-References: <200801260132.09529.rjw@sisk.pl> <20080126094239.GA4096@ucw.cz>
+Date: Sun, 27 Jan 2008 00:42:38 +0100
+Message-ID: <200801270042.38930.rjw__48529.2678386488$1201391412$gmane$org@sisk.pl>
+References: <200801260132.09529.rjw@sisk.pl>
+	<200801252147.27254.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080126094239.GA4096@ucw.cz>
+In-Reply-To: <200801252147.27254.lenb@kernel.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,32 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@zytor.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 26 of January 2008, Pavel Machek wrote:
-> Hi!
-> 
+On Saturday, 26 of January 2008, Len Brown wrote:
+> On Friday 25 January 2008 19:32, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
 > > I'd like to move the 64-bit suspend/hibernation files from arch/x86/kernel to
 > > arch/x86/power, modify the names of the 32-bit files already in
 > > arch/x86/power and update the Makefiles accordingly, but there are some changes
 > > queued for merging that touch the files in question.
+> > 
+> > When is the right time for making changes like that?
+> > 
+> > Rafael
 > 
-> I have similar patch producing hibernation_*.S, I can send it as a
-> base.
+> In Cambridge, when we discussed cleanups that touch a lot of files
+> but have no functional change -- somebody suggested that right
+> after rc1 closes is a good time.  The reasoning was that they
+> would not conflict with the functional changes in rc1.
+> 
+> However, I recall Linus saying something about "Andrew is special"
+> WRT permission to push cleanups after the rc1 window; so I don't
+> know what the final ruling was -- if there was such a ruling.
 
-Well, it probably will have to be rebased anyway.  That's the problem: what to
-base it on to avoid conflicts.
+Well, I don't think there was a ruling, but perhaps sneaking it into -mm
+after -rc1 would do the trick. ;-)
 
-> Moving it soon  would be nice :-).
-
-Yes, but I'm afraid not earlier than after the ACPI suspend tree is merged.
-
-> As I'm in process of rewriting arch/x86/kernel/acpi/ , I'd prefer that
-> not to be moved from under me.
-
-I'm not going to touch that now. :-)
-
-Greetings,
 Rafael
