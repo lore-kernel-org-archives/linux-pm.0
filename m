@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Problem with s3 suspend to ram
-Date: Sun, 27 Jan 2008 12:13:36 +0100
-Message-ID: <200801271213.36701.rjw__17986.3256788396$1201432694$gmane$org@sisk.pl>
-References: <1571.71830.qm@web55204.mail.re4.yahoo.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Q: x86 suspend/hibernation code consolidation
+Date: Mon, 28 Jan 2008 15:03:50 +0100
+Message-ID: <20080128140350.GB27928__37000.6626043052$1201529204$gmane$org@elte.hu>
+References: <200801260132.09529.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1571.71830.qm@web55204.mail.re4.yahoo.com>
 Content-Disposition: inline
+In-Reply-To: <200801260132.09529.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: G L <glafranceweb@yahoo.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 27 of January 2008, G L wrote:
-> Hello,
 
-Hi,
- 
-> Thanks for replying!
-> 
-> Well I updated Mythbuntu 7.10 to the latest kernel offered, which is 2.6.22-14-generic.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Please don't drop CCs in the next messages, thanks.
+> I'd like to move the 64-bit suspend/hibernation files from 
+> arch/x86/kernel to arch/x86/power, modify the names of the 32-bit 
+> files already in arch/x86/power and update the Makefiles accordingly, 
+> but there are some changes queued for merging that touch the files in 
+> question.
 
-Would you be able to install a kernel.org kernel?
+nice cleanup.
 
-Rafael
+> When is the right time for making changes like that?
+
+best would be after the x86.git merge. We could push this via x86.git in 
+fact, to line it up with whatever other changes there might be. -mm 
+would be fine too, if there are pending patches in this area in -mm. 
+(and i recall you did some global-scope suspend/resume changes that 
+might interfere?)
+
+	Ingo
