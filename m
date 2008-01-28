@@ -1,7 +1,7 @@
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Subject: [RFC 2/4] Voltage/Current Regulator framework
-Date: Mon, 28 Jan 2008 15:32:21 +0000
-Message-ID: <1201534342.3551.143.camel@localhost.localdomain>
+Subject: [RFC 0/4] Voltage/Current Regulator framework
+Date: Mon, 28 Jan 2008 15:31:51 +0000
+Message-ID: <1201534311.3551.141.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -19,130 +19,68 @@ To: linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@list
 Cc: Vincent Sanders <vince@simtec.co.uk>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Ross Wille <wille@freescale.com>
 List-Id: linux-pm@vger.kernel.org
 
-Regulator driver API :-
+I'd like to gather some feedback on a voltage and current regulator
+framework I am currently working on for SoC based devices (e.g. phones,
+mp3 players, GPS, etc). Please note that this is still work in progress.
 
-diff --git a/include/linux/regulator/regulator-drv.h b/include/linux/regulator/regulator-drv.h
-new file mode 100644
-index 0000000..3c9b398
---- /dev/null
-+++ b/include/linux/regulator/regulator-drv.h
-@@ -0,0 +1,119 @@
-+/*
-+ * regulator-drv.h -- SoC Regulator support.
-+ *
-+ * Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Regulator Driver Interface.
-+ */
-+
-+
-+#ifndef __LINUX_REGULATOR_DRV_H_
-+#define __LINUX_REGULATOR_DRV_H_
-+
-+#include <linux/device.h>
-+#include <linux/regulator/regulator.h>
-+
-+struct regulator_constraints;
-+struct regulator_cdev;
-+
-+/**
-+ * struct regulator_ops - regulator operations.
-+ *
-+ * This struct describes regulator operations.
-+ */
-+struct regulator_ops {
-+
-+	/* get/set regulator voltage */
-+	int (*set_voltage)(struct regulator_cdev *, int uV);
-+	int (*get_voltage)(struct regulator_cdev *);
-+
-+	/* get/set regulator current  */
-+	int (*set_current)(struct regulator_cdev *, int uA);
-+	int (*get_current)(struct regulator_cdev *);
-+
-+	/* enable/disable regulator */
-+	int (*enable)(struct regulator_cdev *);
-+	int (*disable)(struct regulator_cdev *);
-+	int (*is_enabled)(struct regulator_cdev *);
-+
-+	/* get/set regulator operating mode (defined in regulator.h) */
-+	int (*set_mode)(struct regulator_cdev *, unsigned int mode);
-+	unsigned int (*get_mode)(struct regulator_cdev *);
-+
-+	/* get most efficient regulator operating mode for load */
-+	unsigned int (*get_optimum_mode)(struct regulator_cdev *, int input_uV,
-+		int output_uV, int load_uA);
-+};
-+
-+/*
-+ * Regulators can either control voltage or current.
-+ */
-+enum regulator_type {
-+	REGULATOR_VOLTAGE,
-+	REGULATOR_CURRENT,
-+};
-+
-+/**
-+ * struct regulator_desc - Regulator descriptor
-+ *
-+ */
-+struct regulator_desc {
-+	const char *name;
-+	int id;
-+	struct regulator_ops *ops;
-+	int irq;
-+	enum regulator_type type;
-+	struct module *owner;
-+};
-+
-+/**
-+ * regulator_register - register regulator
-+ * @regulator: regulator source
-+ * @reg_data: private regulator data
-+ *
-+ * Called by regulator drivers to register a regulator.
-+ * Returns 0 on success.
-+ */
-+struct regulator_cdev *regulator_register(
-+	struct regulator_desc *regulator_desc, void *reg_data);
-+
-+/**
-+ * regulator_unregister - unregister regulator
-+ * @regulator: regulator source
-+ *
-+ * Called by regulator drivers to unregister a regulator.
-+ */
-+void regulator_unregister(struct regulator_cdev *rcdev);
-+
-+/**
-+ * regulator_notifier_call_chain - call regulator event notifier
-+ * @regulator: regulator source
-+ * @event: notifier block
-+ * @data:
-+ *
-+ * Called by regulator drivers to notify clients a regulator event has
-+ * occurred.
-+ */
-+int regulator_notifier_call_chain(struct regulator_cdev *rcdev,
-+	unsigned long event, void *data);
-+
-+/**
-+ * regulator_get_drvdata - get regulator driver data
-+ * @regulator: regulator
-+ */
-+void *rcdev_get_drvdata (struct regulator_cdev *rcdev);
-+
-+/**
-+ * regulator_get_id - get regulator ID
-+ * @regulator: regulator
-+ */
-+int rcdev_get_id (struct regulator_cdev *rcdev);
-+
-+
-+#endif
+The intention is to allow systems to dynamically control regulator
+output in order to save power and prolong battery life. This applies to
+both voltage regulators (where voltage output is controllable) and
+current sinks (where current output is controllable).
+
+The framework is designed around SoC based devices but may also be
+relevant to non SoC devices. It's also been designed against two Power
+Management ICs (PMICs) currently on the market - namely the Freescale
+MC13783 and the Wolfson WM8350. However it is quite generic and should
+apply to all PMICs. 
+
+The framework breaks into three main interfaces :-
+
+ 1. Client or Consumer driver API.
+
+  This uses a similar API to the kernel clock interface in that client
+or consumer drivers can get and put a regulator (like they can with
+clocks atm) and get/set voltage, current, mode, enable and disable. This
+should allow clients complete control over their supply voltage and
+current. This API also compiles out if not in use so drivers can be
+reused in systems with no PMIC power control.
+
+ 2. Regulator driver API.
+
+  This allows regulator drivers to register their regulators and provide
+operations to the core. It also has a notifier call chain for
+propagating regulator events to clients.
+
+ 3. Platform API.
+
+  This API is for platform/device specific code and allows the creation
+of voltage/current domains (with constraints) for each regulator. It can
+provide regulator constraints that will prevent device damage through
+over voltage or over current caused by buggy client drivers.  It also
+allows the creation of a regulator tree whereby some regulators are
+supplied by others (similar to a clock tree).
+
+
+The framework also exports a lot of useful voltage/current data to
+userspace via sysfs. This could be used to monitor device and regulator
+power and status.
+
+Fwiw, there is code in our public git tree that currently shows this API
+in use:-
+
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=shortlog;h=imx31
+
+All the relevant files are under include/linux/regulator and
+drivers/regulator. There are client drivers here :-
+
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=arch/arm/mach-mx3/cpufreq.c;h=77f03d85fef6b29b0ca2e820d38d9ebb068e7bf7;hb=imx31
+
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=drivers/leds/leds-wm8350.c;h=a81bbf9154b4de13c029aee0613294562a03f506;hb=imx31
+
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=drivers/video/backlight/wm8350_bl.c;h=3eafb83683b7f242ec78ff620431307c25e23202;hb=imx31
+
+http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=sound/soc/imx/imx32ads-wm8350.c;h=aae347ac556203fbdb64d71f4dc0be7df250767a;hb=imx31
+
+Patch follows.
+
+Liam
