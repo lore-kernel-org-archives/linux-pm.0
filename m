@@ -1,11 +1,11 @@
-From: G L <glafranceweb@yahoo.com>
-Subject: Re: Problem with s3 suspend to ram
-Date: Mon, 28 Jan 2008 02:24:50 -0800 (PST)
-Message-ID: <986804.87015.qm__12780.6890559897$1201535444$gmane$org@web55214.mail.re4.yahoo.com>
-Reply-To: G L <glafranceweb@yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: <gregkh@suse.de>
+Subject: patch pm-export-device_pm_schedule_removal.patch added
+	to gregkh-2.6 tree
+Date: Mon, 28 Jan 2008 09:59:20 -0800
+Message-ID: <12015431603673@kroah.org>
+References: <200801250130.26591.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200801250130.26591.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,45 +15,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl, akpm@linux-foundation.org, greg@kroah.com, gregkh@suse.de, lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, mb@bu3sch.de
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-Today I tried the 2.6.24-5-generic.  Also, I tried to suspend/resume with two different SATA settings in the bios (IDE and Linux AHCI).
-I also played with various settings in /etc/default/acpi-support. 
+This is a note to let you know that I've just added the patch titled
 
-The problem is still there, but it's different.
+     Subject: PM: Export device_pm_schedule_removal
 
-Instead of getting:
-ata1 soft reset failed
-ata1 COMRESET failed
+to my gregkh-2.6 tree.  Its filename is
 
-It does:
-ata1 soft reset
-failed ...[above line about 5 times]
-then it says something like "giving up"
+     pm-export-device_pm_schedule_removal.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
------ Original Message ----
+>From rjw@sisk.pl  Mon Jan 28 08:57:01 2008
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Fri, 25 Jan 2008 01:30:25 +0100
+Subject: PM: Export device_pm_schedule_removal
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Buesch <mb@bu3sch.de>, pm list <linux-pm@lists.linux-foundation.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, bcm43xx-dev@lists.berlios.de, Alessandro Rubini <rubini@ipvvis.unipv.it>, Richard Purdie <rpurdie@rpsys.net>, Greg KH <greg@kroah.com>
+Message-ID: <200801250130.26591.rjw@sisk.pl>
+Content-Disposition: inline
+
+
 From: Rafael J. Wysocki <rjw@sisk.pl>
-To: G L <glafranceweb@yahoo.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>; pm list <linux-pm@lists.linux-foundation.org>
-Sent: Sunday, January 27, 2008 6:13:36 AM
-Subject: Re: Problem with s3 suspend to ram
 
-On Sunday, 27 of January 2008, G L wrote:
-> Hello,
+Move the declaration of device_pm_schedule_removal() to device.h
+and make it exported, as it will be used directly by some drivers
+for unregistering device objects during suspend/resume cycles in a
+safe way.
 
-Hi,
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> Thanks for replying!
->
-> Well I updated Mythbuntu 7.10 to the latest kernel offered, which is 2.6.22-14-generic.
+---
+ drivers/base/power/main.c  |    1 +
+ drivers/base/power/power.h |    1 -
+ include/linux/device.h     |    6 ++++++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-Please don't drop CCs in the next messages, thanks.
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -129,6 +129,7 @@ void device_pm_schedule_removal(struct d
+ 	list_move_tail(&dev->power.entry, &dpm_destroy);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
++EXPORT_SYMBOL_GPL(device_pm_schedule_removal);
+ 
+ /**
+  *	pm_sleep_lock - mutual exclusion for registration and suspend
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -13,7 +13,6 @@ static inline struct device *to_device(s
+ 
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+-extern void device_pm_schedule_removal(struct device *);
+ extern int pm_sleep_lock(void);
+ extern void pm_sleep_unlock(void);
+ 
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -534,11 +534,17 @@ extern struct device *device_create(stru
+ extern void device_destroy(struct class *cls, dev_t devt);
+ #ifdef CONFIG_PM_SLEEP
+ extern void destroy_suspended_device(struct class *cls, dev_t devt);
++extern void device_pm_schedule_removal(struct device *);
+ #else /* !CONFIG_PM_SLEEP */
+ static inline void destroy_suspended_device(struct class *cls, dev_t devt)
+ {
+ 	device_destroy(cls, devt);
+ }
++
++static inline void device_pm_schedule_removal(struct device *dev)
++{
++	device_unregister(dev);
++}
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ /*
 
-Would you be able to install a kernel.org kernel?
 
-Rafael
+Patches currently in gregkh-2.6 which might be from rjw@sisk.pl are
+
+driver/pm-export-device_pm_schedule_removal.patch
