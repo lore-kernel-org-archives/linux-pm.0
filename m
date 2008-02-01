@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 28/37] ACPI: Separate disabling of GPEs from _PTS
-Date: Thu, 31 Jan 2008 23:36:59 -0500
-Message-ID: <aedf9a8ff25f5890eb416d95520afdc5d40e539b.1201840183.git.len.brown__30251.2929345996$1201843698$gmane$org@intel.com>
+Subject: [PATCH 33/37] Suspend: Add config option to disable the
+	freezer if architecture wants that
+Date: Thu, 31 Jan 2008 23:37:04 -0500
+Message-ID: <16a00d127d8162c859537bbd8cb3934603a7985a.1201840183.git.len.brown__2621.65605458922$1201843705$gmane$org@intel.com>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -17,84 +18,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: linux-acpi@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-The preparation to enter an ACPI system sleep state is now tied to
-the disabling of GPEs, but the GPEs should not be disabled before
-suspending devices.  Since on ACPI 1.0x systems the _PTS global
-control method should be executed before suspending devices, we
-need to disable GPEs separately.
+This patch makes the freezer optional for suspend to allow the
+system to work (or not work) like the original PMU suspend.
 
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/hardware/hwsleep.c |    4 ----
- drivers/acpi/sleep/main.c       |   17 +++++++++++++++--
- 2 files changed, 15 insertions(+), 6 deletions(-)
+ arch/powerpc/Kconfig |    4 ++++
+ kernel/power/Kconfig |   11 +++++++++++
+ kernel/power/main.c  |    6 +++---
+ kernel/power/power.h |   22 ++++++++++++++++++++++
+ 4 files changed, 40 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
-index 13c93a1..fd1c4ba 100644
---- a/drivers/acpi/hardware/hwsleep.c
-+++ b/drivers/acpi/hardware/hwsleep.c
-@@ -229,10 +229,6 @@ acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
- 				"While executing method _SST"));
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 824140d..4a22c99 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -405,6 +405,10 @@ config CMDLINE
+ 	  most cases you will need to specify the root device here.
+ 
+ if !44x || BROKEN
++config ARCH_WANTS_FREEZER_CONTROL
++	def_bool y
++	depends on ADB_PMU
++
+ source kernel/power/Kconfig
+ endif
+ 
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index f8153fd..ef9b802 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -104,6 +104,17 @@ config SUSPEND
+ 	  powered and thus its contents are preserved, such as the
+ 	  suspend-to-RAM state (e.g. the ACPI S3 state).
+ 
++config SUSPEND_FREEZER
++	bool "Enable freezer for suspend to RAM/standby" \
++		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
++	depends on SUSPEND
++	default y
++	help
++	  This allows you to turn off the freezer for suspend. If this is
++	  done, no tasks are frozen for suspend to RAM/standby.
++
++	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
++
+ config HIBERNATION
+ 	bool "Hibernation (aka 'suspend to disk')"
+ 	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index d9bba45..e47214c 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -181,7 +181,7 @@ static int suspend_prepare(void)
+ 
+ 	pm_prepare_console();
+ 
+-	if (freeze_processes()) {
++	if (suspend_freeze_processes()) {
+ 		error = -EAGAIN;
+ 		goto Thaw;
  	}
+@@ -199,7 +199,7 @@ static int suspend_prepare(void)
+ 		return 0;
  
--	/* Disable/Clear all GPEs */
--
--	status = acpi_hw_disable_all_gpes();
--
- 	return_ACPI_STATUS(status);
- }
- 
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index fdd8139..198ff8a 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -91,10 +91,13 @@ static int acpi_pm_begin(suspend_state_t pm_state)
- 
- static int acpi_pm_prepare(void)
+  Thaw:
+-	thaw_processes();
++	suspend_thaw_processes();
+ 	pm_restore_console();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -308,7 +308,7 @@ int suspend_devices_and_enter(suspend_state_t state)
+  */
+ static void suspend_finish(void)
  {
--	int error = acpi_sleep_prepare(acpi_target_sleep_state);
-+	int error;
- 
-+	error = acpi_sleep_prepare(acpi_target_sleep_state);
- 	if (error)
- 		acpi_target_sleep_state = ACPI_STATE_S0;
-+	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
- 
- 	return error;
+-	thaw_processes();
++	suspend_thaw_processes();
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
  }
-@@ -261,7 +264,16 @@ static int acpi_hibernation_start(void)
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 8ec5499..700f44e 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -1,6 +1,7 @@
+ #include <linux/suspend.h>
+ #include <linux/suspend_ioctls.h>
+ #include <linux/utsname.h>
++#include <linux/freezer.h>
  
- static int acpi_hibernation_prepare(void)
- {
--	return acpi_sleep_prepare(ACPI_STATE_S4);
-+	int error;
-+
-+	error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	if (error)
-+		return error;
-+
-+	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
-+
-+	return error;
- }
+ struct swsusp_info {
+ 	struct new_utsname	uts;
+@@ -203,3 +204,24 @@ enum {
+ #define TEST_MAX	(__TEST_AFTER_LAST - 1)
  
- static int acpi_hibernation_enter(void)
-@@ -426,6 +438,7 @@ static void acpi_power_off_prepare(void)
- {
- 	/* Prepare to power off the system */
- 	acpi_sleep_prepare(ACPI_STATE_S5);
-+	acpi_hw_disable_all_gpes();
- }
- 
- static void acpi_power_off(void)
+ extern int pm_test_level;
++
++#ifdef CONFIG_SUSPEND_FREEZER
++static inline int suspend_freeze_processes(void)
++{
++	return freeze_processes();
++}
++
++static inline void suspend_thaw_processes(void)
++{
++	thaw_processes();
++}
++#else
++static inline int suspend_freeze_processes(void)
++{
++	return 0;
++}
++
++static inline void suspend_thaw_processes(void)
++{
++}
++#endif
 -- 
 1.5.4.rc5.16.gc0279
