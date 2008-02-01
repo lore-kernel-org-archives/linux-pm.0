@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] feature-removal: Document suspend/hibernate
-	deprecations
-Date: Fri, 1 Feb 2008 11:54:00 +0100
-Message-ID: <200802011154.01492.rjw__34039.8037493744$1201863645$gmane$org@sisk.pl>
-References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
-	<1201844914.23523.84.camel@brick>
+Subject: Re: Need to replace one patch in suspend branch
+Date: Fri, 1 Feb 2008 11:57:01 +0100
+Message-ID: <200802011157.02347.rjw__30629.025193821$1201863808$gmane$org@sisk.pl>
+References: <200801290029.07402.rjw@sisk.pl>
+	<200801312322.09211.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1201844914.23523.84.camel@brick>
+In-Reply-To: <200801312322.09211.lenb@kernel.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,55 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 1 of February 2008, Harvey Harrison wrote:
-> Let this appear as deprecated in 2.6.25, remove after three
-> releases (2.6.28).
-
-Thanks, I'll post a more complete version of the patch later today.
-
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Something like this should be included if you are deprecating
-> userspace functionality.  I tried to come up with a useful
-> reason from your changelogs, but you should fill this in.
+On Friday, 1 of February 2008, Len Brown wrote:
+> On Monday 28 January 2008 18:29, Rafael J. Wysocki wrote:
+> > Hi Len,
+> > 
+> > Would it be possible to replace commit a04ca6718960e842624833a01dbd5f10f38f5af1
+> > "Suspend: Testing facility (rev. 2)" in the suspend branch with the appended patch?
+> > 
+> > Unfortunately, the original commit uses pointers to 'struct kset' which is no
+> > longer valid after the recently merged driver core changes.
 > 
->  Documentation/feature-removal-schedule.txt |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
+> Hi Rafael,
+> The original suspend branch is now available rooted at 2.6.24
+> as "suspend-2.6.24".
 > 
-> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> index 181bff0..cb005de 100644
-> --- a/Documentation/feature-removal-schedule.txt
-> +++ b/Documentation/feature-removal-schedule.txt
-> @@ -354,3 +354,28 @@ Why:	The support code for the old firmware hurts code readability/maintainabilit
->  	and slightly hurts runtime performance. Bugfixes for the old firmware
->  	are not provided by Broadcom anymore.
->  Who:	Michael Buesch <mb@bu3sch.de>
+> The latest "suspend" branch is now based on today's linus HEAD.
+
+Thanks a lot for doing that!
+
+> In the suspend branch, I rewound the series until after the
+> original patch, patch -R the original, patch -N the new one,
+> and checked in the the resulting diff (below).
+> 
+> At the expense of the additional trivial patch,
+> this struck me as a good balance between preserving
+> the (tested) history, showing what changed,
+> and minimizing exposure to bisect build breakage.
+
+Yes, this is a good idea to add this additional patch after the original one.
+
+Thanks,
+Rafael
+
+
+> commit 21779c8de31b1c9e749af676a033109f70156678
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Tue Jan 29 00:29:06 2008 +0100
+> 
+>     suspend: build fix responding to 2.6.25 kset change
+>     
+>     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 84e1ae6..fc717b8 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -53,7 +53,8 @@ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+>  	[TEST_FREEZER] = "freezer",
+>  };
+>  
+> -static ssize_t pm_test_show(struct kset *kset, char *buf)
+> +static ssize_t pm_test_show(struct kobject *kobj, struct kobj_attribute *attr,
+> +				char *buf)
+>  {
+>  	char *s = buf;
+>  	int level;
+> @@ -73,7 +74,8 @@ static ssize_t pm_test_show(struct kset *kset, char *buf)
+>  	return (s - buf);
+>  }
+>  
+> -static ssize_t pm_test_store(struct kset *kset, const char *buf, size_t n)
+> +static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
+> +				const char *buf, size_t n)
+>  {
+>  	const char * const *s;
+>  	int level;
+> @@ -104,6 +106,7 @@ power_attr(pm_test);
+>  static inline int suspend_test(int level) { return 0; }
+>  #endif /* !CONFIG_PM_DEBUG */
+>  
 > +
-> +---------------------------
-> +
-> +What:	SNAPSHOT_PMOPS ioctl
-> +When:	2.6.28
-> +Why:	Badly designed interface, obsoleted by SNAPSHOT_PLATFORM_SUPPORT and
-> +	SNAPSHOT_POWER_OFF
-> +Who:	Len Brown <len.brown@intel.com>
-> +
-> +---------------------------
-> +
-> +What:	SNAPSHOT_SET_SWAP_FILE ioctl
-> +When:	2.6.28
-> +Why:	Insert reason here
-> +Who:	Len Brown <len.brown@intel.com>
-> +
-> +---------------------------
-> +
-> +What:	SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE ioctls
-> +When:	2.6.28
-> +Why:	Defined in a non-portable manner, new numbers introduced, old numbers
-> +	deprecated.
-> +Who:	Len Brown <len.brown@intel.com>
-> +
-> +---------------------------
+>  #ifdef CONFIG_SUSPEND
+>  
+>  /* This is just an arbitrary number */
+> 
+> 
