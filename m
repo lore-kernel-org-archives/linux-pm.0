@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 02/37] Hibernation: Rework platform support
+Subject: [PATCH 04/37] Hibernation: Correct definitions of some
 	ioctls (rev. 2)
-Date: Thu, 31 Jan 2008 23:36:33 -0500
-Message-ID: <6ef4bd5a2709f3f8d28e0ce83c911ed2a8af5afe.1201840183.git.len.brown__892.971483017568$1201841294$gmane$org@intel.com>
+Date: Thu, 31 Jan 2008 23:36:35 -0500
+Message-ID: <f5147875db58350b7c29856b83ef1e38e88a387b.1201840183.git.len.brown__11533.4019800232$1201841423$gmane$org@intel.com>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -23,187 +23,210 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Modify the hibernation userland interface by adding two new ioctls to it,
-SNAPSHOT_PLATFORM_SUPPORT and SNAPSHOT_POWER_OFF, that can be used,
-respectively, to switch the hibernation platform support on/off and to make the
-kernel transition the system to the hibernation state (eg. ACPI S4) using the
-platform (eg. ACPI) driver.
-
-These ioctls are intended to replace the misdesigned SNAPSHOT_PMOPS ioctl,
-which from now is regarded as obsolete and will be removed in the future.
+Three ioctl numbers belonging to the hibernation userland interface,
+SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE,
+are defined in a wrong way (eg. not portable).  Provide new ioctl numbers for
+these ioctls and mark the existing ones as deprecated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/power/userland-swsusp.txt |   24 ++++--------------
- kernel/power/power.h                    |    9 ++----
- kernel/power/user.c                     |   39 +++++++++++++++++++++++--------
- 3 files changed, 38 insertions(+), 34 deletions(-)
+ Documentation/power/userland-swsusp.txt |   26 +++++++++++++-------------
+ kernel/power/power.h                    |   10 +++++-----
+ kernel/power/user.c                     |   18 ++++++++++++++++--
+ 3 files changed, 34 insertions(+), 20 deletions(-)
 
 diff --git a/Documentation/power/userland-swsusp.txt b/Documentation/power/userland-swsusp.txt
-index 32f1874..381e9c0 100644
+index 0785500..af52d53 100644
 --- a/Documentation/power/userland-swsusp.txt
 +++ b/Documentation/power/userland-swsusp.txt
-@@ -85,6 +85,12 @@ SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
- 	recommended to always use this call, because the code to set the resume
- 	partition may be removed from future kernels
+@@ -27,17 +27,17 @@ once at a time.
+ The ioctl() commands recognized by the device are:
  
-+SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
-+	depending on the argument value (enable, if the argument is nonzero)
-+
-+SNAPSHOT_POWER_OFF - make the kernel transition the system to the hibernation
-+	state (eg. ACPI S4) using the platform (eg. ACPI) driver
-+
- SNAPSHOT_S2RAM - suspend to RAM; using this call causes the kernel to
- 	immediately enter the suspend-to-RAM state, so this call must always
- 	be preceded by the SNAPSHOT_FREEZE call and it is also necessary
-@@ -95,24 +101,6 @@ SNAPSHOT_S2RAM - suspend to RAM; using this call causes the kernel to
- 	to resume the system from RAM if there's enough battery power or restore
- 	its state on the basis of the saved suspend image otherwise)
+ SNAPSHOT_FREEZE - freeze user space processes (the current process is
+-	not frozen); this is required for SNAPSHOT_ATOMIC_SNAPSHOT
++	not frozen); this is required for SNAPSHOT_CREATE_IMAGE
+ 	and SNAPSHOT_ATOMIC_RESTORE to succeed
  
--SNAPSHOT_PMOPS - enable the usage of the hibernation_ops->prepare,
--	hibernate_ops->enter and hibernation_ops->finish methods (the in-kernel
--	swsusp knows these as the "platform method") which are needed on many
--	machines to (among others) speed up the resume by letting the BIOS skip
--	some steps or to let the system recognise the correct state of the
--	hardware after the resume (in particular on many machines this ensures
--	that unplugged AC adapters get correctly detected and that kacpid does
--	not run wild after the resume).  The last ioctl() argument can take one
--	of the three values, defined in kernel/power/power.h:
--	PMOPS_PREPARE - make the kernel carry out the
--		hibernation_ops->prepare() operation
--	PMOPS_ENTER - make the kernel power off the system by calling
--		hibernation_ops->enter()
--	PMOPS_FINISH - make the kernel carry out the
--		hibernation_ops->finish() operation
--	Note that the actual constants are misnamed because they surface
--	internal kernel implementation details that have changed.
--
- The device's read() operation can be used to transfer the snapshot image from
- the kernel.  It has the following limitations:
- - you cannot read() more than one virtual memory page at a time
+ SNAPSHOT_UNFREEZE - thaw user space processes frozen by SNAPSHOT_FREEZE
+ 
+-SNAPSHOT_ATOMIC_SNAPSHOT - create a snapshot of the system memory; the
++SNAPSHOT_CREATE_IMAGE - create a snapshot of the system memory; the
+ 	last argument of ioctl() should be a pointer to an int variable,
+ 	the value of which will indicate whether the call returned after
+ 	creating the snapshot (1) or after restoring the system memory state
+ 	from it (0) (after resume the system finds itself finishing the
+-	SNAPSHOT_ATOMIC_SNAPSHOT ioctl() again); after the snapshot
++	SNAPSHOT_CREATE_IMAGE ioctl() again); after the snapshot
+ 	has been created the read() operation can be used to transfer
+ 	it out of the kernel
+ 
+@@ -49,23 +49,23 @@ SNAPSHOT_ATOMIC_RESTORE - restore the system memory state from the
+ 
+ SNAPSHOT_FREE - free memory allocated for the snapshot image
+ 
+-SNAPSHOT_SET_IMAGE_SIZE - set the preferred maximum size of the image
++SNAPSHOT_PREF_IMAGE_SIZE - set the preferred maximum size of the image
+ 	(the kernel will do its best to ensure the image size will not exceed
+ 	this number, but if it turns out to be impossible, the kernel will
+ 	create the smallest image possible)
+ 
+ SNAPSHOT_GET_IMAGE_SIZE - return the actual size of the hibernation image
+ 
+-SNAPSHOT_AVAIL_SWAP - return the amount of available swap in bytes (the last
+-	argument should be a pointer to an unsigned int variable that will
++SNAPSHOT_AVAIL_SWAP_SIZE - return the amount of available swap in bytes (the
++	last argument should be a pointer to an unsigned int variable that will
+ 	contain the result if the call is successful).
+ 
+-SNAPSHOT_GET_SWAP_PAGE - allocate a swap page from the resume partition
++SNAPSHOT_ALLOC_SWAP_PAGE - allocate a swap page from the resume partition
+ 	(the last argument should be a pointer to a loff_t variable that
+ 	will contain the swap page offset if the call is successful)
+ 
+-SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated with
+-	SNAPSHOT_GET_SWAP_PAGE
++SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated by
++	SNAPSHOT_ALLOC_SWAP_PAGE
+ 
+ SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
+ 	units) from the beginning of the partition at which the swap header is
+@@ -102,7 +102,7 @@ The device's write() operation is used for uploading the system memory snapshot
+ into the kernel.  It has the same limitations as the read() operation.
+ 
+ The release() operation frees all memory allocated for the snapshot image
+-and all swap pages allocated with SNAPSHOT_GET_SWAP_PAGE (if any).
++and all swap pages allocated with SNAPSHOT_ALLOC_SWAP_PAGE (if any).
+ Thus it is not necessary to use either SNAPSHOT_FREE or
+ SNAPSHOT_FREE_SWAP_PAGES before closing the device (in fact it will also
+ unfreeze user space processes frozen by SNAPSHOT_UNFREEZE if they are
+@@ -113,7 +113,7 @@ snapshot image from/to the kernel will use a swap parition, called the resume
+ partition, or a swap file as storage space (if a swap file is used, the resume
+ partition is the partition that holds this file).  However, this is not really
+ required, as they can use, for example, a special (blank) suspend partition or
+-a file on a partition that is unmounted before SNAPSHOT_ATOMIC_SNAPSHOT and
++a file on a partition that is unmounted before SNAPSHOT_CREATE_IMAGE and
+ mounted afterwards.
+ 
+ These utilities MUST NOT make any assumptions regarding the ordering of
+@@ -135,7 +135,7 @@ means, such as checksums, to ensure the integrity of the snapshot image.
+ The suspending and resuming utilities MUST lock themselves in memory,
+ preferrably using mlockall(), before calling SNAPSHOT_FREEZE.
+ 
+-The suspending utility MUST check the value stored by SNAPSHOT_ATOMIC_SNAPSHOT
++The suspending utility MUST check the value stored by SNAPSHOT_CREATE_IMAGE
+ in the memory location pointed to by the last argument of ioctl() and proceed
+ in accordance with it:
+ 1. 	If the value is 1 (ie. the system memory snapshot has just been
+@@ -149,7 +149,7 @@ in accordance with it:
+ 		image has been saved.
+ 	(b)	The suspending utility SHOULD NOT attempt to perform any
+ 		file system operations (including reads) on the file systems
+-		that were mounted before SNAPSHOT_ATOMIC_SNAPSHOT has been
++		that were mounted before SNAPSHOT_CREATE_IMAGE has been
+ 		called.  However, it MAY mount a file system that was not
+ 		mounted at that time and perform some operations on it (eg.
+ 		use it for saving the image).
 diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 23c1703..6ca85fd 100644
+index 8837ea3..0dd66fa 100644
 --- a/kernel/power/power.h
 +++ b/kernel/power/power.h
-@@ -156,15 +156,12 @@ struct resume_swap_area {
+@@ -147,12 +147,8 @@ struct resume_swap_area {
+ #define SNAPSHOT_IOC_MAGIC	'3'
+ #define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
+ #define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
+-#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
+ #define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
+ #define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
+-#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
+-#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+-#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
  #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
- #define SNAPSHOT_SET_SWAP_FILE		_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
  #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
--#define SNAPSHOT_PMOPS			_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
  #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
- 							struct resume_swap_area)
+@@ -160,7 +156,11 @@ struct resume_swap_area {
  #define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
--#define SNAPSHOT_IOC_MAXNR	14
--
--#define PMOPS_PREPARE	1
--#define PMOPS_ENTER	2
--#define PMOPS_FINISH	3
-+#define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
-+#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
-+#define SNAPSHOT_IOC_MAXNR	16
+ #define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
+ #define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
+-#define SNAPSHOT_IOC_MAXNR	16
++#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
++#define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
++#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
++#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
++#define SNAPSHOT_IOC_MAXNR	20
  
  /* If unset, the snapshot device cannot be open. */
  extern atomic_t snapshot_device_available;
 diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 88aac26..de3fb43 100644
+index 5e866e0..b902a7e 100644
 --- a/kernel/power/user.c
 +++ b/kernel/power/user.c
-@@ -28,6 +28,18 @@
- 
- #include "power.h"
+@@ -40,6 +40,16 @@
+ #define PMOPS_ENTER	2
+ #define PMOPS_FINISH	3
  
 +/*
-+ * NOTE: The SNAPSHOT_PMOPS ioctl is obsolete and will be removed in the
-+ * future.  It is only preserved here for compatibility with existing userland
-+ * utilities.
++ * NOTE: The following ioctl definitions are wrong and have been replaced with
++ * correct ones.  They are only preserved here for compatibility with existing
++ * userland utilities and will be removed in the future.
 + */
-+#define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
++#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
++#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
++#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
++#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
 +
-+#define PMOPS_PREPARE	1
-+#define PMOPS_ENTER	2
-+#define PMOPS_FINISH	3
-+
-+
+ 
  #define SNAPSHOT_MINOR	231
  
- static struct snapshot_data {
-@@ -36,7 +48,7 @@ static struct snapshot_data {
- 	int mode;
- 	char frozen;
- 	char ready;
--	char platform_suspend;
-+	char platform_support;
- } snapshot_state;
- 
- atomic_t snapshot_device_available = ATOMIC_INIT(1);
-@@ -70,7 +82,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	}
- 	data->frozen = 0;
- 	data->ready = 0;
--	data->platform_suspend = 0;
-+	data->platform_support = 0;
- 
- 	return 0;
- }
-@@ -183,7 +195,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
- 			error = -EPERM;
- 			break;
- 		}
--		error = hibernation_snapshot(data->platform_suspend);
-+		error = hibernation_snapshot(data->platform_support);
- 		if (!error)
- 			error = put_user(in_suspend, (unsigned int __user *)arg);
- 		if (!error)
-@@ -197,7 +209,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
- 			error = -EPERM;
- 			break;
- 		}
--		error = hibernation_restore(data->platform_suspend);
-+		error = hibernation_restore(data->platform_support);
+@@ -191,6 +201,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		data->frozen = 0;
  		break;
  
- 	case SNAPSHOT_FREE:
-@@ -285,26 +297,33 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
- 		mutex_unlock(&pm_mutex);
++	case SNAPSHOT_CREATE_IMAGE:
+ 	case SNAPSHOT_ATOMIC_SNAPSHOT:
+ 		if (data->mode != O_RDONLY || !data->frozen  || data->ready) {
+ 			error = -EPERM;
+@@ -198,7 +209,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		}
+ 		error = hibernation_snapshot(data->platform_support);
+ 		if (!error)
+-			error = put_user(in_suspend, (unsigned int __user *)arg);
++			error = put_user(in_suspend, (int __user *)arg);
+ 		if (!error)
+ 			data->ready = 1;
+ 		break;
+@@ -219,6 +230,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		data->ready = 0;
  		break;
  
--	case SNAPSHOT_PMOPS:
-+	case SNAPSHOT_PLATFORM_SUPPORT:
-+		data->platform_support = !!arg;
-+		break;
-+
-+	case SNAPSHOT_POWER_OFF:
-+		if (data->platform_support)
-+			error = hibernation_platform_enter();
-+		break;
-+
-+	case SNAPSHOT_PMOPS: /* This ioctl is deprecated */
- 		error = -EINVAL;
++	case SNAPSHOT_PREF_IMAGE_SIZE:
+ 	case SNAPSHOT_SET_IMAGE_SIZE:
+ 		image_size = arg;
+ 		break;
+@@ -233,12 +245,14 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		error = put_user(size, (loff_t __user *)arg);
+ 		break;
  
- 		switch (arg) {
++	case SNAPSHOT_AVAIL_SWAP_SIZE:
+ 	case SNAPSHOT_AVAIL_SWAP:
+ 		size = count_swap_pages(data->swap, 1);
+ 		size <<= PAGE_SHIFT;
+ 		error = put_user(size, (loff_t __user *)arg);
+ 		break;
  
- 		case PMOPS_PREPARE:
--			data->platform_suspend = 1;
-+			data->platform_support = 1;
- 			error = 0;
- 			break;
- 
- 		case PMOPS_ENTER:
--			if (data->platform_suspend)
-+			if (data->platform_support)
- 				error = hibernation_platform_enter();
--
- 			break;
- 
- 		case PMOPS_FINISH:
--			if (data->platform_suspend)
-+			if (data->platform_support)
- 				error = 0;
--
- 			break;
- 
- 		default:
++	case SNAPSHOT_ALLOC_SWAP_PAGE:
+ 	case SNAPSHOT_GET_SWAP_PAGE:
+ 		if (data->swap < 0 || data->swap >= MAX_SWAPFILES) {
+ 			error = -ENODEV;
+@@ -247,7 +261,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		offset = alloc_swapdev_block(data->swap);
+ 		if (offset) {
+ 			offset <<= PAGE_SHIFT;
+-			error = put_user(offset, (sector_t __user *)arg);
++			error = put_user(offset, (loff_t __user *)arg);
+ 		} else {
+ 			error = -ENOSPC;
+ 		}
 -- 
 1.5.4.rc5.16.gc0279
