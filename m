@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: Removing dev.power.power_state (WAS: Feature
 	Removals for 2.6.25)
-Date: Fri, 1 Feb 2008 13:12:53 -0800
-Message-ID: <200802011312.53404.david-b__24968.3115901009$1201900578$gmane$org@pacbell.net>
-References: <200801312128.10700.david-b@pacbell.net>
+Date: Fri, 1 Feb 2008 13:24:07 -0800
+Message-ID: <200802011324.07760.david-b__14107.6786480427$1201901153$gmane$org@pacbell.net>
+References: <Pine.LNX.4.44L0.0802011019370.3839-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200801312128.10700.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.44L0.0802011019370.3839-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,26 +20,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, Harvey.Harrison@gmail.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Harvey.Harrison@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 31 January 2008, David Brownell wrote:
-> Quoth Harvey Harrison:
-> 
-> > Ping?
-> > What:	dev->power.power_state
-> > When:	July 2007
-> 
-> ... there are still quite a few users left, and a new one was (sigh)
-> recently added.
-> 
->  - drivers/rtc/rtc-sa1100.c ... new usage, merged last week
+On Friday 01 February 2008, Alan Stern wrote:
+>
+> I can look at the USB and SCSI stuff.  It shouldn't be all that bad.  
+> The userspace interface has been gone for quite some time now, and most 
+> of the remaining uses of that field are write-only.
 
-Fixed in a patch I just sent.
-
->  - drivers/spi/... some controller drivers use this (look easy to fix)
-
-Ditto.
+It's that "most" which can make trouble.  :)
 
 - Dave
