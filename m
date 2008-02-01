@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/37] ACPI: Fix mismerge in
-	acpi_hibernation_finish
-Date: Thu, 31 Jan 2008 23:36:37 -0500
-Message-ID: <0122b99e0414205d1f3c1f4bf80f2082f6f1c8b0.1201840183.git.len.brown__1131.90071792832$1201841874$gmane$org@intel.com>
+Subject: [PATCH 07/37] Hibernation: Move function prototypes to
+	header
+Date: Thu, 31 Jan 2008 23:36:38 -0500
+Message-ID: <d7b47cc8a4c8dbb1a4a05f4ee48304fb4a4e0099.1201840183.git.len.brown__21272.3581157208$1201841947$gmane$org@intel.com>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -18,35 +18,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: linux-acpi@vger.kernel.org, Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Adrian Bunk <bunk@kernel.org>
 
-Some code in acpi_hibernation_finish() was moved to acpi_hibernation_leave(),
-but the old copy had been left (it's harmless, but also useless).  Remove it.
+This patch moves the prototypes of count_highmem_pages() and
+restore_highmem() to kernel/power/power.h
 
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/sleep/main.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ kernel/power/power.h    |    8 ++++++++
+ kernel/power/snapshot.c |    1 -
+ kernel/power/swsusp.c   |    8 --------
+ 3 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index 2c0b663..cbfa058 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -267,11 +267,6 @@ static void acpi_hibernation_leave(void)
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index ef90605..c5321eb 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -180,3 +180,11 @@ static inline int pm_notifier_call_chain(unsigned long val)
+ 	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
++
++#ifdef CONFIG_HIGHMEM
++unsigned int count_highmem_pages(void);
++int restore_highmem(void);
++#else
++static inline unsigned int count_highmem_pages(void) { return 0; }
++static inline int restore_highmem(void) { return 0; }
++#endif
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c5ce0f3..1ec3ecc 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -872,7 +872,6 @@ unsigned int count_highmem_pages(void)
+ }
+ #else
+ static inline void *saveable_highmem_page(unsigned long pfn) { return NULL; }
+-static inline unsigned int count_highmem_pages(void) { return 0; }
+ #endif /* CONFIG_HIGHMEM */
  
- static void acpi_hibernation_finish(void)
- {
--	/*
--	 * If ACPI is not enabled by the BIOS and the boot kernel, we need to
--	 * enable it here.
--	 */
--	acpi_enable();
- 	acpi_disable_wakeup_device(ACPI_STATE_S4);
- 	acpi_leave_sleep_state(ACPI_STATE_S4);
+ /**
+diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
+index e1722d3..605c536 100644
+--- a/kernel/power/swsusp.c
++++ b/kernel/power/swsusp.c
+@@ -64,14 +64,6 @@ unsigned long image_size = 500 * 1024 * 1024;
  
+ int in_suspend __nosavedata = 0;
+ 
+-#ifdef CONFIG_HIGHMEM
+-unsigned int count_highmem_pages(void);
+-int restore_highmem(void);
+-#else
+-static inline int restore_highmem(void) { return 0; }
+-static inline unsigned int count_highmem_pages(void) { return 0; }
+-#endif
+-
+ /**
+  *	The following functions are used for tracing the allocated
+  *	swap pages, so that they can be freed in case of an error.
 -- 
 1.5.4.rc5.16.gc0279
