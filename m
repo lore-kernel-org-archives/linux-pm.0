@@ -1,15 +1,14 @@
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-Subject: Re: [PATCH 23/37] Suspend: Clean up Kconfig (V2)
-Date: Fri, 1 Feb 2008 17:05:55 +0800
-Message-ID: <386072610802010105w78a6a558rbd17bd516e912f4c__48594.7609566667$1201881033$gmane$org@mail.gmail.com>
-References: <edae89f5d1eb1fbe1cab74333db5a8e29776900e.1201840183.git.len.brown@intel.com>
-	<9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [PATCH] feature-removal: Document suspend/hibernate
+	deprecations
+Date: Thu, 31 Jan 2008 21:48:34 -0800
+Message-ID: <1201844914.23523.84.camel__9247.11340708218$1201881037$gmane$org@brick>
+References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
-Content-Disposition: inline
+In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,197 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Pavel Machek <pavel@suse.cz>, Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Feb 1, 2008 12:36 PM, Len Brown <lenb@kernel.org> wrote:
-> From: Johannes Berg <johannes@sipsolutions.net>
->
-> This cleans up the suspend Kconfig and removes the need to
-> declare centrally which architectures support suspend. All
-> architectures that currently support suspend are modified
-> accordingly.
->
+Let this appear as deprecated in 2.6.25, remove after three
+releases (2.6.28).
 
-Thanks, OK for Blackfin
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Something like this should be included if you are deprecating
+userspace functionality.  I tried to come up with a useful
+reason from your changelogs, but you should fill this in.
 
-Acked-by: Bryan Wu <bryan.wu@analog.com>
+ Documentation/feature-removal-schedule.txt |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Acked-by: Russell King <rmk@arm.linux.org.uk>
-> Acked-by: Paul Mackerras <paulus@samba.org>
-> Acked-by: Ralf Baechle <ralf@linux-mips.org>
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
-> Cc: Pavel Machek <pavel@suse.cz>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/arm/Kconfig      |    3 +++
->  arch/blackfin/Kconfig |    4 ++++
->  arch/frv/Kconfig      |    5 +++++
->  arch/mips/Kconfig     |    4 ++++
->  arch/powerpc/Kconfig  |    4 ++++
->  arch/sh/Kconfig       |    4 ++++
->  arch/x86/Kconfig      |    4 ++++
->  kernel/power/Kconfig  |   21 +++------------------
->  8 files changed, 31 insertions(+), 18 deletions(-)
->
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 77201d3..a00d8b9 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1035,6 +1035,9 @@ menu "Power management options"
->
->  source "kernel/power/Kconfig"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +
->  endmenu
->
->  source "net/Kconfig"
-> diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-> index fc7ca86..4802eb7 100644
-> --- a/arch/blackfin/Kconfig
-> +++ b/arch/blackfin/Kconfig
-> @@ -898,6 +898,10 @@ endmenu
->  menu "Power management options"
->  source "kernel/power/Kconfig"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  choice
->         prompt "Select PM Wakeup Event Source"
->         default PM_WAKEUP_GPIO_BY_SIC_IWR
-> diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
-> index 43153e7..2e25b95 100644
-> --- a/arch/frv/Kconfig
-> +++ b/arch/frv/Kconfig
-> @@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
->  #        should probably wait a while.
->
->  menu "Power management options"
-> +
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source kernel/power/Kconfig
->  endmenu
->
-> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-> index 4fad0a3..e387f3a 100644
-> --- a/arch/mips/Kconfig
-> +++ b/arch/mips/Kconfig
-> @@ -2086,6 +2086,10 @@ endmenu
->
->  menu "Power management options"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source "kernel/power/Kconfig"
->
->  endmenu
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 68f0cf7..824140d 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -166,6 +166,10 @@ config ARCH_HIBERNATION_POSSIBLE
->         depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
->         default y
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-> +
->  config PPC_DCR_NATIVE
->         bool
->         default n
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index 1cd9c8f..b30c4c3 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -882,6 +882,10 @@ endmenu
->  menu "Power management options (EXPERIMENTAL)"
->  depends on EXPERIMENTAL && SYS_SUPPORTS_PM
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source kernel/power/Kconfig
->
->  endmenu
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 9c511dd..340e81a 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -113,6 +113,10 @@ config ARCH_HIBERNATION_POSSIBLE
->         def_bool y
->         depends on !SMP || !X86_VOYAGER
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !X86_VOYAGER
-> +
->  config ZONE_DMA32
->         bool
->         default X86_64
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index fd76d54..f8153fd 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -85,7 +85,7 @@ config PM_TRACE_RTC
->  config PM_SLEEP_SMP
->         bool
->         depends on SMP
-> -       depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-> +       depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
->         depends on PM_SLEEP
->         select HOTPLUG_CPU
->         default y
-> @@ -95,29 +95,14 @@ config PM_SLEEP
->         depends on SUSPEND || HIBERNATION
->         default y
->
-> -config SUSPEND_UP_POSSIBLE
-> -       bool
-> -       depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
-> -                  || SUPERH || FRV
-> -       depends on !SMP
-> -       default y
-> -
-> -config SUSPEND_SMP_POSSIBLE
-> -       bool
-> -       depends on (X86 && !X86_VOYAGER) \
-> -                  || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
-> -       depends on SMP
-> -       default y
-> -
->  config SUSPEND
->         bool "Suspend to RAM and standby"
-> -       depends on PM
-> -       depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-> +       depends on PM && ARCH_SUSPEND_POSSIBLE
->         default y
->         ---help---
->           Allow the system to enter sleep states in which main memory is
->           powered and thus its contents are preserved, such as the
-> -         suspend-to-RAM state (i.e. the ACPI S3 state).
-> +         suspend-to-RAM state (e.g. the ACPI S3 state).
->
->  config HIBERNATION
->         bool "Hibernation (aka 'suspend to disk')"
-> --
-> 1.5.4.rc5.16.gc0279
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 181bff0..cb005de 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -354,3 +354,28 @@ Why:	The support code for the old firmware hurts code readability/maintainabilit
+ 	and slightly hurts runtime performance. Bugfixes for the old firmware
+ 	are not provided by Broadcom anymore.
+ Who:	Michael Buesch <mb@bu3sch.de>
++
++---------------------------
++
++What:	SNAPSHOT_PMOPS ioctl
++When:	2.6.28
++Why:	Badly designed interface, obsoleted by SNAPSHOT_PLATFORM_SUPPORT and
++	SNAPSHOT_POWER_OFF
++Who:	Len Brown <len.brown@intel.com>
++
++---------------------------
++
++What:	SNAPSHOT_SET_SWAP_FILE ioctl
++When:	2.6.28
++Why:	Insert reason here
++Who:	Len Brown <len.brown@intel.com>
++
++---------------------------
++
++What:	SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE ioctls
++When:	2.6.28
++Why:	Defined in a non-portable manner, new numbers introduced, old numbers
++	deprecated.
++Who:	Len Brown <len.brown@intel.com>
++
++---------------------------
+-- 
+1.5.4.rc4.1142.gf5a97
