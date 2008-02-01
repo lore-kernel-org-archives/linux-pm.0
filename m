@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 05/37] Hibernation: Introduce exportable suspend
-	ioctls header (rev. 2)
-Date: Thu, 31 Jan 2008 23:36:36 -0500
-Message-ID: <f07d2c9078e140323301a72140c6caeb372448dc.1201840183.git.len.brown__9172.83196836269$1201841710$gmane$org@intel.com>
+Subject: [PATCH 08/37] Hibernation: Add PM_RESTORE_PREPARE and
+	PM_POST_RESTORE notifiers (rev. 2)
+Date: Thu, 31 Jan 2008 23:36:39 -0500
+Message-ID: <f0c5038e08f04af6f6aa0536c7efed6e128520fe.1201840183.git.len.brown__11639.4429155209$1201841786$gmane$org@intel.com>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -21,144 +21,151 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-Move the definitions of hibernation ioctls to a separate header file in
-include/linux, which can be exported to the user space.
+Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers to the PM core, to be used
+in analogy with the existing PM_HIBERNATION_PREPARE and PM_POST_HIBERNATION
+notifiers.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: "Rafael J. Wysocki" <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/power/userland-swsusp.txt |   10 ++++----
- include/linux/Kbuild                    |    1 +
- include/linux/suspend_ioctls.h          |   32 +++++++++++++++++++++++++++++++
- kernel/power/power.h                    |   29 +---------------------------
- 4 files changed, 39 insertions(+), 33 deletions(-)
- create mode 100644 include/linux/suspend_ioctls.h
+ Documentation/power/notifiers.txt |    8 ++++++++
+ include/linux/notifier.h          |    2 ++
+ kernel/power/disk.c               |    5 +++++
+ kernel/power/user.c               |   31 +++++++++++++++++++------------
+ 4 files changed, 34 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/power/userland-swsusp.txt b/Documentation/power/userland-swsusp.txt
-index af52d53..7b99636 100644
---- a/Documentation/power/userland-swsusp.txt
-+++ b/Documentation/power/userland-swsusp.txt
-@@ -14,7 +14,7 @@ are going to develop your own suspend/resume utilities.
+diff --git a/Documentation/power/notifiers.txt b/Documentation/power/notifiers.txt
+index 9293e4b..ae1b7ec 100644
+--- a/Documentation/power/notifiers.txt
++++ b/Documentation/power/notifiers.txt
+@@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory state has been restored from a
+ 			hibernation.  Device drivers' .resume() callbacks have
+ 			been executed and tasks have been thawed.
  
- The interface consists of a character device providing the open(),
- release(), read(), and write() operations as well as several ioctl()
--commands defined in kernel/power/power.h.  The major and minor
-+commands defined in include/linux/suspend_ioctls.h .  The major and minor
- numbers of the device are, respectively, 10 and 231, and they can
- be read from /sys/class/misc/snapshot/dev.
- 
-@@ -70,10 +70,10 @@ SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated by
- SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
- 	units) from the beginning of the partition at which the swap header is
- 	located (the last ioctl() argument should point to a struct
--	resume_swap_area, as defined in kernel/power/power.h, containing the
--	resume device specification and the offset); for swap partitions the
--	offset is always 0, but it is different from zero for swap files (see
--	Documentation/swsusp-and-swap-files.txt for details).
-+	resume_swap_area, as defined in kernel/power/suspend_ioctls.h,
-+	containing the resume device specification and the offset); for swap
-+	partitions the offset is always 0, but it is different from zero for
-+	swap files (see Documentation/swsusp-and-swap-files.txt for details).
- 
- SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
- 	depending on the argument value (enable, if the argument is nonzero)
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 85b2482..c0f9bb7 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -143,6 +143,7 @@ header-y += snmp.h
- header-y += sockios.h
- header-y += som.h
- header-y += sound.h
-+header-y += suspend_ioctls.h
- header-y += taskstats.h
- header-y += telephony.h
- header-y += termios.h
-diff --git a/include/linux/suspend_ioctls.h b/include/linux/suspend_ioctls.h
-new file mode 100644
-index 0000000..2c6faec
---- /dev/null
-+++ b/include/linux/suspend_ioctls.h
-@@ -0,0 +1,32 @@
-+#ifndef _LINUX_SUSPEND_IOCTLS_H
-+#define _LINUX_SUSPEND_IOCTLS_H
++PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
++			If all goes well the restored kernel will issue a
++			PM_POST_HIBERNATION notification.
 +
-+/*
-+ * This structure is used to pass the values needed for the identification
-+ * of the resume swap area from a user space to the kernel via the
-+ * SNAPSHOT_SET_SWAP_AREA ioctl
-+ */
-+struct resume_swap_area {
-+	loff_t offset;
-+	u_int32_t dev;
-+} __attribute__((packed));
++PM_POST_RESTORE		An error occurred during the hibernation restore.
++			Device drivers' .resume() callbacks have been executed
++			and tasks have been thawed.
 +
-+#define SNAPSHOT_IOC_MAGIC	'3'
-+#define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
-+#define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
-+#define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
-+#define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
-+#define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
-+#define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
-+#define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
-+							struct resume_swap_area)
-+#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
-+#define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
-+#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
-+#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
-+#define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
-+#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
-+#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
-+#define SNAPSHOT_IOC_MAXNR	20
+ PM_SUSPEND_PREPARE	The system is preparing for a suspend.
+ 
+ PM_POST_SUSPEND		The system has just resumed or an error occured during
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 5dfbc68..f4df400 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -228,6 +228,8 @@ static inline int notifier_to_errno(int ret)
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+ #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
++#define PM_POST_RESTORE		0x0006 /* Restore failed */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index b138b43..6597365 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -499,6 +499,10 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++	if (error)
++		goto Finish;
 +
-+#endif /* _LINUX_SUSPEND_IOCTLS_H */
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 0dd66fa..ef90605 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -1,4 +1,5 @@
- #include <linux/suspend.h>
-+#include <linux/suspend_ioctls.h>
- #include <linux/utsname.h>
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -522,6 +526,7 @@ static int software_resume(void)
+  Done:
+ 	free_basic_memory_bitmaps();
+  Finish:
++	pm_notifier_call_chain(PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index b902a7e..f5512cb 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -67,6 +67,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
++	int error;
  
- struct swsusp_info {
-@@ -134,34 +135,6 @@ extern int snapshot_write_next(struct snapshot_handle *handle, size_t count);
- extern void snapshot_write_finalize(struct snapshot_handle *handle);
- extern int snapshot_image_loaded(struct snapshot_handle *handle);
- 
--/*
-- * This structure is used to pass the values needed for the identification
-- * of the resume swap area from a user space to the kernel via the
-- * SNAPSHOT_SET_SWAP_AREA ioctl
-- */
--struct resume_swap_area {
--	loff_t offset;
--	u_int32_t dev;
--} __attribute__((packed));
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+ 		return -EBUSY;
+@@ -87,9 +88,19 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
++		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
++		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
++	}
++	if (error) {
++		atomic_inc(&snapshot_device_available);
++		return error;
+ 	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+@@ -111,6 +122,8 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 		thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 	}
++	pm_notifier_call_chain(data->mode == O_WRONLY ?
++			PM_POST_HIBERNATION : PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	return 0;
+ }
+@@ -174,18 +187,13 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		if (data->frozen)
+ 			break;
+ 		mutex_lock(&pm_mutex);
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-		if (!error) {
+-			printk("Syncing filesystems ... ");
+-			sys_sync();
+-			printk("done.\n");
 -
--#define SNAPSHOT_IOC_MAGIC	'3'
--#define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
--#define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
--#define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
--#define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
--#define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
--#define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
--#define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
--							struct resume_swap_area)
--#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
--#define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
--#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
--#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
--#define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
--#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
--#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
--#define SNAPSHOT_IOC_MAXNR	20
--
- /* If unset, the snapshot device cannot be open. */
- extern atomic_t snapshot_device_available;
- 
+-			error = freeze_processes();
+-			if (error)
+-				thaw_processes();
+-		}
++		printk("Syncing filesystems ... ");
++		sys_sync();
++		printk("done.\n");
++
++		error = freeze_processes();
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen = 1;
+@@ -196,7 +204,6 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 			break;
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
 -- 
 1.5.4.rc5.16.gc0279
