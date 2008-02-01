@@ -1,40 +1,151 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: x86/.../trampoline_64.S racy?
-Date: Fri, 1 Feb 2008 23:15:12 +0100
-Message-ID: <20080201221512.GA13276@elf.ucw.cz>
-References: <20080201220716.GA8597@elf.ucw.cz>
+Subject: x86/.../trampoline_64.S racy?
+Date: Fri, 1 Feb 2008 23:07:16 +0100
+Message-ID: <20080201220716.GA8597@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762980AbYBBAIB@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080201220716.GA8597@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: kernel list <linux-kernel@vger.kernel.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2008-02-01 23:07:16, Pavel Machek wrote:
-> Hi!
-> 
-> I'm trying to reuse trampoline_64.S for wakeup from ACPI s3... but I'm
-> getting some badness: If I insert delay loops into trampoline_64.S,
-> machine fails to boot; but I already increased cpu bootup delay to 200
-> seconds...
-> 
-> Is it possible that bootup is subtly racy somewhere?
+Hi!
 
-No, I just missed another place with timeout:
+I'm trying to reuse trampoline_64.S for wakeup from ACPI s3... but I'm
+getting some badness: If I insert delay loops into trampoline_64.S,
+machine fails to boot; but I already increased cpu bootup delay to 200
+seconds...
 
-                /*
-                 * Wait 5s total for a response
-                 */
-                for (timeout = 0; timeout < 5000000; timeout++) {
-                        if (cpu_isset(cpu, cpu_callin_map))
-                                break;  /* It has booted */
-                        udelay(100);
-                }
+Is it possible that bootup is subtly racy somewhere?
 
-									Pavel
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index aaf4e12..3961bcb 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -188,7 +188,7 @@ void __cpuinit smp_callin(void)
+ 	/*
+ 	 * Waiting 2s total for startup (udelay is not yet working)
+ 	 */
+-	timeout = jiffies + 2*HZ;
++	timeout = jiffies + 200*HZ;
+ 	while (time_before(jiffies, timeout)) {
+ 		/*
+ 		 * Has the boot CPU finished it's STARTUP sequence?
+diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
+index 4aedd0b..34fe9a7 100644
+--- a/arch/x86/kernel/trampoline_64.S
++++ b/arch/x86/kernel/trampoline_64.S
+@@ -24,12 +24,48 @@
+  *	entries.
+  */
+ 
++
+ #include <linux/linkage.h>
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+ #include <asm/msr.h>
+ #include <asm/segment.h>
+ 
++
++#define BEEP \
++	inb	$97, %al; 	\
++	outb	%al, $0x80; 	\
++	movb	$3, %al; 	\
++	outb	%al, $97; 	\
++	outb	%al, $0x80; 	\
++	movb	$-74, %al; 	\
++	outb	%al, $67; 	\
++	outb	%al, $0x80; 	\
++	movb	$-119, %al; 	\
++	outb	%al, $66; 	\
++	outb	%al, $0x80; 	\
++	movb	$15, %al; 	\
++	outb	%al, $66;
++
++#define DISPLAY(x) \
++	pushl	%eax		; \
++	movb	$x, %al;	\
++	outb	%al, $0x80; \
++	popl	%eax
++
++#define DISPLAY_UNSAFE(x) \
++	movb	$x, %al;	\
++	outb	%al, $0x80; \
++
++#define DELAY_OK \
++	movl	$0x30000000,%ecx	; \
++9:	loopl	9b		; 
++
++#define DELAY \
++	movl	$1,%ecx	; \
++9:	loopl	9b		; 
++	
++
+ /* We can free up trampoline after bootup if cpu hotplug is not supported. */
+ #ifndef CONFIG_HOTPLUG_CPU
+ .section .init.data, "aw", @progbits
+@@ -55,6 +91,9 @@ r_base = .
+ 					# Setup stack
+ 	movw	$(trampoline_stack_end - r_base), %sp
+ 
++	DISPLAY(0x70)
++	DELAY
++	
+ 	call	verify_cpu		# Verify the cpu supports long mode
+ 	testl   %eax, %eax		# Check for return code
+ 	jnz	no_longmode
+@@ -78,6 +117,9 @@ r_base = .
+ 	lidtl	tidt - r_base	# load idt with 0, 0
+ 	lgdtl	tgdt - r_base	# load gdt with whatever is appropriate
+ 
++	DISPLAY(0x71)
++	DELAY
++
+ 	xor	%ax, %ax
+ 	inc	%ax		# protected mode (PE) bit
+ 	lmsw	%ax		# into protected mode
+@@ -91,6 +133,9 @@ startup_32:
+ 	movl	$__KERNEL_DS, %eax	# Initialize the %ds segment register
+ 	movl	%eax, %ds
+ 
++	DISPLAY_UNSAFE(0x72)
++	DELAY
++
+ 	xorl	%eax, %eax
+ 	btsl	$5, %eax		# Enable PAE mode
+ 	movl	%eax, %cr4
+@@ -109,6 +154,9 @@ startup_32:
+ 	btsl	$0, %eax		# Enable protected mode
+ 	movl	%eax, %cr0
+ 
++	DISPLAY_UNSAFE(0x73)
++	DELAY
++
+ 	/*
+ 	 * At this point we're in long mode but in 32bit compatibility mode
+ 	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
+@@ -120,6 +168,9 @@ startup_32:
+ 	.code64
+ 	.balign 4
+ startup_64:
++	DISPLAY_UNSAFE(0x74)
++	DELAY
++
+ 	# Now jump into the kernel using virtual addresses
+ 	movq	$secondary_startup_64, %rax
+ 	jmp	*%rax
+
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
