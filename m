@@ -1,16 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: sleepy linux self-test
-Date: Sat, 2 Feb 2008 09:49:22 -0800
-Message-ID: <200802020949.23397.david-b__21744.125619489$1201975048$gmane$org@pacbell.net>
+Date: Sat, 2 Feb 2008 19:00:02 +0100
+Message-ID: <20080202180002.GB26560__30958.5693445571$1201975369$gmane$org@elte.hu>
 References: <20080130131748.GA3796@elf.ucw.cz>
-	<20080202124759.GB25773@elf.ucw.cz> <20080202135037.GC925@elte.hu>
+	<200801311755.33899.david-b@pacbell.net>
+	<20080202124759.GB25773@elf.ucw.cz>
+	<200802020931.38689.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080202135037.GC925@elte.hu>
 Content-Disposition: inline
+In-Reply-To: <200802020931.38689.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 02 February 2008, Ingo Molnar wrote:
+
+* David Brownell <david-b@pacbell.net> wrote:
+
+> > > Plus, the way you're doing it now is violating the locking 
+> > > protocol used by that driver.
+> > 
+> > Yep, you are right, but that is the easy issue to fix.
 > 
-> i'd really love to have a /dev/rtc device compatibility APIs, both 
-> inside and outside the kernel.
+> Which is why I was puzzled that you didn't start out doing it the 
+> "right" way ... even just hard-wiring the dubious assumption that 
+> "rtc0" is the right RTC to use.  :)
 
-Unfortunately the /dev/rtc code became a legacy API for good reasons.
+because this was mostly about an quick & easy hack to see whether it 
+makes sense at all to automate the testing of suspend/resume. (People 
+who want to use RTC functionality might not have the desire to get into 
+extending it straight away - they just want something rather obvious 
+done and that's it.)
 
-Like not recognizing that all the world's not a PC, with a single RTC
-that clones a long-obsolete chip from Motorola ... and not having been
-specified in a hardware-neutral manner.  Oh, and of course not all
-systems actually used the same RTC driver anyway; it's not like there
-was just *one* such programming interface to worry about.
-
-
-> I really dont know why the new RTC code  
-> does not do it - why does it put up artificial anti-adoption barriers to 
-> make it harder to migrate to the new code?
-
-What "anti-adoption" barriers would those be?  Pavel's immediate
-problem was easy to solve, though he didn't know it.
-
->From the perspective of almost anyone not using a PC, all the
-adoption barriers were on the side of the /dev/rtc code.
-
-- Dave
+	Ingo
