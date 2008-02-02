@@ -1,16 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: sleepy linux self-test
-Date: Sat, 2 Feb 2008 09:51:29 -0800
-Message-ID: <200802020951.30071.david-b__44202.4479656995$1201974922$gmane$org@pacbell.net>
+Date: Sat, 2 Feb 2008 09:49:22 -0800
+Message-ID: <200802020949.23397.david-b__21744.125619489$1201975048$gmane$org@pacbell.net>
 References: <20080130131748.GA3796@elf.ucw.cz>
-	<20080202124759.GB25773@elf.ucw.cz>
-	<200802020931.38689.david-b@pacbell.net>
+	<20080202124759.GB25773@elf.ucw.cz> <20080202135037.GC925@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: base64
+  charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802020931.38689.david-b@pacbell.net>
+In-Reply-To: <20080202135037.GC925@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,18 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0dXJkYXkgMDIgRmVicnVhcnkgMjAwOCwgRGF2aWQgQnJvd25lbGwgd3JvdGU6DQo+
-IKCgoKCgoKCgc3RhdGljIGNoYXIgKmZpbmRfd2FrZV9ydGModm9pZCkNCj4goKCgoKCgoKB7
-DQo+IKCgoKCgoKCgoKCgoKCgoKBjaGFyICpwb255ID0gTlVMTDsNCj4gDQo+IKCgoKCgoKCg
-oKCgoKCgoKBkZXYgPSBjbGFzc19maW5kX2RldmljZShydGNfY2xhc3MsICZydGMsIGhhc193
-YWtlYWxhcm0pOw0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAmcG9ueSwNCi4uLiBzb3JyeSwgbm90IGFsbCBxdWFkcnVwZWRzIGFyZSBu
-YW1lZCAicnRjIi4NCg0KPiCgoKCgoKCgoKCgoKCgoKCgcmV0dXJuIHBvbnk7DQo+IKCgoKCg
-oKCgfQ0KPiANCg0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXw0KbGludXgtcG0gbWFpbGluZyBsaXN0DQpsaW51eC1wbUBsaXN0cy5saW51eC1m
-b3VuZGF0aW9uLm9yZw0KaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2xpbnV4LXBtDQo=
+On Saturday 02 February 2008, Ingo Molnar wrote:
+> 
+> i'd really love to have a /dev/rtc device compatibility APIs, both 
+> inside and outside the kernel.
+
+Unfortunately the /dev/rtc code became a legacy API for good reasons.
+
+Like not recognizing that all the world's not a PC, with a single RTC
+that clones a long-obsolete chip from Motorola ... and not having been
+specified in a hardware-neutral manner.  Oh, and of course not all
+systems actually used the same RTC driver anyway; it's not like there
+was just *one* such programming interface to worry about.
+
+
+> I really dont know why the new RTC code  
+> does not do it - why does it put up artificial anti-adoption barriers to 
+> make it harder to migrate to the new code?
+
+What "anti-adoption" barriers would those be?  Pavel's immediate
+problem was easy to solve, though he didn't know it.
+
+>From the perspective of almost anyone not using a PC, all the
+adoption barriers were on the side of the /dev/rtc code.
+
+- Dave
