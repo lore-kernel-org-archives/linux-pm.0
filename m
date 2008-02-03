@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: wakeup code translated to .c
-Date: Mon, 4 Feb 2008 00:57:23 +0100
-Message-ID: <200802040057.24429.rjw@sisk.pl>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl> <20080203235722.GI2799@elf.ucw.cz>
+Date: Mon, 4 Feb 2008 00:59:38 +0100
+Message-ID: <200802040059.38963.rjw@sisk.pl>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802040054.43863.rjw@sisk.pl> <20080203235927.GK2799@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755479AbYBCX7i@vger.kernel.org>
-In-Reply-To: <20080203235722.GI2799@elf.ucw.cz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755083AbYBDABg@vger.kernel.org>
+In-Reply-To: <20080203235927.GK2799@elf.ucw.cz>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
@@ -18,16 +18,14 @@ List-Id: linux-pm@vger.kernel.org
 On Monday, 4 of February 2008, Pavel Machek wrote:
 > Hi!
 > 
-> > - Could the real mode directory be called just "real-mode" or something like
-> >   this ("rm" is not very meaningful :-))?
-> > 
-> > Apart from the above and the _WAKEUP hacks mentioned elsewhere, it looks okay
-> > (from a very high orbit).
+> > BTW, I don't like the way in which the 'struct wakeup_header' fields are
+> > reproduced in rm/wakeup.S very much, because it makes the code fragile.
+> > It might be better to define the offsets in asm-offsets*.c and refer to them
+> > relative to wakeup_header (if possible).
 > 
-> Wakeup hacks? You mean those #ifdef WAKEUP in video code?
+> If you can do that.. yes, that would be nice. I triple-checked it, but
+> indeed is fragile.
 
-Yes.
-
-[I'm not sure if that could be done differently, though.  Surely hpa knows ;-)]
+Do you want me to remove the unused fields from 'struct wakeup_header' too?
 
 Rafael
