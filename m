@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] x86 PM: Consolidate suspend and hibernation
-	code
-Date: Sun, 3 Feb 2008 21:59:31 +0100
-Message-ID: <200802032159.32656.rjw__6183.37819255448$1202072793$gmane$org@sisk.pl>
+Subject: [PATCH 2/4] x86 PM: Rename 32-bit files in arch/x86/power
+Date: Sun, 3 Feb 2008 21:58:36 +0100
+Message-ID: <200802032158.37201.rjw__47698.5451569364$1202072797$gmane$org@sisk.pl>
 References: <200802032141.56887.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,96 +25,214 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move the hibernation-specific code from arch/x86/power/suspend_64.c
-to a separate file (hibernate_64.c) and the CPU-handling code to
-cpu_64.c (in line with the corresponding 32-bit code).
+Rename cpu.c, suspend.c and swsusp.S in arch/x86/power to cpu_32.c,
+hibernate_32.c and hibernate_asm_32.S, respectively, and update the
+purpose and copyright information in these files.
 
-Simplify arch/x86/power/Makefile .
+Update the Makefile in arch/x86/power to reflect the above changes.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86/power/Makefile       |    9 -
- arch/x86/power/cpu_64.c       |  166 +++++++++++++++++++++
- arch/x86/power/hibernate_64.c |  169 ++++++++++++++++++++++
- arch/x86/power/suspend_64.c   |  321 ------------------------------------------
- 4 files changed, 337 insertions(+), 328 deletions(-)
+ arch/x86/power/Makefile           |    4 
+ arch/x86/power/cpu.c              |  133 -----------------------------
+ arch/x86/power/cpu_32.c           |  133 +++++++++++++++++++++++++++++
+ arch/x86/power/hibernate_32.c     |  172 ++++++++++++++++++++++++++++++++++++++
+ arch/x86/power/hibernate_asm_32.S |   77 +++++++++++++++++
+ arch/x86/power/suspend.c          |  172 --------------------------------------
+ arch/x86/power/swsusp.S           |   78 -----------------
+ 7 files changed, 384 insertions(+), 385 deletions(-)
 
-Index: linux-2.6/arch/x86/power/cpu_64.c
+Index: linux-2.6/arch/x86/power/cpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/power/cpu.c
++++ /dev/null
+@@ -1,133 +0,0 @@
+-/*
+- * Suspend support specific for i386.
+- *
+- * Distribute under GPLv2
+- *
+- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
+- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/suspend.h>
+-#include <asm/mtrr.h>
+-#include <asm/mce.h>
+-
+-static struct saved_context saved_context;
+-
+-unsigned long saved_context_ebx;
+-unsigned long saved_context_esp, saved_context_ebp;
+-unsigned long saved_context_esi, saved_context_edi;
+-unsigned long saved_context_eflags;
+-
+-static void __save_processor_state(struct saved_context *ctxt)
+-{
+-	mtrr_save_fixed_ranges(NULL);
+-	kernel_fpu_begin();
+-
+-	/*
+-	 * descriptor tables
+-	 */
+- 	store_gdt(&ctxt->gdt);
+- 	store_idt(&ctxt->idt);
+- 	store_tr(ctxt->tr);
+-
+-	/*
+-	 * segment registers
+-	 */
+- 	savesegment(es, ctxt->es);
+- 	savesegment(fs, ctxt->fs);
+- 	savesegment(gs, ctxt->gs);
+- 	savesegment(ss, ctxt->ss);
+-
+-	/*
+-	 * control registers 
+-	 */
+-	ctxt->cr0 = read_cr0();
+-	ctxt->cr2 = read_cr2();
+-	ctxt->cr3 = read_cr3();
+-	ctxt->cr4 = read_cr4();
+-}
+-
+-void save_processor_state(void)
+-{
+-	__save_processor_state(&saved_context);
+-}
+-
+-static void do_fpu_end(void)
+-{
+-	/*
+-	 * Restore FPU regs if necessary.
+-	 */
+-	kernel_fpu_end();
+-}
+-
+-static void fix_processor_context(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct tss_struct * t = &per_cpu(init_tss, cpu);
+-
+-	set_tss_desc(cpu,t);	/* This just modifies memory; should not be necessary. But... This is necessary, because 386 hardware has concept of busy TSS or some similar stupidity. */
+-
+-	load_TR_desc();				/* This does ltr */
+-	load_LDT(&current->active_mm->context);	/* This does lldt */
+-
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7) {
+-		set_debugreg(current->thread.debugreg0, 0);
+-		set_debugreg(current->thread.debugreg1, 1);
+-		set_debugreg(current->thread.debugreg2, 2);
+-		set_debugreg(current->thread.debugreg3, 3);
+-		/* no 4 and 5 */
+-		set_debugreg(current->thread.debugreg6, 6);
+-		set_debugreg(current->thread.debugreg7, 7);
+-	}
+-
+-}
+-
+-static void __restore_processor_state(struct saved_context *ctxt)
+-{
+-	/*
+-	 * control registers
+-	 */
+-	write_cr4(ctxt->cr4);
+-	write_cr3(ctxt->cr3);
+-	write_cr2(ctxt->cr2);
+-	write_cr0(ctxt->cr0);
+-
+-	/*
+-	 * now restore the descriptor tables to their proper values
+-	 * ltr is done i fix_processor_context().
+-	 */
+- 	load_gdt(&ctxt->gdt);
+- 	load_idt(&ctxt->idt);
+-
+-	/*
+-	 * segment registers
+-	 */
+- 	loadsegment(es, ctxt->es);
+- 	loadsegment(fs, ctxt->fs);
+- 	loadsegment(gs, ctxt->gs);
+- 	loadsegment(ss, ctxt->ss);
+-
+-	/*
+-	 * sysenter MSRs
+-	 */
+-	if (boot_cpu_has(X86_FEATURE_SEP))
+-		enable_sep_cpu();
+-
+-	fix_processor_context();
+-	do_fpu_end();
+-	mtrr_ap_init();
+-	mcheck_init(&boot_cpu_data);
+-}
+-
+-void restore_processor_state(void)
+-{
+-	__restore_processor_state(&saved_context);
+-}
+-
+-/* Needed by apm.c */
+-EXPORT_SYMBOL(save_processor_state);
+-EXPORT_SYMBOL(restore_processor_state);
+Index: linux-2.6/arch/x86/power/cpu_32.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/x86/power/cpu_64.c
-@@ -0,0 +1,166 @@
++++ linux-2.6/arch/x86/power/cpu_32.c
+@@ -0,0 +1,133 @@
 +/*
-+ * Suspend and hibernation support for x86-64
++ * Suspend support specific for i386.
 + *
 + * Distribute under GPLv2
 + *
-+ * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
 + * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
 + * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
 + */
 +
-+#include <linux/smp.h>
++#include <linux/module.h>
 +#include <linux/suspend.h>
-+#include <asm/proto.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
 +#include <asm/mtrr.h>
++#include <asm/mce.h>
 +
-+static void fix_processor_context(void);
++static struct saved_context saved_context;
 +
-+struct saved_context saved_context;
++unsigned long saved_context_ebx;
++unsigned long saved_context_esp, saved_context_ebp;
++unsigned long saved_context_esi, saved_context_edi;
++unsigned long saved_context_eflags;
 +
-+/**
-+ *	__save_processor_state - save CPU registers before creating a
-+ *		hibernation image and before restoring the memory state from it
-+ *	@ctxt - structure to store the registers contents in
-+ *
-+ *	NOTE: If there is a CPU register the modification of which by the
-+ *	boot kernel (ie. the kernel used for loading the hibernation image)
-+ *	might affect the operations of the restored target kernel (ie. the one
-+ *	saved in the hibernation image), then its contents must be saved by this
-+ *	function.  In other words, if kernel A is hibernated and different
-+ *	kernel B is used for loading the hibernation image into memory, the
-+ *	kernel A's __save_processor_state() function must save all registers
-+ *	needed by kernel A, so that it can operate correctly after the resume
-+ *	regardless of what kernel B does in the meantime.
-+ */
 +static void __save_processor_state(struct saved_context *ctxt)
 +{
++	mtrr_save_fixed_ranges(NULL);
 +	kernel_fpu_begin();
 +
 +	/*
 +	 * descriptor tables
 +	 */
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+	store_tr(ctxt->tr);
++ 	store_gdt(&ctxt->gdt);
++ 	store_idt(&ctxt->idt);
++ 	store_tr(ctxt->tr);
 +
-+	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
 +	/*
 +	 * segment registers
 +	 */
-+	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
-+	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
-+	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-+	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
-+	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
-+
-+	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
-+	mtrr_save_fixed_ranges(NULL);
++ 	savesegment(es, ctxt->es);
++ 	savesegment(fs, ctxt->fs);
++ 	savesegment(gs, ctxt->gs);
++ 	savesegment(ss, ctxt->ss);
 +
 +	/*
 +	 * control registers
 +	 */
-+	rdmsrl(MSR_EFER, ctxt->efer);
 +	ctxt->cr0 = read_cr0();
 +	ctxt->cr2 = read_cr2();
 +	ctxt->cr3 = read_cr3();
 +	ctxt->cr4 = read_cr4();
-+	ctxt->cr8 = read_cr8();
 +}
 +
 +void save_processor_state(void)
@@ -126,23 +243,41 @@ Index: linux-2.6/arch/x86/power/cpu_64.c
 +static void do_fpu_end(void)
 +{
 +	/*
-+	 * Restore FPU regs if necessary
++	 * Restore FPU regs if necessary.
 +	 */
 +	kernel_fpu_end();
 +}
 +
-+/**
-+ *	__restore_processor_state - restore the contents of CPU registers saved
-+ *		by __save_processor_state()
-+ *	@ctxt - structure to load the registers contents from
-+ */
++static void fix_processor_context(void)
++{
++	int cpu = smp_processor_id();
++	struct tss_struct * t = &per_cpu(init_tss, cpu);
++
++	set_tss_desc(cpu,t);	/* This just modifies memory; should not be necessary. But... This is necessary, because 386 hardware has concept of busy TSS or some similar stupidity. */
++
++	load_TR_desc();				/* This does ltr */
++	load_LDT(&current->active_mm->context);	/* This does lldt */
++
++	/*
++	 * Now maybe reload the debug registers
++	 */
++	if (current->thread.debugreg7) {
++		set_debugreg(current->thread.debugreg0, 0);
++		set_debugreg(current->thread.debugreg1, 1);
++		set_debugreg(current->thread.debugreg2, 2);
++		set_debugreg(current->thread.debugreg3, 3);
++		/* no 4 and 5 */
++		set_debugreg(current->thread.debugreg6, 6);
++		set_debugreg(current->thread.debugreg7, 7);
++	}
++
++}
++
 +static void __restore_processor_state(struct saved_context *ctxt)
 +{
 +	/*
 +	 * control registers
 +	 */
-+	wrmsrl(MSR_EFER, ctxt->efer);
-+	write_cr8(ctxt->cr8);
 +	write_cr4(ctxt->cr4);
 +	write_cr3(ctxt->cr3);
 +	write_cr2(ctxt->cr2);
@@ -152,27 +287,27 @@ Index: linux-2.6/arch/x86/power/cpu_64.c
 +	 * now restore the descriptor tables to their proper values
 +	 * ltr is done i fix_processor_context().
 +	 */
-+	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
-+	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
-+
++ 	load_gdt(&ctxt->gdt);
++ 	load_idt(&ctxt->idt);
 +
 +	/*
 +	 * segment registers
 +	 */
-+	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
-+	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
-+	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
-+	load_gs_index(ctxt->gs);
-+	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
++ 	loadsegment(es, ctxt->es);
++ 	loadsegment(fs, ctxt->fs);
++ 	loadsegment(gs, ctxt->gs);
++ 	loadsegment(ss, ctxt->ss);
 +
-+	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
++	/*
++	 * sysenter MSRs
++	 */
++	if (boot_cpu_has(X86_FEATURE_SEP))
++		enable_sep_cpu();
 +
 +	fix_processor_context();
-+
 +	do_fpu_end();
 +	mtrr_ap_init();
++	mcheck_init(&boot_cpu_data);
 +}
 +
 +void restore_processor_state(void)
@@ -180,158 +315,172 @@ Index: linux-2.6/arch/x86/power/cpu_64.c
 +	__restore_processor_state(&saved_context);
 +}
 +
-+static void fix_processor_context(void)
-+{
-+	int cpu = smp_processor_id();
-+	struct tss_struct *t = &per_cpu(init_tss, cpu);
-+
-+	/*
-+	 * This just modifies memory; should not be necessary. But... This
-+	 * is necessary, because 386 hardware has concept of busy TSS or some
-+	 * similar stupidity.
-+	 */
-+	set_tss_desc(cpu, t);
-+
-+	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
-+
-+	syscall_init();                         /* This sets MSR_*STAR and related */
-+	load_TR_desc();				/* This does ltr */
-+	load_LDT(&current->active_mm->context);	/* This does lldt */
-+
-+	/*
-+	 * Now maybe reload the debug registers
-+	 */
-+	if (current->thread.debugreg7){
-+                loaddebug(&current->thread, 0);
-+                loaddebug(&current->thread, 1);
-+                loaddebug(&current->thread, 2);
-+                loaddebug(&current->thread, 3);
-+                /* no 4 and 5 */
-+                loaddebug(&current->thread, 6);
-+                loaddebug(&current->thread, 7);
-+	}
-+}
-Index: linux-2.6/arch/x86/power/hibernate_64.c
++/* Needed by apm.c */
++EXPORT_SYMBOL(save_processor_state);
++EXPORT_SYMBOL(restore_processor_state);
+Index: linux-2.6/arch/x86/power/hibernate_32.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/x86/power/hibernate_64.c
-@@ -0,0 +1,169 @@
++++ linux-2.6/arch/x86/power/hibernate_32.c
+@@ -0,0 +1,172 @@
 +/*
-+ * Hibernation support for x86-64
++ * Hibernation support specific for i386 - temporary page tables
 + *
 + * Distribute under GPLv2
 + *
-+ * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
-+ * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
++ * Copyright (c) 2006 Rafael J. Wysocki <rjw@sisk.pl>
 + */
 +
-+#include <linux/smp.h>
 +#include <linux/suspend.h>
-+#include <asm/proto.h>
++#include <linux/bootmem.h>
++
++#include <asm/system.h>
 +#include <asm/page.h>
 +#include <asm/pgtable.h>
-+#include <asm/mtrr.h>
++
++/* Defined in arch/i386/power/swsusp.S */
++extern int restore_image(void);
 +
 +/* References to section boundaries */
 +extern const void __nosave_begin, __nosave_end;
 +
-+/* Defined in arch/x86_64/kernel/suspend_asm.S */
-+extern int restore_image(void);
++/* Pointer to the temporary resume page tables */
++pgd_t *resume_pg_dir;
++
++/* The following three functions are based on the analogous code in
++ * arch/i386/mm/init.c
++ */
 +
 +/*
-+ * Address to jump to in the last phase of restore in order to get to the image
-+ * kernel's text (this value is passed in the image header).
++ * Create a middle page table on a resume-safe page and put a pointer to it in
++ * the given global directory entry.  This only returns the gd entry
++ * in non-PAE compilation mode, since the middle layer is folded.
 + */
-+unsigned long restore_jump_address;
-+
-+/*
-+ * Value of the cr3 register from before the hibernation (this value is passed
-+ * in the image header).
-+ */
-+unsigned long restore_cr3;
-+
-+pgd_t *temp_level4_pgt;
-+
-+void *relocated_restore_code;
-+
-+static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
++static pmd_t *resume_one_md_table_init(pgd_t *pgd)
 +{
-+	long i, j;
++	pud_t *pud;
++	pmd_t *pmd_table;
 +
-+	i = pud_index(address);
-+	pud = pud + i;
-+	for (; i < PTRS_PER_PUD; pud++, i++) {
-+		unsigned long paddr;
-+		pmd_t *pmd;
++#ifdef CONFIG_X86_PAE
++	pmd_table = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd_table)
++		return NULL;
 +
-+		paddr = address + i*PUD_SIZE;
-+		if (paddr >= end)
-+			break;
++	set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
++	pud = pud_offset(pgd, 0);
 +
-+		pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	BUG_ON(pmd_table != pmd_offset(pud, 0));
++#else
++	pud = pud_offset(pgd, 0);
++	pmd_table = pmd_offset(pud, 0);
++#endif
++
++	return pmd_table;
++}
++
++/*
++ * Create a page table on a resume-safe page and place a pointer to it in
++ * a middle page directory entry.
++ */
++static pte_t *resume_one_page_table_init(pmd_t *pmd)
++{
++	if (pmd_none(*pmd)) {
++		pte_t *page_table = (pte_t *)get_safe_page(GFP_ATOMIC);
++		if (!page_table)
++			return NULL;
++
++		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
++
++		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
++
++		return page_table;
++	}
++
++	return pte_offset_kernel(pmd, 0);
++}
++
++/*
++ * This maps the physical memory to kernel virtual address space, a total
++ * of max_low_pfn pages, by creating page tables starting from address
++ * PAGE_OFFSET.  The page tables are allocated out of resume-safe pages.
++ */
++static int resume_physical_mapping_init(pgd_t *pgd_base)
++{
++	unsigned long pfn;
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	int pgd_idx, pmd_idx;
++
++	pgd_idx = pgd_index(PAGE_OFFSET);
++	pgd = pgd_base + pgd_idx;
++	pfn = 0;
++
++	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
++		pmd = resume_one_md_table_init(pgd);
 +		if (!pmd)
 +			return -ENOMEM;
-+		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
-+		for (j = 0; j < PTRS_PER_PMD; pmd++, j++, paddr += PMD_SIZE) {
-+			unsigned long pe;
 +
-+			if (paddr >= end)
++		if (pfn >= max_low_pfn)
++			continue;
++
++		for (pmd_idx = 0; pmd_idx < PTRS_PER_PMD; pmd++, pmd_idx++) {
++			if (pfn >= max_low_pfn)
 +				break;
-+			pe = __PAGE_KERNEL_LARGE_EXEC | paddr;
-+			pe &= __supported_pte_mask;
-+			set_pmd(pmd, __pmd(pe));
++
++			/* Map with big pages if possible, otherwise create
++			 * normal page tables.
++			 * NOTE: We can mark everything as executable here
++			 */
++			if (cpu_has_pse) {
++				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
++				pfn += PTRS_PER_PTE;
++			} else {
++				pte_t *max_pte;
++
++				pte = resume_one_page_table_init(pmd);
++				if (!pte)
++					return -ENOMEM;
++
++				max_pte = pte + PTRS_PER_PTE;
++				for (; pte < max_pte; pte++, pfn++) {
++					if (pfn >= max_low_pfn)
++						break;
++
++					set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
++				}
++			}
 +		}
 +	}
 +	return 0;
 +}
 +
-+static int set_up_temporary_mappings(void)
++static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
 +{
-+	unsigned long start, end, next;
-+	int error;
++#ifdef CONFIG_X86_PAE
++	int i;
 +
-+	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!temp_level4_pgt)
-+		return -ENOMEM;
-+
-+	/* It is safe to reuse the original kernel mapping */
-+	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
-+		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
-+
-+	/* Set up the direct mapping from scratch */
-+	start = (unsigned long)pfn_to_kaddr(0);
-+	end = (unsigned long)pfn_to_kaddr(end_pfn);
-+
-+	for (; start < end; start = next) {
-+		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+		if (!pud)
-+			return -ENOMEM;
-+		next = start + PGDIR_SIZE;
-+		if (next > end)
-+			next = end;
-+		if ((error = res_phys_pud_init(pud, __pa(start), __pa(next))))
-+			return error;
-+		set_pgd(temp_level4_pgt + pgd_index(start),
-+			mk_kernel_pgd(__pa(pud)));
-+	}
-+	return 0;
++	/* Init entries of the first-level page table to the zero page */
++	for (i = 0; i < PTRS_PER_PGD; i++)
++		set_pgd(pg_dir + i,
++			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
++#endif
 +}
 +
 +int swsusp_arch_resume(void)
 +{
 +	int error;
 +
-+	/* We have got enough memory and from now on we cannot recover */
-+	if ((error = set_up_temporary_mappings()))
++	resume_pg_dir = (pgd_t *)get_safe_page(GFP_ATOMIC);
++	if (!resume_pg_dir)
++		return -ENOMEM;
++
++	resume_init_first_level_page_table(resume_pg_dir);
++	error = resume_physical_mapping_init(resume_pg_dir);
++	if (error)
 +		return error;
 +
-+	relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
-+	if (!relocated_restore_code)
-+		return -ENOMEM;
-+	memcpy(relocated_restore_code, &core_restore_code,
-+	       &restore_registers - &core_restore_code);
-+
++	/* We have got enough memory and from now on we cannot recover */
 +	restore_image();
 +	return 0;
 +}
@@ -346,317 +495,251 @@ Index: linux-2.6/arch/x86/power/hibernate_64.c
 +	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
 +	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
 +}
-+
-+struct restore_data_record {
-+	unsigned long jump_address;
-+	unsigned long cr3;
-+	unsigned long magic;
-+};
-+
-+#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-+
-+/**
-+ *	arch_hibernation_header_save - populate the architecture specific part
-+ *		of a hibernation image header
-+ *	@addr: address to save the data at
-+ */
-+int arch_hibernation_header_save(void *addr, unsigned int max_size)
-+{
-+	struct restore_data_record *rdr = addr;
-+
-+	if (max_size < sizeof(struct restore_data_record))
-+		return -EOVERFLOW;
-+	rdr->jump_address = restore_jump_address;
-+	rdr->cr3 = restore_cr3;
-+	rdr->magic = RESTORE_MAGIC;
-+	return 0;
-+}
-+
-+/**
-+ *	arch_hibernation_header_restore - read the architecture specific data
-+ *		from the hibernation image header
-+ *	@addr: address to read the data from
-+ */
-+int arch_hibernation_header_restore(void *addr)
-+{
-+	struct restore_data_record *rdr = addr;
-+
-+	restore_jump_address = rdr->jump_address;
-+	restore_cr3 = rdr->cr3;
-+	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
-+}
-Index: linux-2.6/arch/x86/power/suspend_64.c
+Index: linux-2.6/arch/x86/power/hibernate_asm_32.S
 ===================================================================
---- linux-2.6.orig/arch/x86/power/suspend_64.c
+--- /dev/null
++++ linux-2.6/arch/x86/power/hibernate_asm_32.S
+@@ -0,0 +1,77 @@
++.text
++
++/*
++ * This may not use any stack, nor any variable that is not "NoSave":
++ *
++ * Its rewriting one kernel image with another. What is stack in "old"
++ * image could very well be data page in "new" image, and overwriting
++ * your own stack under you is bad idea.
++ */
++
++#include <linux/linkage.h>
++#include <asm/segment.h>
++#include <asm/page.h>
++#include <asm/asm-offsets.h>
++
++	.text
++
++ENTRY(swsusp_arch_suspend)
++
++	movl %esp, saved_context_esp
++	movl %ebx, saved_context_ebx
++	movl %ebp, saved_context_ebp
++	movl %esi, saved_context_esi
++	movl %edi, saved_context_edi
++	pushfl ; popl saved_context_eflags
++
++	call swsusp_save
++	ret
++
++ENTRY(restore_image)
++	movl	resume_pg_dir, %ecx
++	subl	$__PAGE_OFFSET, %ecx
++	movl	%ecx, %cr3
++
++	movl	restore_pblist, %edx
++	.p2align 4,,7
++
++copy_loop:
++	testl	%edx, %edx
++	jz	done
++
++	movl	pbe_address(%edx), %esi
++	movl	pbe_orig_address(%edx), %edi
++
++	movl	$1024, %ecx
++	rep
++	movsl
++
++	movl	pbe_next(%edx), %edx
++	jmp	copy_loop
++	.p2align 4,,7
++
++done:
++	/* go back to the original page tables */
++	movl	$swapper_pg_dir, %ecx
++	subl	$__PAGE_OFFSET, %ecx
++	movl	%ecx, %cr3
++	/* Flush TLB, including "global" things (vmalloc) */
++	movl	mmu_cr4_features, %eax
++	movl	%eax, %edx
++	andl	$~(1<<7), %edx;  # PGE
++	movl	%edx, %cr4;  # turn off PGE
++	movl	%cr3, %ecx;  # flush TLB
++	movl	%ecx, %cr3
++	movl	%eax, %cr4;  # turn PGE back on
++
++	movl saved_context_esp, %esp
++	movl saved_context_ebp, %ebp
++	movl saved_context_ebx, %ebx
++	movl saved_context_esi, %esi
++	movl saved_context_edi, %edi
++
++	pushl saved_context_eflags ; popfl
++
++	xorl	%eax, %eax
++
++	ret
+Index: linux-2.6/arch/x86/power/suspend.c
+===================================================================
+--- linux-2.6.orig/arch/x86/power/suspend.c
 +++ /dev/null
-@@ -1,321 +0,0 @@
+@@ -1,172 +0,0 @@
 -/*
-- * Suspend and hibernation support for x86-64
+- * Suspend support specific for i386 - temporary page tables
 - *
 - * Distribute under GPLv2
 - *
-- * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
-- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
-- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+- * Copyright (c) 2006 Rafael J. Wysocki <rjw@sisk.pl>
 - */
 -
--#include <linux/smp.h>
 -#include <linux/suspend.h>
--#include <asm/proto.h>
+-#include <linux/bootmem.h>
+-
+-#include <asm/system.h>
 -#include <asm/page.h>
 -#include <asm/pgtable.h>
--#include <asm/mtrr.h>
+-
+-/* Defined in arch/i386/power/swsusp.S */
+-extern int restore_image(void);
 -
 -/* References to section boundaries */
 -extern const void __nosave_begin, __nosave_end;
 -
--static void fix_processor_context(void);
+-/* Pointer to the temporary resume page tables */
+-pgd_t *resume_pg_dir;
 -
--struct saved_context saved_context;
--
--/**
-- *	__save_processor_state - save CPU registers before creating a
-- *		hibernation image and before restoring the memory state from it
-- *	@ctxt - structure to store the registers contents in
-- *
-- *	NOTE: If there is a CPU register the modification of which by the
-- *	boot kernel (ie. the kernel used for loading the hibernation image)
-- *	might affect the operations of the restored target kernel (ie. the one
-- *	saved in the hibernation image), then its contents must be saved by this
-- *	function.  In other words, if kernel A is hibernated and different
-- *	kernel B is used for loading the hibernation image into memory, the
-- *	kernel A's __save_processor_state() function must save all registers
-- *	needed by kernel A, so that it can operate correctly after the resume
-- *	regardless of what kernel B does in the meantime.
+-/* The following three functions are based on the analogous code in
+- * arch/i386/mm/init.c
 - */
--static void __save_processor_state(struct saved_context *ctxt)
--{
--	kernel_fpu_begin();
 -
--	/*
--	 * descriptor tables
--	 */
--	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
--	store_idt((struct desc_ptr *)&ctxt->idt_limit);
--	store_tr(ctxt->tr);
--
--	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
--	/*
--	 * segment registers
--	 */
--	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
--	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
--	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
--	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
--	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
--
--	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
--	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
--	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--	mtrr_save_fixed_ranges(NULL);
--
--	/*
--	 * control registers
--	 */
--	rdmsrl(MSR_EFER, ctxt->efer);
--	ctxt->cr0 = read_cr0();
--	ctxt->cr2 = read_cr2();
--	ctxt->cr3 = read_cr3();
--	ctxt->cr4 = read_cr4();
--	ctxt->cr8 = read_cr8();
--}
--
--void save_processor_state(void)
--{
--	__save_processor_state(&saved_context);
--}
--
--static void do_fpu_end(void)
--{
--	/*
--	 * Restore FPU regs if necessary
--	 */
--	kernel_fpu_end();
--}
--
--/**
-- *	__restore_processor_state - restore the contents of CPU registers saved
-- *		by __save_processor_state()
-- *	@ctxt - structure to load the registers contents from
+-/*
+- * Create a middle page table on a resume-safe page and put a pointer to it in
+- * the given global directory entry.  This only returns the gd entry
+- * in non-PAE compilation mode, since the middle layer is folded.
 - */
--static void __restore_processor_state(struct saved_context *ctxt)
+-static pmd_t *resume_one_md_table_init(pgd_t *pgd)
 -{
--	/*
--	 * control registers
--	 */
--	wrmsrl(MSR_EFER, ctxt->efer);
--	write_cr8(ctxt->cr8);
--	write_cr4(ctxt->cr4);
--	write_cr3(ctxt->cr3);
--	write_cr2(ctxt->cr2);
--	write_cr0(ctxt->cr0);
+-	pud_t *pud;
+-	pmd_t *pmd_table;
 -
--	/*
--	 * now restore the descriptor tables to their proper values
--	 * ltr is done i fix_processor_context().
--	 */
--	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
--	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
+-#ifdef CONFIG_X86_PAE
+-	pmd_table = (pmd_t *)get_safe_page(GFP_ATOMIC);
+-	if (!pmd_table)
+-		return NULL;
 -
+-	set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
+-	pud = pud_offset(pgd, 0);
 -
--	/*
--	 * segment registers
--	 */
--	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
--	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
--	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
--	load_gs_index(ctxt->gs);
--	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
+-	BUG_ON(pmd_table != pmd_offset(pud, 0));
+-#else
+-	pud = pud_offset(pgd, 0);
+-	pmd_table = pmd_offset(pud, 0);
+-#endif
 -
--	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
--	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
--	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--
--	fix_processor_context();
--
--	do_fpu_end();
--	mtrr_ap_init();
+-	return pmd_table;
 -}
 -
--void restore_processor_state(void)
+-/*
+- * Create a page table on a resume-safe page and place a pointer to it in
+- * a middle page directory entry.
+- */
+-static pte_t *resume_one_page_table_init(pmd_t *pmd)
 -{
--	__restore_processor_state(&saved_context);
--}
+-	if (pmd_none(*pmd)) {
+-		pte_t *page_table = (pte_t *)get_safe_page(GFP_ATOMIC);
+-		if (!page_table)
+-			return NULL;
 -
--static void fix_processor_context(void)
--{
--	int cpu = smp_processor_id();
--	struct tss_struct *t = &per_cpu(init_tss, cpu);
+-		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
 -
--	/*
--	 * This just modifies memory; should not be necessary. But... This
--	 * is necessary, because 386 hardware has concept of busy TSS or some
--	 * similar stupidity.
--	 */
--	set_tss_desc(cpu, t);
+-		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
 -
--	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
--
--	syscall_init();                         /* This sets MSR_*STAR and related */
--	load_TR_desc();				/* This does ltr */
--	load_LDT(&current->active_mm->context);	/* This does lldt */
--
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7){
--                loaddebug(&current->thread, 0);
--                loaddebug(&current->thread, 1);
--                loaddebug(&current->thread, 2);
--                loaddebug(&current->thread, 3);
--                /* no 4 and 5 */
--                loaddebug(&current->thread, 6);
--                loaddebug(&current->thread, 7);
+-		return page_table;
 -	}
+-
+-	return pte_offset_kernel(pmd, 0);
 -}
 -
--#ifdef CONFIG_HIBERNATION
--/* Defined in arch/x86_64/kernel/suspend_asm.S */
--extern int restore_image(void);
--
 -/*
-- * Address to jump to in the last phase of restore in order to get to the image
-- * kernel's text (this value is passed in the image header).
+- * This maps the physical memory to kernel virtual address space, a total
+- * of max_low_pfn pages, by creating page tables starting from address
+- * PAGE_OFFSET.  The page tables are allocated out of resume-safe pages.
 - */
--unsigned long restore_jump_address;
--
--/*
-- * Value of the cr3 register from before the hibernation (this value is passed
-- * in the image header).
-- */
--unsigned long restore_cr3;
--
--pgd_t *temp_level4_pgt;
--
--void *relocated_restore_code;
--
--static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
+-static int resume_physical_mapping_init(pgd_t *pgd_base)
 -{
--	long i, j;
+-	unsigned long pfn;
+-	pgd_t *pgd;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int pgd_idx, pmd_idx;
 -
--	i = pud_index(address);
--	pud = pud + i;
--	for (; i < PTRS_PER_PUD; pud++, i++) {
--		unsigned long paddr;
--		pmd_t *pmd;
+-	pgd_idx = pgd_index(PAGE_OFFSET);
+-	pgd = pgd_base + pgd_idx;
+-	pfn = 0;
 -
--		paddr = address + i*PUD_SIZE;
--		if (paddr >= end)
--			break;
--
--		pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+-	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
+-		pmd = resume_one_md_table_init(pgd);
 -		if (!pmd)
 -			return -ENOMEM;
--		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
--		for (j = 0; j < PTRS_PER_PMD; pmd++, j++, paddr += PMD_SIZE) {
--			unsigned long pe;
 -
--			if (paddr >= end)
+-		if (pfn >= max_low_pfn)
+-			continue;
+-
+-		for (pmd_idx = 0; pmd_idx < PTRS_PER_PMD; pmd++, pmd_idx++) {
+-			if (pfn >= max_low_pfn)
 -				break;
--			pe = __PAGE_KERNEL_LARGE_EXEC | paddr;
--			pe &= __supported_pte_mask;
--			set_pmd(pmd, __pmd(pe));
+-
+-			/* Map with big pages if possible, otherwise create
+-			 * normal page tables.
+-			 * NOTE: We can mark everything as executable here
+-			 */
+-			if (cpu_has_pse) {
+-				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
+-				pfn += PTRS_PER_PTE;
+-			} else {
+-				pte_t *max_pte;
+-
+-				pte = resume_one_page_table_init(pmd);
+-				if (!pte)
+-					return -ENOMEM;
+-
+-				max_pte = pte + PTRS_PER_PTE;
+-				for (; pte < max_pte; pte++, pfn++) {
+-					if (pfn >= max_low_pfn)
+-						break;
+-
+-					set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
+-				}
+-			}
 -		}
 -	}
 -	return 0;
 -}
 -
--static int set_up_temporary_mappings(void)
+-static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
 -{
--	unsigned long start, end, next;
--	int error;
+-#ifdef CONFIG_X86_PAE
+-	int i;
 -
--	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
--	if (!temp_level4_pgt)
--		return -ENOMEM;
--
--	/* It is safe to reuse the original kernel mapping */
--	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
--		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
--
--	/* Set up the direct mapping from scratch */
--	start = (unsigned long)pfn_to_kaddr(0);
--	end = (unsigned long)pfn_to_kaddr(end_pfn);
--
--	for (; start < end; start = next) {
--		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
--		if (!pud)
--			return -ENOMEM;
--		next = start + PGDIR_SIZE;
--		if (next > end)
--			next = end;
--		if ((error = res_phys_pud_init(pud, __pa(start), __pa(next))))
--			return error;
--		set_pgd(temp_level4_pgt + pgd_index(start),
--			mk_kernel_pgd(__pa(pud)));
--	}
--	return 0;
+-	/* Init entries of the first-level page table to the zero page */
+-	for (i = 0; i < PTRS_PER_PGD; i++)
+-		set_pgd(pg_dir + i,
+-			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
+-#endif
 -}
 -
 -int swsusp_arch_resume(void)
 -{
 -	int error;
 -
--	/* We have got enough memory and from now on we cannot recover */
--	if ((error = set_up_temporary_mappings()))
+-	resume_pg_dir = (pgd_t *)get_safe_page(GFP_ATOMIC);
+-	if (!resume_pg_dir)
+-		return -ENOMEM;
+-
+-	resume_init_first_level_page_table(resume_pg_dir);
+-	error = resume_physical_mapping_init(resume_pg_dir);
+-	if (error)
 -		return error;
 -
--	relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
--	if (!relocated_restore_code)
--		return -ENOMEM;
--	memcpy(relocated_restore_code, &core_restore_code,
--	       &restore_registers - &core_restore_code);
--
+-	/* We have got enough memory and from now on we cannot recover */
 -	restore_image();
 -	return 0;
 -}
@@ -671,57 +754,99 @@ Index: linux-2.6/arch/x86/power/suspend_64.c
 -	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
 -	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
 -}
+Index: linux-2.6/arch/x86/power/swsusp.S
+===================================================================
+--- linux-2.6.orig/arch/x86/power/swsusp.S
++++ /dev/null
+@@ -1,78 +0,0 @@
+-.text
 -
--struct restore_data_record {
--	unsigned long jump_address;
--	unsigned long cr3;
--	unsigned long magic;
--};
--
--#define RESTORE_MAGIC	0x0123456789ABCDEFUL
--
--/**
-- *	arch_hibernation_header_save - populate the architecture specific part
-- *		of a hibernation image header
-- *	@addr: address to save the data at
+-/* Originally gcc generated, modified by hand
+- *
+- * This may not use any stack, nor any variable that is not "NoSave":
+- *
+- * Its rewriting one kernel image with another. What is stack in "old"
+- * image could very well be data page in "new" image, and overwriting
+- * your own stack under you is bad idea.
 - */
--int arch_hibernation_header_save(void *addr, unsigned int max_size)
--{
--	struct restore_data_record *rdr = addr;
 -
--	if (max_size < sizeof(struct restore_data_record))
--		return -EOVERFLOW;
--	rdr->jump_address = restore_jump_address;
--	rdr->cr3 = restore_cr3;
--	rdr->magic = RESTORE_MAGIC;
--	return 0;
--}
+-#include <linux/linkage.h>
+-#include <asm/segment.h>
+-#include <asm/page.h>
+-#include <asm/asm-offsets.h>
 -
--/**
-- *	arch_hibernation_header_restore - read the architecture specific data
-- *		from the hibernation image header
-- *	@addr: address to read the data from
-- */
--int arch_hibernation_header_restore(void *addr)
--{
--	struct restore_data_record *rdr = addr;
+-	.text
 -
--	restore_jump_address = rdr->jump_address;
--	restore_cr3 = rdr->cr3;
--	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
--}
--#endif /* CONFIG_HIBERNATION */
+-ENTRY(swsusp_arch_suspend)
+-
+-	movl %esp, saved_context_esp
+-	movl %ebx, saved_context_ebx
+-	movl %ebp, saved_context_ebp
+-	movl %esi, saved_context_esi
+-	movl %edi, saved_context_edi
+-	pushfl ; popl saved_context_eflags
+-
+-	call swsusp_save
+-	ret
+-
+-ENTRY(restore_image)
+-	movl	resume_pg_dir, %ecx
+-	subl	$__PAGE_OFFSET, %ecx
+-	movl	%ecx, %cr3
+-
+-	movl	restore_pblist, %edx
+-	.p2align 4,,7
+-
+-copy_loop:
+-	testl	%edx, %edx
+-	jz	done
+-
+-	movl	pbe_address(%edx), %esi
+-	movl	pbe_orig_address(%edx), %edi
+-
+-	movl	$1024, %ecx
+-	rep
+-	movsl
+-
+-	movl	pbe_next(%edx), %edx
+-	jmp	copy_loop
+-	.p2align 4,,7
+-
+-done:
+-	/* go back to the original page tables */
+-	movl	$swapper_pg_dir, %ecx
+-	subl	$__PAGE_OFFSET, %ecx
+-	movl	%ecx, %cr3
+-	/* Flush TLB, including "global" things (vmalloc) */
+-	movl	mmu_cr4_features, %eax
+-	movl	%eax, %edx
+-	andl	$~(1<<7), %edx;  # PGE
+-	movl	%edx, %cr4;  # turn off PGE
+-	movl	%cr3, %ecx;  # flush TLB
+-	movl	%ecx, %cr3
+-	movl	%eax, %cr4;  # turn PGE back on
+-
+-	movl saved_context_esp, %esp
+-	movl saved_context_ebp, %ebp
+-	movl saved_context_ebx, %ebx
+-	movl saved_context_esi, %esi
+-	movl saved_context_edi, %edi
+-
+-	pushl saved_context_eflags ; popfl
+-
+-	xorl	%eax, %eax
+-
+-	ret
 Index: linux-2.6/arch/x86/power/Makefile
 ===================================================================
 --- linux-2.6.orig/arch/x86/power/Makefile
 +++ linux-2.6/arch/x86/power/Makefile
-@@ -1,7 +1,2 @@
--ifeq ($(CONFIG_X86_64),y)
--        obj-$(CONFIG_PM)		+= suspend_64.o
--        obj-$(CONFIG_HIBERNATION)	+= hibernate_asm_64.o
--else
--	obj-$(CONFIG_PM)		+= cpu_32.o
--	obj-$(CONFIG_HIBERNATION)	+= hibernate_32.o hibernate_asm_32.o
--endif
-+obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
-+obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
+@@ -2,6 +2,6 @@ ifeq ($(CONFIG_X86_64),y)
+         obj-$(CONFIG_PM)		+= suspend_64.o
+         obj-$(CONFIG_HIBERNATION)	+= hibernate_asm_64.o
+ else
+-	obj-$(CONFIG_PM)		+= cpu.o
+-	obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
++	obj-$(CONFIG_PM)		+= cpu_32.o
++	obj-$(CONFIG_HIBERNATION)	+= hibernate_32.o hibernate_asm_32.o
+ endif
