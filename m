@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/3] PCI ACPI: Fix comment describing
-	acpi_pci_choose_state
-Date: Sun, 3 Feb 2008 22:53:31 +0100
-Message-ID: <200802032253.31780.rjw__42891.0182360143$1202076263$gmane$org@sisk.pl>
+Subject: [PATCH 3/3] Documentation: Feature removal: Add
+	deprecation of some hibernation ioctls
+Date: Sun, 3 Feb 2008 22:59:03 +0100
+Message-ID: <200802032259.04260.rjw__1572.51969581029$1202076264$gmane$org@sisk.pl>
 References: <200802032252.04852.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -21,29 +21,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Harvey Harrison <harvey.harrison@gmail.com>
 
-The last line of the comment preceding the definition of
-acpi_pci_choose_state() is incorrect.  Remove it.
+Let this appear as deprecated in 2.6.25, remove after three
+releases (2.6.28).
 
+[rjw: Say that I will be removing the features and give the
+reason for the SNAPSHOT_SET_SWAP_FILE ioctl deprecation.]
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-acpi.c |    2 --
- 1 file changed, 2 deletions(-)
+ Documentation/feature-removal-schedule.txt |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-Index: linux-2.6/drivers/pci/pci-acpi.c
+Index: linux-2.6/Documentation/feature-removal-schedule.txt
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-acpi.c
-+++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -241,8 +241,6 @@ EXPORT_SYMBOL(pci_osc_control_set);
-  *	choose from highest power _SxD to lowest power _SxW
-  * else // no _PRW at S-state x
-  * 	choose highest power _SxD or any lower power
-- *
-- * currently we simply return _SxD, if present.
-  */
- 
- static pci_power_t acpi_pci_choose_state(struct pci_dev *pdev,
+--- linux-2.6.orig/Documentation/feature-removal-schedule.txt
++++ linux-2.6/Documentation/feature-removal-schedule.txt
+@@ -338,3 +338,28 @@ Why:	The support code for the old firmwa
+ 	and slightly hurts runtime performance. Bugfixes for the old firmware
+ 	are not provided by Broadcom anymore.
+ Who:	Michael Buesch <mb@bu3sch.de>
++
++---------------------------
++
++What:	SNAPSHOT_PMOPS ioctl
++When:	2.6.28
++Why:	Badly designed interface, obsoleted by SNAPSHOT_PLATFORM_SUPPORT and
++	SNAPSHOT_POWER_OFF.
++Who:	Rafael J. Wysocki <rjw@sisk.pl>
++
++---------------------------
++
++What:	SNAPSHOT_SET_SWAP_FILE ioctl
++When:	2.6.28
++Why:	Obsoleted by SNAPSHOT_SET_SWAP_AREA which is more flexible.
++Who:	Rafael J. Wysocki <rjw@sisk.pl>
++
++---------------------------
++
++What:	SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE ioctls
++When:	2.6.28
++Why:	Defined in a non-portable manner, new numbers introduced, old numbers
++	deprecated.
++Who:	Rafael J. Wysocki <rjw@sisk.pl>
++
++---------------------------
