@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: sleepy linux self-test
-Date: Sun, 3 Feb 2008 23:43:52 +0100
-Message-ID: <200802032343.53319.rjw__34843.1542436176$1202078846$gmane$org@sisk.pl>
-References: <20080130131748.GA3796@elf.ucw.cz> <200802032229.30576.rjw@sisk.pl>
+Date: Sun, 3 Feb 2008 23:48:31 +0100
+Message-ID: <20080203224831.GE2799__18446.7108957053$1202078990$gmane$org@elf.ucw.cz>
+References: <20080130131748.GA3796@elf.ucw.cz> <200802031321.27828.rjw@sisk.pl>
+	<20080203131636.4100828D3E1@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<200802032229.30576.rjw@sisk.pl>
 	<20080203224206.8FD40166811@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080203224206.8FD40166811@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Content-Disposition: inline
+In-Reply-To: <20080203224206.8FD40166811@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,13 +24,8 @@ To: David Brownell <david-b@pacbell.net>
 Cc: mingo@elte.hu, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 3 of February 2008, David Brownell wrote:
-> > > See the appended; it includes more of Ingo's suggestions.
-> > > 
-> > > Since this is increasingly unrelated to the "sleepy linux" concept
-> > > (a version of what systems like OLPC, N700, and N800 are doing), I
-> > > got rid of the "sleepy.c" file.
-> >
+Hi!
+
 > > The changes look good to me.
 > 
 > They feel unfinished to me though.  :)
@@ -38,8 +33,19 @@ On Sunday, 3 of February 2008, David Brownell wrote:
 > Like using "jiffies" instead of a clocksource, which makes trouble
 > since the timing covers periods with IRQs disabled.  And the test
 > mode parameter needs work.
-> 
-> 
+
+Well, I'd say that timing has bigger problem, right?
+
+It is
+
+set alarm
+	suspend system
+| poweroff
+alarm expires
+	system resumes
+
+... so you are measuring resume time + sleep time, no? 
+
 > > Well, it would be nice to have this feature in as soon as reasonably possible,
 > > so that people can include suspend tests in the automated testing.
 > 
@@ -49,7 +55,8 @@ On Sunday, 3 of February 2008, David Brownell wrote:
 > What was the rationale for wanting this done in-kernel?  (Other
 > than to know it can work portably.)
 
-Ingo wants it for automated testing not involving user space modifications.
-
-Thanks,
-Rafael
+Ingo has to answer this one...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
