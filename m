@@ -1,24 +1,27 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: wakeup code translated to .c
-Date: Mon, 4 Feb 2008 00:58:29 +0100
-Message-ID: <20080203235829.GJ2799@elf.ucw.cz>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl>
+Date: Mon, 4 Feb 2008 00:59:27 +0100
+Message-ID: <20080203235927.GK2799@elf.ucw.cz>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802040020.14836.rjw@sisk.pl> <20080203233313.GF2799@elf.ucw.cz> <200802040054.43863.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755292AbYBCX6U@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755230AbYBCX7X@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200802032333.02821.rjw@sisk.pl>
+In-Reply-To: <200802040054.43863.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-> it looks okay
-> (from a very high orbit).
+Hi!
 
-It should look better from closer look. Reusing trampoline_64.S
-instead of cut&copy&paste gets us rid of some really nasty assembly
-;-).
+> BTW, I don't like the way in which the 'struct wakeup_header' fields are
+> reproduced in rm/wakeup.S very much, because it makes the code fragile.
+> It might be better to define the offsets in asm-offsets*.c and refer to them
+> relative to wakeup_header (if possible).
+
+If you can do that.. yes, that would be nice. I triple-checked it, but
+indeed is fragile.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
