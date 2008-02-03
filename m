@@ -1,68 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend to ram problem
-Date: Sun, 3 Feb 2008 19:22:02 +0100
-Message-ID: <200802031922.02877.rjw__46036.5823856138$1202063223$gmane$org@sisk.pl>
-References: <47A5C399.7010405@free.fr> <200802031839.02397.rjw@sisk.pl>
-	<20080203181855.GB1629@elf.ucw.cz>
+Subject: Re: wakeup code translated to .c
+Date: Sun, 3 Feb 2008 19:24:44 +0100
+Message-ID: <200802031924.44592.rjw@sisk.pl>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080203181855.GB1629@elf.ucw.cz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752596AbYBCS0u@vger.kernel.org>
+In-Reply-To: <20080203181648.GA1629@elf.ucw.cz>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, matthieu castet <castet.matthieu@free.fr>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday, 3 of February 2008, Pavel Machek wrote:
-> On Sun 2008-02-03 18:39:01, Rafael J. Wysocki wrote:
-> > On Sunday, 3 of February 2008, matthieu castet wrote:
-> > > matthieu castet wrote:
-> > > > Hi,
-> > > > 
-> > > > I am trying to make work suspend to ram on a MSI MS-6380E with a 2.6.23 
-> > > > kernel.
-> > > > 
-> > > > Standby mode works.
-> > > > S2ram suspend seems to work : the computer turn off and I can wake up it 
-> > > > with the keyboard.
-> > > > 
-> > > > But when the computer wakeup, I see the video card POST on the screen, 
-> > > > but after that the computer hangs : black screen, no working numlock.
-> > > > 
-> > > > I tried to compile PM_TRACE, but it give no result. So this means the 
-> > > > resume hang very early.
-> > > > 
-> > > > What can I do to debug this ?
-> > > >
-> > > I play with the s2_beep feature and :
-> > > - echo 4 > /proc/sys/kernel/acpi_video_flags make the computer beep
-> > > - echo 4 > /proc/sys/kernel/acpi_video_flags make the computer not beep
-> > > - adding a beep in bogus_real_magic, make the computer not beep
+> Hi!
+> 
+> > > This version works on 32-bit, and builds on 64-bit (but I'm pretty
+> > > sure it does not work. 32-bit code probably needs to go into rm/....)
 > > > 
-> > > So the hang seems located in wakeup_start.
 > > 
-> > Hm.  Can you add unconditional BEEP after "jne bogus_real_magic" in
-> > arch/x86/kernel/acpi/wakeup.S and see if it beeps?
+> > Do you have an updated version or is this the latest one?
 > 
-> Hmm, maybe I know where problem could be. Try
-> 
->         movl     $(wakeup_stack - wakeup_code), %esp              # Private stack is needed for ASUS bo\
-> 
-> instead of existing stack setup. That helped on one of my test-boxes
-> -- I uncovered that during rewrite.
+> I'm glad you ask ;-). Here's reasonably-recent version (I have
+> slightly cleaner one, but it got obscured by 2.6.24-git merge), I
+> eventually got it to work on 64-bit, by reusing trampoline.S code.
 
-Well, that could explain some mysterious failures reported from time to time by
-ASUS users.
+Thanks, I'll have a look and test it a bit.
 
 Rafael
