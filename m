@@ -1,77 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: wakeup code translated to .c
-Date: Sun, 3 Feb 2008 23:33:02 +0100
-Message-ID: <200802032333.02821.rjw@sisk.pl>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: sleepy linux self-test
+Date: Sun, 03 Feb 2008 14:42:06 -0800
+Message-ID: <20080203224206.8FD40166811__43062.2646389112$1202078727$gmane$org@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20080130131748.GA3796@elf.ucw.cz> <200802031321.27828.rjw@sisk.pl>
+	<20080203131636.4100828D3E1@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<200802032229.30576.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754571AbYBCWfb@vger.kernel.org>
-In-Reply-To: <20080203181648.GA1629@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200802032229.30576.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: rjw@sisk.pl
+Cc: mingo@elte.hu, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 3 of February 2008, Pavel Machek wrote:
-> Hi!
->=20
-> > > This version works on 32-bit, and builds on 64-bit (but I'm prett=
-y
-> > > sure it does not work. 32-bit code probably needs to go into rm/.=
-=2E..)
-> > >=20
-> >=20
-> > Do you have an updated version or is this the latest one?
->=20
-> I'm glad you ask ;-). Here's reasonably-recent version (I have
-> slightly cleaner one, but it got obscured by 2.6.24-git merge), I
-> eventually got it to work on 64-bit, by reusing trampoline.S code.
+> > See the appended; it includes more of Ingo's suggestions.
+> > 
+> > Since this is increasingly unrelated to the "sleepy linux" concept
+> > (a version of what systems like OLPC, N700, and N800 are doing), I
+> > got rid of the "sleepy.c" file.
+>
+> The changes look good to me.
 
-I needed to rebase it against the current mainline (Makefile conflict).
+They feel unfinished to me though.  :)
 
-Some remarks:
+Like using "jiffies" instead of a clocksource, which makes trouble
+since the timing covers periods with IRQs disabled.  And the test
+mode parameter needs work.
 
-- It looks like arch/x86/kernel/acpi/wakeup.S is not necessary any more=
-=2E
 
-- These warnings:
+> Well, it would be nice to have this feature in as soon as reasonably possible,
+> so that people can include suspend tests in the automated testing.
 
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c: In function =E2=
-=80=98acpi_save_state_mem=E2=80=99:
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:41: warning: in=
-itialization makes pointer from integer without a cast
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: fo=
-rmat =E2=80=98%d=E2=80=99 expects type =E2=80=98int=E2=80=99, but argum=
-ent 2 has type =E2=80=98long unsigned int=E2=80=99
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: fo=
-rmat =E2=80=98%d=E2=80=99 expects type =E2=80=98int=E2=80=99, but argum=
-ent 3 has type =E2=80=98long unsigned int=E2=80=99
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:70: warning: IS=
-O C90 forbids mixed declarations and code
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:82: warning: as=
-signment makes integer from pointer without a cast
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:83: warning: as=
-signment makes integer from pointer without a cast
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:84: warning: IS=
-O C90 forbids mixed declarations and code
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:87: warning: IS=
-O C90 forbids mixed declarations and code
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:90: warning: as=
-signment makes integer from pointer without a cast
-/home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:91: warning: IS=
-O C90 forbids mixed declarations and code
+Except ... "rtcwake" (from util-linux-ng) already supports such
+testing, albeit from userspace.   But not the timing tests.
 
-look pretty scary.
+What was the rationale for wanting this done in-kernel?  (Other
+than to know it can work portably.)
 
-- Could the real mode directory be called just "real-mode" or something=
- like
-  this ("rm" is not very meaningful :-))?
-
-Apart from the above and the _WAKEUP hacks mentioned elsewhere, it look=
-s okay
-(from a very high orbit).
-
-Greetings,
-Rafael
+- Dave
