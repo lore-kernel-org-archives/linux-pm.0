@@ -1,31 +1,49 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/3] Suspend-related cleanups
-Date: Sun, 3 Feb 2008 23:20:27 +0100
-Message-ID: <20080203222027.GB2799__30004.3938601904$1202077316$gmane$org@elf.ucw.cz>
-References: <200802032252.04852.rjw@sisk.pl>
+Subject: Re: wakeup code translated to .c
+Date: Sun, 3 Feb 2008 23:24:07 +0100
+Message-ID: <20080203222407.GC2799@elf.ucw.cz>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz> <20080203184931.GA2648@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754276AbYBCWYB@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200802032252.04852.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <20080203184931.GA2648@uranus.ravnborg.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sun 2008-02-03 19:49:31, Sam Ravnborg wrote:
+> On Sun, Feb 03, 2008 at 07:16:48PM +0100, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > This version works on 32-bit, and builds on 64-bit (but I'm pretty
+> > > > sure it does not work. 32-bit code probably needs to go into rm/....)
+> > > > 
+> > > 
+> > > Do you have an updated version or is this the latest one?
+> > 
+> > I'm glad you ask ;-). Here's reasonably-recent version (I have
+> > slightly cleaner one, but it got obscured by 2.6.24-git merge), I
+> > eventually got it to work on 64-bit, by reusing trampoline.S code.
+> > 
+> > 								Pavel
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> Hi PAvel.
+> 
+> Before you submit this for real we need me to take a deper
+> look into your Makefiles.
 
-> Three suspend-related fixes that IMO can go into 2.6.25 follow.
+Ok, lets get this right.
 
-ACK on all three. Yes, these seem easy enough for 2.6.25.
+> We do not want this duplication between boot and acpi.
+> And the way you deal with code sharing from boot/ is not
+> OK either.
+
+Well, current version has one copy in .c, then two duplicate .S
+version, based on older code.... so few duplicate Makefiles do not
+seem like huge deal.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
