@@ -1,15 +1,17 @@
-From: Sam Ravnborg <sam@ravnborg.org>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: sleepy linux self-test
-Date: Sun, 3 Feb 2008 08:51:11 +0100
-Message-ID: <20080203075111.GB19981__26087.4800420881$1202025315$gmane$org@uranus.ravnborg.org>
-References: <20080130131748.GA3796@elf.ucw.cz> <20080203050537.GA18942@elte.hu>
-	<20080203051425.GA20740@elte.hu>
+Date: Sun, 3 Feb 2008 00:26:02 -0800
+Message-ID: <200802030026.03249.david-b__6806.35921094126$1202027382$gmane$org@pacbell.net>
+References: <20080130131748.GA3796@elf.ucw.cz>
 	<200802022318.03597.david-b@pacbell.net>
+	<20080203075111.GB19981@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080203075111.GB19981@uranus.ravnborg.org>
 Content-Disposition: inline
-In-Reply-To: <200802022318.03597.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +21,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
+To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> --- g26.orig/drivers/char/Kconfig
-> +++ g26/drivers/char/Kconfig
-> @@ -715,9 +715,12 @@ config NVRAM
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called nvram.
->  
-> +comment "You are using the RTC framework, not the legacy CMOS RTC driver"
-> +	depends on RTC_DRV_CMOS
-> +
->  config RTC
->  	tristate "Enhanced Real Time Clock Support"
-> -	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390
-> +	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390 && !RTC_DRV_CMOS
+On Saturday 02 February 2008, Sam Ravnborg wrote:
+> > --- g26.orig/drivers/char/Kconfig
+> > +++ g26/drivers/char/Kconfig
+> > @@ -715,9 +715,12 @@ config NVRAM
+> >  	  To compile this driver as a module, choose M here: the
+> >  	  module will be called nvram.
+> >  
+> > +comment "You are using the RTC framework, not the legacy CMOS RTC driver"
+> > +	depends on RTC_DRV_CMOS
+> > +
+> >  config RTC
+> >  	tristate "Enhanced Real Time Clock Support"
+> > -	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390
+> > +	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV && !ARM && !SUPERH && !S390 && !RTC_DRV_CMOS
+> 
+> This looks like a prime candidate for a HAVE_RTC config variable
 
-This looks like a prime candidate for a HAVE_RTC config variable
-So you do:
+In drivers/rtc/Kconfig there's *currently* a list of about
+three dozen (!) different RTC drivers ... some of which support
+quite a few different variants.
 
- config RTC
- 	tristate "Enhanced Real Time Clock Support"
-+	depends on HAVE_RTC && !RTC_DEV_CMOS
+I'd be glad to see someone clean up the config mess with respect
+to systems using MC146818 compatible chips, but that shouldn't
+begin by assuming the numerous non-MC146818 chips are somehow
+not real RTCs.  ;)
 
-config HAVE_RTC
-	bool
-
-(No "depends on" allowed!)
-
-
-And then the architectures that do support the RTC Framework do an:
-(arch/x86/Kconfig as an example):
- config X86
-+	select HAVE_RTC
-
-So when PPC suddenly supports it they add this single
-select statement and no more Kconfig magic needed.
-
-See Documentation/kbuild/kconfig-language.txt for a bit more elaborate
-description.
-
-	Sam
+- Dave
