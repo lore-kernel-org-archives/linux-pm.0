@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] Documentation: Feature removal: Add
-	deprecation of some hibernation ioctls
-Date: Sun, 3 Feb 2008 22:59:03 +0100
-Message-ID: <200802032259.04260.rjw__1572.51969581029$1202076264$gmane$org@sisk.pl>
+Subject: [PATCH 2/3] PM: Make suspend_device() static
+Date: Sun, 3 Feb 2008 22:55:18 +0100
+Message-ID: <200802032255.19835.rjw__47681.2966204763$1202076291$gmane$org@sisk.pl>
 References: <200802032252.04852.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -21,53 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Harvey Harrison <harvey.harrison@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Adrian Bunk <bunk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
+From: Adrian Bunk <bunk@kernel.org>
 
-Let this appear as deprecated in 2.6.25, remove after three
-releases (2.6.28).
+suspend_device() can become static.
 
-[rjw: Say that I will be removing the features and give the
-reason for the SNAPSHOT_SET_SWAP_FILE ioctl deprecation.]
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/feature-removal-schedule.txt |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-Index: linux-2.6/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6/Documentation/feature-removal-schedule.txt
-@@ -338,3 +338,28 @@ Why:	The support code for the old firmwa
- 	and slightly hurts runtime performance. Bugfixes for the old firmware
- 	are not provided by Broadcom anymore.
- Who:	Michael Buesch <mb@bu3sch.de>
-+
-+---------------------------
-+
-+What:	SNAPSHOT_PMOPS ioctl
-+When:	2.6.28
-+Why:	Badly designed interface, obsoleted by SNAPSHOT_PLATFORM_SUPPORT and
-+	SNAPSHOT_POWER_OFF.
-+Who:	Rafael J. Wysocki <rjw@sisk.pl>
-+
-+---------------------------
-+
-+What:	SNAPSHOT_SET_SWAP_FILE ioctl
-+When:	2.6.28
-+Why:	Obsoleted by SNAPSHOT_SET_SWAP_AREA which is more flexible.
-+Who:	Rafael J. Wysocki <rjw@sisk.pl>
-+
-+---------------------------
-+
-+What:	SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE ioctls
-+When:	2.6.28
-+Why:	Defined in a non-portable manner, new numbers introduced, old numbers
-+	deprecated.
-+Who:	Rafael J. Wysocki <rjw@sisk.pl>
-+
-+---------------------------
+344fcfcea0df8cbaa83e10d7e66b826ead67290b 
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 200ed5f..cfcc54f 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -414,7 +414,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
+  *	@dev:	Device.
+  *	@state:	Power state device is entering.
+  */
+-int suspend_device(struct device *dev, pm_message_t state)
++static int suspend_device(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
