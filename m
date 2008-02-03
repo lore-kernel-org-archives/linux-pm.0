@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] Suspending to SD card on an Asus EEE
-	PC
-Date: Sun, 3 Feb 2008 22:37:01 +0100
-Message-ID: <200802032237.02078.rjw__5505.34214494309$1202074850$gmane$org@sisk.pl>
-References: <20080129065648.GA28550@sfu.ca>
+From: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 0/4] x86 PM: Consolidate suspend and
+	hibernation code
+Date: Sun, 3 Feb 2008 22:52:36 +0100
+Message-ID: <20080203215236.GG2648__32399.1884397858$1202075665$gmane$org@uranus.ravnborg.org>
+References: <200802032141.56887.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080129065648.GA28550@sfu.ca>
 Content-Disposition: inline
+In-Reply-To: <200802032141.56887.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Max Whitney <mwhitney@sfu.ca>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 29 of January 2008, Max Whitney wrote:
-> I've been trying to use Uswsusp to suspend to disk on my Asus EEE PC using an
-> SD card as the resume device. The suspend program appears to run successfully
-> with no errors, but the resume program doesn't do anything besides print the
-> message that says it's running. On further examination, the Uswsusp signature
-> is not on the disk after suspending and rebooting.    
+On Sun, Feb 03, 2008 at 09:41:56PM +0100, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> The problem seems to be that the two calls to fsync in the write_image() function
-> in suspend.c fail, leaving errno set to 5 and perror reporting "Input/output error". 
-> 
-> I'm not sure if this is a Uswsusp problem or just my configuration, but I'm
-> not sure what to try now. Is suspending to a removable device (I think it's
-> a USB device internally) just a bad idea? Any advice, or ideas on how to
-> continue debugging?
+> This series of patches consolidates the x86 suspend and hibernation code.
+> It does the following:
+> - move 64-bit hibernation/suspend files to arch/x86/power (under different
+>   names)
+> - rename 32-bit files in arch/x86/power in line with the 64-bit files
+> - separate hibernation-specific 64-bit code from the code used for both
+>   suspend and hibernation and simplify the Makefile
+> - fix up comments
+> Details are in the changelogs.
 
-Actually, this is a kernel problem.
+All looks good from my angle.
 
-In short, the kernel disconnects removable storage devices before putting them
-into low power states and this cannot be fixed totally cleanly, AFAICS.
+I would have deferred first patch until step 3 but no need to change
+that now.
+And I like the simplification of the arch/x86/Makefile
+and the resulting kernel/power/Makefile.
 
-If this is a USB device, you may try to set CONFIG_USB_PERSIST in the kernel
-config (this is not a safe option, though).
-
-Thanks,
-Rafael
+	Sam
