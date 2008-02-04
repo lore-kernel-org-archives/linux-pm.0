@@ -1,23 +1,59 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: wakeup code translated to .c
-Date: Mon, 4 Feb 2008 01:18:36 +0100
-Message-ID: <20080204001836.GN2799@elf.ucw.cz>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl> <20080203235722.GI2799@elf.ucw.cz> <200802040057.24429.rjw@sisk.pl>
+Date: Mon, 4 Feb 2008 13:44:47 +0100
+Message-ID: <20080204124446.GA7843@elf.ucw.cz>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz> <20080203184931.GA2648@uranus.ravnborg.org> <20080203222407.GC2799@elf.ucw.cz> <20080203222719.GB6456@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755276AbYBDASn@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755414AbYBDMo7@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200802040057.24429.rjw@sisk.pl>
+In-Reply-To: <20080203222719.GB6456@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sun 2008-02-03 23:27:20, Sam Ravnborg wrote:
+> On Sun, Feb 03, 2008 at 11:24:07PM +0100, Pavel Machek wrote:
+> > On Sun 2008-02-03 19:49:31, Sam Ravnborg wrote:
+> > > On Sun, Feb 03, 2008 at 07:16:48PM +0100, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > > This version works on 32-bit, and builds on 64-bit (but I'm pretty
+> > > > > > sure it does not work. 32-bit code probably needs to go into rm/....)
+> > > > > > 
+> > > > > 
+> > > > > Do you have an updated version or is this the latest one?
+> > > > 
+> > > > I'm glad you ask ;-). Here's reasonably-recent version (I have
+> > > > slightly cleaner one, but it got obscured by 2.6.24-git merge), I
+> > > > eventually got it to work on 64-bit, by reusing trampoline.S code.
+> > > > 
+> > > > 								Pavel
+> > > > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > > 
+> > > Hi PAvel.
+> > > 
+> > > Before you submit this for real we need me to take a deper
+> > > look into your Makefiles.
+> > 
+> > Ok, lets get this right.
+> > 
+> > > We do not want this duplication between boot and acpi.
+> > > And the way you deal with code sharing from boot/ is not
+> > > OK either.
+> > 
+> > Well, current version has one copy in .c, then two duplicate .S
+> > version, based on older code.... so few duplicate Makefiles do not
+> > seem like huge deal.
+> It is more the single files that just include another .c file.
+> 
+> Can you drop me an updated patch sometime Monday - I already lost
+> the inital mail and I guess you continue your updates.
 
-Here's updated diff. Video & Makefiles by hpa, rest by me ;-).
-
+Here's current version...
 								Pavel
+
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
 index 8978e98..949b8eb 100644
 --- a/arch/x86/Makefile
@@ -2144,7 +2180,6 @@ index 485de13..56e09cf 100644
  	 * of the OSPM to clear the status bit [ implying that the
  	 * POWER_BUTTON event should not reach userspace ]
  	 */
-
 
 
 -- 
