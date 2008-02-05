@@ -1,51 +1,55 @@
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [linux-pm] Re: Small pm documentation cleanups
-Date: Tue, 5 Feb 2008 22:27:53 +0100
-Message-ID: <9a8748490802051327q38f63c41ie5ea1f923eb2c08d@mail.gmail.com>
-References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>
-	 <47A7F581.8060300@nigel.suspend2.net>
-	 <20080205182712.GA9483@elf.ucw.cz>
+From: matthieu castet <castet.matthieu@free.fr>
+Subject: Re: suspend to ram problem
+Date: Wed, 06 Feb 2008 00:02:26 +0100
+Message-ID: <47A8EB02.90502__9048.64813569493$1202252787$gmane$org@free.fr>
+References: <47A5C399.7010405@free.fr> <47A5DE60.1080402@free.fr>
+	<200802031839.02397.rjw@sisk.pl>
+	<20080203181855.GB1629@elf.ucw.cz> <47A60AA8.8050407@free.fr>
+	<47A6B758.7070405@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758874AbYBEV2Q@vger.kernel.org>
-In-Reply-To: <20080205182712.GA9483@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <47A6B758.7070405@free.fr>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Trivial patch monkey <trivial@kernel.org>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/02/2008, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> >> On Tuesday, 5 of February 2008, Pavel Machek wrote:
-> >>> Small documentation fixes/additions that accumulated in my tree.
-> >>>
-> >>> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> >>
-> >> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >>
-> ...
-...
->
-> Thanks for comments, I applied them.
->
-> Small documentation fixes/additions that accumulated in my tree.
->
-> Len, please pick this up, thanks.
->                                                                         Pavel
->
->
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
->
+Hi,
 
-I've put this on my watch list for the trivial tree.
-So, if it doesn't get merged elsewhere I'll take care of pushing it
-again during the 2.6.26 merge window (and beyond).
+matthieu castet wrote:
+> matthieu castet wrote:
+>> Pavel Machek wrote:
+> 
+>>> Hmm, maybe I know where problem could be. Try
+>>>
+>>>         movl     $(wakeup_stack - wakeup_code), %esp              # 
+>>> Private stack is needed for ASUS bo\
+>>>
+>>> instead of existing stack setup. That helped on one of my test-boxes
+>> Thanks, I will try that.
+>> Because clearing the flags imply pop/push in the stack it could be the 
+>> problem
+> That doesn't help : it still crash in pushl $0.
+> 
+All stack stuff in wakeup_code crash for me.
+I tried to change the stack position, make sure upper bit of %esp are 
+clear, ... nothing work.
+What's are strange is that according to my x86 manual, in real mode the 
+failure can only happen if the stack wrap which is not the case here.
+Any x86 guru advice ?
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+If I remove stack access (remove clearing flag stuff, not call to video 
+stuff) the resume works.
+
+
+Matthieu
