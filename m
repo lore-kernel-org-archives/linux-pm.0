@@ -1,7 +1,7 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: suspend to ram problem
-Date: Wed, 6 Feb 2008 23:43:08 +0100
-Message-ID: <20080206224308.GA1630__46321.2372888394$1202337869$gmane$org@elf.ucw.cz>
+Date: Wed, 6 Feb 2008 23:43:28 +0100
+Message-ID: <20080206224328.GB1630__36607.3393299759$1202337887$gmane$org@elf.ucw.cz>
 References: <47A5C399.7010405@free.fr> <47A6B758.7070405@free.fr>
 	<47A8EB02.90502@free.fr> <200802060020.12289.rjw@sisk.pl>
 	<47AA3763.7000106@free.fr>
@@ -23,8 +23,19 @@ To: matthieu castet <castet.matthieu@free.fr>
 Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
+On Wed 2008-02-06 23:40:35, matthieu castet wrote:
+> Rafael J. Wysocki wrote:
+>> On Wednesday, 6 of February 2008, matthieu castet wrote:
+>>> Hi,
+>>>
+>>> matthieu castet wrote:
+>>>> matthieu castet wrote:
+>>>>> Pavel Machek wrote:
+>>>>>> Hmm, maybe I know where problem could be. Try
+>>>>>>
+>>>>>>         movl     $(wakeup_stack - wakeup_code), %esp              # 
+>>>>>> Private stack is needed for ASUS bo\
+>>>>>>
 >>>>>> instead of existing stack setup. That helped on one of my test-boxes
 >>>>> Thanks, I will try that.
 >>>>> Because clearing the flags imply pop/push in the stack it could be the 
@@ -45,8 +56,7 @@ Hi!
 >> see if that breaks?
 > Yes that also break.
 
-Not sure what is going on... but if you remove all the stack
-references, does it go up to 32-bit mode?
+Hmm, and what kind of machine is that?
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
