@@ -1,33 +1,47 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Wed, 6 Feb 2008 12:29:26 +0100
-Message-ID: <20080206112926.GB8070@elf.ucw.cz>
-References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <47A90F23.80009@zytor.com> <200802060242.15097.rjw@sisk.pl> <47A9129A.7050706@zytor.com>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+Date: Thu, 07 Feb 2008 08:27:03 +1100
+Message-ID: <47AA2627.4030509@nigel.suspend2.net>
+References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>	<47A7F581.8060300@nigel.suspend2.net> <20080205182712.GA9483@elf.ucw.cz>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762204AbYBFL3W@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <47A9129A.7050706@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759369AbYBFV1s@vger.kernel.org>
+In-Reply-To: <20080205182712.GA9483@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Trivial patch monkey <trivial@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-02-05 17:51:22, H. Peter Anvin wrote:
-> Rafael J. Wysocki wrote:
->>> The asm() for making beeps really need to be moved to a function and 
->>> cleaned up (redone in C using inb()/outb()) if they are to be retained at 
->>> all.
->>
->> Yes, they are.  For some people they're the only tool to debug broken resume.
->
-> That's fine, but they should get cleaned up.
->
-> /me is tempted to provide a version which can send messages in Morse Code ;)
+Hi again.
 
-Actually, it would probably be accepted. Debugging early resume is
-evil enough that any help is welcome.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Pavel Machek wrote:
+> Hi!
+> 
+>>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+>>>> Small documentation fixes/additions that accumulated in my tree.
+>>>>
+>>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+>>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>
+> ...
+>>>> 0
+>>>>   	acpi_sleep=	[HW,ACPI] Sleep options
+>>>> -			Format: { s3_bios, s3_mode }
+>>>> -			See Documentation/power/video.txt
+>>>> +			Format: { s3_bios, s3_mode, s3_beep }
+>>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
+>>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
+>>>> +			kernel's real-mode entry point is called.
+>> s/kernel's/the kernel's/
+> 
+> Thanks for comments, I applied them.
+
+You're welcome. Sorry for replying again, but I just noticed another one 
+in the line above - it should be something like "it makes the PC's 
+speaker beep as soon as" ('on PC speaker' isn't right).
+
+Sorry for not getting that last time.
+
+Nigel
