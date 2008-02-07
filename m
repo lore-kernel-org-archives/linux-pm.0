@@ -1,17 +1,13 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [rft] s2ram wakeup moves to .c,
-	could fix few machines
-Date: Thu, 07 Feb 2008 14:34:26 -0800
-Message-ID: <47AB8772.4010709@zytor.com>
-References: <20080205190600.GB11613@elf.ucw.cz>
-	<200802060227.14385.rjw@sisk.pl> <200802070049.00461.rjw@sisk.pl>
-	<200802072312.31430.rjw@sisk.pl>
-	<20080207222833.GA23004@uranus.ravnborg.org>
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+Subject: Re: [GIT PATCH] suspend patches for 2.6.25-rc0
+Date: Thu, 7 Feb 2008 17:27:13 -0500
+Message-ID: <20080207222713.GA20549@cs.cmu.edu>
+References: <200802011820.56693.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080207222833.GA23004@uranus.ravnborg.org>
+Content-Disposition: inline
+In-Reply-To: <200802011820.56693.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Sam Ravnborg wrote:
->> +
->> +	. = 0;
->> +	.text		: { *(.text*) }
->> +
->> +	. = ALIGN(16);
-> Why?
+On Fri, Feb 01, 2008 at 06:20:56PM -0500, Len Brown wrote:
+> please pull from: 
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git suspend
+> 
+> This will update the files shown below.
 
-It's good practice to have at least paragraph (segment boundary) 
-alignment between different types of data.  In the case of the .bss, it 
-also allows cleaning with rep;movsl.
+The following patch,
 
-It's technically not all that necessary (except for 4-byte alignment for 
-the .bss), but it makes things easier to debug on the assembly level.
+    commit c3e94d899c864e558f938f9845ddb8c2e5d5ccd0
+    Author: Alan Stern <stern@rowland.harvard.edu>
+    Date:   Mon Nov 19 23:38:25 2007 +0100
 
->> +	/* Adjust this as appropriate */
->> +	/* This allows 4 pages (16K) */
->> +	. = ASSERT(_end <= 0x4000, "Wakeup too big!");
-> PAGE_SIZE * 4?
+    Hibernation: Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers (rev. 2)
 
-Not really, because it's not at all related to the kernel page size; the 
-reference to pages there is informal.  If we go to a larger virtual page 
-size we do NOT want this to change.
+Seems to have reverted some code related to the PM_HIBERNATION_PREPARE
+notifiers in kernel/power/user.c that were added in 2.6.23 by the
+following patch,
 
-	-hpa
+    commit b10d911749d37dccfa5873d2088aea3f074b9e45
+    Author: Rafael J. Wysocki <rjw@sisk.pl>
+    Date:   Thu Jul 19 01:47:36 2007 -0700
+
+    PM: introduce hibernation and suspend notifiers
+
+I'm pretty sure this was not the intent of the new patch because it only
+tries to extend upon the former functionality and not replace it.
+
+Jan
