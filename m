@@ -1,64 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend to ram problem
-Date: Thu, 7 Feb 2008 21:00:31 +0100
-Message-ID: <200802072100.32205.rjw__38665.1775603697$1202414866$gmane$org@sisk.pl>
-References: <47A5C399.7010405@free.fr> <20080207092035.GB1816@elf.ucw.cz>
-	<47AB60C4.50602@free.fr>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: ACPI_WMI: worst config description of all times
+Date: Thu, 7 Feb 2008 22:47:16 +0100
+Message-ID: <20080207214715.GA15211@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47AB60C4.50602@free.fr>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933561AbYBGVrW@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 7 of February 2008, matthieu castet wrote:
-> Hi,
-> 
-> 
-> Pavel Machek wrote:
-> > Hi!
-> > So I assume it is some kind of desktop?
-> Yes.
-> 
-> >>
-> >> ...if someone calls start as 0x1234:0, we are okay. But if some broken
-> >> bios calls us as 0x1:0x234, we've got a problem.
-> >
-> > Well, in that case the signature/end_signature tests below would 
->  >trigger, no?
-> 
-> Yes, and for example the beep flag won't work.
-> 
-> >
-> > Not sure what is going on... but if you remove all the stack
-> > references, does it go up to 32-bit mode?
-> Yes, but I end up with a kernel panic after console resume and some 
-> resume stuff.
-> 
->  > Looks like ss goes bonkers or the 32-bit opcodes are invalid in real 
-> mode.
->  > Matthieu, can you try "pushw %ax; popw %ax;", please?
-> I still crash.
-> I also try to set ss to 0, and hardcode the stack (knowing we are loaded 
-> at 0x1000). And it crash.
-> 
-> 
-> I wonder if there a way to check that we are realy in real mode ?
 
-Yes.  In real mode bit 0 of the cr0 register should be 0.
 
-Thanks,
-Rafael
+See? It even has completely useless help text.
+
+Does WMI stand for Windows Management Instrumentation? It is some
+server management feature? What is it good for?
+
+								Pavel
+
+  WMI (EXPERIMENTAL) (ACPI_WMI) [N/m/y/?] (NEW) ?
+
+This driver adds support for the ACPI-WMI mapper device (PNP0C14)
+found on some systems.
+
+NOTE: You will need another driver or userspace application on top of
+this to actually use anything defined in the ACPI-WMI mapper.
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
