@@ -1,37 +1,44 @@
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Thu, 7 Feb 2008 15:33:54 -0800
-Message-ID: <2c0942db0802071533l5c3b98fel90946b73f8a9586b@mail.gmail.com>
-References: <20080207214715.GA15211@elf.ucw.cz>
-	 <200802071727.38743.lenb@kernel.org>
-	 <20080207223455.GB6096@elf.ucw.cz>
-	 <200802072318.28313.carlos@strangeworlds.co.uk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Date: Fri, 8 Feb 2008 00:35:09 +0100
+Message-ID: <20080207233509.GB21468@elf.ucw.cz>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com> <200802080006.54151.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200802072318.28313.carlos@strangeworlds.co.uk>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S935387AbYBGXfK@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org
+In-Reply-To: <200802080006.54151.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Feb 7, 2008 3:18 PM, Carlos Corbacho <carlos@strangeworlds.co.uk> wrote:
-> As for the Kconfig - I'm open to suggestions.
+Hi!
 
-While the kconfig text is supposed to say 'what' something is, the
-more valuable piece of information it provides is *why* one would want
-to enable it.
+> > > -	memcpy((void *)acpi_wakeup_address, &wakeup_start,
+> > > -	       &wakeup_end - &wakeup_start);
+> > > -	acpi_copy_wakeup_routine(acpi_wakeup_address);
+> > > +	memcpy((void *)acpi_realmode, &wakeup_code_start, 4*PAGE_SIZE);
+> > 
+> > Using a PAGE_SIZE multiplier here isn't a good thing...
+> 
+> Yes, I'll fix that in one of the next iterations.
 
-Do you have list of hardware/platforms that require this feature to
-get the hardware to work? (acer abc123, tcm1100 xyz) If so, providing
-that information to the user/distributions is the right first step.
-Tell them why they want this feature.
+Agreed.
 
-Better, if there are kernel drivers that require this (and currently
-only those drivers), then have those kernel drivers enable ACPI WMI,
-and otherwise leave it off. If/when the userspace accessible bits go
-in, it can be exposed to the configurator then.
+> > > +	header = (struct wakeup_header *)(acpi_realmode + 0x3f00);
+> > 
+> > ... especially not with magic constants like this.
+> 
+> Yeah.  Pavel, what's at 0x3f00, btw?
 
-Ray
+struct wakeup_header.
+
+I really need the entry point to be at offset 0, so that I can get
+pointers to my data. I could not figure out how to do it any other
+way. And if 0 is taken, I thought I'd put header at the end.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
