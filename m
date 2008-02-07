@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Thu, 7 Feb 2008 23:57:32 +0100
-Message-ID: <200802072357.33293.rjw@sisk.pl>
-References: <20080205190600.GB11613@elf.ucw.cz> <20080207222845.GA6096@elf.ucw.cz> <47AB8A41.3040008@zytor.com>
+Date: Fri, 8 Feb 2008 00:06:53 +0100
+Message-ID: <200802080006.54151.rjw@sisk.pl>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932614AbYBGW7m@vger.kernel.org>
-In-Reply-To: <47AB8A41.3040008@zytor.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758683AbYBGXIj@vger.kernel.org>
+In-Reply-To: <47AB887E.7010000@zytor.com>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 To: "H. Peter Anvin" <hpa@zytor.com>
@@ -16,29 +16,88 @@ Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Lin
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday, 7 of February 2008, H. Peter Anvin wrote:
-> Pavel Machek wrote:
-> > 
-> > This is probably more acceptable version of beep; but there are
-> > probably even better ways to clean it...
-> > 
-> >         if (wakeup_header.realmode_flags & 4) {
-> >                 inb(97);
-> >                 outb(0, 0x80);
-> >                 outb(3, 97);
-> >                 outb(0, 0x80);
-> >                 outb(-74, 67);
-> >                 outb(0, 0x80);
-> >                 outb(-119, 66);
-> >                 outb(0, 0x80);
-> >                 outb(15, 66);
-> >         }
-> > 
+> Rafael J. Wysocki wrote:
+> > Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
+> > @@ -0,0 +1,122 @@
+> > +/*
+> > + * ACPI wakeup real mode startup stub
+> > + */
+> > +#include <asm/segment.h>
+> > +#include <asm/msr-index.h>
+> > +#include <asm/page_64.h>
+> > +#include <asm/pgtable_64.h>
+> > +
+> > +	.code16
+> > +	.section ".header", "a"
+> > +
+> > +/* This should match the structure in wakeup.h */
+> > +		.globl	wakeup_header
+> > +wakeup_header:
+> > +video_mode:	.short	0	/* Video mode number */
+> > +pmode_return:	.byte	0x66, 0xea	/* ljmpl */
+> > +		.long	0	/* offset goes here */
+> > +		.short	__KERNEL_CS
 > 
-> What is available at this point -- are BIOS calls still accessible; are 
-> interrupts running?
+> Missing a .short pad here... Pavel fixed that at some point, I thought.
 
-No interrupts.
+Hm, the struct in wakeup.h doesn't contain it too.  Why exactly is it
+necessary?
 
-We're in the real mode, so BIOS calls should be accessible.
+[--snip--]
+> >  	}
+> > -	memcpy((void *)acpi_wakeup_address, &wakeup_start,
+> > -	       &wakeup_end - &wakeup_start);
+> > -	acpi_copy_wakeup_routine(acpi_wakeup_address);
+> > +	memcpy((void *)acpi_realmode, &wakeup_code_start, 4*PAGE_SIZE);
+> 
+> Using a PAGE_SIZE multiplier here isn't a good thing...
+
+Yes, I'll fix that in one of the next iterations.
+
+> 
+> > +	header = (struct wakeup_header *)(acpi_realmode + 0x3f00);
+> 
+> ... especially not with magic constants like this.
+
+Yeah.  Pavel, what's at 0x3f00, btw?
+
+> If you're putting the "header" at the end, then you should also replace 
+> the end_signature stuff since that's, then, redundant.
+
+In fact, I'd prefer to remove .signature from the header and use the
+end_signature only, so that I can use struct wakeup_header for addressing
+the header fields in the assembly too.
+
+> Furthermore, by doing so, you're also padding the binary out to its maximum
+> length, so you might as well just remove the .bss-clearing stuff.
+
+Do you mean placing the header at the end will fill the area between it and the
+code with zeros, so the .bss clearing is not necessary?
+
+> It's not really clear to me why to do this what way...
+> 
+> > +	if (header->signature != 0x51ee1111) {
+> > +		printk(KERN_ERR "wakeup header does not match\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	header->video_mode = saved_video_mode;
+> > +
+> > +#ifndef CONFIG_64BIT
+> > +	store_gdt(&header->pmode_gdt);
+> > +
+> > +	header->pmode_efer_low = nx_enabled;
+> > +	if (header->pmode_efer_low & 1) {
+> > +		/* This is strange, why not save efer, always? */
+> > +		rdmsr(MSR_EFER, header->pmode_efer_low,
+> > +			header->pmode_efer_high);
+> > +	}
+> 
+> Yes, why not save EFER every time?
+
+Well, I think we can do that.
 
 Rafael
