@@ -1,105 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Fri, 8 Feb 2008 00:09:04 +0100
-Message-ID: <200802080009.04666.rjw@sisk.pl>
-References: <20080205190600.GB11613@elf.ucw.cz> <47AB8A41.3040008@zytor.com> <20080207225121.GE6096@elf.ucw.cz>
+Date: Thu, 07 Feb 2008 15:13:58 -0800
+Message-ID: <47AB90B6.8090607@zytor.com>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com> <200802080006.54151.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763133AbYBGXK6@vger.kernel.org>
-In-Reply-To: <20080207225121.GE6096@elf.ucw.cz>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763736AbYBGXOg@vger.kernel.org>
+In-Reply-To: <200802080006.54151.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 7 of February 2008, Pavel Machek wrote:
-> On Thu 2008-02-07 14:46:25, H. Peter Anvin wrote:
-> > Pavel Machek wrote:
-> >>
-> >> This is probably more acceptable version of beep; but there are
-> >> probably even better ways to clean it...
-> >>
-> >>         if (wakeup_header.realmode_flags & 4) {
-> >>                 inb(97);
-> >>                 outb(0, 0x80);
-> >>                 outb(3, 97);
-> >>                 outb(0, 0x80);
-> >>                 outb(-74, 67);
-> >>                 outb(0, 0x80);
-> >>                 outb(-119, 66);
-> >>                 outb(0, 0x80);
-> >>                 outb(15, 66);
-> >>         }
-> >>
-> >
-> > What is available at this point -- are BIOS calls still accessible; are 
-> > interrupts running?
+Rafael J. Wysocki wrote:
+> On Thursday, 7 of February 2008, H. Peter Anvin wrote:
+>> Rafael J. Wysocki wrote:
+>>> Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
+>>> ===================================================================
+>>> --- /dev/null
+>>> +++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
+>>> @@ -0,0 +1,122 @@
+>>> +/*
+>>> + * ACPI wakeup real mode startup stub
+>>> + */
+>>> +#include <asm/segment.h>
+>>> +#include <asm/msr-index.h>
+>>> +#include <asm/page_64.h>
+>>> +#include <asm/pgtable_64.h>
+>>> +
+>>> +	.code16
+>>> +	.section ".header", "a"
+>>> +
+>>> +/* This should match the structure in wakeup.h */
+>>> +		.globl	wakeup_header
+>>> +wakeup_header:
+>>> +video_mode:	.short	0	/* Video mode number */
+>>> +pmode_return:	.byte	0x66, 0xea	/* ljmpl */
+>>> +		.long	0	/* offset goes here */
+>>> +		.short	__KERNEL_CS
+>> Missing a .short pad here... Pavel fixed that at some point, I thought.
 > 
-> No interrupts. BIOS calls work on some machines, but I'd like this to
-> work when bios does not.
-> 
-> Actually, matthieu's code is probably better to start from:
-> 
-> +/* one ISA cycle @8Mhz */
-> +#define PAUSE outb %al, $0x80
-> +#define WAIT_100MS \
-> +       movl $800000, %eax; \
-> +       2: \
-> +       PAUSE; \
-> +       dec %eax; \
-> +       jne 2b
-> +
-> +/* What's the PIT rate */
-> +#define COUNT 0xf89
->  #define BEEP \
-> -       inb     $97, %al;       \
-> -       outb    %al, $0x80;     \
-> -       movb    $3, %al;        \
-> -       outb    %al, $97;       \
-> -       outb    %al, $0x80;     \
-> -       movb    $-74, %al;      \
-> -       outb    %al, $67;       \
-> -       outb    %al, $0x80;     \
-> -       movb    $-119, %al;     \
-> -       outb    %al, $66;       \
-> -       outb    %al, $0x80;     \
-> -       movb    $15, %al;       \
-> -       outb    %al, $66;
-> +       /* enable counter 2 */ \
-> +       inb             $0x61, %al;     \
-> +       PAUSE;  \
-> +       orb     $3, %al; \
-> +       outb    %al, $0x61;     \
-> +       PAUSE;  \
-> +       /* set command for counter 2, 2 byte write */ \
-> +       movb    $0xB6, %al;     \
-> +       outb    %al, $0x43;     \
-> +       PAUSE;  \
-> +       /* select desired HZ */ \
-> +       movb    $(COUNT & 0xff), %al; \
-> +       outb    %al, $0x42;     \
-> +       PAUSE;  \
-> +       movb    $(COUNT >> 8), %al;     \
-> +       outb    %al, $0x42; \
-> +       WAIT_100MS; \
-> +       /* disable counter 2 */ \
-> +       inb             $0x61, %al;     \
-> +       PAUSE;  \
-> +       andb    $0xFC, %al; \
-> +       outb    %al, $0x61; \
-> +       WAIT_100MS
-> +
-> +#define CBEEP \
-> +       testl   $4, realmode_flags - wakeup_code; \
-> +       jz      1f; \
-> +       BEEP; \
-> +1:
-> 
-> ...because it allows user to compute number of beeps.
+> Hm, the struct in wakeup.h doesn't contain it too.  Why exactly is it
+> necessary?
 
-Hm, it seems we can convert it at least partially to C.
+Err, I guess it's only necessary if _jmp2 is declared u32.  I generally 
+prefer to keep fields naturally aligned even though x86 doesn't require 
+it, it's a bit of paranoia on my part.
 
-Rafael
+> 
+> Yeah.  Pavel, what's at 0x3f00, btw?
+> 
+
+To be fair, this might have come from my early hack, I don't know for sure.
+
+> In fact, I'd prefer to remove .signature from the header and use the
+> end_signature only, so that I can use struct wakeup_header for addressing
+> the header fields in the assembly too.
+
+I *thought* that's what I had originally.  I'm a bit confused, or it 
+might have been something Pavel changed.
+
+>> Furthermore, by doing so, you're also padding the binary out to its maximum
+>> length, so you might as well just remove the .bss-clearing stuff.
+> 
+> Do you mean placing the header at the end will fill the area between it and the
+> code with zeros, so the .bss clearing is not necessary?
+
+Yes.  It could, of course, also be cleared by a simple memset() in the 
+setup code in the kernel, as opposed by the initial assembly code. 
+That's probably the preferred option.
+
+	-hpa
