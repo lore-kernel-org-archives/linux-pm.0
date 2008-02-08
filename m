@@ -1,39 +1,38 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Fri, 8 Feb 2008 06:53:13 +0000
-Message-ID: <20080208065312.GA4341@ucw.cz>
-References: <20080207214715.GA15211@elf.ucw.cz> <200802072351.32521.carlos@strangeworlds.co.uk> <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com> <200802080027.54576.carlos@strangeworlds.co.uk>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Date: Fri, 8 Feb 2008 07:04:19 +0000
+Message-ID: <20080208070419.GA4544@ucw.cz>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com> <200802080006.54151.rjw@sisk.pl> <20080207233509.GB21468@elf.ucw.cz> <47AB975C.1010902@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932935AbYBHHEq@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200802080027.54576.carlos@strangeworlds.co.uk>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org
+In-Reply-To: <47AB975C.1010902@zytor.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> On Friday 08 February 2008 00:12:24 Ray Lee wrote:
-> > While I'm not trying to set you up for a firing squad, if you can show
-> > that the only use this driver has is as underlying support for Acer/HP
-> > xyz drivers, 
+> >I really need the entry point to be at offset 0, so 
+> >that I can get
+> >pointers to my data. I could not figure out how to do 
+> >it any other
+> >way. And if 0 is taken, I thought I'd put header at the 
+> >end.
+> >
 > 
-> Certainly at the moment, this is the only real use it has (and the only reason 
-> I spent any time working on a generic ACPI-WMI driver - probably one of the 
-> reasons Kconfig is somewhat neglected - ACPI-WMI is a means to an end for me 
-> (getting my laptop properly supported by another driver on top of it), not 
-> the end itself).
-> 
-> Although, given most of the other laptop drivers in drivers/misc use 'select' 
-> for various things, I don't see the harm here - unless anyone else has a 
-> great objection to acer-wmi and tc1100-wmi having 'select ACPI_WMI'?
+> Why not just put the structure at 0, and put pointers in 
+> the structure to everything else you need?
 
-I believe selct is the way to go here. What do acer-wmi handle?
-Additional buttons? Leds? Temperatures? Fan states?
+segments:offsets rear its ugly head here. I need %ds to point to my
+data, and the way to do it is copy it from %cs; that needs start to be
+at 0.
 
-The laptops will boot fine without it, right?
+If you can find a solution that does not need this (some
+segment/offset arithmetics at beggining of wakeup?) we could use it,
+but I was lost between relocations.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
