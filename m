@@ -1,35 +1,46 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Fri, 08 Feb 2008 13:18:16 -0800
-Message-ID: <47ACC718.5060508@zytor.com>
-References: <20080205190600.GB11613@elf.ucw.cz> <47AB975C.1010902@zytor.com> <20080208070419.GA4544@ucw.cz> <200802081723.16354.rjw@sisk.pl> <20080208210004.GA12923@elf.ucw.cz> <47ACC381.9070601@zytor.com> <20080208210905.GB12923@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [rft] s2ram wakeup moves to .c, could fix few
+ machines
+Date: Fri, 8 Feb 2008 16:20:05 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802081617280.5958-100000@iolanthe.rowland.org>
+References: <20080208210004.GA12923@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755414AbYBHVSf@vger.kernel.org>
-In-Reply-To: <20080208210905.GB12923@elf.ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758663AbYBHVUf@vger.kernel.org>
+In-Reply-To: <20080208210004.GA12923@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
+On Fri, 8 Feb 2008, Pavel Machek wrote:
 
+> > > segments:offsets rear its ugly head here. I need %ds to point to my
+> > > data, and the way to do it is copy it from %cs; that needs start to be
+> > > at 0.
+> > 
+> > Hm, why exactly is that necessay?
 > 
-> Indirect call from where?
+> It is not _neccessary_. Try to come up with another method that gets
+> relocations right. I could not :-(.
 > 
-> BIOS jumps to address you provide.
-> 
->> Where is this code?
-> 
-> arch/x86/kernel/acpi/realmode/wakeup.S
-> 
-> BIOS jumps to wakeup_code. With CS=something, IP=0. If wakeup code is
-> at other address than zero, I'll not be able to easily address data
-> below it.
-> 								Pavel
+> (Actually, putting table at the offset 0 and short jump at beggining
+> of the table would probably do the trick. But that still keeps code at
+> offset 0 :-).
 
-Ah, okay.  Yes, the canonical way to deal with that is to put a short 
-jump at the top.
+Pavel, can you explain in greater detail exactly what you need?
 
-	-hpa
+It sounds like you are running in real mode with code stored at some 
+(unknown?) location in memory.  The BIOS calls this code with IP=0 and 
+CS=<something>, which apparently doesn't fit your requirements.
+
+So just what are your requirements?  The only possibilities I can think 
+of are:
+
+	Code stored at a particular location in memory;
+
+	CS, IP, etc. initialized to some particular values.
+
+What am I missing?
+
+Alan Stern
