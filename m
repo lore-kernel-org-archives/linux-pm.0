@@ -1,94 +1,157 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Fri, 8 Feb 2008 22:35:56 +0100
-Message-ID: <20080208213556.GH12923@elf.ucw.cz>
-References: <20080205190600.GB11613@elf.ucw.cz> <20080207222845.GA6096@elf.ucw.cz> <47AB8A41.3040008@zytor.com> <200802072357.33293.rjw@sisk.pl> <47AB90C7.2070205@zytor.com>
+Date: Fri, 8 Feb 2008 22:41:45 +0100
+Message-ID: <20080208214145.GJ12923@elf.ucw.cz>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <200802070049.00461.rjw@sisk.pl> <200802072312.31430.rjw@sisk.pl> <20080207222833.GA23004@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759668AbYBHVf4@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759815AbYBHVlx@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <47AB90C7.2070205@zytor.com>
+In-Reply-To: <20080207222833.GA23004@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> Do we never need data from a .h file?
+> If we do name it wakeup.lds.S and kbuild
+> will fix it (assuming we have wakeup.lds
+> as a prerequisite where it is needed.
 
-> Okay, this uses the iodelay as the timesource... here is the total 
-> silliness (and totally untested, of course.)
+Ok, I got it to work... but notice the ugly #undef :-(.
 
-Why untested? Testing suspend is easy ;-). s2ram from suspend.sf.net
-tends to just work...
-								Pavel
+							Pavel
 
-> static inline void io_delay(void)
-> {
-> 	outb(0, 0x80);
-> }
-> 
-> static void udelay(int loops)
-> {
-> 	while (loops--)
-> 		io_delay();	/* Approximately 1 us */
-> }
-> 
-> static void beep(unsigned int hz)
-> {
-> 	u8 enable;
-> 
-> 	if (!hz) {
-> 		enable = 0x00;		/* Turn off speaker */
-> 	} else {
-> 		u16 div = 1193181/hz;
-> 
-> 		outb(0xb6, 0x43);	/* Ctr 2, squarewave, load, binary */
-> 		io_delay();
-> 		outb(div, 0x42);	/* LSB of counter */
-> 		io_delay();
-> 		outb(div >> 8, 0x42);	/* MSB of counter */
-> 		io_delay();
-> 
-> 		enable = 0x03;		/* Turn on speaker */
-> 	}
-> 	inb(0x61);		/* Dummy read of System Control Port B */
-> 	io_delay();
-> 	outb(enable, 0x61);	/* Enable timer 2 output to speaker */
-> 	io_delay();
-> }
-> 
-> #define DOT_HZ		880
-> #define DASH_HZ		587
-> #define US_PER_DOT	125000
-> 
-> /* Okay, this is totally silly, but it's kind of fun. */
-> void send_morse(const char *pattern)
-> {
-> 	char s;
-> 
-> 	while ((s = *pattern++)) {
-> 		switch (s) {
-> 		case '.':
-> 			beep(DOT_HZ);
-> 			udelay(US_PER_DOT);
-> 			beep(0);
-> 			udelay(US_PER_DOT);
-> 			break;
-> 		case '-':
-> 			beep(DASH_HZ);
-> 			udelay(US_PER_DOT*3);
-> 			beep(0);
-> 			udelay(US_PER_DOT);
-> 			break;
-> 		default:	/* Assume it's a space */
-> 			udelay(US_PER_DOT*3);
-> 			break;
-> 		}
-> 	}
-> }
-> 
-> 
+diff --git a/arch/x86/kernel/acpi/realmode/Makefile b/arch/x86/kernel/acpi/realmode/Makefile
+index b239f0f..0e4742b 100644
+--- a/arch/x86/kernel/acpi/realmode/Makefile
++++ b/arch/x86/kernel/acpi/realmode/Makefile
+@@ -46,7 +46,10 @@ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__AS
+ WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
+ 
+ LDFLAGS_wakeup.elf	:= -T
+-$(obj)/wakeup.elf: $(src)/wakeup.ld $(WAKEUP_OBJS) FORCE
++
++CPPFLAGS_wakeup.lds += -P -C
++
++$(obj)/wakeup.elf: $(src)/wakeup.lds $(WAKEUP_OBJS) FORCE
+ 	$(call if_changed,ld)
+ 
+ OBJCOPYFLAGS_wakeup.bin	:= -O binary
+diff --git a/arch/x86/kernel/acpi/realmode/wakeup.ld b/arch/x86/kernel/acpi/realmode/wakeup.ld
+deleted file mode 100644
+--- /dev/null
++++ b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
+@@ -0,0 +1,62 @@
++/*
++ * wakeup.ld
++ *
++ * Linker script for the real-mode wakeup code
++ */
++#undef i386
++
++OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
++OUTPUT_ARCH(i386)
++ENTRY(_start)
++
++SECTIONS
++{
++	. = 0x3f00;
++	.header : {
++		 *(.header)
++	}
++
++	. = 0;
++	.text : {
++		 *(.text*)
++	}
++
++	. = ALIGN(16);
++	.rodata : {
++		*(.rodata*)
++	}
++
++	.videocards : {
++		video_cards = .;
++		*(.videocards)
++		video_cards_end = .;
++	}
++
++	. = ALIGN(16);
++	.data : {
++		 *(.data*)
++	}
++
++	.signature : {
++		end_signature = .;
++		LONG(0x65a22c82)
++	}
++
++	. = ALIGN(16);
++	.bss :	{
++		__bss_start = .;
++		*(.bss)
++		__bss_end = .;
++	}
++
++	. = ALIGN(16);
++	_end = .;
++
++	/DISCARD/ : {
++		*(.note*)
++	}
++
++	/* Adjust this as appropriate */
++	/* This allows 4 pages (16K) */
++	. = ASSERT(_end <= 0x4000, "Wakeup too big!");
++}
 
+
+> > +
+> > +	. = 0;
+> > +	.text		: { *(.text*) }
+> > +
+> > +	. = ALIGN(16);
+> Why?
+> > +	.rodata		: { *(.rodata*) }
+> > +
+> > +	.videocards	: {
+> > +		video_cards = .;
+> > +		*(.videocards)
+> > +		video_cards_end = .;
+> > +	}
+> > +
+> > +	. = ALIGN(16);
+> Why?
+> > +	.data		: { *(.data*) }
+> > +
+> > +	.signature	: {
+> > +		end_signature = .;
+> > +		LONG(0x65a22c82)
+> > +	}
+> > +
+> > +	. = ALIGN(16);
+> Why?
+> > +	.bss		:
+> > +	{
+> > +		__bss_start = .;
+> > +		*(.bss)
+> > +		__bss_end = .;
+> > +	}
+> > +
+> > +	. = ALIGN(16);
+> Why?
+> > +	_end = .;
+> > +
+> > +	/DISCARD/ : { *(.note*) }
+> > +
+> > +	/* Adjust this as appropriate */
+> > +	/* This allows 4 pages (16K) */
+> > +	. = ASSERT(_end <= 0x4000, "Wakeup too big!");
+> PAGE_SIZE * 4?
+> 
+> 
+> 	Sam
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
