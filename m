@@ -1,32 +1,37 @@
-From: Jan Harkes <jaharkes@cs.cmu.edu>
-Subject: Re: [GIT PATCH] suspend patches for 2.6.25-rc0
-Date: Thu, 7 Feb 2008 19:44:25 -0500
-Message-ID: <20080208004425.GB29980__2408.48817998103$1202431568$gmane$org@cs.cmu.edu>
-References: <200802011820.56693.lenb@kernel.org>
-	<20080207222713.GA20549@cs.cmu.edu>
-	<200802080014.41638.rjw@sisk.pl>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: ACPI_WMI: worst config description of all times
+Date: Fri, 8 Feb 2008 00:27:53 +0000
+Message-ID: <200802080027.54576.carlos@strangeworlds.co.uk>
+References: <20080207214715.GA15211@elf.ucw.cz> <200802072351.32521.carlos@strangeworlds.co.uk> <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <200802080014.41638.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 12:14:40AM +0100, Rafael J. Wysocki wrote:
-> I haven't revert the changes.  It's only moved the notifier chain calls from
-> the ioctls to open/release in user.c .
+On Friday 08 February 2008 00:12:24 Ray Lee wrote:
+> While I'm not trying to set you up for a firing squad, if you can show
+> that the only use this driver has is as underlying support for Acer/HP
+> xyz drivers, 
 
-Ah my bad, sorry about the false alarm.
+Certainly at the moment, this is the only real use it has (and the only reason 
+I spent any time working on a generic ACPI-WMI driver - probably one of the 
+reasons Kconfig is somewhat neglected - ACPI-WMI is a means to an end for me 
+(getting my laptop properly supported by another driver on top of it), not 
+the end itself).
 
-Jan
+Although, given most of the other laptop drivers in drivers/misc use 'select' 
+for various things, I don't see the harm here - unless anyone else has a 
+great objection to acer-wmi and tc1100-wmi having 'select ACPI_WMI'?
+
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
