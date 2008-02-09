@@ -1,15 +1,12 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0
-Date: Sat, 9 Feb 2008 04:04:32 -0500
-Message-ID: <200802090404.32835.lenb__26619.0003174872$1202548183$gmane$org@kernel.org>
-References: <200802070450.09098.lenb@kernel.org>
-	<20080209082748.GA7792@elte.hu> <20080209083143.GA9634@elte.hu>
+Subject: [GIT PATCH] ACPI patches for 2.6.25-rc0 (#3)
+Date: Sat, 9 Feb 2008 04:53:00 -0500
+Message-ID: <200802090453.01266.lenb__31934.3368559659$1202551459$gmane$org@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080209083143.GA9634@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,90 +17,235 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Sujith <sujith.thomas@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 09 February 2008 03:31, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > that fixed the build failure on 32-bit, but there's another one i just 
-> > hit on 64-bit x86:
-> > 
-> > drivers/built-in.o: In function `acpi_video_bus_put_devices':
-> > video.c:(.text+0x5540d): undefined reference to `thermal_cooling_device_unregister'
-> > drivers/built-in.o: In function `acpi_video_bus_add':
-> > video.c:(.text+0x56994): undefined reference to `thermal_cooling_device_register'
-> > 
-> > which is due to:
-> > 
-> >   commit 702ed512de9c8a67a69a981c73b7337c2131f198
-> >   Date:   Thu Jan 17 15:51:22 2008 +0800
-> > 
-> >       ACPI: register ACPI Video LCD as generic thermal cooling device
-> > 
-> > the commit couldnt be reverted cleanly, i've done a manual fixup of 
-> > the revert (find the patch below).
-> 
-> (config for that build breakage attached, in case you were wondering 
-> about how to trigger it.)
+Hi Linus,
 
->From a0dd25b2c83de4623487ca4de9c1d962b552ca0f Mon Sep 17 00:00:00 2001
-From: Len Brown <len.brown@intel.com>
-Date: Sat, 9 Feb 2008 04:01:48 -0500
-Subject: [PATCH] ACPI: thermal: buildfix for CONFIG_THERMAL=n
-Organization: Intel Open Source Technology Center
+please pull from: 
 
-This fixes the build, but acpi_fan_add() still needs
-to be updated to handle thermal_cooling_device_register()
-returning NULL as a non-fatal condition.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- include/linux/thermal.h |   23 ++++++++++++++++++++---
- 1 files changed, 20 insertions(+), 3 deletions(-)
+This fixes a boot regression, two build failures, and updates some documentation.
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index bba7712..818ca1c 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -79,7 +79,9 @@ struct thermal_zone_device {
- };
- 
- struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
--					struct thermal_zone_device_ops *);
-+							 struct
-+							 thermal_zone_device_ops
-+							 *);
- void thermal_zone_device_unregister(struct thermal_zone_device *);
- 
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
-@@ -87,8 +89,23 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
- 				       struct thermal_cooling_device *);
- 
-+#ifdef	CONFIG_THERMAL
- struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
--					struct thermal_cooling_device_ops *);
-+							       struct
-+							       thermal_cooling_device_ops
-+							       *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
-+#else
-+static inline struct thermal_cooling_device
-+*thermal_cooling_device_register(char *c, void *v,
-+				 struct thermal_cooling_device_ops *t)
-+{
-+	return NULL;
-+}
-+static inline
-+    void thermal_cooling_device_unregister(struct thermal_cooling_device *t)
-+{
-+};
-+#endif
- 
--#endif				/* __THERMAL_H__ */
-+#endif /* __THERMAL_H__ */
--- 
-1.5.4.34.g053d9
+This will update the files shown below.
+
+thanks!
+
+-Len
+
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24.diff.gz
+
+ Documentation/00-INDEX                        |    8 +-
+ Documentation/laptops/00-INDEX                |   10 ++
+ Documentation/laptops/acer-wmi.txt            |  202 +++++++++++++++++++++++++
+ Documentation/{ => laptops}/sony-laptop.txt   |    1 -
+ Documentation/{ => laptops}/sonypi.txt        |    0 
+ Documentation/{ => laptops}/thinkpad-acpi.txt |    0 
+ arch/x86/Kconfig                              |    3 +
+ drivers/acpi/Makefile                         |    2 +-
+ drivers/acpi/sbs.c                            |    2 +-
+ drivers/acpi/sbshc.c                          |    6 +
+ drivers/char/Kconfig                          |    2 +-
+ drivers/cpuidle/cpuidle.c                     |   13 ++-
+ drivers/misc/Kconfig                          |   13 +-
+ drivers/misc/acer-wmi.c                       |    6 +-
+ include/linux/thermal.h                       |   23 +++-
+ 15 files changed, 269 insertions(+), 22 deletions(-)
+ create mode 100644 Documentation/laptops/00-INDEX
+ create mode 100644 Documentation/laptops/acer-wmi.txt
+ rename Documentation/{ => laptops}/sony-laptop.txt (99%)
+ rename Documentation/{ => laptops}/sonypi.txt (100%)
+ rename Documentation/{ => laptops}/thinkpad-acpi.txt (100%)
+
+through these commits:
+
+Alexey Starikovskiy (1):
+      ACPI: SBS: Host controller must initialize before SBS.
+
+Carlos Corbacho (7):
+      tc1100-wmi: Mark as experimental
+      acer-wmi: Fix backlight on AMW0 (V1) laptops
+      Documentation - Create laptops sub-directory
+      thinkpad-acpi - Move thinkpad-acpi.txt to Documentation/laptops
+      sony-laptop - Move sony-laptop.txt to Documentation/laptops
+      sonypi - Move sonypi.txt to Documentation/laptops
+      acer-wmi - Add documentation
+
+Len Brown (1):
+      ACPI: thermal: buildfix for CONFIG_THERMAL=n
+
+Venki Pallipadi (1):
+      cpuidle: build fix for non-x86
+
+with this log:
+
+commit a52500c917ead55dd78d9f37b8ca993f4f79f72a
+Merge: d47b180... 4609d02... 16111c7...
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Feb 9 04:32:55 2008 -0500
+
+    Merge branches 'release', 'wmi' and 'laptop-docs' into release
+
+commit d47b180c26c22d78c2428117abb7e6beba00b7ef
+Merge: 249d621... bbafbec...
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Feb 9 04:32:47 2008 -0500
+
+    Merge branches 'release' and 'bugzilla-9910' into release
+
+commit 249d621a85668b3b09296fbcfcf1cb5e9372a5ea
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Feb 9 04:32:40 2008 -0500
+
+    Merge branches 'release' and 'buildfix' into release
+
+commit 16111c797990f4fab571f6e982390cb842d16bf0
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Feb 9 01:32:25 2008 +0000
+
+    acer-wmi - Add documentation
+    
+    Add some initial documentation detailing what acer-wmi is, and how to use
+    it. Update the Kconfig entry with a reference to the documentation.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 018a651a9c4e3fba623b735593fb39869a69c2f7
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Feb 9 01:32:19 2008 +0000
+
+    sonypi - Move sonypi.txt to Documentation/laptops
+    
+    Also update references to sonypi.txt in Kconfig.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    CC: Mattia Dongili <malattia@linux.it>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit f04b7c402ba587a299e62907a457013914dec477
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Feb 9 01:32:14 2008 +0000
+
+    sony-laptop - Move sony-laptop.txt to Documentation/laptops
+    
+    Also update references to sony-laptop.txt in Kconfig.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    CC: Mattia Dongili <malattia@linux.it>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit f191dc6b55cf92eb8e1f48b41533ecf4d6161569
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Feb 9 01:32:09 2008 +0000
+
+    thinkpad-acpi - Move thinkpad-acpi.txt to Documentation/laptops
+    
+    Also update references to thinkpad-acpi.txt in Kconfig.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit d6ff3655773a1810b15da942c40478bf5217e390
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Feb 9 01:32:03 2008 +0000
+
+    Documentation - Create laptops sub-directory
+    
+    There are currently various laptop drivers floating about with no central
+    place for their documentation, which is currently scattered around the top
+    level Documentation/ directory.
+    
+    So, as a first step, lets create a Documentation sub-directory, and update
+    the relevant index files. The work of then moving the existing laptop
+    driver related documentation will then be handled later.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    CC: Mattia Dongili <malattia@linux.it>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit a0dd25b2c83de4623487ca4de9c1d962b552ca0f
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Feb 9 04:01:48 2008 -0500
+
+    ACPI: thermal: buildfix for CONFIG_THERMAL=n
+    
+    This fixes the build, but acpi_fan_add() still needs
+    to be updated to handle thermal_cooling_device_register()
+    returning NULL as a non-fatal condition.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit a6869cc4cfd633d909918f1489a6a8ac668cd6aa
+Author: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Fri Feb 8 17:05:44 2008 -0800
+
+    cpuidle: build fix for non-x86
+    
+    The last posted version of this patch gave compile error
+    on IA64. So, here goes yet another rewrite of the patch.
+    
+    Convert cpu_idle_wait() to cpuidle_kick_cpus() which is
+    SMP-only, and gives error on non supported CPU.
+    
+    Changes from last patch sent by Kevin:
+    Moved the definition of kick_cpus back to cpuidle.c from cpuidle.h:
+    * Having it in .h gives #error on archs which includes the header file without
+      actually having CPU_IDLE configured. To make it work in .h, we need one more
+      #ifdef around that code which makes it messy.
+    * Also, the function is only called from one file. So, it can be in declared
+      statically in .c rather than making it available to everyone who includes
+      the .h file.
+    
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Kevin Hilman <khilman@mvista.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 4609d029aa8a2c7e0ad71e329c6e3493e1e95040
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Fri Feb 8 23:51:49 2008 +0000
+
+    acer-wmi: Fix backlight on AMW0 (V1) laptops
+    
+    There is some leftover cruft from the old quirk infrastructure that causes
+    us to be unable to set the backlight on older laptops.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit b01368291926b30abc702dee35c688408b54d422
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Fri Feb 8 23:51:43 2008 +0000
+
+    tc1100-wmi: Mark as experimental
+    
+    tc1100-wmi has not undergone as much testing as acer-wmi, so it certainly
+    should be marked as experimental as well until we get more user feedback.
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit bbafbecb24190959d77a8fee7bd23798b81e25c2
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Sat Feb 9 03:22:13 2008 -0500
+
+    ACPI: SBS: Host controller must initialize before SBS.
+    
+    In static case sbshc must be compiled ahead of sbs, so that
+    hc is configured first.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=9910
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
