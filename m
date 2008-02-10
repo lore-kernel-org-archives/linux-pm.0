@@ -1,45 +1,46 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Date: Sun, 10 Feb 2008 22:21:24 +0100
-Message-ID: <20080210212124.GA14739@uranus.ravnborg.org>
-References: <20080205190600.GB11613@elf.ucw.cz> <200802082301.51582.rjw@sisk.pl> <20080208220834.GA1631@elf.ucw.cz> <200802090118.50418.rjw@sisk.pl> <47ACF488.7070502@zytor.com> <20080210211457.GJ15662@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: sleepy linux self-test
+Date: Sun, 10 Feb 2008 22:02:58 +0100
+Message-ID: <20080210210258.GH15662__13920.8666551442$1202678977$gmane$org@elf.ucw.cz>
+References: <20080130131748.GA3796@elf.ucw.cz>
+	<20080202193202.GB31621@elf.ucw.cz>
+	<20080202193843.GB32039@elte.hu>
+	<200802021837.17777.david-b@pacbell.net>
+	<20080203050537.GA18942@elte.hu> <20080203051425.GA20740@elte.hu>
+	<20080203051953.GA21183@elte.hu> <20080203053507.GA21681@elte.hu>
+	<20080203055429.GA24996@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755479AbYBJVV3@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080210211457.GJ15662@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+In-Reply-To: <20080203055429.GA24996@elte.hu>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 10:14:57PM +0100, Pavel Machek wrote:
-> On Fri 2008-02-08 16:32:08, H. Peter Anvin wrote:
-> > Rafael J. Wysocki wrote:
-> >>
-> >> Consolidated patch is appended.  I'll test it tomorrow on x86-64.
-> >>
-> >> I'd like to add the cleaned up beeping code to it and perhaps try to push it
-> >> for -mm testing without any further changes.  We can still do more cleanups in
-> >> followup patches.
-> >>
-> >
-> > The other thing to figure out is to what extent we can clean up the 
-> > conditionals in the video mode code by refactoring.  All they really do 
-> > here is save space by removing functionality not needed for wakeup, because 
-> > I didn't know how much space was realistic.
-> >
-> > It's possible we can remove them altogether by having a dummy boot_params 
-> > structure (4K).
+Hi!
+
+> >  [   23.893598] Calling initcall 0xc0c518b0: be_sleepy+0x0/0x170()
+> >  [   23.901601] PM: no wakelarm-capable RTC
+> >  [   23.905599] initcall 0xc0c518b0: be_sleepy+0x0/0x170() returned 0.
+> >  [   23.910879] initcall 0xc0c518b0 ran for 3 msecs: be_sleepy+0x0/0x170()
+> > 
+> > so close, yet so far away :-)
 > 
-> I'd say that few #ifdefs are acceptable if we save 4K, but...
-> 
-> Sam... is there something that urgently needs fixing?
+> good news: the suspend+resume self-test works perfectly now! :-)
 
-I will prepare some build system bits later.
-So please use what you have today and I can always clean it up
-when I have something better.
-
-So for the bits I have competence in - no issues.
-
-	Sam
+Good. What's next here? Will you just merge it to -x86, meaning it is
+planned for 2.6.26?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
