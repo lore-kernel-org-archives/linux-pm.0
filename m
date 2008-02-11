@@ -1,8 +1,8 @@
 From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Subject: [PATCH 1/2] acer-wmi - Fail gracefully if ACPI is
+Subject: [PATCH 2/2] tc1100-wmi - Fail gracefully if ACPI is
 	disabled
-Date: Mon, 11 Feb 2008 19:55:03 +0000
-Message-ID: <200802111955.04562.carlos__46650.1475465067$1202771383$gmane$org@strangeworlds.co.uk>
+Date: Mon, 11 Feb 2008 19:55:45 +0000
+Message-ID: <200802111955.46199.carlos__46437.2594994076$1202771749$gmane$org@strangeworlds.co.uk>
 References: <200802080145.16774.lenb@kernel.org>
 	<20080211091743.GA16459@elte.hu>
 	<200802111923.31736.carlos@strangeworlds.co.uk>
@@ -26,7 +26,7 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-acer-wmi - Fail gracefully if ACPI is disabled
+tc1100-wmi - Fail gracefully if ACPI is disabled
 
 From: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
@@ -42,21 +42,21 @@ CC: Andrew Morton <akpm@linux-foundation.org>
 CC: Len Brown <lenb@kernel.org>
 ---
 
- drivers/misc/acer-wmi.c |    3 +++
+ drivers/misc/tc1100-wmi.c |    3 +++
  1 files changed, 3 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/misc/acer-wmi.c b/drivers/misc/acer-wmi.c
-index d7aea93..6e81027 100644
---- a/drivers/misc/acer-wmi.c
-+++ b/drivers/misc/acer-wmi.c
-@@ -1029,6 +1029,9 @@ static int __init acer_wmi_init(void)
+diff --git a/drivers/misc/tc1100-wmi.c b/drivers/misc/tc1100-wmi.c
+index f25e4c9..cb8f79f 100644
+--- a/drivers/misc/tc1100-wmi.c
++++ b/drivers/misc/tc1100-wmi.c
+@@ -263,6 +263,9 @@ static int __init tc1100_init(void)
  {
- 	int err;
+ 	int result = 0;
  
 +	if (acpi_disabled)
 +		return -ENODEV;
 +
- 	printk(ACER_INFO "Acer Laptop ACPI-WMI Extras version %s\n",
- 			ACER_WMI_VERSION);
+ 	if (!wmi_has_guid(GUID))
+ 		return -ENODEV;
  
