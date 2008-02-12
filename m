@@ -1,14 +1,18 @@
-From: Namo Mandos <mandos@la-mancha.net>
-Subject: Re: [Suspend-devel] suspend and hibernate suddenly
-	stopped working
-Date: Tue, 12 Feb 2008 07:58:06 -0500
-Message-ID: <47B197DE.1070304__41055.0076667734$1202834494$gmane$org@la-mancha.net>
-References: <47B12781.2020400@la-mancha.net> <200802121133.15973.rjw@sisk.pl>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: [PATCH 1/2] acer-wmi - Fail gracefully if ACPI is
+	disabled
+Date: Tue, 12 Feb 2008 19:28:05 +0000
+Message-ID: <200802121928.06420.carlos__13289.4681221389$1202844840$gmane$org@strangeworlds.co.uk>
+References: <200802080145.16774.lenb@kernel.org>
+	<200802111955.04562.carlos@strangeworlds.co.uk>
+	<alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802121133.15973.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Oh, oops.
-
-2.6.20-15 and 2.6.20-16.  As supplied by Ubuntu 7.04's package 
-repositories, if that's any help.
-
-Thanks.
-
-Yours,
---Mandos.
-
-Rafael J. Wysocki wrote:
-> On Tuesday, 12 of February 2008, Namo Mandos wrote:
->> Hi.  I am using a Fujitsu A6020 notebook with Ubuntu Linux 7.04, and 
->> using the original default swsusp stuff (I think), it was able to 
->> hibernate and suspend effectively.  Months and many package 
->> installations later, it stopped.  So I installed uswsusp, but it doesn't 
->> work either.  But it was more informative.
+On Tuesday 12 February 2008 04:41:42 Linus Torvalds wrote:
 > 
-> It will probably help if you tell us which kernel versions you tried.
+> On Mon, 11 Feb 2008, Carlos Corbacho wrote:
+> > 
+> > WMI drivers, like their ACPI counterparts, should also check if ACPI is
+> > disabled or not, and bail out if so, otherwise we cause a crash.
 > 
-> Thanks,
-> Rafael
+> Shouldn't "wmi_has_guid()" just return false if ACPI isn't enabled, and 
+> the drivers should just then always give up?
+
+Yes - that's a better fix.
+
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
