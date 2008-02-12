@@ -1,17 +1,14 @@
-From: "Thomas, Sujith" <sujith.thomas@intel.com>
-Subject: RE: [Bug-fix]:2.6.25-rc0 Generic thermal management
-	[Patch 1/2]: validating input parameters
-Date: Tue, 12 Feb 2008 21:27:44 +0530
-Message-ID: <05B550FD4BD2014E841D83547B62600802A6B2A7__37801.0291643024$1202832104$gmane$org@bgsmsx411.gar.corp.intel.com>
-References: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
-	<20080211133827.16140ba0.akpm@linux-foundation.org>
+From: Namo Mandos <mandos@la-mancha.net>
+Subject: Re: [Suspend-devel] suspend and hibernate suddenly
+	stopped working
+Date: Tue, 12 Feb 2008 07:58:06 -0500
+Message-ID: <47B197DE.1070304__41055.0076667734$1202834494$gmane$org@la-mancha.net>
+References: <47B12781.2020400@la-mancha.net> <200802121133.15973.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20080211133827.16140ba0.akpm@linux-foundation.org>
+In-Reply-To: <200802121133.15973.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,226 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Mon, 11 Feb 2008 15:57:06 +0530
-> "Thomas, Sujith" <sujith.thomas@intel.com> wrote:
+Oh, oops.
 
-> > From: Thomas Sujith <sujith.thomas@intel.com>
-> > 
-> > Added sanity checks for interface functions in thermal with
-> > other modules such as fan, processor, video etc..
-> > 
-> > Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
-> > ---
-> > drivers/thermal/thermal.c |   69
-> > +++++++++++++++++++++++++++++-----------------
-> 
-> The patch is fairly seriously wordwrapped.
-Should be fixed now.
-> 
-> >  1 files changed, 44 insertions(+), 25 deletions(-)
-> > 
-> > Index: linux-2.6.24-rc3/drivers/thermal/thermal.c
-> > ===================================================================
-> > --- linux-2.6.24-rc3.orig/drivers/thermal/thermal.c
-> > +++ linux-2.6.24-rc3/drivers/thermal/thermal.c
-> > @@ -301,13 +301,27 @@ int thermal_zone_bind_cooling_device(str
-> >  {
-> >  	struct thermal_cooling_device_instance *dev;
-> >  	struct thermal_cooling_device_instance *pos;
-> > +	struct thermal_zone_device *pos1;
-> > +	struct thermal_cooling_device *pos2;
-> >  	int result;
-> >  
-> > +	if (!tz || !cdev)
-> > +		return -EINVAL;
-> 
-> Is this change actually needed?  It's sloppy for a caller to be
-passing
-> invalid arguments into a callee, and it's not good for the callee to
-just
-> hide that sloppiness.
-I agree; removed
-> 
-> > -		return NULL;
-> > +		return  ERR_PTR(-EINVAL);
-> 
-> the patch adds several spaces like this in places where we don't
-normally
-> put them.
-I agree; removed
+2.6.20-15 and 2.6.20-16.  As supplied by Ubuntu 7.04's package 
+repositories, if that's any help.
 
+Thanks.
 
-From: Thomas Sujith <sujith.thomas@intel.com>
+Yours,
+--Mandos.
 
-Added sanity checks for interface functions in thermal with
-other modules such as fan, processor, video etc. Using ERR_PTR
-to return errors.
- 
-Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
----
- drivers/thermal/thermal.c |   63
-+++++++++++++++++++++++++++-------------------
- 1 files changed, 38 insertions(+), 25 deletions(-)
-
-Index: linux-2.6.24-rc3/drivers/thermal/thermal.c
-===================================================================
---- linux-2.6.24-rc3.orig/drivers/thermal/thermal.c
-+++ linux-2.6.24-rc3/drivers/thermal/thermal.c
-@@ -301,13 +301,24 @@ int thermal_zone_bind_cooling_device(str
- {
- 	struct thermal_cooling_device_instance *dev;
- 	struct thermal_cooling_device_instance *pos;
-+	struct thermal_zone_device *pos1;
-+	struct thermal_cooling_device *pos2;
- 	int result;
- 
- 	if (trip >= tz->trips ||
- 	    (trip < 0 && trip != THERMAL_TRIPS_NONE))
- 		return -EINVAL;
- 
--	if (!tz || !cdev)
-+	list_for_each_entry(pos1, &thermal_tz_list, node) {
-+		if (pos1 == tz)
-+			break;
-+	}
-+	list_for_each_entry(pos2, &thermal_cdev_list, node) {
-+		if (pos2 == cdev)
-+			break;
-+	}
-+
-+	if (tz != pos1 || cdev != pos2)
- 		return -EINVAL;
- 
- 	dev =
-@@ -427,21 +438,24 @@ struct thermal_cooling_device *thermal_c
- 	struct thermal_zone_device *pos;
- 	int result;
- 
-+	if (!type)
-+		return ERR_PTR(-EINVAL);
-+
- 	if (strlen(type) >= THERMAL_NAME_LENGTH)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
- 		!ops->set_cur_state)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	cdev = kzalloc(sizeof(struct thermal_cooling_device),
-GFP_KERNEL);
- 	if (!cdev)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	result = get_idr(&thermal_cdev_idr, &thermal_idr_lock,
-&cdev->id);
- 	if (result) {
- 		kfree(cdev);
--		return NULL;
-+		return ERR_PTR(result);
- 	}
- 
- 	strcpy(cdev->type, type);
-@@ -453,16 +467,14 @@ struct thermal_cooling_device *thermal_c
- 	if (result) {
- 		release_idr(&thermal_cdev_idr, &thermal_idr_lock,
-cdev->id);
- 		kfree(cdev);
--		return NULL;
-+		return ERR_PTR(result);
- 	}
- 
- 	/* sys I/F */
--	if (type) {
--		result = device_create_file(&cdev->device,
--					    &dev_attr_cdev_type);
--		if (result)
--			goto unregister;
--	}
-+	result = device_create_file(&cdev->device,
-+				    &dev_attr_cdev_type);
-+	if (result)
-+		goto unregister;
- 
- 	result = device_create_file(&cdev->device, &dev_attr_max_state);
- 	if (result)
-@@ -490,7 +502,7 @@ struct thermal_cooling_device *thermal_c
-       unregister:
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
--	return NULL;
-+	return ERR_PTR(result);
- }
- EXPORT_SYMBOL(thermal_cooling_device_register);
- 
-@@ -559,18 +571,21 @@ struct thermal_zone_device *thermal_zone
- 	int result;
- 	int count;
- 
-+	if (!type)
-+		return ERR_PTR(-EINVAL);
-+
- 	if (strlen(type) >= THERMAL_NAME_LENGTH)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	if (trips > THERMAL_MAX_TRIPS || trips < 0)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	if (!ops || !ops->get_temp)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
- 	if (!tz)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	INIT_LIST_HEAD(&tz->cooling_devices);
- 	idr_init(&tz->idr);
-@@ -578,7 +593,7 @@ struct thermal_zone_device *thermal_zone
- 	result = get_idr(&thermal_tz_idr, &thermal_idr_lock, &tz->id);
- 	if (result) {
- 		kfree(tz);
--		return NULL;
-+		return ERR_PTR(result);
- 	}
- 
- 	strcpy(tz->type, type);
-@@ -591,15 +606,13 @@ struct thermal_zone_device *thermal_zone
- 	if (result) {
- 		release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 		kfree(tz);
--		return NULL;
-+		return ERR_PTR(result);
- 	}
- 
- 	/* sys I/F */
--	if (type) {
--		result = device_create_file(&tz->device,
-&dev_attr_type);
--		if (result)
--			goto unregister;
--	}
-+	result = device_create_file(&tz->device, &dev_attr_type);
-+	if (result)
-+		goto unregister;
- 
- 	result = device_create_file(&tz->device, &dev_attr_temp);
- 	if (result)
-@@ -633,7 +646,7 @@ struct thermal_zone_device *thermal_zone
-       unregister:
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	device_unregister(&tz->device);
--	return NULL;
-+	return ERR_PTR(result);
- }
- EXPORT_SYMBOL(thermal_zone_device_register);
- 
+Rafael J. Wysocki wrote:
+> On Tuesday, 12 of February 2008, Namo Mandos wrote:
+>> Hi.  I am using a Fujitsu A6020 notebook with Ubuntu Linux 7.04, and 
+>> using the original default swsusp stuff (I think), it was able to 
+>> hibernate and suspend effectively.  Months and many package 
+>> installations later, it stopped.  So I installed uswsusp, but it doesn't 
+>> work either.  But it was more informative.
+> 
+> It will probably help if you tell us which kernel versions you tried.
+> 
+> Thanks,
+> Rafael
