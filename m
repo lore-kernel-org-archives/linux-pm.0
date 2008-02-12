@@ -1,14 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 9944] New: suspend to ram doesn't
- work anymore on Thinkpad T61 with Intel X3100
-Date: Tue, 12 Feb 2008 14:13:18 -0800
-Message-ID: <20080212141318.7b83ee24.akpm__18.0156938315079$1202854612$gmane$org@linux-foundation.org>
-References: <bug-9944-10286@http.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI suspend: Execute _WAK with the right
+	argument
+Date: Wed, 13 Feb 2008 00:32:16 +0100
+Message-ID: <200802130032.17636.rjw__25400.4346243621$1202859422$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <bug-9944-10286@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,55 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: corsac@debian.org, bugme-daemon@bugzilla.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-(Please respond via emailed reply-to-all, not via the bugzilla web interface)
+The _WAK global ACPI control method has to be called with the
+argument representing the sleep state being exited.  Make it happen.
 
-On Tue, 12 Feb 2008 14:02:31 -0800 (PST)
-bugme-daemon@bugzilla.kernel.org wrote:
+Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
+problem and debugging.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9944
-> 
->            Summary: suspend to ram doesn't work anymore on Thinkpad T61 with
->                     Intel X3100
->            Product: Power Management
->            Version: 2.5
->      KernelVersion: 2.6.25-rc1
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Hibernation/Suspend
->         AssignedTo: power-management_other@kernel-bugs.osdl.org
->         ReportedBy: corsac@debian.org
-> 
-> 
-> Latest working kernel version: 2.6.24.2
-> Earliest failing kernel version: 2.6.25-rc1
+Reported-by: Mirco Tischler <mt-ml@gmx.de>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/hardware/hwsleep.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Rafael, is your list opened yet?
-
-> Distribution: Debian Sid
-> Hardware Environment: Thinkpad T61
-> Software Environment: 
-> Problem Description:
-> 
-> Suspend to ram doesn't work anymore on my thinkpad t61 with 2.6.25-rc1. On
-> 2.6.24 I had to pass acpi_sleep=s3bios at boot time and suspend with s2ram -f
-> -a 3.
-> 
-> On 2.6.25-rc1 doing (on console, with X not running) that leads to a blank
-> screen and the ___sleep___ led (the moon) on the thinkpad blinks (like when it
-> is currently suspending), but nothing happens then.
-> 
-> If I can make some more tests, or if you need more info, please ask. I hope
-> this is no duplicate.
-> 
-
-I have a t61p and suspend/hibernate is bad and deteriorating.  So
-many things go wrong that I'm afraid to test it any more.
+Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
++++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+@@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
+ 		return_ACPI_STATUS(status);
+ 	}
+ 
++	arg.integer.value = sleep_state;
+ 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+ 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+ 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
