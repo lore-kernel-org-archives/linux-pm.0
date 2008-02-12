@@ -1,14 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug-fix]:2.6.25-rc0 Generic thermal management
- [Patch 1/2]: validating input parameters
-Date: Mon, 11 Feb 2008 13:38:27 -0800
-Message-ID: <20080211133827.16140ba0.akpm__16624.8487578288$1202773047$gmane$org@linux-foundation.org>
-References: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/2] acer-wmi - Fail gracefully if ACPI is
+	disabled
+Date: Mon, 11 Feb 2008 20:41:42 -0800 (PST)
+Message-ID: <alpine.LFD.1.00.0802112038360.2920__32150.9180394516$1202791418$gmane$org@woody.linux-foundation.org>
+References: <200802080145.16774.lenb@kernel.org>
+	<20080211091743.GA16459@elte.hu>
+	<200802111923.31736.carlos@strangeworlds.co.uk>
+	<200802111955.04562.carlos@strangeworlds.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
+In-Reply-To: <200802111955.04562.carlos@strangeworlds.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Thomas, Sujith" <sujith.thomas@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Feb 2008 15:57:06 +0530
-"Thomas, Sujith" <sujith.thomas@intel.com> wrote:
 
-> From: Thomas Sujith <sujith.thomas@intel.com>
+
+On Mon, 11 Feb 2008, Carlos Corbacho wrote:
 > 
-> Added sanity checks for interface functions in thermal with
-> other modules such as fan, processor, video etc..
-> 
-> Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
-> ---
-> drivers/thermal/thermal.c |   69
-> +++++++++++++++++++++++++++++-----------------
+> WMI drivers, like their ACPI counterparts, should also check if ACPI is
+> disabled or not, and bail out if so, otherwise we cause a crash.
 
-The patch is fairly seriously wordwrapped.
+Shouldn't "wmi_has_guid()" just return false if ACPI isn't enabled, and 
+the drivers should just then always give up?
 
->  1 files changed, 44 insertions(+), 25 deletions(-)
-> 
-> Index: linux-2.6.24-rc3/drivers/thermal/thermal.c
-> ===================================================================
-> --- linux-2.6.24-rc3.orig/drivers/thermal/thermal.c
-> +++ linux-2.6.24-rc3/drivers/thermal/thermal.c
-> @@ -301,13 +301,27 @@ int thermal_zone_bind_cooling_device(str
->  {
->  	struct thermal_cooling_device_instance *dev;
->  	struct thermal_cooling_device_instance *pos;
-> +	struct thermal_zone_device *pos1;
-> +	struct thermal_cooling_device *pos2;
->  	int result;
->  
-> +	if (!tz || !cdev)
-> +		return -EINVAL;
+The proper way to get there would seem to be to just do this instead..
 
-Is this change actually needed?  It's sloppy for a caller to be passing
-invalid arguments into a callee, and it's not good for the callee to just
-hide that sloppiness.
+We should *not* add some random ACPI workarounds to individual drivers, we 
+should just make the wmi subsystem so robust that nobody *cares* if acpi 
+exists or is enabled on that machine.
 
-> -		return NULL;
-> +		return  ERR_PTR(-EINVAL);
+		Linus
 
-the patch adds several spaces like this in places where we don't normally
-put them.
+---
+ drivers/acpi/wmi.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+index 36b84ab..457ed3d 100644
+--- a/drivers/acpi/wmi.c
++++ b/drivers/acpi/wmi.c
+@@ -673,11 +673,11 @@ static int __init acpi_wmi_init(void)
+ {
+ 	acpi_status result;
+ 
++	INIT_LIST_HEAD(&wmi_blocks.list);
++
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
+-	INIT_LIST_HEAD(&wmi_blocks.list);
+-
+ 	result = acpi_bus_register_driver(&acpi_wmi_driver);
+ 
+ 	if (result < 0) {
