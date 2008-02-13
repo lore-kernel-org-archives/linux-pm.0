@@ -1,18 +1,17 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug-fix]:2.6.25-rc0 Generic thermal management
- [Patch 1/2]: validating input parameters
-Date: Wed, 13 Feb 2008 10:33:09 -0800
-Message-ID: <20080213103309.81ce6d36.akpm__40450.7134379402$1202928504$gmane$org@linux-foundation.org>
-References: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
-	<20080211133827.16140ba0.akpm@linux-foundation.org>
-	<05B550FD4BD2014E841D83547B62600802A6B2A7@bgsmsx411.gar.corp.intel.com>
-	<20080212133446.a521a8bb.akpm@linux-foundation.org>
-	<05B550FD4BD2014E841D83547B62600802A6BA72@bgsmsx411.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend-devel] suspend and hibernate suddenly
+	stopped working
+Date: Wed, 13 Feb 2008 20:28:36 +0100
+Message-ID: <200802132028.36784.rjw__44228.356346912$1202931155$gmane$org@sisk.pl>
+References: <47B12781.2020400@la-mancha.net> <200802121133.15973.rjw@sisk.pl>
+	<47B197DE.1070304@la-mancha.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <05B550FD4BD2014E841D83547B62600802A6BA72@bgsmsx411.gar.corp.intel.com>
+In-Reply-To: <47B197DE.1070304@la-mancha.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Thomas, Sujith" <sujith.thomas@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Namo Mandos <mandos@la-mancha.net>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 Feb 2008 16:33:10 +0530
-"Thomas, Sujith" <sujith.thomas@intel.com> wrote:
+On Tuesday, 12 of February 2008, Namo Mandos wrote:
+> Oh, oops.
+> 
+> 2.6.20-15 and 2.6.20-16.  As supplied by Ubuntu 7.04's package 
+> repositories, if that's any help.
 
-> 	For time being I am attaching the patch and in the meanwhile
-> I'll figure out
-> a way to fix the wordwrap issues. This was what Len Brown also had
-> recommended.
+These are quite old.
 
-This patch has no changelog.  Please include the full and up-to-date
-changelog with each iteration of a patch.
+Any chance to install 2.6.24 or (better yet) 2.6.25-rc1?
 
-This patch doesn't apply.  My version of Linux has
-
-	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
-		return -EINVAL;
-
-whereas yours apparently has
-
-  	if (trip >= tz->trips ||
-  	    (trip < 0 && trip != THERMAL_TRIPS_NONE))
-  		return -EINVAL;
-
-(plus other changes).
-
-Maybe you have some other patch which predeced this one.
-
-You apparently didn't resend "[Bug-fix]:2.6.25-rc0 Generic thermal
-management:ACPI [Patch 2/2]: buildfix for CONFIG_THERMAL=n" which was also
-mangled.
-
-
-So please just start again.  Resend all patches, against latest mainline,
-with full changelogs and appropriate cc's, in an unmangled form.
-
-Also it would be good if you could be a bit more conventional with the
-patch titling.  For this one, 
-
-Subject: [patch 1/2] Generic thermal management: validate input parameters
-
-would suit.  Section 14 of Documentation/SubmittingPatches has some
-explanation.
-
-Thanks.
+Rafael
