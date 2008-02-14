@@ -1,14 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI suspend: Execute _WAK with the right
-	argument
-Date: Thu, 14 Feb 2008 00:30:35 -0500
-Message-ID: <200802140030.35658.lenb__11544.0921429128$1202967221$gmane$org@kernel.org>
-References: <200802130032.17636.rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] tc1100-wmi - Fail gracefully if ACPI is
+	disabled
+Date: Thu, 14 Feb 2008 01:11:41 -0500
+Message-ID: <200802140111.41883.lenb__17969.8014668704$1202969653$gmane$org@kernel.org>
+References: <200802080145.16774.lenb@kernel.org>
+	<200802111923.31736.carlos@strangeworlds.co.uk>
+	<200802111955.46199.carlos@strangeworlds.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802130032.17636.rjw@sisk.pl>
+In-Reply-To: <200802111955.46199.carlos@strangeworlds.co.uk>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,46 +21,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-applied
+applied.
 
-thanks for quickly finding and fixing this 2.6.25-rc1 regression.
-
+thanks,
 -len
 
-On Tuesday 12 February 2008 18:32, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Monday 11 February 2008 14:55, Carlos Corbacho wrote:
+> tc1100-wmi - Fail gracefully if ACPI is disabled
 > 
-> The _WAK global ACPI control method has to be called with the
-> argument representing the sleep state being exited.  Make it happen.
+> From: Carlos Corbacho <carlos@strangeworlds.co.uk>
 > 
-> Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
-> problem and debugging.
+> WMI drivers, like their ACPI counterparts, should also check if ACPI is
+> disabled or not, and bail out if so, otherwise we cause a crash.
 > 
-> Reported-by: Mirco Tischler <mt-ml@gmx.de>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Spotted by Ingo Molnar.
+> 
+> Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Linus Torvalds <torvalds@linux-foundation.org>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Len Brown <lenb@kernel.org>
 > ---
->  drivers/acpi/hardware/hwsleep.c |    1 +
->  1 file changed, 1 insertion(+)
 > 
-> Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-> +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-> @@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
->  		return_ACPI_STATUS(status);
->  	}
+>  drivers/misc/tc1100-wmi.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/misc/tc1100-wmi.c b/drivers/misc/tc1100-wmi.c
+> index f25e4c9..cb8f79f 100644
+> --- a/drivers/misc/tc1100-wmi.c
+> +++ b/drivers/misc/tc1100-wmi.c
+> @@ -263,6 +263,9 @@ static int __init tc1100_init(void)
+>  {
+>  	int result = 0;
 >  
-> +	arg.integer.value = sleep_state;
->  	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
->  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
->  		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +	if (acpi_disabled)
+> +		return -ENODEV;
+> +
+>  	if (!wmi_has_guid(GUID))
+>  		return -ENODEV;
+>  
 > 
