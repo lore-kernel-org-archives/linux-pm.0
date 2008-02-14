@@ -1,83 +1,73 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [patch] move wakeup code to .c
-Date: Fri, 15 Feb 2008 01:35:06 -0500
-Message-ID: <200802150135.07127.lenb@kernel.org>
-References: <20080210222723.GA1865@elf.ucw.cz>
+From: Yi Yang <yi.y.yang@intel.com>
+Subject: [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount
+	imbalance
+Date: Fri, 15 Feb 2008 07:44:29 +0800
+Message-ID: <1203032669.3897.8.camel__485.226119826798$1203066103$gmane$org@yangyi-dev.bj.intel.com>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	<1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
+Reply-To: yi.y.yang@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932891AbYBOGfm@vger.kernel.org>
-In-Reply-To: <20080210222723.GA1865@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, hpa@zytor.com, rjw@sisk.pl, sam@ravnborg.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: akpm@linux-foundation.org, torvalds@linux-foundation.org, gregkh@suse.de
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, elendil@planet.nl, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, yhlu.kernel@gmail.com, mingo@elte.hu, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-scripts/checkpatch.pl
-ERROR: do not initialise externals to 0 or NULL
-#113: FILE: arch/x86/boot/video-mode.c:29:
-+int do_restore = 0;    /* Screen contents changed during mode flip */
+When one cpu is set to offline, the caller process will hang, according to
+the trace data, the problem lies in the refcount error in cpufreq driver,
+cpufreq_cpu_callback will wait for completion policy->kobj_unregister
+which is nerver completed because a refcount error in function
+__cpufreq_remove_dev in file driver/cpufreq/cpufreq.c results in not
+calling kobject release method.
 
-WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-#644: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:4:
-+extern volatile struct wakeup_header wakeup_header;
+In driver/cpufreq/cpufreq.c, the refcount of data->kobj isn't 1 when it
+will be unregistered, this problem didn't exist in 2.6.24 and earlier.
 
-WARNING: externs should be avoided in .c files
-#644: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:4:
-+extern volatile struct wakeup_header wakeup_header;
+The root cause is kobject API switch, kobject_init_and_add and kobject_put
+replace older kobject_register and kobject_unregister in 2.6.25-rc1,
+compared to 2.6.24, kobject_unregister is deleted in function
+__cpufreq_remove_dev but it isn't replaced with kobject_put.
 
-ERROR: need a space before the open parenthesis '('
-#710: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:70:
-+               while(1);
+This patch adds kobject_put to balance refcount. I noticed Greg suggests
+it will fix a power-off issue to remove kobject_get statement block, but i
+think that isn't the best way because those code block has existed very long
+and it is helpful because the successive statements are invoking relevant
+data.
 
-WARNING: externs should be avoided in .c files
-#968: FILE: arch/x86/kernel/acpi/sleep.c:21:
-+extern char wakeup_code_start, wakeup_code_end;
 
-WARNING: externs should be avoided in .c files
-#970: FILE: arch/x86/kernel/acpi/sleep.c:23:
-+extern unsigned long setup_trampoline(void);
+Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+---
+ cpufreq.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-WARNING: externs should be avoided in .c files
-#971: FILE: arch/x86/kernel/acpi/sleep.c:24:
-+extern void wakeup_long64(void);
-
-WARNING: externs should be avoided in .c files
-#973: FILE: arch/x86/kernel/acpi/sleep.c:26:
-+extern unsigned long saved_video_mode;
-
-WARNING: externs should be avoided in .c files
-#974: FILE: arch/x86/kernel/acpi/sleep.c:27:
-+extern long saved_magic;
-
-WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-#975: FILE: arch/x86/kernel/acpi/sleep.c:28:
-+extern volatile unsigned long init_rsp;
-
-WARNING: externs should be avoided in .c files
-#975: FILE: arch/x86/kernel/acpi/sleep.c:28:
-+extern volatile unsigned long init_rsp;
-
-WARNING: externs should be avoided in .c files
-#976: FILE: arch/x86/kernel/acpi/sleep.c:29:
-+extern void (*initial_code)(void);
-
-WARNING: externs should be avoided in .c files
-#978: FILE: arch/x86/kernel/acpi/sleep.c:31:
-+extern int wakeup_pmode_return;
-
-WARNING: externs should be avoided in .c files
-#979: FILE: arch/x86/kernel/acpi/sleep.c:32:
-+extern char swsusp_pg_dir[PAGE_SIZE];
-
-WARNING: externs should be avoided in .c files
-#984: FILE: arch/x86/kernel/acpi/sleep.c:37:
-+extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
-
-total: 2 errors, 13 warnings, 1615 lines checked
-
-/home/lenb/Documents/wakeup.patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
+--- a/drivers/cpufreq/cpufreq.c	2008-02-15 04:41:29.000000000 +0800
++++ b/drivers/cpufreq/cpufreq.c	2008-02-15 06:56:56.000000000 +0800
+@@ -1057,12 +1057,17 @@ static int __cpufreq_remove_dev (struct 
+ 
+ 	unlock_policy_rwsem_write(cpu);
+ 
++	/* it matches the previous kobject_get */
+ 	kobject_put(&data->kobj);
+ 
+ 	/* we need to make sure that the underlying kobj is actually
+ 	 * not referenced anymore by anybody before we proceed with
+ 	 * unloading.
+ 	 */
++
++	/* unregister data->kobj, it matches kobject_init_and_add */
++	kobject_put(&data->kobj);
++
+ 	dprintk("waiting for dropping of refcount\n");
+ 	wait_for_completion(&data->kobj_unregister);
+ 	dprintk("wait complete\n");
