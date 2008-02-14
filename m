@@ -1,8 +1,8 @@
 From: Yi Yang <yi.y.yang@intel.com>
 Subject: [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount
 	imbalance
-Date: Fri, 15 Feb 2008 07:44:29 +0800
-Message-ID: <1203032669.3897.8.camel__485.226119826798$1203066103$gmane$org@yangyi-dev.bj.intel.com>
+Date: Fri, 15 Feb 2008 07:48:41 +0800
+Message-ID: <1203032921.3897.10.camel__35637.9213314087$1203066771$gmane$org@yangyi-dev.bj.intel.com>
 References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
 	<1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
 Reply-To: yi.y.yang@intel.com
@@ -20,8 +20,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org, gregkh@suse.de
-Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, elendil@planet.nl, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, yhlu.kernel@gmail.com, mingo@elte.hu, linux-pm@lists.linux-foundation.org
+To: akpm@linux-foundation.org
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 When one cpu is set to offline, the caller process will hang, according to
