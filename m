@@ -1,48 +1,83 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [patch 1/6] Generic thermal management: validate
-	input parameters
-Date: Fri, 15 Feb 2008 01:09:36 -0500
-Message-ID: <200802150109.36632.lenb__27283.1144663089$1203055903$gmane$org@kernel.org>
-References: <05B550FD4BD2014E841D83547B62600802AA64FF@bgsmsx411.gar.corp.intel.com>
+Subject: Re: [patch] move wakeup code to .c
+Date: Fri, 15 Feb 2008 01:35:06 -0500
+Message-ID: <200802150135.07127.lenb@kernel.org>
+References: <20080210222723.GA1865@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <05B550FD4BD2014E841D83547B62600802AA64FF@bgsmsx411.gar.corp.intel.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932891AbYBOGfm@vger.kernel.org>
+In-Reply-To: <20080210222723.GA1865@elf.ucw.cz>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Thomas, Sujith" <sujith.thomas@intel.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, hpa@zytor.com, rjw@sisk.pl, sam@ravnborg.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 15 February 2008 00:22, Thomas, Sujith wrote:
-> From: Thomas Sujith <sujith.thomas@intel.com>
+scripts/checkpatch.pl
+ERROR: do not initialise externals to 0 or NULL
+#113: FILE: arch/x86/boot/video-mode.c:29:
++int do_restore = 0;    /* Screen contents changed during mode flip */
 
-Thanks Sujith, this patch series was a massive improvement over the last one --
-checkpatch.pl clean and everything:-)
+WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
+#644: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:4:
++extern volatile struct wakeup_header wakeup_header;
 
-I think if you can get rid of the outlook-destroys-plain text via word-wrap
-so you don't need to also attach the patches, then you're cookin' with gas.
+WARNING: externs should be avoided in .c files
+#644: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:4:
++extern volatile struct wakeup_header wakeup_header;
 
-In the mean time, I've loaded the attachments into the acpi test tree.
-if you send more attachments in the future, please start them
-with the 1st line as a Subject: so they look to the tools like e-mail.
+ERROR: need a space before the open parenthesis '('
+#710: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:70:
++               while(1);
 
-eg.
+WARNING: externs should be avoided in .c files
+#968: FILE: arch/x86/kernel/acpi/sleep.c:21:
++extern char wakeup_code_start, wakeup_code_end;
 
-Subject: intel_menlo: extract return values using PTR_ERR
-From: Thomas Sujith <sujith.thomas@intel.com>
+WARNING: externs should be avoided in .c files
+#970: FILE: arch/x86/kernel/acpi/sleep.c:23:
++extern unsigned long setup_trampoline(void);
 
-Need to extract errors using PTR_ERR macro and...
+WARNING: externs should be avoided in .c files
+#971: FILE: arch/x86/kernel/acpi/sleep.c:24:
++extern void wakeup_long64(void);
 
+WARNING: externs should be avoided in .c files
+#973: FILE: arch/x86/kernel/acpi/sleep.c:26:
++extern unsigned long saved_video_mode;
 
-thanks,
--Len
+WARNING: externs should be avoided in .c files
+#974: FILE: arch/x86/kernel/acpi/sleep.c:27:
++extern long saved_magic;
+
+WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
+#975: FILE: arch/x86/kernel/acpi/sleep.c:28:
++extern volatile unsigned long init_rsp;
+
+WARNING: externs should be avoided in .c files
+#975: FILE: arch/x86/kernel/acpi/sleep.c:28:
++extern volatile unsigned long init_rsp;
+
+WARNING: externs should be avoided in .c files
+#976: FILE: arch/x86/kernel/acpi/sleep.c:29:
++extern void (*initial_code)(void);
+
+WARNING: externs should be avoided in .c files
+#978: FILE: arch/x86/kernel/acpi/sleep.c:31:
++extern int wakeup_pmode_return;
+
+WARNING: externs should be avoided in .c files
+#979: FILE: arch/x86/kernel/acpi/sleep.c:32:
++extern char swsusp_pg_dir[PAGE_SIZE];
+
+WARNING: externs should be avoided in .c files
+#984: FILE: arch/x86/kernel/acpi/sleep.c:37:
++extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
+
+total: 2 errors, 13 warnings, 1615 lines checked
+
+/home/lenb/Documents/wakeup.patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
