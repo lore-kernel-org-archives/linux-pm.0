@@ -1,79 +1,79 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: tsc breaks atkbd suspend
-Date: Tue, 19 Feb 2008 11:00:29 +0100
-Message-ID: <20080219100029.GA1637@elf.ucw.cz>
-References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
+Subject: Re: [patch] suspend/resume self-test
+Date: Tue, 19 Feb 2008 11:11:16 +0100
+Message-ID: <20080219101116.GA2202@elf.ucw.cz>
+References: <20080130131748.GA3796@elf.ucw.cz>
+	<200802180240.47510.david-b@pacbell.net>
+	<20080218130914.GC17697@elte.hu>
+	<200802181216.25350.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760295AbYBSLW7@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz
-Cc: kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz, Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <200802181216.25350.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Mon 2008-02-18 12:16:24, David Brownell wrote:
+> On Monday 18 February 2008, Ingo Molnar wrote:
+> > =
 
-TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC
-means _require_ TSC), but it is not properly disabled when it is
-unusable, because acpi code understood the config switch as "may use
-TSC".
+> > * David Brownell <david-b@pacbell.net> wrote:
+> > =
 
-This actually fixes suspend problems on my x60.
+> > > > > =A0 - Includes a command line parameter, which needs work yet ...=
+ it
+> > > > > =A0 =A0 currently turns this test off, but it should also let the=
+ target
+> > > > > =A0 =A0 state be specified (and maybe even default to "no test").
+> > > =
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > > I think "no test" should be the default; STR working sanely on x86 is =
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 980e1c3..6f3b217 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -364,7 +364,7 @@ int acpi_processor_resume(struct acpi_de
- 	return 0;
- }
- 
--#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
-+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- static int tsc_halts_in_c(int state)
- {
- 	switch (boot_cpu_data.x86_vendor) {
-@@ -544,7 +544,7 @@ #endif
- 		/* Get end time (ticks) */
- 		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 
--#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
-+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 		/* TSC halts in C2, so notify users */
- 		if (tsc_halts_in_c(ACPI_STATE_C2))
- 			mark_tsc_unstable("possible TSC halt in C2");
-@@ -609,7 +609,7 @@ #endif
- 			acpi_set_register(ACPI_BITREG_ARB_DISABLE, 0);
- 		}
- 
--#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
-+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 		/* TSC halts in C3, so notify users */
- 		if (tsc_halts_in_c(ACPI_STATE_C3))
- 			mark_tsc_unstable("TSC halts in C3");
-@@ -1500,7 +1500,7 @@ static int acpi_idle_enter_simple(struct
- 	acpi_idle_do_entry(cx);
- 	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 
--#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
-+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 	/* TSC could halt in idle, so notify users */
- 	if (tsc_halts_in_c(cx->type))
- 		mark_tsc_unstable("TSC halts in idle");;
-@@ -1614,7 +1614,7 @@ static int acpi_idle_enter_bm(struct cpu
- 		spin_unlock(&c3_lock);
- 	}
- 
--#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
-+#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 	/* TSC could halt in idle, so notify users */
- 	if (tsc_halts_in_c(ACPI_STATE_C3))
- 		mark_tsc_unstable("TSC halts in idle");
+> > > unfortunately too much a surprise.  Someone more active in PM testing =
 
+> > > should update that.
+> > =
 
--- 
+> > All i'm asking for is to make the self-test easily accessible. Not for =
+
+> > it to blow up in the face of users who do not ask for it.
+> =
+
+> I'm all for that, but also I don't want to see it blow up regularly
+> in the face of people who just enable all the selftest options.  The
+> other tests have a much better expectation of working "by default".
+
+> > And, at least to me, there seems to be a rather apparent correlation =
+
+> > between "suspend/resume regressions caught as early as possible" and th=
+e =
+
+> > future, desired state of: "STR working sanely on x86" ;-)
+> =
+
+> Thing is, this will catch not just regressions ... but cases where
+> STR never worked in the first place.  Video problems, etc.  Also
+> various system startup races, as in the PCMCIA and MMC/SD/SDIO
+> cases I noted.
+
+David is right here. At minimum, s2ram needs acpi_sleep=3D... options to
+tell it how to set up the video. That is not issue for you, but it
+means we should not be doing it by default.
+									Pavel
+-- =
+
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
