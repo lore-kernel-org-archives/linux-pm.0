@@ -1,41 +1,30 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Status of storage autosuspend
-Date: Mon, 18 Feb 2008 23:20:14 +0100
-Message-ID: <20080218222014.GB31201@elf.ucw.cz>
-References: <20080218202749.GA2656@elf.ucw.cz> <Pine.LNX.4.44L0.0802181530330.31135-100000@netrider.rowland.org>
+Date: Mon, 18 Feb 2008 22:19:11 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802182214060.18685-100000@netrider.rowland.org>
+References: <20080218222014.GB31201@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761998AbYBRWUB@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0802181530330.31135-100000@netrider.rowland.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760684AbYBSDTW@vger.kernel.org>
+In-Reply-To: <20080218222014.GB31201@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Mon, 18 Feb 2008, Pavel Machek wrote:
 
-> > What is the status of USB storage/SCSI autosuspend patches? They work
-> > nicely here ;-).
+> > Should we ignore this issue and submit the patches anyway?
 > 
-> I could submit them, but there is one outstanding problem I would like
-> to solve first.  Maybe you can suggest a solution.
-> 
-> The problem is how to handle SG_IOCTL calls.  It seems that the only
-> safe thing to do is to force an autoresume and prevent the device from
-> autosuspending until the device file is closed.  Unfortunately the
-> SG_IOCTL stuff is all handled inside the block layer, and there's no
-> apparent way (other than some dreadful hack) of passing the necessary
-> information down to the SCSI layer.
+> I think you should. "Easy" (and clean) solution to that issue is to
+> just return -EPERM from SG_IOCTL if autosuspend is configured in ;-).
 
-Hmm...
+:-)
 
-> Should we ignore this issue and submit the patches anyway?
+Okay, I'll update the patches to 2.6.25-rc2 and submit them in a few
+days.  (Actually the SCSI patch has to go in first and the usb-storage
+patch afterward, which will probably cause it to be delayed one kernel
+version.  I don't know any good way to handle these cross-subsystem
+updates...)
 
-I think you should. "Easy" (and clean) solution to that issue is to
-just return -EPERM from SG_IOCTL if autosuspend is configured in ;-).
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan Stern
