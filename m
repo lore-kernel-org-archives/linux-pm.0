@@ -1,14 +1,14 @@
-From: <gregkh@suse.de>
-Subject: patch driver-core-pm-make-suspend_device-static.patch
-	added to gregkh-2.6 tree
-Date: Tue, 19 Feb 2008 11:43:11 -0800
-Message-ID: <12034501912611__19688.9612278484$1203450452$gmane$org@kroah.org>
-References: <200802032255.19835.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: arch/x86/kernel/acpi/sleep_32.c not compiled ?
+Date: Tue, 19 Feb 2008 22:02:52 +0100
+Message-ID: <200802192202.53510.rjw__8590.09246710247$1203455236$gmane$org@sisk.pl>
+References: <20080219165940.6e9348f6@crazy>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802032255.19835.rjw@sisk.pl>
+In-Reply-To: <20080219165940.6e9348f6@crazy>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: bunk@kernel.org, greg@kroah.com, gregkh@suse.de, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, pavel@ucw.cz, rjw@sisk.pl
+To: Thomas Petazzoni <thomas.petazzoni@enix.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, 19 of February 2008, Thomas Petazzoni wrote:
+> Hi,
 
-This is a note to let you know that I've just added the patch titled
+Hi,
 
-     Subject: Driver core: PM: Make suspend_device() static
+> Maybe I'm missing something completely obvious, but I don't see where
+> the arch/x86/kernel/acpi/sleep_32.c file gets compiled. The Makefile in
+> that directory compiles sleep.o, but doesn't compile sleep_$(BITS).o:
+> 
+> obj-$(CONFIG_ACPI)              += boot.o
+> obj-$(CONFIG_ACPI_SLEEP)        += sleep.o wakeup_$(BITS).o
+> 
+> ifneq ($(CONFIG_ACPI_PROCESSOR),)
+> obj-y                           += cstate.o processor.o
+> endif
 
-to my gregkh-2.6 tree.  Its filename is
+No, the file is not build now.
 
-     driver-core-pm-make-suspend_device-static.patch
+Pavel, is this file really necessary?
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From rjw@sisk.pl Sun Feb  3 14:03:13 2008
-From: Adrian Bunk <bunk@kernel.org>
-Date: Sun, 3 Feb 2008 22:55:18 +0100
-Subject: Driver core: PM: Make suspend_device() static
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <greg@kroah.com>, Adrian Bunk <bunk@kernel.org>
-Message-ID: <200802032255.19835.rjw@sisk.pl>
-Content-Disposition: inline
-
-
-From: Adrian Bunk <bunk@kernel.org>
-
-suspend_device() can become static.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/base/power/main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -415,7 +415,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
-  *	@dev:	Device.
-  *	@state:	Power state device is entering.
-  */
--int suspend_device(struct device *dev, pm_message_t state)
-+static int suspend_device(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
-
-
-Patches currently in gregkh-2.6 which might be from bunk@kernel.org are
-
-driver/driver-core-pm-make-suspend_device-static.patch
-pci/pci-if-0-pci_assign_resource_fixed.patch
-usb/usb-make-usb_storage_onetouch-available-with-pm.patch
-usb/usb-g_printer-fix-empty-if-statement.patch
+Rafael
