@@ -1,45 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM: Remove unbalanced mutex_unlock() from dpm_resume()
-Date: Wed, 20 Feb 2008 02:01:41 +0100
-Message-ID: <200802200201.42543.rjw@sisk.pl>
+From: Greg KH <greg@kroah.com>
+Subject: Re: Status of storage autosuspend
+Date: Tue, 19 Feb 2008 22:20:43 -0800
+Message-ID: <20080220062043.GA22308@kroah.com>
+References: <20080218222014.GB31201@elf.ucw.cz> <Pine.LNX.4.44L0.0802182214060.18685-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758522AbYBTGdg@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0802182214060.18685-100000@netrider.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+On Mon, Feb 18, 2008 at 10:19:11PM -0500, Alan Stern wrote:
+> On Mon, 18 Feb 2008, Pavel Machek wrote:
+> 
+> > > Should we ignore this issue and submit the patches anyway?
+> > 
+> > I think you should. "Easy" (and clean) solution to that issue is to
+> > just return -EPERM from SG_IOCTL if autosuspend is configured in ;-).
+> 
+> :-)
+> 
+> Okay, I'll update the patches to 2.6.25-rc2 and submit them in a few
+> days.  (Actually the SCSI patch has to go in first and the usb-storage
+> patch afterward, which will probably cause it to be delayed one kernel
+> version.  I don't know any good way to handle these cross-subsystem
+> updates...)
 
-Please consider taking the following fix for 2.6.25.
+Push the usb-storage one through the scsi tree as well.  The subsystem
+maintainers handle this kind of thing all the time (for example, a sysfs
+feature is about to go in through the ocfs tree for this very reason.)
 
-Thanks,
-Rafael
+thanks,
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Remove an unnecessary unlocking of dpm_list_mtx in the error path
-in drivers/base/power/main.c:dpm_suspend() .
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |    1 -
- 1 file changed, 1 deletion(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
- 			mutex_lock(&dpm_list_mtx);
- 			if (list_empty(&dev->power.entry))
- 				list_add(&dev->power.entry, &dpm_locked);
--			mutex_unlock(&dpm_list_mtx);
- 			break;
- 		}
- 		mutex_lock(&dpm_list_mtx);
+greg k-h
