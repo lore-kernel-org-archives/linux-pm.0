@@ -1,45 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc2: cannot power off, reboot
-Date: Wed, 20 Feb 2008 01:54:12 +0100
-Message-ID: <200802200154.12864.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
+Subject: [PATCH] PM: Remove unbalanced mutex_unlock() from dpm_resume()
+Date: Wed, 20 Feb 2008 02:01:41 +0100
+Message-ID: <200802200201.42543.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 19 of February 2008, Guennadi Liakhovetski wrote:
-> Hi
+Hi Greg,
 
-Hi,
-
-> Don't remember, if this has been already reported for post 2.6.24 kernels:
-
-Yes, see http://bugzilla.kernel.org/show_bug.cgi?id=9960 .
- 
-> for instance with 2.6.25-rc2 my dual P-II cannot power off / reboot with 
-> "essentially" the same .config as under 2.6.24. 2.6.24 works. Last 
-> messages on the console are about syncing the 2 SCSI disks. Sysrq-O (power 
-> off) says something about the keyboard, and then about syncing the disks 
-> again and stays on. I _think_ rebooting doesn't work either. What info is 
-> needed for debugging? .config + full dmesg? For both 2.6.24 and 
-> 2.6.25-rc2?
-
-[It usually is a good idea to send a CC to the LKML on such reports.]
+Please consider taking the following fix for 2.6.25.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Remove an unnecessary unlocking of dpm_list_mtx in the error path
+in drivers/base/power/main.c:dpm_suspend() .
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
+ 			mutex_lock(&dpm_list_mtx);
+ 			if (list_empty(&dev->power.entry))
+ 				list_add(&dev->power.entry, &dpm_locked);
+-			mutex_unlock(&dpm_list_mtx);
+ 			break;
+ 		}
+ 		mutex_lock(&dpm_list_mtx);
