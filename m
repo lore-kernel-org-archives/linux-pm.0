@@ -1,43 +1,43 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: tsc breaks atkbd suspend
-Date: Tue, 19 Feb 2008 19:17:36 -0500
-Message-ID: <200802191917.36641.lenb@kernel.org>
-References: <20080218133852.GA1573@elf.ucw.cz> <20080219140552.GC9965@elte.hu> <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: APM depends on PM_SLEEP?
+Date: Wed, 20 Feb 2008 01:17:58 +0100
+Message-ID: <200802200117.58533.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0802191209260.5385@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1764058AbYBTASz@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802191209260.5385@axis700.grange>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz, kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 February 2008 11:51, Thomas Gleixner wrote:
-> On Tue, 19 Feb 2008, Ingo Molnar wrote:
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC 
-> > > means _require_ TSC), but it is not properly disabled when it is 
-> > > unusable, because acpi code understood the config switch as "may use 
-> > > TSC".
-> > > 
-> > > This actually fixes suspend problems on my x60.
-> > 
-> > ah! This makes tons of sense. I've applied your patch
+On Tuesday, 19 of February 2008, Guennadi Liakhovetski wrote:
+> Hi
 
-please do not.
+Hi,
 
-> > - but i guess it  should go via the ACPI tree.
+> Could anyone explain me why APM depends on PM_SLEEP?
 
-yes.
+Because it refers to the code in drivers/base/power/main.c that depends on
+PM_SLEEP.
 
-> Right. The breakage was introduced there when IA64 switched to
-> GENERIC_TIME and the X86_TSC dependency was added.
+> Isn't it a valid configuration, when I don't want to sleep / suspend, but
+> need APM to, say, turn my machine off using
+> APM_REAL_MODE_POWER_OFF, or if I need APM_DISPLAY_BLANK?
 
-so do we need a patch for 2.6.23.stable and 2.6.24.stable?
+Yes, in theory, but that would require some more fine-grained #ifdeffing or
+something similar.
 
-thanks,
--Len
+Thanks,
+Rafael
