@@ -1,41 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/2] Two important suspend/hibernation patches updated
-Date: Wed, 20 Feb 2008 01:33:43 +0100
-Message-ID: <200802200133.44098.rjw@sisk.pl>
+Subject: Re: 2.6.25-rc2: cannot power off, reboot
+Date: Wed, 20 Feb 2008 01:54:12 +0100
+Message-ID: <200802200154.12864.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On Tuesday, 19 of February 2008, Guennadi Liakhovetski wrote:
+> Hi
 
-New version of:
-* hibernate: handle DEBUG_PAGEALLOC
-  (commit af7e61cc86a6d052a7eddcd777a8a87906ab5a35 in the suspend branch)
-* suspend: wakeup code in C
-  (commit 280529bd8a01a6d7045658b322ba9a1cda793de2 in the test branch)
-follow.
+Hi,
 
-The first one doesn't contain the powerpc change included in the original
-"hibernate: handle DEBUG_PAGEALLOC" patch, that turned out to be harmful.
-I'd like it to go into 2.6.25, if possible.
+> Don't remember, if this has been already reported for post 2.6.24 kernels:
 
-The second one addresses the following problem reports related to the original
-"suspend: wakeup code in C" patch:
-* http://lkml.org/lkml/2008/2/16/178
-* http://lkml.org/lkml/2008/2/16/74
-* http://marc.info/?l=linux-acpi&m=120313725501682&w=4
-* http://lkml.org/lkml/2008/2/19/263
-It is considered as 2.6.26 material.
+Yes, see http://bugzilla.kernel.org/show_bug.cgi?id=9960 .
+ 
+> for instance with 2.6.25-rc2 my dual P-II cannot power off / reboot with 
+> "essentially" the same .config as under 2.6.24. 2.6.24 works. Last 
+> messages on the console are about syncing the 2 SCSI disks. Sysrq-O (power 
+> off) says something about the keyboard, and then about syncing the disks 
+> again and stays on. I _think_ rebooting doesn't work either. What info is 
+> needed for debugging? .config + full dmesg? For both 2.6.24 and 
+> 2.6.25-rc2?
 
-Please replace the previous versions of these patches with the new ones.
+[It usually is a good idea to send a CC to the LKML on such reports.]
 
 Thanks,
 Rafael
-
