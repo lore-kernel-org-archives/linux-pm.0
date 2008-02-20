@@ -1,70 +1,51 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: 2.6.25-rc2: cannot power off, reboot
-Date: Wed, 20 Feb 2008 15:16:57 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0802201515400.5735@axis700.grange>
-References: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
-	<47BC3429.3060407@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Remove unbalanced mutex_unlock() from dpm_resume()
+Date: Wed, 20 Feb 2008 11:13:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802201112010.4828-100000@iolanthe.rowland.org>
+References: <200802200201.42543.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47BC3429.3060407@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Yi Yang <yang.y.yi@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200802200201.42543.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMCBGZWIgMjAwOCwgWWkgWWFuZyB3cm90ZToKCj4gTWF5YmUgaXQgaXMgY3B1ZnJl
-cSdzIGJ1ZyB3aGljaCBoYXMgYmVlbiBmaXhlZCBidXQgdGhlIGZpeCBwYXRjaCBpc24ndCBpbiB0
-aGUKPiAyLjYuMjUtcmMyLCB5b3UgbWF5IHRyeSB0aGlzIHBhdGNoLCBpdCBoYXMgYmVlbiBpbiBH
-cmVnJ3MgZ2l0IHRyZWU6CgpUaGFua3MsIGJ1dCBJIGRvbid0IGhhdmUgY3B1ZnJlcSBvbiB0aGlz
-IG1hY2hpbmUgLSBpdCdzIG9ubHkgYSBQLUlJLi4uCgpUaG5rcwpHdWVubmFkaQoKPiAKPiA+IEZy
-b20gZm9vQGJheiBUdWUgQXByICA5IDEyOjEyOjQzIDIwMDIKPiBEYXRlOiBTYXQsIDkgRmViIDIw
-MDggMDA6NTI6NDAgKzA1MzAKPiBUbzogR3JlZyBLSCA8Z3JlZ0Brcm9haC5jb20+Cj4gRnJvbTog
-QmFsYWppIFJhbyA8YmFsYWppcnJhb0BnbWFpbC5jb20+Cj4gU3ViamVjdDogY3B1ZnJlcTogZml4
-IGtvYmplY3QgcmVmZXJlbmNlIGNvdW50IGhhbmRsaW5nCj4gCj4gVGhlIGNwdWZyZXEgY29yZSBz
-aG91bGQgbm90IHRha2UgYW4gZXh0cmEga29iamVjdCByZWZlcmVuY2UgY291bnQgZm9yIG5vCj4g
-cmVhc29uLCBhbmQgdGhlbiByZWZ1c2UgdG8gcmVsZWFzZSBpdC4gIFRoaXMgaGFzIGJlZW4gcmVw
-b3J0ZWQgYXMKPiBrZWVwaW5nIG1hY2hpbmVzIGZyb20gcHJvcGVybHkgcG93ZXJpbmcgZG93biBh
-bGwgdGhlIHdheS4KPiAKPiAKPiBTaWduZWQtb2ZmLWJ5OiBCYWxhamkgUmFvIDxiYWxhamlycmFv
-QGdtYWlsLmNvbT4KPiBDYzogRGF2ZSBKb25lcyA8ZGF2ZWpAY29kZW1vbmtleS5vcmcudWs+Cj4g
-Q2M6IFlpIFlhbmcgPHlpLnkueWFuZ0BpbnRlbC5jb20+Cj4gQ2M6IEFsYW4gU3Rlcm4gPHN0ZXJu
-QHJvd2xhbmQuaGFydmFyZC5lZHU+Cj4gQ2M6IEZyYW5zIFBvcCA8ZWxlbmRpbEBwbGFuZXQubmw+
-Cj4gQ2M6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4KPiBDYzogSW5nbyBNb2xu
-YXIgPG1pbmdvQGVsdGUuaHU+Cj4gU2lnbmVkLW9mZi1ieTogR3JlZyBLcm9haC1IYXJ0bWFuIDxn
-cmVna2hAc3VzZS5kZT4KPiAKPiAtLS0KPiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgICAg
-OCAtLS0tLS0tLQo+IDEgZmlsZSBjaGFuZ2VkLCA4IGRlbGV0aW9ucygtKQo+IAo+IC0tLSBhL2Ry
-aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5j
-Cj4gQEAgLTEwMDYsMTQgKzEwMDYsNiBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9yZW1vdmVfZGV2
-IChzdHJ1Y3QgCX0KPiAjZW5kaWYKPiAKPiAtCj4gLQlpZiAoIWtvYmplY3RfZ2V0KCZkYXRhLT5r
-b2JqKSkgewo+IC0JCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmNwdWZyZXFfZHJpdmVyX2xvY2ss
-IGZsYWdzKTsKPiAtCQljcHVmcmVxX2RlYnVnX2VuYWJsZV9yYXRlbGltaXQoKTsKPiAtCQl1bmxv
-Y2tfcG9saWN5X3J3c2VtX3dyaXRlKGNwdSk7Cj4gLQkJcmV0dXJuIC1FRkFVTFQ7Cj4gLQl9Cj4g
-LQo+ICNpZmRlZiBDT05GSUdfU01QCj4gCj4gI2lmZGVmIENPTkZJR19IT1RQTFVHX0NQVQo+IAo+
-IAo+IAo+IEd1ZW5uYWRpIExpYWtob3ZldHNraSDlhpnpgZM6Cj4gPiBIaQo+ID4gCj4gPiBEb24n
-dCByZW1lbWJlciwgaWYgdGhpcyBoYXMgYmVlbiBhbHJlYWR5IHJlcG9ydGVkIGZvciBwb3N0IDIu
-Ni4yNCBrZXJuZWxzOgo+ID4gZm9yIGluc3RhbmNlIHdpdGggMi42LjI1LXJjMiBteSBkdWFsIFAt
-SUkgY2Fubm90IHBvd2VyIG9mZiAvIHJlYm9vdCB3aXRoCj4gPiAiZXNzZW50aWFsbHkiIHRoZSBz
-YW1lIC5jb25maWcgYXMgdW5kZXIgMi42LjI0LiAyLjYuMjQgd29ya3MuIExhc3QgbWVzc2FnZXMK
-PiA+IG9uIHRoZSBjb25zb2xlIGFyZSBhYm91dCBzeW5jaW5nIHRoZSAyIFNDU0kgZGlza3MuIFN5
-c3JxLU8gKHBvd2VyIG9mZikgc2F5cwo+ID4gc29tZXRoaW5nIGFib3V0IHRoZSBrZXlib2FyZCwg
-YW5kIHRoZW4gYWJvdXQgc3luY2luZyB0aGUgZGlza3MgYWdhaW4gYW5kCj4gPiBzdGF5cyBvbi4g
-SSBfdGhpbmtfIHJlYm9vdGluZyBkb2Vzbid0IHdvcmsgZWl0aGVyLiBXaGF0IGluZm8gaXMgbmVl
-ZGVkIGZvcgo+ID4gZGVidWdnaW5nPyAuY29uZmlnICsgZnVsbCBkbWVzZz8gRm9yIGJvdGggMi42
-LjI0IGFuZCAyLjYuMjUtcmMyPwo+ID4gCj4gPiBUaGFua3MKPiA+IEd1ZW5uYWRpCj4gPiAtLS0K
-PiA+IEd1ZW5uYWRpIExpYWtob3ZldHNraQo+ID4gX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KPiA+IGxpbnV4LXBtIG1haWxpbmcgbGlzdAo+ID4gbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKPiA+IGh0dHBzOi8vbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQo+ID4gCj4gPiAgIAoKLS0tCkd1
-ZW5uYWRpIExpYWtob3ZldHNraQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2xpbnV4LXBt
+On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
+
+> Hi Greg,
+> 
+> Please consider taking the following fix for 2.6.25.
+
+Don't just consider it!  :-)  It's a real bug fix.
+
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Remove an unnecessary unlocking of dpm_list_mtx in the error path
+> in drivers/base/power/main.c:dpm_suspend() .
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/base/power/main.c |    1 -
+>  1 file changed, 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/main.c
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
+>  			mutex_lock(&dpm_list_mtx);
+>  			if (list_empty(&dev->power.entry))
+>  				list_add(&dev->power.entry, &dpm_locked);
+> -			mutex_unlock(&dpm_list_mtx);
+>  			break;
+>  		}
+>  		mutex_lock(&dpm_list_mtx);
+
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+
