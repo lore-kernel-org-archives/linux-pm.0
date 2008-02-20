@@ -1,38 +1,46 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: Status of storage autosuspend
-Date: Tue, 19 Feb 2008 22:20:43 -0800
-Message-ID: <20080220062043.GA22308@kroah.com>
-References: <20080218222014.GB31201@elf.ucw.cz> <Pine.LNX.4.44L0.0802182214060.18685-100000@netrider.rowland.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: tsc breaks atkbd suspend
+Date: Wed, 20 Feb 2008 07:51:43 +0100 (CET)
+Message-ID: <alpine.LFD.1.00.0802200751010.7583@apollo.tec.linutronix.de>
+References: <20080218133852.GA1573@elf.ucw.cz> <20080219140552.GC9965@elte.hu> <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de> <200802191917.36641.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758522AbYBTGdg@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0802182214060.18685-100000@netrider.rowland.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760656AbYBTGwf@vger.kernel.org>
+In-Reply-To: <200802191917.36641.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz, kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 10:19:11PM -0500, Alan Stern wrote:
-> On Mon, 18 Feb 2008, Pavel Machek wrote:
-> 
-> > > Should we ignore this issue and submit the patches anyway?
-> > 
-> > I think you should. "Easy" (and clean) solution to that issue is to
-> > just return -EPERM from SG_IOCTL if autosuspend is configured in ;-).
-> 
-> :-)
-> 
-> Okay, I'll update the patches to 2.6.25-rc2 and submit them in a few
-> days.  (Actually the SCSI patch has to go in first and the usb-storage
-> patch afterward, which will probably cause it to be delayed one kernel
-> version.  I don't know any good way to handle these cross-subsystem
-> updates...)
+On Tue, 19 Feb 2008, Len Brown wrote:
 
-Push the usb-storage one through the scsi tree as well.  The subsystem
-maintainers handle this kind of thing all the time (for example, a sysfs
-feature is about to go in through the ocfs tree for this very reason.)
+> On Tuesday 19 February 2008 11:51, Thomas Gleixner wrote:
+> > On Tue, 19 Feb 2008, Ingo Molnar wrote:
+> > > * Pavel Machek <pavel@ucw.cz> wrote:
+> > > 
+> > > > TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC 
+> > > > means _require_ TSC), but it is not properly disabled when it is 
+> > > > unusable, because acpi code understood the config switch as "may use 
+> > > > TSC".
+> > > > 
+> > > > This actually fixes suspend problems on my x60.
+> > > 
+> > > ah! This makes tons of sense. I've applied your patch
+> 
+> please do not.
 
-thanks,
+It's not in the -mm branch.
+ 
+> > > - but i guess it  should go via the ACPI tree.
+> 
+> yes.
+> 
+> > Right. The breakage was introduced there when IA64 switched to
+> > GENERIC_TIME and the X86_TSC dependency was added.
+> 
+> so do we need a patch for 2.6.23.stable and 2.6.24.stable?
 
-greg k-h
+Yes.
+
+Thanks,
+	tglx
