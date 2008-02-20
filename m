@@ -1,51 +1,62 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Remove unbalanced mutex_unlock() from dpm_resume()
-Date: Wed, 20 Feb 2008 11:13:39 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802201112010.4828-100000@iolanthe.rowland.org>
+From: <gregkh@suse.de>
+Subject: patch pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch added to gregkh-2.6 tree
+Date: Wed, 20 Feb 2008 13:57:18 -0800
+Message-ID: <12035446381218@kroah.org>
 References: <200802200201.42543.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <200802200201.42543.rjw@sisk.pl>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <greg@kroah.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: rjw@sisk.pl, greg@kroah.com, gregkh@suse.de, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, pavel@ucw.cz, stern@rowland.harvard.edu
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
 
-> Hi Greg,
-> 
-> Please consider taking the following fix for 2.6.25.
+This is a note to let you know that I've just added the patch titled
 
-Don't just consider it!  :-)  It's a real bug fix.
+     Subject: PM: Remove unbalanced mutex_unlock() from dpm_resume()
 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Remove an unnecessary unlocking of dpm_list_mtx in the error path
-> in drivers/base/power/main.c:dpm_suspend() .
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/main.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
->  			mutex_lock(&dpm_list_mtx);
->  			if (list_empty(&dev->power.entry))
->  				list_add(&dev->power.entry, &dpm_locked);
-> -			mutex_unlock(&dpm_list_mtx);
->  			break;
->  		}
->  		mutex_lock(&dpm_list_mtx);
+to my gregkh-2.6 tree.  Its filename is
 
+     pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From rjw@sisk.pl  Wed Feb 20 12:56:19 2008
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Wed, 20 Feb 2008 02:01:41 +0100
+Subject: PM: Remove unbalanced mutex_unlock() from dpm_resume()
+To: Greg KH <greg@kroah.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, "Linux-pm mailing list" <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Message-ID: <200802200201.42543.rjw@sisk.pl>
+Content-Disposition: inline
+
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Remove an unnecessary unlocking of dpm_list_mtx in the error path
+in drivers/base/power/main.c:dpm_suspend() .
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ drivers/base/power/main.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
+ 			mutex_lock(&dpm_list_mtx);
+ 			if (list_empty(&dev->power.entry))
+ 				list_add(&dev->power.entry, &dpm_locked);
+-			mutex_unlock(&dpm_list_mtx);
+ 			break;
+ 		}
+ 		mutex_lock(&dpm_list_mtx);
+
+
+Patches currently in gregkh-2.6 which might be from rjw@sisk.pl are
+
+driver/driver-core-pm-make-suspend_device-static.patch
+driver/pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
