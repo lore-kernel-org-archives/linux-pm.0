@@ -1,16 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] suspend/resume self-test
-Date: Wed, 20 Feb 2008 11:15:42 +0100
-Message-ID: <20080220101542.GC3881__27895.5463706099$1203502703$gmane$org@elte.hu>
-References: <20080130131748.GA3796@elf.ucw.cz>
-	<20080219101116.GA2202@elf.ucw.cz> <20080219144328.GD21176@elte.hu>
-	<200802191112.57616.david-b@pacbell.net>
+From: Yi Yang <yang.y.yi@gmail.com>
+Subject: Re: 2.6.25-rc2: cannot power off, reboot
+Date: Wed, 20 Feb 2008 22:07:37 +0800
+Message-ID: <47BC3429.3060407@gmail.com>
+References: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200802191112.57616.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0802192321370.11079@axis700.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,48 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-* David Brownell <david-b@pacbell.net> wrote:
-
-> > nowhere did i suggest that it should be default-enabled ...
-> 
-> The patch you asked to be merged *DID* have it be default-enabled! So 
-> you did more than just "suggest"... if that option is enabled in 
-> Kconfig, this test is always forced on and it will cause failures on 
-> systems where STR has never worked.
-
-i think you dont understand what "default enabled" means in this 
-context. Default enabled means the Kconfig entry has a "default y" line 
-- which it did not have in the patch i sent.
-
-if a tester enables the .config option then it is very much expected to 
-be triggered, just like the other .config debug options. Of course, the 
-tester specifically enabled it, so that's what we want to happen. Not 
-some other "yes_i_really_meant_it" boot option ... There can also be 
-_another_ .config option that turns off the 'run by default' property - 
-but if someone selects the _default off_ feature and enables it, just 
-like i did, then the feature is very much expected to run.
-
-you really seem to have deep misunderstandings about how testers use 
-Linux, what it takes to build up a proper debug infrastructure and how 
-to utilize all these things to make Linux better. You come from the 
-embedded world where everything is configured together specifically, 
-where people know what they are using and were every feature is well 
-accounted for. But you seem to have little insight into how 
-distributions utilize kernel features and what it takes to accept the 
-help of testers who dont know the field that well but still want to help 
-out - as long as we let them.
-
-These are well-established practices we use in all other debug features 
-that help Linux today, and what you are asking for is weird, unusual and 
-wrong. Please take a look at how all the other debug stuff works. Rule
-#1: testers dont have to beg the kernel for 1 hour and have to write 2
-patches to let the test code be run finally ... ;-) This isnt even about 
-any nuances where reasonable people might disagree, this is really basic 
-testing-101 stuff.
-
-	Ingo
+TWF5YmUgaXQgaXMgY3B1ZnJlcSdzIGJ1ZyB3aGljaCBoYXMgYmVlbiBmaXhlZCBidXQgdGhlIGZp
+eCBwYXRjaCBpc24ndCAKaW4gdGhlIDIuNi4yNS1yYzIsIHlvdSBtYXkgdHJ5IHRoaXMgcGF0Y2gs
+IGl0IGhhcyBiZWVuIGluIEdyZWcncyBnaXQgdHJlZToKCkZyb20gZm9vQGJheiBUdWUgQXByICA5
+IDEyOjEyOjQzIDIwMDIKRGF0ZTogU2F0LCA5IEZlYiAyMDA4IDAwOjUyOjQwICswNTMwClRvOiBH
+cmVnIEtIIDxncmVnQGtyb2FoLmNvbT4KRnJvbTogQmFsYWppIFJhbyA8YmFsYWppcnJhb0BnbWFp
+bC5jb20+ClN1YmplY3Q6IGNwdWZyZXE6IGZpeCBrb2JqZWN0IHJlZmVyZW5jZSBjb3VudCBoYW5k
+bGluZwoKVGhlIGNwdWZyZXEgY29yZSBzaG91bGQgbm90IHRha2UgYW4gZXh0cmEga29iamVjdCBy
+ZWZlcmVuY2UgY291bnQgZm9yIG5vCnJlYXNvbiwgYW5kIHRoZW4gcmVmdXNlIHRvIHJlbGVhc2Ug
+aXQuICBUaGlzIGhhcyBiZWVuIHJlcG9ydGVkIGFzCmtlZXBpbmcgbWFjaGluZXMgZnJvbSBwcm9w
+ZXJseSBwb3dlcmluZyBkb3duIGFsbCB0aGUgd2F5LgoKClNpZ25lZC1vZmYtYnk6IEJhbGFqaSBS
+YW8gPGJhbGFqaXJyYW9AZ21haWwuY29tPgpDYzogRGF2ZSBKb25lcyA8ZGF2ZWpAY29kZW1vbmtl
+eS5vcmcudWs+CkNjOiBZaSBZYW5nIDx5aS55LnlhbmdAaW50ZWwuY29tPgpDYzogQWxhbiBTdGVy
+biA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT4KQ2M6IEZyYW5zIFBvcCA8ZWxlbmRpbEBwbGFu
+ZXQubmw+CkNjOiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CkNjOiBJbmdvIE1v
+bG5hciA8bWluZ29AZWx0ZS5odT4KU2lnbmVkLW9mZi1ieTogR3JlZyBLcm9haC1IYXJ0bWFuIDxn
+cmVna2hAc3VzZS5kZT4KCi0tLQogZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyB8ICAgIDggLS0t
+LS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA4IGRlbGV0aW9ucygtKQoKLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2NwdWZyZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCkBAIC0xMDA2LDE0
+ICsxMDA2LDYgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2RldiAoc3RydWN0IAogCX0K
+ICNlbmRpZgogCi0KLQlpZiAoIWtvYmplY3RfZ2V0KCZkYXRhLT5rb2JqKSkgewotCQlzcGluX3Vu
+bG9ja19pcnFyZXN0b3JlKCZjcHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7Ci0JCWNwdWZyZXFf
+ZGVidWdfZW5hYmxlX3JhdGVsaW1pdCgpOwotCQl1bmxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKGNw
+dSk7Ci0JCXJldHVybiAtRUZBVUxUOwotCX0KLQogI2lmZGVmIENPTkZJR19TTVAKIAogI2lmZGVm
+IENPTkZJR19IT1RQTFVHX0NQVQoKCgpHdWVubmFkaSBMaWFraG92ZXRza2kg5YaZ6YGTOgo+IEhp
+Cj4KPiBEb24ndCByZW1lbWJlciwgaWYgdGhpcyBoYXMgYmVlbiBhbHJlYWR5IHJlcG9ydGVkIGZv
+ciBwb3N0IDIuNi4yNCBrZXJuZWxzOiAKPiBmb3IgaW5zdGFuY2Ugd2l0aCAyLjYuMjUtcmMyIG15
+IGR1YWwgUC1JSSBjYW5ub3QgcG93ZXIgb2ZmIC8gcmVib290IHdpdGggCj4gImVzc2VudGlhbGx5
+IiB0aGUgc2FtZSAuY29uZmlnIGFzIHVuZGVyIDIuNi4yNC4gMi42LjI0IHdvcmtzLiBMYXN0IAo+
+IG1lc3NhZ2VzIG9uIHRoZSBjb25zb2xlIGFyZSBhYm91dCBzeW5jaW5nIHRoZSAyIFNDU0kgZGlz
+a3MuIFN5c3JxLU8gKHBvd2VyIAo+IG9mZikgc2F5cyBzb21ldGhpbmcgYWJvdXQgdGhlIGtleWJv
+YXJkLCBhbmQgdGhlbiBhYm91dCBzeW5jaW5nIHRoZSBkaXNrcyAKPiBhZ2FpbiBhbmQgc3RheXMg
+b24uIEkgX3RoaW5rXyByZWJvb3RpbmcgZG9lc24ndCB3b3JrIGVpdGhlci4gV2hhdCBpbmZvIGlz
+IAo+IG5lZWRlZCBmb3IgZGVidWdnaW5nPyAuY29uZmlnICsgZnVsbCBkbWVzZz8gRm9yIGJvdGgg
+Mi42LjI0IGFuZCAKPiAyLjYuMjUtcmMyPwo+Cj4gVGhhbmtzCj4gR3Vlbm5hZGkKPiAtLS0KPiBH
+dWVubmFkaSBMaWFraG92ZXRza2kKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwo+IGxpbnV4LXBtIG1haWxpbmcgbGlzdAo+IGxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCj4gaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCj4KPiAgIAoKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
