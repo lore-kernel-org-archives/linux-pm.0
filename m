@@ -1,26 +1,95 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: power_state: remove it from usb
-Date: Thu, 21 Feb 2008 17:37:48 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802211737002.4990-100000@iolanthe.rowland.org>
-References: <20080221221950.GA25977@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc2 regression - hang on suspend
+Date: Fri, 22 Feb 2008 00:06:38 +0100
+Message-ID: <200802220006.39130.rjw__4755.14416252754$1203635421$gmane$org@sisk.pl>
+References: <1203422386.10992.2.camel@localhost>
+	<200802210131.54272.rjw@sisk.pl>
+	<1203588294.3882.6.camel@localhost>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20080221221950.GA25977-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1203588294.3882.6.camel@localhost>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 21 Feb 2008, Pavel Machek wrote:
-
-> > Unfortunately some of the things you changed turn out not to be 
-> > write-only.  (You also missed a usage of power.power_state in a 
-> > comment!)  
+On Thursday, 21 of February 2008, Soeren Sonnenburg wrote:
+> On Thu, 2008-02-21 at 01:31 +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
+> > > On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> > > > > On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
+> > > > > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> > > > > > > Hi,
+> > > > > > 
+> > > > > > Hi,
+> > > > > > 
+> > > > > > > since 2.6.25-rc1 (first version I tried) and still in rc2
+> > (and git), I
+> > > > > > > see a hang on s2ram already when trying to suspend.
+> > > > > > 
+> > > > > > Does it work with 2.6.24?
+> > > > > 
+> > > > > yes.
+> > > > 
+> > > > Please take the current mainline (there are a couple of nasty bugs
+> > fixed in
+> > > > it), configure it with CONFIG_PM_DEBUG set, boot it with
+> > "no_console_suspend",
+> > > > run
+> > > > 
+> > > > # echo 8 > /proc/sys/kernel/printk
+> > > > # echo devices > /sys/power/pm_test
+> > > > # echo mem > /sys/power/state
+> > > > 
+> > > > If it hangs, it should leave a stack trace before and I need that trace to see
+> > > > what's going on.  If it doesn't hang, I'll tell you what to do next.
+> > > 
+> > > I tried with 2.6.24.2 with CONFIG_PM_DEBUG set, following your steps and
+> > > yes it works flawlessly (though the display did not come back I could
+> > > suspend/resume multiple times without problems, and finally s2ram -f -p
+> > > brought the display back).
+> > 
+> > Hm, there's no /sys/power/pm_test in 2.6.24.2 (and the "current mainline"
+> > means the latest -git kernel possible or the current top of the Linus' tree),
+> > so in fact you tested 2.6.24 again, that is known to work ...
 > 
-> I might have missed comments, but where I missed read? It compiled
-> after I removed the field from the core...?
+> Great :( 
+> 
+> Anyway testing linus' git-current, I see that it does not hang. However
+> after the echo mem >/sys/power/state I am seeing:
+> [...]
+> PM: Finishing wakeup.
+> Restarting tasks ... done.
+> ata1: port is slow to respond, please be patient (Status 0x80)
+> ata1: device not ready (errno=-16), forcing hardreset
+> 
+> 
+> and this a couple of times. Using echo none >/sys/power/pm_test and then
+> echo mem >/sys/power/state I see it hang on ata1 errors again. Waiting
+> about 10-30 seconds it progresses further and finally arrives at 
+> 
+> CPU0 attaching NULL sched-domain
+> CPU1 attaching NULL sched-domain
+> 
+> then hangs.
 
-Grep for power_state in drivers/usb/host/*.c.
+Please see if compiling the kernel with CONFIG_SMP unset makes suspend
+work.
 
-Alan Stern
+Also, if you could find the commit that broke things, it would probably help a
+lot.
+
+Thanks,
+Rafael
