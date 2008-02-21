@@ -1,53 +1,43 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc2
-Date: Thu, 21 Feb 2008 13:19:51 +0100
-Message-ID: <20080221121951.GB27508__17097.7413341918$1203596553$gmane$org@uranus.ravnborg.org>
-References: <200802210357.08197.lenb@kernel.org>
-	<20080221095431.GB26714@uranus.ravnborg.org>
-	<200802210717.17047.lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: power_state: get rid of write-only variable in SATA
+Date: Thu, 21 Feb 2008 13:56:55 +0100
+Message-ID: <20080221125652.GA23548@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200802210717.17047.lenb@kernel.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Sender: linux-ide-owner@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, jgarzik@pobox.com, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 07:17:16AM -0500, Len Brown wrote:
-> On Thursday 21 February 2008 04:54, Sam Ravnborg wrote:
-> > On Thu, Feb 21, 2008 at 03:57:07AM -0500, Len Brown wrote:
-> > > Hi Linus,
-> > > 
-> > > please pull from: 
-> > > 
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> > > 
-> > > Fixes a pair of a boot regressions, and some churn mostly related
-> > > to some of the new thermal and thinkpad code that went into -rc1.
-> > > 
-> > > This will update the files shown below.
-> > 
-> > Hi Len.
-> > 
-> > Any specific reason the two section mismatch patches that
-> > I posted a few days ago are not included?
-> > If they are buggy or questionable please let me know.
-> > 
-> > I can resend if you like.
-> 
-> they're still in the test branch.
 
-OK - thanks,
+power_state is scheduled for removal, and libata uses it in write-only
+mode. Remove it.
 
-	Sam
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index b4985bc..a31572d 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -6542,8 +6542,6 @@ int ata_host_suspend(struct ata_host *ho
+ 	ata_lpm_enable(host);
+ 
+ 	rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
+-	if (rc == 0)
+-		host->dev->power.power_state = mesg;
+ 	return rc;
+ }
+ 
+@@ -6562,7 +6560,6 @@ void ata_host_resume(struct ata_host *ho
+ {
+ 	ata_host_request_pm(host, PMSG_ON, ATA_EH_SOFTRESET,
+ 			    ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET, 0);
+-	host->dev->power.power_state = PMSG_ON;
+ 
+ 	/* reenable link pm */
+ 	ata_lpm_disable(host);
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
