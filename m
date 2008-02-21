@@ -1,47 +1,35 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] patch power_state-remove-it-from-usb.patch added to
- gregkh-2.6 tree
-Date: Thu, 21 Feb 2008 17:18:32 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802211717230.4990-100000@iolanthe.rowland.org>
-References: <1203630196303@kroah.org>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: power_state: remove it from usb
+Date: Thu, 21 Feb 2008 23:19:50 +0100
+Message-ID: <20080221221950.GA25977@elf.ucw.cz>
+References: <20080221130145.GA3789@elf.ucw.cz> <Pine.LNX.4.44L0.0802211648530.2114-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S935167AbYBUWSn@vger.kernel.org>
-In-Reply-To: <1203630196303@kroah.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@suse.de
-Cc: pavel@ucw.cz, greg@kroah.com, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, pavel@suse.cz
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0802211648530.2114-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 21 Feb 2008 gregkh@suse.de wrote:
+On Thu 2008-02-21 16:50:36, Alan Stern wrote:
+> On Thu, 21 Feb 2008, Pavel Machek wrote:
+> 
+> > power_state is scheduled for removal, and it is used only write-only
+> > by USB. Remove it.
+> 
+> Unfortunately some of the things you changed turn out not to be 
+> write-only.  (You also missed a usage of power.power_state in a 
+> comment!)  
 
-> This is a note to let you know that I've just added the patch titled
-> 
->      Subject: power_state: remove it from usb
-> 
-> to my gregkh-2.6 tree.  Its filename is
-> 
->      power_state-remove-it-from-usb.patch
-> 
-> This tree can be found at 
->     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-> 
-> 
-> From pavel@ucw.cz  Thu Feb 21 13:36:03 2008
-> From: Pavel Machek <pavel@ucw.cz>
-> Date: Thu, 21 Feb 2008 14:01:45 +0100
-> Subject: power_state: remove it from usb
-> To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Greg KH <greg@kroah.com>, stern@rowland.harvard.edu, linux-usb@vger.kernel.org
-> Message-ID: <20080221130145.GA3789@elf.ucw.cz>
-> Content-Disposition: inline
-> 
-> 
-> 
-> power_state is scheduled for removal, and it is used only write-only
-> by USB. Remove it.
+I might have missed comments, but where I missed read? It compiled
+after I removed the field from the core...?
 
-Greg, this patch is incomplete.  Some of the settings that Pavel 
-removed are used by the host controller drivers.  Please revert this; 
-I'll send a more complete patch later.
+> I'll post a more complete patch soon.		
 
-Alan Stern
+Thanks!
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
