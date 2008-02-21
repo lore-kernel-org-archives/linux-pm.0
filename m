@@ -1,60 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: APM depends on PM_SLEEP?
-Date: Thu, 21 Feb 2008 00:56:26 +0100
-Message-ID: <200802210056.26992.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0802191209260.5385@axis700.grange>
-	<200802200117.58533.rjw@sisk.pl>
-	<Pine.LNX.4.64.0802202358580.10149@axis700.grange>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/2] Two important suspend/hibernation patches updated
+Date: Thu, 21 Feb 2008 03:44:45 -0500
+Message-ID: <200802210344.45680.lenb@kernel.org>
+References: <200802200133.44098.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802202358580.10149@axis700.grange>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200802200133.44098.rjw@sisk.pl>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-pm@lists.linux-foundation.org
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 21 of February 2008, Guennadi Liakhovetski wrote:
-> On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
+On Tuesday 19 February 2008 19:33, Rafael J. Wysocki wrote:
+> Hi Len,
 > 
-> > On Tuesday, 19 of February 2008, Guennadi Liakhovetski wrote:
-> > > Hi
-> > 
-> > Hi,
-> > 
-> > > Could anyone explain me why APM depends on PM_SLEEP?
-> > 
-> > Because it refers to the code in drivers/base/power/main.c that depends on
-> > PM_SLEEP.
-> > 
-> > > Isn't it a valid configuration, when I don't want to sleep / suspend, but
-> > > need APM to, say, turn my machine off using
-> > > APM_REAL_MODE_POWER_OFF, or if I need APM_DISPLAY_BLANK?
-> > 
-> > Yes, in theory, but that would require some more fine-grained #ifdeffing or
-> > something similar.
+> New version of:
+> * hibernate: handle DEBUG_PAGEALLOC
+>   (commit af7e61cc86a6d052a7eddcd777a8a87906ab5a35 in the suspend branch)
+> * suspend: wakeup code in C
+>   (commit 280529bd8a01a6d7045658b322ba9a1cda793de2 in the test branch)
+> follow.
 > 
-> As we see, for example, here:
+> The first one doesn't contain the powerpc change included in the original
+> "hibernate: handle DEBUG_PAGEALLOC" patch, that turned out to be harmful.
+> I'd like it to go into 2.6.25, if possible.
 > 
-> http://www.uwsg.indiana.edu/hypermail/linux/kernel/0802.2/2215.html
+> The second one addresses the following problem reports related to the original
+> "suspend: wakeup code in C" patch:
+> * http://lkml.org/lkml/2008/2/16/178
+> * http://lkml.org/lkml/2008/2/16/74
+> * http://marc.info/?l=linux-acpi&m=120313725501682&w=4
+> * http://lkml.org/lkml/2008/2/19/263
+> It is considered as 2.6.26 material.
 > 
-> it also happens in practice.
+> Please replace the previous versions of these patches with the new ones.
 
-There are configurations in which it doesn't compile when this dependency
-is removed.
+done. (and suspend branch is now re-based to latest linus tree)
 
-I'm not an APM developer/maintainer/whatever and I have _much_ more urgent
-things to take care of than this one.
-
-Thanks,
-Rafael
+thanks,
+-Len
