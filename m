@@ -1,95 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc2 regression - hang on suspend
-Date: Fri, 22 Feb 2008 00:06:38 +0100
-Message-ID: <200802220006.39130.rjw__4755.14416252754$1203635421$gmane$org@sisk.pl>
-References: <1203422386.10992.2.camel@localhost>
-	<200802210131.54272.rjw@sisk.pl>
-	<1203588294.3882.6.camel@localhost>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] power_state: get rid of write-only variable in SATA
+Date: Fri, 22 Feb 2008 00:42:20 +0100
+Message-ID: <20080221234220.GC25977@elf.ucw.cz>
+References: <20080221125652.GA23548@elf.ucw.cz> <47BDA22F.5060300@pobox.com> <20080221193350.DA772235007@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1203588294.3882.6.camel@localhost>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080221193350.DA772235007@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Sender: linux-ide-owner@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: jgarzik@pobox.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 21 of February 2008, Soeren Sonnenburg wrote:
-> On Thu, 2008-02-21 at 01:31 +0100, Rafael J. Wysocki wrote:
-> > On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
-> > > On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > > > On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
-> > > > > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > > > > > Hi,
-> > > > > > 
-> > > > > > Hi,
-> > > > > > 
-> > > > > > > since 2.6.25-rc1 (first version I tried) and still in rc2
-> > (and git), I
-> > > > > > > see a hang on s2ram already when trying to suspend.
-> > > > > > 
-> > > > > > Does it work with 2.6.24?
-> > > > > 
-> > > > > yes.
-> > > > 
-> > > > Please take the current mainline (there are a couple of nasty bugs
-> > fixed in
-> > > > it), configure it with CONFIG_PM_DEBUG set, boot it with
-> > "no_console_suspend",
-> > > > run
-> > > > 
-> > > > # echo 8 > /proc/sys/kernel/printk
-> > > > # echo devices > /sys/power/pm_test
-> > > > # echo mem > /sys/power/state
-> > > > 
-> > > > If it hangs, it should leave a stack trace before and I need that trace to see
-> > > > what's going on.  If it doesn't hang, I'll tell you what to do next.
-> > > 
-> > > I tried with 2.6.24.2 with CONFIG_PM_DEBUG set, following your steps and
-> > > yes it works flawlessly (though the display did not come back I could
-> > > suspend/resume multiple times without problems, and finally s2ram -f -p
-> > > brought the display back).
-> > 
-> > Hm, there's no /sys/power/pm_test in 2.6.24.2 (and the "current mainline"
-> > means the latest -git kernel possible or the current top of the Linus' tree),
-> > so in fact you tested 2.6.24 again, that is known to work ...
-> 
-> Great :( 
-> 
-> Anyway testing linus' git-current, I see that it does not hang. However
-> after the echo mem >/sys/power/state I am seeing:
-> [...]
-> PM: Finishing wakeup.
-> Restarting tasks ... done.
-> ata1: port is slow to respond, please be patient (Status 0x80)
-> ata1: device not ready (errno=-16), forcing hardreset
-> 
-> 
-> and this a couple of times. Using echo none >/sys/power/pm_test and then
-> echo mem >/sys/power/state I see it hang on ata1 errors again. Waiting
-> about 10-30 seconds it progresses further and finally arrives at 
-> 
-> CPU0 attaching NULL sched-domain
-> CPU1 attaching NULL sched-domain
-> 
-> then hangs.
+On Thu 2008-02-21 11:33:50, David Brownell wrote:
+> > libata uses it under the assumption that "other parts" of the system are 
+> > aware of this variable.
 
-Please see if compiling the kernel with CONFIG_SMP unset makes suspend
-work.
+There are no other relevant parts, except one debug printk that is
+getting removed.
 
-Also, if you could find the commit that broke things, it would probably help a
-lot.
+> > May I assume that the API has changed such that this is no longer necessary?
+> 
+> Yes.  The original motivation for dev->power.power_state was to let
 
-Thanks,
-Rafael
+ACK.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
