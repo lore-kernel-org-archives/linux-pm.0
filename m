@@ -1,128 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers
-	off after suspend-to-disk. Screen becomes green.
-Date: Thu, 21 Feb 2008 21:30:46 +0100
-Message-ID: <200802212130.47630.rjw__44620.7322217107$1203626095$gmane$org@sisk.pl>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-	<200802211727.21593.rjw@sisk.pl>
-	<200802211034.22056.jesse.barnes@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802211034.22056.jesse.barnes@intel.com>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+From: <gregkh@suse.de>
+Subject: patch power_state-remove-it-from-driver-core.patch added to gregkh-2.6 tree
+Date: Thu, 21 Feb 2008 13:43:15 -0800
+Message-ID: <1203630195215@kroah.org>
+References: <20080221125809.GA30308@elf.ucw.cz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933848AbYBUVnp@vger.kernel.org>
+In-Reply-To: <20080221125809.GA30308@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: pavel@ucw.cz, greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, pavel@suse.cz, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 21 of February 2008, Jesse Barnes wrote:
-> On Thursday, February 21, 2008 8:27 am Rafael J. Wysocki wrote:
-> > On Thursday, 21 of February 2008, Jeff Chua wrote:
-> > > On Thu, Feb 21, 2008 at 8:39 AM, Jesse Barnes <jesse.barnes@intel.com> 
-> wrote:
-> > > > On Wednesday, February 20, 2008 4:35 pm Jeff Chua wrote:
-> > > >  > On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes
-> > > >  > <jesse.barnes@intel.com>
-> > > >
-> > > >  wrote:
-> > > >  > >  Ok, can you give this patch a try with the 'platform' method?  It
-> > > >  > > should at least tell us what ACPI would like the device to do at
-> > > >  > > suspend time, but it probably won't fix the hang.
-> > >
-> > > It says "calling pci_set_power_state with 3". Then after all then it
-> > > still hangs, and then resume with Mr Green.
-> > >
-> > > PM: Syncing filesystems ... done.
-> > > Freezing user space processes ... (elapsed 0.00 seconds) done.
-> > > Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> > > PM: Shrinking memory...  ^H-^Hdone (0 pages freed)
-> > > PM: Freed 0 kbytes in 0.20 seconds (0.00 MB/s)
-> > > ACPI: Preparing to enter system sleep state S4
-> > > Suspending console(s)
-> > > sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> > > drm_sysfs_suspend
-> > > ACPI: PCI interrupt for device 0000:00:02.0 disabled
-> > > calling pci_set_power_state with 3
-> >
-> > So it returns the right value.
-> >
-> > Jeff, Jesse, please check one thing for me.
-> >
-> > Please boot 2.6.25-rc2 (or better, the current head of the Linus' tree)
-> > with no_console_suspend and try to do the following:
-> >
-> > # echo 8 > /proc/sys/kernel/printk
-> > # echo core > /sys/power/pm_test
-> > # echo disk > /sys/power/state
-> >
-> > (that will run a test of the freeze/unfreeze code without creating the
-> > image) and then
-> 
-> That comes back for me, without creating the green screen.  There's a long 
-> delay between it saying "entering S4" and actually resuming back to my 
-> console though.
 
-There's an intentional 5 sec. wait.  If the delay is longer that 5 sec., that's a
-bit strange.
- 
-> > # echo mem > /sys/power/state
-> >
-> > (that will run a test of the suspend/resume code without actually
-> > suspending).
-> >
-> > I'd like to know if that works.
-> 
-> This also works (after doing the echo disk > ...) above.
+This is a note to let you know that I've just added the patch titled
 
-That's what I wanted to know, thanks.
+     Subject: power_state: remove it from driver core
 
-> There's still a delay between "entering S3" and the resume to my console
-> though. 
+to my gregkh-2.6 tree.  Its filename is
 
-If that's 5 sec., it's fine.
+     power_state-remove-it-from-driver-core.patch
 
-Please apply the appended patch and try to hibernate.  I wonder if you get the
-reboot or it hangs earlier.
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-Thanks,
-Rafael
+
+>From pavel@ucw.cz  Thu Feb 21 13:36:22 2008
+From: Pavel Machek <pavel@ucw.cz>
+Date: Thu, 21 Feb 2008 13:58:10 +0100
+Subject: power_state: remove it from driver core
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
+Message-ID: <20080221125809.GA30308@elf.ucw.cz>
+Content-Disposition: inline
+
+
+power_state is scheduled for removal, and it is used only for debug
+prints by driver core. Remove it.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/power/disk.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/base/power/main.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -405,11 +405,7 @@ int hibernation_platform_enter(void)
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -419,11 +419,6 @@ static int suspend_device(struct device 
+ {
+ 	int error = 0;
  
- 	local_irq_disable();
- 	error = device_power_down(PMSG_SUSPEND);
--	if (!error) {
--		hibernation_ops->enter();
--		/* We should never get here */
--		while (1);
+-	if (dev->power.power_state.event) {
+-		dev_dbg(dev, "PM: suspend %d-->%d\n",
+-			dev->power.power_state.event, state.event);
 -	}
-+	mdelay(1000);
- 	local_irq_enable();
- 
- 	/*
-@@ -424,6 +420,7 @@ int hibernation_platform_enter(void)
- 	resume_console();
-  Close:
- 	hibernation_ops->end();
-+	kernel_restart(NULL);
- 	return error;
- }
- 
+-
+ 	if (dev->class && dev->class->suspend) {
+ 		suspend_device_dbg(dev, state, "class ");
+ 		error = dev->class->suspend(dev, state);
+
+
+Patches currently in gregkh-2.6 which might be from pavel@ucw.cz are
+
+driver/driver-core-pm-make-suspend_device-static.patch
+driver/pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
+driver/power_state-remove-it-from-driver-core.patch
+usb/power_state-remove-it-from-usb.patch
