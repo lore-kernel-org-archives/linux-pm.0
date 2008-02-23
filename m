@@ -1,15 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [patch 2.6.25-rc2-git] acpi_pci_set_power_state()
-	cleanups
-Date: Sat, 23 Feb 2008 01:30:00 -0500
-Message-ID: <200802230130.01081.lenb__14137.7066880979$1203748321$gmane$org@kernel.org>
-References: <200802222141.51699.david-b@pacbell.net>
+From: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-rc2 regression - hang on suspend
+Date: Sat, 23 Feb 2008 08:38:38 +0100
+Message-ID: <1203752318.4498.1.camel__11732.8881788582$1203752430$gmane$org@localhost>
+References: <1203422386.10992.2.camel@localhost>
+	<200802220006.39130.rjw@sisk.pl> <1203663628.8422.2.camel@localhost>
+	<200802221656.28546.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802222141.51699.david-b@pacbell.net>
-Content-Disposition: inline
+In-Reply-To: <200802221656.28546.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,71 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-applied.
+On Fri, 2008-02-22 at 16:56 +0100, Rafael J. Wysocki wrote:
+> On Friday, 22 of February 2008, Soeren Sonnenburg wrote:
+> > On Fri, 2008-02-22 at 00:06 +0100, Rafael J. Wysocki wrote: 
+> > > On Thursday, 21 of February 2008, Soeren Sonnenburg wrote:
+> > > > On Thu, 2008-02-21 at 01:31 +0100, Rafael J. Wysocki wrote:
+> > > > > On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
+> > > > > > On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
+> > [...] 
+> > Also when compiling these many kernels via make -j4 I noted that I could
+> > hardly move the mouse / use the keyboard, but saw random jumps and
+> > key-repetitions...
+> 
+> This last bit is most likely a scheduler issue.  Do you have CONFIG_GROUP_SCHED
+> set by chance?  If you do, please try to unset it and see if that helps.
 
-thanks,
--len
+Yes I had. Disabling this helped a lot -- the kernel seems to behave
+normally with this option unset.
 
-On Saturday 23 February 2008 00:41, David Brownell wrote:
-> Minor cleanups to acpi_pci_set_power_state():  use the ACPI and PCI
-> state symbols to make clear that a mapping is being done between PCI
-> and ACPI states, instead of using magic numbers.  For paranoia's sake,
-> report any errors.  Save five bytes (x86_64) too.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
-> Extracted from the "teach ACPI how to use driver model wakeup flags"
-> patch series ... who knows, maybe that could be merged someday.
-> 
->  drivers/pci/pci-acpi.c |   24 ++++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
-> 
-> --- g26.orig/drivers/pci/pci-acpi.c	2008-02-22 19:26:58.000000000 -0800
-> +++ g26/drivers/pci/pci-acpi.c	2008-02-22 20:37:14.000000000 -0800
-> @@ -272,21 +272,29 @@ static int acpi_pci_set_power_state(stru
->  {
->  	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
->  	acpi_handle tmp;
-> -	static int state_conv[] = {
-> -		[0] = 0,
-> -		[1] = 1,
-> -		[2] = 2,
-> -		[3] = 3,
-> -		[4] = 3
-> +	static const u8 state_conv[] = {
-> +		[PCI_D0] = ACPI_STATE_D0,
-> +		[PCI_D1] = ACPI_STATE_D1,
-> +		[PCI_D2] = ACPI_STATE_D2,
-> +		[PCI_D3hot] = ACPI_STATE_D3,
-> +		[PCI_D3cold] = ACPI_STATE_D3
->  	};
-> -	int acpi_state = state_conv[(int __force) state];
->  
->  	if (!handle)
->  		return -ENODEV;
->  	/* If the ACPI device has _EJ0, ignore the device */
->  	if (ACPI_SUCCESS(acpi_get_handle(handle, "_EJ0", &tmp)))
->  		return 0;
-> -	return acpi_bus_set_power(handle, acpi_state);
-> +
-> +	switch (state) {
-> +	case PCI_D0:
-> +	case PCI_D1:
-> +	case PCI_D2:
-> +	case PCI_D3hot:
-> +	case PCI_D3cold:
-> +		return acpi_bus_set_power(handle, state_conv[state]);
-> +	}
-> +	return -EINVAL;
->  }
->  
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Soeren
