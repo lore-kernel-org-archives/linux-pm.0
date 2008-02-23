@@ -1,16 +1,13 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] PM: Handle unregistering devices
-	during	suspend/hibernation
-Date: Fri, 22 Feb 2008 19:47:37 -0800
-Message-ID: <20080223034737.GA25876__18116.0282729708$1203738488$gmane$org@suse.de>
-References: <200802230053.12180.rjw@sisk.pl> <20080223000222.GA26104@suse.de>
-	<200802230121.50232.rjw@sisk.pl> <200802230219.28191.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: [patch 2.6.25-rc2-git] acpi_pci_set_power_state()
+	cleanups
+Date: Fri, 22 Feb 2008 21:41:51 -0800
+Message-ID: <200802222141.51699.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200802230219.28191.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-acpi@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 02:19:27AM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 23 of February 2008, Rafael J. Wysocki wrote:
-> > On Saturday, 23 of February 2008, Greg KH wrote:
-> > > On Sat, Feb 23, 2008 at 12:53:11AM +0100, Rafael J. Wysocki wrote:
-> > > > Hi Greg,
-> > > > 
-> > > > The appended patch fixes the issue with the new code for suspending/resuming
-> > > > devices, related to the fact that some device drivers and CPU hotplug notifiers
-> > > > unregister device objects while suspend is in progress, which leads to
-> > > > deadlocks.
-> > > > 
-> > > > Please consider taking it for 2.6.25.
-> 
-> Ouch, please disregard this patch.
-> 
-> Alan rightfully noticed that it may confuse subsystems assuming that after
-> device_unregister() has returned, the driver's ->release() method has run.
-> 
-> Unfortunately, he did that in a Bugzilla comment that has never reached
-> my mailbox (strangely enough, I haven't been receiving any messages from
-> the Bugzilla for the last two days or so).
-> 
-> Sorry for the trouble.
+Minor cleanups to acpi_pci_set_power_state():  use the ACPI and PCI
+state symbols to make clear that a mapping is being done between PCI
+and ACPI states, instead of using magic numbers.  For paranoia's sake,
+report any errors.  Save five bytes (x86_64) too.
 
-No problem at all.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Extracted from the "teach ACPI how to use driver model wakeup flags"
+patch series ... who knows, maybe that could be merged someday.
 
-thanks,
+ drivers/pci/pci-acpi.c |   24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-greg k-h
+--- g26.orig/drivers/pci/pci-acpi.c	2008-02-22 19:26:58.000000000 -0800
++++ g26/drivers/pci/pci-acpi.c	2008-02-22 20:37:14.000000000 -0800
+@@ -272,21 +272,29 @@ static int acpi_pci_set_power_state(stru
+ {
+ 	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
+ 	acpi_handle tmp;
+-	static int state_conv[] = {
+-		[0] = 0,
+-		[1] = 1,
+-		[2] = 2,
+-		[3] = 3,
+-		[4] = 3
++	static const u8 state_conv[] = {
++		[PCI_D0] = ACPI_STATE_D0,
++		[PCI_D1] = ACPI_STATE_D1,
++		[PCI_D2] = ACPI_STATE_D2,
++		[PCI_D3hot] = ACPI_STATE_D3,
++		[PCI_D3cold] = ACPI_STATE_D3
+ 	};
+-	int acpi_state = state_conv[(int __force) state];
+ 
+ 	if (!handle)
+ 		return -ENODEV;
+ 	/* If the ACPI device has _EJ0, ignore the device */
+ 	if (ACPI_SUCCESS(acpi_get_handle(handle, "_EJ0", &tmp)))
+ 		return 0;
+-	return acpi_bus_set_power(handle, acpi_state);
++
++	switch (state) {
++	case PCI_D0:
++	case PCI_D1:
++	case PCI_D2:
++	case PCI_D3hot:
++	case PCI_D3cold:
++		return acpi_bus_set_power(handle, state_conv[state]);
++	}
++	return -EINVAL;
+ }
+ 
+ 
