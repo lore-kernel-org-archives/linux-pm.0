@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: Handle unregistering devices during
-	suspend/hibernation
-Date: Sat, 23 Feb 2008 01:21:49 +0100
-Message-ID: <200802230121.50232.rjw__46802.380870986$1203726386$gmane$org@sisk.pl>
-References: <200802230053.12180.rjw@sisk.pl> <20080223000222.GA26104@suse.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: i915 hibernation patch (was: Re: [Suspend-devel]
+ 2.6.25-rc2 System no longer powers off aftersuspend-to-disk. Screen becomes
+ green.)
+Date: Fri, 22 Feb 2008 17:00:06 -0800 (PST)
+Message-ID: <alpine.LFD.1.00.0802221653000.21332__24658.0306128182$1203728536$gmane$org@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	<200802211713.20713.jesse.barnes@intel.com>
+	<200802211744.35563.jesse.barnes@intel.com>
+	<200802230031.20292.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080223000222.GA26104@suse.de>
-Content-Disposition: inline
+In-Reply-To: <200802230031.20292.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,102 +22,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Romano Giannetti <romano@dea.icai.upcomillas.es>, linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 23 of February 2008, Greg KH wrote:
-> On Sat, Feb 23, 2008 at 12:53:11AM +0100, Rafael J. Wysocki wrote:
-> > Hi Greg,
-> > 
-> > The appended patch fixes the issue with the new code for suspending/resuming
-> > devices, related to the fact that some device drivers and CPU hotplug notifiers
-> > unregister device objects while suspend is in progress, which leads to
-> > deadlocks.
-> > 
-> > Please consider taking it for 2.6.25.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Introduce a mechanism preventing drivers and CPU hotplug notifiers
-> > from deadlocking suspend/hibernation by unregistering device objects
-> > while it is in progress.  Specifically, make device_del() detect if
-> > it has been called by the suspending task and automatically defer the
-> > removal of the device object if that's the case.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Acked-by: Alan Stern <stern@rowland.harvard.edu>
-> > ---
-> >  drivers/base/core.c        |    5 +++++
-> >  drivers/base/power/main.c  |    9 +++++++++
-> >  drivers/base/power/power.h |    5 +++++
-> >  3 files changed, 19 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/base/power/main.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/main.c
-> > +++ linux-2.6/drivers/base/power/main.c
-> > @@ -59,6 +59,13 @@ static DECLARE_RWSEM(pm_sleep_rwsem);
-> >  
-> >  int (*platform_enable_wakeup)(struct device *dev, int is_on);
-> >  
-> > +static struct task_struct *suspending_task;
-> > +
-> > +bool in_suspend_context(void)
-> > +{
-> > +	return (suspending_task == current);
-> > +}
-> > +
-> >  /**
-> >   *	device_pm_add - add a device to the list of active devices
-> >   *	@dev:	Device to be added to the list
-> > @@ -272,6 +279,7 @@ static void dpm_resume(void)
-> >  		mutex_lock(&dpm_list_mtx);
-> >  	}
-> >  	mutex_unlock(&dpm_list_mtx);
-> > +	suspending_task = NULL;
-> >  }
-> >  
-> >  /**
-> > @@ -460,6 +468,7 @@ static int dpm_suspend(pm_message_t stat
-> >  {
-> >  	int error = 0;
-> >  
-> > +	suspending_task = current;
-> >  	mutex_lock(&dpm_list_mtx);
-> >  	while (!list_empty(&dpm_locked)) {
-> >  		struct list_head *entry = dpm_locked.prev;
-> > Index: linux-2.6/drivers/base/core.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/core.c
-> > +++ linux-2.6/drivers/base/core.c
-> > @@ -929,6 +929,11 @@ void device_del(struct device *dev)
-> >  	struct device *parent = dev->parent;
-> >  	struct class_interface *class_intf;
-> >  
-> > +	if (in_suspend_context()) {
-> > +		get_device(dev);
-> > +		device_pm_schedule_removal(dev);
-> > +		return;
-> > +	}
-> 
-> Why are you grabbing an additional reference to the device here?  That
-> would seem to get out of balance when the device is later scheduled for
-> removal, right?
 
-No, IMO the reference is necessary, because unregister_dropped_devices() uses
-device_unregister() that does the put_device() eventually.
 
-If we are called by device_unregister(), the get_device() is needed to balance
-the put_device() that will be called by device_unregister() after we return.
+On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
 
-OTOH, if we are called directly, then we need to balance the put_device()
-that will be done by device_unregister() called from
-unregister_dropped_devices().
+> --- linux-2.6.orig/drivers/char/drm/i915_drv.c
+> +++ linux-2.6/drivers/char/drm/i915_drv.c
+> @@ -222,6 +222,7 @@ static void i915_restore_vga(struct drm_
+>  			   dev_priv->saveGR[0x18]);
+>  
+>  	/* Attribute controller registers */
+> +	inb(st01);
+>  	for (i = 0; i < 20; i++)
+>  		i915_write_ar(st01, i, dev_priv->saveAR[i], 0);
+>  	inb(st01); /* switch back to index mode */
 
-Thanks,
-Rafael
+I'm doing this part separately, please drop it - it has nothing to do with 
+the rest of the patch.
+
+I'd also suggest that you just add a helper function like
+
+	int pm_event_powerdown(struct pm_message mesg)
+	{
+		return mesg.event >= PM_EVENT_SUSPEND;
+	}
+
+or something, so that you can have code like
+
+	if (pm_event_powerdown(mesg))
+		pci_set_power_state(pdev, PCI_D3hot);
+
+instead of the test for EVENT_SUSPEND/HIBERNATE explicitly.
+
+Of course, the places that already do a switch-statement are much better 
+kept that way and just add PM_EVENT_HIBERNATE to the list.
+
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -554,6 +554,7 @@ pci_power_t pci_choose_state(struct pci_
+>  	case PM_EVENT_PRETHAW:
+>  		/* REVISIT both freeze and pre-thaw "should" use D0 */
+>  	case PM_EVENT_SUSPEND:
+> +	case PM_EVENT_HIBERNATE:
+>  		return PCI_D3hot;
+
+Didn't you miss the apci_pci_choose_state() thing that also needs this 
+extension?
+
+> Index: linux-2.6/drivers/usb/host/u132-hcd.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/usb/host/u132-hcd.c
+> +++ linux-2.6/drivers/usb/host/u132-hcd.c
+> @@ -3214,14 +3214,18 @@ static int u132_suspend(struct platform_
+>                  return -ESHUTDOWN;
+>          } else {
+>                  int retval = 0;
+> -                if (state.event == PM_EVENT_FREEZE) {
+> +
+> +		switch (state.event) {
+> +		case PM_EVENT_FREEZE:
+>                          retval = u132_bus_suspend(hcd);
+> -                } else if (state.event == PM_EVENT_SUSPEND) {
+> +			break;
+> +		case PM_EVENT_SUSPEND:
+> +		case PM_EVENT_HIBERNATE:
+>                          int ports = MAX_U132_PORTS;
+>                          while (ports-- > 0) {
+>                                  port_power(u132, ports, 0);
+>                          }
+> -                }
+> +			break;
+>                  if (retval == 0)
+>                          pdev->dev.power.power_state = state;
+>                  return retval;
+
+Looks like a missing close-brace to me there - you removed the final '}'.
+
+Or am I blind?
+
+Apart from those issues it looks fine to me.
+
+			Linus
