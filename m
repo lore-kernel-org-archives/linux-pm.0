@@ -1,44 +1,155 @@
-From: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-rc2 regression - hang on suspend
-Date: Sat, 23 Feb 2008 08:38:38 +0100
-Message-ID: <1203752318.4498.1.camel__11732.8881788582$1203752430$gmane$org@localhost>
-References: <1203422386.10992.2.camel@localhost>
-	<200802220006.39130.rjw@sisk.pl> <1203663628.8422.2.camel@localhost>
-	<200802221656.28546.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: power_state: remove from input & rfkill
+Date: Sat, 23 Feb 2008 11:30:01 +0100
+Message-ID: <20080223103001.GA3837@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802221656.28546.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-input-owner@vger.kernel.org
+To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2008-02-22 at 16:56 +0100, Rafael J. Wysocki wrote:
-> On Friday, 22 of February 2008, Soeren Sonnenburg wrote:
-> > On Fri, 2008-02-22 at 00:06 +0100, Rafael J. Wysocki wrote: 
-> > > On Thursday, 21 of February 2008, Soeren Sonnenburg wrote:
-> > > > On Thu, 2008-02-21 at 01:31 +0100, Rafael J. Wysocki wrote:
-> > > > > On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
-> > > > > > On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
-> > [...] 
-> > Also when compiling these many kernels via make -j4 I noted that I could
-> > hardly move the mouse / use the keyboard, but saw random jumps and
-> > key-repetitions...
-> 
-> This last bit is most likely a scheduler issue.  Do you have CONFIG_GROUP_SCHED
-> set by chance?  If you do, please try to unset it and see if that helps.
 
-Yes I had. Disabling this helped a lot -- the kernel seems to behave
-normally with this option unset.
+power_state is being removed from kernel, this time in input.
 
-Soeren
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index 2763394..3816e44 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -895,13 +895,8 @@ #ifdef CONFIG_PM
+ 
+ static int i8042_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	if (dev->dev.power.power_state.event != state.event) {
+-		if (state.event == PM_EVENT_SUSPEND)
+-			i8042_controller_reset();
+-
+-		dev->dev.power.power_state = state;
+-	}
+-
++	if (state.event == PM_EVENT_SUSPEND)
++		i8042_controller_reset();
+ 	return 0;
+ }
+ 
+@@ -914,12 +909,6 @@ static int i8042_resume(struct platform_
+ {
+ 	int error;
+ 
+-/*
+- * Do not bother with restoring state if we haven't suspened yet
+- */
+-	if (dev->dev.power.power_state.event == PM_EVENT_ON)
+-		return 0;
+-
+ 	error = i8042_controller_check();
+ 	if (error)
+ 		return error;
+@@ -954,9 +943,6 @@ static int i8042_resume(struct platform_
+ 		i8042_enable_kbd_port();
+ 
+ 	i8042_interrupt(0, NULL);
+-
+-	dev->dev.power.power_state = PMSG_ON;
+-
+ 	return 0;
+ }
+ #endif /* CONFIG_PM */
+diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
+index 7f52938..0673f3a 100644
+--- a/drivers/input/serio/serio.c
++++ b/drivers/input/serio/serio.c
+@@ -912,13 +912,8 @@ #endif /* CONFIG_HOTPLUG */
+ #ifdef CONFIG_PM
+ static int serio_suspend(struct device *dev, pm_message_t state)
+ {
+-	if (dev->power.power_state.event != state.event) {
+-		if (state.event == PM_EVENT_SUSPEND)
+-			serio_cleanup(to_serio_port(dev));
+-
+-		dev->power.power_state = state;
+-	}
+-
++	if (state.event == PM_EVENT_SUSPEND)
++		serio_cleanup(to_serio_port(dev));
+ 	return 0;
+ }
+ 
+@@ -926,8 +921,7 @@ static int serio_resume(struct device *d
+ {
+ 	struct serio *serio = to_serio_port(dev);
+ 
+-	if (dev->power.power_state.event != PM_EVENT_ON &&
+-	    serio_reconnect_driver(serio)) {
++	if (serio_reconnect_driver(serio)) {
+ 		/*
+ 		 * Driver re-probing can take a while, so better let kseriod
+ 		 * deal with it.
+@@ -935,8 +929,6 @@ static int serio_resume(struct device *d
+ 		serio_rescan(serio);
+ 	}
+ 
+-	dev->power.power_state = PMSG_ON;
+-
+ 	return 0;
+ }
+ #endif /* CONFIG_PM */
+diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
+index 1a47f5d..81d7f5f 100644
+--- a/net/rfkill/rfkill.c
++++ b/net/rfkill/rfkill.c
+@@ -231,18 +231,14 @@ static int rfkill_suspend(struct device 
+ {
+ 	struct rfkill *rfkill = to_rfkill(dev);
+ 
+-	if (dev->power.power_state.event != state.event) {
+-		if (state.event == PM_EVENT_SUSPEND) {
+-			mutex_lock(&rfkill->mutex);
+-
+-			if (rfkill->state == RFKILL_STATE_ON)
+-				rfkill->toggle_radio(rfkill->data,
+-						     RFKILL_STATE_OFF);
++	if (state.event == PM_EVENT_SUSPEND) {
++		mutex_lock(&rfkill->mutex);
+ 
+-			mutex_unlock(&rfkill->mutex);
+-		}
++		if (rfkill->state == RFKILL_STATE_ON)
++			rfkill->toggle_radio(rfkill->data,
++					     RFKILL_STATE_OFF);
+ 
+-		dev->power.power_state = state;
++		mutex_unlock(&rfkill->mutex);
+ 	}
+ 
+ 	return 0;
+@@ -252,16 +248,12 @@ static int rfkill_resume(struct device *
+ {
+ 	struct rfkill *rfkill = to_rfkill(dev);
+ 
+-	if (dev->power.power_state.event != PM_EVENT_ON) {
+-		mutex_lock(&rfkill->mutex);
++	mutex_lock(&rfkill->mutex);
+ 
+-		if (rfkill->state == RFKILL_STATE_ON)
+-			rfkill->toggle_radio(rfkill->data, RFKILL_STATE_ON);
++	if (rfkill->state == RFKILL_STATE_ON)
++		rfkill->toggle_radio(rfkill->data, RFKILL_STATE_ON);
+ 
+-		mutex_unlock(&rfkill->mutex);
+-	}
+-
+-	dev->power.power_state = PMSG_ON;
++	mutex_unlock(&rfkill->mutex);
+ 	return 0;
+ }
+ #else
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
