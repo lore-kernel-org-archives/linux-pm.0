@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: Introduce PM_EVENT_HIBERNATE (was: Re:
-	i915 hibernation patch (was: Re: 2.6.25-rc2 System no longer ...))
-Date: Sun, 24 Feb 2008 12:25:20 +0100
-Message-ID: <200802241225.21510.rjw__7055.98032004691$1203852583$gmane$org@sisk.pl>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-	<1203826599.30621.25.camel@mtlp> <200802241211.48000.rjw@sisk.pl>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is
+	inserted
+Date: Sun, 24 Feb 2008 14:33:20 +0100
+Message-ID: <200802241433.20755.rjw__44963.9208186001$1203860421$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802241211.48000.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,51 +19,251 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mirco Tischler <mt-ml@gmx.de>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Alexey Starikovskiy <astarikovskiy@suse.de>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Romano Giannetti <romano@dea.icai.upcomillas.es>, linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5LCAyNCBvZiBGZWJydWFyeSAyMDA4LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToK
-PiBPbiBTdW5kYXksIDI0IG9mIEZlYnJ1YXJ5IDIwMDgsIE1pcmNvIFRpc2NobGVyIHdyb3RlOgo+
-ID4gCj4gPiBPbiBTYSwgMjAwOC0wMi0yMyBhdCAxOToxMyArMDEwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gPiA+IEluZGV4OiBsaW51eC0yLjYvZHJpdmVycy91c2IvaG9zdC91MTMyLWhj
-ZC5jCj4gPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT0KPiA+ID4gLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvdXNi
-L2hvc3QvdTEzMi1oY2QuYwo+ID4gPiArKysgbGludXgtMi42L2RyaXZlcnMvdXNiL2hvc3QvdTEz
-Mi1oY2QuYwo+ID4gPiBAQCAtMzIxNCwxNCArMzIxNCwxOSBAQCBzdGF0aWMgaW50IHUxMzJfc3Vz
-cGVuZChzdHJ1Y3QgcGxhdGZvcm1fCj4gPiA+ICAgICAgICAgICAgICAgICAgcmV0dXJuIC1FU0hV
-VERPV047Cj4gPiA+ICAgICAgICAgIH0gZWxzZSB7Cj4gPiA+ICAgICAgICAgICAgICAgICAgaW50
-IHJldHZhbCA9IDA7Cj4gPiA+IC0gICAgICAgICAgICAgICAgaWYgKHN0YXRlLmV2ZW50ID09IFBN
-X0VWRU5UX0ZSRUVaRSkgewo+ID4gPiArCj4gPiA+ICsJCXN3aXRjaCAoc3RhdGUuZXZlbnQpIHsK
-PiA+ID4gKwkJY2FzZSBQTV9FVkVOVF9GUkVFWkU6Cj4gPiA+ICAgICAgICAgICAgICAgICAgICAg
-ICAgICByZXR2YWwgPSB1MTMyX2J1c19zdXNwZW5kKGhjZCk7Cj4gPiA+IC0gICAgICAgICAgICAg
-ICAgfSBlbHNlIGlmIChzdGF0ZS5ldmVudCA9PSBQTV9FVkVOVF9TVVNQRU5EKSB7Cj4gPiA+ICsJ
-CQlicmVhazsKPiA+ID4gKwkJY2FzZSBQTV9FVkVOVF9TVVNQRU5EOgo+ID4gPiArCQljYXNlIFBN
-X0VWRU5UX0hJQkVSTkFURToKPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgIGludCBwb3J0
-cyA9IE1BWF9VMTMyX1BPUlRTOwo+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUg
-KHBvcnRzLS0gPiAwKSB7Cj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBv
-cnRfcG93ZXIodTEzMiwgcG9ydHMsIDApOwo+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgICAg
-fQo+ID4gPiAtICAgICAgICAgICAgICAgIH0KPiA+ID4gKwkJCWJyZWFrOwo+ID4gPiArCQl9Cj4g
-PiA+ICAgICAgICAgICAgICAgICAgaWYgKHJldHZhbCA9PSAwKQo+ID4gPiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgcGRldi0+ZGV2LnBvd2VyLnBvd2VyX3N0YXRlID0gc3RhdGU7Cj4gPiA+ICAg
-ICAgICAgICAgICAgICAgcmV0dXJuIHJldHZhbDsKPiA+IO+7v0htbS4gRG9lc24ndCBjb21waWxl
-IGZvciBtZSBpbiAyLjYuMjUtcmMyLWdpdDc6Cj4gPiAKPiA+ICAgQ0MgW01dICBkcml2ZXJzL3Vz
-Yi9ob3N0L3UxMzItaGNkLm8KPiA+IGRyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2QuYzogSW4gZnVu
-Y3Rpb24g4oCYdTEzMl9zdXNwZW5k4oCZOgo+ID4gZHJpdmVycy91c2IvaG9zdC91MTMyLWhjZC5j
-OjMyMjQ6IGVycm9yOiBleHBlY3RlZCBleHByZXNzaW9uIGJlZm9yZQo+ID4g4oCYaW504oCZCj4g
-PiBkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmM6MzIyNTogZXJyb3I6IOKAmHBvcnRz4oCZIHVu
-ZGVjbGFyZWQgKGZpcnN0IHVzZQo+ID4gaW4gdGhpcyBmdW5jdGlvbikKPiA+IGRyaXZlcnMvdXNi
-L2hvc3QvdTEzMi1oY2QuYzozMjI1OiBlcnJvcjogKEVhY2ggdW5kZWNsYXJlZCBpZGVudGlmaWVy
-IGlzCj4gPiByZXBvcnRlZCBvbmx5IG9uY2UKPiA+IGRyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2Qu
-YzozMjI1OiBlcnJvcjogZm9yIGVhY2ggZnVuY3Rpb24gaXQgYXBwZWFycwo+ID4gaW4uKQo+ID4g
-bWFrZVszXTogKioqIFtkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLm9dIEVycm9yIDEKPiA+IG1h
-a2VbMl06ICoqKiBbZHJpdmVycy91c2IvaG9zdF0gRXJyb3IgMgo+ID4gbWFrZVsxXTogKioqIFtk
-cml2ZXJzL3VzYl0gRXJyb3IgMgo+ID4gbWFrZTogKioqIFtkcml2ZXJzXSBFcnJvciAyCj4gPiAK
-PiA+IFRoaXMgZml4ZXMgaXQ6Cj4gPiAKPiA+IFRoYW5rcwo+ID4gTWlyY28KPiA+IAo+ID4gLS0t
-Cj4gPiBGcm9tOiBNaXJjbyBUaXNjaGxlciA8bXQtbWxAZ214LmRlPgo+ID4gCj4gPiBGaXhlcyB0
-aGUgZm9sbG93aW5nIGNvbXBpbGUgZXJyb3IgY2F1c2VkIGJ5IGNvbW1pdAo+ID4gM2EyZDViNzAw
-MTMyZjM1NDAxZjFkOWUyMmZlM2MyY2FiMDJjMjU0OQoKQWgsIEkgc2VlIGl0J3MgbWVyZ2VkIGFs
-cmVhZHkuCgpUaGFua3MgZm9yIHRoZSBmaXgsIGJ0dyEgOi0pCgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Sunday, 24 of February 2008, Alan Stern wrote:
+> On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
+> 
+> > On Sunday, 24 of February 2008, Alan Stern wrote:
+> > > On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > Ultimately no, it's not.  However, we are now late in the -rc2 time frame and
+> > > > the release of -rc3 seems to be imminent.  At this point, IMO, that's the
+> > > > safest thing to do.  BTW, appended is the patch I'd like to get applied.
+> > > 
+> > > In the interest of having a safe release, I guess you're right.
+> > 
+> > That's what I'm concerned about at the moment.  I'm afraid there won't be
+> > enough time to nail down all the issues (there may be some we're not even
+> > aware of).
+> 
+> All right.  You'll need to enlarge your big reversal patch by reverting 
+> commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f.
+
+Thanks for the hint.
+
+In fact, I had to add a couple of fixes in device_power_down() and
+dpm_suspend().  The entire patch is appended.
+
+I'll comment your new patch in a separate message.
+
+Thanks,
+Rafael
+
+---
+ drivers/base/power/main.c |   97 +++-------------------------------------------
+ drivers/usb/core/usb.c    |    2 
+ 2 files changed, 8 insertions(+), 91 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -48,7 +48,6 @@
+  */
+ 
+ LIST_HEAD(dpm_active);
+-static LIST_HEAD(dpm_locked);
+ static LIST_HEAD(dpm_off);
+ static LIST_HEAD(dpm_off_irq);
+ static LIST_HEAD(dpm_destroy);
+@@ -81,28 +80,6 @@ void device_pm_add(struct device *dev)
+  */
+ void device_pm_remove(struct device *dev)
+ {
+-	/*
+-	 * If this function is called during a suspend, it will be blocked,
+-	 * because we're holding the device's semaphore at that time, which may
+-	 * lead to a deadlock.  In that case we want to print a warning.
+-	 * However, it may also be called by unregister_dropped_devices() with
+-	 * the device's semaphore released, in which case the warning should
+-	 * not be printed.
+-	 */
+-	if (down_trylock(&dev->sem)) {
+-		if (down_read_trylock(&pm_sleep_rwsem)) {
+-			/* No suspend in progress, wait on dev->sem */
+-			down(&dev->sem);
+-			up_read(&pm_sleep_rwsem);
+-		} else {
+-			/* Suspend in progress, we may deadlock */
+-			dev_warn(dev, "Suspicious %s during suspend\n",
+-				__FUNCTION__);
+-			dump_stack();
+-			/* The user has been warned ... */
+-			down(&dev->sem);
+-		}
+-	}
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+@@ -110,7 +87,6 @@ void device_pm_remove(struct device *dev
+ 	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+-	up(&dev->sem);
+ }
+ 
+ /**
+@@ -266,7 +242,7 @@ static void dpm_resume(void)
+ 		struct list_head *entry = dpm_off.next;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_move_tail(entry, &dpm_locked);
++		list_move_tail(entry, &dpm_active);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		resume_device(dev);
+ 		mutex_lock(&dpm_list_mtx);
+@@ -275,25 +251,6 @@ static void dpm_resume(void)
+ }
+ 
+ /**
+- *	unlock_all_devices - Release each device's semaphore
+- *
+- *	Go through the dpm_off list.  Put each device on the dpm_active
+- *	list and unlock it.
+- */
+-static void unlock_all_devices(void)
+-{
+-	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_locked)) {
+-		struct list_head *entry = dpm_locked.prev;
+-		struct device *dev = to_device(entry);
+-
+-		list_move(entry, &dpm_active);
+-		up(&dev->sem);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-}
+-
+-/**
+  *	unregister_dropped_devices - Unregister devices scheduled for removal
+  *
+  *	Unregister all devices on the dpm_destroy list.
+@@ -305,7 +262,6 @@ static void unregister_dropped_devices(v
+ 		struct list_head *entry = dpm_destroy.next;
+ 		struct device *dev = to_device(entry);
+ 
+-		up(&dev->sem);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		/* This also removes the device from the list */
+ 		device_unregister(dev);
+@@ -324,7 +280,6 @@ void device_resume(void)
+ {
+ 	might_sleep();
+ 	dpm_resume();
+-	unlock_all_devices();
+ 	unregister_dropped_devices();
+ 	up_write(&pm_sleep_rwsem);
+ }
+@@ -388,18 +343,15 @@ int device_power_down(pm_message_t state
+ 		struct list_head *entry = dpm_off.prev;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_del_init(&dev->power.entry);
+ 		error = suspend_device_late(dev, state);
+ 		if (error) {
+ 			printk(KERN_ERR "Could not power down device %s: "
+ 					"error %d\n",
+ 					kobject_name(&dev->kobj), error);
+-			if (list_empty(&dev->power.entry))
+-				list_add(&dev->power.entry, &dpm_off);
+ 			break;
+ 		}
+-		if (list_empty(&dev->power.entry))
+-			list_add(&dev->power.entry, &dpm_off_irq);
++		if (!list_empty(&dev->power.entry))
++			list_move(&dev->power.entry, &dpm_off_irq);
+ 	}
+ 
+ 	if (!error)
+@@ -461,11 +413,10 @@ static int dpm_suspend(pm_message_t stat
+ 	int error = 0;
+ 
+ 	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_locked)) {
+-		struct list_head *entry = dpm_locked.prev;
++	while (!list_empty(&dpm_active)) {
++		struct list_head *entry = dpm_active.prev;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_del_init(&dev->power.entry);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		error = suspend_device(dev, state);
+ 		if (error) {
+@@ -476,14 +427,11 @@ static int dpm_suspend(pm_message_t stat
+ 					(error == -EAGAIN ?
+ 					" (please convert to suspend_late)" :
+ 					""));
+-			mutex_lock(&dpm_list_mtx);
+-			if (list_empty(&dev->power.entry))
+-				list_add(&dev->power.entry, &dpm_locked);
+ 			break;
+ 		}
+ 		mutex_lock(&dpm_list_mtx);
+-		if (list_empty(&dev->power.entry))
+-			list_add(&dev->power.entry, &dpm_off);
++		if (!list_empty(&dev->power.entry))
++			list_move(&dev->power.entry, &dpm_off);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 
+@@ -491,36 +439,6 @@ static int dpm_suspend(pm_message_t stat
+ }
+ 
+ /**
+- *	lock_all_devices - Acquire every device's semaphore
+- *
+- *	Go through the dpm_active list. Carefully lock each device's
+- *	semaphore and put it in on the dpm_locked list.
+- */
+-static void lock_all_devices(void)
+-{
+-	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_active)) {
+-		struct list_head *entry = dpm_active.next;
+-		struct device *dev = to_device(entry);
+-
+-		/* Required locking order is dev->sem first,
+-		 * then dpm_list_mutex.  Hence this awkward code.
+-		 */
+-		get_device(dev);
+-		mutex_unlock(&dpm_list_mtx);
+-		down(&dev->sem);
+-		mutex_lock(&dpm_list_mtx);
+-
+-		if (list_empty(entry))
+-			up(&dev->sem);		/* Device was removed */
+-		else
+-			list_move_tail(entry, &dpm_locked);
+-		put_device(dev);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-}
+-
+-/**
+  *	device_suspend - Save state and stop all devices in system.
+  *	@state: new power management state
+  *
+@@ -533,7 +451,6 @@ int device_suspend(pm_message_t state)
+ 
+ 	might_sleep();
+ 	down_write(&pm_sleep_rwsem);
+-	lock_all_devices();
+ 	error = dpm_suspend(state);
+ 	if (error)
+ 		device_resume();
+Index: linux-2.6/drivers/usb/core/usb.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/usb.c
++++ linux-2.6/drivers/usb/core/usb.c
+@@ -234,7 +234,7 @@ static int ksuspend_usb_init(void)
+ 	 * singlethreaded.  Its job doesn't justify running on more
+ 	 * than one CPU.
+ 	 */
+-	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
++	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
+ 	if (!ksuspend_usb_wq)
+ 		return -ENOMEM;
+ 	return 0;
