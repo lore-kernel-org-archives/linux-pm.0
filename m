@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [Bug 10030] Suspend doesn't work when SD card is
 	inserted
-Date: Sun, 24 Feb 2008 14:33:20 +0100
-Message-ID: <200802241433.20755.rjw__44963.9208186001$1203860421$gmane$org@sisk.pl>
+Date: Sun, 24 Feb 2008 14:51:16 +0100
+Message-ID: <200802241451.17334.rjw__18773.6877044246$1203861272$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,138 +25,134 @@ List-Id: linux-pm@vger.kernel.org
 
 On Sunday, 24 of February 2008, Alan Stern wrote:
 > On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
-> 
 > > On Sunday, 24 of February 2008, Alan Stern wrote:
 > > > On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > > Ultimately no, it's not.  However, we are now late in the -rc2 time frame and
-> > > > the release of -rc3 seems to be imminent.  At this point, IMO, that's the
-> > > > safest thing to do.  BTW, appended is the patch I'd like to get applied.
-> > > 
-> > > In the interest of having a safe release, I guess you're right.
-> > 
-> > That's what I'm concerned about at the moment.  I'm afraid there won't be
-> > enough time to nail down all the issues (there may be some we're not even
-> > aware of).
 > 
-> All right.  You'll need to enlarge your big reversal patch by reverting 
-> commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f.
+> > > I still have no clear idea about what's going on with the ACPI bug in 
+> > > #9874.
+> > 
+> > It seems that the ACPI code is not prepared to cope with a failing device
+> > registration, in which case it'd need fixing.  Frankly, I'm afraid there may
+> > be more issues like this throughout the tree.
+> 
+> The fact remains that it is unsafe to register a device during a sleep 
+> transition, although if the device's driver doesn't have a suspend or 
+> resume method you can probably get away with it.
+> 
+> > > However perhaps the bug wouldn't occur if we blocked device  
+> > > registration until after the resume was finished, instead of failing it 
+> > > outright.  Since the registration in this case was done in a workqueue 
+> > > thread, blocking wouldn't cause an immediate deadlock.
+> > 
+> > No, it wouldn't, but the fact that it happens in the ACPI code makes me worry.
+> 
+> It happened in a workqueue.  There could be lots of similar cases: Some 
+> interrupt-driven event causes a hotplug action.  Since the action can't 
+> be carried out in interrupt context, the driver has no choice but to 
+> defer it to a workqueue or kernel thread.  Blocking that workqueue or 
+> kernel thread won't cause a problem _unless_ the driver's 
+> suspend/resume methods try to synchronize with it.  That's the 
+> difficult case.
 
-Thanks for the hint.
+Yes.
 
-In fact, I had to add a couple of fixes in device_power_down() and
-dpm_suspend().  The entire patch is appended.
+> > If we block that code and the things it's supposed to do turn out to be
+> > necessary for suspending later on, we'll be in trouble.
+> 
+> Exactly.
+> 
+> > > @@ -94,14 +102,15 @@ void device_pm_remove(struct device *dev
+> > >  			/* No suspend in progress, wait on dev->sem */
+> > >  			down(&dev->sem);
+> > >  			up_read(&pm_sleep_rwsem);
+> > > -		} else {
+> > > -			/* Suspend in progress, we may deadlock */
+> > > +		} else if (!in_suspend_context()) {
+> > > +			/* Suspending in another task, we may deadlock */
+> > 
+> > Well, that shouldn't really deadlock.  If it does, there is a potential design
+> > issue somewhere.  I think it might be better to set up a timer in here too.
+> 
+> At this point the driver core owns the device semaphore, so the 
+> unregistration task will block until the sleep is over.  If the 
+> driver's resume method has to synchronize with the unregistration task 
+> then it will deadlock.  I agree, it would be a design issue.  In fact, 
+> it's the same design issue described earlier in this email.
+> 
+> > Although IMO it would be even better to just set up a timer and remove the
+> > warning altogehter.
+> 
+> That warning was just for debugging purposes.  A timer in the resume
+> path could do the same thing with fewer false alarms, just like the 
+> timer in the suspend path.  I have added it to the new patch.
 
-I'll comment your new patch in a separate message.
+OK
 
-Thanks,
-Rafael
+> > >  			dev_warn(dev, "Suspicious %s during suspend\n",
+> > >  				__FUNCTION__);
+> > >  			dump_stack();
+> > >  			/* The user has been warned ... */
+> > >  			down(&dev->sem);
+> > >  		}
+> > > +			/* Otherwise we're okay */
+> > >  	}
+> > >  	pr_debug("PM: Removing info for %s:%s\n",
+> > >  		 dev->bus ? dev->bus->name : "No Bus",
+> > 
+> > There's a problem here, because we shouldn't release the semaphore if we're
+> > in the suspend context.
+> 
+> Yes, you're right.  It's fixed in the new version.
+> 
+> > > +static void suspend_timeout(unsigned long _dev)
+> > > +{
+> > > +	struct device *dev = (struct device *) _dev;
+> > > +
+> > > +	dev_err(dev, "deadlock during suspend!\n");
+> > > +	show_state();
+> > 
+> > The show_state() seems to be overkill and won't really help if the user can't
+> > collect the output on the fly using a serial console or something like this.
+> > [The debug stuff printed here should fit a typical laptop screen, ideally.]
+> 
+> Changed.
+> 
+> > I'd prefer
+> > 
+> > 	if (in_suspend_context()) {
+> > 		__device_release_driver(dev);
+> > 	} else {
+> > 		down(&dev->sem);
+> > 		__device_release_driver(dev);
+> > 		up(&dev->sem);
+> > 	}
+> 
+> Okay.
+> 
+> You know, with this new patch we probably don't need 
+> device_pm_schedule_removal() any more.
 
----
- drivers/base/power/main.c |   97 +++-------------------------------------------
- drivers/usb/core/usb.c    |    2 
- 2 files changed, 8 insertions(+), 91 deletions(-)
+No, we don't.  However, because of that dpm_suspend() and device_power_down()
+need to be changed not to assume that the removed devices will end up on
+dpm_destroy.
 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -48,7 +48,6 @@
-  */
- 
- LIST_HEAD(dpm_active);
--static LIST_HEAD(dpm_locked);
- static LIST_HEAD(dpm_off);
- static LIST_HEAD(dpm_off_irq);
- static LIST_HEAD(dpm_destroy);
-@@ -81,28 +80,6 @@ void device_pm_add(struct device *dev)
-  */
- void device_pm_remove(struct device *dev)
- {
--	/*
--	 * If this function is called during a suspend, it will be blocked,
--	 * because we're holding the device's semaphore at that time, which may
--	 * lead to a deadlock.  In that case we want to print a warning.
--	 * However, it may also be called by unregister_dropped_devices() with
--	 * the device's semaphore released, in which case the warning should
--	 * not be printed.
--	 */
--	if (down_trylock(&dev->sem)) {
--		if (down_read_trylock(&pm_sleep_rwsem)) {
--			/* No suspend in progress, wait on dev->sem */
--			down(&dev->sem);
--			up_read(&pm_sleep_rwsem);
--		} else {
--			/* Suspend in progress, we may deadlock */
--			dev_warn(dev, "Suspicious %s during suspend\n",
--				__FUNCTION__);
--			dump_stack();
--			/* The user has been warned ... */
--			down(&dev->sem);
--		}
--	}
- 	pr_debug("PM: Removing info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
-@@ -110,7 +87,6 @@ void device_pm_remove(struct device *dev
- 	dpm_sysfs_remove(dev);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
--	up(&dev->sem);
- }
- 
- /**
-@@ -266,7 +242,7 @@ static void dpm_resume(void)
- 		struct list_head *entry = dpm_off.next;
- 		struct device *dev = to_device(entry);
- 
--		list_move_tail(entry, &dpm_locked);
-+		list_move_tail(entry, &dpm_active);
- 		mutex_unlock(&dpm_list_mtx);
- 		resume_device(dev);
- 		mutex_lock(&dpm_list_mtx);
-@@ -275,25 +251,6 @@ static void dpm_resume(void)
- }
- 
- /**
-- *	unlock_all_devices - Release each device's semaphore
-- *
-- *	Go through the dpm_off list.  Put each device on the dpm_active
-- *	list and unlock it.
-- */
--static void unlock_all_devices(void)
--{
--	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_locked)) {
--		struct list_head *entry = dpm_locked.prev;
--		struct device *dev = to_device(entry);
--
--		list_move(entry, &dpm_active);
--		up(&dev->sem);
--	}
--	mutex_unlock(&dpm_list_mtx);
--}
--
--/**
-  *	unregister_dropped_devices - Unregister devices scheduled for removal
-  *
-  *	Unregister all devices on the dpm_destroy list.
-@@ -305,7 +262,6 @@ static void unregister_dropped_devices(v
- 		struct list_head *entry = dpm_destroy.next;
- 		struct device *dev = to_device(entry);
- 
--		up(&dev->sem);
- 		mutex_unlock(&dpm_list_mtx);
- 		/* This also removes the device from the list */
- 		device_unregister(dev);
-@@ -324,7 +280,6 @@ void device_resume(void)
- {
- 	might_sleep();
- 	dpm_resume();
--	unlock_all_devices();
- 	unregister_dropped_devices();
- 	up_write(&pm_sleep_rwsem);
- }
+> However I have left it in for now.
+
+Well, it's used by the b43, leds and hwrng drivers as well as by some CPU
+hotplug notifiers.  They all will have to be changed along with removing it.
+
+> > Well, I'd really feel much more comfortable if we removed the troublesome code
+> > for 2.6.25 and reintroduced it along with the above safeguards for 2.6.26.
+> > 
+> > Of course, this doesn't mean we can't send debug patches for testing to the
+> > users who have alraedy reported problems with it. :-)
+> 
+> Certainly!
+> 
+> Here's the new version.
+
+IMO you also should add this change in device_power_down():
+
 @@ -388,18 +343,15 @@ int device_power_down(pm_message_t state
  		struct list_head *entry = dpm_off.prev;
  		struct device *dev = to_device(entry);
@@ -178,92 +174,12 @@ Index: linux-2.6/drivers/base/power/main.c
  	}
  
  	if (!error)
-@@ -461,11 +413,10 @@ static int dpm_suspend(pm_message_t stat
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_locked)) {
--		struct list_head *entry = dpm_locked.prev;
-+	while (!list_empty(&dpm_active)) {
-+		struct list_head *entry = dpm_active.prev;
- 		struct device *dev = to_device(entry);
- 
--		list_del_init(&dev->power.entry);
- 		mutex_unlock(&dpm_list_mtx);
- 		error = suspend_device(dev, state);
- 		if (error) {
-@@ -476,14 +427,11 @@ static int dpm_suspend(pm_message_t stat
- 					(error == -EAGAIN ?
- 					" (please convert to suspend_late)" :
- 					""));
--			mutex_lock(&dpm_list_mtx);
--			if (list_empty(&dev->power.entry))
--				list_add(&dev->power.entry, &dpm_locked);
- 			break;
- 		}
- 		mutex_lock(&dpm_list_mtx);
--		if (list_empty(&dev->power.entry))
--			list_add(&dev->power.entry, &dpm_off);
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &dpm_off);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
- 
-@@ -491,36 +439,6 @@ static int dpm_suspend(pm_message_t stat
- }
- 
- /**
-- *	lock_all_devices - Acquire every device's semaphore
-- *
-- *	Go through the dpm_active list. Carefully lock each device's
-- *	semaphore and put it in on the dpm_locked list.
-- */
--static void lock_all_devices(void)
--{
--	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_active)) {
--		struct list_head *entry = dpm_active.next;
--		struct device *dev = to_device(entry);
--
--		/* Required locking order is dev->sem first,
--		 * then dpm_list_mutex.  Hence this awkward code.
--		 */
--		get_device(dev);
--		mutex_unlock(&dpm_list_mtx);
--		down(&dev->sem);
--		mutex_lock(&dpm_list_mtx);
--
--		if (list_empty(entry))
--			up(&dev->sem);		/* Device was removed */
--		else
--			list_move_tail(entry, &dpm_locked);
--		put_device(dev);
--	}
--	mutex_unlock(&dpm_list_mtx);
--}
--
--/**
-  *	device_suspend - Save state and stop all devices in system.
-  *	@state: new power management state
-  *
-@@ -533,7 +451,6 @@ int device_suspend(pm_message_t state)
- 
- 	might_sleep();
- 	down_write(&pm_sleep_rwsem);
--	lock_all_devices();
- 	error = dpm_suspend(state);
- 	if (error)
- 		device_resume();
-Index: linux-2.6/drivers/usb/core/usb.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/usb.c
-+++ linux-2.6/drivers/usb/core/usb.c
-@@ -234,7 +234,7 @@ static int ksuspend_usb_init(void)
- 	 * singlethreaded.  Its job doesn't justify running on more
- 	 * than one CPU.
- 	 */
--	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
-+	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
- 	if (!ksuspend_usb_wq)
- 		return -ENOMEM;
- 	return 0;
+
+and the analogous one in dpm_suspend().  Otherwise there would be a problem
+if suspend_device_late() itself removed the device (same for device_suspend()).
+Of course, that would lead to a problem if device_pm_schedule_removal() were
+used for the removal, so the last "!list_empty(&dev->power.entry)" is really
+not sufficient - until device_pm_schedule_removal() is removed.
+
+Thanks,
+Rafael
