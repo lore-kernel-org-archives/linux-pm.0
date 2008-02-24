@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM: Do not acquire device semaphores upfront
-	during suspend
-Date: Mon, 25 Feb 2008 00:35:04 +0100
-Message-ID: <200802250035.05791.rjw__32330.3486490206$1203896327$gmane$org@sisk.pl>
+Subject: Re: linux-next: Tree for Feb 24
+Date: Mon, 25 Feb 2008 00:43:47 +0100
+Message-ID: <200802250043.48765.rjw__5427.88871466673$1203896802$gmane$org@sisk.pl>
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
+	<200802242100.46474.rjw@sisk.pl> <47C1FF2E.4060600@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <47C1FF2E.4060600@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,311 +19,124 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Lukas Hejtmanek <xhejtman@ics.muni.cz>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, len.brown@intel.com, peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-next@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+On Monday, 25 of February 2008, Kevin Winchester wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday, 24 of February 2008, Kevin Winchester wrote:
+> > 
+> >> Today was different - I attempted to suspend and resume from the console,
+> >> and the machine did not come back up.  I found the following in my log -
+> >> any help would be appreciated.
+> >>
+> >> Feb 24 13:59:56 alekhine kernel: [  456.497875] PM: Syncing filesystems ... done.
+> >> Feb 24 14:00:20 alekhine kernel: [  456.507273] Freezing user space processes ... (elapsed 0.00 seconds) done.
+> >> Feb 24 14:00:20 alekhine kernel: [  456.510447] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> >> Feb 24 14:00:20 alekhine kernel: [  456.510754] ACPI: Preparing to enter system sleep state S3
+> >> Feb 24 14:00:20 alekhine kernel: [  456.612370] Suspending console(s)
+> >> Feb 24 14:00:20 alekhine kernel: [  456.616254] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+> >> Feb 24 14:00:20 alekhine kernel: [  456.616521] sd 3:0:0:0: [sda] Stopping disk
+> >> Feb 24 14:00:20 alekhine kernel: [  456.618221] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.630296] ACPI: PCI interrupt for device 0000:00:10.4 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.641085] ACPI: PCI interrupt for device 0000:00:10.3 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.651877] ACPI: PCI interrupt for device 0000:00:10.2 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.662716] ACPI: PCI interrupt for device 0000:00:10.1 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.673550] ACPI: PCI interrupt for device 0000:00:10.0 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.684385] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.695056] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] 5 locks held by bash/2929:
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #0:  (&buffer->mutex){--..}, at: [<c018960c>] sysfs_write_file+0x25/0xe3
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #1:  (pm_mutex){--..}, at: [<c0138c54>] enter_state+0xea/0x100
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #2:  (pm_sleep_rwsem){----}, at: [<c023c4b8>] device_suspend+0x25/0x251
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #3:  (&data->update_lock#2){--..}, at: [<c029cb2b>] abituguru_suspend+0x13/0x18
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #4:  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] irq event stamp: 19374
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last  enabled at (19373): [<c0326664>] __mutex_unlock_slowpath+0xd5/0xef
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last disabled at (19374): [<c0327bca>] _spin_lock_irqsave+0xf/0x3c
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last  enabled at (18484): [<c011e6ba>] __do_softirq+0x99/0x9e
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last disabled at (18479): [<c0104f15>] do_softirq+0x58/0xa8
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856] Pid: 2929, comm: bash Not tainted 2.6.25-rc2-next-20080224 #58
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01177c7>] __schedule_bug+0x58/0x5f
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0325b43>] schedule+0x67/0x3b3
+> > 
+> > Well, could you check what's at schedule+0x67, please?
+> 
+> Is this how I would do this?  I tried schedule+0x67, but it just showed me the beginning of profile_hit.
+> 
+> (gdb) l *(schedule+0x66)
+> 0xc0325b42 is in schedule (kernel/sched.c:3836).
+> 3831		 * Test if we are atomic. Since do_exit() needs to call into
+> 3832		 * schedule() atomically, we ignore that path for now.
+> 3833		 * Otherwise, whine if we are scheduling when we should not be.
+> 3834		 */
+> 3835		if (unlikely(in_atomic_preempt_off()) && unlikely(!prev->exit_state))
+> 3836			__schedule_bug(prev);
+> 3837	
+> 3838		profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+> 3839	
+> 3840		schedstat_inc(this_rq(), sched_count);
+> 
+> It appears that we are scheduling when we should not be...
+> 
+> 
+> > 
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c39>] ? __mod_timer+0x8d/0x98
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326043>] schedule_timeout+0x73/0x91
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c012185c>] ? process_timeout+0x0/0xa
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326075>] schedule_timeout_uninterruptible+0x14/0x16
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c54>] msleep+0x10/0x16
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01e0e51>] pci_set_power_state+0x17f/0x200
+> >> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0244917>] velocity_suspend+0x2e9/0x302
+> > 
+> > velocity_suspend() seems to be at fault.
+> 
+> (gdb) l *(velocity_suspend+0x37)
+> 0xc0244665 is in velocity_suspend (drivers/net/via-velocity.c:3399).
+> 3394		if(!netif_running(vptr->dev))
+> 3395			return 0;
+> 3396	
+> 3397		netif_device_detach(vptr->dev);
+> 3398	
+> 3399		spin_lock_irqsave(&vptr->lock, flags);
+> 3400		pci_save_state(pdev);
+> 3401	#ifdef ETHTOOL_GWOL
+> 3402		if (vptr->flags & VELOCITY_FLAGS_WOL_ENABLED) {
+> 3403			velocity_get_ip(vptr);
+> (gdb) 
+> 3404			velocity_save_context(vptr, &vptr->context);
+> 3405			velocity_shutdown(vptr);
+> 3406			velocity_set_wol(vptr);
+> 3407			pci_enable_wake(pdev, PCI_D3hot, 1);
+> 3408			pci_set_power_state(pdev, PCI_D3hot);
 
-The appended patch should fix the regreesions reported at:
-http://bugzilla.kernel.org/show_bug.cgi?id=9874
-http://bugzilla.kernel.org/show_bug.cgi?id=10030
+Hm, why doesn't it use pci_choose_state() here?
 
-Please accept it for 2.6.25.
+> 3409		} else {
+> 3410			velocity_save_context(vptr, &vptr->context);
+> 3411			velocity_shutdown(vptr);
+> 3412			pci_disable_device(pdev);
+> 3413			pci_set_power_state(pdev, pci_choose_state(pdev, state));
+> (gdb) 
+> 3414		}
+> 3415	#else
+> 3416		pci_set_power_state(pdev, pci_choose_state(pdev, state));
+> 3417	#endif
+> 3418		spin_unlock_irqrestore(&vptr->lock, flags);
+> 3419		return 0;
+> 3420	}
+> 
+> So velocity_suspend calls spin_lock_irqsave, and then pci_set_power_state
+> which msleep()s.  Is that the root problem here?
 
-Thanks,
+Yes, most probably, it is.
+
+> (I've added Ingo & Peter to the CC list since they may have some comments on
+> the scheduler/lockdep parts of the trace).   
+
+Well, it calls many things it shouldn't call under a spinlock, AFAICS.
+
+Who's maintaining this driver?
+
 Rafael
-
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Remove the code that acquires all device semaphores from the suspend
-code path as it causes multiple problems to appear (most notably,
-http://bugzilla.kernel.org/show_bug.cgi?id=10030) and revert the
-change introduced by commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f
-depending on the code being removed.
-
-Remove pm_sleep_lock()/pm_sleep_unlock() from device_add() to avoid
-the issue reported at http://bugzilla.kernel.org/show_bug.cgi?id=9874.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/core.c       |    8 ---
- drivers/base/power/main.c |  106 ++++++----------------------------------------
- drivers/usb/core/usb.c    |    2 
- 3 files changed, 17 insertions(+), 99 deletions(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -48,7 +48,6 @@
-  */
- 
- LIST_HEAD(dpm_active);
--static LIST_HEAD(dpm_locked);
- static LIST_HEAD(dpm_off);
- static LIST_HEAD(dpm_off_irq);
- static LIST_HEAD(dpm_destroy);
-@@ -81,28 +80,6 @@ void device_pm_add(struct device *dev)
-  */
- void device_pm_remove(struct device *dev)
- {
--	/*
--	 * If this function is called during a suspend, it will be blocked,
--	 * because we're holding the device's semaphore at that time, which may
--	 * lead to a deadlock.  In that case we want to print a warning.
--	 * However, it may also be called by unregister_dropped_devices() with
--	 * the device's semaphore released, in which case the warning should
--	 * not be printed.
--	 */
--	if (down_trylock(&dev->sem)) {
--		if (down_read_trylock(&pm_sleep_rwsem)) {
--			/* No suspend in progress, wait on dev->sem */
--			down(&dev->sem);
--			up_read(&pm_sleep_rwsem);
--		} else {
--			/* Suspend in progress, we may deadlock */
--			dev_warn(dev, "Suspicious %s during suspend\n",
--				__FUNCTION__);
--			dump_stack();
--			/* The user has been warned ... */
--			down(&dev->sem);
--		}
--	}
- 	pr_debug("PM: Removing info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
-@@ -110,7 +87,6 @@ void device_pm_remove(struct device *dev
- 	dpm_sysfs_remove(dev);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
--	up(&dev->sem);
- }
- 
- /**
-@@ -230,6 +206,8 @@ static int resume_device(struct device *
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-+	down(&dev->sem);
-+
- 	if (dev->bus && dev->bus->resume) {
- 		dev_dbg(dev,"resuming\n");
- 		error = dev->bus->resume(dev);
-@@ -245,6 +223,8 @@ static int resume_device(struct device *
- 		error = dev->class->resume(dev);
- 	}
- 
-+	up(&dev->sem);
-+
- 	TRACE_RESUME(error);
- 	return error;
- }
-@@ -266,7 +246,7 @@ static void dpm_resume(void)
- 		struct list_head *entry = dpm_off.next;
- 		struct device *dev = to_device(entry);
- 
--		list_move_tail(entry, &dpm_locked);
-+		list_move_tail(entry, &dpm_active);
- 		mutex_unlock(&dpm_list_mtx);
- 		resume_device(dev);
- 		mutex_lock(&dpm_list_mtx);
-@@ -275,25 +255,6 @@ static void dpm_resume(void)
- }
- 
- /**
-- *	unlock_all_devices - Release each device's semaphore
-- *
-- *	Go through the dpm_off list.  Put each device on the dpm_active
-- *	list and unlock it.
-- */
--static void unlock_all_devices(void)
--{
--	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_locked)) {
--		struct list_head *entry = dpm_locked.prev;
--		struct device *dev = to_device(entry);
--
--		list_move(entry, &dpm_active);
--		up(&dev->sem);
--	}
--	mutex_unlock(&dpm_list_mtx);
--}
--
--/**
-  *	unregister_dropped_devices - Unregister devices scheduled for removal
-  *
-  *	Unregister all devices on the dpm_destroy list.
-@@ -305,7 +266,6 @@ static void unregister_dropped_devices(v
- 		struct list_head *entry = dpm_destroy.next;
- 		struct device *dev = to_device(entry);
- 
--		up(&dev->sem);
- 		mutex_unlock(&dpm_list_mtx);
- 		/* This also removes the device from the list */
- 		device_unregister(dev);
-@@ -324,7 +284,6 @@ void device_resume(void)
- {
- 	might_sleep();
- 	dpm_resume();
--	unlock_all_devices();
- 	unregister_dropped_devices();
- 	up_write(&pm_sleep_rwsem);
- }
-@@ -388,18 +347,15 @@ int device_power_down(pm_message_t state
- 		struct list_head *entry = dpm_off.prev;
- 		struct device *dev = to_device(entry);
- 
--		list_del_init(&dev->power.entry);
- 		error = suspend_device_late(dev, state);
- 		if (error) {
- 			printk(KERN_ERR "Could not power down device %s: "
- 					"error %d\n",
- 					kobject_name(&dev->kobj), error);
--			if (list_empty(&dev->power.entry))
--				list_add(&dev->power.entry, &dpm_off);
- 			break;
- 		}
--		if (list_empty(&dev->power.entry))
--			list_add(&dev->power.entry, &dpm_off_irq);
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &dpm_off_irq);
- 	}
- 
- 	if (!error)
-@@ -419,6 +375,8 @@ static int suspend_device(struct device 
- {
- 	int error = 0;
- 
-+	down(&dev->sem);
-+
- 	if (dev->power.power_state.event) {
- 		dev_dbg(dev, "PM: suspend %d-->%d\n",
- 			dev->power.power_state.event, state.event);
-@@ -441,6 +399,9 @@ static int suspend_device(struct device 
- 		error = dev->bus->suspend(dev, state);
- 		suspend_report_result(dev->bus->suspend, error);
- 	}
-+
-+	up(&dev->sem);
-+
- 	return error;
- }
- 
-@@ -461,11 +422,10 @@ static int dpm_suspend(pm_message_t stat
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_locked)) {
--		struct list_head *entry = dpm_locked.prev;
-+	while (!list_empty(&dpm_active)) {
-+		struct list_head *entry = dpm_active.prev;
- 		struct device *dev = to_device(entry);
- 
--		list_del_init(&dev->power.entry);
- 		mutex_unlock(&dpm_list_mtx);
- 		error = suspend_device(dev, state);
- 		if (error) {
-@@ -476,14 +436,11 @@ static int dpm_suspend(pm_message_t stat
- 					(error == -EAGAIN ?
- 					" (please convert to suspend_late)" :
- 					""));
--			mutex_lock(&dpm_list_mtx);
--			if (list_empty(&dev->power.entry))
--				list_add(&dev->power.entry, &dpm_locked);
- 			break;
- 		}
- 		mutex_lock(&dpm_list_mtx);
--		if (list_empty(&dev->power.entry))
--			list_add(&dev->power.entry, &dpm_off);
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &dpm_off);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
- 
-@@ -491,36 +448,6 @@ static int dpm_suspend(pm_message_t stat
- }
- 
- /**
-- *	lock_all_devices - Acquire every device's semaphore
-- *
-- *	Go through the dpm_active list. Carefully lock each device's
-- *	semaphore and put it in on the dpm_locked list.
-- */
--static void lock_all_devices(void)
--{
--	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_active)) {
--		struct list_head *entry = dpm_active.next;
--		struct device *dev = to_device(entry);
--
--		/* Required locking order is dev->sem first,
--		 * then dpm_list_mutex.  Hence this awkward code.
--		 */
--		get_device(dev);
--		mutex_unlock(&dpm_list_mtx);
--		down(&dev->sem);
--		mutex_lock(&dpm_list_mtx);
--
--		if (list_empty(entry))
--			up(&dev->sem);		/* Device was removed */
--		else
--			list_move_tail(entry, &dpm_locked);
--		put_device(dev);
--	}
--	mutex_unlock(&dpm_list_mtx);
--}
--
--/**
-  *	device_suspend - Save state and stop all devices in system.
-  *	@state: new power management state
-  *
-@@ -533,7 +460,6 @@ int device_suspend(pm_message_t state)
- 
- 	might_sleep();
- 	down_write(&pm_sleep_rwsem);
--	lock_all_devices();
- 	error = dpm_suspend(state);
- 	if (error)
- 		device_resume();
-Index: linux-2.6/drivers/usb/core/usb.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/usb.c
-+++ linux-2.6/drivers/usb/core/usb.c
-@@ -234,7 +234,7 @@ static int ksuspend_usb_init(void)
- 	 * singlethreaded.  Its job doesn't justify running on more
- 	 * than one CPU.
- 	 */
--	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
-+	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
- 	if (!ksuspend_usb_wq)
- 		return -ENOMEM;
- 	return 0;
-Index: linux-2.6/drivers/base/core.c
-===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -770,13 +770,6 @@ int device_add(struct device *dev)
- 	struct class_interface *class_intf;
- 	int error;
- 
--	error = pm_sleep_lock();
--	if (error) {
--		dev_warn(dev, "Suspicious %s during suspend\n", __FUNCTION__);
--		dump_stack();
--		return error;
--	}
--
- 	dev = get_device(dev);
- 	if (!dev || !strlen(dev->bus_id)) {
- 		error = -EINVAL;
-@@ -843,7 +836,6 @@ int device_add(struct device *dev)
- 	}
-  Done:
- 	put_device(dev);
--	pm_sleep_unlock();
- 	return error;
-  BusError:
- 	device_pm_remove(dev);
