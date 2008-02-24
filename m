@@ -1,15 +1,16 @@
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
- when SD card is inserted]
-Date: Mon, 25 Feb 2008 18:41:02 +0100
-Message-ID: <20080225184102.0a2e2bb5__40722.9044045836$1203967808$gmane$org@mjolnir.drzeus.cx>
-References: <200802241500.41969.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+From: Mirco Tischler <mt-ml@gmx.de>
+Subject: Re: [PATCH] PM: Introduce PM_EVENT_HIBERNATE (was: Re:
+	i915	hibernation patch (was: Re: 2.6.25-rc2 System no longer ...))
+Date: Sun, 24 Feb 2008 05:16:39 +0100
+Message-ID: <1203826599.30621.25.camel__12686.343646101$1203967808$gmane$org@mtlp>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	<alpine.LFD.1.00.0802221805540.21332@woody.linux-foundation.org>
+	<b6a2187b0802222036i33d5bcc2n4e3bafd6d846cc09@mail.gmail.com>
+	<200802231913.27592.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============9050604236240721486=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+In-Reply-To: <200802231913.27592.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,76 +18,142 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Alexey Starikovskiy <astarikovskiy@suse.de>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Romano Giannetti <romano@dea.icai.upcomillas.es>, linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 24 Feb 2008 10:33:34 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> 
-> Well, the patch itself isn't really adequate; it was just a first pass 
-> intended to illustrate the nature of the problem.
-> 
-> The problems in the MMC subsystem go deeper.
-> 
-> The first is the way it uses flush_workqueue().  This is almost always 
-> a bad function to call, because it introduces unnecessary dependencies.  
-> cancel_delayed_work_sync() is much better.
-> 
-> But even changing that won't solve the second issue, which is a genuine
-> bug.  There is a race between detect events and suspend events.  The
-> mmc_suspend_host() routine starts out by flushing the kmmcd workqueue
-> before calling the host's suspend routine.  So what happens if another
-> detect event occurs in between?
-> 
+--===============9050604236240721486==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zyEGKsDvYSpQuS57/WV6"
 
-The idea is that host drivers shouldn't do that. Once they've called
-mmc_suspend_host(), then they shouldn't be poking the MMC core in any
-other way. None of this is of course properly documented. :/
 
-> This whole area of synchronization between card insertion, card
-> removal, suspend, and resume needs to be thought out better.  
-> Especially keeping in mind that device registration or unregistration
-> during a system sleep is likely to block until the sleep is over.
+--=-zyEGKsDvYSpQuS57/WV6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Trying to keep up with the PM changes is a full time job. For now I've
-mostly ignored it as I don't even have time for the other stuff.
-Patches welcome.
 
-> 
-> Lastly, there are some other questions about confusing aspects of the
-> subsystem.  What's the story with __mmc_claim_host()?  Is it really
-> nothing more than an abortable mutex_lock()?  Why does it ever need to
-> be aborted?  Why is its second argument an atomic_t instead of a normal
-> int?
-> 
+On Sa, 2008-02-23 at 19:13 +0100, Rafael J. Wysocki wrote:
+> Index: linux-2.6/drivers/usb/host/u132-hcd.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/drivers/usb/host/u132-hcd.c
+> +++ linux-2.6/drivers/usb/host/u132-hcd.c
+> @@ -3214,14 +3214,19 @@ static int u132_suspend(struct platform_
+>                  return -ESHUTDOWN;
+>          } else {
+>                  int retval =3D 0;
+> -                if (state.event =3D=3D PM_EVENT_FREEZE) {
+> +
+> +		switch (state.event) {
+> +		case PM_EVENT_FREEZE:
+>                          retval =3D u132_bus_suspend(hcd);
+> -                } else if (state.event =3D=3D PM_EVENT_SUSPEND) {
+> +			break;
+> +		case PM_EVENT_SUSPEND:
+> +		case PM_EVENT_HIBERNATE:
+>                          int ports =3D MAX_U132_PORTS;
+>                          while (ports-- > 0) {
+>                                  port_power(u132, ports, 0);
+>                          }
+> -                }
+> +			break;
+> +		}
+>                  if (retval =3D=3D 0)
+>                          pdev->dev.power.power_state =3D state;
+>                  return retval;
+=EF=BB=BFHmm. Doesn't compile for me in 2.6.25-rc2-git7:
 
-It got that way when SDIO got in. It was needed to make it abortable to
-solve a rather nasty deadlock situation. I don't remember the details
-right now, but it should be in the LKML archives.
+  CC [M]  drivers/usb/host/u132-hcd.o
+drivers/usb/host/u132-hcd.c: In function =E2=80=98u132_suspend=E2=80=99:
+drivers/usb/host/u132-hcd.c:3224: error: expected expression before
+=E2=80=98int=E2=80=99
+drivers/usb/host/u132-hcd.c:3225: error: =E2=80=98ports=E2=80=99 undeclared=
+ (first use
+in this function)
+drivers/usb/host/u132-hcd.c:3225: error: (Each undeclared identifier is
+reported only once
+drivers/usb/host/u132-hcd.c:3225: error: for each function it appears
+in.)
+make[3]: *** [drivers/usb/host/u132-hcd.o] Error 1
+make[2]: *** [drivers/usb/host] Error 2
+make[1]: *** [drivers/usb] Error 2
+make: *** [drivers] Error 2
 
-> Why are mmc_detect() and related routines described in comments as
-> "Card detection callback from host"?  They don't handle card
-> _detection_ -- they handle card _removal_.
+This fixes it:
 
-They handle both.
+Thanks
+Mirco
 
-> 
-> What's the purpose of the card-counting loop in 
-> host/omap.c:mmc_omap_switch_handler()?  It looks like dead code.
-> 
+---
+From: Mirco Tischler <mt-ml@gmx.de>
 
-I'm not too familiar with that driver, but they've been playing around
-with multiplexing several cards into one controller. Might be bits and
-pieces of that.
+Fixes the following compile error caused by commit
+3a2d5b700132f35401f1d9e22fe3c2cab02c2549
 
-Rgds
--- 
-     -- Pierre Ossman
+...
+  CC [M]  drivers/usb/host/u132-hcd.o
+drivers/usb/host/u132-hcd.c: In function =E2=80=98u132_suspend=E2=80=99:
+drivers/usb/host/u132-hcd.c:3224: error: expected expression before
+=E2=80=98int=E2=80=99
+drivers/usb/host/u132-hcd.c:3225: error: =E2=80=98ports=E2=80=99 undeclared=
+ (first use
+in this function)
+...
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Signed-off-by: Mirco Tischler <mt-ml@gmx.de>
+---
+ drivers/usb/host/u132-hcd.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/usb/host/u132-hcd.c b/drivers/usb/host/u132-hcd.c
+index 6fca069..58830b2 100644
+--- a/drivers/usb/host/u132-hcd.c
++++ b/drivers/usb/host/u132-hcd.c
+@@ -3214,6 +3214,7 @@ static int u132_suspend(struct platform_device
+*pdev, pm_message_t state)
+                 return -ESHUTDOWN;
+         } else {
+                 int retval =3D 0;
++		int ports =3D 0;
+=20
+ 		switch (state.event) {
+ 		case PM_EVENT_FREEZE:
+@@ -3221,7 +3222,7 @@ static int u132_suspend(struct platform_device
+*pdev, pm_message_t state)
+ 			break;
+ 		case PM_EVENT_SUSPEND:
+ 		case PM_EVENT_HIBERNATE:
+-                        int ports =3D MAX_U132_PORTS;
++			ports =3D MAX_U132_PORTS;
+                         while (ports-- > 0) {
+                                 port_power(u132, ports, 0);
+                         }
+
+
+--=-zyEGKsDvYSpQuS57/WV6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHwO+nz+diZ7c2xfgRAmHZAJwO5uX55UH5d8T5sw4laow0LBxyVACeK1PD
+nIrfm2m5GjIflDP7vPzjtyY=
+=Vx2M
+-----END PGP SIGNATURE-----
+
+--=-zyEGKsDvYSpQuS57/WV6--
+
+
+--===============9050604236240721486==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============9050604236240721486==--
