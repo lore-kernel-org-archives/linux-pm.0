@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [Bug 10030] Suspend doesn't work when SD card is
 	inserted
-Date: Sun, 24 Feb 2008 14:03:02 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802241358080.11145-100000__42429.144078824$1203879887$gmane$org@netrider.rowland.org>
-References: <20080224182120.GB3886@ucw.cz>
+Date: Sun, 24 Feb 2008 14:27:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802241409320.11316-100000__43516.7278083556$1203881380$gmane$org@netrider.rowland.org>
+References: <200802241451.17334.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080224182120.GB3886@ucw.cz>
+In-Reply-To: <200802241451.17334.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,53 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 24 Feb 2008, Pavel Machek wrote:
+On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
 
-> Hi!
+> > You know, with this new patch we probably don't need 
+> > device_pm_schedule_removal() any more.
 > 
-> > Index: usb-2.6/drivers/base/power/main.c
-> > ===================================================================
-> > --- usb-2.6.orig/drivers/base/power/main.c
-> > +++ usb-2.6/drivers/base/power/main.c
-> > @@ -25,6 +25,7 @@
-> >  #include <linux/pm.h>
-> >  #include <linux/resume-trace.h>
-> >  #include <linux/rwsem.h>
-> > +#include <linux/sched.h>
-> >  
-> >  #include "../base.h"
-> >  #include "power.h"
-> > @@ -59,6 +60,13 @@ static DECLARE_RWSEM(pm_sleep_rwsem);
-> >  
-> >  int (*platform_enable_wakeup)(struct device *dev, int is_on);
-> >  
-> > +static struct task_struct *suspending_task;
+> No, we don't.  However, because of that dpm_suspend() and device_power_down()
+> need to be changed not to assume that the removed devices will end up on
+> dpm_destroy.
+
+Yes.  The safest approach will be to check whether the device is still 
+at the end of the dpm_locked or dpm_off list; if it hasn't then we can 
+assume that it has been removed (or scheduled for removal).
+
+> IMO you also should add this change in device_power_down():
 > 
-> What locking protects this variable? What happens when suspending_task
-> exits? (Hmm, that would probably be bug, anyway?)
+> @@ -388,18 +343,15 @@ int device_power_down(pm_message_t state
+>  		struct list_head *entry = dpm_off.prev;
+>  		struct device *dev = to_device(entry);
+>  
+> -		list_del_init(&dev->power.entry);
+>  		error = suspend_device_late(dev, state);
+>  		if (error) {
+>  			printk(KERN_ERR "Could not power down device %s: "
+>  					"error %d\n",
+>  					kobject_name(&dev->kobj), error);
+> -			if (list_empty(&dev->power.entry))
+> -				list_add(&dev->power.entry, &dpm_off);
+>  			break;
+>  		}
+> -		if (list_empty(&dev->power.entry))
+> -			list_add(&dev->power.entry, &dpm_off_irq);
+> +		if (!list_empty(&dev->power.entry))
+> +			list_move(&dev->power.entry, &dpm_off_irq);
+>  	}
 
-It's protected by whatever existing locking scheme allows only one
-task to start a system sleep at a time.  For example, the suspending 
-task has to get a write lock on pm_sleep_rwsem.
+Actually I changed the last two lines to:
 
-Yes, if the suspending task exits before the system has woken up, 
-you're in trouble regardless.
++
++		/* Don't move the entry if the device has been unregistered */
++		if (entry == dpm_off.prev)
++			list_move(entry, &dpm_off_irq);
 
-> Or are we running UP when this is accessed? This at least needs a big
-> fat comment.
-> 
-> > +bool in_suspend_context(void)
-> > +{
-> > +	return (suspending_task == current);
-> > +}
+with analogous changes to dpm_suspend().
 
-We aren't necessarily UP.  But since all that matters is whether or not 
-suspend_task is equal to the current task, no extra locking is needed.  
-
-I'll add a comment explaining all this.
+Any more suggestions for updates?
 
 Alan Stern
