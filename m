@@ -1,19 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: Introduce PM_EVENT_HIBERNATE (was: Re:
 	i915 hibernation patch (was: Re: 2.6.25-rc2 System no longer ...))
-Date: Sun, 24 Feb 2008 09:29:18 +0100
-Message-ID: <20080224082917.GA4784__11849.9341457666$1203841961$gmane$org@ucw.cz>
+Date: Sun, 24 Feb 2008 12:11:46 +0100
+Message-ID: <200802241211.48000.rjw__29486.3320109018$1203851804$gmane$org@sisk.pl>
 References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-	<alpine.LFD.1.00.0802221805540.21332@woody.linux-foundation.org>
-	<b6a2187b0802222036i33d5bcc2n4e3bafd6d846cc09@mail.gmail.com>
-	<200802231913.27592.rjw@sisk.pl>
-	<alpine.LFD.1.00.0802231041510.21332@woody.linux-foundation.org>
+	<200802231913.27592.rjw@sisk.pl> <1203826599.30621.25.camel@mtlp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1203826599.30621.25.camel@mtlp>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802231041510.21332@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,22 +20,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Romano Giannetti <romano@dea.icai.upcomillas.es>, Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+To: Mirco Tischler <mt-ml@gmx.de>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Alexey Starikovskiy <astarikovskiy@suse.de>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Romano Giannetti <romano@dea.icai.upcomillas.es>, linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Thanks, applied. 
-> 
-> With this, I also find that I dislike the use of suspend/resume for 
-> freezing for STD a lot less. It's still too easy to get confused, but at 
-> least now drivers always have total knowledge about what is really going 
-> on. I'd not like this interface as a driver writer, but now it's not 
-> fundamentally broken any more, just slightly confusing.
-
-Heh, thanks :-).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+T24gU3VuZGF5LCAyNCBvZiBGZWJydWFyeSAyMDA4LCBNaXJjbyBUaXNjaGxlciB3cm90ZToKPiAK
+PiBPbiBTYSwgMjAwOC0wMi0yMyBhdCAxOToxMyArMDEwMCwgUmFmYWVsIEouIFd5c29ja2kgd3Jv
+dGU6Cj4gPiBJbmRleDogbGludXgtMi42L2RyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2QuYwo+ID4g
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PQo+ID4gLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvdXNiL2hvc3QvdTEzMi1o
+Y2QuYwo+ID4gKysrIGxpbnV4LTIuNi9kcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmMKPiA+IEBA
+IC0zMjE0LDE0ICszMjE0LDE5IEBAIHN0YXRpYyBpbnQgdTEzMl9zdXNwZW5kKHN0cnVjdCBwbGF0
+Zm9ybV8KPiA+ICAgICAgICAgICAgICAgICAgcmV0dXJuIC1FU0hVVERPV047Cj4gPiAgICAgICAg
+ICB9IGVsc2Ugewo+ID4gICAgICAgICAgICAgICAgICBpbnQgcmV0dmFsID0gMDsKPiA+IC0gICAg
+ICAgICAgICAgICAgaWYgKHN0YXRlLmV2ZW50ID09IFBNX0VWRU5UX0ZSRUVaRSkgewo+ID4gKwo+
+ID4gKwkJc3dpdGNoIChzdGF0ZS5ldmVudCkgewo+ID4gKwkJY2FzZSBQTV9FVkVOVF9GUkVFWkU6
+Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0dmFsID0gdTEzMl9idXNfc3VzcGVuZCho
+Y2QpOwo+ID4gLSAgICAgICAgICAgICAgICB9IGVsc2UgaWYgKHN0YXRlLmV2ZW50ID09IFBNX0VW
+RU5UX1NVU1BFTkQpIHsKPiA+ICsJCQlicmVhazsKPiA+ICsJCWNhc2UgUE1fRVZFTlRfU1VTUEVO
+RDoKPiA+ICsJCWNhc2UgUE1fRVZFTlRfSElCRVJOQVRFOgo+ID4gICAgICAgICAgICAgICAgICAg
+ICAgICAgIGludCBwb3J0cyA9IE1BWF9VMTMyX1BPUlRTOwo+ID4gICAgICAgICAgICAgICAgICAg
+ICAgICAgIHdoaWxlIChwb3J0cy0tID4gMCkgewo+ID4gICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgcG9ydF9wb3dlcih1MTMyLCBwb3J0cywgMCk7Cj4gPiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfQo+ID4gLSAgICAgICAgICAgICAgICB9Cj4gPiArCQkJYnJlYWs7Cj4gPiArCQl9
+Cj4gPiAgICAgICAgICAgICAgICAgIGlmIChyZXR2YWwgPT0gMCkKPiA+ICAgICAgICAgICAgICAg
+ICAgICAgICAgICBwZGV2LT5kZXYucG93ZXIucG93ZXJfc3RhdGUgPSBzdGF0ZTsKPiA+ICAgICAg
+ICAgICAgICAgICAgcmV0dXJuIHJldHZhbDsKPiDvu79IbW0uIERvZXNuJ3QgY29tcGlsZSBmb3Ig
+bWUgaW4gMi42LjI1LXJjMi1naXQ3Ogo+IAo+ICAgQ0MgW01dICBkcml2ZXJzL3VzYi9ob3N0L3Ux
+MzItaGNkLm8KPiBkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmM6IEluIGZ1bmN0aW9uIOKAmHUx
+MzJfc3VzcGVuZOKAmToKPiBkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmM6MzIyNDogZXJyb3I6
+IGV4cGVjdGVkIGV4cHJlc3Npb24gYmVmb3JlCj4g4oCYaW504oCZCj4gZHJpdmVycy91c2IvaG9z
+dC91MTMyLWhjZC5jOjMyMjU6IGVycm9yOiDigJhwb3J0c+KAmSB1bmRlY2xhcmVkIChmaXJzdCB1
+c2UKPiBpbiB0aGlzIGZ1bmN0aW9uKQo+IGRyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2QuYzozMjI1
+OiBlcnJvcjogKEVhY2ggdW5kZWNsYXJlZCBpZGVudGlmaWVyIGlzCj4gcmVwb3J0ZWQgb25seSBv
+bmNlCj4gZHJpdmVycy91c2IvaG9zdC91MTMyLWhjZC5jOjMyMjU6IGVycm9yOiBmb3IgZWFjaCBm
+dW5jdGlvbiBpdCBhcHBlYXJzCj4gaW4uKQo+IG1ha2VbM106ICoqKiBbZHJpdmVycy91c2IvaG9z
+dC91MTMyLWhjZC5vXSBFcnJvciAxCj4gbWFrZVsyXTogKioqIFtkcml2ZXJzL3VzYi9ob3N0XSBF
+cnJvciAyCj4gbWFrZVsxXTogKioqIFtkcml2ZXJzL3VzYl0gRXJyb3IgMgo+IG1ha2U6ICoqKiBb
+ZHJpdmVyc10gRXJyb3IgMgo+IAo+IFRoaXMgZml4ZXMgaXQ6Cj4gCj4gVGhhbmtzCj4gTWlyY28K
+PiAKPiAtLS0KPiBGcm9tOiBNaXJjbyBUaXNjaGxlciA8bXQtbWxAZ214LmRlPgo+IAo+IEZpeGVz
+IHRoZSBmb2xsb3dpbmcgY29tcGlsZSBlcnJvciBjYXVzZWQgYnkgY29tbWl0Cj4gM2EyZDViNzAw
+MTMyZjM1NDAxZjFkOWUyMmZlM2MyY2FiMDJjMjU0OQo+IAo+IC4uLgo+ICAgQ0MgW01dICBkcml2
+ZXJzL3VzYi9ob3N0L3UxMzItaGNkLm8KPiBkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmM6IElu
+IGZ1bmN0aW9uIOKAmHUxMzJfc3VzcGVuZOKAmToKPiBkcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNk
+LmM6MzIyNDogZXJyb3I6IGV4cGVjdGVkIGV4cHJlc3Npb24gYmVmb3JlCj4g4oCYaW504oCZCj4g
+ZHJpdmVycy91c2IvaG9zdC91MTMyLWhjZC5jOjMyMjU6IGVycm9yOiDigJhwb3J0c+KAmSB1bmRl
+Y2xhcmVkIChmaXJzdCB1c2UKPiBpbiB0aGlzIGZ1bmN0aW9uKQo+IC4uLgo+IAo+IFNpZ25lZC1v
+ZmYtYnk6IE1pcmNvIFRpc2NobGVyIDxtdC1tbEBnbXguZGU+Cj4gLS0tCj4gIGRyaXZlcnMvdXNi
+L2hvc3QvdTEzMi1oY2QuYyB8ICAgIDMgKystCj4gIDEgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRp
+b25zKCspLCAxIGRlbGV0aW9ucygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3VzYi9ob3N0
+L3UxMzItaGNkLmMgYi9kcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNkLmMKPiBpbmRleCA2ZmNhMDY5
+Li41ODgzMGIyIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2QuYwo+ICsr
+KyBiL2RyaXZlcnMvdXNiL2hvc3QvdTEzMi1oY2QuYwo+IEBAIC0zMjE0LDYgKzMyMTQsNyBAQCBz
+dGF0aWMgaW50IHUxMzJfc3VzcGVuZChzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlCj4gKnBkZXYsIHBt
+X21lc3NhZ2VfdCBzdGF0ZSkKPiAgICAgICAgICAgICAgICAgIHJldHVybiAtRVNIVVRET1dOOwo+
+ICAgICAgICAgIH0gZWxzZSB7Cj4gICAgICAgICAgICAgICAgICBpbnQgcmV0dmFsID0gMDsKPiAr
+CQlpbnQgcG9ydHMgPSAwOwoKSG0sIHdoeSBub3QgdG8gZG86CgotLS0KIGRyaXZlcnMvdXNiL2hv
+c3QvdTEzMi1oY2QuYyB8ICAgIDIgKy0KIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwg
+MSBkZWxldGlvbigtKQoKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL3VzYi9ob3N0L3UxMzItaGNk
+LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy91c2IvaG9zdC91MTMyLWhj
+ZC5jCisrKyBsaW51eC0yLjYvZHJpdmVycy91c2IvaG9zdC91MTMyLWhjZC5jCkBAIC0zMjE0LDYg
+KzMyMTQsNyBAQCBzdGF0aWMgaW50IHUxMzJfc3VzcGVuZChzdHJ1Y3QgcGxhdGZvcm1fCiAgICAg
+ICAgICAgICAgICAgcmV0dXJuIC1FU0hVVERPV047CiAgICAgICAgIH0gZWxzZSB7CiAgICAgICAg
+ICAgICAgICAgaW50IHJldHZhbCA9IDA7CisJCWludCBwb3J0cyA9IE1BWF9VMTMyX1BPUlRTOwog
+CiAJCXN3aXRjaCAoc3RhdGUuZXZlbnQpIHsKIAkJY2FzZSBQTV9FVkVOVF9GUkVFWkU6CkBAIC0z
+MjIxLDcgKzMyMjIsNiBAQCBzdGF0aWMgaW50IHUxMzJfc3VzcGVuZChzdHJ1Y3QgcGxhdGZvcm1f
+CiAJCQlicmVhazsKIAkJY2FzZSBQTV9FVkVOVF9TVVNQRU5EOgogCQljYXNlIFBNX0VWRU5UX0hJ
+QkVSTkFURToKLSAgICAgICAgICAgICAgICAgICAgICAgIGludCBwb3J0cyA9IE1BWF9VMTMyX1BP
+UlRTOwogICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUgKHBvcnRzLS0gPiAwKSB7CiAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBvcnRfcG93ZXIodTEzMiwgcG9ydHMsIDApOwog
+ICAgICAgICAgICAgICAgICAgICAgICAgfQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL2xpbnV4LXBt
