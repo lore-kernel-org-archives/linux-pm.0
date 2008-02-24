@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [Bug 10030] Suspend doesn't work when SD card is
 	inserted
-Date: Sun, 24 Feb 2008 14:51:16 +0100
-Message-ID: <200802241451.17334.rjw__18773.6877044246$1203861272$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
+Date: Sun, 24 Feb 2008 15:00:41 +0100
+Message-ID: <200802241500.41969.rjw__45932.8191973784$1203861840$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0802232240530.29968-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802232240530.29968-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,166 +20,136 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday, 24 of February 2008, Alan Stern wrote:
-> On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
-> > On Sunday, 24 of February 2008, Alan Stern wrote:
-> > > On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
+> On Sat, 23 Feb 2008, Alan Stern wrote:
 > 
-> > > I still have no clear idea about what's going on with the ACPI bug in 
-> > > #9874.
-> > 
-> > It seems that the ACPI code is not prepared to cope with a failing device
-> > registration, in which case it'd need fixing.  Frankly, I'm afraid there may
-> > be more issues like this throughout the tree.
+> > It happened in a workqueue.  There could be lots of similar cases: Some 
+> > interrupt-driven event causes a hotplug action.  Since the action can't 
+> > be carried out in interrupt context, the driver has no choice but to 
+> > defer it to a workqueue or kernel thread.  Blocking that workqueue or 
+> > kernel thread won't cause a problem _unless_ the driver's 
+> > suspend/resume methods try to synchronize with it.  That's the 
+> > difficult case.
 > 
-> The fact remains that it is unsafe to register a device during a sleep 
-> transition, although if the device's driver doesn't have a suspend or 
-> resume method you can probably get away with it.
+> In fact this turns out to be exactly the problem with the MMC
+> subsystem.  It uses a dedicated workqueue (kmmcd) to handle state
+> changes, and mmc_suspend_host() does a flush_workqueue().  If the
+> workqueue contains an entry to register or unregister a device, this is
+> guaranteed to deadlock -- and that's exactly what happens when Zdenek 
+> inserts or removes a card during the disk-drive spindown time of a 
+> system sleep.
 > 
-> > > However perhaps the bug wouldn't occur if we blocked device  
-> > > registration until after the resume was finished, instead of failing it 
-> > > outright.  Since the registration in this case was done in a workqueue 
-> > > thread, blocking wouldn't cause an immediate deadlock.
-> > 
-> > No, it wouldn't, but the fact that it happens in the ACPI code makes me worry.
+> It looks like the best solution is for mmc_suspend_host() not to flush
+> the workqueue; instead the workqueue should prevent itself from
+> running during a suspend.  Right now the easiest way to accomplish this
+> is for the workqueue routines (mmc_detect() and siblings) to acquire
+> the mmc_host's device semaphore.  If in the future the MMC subsystem
+> adds dynamic PM support then a more complicated arrangement will be 
+> needed.
 > 
-> It happened in a workqueue.  There could be lots of similar cases: Some 
-> interrupt-driven event causes a hotplug action.  Since the action can't 
-> be carried out in interrupt context, the driver has no choice but to 
-> defer it to a workqueue or kernel thread.  Blocking that workqueue or 
-> kernel thread won't cause a problem _unless_ the driver's 
-> suspend/resume methods try to synchronize with it.  That's the 
-> difficult case.
+> So the patch below, in combination with the previous patch, might just 
+> fix the whole problem.
 
-Yes.
+The patch looks sane and I think you're right.
 
-> > If we block that code and the things it's supposed to do turn out to be
-> > necessary for suspending later on, we'll be in trouble.
-> 
-> Exactly.
-> 
-> > > @@ -94,14 +102,15 @@ void device_pm_remove(struct device *dev
-> > >  			/* No suspend in progress, wait on dev->sem */
-> > >  			down(&dev->sem);
-> > >  			up_read(&pm_sleep_rwsem);
-> > > -		} else {
-> > > -			/* Suspend in progress, we may deadlock */
-> > > +		} else if (!in_suspend_context()) {
-> > > +			/* Suspending in another task, we may deadlock */
-> > 
-> > Well, that shouldn't really deadlock.  If it does, there is a potential design
-> > issue somewhere.  I think it might be better to set up a timer in here too.
-> 
-> At this point the driver core owns the device semaphore, so the 
-> unregistration task will block until the sleep is over.  If the 
-> driver's resume method has to synchronize with the unregistration task 
-> then it will deadlock.  I agree, it would be a design issue.  In fact, 
-> it's the same design issue described earlier in this email.
-> 
-> > Although IMO it would be even better to just set up a timer and remove the
-> > warning altogehter.
-> 
-> That warning was just for debugging purposes.  A timer in the resume
-> path could do the same thing with fewer false alarms, just like the 
-> timer in the suspend path.  I have added it to the new patch.
+Still, it depends on us holding the device semaphores (if I understand it
+correctly).  For this reason, I'd prefer to include it into the patch that adds
+device locking to the PM core.
 
-OK
+I think we should first remove the device locking from
+drivers/base/power/main.c (that's the patch I'd like to push upstream now) and
+then create a patch that will add it back along with all of the necessary
+additional changes we know of (BTW, I've just received a message from another
+user affected by it).
 
-> > >  			dev_warn(dev, "Suspicious %s during suspend\n",
-> > >  				__FUNCTION__);
-> > >  			dump_stack();
-> > >  			/* The user has been warned ... */
-> > >  			down(&dev->sem);
-> > >  		}
-> > > +			/* Otherwise we're okay */
-> > >  	}
-> > >  	pr_debug("PM: Removing info for %s:%s\n",
-> > >  		 dev->bus ? dev->bus->name : "No Bus",
-> > 
-> > There's a problem here, because we shouldn't release the semaphore if we're
-> > in the suspend context.
-> 
-> Yes, you're right.  It's fixed in the new version.
-> 
-> > > +static void suspend_timeout(unsigned long _dev)
-> > > +{
-> > > +	struct device *dev = (struct device *) _dev;
-> > > +
-> > > +	dev_err(dev, "deadlock during suspend!\n");
-> > > +	show_state();
-> > 
-> > The show_state() seems to be overkill and won't really help if the user can't
-> > collect the output on the fly using a serial console or something like this.
-> > [The debug stuff printed here should fit a typical laptop screen, ideally.]
-> 
-> Changed.
-> 
-> > I'd prefer
-> > 
-> > 	if (in_suspend_context()) {
-> > 		__device_release_driver(dev);
-> > 	} else {
-> > 		down(&dev->sem);
-> > 		__device_release_driver(dev);
-> > 		up(&dev->sem);
-> > 	}
-> 
-> Okay.
-> 
-> You know, with this new patch we probably don't need 
-> device_pm_schedule_removal() any more.
-
-No, we don't.  However, because of that dpm_suspend() and device_power_down()
-need to be changed not to assume that the removed devices will end up on
-dpm_destroy.
-
-> However I have left it in for now.
-
-Well, it's used by the b43, leds and hwrng drivers as well as by some CPU
-hotplug notifiers.  They all will have to be changed along with removing it.
-
-> > Well, I'd really feel much more comfortable if we removed the troublesome code
-> > for 2.6.25 and reintroduced it along with the above safeguards for 2.6.26.
-> > 
-> > Of course, this doesn't mean we can't send debug patches for testing to the
-> > users who have alraedy reported problems with it. :-)
-> 
-> Certainly!
-> 
-> Here's the new version.
-
-IMO you also should add this change in device_power_down():
-
-@@ -388,18 +343,15 @@ int device_power_down(pm_message_t state
- 		struct list_head *entry = dpm_off.prev;
- 		struct device *dev = to_device(entry);
- 
--		list_del_init(&dev->power.entry);
- 		error = suspend_device_late(dev, state);
- 		if (error) {
- 			printk(KERN_ERR "Could not power down device %s: "
- 					"error %d\n",
- 					kobject_name(&dev->kobj), error);
--			if (list_empty(&dev->power.entry))
--				list_add(&dev->power.entry, &dpm_off);
- 			break;
- 		}
--		if (list_empty(&dev->power.entry))
--			list_add(&dev->power.entry, &dpm_off_irq);
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &dpm_off_irq);
- 	}
- 
- 	if (!error)
-
-and the analogous one in dpm_suspend().  Otherwise there would be a problem
-if suspend_device_late() itself removed the device (same for device_suspend()).
-Of course, that would lead to a problem if device_pm_schedule_removal() were
-used for the removal, so the last "!list_empty(&dev->power.entry)" is really
-not sufficient - until device_pm_schedule_removal() is removed.
+but we need to be careful with
+all the details.  IMO, it would be 
 
 Thanks,
 Rafael
+
+ 
+> Index: usb-2.6/drivers/mmc/core/core.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/mmc/core/core.c
+> +++ usb-2.6/drivers/mmc/core/core.c
+> @@ -731,8 +731,6 @@ void mmc_stop_host(struct mmc_host *host
+>   */
+>  int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
+>  {
+> -	mmc_flush_scheduled_work();
+> -
+>  	mmc_bus_get(host);
+>  	if (host->bus_ops && !host->bus_dead) {
+>  		if (host->bus_ops->suspend)
+> Index: usb-2.6/drivers/mmc/core/mmc.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/mmc/core/mmc.c
+> +++ usb-2.6/drivers/mmc/core/mmc.c
+> @@ -441,6 +441,7 @@ static void mmc_detect(struct mmc_host *
+>  	BUG_ON(!host);
+>  	BUG_ON(!host->card);
+>  
+> +	down(&mmc_classdev(host)->sem);
+>  	mmc_claim_host(host);
+>  
+>  	/*
+> @@ -449,6 +450,7 @@ static void mmc_detect(struct mmc_host *
+>  	err = mmc_send_status(host->card, NULL);
+>  
+>  	mmc_release_host(host);
+> +	up(&mmc_classdev(host)->sem);
+>  
+>  	if (err) {
+>  		mmc_remove(host);
+> Index: usb-2.6/drivers/mmc/core/sd.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/mmc/core/sd.c
+> +++ usb-2.6/drivers/mmc/core/sd.c
+> @@ -500,6 +500,7 @@ static void mmc_sd_detect(struct mmc_hos
+>  	BUG_ON(!host);
+>  	BUG_ON(!host->card);
+>  
+> +	down(&mmc_classdev(host)->sem);
+>  	mmc_claim_host(host);
+>  
+>  	/*
+> @@ -508,6 +509,7 @@ static void mmc_sd_detect(struct mmc_hos
+>  	err = mmc_send_status(host->card, NULL);
+>  
+>  	mmc_release_host(host);
+> +	up(&mmc_classdev(host)->sem);
+>  
+>  	if (err) {
+>  		mmc_sd_remove(host);
+> Index: usb-2.6/drivers/mmc/core/sdio.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/mmc/core/sdio.c
+> +++ usb-2.6/drivers/mmc/core/sdio.c
+> @@ -195,6 +195,7 @@ static void mmc_sdio_detect(struct mmc_h
+>  	BUG_ON(!host);
+>  	BUG_ON(!host->card);
+>  
+> +	down(&mmc_classdev(host)->sem);
+>  	mmc_claim_host(host);
+>  
+>  	/*
+> @@ -203,6 +204,7 @@ static void mmc_sdio_detect(struct mmc_h
+>  	err = mmc_select_card(host->card);
+>  
+>  	mmc_release_host(host);
+> +	up(&mmc_classdev(host)->sem);
+>  
+>  	if (err) {
+>  		mmc_sdio_remove(host);
+> 
+> 
+> 
+
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
