@@ -1,48 +1,36 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
- when SD card is inserted]
-Date: Mon, 25 Feb 2008 15:00:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802251451050.5536-100000__23323.8370660276$1203970029$gmane$org@iolanthe.rowland.org>
-References: <20080225193134.104b386d@mjolnir.drzeus.cx>
+From: Mark Lord <liml@rtr.ca>
+Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
+Date: Mon, 25 Feb 2008 17:26:09 -0500
+Message-ID: <47C34081.5090205@rtr.ca>
+References: <20080225134558.GA1611@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080225193134.104b386d@mjolnir.drzeus.cx>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20080225134558.GA1611@elf.ucw.cz>
+Sender: linux-ide-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, stern@rowland.harvard.edu, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Feb 2008, Pierre Ossman wrote:
-
-> > What do you think of the patch attached to comment #40 in the Bugzilla 
-> > entry?
-> > 
+Pavel Machek wrote:
+> Hi!
 > 
-> Looks ok. As long as those two synchronization points are guaranteed,
-> then I'm happy.
+> This is a patch (very ugly, assumes you have just one disk) to bring
+> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
+> as a base.
+> 
+> It saves .5W compared to config with disk spinning, and even .15W
+> compared to hdparm -y... on my thinkpad x60 anyway.
+..
 
-Maybe a better approach would be to leave the workqueue unfreezable,
-and keep cancel_delayed_work_sync() in mmc_suspend_host().  It would
-then be necessary to add a test to verify, if there is a card attached,
-that the card is indeed suspended.  After all, it's possible that the
-cancel_delayed_work_sync() ended up waiting for a job already running
-on the workqueue to register a new card!  (The same would be true even 
-with flush_scheduled_work.)
+There was a discussion of this here today.
+It makes good use of AHCI-specific features.
 
-Also, as a bit of defensive programming, it might be a good idea to add
-a "suspended" flag to the mmc_host structure.  If mmc_rescan() sees
-that the flag is set then it should return immediately.  This would
-protect against host drivers that aren't careful to disable detect
-IRQs before calling mmc_suspend_host().
+Has it been tested with a Port-Multiplier yet?
 
-Alan Stern
+This is cool enough that we really ought to do a hardware-independent
+version, so that all SATA interfaces could benefit.  Especially ata_piix,
+but others too.
+
+Cheers
