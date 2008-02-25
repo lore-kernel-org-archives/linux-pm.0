@@ -1,44 +1,49 @@
-From: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
-Date: Mon, 25 Feb 2008 17:42:58 -0500
-Message-ID: <47C34472.3090706@garzik.org>
-References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca>
+From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
+	when SD card is inserted]
+Date: Tue, 26 Feb 2008 00:51:43 +0200
+Message-ID: <31e679430802251451y3ae370ddj125616ee4e655536__10711.3216225573$1203981523$gmane$org@mail.gmail.com>
+References: <200802241500.41969.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+	<20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <47C34081.5090205@rtr.ca>
-Sender: linux-ide-owner@vger.kernel.org
-To: Mark Lord <liml@rtr.ca>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, stern@rowland.harvard.edu, linux-ide@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>, carlos.aguiar@indt.com.br
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Mark Lord wrote:
-> Pavel Machek wrote:
->> This is a patch (very ugly, assumes you have just one disk) to bring
->> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
->> as a base.
->>
->> It saves .5W compared to config with disk spinning, and even .15W
->> compared to hdparm -y... on my thinkpad x60 anyway.
-> ..
-> 
-> There was a discussion of this here today.
-> It makes good use of AHCI-specific features.
-> 
-> Has it been tested with a Port-Multiplier yet?
-> 
-> This is cool enough that we really ought to do a hardware-independent
-> version, so that all SATA interfaces could benefit.  Especially ata_piix,
-> but others too.
+<snip>
 
-BTW we can also save power by allowing the user to choose to disable 
-hotplugging support.  Then we can power down PHYs that are not in use.
+> > What's the purpose of the card-counting loop in
+> > host/omap.c:mmc_omap_switch_handler()? It looks like dead code.
+> >
+>
+> I'm not too familiar with that driver, but they've been playing around
+> with multiplexing several cards into one controller. Might be bits and
+> pieces of that.
+>
 
-That requires the addition of some policy controls, because it is 
-user-specific whether or not to waste power waiting for a plug-in event.
+AFAIK, that came after mmc multislot support. Omap2 has one mmc
+controller  for several (2 in practice) mm slots (cards).
+It's not really a dead code since it's used in n800 and n810, it's in
+linux-omap archives and git tree.
 
-	Jeff
+Carlos Aguiar, added in the loop, might have some comments about it.
 
-
-
+--
+Best Regards,
+Felipe Balbi
+felipebalbi@users.sourceforge.net
