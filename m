@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fundamental flaw in system suspend,
- exposed by freezer removal
-Date: Mon, 25 Feb 2008 14:46:35 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802251439030.5536-100000__32276.1909025305$1203968987$gmane$org@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0802251010330.2133-100000@iolanthe.rowland.org>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
+ when SD card is inserted]
+Date: Mon, 25 Feb 2008 15:00:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802251451050.5536-100000__23323.8370660276$1203970029$gmane$org@iolanthe.rowland.org>
+References: <20080225193134.104b386d@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802251010330.2133-100000@iolanthe.rowland.org>
+In-Reply-To: <20080225193134.104b386d@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Feb 2008, Alan Stern wrote:
+On Mon, 25 Feb 2008, Pierre Ossman wrote:
 
-> The only possible solution is to have the drivers themselves be
-> responsible for preventing calls to device_add() or device_register()  
-> during a system sleep.  (It's also necessary to prevent driver binding,
-> but this isn't a major issue.)  The most straightforward approach is to
-> add a new pair of driver methods: one to disable adding children and
-> one to re-enable it.  Of course this would represent a significant
-> addition to the Power Management driver interface.
+> > What do you think of the patch attached to comment #40 in the Bugzilla 
+> > entry?
+> > 
 > 
-> (Note that the existing suspend and resume methods cannot be used for 
-> this purpose.  Drivers assume that when the suspend method is called, 
-> it has already been called for all the child devices.  This wouldn't be 
-> true if one of the purposes of the method was to prevent addition of 
-> new children.)
+> Looks ok. As long as those two synchronization points are guaranteed,
+> then I'm happy.
 
-On further thought maybe the existing methods can be used, with care.  
-Drivers would have to assume the responsibility of synchronizing with
-their helper threads and stopping addition of new children (something
-they should already be doing), and they would also have to check that
-all the existing children are already suspended.  They should not make
-the assumption that the PM core has already suspended all the children.
+Maybe a better approach would be to leave the workqueue unfreezable,
+and keep cancel_delayed_work_sync() in mmc_suspend_host().  It would
+then be necessary to add a test to verify, if there is a card attached,
+that the card is indeed suspended.  After all, it's possible that the
+cancel_delayed_work_sync() ended up waiting for a job already running
+on the workqueue to register a new card!  (The same would be true even 
+with flush_scheduled_work.)
 
-The PM core could help detect errors here.  If it tries to suspend a 
-device and sees that the device's parent is already suspended, then the 
-parent's driver has a bug.
+Also, as a bit of defensive programming, it might be a good idea to add
+a "suspended" flag to the mmc_host structure.  If mmc_rescan() sees
+that the flag is set then it should return immediately.  This would
+protect against host drivers that aren't careful to disable detect
+IRQs before calling mmc_suspend_host().
 
 Alan Stern
