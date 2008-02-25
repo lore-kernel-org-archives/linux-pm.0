@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: broken suspend to ram with velocity driver
-Date: Tue, 26 Feb 2008 01:49:39 +0100
-Message-ID: <200802260149.40659.rjw__23534.3398795978$1203987223$gmane$org@sisk.pl>
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<20080225092628.GA493@elf.ucw.cz> <47C35C53.5010609@gmail.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: [patch 2.6.25-rc2-git] crosslink ACPI and "real"
+	device nodes
+Date: Tue, 26 Feb 2008 05:47:08 +0800
+Message-ID: <1203976028.10256.87.camel__18293.8969032422$1204007803$gmane$org@acpi-hp-zz.sh.intel.com>
+References: <200802222154.25204.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47C35C53.5010609@gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200802222154.25204.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,88 +18,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 26 of February 2008, Kevin Winchester wrote:
-> Pavel Machek wrote:
-[--snip--]
-> (Trimmed cc, since this is really just more of a PM discussion)
-> 
-> No modules here...
-> 
-> I recompiled the kernel without the velocity driver, and got behaviour more
-> comparable to the other failures I've experienced in the past: 
-> 
-> Feb 25 20:18:46 alekhine kernel: [   73.564725] PM: Syncing filesystems ... done.
-> Feb 25 20:19:14 alekhine kernel: [   73.580807] Freezing user space processes ... (elapsed 0.01 seconds) done.
-> Feb 25 20:19:14 alekhine kernel: [   73.595524] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> Feb 25 20:19:14 alekhine kernel: [   73.595839] ACPI: Preparing to enter system sleep state S3
-> Feb 25 20:19:14 alekhine kernel: [   73.697308] Suspending console(s)
-> Feb 25 20:19:14 alekhine kernel: [   73.700386] sd 3:0:0:0: [sda] Synchronizing SCSI cache
-> Feb 25 20:19:14 alekhine kernel: [   73.783185] sd 3:0:0:0: [sda] Stopping disk
-> Feb 25 20:19:14 alekhine kernel: [   73.784302] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.794585] ACPI: PCI interrupt for device 0000:00:10.4 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.805370] ACPI: PCI interrupt for device 0000:00:10.3 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.816170] ACPI: PCI interrupt for device 0000:00:10.2 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.826999] ACPI: PCI interrupt for device 0000:00:10.1 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.837833] ACPI: PCI interrupt for device 0000:00:10.0 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.848668] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.859346] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
-> Feb 25 20:19:14 alekhine kernel: [   73.882878] Intel machine check architecture supported.
-> Feb 25 20:19:14 alekhine kernel: [   73.882878] Intel machine check reporting enabled on CPU#0.
-> Feb 25 20:19:14 alekhine kernel: [   73.884890] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-> Feb 25 20:19:14 alekhine kernel: [   73.884892] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-> Feb 25 20:19:14 alekhine kernel: [   73.890893] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
-> Feb 25 20:19:14 alekhine kernel: [   73.890893] usb usb2: root hub lost power or was reset
-> Feb 25 20:19:14 alekhine kernel: [   73.901724] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
-> Feb 25 20:19:14 alekhine kernel: [   73.901724] usb usb3: root hub lost power or was reset
-> Feb 25 20:19:14 alekhine kernel: [   73.912597] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
-> Feb 25 20:19:14 alekhine kernel: [   73.912597] usb usb4: root hub lost power or was reset
-> Feb 25 20:19:14 alekhine kernel: [   73.923472] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
-> Feb 25 20:19:14 alekhine kernel: [   73.923472] usb usb5: root hub lost power or was reset
-> Feb 25 20:19:14 alekhine kernel: [   73.934336] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
-> Feb 25 20:19:14 alekhine kernel: [   73.945209] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
-> Feb 25 20:19:14 alekhine kernel: [   73.947465] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-> Feb 25 20:19:14 alekhine kernel: [   73.947660] sd 3:0:0:0: [sda] Starting disk
-> Feb 25 20:19:14 alekhine kernel: [   74.183122] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   74.183122] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   74.336028] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   74.336028] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   74.491252] ata3.00: configured for UDMA/33
-> Feb 25 20:19:14 alekhine kernel: [   74.678330] ata3.01: configured for UDMA/33
-> Feb 25 20:19:14 alekhine kernel: [   78.168897] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   78.168897] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-> Feb 25 20:19:14 alekhine kernel: [   78.172976] ata4.00: configured for UDMA/100
-> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] Write Protect is off
-> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> Feb 25 20:19:14 alekhine kernel: [   78.720991] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
-> Feb 25 20:19:14 alekhine kernel: [   78.766838] done.
-> Feb 25 20:19:14 alekhine kernel: [   78.951998] usb 2-1: new low speed USB device using uhci_hcd and address 4
-> Feb 25 20:19:14 alekhine kernel: [   79.114037] usb 2-1: configuration #1 chosen from 1 choice
-> Feb 25 20:19:14 alekhine kernel: [   79.138166] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
-> Feb 25 20:19:14 alekhine kernel: [   79.180828] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
-> Feb 25 20:19:14 alekhine kernel: [   79.181059] usb 2-2: USB disconnect, address 3
-> Feb 25 20:19:15 alekhine kernel: [   79.436567] usb 2-2: new low speed USB device using uhci_hcd and address 5
-> Feb 25 20:19:15 alekhine kernel: [   79.606180] usb 2-2: configuration #1 chosen from 1 choice
-> Feb 25 20:19:15 alekhine kernel: [   79.623893] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
-> Feb 25 20:19:15 alekhine kernel: [   79.663140] input: USB HID v1.11 Keyboard [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-> Feb 25 20:19:15 alekhine kernel: [   79.697610] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
-> Feb 25 20:19:15 alekhine kernel: [   79.721948] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-> 
-> 
-> I don't see anything there that would explain the failure, but the console
-> never comes back, and I am forced to hard reset the box.  Anything else I can
-> try?  
 
-First, let's try to remove some noise.
+On Sat, 2008-02-23 at 13:54 +0800, David Brownell wrote:
+> Add cross-links between ACPI device and "real" devices in sysfs,
+> exposing otherwise-hidden interrelationships between the various
+> device nodes for ACPI stuff.  As a representative example, one
+> hardware device is exposed as two logical devices (PNP and ACPI):
+> 
+>   .../pnp0/00:06/
+>   .../LNXSYSTM:00/device:00/PNP0A03:00/device:15/PNP0B00:00/
+> 
+> The PNP device gets a "firmware_node" link pointing to the ACPI
+> device,
+> and is what a Linux device driver binds to.  The ACPI device has
+> instead
+> a "physical_node" link pointing back to the PNP device.  Other
+> firmware
+> frameworks, like OpenFirmware, could do the same thing to couple their
+> firmware tables to the rest of the system.
+> 
+> (Based on a patch from Zhang Rui.  This version is modified to not
+> depend on the patch makig ACPI initialize driver model wakeup flags.)
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> ---
+> Another extract from the "teach ACPI how to use driver model wakeup
+> flags" patch series.  The linkage helps sort out confusion about which
+> devices are wakeup-capable, among other things, and can help when
+> interpreting /proc/acpi/wakeup contents.
+> 
+>  drivers/acpi/glue.c |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> --- g26.orig/drivers/acpi/glue.c        2008-02-22 20:39:19.000000000
+> -0800
+> +++ g26/drivers/acpi/glue.c     2008-02-22 20:46:40.000000000 -0800
+> @@ -142,6 +142,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
+> 
+>  static int acpi_bind_one(struct device *dev, acpi_handle handle)
+>  {
+> +       struct acpi_device *acpi_dev;
+>         acpi_status status;
+> 
+>         if (dev->archdata.acpi_handle) {
+> @@ -157,6 +158,16 @@ static int acpi_bind_one(struct device *
+>         }
+>         dev->archdata.acpi_handle = handle;
+> 
+> +       status = acpi_bus_get_device(handle, &acpi_dev);
+> +       if (!ACPI_FAILURE(status)) {
+> +               int ret;
+> +
+> +               ret = sysfs_create_link(&dev->kobj,
+> &acpi_dev->dev.kobj,
+> +                               "firmware_node");
+> +               ret = sysfs_create_link(&acpi_dev->dev.kobj,
+> &dev->kobj,
+> +                               "physical_node");
+> +       }
+ret is not needed here...
 
-Please test 2.6.25-rc3 with commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
-"power_state: get rid of write-only variable in SATA" reverted and with the
-patch from http://marc.info/?l=linux-acpi&m=120389632114090&w=2 applied.
-
-Second, what exactly do you do to suspend to RAM?
-
-Rafael
+>         return 0;
+>  }
+> 
+> @@ -165,8 +176,17 @@ static int acpi_unbind_one(struct device
+>         if (!dev->archdata.acpi_handle)
+>                 return 0;
+>         if (dev ==
+> acpi_get_physical_device(dev->archdata.acpi_handle)) {
+> +               struct acpi_device *acpi_dev;
+> +
+>                 /* acpi_get_physical_device increase refcnt by one */
+>                 put_device(dev);
+> +
+> +               if (!acpi_bus_get_device(dev->archdata.acpi_handle,
+> +                                       &acpi_dev)) {
+> +                       sysfs_remove_link(&dev->kobj,
+> "firmware_node");
+> +                       sysfs_remove_link(&acpi_dev->dev.kobj,
+> "physical_node");
+> +               }
+> +
+>                 acpi_detach_data(dev->archdata.acpi_handle,
+>                                  acpi_glue_data_handler);
+>                 dev->archdata.acpi_handle = NULL;
+> 
+> 
