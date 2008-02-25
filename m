@@ -1,15 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: using long instead of atomic_t when only set/read is
- required (was Re: [Bug 10030] Suspend doesn't work when SD card is
- inserted)
-Date: Mon, 25 Feb 2008 09:46:06 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802250943410.3549-100000__48844.262926332$1203950981$gmane$org@iolanthe.rowland.org>
-References: <20080225090316.GA420@elf.ucw.cz>
+Subject: Fundamental flaw in system suspend,
+	exposed by freezer removal
+Date: Mon, 25 Feb 2008 10:39:49 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802251010330.2133-100000__30933.102782774$1203954117$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080225090316.GA420@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +16,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, davem@davemloft.net, Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Feb 2008, Pavel Machek wrote:
+Ongoing efforts to remove the freezer from the system suspend and
+hibernation code ("system sleep" is the proper catch-all term) have
+turned up a fundamental flaw in the Power Management subsystem's
+design.  In brief, we cannot handle the race between hotplug addition
+of new devices and suspending all existing devices.
 
-> Hi!
-> 
-> Alan thinks that `subj` is correct...
+It's not a simple problem (and I'm going to leave out a lot of details
+here).  For a comparison, think about what happens when a device is
+hot-unplugged.  When device_del() calls the driver's remove method, the
+driver is expected to manage all the details of synchronizing with
+other threads that may be trying to add new child devices as well as
+removing all existing children.
 
-More precisely, reads and writes of pointers are always atomic.  That 
-is, if a write and a read occur concurrently, it is guaranteed that the 
-read will obtain either the old or the new value of the pointer, never 
-a mish-mash of the two.  If this were not so then RCU wouldn't work.
+But when a system sleep begins, the PM core is expected to suspend
+all the children of a device before calling the device driver's suspend
+method.  If there are other threads trying to add new children at the
+same time, it's the PM core's responsibility to synchronize with
+them -- an impossible job, since only the device's driver knows what
+those other threads are and how to stop them safely.
 
-> I guess it only works as long as longs are aligned? Should it be
-> written down to atomic_ops.txt?
+In the past this deficiency has been hidden by the freezer.  Other 
+tasks couldn't register new children because they were frozen.  But now 
+we are phasing out the freezer (already most kernel threads are not 
+freezable) and the problem is starting to show up.
 
-Forget it, I'm going to withdraw the entire thing.  The whole approach 
-is wrong.  More details in a new email thread, to follow soon.
+A change to the PM core present in 2.6.25-rc2 (but which is about to be
+reverted!) has the core try to prevent these additions by acquiring the
+device semaphores for every registered device.  This has turned out to
+be too heavy-handed; for example, it prevents drivers from
+unregistering devices during a system sleep.  There are more subtle
+synchronization problems as well.
+
+The only possible solution is to have the drivers themselves be
+responsible for preventing calls to device_add() or device_register()  
+during a system sleep.  (It's also necessary to prevent driver binding,
+but this isn't a major issue.)  The most straightforward approach is to
+add a new pair of driver methods: one to disable adding children and
+one to re-enable it.  Of course this would represent a significant
+addition to the Power Management driver interface.
+
+(Note that the existing suspend and resume methods cannot be used for 
+this purpose.  Drivers assume that when the suspend method is called, 
+it has already been called for all the child devices.  This wouldn't be 
+true if one of the purposes of the method was to prevent addition of 
+new children.)
+
+Another way of accomplishing this is to require drivers to pay
+attention to pm_notifier chain and stop registering children when any
+of the PM_xxx_PREPARE messages is sent.  This approach feels a lot more
+awkward to me.
+
+Comments and discussion?
 
 Alan Stern
