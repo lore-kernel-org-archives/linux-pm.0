@@ -1,56 +1,117 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
-Date: Tue, 26 Feb 2008 10:52:36 -0500
-Message-ID: <47C435C4.9000402@rtr.ca>
-References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca> <20080225223432.GN2659@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Tue, 26 Feb 2008 10:49:20 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802261016540.4176-100000__29967.068511951$1204041124$gmane$org@iolanthe.rowland.org>
+References: <200802260107.51385.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20080225223432.GN2659@elf.ucw.cz>
-Sender: linux-ide-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mark Lord <liml@rtr.ca>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, stern@rowland.harvard.edu, linux-ide@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200802260107.51385.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->>> This is a patch (very ugly, assumes you have just one disk) to bring
->>> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
->>> as a base.
->>>
->>> It saves .5W compared to config with disk spinning, and even .15W
->>> compared to hdparm -y... on my thinkpad x60 anyway.
->> ..
->>
->> There was a discussion of this here today.
-> 
-> Real-life discussion, or something I could read? :-).
-> 
->> It makes good use of AHCI-specific features.
->>
->> Has it been tested with a Port-Multiplier yet?
-> 
-> I do not know what port-multiplier is, sorry. But it was not really
-> tested. It is not expected to work on any other config than notebook
-> very similar to mine.
-> 
->> This is cool enough that we really ought to do a hardware-independent
->> version, so that all SATA interfaces could benefit.  Especially ata_piix,
->> but others too.
-> 
-> Well, it seems like it is 10 lines per driver once Alan's SCSI
-> autosuspend patches are in...
-..
+On Tue, 26 Feb 2008, Rafael J. Wysocki wrote:
 
-Cool (literally)!
+> > > IMO the device driver should assure that no new children will be registered
+> > > concurrently with the ->suspend() method (IOW, ->suspend() should wait for
+> > > all such registrations to complete and should prevent any new ones from
+> > > being started) and it should make it impossible to register any new children
+> > > after ->suspend() has run.  It's the driver's problem how to achieve that.
+> > 
+> > Exactly; this has to be added to the PM documentation.
+> 
+> Into Documentation/power/devices.txt, I gather?
 
-I think I might have gotten your patch confused in my mind
-with another AHCI patch, which uses features of the chip itself
-to automatically negotiate/change link power status on the fly
-(no s/w needed, other than to turn it on).
+Yes.
 
-That one is very ACPI specific, though.
+> > > > The PM core could help detect errors here.  If it tries to suspend a 
+> > > > device and sees that the device's parent is already suspended, then the 
+> > > > parent's driver has a bug.
+> > > 
+> > > Yes, I think we ought to fail the suspend in such cases.  Still, that's not
+> > > sufficient to prevent a child from being registered after we've run
+> > > dpm_suspend().  For this reason, we could also leave dpm_suspend() with
+> > > dpm_list_mtx held and not release it until the next dpm_resume() is run.
+> > 
+> > The pm_sleep_rwsem will do a better job of catching such errors.
+> 
+> But we should not leave a window between releasing dpm_list_mtx and taking
+> pm_sleep_rwsem.  Either that, or we should make sure that dpm_active is
+> empty after acquiring pm_sleep_rwsem.
 
+I've got some ideas on how to implement this.
 
+We can add a new field "suspend_called" to dev->power.  It would be
+owned by the PM core (protect by dpm_list_mtx) and read-only to
+drivers.  Normally it will contain 0, but when the suspend method is
+running we set it to SUSPEND_RUNNING and when the method returns
+successfully we set it to SUSPEND_DONE.  Before calling the resume
+method we set it back to 0.  Drivers can use this field as an easy way
+of checking that all the child devices have been suspended.
+
+When a new device is registered we check its parent's suspend_called
+value.  If it is SUSPEND_DONE then the caller has a bug and we have to
+fail the registration.  If it is SUSPEND_RUNNING then the registration
+is legal, but we remember what happened.  Then when the
+currently-running suspend method returns and we reacquire the
+dpm_list_mtx, we will realize that a race was lost.  If the method
+completed successfully (which it shouldn't) we can resume that device
+immediately without ever taking it off the dpm_active list; but either
+way we should continue the suspend loop.  Now the new child will be at
+the end of the dpm_active_list, so it will be suspended before the
+parent is reached again.
+
+This way we can recover from drivers that are willing to suspend their 
+device even though there are unsuspended children.  The only drawback 
+will be that for a short time the child will be active while its parent 
+is suspended.
+
+We should not abort the entire sleep transition simply because we lost 
+a race.  With this scheme we won't even need the pm_sleep_rwsem; the 
+dpm_list_mtx will provide all the necessary protection.
+
+This is more intricate than it should be.  It would have been better to
+have had "disable_new_children" and "enable_new_children" methods from
+the beginning; then there wouldn't be any races at all.  That's life...
+
+The one tricky thing to watch out for is when a suspend or resume 
+method wants to unregister the device being suspended or resumed.  Even 
+that should be doable (set suspend_called to UNREGISTERED or something 
+like that).
+
+> > > That will potentially cause some trouble to CPU hotplug cotifiers, but we can
+> > > handle that, for example, by using the in_suspend_context() test.
+> > 
+> > Do they need to register new CPUs at some point?  There ought to be a 
+> > way to handle that.
+> 
+> No, they don't, but there are some CPU-related device objects that get
+> uregistered/registered.  Still, all of this work is really redundant if the CPU
+> in question comes back up during the resume, so it should be avoided in
+> general.  The CPU hotplug notifiers should only unregister those objects if
+> the CPU hasn't gone on line during the resume and they have all information
+> necessary for discovering that.
+
+Unregistration should always be allowed, and registration should be 
+allowed whenever the parent isn't suspended.  For devices with no 
+parent, we can imagine there is a fictitious parent at the root of the 
+device tree.  Conceptually it gets suspended after every real device 
+and resumed before.  Maybe even before dpm_power_up(), meaning that 
+devices with no parent could be registered by a resume_early method.
+
+When your lock-removal stuff gets into Greg's tree, I'll write all 
+this.  Sound good?
+
+Alan Stern
