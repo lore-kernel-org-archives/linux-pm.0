@@ -1,66 +1,32 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fundamental flaw in system suspend,
- exposed by freezer removal
-Date: Tue, 26 Feb 2008 10:58:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802261055230.4176-100000__9010.15587519414$1204041642$gmane$org@iolanthe.rowland.org>
-References: <47C415F2.2060905@davidnewall.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
+Date: Tue, 26 Feb 2008 16:21:43 +0000
+Message-ID: <20080226162142.GA12020@srcf.ucam.org>
+References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca> <47C34472.3090706@garzik.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47C415F2.2060905@davidnewall.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Newall <davidn@davidnewall.com>
-Cc: linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <47C34472.3090706@garzik.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Mark Lord <liml@rtr.ca>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, stern@rowland.harvard.edu, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 27 Feb 2008, David Newall wrote:
+On Mon, Feb 25, 2008 at 05:42:58PM -0500, Jeff Garzik wrote:
 
-> David Brownell wrote:
-> > On Tuesday 26 February 2008, David Newall wrote:
-> >   
-> >> Hardware can be inserted and removed while we're in a suspend state; and
-> >> there's nothing that we can do about it until we resume.  Is it fair to
-> >> say, then, that having started suspend, we could reasonably ignore any
-> >> device insertion and removal, and handle it on resume?
-> >>     
-> >
-> > "Ignore" seems a bit strong; those events may be wakeup triggers,
-> > which would cause the hardware to make it a very short suspend state.
-> >
-> > "Defer handling" is more to the point, be it by hardware or software.
-> >
-> >   
+> BTW we can also save power by allowing the user to choose to disable 
+> hotplugging support.  Then we can power down PHYs that are not in use.
 > 
-> Of course, "defer".  The insertion has to be handled eventually.  What
-> I'm wondering is if we can ignore it, and catch it on the resume.
+> That requires the addition of some policy controls, because it is 
+> user-specific whether or not to waste power waiting for a plug-in event.
 
-Certainly.  If hardware-change events can get lost because of the
-system sleep, the resume method should make every effort to verify that 
-what it remembers of the hardware state matches the current reality.
+For AHCI, if you've enabled link power management then you've already 
+disabled hotplug. We might as well power down unused phys in that case. 
+Note that laptop bays still seem to tend to use platform-specific 
+hotplug notification, even when they're sata - we'll get the hotplug 
+notify for them even if the phy's powered down, so that case also needs 
+to be handled.
 
-> >> Presumably we need to scan for hardware changes on resume.
-> >>     
-> >
-> > Not on most busses I work with; the hardware issues notifications
-> > whenever the devices are removable.
-> >   
-> 
-> There's no notification while we're suspended.  Isn't it necessary to
-> scan all busses on resume, just to know what's on them?
-
-It depends on the bus.  If the bus doesn't support hotplugging then 
-scanning isn't necessary.  If the bus does support hotplugging then 
-scanning after suspend may or may not be necessary, depending on 
-whether or not the bus controller remained powered during the suspend.  
-For hotpluggable buses, scanning after hibernation is always necessary.
-
-Alan Stern
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
