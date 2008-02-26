@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.25-rc2-git] crosslink ACPI and "real"
-	device nodes
-Date: Mon, 25 Feb 2008 23:17:43 -0800
-Message-ID: <200802252317.43717.david-b__8970.82867236367$1204010463$gmane$org@pacbell.net>
-References: <200802222154.25204.david-b@pacbell.net>
-	<200802252245.43282.david-b@pacbell.net>
-	<1203977422.10256.91.camel@acpi-hp-zz.sh.intel.com>
+Subject: Re: Fundamental flaw in system suspend,
+	exposed by freezer removal
+Date: Tue, 26 Feb 2008 01:16:17 -0800
+Message-ID: <200802260116.18142.david-b__26831.7800750539$1204017603$gmane$org@pacbell.net>
+References: <Pine.LNX.4.44L0.0802251439030.5536-100000@iolanthe.rowland.org>
+	<200802252313.23399.david-b@pacbell.net>
+	<47C3CD15.1060908@davidnewall.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1203977422.10256.91.camel@acpi-hp-zz.sh.intel.com>
+In-Reply-To: <47C3CD15.1060908@davidnewall.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,34 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: David Newall <davidn@davidnewall.com>
+Cc: linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 25 February 2008, Zhang, Rui wrote:
+On Tuesday 26 February 2008, David Newall wrote:
 > 
-> On Tue, 2008-02-26 at 14:45 +0800, David Brownell wrote:
-> > On Monday 25 February 2008, Zhang, Rui wrote:
-> > > > +       if (!ACPI_FAILURE(status)) {
-> > > > +               int ret;
-> > > > +
-> > > > +               ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
-> > > > +                               "firmware_node");
-> > > > +               ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
-> > > > +                               "physical_node");
-> > > > +       }
-> > >
-> > > ret is not needed here...
-> > 
-> > But what compiler warnings do you see when you omit it?  :)
->
-> I tried but NO warnings at all
+> Hardware can be inserted and removed while we're in a suspend state; and
+> there's nothing that we can do about it until we resume.  Is it fair to
+> say, then, that having started suspend, we could reasonably ignore any
+> device insertion and removal, and handle it on resume?
 
-Really???  In <linux/sysfs.h> I found:
+"Ignore" seems a bit strong; those events may be wakeup triggers,
+which would cause the hardware to make it a very short suspend state.
 
-int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
-                                   const char *name);
+"Defer handling" is more to the point, be it by hardware or software.
 
-Perhaps you disabled those warnings.  (And FWIW, I don't see any
-reasonable way to handle such faults, so ignoring them is thus
-the right "solution".)
+
+> Presumably we need to scan for hardware changes on resume.
+
+Not on most busses I work with; the hardware issues notifications
+whenever the devices are removable.
+
+Which is a Good Thing ... scanning, as you suggest, is inherently
+not reliable.  If a mouse is swapped, it likely doesn't matter a
+lot whether it's the "same" or not.
+
+But ... how about if some removable storage media was taken out,
+updated on a different system, then restored before the resume?
+Not many filesystems handle that sanely.  You *really* want to
+have hardware which reports disconnect/reconnect events, or which
+physically prevents them (locked case etc).
+
+- Dave
