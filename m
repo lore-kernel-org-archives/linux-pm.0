@@ -1,17 +1,18 @@
-From: David Newall <davidn@davidnewall.com>
-Subject: Re: Fundamental flaw in system suspend,
- exposed by freezer removal
-Date: Wed, 27 Feb 2008 00:06:50 +1030
-Message-ID: <47C415F2.2060905__40718.8987861902$1204041588$gmane$org@davidnewall.com>
-References: <Pine.LNX.4.44L0.0802251439030.5536-100000@iolanthe.rowland.org>
-	<200802252313.23399.david-b@pacbell.net>
-	<47C3CD15.1060908@davidnewall.com>
-	<200802260116.18142.david-b@pacbell.net>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [patch 2.6.25-rc2-git] crosslink ACPI and "real"
+	device nodes
+Date: Tue, 26 Feb 2008 10:10:58 -0300
+Message-ID: <20080226131058.GA8234__9495.46737033433$1204041602$gmane$org@khazad-dum.debian.net>
+References: <200802222154.25204.david-b@pacbell.net>
+	<200802252245.43282.david-b@pacbell.net>
+	<1203977422.10256.91.camel@acpi-hp-zz.sh.intel.com>
+	<200802252317.43717.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802260116.18142.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <200802252317.43717.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,35 +23,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Tuesday 26 February 2008, David Newall wrote:
->   
->> Hardware can be inserted and removed while we're in a suspend state; and
->> there's nothing that we can do about it until we resume.  Is it fair to
->> say, then, that having started suspend, we could reasonably ignore any
->> device insertion and removal, and handle it on resume?
->>     
->
-> "Ignore" seems a bit strong; those events may be wakeup triggers,
-> which would cause the hardware to make it a very short suspend state.
->
-> "Defer handling" is more to the point, be it by hardware or software.
->
->   
+On Mon, 25 Feb 2008, David Brownell wrote:
+> int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
+>                                    const char *name);
+> 
+> Perhaps you disabled those warnings.  (And FWIW, I don't see any
+> reasonable way to handle such faults, so ignoring them is thus
+> the right "solution".)
 
-Of course, "defer".  The insertion has to be handled eventually.  What
-I'm wondering is if we can ignore it, and catch it on the resume.
+You issue a printk warning the user, and try to continue.
 
-
->> Presumably we need to scan for hardware changes on resume.
->>     
->
-> Not on most busses I work with; the hardware issues notifications
-> whenever the devices are removable.
->   
-
-There's no notification while we're suspended.  Isn't it necessary to
-scan all busses on resume, just to know what's on them?
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
