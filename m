@@ -1,18 +1,16 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [patch 2.6.25-rc2-git] crosslink ACPI and "real"
-	device nodes
-Date: Tue, 26 Feb 2008 10:10:58 -0300
-Message-ID: <20080226131058.GA8234__9495.46737033433$1204041602$gmane$org@khazad-dum.debian.net>
-References: <200802222154.25204.david-b@pacbell.net>
-	<200802252245.43282.david-b@pacbell.net>
-	<1203977422.10256.91.camel@acpi-hp-zz.sh.intel.com>
-	<200802252317.43717.david-b@pacbell.net>
+From: David Newall <davidn@davidnewall.com>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Tue, 26 Feb 2008 18:55:57 +1030
+Message-ID: <47C3CD15.1060908__855.834692674939$1204041604$gmane$org@davidnewall.com>
+References: <Pine.LNX.4.44L0.0802251439030.5536-100000@iolanthe.rowland.org>
+	<200802252325.09439.rjw@sisk.pl>
+	<200802252313.23399.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200802252317.43717.david-b@pacbell.net>
+In-Reply-To: <200802252313.23399.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,21 +21,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Feb 2008, David Brownell wrote:
-> int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
->                                    const char *name);
-> 
-> Perhaps you disabled those warnings.  (And FWIW, I don't see any
-> reasonable way to handle such faults, so ignoring them is thus
-> the right "solution".)
+David Brownell wrote:
+> This "flaw" isn't a new thing, of course.  I remember pointing out the rather
+> annoying proclivity of the PM framework to deadlock when suspend() tried to
+> remove USB devices ... back around 2.6.10 or so.  Things have shuffled around
+> a bit, and gotten better in some cases, but not fundamentally changed.
 
-You issue a printk warning the user, and try to continue.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Hardware can be inserted and removed while we're in a suspend state; and
+there's nothing that we can do about it until we resume.  Is it fair to
+say, then, that having started suspend, we could reasonably ignore any
+device insertion and removal, and handle it on resume?  Presumably we
+need to scan for hardware changes on resume.
