@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fundamental flaw in system suspend,
-	exposed by freezer removal
-Date: Wed, 27 Feb 2008 00:17:15 +0100
-Message-ID: <200802270017.16108.rjw__44819.9858460159$1204068010$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0802261016540.4176-100000@iolanthe.rowland.org>
+From: Kevin Winchester <kjwinchester@gmail.com>
+Subject: Re: broken suspend to ram with velocity driver
+Date: Tue, 26 Feb 2008 20:28:39 -0400
+Message-ID: <47C4AEB7.1030404__42910.2218164646$1204072290$gmane$org@gmail.com>
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
+	<47C1B52B.3080104@gmail.com> <200802242100.46474.rjw@sisk.pl>
+	<47C1FF2E.4060600@gmail.com> <20080225092628.GA493@elf.ucw.cz>
+	<47C35C53.5010609@gmail.com> <20080226214950.GD10280@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802261016540.4176-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20080226214950.GD10280@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,140 +20,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 26 of February 2008, Alan Stern wrote:
-> On Tue, 26 Feb 2008, Rafael J. Wysocki wrote:
+Pavel Machek wrote:
+> Hi!
 > 
-> > > > IMO the device driver should assure that no new children will be registered
-> > > > concurrently with the ->suspend() method (IOW, ->suspend() should wait for
-> > > > all such registrations to complete and should prevent any new ones from
-> > > > being started) and it should make it impossible to register any new children
-> > > > after ->suspend() has run.  It's the driver's problem how to achieve that.
-> > > 
-> > > Exactly; this has to be added to the PM documentation.
-> > 
-> > Into Documentation/power/devices.txt, I gather?
+>> I recompiled the kernel without the velocity driver, and got behaviour more comparable to the other failures I've experienced in the past:
+>>
+>> Feb 25 20:18:46 alekhine kernel: [   73.564725] PM: Syncing filesystems ... done.
+>> Feb 25 20:19:14 alekhine kernel: [   73.580807] Freezing user space processes ... (elapsed 0.01 seconds) done.
+>> Feb 25 20:19:14 alekhine kernel: [   73.595524] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+>> Feb 25 20:19:14 alekhine kernel: [   73.595839] ACPI: Preparing to enter system sleep state S3
+>> Feb 25 20:19:14 alekhine kernel: [   73.697308] Suspending console(s)
+>> Feb 25 20:19:14 alekhine kernel: [   73.700386] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+>> Feb 25 20:19:14 alekhine kernel: [   73.783185] sd 3:0:0:0: [sda] Stopping disk
+>> Feb 25 20:19:14 alekhine kernel: [   73.784302] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.794585] ACPI: PCI interrupt for device 0000:00:10.4 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.805370] ACPI: PCI interrupt for device 0000:00:10.3 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.816170] ACPI: PCI interrupt for device 0000:00:10.2 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.826999] ACPI: PCI interrupt for device 0000:00:10.1 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.837833] ACPI: PCI interrupt for device 0000:00:10.0 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.848668] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.859346] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
+>> Feb 25 20:19:14 alekhine kernel: [   73.882878] Intel machine check architecture supported.
+>> Feb 25 20:19:14 alekhine kernel: [   73.882878] Intel machine check reporting enabled on CPU#0.
+>> Feb 25 20:19:14 alekhine kernel: [   73.884890] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+>> Feb 25 20:19:14 alekhine kernel: [   73.884892] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+>> Feb 25 20:19:14 alekhine kernel: [   73.890893] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 25 20:19:14 alekhine kernel: [   73.890893] usb usb2: root hub lost power or was reset
+>> Feb 25 20:19:14 alekhine kernel: [   73.901724] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 25 20:19:14 alekhine kernel: [   73.901724] usb usb3: root hub lost power or was reset
+>> Feb 25 20:19:14 alekhine kernel: [   73.912597] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 25 20:19:14 alekhine kernel: [   73.912597] usb usb4: root hub lost power or was reset
+>> Feb 25 20:19:14 alekhine kernel: [   73.923472] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 25 20:19:14 alekhine kernel: [   73.923472] usb usb5: root hub lost power or was reset
+>> Feb 25 20:19:14 alekhine kernel: [   73.934336] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 25 20:19:14 alekhine kernel: [   73.945209] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
+>> Feb 25 20:19:14 alekhine kernel: [   73.947465] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+>> Feb 25 20:19:14 alekhine kernel: [   73.947660] sd 3:0:0:0: [sda] Starting disk
+>> Feb 25 20:19:14 alekhine kernel: [   74.183122] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   74.183122] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   74.336028] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   74.336028] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   74.491252] ata3.00: configured for UDMA/33
+>> Feb 25 20:19:14 alekhine kernel: [   74.678330] ata3.01: configured for UDMA/33
+>> Feb 25 20:19:14 alekhine kernel: [   78.168897] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   78.168897] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
+>> Feb 25 20:19:14 alekhine kernel: [   78.172976] ata4.00: configured for UDMA/100
+>> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+>> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] Write Protect is off
+>> Feb 25 20:19:14 alekhine kernel: [   78.177133] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>> Feb 25 20:19:14 alekhine kernel: [   78.720991] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
+>> Feb 25 20:19:14 alekhine kernel: [   78.766838] done.
+>> Feb 25 20:19:14 alekhine kernel: [   78.951998] usb 2-1: new low speed USB device using uhci_hcd and address 4
+>> Feb 25 20:19:14 alekhine kernel: [   79.114037] usb 2-1: configuration #1 chosen from 1 choice
+>> Feb 25 20:19:14 alekhine kernel: [   79.138166] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
+>> Feb 25 20:19:14 alekhine kernel: [   79.180828] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
+>> Feb 25 20:19:14 alekhine kernel: [   79.181059] usb 2-2: USB disconnect, address 3
+>> Feb 25 20:19:15 alekhine kernel: [   79.436567] usb 2-2: new low speed USB device using uhci_hcd and address 5
+>> Feb 25 20:19:15 alekhine kernel: [   79.606180] usb 2-2: configuration #1 chosen from 1 choice
+>> Feb 25 20:19:15 alekhine kernel: [   79.623893] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
+>> Feb 25 20:19:15 alekhine kernel: [   79.663140] input: USB HID v1.11 Keyboard [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
+>> Feb 25 20:19:15 alekhine kernel: [   79.697610] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
+>> Feb 25 20:19:15 alekhine kernel: [   79.721948] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
+>>
+>>
+>> I don't see anything there that would explain the failure, but the console never comes back, and I am forced to hard reset the box.  Anything else I can try?
+>>
 > 
-> Yes.
+> So machine works but video is that? See suspend.sf.net...
 > 
-> > > > > The PM core could help detect errors here.  If it tries to suspend a 
-> > > > > device and sees that the device's parent is already suspended, then the 
-> > > > > parent's driver has a bug.
-> > > > 
-> > > > Yes, I think we ought to fail the suspend in such cases.  Still, that's not
-> > > > sufficient to prevent a child from being registered after we've run
-> > > > dpm_suspend().  For this reason, we could also leave dpm_suspend() with
-> > > > dpm_list_mtx held and not release it until the next dpm_resume() is run.
-> > > 
-> > > The pm_sleep_rwsem will do a better job of catching such errors.
-> > 
-> > But we should not leave a window between releasing dpm_list_mtx and taking
-> > pm_sleep_rwsem.  Either that, or we should make sure that dpm_active is
-> > empty after acquiring pm_sleep_rwsem.
-> 
-> I've got some ideas on how to implement this.
-> 
-> We can add a new field "suspend_called" to dev->power.
 
-I'd call it "sleeping" or something like this, for it will also be used by
-hibernation callbacks.
+I haven't done too much looking at what the tool on that site does,
+but I was under the impression that I should be able to do:
 
-> It would be owned by the PM core (protect by dpm_list_mtx) and read-only to
-> drivers.  Normally it will contain 0, but when the suspend method is
-> running we set it to SUSPEND_RUNNING and when the method returns
-> successfully we set it to SUSPEND_DONE.  Before calling the resume
-> method we set it back to 0.
+echo mem > /sys/power/state
 
-Why before?  I'd think that any non-suspended children should not be visible
-by the partent's ->resume().
+and then bring the system back up and have it work.  If that is
+not expected to work, then I won't bother trying it again.  My
+goal in all this is to help test the kernel, and provide feedback
+and testing for features that are expected to work. If this is
+expected to work, then I would rather provide testing for patches
+to the kernel that will make this work, rather than relying on
+userspace tricks to get around a broken kernel (because frankly,
+I couldn't care much less if STR works for me or not - I was just
+testing it to be helpful).
 
-> Drivers can use this field as an easy way of checking that all the child
-> devices have been suspended. 
-> 
-> When a new device is registered we check its parent's suspend_called
-> value.  If it is SUSPEND_DONE then the caller has a bug and we have to
-> fail the registration.  If it is SUSPEND_RUNNING then the registration
-> is legal, but we remember what happened.
+Am I wrong about this?  Is the tool at suspend.sf.net supposed to
+be required for STR to work with current linux kernels?
 
-This seems to require some trickery.  Namely, device_add() will notice that
-the registration is done concurrently with the running ->suspend() of the
-parent and will have to communicate that to dpm_suspend() which is supposed
-to resume the master in the next step.
-
-> Then when the currently-running suspend method returns and we reacquire the
-> dpm_list_mtx, we will realize that a race was lost.
-
-How exactly do you want to check that?
-
-> If the method completed successfully (which it shouldn't) we can resume that
-> device immediately without ever taking it off the dpm_active list; but either
-> way we should continue the suspend loop.  Now the new child will be at
-> the end of the dpm_active_list, so it will be suspended before the
-> parent is reached again.
-> 
-> This way we can recover from drivers that are willing to suspend their 
-> device even though there are unsuspended children.  The only drawback 
-> will be that for a short time the child will be active while its parent 
-> is suspended.
-
-Well, if the parent is a bus, that will be a problem.
-
-> We should not abort the entire sleep transition simply because we lost 
-> a race.
-
-I don't agree here.  If we require drivers to prevent such races from happening
-and they don't comply, we can give up instead of trying to work around the
-non-compilance.
-
-> With this scheme we won't even need the pm_sleep_rwsem; the  
-> dpm_list_mtx will provide all the necessary protection.
-> 
-> This is more intricate than it should be.  It would have been better to
-> have had "disable_new_children" and "enable_new_children" methods from
-> the beginning; then there wouldn't be any races at all.  That's life...
-> 
-> The one tricky thing to watch out for is when a suspend or resume 
-> method wants to unregister the device being suspended or resumed.
-
-That can't happen, because dev->sem is taken by suspend_device() and
-device_del() would lock up attempting to acquire it once again.
-
-> Even  that should be doable (set suspend_called to UNREGISTERED or something 
-> like that).
-> 
-> > > > That will potentially cause some trouble to CPU hotplug cotifiers, but we can
-> > > > handle that, for example, by using the in_suspend_context() test.
-> > > 
-> > > Do they need to register new CPUs at some point?  There ought to be a 
-> > > way to handle that.
-> > 
-> > No, they don't, but there are some CPU-related device objects that get
-> > uregistered/registered.  Still, all of this work is really redundant if the CPU
-> > in question comes back up during the resume, so it should be avoided in
-> > general.  The CPU hotplug notifiers should only unregister those objects if
-> > the CPU hasn't gone on line during the resume and they have all information
-> > necessary for discovering that.
-> 
-> Unregistration should always be allowed, and registration should be 
-> allowed whenever the parent isn't suspended.
-
-I'm still thinking that registering while the parent is suspending should not
-be allowed.
-
-> For devices with no parent, we can imagine there is a fictitious parent at
-> the root of the device tree.  Conceptually it gets suspended after every real
-> device and resumed before.  Maybe even before dpm_power_up(), meaning that 
-> devices with no parent could be registered by a resume_early method.
-> 
-> When your lock-removal stuff gets into Greg's tree, I'll write all 
-> this.  Sound good?
-
-The direction seems to be fine, but the details need a bit more clarification,
-as far as I'm concerned.  Having a patch to discuss will certainly help a lot,
-though. ;-)
-
-Thanks,
-Rafael
+-- 
+Kevin Winchester
