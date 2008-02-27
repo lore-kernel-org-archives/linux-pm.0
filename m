@@ -1,14 +1,14 @@
-From: Marcelo Tosatti <marcelo@kvack.org>
-Subject: Re: Time in suspended mode has second resolution
-Date: Tue, 11 Sep 2007 02:52:32 -0400
-Message-ID: <20070911065232.GA3490@dmt>
-References: <20070910200907.GA4736@dmt> <20070911005547.GA26578@dmt>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Wed, 27 Feb 2008 11:03:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802271029280.4920-100000@iolanthe.rowland.org>
+References: <200802270017.16108.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070911005547.GA26578@dmt>
+In-Reply-To: <200802270017.16108.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,283 +18,136 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
-Cc: tglx@linutronix.de, David Woodhouse <dwmw2@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 27 Feb 2008, Rafael J. Wysocki wrote:
 
-On suspend, timekeeping_suspend() saves the current time from RTC,
-and restores that on resume. Since it truncates the time to second
-resolution, and the TSC has just been zeroed on poweroff, the following
-can happen:
+> > I've got some ideas on how to implement this.
+> > 
+> > We can add a new field "suspend_called" to dev->power.
+> 
+> I'd call it "sleeping" or something like this, for it will also be used by
+> hibernation callbacks.
 
-last_jiffies_update =3D second.nanosec;
-timekeeping_suspend_time =3D get_rtc_time();
-suspend
-resume
-xtime.tv_sec =3D timekeeping_suspend_time;
+The name refers to the "suspend" method, not the type of sleep being
+carried out.  We use the same method for both suspend and hibernation.
+But maybe "sleeping" would be better.
 
-So the system might end up with the current time set with a
-value lower than last_jiffies_update, causing "delta" from
-tick_do_update_jiffies64() to be negative. The end result is that the
-system spends more time than necessary in cpu_idle(), until "delta"
-becomes positive (which can take hundreds of ms).
+> > It would be owned by the PM core (protect by dpm_list_mtx) and read-only to
+> > drivers.  Normally it will contain 0, but when the suspend method is
+> > running we set it to SUSPEND_RUNNING and when the method returns
+> > successfully we set it to SUSPEND_DONE.  Before calling the resume
+> > method we set it back to 0.
+> 
+> Why before?  I'd think that any non-suspended children should not be visible
+> by the partent's ->resume().
 
-The proposed fix is to zero last_jiffies_update on resume. Note: if
-cpu_idle() is invoked before timekeeping_resume has had a chance to run,
-a negative delta on tick_do_update_jiffies64() will be seen, so a proper
-fix would be to zero it in early_resume.
+All right, we can set it to RESUME_RUNNING before calling the resume
+method and then set it to 0 afterwards.  The point is that the value
+shouldn't remain SUSPEND_DONE while resume runs, because it should be
+legal for resume to register new children.
 
-Are there any side effects of zeroing last_jiffies_update like this?
+> > When a new device is registered we check its parent's suspend_called
+> > value.  If it is SUSPEND_DONE then the caller has a bug and we have to
+> > fail the registration.  If it is SUSPEND_RUNNING then the registration
+> > is legal, but we remember what happened.
+> 
+> This seems to require some trickery.  Namely, device_add() will notice that
+> the registration is done concurrently with the running ->suspend() of the
+> parent and will have to communicate that to dpm_suspend() which is supposed
+> to resume the master in the next step.
 
-TIA
+It will get noticed in device_pm_add() while holding dpm_list_mtx.  
+The information can be stored in a static private flag
+"child_added_while_parent_suspends" (or maybe something more terse!).
 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 52db9e3..28b678f 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -33,7 +33,7 @@ static DEFINE_PER_CPU(struct tick_sched,
- /*
-  * The time, when the last jiffy update happened. Protected by xtime_lock.
-  */
--static ktime_t last_jiffies_update;
-+ktime_t last_jiffies_update;
- =
+> > Then when the currently-running suspend method returns and we reacquire the
+> > dpm_list_mtx, we will realize that a race was lost.
+> 
+> How exactly do you want to check that?
 
- struct tick_sched *tick_get_tick_sched(int cpu)
- {
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 3d1042f..ac22ae2 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -260,6 +260,7 @@ static int timekeeping_suspended;
- /* time in seconds when suspend began */
- static unsigned long timekeeping_suspend_time;
- =
+Check whether child_added_while_parent_suspends is nonzero.
 
-+extern ktime_t last_jiffies_update;
- /**
-  * timekeeping_resume - Resumes the generic timekeeping subsystem.
-  * @dev:	unused
-@@ -293,6 +294,8 @@ static int timekeeping_resume(struct sys
- =
+> > If the method completed successfully (which it shouldn't) we can resume that
+> > device immediately without ever taking it off the dpm_active list; but either
+> > way we should continue the suspend loop.  Now the new child will be at
+> > the end of the dpm_active_list, so it will be suspended before the
+> > parent is reached again.
+> > 
+> > This way we can recover from drivers that are willing to suspend their 
+> > device even though there are unsuspended children.  The only drawback 
+> > will be that for a short time the child will be active while its parent 
+> > is suspended.
+> 
+> Well, if the parent is a bus, that will be a problem.
 
- 	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- =
+Sure.  But it won't be the PM core's problem; it will be a bug in the
+bus's driver.  We will print a warning in the log so the bug can be 
+tracked down.
 
-+	last_jiffies_update =3D ktime_set(0, 0);
-+
- 	/* Resume hrtimers */
- 	hres_timers_resume();
- =
+> > We should not abort the entire sleep transition simply because we lost 
+> > a race.
+> 
+> I don't agree here.  If we require drivers to prevent such races from happening
+> and they don't comply, we can give up instead of trying to work around the
+> non-compilance.
 
+You misunderstand.  We can't require drivers to prevent these races 
+entirely.  As an example, a properly-written, compliant driver might 
+work like this:
 
-On Mon, Sep 10, 2007 at 08:55:47PM -0400, Marcelo Tosatti wrote:
-> =
+	Task 0				Task 1
+	------				------
+	dev->power.sleeping =
+	  SUSPEND_RUNNING;
+	Call (drv->suspend)(dev)
+					Register a child below dev
+	suspend method prevents new
+	  child registrations
+	suspend method waits for
+	  existing registration to
+	  finish
+					Check dev->power.sleeping and set
+					  child_added_while_parent_suspends
+					Registration completes successfully
+	suspend method sees there is
+	  an unsuspended child and
+	  returns -EBUSY
 
-> I suppose that saving the current nanosecond time from xtime on suspend
-> and then restoring it _right after resume_ can fix this.
+	Check child_added_while_parent_suspends
+	  and realize that we lost the race
 
-Bullshit.
+There's nothing illegal about this; it's just an accident of timing.  
+Nothing has gone wrong and we shouldn't abort the sleep.  We should
+continue where we left off, by suspending the new child and then trying
+to suspend the parent again.
 
-> On Mon, Sep 10, 2007 at 04:09:07PM -0400, Marcelo Tosatti wrote:
-> > Hi folks,
-> > =
+> > With this scheme we won't even need the pm_sleep_rwsem; the  
+> > dpm_list_mtx will provide all the necessary protection.
+> > 
+> > This is more intricate than it should be.  It would have been better to
+> > have had "disable_new_children" and "enable_new_children" methods from
+> > the beginning; then there wouldn't be any races at all.  That's life...
+> > 
+> > The one tricky thing to watch out for is when a suspend or resume 
+> > method wants to unregister the device being suspended or resumed.
+> 
+> That can't happen, because dev->sem is taken by suspend_device() and
+> device_del() would lock up attempting to acquire it once again.
 
-> > So I tracked down the problem where time is being spent in cpu_idle()
-> > for way more than necessary on resume (thanks Jordan!).
-> > =
+We'll have to fix device_del() to prevent that from happening.  Your 
+in_sleep_context() approach should work.
 
-> > What happens is that "last_jiffies_update" has a higher value than "now"
-> > in tick_do_update_jiffies64(), therefore "delta" becomes negative.
-> > =
+> > Unregistration should always be allowed, and registration should be 
+> > allowed whenever the parent isn't suspended.
+> 
+> I'm still thinking that registering while the parent is suspending should not
+> be allowed.
 
-> > The reason for this is that timekeeping_suspend uses the RTC with second
-> > resolution to save the time of suspend, thus indirectly truncating the
-> > value restored on resume.
-> > =
+Unfortunately the lack of "prevent_new_children" and 
+"allow_new_children" methods gives us no choice.  The example above 
+shows why.
 
-> > So the following gets rid of the problem
-> > =
-
-> > diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> > index 3d1042f..06a7040 100644
-> > --- a/kernel/time/timekeeping.c
-> > +++ b/kernel/time/timekeeping.c
-> > @@ -280,7 +280,7 @@ static int timekeeping_resume(struct sys
-> >         if (now && (now > timekeeping_suspend_time)) {
-> >                 unsigned long sleep_length =3D now - timekeeping_suspen=
-d_time;
-> > =
-
-> > -               xtime.tv_sec +=3D sleep_length;
-> > +               xtime.tv_sec +=3D sleep_length + 1;
-> >                 wall_to_monotonic.tv_sec -=3D sleep_length;
-> >         }
-> >         /* re-base the last cycle value */
-> > =
-
-> > But it erroneously affects the internal clock.
-> > =
-
-> > By the way, talking about "internal clock", the fact that xtime is
-> > truncated during resume can result in wrong clock time, right? Even more
-> > if you do it often.
-> > =
-
-> > =
-
-> > Below you can see the problem in action.
-> > =
-
-> > [    0.040888] rtc_cmos rtc_cmos: EARLY resume
-> > [    0.040972] platform powerbutton: EARLY resume
-> > [    0.041050] platform lid: EARLY resume
-> > [    0.041123] pci 0000:00:01.0: EARLY resume
-> > [    0.041202] lxfb 0000:00:01.1: EARLY resume
-> > [    0.041281] Geode LX AES 0000:00:01.2: EARLY resume
-> > [    0.041366] CAF=C9 NAND 0000:00:0c.0: EARLY resume
-> > [    0.041450] sdhci 0000:00:0c.1: EARLY resume
-> > [    0.041530] cafe1000-ccic 0000:00:0c.2: EARLY resume
-> > [    0.041616] pci 0000:00:0f.0: EARLY resume
-> > [    0.041694] cs5535audio 0000:00:0f.3: EARLY resume
-> > [    0.041779] ohci_hcd 0000:00:0f.4: EARLY resume
-> > [    0.041861] ehci_hcd 0000:00:0f.5: EARLY resume
-> > [    0.041953] serial8250 serial8250.0: EARLY resume
-> > [    0.042034] platform pcspkr: EARLY resume
-> > [    0.042111] platform vesafb.0: EARLY resume
-> > [    0.042259] serial8250 serial8250: EARLY resume
-> > [    0.042354] i8042 i8042: EARLY resume
-> > [    0.042430] platform dcon: EARLY resume
-> > [    0.042525] platform olpc-battery.0: EARLY resume
-> > [    0.042658] tick_do_update_jiffies64: now=3D50081263258 last_jiffies=
-_update=3D50523000000
-> > [    0.042773] tick_do_update_jiffies64: delta=3D[-1,558263258]
-> > [    0.042866] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.042970] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.043065] tick_do_update_jiffies64: now=3D[50,81263258]
-> > [    0.043829] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.045982] olpm-pm:  SCI 0x0 received
-> > [    0.046075] PM: Finishing wakeup.
-> > [    0.046172] rtc_cmos rtc_cmos: resuming
-> > [    0.046254] platform powerbutton: resuming
-> > [    0.046335] platform lid: resuming
-> > [    0.046419] pci 0000:00:01.0: resuming
-> > [    0.046627] lxfb 0000:00:01.1: resuming
-> > [    0.046887] Geode LX AES 0000:00:01.2: resuming
-> > [    0.047128] CAF=C9 NAND 0000:00:0c.0: resuming
-> > [    0.047217] sdhci 0000:00:0c.1: resuming
-> > [    0.047447] PM: Writing back config space on device 0000:00:0c.1 at =
-offset f (was 8080100, writing 808010b)
-> > [    0.047719] PM: Writing back config space on device 0000:00:0c.1 at =
-offset 3 (was 800000, writing 802000)
-> > [    0.047884] PM: Writing back config space on device 0000:00:0c.1 at =
-offset 1 (was 2b00002, writing 2b00006)
-> > [    0.048228] mmc_detect_change: sleeping for 1 msecs
-> > [    0.048310] mmc_schedule_delayed_work, delay=3D1
-> > [    0.048401] internal_add_timer, expires=3Dfffc317c now=3Dfffc317b
-> > [    0.048503] cafe1000-ccic 0000:00:0c.2: resuming
-> > [    0.048674] PM: Writing back config space on device 0000:00:0c.2 at =
-offset f (was 8080100, writing 808010b)
-> > [    0.048946] PM: Writing back config space on device 0000:00:0c.2 at =
-offset 3 (was 800000, writing 802000)
-> > [    0.049111] PM: Writing back config space on device 0000:00:0c.2 at =
-offset 1 (was 2b00002, writing 2b00006)
-> > [    0.054417] pci 0000:00:0f.0: resuming
-> > [    0.054648] cs5535audio 0000:00:0f.3: resuming
-> > [    0.054917] PCI: Setting latency timer of device 0000:00:0f.3 to 64
-> > [    0.059360] __wake_up: caller0=3Dd099ceaa caller1=3Dc052e4d7
-> > [    0.059459] ohci_hcd 0000:00:0f.4: resuming
-> > [    0.059569] ohci_hcd 0000:00:0f.4: PCI D0, from previous PCI D3
-> > [    0.059833] PCI: Setting latency timer of device 0000:00:0f.4 to 64
-> > [    0.060100] ohci_hcd 0000:00:0f.4: powerup ports
-> > [    0.060195] internal_add_timer, expires=3Dfffc3190 now=3Dfffc317b
-> > [    0.060326] no need resched!
-> > [    0.070678] tick_do_update_jiffies64: now=3D50109289623 last_jiffies=
-_update=3D50523000000
-> > [    0.070793] tick_do_update_jiffies64: delta=3D[-1,586289623]
-> > [    0.070886] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.070990] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.071085] tick_do_update_jiffies64: now=3D[50,109289623]
-> > [    0.071226] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.071353] no need resched!
-> > [    0.098686] tick_do_update_jiffies64: now=3D50137300251 last_jiffies=
-_update=3D50523000000
-> > [    0.098801] tick_do_update_jiffies64: delta=3D[-1,614300251]
-> > [    0.098894] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.098998] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.099092] tick_do_update_jiffies64: now=3D[50,137300251]
-> > [    0.099230] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.099356] no need resched!
-> > [    0.126691] tick_do_update_jiffies64: now=3D50165307741 last_jiffies=
-_update=3D50523000000
-> > [    0.126806] tick_do_update_jiffies64: delta=3D[-1,642307741]
-> > [    0.126899] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.127003] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.127097] tick_do_update_jiffies64: now=3D[50,165307741]
-> > [    0.127235] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.127360] no need resched!
-> > [    0.154695] tick_do_update_jiffies64: now=3D50193314933 last_jiffies=
-_update=3D50523000000
-> > [    0.154811] tick_do_update_jiffies64: delta=3D[-1,670314933]
-> > [    0.154903] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.155007] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.155102] tick_do_update_jiffies64: now=3D[50,193314933]
-> > [    0.155240] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.155365] no need resched!
-> > [    0.182700] tick_do_update_jiffies64: now=3D50221322406 last_jiffies=
-_update=3D50523000000
-> > [    0.182815] tick_do_update_jiffies64: delta=3D[-1,698322406]
-> > [    0.182908] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.183013] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.183107] tick_do_update_jiffies64: now=3D[50,221322406]
-> > [    0.183245] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.183370] no need resched!
-> > [    0.210705] tick_do_update_jiffies64: now=3D50249329404 last_jiffies=
-_update=3D50523000000
-> > [    0.210820] tick_do_update_jiffies64: delta=3D[-1,726329404]
-> > [    0.210913] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.211017] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.211111] tick_do_update_jiffies64: now=3D[50,249329404]
-> > [    0.211249] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.211374] no need resched!
-> > [    0.462743] tick_do_update_jiffies64: now=3D50501390710 last_jiffies=
-_update=3D50523000000
-> > ...
-> > [    0.462858] tick_do_update_jiffies64: delta=3D[-1,978390710]
-> > [    0.462951] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.463055] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.463150] tick_do_update_jiffies64: now=3D[50,501390710]
-> > [    0.463287] run_timer_softirq: jiffies=3Dfffc317b, base->timer_jiffi=
-es=3Dfffc317c
-> > [    0.463413] no need resched!
-> > [    0.485374] tick_do_update_jiffies64: now=3D50524024023 last_jiffies=
-_update=3D50523000000
-> > [    0.485488] tick_do_update_jiffies64: delta=3D[0,1024023]
-> > [    0.485578] tick_do_update_jiffies64: last_jiffies_update=3D[50,5230=
-00000]
-> > [    0.485683] tick_do_update_jiffies64: tick_period=3D[0,1000000]
-> > [    0.485777] tick_do_update_jiffies64: now=3D[50,524024023]
-> > =
-
-> > Then things proceed normally.
-> > =
-
-> > =
-
-> > =
+Alan Stern
