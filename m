@@ -1,15 +1,17 @@
-From: Kevin Winchester <kjwinchester@gmail.com>
-Subject: Re: broken suspend to ram with velocity driver
-Date: Tue, 26 Feb 2008 20:48:46 -0400
-Message-ID: <47C4B36E.40807__29166.9633858421$1204073442$gmane$org@gmail.com>
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<20080225092628.GA493@elf.ucw.cz> <47C35C53.5010609@gmail.com>
-	<200802260149.40659.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [patch 2.6.25-rc2-git] crosslink ACPI and "real"
+	device nodes
+Date: Tue, 26 Feb 2008 18:19:31 -0800
+Message-ID: <200802261819.31755.david-b__10597.8441461504$1204078974$gmane$org@pacbell.net>
+References: <200802222154.25204.david-b@pacbell.net>
+	<200802252317.43717.david-b@pacbell.net>
+	<20080226131058.GA8234@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802260149.40659.rjw@sisk.pl>
+In-Reply-To: <20080226131058.GA8234@khazad-dum.debian.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,102 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday, 26 of February 2008, Kevin Winchester wrote:
->> Pavel Machek wrote:
-> [--snip--]
->> (Trimmed cc, since this is really just more of a PM discussion)
->>
->> No modules here...
->>
->> I recompiled the kernel without the velocity driver, and got behaviour more
->> comparable to the other failures I've experienced in the past: 
->>
-
-<snip old trace>
-
->>
->>
->> I don't see anything there that would explain the failure, but the console
->> never comes back, and I am forced to hard reset the box.  Anything else I can
->> try?  
+On Tuesday 26 February 2008, Henrique de Moraes Holschuh wrote:
+> On Mon, 25 Feb 2008, David Brownell wrote:
+> > int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
+> >                                    const char *name);
+> > 
+> > Perhaps you disabled those warnings.  (And FWIW, I don't see any
+> > reasonable way to handle such faults, so ignoring them is thus
+> > the right "solution".)
 > 
-> First, let's try to remove some noise.
-> 
-> Please test 2.6.25-rc3 with commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
-> "power_state: get rid of write-only variable in SATA" reverted and with the
-> patch from http://marc.info/?l=linux-acpi&m=120389632114090&w=2 applied.
-> 
-> Second, what exactly do you do to suspend to RAM?
-> 
+> You issue a printk warning the user, and try to continue.
 
-And here is the trace from the kernel with the revert and patch:
+That's not "handling" in any useful sense though.  There's no
+question about "try" to continue, by the way ... from inside
+the kernel this information is completely non-essential.
 
-Feb 26 20:42:14 alekhine kernel: [  278.487844] PM: Syncing filesystems ... done.
-Feb 26 20:42:40 alekhine kernel: [  278.523599] Freezing user space processes ... (elapsed 0.00 seconds) done.
-Feb 26 20:42:40 alekhine kernel: [  278.525885] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-Feb 26 20:42:40 alekhine kernel: [  278.526196] ACPI: Preparing to enter system sleep state S3
-Feb 26 20:42:40 alekhine kernel: [  278.627907] Suspending console(s)
-Feb 26 20:42:40 alekhine kernel: [  278.631643] sd 3:0:0:0: [sda] Synchronizing SCSI cache
-Feb 26 20:42:40 alekhine kernel: [  278.738062] sd 3:0:0:0: [sda] Stopping disk
-Feb 26 20:42:40 alekhine kernel: [  278.739041] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.749597] ACPI: PCI interrupt for device 0000:00:10.4 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.760383] ACPI: PCI interrupt for device 0000:00:10.3 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.771183] ACPI: PCI interrupt for device 0000:00:10.2 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.782017] ACPI: PCI interrupt for device 0000:00:10.1 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.792851] ACPI: PCI interrupt for device 0000:00:10.0 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.803686] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.814329] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.837854] Intel machine check architecture supported.
-Feb 26 20:42:40 alekhine kernel: [  278.837854] Intel machine check reporting enabled on CPU#0.
-Feb 26 20:42:40 alekhine kernel: [  278.840865] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-Feb 26 20:42:40 alekhine kernel: [  278.840866] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-Feb 26 20:42:40 alekhine kernel: [  278.846866] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.846866] usb usb2: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.857689] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.857689] usb usb3: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.868560] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.868560] usb usb4: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.879436] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.879436] usb usb5: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.890311] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.901173] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
-Feb 26 20:42:40 alekhine kernel: [  278.903446] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-Feb 26 20:42:40 alekhine kernel: [  278.903642] sd 3:0:0:0: [sda] Starting disk
-Feb 26 20:42:40 alekhine kernel: [  279.144623] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.144623] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.297860] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.297860] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.453232] ata3.00: configured for UDMA/33
-Feb 26 20:42:40 alekhine kernel: [  279.640338] ata3.01: configured for UDMA/33
-Feb 26 20:42:40 alekhine kernel: [  283.485517] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  283.485517] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  283.487637] ata4.00: configured for UDMA/100
-Feb 26 20:42:40 alekhine kernel: [  283.490010] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-Feb 26 20:42:40 alekhine kernel: [  283.490030] sd 3:0:0:0: [sda] Write Protect is off
-Feb 26 20:42:40 alekhine kernel: [  283.490137] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-Feb 26 20:42:40 alekhine kernel: [  284.034036] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
-Feb 26 20:42:40 alekhine kernel: [  284.061980] done.
-Feb 26 20:42:40 alekhine kernel: [  284.265037] usb 2-1: new low speed USB device using uhci_hcd and address 4
-Feb 26 20:42:40 alekhine kernel: [  284.428562] usb 2-1: configuration #1 chosen from 1 choice
-Feb 26 20:42:40 alekhine kernel: [  284.452701] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
-Feb 26 20:42:40 alekhine kernel: [  284.495532] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
-Feb 26 20:42:40 alekhine kernel: [  284.495724] usb 2-2: USB disconnect, address 3
-Feb 26 20:42:40 alekhine kernel: [  284.751242] usb 2-2: new low speed USB device using uhci_hcd and address 5
-Feb 26 20:42:41 alekhine kernel: [  284.920833] usb 2-2: configuration #1 chosen from 1 choice
-Feb 26 20:42:41 alekhine kernel: [  284.938005] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
-Feb 26 20:42:41 alekhine kernel: [  284.977818] input: USB HID v1.11 Keyboard [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-Feb 26 20:42:41 alekhine kernel: [  285.012253] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
-Feb 26 20:42:41 alekhine kernel: [  285.033838] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-
-It looks basically identical to me, but I haven't diff'ed them or
-anything.  Do you have any other options, or am I out of luck for\
-the moment?
-
-Thanks for the help,
--- 
-Kevin Winchester
+- Dave
