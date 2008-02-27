@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: broken suspend to ram with velocity driver
-Date: Wed, 27 Feb 2008 13:59:41 +0100
-Message-ID: <200802271359.42535.rjw__4219.3770212636$1204117439$gmane$org@sisk.pl>
+Date: Wed, 27 Feb 2008 14:06:12 +0100
+Message-ID: <200802271406.13312.rjw@sisk.pl>
 References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<200802260149.40659.rjw@sisk.pl> <47C4B082.3040008@gmail.com>
+	<20080226214950.GD10280@elf.ucw.cz> <47C4AEB7.1030404@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47C4B082.3040008@gmail.com>
+In-Reply-To: <47C4AEB7.1030404@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,16 +24,10 @@ Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, LKML <linux-kernel
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, 27 of February 2008, Kevin Winchester wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday, 26 of February 2008, Kevin Winchester wrote:
-> >> Pavel Machek wrote:
-> > [--snip--]
-> >> (Trimmed cc, since this is really just more of a PM discussion)
-> >>
-> >> No modules here...
-> >>
-> >> I recompiled the kernel without the velocity driver, and got behaviour more
-> >> comparable to the other failures I've experienced in the past: 
+> Pavel Machek wrote:
+> > Hi!
+> > 
+> >> I recompiled the kernel without the velocity driver, and got behaviour more comparable to the other failures I've experienced in the past:
 > >>
 > >> Feb 25 20:18:46 alekhine kernel: [   73.564725] PM: Syncing filesystems ... done.
 > >> Feb 25 20:19:14 alekhine kernel: [   73.580807] Freezing user space processes ... (elapsed 0.01 seconds) done.
@@ -93,33 +87,42 @@ On Wednesday, 27 of February 2008, Kevin Winchester wrote:
 > >> Feb 25 20:19:15 alekhine kernel: [   79.721948] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
 > >>
 > >>
-> >> I don't see anything there that would explain the failure, but the console
-> >> never comes back, and I am forced to hard reset the box.  Anything else I can
-> >> try?  
+> >> I don't see anything there that would explain the failure, but the console never comes back, and I am forced to hard reset the box.  Anything else I can try?
+> >>
 > > 
-> > First, let's try to remove some noise.
-> > 
-> > Please test 2.6.25-rc3 with commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
-> > "power_state: get rid of write-only variable in SATA" reverted and with the
-> > patch from http://marc.info/?l=linux-acpi&m=120389632114090&w=2 applied.
-> > 
-> > Second, what exactly do you do to suspend to RAM?
+> > So machine works but video is that? See suspend.sf.net...
 > > 
 > 
-> To suspend to ram, I do Ctrl-Alt-1 to switch from the GDM login screen to
-> the console, and then:
+> I haven't done too much looking at what the tool on that site does,
+> but I was under the impression that I should be able to do:
 > 
-> /etc/init.d/gdm stop
 > echo mem > /sys/power/state
 > 
-> I have also tried it from X in the past (using the Ubuntu quit menu option),
-> with just about the same result, as I recall.  This time I figured I would
-> try to make it easier for the suspend code and try it from the console.
+> and then bring the system back up and have it work.  If that is
+> not expected to work, then I won't bother trying it again.  My
+> goal in all this is to help test the kernel, and provide feedback
+> and testing for features that are expected to work. If this is
+> expected to work, then I would rather provide testing for patches
+> to the kernel that will make this work, rather than relying on
+> userspace tricks to get around a broken kernel (because frankly,
+> I couldn't care much less if STR works for me or not - I was just
+> testing it to be helpful).
 > 
-> Should I have been doing something else?
+> Am I wrong about this?  Is the tool at suspend.sf.net supposed to
+> be required for STR to work with current linux kernels?
 
-You can try the s2ram program from suspend.sf.net
-(http://suspend.sf.net/s2ram-support.html).
+That depends on the hardware configuration, really.  On some systems
+
+# echo mem > /sys/power/state
+
+works out of the box, but on some of them we need to run some real mode
+quirks from the user space to bring the graphics card back on line.  That's
+what s2ram is needed for.
+
+Now, if you manage to find the combination of s2ram options appropriate for
+your system, so that it can suspend and resume successfully, it will be very
+helpful if you periodically test this functionality on new kernels to make sure
+there are no regressions.
 
 Thanks,
 Rafael
