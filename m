@@ -1,16 +1,15 @@
 From: Kevin Winchester <kjwinchester@gmail.com>
 Subject: Re: broken suspend to ram with velocity driver
-Date: Tue, 26 Feb 2008 20:28:39 -0400
-Message-ID: <47C4AEB7.1030404__42910.2218164646$1204072290$gmane$org@gmail.com>
+Date: Tue, 26 Feb 2008 20:36:18 -0400
+Message-ID: <47C4B082.3040008__6681.33758376843$1204072782$gmane$org@gmail.com>
 References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<47C1B52B.3080104@gmail.com> <200802242100.46474.rjw@sisk.pl>
-	<47C1FF2E.4060600@gmail.com> <20080225092628.GA493@elf.ucw.cz>
-	<47C35C53.5010609@gmail.com> <20080226214950.GD10280@elf.ucw.cz>
+	<20080225092628.GA493@elf.ucw.cz> <47C35C53.5010609@gmail.com>
+	<200802260149.40659.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080226214950.GD10280@elf.ucw.cz>
+In-Reply-To: <200802260149.40659.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,14 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->> I recompiled the kernel without the velocity driver, and got behaviour more comparable to the other failures I've experienced in the past:
+Rafael J. Wysocki wrote:
+> On Tuesday, 26 of February 2008, Kevin Winchester wrote:
+>> Pavel Machek wrote:
+> [--snip--]
+>> (Trimmed cc, since this is really just more of a PM discussion)
+>>
+>> No modules here...
+>>
+>> I recompiled the kernel without the velocity driver, and got behaviour more
+>> comparable to the other failures I've experienced in the past: 
 >>
 >> Feb 25 20:18:46 alekhine kernel: [   73.564725] PM: Syncing filesystems ... done.
 >> Feb 25 20:19:14 alekhine kernel: [   73.580807] Freezing user space processes ... (elapsed 0.01 seconds) done.
@@ -87,29 +92,30 @@ Pavel Machek wrote:
 >> Feb 25 20:19:15 alekhine kernel: [   79.721948] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
 >>
 >>
->> I don't see anything there that would explain the failure, but the console never comes back, and I am forced to hard reset the box.  Anything else I can try?
->>
+>> I don't see anything there that would explain the failure, but the console
+>> never comes back, and I am forced to hard reset the box.  Anything else I can
+>> try?  
 > 
-> So machine works but video is that? See suspend.sf.net...
+> First, let's try to remove some noise.
+> 
+> Please test 2.6.25-rc3 with commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
+> "power_state: get rid of write-only variable in SATA" reverted and with the
+> patch from http://marc.info/?l=linux-acpi&m=120389632114090&w=2 applied.
+> 
+> Second, what exactly do you do to suspend to RAM?
 > 
 
-I haven't done too much looking at what the tool on that site does,
-but I was under the impression that I should be able to do:
+To suspend to ram, I do Ctrl-Alt-1 to switch from the GDM login screen to
+the console, and then:
 
+/etc/init.d/gdm stop
 echo mem > /sys/power/state
 
-and then bring the system back up and have it work.  If that is
-not expected to work, then I won't bother trying it again.  My
-goal in all this is to help test the kernel, and provide feedback
-and testing for features that are expected to work. If this is
-expected to work, then I would rather provide testing for patches
-to the kernel that will make this work, rather than relying on
-userspace tricks to get around a broken kernel (because frankly,
-I couldn't care much less if STR works for me or not - I was just
-testing it to be helpful).
+I have also tried it from X in the past (using the Ubuntu quit menu option),
+with just about the same result, as I recall.  This time I figured I would
+try to make it easier for the suspend code and try it from the console.
 
-Am I wrong about this?  Is the tool at suspend.sf.net supposed to
-be required for STR to work with current linux kernels?
+Should I have been doing something else?
 
 -- 
 Kevin Winchester
