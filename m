@@ -1,80 +1,356 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [demo patch/RFC] sleepy linux
-Date: Thu, 28 Feb 2008 19:13:57 +0100
-Message-ID: <20080228181357.GA6050@elf.ucw.cz>
-References: <20080226102652.GA1830@elf.ucw.cz> <20080226085422.6408fc4a.randy.dunlap@oracle.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Thu, 28 Feb 2008 17:49:38 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802281741030.2180-100000__6078.08176796443$1204239124$gmane$org@iolanthe.rowland.org>
+References: <200802272050.39769.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755890AbYB1SNo@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080226085422.6408fc4a.randy.dunlap@oracle.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200802272050.39769.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Rafael:
 
-> Is this limited to UP and only one disk?
+Here's my patch.  It doesn't include the timers for deadlock debugging, 
+but it does include all the other stuff we've been talking about.  My 
+base probably isn't quite in sync with yours, so this may not apply 
+cleanly on your system.  But the divergences should be small.
 
-Yes... for now.
+Incidentally, there seemed to be a bug in your dpm_suspend() -- the 
+dpm_list_mtx needs to be reacquired before the error checking.  This
+patch fixes that.  It also removes pm_sleep_rwsem, which isn't used 
+any more.
 
-> [comments below]
+We should think about device_pm_schedule_removal().  It won't work
+right if a suspend method calls it for the device being suspended, 
+because the device gets moved to the dpm_off list after the method 
+runs.
 
-Thanks!
+Alan Stern
 
-> > --- /dev/null
-> > +++ b/Documentation/power/sleepy.txt
-> > @@ -0,0 +1,55 @@
-> > +		Sleepy Linux
-> > +		~~~~~~~~~~~~
-> > +
-> > +Copyright 2007 Pavel Machek <pavel@suse.cz>
-> > +	  GPLv2
-> > +
-> > +Current Linux versions can enter suspend-to-RAM just fine, but only
-> > +can do it on explicit request. But suspend-to-RAM is important, eating
-> 
->   Usually "can only do it" AFAIK.
-> 
-> > +something like 10% of power needed for idle system. Starting suspend
-> > +manually is not too convinient; it is not an option on multiuser
-> 
->                        convenient;
 
-Spelling applied.
 
-> > +Then, enable SCSI powersave by something like:
-> > +
-> > +mount /sys
-> 
-> Isn't /sys auto-mounted by kernel?
-
-No.
-
-> > +/* The host and its devices are all idle so we can autosuspend */
-> > +static int autosuspend(struct Scsi_Host *host)
-> > +{
-> > +	if (my_pdev && autosuspend_enabled) {
-> > +		printk("ahci: should autosuspend\n");
-> 
-> Use printk() KERN_* levels (multiple places).
-
-Well, code obviously needs a lot of work... I said it was ugly ;-).
-
-> > @@ -1820,6 +1858,10 @@ static void ahci_thaw(struct ata_port *a
-> >  
-> >  static void ahci_error_handler(struct ata_port *ap)
-> >  {
-> > +	struct ata_host *host = ap->host;
-> > +	int rc;
-> > +	extern int slept;
-> 
-> Eh?
-
-Pavel in hack mode ;-). Yes, I'll clean it up once I fix the
-fundamental issues -- like UP only etc... 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Index: usb-2.6/Documentation/power/devices.txt
+===================================================================
+--- usb-2.6.orig/Documentation/power/devices.txt
++++ usb-2.6/Documentation/power/devices.txt
+@@ -192,11 +192,27 @@ used to resume those devices.
+ 
+ The ordering of the device tree is defined by the order in which devices
+ get registered:  a child can never be registered, probed or resumed before
+-its parent; and can't be removed or suspended after that parent.
++its parent; and can't be removed or suspended after that parent.  This
++means that special care is needed when calling device_move(); currently
++the kernel does not adjust its suspend and resume ordering to match the
++new device tree.
+ 
+ The policy is that the device tree should match hardware bus topology.
+ (Or at least the control bus, for devices which use multiple busses.)
+ 
++There is an unavoidable race between the PM core suspending all the
++children of a device and the device's driver registering new children.
++As a result, it is possible that the core may try to suspend a device
++without first having suspended all of the device's children.  Drivers
++must check for this; a suspend method should return -EBUSY if there are
++unsuspended children.  (The child->power.sleeping field can be used
++for this check.)  In addition, it is illegal to register a child device
++below a suspended parent; hence suspend methods must synchronize with
++other kernel threads that may attempt to add new children.  The suspend
++method must prevent new registrations and wait for concurrent registrations
++to complete before it returns.  New children may be added once more when
++the resume method runs.
++
+ 
+ Suspending Devices
+ ------------------
+@@ -387,7 +403,9 @@ while the system was powered off, whenev
+ PCMCIA, MMC, USB, Firewire, SCSI, and even IDE are common examples of busses
+ where common Linux platforms will see such removal.  Details of how drivers
+ will notice and handle such removals are currently bus-specific, and often
+-involve a separate thread.
++involve a separate thread.  Currently the kernel does not allow a suspend
++or resume method to directly unregister the device being suspended or
++resumed.
+ 
+ 
+ Note that the bus-specific runtime PM wakeup mechanism can exist, and might
+Index: usb-2.6/include/linux/pm.h
+===================================================================
+--- usb-2.6.orig/include/linux/pm.h
++++ usb-2.6/include/linux/pm.h
+@@ -180,8 +180,20 @@ typedef struct pm_message {
+ #define PMSG_HIBERNATE	((struct pm_message){ .event = PM_EVENT_HIBERNATE, })
+ #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
+ 
++/* This records which method calls have been made, not the device's
++ * actual power state.  It is read-only to drivers.
++ */
++enum pm_sleep_state {
++	PM_AWAKE,		/* = 0, normal situation */
++	PM_SLEEPING,		/* suspend method is running */
++	PM_ASLEEP,		/* suspend method has returned */
++	PM_WAKING,		/* resume method is running */
++	PM_GONE,		/* device has been unregistered */
++};
++
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
++	enum pm_sleep_state	sleeping;
+ 	unsigned		can_wakeup:1;
+ #ifdef	CONFIG_PM_SLEEP
+ 	unsigned		should_wakeup:1;
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -11,28 +11,18 @@ static inline struct device *to_device(s
+ 	return container_of(entry, struct device, power.entry);
+ }
+ 
+-extern void device_pm_add(struct device *);
++extern int device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+-extern int pm_sleep_lock(void);
+-extern void pm_sleep_unlock(void);
+ 
+ #else /* CONFIG_PM_SLEEP */
+ 
+ 
+-static inline void device_pm_add(struct device *dev)
+-{
+-}
+-
+-static inline void device_pm_remove(struct device *dev)
+-{
+-}
+-
+-static inline int pm_sleep_lock(void)
++static inline int device_pm_add(struct device *dev)
+ {
+ 	return 0;
+ }
+ 
+-static inline void pm_sleep_unlock(void)
++static inline void device_pm_remove(struct device *dev)
+ {
+ }
+ 
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -54,7 +54,9 @@ static LIST_HEAD(dpm_destroy);
+ 
+ static DEFINE_MUTEX(dpm_list_mtx);
+ 
+-static DECLARE_RWSEM(pm_sleep_rwsem);
++/* Protected by dpm_list_mtx */
++static bool child_added_while_parent_suspends;
++static bool all_devices_asleep;
+ 
+ int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ 
+@@ -62,14 +64,37 @@ int (*platform_enable_wakeup)(struct dev
+  *	device_pm_add - add a device to the list of active devices
+  *	@dev:	Device to be added to the list
+  */
+-void device_pm_add(struct device *dev)
++int device_pm_add(struct device *dev)
+ {
++	int rc = 0;
++
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+-	list_add_tail(&dev->power.entry, &dpm_active);
++	if (dev->parent) {
++		switch (dev->parent->power.sleeping) {
++		case PM_SLEEPING:
++			child_added_while_parent_suspends = true;
++			break;
++		case PM_ASLEEP:
++			dev_err(dev, "added while parent '%s' is asleep\n",
++					dev->parent->bus_id);
++			rc = -EHOSTDOWN;
++			break;
++		default:
++			break;
++		}
++	} else if (all_devices_asleep) {
++		dev_err(dev, "added while all devices are asleep\n");
++		rc = -ENETDOWN;
++	}
++	if (rc == 0)
++		list_add_tail(&dev->power.entry, &dpm_active);
++	else
++		dump_stack();
+ 	mutex_unlock(&dpm_list_mtx);
++	return rc;
+ }
+ 
+ /**
+@@ -86,6 +111,7 @@ void device_pm_remove(struct device *dev
+ 	mutex_lock(&dpm_list_mtx);
+ 	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
++	dev->power.sleeping = PM_GONE;
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ 
+@@ -107,31 +133,6 @@ void device_pm_schedule_removal(struct d
+ }
+ EXPORT_SYMBOL_GPL(device_pm_schedule_removal);
+ 
+-/**
+- *	pm_sleep_lock - mutual exclusion for registration and suspend
+- *
+- *	Returns 0 if no suspend is underway and device registration
+- *	may proceed, otherwise -EBUSY.
+- */
+-int pm_sleep_lock(void)
+-{
+-	if (down_read_trylock(&pm_sleep_rwsem))
+-		return 0;
+-
+-	return -EBUSY;
+-}
+-
+-/**
+- *	pm_sleep_unlock - mutual exclusion for registration and suspend
+- *
+- *	This routine undoes the effect of device_pm_add_lock
+- *	when a device's registration is complete.
+- */
+-void pm_sleep_unlock(void)
+-{
+-	up_read(&pm_sleep_rwsem);
+-}
+-
+ 
+ /*------------------------- Resume routines -------------------------*/
+ 
+@@ -242,14 +243,18 @@ static int resume_device(struct device *
+ static void dpm_resume(void)
+ {
+ 	mutex_lock(&dpm_list_mtx);
++	all_devices_asleep = false;
+ 	while(!list_empty(&dpm_off)) {
+ 		struct list_head *entry = dpm_off.next;
+ 		struct device *dev = to_device(entry);
+ 
+ 		list_move_tail(entry, &dpm_active);
++		dev->power.sleeping = PM_WAKING;
+ 		mutex_unlock(&dpm_list_mtx);
+ 		resume_device(dev);
+ 		mutex_lock(&dpm_list_mtx);
++		if (dev->power.sleeping != PM_GONE)
++			dev->power.sleeping = PM_AWAKE;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+@@ -285,7 +290,6 @@ void device_resume(void)
+ 	might_sleep();
+ 	dpm_resume();
+ 	unregister_dropped_devices();
+-	up_write(&pm_sleep_rwsem);
+ }
+ EXPORT_SYMBOL_GPL(device_resume);
+ 
+@@ -421,9 +425,18 @@ static int dpm_suspend(pm_message_t stat
+ 		struct list_head *entry = dpm_active.prev;
+ 		struct device *dev = to_device(entry);
+ 
++		dev->power.sleeping = PM_SLEEPING;
++		child_added_while_parent_suspends = false;
+ 		mutex_unlock(&dpm_list_mtx);
+ 		error = suspend_device(dev, state);
++		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
++			if (dev->power.sleeping != PM_GONE)
++				dev->power.sleeping = PM_AWAKE;
++			if (error == -EBUSY && entry != dpm_active.prev)
++				continue;	/* A child was added before
++						 * the device could suspend
++						 */
+ 			printk(KERN_ERR "Could not suspend device %s: "
+ 					"error %d%s\n",
+ 					kobject_name(&dev->kobj),
+@@ -433,10 +446,24 @@ static int dpm_suspend(pm_message_t stat
+ 					""));
+ 			break;
+ 		}
+-		mutex_lock(&dpm_list_mtx);
+-		if (!list_empty(&dev->power.entry))
+-			list_move(&dev->power.entry, &dpm_off);
++		if (dev->power.sleeping != PM_GONE) {
++			if (child_added_while_parent_suspends) {
++				dev_err(dev, "suspended while a child "
++						"was added\n");
++				dev->power.sleeping = PM_WAKING;
++				mutex_unlock(&dpm_list_mtx);
++				resume_device(dev);
++				mutex_lock(&dpm_list_mtx);
++				if (dev->power.sleeping != PM_GONE)
++					dev->power.sleeping = PM_AWAKE;
++			} else {
++				dev->power.sleeping = PM_ASLEEP;
++				list_move(&dev->power.entry, &dpm_off);
++			}
++		}
+ 	}
++	if (!error)
++		all_devices_asleep = true;
+ 	mutex_unlock(&dpm_list_mtx);
+ 
+ 	return error;
+@@ -454,7 +481,6 @@ int device_suspend(pm_message_t state)
+ 	int error;
+ 
+ 	might_sleep();
+-	down_write(&pm_sleep_rwsem);
+ 	error = dpm_suspend(state);
+ 	if (error)
+ 		device_resume();
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -815,10 +815,12 @@ int device_add(struct device *dev)
+ 	error = dpm_sysfs_add(dev);
+ 	if (error)
+ 		goto PMError;
+-	device_pm_add(dev);
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = device_pm_add(dev);
++	if (error)
++		goto PMAddError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -838,8 +840,9 @@ int device_add(struct device *dev)
+  Done:
+ 	put_device(dev);
+ 	return error;
++ PMAddError:
++	bus_remove_device(dev);
+  BusError:
+-	device_pm_remove(dev);
+ 	dpm_sysfs_remove(dev);
+  PMError:
+ 	if (dev->bus)
