@@ -1,60 +1,80 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fundamental flaw in system suspend,
-	exposed by freezer removal
-Date: Thu, 28 Feb 2008 07:36:10 +1100
-Message-ID: <1204144570.15052.256.camel__42005.9112403125$1204144861$gmane$org@pasglop>
-References: <Pine.LNX.4.44L0.0802251010330.2133-100000@iolanthe.rowland.org>
-Reply-To: benh@kernel.crashing.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [demo patch/RFC] sleepy linux
+Date: Thu, 28 Feb 2008 19:13:57 +0100
+Message-ID: <20080228181357.GA6050@elf.ucw.cz>
+References: <20080226102652.GA1830@elf.ucw.cz> <20080226085422.6408fc4a.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802251010330.2133-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755890AbYB1SNo@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080226085422.6408fc4a.randy.dunlap@oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Mon, 2008-02-25 at 10:39 -0500, Alan Stern wrote:
-> Ongoing efforts to remove the freezer from the system suspend and
-> hibernation code ("system sleep" is the proper catch-all term) have
-> turned up a fundamental flaw in the Power Management subsystem's
-> design.  In brief, we cannot handle the race between hotplug addition
-> of new devices and suspending all existing devices.
+> Is this limited to UP and only one disk?
 
- .../...
+Yes... for now.
 
-Yup, old problem, I think I've said a long time ago that it's the
-reponsibility of bus drivers (such as USB khub) to stop issuing device
-additions when suspend is in progress. It might be possible to still do
-removal tho.
+> [comments below]
 
-> The only possible solution is to have the drivers themselves be
-> responsible for preventing calls to device_add() or device_register()  
-> during a system sleep.  (It's also necessary to prevent driver binding,
-> but this isn't a major issue.) 
+Thanks!
 
-Agreed.
+> > --- /dev/null
+> > +++ b/Documentation/power/sleepy.txt
+> > @@ -0,0 +1,55 @@
+> > +		Sleepy Linux
+> > +		~~~~~~~~~~~~
+> > +
+> > +Copyright 2007 Pavel Machek <pavel@suse.cz>
+> > +	  GPLv2
+> > +
+> > +Current Linux versions can enter suspend-to-RAM just fine, but only
+> > +can do it on explicit request. But suspend-to-RAM is important, eating
+> 
+>   Usually "can only do it" AFAIK.
+> 
+> > +something like 10% of power needed for idle system. Starting suspend
+> > +manually is not too convinient; it is not an option on multiuser
+> 
+>                        convenient;
 
->  The most straightforward approach is to
-> add a new pair of driver methods: one to disable adding children and
-> one to re-enable it.  Of course this would represent a significant
-> addition to the Power Management driver interface.
+Spelling applied.
 
-No, I think the global notifier is plenty for now. Later on, we can
-re-add early-suspend, late-resume, or we can finally turn the whole
-thing into a recursive call tree where the parents are the ones calling
-the children suspend :-) But for now, I think the global notifier is
-enough.
+> > +Then, enable SCSI powersave by something like:
+> > +
+> > +mount /sys
+> 
+> Isn't /sys auto-mounted by kernel?
 
-Cheers,
-Ben.
+No.
+
+> > +/* The host and its devices are all idle so we can autosuspend */
+> > +static int autosuspend(struct Scsi_Host *host)
+> > +{
+> > +	if (my_pdev && autosuspend_enabled) {
+> > +		printk("ahci: should autosuspend\n");
+> 
+> Use printk() KERN_* levels (multiple places).
+
+Well, code obviously needs a lot of work... I said it was ugly ;-).
+
+> > @@ -1820,6 +1858,10 @@ static void ahci_thaw(struct ata_port *a
+> >  
+> >  static void ahci_error_handler(struct ata_port *ap)
+> >  {
+> > +	struct ata_host *host = ap->host;
+> > +	int rc;
+> > +	extern int slept;
+> 
+> Eh?
+
+Pavel in hack mode ;-). Yes, I'll clean it up once I fix the
+fundamental issues -- like UP only etc... 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
