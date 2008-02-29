@@ -1,11 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [RFC] Add extra PM_EVENT_* codes for use by subsystems
-Date: Fri, 29 Feb 2008 12:27:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802291223300.6695-100000@iolanthe.rowland.org>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Fri, 29 Feb 2008 13:42:17 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802291227430.6695-100000__28009.7707444385$1204310654$gmane$org@iolanthe.rowland.org>
+References: <200802291802.41590.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200802291802.41590.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,65 +18,140 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Is there any objection to adding extra PM_EVENT_* codes?  Although they
-won't ever be issued by the PM core, they will come in handy for
-internal uses in power-aware subsystems (like USB).
+On Fri, 29 Feb 2008, Rafael J. Wysocki wrote:
+
+> > > Suppose we add a mutex to dev_pm_info, say pm_mtx, and require it to be:
+> > > (1) taken by suspend_device(dev) (at the beginning)
+> > > (2) released by resume_device(dev) (at the end)
+> > > (3) taken (and released) by device_pm_add() if dev is the parent of the device
+> > >     being added.
+> > > 
+> > > In that case, device_pm_add() will block on attepmpts to register devices whose
+> > > parents are suspended (or suspending) and we're done.  At least so it would
+> > > seem.
+> > 
+> > No; this would repeat the same mistake we were struggling with last
+> > week.
+> 
+> Not exactly, because in that case we blocked all attempts to register devices,
+> while I think we can only block those regarding the children of a suspending
+> (or suspended) device.
+
+It's the "suspending" case that causes trouble.  Go back and look at 
+the race I diagrammed in
+
+https://lists.linux-foundation.org/pipermail/linux-pm/2008-February/016763.html
+
+> > Blocking registration attempts (especially if we start _before_ 
+> > calling the device's suspend method or end _after_ calling the resume
+> > method) will lead to deadlocks while suspending or resuming.
+> 
+> I'm not really convinced that it'll happen.
+
+It _did_ happen.  Precisely this race occurred in Bug #10030 (the SD
+card insertion/removal), although there the window was bigger because
+we blocked registrations starting from the start of the system sleep
+instead of from when the parent's suspend method was called.
+
+>  If we make the rule that
+> registering children from the device's own ->suspend() method is forbidden
+> (I don't really see why it should be allowed), something like this might work
+> (it seems to me):
+
+It's not that the suspend method itself will want to register children.  
+The problem is that the method has to wait for other threads that may 
+already have started to register a child.  If those other threads are 
+blocked then suspend will deadlock.
+
+> @@ -427,6 +433,13 @@ static int dpm_suspend(pm_message_t stat
+>  		struct device *dev = to_device(entry);
+>  
+>  		mutex_unlock(&dpm_list_mtx);
+> +		mutex_lock(&dev->power.lock);
+> +		mutex_lock(&dpm_list_mtx);
+> +		if (dev != to_device(dpm_active.prev)) {
+> +			mutex_unlock(&dev->power.lock);
+> +			continue;
+> +		}
+> +		mutex_unlock(&dpm_list_mtx);
+>  		error = suspend_device(dev, state);
+>  		mutex_lock(&dpm_list_mtx);
+>  		if (error) {
+
+This looks pretty awkward.  Won't it cause lockdep to complain about
+recursive locking of dev->power.lock?
+
+> > If the blocking starts after the suspend method returns then it will be 
+> > safer.  But what's the point?  If a registration attempt is made at 
+> > that stage, it means there's a bug in the driver.  So failing the 
+> > registration seems like a reasonable thing to do.
+> 
+> That doesn't buy us anything if drivers don't check whether the registration
+> succeeded.  And they don't.
+
+It buys us one thing: The system will continue to limp along instead of 
+locking up.
+
+If drivers don't check whether registration succeeded...  What can I 
+say?  It's another bug.
+
+> > One issue: This rule doesn't allow suspend_late or resume_early methods
+> > to register any new devices.
+> 
+> Not exactly.  Just the children of suspended devices, which makes a difference
+> IMO. :-)
+
+During suspend_late and resume_early _every_ device is suspended, 
+including the fictitious "device-tree-root" device.  Hence _every_ 
+registration is for a child of a suspended device.
+
+Besides, you don't want to allow new devices to be registered during 
+suspend_late, do you?  They wouldn't get suspended before the system 
+went to sleep.
+
+> > Will that cause problems with the CPU hotplug or ACPI subsystems?  ACPI in
+> > particular may need to freeze the kacpi_notify workqueue -- in fact, that
+> > might solve the problem in Bugzilla #9874.
+> 
+> Well, my impression is that we do this thing to prepare for removing the
+> freezer in the future, so I'd rather solve issues in some other ways than just
+> by freezing threads that get in the way. ;-)
+
+Right now that may be the easiest solution.  In fact, it may still be 
+the easiest solution even after we stop freezing user threads.
+
+> > Remember too that the target state is set before any devices are
+> > suspended.  Hence, after the state is set there may still be runtime
+> > resumes taking place.  Those _must_ not fail, which means that this
+> > resume ought to work also.
+> 
+> They may be handled in a different way, not by ->resume().
+
+I'm not sure I understand.  Sure, autoresume may not involve calling 
+the driver's resume method.  But it does involve actually setting the 
+device back to full power, so what's the difference?
+
+> > > > +				resume_device(dev);
+> > > > +				mutex_lock(&dpm_list_mtx);
+> > > > +				if (dev->power.sleeping != PM_GONE)
+> > > > +					dev->power.sleeping = PM_AWAKE;
+> > > > +			} else {
+> > 
+> > > Well, I wish it could be simpler ...
+> > 
+> > Me too.  But until the API is changed, this seems to be the best we can 
+> > do.  It's not quite as bad as it looks, since a fair amount of the new 
+> > code is just for reporting on and recovering from bugs in drivers.
+> 
+> Still, it doesn't look very nice ...
+
+Are you still considering adding separate methods for suspend and 
+hibernate (maybe also for freeze and prethaw)?  Perhaps the 
+"prevent_new_children" and "allow_new_children" methods could be added 
+then.  This would allow some of this complication to go away.
 
 Alan Stern
-
-
-Index: usb-2.6/include/linux/pm.h
-===================================================================
---- usb-2.6.orig/include/linux/pm.h
-+++ usb-2.6/include/linux/pm.h
-@@ -164,21 +164,40 @@ typedef struct pm_message {
-  * well as during system sleep states like PM_SUSPEND_STANDBY.  They may
-  * be able to use wakeup events to exit from runtime low-power states,
-  * or from system low-power states such as standby or suspend-to-RAM.
-+ *
-+ * The PM core will never issue the PMSG_ codes for USER_SUSPEND,
-+ * USER_RESUME, REMOTE_WAKEUP, AUTOSUSPEND, or AUTORESUME.  They are
-+ * provided for internal use by power-aware subsystems.
-  */
- 
--#define PM_EVENT_ON 0
--#define PM_EVENT_FREEZE 1
--#define PM_EVENT_SUSPEND 2
--#define PM_EVENT_HIBERNATE 4
--#define PM_EVENT_PRETHAW 8
-+#define PM_EVENT_ON		0x0000
-+#define PM_EVENT_FREEZE		0x0001
-+#define PM_EVENT_SUSPEND	0x0002
-+#define PM_EVENT_HIBERNATE	0x0004
-+#define PM_EVENT_PRETHAW	0x0008
-+#define PM_EVENT_USER_SUSPEND	0x0010
-+#define PM_EVENT_USER_RESUME	0x0020
-+#define PM_EVENT_REMOTE_WAKEUP	0x0040
-+#define PM_EVENT_AUTOSUSPEND	0x0080
-+#define PM_EVENT_AUTORESUME	0x0100
- 
- #define PM_EVENT_SLEEP	(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
- 
-+#define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
- #define PMSG_FREEZE	((struct pm_message){ .event = PM_EVENT_FREEZE, })
- #define PMSG_PRETHAW	((struct pm_message){ .event = PM_EVENT_PRETHAW, })
- #define PMSG_SUSPEND	((struct pm_message){ .event = PM_EVENT_SUSPEND, })
- #define PMSG_HIBERNATE	((struct pm_message){ .event = PM_EVENT_HIBERNATE, })
--#define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
-+#define PMSG_USER_SUSPEND	((struct pm_message) \
-+					{ .event = PM_EVENT_USER_SUSPEND, })
-+#define PMSG_USER_RESUME	((struct pm_message) \
-+					{ .event = PM_EVENT_USER_RESUME, })
-+#define PMSG_REMOTE_WAKEUP	((struct pm_message) \
-+					{ .event = PM_EVENT_REMOTE_WAKEUP, })
-+#define PMSG_AUTOSUSPSEND	((struct pm_message) \
-+					{ .event = PM_EVENT_AUTOSUSPSEND, })
-+#define PMSG_AUTORESUME		((struct pm_message) \
-+					{ .event = PM_EVENT_AUTORESUME, })
- 
- struct dev_pm_info {
- 	pm_message_t		power_state;
