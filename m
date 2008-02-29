@@ -1,15 +1,14 @@
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
- when SD card is inserted]
-Date: Sat, 1 Mar 2008 15:47:11 +0100
-Message-ID: <20080301154711.372dd28a__44147.2906423316$1204383073$gmane$org@mjolnir.drzeus.cx>
-References: <20080301151155.55209ebb@mjolnir.drzeus.cx>
-	<Pine.LNX.4.44L0.0803010931090.4212-100000@netrider.rowland.org>
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
+Date: Fri, 29 Feb 2008 16:44:07 -0500
+Message-ID: <20080229214407.GC1289__6959.83852861008$1204383720$gmane$org@csclub.uwaterloo.ca>
+References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803010931090.4212-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +18,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 1 Mar 2008 09:36:36 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Fri, Feb 29, 2008 at 07:38:12PM +0100, Pierre Ossman wrote:
+> +/*
+> + * The minimum number of ticks needed to not oscillate faster than
+> + * 500 Hz.
+> + */
+> +#define MIN_DEEP_INTERVAL (HZ / 500)
 
-> 
-> The easiest way to do this will be to wait until some planned updates 
-> are added to the PM core; then this will be a quick and simple change.  
-> That probably means waiting until after 2.6.25 is released, however.
-> 
-
-Ok. Just give me a poke when it's time.
+What happens here if HZ < 500?  Or does the fact that you have less than
+500HZ jiffies automatically imply that you can't go to sleep more than
+the jiffy rate times per second?
 
 --
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Len Sorensen
