@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fundamental flaw in system suspend,
- exposed by freezer removal
-Date: Fri, 29 Feb 2008 13:42:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0802291227430.6695-100000__28009.7707444385$1204310654$gmane$org@iolanthe.rowland.org>
-References: <200802291802.41590.rjw@sisk.pl>
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: [RFC][PATCH] cpuidle: avoid singing capacitors
+Date: Fri, 29 Feb 2008 19:38:12 +0100
+Message-ID: <20080229193812.31f45b0c__21435.8212579556$1204313647$gmane$org@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200802291802.41590.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,140 +15,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Adam Belay <abelay@novell.com>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 29 Feb 2008, Rafael J. Wysocki wrote:
+Many devices today are of a less than stellar quality, and singing
+transistors are a common problem. A high-pitch noise is created, caused
+by power fluctuations as the processor enters and leaves deep sleep at
+a high frequency.
 
-> > > Suppose we add a mutex to dev_pm_info, say pm_mtx, and require it to be:
-> > > (1) taken by suspend_device(dev) (at the beginning)
-> > > (2) released by resume_device(dev) (at the end)
-> > > (3) taken (and released) by device_pm_add() if dev is the parent of the device
-> > >     being added.
-> > > 
-> > > In that case, device_pm_add() will block on attepmpts to register devices whose
-> > > parents are suspended (or suspending) and we're done.  At least so it would
-> > > seem.
-> > 
-> > No; this would repeat the same mistake we were struggling with last
-> > week.
-> 
-> Not exactly, because in that case we blocked all attempts to register devices,
-> while I think we can only block those regarding the children of a suspending
-> (or suspended) device.
+Instead of just disabling the deep sleep (which wastes power). This
+patch merely reduces the number of times it is entered so that the
+frequency doesn't exceed 500 Hz. That should make sure the problem is
+inaudible.
 
-It's the "suspending" case that causes trouble.  Go back and look at 
-the race I diagrammed in
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+--
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2008-February/016763.html
+The basic idea is above, but the implementation doesn't quite work. It seems jiffies is not a good time source in this scenario. The time spent in C3 takes a much bigger hit than I expect. The fact that powertop says that it has an average residency of 200 ms in C2 tells me that those should have been spent in C3.
 
-> > Blocking registration attempts (especially if we start _before_ 
-> > calling the device's suspend method or end _after_ calling the resume
-> > method) will lead to deadlocks while suspending or resuming.
-> 
-> I'm not really convinced that it'll happen.
+So, pointers on what else to do?
 
-It _did_ happen.  Precisely this race occurred in Bug #10030 (the SD
-card insertion/removal), although there the window was bigger because
-we blocked registrations starting from the start of the system sleep
-instead of from when the parent's suspend method was called.
+(Patch also needs an on/off switch, but that's a later problem)
 
->  If we make the rule that
-> registering children from the device's own ->suspend() method is forbidden
-> (I don't really see why it should be allowed), something like this might work
-> (it seems to me):
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 78d77c5..171d838 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -16,6 +16,12 @@
+ 
+ #define BREAK_FUZZ     4       /* 4 us */
+ 
++/*
++ * The minimum number of ticks needed to not oscillate faster than
++ * 500 Hz.
++ */
++#define MIN_DEEP_INTERVAL (HZ / 500)
++
+ struct menu_device {
+        int             last_state_idx;
+ 
+@@ -23,6 +29,8 @@ struct menu_device {
+        unsigned int    predicted_us;
+        unsigned int    last_measured_us;
+        unsigned int    elapsed_us;
++
++       unsigned long   last_deep_jif;
+ };
+ 
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+@@ -50,9 +58,16 @@ static int menu_select(struct cpuidle_device *dev)
+                        break;
+                if (s->exit_latency > pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY))
+                        break;
++               if ((dev->states[i].flags & CPUIDLE_FLAG_DEEP) &&
++                       time_before_eq(jiffies, data->last_deep_jif + MIN_DEEP_INTERVAL))
++                       break;
+        }
+ 
+        data->last_state_idx = i - 1;
++
++       if (dev->states[i - 1].flags & CPUIDLE_FLAG_DEEP)
++               data->last_deep_jif = jiffies;
++
+        return i - 1;
+ }
+ 
 
-It's not that the suspend method itself will want to register children.  
-The problem is that the method has to wait for other threads that may 
-already have started to register a child.  If those other threads are 
-blocked then suspend will deadlock.
 
-> @@ -427,6 +433,13 @@ static int dpm_suspend(pm_message_t stat
->  		struct device *dev = to_device(entry);
->  
->  		mutex_unlock(&dpm_list_mtx);
-> +		mutex_lock(&dev->power.lock);
-> +		mutex_lock(&dpm_list_mtx);
-> +		if (dev != to_device(dpm_active.prev)) {
-> +			mutex_unlock(&dev->power.lock);
-> +			continue;
-> +		}
-> +		mutex_unlock(&dpm_list_mtx);
->  		error = suspend_device(dev, state);
->  		mutex_lock(&dpm_list_mtx);
->  		if (error) {
+-- 
+     -- Pierre Ossman
 
-This looks pretty awkward.  Won't it cause lockdep to complain about
-recursive locking of dev->power.lock?
-
-> > If the blocking starts after the suspend method returns then it will be 
-> > safer.  But what's the point?  If a registration attempt is made at 
-> > that stage, it means there's a bug in the driver.  So failing the 
-> > registration seems like a reasonable thing to do.
-> 
-> That doesn't buy us anything if drivers don't check whether the registration
-> succeeded.  And they don't.
-
-It buys us one thing: The system will continue to limp along instead of 
-locking up.
-
-If drivers don't check whether registration succeeded...  What can I 
-say?  It's another bug.
-
-> > One issue: This rule doesn't allow suspend_late or resume_early methods
-> > to register any new devices.
-> 
-> Not exactly.  Just the children of suspended devices, which makes a difference
-> IMO. :-)
-
-During suspend_late and resume_early _every_ device is suspended, 
-including the fictitious "device-tree-root" device.  Hence _every_ 
-registration is for a child of a suspended device.
-
-Besides, you don't want to allow new devices to be registered during 
-suspend_late, do you?  They wouldn't get suspended before the system 
-went to sleep.
-
-> > Will that cause problems with the CPU hotplug or ACPI subsystems?  ACPI in
-> > particular may need to freeze the kacpi_notify workqueue -- in fact, that
-> > might solve the problem in Bugzilla #9874.
-> 
-> Well, my impression is that we do this thing to prepare for removing the
-> freezer in the future, so I'd rather solve issues in some other ways than just
-> by freezing threads that get in the way. ;-)
-
-Right now that may be the easiest solution.  In fact, it may still be 
-the easiest solution even after we stop freezing user threads.
-
-> > Remember too that the target state is set before any devices are
-> > suspended.  Hence, after the state is set there may still be runtime
-> > resumes taking place.  Those _must_ not fail, which means that this
-> > resume ought to work also.
-> 
-> They may be handled in a different way, not by ->resume().
-
-I'm not sure I understand.  Sure, autoresume may not involve calling 
-the driver's resume method.  But it does involve actually setting the 
-device back to full power, so what's the difference?
-
-> > > > +				resume_device(dev);
-> > > > +				mutex_lock(&dpm_list_mtx);
-> > > > +				if (dev->power.sleeping != PM_GONE)
-> > > > +					dev->power.sleeping = PM_AWAKE;
-> > > > +			} else {
-> > 
-> > > Well, I wish it could be simpler ...
-> > 
-> > Me too.  But until the API is changed, this seems to be the best we can 
-> > do.  It's not quite as bad as it looks, since a fair amount of the new 
-> > code is just for reporting on and recovering from bugs in drivers.
-> 
-> Still, it doesn't look very nice ...
-
-Are you still considering adding separate methods for suspend and 
-hibernate (maybe also for freeze and prethaw)?  Perhaps the 
-"prevent_new_children" and "allow_new_children" methods could be added 
-then.  This would allow some of this complication to go away.
-
-Alan Stern
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
