@@ -1,14 +1,13 @@
 From: Pierre Ossman <drzeus-list@drzeus.cx>
 Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
-Date: Sat, 1 Mar 2008 13:31:27 +0100
-Message-ID: <20080301133127.0a85f319__36643.9329962761$1204374930$gmane$org@mjolnir.drzeus.cx>
+Date: Sat, 1 Mar 2008 14:40:01 +0100
+Message-ID: <20080301144001.771fa29c__6898.00914046845$1204379128$gmane$org@mjolnir.drzeus.cx>
 References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
-	<20080229214407.GC1289@csclub.uwaterloo.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080229214407.GC1289@csclub.uwaterloo.ca>
+In-Reply-To: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +17,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Adam Belay <abelay@novell.com>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 29 Feb 2008 16:44:07 -0500
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+On Fri, 29 Feb 2008 19:38:12 +0100
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-> On Fri, Feb 29, 2008 at 07:38:12PM +0100, Pierre Ossman wrote:
-> > +/*
-> > + * The minimum number of ticks needed to not oscillate faster than
-> > + * 500 Hz.
-> > + */
-> > +#define MIN_DEEP_INTERVAL (HZ / 500)
-> 
-> What happens here if HZ < 500?  Or does the fact that you have less than
-> 500HZ jiffies automatically imply that you can't go to sleep more than
-> the jiffy rate times per second?
+> @@ -50,9 +58,16 @@ static int menu_select(struct cpuidle_device *dev)
+>                         break;
+>                 if (s->exit_latency > pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY))
+>                         break;
+> +               if ((dev->states[i].flags & CPUIDLE_FLAG_DEEP) &&
+> +                       time_before_eq(jiffies, data->last_deep_jif + MIN_DEEP_INTERVAL))
+> +                       break;
+>         }
+>  
 
-A low HZ will still go to sleep very often (provided NO_HZ is in effect). But a HZ < 500 makes that number up there turn to zero.  But the check further down makes sure that at least 1 tick passes. So that means it will not enter C3 more often than min(HZ, 500) Hz. Another reason to stop using jiffies.
+I guess another approach would be to refuse to enter deep sleep if the sleep time is less than 2 ms. That would mean we would not lose the long sleeps, but if it is just doing short sleeps then we would never enter C3...
+
+Is there a decent way of testing which approach is actually doing the least damage?
+
+Rgds
 
 -- 
      -- Pierre Ossman
