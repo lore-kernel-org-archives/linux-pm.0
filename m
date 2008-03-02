@@ -1,14 +1,14 @@
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
-Date: Sun, 2 Mar 2008 15:17:06 +0100
-Message-ID: <20080302151706.4f99dda9__39156.2510900714$1204467800$gmane$org@mjolnir.drzeus.cx>
-References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
-	<75b66ecd0803011827qd64e1f2ud593fedbec33abe9@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Add extra PM_EVENT_* codes for use by
+	subsystems
+Date: Sun, 2 Mar 2008 10:18:35 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803021017280.9430-100000@netrider.rowland.org>
+References: <200803021357.42826.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <75b66ecd0803011827qd64e1f2ud593fedbec33abe9@mail.gmail.com>
+In-Reply-To: <200803021357.42826.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 1 Mar 2008 21:27:09 -0500
-"Lee Revell" <rlrevell@joe-job.com> wrote:
+On Sun, 2 Mar 2008, Rafael J. Wysocki wrote:
 
+> On Friday, 29 of February 2008, Alan Stern wrote:
+> > Is there any objection to adding extra PM_EVENT_* codes?  Although they
+> > won't ever be issued by the PM core, they will come in handy for
+> > internal uses in power-aware subsystems (like USB).
 > 
-> Should there be a comment stating the motivation for the change?
+> Well, this is in a (slight) conflict with the hibernation/suspend callbacks
+> rework that I'm working on with Alex.  I'll send the first patch in a few
+> minutes for comments.
 
-In the code you mean? Yes, that will be added.
+If you want to add my new codes to yours, that would be fine.  Or I 
+could wait until after your new callbacks are merged before submitting 
+the new event codes.  Whatever you think is best.
 
-> 
-> Thanks for trying to address this problem, I know many users who are afflicted.
-> 
-
-As always, the quickest way to get things done is to make sure a kernel developer suffers from the same issue. ;)
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Alan Stern
