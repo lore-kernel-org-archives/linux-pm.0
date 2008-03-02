@@ -1,16 +1,13 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch] Re: using long instead of atomic_t when only
- set/read is required
-Date: Mon, 3 Mar 2008 15:48:31 +0000
-Message-ID: <20080303154831.22a4eb14__11982.0015774623$1204560718$gmane$org@core>
-References: <20080225090316.GA420@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0802250943410.3549-100000@iolanthe.rowland.org>
-	<20080303120842.GA28369@elf.ucw.cz>
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: [PATCH RFC] introduce pm_call() macro to get rid of most
+	#ifdef	CONFIG_PM
+Date: Mon, 3 Mar 2008 02:43:08 +0300
+Message-ID: <20080302234308.GA10116__16746.1161887788$1204560739$gmane$org@zarina>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080303120842.GA28369@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,23 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Kernel@smtp1.linux-foundation.org, Zdenek@smtp1.linux-foundation.org, development list <linux-kernel@vger.kernel.org>, Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net, Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> Ok, so linux actually atomicity of long?
+Currently drivers handle CONFIG_PM this way:
 
-No it doesn't. And even if it did you couldn't use long for this because
-atomic_t also ensures the points operations complete are defined. You
-might just about get away with volatile long * objects on x86 for simple
-assignments but for anything else gcc can and will generate code to
-update values whichever way it feels best - which includes turning
+#ifdef CONFIG_PM
+drv_suspend() {}
+drv_resume() {}
+#else
+#define drv_suspend NULL
+#define drv_resume NULL
+#endif
 
-	long *x = a + b;
+struct driver drv = {
+	.suspend = drv_suspend,
+	.resume = drv_resume,
+};
 
-into
+With this patch, the code above converts into:
 
-	*x = a;
-	*x += b;
+drv_suspend() {}
+drv_resume() {}
 
-Alan
+struct driver drv = {
+	.suspend = pm_call(drv_suspend),
+	.resume = pm_call(drv_resume),
+};
+
+GCC will optimize away suspend/resume calls if they're really
+not used.
+
+Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+---
+ include/linux/pm.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 015b735..6e0b9c2 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -114,6 +114,13 @@ typedef struct pm_message {
+ 	int event;
+ } pm_message_t;
+ 
++#ifdef CONFIG_PM
++#define pm_call(x) (x)
++#else
++/* avoid `defined but not used' warning */
++#define pm_call(x) ((x) - 1 ? NULL : NULL)
++#endif /* CONFIG_PM */
++
+ /*
+  * Several driver power state transitions are externally visible, affecting
+  * the state of pending I/O queues and (for drivers that touch hardware)
+-- 
+1.5.4.3
