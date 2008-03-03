@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fundamental flaw in system suspend,
- exposed by freezer removal
-Date: Mon, 3 Mar 2008 12:43:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803031217070.3611-100000@iolanthe.rowland.org>
-References: <200803031732.52823.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch] Re: using long instead of atomic_t when only
+	set/read	is required
+Date: Mon, 3 Mar 2008 18:44:22 +0100
+Message-ID: <20080303174422.GB13869__43694.576182361$1204566453$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0803031207120.3611-100000@iolanthe.rowland.org>
+	<alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803031732.52823.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,152 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, davem@davemloft.net, Alan Cox <alan@lxorguk.ukuu.org.uk>, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
+Hi!
 
-> > After more thought, I'm not so sure about this.  It might be a good
-> > idea to call the begin_sleep method just before the suspend method (or
-> > any of its variants: freeze, hibernate, prethaw, etc.) and call the
-> > end_sleep method just after the resume method.  This minimizes the time
-> > drivers will spend in a peculiar non-hotplug-aware state, although it 
-> > means that begin_sleep would have to be idempotent.
+> > Consider a routine like the following:
 > > 
-> > It also allows sophisticated drivers to do all their processing in the
-> > begin_sleep (and end_sleep) method: both preventing new child
-> > registrations and powering down the device.  At the moment I'm not sure
-> > whether this would turn out to be a good strategy, but it might.
-> 
-> Well, I think there should be a window between ->suspend_begin()
-> and ->suspend() allowing the core to cancel the suspending of given
-> device and to select another one.  For example, if there's a child
-> registration concurrent wrt ->suspend_begin() which completes after
-> ->suspend_begin() has been called, but before ->suspend_begin() has a chance
-> to block it, the core should not call ->suspend() for the device, but select
-> another one (the child).
-
-With a sophisticated driver that would never happen, because after
-blocking new child registrations, the driver would check that the
-power.sleeping flag is set in all the children before powering down the 
-device.  But like I said, I'm not sure if this would be a good 
-strategy.
-
-(This partly has to do with the requirements for runtime PM.  During a
-runtime suspend the driver does have to check the children's status; it
-can't rely on the PM core.  So if the check has to be done anyway, why
-not also check during a system sleep?)
-
-With non-sophisticated drivers, it definitely could happen that a new
-child is registered concurrently with begin_sleep.  Then the core would
-go back and suspend the child first, as you say.  Eventually the core
-would return to the parent device, at which time it would call the
-parent's begin_sleep method again -- unless we add another flag to
-indicate that it had already been called.
-
-> Of course, it won't be necessary if the ->suspend_begin() methods are called
-> in an initial forward pass through dpm_active.
-
-Right.  That would be simpler.
-
-> > (BTW, I wonder if it's a good idea for device_add() to call 
-> > device_pm_add() before calling bus_add_device().  If a suspend occurs 
-> > in between, we could end up in a strange situation with a driver being 
-> > asked to suspend a device before that device has been fully registered 
-> > -- in fact the registration might still fail.)
-> 
-> That's correct.  Perhaps we should change device_add().
-
-I had a change like that in my version of the patch.  It's excerpted 
-below.
-
-> > > Well, we can add new callbacks for notifying drivers of an impending suspend.
-> > > In that case, say we add a ->begin() callback for this purpose (in fact that
-> > > would be two callbacks, ->suspend_begin() and ->hibernate_begin(), but let's
-> > > simplify things a bit for now), so there are the following questions:
+> > 	static task_struct *the_task;
 > > 
-> > In theory you could even expand it to freeze_begin and prethaw_begin.
-> 
-> I meant ->hibernate_begin() as ->freeze_begin() and I don't see any reason why
-> ->prethaw_begin() would be different from it (the difference between ->freeze()
-> and ->prethaw() -- now called ->quiesce(), btw -- is that the former saves
-> device settings and the latter doesn't).
-
-AFAICS there needs to be only one begin_sleep method.  It should apply 
-equally well to suspend, freeze, quiesce, and hibernate.  (But not to 
-suspend_late.)
-
-> > > * Perhaps we can require ->suspend() to always succeed after ->begin() has
-> > >   succeeded?
+> > 	void store_task(void)
+> > 	{
+> > 		the_task = current;
+> > 	}
 > > 
-> > No.  Some drivers might implement just one and some drivers just the 
-> > other.
+> > Is it possible to say whether readers examining "the_task" are 
+> > guaranteed to see a coherent value?
 > 
-> I thought ->suspend() would be mandatory, even if it's to be empty.
-
-There's no need for that.  If it isn't implemented, treat it as though 
-it was successful.
-
-But if a driver implements suspend() and leaves begin_sleep() as just a 
-stub (which many drivers might reasonably do, if they never register 
-any children), then the core shouldn't require suspend() to succeed 
-merely because begin_sleep() did.
-
-And especially not if begin_sleep() is called in a separate pass.
-
-> > Here's something else to think about.  We might want to allow some 
-> > devices to be "power-irrelevant".  That is, the device exists in the 
-> > kernel only as a representation of some software state, not as a 
-> > physical device.  It doesn't consume power, it doesn't have any state 
-> > to lose during a sleep, and its driver doesn't implement suspend or 
-> > resume methods.  For these sorts of devices, we might allow 
-> > device_add() to skip calling device_pm_add() altogether.  USB 
-> > interfaces are a little like this, as are SCSI hosts and MMC hosts.
+> Yes, we do depend on this.  All the RCU stuff (and in general *anything* 
+> that depends on memory ordering as opposed to full locking, and we have 
+> quite a lot of it) is very fundamentally dependent on the fact that things 
+> like pointers get read and written atomically.
 > 
-> If such devices serve as logical parents of some "real" ones, we should
-> at least mark them as "sleeping" during suspend to protect the dpm_active
-> ordering.
+> HOWEVER, it is worth pointing out that it's generally true in a 
+> "different" sense than the actual atomic accesses. For example, if you 
+> test a single bit of a word, it's still quite possible that gcc will have 
+> turned that "atomic" read into a single byte read, so it's not necessarily 
+> the case that we'll actually even read the whole word. 
+> 
+> (Writes are different: if you do things like bitwise updates they simply 
+> *will*not* be atomic, but that's simply not what we depend on anyway).
 
-They wouldn't have to be marked at all.  They would never get on any of 
-the PM lists, because they would never be passed to device_pm_add().
+Ok... can we get Alan Stern's patch into Documentation/atomic_ops.txt
+, then? I was not aware of this, and there seems to be lot of
+confusion around...
 
-The status of such devices is a little peculiar.  For example, consider 
-the MMC subsystem.  There's an MMC controller, generally a platform 
-device.  Its child is an mmc_host device, but the mmc_host methods are 
-called by the platform device's methods -- there is no driver 
-associated with an mmc_host.  At one time the mmc_host was a 
-class_device; that's may explain in part why it works this way.
+Plus... I really don't think we can "just access" this as normal
+pointers... due to the compiler issues Alan Cox mentioned, and due to
+the ACCESS_ONCE() issue.
 
-Alan Stern
-
-
-Index: usb-2.6/drivers/base/core.c
-===================================================================
---- usb-2.6.orig/drivers/base/core.c
-+++ usb-2.6/drivers/base/core.c
-@@ -815,10 +815,12 @@ int device_add(struct device *dev)
- 	error = dpm_sysfs_add(dev);
- 	if (error)
- 		goto PMError;
--	device_pm_add(dev);
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
-+	error = device_pm_add(dev);
-+	if (error)
-+		goto PMAddError;
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
- 	if (parent)
-@@ -838,8 +840,9 @@ int device_add(struct device *dev)
-  Done:
- 	put_device(dev);
- 	return error;
-+ PMAddError:
-+	bus_remove_device(dev);
-  BusError:
--	device_pm_remove(dev);
- 	dpm_sysfs_remove(dev);
-  PMError:
- 	if (dev->bus)
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
