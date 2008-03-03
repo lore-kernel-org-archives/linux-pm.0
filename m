@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] Device core: Remove dpm_sysfs_remove() from
-	error path of device_add()
-Date: Mon, 3 Mar 2008 23:46:51 +0100
-Message-ID: <200803032346.52173.rjw__43151.7009893016$1204584630$gmane$org@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Mon, 3 Mar 2008 17:48:45 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803031626180.8280-100000__39697.7871809669$1204584652$gmane$org@iolanthe.rowland.org>
+References: <200803032147.10223.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200803032147.10223.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,40 +18,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
 
-The appended patch fixes a bug in the error path of device_add().
+> > > Of course, it won't be necessary if the ->suspend_begin() methods are called
+> > > in an initial forward pass through dpm_active.
+> > 
+> > Right.  That would be simpler.
 
-Please accept it for 2.6.25.
+Let's stick with that for now.
 
-Thanks,
-Rafael
+What about on the resume side?  Do you want to prevent child
+registrations until after end_sleep has run?  Or would you be okay with
+allowing the resume method to register new children?  It should be safe
+to assume that drivers are smart enough to bring the device back to
+full power before looking for new children.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+In fact, maybe we don't need an end_sleep method at all.  There isn't
+any synchronization issue to worry about -- drivers aren't going to
+register their new children in a suspended state!
 
-Since device_pm_remove(dev) calls dpm_sysfs_remove(dev), it's
-incorrect to call the latter after the former in the device_add()
-error path.
+> > > That's correct.  Perhaps we should change device_add().
+> > 
+> > I had a change like that in my version of the patch.  It's excerpted 
+> > below.
+> 
+> Hm, I wonder why you didn't move dpm_sysfs_add() along with device_pm_add()?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/core.c |    1 -
- 1 file changed, 1 deletion(-)
+Because I didn't think of it.  :-)
 
-Index: linux-2.6/drivers/base/core.c
-===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -839,7 +839,6 @@ int device_add(struct device *dev)
- 	return error;
-  BusError:
- 	device_pm_remove(dev);
--	dpm_sysfs_remove(dev);
-  PMError:
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> Perhaps it's better to include dpm_sysfs_add() into device_pm_add(), since we
+> are going the make the return a result anyway?
+
+Yes.
+
+> > > I thought ->suspend() would be mandatory, even if it's to be empty.
+> > 
+> > There's no need for that.  If it isn't implemented, treat it as though 
+> > it was successful.
+> 
+> Well, I'm not sure.  Right now we have a problem with distinguishing drivers
+> that don't implement ->suspend() purposefully from the ones that just don't
+> support suspend/hibernation ...
+> 
+> OTOH, since we are going to have a pointer to 'struct pm_ops', we can safely
+> assume that if it's not NULL, the driver writer knows what he's doing.
+
+That's reasonable.  If a driver doesn't support PM then it won't have 
+a pm_ops pointer.
+
+> > > > Here's something else to think about.  We might want to allow some 
+> > > > devices to be "power-irrelevant".  That is, the device exists in the 
+> > > > kernel only as a representation of some software state, not as a 
+> > > > physical device.  It doesn't consume power, it doesn't have any state 
+> > > > to lose during a sleep, and its driver doesn't implement suspend or 
+> > > > resume methods.  For these sorts of devices, we might allow 
+> > > > device_add() to skip calling device_pm_add() altogether.  USB 
+> > > > interfaces are a little like this, as are SCSI hosts and MMC hosts.
+> > > 
+> > > If such devices serve as logical parents of some "real" ones, we should
+> > > at least mark them as "sleeping" during suspend to protect the dpm_active
+> > > ordering.
+> > 
+> > They wouldn't have to be marked at all.  They would never get on any of 
+> > the PM lists, because they would never be passed to device_pm_add().
+> 
+> But dev->parent will be not NULL for their children being on dpm_active ...
+> 
+> IMO it's simpler to just add those devices without any suspend callbacks
+> defined to dpm_active and handle them normally than to introduce a special
+> case.
+
+Yeah, I'm just trying to think too far ahead.
+
+Alan Stern
