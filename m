@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH] PM: Make PM core handle device
-	registrations concurrent with suspend/hibernation
-Date: Tue, 4 Mar 2008 00:10:01 +0100
-Message-ID: <200803040010.02075.rjw__3930.22239809415$1204586041$gmane$org@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fundamental flaw in system suspend,
+ exposed by freezer removal
+Date: Mon, 3 Mar 2008 18:12:31 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803031808150.8280-100000__30560.8900999234$1204586161$gmane$org@iolanthe.rowland.org>
+References: <200803032356.35275.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200803032356.35275.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,245 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
 
-The appended patch is intended to fix the issue with the PM core that it allows
-device registrations to complete successfully even if they run concurrently
-with the suspending of their parents, which may lead to a wrong ordering of
-devices on the dpm_active list and, as a result, to failures during suspend and
-hibernation transitions.
+> > > Perhaps it's better to include dpm_sysfs_add() into device_pm_add(), since we
+> > > are going the make the return a result anyway?
+> > 
+> > Yes.
+> 
+> Okay, I'll prepare a patch for that, on top of the one introducing the
+> 'sleeping' field into 'struct dev_pm_info' (posting in a while).
 
-Comments welcome.
+While you're at it, could you add a field to indicate whether 
+begin_sleep() has been called?  It would help prevent multiple calls to 
+that method when a race does occur, and it could be useful for drivers 
+as well.
 
-Thanks,
-Rafael
+> The question remains what we're going to do with the drivers without pm_ops
+> pointers in the long run (in the short run we will use the legacy callbacks in
+> that cases, if defined).
 
+One possibility is to unbind those drivers at the start of a sleep
+transition and reprobe them at the end.  Another possibility is to
+ignore the lack of PM support and hope it doesn't cause any problems.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Modify the PM core to protect its data structures, specifically the
-dpm_active list, from being corrupted if a child of the currently
-suspending device is registered concurrently with its ->suspend()
-callback.  In that case, since the new device (the child) is added
-to dpm_active after its parent, the PM core will attempt to
-suspend it after the parent, which is wrong.
-
-Introduce a new member of struct dev_pm_info, called 'sleeping',
-and use it to check if the parent of the device being added to
-dpm_active has been suspended, in which case the device registration
-fails.  Also, use 'sleeping' for checking if the ordering of devices
-on dpm_active is correct.
-
-Remove pm_sleep_rwsem which is not necessary any more.
-
-Special thanks to Alan Stern for discussions and suggestions that
-lead to the creation of this patch.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/devices.txt |    4 +++
- drivers/base/core.c             |    6 ++++-
- drivers/base/power/main.c       |   47 ++++++++++++----------------------------
- drivers/base/power/power.h      |   23 ++-----------------
- include/linux/pm.h              |    1 
- 5 files changed, 28 insertions(+), 53 deletions(-)
-
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -186,6 +186,7 @@ struct dev_pm_info {
- #ifdef	CONFIG_PM_SLEEP
- 	unsigned		should_wakeup:1;
- 	struct list_head	entry;
-+	bool			sleeping;	/* Owned by the PM core */
- #endif
- };
- 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -54,22 +54,26 @@ static LIST_HEAD(dpm_destroy);
- 
- static DEFINE_MUTEX(dpm_list_mtx);
- 
--static DECLARE_RWSEM(pm_sleep_rwsem);
--
- int (*platform_enable_wakeup)(struct device *dev, int is_on);
- 
- /**
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
-  */
--void device_pm_add(struct device *dev)
-+int device_pm_add(struct device *dev)
- {
-+	int error = 0;
-+
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
--	list_add_tail(&dev->power.entry, &dpm_active);
-+	if (dev->parent && dev->parent->power.sleeping)
-+		error = -EBUSY;
-+	else
-+		list_add_tail(&dev->power.entry, &dpm_active);
- 	mutex_unlock(&dpm_list_mtx);
-+	return error;
- }
- 
- /**
-@@ -107,32 +111,6 @@ void device_pm_schedule_removal(struct d
- }
- EXPORT_SYMBOL_GPL(device_pm_schedule_removal);
- 
--/**
-- *	pm_sleep_lock - mutual exclusion for registration and suspend
-- *
-- *	Returns 0 if no suspend is underway and device registration
-- *	may proceed, otherwise -EBUSY.
-- */
--int pm_sleep_lock(void)
--{
--	if (down_read_trylock(&pm_sleep_rwsem))
--		return 0;
--
--	return -EBUSY;
--}
--
--/**
-- *	pm_sleep_unlock - mutual exclusion for registration and suspend
-- *
-- *	This routine undoes the effect of device_pm_add_lock
-- *	when a device's registration is complete.
-- */
--void pm_sleep_unlock(void)
--{
--	up_read(&pm_sleep_rwsem);
--}
--
--
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -247,6 +225,7 @@ static void dpm_resume(void)
- 		struct device *dev = to_device(entry);
- 
- 		list_move_tail(entry, &dpm_active);
-+		dev->power.sleeping = false;
- 		mutex_unlock(&dpm_list_mtx);
- 		resume_device(dev);
- 		mutex_lock(&dpm_list_mtx);
-@@ -285,7 +264,6 @@ void device_resume(void)
- 	might_sleep();
- 	dpm_resume();
- 	unregister_dropped_devices();
--	up_write(&pm_sleep_rwsem);
- }
- EXPORT_SYMBOL_GPL(device_resume);
- 
-@@ -426,6 +404,11 @@ static int dpm_suspend(pm_message_t stat
- 		struct list_head *entry = dpm_active.prev;
- 		struct device *dev = to_device(entry);
- 
-+		if (dev->parent && dev->parent->power.sleeping) {
-+			error = -EAGAIN;
-+			break;
-+		}
-+		dev->power.sleeping = true;;
- 		mutex_unlock(&dpm_list_mtx);
- 		error = suspend_device(dev, state);
- 		mutex_lock(&dpm_list_mtx);
-@@ -437,6 +420,7 @@ static int dpm_suspend(pm_message_t stat
- 					(error == -EAGAIN ?
- 					" (please convert to suspend_late)" :
- 					""));
-+			dev->power.sleeping = false;
- 			break;
- 		}
- 		if (!list_empty(&dev->power.entry))
-@@ -459,7 +443,6 @@ int device_suspend(pm_message_t state)
- 	int error;
- 
- 	might_sleep();
--	down_write(&pm_sleep_rwsem);
- 	error = dpm_suspend(state);
- 	if (error)
- 		device_resume();
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -11,30 +11,13 @@ static inline struct device *to_device(s
- 	return container_of(entry, struct device, power.entry);
- }
- 
--extern void device_pm_add(struct device *);
-+extern int device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
--extern int pm_sleep_lock(void);
--extern void pm_sleep_unlock(void);
- 
- #else /* CONFIG_PM_SLEEP */
- 
--
--static inline void device_pm_add(struct device *dev)
--{
--}
--
--static inline void device_pm_remove(struct device *dev)
--{
--}
--
--static inline int pm_sleep_lock(void)
--{
--	return 0;
--}
--
--static inline void pm_sleep_unlock(void)
--{
--}
-+static inline int device_pm_add(struct device *dev) { return 0; }
-+static inline void device_pm_remove(struct device *dev) {}
- 
- #endif
- 
-Index: linux-2.6/drivers/base/core.c
-===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -814,7 +814,11 @@ int device_add(struct device *dev)
- 	error = dpm_sysfs_add(dev);
- 	if (error)
- 		goto PMError;
--	device_pm_add(dev);
-+	error = device_pm_add(dev);
-+	if (error) {
-+		dpm_sysfs_remove(dev);
-+		goto PMError;
-+	}
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
-Index: linux-2.6/Documentation/power/devices.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/devices.txt
-+++ linux-2.6/Documentation/power/devices.txt
-@@ -196,6 +196,10 @@ its parent; and can't be removed or susp
- 
- The policy is that the device tree should match hardware bus topology.
- (Or at least the control bus, for devices which use multiple busses.)
-+In particular, this means that a device registration may fail if the parent of
-+the device is suspending (ie. has just been chosen by the PM core as the next
-+device to suspend) or has already suspended.  Device drivers must be prepared
-+to cope with such situations.
- 
- 
- Suspending Devices
+Alan Stern
