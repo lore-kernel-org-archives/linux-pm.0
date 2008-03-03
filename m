@@ -1,11 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 2/2] usb-storage: add autosuspend support
-Date: Mon, 3 Mar 2008 11:12:19 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803031109270.3611-100000__17176.4354258359$1204561403$gmane$org@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Fundamental flaw in system suspend,
+	exposed by freezer removal
+Date: Mon, 3 Mar 2008 17:32:52 +0100
+Message-ID: <200803031732.52823.rjw__30403.1181186021$1204562178$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803022152270.6168-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803022152270.6168-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,150 +19,156 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: USB Storage list <usb-storage@lists.one-eyed-alien.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1043) implements autosuspend for usb-storage.  It relies
-on an underlying SCSI dynamic PM implementation for generating
-autosuspend and autoresume requests.
+On Monday, 3 of March 2008, Alan Stern wrote:
+> On Sun, 2 Mar 2008, Rafael J. Wysocki wrote:
+[--snip--]
+> 
+> > > The prevent_new_children methods should be called in a separate initial
+> > > forward pass through the dpm_active list -- rather like the reverted
+> > > lock_all_devices() routine.  Similarly for the allow_new_children 
+> > > methods (a final backward pass like unlock_all_devices()).
+> > 
+> > Agreed.
+> 
+> After more thought, I'm not so sure about this.  It might be a good
+> idea to call the begin_sleep method just before the suspend method (or
+> any of its variants: freeze, hibernate, prethaw, etc.) and call the
+> end_sleep method just after the resume method.  This minimizes the time
+> drivers will spend in a peculiar non-hotplug-aware state, although it 
+> means that begin_sleep would have to be idempotent.
+> 
+> It also allows sophisticated drivers to do all their processing in the
+> begin_sleep (and end_sleep) method: both preventing new child
+> registrations and powering down the device.  At the moment I'm not sure
+> whether this would turn out to be a good strategy, but it might.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Well, I think there should be a window between ->suspend_begin()
+and ->suspend() allowing the core to cancel the suspending of given
+device and to select another one.  For example, if there's a child
+registration concurrent wrt ->suspend_begin() which completes after
+->suspend_begin() has been called, but before ->suspend_begin() has a chance
+to block it, the core should not call ->suspend() for the device, but select
+another one (the child).
 
----
+Of course, it won't be necessary if the ->suspend_begin() methods are called
+in an initial forward pass through dpm_active.
 
-I'm submitting this through the SCSI tree rather than the USB tree, 
-because it depends so heavily on the previous SCSI dynamic PM patch.
+> Alternatively, some subsystems might want to stop all child
+> registrations right at the beginning of the sleep transition.  This
+> would amount to blocking the kernel thread responsible for those
+> registrations when the sleep begins -- in other words, making that
+> thread freezable!
 
+Well, I think the possibility to freeze kernel threads on demand may be
+considered as one of suspend synchronization mechanisms available to drivers.
 
-Index: usb-2.6/drivers/usb/storage/usb.c
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/usb.c
-+++ usb-2.6/drivers/usb/storage/usb.c
-@@ -184,16 +184,22 @@ static int storage_suspend(struct usb_in
- {
- 	struct us_data *us = usb_get_intfdata(iface);
+[--snip--] 
+> > > Actually you can simplify the whole thing by getting rid of 
+> > > dev->power.lock entirely.  Protect the "sleeping" flag by dpm_list_mtx.
+> > 
+> > Then, if a child registration occurs while suspend_device(parent) is being
+> > run, dpm_active will be in a wrong order, unless suspend_device(parent) returns
+> > an error (which, BTW, also imposes a new rule on drivers).
+> 
+> Sorry, I don't follow you.
+> 
+> I meant doing something approximately like this:
+> 
+> 	mutex_lock(&dpm_list_mtx);
+> 	while (!list_is_empty(&dpm_active)) {
+> 		dev = dpm_active.prev;
+> 		dev->power.sleeping = true;
+> 		mutex_unlock(&dpm_list_mtx);
+> 		error = suspend_device(dev);
+> 		mutex_lock(&dpm_list_mtx);
+> 		...
+> 	}
+> 
+> and make device_pm_add() fail if dev->parent->power.sleeping is true.
+> This will do what you want, right?
+
+Yes, that should work.  I'll rework the patch along these lines (it starts to
+look really simple now :-); I'll post the new version in a separate thread).
+
+> With the begin_sleep method call added it gets a little more
+> complicated, since you have to reacquire dpm_list_mtx after calling the
+> begin_sleep method and before setting dev->power.sleeping to true, in
+> order to make sure that dev is still the last entry on dpm_active.  
+> But it's quite doable.
+
+Yes, it is.
+
+> (BTW, I wonder if it's a good idea for device_add() to call 
+> device_pm_add() before calling bus_add_device().  If a suspend occurs 
+> in between, we could end up in a strange situation with a driver being 
+> asked to suspend a device before that device has been fully registered 
+> -- in fact the registration might still fail.)
+
+That's correct.  Perhaps we should change device_add().
+
+> > I'm not sure the "GONE" state willl really be necessary.
+> 
+> I'm not sure either.  You can get the same effect by checking 
+> list_empty(&dev->power.entry).
+> 
+> > Well, we can add new callbacks for notifying drivers of an impending suspend.
+> > In that case, say we add a ->begin() callback for this purpose (in fact that
+> > would be two callbacks, ->suspend_begin() and ->hibernate_begin(), but let's
+> > simplify things a bit for now), so there are the following questions:
+> 
+> In theory you could even expand it to freeze_begin and prethaw_begin.
+
+I meant ->hibernate_begin() as ->freeze_begin() and I don't see any reason why
+->prethaw_begin() would be different from it (the difference between ->freeze()
+and ->prethaw() -- now called ->quiesce(), btw -- is that the former saves
+device settings and the latter doesn't).
  
-+	US_DEBUGP("%s\n", __FUNCTION__);
-+
-+#ifdef CONFIG_SCSI_DYNAMIC_PM
-+	/* Don't suspend if the host is still active */
-+	if (iface->pm_usage_cnt > 0) {
-+		US_DEBUGP("host is not suspended!\n");
-+		return -EBUSY;
-+	}
-+#endif
-+
- 	/* Wait until no command is running */
- 	mutex_lock(&us->dev_mutex);
- 
--	US_DEBUGP("%s\n", __FUNCTION__);
- 	if (us->suspend_resume_hook)
- 		(us->suspend_resume_hook)(us, US_SUSPEND);
- 
--	/* When runtime PM is working, we'll set a flag to indicate
--	 * whether we should autoresume when a SCSI request arrives. */
--
- 	mutex_unlock(&us->dev_mutex);
- 	return 0;
- }
-@@ -202,13 +208,10 @@ static int storage_resume(struct usb_int
- {
- 	struct us_data *us = usb_get_intfdata(iface);
- 
--	mutex_lock(&us->dev_mutex);
--
- 	US_DEBUGP("%s\n", __FUNCTION__);
- 	if (us->suspend_resume_hook)
- 		(us->suspend_resume_hook)(us, US_RESUME);
- 
--	mutex_unlock(&us->dev_mutex);
- 	return 0;
- }
- 
-@@ -957,6 +960,9 @@ static int storage_probe(struct usb_inte
- 		return -ENOMEM;
- 	}
- 
-+	/* Don't autosuspend until the SCSI core tells us */
-+	usb_autopm_get_interface(intf);
-+
- 	/*
- 	 * Allow 16-byte CDBs and thus > 2TB
- 	 */
-@@ -1054,6 +1060,7 @@ static struct usb_driver usb_storage_dri
- 	.pre_reset =	storage_pre_reset,
- 	.post_reset =	storage_post_reset,
- 	.id_table =	storage_usb_ids,
-+	.supports_autosuspend = 1,
- };
- 
- static int __init usb_stor_init(void)
-Index: usb-2.6/drivers/usb/storage/scsiglue.c
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/scsiglue.c
-+++ usb-2.6/drivers/usb/storage/scsiglue.c
-@@ -299,10 +299,15 @@ static int device_reset(struct scsi_cmnd
- 
- 	US_DEBUGP("%s called\n", __FUNCTION__);
- 
--	/* lock the device pointers and do the reset */
--	mutex_lock(&(us->dev_mutex));
--	result = us->transport_reset(us);
--	mutex_unlock(&us->dev_mutex);
-+	result = usb_autopm_get_interface(us->pusb_intf);
-+	if (result == 0) {
-+
-+		/* lock the device pointers and do the reset */
-+		mutex_lock(&(us->dev_mutex));
-+		result = us->transport_reset(us);
-+		mutex_unlock(&us->dev_mutex);
-+		usb_autopm_put_interface(us->pusb_intf);
-+	}
- 
- 	return result < 0 ? FAILED : SUCCESS;
- }
-@@ -345,6 +350,32 @@ void usb_stor_report_bus_reset(struct us
- 	scsi_unlock(host);
- }
- 
-+#ifdef CONFIG_SCSI_DYNAMIC_PM
-+
-+/* The host and its devices are all idle so we can autosuspend */
-+static int us_autosuspend(struct Scsi_Host *host)
-+{
-+	struct us_data *us = host_to_us(host);
-+
-+	usb_autopm_put_interface(us->pusb_intf);
-+	return 0;
-+}
-+
-+/* The host needs to be autoresumed */
-+static int us_autoresume(struct Scsi_Host *host)
-+{
-+	struct us_data *us = host_to_us(host);
-+
-+	return usb_autopm_get_interface(us->pusb_intf);
-+}
-+
-+#else
-+#define us_autosuspend		NULL
-+#define us_autoresume		NULL
-+
-+#endif /* CONFIG_SCSI_DYNAMIC_PM */
-+
-+
- /***********************************************************************
-  * /proc/scsi/ functions
-  ***********************************************************************/
-@@ -471,6 +502,10 @@ struct scsi_host_template usb_stor_host_
- 	.eh_device_reset_handler =	device_reset,
- 	.eh_bus_reset_handler =		bus_reset,
- 
-+	/* dynamic power management */
-+	.autosuspend =			us_autosuspend,
-+	.autoresume =			us_autoresume,
-+
- 	/* queue commands only, only one command per LUN */
- 	.can_queue =			1,
- 	.cmd_per_lun =			1,
+> > * Is it going to return a result?
+> > * If it is, should we fail the suspend if an error is returned?
+> > * In that case, should the ->suspend() callback return a result?
+> 
+> To be safe, everything should return a result and we should abort the 
+> sleep if anything returns an error.
+> 
+> It's easier to ignore a return code now than to change a method
+> signature later.  :-)
+> 
+> > * Perhaps we can require ->suspend() to always succeed after ->begin() has
+> >   succeeded?
+> 
+> No.  Some drivers might implement just one and some drivers just the 
+> other.
+
+I thought ->suspend() would be mandatory, even if it's to be empty.
+
+> > OTOH, IMO requiring ->suspend() to return an error if there's been a concurrent
+> > child registration and resuming the device if that happens is not a trivial
+> > change and it may require as many driver modifications as failing the
+> > registration of the child right away.
+> 
+> That's true.  If the driver's author wants to do things that way, he
+> can.  For instance, there are several subsystems which will probe for
+> new children as part of their resume processing.  So if a child was
+> detected just before the system went to sleep and failed to get
+> registered, then it will be detected again when the system wakes up and
+> now the registration will succeed.
+> 
+> Here's something else to think about.  We might want to allow some 
+> devices to be "power-irrelevant".  That is, the device exists in the 
+> kernel only as a representation of some software state, not as a 
+> physical device.  It doesn't consume power, it doesn't have any state 
+> to lose during a sleep, and its driver doesn't implement suspend or 
+> resume methods.  For these sorts of devices, we might allow 
+> device_add() to skip calling device_pm_add() altogether.  USB 
+> interfaces are a little like this, as are SCSI hosts and MMC hosts.
+
+If such devices serve as logical parents of some "real" ones, we should
+at least mark them as "sleeping" during suspend to protect the dpm_active
+ordering.
+
+Thanks,
+Rafael
