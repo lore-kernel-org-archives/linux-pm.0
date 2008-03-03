@@ -1,13 +1,14 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: [PATCH RFC] introduce pm_call() macro to get rid of most
-	#ifdef	CONFIG_PM
-Date: Mon, 3 Mar 2008 02:43:08 +0300
-Message-ID: <20080302234308.GA10116__16746.1161887788$1204560739$gmane$org@zarina>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
+Date: Mon, 03 Mar 2008 13:36:50 +0100
+Message-ID: <p73mypg6l25.fsf__13850.3385628157$1204560750$gmane$org@bingen.suse.de>
+References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <20080229193812.31f45b0c@mjolnir.drzeus.cx> (Pierre Ossman's
+	message of "Fri\, 29 Feb 2008 19\:38\:12 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,60 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently drivers handle CONFIG_PM this way:
+Pierre Ossman <drzeus-list@drzeus.cx> writes:
 
-#ifdef CONFIG_PM
-drv_suspend() {}
-drv_resume() {}
-#else
-#define drv_suspend NULL
-#define drv_resume NULL
-#endif
+> Many devices today are of a less than stellar quality, and singing
+> transistors are a common problem. A high-pitch noise is created, caused
+> by power fluctuations as the processor enters and leaves deep sleep at
+> a high frequency.
+>
+> Instead of just disabling the deep sleep (which wastes power). This
+> patch merely reduces the number of times it is entered so that the
+> frequency doesn't exceed 500 Hz. That should make sure the problem is
+> inaudible.
+>
+> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+> --
+>
+> The basic idea is above, but the implementation doesn't quite work. It seems jiffies is not a good time source in this scenario. The time spent in C3 takes a much bigger hit than I expect. The fact that powertop says that it has an average residency of 200 ms in C2 tells me that those should have been spent in C3.
 
-struct driver drv = {
-	.suspend = drv_suspend,
-	.resume = drv_resume,
-};
+I like the patch in principle, although I think the threshold should
+be configurable, not hard coded.
 
-With this patch, the code above converts into:
+I haven't checked in detail if that is the case, but you need to make
+sure that you only reference jiffies on idle exit after the clock
+source has caught up with lost jiffies after idle. That might be 
+the cause of your problem.
 
-drv_suspend() {}
-drv_resume() {}
-
-struct driver drv = {
-	.suspend = pm_call(drv_suspend),
-	.resume = pm_call(drv_resume),
-};
-
-GCC will optimize away suspend/resume calls if they're really
-not used.
-
-Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
----
- include/linux/pm.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 015b735..6e0b9c2 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -114,6 +114,13 @@ typedef struct pm_message {
- 	int event;
- } pm_message_t;
- 
-+#ifdef CONFIG_PM
-+#define pm_call(x) (x)
-+#else
-+/* avoid `defined but not used' warning */
-+#define pm_call(x) ((x) - 1 ? NULL : NULL)
-+#endif /* CONFIG_PM */
-+
- /*
-  * Several driver power state transitions are externally visible, affecting
-  * the state of pending I/O queues and (for drivers that touch hardware)
--- 
-1.5.4.3
+-Andi
