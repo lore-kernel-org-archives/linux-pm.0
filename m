@@ -1,14 +1,17 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH 1/2] SCSI: add dynamic Power Management
-	infrastructure
-Date: Mon, 03 Mar 2008 17:24:19 -0600
-Message-ID: <1204586659.3043.92.camel__23908.2651598894$1204586967$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0803031107360.3611-100000@iolanthe.rowland.org>
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH RFC] introduce pm_call() macro to get rid of
+	most	#ifdef CONFIG_PM
+Date: Tue, 4 Mar 2008 02:26:58 +0300
+Message-ID: <20080303232658.GB27395__39985.6234355413$1204588238$gmane$org@zarina>
+References: <20080302234308.GA10116@zarina>
+	<20080302160820.1930a770@laptopd505.fenrus.org>
+Reply-To: cbouatmailru@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803031107360.3611-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20080302160820.1930a770@laptopd505.fenrus.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,75 +21,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2008-03-03 at 11:09 -0500, Alan Stern wrote:
-> This patch (as1042) introduces dynamic Power Management for the SCSI
-> stack.  It keeps track of devices' logical state and adds a
-> notification callback to tell the host adapter driver when some or all
-> of the devices on a SCSI bus are no longer in use, so the link can be
-> powered down.
+On Sun, Mar 02, 2008 at 04:08:20PM -0800, Arjan van de Ven wrote:
+> On Mon, 3 Mar 2008 02:43:08 +0300
+> Anton Vorontsov <cbouatmailru@gmail.com> wrote:
 > 
-> It also adds autosuspend capability (disabled initially) that can be
-> controlled by userspace, using the same sort of sysfs API as the USB
-> autosuspend implementation.
+> > Currently drivers handle CONFIG_PM this way:
+> > 
+> > #ifdef CONFIG_PM
+> > drv_suspend() {}
+> > drv_resume() {}
+> > #else
+> > #define drv_suspend NULL
+> > #define drv_resume NULL
+> > #endif
+> > 
+> > struct driver drv = {
+> > 	.suspend = drv_suspend,
+> > 	.resume = drv_resume,
+> > };
+> > 
+> > With this patch, the code above converts into:
+> > 
+> > drv_suspend() {}
+> > drv_resume() {}
+> > 
+> > struct driver drv = {
+> > 	.suspend = pm_call(drv_suspend),
+> > 	.resume = pm_call(drv_resume),
+> > };
+> > 
+> > GCC will optimize away suspend/resume calls if they're really
+> > not used.
+> > 
 > 
-> Everything is managed by a new Kconfig option:
-> CONFIG_SCSI_DYNAMIC_PM.  If that symbol isn't set then essentially
-> nothing is changed (some code gets moved from one source file to
-> another).
+> 
+> to be honest, at this point I would think it's time to remove
+> CONFIG_PM, or rather,
+> just make it always be there and just get rid of the ifdefs.
 
-First the general comments/questions:
+Don't be so CONFIG_PM-centric :-)
 
-1. It's done at the wrong level: suspend "device" is actually a target
-function.  There's no way on a multi-lun device we want to keep the
-flags and last_busy anywhere but in the target
+$ zcat /proc/config.gz | grep CONFIG_PM
+# CONFIG_PM is not set
 
-2. As you say in the comment, the thing we're trying to power down is
-the link.  In most SCSI implementations, the link has a rather complex
-relationship to the target, what we want to do in
-periodic_autosuspend_scan() is run over the devices on each link, and if
-they're not busy suspend the link?  What's probably needed is a set of
-adjunct helpers for the transport classes to do this.
+This is machine I use at home.
 
-3. The link power down is much faster than device spin down ... in your
-patch these two things seem to be coupled ... we really need to keep
-them separate.
+> We're saving 2 words and a bit of code,
+> but only a case that not even the embedded guys use. 
 
-4. The entanglement with error handling is incredibly problematic (since
-eh is a nastily complex state machine in its own right).  What do
-transports that use eh_strategy_handler do about all of this?
+Well, on my ARM machine, with CONFIG_PM=y vmlinux grows by 30KB, half
+of that is in drivers/. 30KB is 1% of the vmlinux. Is it enough to
+worth saving? I don't know.
 
+On a x86 box, CONFIG_PM=y grows the vmlinux by 400KB (yeah, it's
+including ACPI and stuff), though here I didn't count drivers'
+suspend/resume hooks contribution share.
 
-Then the specific code:
-
-> +scsi_mod-y                     += scsi_scan.o scsi_sysfs.o scsi_devinfo.o \
-> +                                  scsi_pm.o
-
-If you just said N to SCSI_DYNAMIC_PM why does it still get compiled in?
-
-
-
-> 		.name		= "sd",
->  		.probe		= sd_probe,
->  		.remove		= sd_remove,
-> -		.suspend	= sd_suspend,
-> -		.resume		= sd_resume,
->  		.shutdown	= sd_shutdown,
->  	},
->  	.rescan			= sd_rescan,
->  	.done			= sd_done,
-> +	.suspend		= sd_suspend,
-> +	.resume			= sd_resume,
->  };
-
-You're duplicating the driver suspend/resume methods in scsi_driver.  We
-just had a discussion about this at the storage summit.  Those methods
-are staying, so we might as well not duplicate them.
-
-James
-
-
-James
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
