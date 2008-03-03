@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: [patch] Re: using long instead of atomic_t when only
- set/read is required
-Date: Mon, 3 Mar 2008 12:11:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803031207120.3611-100000__40313.1521693014$1204564451$gmane$org@iolanthe.rowland.org>
-References: <20080303155330.39e45ad4@core>
+	set/read is required
+Date: Tue, 4 Mar 2008 04:16:33 +1100
+Message-ID: <200803040416.33937.nickpiggin@yahoo.com.au>
+References: <20080303120842.GA28369@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0803031023550.3611-100000@iolanthe.rowland.org>
+	<20080303155330.39e45ad4@core>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <20080303155330.39e45ad4@core>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +25,21 @@ To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: Andrew Morton <akpm@osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 3 Mar 2008, Alan Cox wrote:
-
-> > Atomicity of reads of write for pointers and integral types (other than 
+On Tuesday 04 March 2008 02:53, Alan Cox wrote:
+> > Atomicity of reads of write for pointers and integral types (other than
 > > long long) should be documented.
-> 
+>
 > NAK.
-> 
+>
 > Atomicity of reads or writes for pointers and integral types is NOT
 > guaranteed. Gcc doesn't believe in your guarantee.
 
-Miscommunication and lack of clarity.  CPU reads and writes _are_ 
-guaranteed to be atomic.  What is not guaranteed is that the compiler 
-will generate a single read or write instruction corresponding to a 
-particular expression in C.
+Are you sure gcc doesn't? Or is it just "C"?
 
-Consider a routine like the following:
+Linux wouldn't work today if gcc did something non-atomic there
+(presuming you're talking about naturally aligned pointers/ints).
+It is widely used and accepted.
 
-	static task_struct *the_task;
-
-	void store_task(void)
-	{
-		the_task = current;
-	}
-
-Is it possible to say whether readers examining "the_task" are 
-guaranteed to see a coherent value?
-
-Alan Stern		
+RCU users are far from the only places to rely on this, although
+I guess they are the main ones when it comes to assigning pointers
+atomically.
