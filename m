@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] Re: using long instead of atomic_t when only
-	set/read is required
-Date: Mon, 3 Mar 2008 21:27:29 +0100
-Message-ID: <200803032127.30761.rjw__31038.6671721519$1204576402$gmane$org@sisk.pl>
-References: <20080225090316.GA420@elf.ucw.cz> <20080303154831.22a4eb14@core>
-	<20080303172410.GA13869@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Date: Mon, 3 Mar 2008 21:46:03 +0100
+Message-ID: <20080303204603.GA19775__42641.7375369512$1204577238$gmane$org@elf.ucw.cz>
+References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
+	<20080303211842.6f492782@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080303172410.GA13869@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <20080303211842.6f492782@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,55 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net, Alan Cox <alan@lxorguk.ukuu.org.uk>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 3 of March 2008, Pavel Machek wrote:
-> Hi!
-> 
-> > > Ok, so linux actually atomicity of long?
->                          ^~-- assumes should be here.
-> 
-> > No it doesn't. And even if it did you couldn't use long for this because
-> > atomic_t also ensures the points operations complete are defined. You
-> > might just about get away with volatile long * objects on x86 for simple
-> > assignments but for anything else gcc can and will generate code to
-> > update values whichever way it feels best - which includes turning
-> > 
-> > 	long *x = a + b;
-> > 
-> > into
-> > 
-> > 	*x = a;
-> > 	*x += b;
-> 
-> Ok, I can understand the gcc side. But do we actually run on an
-> architecture where
-> 
-> long *x;
-> 
-> *x = 0;
-> 
-> racing with 
-> 
-> *x = 0x12345678;
-> 
-> can produce
-> 
-> *x == 0x12340000;
-> 
-> or something like that?
+Hi!
 
-Well something like this could happen, in theory, on a "32-bit" architecture
-with a 16-bit bus.  In that case, one can imagine, the first word of the
-first write may be sent through the bus immediately followed by the first
-word of the second write, followed by the second word of the second
-write and by the second word of the first write, in this order.
+> I've been playing around with this for a bit, and the jiffies approach
+> just had too many gotchas. So I tried using the information that was
+> already present in the menu governor. This is what I came up with.
+> 
+> It solves the primary problem of getting rid of the noise. I've also
+> tried some crude power measurements and I couldn't get any difference
+> with and without the patch. Powertop also nicely shows that the CPU is
+> still spending almost all of its time in C3. Therefore, I'm letting the
+> effects of it be enabled by default.
+> 
+> So I'm taking the [RFC] off it. Please still test and see that it
+> solves the issue on other machines, and the it does not cause any big
+> power surges.
+> 
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 78d77c5..d9c43e3 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -16,6 +16,8 @@
+>  
+>  #define BREAK_FUZZ     4       /* 4 us */
+>  
+> +static unsigned int min_deep_sleep = 2000;
+> +
 
-> I'm told RCU relies on architectures not doing this, and I'd like to get this
-> clarified.
-
-Yes, it would be good to know that for sure.
-
-Rafael 
+Well, why not, but I believe we should default to old behaviour... not
+all machines are cheaply-build.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
