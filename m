@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/2] SCSI: add dynamic Power Management
-	infrastructure
-Date: Tue, 4 Mar 2008 11:51:48 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803041130160.4039-100000__24910.7721764178$1204649767$gmane$org@iolanthe.rowland.org>
-References: <1204586659.3043.92.camel@localhost.localdomain>
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Date: Tue, 4 Mar 2008 18:19:24 +0100
+Message-ID: <20080304181924.70aaf8c1__45395.8829785281$1204651475$gmane$org@mjolnir.drzeus.cx>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
+	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1204586659.3043.92.camel@localhost.localdomain>
+In-Reply-To: <20080304071423.0e6b71c1@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,108 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 3 Mar 2008, James Bottomley wrote:
+On Tue, 4 Mar 2008 07:14:23 +0100
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-> On Mon, 2008-03-03 at 11:09 -0500, Alan Stern wrote:
-> > This patch (as1042) introduces dynamic Power Management for the SCSI
-> > stack.  It keeps track of devices' logical state and adds a
-> > notification callback to tell the host adapter driver when some or all
-> > of the devices on a SCSI bus are no longer in use, so the link can be
-> > powered down.
-> > 
-> > It also adds autosuspend capability (disabled initially) that can be
-> > controlled by userspace, using the same sort of sysfs API as the USB
-> > autosuspend implementation.
-> > 
-> > Everything is managed by a new Kconfig option:
-> > CONFIG_SCSI_DYNAMIC_PM.  If that symbol isn't set then essentially
-> > nothing is changed (some code gets moved from one source file to
-> > another).
 > 
-> First the general comments/questions:
+> Many devices today are of a less than stellar quality, and singing
+> capacitors are a common problem. A high-pitch noise is created, caused
+> by power fluctuations as the processor enters and leaves deep sleep at
+> a high frequency.
 > 
-> 1. It's done at the wrong level: suspend "device" is actually a target
-> function.  There's no way on a multi-lun device we want to keep the
-> flags and last_busy anywhere but in the target
-
-Okay.
-
-> 2. As you say in the comment, the thing we're trying to power down is
-> the link.  In most SCSI implementations, the link has a rather complex
-> relationship to the target, what we want to do in
-> periodic_autosuspend_scan() is run over the devices on each link, and if
-> they're not busy suspend the link?  What's probably needed is a set of
-> adjunct helpers for the transport classes to do this.
-
-I'd love to do it that way, but I don't understand enough about how the 
-transport classes work.  If somebody could help out, I'd appreciate it.
-
-> 3. The link power down is much faster than device spin down ... in your
-> patch these two things seem to be coupled ... we really need to keep
-> them separate.
-
-I don't understand.  Is it safe in general to keep a device spun up
-while taking the link down?  Or to avoid sending a SYNCHRONIZE CACHE
-command before suspending the link?  I wouldn't think so.  This means
-the device suspend routine must be carried out before the link is
-suspended.
-
-> 4. The entanglement with error handling is incredibly problematic (since
-> eh is a nastily complex state machine in its own right).  What do
-> transports that use eh_strategy_handler do about all of this?
-
-They should prevent the link from autosuspending before starting up the
-error handler and then allow it again when the handler is done.  
-Ideally the core should do this for them automatically, before calling
-eh_strategy_handler.
-
-> Then the specific code:
+> Instead of just disabling the deep sleep (which wastes power), this
+> patch allows you to reduces the number of times it is entered so that
+> the frequency can be kept inaudible.
 > 
-> > +scsi_mod-y                     += scsi_scan.o scsi_sysfs.o scsi_devinfo.o \
-> > +                                  scsi_pm.o
-> 
-> If you just said N to SCSI_DYNAMIC_PM why does it still get compiled in?
+> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+> --
 
-Because the scsi_pm.c source file contains some code I moved from other
-files, stuff that has to be compiled whether SCSI_DYNAMIC_PM is
-configured or not.  When SCSI_DYNAMIC_PM isn't set then the original 
-code is used, otherwise new code is used.
+Hold off on this. It turns out it still has major problems. The menu algorithm now and then gets really bad at predicting sleep times, completely killing this avoidance scheme.
 
-I suppose the old code could be left where it was, protected by 
-"#ifndef CONFIG_SCSI_DYNAMIC_PM", but it doesn't seem like a good idea 
-to have two versions of the same subroutine in two different source 
-files.
+(On that subject, does anyone except Adam understand that algorithm? Some comments wouldn't hurt...)
 
-> > 		.name		= "sd",
-> >  		.probe		= sd_probe,
-> >  		.remove		= sd_remove,
-> > -		.suspend	= sd_suspend,
-> > -		.resume		= sd_resume,
-> >  		.shutdown	= sd_shutdown,
-> >  	},
-> >  	.rescan			= sd_rescan,
-> >  	.done			= sd_done,
-> > +	.suspend		= sd_suspend,
-> > +	.resume			= sd_resume,
-> >  };
-> 
-> You're duplicating the driver suspend/resume methods in scsi_driver.
+So for now, I'm back to thinking that measuring the interval between deep sleeps is the better approach. I could use some ideas for a good clock source though. I haven't dug much deeper than jiffies when it comes to kernel timekeeping.
 
-(More precisely, this duplicates the method pointers, not the methods
-themselves.)
+Rgds
+-- 
+     -- Pierre Ossman
 
-The only reason for doing it like this was to avoid the "Driver '%s'
-needs updating - please use bus_type methods" warning in the driver
-core.  It's not otherwise important.
-
->  We
-> just had a discussion about this at the storage summit.  Those methods
-> are staying, so we might as well not duplicate them.
-
-Then what about those warnings?
-
-Alan Stern
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
