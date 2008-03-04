@@ -1,23 +1,15 @@
-From: Andi Kleen <andi@firstfloor.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Tue, 4 Mar 2008 19:34:06 +0100
-Message-ID: <20080304183406.GC27332__12279.4340983548$1204655698$gmane$org@one.firstfloor.org>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+Date: Tue, 4 Mar 2008 11:01:28 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEA77031__45505.8973668658$1204658040$gmane$org@orsmsx423.amr.corp.intel.com>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com><Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org><20080303231033.GB15255@one.firstfloor.org><20080304040048.GA31562@codemonkey.org.uk><20080304071423.0e6b71c1@mjolnir.drzeus.cx>
 	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<20080304172918.GA27332@one.firstfloor.org>
-	<20080304183032.17084e39@mjolnir.drzeus.cx>
-	<20080304174315.GB27332@one.firstfloor.org>
-	<20080304190446.775165e3@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080304190446.775165e3@mjolnir.drzeus.cx>
+Content-class: urn:content-classes:message
+In-Reply-To: <20080304181924.70aaf8c1@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,23 +23,54 @@ To: Pierre Ossman <drzeus-list@drzeus.cx>
 Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 07:04:46PM +0100, Pierre Ossman wrote:
-> On Tue, 4 Mar 2008 18:43:15 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > And how can I tell if this handler has run? Not that it really matters I guess, as I don't think running it from the cpuidle governor is very sane.
-> >  
-> > After irq_enter->tick_nohz_update_jiffies() 
-> > 
-> > You might need a new callback into the idle governours for this though.
-> > 
-> 
-> I don't think I quite see the point. If we can't force an update, then
-> it doesn't really help us knowing if the jiffies value is stale or not.
+ 
 
-What do you mean with force an update? The system always does an 
-jiffies update automatically after idle wakeup. It's just that if you add 
-code to the code path that uses jiffies you have to make sure it is after the 
-standard update, otherwise you'll see a stale value.
+>-----Original Message-----
+>From: Pierre Ossman [mailto:drzeus-list@drzeus.cx] 
+>Sent: Tuesday, March 04, 2008 9:19 AM
+>To: Pallipadi, Venkatesh
+>Cc: Dave Jones; Andi Kleen; Alan Stern; LKML; Adam Belay; Lee 
+>Revell; linux-pm@lists.linux-foundation.org; Pavel Machek
+>Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+>
+>On Tue, 4 Mar 2008 07:14:23 +0100
+>Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+>
+>> 
+>> Many devices today are of a less than stellar quality, and singing
+>> capacitors are a common problem. A high-pitch noise is 
+>created, caused
+>> by power fluctuations as the processor enters and leaves 
+>deep sleep at
+>> a high frequency.
+>> 
+>> Instead of just disabling the deep sleep (which wastes power), this
+>> patch allows you to reduces the number of times it is entered so that
+>> the frequency can be kept inaudible.
+>> 
+>> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+>> --
+>
+>Hold off on this. It turns out it still has major problems. 
+>The menu algorithm now and then gets really bad at predicting 
+>sleep times, completely killing this avoidance scheme.
+>
+>(On that subject, does anyone except Adam understand that 
+>algorithm? Some comments wouldn't hurt...)
 
--Andi
+Prediction is based on cumulative time till "non expected wakeup". So,
+prediction will come into play only when there are very short wakeups
+due to "unexpected wakeups".
+
+>So for now, I'm back to thinking that measuring the interval 
+>between deep sleeps is the better approach. I could use some 
+>ideas for a good clock source though. I haven't dug much 
+>deeper than jiffies when it comes to kernel timekeeping.
+
+I think best solution is to use get_last_residency that is already
+there. If the last residency or expected_us is very low, you can avoid
+deep idle states. That way you don't have to depend on jiffies being
+updated at the time you are checking it.
+
+Thanks,
+Venki
