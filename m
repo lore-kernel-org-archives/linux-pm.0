@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
-	registrations concurrent with suspend/hibernation
-Date: Tue, 4 Mar 2008 22:52:50 +0100
-Message-ID: <200803042252.51440.rjw__23406.8231577568$1204667868$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803041041270.4039-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] freezer vs stopped or traced
+Date: Tue, 4 Mar 2008 23:02:43 +0100
+Message-ID: <200803042302.44828.rjw__18527.3840012544$1204668385$gmane$org@sisk.pl>
+References: <20080304042205.4DA9F2700FB@magilla.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803041041270.4039-100000@iolanthe.rowland.org>
+In-Reply-To: <20080304042205.4DA9F2700FB@magilla.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,100 +18,164 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 4 of March 2008, Alan Stern wrote:
-> On Tue, 4 Mar 2008, Rafael J. Wysocki wrote:
+Hi,
+
+Please send CCs of freezer patches to me and Pavel.
+
+On Tuesday, 4 of March 2008, Roland McGrath wrote:
 > 
-> > Hi,
-> > 
-> > The appended patch is intended to fix the issue with the PM core that it allows
-> > device registrations to complete successfully even if they run concurrently
-> > with the suspending of their parents, which may lead to a wrong ordering of
-> > devices on the dpm_active list and, as a result, to failures during suspend and
-> > hibernation transitions.
-> > 
-> > Comments welcome.
+> This changes the "freezer" code used by suspend/hibernate in its treatment
+> of tasks in TASK_STOPPED (job control stop) and TASK_TRACED (ptrace) states.
 > 
-> > Index: linux-2.6/include/linux/pm.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/pm.h
-> > +++ linux-2.6/include/linux/pm.h
-> > @@ -186,6 +186,7 @@ struct dev_pm_info {
-> >  #ifdef	CONFIG_PM_SLEEP
-> >  	unsigned		should_wakeup:1;
-> >  	struct list_head	entry;
-> > +	bool			sleeping;	/* Owned by the PM core */
-> >  #endif
-> >  };
+> As I understand it, the intent of the "freezer" is to hold all tasks
+> from doing anything significant.  For this purpose, TASK_STOPPED and
+> TASK_TRACED are "frozen enough".  It's possible the tasks might resume
+> from ptrace calls (if the tracer were unfrozen) or from signals
+> (including ones that could come via timer interrupts, etc).  But this
+> doesn't matter as long as they quickly block again while "freezing" is
+> in effect.  Some minor adjustments to the signal.c code make sure that
+> try_to_freeze() very shortly follows all wakeups from both kinds of
+> stop.  This lets the freezer code safely leave stopped tasks unmolested.
 > 
-> Drivers might want to use this field without having to add protective 
-> "#ifdef CONFIG_PM_SLEEP" lines.
+> Changing this fixes the longstanding bug of seeing after resuming from
+> suspend/hibernate your shell report "[1] Stopped" and the like for all
+> your jobs stopped by ^Z et al, as if you had freshly fg'd and ^Z'd them.
+> It also removes from the freezer the arcane special case treatment for
+> ptrace'd tasks, which relied on intimate knowledge of ptrace internals.
 
-I guess you mean that driver writers may not want to make each piece of code
-referring to this flag depend on CONFIG_PM_SLEEP.  Any driver that actually
-writes to it will be buggy ...
+I think the change goes in the right direction.
 
-> You can change it to a single-bit bitfield and place it adjacent to
-> can_wakeup. 
+How thoroughly has it been tested?
 
-Yeah, good catch.  I will.
-
-> > -void device_pm_add(struct device *dev)
-> > +int device_pm_add(struct device *dev)
-> >  {
-> > +	int error = 0;
-> > +
-> >  	pr_debug("PM: Adding info for %s:%s\n",
-> >  		 dev->bus ? dev->bus->name : "No Bus",
-> >  		 kobject_name(&dev->kobj));
-> >  	mutex_lock(&dpm_list_mtx);
-> > -	list_add_tail(&dev->power.entry, &dpm_active);
-> > +	if (dev->parent && dev->parent->power.sleeping)
-> > +		error = -EBUSY;
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> ---
+>  kernel/power/process.c |   29 ++++++++++++-----------------
+>  kernel/signal.c        |   16 ++++++++++++++--
+>  2 files changed, 26 insertions(+), 19 deletions(-)
 > 
-> Add a stack dump?  When this isn't a race, it's the kind of bug we want
-> to fix.
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 7c2118f..f1d0b34 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -75,22 +75,15 @@ void refrigerator(void)
+>  	__set_current_state(save);
+>  }
+>  
+> -static void fake_signal_wake_up(struct task_struct *p, int resume)
+> +static void fake_signal_wake_up(struct task_struct *p)
+>  {
+>  	unsigned long flags;
+>  
+>  	spin_lock_irqsave(&p->sighand->siglock, flags);
+> -	signal_wake_up(p, resume);
+> +	signal_wake_up(p, 0);
+>  	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+>  }
+>  
+> -static void send_fake_signal(struct task_struct *p)
+> -{
+> -	if (task_is_stopped(p))
+> -		force_sig_specific(SIGSTOP, p);
+> -	fake_signal_wake_up(p, task_is_stopped(p));
+> -}
+> -
+>  static int has_mm(struct task_struct *p)
+>  {
+>  	return (p->mm && !(p->flags & PF_BORROWED_MM));
+> @@ -121,7 +114,7 @@ static int freeze_task(struct task_struct *p, int with_mm_only)
+>  	if (freezing(p)) {
+>  		if (has_mm(p)) {
+>  			if (!signal_pending(p))
+> -				fake_signal_wake_up(p, 0);
+> +				fake_signal_wake_up(p);
+>  		} else {
+>  			if (with_mm_only)
+>  				ret = 0;
+> @@ -135,7 +128,7 @@ static int freeze_task(struct task_struct *p, int with_mm_only)
+>  		} else {
+>  			if (has_mm(p)) {
+>  				set_freeze_flag(p);
+> -				send_fake_signal(p);
+> +				fake_signal_wake_up(p);
+>  			} else {
+>  				if (with_mm_only) {
+>  					ret = 0;
+> @@ -182,15 +175,17 @@ static int try_to_freeze_tasks(int freeze_user_space)
+>  			if (frozen(p) || !freezeable(p))
+>  				continue;
+>  
+> -			if (task_is_traced(p) && frozen(p->parent)) {
+> -				cancel_freezing(p);
+> -				continue;
+> -			}
+> -
+>  			if (!freeze_task(p, freeze_user_space))
+>  				continue;
+>  
+> -			if (!freezer_should_skip(p))
+> +			/*
+> +			 * Now that we've done set_freeze_flag, don't
+> +			 * perturb a task in TASK_STOPPED or TASK_TRACED.
+> +			 * It is "frozen enough".  If the task does wake
+> +			 * up, it will immediately call try_to_freeze.
+> +			 */
+> +			if (!task_is_stopped_or_traced(p) &&
+> +			    !freezer_should_skip(p))
 
-Yes, I'll do that.
+Why don't you modify freezer_should_skip() to include the
+!task_is_stopped_or_traced() test and put a comment in there?
 
-> > +	else
-> > +		list_add_tail(&dev->power.entry, &dpm_active);
-> >  	mutex_unlock(&dpm_list_mtx);
-> > +	return error;
-> >  }
-> 
-> > @@ -426,6 +404,11 @@ static int dpm_suspend(pm_message_t stat
-> >  		struct list_head *entry = dpm_active.prev;
-> >  		struct device *dev = to_device(entry);
-> >  
-> > +		if (dev->parent && dev->parent->power.sleeping) {
-> > +			error = -EAGAIN;
-> > +			break;
-> > +		}
-> 
-> It's not clear that we want to have this check.  It would cause
-> problems if the device ordering got mixed up by device_move(), which is
-> pretty much the only way it could be triggered.
+>  				todo++;
+>  		} while_each_thread(g, p);
+>  		read_unlock(&tasklist_lock);
+> diff --git a/kernel/signal.c b/kernel/signal.c
+> index 84917fe..6af1210 100644
+> --- a/kernel/signal.c
+> +++ b/kernel/signal.c
+> @@ -1623,7 +1623,6 @@ static void ptrace_stop(int exit_code, int clear_code, siginfo_t *info)
+>  	/* Let the debugger run.  */
+>  	__set_current_state(TASK_TRACED);
+>  	spin_unlock_irq(&current->sighand->siglock);
+> -	try_to_freeze();
+>  	read_lock(&tasklist_lock);
+>  	if (!unlikely(killed) && may_ptrace_stop()) {
+>  		do_notify_parent_cldstop(current, CLD_TRAPPED);
+> @@ -1641,6 +1640,13 @@ static void ptrace_stop(int exit_code, int clear_code, siginfo_t *info)
+>  	}
+>  
+>  	/*
+> +	 * While in TASK_TRACED, we were considered "frozen enough".
+> +	 * Now that we woke up, it's crucial if we're supposed to be
+> +	 * frozen that we freeze now before running anything substantial.
+> +	 */
+> +	try_to_freeze();
+> +
+> +	/*
+>  	 * We are back.  Now reacquire the siglock before touching
+>  	 * last_siginfo, so that we are sure to have synchronized with
+>  	 * any signal-sending on another CPU that wants to examine it.
+> @@ -1757,9 +1763,15 @@ int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
+>  	sigset_t *mask = &current->blocked;
+>  	int signr = 0;
+>  
+> +relock:
+> +	/*
+> +	 * We'll jump back here after any time we were stopped in TASK_STOPPED.
+> +	 * While in TASK_STOPPED, we were considered "frozen enough".
+> +	 * Now that we woke up, it's crucial if we're supposed to be
+> +	 * frozen that we freeze now before running anything substantial.
+> +	 */
+>  	try_to_freeze();
+>  
+> -relock:
+>  	spin_lock_irq(&current->sighand->siglock);
+>  	for (;;) {
+>  		struct k_sigaction *ka;
+> --
 
-Well, isn't it actually dangerous to suspend parents before their children?
-What happens, for example, if putting the parent into D3 causes power to be
-cut from the children and then we attempt to suspend them?
-
-> If you do want to leave it in, add a stack dump (and perhaps make it 
-> not return an error).  This would help force people to figure out safe 
-> ways to use device_move().
-
-Yes, I'll add a stack dump here.
-
-In fact, I'm going to add WARN_ON(true) in both places.
-
-> > +		dev->power.sleeping = true;;
-> 
-> Extra ';'.
-
-Hah, thanks, will remove.
-
+Thanks,
 Rafael
