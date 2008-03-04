@@ -1,17 +1,17 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Tue, 4 Mar 2008 10:40:28 +0100
-Message-ID: <20080304094028.GC15255__17273.69904188$1204623716$gmane$org@one.firstfloor.org>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
+	when SD card is inserted]
+Date: Tue, 4 Mar 2008 01:44:09 -0800
+Message-ID: <200803040144.09601.david-b__14595.1273655102$1204624053$gmane$org@pacbell.net>
+References: <200802241500.41969.rjw@sisk.pl>
+	<200803031359.38263.david-b@pacbell.net>
+	<20080304070357.61ee825b@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080304070357.61ee825b@mjolnir.drzeus.cx>
 Content-Disposition: inline
-In-Reply-To: <20080304040048.GA31562@codemonkey.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>, Alan Stern <stern@rowland.harvard.edu>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:00:48PM -0500, Dave Jones wrote:
-> On Tue, Mar 04, 2008 at 12:10:33AM +0100, Andi Kleen wrote:
->  > On Mon, Mar 03, 2008 at 06:05:35PM -0500, Alan Stern wrote:
->  > > On Mon, 3 Mar 2008, Pallipadi, Venkatesh wrote:
->  > > 
->  > > > But, with this patch:
->  > > > - we are penalizing good hardware and making them less power efficient
->  > > > to match the bad ones.
->  > > > - There may also be server systems which first may not have these sort
->  > > > of power fluctuations and even when buggy and have this noise, system
->  > > > may be in some corner of some lab with fans making more noise than the
->  > > > capacitors.
->  > > 
->  > > Can you make it configurable through sysfs?  
->  > 
->  > It already is, through a writable module_parm() 
->  > 
->  > > Default to disabled, but 
->  > > allow the user to turn it on if the machine makes too much noise.
->  > 
->  > 99+% of the users wouldn't be able to figure that out.
+On Monday 03 March 2008, Pierre Ossman wrote:
+> On Mon, 3 Mar 2008 13:59:37 -0800
+> David Brownell <david-b@pacbell.net> wrote:
 > 
-> 99+% of users don't have singing capacitors. (Or don't care enough to complain)
-> For those that do can't figure out what to do from google,
-> we have a documentation problem.
+> > 
+> > Card insert/remove events can be system wake events though.  Which
+> > makes that restriction impractical.
 
-The big question is if there is a measurable difference in power consumption
-from a reasonable default value.  I doubt it actually. The normal rule
-of thumb is that if you average sleeps are long enough (and they still
-stay this way even with the patch enabled) you're doing ok. If there is 
-no or not significant penalty there is no reason to not enable it by default.
+This part seems to be ignored by your comment ... wake events.
 
--Andi
+
+> > I think hosts need to be able to call mmc_detect_change() as soon as
+> > they see a stable signal.  The MMC core can hold off handling that
+> > for a while, if it needs to wait until the code walking the device
+> > tree gets around to resuming that host.  It's a lot more natural to
+> > hold off such stuff one time there than in N host drivers; especially
+> > since the MMC core already has such hold-off code.
+> > 
+> 
+> That actually sorts itself out as the MMC core reprobes on wakeup, but
+> I see your point. Right now things will work peachy if the controllers
+> just make sure to disable their card detection logic before telling the
+> core to suspend.   
+
+That is, the MMC core doesn't understand wakeup events.
+
+Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
+need either such reprobing or the associated remove-on-suspend.
+
+- Dave
