@@ -1,16 +1,17 @@
-From: Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Mon, 3 Mar 2008 23:00:48 -0500
-Message-ID: <20080304040048.GA31562__13662.0205747478$1204603509$gmane$org@codemonkey.org.uk>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
+ when SD card is inserted]
+Date: Tue, 4 Mar 2008 07:03:57 +0100
+Message-ID: <20080304070357.61ee825b__34735.0050848492$1204610855$gmane$org@mjolnir.drzeus.cx>
+References: <200802241500.41969.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+	<20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+	<200803031359.38263.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080303231033.GB15255@one.firstfloor.org>
+In-Reply-To: <200803031359.38263.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Lee Revell <rlrevell@joe-job.com>, Pierre Ossman <drzeus-list@drzeus.cx>, linux-pm@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 12:10:33AM +0100, Andi Kleen wrote:
- > On Mon, Mar 03, 2008 at 06:05:35PM -0500, Alan Stern wrote:
- > > On Mon, 3 Mar 2008, Pallipadi, Venkatesh wrote:
- > > 
- > > > But, with this patch:
- > > > - we are penalizing good hardware and making them less power efficient
- > > > to match the bad ones.
- > > > - There may also be server systems which first may not have these sort
- > > > of power fluctuations and even when buggy and have this noise, system
- > > > may be in some corner of some lab with fans making more noise than the
- > > > capacitors.
- > > 
- > > Can you make it configurable through sysfs?  
- > 
- > It already is, through a writable module_parm() 
- > 
- > > Default to disabled, but 
- > > allow the user to turn it on if the machine makes too much noise.
- > 
- > 99+% of the users wouldn't be able to figure that out.
+On Mon, 3 Mar 2008 13:59:37 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-99+% of users don't have singing capacitors. (Or don't care enough to complain)
-For those that do can't figure out what to do from google,
-we have a documentation problem.
+> 
+> Card insert/remove events can be system wake events though.  Which
+> makes that restriction impractical.
+> 
+> I think hosts need to be able to call mmc_detect_change() as soon as
+> they see a stable signal.  The MMC core can hold off handling that
+> for a while, if it needs to wait until the code walking the device
+> tree gets around to resuming that host.  It's a lot more natural to
+> hold off such stuff one time there than in N host drivers; especially
+> since the MMC core already has such hold-off code.
+> 
 
-	Dave 
+That actually sorts itself out as the MMC core reprobes on wakeup, but I see your point. Right now things will work peachy if the controllers just make sure to disable their card detection logic before telling the core to suspend.
 
+Rgds
 -- 
-http://www.codemonkey.org.uk
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
