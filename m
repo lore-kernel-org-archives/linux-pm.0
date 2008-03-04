@@ -1,17 +1,14 @@
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
- when SD card is inserted]
-Date: Tue, 4 Mar 2008 10:58:41 +0100
-Message-ID: <20080304105841.6c951665__47204.9223761589$1204624922$gmane$org@mjolnir.drzeus.cx>
-References: <200802241500.41969.rjw@sisk.pl>
-	<200803031359.38263.david-b@pacbell.net>
-	<20080304070357.61ee825b@mjolnir.drzeus.cx>
-	<200803040144.09601.david-b@pacbell.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Make PM core handle device
+ registrations concurrent with suspend/hibernation
+Date: Tue, 4 Mar 2008 11:01:14 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803041041270.4039-100000__12331.1374140487$1204646824$gmane$org@iolanthe.rowland.org>
+References: <200803040010.02075.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803040144.09601.david-b@pacbell.net>
+In-Reply-To: <200803040010.02075.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,48 +18,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 4 Mar 2008 01:44:09 -0800
-David Brownell <david-b@pacbell.net> wrote:
+On Tue, 4 Mar 2008, Rafael J. Wysocki wrote:
 
-> On Monday 03 March 2008, Pierre Ossman wrote:
-> > On Mon, 3 Mar 2008 13:59:37 -0800
-> > David Brownell <david-b@pacbell.net> wrote:
-> > 
-> > > 
-> > > Card insert/remove events can be system wake events though.  Which
-> > > makes that restriction impractical.
+> Hi,
 > 
-> This part seems to be ignored by your comment ... wake events.
->
-
-How so? How is a wake caused by the MMC controller different than any other source?
-
+> The appended patch is intended to fix the issue with the PM core that it allows
+> device registrations to complete successfully even if they run concurrently
+> with the suspending of their parents, which may lead to a wrong ordering of
+> devices on the dpm_active list and, as a result, to failures during suspend and
+> hibernation transitions.
 > 
-> That is, the MMC core doesn't understand wakeup events.
-> 
-> Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
-> need either such reprobing or the associated remove-on-suspend.
-> 
+> Comments welcome.
 
-You need well behaved _systems_, not just hosts to achieve that guarantee. SDHCI controllers have the ability to wake up the system on card removal, but there is zero guarantee that the platform actually wired the controller up in a way that actually allows it to do this. Throw suspend to disk, where the system might completely lose power, into the mix and you're completely screwed.
+> Index: linux-2.6/include/linux/pm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pm.h
+> +++ linux-2.6/include/linux/pm.h
+> @@ -186,6 +186,7 @@ struct dev_pm_info {
+>  #ifdef	CONFIG_PM_SLEEP
+>  	unsigned		should_wakeup:1;
+>  	struct list_head	entry;
+> +	bool			sleeping;	/* Owned by the PM core */
+>  #endif
+>  };
 
-So for the default behaviour to change, we need one of two things:
+Drivers might want to use this field without having to add protective 
+"#ifdef CONFIG_PM_SLEEP" lines.  You can change it to a single-bit 
+bitfield and place it adjacent to can_wakeup.
 
-- Certainty that removals cannot go unnoticed. (even then, you also need wakeup latency guarantees)
-- Ability to detect a removal after the fact.
+> -void device_pm_add(struct device *dev)
+> +int device_pm_add(struct device *dev)
+>  {
+> +	int error = 0;
+> +
+>  	pr_debug("PM: Adding info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus",
+>  		 kobject_name(&dev->kobj));
+>  	mutex_lock(&dpm_list_mtx);
+> -	list_add_tail(&dev->power.entry, &dpm_active);
+> +	if (dev->parent && dev->parent->power.sleeping)
+> +		error = -EBUSY;
 
-For the general case, the first one is impossible given todays hardware. The second might be solvable, but noone has done the work.
+Add a stack dump?  When this isn't a race, it's the kind of bug we want
+to fix.
 
-(If your complete system can satisfy the first option, feel free to add the "unsafe" option to you defconfig, but that is hardly adequate reason to have it on by default.)
+> +	else
+> +		list_add_tail(&dev->power.entry, &dpm_active);
+>  	mutex_unlock(&dpm_list_mtx);
+> +	return error;
+>  }
 
-Rgds
--- 
-     -- Pierre Ossman
+> @@ -426,6 +404,11 @@ static int dpm_suspend(pm_message_t stat
+>  		struct list_head *entry = dpm_active.prev;
+>  		struct device *dev = to_device(entry);
+>  
+> +		if (dev->parent && dev->parent->power.sleeping) {
+> +			error = -EAGAIN;
+> +			break;
+> +		}
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+It's not clear that we want to have this check.  It would cause
+problems if the device ordering got mixed up by device_move(), which is
+pretty much the only way it could be triggered.
+
+If you do want to leave it in, add a stack dump (and perhaps make it 
+not return an error).  This would help force people to figure out safe 
+ways to use device_move().
+
+> +		dev->power.sleeping = true;;
+
+Extra ';'.
+
+Alan Stern
