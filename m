@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
- registrations concurrent with suspend/hibernation
-Date: Tue, 4 Mar 2008 11:01:14 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803041041270.4039-100000__12331.1374140487$1204646824$gmane$org@iolanthe.rowland.org>
-References: <200803040010.02075.rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] SCSI: add dynamic Power Management
+	infrastructure
+Date: Tue, 4 Mar 2008 11:51:48 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803041130160.4039-100000__24910.7721764178$1204649767$gmane$org@iolanthe.rowland.org>
+References: <1204586659.3043.92.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803040010.02075.rjw@sisk.pl>
+In-Reply-To: <1204586659.3043.92.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,79 +18,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 4 Mar 2008, Rafael J. Wysocki wrote:
+On Mon, 3 Mar 2008, James Bottomley wrote:
 
-> Hi,
+> On Mon, 2008-03-03 at 11:09 -0500, Alan Stern wrote:
+> > This patch (as1042) introduces dynamic Power Management for the SCSI
+> > stack.  It keeps track of devices' logical state and adds a
+> > notification callback to tell the host adapter driver when some or all
+> > of the devices on a SCSI bus are no longer in use, so the link can be
+> > powered down.
+> > 
+> > It also adds autosuspend capability (disabled initially) that can be
+> > controlled by userspace, using the same sort of sysfs API as the USB
+> > autosuspend implementation.
+> > 
+> > Everything is managed by a new Kconfig option:
+> > CONFIG_SCSI_DYNAMIC_PM.  If that symbol isn't set then essentially
+> > nothing is changed (some code gets moved from one source file to
+> > another).
 > 
-> The appended patch is intended to fix the issue with the PM core that it allows
-> device registrations to complete successfully even if they run concurrently
-> with the suspending of their parents, which may lead to a wrong ordering of
-> devices on the dpm_active list and, as a result, to failures during suspend and
-> hibernation transitions.
+> First the general comments/questions:
 > 
-> Comments welcome.
+> 1. It's done at the wrong level: suspend "device" is actually a target
+> function.  There's no way on a multi-lun device we want to keep the
+> flags and last_busy anywhere but in the target
 
-> Index: linux-2.6/include/linux/pm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pm.h
-> +++ linux-2.6/include/linux/pm.h
-> @@ -186,6 +186,7 @@ struct dev_pm_info {
->  #ifdef	CONFIG_PM_SLEEP
->  	unsigned		should_wakeup:1;
->  	struct list_head	entry;
-> +	bool			sleeping;	/* Owned by the PM core */
->  #endif
->  };
+Okay.
 
-Drivers might want to use this field without having to add protective 
-"#ifdef CONFIG_PM_SLEEP" lines.  You can change it to a single-bit 
-bitfield and place it adjacent to can_wakeup.
+> 2. As you say in the comment, the thing we're trying to power down is
+> the link.  In most SCSI implementations, the link has a rather complex
+> relationship to the target, what we want to do in
+> periodic_autosuspend_scan() is run over the devices on each link, and if
+> they're not busy suspend the link?  What's probably needed is a set of
+> adjunct helpers for the transport classes to do this.
 
-> -void device_pm_add(struct device *dev)
-> +int device_pm_add(struct device *dev)
->  {
-> +	int error = 0;
-> +
->  	pr_debug("PM: Adding info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
->  	mutex_lock(&dpm_list_mtx);
-> -	list_add_tail(&dev->power.entry, &dpm_active);
-> +	if (dev->parent && dev->parent->power.sleeping)
-> +		error = -EBUSY;
+I'd love to do it that way, but I don't understand enough about how the 
+transport classes work.  If somebody could help out, I'd appreciate it.
 
-Add a stack dump?  When this isn't a race, it's the kind of bug we want
-to fix.
+> 3. The link power down is much faster than device spin down ... in your
+> patch these two things seem to be coupled ... we really need to keep
+> them separate.
 
-> +	else
-> +		list_add_tail(&dev->power.entry, &dpm_active);
->  	mutex_unlock(&dpm_list_mtx);
-> +	return error;
->  }
+I don't understand.  Is it safe in general to keep a device spun up
+while taking the link down?  Or to avoid sending a SYNCHRONIZE CACHE
+command before suspending the link?  I wouldn't think so.  This means
+the device suspend routine must be carried out before the link is
+suspended.
 
-> @@ -426,6 +404,11 @@ static int dpm_suspend(pm_message_t stat
->  		struct list_head *entry = dpm_active.prev;
->  		struct device *dev = to_device(entry);
->  
-> +		if (dev->parent && dev->parent->power.sleeping) {
-> +			error = -EAGAIN;
-> +			break;
-> +		}
+> 4. The entanglement with error handling is incredibly problematic (since
+> eh is a nastily complex state machine in its own right).  What do
+> transports that use eh_strategy_handler do about all of this?
 
-It's not clear that we want to have this check.  It would cause
-problems if the device ordering got mixed up by device_move(), which is
-pretty much the only way it could be triggered.
+They should prevent the link from autosuspending before starting up the
+error handler and then allow it again when the handler is done.  
+Ideally the core should do this for them automatically, before calling
+eh_strategy_handler.
 
-If you do want to leave it in, add a stack dump (and perhaps make it 
-not return an error).  This would help force people to figure out safe 
-ways to use device_move().
+> Then the specific code:
+> 
+> > +scsi_mod-y                     += scsi_scan.o scsi_sysfs.o scsi_devinfo.o \
+> > +                                  scsi_pm.o
+> 
+> If you just said N to SCSI_DYNAMIC_PM why does it still get compiled in?
 
-> +		dev->power.sleeping = true;;
+Because the scsi_pm.c source file contains some code I moved from other
+files, stuff that has to be compiled whether SCSI_DYNAMIC_PM is
+configured or not.  When SCSI_DYNAMIC_PM isn't set then the original 
+code is used, otherwise new code is used.
 
-Extra ';'.
+I suppose the old code could be left where it was, protected by 
+"#ifndef CONFIG_SCSI_DYNAMIC_PM", but it doesn't seem like a good idea 
+to have two versions of the same subroutine in two different source 
+files.
+
+> > 		.name		= "sd",
+> >  		.probe		= sd_probe,
+> >  		.remove		= sd_remove,
+> > -		.suspend	= sd_suspend,
+> > -		.resume		= sd_resume,
+> >  		.shutdown	= sd_shutdown,
+> >  	},
+> >  	.rescan			= sd_rescan,
+> >  	.done			= sd_done,
+> > +	.suspend		= sd_suspend,
+> > +	.resume			= sd_resume,
+> >  };
+> 
+> You're duplicating the driver suspend/resume methods in scsi_driver.
+
+(More precisely, this duplicates the method pointers, not the methods
+themselves.)
+
+The only reason for doing it like this was to avoid the "Driver '%s'
+needs updating - please use bus_type methods" warning in the driver
+core.  It's not otherwise important.
+
+>  We
+> just had a discussion about this at the storage summit.  Those methods
+> are staying, so we might as well not duplicate them.
+
+Then what about those warnings?
 
 Alan Stern
