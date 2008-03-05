@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Make PM core handle device
- registrations concurrent with suspend/hibernation
-Date: Wed, 5 Mar 2008 17:00:07 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803051658290.4318-100000__15506.7272637554$1204754777$gmane$org@iolanthe.rowland.org>
-References: <200803052249.30306.rjw@sisk.pl>
+	registrations concurrent with suspend/hibernation
+Date: Thu, 6 Mar 2008 00:24:28 +0100
+Message-ID: <200803060024.28850.rjw__44940.806044224$1204759684$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803051658290.4318-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803052249.30306.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0803051658290.4318-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +19,134 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
-
-> On Wednesday, 5 of March 2008, Alan Stern wrote:
-> > On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
-> > 
-> > > -void device_pm_add(struct device *dev)
-> > > +int device_pm_add(struct device *dev)
-> > >  {
-> > > +	int error = 0;
-> > > +
-> > >  	pr_debug("PM: Adding info for %s:%s\n",
-> > >  		 dev->bus ? dev->bus->name : "No Bus",
-> > >  		 kobject_name(&dev->kobj));
-> > >  	mutex_lock(&dpm_list_mtx);
-> > > -	list_add_tail(&dev->power.entry, &dpm_active);
-> > > +	if (dev->parent && dev->parent->power.sleeping) {
-> > > +		WARN_ON(true);
-> > 
-> > I would prefer to put a dev_warn() line here, so that people reading
-> > the kernel log can easily tell which device caused the problem and what
-> > sort of problem it is.  Something like this:
-> > 
-> > 		dev_warn(dev, "device added while parent %s is asleep\n",
-> > 				dev->parent->bus_id);
-> > 		WARN_ON(true);
+On Wednesday, 5 of March 2008, Alan Stern wrote:
+> On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
 > 
-> Added.
-> 
-> > > @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
-> > >  		struct list_head *entry = dpm_active.prev;
-> > >  		struct device *dev = to_device(entry);
-> > >  
-> > > +		if (dev->parent && dev->parent->power.sleeping) {
-> > > +			WARN_ON(true);
-> > > +			error = -EAGAIN;
-> > > +			break;
+> > On Wednesday, 5 of March 2008, Alan Stern wrote:
+> > > On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > -void device_pm_add(struct device *dev)
+> > > > +int device_pm_add(struct device *dev)
+> > > >  {
+> > > > +	int error = 0;
+> > > > +
+> > > >  	pr_debug("PM: Adding info for %s:%s\n",
+> > > >  		 dev->bus ? dev->bus->name : "No Bus",
+> > > >  		 kobject_name(&dev->kobj));
+> > > >  	mutex_lock(&dpm_list_mtx);
+> > > > -	list_add_tail(&dev->power.entry, &dpm_active);
+> > > > +	if (dev->parent && dev->parent->power.sleeping) {
+> > > > +		WARN_ON(true);
+> > > 
+> > > I would prefer to put a dev_warn() line here, so that people reading
+> > > the kernel log can easily tell which device caused the problem and what
+> > > sort of problem it is.  Something like this:
+> > > 
+> > > 		dev_warn(dev, "device added while parent %s is asleep\n",
+> > > 				dev->parent->bus_id);
+> > > 		WARN_ON(true);
 > > 
-> > Again, a dev_warn() would be appropriate.
+> > Added.
+> > 
+> > > > @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
+> > > >  		struct list_head *entry = dpm_active.prev;
+> > > >  		struct device *dev = to_device(entry);
+> > > >  
+> > > > +		if (dev->parent && dev->parent->power.sleeping) {
+> > > > +			WARN_ON(true);
+> > > > +			error = -EAGAIN;
+> > > > +			break;
+> > > 
+> > > Again, a dev_warn() would be appropriate.
+> > 
+> > I chose just "WARN_ON(dev->parent && dev->parent->power.sleeping)",
+> > which is shorter. :-)
+> > 
+> > I don't really expect it to appear and if it's reported, it'll be easy to
+> > figure out everything from the stack trace.
 > 
-> I chose just "WARN_ON(dev->parent && dev->parent->power.sleeping)",
-> which is shorter. :-)
+> Okay.
 > 
-> I don't really expect it to appear and if it's reported, it'll be easy to
-> figure out everything from the stack trace.
+> > Revised patch below.
+> 
+> It looks good.  Let's hope it doesn't mess up ACPI too badly...  :-)
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-Okay.
+Thanks!
 
-> Revised patch below.
+Okay, I also have the appended patch on top of this one. :-)
 
-It looks good.  Let's hope it doesn't mess up ACPI too badly...  :-)
+Rafael
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Alan Stern
+Include dpm_sysfs_add() into device_pm_add(), in analogy with
+device_pm_remove(), and modify device_add() to call the latter after
+bus_add_device(), to avoid situations in which the PM core may
+attempt to suspend a device the registration of which has not been
+successful.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/core.c       |   15 +++++----------
+ drivers/base/power/main.c |    4 +++-
+ 2 files changed, 8 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -812,17 +812,12 @@ int device_add(struct device *dev)
+ 	error = device_add_attrs(dev);
+ 	if (error)
+ 		goto AttrsError;
+-	error = dpm_sysfs_add(dev);
+-	if (error)
+-		goto PMError;
+-	error = device_pm_add(dev);
+-	if (error) {
+-		dpm_sysfs_remove(dev);
+-		goto PMError;
+-	}
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = device_pm_add(dev);
++	if (error)
++		goto PMError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -842,9 +837,9 @@ int device_add(struct device *dev)
+  Done:
+ 	put_device(dev);
+ 	return error;
+- BusError:
+-	device_pm_remove(dev);
+  PMError:
++	bus_remove_device(dev);
++ BusError:
+ 	if (dev->bus)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -75,7 +75,9 @@ int device_pm_add(struct device *dev)
+ 		WARN_ON(true);
+ 		error = -EBUSY;
+ 	} else {
+-		list_add_tail(&dev->power.entry, &dpm_active);
++		error = dpm_sysfs_add(dev);
++		if (!error)
++			list_add_tail(&dev->power.entry, &dpm_active);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
