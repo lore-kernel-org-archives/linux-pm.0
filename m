@@ -1,23 +1,14 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Wed, 5 Mar 2008 16:48:56 +0100
-Message-ID: <20080305154856.GC553__2774.4029918269$1204732277$gmane$org@one.firstfloor.org>
-References: <20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
-	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<20080304172918.GA27332@one.firstfloor.org>
-	<20080304183032.17084e39@mjolnir.drzeus.cx>
-	<20080304174315.GB27332@one.firstfloor.org>
-	<20080304190446.775165e3@mjolnir.drzeus.cx>
-	<20080304183406.GC27332@one.firstfloor.org>
-	<20080305070454.3df78593@mjolnir.drzeus.cx>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Make PM core handle device
+ registrations concurrent with suspend/hibernation
+Date: Wed, 5 Mar 2008 11:03:52 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803051050310.4621-100000@iolanthe.rowland.org>
+References: <200803042252.51440.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080305070454.3df78593@mjolnir.drzeus.cx>
+In-Reply-To: <200803042252.51440.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,27 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Marcel Holtmann <marcel@holtmann.org>, LKML <linux-kernel@vger.kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 07:04:54AM +0100, Pierre Ossman wrote:
-> I still don't follow. Perhaps you can express it in pseudo code? If I have a stale value that I cannot refresh, knowing that it is stale doesn't change anything.
+On Tue, 4 Mar 2008, Rafael J. Wysocki wrote:
 
-Start: You discovered at some point where you currently have code a variable 
-is not updated yet.
-Fact: You have some new code that runs before that point
-Information: The variable is updated later eventually in the idle exit path.
-Fact II: You require the variable to be updated in your new code
-Possible solutions: 
-(1) you move your new code in a point of the idle exit path after the variable 
-is updated 
-(2) you move the code that updates the variable earlier before your code
-Solution: I described the first variant which is likely easier.
-How: I told you where it is updated, so that shouldn't be too difficult. 
-Action: Implement solution (1) or (2) 
-Action: Test if it works
-Check: If test succeeded exit 
-Otherwise: Restart at Start
+> > It's not clear that we want to have this check.  It would cause
+> > problems if the device ordering got mixed up by device_move(), which is
+> > pretty much the only way it could be triggered.
+> 
+> Well, isn't it actually dangerous to suspend parents before their children?
+> What happens, for example, if putting the parent into D3 causes power to be
+> cut from the children and then we attempt to suspend them?
 
--Andi
+It depends on the devices involved.  For PCI devices, obviously there 
+will be problems of the sort you described.  But for other devices 
+there might not be.
+
+For example, the USB Bluetooth driver will sometimes create a new TTY
+device and then move the existing Bluetooth device underneath it (this
+description is oversimplified and probably wrong in some important
+respects, but you get the idea).  Suspending the Bluetooth device
+before suspending the TTY won't cause any power-related problems,
+because a TTY is a purely logical device with no power implications at
+all.
+
+There might still be logical problems, of course...  We need to add a
+mechanism for reordering the dpm_active list when device_move() is
+called.  But first we need to get in touch with the people using
+device_move() -- basically just Marcel and Cornelia -- and see what
+sort of mechanism they will need.
+
+Alan Stern
