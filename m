@@ -1,12 +1,19 @@
-From: "eric miao" <eric.y.miao@gmail.com>
-Subject: What happened to linux-pm.org?
-Date: Wed, 5 Mar 2008 10:03:47 +0800
-Message-ID: <f17812d70803041803m3505b4abo9c211f91f7f69345@mail.gmail.com>
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Date: Wed, 5 Mar 2008 07:02:01 +0100
+Message-ID: <20080305070201.0d16cd40__43377.2034048617$1204697178$gmane$org@mjolnir.drzeus.cx>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
+	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,12 +23,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Actually it was a link from one article on LWM to www.linux-pm.org, but
-it looks no useful content on that site. What happened?
+On Tue, 4 Mar 2008 11:01:28 -0800
+"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 
+> >
+> >(On that subject, does anyone except Adam understand that 
+> >algorithm? Some comments wouldn't hurt...)
+> 
+> Prediction is based on cumulative time till "non expected wakeup". So,
+> prediction will come into play only when there are very short wakeups
+> due to "unexpected wakeups".
+> 
+
+Ah, so the measured_us and elapsed_us are trying to keep track of time between non-timer wakeups?
+
+> >So for now, I'm back to thinking that measuring the interval 
+> >between deep sleeps is the better approach. I could use some 
+> >ideas for a good clock source though. I haven't dug much 
+> >deeper than jiffies when it comes to kernel timekeeping.
+> 
+> I think best solution is to use get_last_residency that is already
+> there. If the last residency or expected_us is very low, you can avoid
+> deep idle states. That way you don't have to depend on jiffies being
+> updated at the time you are checking it.
+> 
+
+I tried using predicted_us and last_measured_us, and those didn't work (see the #if 0 code in my last patch). And since cpuidle_get_last_residency() is part of predicted_us, I don't think it is reporting useful values.
+
+Rgds
 -- 
-Cheers
-- eric
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
