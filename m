@@ -1,15 +1,14 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Make PM core handle device
  registrations concurrent with suspend/hibernation
-Date: Wed, 5 Mar 2008 17:16:29 +0100
-Message-ID: <20080305171629.6853c454__11007.4222473942$1204733991$gmane$org@gondolin.boeblingen.de.ibm.com>
-References: <200803042252.51440.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0803051050310.4621-100000@iolanthe.rowland.org>
+Date: Wed, 5 Mar 2008 11:27:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803051118060.4750-100000@iolanthe.rowland.org>
+References: <200803050215.31195.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803051050310.4621-100000@iolanthe.rowland.org>
+In-Reply-To: <200803050215.31195.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Marcel Holtmann <marcel@holtmann.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 Mar 2008 11:03:52 -0500 (EST),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
 
-> There might still be logical problems, of course...  We need to add a
-> mechanism for reordering the dpm_active list when device_move() is
-> called.  But first we need to get in touch with the people using
-> device_move() -- basically just Marcel and Cornelia -- and see what
-> sort of mechanism they will need.
+> -void device_pm_add(struct device *dev)
+> +int device_pm_add(struct device *dev)
+>  {
+> +	int error = 0;
+> +
+>  	pr_debug("PM: Adding info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus",
+>  		 kobject_name(&dev->kobj));
+>  	mutex_lock(&dpm_list_mtx);
+> -	list_add_tail(&dev->power.entry, &dpm_active);
+> +	if (dev->parent && dev->parent->power.sleeping) {
+> +		WARN_ON(true);
 
-On s390 we currently don't do anything suspend related at all - I'd
-need to think about that. (I use device_move() to reflect topology
-changes on the (virtual) hardware, so I'd guess the "don't suspend
-parent before child rule" should still apply afterwards. But of course,
-that also depends on what we actually need to do on the parent's bus and
-what on the child's bus.)
+I would prefer to put a dev_warn() line here, so that people reading
+the kernel log can easily tell which device caused the problem and what
+sort of problem it is.  Something like this:
+
+		dev_warn(dev, "device added while parent %s is asleep\n",
+				dev->parent->bus_id);
+		WARN_ON(true);
+
+> @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
+>  		struct list_head *entry = dpm_active.prev;
+>  		struct device *dev = to_device(entry);
+>  
+> +		if (dev->parent && dev->parent->power.sleeping) {
+> +			WARN_ON(true);
+> +			error = -EAGAIN;
+> +			break;
+
+Again, a dev_warn() would be appropriate.
+
+And you might consider taking out the "error = -EAGAIN" and the
+"break".  When this occurs it doesn't mean that devices were suspended
+in the wrong order; it means that the ordering of the parent pointers
+fails to match the ordering of dpm_active.  The only way for this to
+happen is if the parent pointers are messed up by device_move() --
+dpm_active will still be correct.
+
+The rest of the patch looks fine.
+
+Alan Stern
