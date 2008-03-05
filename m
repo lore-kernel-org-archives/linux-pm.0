@@ -1,14 +1,23 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
- registrations concurrent with suspend/hibernation
-Date: Wed, 5 Mar 2008 11:27:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803051118060.4750-100000@iolanthe.rowland.org>
-References: <200803050215.31195.rjw@sisk.pl>
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Date: Wed, 5 Mar 2008 17:53:39 +0100
+Message-ID: <20080305175339.2059226b__36443.1175672964$1204736457$gmane$org@mjolnir.drzeus.cx>
+References: <20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<20080304172918.GA27332@one.firstfloor.org>
+	<20080304183032.17084e39@mjolnir.drzeus.cx>
+	<20080304174315.GB27332@one.firstfloor.org>
+	<20080304190446.775165e3@mjolnir.drzeus.cx>
+	<20080304183406.GC27332@one.firstfloor.org>
+	<20080305070454.3df78593@mjolnir.drzeus.cx>
+	<20080305154856.GC553@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803050215.31195.rjw@sisk.pl>
+In-Reply-To: <20080305154856.GC553@one.firstfloor.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +27,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
+On Wed, 5 Mar 2008 16:48:56 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> -void device_pm_add(struct device *dev)
-> +int device_pm_add(struct device *dev)
->  {
-> +	int error = 0;
-> +
->  	pr_debug("PM: Adding info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
->  	mutex_lock(&dpm_list_mtx);
-> -	list_add_tail(&dev->power.entry, &dpm_active);
-> +	if (dev->parent && dev->parent->power.sleeping) {
-> +		WARN_ON(true);
+> 
+> Start: You discovered at some point where you currently have code a variable 
+> is not updated yet.
+> Fact: You have some new code that runs before that point
+> Information: The variable is updated later eventually in the idle exit path.
+> Fact II: You require the variable to be updated in your new code
 
-I would prefer to put a dev_warn() line here, so that people reading
-the kernel log can easily tell which device caused the problem and what
-sort of problem it is.  Something like this:
+For some value of "require". The code will do what it's supposed to do anyway, just in a sub-optimal way (it will avoid a deep sleep even though it didn't need to).
 
-		dev_warn(dev, "device added while parent %s is asleep\n",
-				dev->parent->bus_id);
-		WARN_ON(true);
+> Possible solutions: 
+> (1) you move your new code in a point of the idle exit path after the variable 
+> is updated 
 
-> @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
->  		struct list_head *entry = dpm_active.prev;
->  		struct device *dev = to_device(entry);
->  
-> +		if (dev->parent && dev->parent->power.sleeping) {
-> +			WARN_ON(true);
-> +			error = -EAGAIN;
-> +			break;
+But I don't use jiffies in the idle exit path, only the entry path.
 
-Again, a dev_warn() would be appropriate.
+> (2) you move the code that updates the variable earlier before your code
 
-And you might consider taking out the "error = -EAGAIN" and the
-"break".  When this occurs it doesn't mean that devices were suspended
-in the wrong order; it means that the ordering of the parent pointers
-fails to match the ordering of dpm_active.  The only way for this to
-happen is if the parent pointers are messed up by device_move() --
-dpm_active will still be correct.
+Which basically leaves this option. I.e. guarantee that jiffies are updated between one cpuidle reflect and the subsequent select.
 
-The rest of the patch looks fine.
+> Solution: I described the first variant which is likely easier.
+> How: I told you where it is updated, so that shouldn't be too difficult. 
+> Action: Implement solution (1) or (2) 
+> Action: Test if it works
+> Check: If test succeeded exit 
+> Otherwise: Restart at Start
+> 
 
-Alan Stern
+Now you're just being a smart-ass. :)
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
