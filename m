@@ -1,15 +1,16 @@
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
 	when SD card is inserted]
-Date: Thu, 6 Mar 2008 21:53:44 +0100
-Message-ID: <c4e36d110803061253i7f8edd6eu97887d2e628453e2__10391.7516222738$1204837033$gmane$org@mail.gmail.com>
-References: <20080306155553.GA3908@ucw.cz>
-	<Pine.LNX.4.44L0.0803061528460.9174-100000@iolanthe.rowland.org>
+Date: Thu, 6 Mar 2008 13:23:29 -0800
+Message-ID: <200803061323.30314.david-b__11353.4266515218$1204838740$gmane$org@pacbell.net>
+References: <200802241500.41969.rjw@sisk.pl>
+	<200803040144.09601.david-b@pacbell.net>
+	<20080304105841.6c951665@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803061528460.9174-100000@iolanthe.rowland.org>
+In-Reply-To: <20080304105841.6c951665@mjolnir.drzeus.cx>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,48 +21,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-2008/3/6, Alan Stern <stern@rowland.harvard.edu>:
-> On Thu, 6 Mar 2008, Pavel Machek wrote:
->
->  > On Tue 2008-03-04 16:00:51, Alan Stern wrote:
->  > > On Tue, 4 Mar 2008, David Brownell wrote:
->  > >
->  > > > > What's wrong with a superfluous probe at resume time, besides the waste
->  > > > > of a few milliseconds?
->  > > >
->  > > > I'm more concerned with the undesirable removal of devices at suspend
->  > > > time ... ones with mounted filesystems etc.
->  > >
->  > > On that we can agree.  The removal is done if the host doesn't define a
->  > > resume method.  There doesn't seem to be any point to that, given that
->  > > the probing during resume will determine whether a card has in fact
->  > > been removed.
->  >
->  > Hmm, if the driver is sleeping too deeply, user might have removed the
->  > card and put in different one, without driver noticing. That would be
->  > _bad_.
->
->
-> Ironically, the very same problem now exists with the USB mass-storage
->  driver.  I don't see any way for the driver itself to solve it,
->  especially during a hibernation (which can be a _very_ deep sleep).
->
->  One thing that could be done is for filesystems to verify, after a
->  system sleep, that their superblocks haven't changed.  There could
->  still be issues with non-mounted partitions, if they have live entries
->  in the block cache, but it would be an improvement.
->
->  Do you know the right people to mention this to?  Anybody in filesystem
->  development interested in suspend/hibernation issues?
+
+> > > > Card insert/remove events can be system wake events though.  Which
+> > > > makes that restriction impractical.
+> > 
+> > This part seems to be ignored by your comment ... wake events.
+> 
+> How so? How is a wake caused by the MMC controller different
+> than any other source? 
+
+They aren't.  Which is part of why the way MMC currently assumes that
+insert/remove events don't work is a problem.
 
 
-IMHO the way would be to try to unmount fs if it's possible - if not -
-user should be notified on suspend/hibernation that he must preserve
-media in its place after resume and it should be checked and user
-should be notified if different devices/fs were find...
+> > That is, the MMC core doesn't understand wakeup events.
+> > 
+> > Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
+> > need either such reprobing or the associated remove-on-suspend.
+> 
+> You need well behaved _systems_, not just hosts to achieve that
+> guarantee.
 
-Zdenek
+Sure, but a host can't be well behaved all by itself!
+
+And in any case, I had already made clear I was talking
+about _systems_ that behave properly.
+
+
+> SDHCI controllers have the ability to wake up the 
+> system on card removal, but there is zero guarantee that the
+> platform actually wired the controller up in a way that actually
+> allows it to do this. Throw suspend to disk, where the system might
+> completely lose power, into the mix and you're completely screwed.     
+
+I'm talking about generic MMC/SD controllers of the type
+that have been around for years ... on systems which won't
+use hibernation ("suspend to disk"), but do use real system
+sleep states where card detection (by IRQs) works.
+
+ 
+> So for the default behaviour to change, we need one of two things:
+> 
+> - Certainty that removals cannot go unnoticed. (even then, you
+>   also need wakeup latency guarantees) 
+> - Ability to detect a removal after the fact.
+>
+> For the general case, the first one is impossible given todays
+> hardware.
+
+Odd that it's very possible on the systems I mentioned.
+
+
+> The second might be solvable, but noone has done the work.  
+
+I don't know what you mean by "detect a removal after
+the fact", or why it'd be needed if you detected it
+in the first place.
+
+ 
+> (If your complete system can satisfy the first option, feel
+> free to add the "unsafe" option to you defconfig, but that is
+> hardly adequate reason to have it on by default.)  
+
+Thing is, I had also pointed out that it wasn't "unsafe"
+in the least on many systems.
+
+I'll refresh the patch which improves that mechanism and
+updates its description.
+
+- Dave
