@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Make PM core handle device
-	registrations concurrent with suspend/hibernation
-Date: Thu, 6 Mar 2008 17:26:02 +0100
-Message-ID: <200803061726.03277.rjw__42850.0356073075$1204821261$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803061022150.4061-100000@iolanthe.rowland.org>
+ registrations concurrent with suspend/hibernation
+Date: Thu, 6 Mar 2008 12:40:37 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803061233460.7892-100000__41677.9201281772$1204825531$gmane$org@iolanthe.rowland.org>
+References: <200803061726.03277.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803061022150.4061-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200803061726.03277.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 6 of March 2008, Alan Stern wrote:
-> On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
+On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
+
+> > I thought of one more thing you might want to add: device_pm_add() 
+> > doesn't handle the case where dev->parent is NULL.
 > 
-> > > > Revised patch below.
-> > > 
-> > > It looks good.  Let's hope it doesn't mess up ACPI too badly...  :-)
-> > > 
-> > > Acked-by: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > Thanks!
+> I'm not sure what you mean.
 > 
-> I thought of one more thing you might want to add: device_pm_add() 
-> doesn't handle the case where dev->parent is NULL.
+> If dev->parent is NULL, we get into the "successful" branch where the device is
+> added to dpm_active.  Do you think we should add any extra handling of this
+> case?
 
-I'm not sure what you mean.
+If a device is registered after dpm_suspend() has returned, the
+device won't be suspended properly before the system goes to sleep.  
 
-If dev->parent is NULL, we get into the "successful" branch where the device is
-added to dpm_active.  Do you think we should add any extra handling of this
-case?
+If the device has a parent then you're okay, because the parent must
+already be suspended and so device_pm_add() will fail.  But if the
+device doesn't have a parent then device_pm_add() will succeed, which
+you don't want.
 
-> You could put in that static "all_devices_sleeping" flag, which gets set at
-> the end of dpm_suspend() and cleared at the start of dpm_resume().
+> > You could put in that static "all_devices_sleeping" flag, which gets set at
+> > the end of dpm_suspend() and cleared at the start of dpm_resume().
+> 
+> Well, I don't think it's necessary.  dpm_active is empty in that case and
+> we can use the list_empty(&dpm_active) check instead.
 
-Well, I don't think it's necessary.  dpm_active is empty in that case and
-we can use the list_empty(&dpm_active) check instead.
+What would happen the very first time the system registers a device 
+during startup?
 
-Thanks,
-Rafael
+Alan Stern
