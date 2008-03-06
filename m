@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
- registrations concurrent with suspend/hibernation
-Date: Thu, 6 Mar 2008 10:26:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0803061022150.4061-100000__17868.4968770996$1204817639$gmane$org@iolanthe.rowland.org>
-References: <200803060024.28850.rjw@sisk.pl>
+From: Mark Lord <lkml@rtr.ca>
+Subject: Re: [patch] Re: using long instead of atomic_t when only
+ set/read is required
+Date: Thu, 06 Mar 2008 10:58:30 -0500
+Message-ID: <47D014A6.9090300__2683.67905305258$1204819251$gmane$org@rtr.ca>
+References: <Pine.LNX.4.44L0.0803031207120.3611-100000@iolanthe.rowland.org>
+	<alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803060024.28850.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, davem@davemloft.net, Alan Cox <alan@lxorguk.ukuu.org.uk>, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
-
-> > > Revised patch below.
-> > 
-> > It looks good.  Let's hope it doesn't mess up ACPI too badly...  :-)
-> > 
-> > Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Linus Torvalds wrote:
 > 
-> Thanks!
-
-I thought of one more thing you might want to add: device_pm_add() 
-doesn't handle the case where dev->parent is NULL.  You could put in 
-that static "all_devices_sleeping" flag, which gets set at the end of 
-dpm_suspend() and cleared at the start of dpm_resume().
-
-> Okay, I also have the appended patch on top of this one. :-)
+> On Mon, 3 Mar 2008, Alan Stern wrote:
+>> Consider a routine like the following:
+>>
+>> 	static task_struct *the_task;
+>>
+>> 	void store_task(void)
+>> 	{
+>> 		the_task = current;
+>> 	}
+>>
+>> Is it possible to say whether readers examining "the_task" are 
+>> guaranteed to see a coherent value?
 > 
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Include dpm_sysfs_add() into device_pm_add(), in analogy with
-> device_pm_remove(), and modify device_add() to call the latter after
-> bus_add_device(), to avoid situations in which the PM core may
-> attempt to suspend a device the registration of which has not been
-> successful.
+> Yes, we do depend on this.  All the RCU stuff (and in general *anything* 
+> that depends on memory ordering as opposed to full locking, and we have 
+> quite a lot of it) is very fundamentally dependent on the fact that things 
+> like pointers get read and written atomically.
+..
 
-Clean and simple.  Ack.
+But also consider something like this:
 
-Alan Stern
+ 	void store_task(void)
+ 	{
+ 		*the_task = current;
+ 	}
+
+In this case, there is no guarantee that the assignment
+can be done atomically on all CPU types.  Some RISC archs
+(eg. MIPS R2xxx) require an (interruptible) instruction pair
+to store values to a potentially unaligned address.
+
+This was a BIG issue on a different system that I once worked on.
+
+Cheers
