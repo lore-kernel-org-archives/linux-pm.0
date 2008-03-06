@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
-	when SD card is inserted]
-Date: Thu, 6 Mar 2008 16:55:53 +0100
-Message-ID: <20080306155553.GA3908__12557.3170990267$1204835138$gmane$org@ucw.cz>
-References: <200803041230.42152.david-b@pacbell.net>
-	<Pine.LNX.4.44L0.0803041558070.15986-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Make PM core handle device
+ registrations concurrent with suspend/hibernation
+Date: Thu, 6 Mar 2008 15:28:26 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803061523530.9174-100000__45228.5404121087$1204835534$gmane$org@iolanthe.rowland.org>
+References: <200803062118.32860.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0803041558070.15986-100000@iolanthe.rowland.org>
+In-Reply-To: <200803062118.32860.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-03-04 16:00:51, Alan Stern wrote:
-> On Tue, 4 Mar 2008, David Brownell wrote:
-> 
-> > > What's wrong with a superfluous probe at resume time, besides the waste 
-> > > of a few milliseconds?
-> > 
-> > I'm more concerned with the undesirable removal of devices at suspend
-> > time ... ones with mounted filesystems etc.
-> 
-> On that we can agree.  The removal is done if the host doesn't define a 
-> resume method.  There doesn't seem to be any point to that, given that 
-> the probing during resume will determine whether a card has in fact 
-> been removed.
+On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
 
-Hmm, if the driver is sleeping too deeply, user might have removed the
-card and put in different one, without driver noticing. That would be
-_bad_.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> On Thursday, 6 of March 2008, Alan Stern wrote:
+> > On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > I thought of one more thing you might want to add: device_pm_add() 
+> > > > doesn't handle the case where dev->parent is NULL.
+> > > 
+> > > I'm not sure what you mean.
+> > > 
+> > > If dev->parent is NULL, we get into the "successful" branch where the device is
+> > > added to dpm_active.  Do you think we should add any extra handling of this
+> > > case?
+> > 
+> > If a device is registered after dpm_suspend() has returned, the
+> > device won't be suspended properly before the system goes to sleep.  
+> > 
+> > If the device has a parent then you're okay, because the parent must
+> > already be suspended and so device_pm_add() will fail.  But if the
+> > device doesn't have a parent then device_pm_add() will succeed, which
+> > you don't want.
+> 
+> Well, can it happen in practice?  If it can, then what way can it happen?
+
+Yes, it can happen in practice when a new module is loaded.  In some 
+ways, modules' init routines are like probe methods.
+
+Maybe it can happen some other ways too, but I don't know of any.
+
+> It seems to me that we're discussing purely academic stuff here.  If it turns
+> out to be of any practical relevance, it will be trivial to add the handling of
+> it in the future.
+
+To be safe, I think we should make system sleep mutually exclusive with 
+module loading.
+
+Alan Stern
