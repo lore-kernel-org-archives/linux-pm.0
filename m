@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
-	registrations concurrent with suspend/hibernation
-Date: Thu, 6 Mar 2008 21:18:32 +0100
-Message-ID: <200803062118.32860.rjw__10467.8118172616$1204835053$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803061233460.7892-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work
+	when SD card is inserted]
+Date: Thu, 6 Mar 2008 16:55:53 +0100
+Message-ID: <20080306155553.GA3908__12557.3170990267$1204835138$gmane$org@ucw.cz>
+References: <200803041230.42152.david-b@pacbell.net>
+	<Pine.LNX.4.44L0.0803041558070.15986-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803061233460.7892-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0803041558070.15986-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 6 of March 2008, Alan Stern wrote:
-> On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
+On Tue 2008-03-04 16:00:51, Alan Stern wrote:
+> On Tue, 4 Mar 2008, David Brownell wrote:
 > 
-> > > I thought of one more thing you might want to add: device_pm_add() 
-> > > doesn't handle the case where dev->parent is NULL.
+> > > What's wrong with a superfluous probe at resume time, besides the waste 
+> > > of a few milliseconds?
 > > 
-> > I'm not sure what you mean.
-> > 
-> > If dev->parent is NULL, we get into the "successful" branch where the device is
-> > added to dpm_active.  Do you think we should add any extra handling of this
-> > case?
+> > I'm more concerned with the undesirable removal of devices at suspend
+> > time ... ones with mounted filesystems etc.
 > 
-> If a device is registered after dpm_suspend() has returned, the
-> device won't be suspended properly before the system goes to sleep.  
-> 
-> If the device has a parent then you're okay, because the parent must
-> already be suspended and so device_pm_add() will fail.  But if the
-> device doesn't have a parent then device_pm_add() will succeed, which
-> you don't want.
+> On that we can agree.  The removal is done if the host doesn't define a 
+> resume method.  There doesn't seem to be any point to that, given that 
+> the probing during resume will determine whether a card has in fact 
+> been removed.
 
-Well, can it happen in practice?  If it can, then what way can it happen?
-
-> > > You could put in that static "all_devices_sleeping" flag, which gets set at
-> > > the end of dpm_suspend() and cleared at the start of dpm_resume().
-> > 
-> > Well, I don't think it's necessary.  dpm_active is empty in that case and
-> > we can use the list_empty(&dpm_active) check instead.
-> 
-> What would happen the very first time the system registers a device 
-> during startup?
-
-For any other uses than in device_pm_add(), the list_empty(&dpm_active) test
-should be sufficient, IMHO.
-
-It seems to me that we're discussing purely academic stuff here.  If it turns
-out to be of any practical relevance, it will be trivial to add the handling of
-it in the future.
-
-Thanks,
-Rafael
+Hmm, if the driver is sleeping too deeply, user might have removed the
+card and put in different one, without driver noticing. That would be
+_bad_.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
