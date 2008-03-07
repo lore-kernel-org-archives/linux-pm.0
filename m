@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device
-	registrations concurrent with suspend/hibernation
-Date: Thu, 6 Mar 2008 23:30:27 +0100
-Message-ID: <200803062330.28639.rjw__35081.6003083766$1204842911$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803061656180.19564-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] SCSI: remove dev->power.power_state from mesh
+	driver
+Date: Fri, 7 Mar 2008 11:20:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803071118040.4398-100000__38550.5121238113$1204907042$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803061656180.19564-100000@iolanthe.rowland.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +16,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Paul Mackerras <paulus@au.ibm.com>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 6 of March 2008, Alan Stern wrote:
-> On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
-> 
-> > > > Well, can it happen in practice?  If it can, then what way can it happen?
-> > > 
-> > > Yes, it can happen in practice when a new module is loaded.  In some 
-> > > ways, modules' init routines are like probe methods.
-> > 
-> > Hmm, I'm not sure if it really is possible to load a module when all devices
-> > have been suspended.  Never mind, though.
-> 
-> You can load the module before devices are suspended, and then its init 
-> routine can run while the suspend is starting.
+power.power_state is scheduled for removal.  This patch (as1055)
+removes all uses of that field from the SCSI mesh driver.
 
-Yeah.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: Paul Mackerras <paulus@au.ibm.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> > > To be safe, I think we should make system sleep mutually exclusive with 
-> > > module loading.
-> > 
-> > Okay, is the (yet another) version of the patch below fine by you?
-> 
-> Yes, it's fine.  Mutual exclusion with module loading can be added 
-> later.  (Ironically, it may require putting pm_sleep_rwsem back!)
+---
 
-I'm going to send this patch and the "include dpm_sysfs_add() into
-device_pm_add()" patch for -mm/linux-next testing, if you don't mind.
-
-I'm working on a new version of the "PM: Separate suspend and hibernation
-callbacks" patch, on top of the two.
-
-Thanks,
-Rafael
+Index: usb-2.6/drivers/scsi/mesh.c
+===================================================================
+--- usb-2.6.orig/drivers/scsi/mesh.c
++++ usb-2.6/drivers/scsi/mesh.c
+@@ -1765,7 +1765,7 @@ static int mesh_suspend(struct macio_dev
+ 	default:
+ 		return 0;
+ 	}
+-	if (mesg.event == mdev->ofdev.dev.power.power_state.event)
++	if (ms->phase == sleeping)
+ 		return 0;
+ 
+ 	scsi_block_requests(ms->host);
+@@ -1780,8 +1780,6 @@ static int mesh_suspend(struct macio_dev
+ 	disable_irq(ms->meshintr);
+ 	set_mesh_power(ms, 0);
+ 
+-	mdev->ofdev.dev.power.power_state = mesg;
+-
+ 	return 0;
+ }
+ 
+@@ -1790,7 +1788,7 @@ static int mesh_resume(struct macio_dev 
+ 	struct mesh_state *ms = (struct mesh_state *)macio_get_drvdata(mdev);
+ 	unsigned long flags;
+ 
+-	if (mdev->ofdev.dev.power.power_state.event == PM_EVENT_ON)
++	if (ms->phase != sleeping)
+ 		return 0;
+ 
+ 	set_mesh_power(ms, 1);
+@@ -1801,8 +1799,6 @@ static int mesh_resume(struct macio_dev 
+ 	enable_irq(ms->meshintr);
+ 	scsi_unblock_requests(ms->host);
+ 
+-	mdev->ofdev.dev.power.power_state.event = PM_EVENT_ON;
+-
+ 	return 0;
+ }
+ 
