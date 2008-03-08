@@ -1,8 +1,7 @@
-From: "Scott Thompson" <postfail@hushmail.com>
-Subject: Metrics for comparing power savings of patches...
-Date: Fri, 07 Mar 2008 12:01:05 -0500
-Message-ID: <20080307170105.AF99E1A0039@mailserver8.hushmail.com>
-Reply-To: postfail@hushmail.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Helping drivers to work without the freezer
+Date: Sat, 8 Mar 2008 11:49:47 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0803081127430.18951-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,30 +15,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, power@bughost.org
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-I've seen several patch submissions and comments with varying
-claims of 'power savings' from one level to another on both the 
-linux-pm and powertop lists.
+This idea just occurred to me.  It may or may not end up being useful, 
+and I don't have any specific applications in mind yet.
 
-Standard technique seems to be to plug computer directly into a
-wattmeter and then provide some feedback as to the savings comparing
-one patchgroup to what is currently available.
+System sleeps are supposed to be transparent to userspace.  An I/O 
+request submitted just before the sleep starts should be blocked until 
+after the system wakes up.
 
-Different wattmeters, however, will have different response and 
-accuracy depending on load for instant readings; usually the lower-
-loads (such as laptops) will be less accurate.
+Without the freezer to do this blocking for them, drivers will have to 
+do it themselves.  So when a driver is about to carry out an I/O 
+operation, it has to insure that the operation is mutually exclusive 
+with sleeping.
 
-However, I have seen that most wattmeters do a 'better' job at 
-measuring total wattage over an interval than the 'instant 
-reading'. I advise caution in advertising 'expected savings' for 
-instant readings....
+One way to do this is by a private mutex, which would protect both the
+block of code doing the I/O and the suspend routine.  One for each
+device; that's a lot of new mutexes.
 
-Also, if anyone knows of any free benchmarks, best practices, or 
-guidelines for trying to do comparative power analysis for patches 
-with wattmeters please let me know.
+My idea is instead to have the PM core provide a new pair of routines
+for use by drivers.  Something like "thread_not_sleepable()" and 
+"thread_sleepable()".  
 
----------------------------------------
-Scott Thompson / postfail@hushmail.com
----------------------------------------
+The first routine would be called by a driver before starting to do
+I/O, while no locks are held.  If a sleep transition had already
+started, the routine would block until the sleep was over.  Otherwise,
+the thread would be marked with a NOT_SLEEPABLE flag until the second
+routine was called.  When the PM core wanted to start a system sleep
+it would have to check whether any threads were marked NOT_SLEEPABLE,
+and wait until none of them were.
+
+This could make drivers a little simpler.  It would mean less code to
+modify, and it would remove one entry from the messy I/O vs. unbind vs.
+suspend synchronization problem.
+
+Comments?
+
+Alan Stern
