@@ -1,12 +1,22 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Sun, 9 Mar 2008 14:50:54 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803091447090.13999-100000__6503.59293581477$1205088773$gmane$org@netrider.rowland.org>
-References: <20080309151659.63d54f38@mjolnir.drzeus.cx>
+Date: Sun, 9 Mar 2008 16:30:09 -0300
+Message-ID: <20080309193009.GD27193__39786.2868536778$1205091244$gmane$org@khazad-dum.debian.net>
+References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
+	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
+	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
+	<20080306092730.4412d085@mjolnir.drzeus.cx>
+	<20080309151659.63d54f38@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <20080309151659.63d54f38@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,33 +28,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, linux-pm@lists.linux-foundation.org, Lee Revell <rlrevell@joe-job.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 9 Mar 2008, Pierre Ossman wrote:
-
+On Sun, 09 Mar 2008, Pierre Ossman wrote:
 > I'm beginning to think this is a lost cause. I've tried several variants, all without satisfactory results.
-> 
-> In case anyone else has any more ideas, I'll detail what I've found influences the noise:
-> 
-> 1. C state
-> 
-> This is the big one. There is no noise as long as C3 is avoided (processor.max_cstate).
-> 
-> 2. uhci_hcd driver
-> 
-> USB is somehow involved in this problem. Unloading the uhci_hcd driver almost entirely kills the noise on a 1000 HZ NO_HZ kernel. On a 100 HZ, no NO_HZ kernel, the effect is very small, but still there.
-> 
-> 3. Low speed USB devices
-> 
-> Related, the noise goes away if I insert a USB mouse (low speed). A high-speed device does not effect the noise, neither does the two built-in low speed devices (a fingerprint reader and a bluetooth host).
 
-The relation to UHCI probably has to do with ongoing DMA.  The amount
-of DMA varies according to whether or not the USB devices are
-suspended, whether or not they have drivers, and the speed at which 
-they run.
+THIS will work:
+http://www.nordichardware.com/image3.php?id=1446
 
-You can test whether suspending the onboard USB devices changes 
-anything.  See Documentation/usb/power-management.txt.
+ThinkPad owners have known this for a while...
 
-Alan Stern
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
