@@ -1,10 +1,8 @@
-From: Pierre Ossman <drzeus-list@drzeus.cx>
+From: Andi Kleen <andi@firstfloor.org>
 Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Tue, 11 Mar 2008 08:51:45 +0100
-Message-ID: <20080311085145.5fcf3186__28936.7474303164$1205222102$gmane$org@mjolnir.drzeus.cx>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
+Date: Tue, 11 Mar 2008 11:48:22 +0100
+Message-ID: <20080311104822.GC18917__49015.6790278435$1205232600$gmane$org@one.firstfloor.org>
+References: <20080303231033.GB15255@one.firstfloor.org>
 	<20080304040048.GA31562@codemonkey.org.uk>
 	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
 	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
@@ -13,11 +11,13 @@ References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com
 	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
 	<20080306092730.4412d085@mjolnir.drzeus.cx>
 	<20080309151659.63d54f38@mjolnir.drzeus.cx>
+	<20080311085145.5fcf3186@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080309151659.63d54f38@mjolnir.drzeus.cx>
+Content-Disposition: inline
+In-Reply-To: <20080311085145.5fcf3186@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,76 +27,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, linux-pm@lists.linux-foundation.org, Lee Revell <rlrevell@joe-job.com>
 List-Id: linux-pm@vger.kernel.org
 
-I had a sudden surge of inspiration and decided to follow up on this
-one a bit: 
+> I have now found a very hacky workaround that is slightly better than
+> disabling C3 altogether; making C3 exclusive to one core at a time. It
+> seems to kill the noise and the system now spends 50% in C3, instead of
+> 0%.
 
-> 
-> 5. Second core
-> 
-> Disabling the second core makes the noise go away. This might be a subset of 1., as I've been told that a stopped core enters C1.
-> 
+I suspect it won't do much of C3 if only one core is idle this way.
+Most likely you just disabled C3 this way in a way invisible to software.
 
-I have now found a very hacky workaround that is slightly better than
-disabling C3 altogether; making C3 exclusive to one core at a time. It
-seems to kill the noise and the system now spends 50% in C3, instead of
-0%.
-
-I read somewhere that the Intel Duo:s have an extra low power mode that
-is entered if both cores are suspended at the same time (disabling the
-shared cache or something like that I guess). So perhaps that mode is
-the culprit. I'm hoping there's a way to disable just that feature. Do
-any of you know a way? Venkatesh perhaps?
-
-Here's the patch I'm currently running at least:
-
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 78d77c5..9a859fb 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -16,6 +16,8 @@
- 
- #define BREAK_FUZZ     4       /* 4 us */
- 
-+static atomic_t cur_deep_cpu = ATOMIC_INIT(-1);
-+
- struct menu_device {
-        int             last_state_idx;
- 
-@@ -50,6 +52,13 @@ static int menu_select(struct cpuidle_device *dev)
-                        break;
-                if (s->exit_latency > pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY))
-                        break;
-+
-+               if (s->flags & CPUIDLE_FLAG_DEEP) {
-+                       rmb();
-+                       if (atomic_cmpxchg(&cur_deep_cpu, -1, dev->cpu) != -1)
-+                               break;
-+                       wmb();
-+               }
-        }
- 
-        data->last_state_idx = i - 1;
-@@ -80,6 +89,11 @@ static void menu_reflect(struct cpuidle_device *dev)
-        if (!(target->flags & CPUIDLE_FLAG_TIME_VALID))
-                measured_us = USEC_PER_SEC / HZ;
- 
-+       if (atomic_read(&cur_deep_cpu) == dev->cpu) {
-+               atomic_set(&cur_deep_cpu, -1);
-+               wmb();
-+       }
-+
-        /* Predict time remaining until next break event */
-        if (measured_us + BREAK_FUZZ < data->expected_us - target->exit_latency) {
-                data->predicted_us = max(measured_us, data->last_measured_us);
-
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+-Andi
