@@ -1,24 +1,14 @@
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Tue, 11 Mar 2008 18:31:49 +0100
-Message-ID: <20080311183149.0f44e603__22625.7726121277$1205256903$gmane$org@mjolnir.drzeus.cx>
-References: <20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
-	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
-	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
-	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
-	<20080306092730.4412d085@mjolnir.drzeus.cx>
-	<20080309151659.63d54f38@mjolnir.drzeus.cx>
-	<20080311085145.5fcf3186@mjolnir.drzeus.cx>
-	<20080311104822.GC18917@one.firstfloor.org>
-	<20080311162026.012744cd@mjolnir.drzeus.cx>
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Tue, 11 Mar 2008 17:10:04 -0400
+Message-ID: <20080311211004.GA30164__47942.5885402181$1205270165$gmane$org@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080311162026.012744cd@mjolnir.drzeus.cx>
+Content-Disposition: inline
+In-Reply-To: <1204773188.4707.109.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,33 +18,160 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 Mar 2008 16:20:26 +0100
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-
-> On Tue, 11 Mar 2008 11:48:22 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > I have now found a very hacky workaround that is slightly better than
-> > > disabling C3 altogether; making C3 exclusive to one core at a time. It
-> > > seems to kill the noise and the system now spends 50% in C3, instead of
-> > > 0%.
-> > 
-> > I suspect it won't do much of C3 if only one core is idle this way.
-> > Most likely you just disabled C3 this way in a way invisible to software.
-> > 
-> 
-> What a letdown... I'll pull out the old watt meter again and see if I can confirm that.
+On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
+> This is a minimal patch with only the essential features. All
+> additional features are split out and can be discussed later. I think
+> it may be easier to get consensus on this minimal patch.
 > 
 
-It seems that you are correct Andi. Power usage is in line with C3 completely disabled. Bummer :/
+Hi Huang,
 
--- 
-     -- Pierre Ossman
+This patchset is slowly getting better. True that first we need to come
+up with minimal infrastructure patch and then think of building more
+functionality on top of it.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+
+> This patch provides an enhancement to kexec/kdump. It implements
+> the following features:
+> 
+> - Jumping between the original kernel and the kexeced kernel.
+> 
+> - Backup/restore memory used by both the original kernel and the
+>   kexeced kernel.
+> 
+> - Save/restore CPU and devices state before after kexec.
+> 
+> 
+> The features of this patch can be used for as follow:
+> 
+> - A simple hibernation implementation without ACPI support. You can
+>   kexec a hibernating kernel, save the memory image of original system
+>   and shutdown the system. When resuming, you restore the memory image
+>   of original system via ordinary kexec load then jump back.
+> 
+
+The main usage of this functionality is for hibernation. I am not sure
+what has been the conclusion of previous discussions.
+
+Rafael/Pavel, does the approach of doing hibernation using a separate
+kernel holds promise?
+
+[..]
+> Usage example of simple hibernation:
+> 
+> 1. Compile and install patched kernel with following options selected:
+> 
+> CONFIG_X86_32=y
+> CONFIG_RELOCATABLE=y
+> CONFIG_KEXEC=y
+> CONFIG_CRASH_DUMP=y
+> CONFIG_PM=y
+> 
+> 2. Build an initramfs image contains kexec-tool and makedumpfile, or
+>    download the pre-built initramfs image, called rootfs.gz in
+>    following text.
+> 
+> 3. Prepare a partition to save memory image of original kernel, called
+>    hibernating partition in following text.
+> 
+> 3. Boot kernel compiled in step 1 (kernel A).
+> 
+> 4. In the kernel A, load kernel compiled in step 1 (kernel B) with
+>    /sbin/kexec. The shell command line can be as follow:
+> 
+>    /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
+>      --mem-max=0xffffff --initrd=rootfs.gz
+> 
+> 5. Boot the kernel B with following shell command line:
+> 
+>    /sbin/kexec -e
+> 
+> 6. The kernel B will boot as normal kexec. In kernel B the memory
+>    image of kernel A can be saved into hibernating partition as
+>    follow:
+> 
+>    jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
+>    echo $jump_back_entry > kexec_jump_back_entry
+>    cp /proc/vmcore dump.elf
+> 
+
+Why not store the entry point in dump.elf itself, instead of storing it
+in a separate file?
+
+I think this is more like a resumable core file. Something similar to
+functionality what qemu does for resuming an already booted kernel image.
+So we might have to introduce an ELF_NOTE to mark an image as resumable
+core. 
+
+>    Then you can shutdown the machine as normal.
+> 
+> 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+>    root file system.
+> 
+> 8. In kernel C, load the memory image of kernel A as follow:
+> 
+>    /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
+> 
+
+How the memory segments of dump.elf loaded? Normal kexec way? Memory
+segments of dump.elf are first stored somewhere and then moved to
+destination at "kexec -e" time?
+
+Does this really work? If we have 4G RAM, what will be the size of
+dump.elf? And when we load it back for resuming, do we have sufficient
+memory left?
+
+May be we can have a separate load flag (--load-resume-image) to mark
+that we are resuming an hibernated image and kexec does not have to
+prepare commandline, does not have to prepare zero page/setup page etc.
+
+
+I have thought through it again and try to put together some of the
+new kexec options we can introduce to make the whole thing work. I am 
+considering a simple case where a user boots the kernel A and then
+launches kernel B using "kexec --load-preseve-context". Now a user
+might save the hibernated image or might want to come back to A.
+
+- kexec -l <kernel-image>
+        Normal kexec functionality. Boot a new kernel, without preserving
+        existing kernel's context.
+
+- kexec --load-preserve-context <kernel-image>
+        Boot a new kernel while preserving existing kernel's context.
+
+        Will be used for booting kernel B for the first time.
+
+- kexec --load-resume-image <resumable-core>
+        Resumes an hibernated image. Load a ELF64 hibernated image.
+
+	Context of first kernel/boot-loader will not be preserved.
+
+	First kernel will not save cpu states. Will put devices into
+	suspended state though so that these can be resumed by resumable
+	core
+
+        This option can be used by kboot or kernel C to resume an hibernated
+	image.
+
+- kexec --load-resume-entry <entry-point>
+        Image is already loaded. Just prepare the entry point so that one
+        can enter back to previous image. cpu states will be saved and devices
+        will be put to suspended states.
+
+        will be used for A --> B and B ---> A transitions. Both A and B are
+        booted. This is just for switching back and forth between A and B.
+
+- kexec -e
+        Transition into the new kernel
+
+This patch looks in pretty decent shape. Once there is some sort of
+understanding that this approach is promising for hibernation and we
+have consensus on high level interface, then we can get into line by 
+line review of the patch set. 
+
+Thanks
+Vivek
