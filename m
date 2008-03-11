@@ -1,7 +1,7 @@
 From: Pierre Ossman <drzeus-list@drzeus.cx>
 Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Tue, 11 Mar 2008 16:20:26 +0100
-Message-ID: <20080311162026.012744cd__45098.3726339929$1205249227$gmane$org@mjolnir.drzeus.cx>
+Date: Tue, 11 Mar 2008 18:31:49 +0100
+Message-ID: <20080311183149.0f44e603__22625.7726121277$1205256903$gmane$org@mjolnir.drzeus.cx>
 References: <20080303231033.GB15255@one.firstfloor.org>
 	<20080304040048.GA31562@codemonkey.org.uk>
 	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
@@ -13,11 +13,12 @@ References: <20080303231033.GB15255@one.firstfloor.org>
 	<20080309151659.63d54f38@mjolnir.drzeus.cx>
 	<20080311085145.5fcf3186@mjolnir.drzeus.cx>
 	<20080311104822.GC18917@one.firstfloor.org>
+	<20080311162026.012744cd@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080311104822.GC18917@one.firstfloor.org>
+In-Reply-To: <20080311162026.012744cd@mjolnir.drzeus.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,24 +28,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, linux-pm@lists.linux-foundation.org, Lee Revell <rlrevell@joe-job.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 Mar 2008 11:48:22 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On Tue, 11 Mar 2008 16:20:26 +0100
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-> > I have now found a very hacky workaround that is slightly better than
-> > disabling C3 altogether; making C3 exclusive to one core at a time. It
-> > seems to kill the noise and the system now spends 50% in C3, instead of
-> > 0%.
+> On Tue, 11 Mar 2008 11:48:22 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> I suspect it won't do much of C3 if only one core is idle this way.
-> Most likely you just disabled C3 this way in a way invisible to software.
+> > > I have now found a very hacky workaround that is slightly better than
+> > > disabling C3 altogether; making C3 exclusive to one core at a time. It
+> > > seems to kill the noise and the system now spends 50% in C3, instead of
+> > > 0%.
+> > 
+> > I suspect it won't do much of C3 if only one core is idle this way.
+> > Most likely you just disabled C3 this way in a way invisible to software.
+> > 
+> 
+> What a letdown... I'll pull out the old watt meter again and see if I can confirm that.
 > 
 
-What a letdown... I'll pull out the old watt meter again and see if I can confirm that.
+It seems that you are correct Andi. Power usage is in line with C3 completely disabled. Bummer :/
 
-Rgds
 -- 
      -- Pierre Ossman
 
