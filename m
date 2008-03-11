@@ -1,11 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] Hibernation: Fix mark_nosave_pages()
-Date: Wed, 12 Mar 2008 00:34:57 +0100
-Message-ID: <200803120034.58615.rjw__2150.56328238479$1205278691$gmane$org@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 00:49:05 +0100
+Message-ID: <200803120049.06491.rjw__33977.6941844777$1205279551$gmane$org@sisk.pl>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080311211004.GA30164@redhat.com>
+	<20080311232415.GA26320@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080311232415.GA26320@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,144 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On Wednesday, 12 of March 2008, Pavel Machek wrote:
+> Hi!
 
-The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=9966 .
+Hi,
 
-Although the problem has been there for quite some time (since before 2.6.22,
-apparently), it would be good to have in 2.6.25, because it may fix booting
-problems on the affected systems.
+> > > This is a minimal patch with only the essential features. All
+> > > additional features are split out and can be discussed later. I think
+> > > it may be easier to get consensus on this minimal patch.
+> > > 
+> > 
+> > Hi Huang,
+> > 
+> > This patchset is slowly getting better. True that first we need to come
+> > up with minimal infrastructure patch and then think of building more
+> > functionality on top of it.
+> > 
+> ...
+> > > The features of this patch can be used for as follow:
+> > > 
+> > > - A simple hibernation implementation without ACPI support. You can
+> > >   kexec a hibernating kernel, save the memory image of original system
+> > >   and shutdown the system. When resuming, you restore the memory image
+> > >   of original system via ordinary kexec load then jump back.
+> > > 
+> > 
+> > The main usage of this functionality is for hibernation. I am not sure
+> > what has been the conclusion of previous discussions.
+> > 
+> > Rafael/Pavel, does the approach of doing hibernation using a separate
+> > kernel holds promise?
+> 
+> Its certainly "more traditional" method of doing hibernation than
+> tricks swsusp currently plays.
 
-Please note that it doesn't modify the code behavior on the systems which are
-not affected by bug #9966 .
+What exactly are you referring to?
+
+> Yes, I'd like these patches to go in, being able to switch kernels seems like
+> useful tool. 
+
+No objection from me.
+ 
+> Now, I guess they are some difficulties, like ACPI integration, and
+> some basic drawbacks, like few seconds needed to boot second kernel
+> during suspend.
+> 
+> ...OTOH this is probably only chance to eliminate freezer from
+> swsusp...
+
+Some facts:
+
+* In order to be able to do suspend (STR) without the freezer, we need to make
+  device drivers block access to devices from applications during suspend.
+* There's no reason to think that we can't use this same mechanism for
+  hibernation (the only difficulty seems to be the handling of devices used for
+  saving the image).
+* We need the drivers to quiesce devices to be able to do the kexec jump in the
+  first place (and to avoid races, we'll need them to block applications'
+  access to devices just like for STR, which is the sufficient condition for
+  removing the freezer).
+
+So, I don't really think that the "freezer removal" argument is valid here.
+
+Moreover, if this had been the _only_ argument for the $subject functionality,
+I'd have been against it.
 
 Thanks,
 Rafael
-
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-There is a problem in the hibernation code that triggers on some NUMA
-systems on which pfn_valid() returns 'true' for some PFNs that don't
-belong to any zone.  Namely, there is a BUG_ON() in
-memory_bm_find_bit() that triggers for PFNs not belonging to any
-zone and passing the pfn_valid() test.  On the affected systems it
-triggers when we mark PFNs reported by the platform as not saveable,
-because the PFNs in question belong to a region mapped directly using
-iorepam() (i.e. the ACPI data area) and they pass the pfn_valid()
-test.
-
-Modify memory_bm_find_bit() so that it returns an error if given PFN
-doesn't belong to any zone instead of crashing the kernel and ignore
-the result returned by it in mark_nosave_pages(), while marking the
-"nosave" memory regions.
-
-This doesn't affect the hibernation functionality, as we won't touch
-the PFNs in question anyway.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |   41 ++++++++++++++++++++++++++++++++++-------
- 1 file changed, 34 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -447,7 +447,7 @@ static void memory_bm_free(struct memory
-  *	of @bm->cur_zone_bm are updated.
-  */
- 
--static void memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
-+static int memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
- 				void **addr, unsigned int *bit_nr)
- {
- 	struct zone_bitmap *zone_bm;
-@@ -461,7 +461,8 @@ static void memory_bm_find_bit(struct me
- 		while (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
- 			zone_bm = zone_bm->next;
- 
--			BUG_ON(!zone_bm);
-+			if (!zone_bm)
-+				return -EFAULT;
- 		}
- 		bm->cur.zone_bm = zone_bm;
- 	}
-@@ -479,23 +480,40 @@ static void memory_bm_find_bit(struct me
- 	pfn -= bb->start_pfn;
- 	*bit_nr = pfn % BM_BITS_PER_CHUNK;
- 	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
-+	return 0;
- }
- 
- static void memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	set_bit(bit, addr);
- }
- 
-+static int mem_bm_set_bit_check(struct memory_bitmap *bm, unsigned long pfn)
-+{
-+	void *addr;
-+	unsigned int bit;
-+	int error;
-+
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	if (!error)
-+		set_bit(bit, addr);
-+	return error;
-+}
-+
- static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	clear_bit(bit, addr);
- }
- 
-@@ -503,8 +521,10 @@ static int memory_bm_test_bit(struct mem
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	return test_bit(bit, addr);
- }
- 
-@@ -709,8 +729,15 @@ static void mark_nosave_pages(struct mem
- 				region->end_pfn << PAGE_SHIFT);
- 
- 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
--			if (pfn_valid(pfn))
--				memory_bm_set_bit(bm, pfn);
-+			if (pfn_valid(pfn)) {
-+				/*
-+				 * It is safe to ignore the result of
-+				 * mem_bm_set_bit_check() here, since we won't
-+				 * touch the PFNs for which the error is
-+				 * returned anyway.
-+				 */
-+				mem_bm_set_bit_check(bm, pfn);
-+			}
- 	}
- }
- 
