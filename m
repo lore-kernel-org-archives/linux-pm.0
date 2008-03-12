@@ -1,52 +1,75 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: + pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspend-vt-switch.patch added to -mm tree
-Date: Wed, 12 Mar 2008 09:51:49 +0100
-Message-ID: <20080312085149.GA3993@ucw.cz>
-References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 09:57:14 +0100
+Message-ID: <20080312085714.GB3993__25200.1205728904$1205312408$gmane$org@ucw.cz>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080311211004.GA30164@redhat.com>
+	<20080311232415.GA26320@elf.ucw.cz>
+	<200803120049.06491.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751543AbYCLIwV@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
-Cc: mm-commits@vger.kernel.org, dilinger@queued.net, adaplas@pol.net, dilinger@debian.org, jordan.crouse@amd.com, rjw@sisk.pl
+In-Reply-To: <200803120049.06491.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Subject: PM/gxfb: add hook to PM console layer that allows disabling of suspend VT switch
-> From: Andres Salomon <dilinger@queued.net>
+> > > > The features of this patch can be used for as follow:
+> > > > 
+> > > > - A simple hibernation implementation without ACPI support. You can
+> > > >   kexec a hibernating kernel, save the memory image of original system
+> > > >   and shutdown the system. When resuming, you restore the memory image
+> > > >   of original system via ordinary kexec load then jump back.
+> > > > 
+> > > 
+> > > The main usage of this functionality is for hibernation. I am not sure
+> > > what has been the conclusion of previous discussions.
+> > > 
+> > > Rafael/Pavel, does the approach of doing hibernation using a separate
+> > > kernel holds promise?
+> > 
+> > Its certainly "more traditional" method of doing hibernation than
+> > tricks swsusp currently plays.
 > 
-> Prior to suspend, we allocate and switch to a new VT; after suspend, we switch
-> back to the original VT.  This can be slow, and is completely unnecessary if
-> the framebuffer we're using can restore video properly.
+> What exactly are you referring to?
+
+Well, traditionaly it is 'A saves B to disk' (like bootloader saves
+kernel&userspace). In swsusp we have 'kernel saves itself'... which
+works, too, but is pretty different design.
+
+> > Now, I guess they are some difficulties, like ACPI integration, and
+> > some basic drawbacks, like few seconds needed to boot second kernel
+> > during suspend.
+> > 
+> > ...OTOH this is probably only chance to eliminate freezer from
+> > swsusp...
 > 
-> This adds a hook that allows drivers to select whether or not to do this vt
-> switch, and changes the gxfb driver to call this hook.  It also adds a module
-> param to gxfb to allow controlling of the vt switch (defaulting to no switch).
+> Some facts:
 > 
-> (Note: I'm not convinced that console_sem is the best way to protect this, but
-> we should probably have some form of locking..)
+> * There's no reason to think that we can't use this same mechanism for
+>   hibernation (the only difficulty seems to be the handling of devices used for
+>   saving the image).
 
-I guess this is okay for now, but we probably want to make it more
-elaborate in future.
+Ok, at least kexec makes handling of suspend device easier.
 
-Console switch is there to make sure kernel (not X) owns the graphical
-hardware.
+> Moreover, if this had been the _only_ argument for the $subject functionality,
+> I'd have been against it.
 
-That is unneccessary for gxfb since X never owns graphics hardware,
-good. (I do not see why it is optional, then. Do you really want to
-see tty1?)
+Fortunately its not the only one :-).
 
-Now, question is what happens with two graphics cards, one of them
-driven by X. Fortunately that is uncommon.
-
-Also, it would be nice to make the logic the other way around. Move vt
-switching to the drivers that need it because X can be expected to own
-the hardware.
-
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
