@@ -1,15 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Wed, 12 Mar 2008 16:31:29 -0400
-Message-ID: <200803121631.30307.lenb__49350.0715624124$1205354137$gmane$org@kernel.org>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
-	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Separate suspend and hibernation
+	callbacks (highest level) - updated
+Date: Wed, 12 Mar 2008 22:22:36 +0100
+Message-ID: <200803122222.37024.rjw__13926.484125159$1205357141$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803092219290.31643-100000@netrider.rowland.org>
+	<200803101758.01826.rjw@sisk.pl>
+	<200803120237.24857.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080305094023.6486ebdf@mjolnir.drzeus.cx>
+In-Reply-To: <200803120237.24857.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,12 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, LKML <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus-list@drzeus.cx>
+To: David Brownell <david-b@pacbell.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-> I'll see if I can get around to some kind of power measurement (ideas for doing that in a sane way are still welcome btw).
+On Wednesday, 12 of March 2008, David Brownell wrote:
+> On Monday 10 March 2008, Rafael J. Wysocki wrote:
+> > + * @poweroff: Hibernation-specific, executed after saving a hibernatio=
+n image.
+> > + *=A0=A0=A0=A0=A0Quiesce the device, put it into a low power state app=
+ropriate for the
+> > + *=A0=A0=A0=A0=A0upcoming system state (such as PCI_D3hot), and enable=
+ wakeup events as
+> > + *=A0=A0=A0=A0=A0appropriate.
+> =
 
-Run BLTK.
+> This seems uncomfortably similar to device_driver.shutdown().
+> The only obvious difference is wakeup event handling, and even
+> that is already a function of the target system state.
+> =
 
-http://www.lesswatts.org/projects/bltk/
+> Are both methods needed?
+> =
+
+> Shouldn't this be more generic, not "hibernation-specific"?
+
+Well, let's not make restrictions at this point.  There's nothing wrong with
+pointing both at the same function and if everyone turns out to do that, we=
+'ll
+remove one callback.
+
+Thanks,
+Rafael
