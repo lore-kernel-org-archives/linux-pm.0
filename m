@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 12 Mar 2008 11:01:49 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803121055510.4595-100000__31374.6248641566$1205334309$gmane$org@iolanthe.rowland.org>
-References: <1205286937.29875.9.camel@caritas-dev.intel.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] doc/power: move power-related files to
+ Documentation/power/
+Date: Wed, 12 Mar 2008 09:33:50 -0700
+Message-ID: <20080312093350.785d6cde.randy.dunlap__44258.4311160774$1205339889$gmane$org@oracle.com>
+References: <20080304134837.dcfed6dd.randy.dunlap@oracle.com>
+	<200803120247.27649.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1205286937.29875.9.camel@caritas-dev.intel.com>
+In-Reply-To: <200803120247.27649.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,24 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, cbou@mail.ru, dwmw2@infradead.org, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 12 Mar 2008, Huang, Ying wrote:
+On Wed, 12 Mar 2008 02:47:27 -0400 Len Brown wrote:
 
-> I think "kexec based hibernation" is the only currently available
-> possible method to write out image without freezer (after driver works
-> are done). If other process is running, how to prevent them from writing
-> to disk without freezing them in current implementation?
+> On Tuesday 04 March 2008, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Move power-related files to Documentation/power/.
+> > 
+> > Move 00-INDEX entries to power/00-INDEX (and add entry for
+> > pm_qos_interface.txt).
+> > 
+> > Update references to moved filenames.
+> > 
+> > Fix some trailing whitespace.
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> >  Documentation/00-INDEX                     |    4 
+> >  Documentation/kernel-parameters.txt        |    2 
+> >  Documentation/pm.txt                       |  257 -------------------
+> >  Documentation/pm_qos_interface.txt         |   59 ----
+> >  Documentation/power/00-INDEX               |    6 
+> >  Documentation/power/pm.txt                 |  257 +++++++++++++++++++
+> >  Documentation/power/pm_qos_interface.txt   |   59 ++++
+> >  Documentation/power/power_supply_class.txt |  169 ++++++++++++
+> >  Documentation/power_supply_class.txt       |  169 ------------
+> >  arch/x86/Kconfig                           |    2 
+> >  kernel/power/Kconfig                       |    2 
+> >  11 files changed, 494 insertions(+), 492 deletions(-)
+> 
+> Randy,
+> This one doesn't apply any more.
+> somebody already remove the power_supply_class.txt file?
 
-This is a very good question.
+Don't think so, but I can't reproduce the problem.
+What kernel tree are you applying it to?
 
-It's a matter of managing the block layer's request queues.  Somehow 
-the existing I/O requests must remain blocked while the requests needed 
-for writing the image must be allowed to proceed.
-
-I don't know what would be needed to make this work, but it ought to be 
-possible somehow...
-
-Alan Stern
+---
+~Randy
