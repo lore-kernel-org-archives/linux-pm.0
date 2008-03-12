@@ -1,15 +1,12 @@
-From: david@lang.hm
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 11 Mar 2008 17:09:32 -0700 (PDT)
-Message-ID: <alpine.DEB.1.00.0803111708270.32330__23545.1280874715$1205280774$gmane$org@asgard.lang.hm>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
-	<1205272758.7990.37.camel@nigel-laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Suspend and hibernation patchset
+Date: Wed, 12 Mar 2008 01:29:24 +0100
+Message-ID: <200803120129.25585.rjw__49163.813427049$1205281957$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1205272758.7990.37.camel@nigel-laptop>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +16,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 12 Mar 2008, Nigel Cunningham wrote:
+Hi,
 
-> 3. Usability.
->
-> Right now, kexec based hibernation looks quite complicated to configure,
-> and the user is apparently going to have to remember to boot a different
-> kernel or at least a different bootloader entry in order to resume. Not
-> a plus. It would be good if you could find a way to use one bootloader
-> entry, resuming if there's an image, booting normally if there's not.
+For everyone interested, I have put together a patchset containing some "fresh"
+patches related to suspend and hibernation, on top of 2.6.25-rc5, located at:
 
-I don't see any reason why this couldn't be done with an initrd to decide 
-if you are doing a normal boot or a restore.
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc5/patches/
 
-David Lang
+I have not yet decided what to do with patches 01-03.  Patch 03 will probably
+be sent upstream soon.
+
+Patch 04 is currently in the "test" branch of the ACPI tree and has been
+tested already for some time in -mm and linux-next.
+
+Patches 05-08, being mainly fixes, have just been sent upstream.
+
+Patch 09, which I'm considering as the most important one, is the first of
+a series that will introduce a new suspend and hibernation framework for
+device drivers.  It introduces the highest-level structures and documents
+them, so if you are planning any modifications in this area, have a look at it
+and please let me know if there are any conflicts, so that we can avoid them.
+
+Thanks,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
