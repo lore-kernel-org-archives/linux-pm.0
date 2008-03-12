@@ -1,15 +1,15 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
+From: "Huang, Ying" <ying.huang@intel.com>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 11 Mar 2008 20:02:55 -0600
-Message-ID: <m1ejagzokw.fsf__28504.5264209204$1205287703$gmane$org@ebiederm.dsl.xmission.com>
+Date: Wed, 12 Mar 2008 10:14:34 +0800
+Message-ID: <1205288074.29875.22.camel__26003.2359547496$1205288192$gmane$org@caritas-dev.intel.com>
 References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com> <200803112318.28120.rjw@sisk.pl>
+	<20080311211004.GA30164@redhat.com>
+	<1205272758.7990.37.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803112318.28120.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue, 11 Mar 2008 23:18:27 +0100")
+In-Reply-To: <1205272758.7990.37.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Wed, 2008-03-12 at 08:59 +1100, Nigel Cunningham wrote:
+> Hi all.
+> 
+> I hope kexec turns out to be a good, usable solution. Unfortunately,
+> however, I still have some areas where I'm not convinced that kexec is
+> going to work or work well:
+> 
+> 1. Reliability.
+> 
+> It's being sold as a replacement for freezing processes, yet AFAICS it's
+> still going to require the freezer in order to be reliable. In the
+> normal case, there isn't much of an issue with freeing memory or
+> allocating swap, and so these steps can be expected to progress without
+> pain. Imagine, however, the situation where another process or processes
+> are trying to allocate large amounts of memory at the same time, or the
+> system is swapping heavily. Although such situations will not be common,
+> they are entirely conceivable, and any implementation ought to be able
+> to handle such a situation efficiently. If the freezer is removed, any
+> hibernation implementation - not just kexec - is going to have a much
+> harder job of being reliable in all circumstances. AFAICS, the only way
+> a kexec based solution is going to be able to get around this will be to
+> not have to allocate memory, but that will require permanent allocation
+> of memory for the kexec kernel and it's work area as well as the
+> permanent, exclusive allocation of storage for the kexec hibernation
+> implementation that's currently in place (making the LCA complaint about
+> not being able to hibernate to swap on NTFS on fuse equally relevant).
 
-> Well, what can I say?
->
-> I haven't been a big fan of doing hibernation this way since the very beginning
-> and I still have the same reservations.  Namely, my opinion is that the
-> hibernation-related problems we have are not just solvable this way.  For one
-> example, in order to stop using the freezer for suspend/hibernation we first
-> need to revamp the suspending/resuming of devices (uder way) and the
-> kexec-based approach doesn't help us here.  I wouldn't like to start another
-> discussion about it though.
+As Eric said kexec need only to allocate memory during loading, not
+executing.
+ 
+> While this might be feasible on machines with larger amounts of memory
+> (you might validly be able to argue that a user won't miss 10MB of RAM),
+> it does make hibernation less viable or unviable for systems with less
+> memory (embedded!). It also means that there are 10MB of RAM (or
+> whatever amount) that the user has paid good money for, but which are
+> probably only used for 30s at a time a couple of times a day.
+> 
+> Any attempt to start to use storage available to the hibernating kernel
+> is also going to have these race issues.
 
-Agreed.  At best all this does is moving the policy on how to save the kernel
-image from the kernel itself out to user space, and it not a cure all.
+I think this can be avoid such as preallocate some hard disk space (such
+as a dedicate hibernating file, the block list are loaded by
+kexec-tools).
 
-> That said, I can imagine some applications of the $subject functionality
-> not directly related to hibernation.  For example, one can use it for kernel
-> debgging (jump to a new kernel, change something in the old kernel's
-> data, jump back and see what happens etc.).  Also, in principle it may be used
-> for such things as live migration of VMs.
+> 2. Lack of ACPI support.
+> 
+> At the moment, noone is going to want to use kexec based hibernation if
+> they have an ACPI system. This needs to be addressed before it can be
+> considered a serious contender.
 
-Also such things as calling BIOS services or EFI services on x86_64.  Where
-vm86 is not useful.
+ACPI is the biggest challenge for kexec based hibernation. I will try to
+deal with it. But for most people, ACPI is not a big issue. This is
+hibernation, not suspend to RAM.
 
-So in principle I think a kexec with return is a logical extension to
-the current kexec functionality.  
+> 3. Usability.
+> 
+> Right now, kexec based hibernation looks quite complicated to configure,
+> and the user is apparently going to have to remember to boot a different
+> kernel or at least a different bootloader entry in order to resume. Not
 
-That said it looks like next month before I will have time to do a reasonable
-job of reviewing the current patches.  
+No, the newest implementation need not to boot a different kernel or
+different bootloader entry. You just use one bootloader entry, it will
+resume if there's an image, booting normally if there's not. You can
+look at the newest hibernation example description.
 
-Eric
+And the new method can even be used to load hibernation image of uswsusp
+too.
+
+> a plus. It would be good if you could find a way to use one bootloader
+> entry, resuming if there's an image, booting normally if there's not.
+
+Best Regards,
+Huang Ying
