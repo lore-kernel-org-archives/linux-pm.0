@@ -1,16 +1,13 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] doc/power: move power-related files to
-	Documentation/power/
-Date: Wed, 12 Mar 2008 17:49:37 -0400
-Message-ID: <200803121749.37889.lenb__48630.5880629972$1205358789$gmane$org@kernel.org>
-References: <20080304134837.dcfed6dd.randy.dunlap@oracle.com>
-	<200803121600.45535.lenb@kernel.org>
-	<20080312144110.113c853b.randy.dunlap@oracle.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 22:53:06 +0100
+Message-ID: <200803122253.07631.rjw__20527.3569947623$1205358932$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080312144110.113c853b.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,71 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dwmw2@infradead.org, cbou@mail.ru
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 12 March 2008, Randy Dunlap wrote:
-> On Wed, 12 Mar 2008 16:00:45 -0400 Len Brown wrote:
+On Wednesday, 12 of March 2008, Alan Stern wrote:
+> On Wed, 12 Mar 2008, Huang, Ying wrote:
 > 
-> > linus top of tree.  i was wrong that it was already gone,
-> > i guess i assumed that since it had 1 hunk and patch
-> > told me the hunk was reversed i assumed that part
-> > had been applied already.
+> > I think "kexec based hibernation" is the only currently available
+> > possible method to write out image without freezer (after driver works
+> > are done). If other process is running, how to prevent them from writing
+> > to disk without freezing them in current implementation?
 > 
-> Can you try the patch below?
-> It works_for_me but that doesn't give me lots of confidence.
+> This is a very good question.
 > 
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> It's a matter of managing the block layer's request queues.  Somehow 
+> the existing I/O requests must remain blocked while the requests needed 
+> for writing the image must be allowed to proceed.
 > 
-> Move power-related files to Documentation/power/.
-> 
-> Move 00-INDEX entries to power/00-INDEX (and add entry for
-> pm_qos_interface.txt).
-> 
-> Update references to moved filenames.
-> 
-> Fix some trailing whitespace.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/00-INDEX                     |    4 
->  Documentation/kernel-parameters.txt        |    2 
->  Documentation/pm.txt                       |  257 -------------------
->  Documentation/pm_qos_interface.txt         |   59 ----
->  Documentation/power/00-INDEX               |    6 
->  Documentation/power/pm.txt                 |  257 +++++++++++++++++++
->  Documentation/power/pm_qos_interface.txt   |   59 ++++
->  Documentation/power/power_supply_class.txt |  169 ++++++++++++
->  Documentation/power_supply_class.txt       |  169 ------------
->  arch/x86/Kconfig                           |    2 
->  kernel/power/Kconfig                       |    2 
->  11 files changed, 494 insertions(+), 492 deletions(-)
-> 
+> I don't know what would be needed to make this work, but it ought to be 
+> possible somehow...
 
-not better
+Yes, it ought to be possible.
 
-Please send it to me as an attachment,
-maybe kmail is getting confused b/c this text has non ascii characters?
+Ultimately, IMHO, we should put all devices unnecessary for saving the image
+(and doing some eye-candy work) into low power states before the image is
+created and keep them in low power states until the system is eventually
+powered off.
 
-(does this patch apply for anybody else?)
+If this is done, the remaining problem is the handling of the devices that we
+need to save the image.  I believe that will be achievable without using the
+freezer.
 
-thanks,
--Len
-
-[lenb@t61 linus (master)]$ patch -Np1 --dry-run < ~/Documents/doc-new.patch
-patching file Documentation/00-INDEX
-patching file Documentation/power/00-INDEX
-patching file Documentation/pm.txt
-patching file Documentation/power/pm.txt
-patching file Documentation/pm_qos_interface.txt
-patching file Documentation/power/pm_qos_interface.txt
-patching file Documentation/power/power_supply_class.txt
-patching file Documentation/power_supply_class.txt
-Reversed (or previously applied) patch detected!  Skipping patch.
-1 out of 1 hunk ignored -- saving rejects to file Documentation/power_supply_class.txt.rej
-patching file arch/x86/Kconfig
-patching file kernel/power/Kconfig
-patching file Documentation/kernel-parameters.txt
-[lenb@t61 linus (master)]$   
+Thanks,
+Rafael
