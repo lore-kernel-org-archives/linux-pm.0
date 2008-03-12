@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 12 Mar 2008 09:57:14 +0100
-Message-ID: <20080312085714.GB3993__25200.1205728904$1205312408$gmane$org@ucw.cz>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
-	<20080311232415.GA26320@elf.ucw.cz>
-	<200803120049.06491.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH] PM: Separate suspend and hibernation
+	callbacks (highest level) - updated
+Date: Wed, 12 Mar 2008 01:37:24 -0800
+Message-ID: <200803120237.24857.david-b__35778.34174871$1205314873$gmane$org@pacbell.net>
+References: <Pine.LNX.4.44L0.0803092219290.31643-100000@netrider.rowland.org>
+	<200803101758.01826.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200803101758.01826.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <200803120049.06491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,54 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Monday 10 March 2008, Rafael J. Wysocki wrote:
+> + * @poweroff: Hibernation-specific, executed after saving a hibernation =
+image.
+> + *=A0=A0=A0=A0=A0Quiesce the device, put it into a low power state appro=
+priate for the
+> + *=A0=A0=A0=A0=A0upcoming system state (such as PCI_D3hot), and enable w=
+akeup events as
+> + *=A0=A0=A0=A0=A0appropriate.
 
-> > > > The features of this patch can be used for as follow:
-> > > > 
-> > > > - A simple hibernation implementation without ACPI support. You can
-> > > >   kexec a hibernating kernel, save the memory image of original system
-> > > >   and shutdown the system. When resuming, you restore the memory image
-> > > >   of original system via ordinary kexec load then jump back.
-> > > > 
-> > > 
-> > > The main usage of this functionality is for hibernation. I am not sure
-> > > what has been the conclusion of previous discussions.
-> > > 
-> > > Rafael/Pavel, does the approach of doing hibernation using a separate
-> > > kernel holds promise?
-> > 
-> > Its certainly "more traditional" method of doing hibernation than
-> > tricks swsusp currently plays.
-> 
-> What exactly are you referring to?
+This seems uncomfortably similar to device_driver.shutdown().
+The only obvious difference is wakeup event handling, and even
+that is already a function of the target system state.
 
-Well, traditionaly it is 'A saves B to disk' (like bootloader saves
-kernel&userspace). In swsusp we have 'kernel saves itself'... which
-works, too, but is pretty different design.
+Are both methods needed?
 
-> > Now, I guess they are some difficulties, like ACPI integration, and
-> > some basic drawbacks, like few seconds needed to boot second kernel
-> > during suspend.
-> > 
-> > ...OTOH this is probably only chance to eliminate freezer from
-> > swsusp...
-> 
-> Some facts:
-> 
-> * There's no reason to think that we can't use this same mechanism for
->   hibernation (the only difficulty seems to be the handling of devices used for
->   saving the image).
-
-Ok, at least kexec makes handling of suspend device easier.
-
-> Moreover, if this had been the _only_ argument for the $subject functionality,
-> I'd have been against it.
-
-Fortunately its not the only one :-).
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Shouldn't this be more generic, not "hibernation-specific"?
