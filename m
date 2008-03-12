@@ -1,14 +1,15 @@
 From: "Huang, Ying" <ying.huang@intel.com>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 12 Mar 2008 09:45:26 +0800
-Message-ID: <1205286326.29069.16.camel__30904.0617351004$1205286573$gmane$org@caritas-dev.intel.com>
+Date: Wed, 12 Mar 2008 09:55:37 +0800
+Message-ID: <1205286937.29875.9.camel__28442.5986269072$1205287009$gmane$org@caritas-dev.intel.com>
 References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
+	<20080311211004.GA30164@redhat.com> <20080311232415.GA26320@elf.ucw.cz>
+	<200803120049.06491.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080311211004.GA30164@redhat.com>
+In-Reply-To: <200803120049.06491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,205 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2008-03-11 at 17:10 -0400, Vivek Goyal wrote: 
-> On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
-> > This is a minimal patch with only the essential features. All
-> > additional features are split out and can be discussed later. I think
-> > it may be easier to get consensus on this minimal patch.
+On Wed, 2008-03-12 at 00:49 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 12 of March 2008, Pavel Machek wrote:
+[...]
 > > 
+> > Its certainly "more traditional" method of doing hibernation than
+> > tricks swsusp currently plays.
 > 
-> Hi Huang,
-> 
-> This patchset is slowly getting better. True that first we need to come
-> up with minimal infrastructure patch and then think of building more
-> functionality on top of it.
-> 
-> 
-> > This patch provides an enhancement to kexec/kdump. It implements
-> > the following features:
-> > 
-> > - Jumping between the original kernel and the kexeced kernel.
-> > 
-> > - Backup/restore memory used by both the original kernel and the
-> >   kexeced kernel.
-> > 
-> > - Save/restore CPU and devices state before after kexec.
-> > 
-> > 
-> > The features of this patch can be used for as follow:
-> > 
-> > - A simple hibernation implementation without ACPI support. You can
-> >   kexec a hibernating kernel, save the memory image of original system
-> >   and shutdown the system. When resuming, you restore the memory image
-> >   of original system via ordinary kexec load then jump back.
-> > 
-> 
-> The main usage of this functionality is for hibernation. I am not sure
-> what has been the conclusion of previous discussions.
-> 
-> Rafael/Pavel, does the approach of doing hibernation using a separate
-> kernel holds promise?
-> 
-> [..]
-> > Usage example of simple hibernation:
-> > 
-> > 1. Compile and install patched kernel with following options selected:
-> > 
-> > CONFIG_X86_32=y
-> > CONFIG_RELOCATABLE=y
-> > CONFIG_KEXEC=y
-> > CONFIG_CRASH_DUMP=y
-> > CONFIG_PM=y
-> > 
-> > 2. Build an initramfs image contains kexec-tool and makedumpfile, or
-> >    download the pre-built initramfs image, called rootfs.gz in
-> >    following text.
-> > 
-> > 3. Prepare a partition to save memory image of original kernel, called
-> >    hibernating partition in following text.
-> > 
-> > 3. Boot kernel compiled in step 1 (kernel A).
-> > 
-> > 4. In the kernel A, load kernel compiled in step 1 (kernel B) with
-> >    /sbin/kexec. The shell command line can be as follow:
-> > 
-> >    /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
-> >      --mem-max=0xffffff --initrd=rootfs.gz
-> > 
-> > 5. Boot the kernel B with following shell command line:
-> > 
-> >    /sbin/kexec -e
-> > 
-> > 6. The kernel B will boot as normal kexec. In kernel B the memory
-> >    image of kernel A can be saved into hibernating partition as
-> >    follow:
-> > 
-> >    jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
-> >    echo $jump_back_entry > kexec_jump_back_entry
-> >    cp /proc/vmcore dump.elf
-> > 
-> 
-> Why not store the entry point in dump.elf itself, instead of storing it
-> in a separate file?
-> 
-> I think this is more like a resumable core file. Something similar to
-> functionality what qemu does for resuming an already booted kernel image.
-> So we might have to introduce an ELF_NOTE to mark an image as resumable
-> core. 
+> What exactly are you referring to?
 
-Yes. The entry point should be saved in dump.elf itself, this can be
-done via a user-space tool such as "makedumpfile". Because
-"makedumpfile" is also used to exclude free pages from disk image, it
-needs a communication method between two kernels (to get backup pages
-map or something like that from kernel A). We have talked about this
-before.
+Long long ago, the hibernation is not done by Linux kernel itself but
+BIOS (APM). Those days, kernel just does some preparation and jump to
+BIOS to do the hibernation. Imagine kernel B is the hibernation BIOS,
+kernel A does some prepare and jump to the BIOS (kernel B) just like the
+old days.
 
-- Your opinion is to communicate via the purgatory. (But I don't know
-how to communicate between kernel A and purgatory).
-- Eric's opinion is to communicate between the user space in kernel A
-and user space in kernel B.
-- My opinion is to communicate between two kernel directly.
-
-I think as a minimal infrastructure patch, we can communicate minimal
-information between user space of two kernels. When we have consensus on
-this topic, we can use makedumpfile for both excluding free pages and
-saving the entry point. Now, we can save the entry point in a separate
-file or I can write a simple tool to do this.
-
-> >    Then you can shutdown the machine as normal.
+> > Yes, I'd like these patches to go in, being able to switch kernels seems like
+> > useful tool. 
+> 
+> No objection from me.
+>  
+> > Now, I guess they are some difficulties, like ACPI integration, and
+> > some basic drawbacks, like few seconds needed to boot second kernel
+> > during suspend.
 > > 
-> > 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
-> >    root file system.
-> > 
-> > 8. In kernel C, load the memory image of kernel A as follow:
-> > 
-> >    /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
-> > 
+> > ...OTOH this is probably only chance to eliminate freezer from
+> > swsusp...
 > 
-> How the memory segments of dump.elf loaded? Normal kexec way? Memory
-> segments of dump.elf are first stored somewhere and then moved to
-> destination at "kexec -e" time?
+> Some facts:
+> 
+> * In order to be able to do suspend (STR) without the freezer, we need to make
+>   device drivers block access to devices from applications during suspend.
+> * There's no reason to think that we can't use this same mechanism for
+>   hibernation (the only difficulty seems to be the handling of devices used for
+>   saving the image).
 
-Yes. Exactly. But during kexec loading, if the source page is same as
-destination page, we need just one page.
+I think "kexec based hibernation" is the only currently available
+possible method to write out image without freezer (after driver works
+are done). If other process is running, how to prevent them from writing
+to disk without freezing them in current implementation?
 
-> Does this really work? If we have 4G RAM, what will be the size of
-> dump.elf? And when we load it back for resuming, do we have sufficient
-> memory left?
-
-Yes. It really works. If we have 4G RAM, the size of dump.elf is 4G -
-(memory area used by second kernel), in this example, it is 4G - 16M.
-The loading kernel will live in 16M memory, and load dump.elf into all
-other memory area.
-
-> May be we can have a separate load flag (--load-resume-image) to mark
-> that we are resuming an hibernated image and kexec does not have to
-> prepare commandline, does not have to prepare zero page/setup page etc.
-
-There is already similar flag in original kexec-tools implementation:
-"--args-none". If it is specified, kexec-tools does not prepare command
-line and zero page/setup page etc. I think we can just re-use this flag.
-And If it is desired an alias is good for me too.
-
-> I have thought through it again and try to put together some of the
-> new kexec options we can introduce to make the whole thing work. I am 
-> considering a simple case where a user boots the kernel A and then
-> launches kernel B using "kexec --load-preseve-context". Now a user
-> might save the hibernated image or might want to come back to A.
+> * We need the drivers to quiesce devices to be able to do the kexec jump in the
+>   first place (and to avoid races, we'll need them to block applications'
+>   access to devices just like for STR, which is the sufficient condition for
+>   removing the freezer).
 > 
-> - kexec -l <kernel-image>
->         Normal kexec functionality. Boot a new kernel, without preserving
->         existing kernel's context.
+> So, I don't really think that the "freezer removal" argument is valid here.
 > 
-> - kexec --load-preserve-context <kernel-image>
->         Boot a new kernel while preserving existing kernel's context.
-> 
->         Will be used for booting kernel B for the first time.
-> 
-> - kexec --load-resume-image <resumable-core>
-
-In original kexec-tools, this can be done through:
-kexec -l --args-none <resumable-core>
-
-Do you need to define an alias for it?
-
->         Resumes an hibernated image. Load a ELF64 hibernated image.
-> 
-> 	Context of first kernel/boot-loader will not be preserved.
-> 
-> 	First kernel will not save cpu states. Will put devices into
-> 	suspended state though so that these can be resumed by resumable
-> 	core
-> 
->         This option can be used by kboot or kernel C to resume an hibernated
-> 	image.
-> 
-> - kexec --load-resume-entry <entry-point>
-
-In current implementation, this can be done through:
-kexec --load-jump-back-helper --entry <entry-point>.
-
-I think the new name is good.
-
->         Image is already loaded. Just prepare the entry point so that one
->         can enter back to previous image. cpu states will be saved and devices
->         will be put to suspended states.
-> 
->         will be used for A --> B and B ---> A transitions. Both A and B are
->         booted. This is just for switching back and forth between A and B.
-> 
-> - kexec -e
->         Transition into the new kernel
-> 
-> This patch looks in pretty decent shape. Once there is some sort of
-> understanding that this approach is promising for hibernation and we
-> have consensus on high level interface, then we can get into line by 
-> line review of the patch set. 
-> 
+> Moreover, if this had been the _only_ argument for the $subject functionality,
+> I'd have been against it.
 
 Best Regards,
 Huang Ying
