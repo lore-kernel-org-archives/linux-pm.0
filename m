@@ -1,16 +1,17 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Wed, 12 Mar 2008 15:17:52 -0400
-Message-ID: <200803121517.52801.lenb__21556.9929373034$1205349628$gmane$org@kernel.org>
-References: <20080303231033.GB15255@one.firstfloor.org>
-	<20080311085145.5fcf3186@mjolnir.drzeus.cx>
-	<20080311104822.GC18917@one.firstfloor.org>
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 15:37:40 -0400
+Message-ID: <20080312193740.GE13549__41116.1673990593$1205350796$gmane$org@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080311211004.GA30164@redhat.com>
+	<1205286326.29069.16.camel@caritas-dev.intel.com>
+	<m1abl4znw6.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080311104822.GC18917@one.firstfloor.org>
 Content-Disposition: inline
+In-Reply-To: <m1abl4znw6.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +21,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, LKML <linux-kernel@vger.kernel.org>, Pierre Ossman <drzeus-list@drzeus.cx>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 11 March 2008, Andi Kleen wrote:
-> > I have now found a very hacky workaround that is slightly better than
-> > disabling C3 altogether; making C3 exclusive to one core at a time. It
-> > seems to kill the noise and the system now spends 50% in C3, instead of
-> > 0%.
+On Tue, Mar 11, 2008 at 08:17:45PM -0600, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
 > 
-> I suspect it won't do much of C3 if only one core is idle this way.
-> Most likely you just disabled C3 this way in a way invisible to software.
+> > Yes. The entry point should be saved in dump.elf itself, this can be
+> > done via a user-space tool such as "makedumpfile". Because
+> > "makedumpfile" is also used to exclude free pages from disk image, it
+> > needs a communication method between two kernels (to get backup pages
+> > map or something like that from kernel A). We have talked about this
+> > before.
+> >
+> > - Your opinion is to communicate via the purgatory. (But I don't know
+> > how to communicate between kernel A and purgatory).
+> 
+> How about the return address on the stack?
+> 
 
-Andi is correct.
-C-states are coordinated in hardware.
-ie. if both cores enter core-C3, then the hardware allows the package
-to enter package C3.
+I think he needs to pass on much more data than just return address. 
 
-Package C-states are a big deal -- that is where most of the power savings is.
+IIUC, he needs to pass backup pages map to new kernel, so that any
+user space tool can use backup pages map to reconstruct/rearrange the
+first kernel's memory core and tools like makedumpfile can do filtering
+before hibernated images is saved.
 
-So preventing all the cores from entering C3 at the same time is
-the opposite of what we want to be doing.
+This brings me to a random thought. Can we break the process of loading
+a hibernation kernel in two steps.
 
--Len
+- In first step just do the memory reservation for running second kernel.
+  (kexec -l <dummpy-file-for-reserving-memory>)
+
+- This memory map of reserved pages is exported to user space.
+
+- Use this memory map and regenerate the hibernation kernel initrd
+  (rootfs.gz) and put the memory map there. This memory map can be used
+  by makedumpfile in second kernel for filtering.
+
+This way it will user space to user space communication of information 
+which gets fixed at kernel loading time.
+
+> > - Eric's opinion is to communicate between the user space in kernel A
+> > and user space in kernel B.
+> 
+> Purgatory is for all intents and purposes user space.  Because the
+> return address falls on the trampoline page we won't know it's
+> address before we call kexec.  But a return address and a stack
+> on that page should be a perfectly good way to communicate.
+> 
+> > - My opinion is to communicate between two kernel directly.
+> >
+> > I think as a minimal infrastructure patch, we can communicate minimal
+> > information between user space of two kernels. When we have consensus on
+> > this topic, we can use makedumpfile for both excluding free pages and
+> > saving the entry point. Now, we can save the entry point in a separate
+> > file or I can write a simple tool to do this.
+> 
+> We need a fixed protocol so we do not make assumptions about how things
+> will be implemented, allowing kernels to diverge and kinds of other
+> good things.
+> 
+> For communicating extra information from the kernel being shut down
+> we have elf notes.
+> 
+> Direct kernel to kernel communication is forbidden.  We must have
+> a well defined protocol.  Allowing the implementations to change
+> at their different speeds, and still work together.
+> 
+
+Agreed. Without a proper protocol, we will often run into issues that
+X version of kernel does not work with Y version of hibernation kernel
+etc.
+
+> >> May be we can have a separate load flag (--load-resume-image) to mark
+> >> that we are resuming an hibernated image and kexec does not have to
+> >> prepare commandline, does not have to prepare zero page/setup page etc.
+> >
+> > There is already similar flag in original kexec-tools implementation:
+> > "--args-none". If it is specified, kexec-tools does not prepare command
+> > line and zero page/setup page etc. I think we can just re-use this flag.
+> > And If it is desired an alias is good for me too.
+> 
+> My gut feel is we look at the image and detect what kind it is, and simply
+> not enable image processing after we have read the note that says it
+> is a resumable core or whatever.
+> 
+
+That makes sense. Just that we shall have to put some kind of ELF NOTE
+or some other identifier in resumable core file to identify it.
+
+Thanks
+Vivek
