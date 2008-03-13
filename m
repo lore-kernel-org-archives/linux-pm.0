@@ -1,14 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Hibernation: Fix mark_nosave_pages()
-Date: Thu, 13 Mar 2008 08:46:21 +0100
-Message-ID: <20080313074621.GB19117__10909.8591180102$1205404266$gmane$org@elf.ucw.cz>
-References: <200803120034.58615.rjw@sisk.pl>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Date: Thu, 13 Mar 2008 11:42:17 +0100
+Message-ID: <20080313104217.GH2522__32382.8267319643$1205404924$gmane$org@one.firstfloor.org>
+References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080310100008.GA9520@elf.ucw.cz>
+	<20080310134915.45ae7446@mjolnir.drzeus.cx>
+	<200803121511.17389.lenb@kernel.org>
+	<20080313081048.GB19808@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200803120034.58615.rjw@sisk.pl>
+In-Reply-To: <20080313081048.GB19808@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +22,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, Pierre Ossman <drzeus-list@drzeus.cx>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2008-03-12 00:34:57, Rafael J. Wysocki wrote:
-> Hi Len,
+On Thu, Mar 13, 2008 at 09:10:48AM +0100, Pavel Machek wrote:
+> Hi!
 > 
-> The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=9966 .
+> > > > USB keeps processor out of C3 in many cases.
+> > > 
+> > > I figured that was the case. But I did not see any difference in powertop.
+> > 
+> > Modern Intel mobile processors have a feature called "C2 popup"
+> > that allows the processor to retire DMA from C3 without
+> > breaking into C0.  Instead the processor pops up to C2
+> > where the cache snoop can allow the DMA to retire --
+> > then it returns to C3, all transparent to software.
 > 
-> Although the problem has been there for quite some time (since before 2.6.22,
-> apparently), it would be good to have in 2.6.25, because it may fix booting
-> problems on the affected systems.
-> 
-> Please note that it doesn't modify the code behavior on the systems which are
-> not affected by bug #9966 .
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> There is a problem in the hibernation code that triggers on some NUMA
-> systems on which pfn_valid() returns 'true' for some PFNs that don't
-> belong to any zone.  Namely, there is a BUG_ON() in
-> memory_bm_find_bit() that triggers for PFNs not belonging to any
-> zone and passing the pfn_valid() test.  On the affected systems it
-> triggers when we mark PFNs reported by the platform as not saveable,
-> because the PFNs in question belong to a region mapped directly using
-> iorepam() (i.e. the ACPI data area) and they pass the pfn_valid()
-> test.
-> 
-> Modify memory_bm_find_bit() so that it returns an error if given PFN
-> doesn't belong to any zone instead of crashing the kernel and ignore
-> the result returned by it in mark_nosave_pages(), while marking the
-> "nosave" memory regions.
-> 
-> This doesn't affect the hibernation functionality, as we won't touch
-> the PFNs in question anyway.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Does that mean we should go to C3 on modern intels, even with
+> busmaster going on, so that cpu can keep going C2..C3..C2 as needed?
 
-ACK. I hate how it adds more code to swsusp, but I could not find a
-simple way to avoid that.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+C3 is still more expensive power wise to enter, so entering C3 just
+to let it immediately go back to C2 for bus mastering would be likely
+still a loss over staying at C2.
+
+-Andi
