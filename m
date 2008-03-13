@@ -1,35 +1,61 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
-Date: Thu, 13 Mar 2008 00:50:46 -0700
-Message-ID: <20080313005046.d52c9044.akpm__5411.32185976512$1205394762$gmane$org@linux-foundation.org>
-References: <200803130214.36861.lenb@kernel.org>
-	<20080312234516.bb079cc5.akpm@linux-foundation.org>
-	<200803130338.05928.lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: +
+	pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspen
+	d-vt-switch.patch added to -mm tree
+Date: Thu, 13 Mar 2008 08:43:32 +0100
+Message-ID: <20080313074332.GA19117@elf.ucw.cz>
+References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org> <20080312085149.GA3993@ucw.cz> <20080312144506.GE1018@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803130338.05928.lenb@kernel.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756112AbYCMKMu@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080312144506.GE1018@cosmic.amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, mm-commits@vger.kernel.org, dilinger@queued.net, adaplas@pol.net, dilinger@debian.org, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 Mar 2008 03:38:05 -0400 Len Brown <lenb@kernel.org> wrote:
 
-> > http://userweb.kernel.org/~akpm/mmotm/broken-out/drivers-acpi-asus_acpic-correct-use-of-and.patch
+> > > (Note: I'm not convinced that console_sem is the best way to protect this, but
+> > > we should probably have some form of locking..)
 > > 
-> >   Fix an overrun.
+> > I guess this is okay for now, but we probably want to make it more
+> > elaborate in future.
+> > 
+> > Console switch is there to make sure kernel (not X) owns the graphical
+> > hardware.
+> > 
+> > That is unneccessary for gxfb since X never owns graphics hardware,
+> > good. (I do not see why it is optional, then. Do you really want to
+> > see tty1?)
 > 
-> this is the same url as above.
+> Its the dream for the lxfb and gxfb to own the graphics hardware
+> completely (at least, thats what Jim Gettys keeps pounding in to my
+> brain), but we're not quite there yet.  What we have here are 
+> framebuffer drivers that are intelligent enough to save and restore the
+> state of the graphics engine, which is still a lot better then most other
+> drivers.
 
-Sorry, should have been
-http://userweb.kernel.org/~akpm/mmotm/broken-out/acpi-fix-overflow.patch
+Ok.
+
+> > Now, question is what happens with two graphics cards, one of them
+> > driven by X. Fortunately that is uncommon.
+> 
+> We would be screwed.  But since the Geode has built in graphics logic,
+> it doesn't make much sense to use an external card, so we'll mostly
+> avoid this problem.  But even if it happens, we'll have the VT switch
+> available in a pinch.
+> 
+> > Also, it would be nice to make the logic the other way around. Move vt
+> > switching to the drivers that need it because X can be expected to own
+> > the hardware.
+> 
+> Conservation of energy.  Its easier to make 3 or 4 drivers opt out of 
+
+Nice euphemism. You did quick hack instead of proper solution, and
+someone will have to clean it up sooner or later...
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
