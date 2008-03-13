@@ -1,17 +1,18 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] doc/power: move power-related files to
-	Documentation/power/
-Date: Wed, 12 Mar 2008 18:08:53 -0400
-Message-ID: <200803121808.53851.lenb__30322.0797134147$1205359891$gmane$org@kernel.org>
-References: <20080304134837.dcfed6dd.randy.dunlap@oracle.com>
-	<200803121749.37889.lenb@kernel.org>
-	<20080312145431.08222a61.randy.dunlap@oracle.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 18:01:16 -0600
+Message-ID: <m1myp3xzjn.fsf__9284.29896380312$1205366848$gmane$org@ebiederm.dsl.xmission.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080311211004.GA30164@redhat.com>
+	<1205272758.7990.37.camel@nigel-laptop>
+	<1205288074.29875.22.camel@caritas-dev.intel.com>
+	<20080312185356.GD13549@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080312145431.08222a61.randy.dunlap@oracle.com>
-Content-Disposition: inline
+In-Reply-To: <20080312185356.GD13549@redhat.com> (Vivek Goyal's message of
+	"Wed, 12 Mar 2008 14:53:56 -0400")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +22,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dwmw2@infradead.org, cbou@mail.ru
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 12 March 2008, Randy Dunlap wrote:
-> On Wed, 12 Mar 2008 17:49:37 -0400 Len Brown wrote:
-> 
-> > On Wednesday 12 March 2008, Randy Dunlap wrote:
-> > > On Wed, 12 Mar 2008 16:00:45 -0400 Len Brown wrote:
-> > > 
-> > > > linus top of tree.  i was wrong that it was already gone,
-> > > > i guess i assumed that since it had 1 hunk and patch
-> > > > told me the hunk was reversed i assumed that part
-> > > > had been applied already.
-> > > 
-> > > Can you try the patch below?
-> > > It works_for_me but that doesn't give me lots of confidence.
-> > > 
-> > > ---
-> ...
-> > > 
-> > 
-> > not better
-> > 
-> > Please send it to me as an attachment,
-> > maybe kmail is getting confused b/c this text has non ascii characters?
-> > 
-> > (does this patch apply for anybody else?)
-> 
-> OK, attached.
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-the attachment worked.
-i guess the problem was something to do with the non-ascii characters
-in that document file.
+> Yes. But this memory gets reserved at loading time and then this memory
+> remains unused for the whole duration (except hibernation).
+>
+> In the example you gave, looks like you are reserving 15MB of memory for
+> second kernel. In practice, we we finding it difficult to boot a regular
+> kernel in 16MB of memory in kdump. We are now reserving 128MB of memory
+> for kdump kernel on x86 arch, otheriwse OOM kill kicks in during init
+> or while core is being copied.
 
-i use kmail for about 18 months b/c it seems to handle both plain text
-and attachments.
-This is the first issue I've had with it (though I did
-recently change to the kmail that comes with FC8 from
-the old version that camem with opensuse 10.2)
+Sounds like something we may want to fix.  Living at the default kernel
+address may alieviate that problem somewhat.
 
-thanks,
--Len
+> Kexec based hibernation does not look any different than kdump in terms
+> of memory requirements. The only difference seems to be that kdump does
+> the contiguous memory reservation at boot time and kexec based hibernation
+> does the memory reservation at kernel loading time.
+>
+> The only difference I can think of is, kdump will generally run on servers
+> and hibernation will be required on desktops/laptops and run time memory
+> requirements might be little different. I don't have numbers though.
+>
+> At the same time carrying a separate kernel binary just for hibernation
+> purposes does not sound very good.
+
+One difference is you only get the memory penalty just before you hibernate,
+instead of continuously.  So potentially you could swap out things to
+make run for the kernel to save you to disk.
+
+> [..]
+>> > 3. Usability.
+>> > 
+>> > Right now, kexec based hibernation looks quite complicated to configure,
+>> > and the user is apparently going to have to remember to boot a different
+>> > kernel or at least a different bootloader entry in order to resume. Not
+>> 
+>> No, the newest implementation need not to boot a different kernel or
+>> different bootloader entry. You just use one bootloader entry, it will
+>> resume if there's an image, booting normally if there's not. You can
+>> look at the newest hibernation example description.
+>> 
+>
+> Following is the step from new method you have given.
+>
+> 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+>    root file system.
+>
+> This mentions that use rootfs.gz as initrd. Without modifying the boot
+> loader entry, how would I switch the initrd dynamically.
+>
+> Looks like it might be a typo. So basically we can just boot back into
+> normal kernel and then a user can load the resumable core file and kexec
+> to it?
+>
+> I think all this functionality can be packed into normal initrd itself
+> to make user interface better.
+>
+> A user can configure the destination for hibernated image at system
+> installation time and initrd will be modified accordingly to save the
+> hibernated image as well to check that user specfied location to find out
+> if a hibernation image is available and needs to be resumed.
+
+Yes.  And we don't need to load any of this until just before hibernation
+time so we should be able to change things right up until the last moment.
+
+Eric
