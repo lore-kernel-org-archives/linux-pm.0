@@ -1,39 +1,34 @@
-From: Andres Salomon <dilinger@queued.net>
-Subject: Re: +
- pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspen
- d-vt-switch.patch added to -mm tree
-Date: Thu, 13 Mar 2008 10:57:50 -0400
-Message-ID: <20080313105750.3e50107a@ephemeral>
-References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
-	<20080312085149.GA3993@ucw.cz>
-	<20080312144506.GE1018@cosmic.amd.com>
-	<20080313074332.GA19117@elf.ucw.cz>
+From: Andrea Arcangeli <andrea@qumranet.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
+Date: Thu, 13 Mar 2008 13:50:16 +0100
+Message-ID: <20080313125016.GZ7365__407.755611422722$1205421195$gmane$org@v2.random>
+References: <200803130214.36861.lenb@kernel.org>
+	<20080312234516.bb079cc5.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756465AbYCMOyH@vger.kernel.org>
-In-Reply-To: <20080313074332.GA19117@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jordan Crouse <jordan.crouse@amd.com>, akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, mm-commits@vger.kernel.org, rjw@sisk.pl
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20080312234516.bb079cc5.akpm@linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 Mar 2008 08:43:32 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
-
-[...]
-> > 
-> > > Also, it would be nice to make the logic the other way around. Move vt
-> > > switching to the drivers that need it because X can be expected to own
-> > > the hardware.
-> > 
-> > Conservation of energy.  Its easier to make 3 or 4 drivers opt out of 
+On Wed, Mar 12, 2008 at 11:45:16PM -0700, Andrew Morton wrote:
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/revert-acpi-thermal-fixup.patch
 > 
-> Nice euphemism. You did quick hack instead of proper solution, and
-> someone will have to clean it up sooner or later...
-> 								Pavel
-> 
+>   Hopeully fix a regression which Andrea Arcangeli hit.  Although I'm not sure
+>   that he has confirmed that this revert actually works?
 
-And I wouldn't be willing to do anything further without approval
-from the fbdevel folks.  No one's stopping you from writing a patch
-if you feel so strongly about it, though.
+Last time I tried it fixed my boot failure (I found it by bisecting).
+
+Thanks.
