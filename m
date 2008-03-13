@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
 Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
-Date: Thu, 13 Mar 2008 14:25:37 +0100
-Message-ID: <1205414737.29877.366.camel__43845.045581884$1205414873$gmane$org@queen.suse.de>
+Date: Thu, 13 Mar 2008 14:50:12 +0100
+Message-ID: <1205416212.21619.2.camel__24433.6626412862$1205416368$gmane$org@queen.suse.de>
 References: <200803130214.36861.lenb@kernel.org>
 	<20080312234516.bb079cc5.akpm@linux-foundation.org>
 	<1205391105.2240.68.camel@acpi-hp-zz.sh.intel.com>
@@ -37,32 +37,68 @@ On Thu, 2008-03-13 at 13:55 +0100, Andrea Arcangeli wrote:
 > started. (you didn't ask for syslog until today)
 > 
 > Hardware is ASUS M2A-VM ACPI BIOS Revision 1604.
-This is pretty sure fixed in 2.6.25-rc5.
+
+If you want to give them a try..., these are the patches which should
+fix this BIOS issue (from Len's release branch):
+
+commit c8d16e27a3601d1cbcdfe657eb4ff5e762019e8d
+Author: Lin Ming <ming.m.lin@intel.com>
+Date:   Fri Feb 29 07:38:54 2008 +0800
+
+    ACPI: fix boot oops regression in thermal
+    
+    Fix a memory overflow bug when copying
+    NULL internal package element object to external.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=10132
+    
+    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+diff --git a/drivers/acpi/utilities/utobject.c b/drivers/acpi/utilities/utobject.c
+index 76ee766..e08b3fa 100644
+--- a/drivers/acpi/utilities/utobject.c
++++ b/drivers/acpi/utilities/utobject.c
+@@ -432,7 +432,7 @@ acpi_ut_get_simple_object_size(union acpi_operand_object *internal_object,
+ 	 * element -- which is legal)
+ 	 */
+ 	if (!internal_object) {
+-		*obj_length = 0;
++		*obj_length = sizeof(union acpi_object);
+ 		return_ACPI_STATUS(AE_OK);
+ 	}
  
-It's probably this:
-https://bugzilla.novell.com/show_bug.cgi?id=350017
-It's fixed by:
-c8d16e27a3601d1cbcdfe657eb4ff5e762019e8d
--> fixing the memory corruption
-b6a163875935ce8e8e85901a7f2b68f7a314d914
--> check the pointer which is now not corrupted anymore, but NULL.
 
-Hmm, the commits are only in Len's tree and have not hit
-Linus' tree yet.
+commit b6a163875935ce8e8e85901a7f2b68f7a314d914
+Author: Thomas Renninger <trenn@suse.de>
+Date:   Wed Mar 12 01:06:24 2008 +0100
 
-   Thomas
+    ACPICA: Warn if packages with invalid references are evaluated
+    
+    And return an error to avoid NULL pointer access by the caller
+    Lin Ming's patch avoids corrupted mem access when
+    BIOS has invalid references included, the handle is now zero
+    instead of corrupted.
+    
+    Signed-off-by: Thomas Renninger <trenn@suse.de>
+    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-> email message attachment
-> > -------- Forwarded Message --------
-> > From: Andrea Arcangeli <andrea@qumranet.com>
-> > To: Zhang, Rui <rui.zhang@intel.com>
-> > Cc: Thomas, Sujith <sujith.thomas@intel.com>, Brown, Len
-> > <len.brown@intel.com>
-> > Subject: Re: thermal.c crash at boot
-> > Date: Thu, 21 Feb 2008 15:55:56 +0100
-> > 
-> > On Mon, Feb 18, 2008 at 09:15:13AM +0800, Zhang, Rui wrote:
-> > > Please attach the acpidump output.
-> > 
-> > attached.
-> > 
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index eba55b7..44ea60c 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -407,6 +407,12 @@ acpi_evaluate_reference(acpi_handle handle,
+ 			break;
+ 		}
+ 
++		if (!element->reference.handle) {
++			printk(KERN_WARNING PREFIX "Invalid reference in"
++			       " package %s\n", pathname);
++			status = AE_NULL_ENTRY;
++			break;
++		}
+ 		/* Get the  acpi_handle. */
+ 
+ 		list->handles[i] = element->reference.handle;
