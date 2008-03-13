@@ -1,15 +1,16 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Thu, 13 Mar 2008 09:47:30 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEB33CDD__25006.0188737281$1205427843$gmane$org@orsmsx423.amr.corp.intel.com>
-References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org><20080310100008.GA9520@elf.ucw.cz><20080310134915.45ae7446@mjolnir.drzeus.cx><200803121511.17389.lenb@kernel.org>
-	<20080313173437.5f00f70e@mjolnir.drzeus.cx>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Thu, 13 Mar 2008 18:03:29 +0100
+Message-ID: <200803131803.31120.rjw__5164.24103775552$1205428042$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
+	<200803122253.07631.rjw@sisk.pl>
+	<m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20080313173437.5f00f70e@mjolnir.drzeus.cx>
+In-Reply-To: <m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Ossman <drzeus-list@drzeus.cx>, Len Brown <lenb@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
- 
+On Thursday, 13 of March 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > Yes, it ought to be possible.
+> >
+> > Ultimately, IMHO, we should put all devices unnecessary for saving the image
+> > (and doing some eye-candy work) into low power states before the image is
+> > created and keep them in low power states until the system is eventually
+> > powered off.
+> 
+> Why?  I guess I don't see why we care what power state the devices are in.
+> Especially since we should be able to quickly save the image.
+> 
+> We need to disconnect the drivers from the hardware yes.  So filesystems
+> still work and applications that do direct hardware access still work
+> and don't need to reopen their connections.
+> 
+> I'm leery of low power states as they don't always work, and bringing
+> low power states seems to confuse hibernation to disk with suspend to
+> ram.
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Pierre Ossman
->Sent: Thursday, March 13, 2008 9:35 AM
->To: Len Brown
->Cc: linux-pm@lists.linux-foundation.org; Pavel Machek; LKML; 
->Adam Belay; Andi Kleen; Lee Revell
->Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
->
->On Wed, 12 Mar 2008 15:11:17 -0400
->Len Brown <lenb@kernel.org> wrote:
->
->> > 
->> > So for now, the only viable workaround is processor.max_cstate....
->> 
->> yup, that's why we put it in.  Is it insufficient?
->> 
->
->For some value of insufficient. It is sub-optimal. I'm hoping 
->there is a way to enter C3 in a pattern that avoids the noise 
->and still gives a reduced power usage.
->
+>From the ACPI compliance point of view it's better to do it this way.  We need
+to put the devices into low power states anyway before "powering off" the
+system and we won't need to touch them for the second time if we do that
+in advance.
 
-Can you try using /dev/cpu_dma_latency from an user space application.
-Refer Documentation/pm_qos_interface.txt for usage. With this interface
-you can change menu governor behavior from userspace, by dynamically
-allowing it to use C3 or not. I am thinking that something like allowing
-C3 for few seconds and blocking it for few seconds may help.
+Still, it would be sufficient if we disconnected the drivers from the hardware
+and thus prevented applications from accessing that hardware.
 
 Thanks,
-Venki
+Rafael
