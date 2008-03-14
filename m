@@ -1,17 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Thu, 13 Mar 2008 17:07:17 -0600
-Message-ID: <m1ejaew7dm.fsf__7938.11047119579$1205450048$gmane$org@ebiederm.dsl.xmission.com>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803122253.07631.rjw@sisk.pl>
-	<m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
-	<200803131803.31120.rjw@sisk.pl>
+From: Andrea Arcangeli <andrea@qumranet.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
+Date: Fri, 14 Mar 2008 01:28:57 +0100
+Message-ID: <20080314002857.GO7365__38190.8953575932$1205454747$gmane$org@v2.random>
+References: <200803130214.36861.lenb@kernel.org>
+	<20080312234516.bb079cc5.akpm@linux-foundation.org>
+	<20080313125016.GZ7365@v2.random>
+	<200803131349.27964.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803131803.31120.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Thu, 13 Mar 2008 18:03:29 +0100")
+Content-Disposition: inline
+In-Reply-To: <200803131349.27964.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +21,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, Mar 13, 2008 at 01:49:27PM -0400, Len Brown wrote:
+> or check out Linus' top of tree and apply the plain patch:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.25/acpi-release-20070126-2.6.25-rc5.diff.gz
 
-> From the ACPI compliance point of view it's better to do it this way.  We need
-> to put the devices into low power states anyway before "powering off" the
-> system and we won't need to touch them for the second time if we do that
-> in advance.
-
-Interesting.  From a kexec jump where we exit the kernel and then return
-to it seem all that is required.
-
-I will have to look at the ACPI case.  That seems to be the lynch pin
-of a couple of arguments for doing strange things: ACPI requires it.
-
-> Still, it would be sufficient if we disconnected the drivers from the hardware
-> and thus prevented applications from accessing that hardware.
-
-My gut feeling is that except for a handful of drivers we could even
-get away with simply implementing hot unplug and hot replug.  Disks
-are the big exception here.
-
-Which suggests to me that it is at least possible that the methods we
-want for a kexec jump hibernation may be different from an in-kernel
-hibernation and quite possibly are easier to implement.
-
-Eric
+This fixed my problem thanks.
