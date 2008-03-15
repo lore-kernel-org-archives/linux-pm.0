@@ -1,19 +1,13 @@
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [PATCH] cpuidle: avoid singing capacitors
-Date: Sat, 15 Mar 2008 01:41:43 +0100
-Message-ID: <20080315014143.32d0d5e9__44184.0989901268$1205541979$gmane$org@mjolnir.drzeus.cx>
-References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080310100008.GA9520@elf.ucw.cz>
-	<20080310134915.45ae7446@mjolnir.drzeus.cx>
-	<200803121511.17389.lenb@kernel.org>
-	<20080313173437.5f00f70e@mjolnir.drzeus.cx>
-	<20080314204041.6e376568@mjolnir.drzeus.cx>
-	<924EFEDD5F540B4284297C4DC59F3DEEB34783@orsmsx423.amr.corp.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH 0/3] PM wakeup flags revisited
+Date: Sat, 15 Mar 2008 17:53:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803151708160.28007-100000__20407.8588438735$1205618164$gmane$org@netrider.rowland.org>
+References: <200803142337.12605.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEB34783@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <200803142337.12605.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,47 +17,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>, Andi Kleen <andi@firstfloor.org>, Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: sfr@canb.auug.org.au, Kernel development list <linux-kernel@vger.kernel.org>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org, apw@shadowen.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 Mar 2008 14:15:46 -0700
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+On Fri, 14 Mar 2008, Rafael J. Wysocki wrote:
 
+> On Friday, 14 of March 2008, Andrew Morton wrote:
+
+> > Sorry, but that code should be dragged out and shot.  Doing this:
+> > 
+> > > 	device_can_wakeup(tty_dev) = 1;
+> > 
+> > is just gross and stupid.  It looks daft, it isn't C and it *requires* that
+> > device_can_wakeup() be implemented as a macro, which totally busts any
+> > concept of abstraction.
+
+It seems to have been a one-time occurrence.  This patch series fixes 
+it.
+
+> > The code previously had quite reasonable accessors:
+> > 
+> >  #define device_set_wakeup_enable(dev,val) \
+> >         ((dev)->power.should_wakeup = !!(val))
+> >  #define device_may_wakeup(dev) \
+> >         (device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> > 
+> > can we please go back to that scheme?  Please also convert all these
+> > magical macros into inlined C functions.  One reason is that this:
+> > 
+> > +#define device_init_wakeup(dev,val) \
+> > +       do { \
+> > +               device_can_wakeup(dev) = !!(val); \
+> > +               device_set_wakeup_enable(dev,val); \
+> > +       } while(0)
+> > 
+> > is buggy.  It evaluates its arguments multiple times and will cause
+> > failures when passed expressions which have side-effects.
+
+This series converts the macros to inline functions.
+
+> > Alan, please also pass all future patches through checkpatch - there is no
+> > need to be adding trivial coding-style errors in this day and age.
+
+Rest assurred that checkpath is now an integral part of my normal 
+workflow.  All the patches in this series pass with flying colors.
+
+> Well, Greg please drop the "PM: make wakeup flags available whenever CONFIG_PM
+> is set" and Alan please resubmit the patch with the problems pointed out by
+> Andrew fixed.
 > 
-> Why go only one C-state down. Why not directly drop to max_hwcstate? We
-> don't need to loop through that way.
-> 
+> In fact I'd even prefer it to be two patches, one that moves should_wakeup and
+> the related macros out of the CONFIG_PM_SLEEP #ifdef, because that's what fixes
+> the problem described in the changelog, and one that makes the remaining
+> changes with a separate changelog.
 
-Good point. But we can't just jump there and be done with it. That state might not be available (then again, we could require the user to put in a valid max_hwcstate, but that isn't as user friendly).
+Done.
 
-> There are few other concerns which make me feel that the patch will be
-> not as simple as this.
-> 1) BIOS may already be exporting the lower C-states as separate states.
-> In which case we just have to ignore this deep C-state and return. I
-> mean, on your system if BIOS exports C1, C3 and C6 hardware C-states and
-> you give max_hwcstate as C3, then we don't want to have C1, C3 and C3 in
-> our list.
-> 
+The 1/3 patch fixes the unfortunate code in the serial-core driver.
 
-Indeed. But the current system doesn't easily allows us to handle that. Any ideas?
+The 2/3 patch moves the macros out from under CONFIG_PM_SLEEP.
 
-> 2) On same lines the other information in ACPI like (low power of 100
-> and higher latency for C6 on your system) corresponds to hardware C6
-> state. If we change the hardware C-state here to C3, then continue to
-> use latency info from ACPI for hw C6, that may lead to inefficient state
-> selection in the governor. Also, ther are assumptions related DMA,
-> lapic, TSC etc in upper level ACPI based on "ACPI C-state" and changing
-> underlying hardware C-state to C1 for example will change some of those
-> behavior.
-> 
+The 3/3 patch converts the macros to inline functions and creates a new
+pm_wakeup.h file for them.  They can't remain in pm.h, because they
+depend on the definition of struct device -- and the compiler hasn't
+seen that yet when pm.h is read.
 
-It is still way better going to C3 less than possible than not at all (i.e. the previous workaround of processor.max_cstate). As far as I can tell from the documentation, every C-state includes all of the negative side effects of the ones preceding it. So it should just be a matter of sub-optimal selection by the governor. And I don't see how we can fix that without a big table for each processor and possibly chipset.
+It's not clear why the can_wakeup accessors are written to work even
+when CONFIG_PM isn't set.  Nevertheless, the patches retain that
+behavior.
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Alan Stern
