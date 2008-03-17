@@ -1,14 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Too many timer interrupts in NO_HZ
-Date: Mon, 17 Mar 2008 00:44:49 -0800
-Message-ID: <200803170144.50990.david-b__1543.54239716685$1205743709$gmane$org@pacbell.net>
-References: <Pine.LNX.4.44L0.0803162224460.2108-100000@netrider.rowland.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: Metrics for comparing power savings of patches...
+Date: Mon, 17 Mar 2008 08:50:36 -0700
+Message-ID: <47DE934C.9020901__8925.87745697728$1205769331$gmane$org@linux.intel.com>
+References: <20080307170105.AF99E1A0039@mailserver8.hushmail.com>
+	<20080316190341.GA4638@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803162224460.2108-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20080316190341.GA4638@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Chanda Sethia <chanda.sethia@in.ibm.com>, suresh.b.siddha@intel.com, Linux Kernel <linux-kernel@vger.kernel.org>, discuss@lesswatts.org, tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Scott Thompson <postfail@hushmail.com>, power@bughost.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 16 March 2008, Alan Stern wrote:
-> On Sun, 16 Mar 2008, Vaidyanathan Srinivasan wrote:
+Pavel Machek wrote:
+>> However, I have seen that most wattmeters do a 'better' job at 
+>> measuring total wattage over an interval than the 'instant 
+>> reading'. I advise caution in advertising 'expected savings' for 
+>> instant readings....
+>>
+>> Also, if anyone knows of any free benchmarks, best practices, or 
+>> guidelines for trying to do comparative power analysis for patches 
+>> with wattmeters please let me know.
 > 
-> The largest entry is for ehci_watchdog.  This timer won't run at all if
+> Intel has something on lesswatts.org.
 
-... you're not accessing EHCI devices at all.  Is HAL or
-something else polling them too often?  Or are you maybe
-doing something else that resembles "real work"?
+the most "accurate" method is "minutes before the battery is empty" as long
+as you do measurements shortly after eachother on the same battery and take care
+of how full the battery is charged when you start the rundown.
 
-
-> your EHCI controllers are allowed to autosuspend, which will happen
-> automatically if
-> 
-> 	(1) You enable CONFIG_USB_SUSPEND, and
-> 
-> 	(2) You have no high-speed USB devices attached, or the
-> 	    ones that are attached have all been suspended.
-> 
-> On the other hand, if you were actively using some high-speed USB 
-> device during the test then it's understandable that there should be 
-> lots of timer interrupts as a result.
-
-That watchdog is a bit messy, but it's got two basic tasks:
-
- (a) Take work off the async ring ... bulk and control
-     transfers will leave an empty QH there for a few
-     milliseconds before taking it off, to avoid wasting
-     effort in the common case where another transfer
-     quickly follows the first one.  In the extreme case,
-     when there's no more work, that ring gets disabled.
-
- (b) A real I/O watchdog ... in case the hardware forgets
-     to issue some kind of I/O completion interrupt.  This
-     watchdog rarely needs to fire.
-
-So I'm thinking this is most likely a case where something
-is sending work to one or more high speed devices.
-
-- Dave
+However.. this takes forever to do any kind of experiment.
