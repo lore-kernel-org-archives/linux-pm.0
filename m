@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
- and hibernation callbacks
-Date: Tue, 18 Mar 2008 11:10:05 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803181103410.1476-100000@netrider.rowland.org>
-References: <20080318100106.GA10830@elf.ucw.cz>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Tue, 18 Mar 2008 10:56:09 -0600
+Message-ID: <m1prtsug2e.fsf__27347.3368179568$1205860096$gmane$org@ebiederm.dsl.xmission.com>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
+	<200803131803.31120.rjw@sisk.pl>
+	<m1ejaew7dm.fsf@ebiederm.dsl.xmission.com>
+	<200803140231.39282.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080318100106.GA10830@elf.ucw.cz>
+In-Reply-To: <200803140231.39282.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 14 Mar 2008 02:31:38 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +21,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 18 Mar 2008, Pavel Machek wrote:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> > + * @complete: Undo the changes made by @prepare().  This method is executed for
-> > + *	all kinds of resume transitions, immediately following one of the resume
-> > + *	callbacks: @resume(), @thaw(), @restore(), or @recover().  Also executed
-> > + *	if a suspend callback (@suspend(), @freeze(), @poweroff(), @quiesce())
-> > + *	immediately following a successful @prepare() fails OR if a new child
-> > + *	of the device has been registered during @prepare().
+> On Friday, 14 of March 2008, Eric W. Biederman wrote:
+>
+>> > Still, it would be sufficient if we disconnected the drivers from the
+> hardware
+>> > and thus prevented applications from accessing that hardware.
+>> 
+>> My gut feeling is that except for a handful of drivers we could even
+>> get away with simply implementing hot unplug and hot replug.  Disks
+>> are the big exception here.
+>> 
+>> Which suggests to me that it is at least possible that the methods we
+>> want for a kexec jump hibernation may be different from an in-kernel
+>> hibernation and quite possibly are easier to implement.
+>
+> I'm not sure about the "easier" part, quite frankly.  Also, with our current
+> ordering of code the in-kernel hibernation will need the same callbacks
+> as the kexec-based thing.  However, with the in-kernel approach we can
+> attempt (in the future) to be more ACPI compliant, so to speak, but with the
+> kexec-based approach that won't be possible.
+>
+> Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
+> a separate question, but IMO we won't be able to answer it without _lots_ of
+> testing on vaious BIOS/firmware configurations.  Our experience so far
+> indicates that at least some BIOSes expect us to follow ACPI and misbehave
+> otherwise, so for those systems there should be an "ACPI way" available.
+> [Others just don't work well if we try to follow ACPI and those may be handled
+> using the kexec-based approach, but that doesn't mean that we can just ignore
+> the ACPI compliance issue, at least for now.]
 
-"during a successful call to @prepare()"?
+If we do use the ACPI S4 state I completely agree we should be at
+least spec compliant in how we use it.
 
-> So... we do prepare() but it detects new child, so it returns -EAGAIN.
->   so we call complete() based on description above
-> ...and then we call prepare() to suspend again?
+I took a quick skim through my copy of the ACPI spec so I could get a
+feel for this issue.  Hibernation maps to the ACPI S4 state.  The only
+thing we appear to gain from S4 is the ability to tell the BIOS (so it
+can tell a bootloader) that this was a hibernation power off instead
+of simply a software power off.
 
-You misunderstood (maybe the comment needs to be clarified as above).  
+It looks like entering the ACPI S4 state has a few advantages with
+respect to how the system wakes up.  In general using the ACPI S5
+state (soft off) appears simpler, and potentially more reliable.
 
-If prepare() returns any error (including -EAGAIN) then complete() does
-not get called.  If prepare() returns successfully but the PM core
-detects that a new child was added while prepare() was running, then we
-call complete(), suspend the child, and call prepare() again.
+The sequence we appear to want is:
+- Disconnecting drivers from devices.
+- Saving the image.
+- Placing the system in a low power or off state.
 
-> > + * @suspend: Executed before putting the system into a sleep state in which the
-> > + *	contents of main memory are preserved.  Quiesce the device, put it into
-> 
-> content....is?
+- Coming out of the low power state.
+- Restoring the image.
+- Reconnecting drivers to devices.
+  (We must assume the device state could have changed here
+   no matter what we do)
 
-It's okay to use "contents" -- analogous to the table of contents in a
-book.  It's one of those weird corner cases where either alternative is
-acceptable.
+It is mostly a matter of where we place the code.
 
-Alan Stern
+Right now I don't see a limitation either with a kexec based approach
+or without one.  Especially since the common case would be using
+the same kernel with the same drivers both before and after the
+hibernation event.
+
+The low power states for S4 seem to be just so that we can
+decide which devices have enough life that they can wake up
+the system.  If we handle all of that as a second pass after
+we have the system in a state where we have saved it we should
+be in good shape.
+
+My inclination is to just use S5 (soft off).
+
+One of the cool things about hibernation to disk was that we were
+supposed to get the BIOS totally out of that path so we could get
+something that was rock solid and reliable.  I don't see why we should
+use ACPI S4 when the BIOS doesn't seem to give us anything useful, and
+causes us headaches we should even consider using S4.
+
+Does using the S4 state have advantages that I currently do not
+see?
+
+Len? Rafael? Anyone?
+
+Eric
