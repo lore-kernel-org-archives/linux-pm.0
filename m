@@ -1,17 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 18 Mar 2008 10:56:09 -0600
-Message-ID: <m1prtsug2e.fsf__27347.3368179568$1205860096$gmane$org@ebiederm.dsl.xmission.com>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803131803.31120.rjw@sisk.pl>
-	<m1ejaew7dm.fsf@ebiederm.dsl.xmission.com>
-	<200803140231.39282.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
+	hibernation	patchset against -rc6)
+Date: Tue, 18 Mar 2008 18:07:06 +0100
+Message-ID: <20080318170706.GA1580@elf.ucw.cz>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
+	<20080318130642.GA1609@elf.ucw.cz>
+	<20080318130710.GB1609@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803140231.39282.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 14 Mar 2008 02:31:38 +0100")
+Content-Disposition: inline
+In-Reply-To: <20080318130710.GB1609@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,88 +22,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tue 2008-03-18 14:07:10, Pavel Machek wrote:
+> On Tue 2008-03-18 14:06:42, Pavel Machek wrote:
+> > 
+> > Confirmed, suspend slowness is in 2.6.25-rc6, too. It takes 15 seconds
+> > to suspend/resume, while 2.6.24 takes 9. Thinkpad x60.
+> 
+> IIRC 2.6.25-rc5 was "fast".
 
-> On Friday, 14 of March 2008, Eric W. Biederman wrote:
->
->> > Still, it would be sufficient if we disconnected the drivers from the
-> hardware
->> > and thus prevented applications from accessing that hardware.
->> 
->> My gut feeling is that except for a handful of drivers we could even
->> get away with simply implementing hot unplug and hot replug.  Disks
->> are the big exception here.
->> 
->> Which suggests to me that it is at least possible that the methods we
->> want for a kexec jump hibernation may be different from an in-kernel
->> hibernation and quite possibly are easier to implement.
->
-> I'm not sure about the "easier" part, quite frankly.  Also, with our current
-> ordering of code the in-kernel hibernation will need the same callbacks
-> as the kexec-based thing.  However, with the in-kernel approach we can
-> attempt (in the future) to be more ACPI compliant, so to speak, but with the
-> kexec-based approach that won't be possible.
->
-> Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
-> a separate question, but IMO we won't be able to answer it without _lots_ of
-> testing on vaious BIOS/firmware configurations.  Our experience so far
-> indicates that at least some BIOSes expect us to follow ACPI and misbehave
-> otherwise, so for those systems there should be an "ACPI way" available.
-> [Others just don't work well if we try to follow ACPI and those may be handled
-> using the kexec-based approach, but that doesn't mean that we can just ignore
-> the ACPI compliance issue, at least for now.]
+rc6:
 
-If we do use the ACPI S4 state I completely agree we should be at
-least spec compliant in how we use it.
+CPU0 attaching sched-domain:
+ domain 0: span 3
+  groups: 1 2
+CPU1 attaching sched-domain:
+ domain 0: span 3
+  groups: 2 1
+CPU1 is up
+ACPI: EC: missing OBF confirmation, don't expect it any longer.
 
-I took a quick skim through my copy of the ACPI spec so I could get a
-feel for this issue.  Hibernation maps to the ACPI S4 state.  The only
-thing we appear to gain from S4 is the ability to tell the BIOS (so it
-can tell a bootloader) that this was a hibernation power off instead
-of simply a software power off.
 
-It looks like entering the ACPI S4 state has a few advantages with
-respect to how the system wakes up.  In general using the ACPI S5
-state (soft off) appears simpler, and potentially more reliable.
+(there's ~.5 sec delay here)
 
-The sequence we appear to want is:
-- Disconnecting drivers from devices.
-- Saving the image.
-- Placing the system in a low power or off state.
+ACPI: EC: missing write data confirmation, don't expect it any longer.
 
-- Coming out of the low power state.
-- Restoring the image.
-- Reconnecting drivers to devices.
-  (We must assume the device state could have changed here
-   no matter what we do)
+(and > 3 sec delay here)
 
-It is mostly a matter of where we place the code.
+PM: Writing back config space on device 0000:00:02.0 at offset 1 (was
+900003, writing 900007)
+PCI: Setting latency timer of device 0000:00:02.0 to 64
+PM: Writing back config space on device 0000:00:02.1 at offset 1 (was
+900000, writing 900003)
+PM: Writing back config space on device 0000:00:1b.0 at offset 1 (was
+100106, writing 100102)
+PCI: Setting latency timer of device 0000:00:1b.0 to 64
+PCI: Setting latency timer of device 0000:00:1c.0 to 64
+PCI: Setting latency timer of device 0000:00:1c.1 to 64
 
-Right now I don't see a limitation either with a kexec based approach
-or without one.  Especially since the common case would be using
-the same kernel with the same drivers both before and after the
-hibernation event.
 
-The low power states for S4 seem to be just so that we can
-decide which devices have enough life that they can wake up
-the system.  If we handle all of that as a second pass after
-we have the system in a state where we have saved it we should
-be in good shape.
-
-My inclination is to just use S5 (soft off).
-
-One of the cool things about hibernation to disk was that we were
-supposed to get the BIOS totally out of that path so we could get
-something that was rock solid and reliable.  I don't see why we should
-use ACPI S4 when the BIOS doesn't seem to give us anything useful, and
-causes us headaches we should even consider using S4.
-
-Does using the S4 state have advantages that I currently do not
-see?
-
-Len? Rafael? Anyone?
-
-Eric
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
