@@ -1,20 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation	patchset against -rc6)
-Date: Wed, 19 Mar 2008 11:19:47 +0100
-Message-ID: <20080319101947.GA2963@elf.ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
-	<20080318130642.GA1609@elf.ucw.cz>
-	<20080318130710.GB1609@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
-	<20080318225201.GA2115@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and	hibernation callbacks
+Date: Wed, 19 Mar 2008 10:15:27 +0100
+Message-ID: <20080319091526.GA1938@elf.ucw.cz>
+References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
+	<20080319005340.GC8298@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
+In-Reply-To: <20080319005340.GC8298@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,30 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue 2008-03-18 17:53:40, Greg KH wrote:
+> On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Introduce 'struct pm_ops' representing a set of suspend and
+> > hibernation operations for bus types, device classes and device
+> > types.
+> 
+> Ok, I must have missed the thread describing why we need to do this, so,
+> why do we need to do this?  What is this going to buy us in the end
+> after everything is changed?
 
-> > It will take a while. My .git directory is 7G, and I'd like to do a
-> > backup before playing with git.
-> 
-> Ouch, what have you done? It should be about 200MB, not 7GB.
-> 
-> > git gc does not exist here, so I guess I need to update git, too :-(.
-> 
-> Well, even with old git you can just do 
-> 
-> 	git repack -a -d
-> 
-> and in your case you'll probably have to leave it running overnight, 
-> because it's going to take hours since you've clearly not ever repacked it 
-> before and as a result it's going to do lots and lots of IO (all that 7GB 
-> and then read much of it twice).
+That was rather long thread where Linus flamed us for having
+everything in one "suspend" callback, selecting what to do by
+pm_message_t parameter. It was kind of hard to miss ;-).
+								Pavel
 
-And 10 minutes later, .git directory is 200MB. Thanks!
 
+> > +struct pm_ops {
+> > +#ifdef CONFIG_PM_SLEEP
+> > +	int (*prepare)(struct device *dev);
+> > +	void (*complete)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_SUSPEND
+> > +	int (*suspend)(struct device *dev);
+> > +	int (*resume)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_HIBERNATION
+> > +	int (*freeze)(struct device *dev);
+> > +	int (*thaw)(struct device *dev);
+> > +	int (*poweroff)(struct device *dev);
+> > +	int (*quiesce)(struct device *dev);
+> > +	int (*restore)(struct device *dev);
+> > +	int (*recover)(struct device *dev);
+> > +#endif
+> 
+> 
+> Don't ifdef stuff like this, it only causes ifdefs to be needed to the
+> .c code as well for all places these structures are defined in
+> drivers/busses, right?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
