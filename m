@@ -1,8 +1,8 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
 	hibernation patchset against -rc6)
-Date: Wed, 19 Mar 2008 11:56:18 +0100
-Message-ID: <20080319105618.GA8298@atrey.karlin.mff.cuni.cz>
+Date: Wed, 19 Mar 2008 12:48:51 +0100
+Message-ID: <20080319114851.GB21270@atrey.karlin.mff.cuni.cz>
 References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
 	<20080318130642.GA1609@elf.ucw.cz>
 	<20080318130710.GB1609@elf.ucw.cz>
@@ -30,26 +30,6 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > It will take a while. My .git directory is 7G, and I'd like to do a
-> > backup before playing with git.
-> 
-> Ouch, what have you done? It should be about 200MB, not 7GB.
-
-Nothing, just used git.
-
-> > git gc does not exist here, so I guess I need to update git, too :-(.
-> 
-> Well, even with old git you can just do 
-> 
-> 	git repack -a -d
-> 
-> and in your case you'll probably have to leave it running overnight, 
-> because it's going to take hours since you've clearly not ever repacked it 
-> before and as a result it's going to do lots and lots of IO (all that 7GB 
-> and then read much of it twice).
-
-I actually _did_ repack before, and this repack was reasonably quick.
-
 > > commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
 > > 
 > >     ACPI: Ignore _BQC object when registering backlight device
@@ -62,11 +42,16 @@ I actually _did_ repack before, and this repack was reasonably quick.
 > 	v2.6.25-rc5-89-g7c0ea45
 > 
 > so it happened after -rc5.
+> 
+> > And that means that ACPI backlight driver is now used on machines where 
+> > it was not used before...?
+> 
+> Somebody more into ACPI needs to judge how likely this is to be an issue..
 
-Ok, so I confirmed that kernel-breaks-backlight-in-X-after-lid-reopen
-is indeed regression between -rc5 and -rc6. Reverting drivers/acpi in
--rc6 fixes this regression.
-								Pavel
+Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
+of drivers/acpi/ec.c patch fixed the
+"rc6-breaks-backlight-in-X-over-lid-close", good.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
