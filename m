@@ -1,19 +1,20 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
 	hibernation	patchset against -rc6)
-Date: Wed, 19 Mar 2008 12:49:24 +0100
-Message-ID: <20080319114924.GC21270@atrey.karlin.mff.cuni.cz>
+Date: Wed, 19 Mar 2008 11:19:47 +0100
+Message-ID: <20080319101947.GA2963@elf.ucw.cz>
 References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
 	<20080318130642.GA1609@elf.ucw.cz>
 	<20080318130710.GB1609@elf.ucw.cz>
 	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
-	<20080318232037.GA1670@elf.ucw.cz> <47E05408.7000003@suse.de>
+	<20080318225201.GA2115@elf.ucw.cz>
+	<alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <47E05408.7000003@suse.de>
+In-Reply-To: <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,51 +24,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-> Pavel Machek wrote:
-> >On Tue 2008-03-18 10:31:28, Linus Torvalds wrote:
-> >>
-> >>On Tue, 18 Mar 2008, Pavel Machek wrote:
-> >>>On Tue 2008-03-18 14:06:42, Pavel Machek wrote:
-> >>>>Confirmed, suspend slowness is in 2.6.25-rc6, too. It takes 15 seconds
-> >>>>to suspend/resume, while 2.6.24 takes 9. Thinkpad x60.
-> >>>IIRC 2.6.25-rc5 was "fast".
-> >>Can you bisect it? There's only 343 commits between -rc5 and -rc6, so it 
-> >>should not take too long to check which commit it is. Even if it should 
-> >>take 9 reboots to bisect it entirely, going just five or six will likely 
-> >>narrow it down sufficiently that we can probably guess fairly well what 
-> >>it's about.
-> >
-> >Slowdown is fixed by this patch:
-> I think only this part is relevant here. But yes, I agree that the whole 
-> patch should be reverted.
-> >@@ -230,7 +227,6 @@ static int acpi_ec_wait(struct acpi_ec *
-> > 		while (time_before(jiffies, delay)) {
-> > 			if (acpi_ec_check_status(ec, event))
-> > 				goto end;
-> >-			msleep(5);
-> > 		}
-> > 	}
-> > 	pr_err(PREFIX "acpi_ec_wait timeout,"
-> Thanks,
-> Alex.
+Hi!
 
-> ACPI: EC: Revert storm handler patch
+> > It will take a while. My .git directory is 7G, and I'd like to do a
+> > backup before playing with git.
 > 
-> From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Ouch, what have you done? It should be about 200MB, not 7GB.
 > 
-> Patch have caused several new troubles, so just revert it for now.
+> > git gc does not exist here, so I guess I need to update git, too :-(.
 > 
-> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Well, even with old git you can just do 
+> 
+> 	git repack -a -d
+> 
+> and in your case you'll probably have to leave it running overnight, 
+> because it's going to take hours since you've clearly not ever repacked it 
+> before and as a result it's going to do lots and lots of IO (all that 7GB 
+> and then read much of it twice).
 
-Tested-by: Pavel Machek <pavel@suse.cz>
-ACK.
-									Pavel
+And 10 minutes later, .git directory is 200MB. Thanks!
 
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
