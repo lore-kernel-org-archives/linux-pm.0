@@ -1,16 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and hibernation callbacks
-Date: Wed, 19 Mar 2008 14:22:00 +0100
-Message-ID: <200803191422.02064.rjw@sisk.pl>
-References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
-	<20080319005340.GC8298@kroah.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
+ hibernation patchset against -rc6)
+Date: Wed, 19 Mar 2008 07:42:36 -0700 (PDT)
+Message-ID: <alpine.LFD.1.00.0803190741490.3020@woody.linux-foundation.org>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
+	<20080318130642.GA1609@elf.ucw.cz>
+	<20080318130710.GB1609@elf.ucw.cz>
+	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
+	<20080318225201.GA2115@elf.ucw.cz>
+	<alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
+	<20080319101947.GA2963@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080319005340.GC8298@kroah.com>
-Content-Disposition: inline
+In-Reply-To: <20080319101947.GA2963@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,72 +24,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 19 of March 2008, Greg KH wrote:
-> On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+On Wed, 19 Mar 2008, Pavel Machek wrote:
+>
+> > > It will take a while. My .git directory is 7G, and I'd like to do a
+> > > backup before playing with git.
 > > 
-> > Introduce 'struct pm_ops' representing a set of suspend and
-> > hibernation operations for bus types, device classes and device
-> > types.
+> > Ouch, what have you done? It should be about 200MB, not 7GB.
 > 
-> Ok, I must have missed the thread describing why we need to do this, so,
-> why do we need to do this?  What is this going to buy us in the end
-> after everything is changed?
+> And 10 minutes later, .git directory is 200MB. Thanks!
 
-There were many threads related to that.
+It strikes me that the only way I can think of that you could have gotten 
+a 7GB .git directory without really working at it is if you use one of the 
+so-called "dumb" git protocols that just copy whole packfiles from 
+kernel.org when you pull.
 
-To summarize, the first purpose is to separate suspend (aka s2ram and standby)
-callbacks from hibernation callbacks in such a way that the new callbacks won't
-take arguments and the purpose of each of them will be clearly specified.  This
-has been requested multiple times by many people, including Linus himself,
-and the reason is that within the current scheme if ->resume() is called, for
-example, it's difficult to say why it's been called (ie. is it a resume from RAM or
-from hibernation or a suspend/hibernation failure etc.?).
+So do you happen to perhaps use http:// or rsync:// when you fetch git 
+data? That would not only be horribly slow occasionally (you'd fetch 
+all-new packs and re-download about 200MB of data when I repack the kernel 
+repo on kernel.org, which happens about once or twice every release 
+cycle), but it would also explain how it ballooned to 7GB for you (because 
+you have all these duplicate packs!).
 
-The second purpose is to make the suspend/hibernation callbacks more flexible
-so that device drivers can handle more than they can within the current scheme.
-For example, some drivers may need to prevent new children of the device from
-being registered before their ->suspend() callbacks are executed or they may
-want to carry out some operations requiring the availability of some other
-devices, not directly bound via the parent-child relationship, in order to prepare
-for the execution of ->suspend(), etc.
+Usign the native git:// protocol would be much faster and avoid the issue 
+in the future.
 
-Ultimately, we'd like to stop using the freezing of tasks for suspend and
-therefore the drivers' suspend/hibernation code will have to take care of
-the handling of the user space during suspend/hibernation which would be
-difficult within the current scheme, without the ->prepare() and ->complete()
-callbacks.
-
-> > +struct pm_ops {
-> > +#ifdef CONFIG_PM_SLEEP
-> > +	int (*prepare)(struct device *dev);
-> > +	void (*complete)(struct device *dev);
-> > +#endif
-> > +#ifdef CONFIG_SUSPEND
-> > +	int (*suspend)(struct device *dev);
-> > +	int (*resume)(struct device *dev);
-> > +#endif
-> > +#ifdef CONFIG_HIBERNATION
-> > +	int (*freeze)(struct device *dev);
-> > +	int (*thaw)(struct device *dev);
-> > +	int (*poweroff)(struct device *dev);
-> > +	int (*quiesce)(struct device *dev);
-> > +	int (*restore)(struct device *dev);
-> > +	int (*recover)(struct device *dev);
-> > +#endif
-> 
-> 
-> Don't ifdef stuff like this, it only causes ifdefs to be needed to the
-> .c code as well for all places these structures are defined in
-> drivers/busses, right?
-
-Sure, but that code won't be necessary otherwise too.
-
-I'll remove the #ifdefs in the next version of the patch.
-
-Thanks,
-Rafael
+		Linus
