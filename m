@@ -1,16 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 19 Mar 2008 01:08:03 +0100
-Message-ID: <200803190108.05004.rjw__17967.9394154393$1205885544$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803140231.39282.rjw@sisk.pl>
-	<m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
+ hibernation patchset against -rc6)
+Date: Tue, 18 Mar 2008 17:40:38 -0700 (PDT)
+Message-ID: <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
+	<20080318130642.GA1609@elf.ucw.cz>
+	<20080318130710.GB1609@elf.ucw.cz>
+	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
+	<20080318225201.GA2115@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
-Content-Disposition: inline
+In-Reply-To: <20080318225201.GA2115@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,98 +22,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 18 of March 2008, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Friday, 14 of March 2008, Eric W. Biederman wrote:
-> >
-> >> > Still, it would be sufficient if we disconnected the drivers from the
-> > hardware
-> >> > and thus prevented applications from accessing that hardware.
-> >> 
-> >> My gut feeling is that except for a handful of drivers we could even
-> >> get away with simply implementing hot unplug and hot replug.  Disks
-> >> are the big exception here.
-> >> 
-> >> Which suggests to me that it is at least possible that the methods we
-> >> want for a kexec jump hibernation may be different from an in-kernel
-> >> hibernation and quite possibly are easier to implement.
-> >
-> > I'm not sure about the "easier" part, quite frankly.  Also, with our current
-> > ordering of code the in-kernel hibernation will need the same callbacks
-> > as the kexec-based thing.  However, with the in-kernel approach we can
-> > attempt (in the future) to be more ACPI compliant, so to speak, but with the
-> > kexec-based approach that won't be possible.
-> >
-> > Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
-> > a separate question, but IMO we won't be able to answer it without _lots_ of
-> > testing on vaious BIOS/firmware configurations.  Our experience so far
-> > indicates that at least some BIOSes expect us to follow ACPI and misbehave
-> > otherwise, so for those systems there should be an "ACPI way" available.
-> > [Others just don't work well if we try to follow ACPI and those may be handled
-> > using the kexec-based approach, but that doesn't mean that we can just ignore
-> > the ACPI compliance issue, at least for now.]
-> 
-> If we do use the ACPI S4 state I completely agree we should be at
-> least spec compliant in how we use it.
-> 
-> I took a quick skim through my copy of the ACPI spec so I could get a
-> feel for this issue.  Hibernation maps to the ACPI S4 state.  The only
-> thing we appear to gain from S4 is the ability to tell the BIOS (so it
-> can tell a bootloader) that this was a hibernation power off instead
-> of simply a software power off.
-> 
-> It looks like entering the ACPI S4 state has a few advantages with
-> respect to how the system wakes up.  In general using the ACPI S5
-> state (soft off) appears simpler, and potentially more reliable.
-> 
-> The sequence we appear to want is:
-> - Disconnecting drivers from devices.
-> - Saving the image.
-> - Placing the system in a low power or off state.
-> 
-> - Coming out of the low power state.
-> - Restoring the image.
-> - Reconnecting drivers to devices.
->   (We must assume the device state could have changed here
->    no matter what we do)
-> 
-> It is mostly a matter of where we place the code.
-> 
-> Right now I don't see a limitation either with a kexec based approach
-> or without one.  Especially since the common case would be using
-> the same kernel with the same drivers both before and after the
-> hibernation event.
-> 
-> The low power states for S4 seem to be just so that we can
-> decide which devices have enough life that they can wake up
-> the system.  If we handle all of that as a second pass after
-> we have the system in a state where we have saved it we should
-> be in good shape.
-> 
-> My inclination is to just use S5 (soft off).
-> 
-> One of the cool things about hibernation to disk was that we were
-> supposed to get the BIOS totally out of that path so we could get
-> something that was rock solid and reliable.  I don't see why we should
-> use ACPI S4 when the BIOS doesn't seem to give us anything useful, and
-> causes us headaches we should even consider using S4.
-> 
-> Does using the S4 state have advantages that I currently do not
-> see?
-> 
-> Len? Rafael? Anyone?
 
-Well, I've been saying that for I-don't-remember-how-long: on my box, if you
-use S5 instead of entering S4, the fan doesn't work correctly after the
-resume.  Plain and simple.
 
-Perhaps there's a problem with our ACPI drivers that causes this to happen,
-but I have no idea what that can be at the moment.
+On Tue, 18 Mar 2008, Pavel Machek wrote:
+> 
+> It will take a while. My .git directory is 7G, and I'd like to do a
+> backup before playing with git.
 
-Thanks,
-Rafael
+Ouch, what have you done? It should be about 200MB, not 7GB.
+
+> git gc does not exist here, so I guess I need to update git, too :-(.
+
+Well, even with old git you can just do 
+
+	git repack -a -d
+
+and in your case you'll probably have to leave it running overnight, 
+because it's going to take hours since you've clearly not ever repacked it 
+before and as a result it's going to do lots and lots of IO (all that 7GB 
+and then read much of it twice).
+
+But yeah, upgrading git first is probably a good idea regardless.
+
+> commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
+> 
+>     ACPI: Ignore _BQC object when registering backlight device
+> 
+> when did this go in? Pretty recently, right?
+
+Yes:
+
+	[torvalds@woody linux]$ git describe 7c0ea45be4f114d85ee35caeead8e1660699c46f
+	v2.6.25-rc5-89-g7c0ea45
+
+so it happened after -rc5.
+
+> And that means that ACPI backlight driver is now used on machines where 
+> it was not used before...?
+
+Somebody more into ACPI needs to judge how likely this is to be an issue..
+
+		Linus
