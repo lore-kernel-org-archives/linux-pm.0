@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks
-Date: Wed, 19 Mar 2008 10:15:27 +0100
-Message-ID: <20080319091526.GA1938@elf.ucw.cz>
-References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
-	<20080319005340.GC8298@kroah.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 3/3] PM: New suspend and hibernation
+	callbacks for PCI bus type
+Date: Wed, 19 Mar 2008 14:24:48 +0100
+Message-ID: <200803191424.49443.rjw@sisk.pl>
+References: <200803170020.55473.rjw@sisk.pl> <200803170025.16149.rjw@sisk.pl>
+	<20080319005508.GD8298@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080319005508.GD8298@kroah.com>
 Content-Disposition: inline
-In-Reply-To: <20080319005340.GC8298@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,48 +24,30 @@ To: Greg KH <greg@kroah.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-03-18 17:53:40, Greg KH wrote:
-> On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
+On Wednesday, 19 of March 2008, Greg KH wrote:
+> On Mon, Mar 17, 2008 at 12:25:15AM +0100, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Introduce 'struct pm_ops' representing a set of suspend and
-> > hibernation operations for bus types, device classes and device
-> > types.
+> > Implement new suspend and hibernation callbacks for the PCI busi type.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci-driver.c |  497 ++++++++++++++++++++++++++++++++++++++++++-----
+> >  include/linux/pci.h      |    2 
+> >  2 files changed, 453 insertions(+), 46 deletions(-)
 > 
-> Ok, I must have missed the thread describing why we need to do this, so,
-> why do we need to do this?  What is this going to buy us in the end
-> after everything is changed?
+> Hm, that's a lot of code added.  What additional functionality did we
+> just get?
 
-That was rather long thread where Linus flamed us for having
-everything in one "suspend" callback, selecting what to do by
-pm_message_t parameter. It was kind of hard to miss ;-).
-								Pavel
+The possibility to handle suspend/hibernation in a more flexible way, provided
+that the drivers define the new callbacks.
 
+> Are we going to have to create a noirq version for every driver and bus
+> type now?
 
-> > +struct pm_ops {
-> > +#ifdef CONFIG_PM_SLEEP
-> > +	int (*prepare)(struct device *dev);
-> > +	void (*complete)(struct device *dev);
-> > +#endif
-> > +#ifdef CONFIG_SUSPEND
-> > +	int (*suspend)(struct device *dev);
-> > +	int (*resume)(struct device *dev);
-> > +#endif
-> > +#ifdef CONFIG_HIBERNATION
-> > +	int (*freeze)(struct device *dev);
-> > +	int (*thaw)(struct device *dev);
-> > +	int (*poweroff)(struct device *dev);
-> > +	int (*quiesce)(struct device *dev);
-> > +	int (*restore)(struct device *dev);
-> > +	int (*recover)(struct device *dev);
-> > +#endif
-> 
-> 
-> Don't ifdef stuff like this, it only causes ifdefs to be needed to the
-> .c code as well for all places these structures are defined in
-> drivers/busses, right?
+No, we aren't.  The PCI and platform bus types already have the noirq callbacks
+implemented (they are called _late and _early, but that's the same
+essentially).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+Thanks,
+Rafael
