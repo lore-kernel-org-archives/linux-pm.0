@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation patchset against -rc6)
-Date: Wed, 19 Mar 2008 23:13:38 +0100
-Message-ID: <200803192313.39664.rjw__34029.7989234843$1205965108$gmane$org@sisk.pl>
+	hibernation	patchset against -rc6)
+Date: Wed, 19 Mar 2008 23:21:17 +0100
+Message-ID: <20080319222117.GH1811__29810.2373410531$1205965541$gmane$org@elf.ucw.cz>
 References: <200803172317.33745.rjw@sisk.pl> <200803192259.00091.rjw@sisk.pl>
-	<20080319220210.GG1811@elf.ucw.cz>
+	<20080319220210.GG1811@elf.ucw.cz> <200803192313.39664.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080319220210.GG1811@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200803192313.39664.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 19 of March 2008, Pavel Machek wrote:
-> On Wed 2008-03-19 22:58:59, Rafael J. Wysocki wrote:
-> > On Wednesday, 19 of March 2008, Pavel Machek wrote:
-> > > 
-> > > > > >> Revert ec.c to 2.6.25-rc5 state:
-> > > > > >>
-> > > > > >> * this fixes backlight after closing/reopening the lid while in X on
-> > > > > >> thinkpad x60
-> > > > > >>
-> > > > > >> * unfortunately it breaks fn-home/end keyboard brightness control
-> > > > > > It should also break volume up/down/mute keys. Essentially all the keys on Thinkpad.
-> > > > > > And it would also be regression to 2.6.24 level.
-> > > > > 
-> > > > > As I explained above.
-> > > > > 
-> > > > > Unfortunately, applying this means I loose screen as soon as I
-> > > > > close/reopen lid. 2.6.24 did not behave like that. And it makes my
-> > > > > machine mostly unusable -- as soon as you try to carry it away, you
-> > > > > loose video. BAD.
-> > > > 
-> > > > Can you text the current -git (preferably without anything on top) pretty please?
-> > > 
-> > > Did anything relevant change in the last 8 hours or so?
-> > 
-> > No, it didn't.
-> > 
-> > > My scripts tell me there's nothing to pull:
-> > > 
-> > > Done counting 441 objects.
-> > > Result has 304 objects.
-> > > Deltifying 304 objects.
-> > >  100% (304/304) done
-> > > Total 304, written 304 (delta 236), reused 121 (delta 75)
-> > > Fetching pack (head and objects)...
-> > > Fetching tags...
-> > > Up to date.
-> > > 
-> > > Applying changes...
-> > > Branch already fully merged.
-> > > pavel@amd:~$
-> > 
-> > Still, the current -git has the offending patch reverted and you're seeing a
-> > regression nevertheless.
-> > 
-> > Is that correct?
+Hi!
+
+> > * backlight goes out in X -- not fixed by current git)
 > 
-> Yes.
-> 
-> (Or more precisely, there are two regressions:
-> 
-> * s2ram 5 seconds slower -- fixed by current git
+> Can you please open a bugzilla entry for this one and make it block
+> bug #9832?  [That will make the tracking of it a bit easier.]
 
-OK
+Bug 10285 has been added to the database
 
-> * backlight goes out in X -- not fixed by current git)
+								Pavel
 
-Can you please open a bugzilla entry for this one and make it block
-bug #9832?  [That will make the tracking of it a bit easier.]
-
-Thanks,
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
