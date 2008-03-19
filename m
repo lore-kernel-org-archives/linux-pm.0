@@ -1,15 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
 	and	hibernation callbacks
-Date: Wed, 19 Mar 2008 14:49:02 +1100
-Message-ID: <1205898542.26869.268.camel@pasglop>
-References: <Pine.LNX.4.44L0.0803182233370.10154-100000@netrider.rowland.org>
-Reply-To: benh@kernel.crashing.org
+Date: Tue, 18 Mar 2008 17:53:40 -0700
+Message-ID: <20080319005340.GC8298@kroah.com>
+References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803182233370.10154-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <200803170022.30345.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,93 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan !
-
-On Tue, 2008-03-18 at 22:44 -0400, Alan Stern wrote:
-
-> In order to make this work, you would have to prevent new children from
-> being registered starting from the time just after prepare() returns,
-> rather than from the time just before suspend() is called.  Nothing is
-> wrong with that, but it requires a redesign of the new flags.  (It's 
-> worth mentioning that drivers will want to have a flag that gets set 
-> just _before_ prepare() -- just _after_ is too late.)
-
-I think that's the most logical semantic to expose to drivers. We've
-been needing prepare() for a lot of things in the past.
-
-The main one is that you know user space is still up & running (not only
-it's not been frozen, but even in the absence of a freezer, you know
-storage hasn't been stopped yet, etc...). So if your driver has tight
-interaction with userspace that requires clean handling of suspend, it
-can be done at that point (X with DRI is an example that could make good
-use of that).
-
-The whole GFP_KERNEL allocation is another, though we could make
-GFP_KERNEL become silently GFP_NOIO when entering the suspend loop, it's
-still useful for the driver to know that we are -about- to start a
-suspend operation, if any significant storage is needed (for backup for
-example, or if it needs to cache a firmware to ensure proper resume),
-it's the right time to do it.
-
-Now, about the issue vs. device insertion, I believe it's solvable
-unless I missed something:
-
-So it's the responsibility of bus drivers such as khubd to stop
-inserting new devices in the tree from prepare(). There we agree. The
-problem is about -enforcing- it in the core right ? That is, making
-device addition actually fail if a bogus bus driver tries to insert a
-device at the wrong time.
-
-This does indeed have an issue of when precisely do we stick that flag
-(that tells the core to fail) since before calling the bus driver
-prepare() is too early and after is potentially too late.
-
-Now, I think this is not really a problem if prepare() calls the drivers
-from top to bottom: In that case, we would set the flag after the bus
-driver returns from prepare(). That means that there is a small window
-where a bogus bus driver can still insert a new child, but I think that
-isn't an issue, specifically because we walk from parent to child:
-
-If the sequence is:
-
-	1- prepare() returns
-	2- we set the "no new addition" flag
-	3- we start walking children
-
-You see that the only place the where the "bad" bus driver can still
-attempt to insert without failing is between 1 and 2. However, that
-happens before we start prepare()'ing the children. So that means that
-anything that has successfully been added -will- have it's prepare()
-called, and thus becomes a normal part of the suspend/resume process.
-Any attempt at adding after 2 would fail, thus we are sure the children
-list is sane here (won't get new things right in between. Removal might
-still happen I suppose, we'll have to look into this closely).
-
-> In the other direction, it ought to be okay to allow new children to 
-> be registered during resume().  There's no need to wait for complete().
-
-There are pros and cons here. A lot of drivers may rely on
-request_firmware() and such, and will possibly deadlock or timeout if
-called during resume before storage is available (i've seen that
-happening with today scheme). It might be better to be safe here, but I
-agree, it's generally less of a concern.
-
-> > Next, he wants the number of noirq callbacks to be reduced.
+On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> I agree.  For example, there isn't much point in having prepare() and
-> complete() entries for noirq.
+> Introduce 'struct pm_ops' representing a set of suspend and
+> hibernation operations for bus types, device classes and device
+> types.
 
-Exactly. I think we really only need noirq variants of suspend and
-resume, and possibly freeze and thaw (I'm not 100% of the later as I
-haven't studied the problem of hibernate closely, but I can see a usage
-scenario that might make sense).
+Ok, I must have missed the thread describing why we need to do this, so,
+why do we need to do this?  What is this going to buy us in the end
+after everything is changed?
 
-> > Both of the above things make sense, so I'll rework the patch (or maybe even
-> > all three patches) to implement them and we'll see how they will look like.
+> +struct pm_ops {
+> +#ifdef CONFIG_PM_SLEEP
+> +	int (*prepare)(struct device *dev);
+> +	void (*complete)(struct device *dev);
+> +#endif
+> +#ifdef CONFIG_SUSPEND
+> +	int (*suspend)(struct device *dev);
+> +	int (*resume)(struct device *dev);
+> +#endif
+> +#ifdef CONFIG_HIBERNATION
+> +	int (*freeze)(struct device *dev);
+> +	int (*thaw)(struct device *dev);
+> +	int (*poweroff)(struct device *dev);
+> +	int (*quiesce)(struct device *dev);
+> +	int (*restore)(struct device *dev);
+> +	int (*recover)(struct device *dev);
+> +#endif
 
-Cheers,
-Ben.
+
+Don't ifdef stuff like this, it only causes ifdefs to be needed to the
+.c code as well for all places these structures are defined in
+drivers/busses, right?
+
+thanks,
+
+greg k-h
