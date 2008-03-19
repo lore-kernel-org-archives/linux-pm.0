@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation	patchset against -rc6)
-Date: Wed, 19 Mar 2008 23:21:17 +0100
-Message-ID: <20080319222117.GH1811__29810.2373410531$1205965541$gmane$org@elf.ucw.cz>
-References: <200803172317.33745.rjw@sisk.pl> <200803192259.00091.rjw@sisk.pl>
-	<20080319220210.GG1811@elf.ucw.cz> <200803192313.39664.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 2/3] PM: Make wakeup flags available whenever
+	CONFIG_PM is set (ver 2)
+Date: Wed, 19 Mar 2008 15:22:54 -0700
+Message-ID: <200803191522.54856.david-b@pacbell.net>
+References: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org>
+	<200803192233.55313.rjw@sisk.pl> <200803192237.43123.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200803192237.43123.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <200803192313.39664.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,22 +20,145 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: linux-pm@lists.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > * backlight goes out in X -- not fixed by current git)
+On Wednesday 19 March 2008, Rafael J. Wysocki wrote:
+> From: Alan Stern <stern@rowland.harvard.edu>
 > 
-> Can you please open a bugzilla entry for this one and make it block
-> bug #9832?  [That will make the tracking of it a bit easier.]
+> The various wakeup flags and their accessor macros in struct
+> dev_pm_info should be available whenever CONFIG_PM is enabled, not
+> just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
+> be configurable for runtime power management.  This patch (as1056b)
+> fixes the oversight.
 
-Bug 10285 has been added to the database
+More accurately, fixes the "regression" ... as noted sometime
+last summer, after 296699de6bdc717189a331ab6bbe90e05c94db06
+introduced CONFIG_SUSPEND.  But that didn't make the regression
+list for that kernel, ergo the delay in fixing it.
 
-								Pavel
+- Dave
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+
+> [rjw: rebased]
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/base/power/main.c  |    2 --
+>  drivers/base/power/sysfs.c |    2 ++
+>  include/linux/pm.h         |   36 +++++++++++++++++++++---------------
+>  3 files changed, 23 insertions(+), 17 deletions(-)
+> 
+> Index: linux-2.6/include/linux/pm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pm.h
+> +++ linux-2.6/include/linux/pm.h
+> @@ -183,9 +183,9 @@ typedef struct pm_message {
+>  struct dev_pm_info {
+>  	pm_message_t		power_state;
+>  	unsigned		can_wakeup:1;
+> +	unsigned		should_wakeup:1;
+>  	bool			sleeping:1;	/* Owned by the PM core */
+>  #ifdef	CONFIG_PM_SLEEP
+> -	unsigned		should_wakeup:1;
+>  	struct list_head	entry;
+>  #endif
+>  };
+> @@ -198,11 +198,6 @@ extern void device_resume(void);
+>  extern int device_suspend(pm_message_t state);
+>  extern int device_prepare_suspend(pm_message_t state);
+>  
+> -#define device_set_wakeup_enable(dev,val) \
+> -	((dev)->power.should_wakeup = !!(val))
+> -#define device_may_wakeup(dev) \
+> -	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> -
+>  extern void __suspend_report_result(const char *function, void *fn, int ret);
+>  
+>  #define suspend_report_result(fn, ret)					\
+> @@ -210,6 +205,24 @@ extern void __suspend_report_result(cons
+>  		__suspend_report_result(__FUNCTION__, fn, ret);		\
+>  	} while (0)
+>  
+> +#else /* !CONFIG_PM_SLEEP */
+> +
+> +static inline int device_suspend(pm_message_t state)
+> +{
+> +	return 0;
+> +}
+> +
+> +#define suspend_report_result(fn, ret) do { } while (0)
+> +
+> +#endif /* !CONFIG_PM_SLEEP */
+> +
+> +#ifdef CONFIG_PM
+> +
+> +#define device_set_wakeup_enable(dev,val) \
+> +	((dev)->power.should_wakeup = !!(val))
+> +#define device_may_wakeup(dev) \
+> +	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> +
+>  /*
+>   * Platform hook to activate device wakeup capability, if that's not already
+>   * handled by enable_irq_wake() etc.
+> @@ -224,24 +237,17 @@ static inline int call_platform_enable_w
+>  	return 0;
+>  }
+>  
+> -#else /* !CONFIG_PM_SLEEP */
+> -
+> -static inline int device_suspend(pm_message_t state)
+> -{
+> -	return 0;
+> -}
+> +#else /* !CONFIG_PM */
+>  
+>  #define device_set_wakeup_enable(dev,val)	do{}while(0)
+>  #define device_may_wakeup(dev)			(0)
+>  
+> -#define suspend_report_result(fn, ret) do { } while (0)
+> -
+>  static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+>  {
+>  	return 0;
+>  }
+>  
+> -#endif /* !CONFIG_PM_SLEEP */
+> +#endif /* !CONFIG_PM */
+>  
+>  /* changes to device_may_wakeup take effect on the next pm state change.
+>   * by default, devices should wakeup if they can.
+> Index: linux-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/main.c
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
+>  /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
+>  static bool all_sleeping;
+>  
+> -int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> -
+>  /**
+>   *	device_pm_add - add a device to the list of active devices
+>   *	@dev:	Device to be added to the list
+> Index: linux-2.6/drivers/base/power/sysfs.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/sysfs.c
+> +++ linux-2.6/drivers/base/power/sysfs.c
+> @@ -6,6 +6,8 @@
+>  #include <linux/string.h>
+>  #include "power.h"
+>  
+> +int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> +
+>  
+>  /*
+>   *	wakeup - Report/change current wakeup option for device
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> 
