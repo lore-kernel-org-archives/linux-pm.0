@@ -1,22 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation	patchset against -rc6)
-Date: Wed, 19 Mar 2008 15:54:48 +0100
-Message-ID: <20080319145448.GA26416@elf.ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
-	<20080318130642.GA1609@elf.ucw.cz>
-	<20080318130710.GB1609@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
-	<20080318225201.GA2115@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
-	<20080319114851.GB21270@atrey.karlin.mff.cuni.cz>
-	<alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: +
+ pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch added to -mm
+ tree
+Date: Wed, 19 Mar 2008 10:55:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803191033430.4958-100000@netrider.rowland.org>
+References: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org>
+In-Reply-To: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,30 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2008-03-19 07:47:06, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 19 Mar 2008, Pavel Machek wrote:
-> > 
-> > Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
-> > of drivers/acpi/ec.c patch fixed the
-> > "rc6-breaks-backlight-in-X-over-lid-close", good.
-> 
-> Can you clarify a bit?
-> 
-> Do you mean that the full revert of 2c81ce4 that already got committed is 
-> sufficient for you, or do you need to totally undo everything we've done 
-> to ec.c since -rc5, and thus also to revert the _other_ revert we did (in 
-> 4af8e10a6c57e7292862bd1703712f0565c7e429)?
+On Tue, 18 Mar 2008 akpm@linux-foundation.org wrote:
 
-I believe that current mainline is okay, and will test that theory
-shortly.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+> Subject: pm-convert-wakeup-flag-accessors-to-inline-functions fix
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> ia64 allmodconfig:
+> 
+> In file included from include/linux/device.h:381,
+>                  from include/linux/rtc.h:110,
+>                  from include/linux/efi.h:19,
+>                  from include/asm/sal.h:40,
+>                  from include/asm-ia64/mca.h:20,
+>                  from arch/ia64/kernel/asm-offsets.c:17:
+> include/linux/pm_wakeup.h: In function `device_init_wakeup':
+> include/linux/pm_wakeup.h:35: error: structure has no member named `should_wakeup'
+> include/linux/pm_wakeup.h: In function `device_set_wakeup_enable':
+> include/linux/pm_wakeup.h:45: error: structure has no member named `should_wakeup'
+> include/linux/pm_wakeup.h: In function `device_may_wakeup':
+> include/linux/pm_wakeup.h:50: error: structure has no member named `should_wakeup'
+> 
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Len Brown <lenb@kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  include/linux/pm_wakeup.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN include/linux/pm_wakeup.h~pm-convert-wakeup-flag-accessors-to-inline-functions-fix include/linux/pm_wakeup.h
+> --- a/include/linux/pm_wakeup.h~pm-convert-wakeup-flag-accessors-to-inline-functions-fix
+> +++ a/include/linux/pm_wakeup.h
+> @@ -25,7 +25,7 @@
+>  # error "please don't include this file directly"
+>  #endif
+>  
+> -#ifdef CONFIG_PM
+> +#ifdef CONFIG_PM_SLEEP
+>  
+>  /* changes to device_may_wakeup take effect on the next pm state change.
+>   * by default, devices should wakeup if they can.
+
+This is completely wrong.
+
+Andrew, I don't know what happened.  But if you go back and compare my
+original patch to the
+pm-make-wakeup-flags-available-whenever-config_pm-is-set patch you
+actually applied, you'll see that you managed to leave out a hunk.  
+Possibly because of a conflict with one of Rafael's patches affecting 
+the same area of code.
+
+Here's a URL for that patch as rebased by Rafael:
+
+	http://marc.info/?l=linux-kernel&m=120528034413861&w=2
+
+The very first hunk in that patch makes the should_wakeup flag
+available always, not just when CONFIG_PM_SLEEP is set.  If you go back
+and import it with that first hunk intact then there should be no need 
+for this "fix" patch.
+
+(In order to do this, you'll first have to revert
+pm-convert-wakeup-flag-accessors-to-inline-functions.patch and then
+re-apply it afterward, because it depends on this one.)
+
+Alan Stern
