@@ -1,16 +1,16 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks
-Date: Wed, 19 Mar 2008 11:07:21 -0700
-Message-ID: <20080319180721.GB5296@kroah.com>
-References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
-	<20080319005340.GC8298@kroah.com> <200803191422.02064.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: +
+ pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch added to -mm
+ tree
+Date: Wed, 19 Mar 2008 11:48:29 -0700
+Message-ID: <20080319114829.bf993b72.akpm@linux-foundation.org>
+References: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org>
+	<Pine.LNX.4.44L0.0803191033430.4958-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200803191422.02064.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0803191033430.4958-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,48 +20,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel@smtp1.linux-foundation.org, development list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 02:22:00PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 19 of March 2008, Greg KH wrote:
-> > On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Introduce 'struct pm_ops' representing a set of suspend and
-> > > hibernation operations for bus types, device classes and device
-> > > types.
+On Wed, 19 Mar 2008 10:55:35 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+
+> On Tue, 18 Mar 2008 akpm@linux-foundation.org wrote:
+> 
+> > Subject: pm-convert-wakeup-flag-accessors-to-inline-functions fix
+> > From: Andrew Morton <akpm@linux-foundation.org>
 > > 
-> > Ok, I must have missed the thread describing why we need to do this, so,
-> > why do we need to do this?  What is this going to buy us in the end
-> > after everything is changed?
+> > ia64 allmodconfig:
+> > 
+> > In file included from include/linux/device.h:381,
+> >                  from include/linux/rtc.h:110,
+> >                  from include/linux/efi.h:19,
+> >                  from include/asm/sal.h:40,
+> >                  from include/asm-ia64/mca.h:20,
+> >                  from arch/ia64/kernel/asm-offsets.c:17:
+> > include/linux/pm_wakeup.h: In function `device_init_wakeup':
+> > include/linux/pm_wakeup.h:35: error: structure has no member named `should_wakeup'
+> > include/linux/pm_wakeup.h: In function `device_set_wakeup_enable':
+> > include/linux/pm_wakeup.h:45: error: structure has no member named `should_wakeup'
+> > include/linux/pm_wakeup.h: In function `device_may_wakeup':
+> > include/linux/pm_wakeup.h:50: error: structure has no member named `should_wakeup'
+> > 
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Cc: Greg KH <greg@kroah.com>
+> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > Cc: Len Brown <lenb@kernel.org>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> > 
+> >  include/linux/pm_wakeup.h |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff -puN include/linux/pm_wakeup.h~pm-convert-wakeup-flag-accessors-to-inline-functions-fix include/linux/pm_wakeup.h
+> > --- a/include/linux/pm_wakeup.h~pm-convert-wakeup-flag-accessors-to-inline-functions-fix
+> > +++ a/include/linux/pm_wakeup.h
+> > @@ -25,7 +25,7 @@
+> >  # error "please don't include this file directly"
+> >  #endif
+> >  
+> > -#ifdef CONFIG_PM
+> > +#ifdef CONFIG_PM_SLEEP
+> >  
+> >  /* changes to device_may_wakeup take effect on the next pm state change.
+> >   * by default, devices should wakeup if they can.
 > 
-> There were many threads related to that.
+> This is completely wrong.
 > 
-> To summarize, the first purpose is to separate suspend (aka s2ram and standby)
-> callbacks from hibernation callbacks in such a way that the new callbacks won't
-> take arguments and the purpose of each of them will be clearly specified.  This
-> has been requested multiple times by many people, including Linus himself,
-> and the reason is that within the current scheme if ->resume() is called, for
-> example, it's difficult to say why it's been called (ie. is it a resume from RAM or
-> from hibernation or a suspend/hibernation failure etc.?).
+> Andrew, I don't know what happened.  But if you go back and compare my
+> original patch to the
+> pm-make-wakeup-flags-available-whenever-config_pm-is-set patch you
+> actually applied, you'll see that you managed to leave out a hunk.  
+> Possibly because of a conflict with one of Rafael's patches affecting 
+> the same area of code.
 > 
-> The second purpose is to make the suspend/hibernation callbacks more flexible
-> so that device drivers can handle more than they can within the current scheme.
-> For example, some drivers may need to prevent new children of the device from
-> being registered before their ->suspend() callbacks are executed or they may
-> want to carry out some operations requiring the availability of some other
-> devices, not directly bound via the parent-child relationship, in order to prepare
-> for the execution of ->suspend(), etc.
+> Here's a URL for that patch as rebased by Rafael:
 > 
-> Ultimately, we'd like to stop using the freezing of tasks for suspend and
-> therefore the drivers' suspend/hibernation code will have to take care of
-> the handling of the user space during suspend/hibernation which would be
-> difficult within the current scheme, without the ->prepare() and ->complete()
-> callbacks.
+> 	http://marc.info/?l=linux-kernel&m=120528034413861&w=2
 
-Ok, thanks.  You might want to include this in the patch itself (hint,
-hint, hint...)
+But there was a patch with the same title from yourself sent four days
+later, which is what I merged.
 
-greg k-h
+Plus Greg has been merging and dropping older versions under our feet and
+maybe Len has too.
+
+> The very first hunk in that patch makes the should_wakeup flag
+> available always, not just when CONFIG_PM_SLEEP is set.  If you go back
+> and import it with that first hunk intact then there should be no need 
+> for this "fix" patch.
+
+> (In order to do this, you'll first have to revert
+> pm-convert-wakeup-flag-accessors-to-inline-functions.patch and then
+> re-apply it afterward, because it depends on this one.)
+
+<shudder>
+
+I'll drop everything, let's start again.
+
+Only how?  umm, please review Greg's driver tree, let us know which patches
+shoudl be dropped from that then send new ones, I guess.
