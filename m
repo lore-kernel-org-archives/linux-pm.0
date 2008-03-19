@@ -1,20 +1,20 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
  hibernation patchset against -rc6)
-Date: Wed, 19 Mar 2008 07:42:36 -0700 (PDT)
-Message-ID: <alpine.LFD.1.00.0803190741490.3020@woody.linux-foundation.org>
+Date: Wed, 19 Mar 2008 07:47:06 -0700 (PDT)
+Message-ID: <alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org>
 References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
 	<20080318130642.GA1609@elf.ucw.cz>
 	<20080318130710.GB1609@elf.ucw.cz>
 	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
 	<20080318225201.GA2115@elf.ucw.cz>
 	<alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
-	<20080319101947.GA2963@elf.ucw.cz>
+	<20080319114851.GB21270@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080319101947.GA2963@elf.ucw.cz>
+In-Reply-To: <20080319114851.GB21270@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,27 +31,20 @@ List-Id: linux-pm@vger.kernel.org
 
 
 On Wed, 19 Mar 2008, Pavel Machek wrote:
->
-> > > It will take a while. My .git directory is 7G, and I'd like to do a
-> > > backup before playing with git.
-> > 
-> > Ouch, what have you done? It should be about 200MB, not 7GB.
 > 
-> And 10 minutes later, .git directory is 200MB. Thanks!
+> Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
+> of drivers/acpi/ec.c patch fixed the
+> "rc6-breaks-backlight-in-X-over-lid-close", good.
 
-It strikes me that the only way I can think of that you could have gotten 
-a 7GB .git directory without really working at it is if you use one of the 
-so-called "dumb" git protocols that just copy whole packfiles from 
-kernel.org when you pull.
+Can you clarify a bit?
 
-So do you happen to perhaps use http:// or rsync:// when you fetch git 
-data? That would not only be horribly slow occasionally (you'd fetch 
-all-new packs and re-download about 200MB of data when I repack the kernel 
-repo on kernel.org, which happens about once or twice every release 
-cycle), but it would also explain how it ballooned to 7GB for you (because 
-you have all these duplicate packs!).
+Do you mean that the full revert of 2c81ce4 that already got committed is 
+sufficient for you, or do you need to totally undo everything we've done 
+to ec.c since -rc5, and thus also to revert the _other_ revert we did (in 
+4af8e10a6c57e7292862bd1703712f0565c7e429)?
 
-Usign the native git:// protocol would be much faster and avoid the issue 
-in the future.
+In other words, what does "rest of drivers/acpi/ec.c patch" mean? Does it 
+mean just the IRQ storm patch, or does it mean everything that happened in 
+drivers/acpi/ec.c since 2.6.25-rc5?
 
-		Linus
+			Linus
