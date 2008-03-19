@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 3/3] PM: New suspend and hibernation
-	callbacks for PCI bus type
-Date: Wed, 19 Mar 2008 14:24:48 +0100
-Message-ID: <200803191424.49443.rjw@sisk.pl>
-References: <200803170020.55473.rjw@sisk.pl> <200803170025.16149.rjw@sisk.pl>
-	<20080319005508.GD8298@kroah.com>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and hibernation callbacks
+Date: Wed, 19 Mar 2008 14:22:00 +0100
+Message-ID: <200803191422.02064.rjw@sisk.pl>
+References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
+	<20080319005340.GC8298@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080319005508.GD8298@kroah.com>
+In-Reply-To: <20080319005340.GC8298@kroah.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,33 +21,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, 19 of March 2008, Greg KH wrote:
-> On Mon, Mar 17, 2008 at 12:25:15AM +0100, Rafael J. Wysocki wrote:
+> On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Implement new suspend and hibernation callbacks for the PCI busi type.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/pci/pci-driver.c |  497 ++++++++++++++++++++++++++++++++++++++++++-----
-> >  include/linux/pci.h      |    2 
-> >  2 files changed, 453 insertions(+), 46 deletions(-)
+> > Introduce 'struct pm_ops' representing a set of suspend and
+> > hibernation operations for bus types, device classes and device
+> > types.
 > 
-> Hm, that's a lot of code added.  What additional functionality did we
-> just get?
+> Ok, I must have missed the thread describing why we need to do this, so,
+> why do we need to do this?  What is this going to buy us in the end
+> after everything is changed?
 
-The possibility to handle suspend/hibernation in a more flexible way, provided
-that the drivers define the new callbacks.
+There were many threads related to that.
 
-> Are we going to have to create a noirq version for every driver and bus
-> type now?
+To summarize, the first purpose is to separate suspend (aka s2ram and standby)
+callbacks from hibernation callbacks in such a way that the new callbacks won't
+take arguments and the purpose of each of them will be clearly specified.  This
+has been requested multiple times by many people, including Linus himself,
+and the reason is that within the current scheme if ->resume() is called, for
+example, it's difficult to say why it's been called (ie. is it a resume from RAM or
+from hibernation or a suspend/hibernation failure etc.?).
 
-No, we aren't.  The PCI and platform bus types already have the noirq callbacks
-implemented (they are called _late and _early, but that's the same
-essentially).
+The second purpose is to make the suspend/hibernation callbacks more flexible
+so that device drivers can handle more than they can within the current scheme.
+For example, some drivers may need to prevent new children of the device from
+being registered before their ->suspend() callbacks are executed or they may
+want to carry out some operations requiring the availability of some other
+devices, not directly bound via the parent-child relationship, in order to prepare
+for the execution of ->suspend(), etc.
+
+Ultimately, we'd like to stop using the freezing of tasks for suspend and
+therefore the drivers' suspend/hibernation code will have to take care of
+the handling of the user space during suspend/hibernation which would be
+difficult within the current scheme, without the ->prepare() and ->complete()
+callbacks.
+
+> > +struct pm_ops {
+> > +#ifdef CONFIG_PM_SLEEP
+> > +	int (*prepare)(struct device *dev);
+> > +	void (*complete)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_SUSPEND
+> > +	int (*suspend)(struct device *dev);
+> > +	int (*resume)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_HIBERNATION
+> > +	int (*freeze)(struct device *dev);
+> > +	int (*thaw)(struct device *dev);
+> > +	int (*poweroff)(struct device *dev);
+> > +	int (*quiesce)(struct device *dev);
+> > +	int (*restore)(struct device *dev);
+> > +	int (*recover)(struct device *dev);
+> > +#endif
+> 
+> 
+> Don't ifdef stuff like this, it only causes ifdefs to be needed to the
+> .c code as well for all places these structures are defined in
+> drivers/busses, right?
+
+Sure, but that code won't be necessary otherwise too.
+
+I'll remove the #ifdefs in the next version of the patch.
 
 Thanks,
 Rafael
