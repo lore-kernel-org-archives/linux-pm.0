@@ -1,16 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 2/3] PM: Make wakeup flags available whenever
-	CONFIG_PM is set (ver 2)
-Date: Wed, 19 Mar 2008 15:22:54 -0700
-Message-ID: <200803191522.54856.david-b@pacbell.net>
-References: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org>
-	<200803192233.55313.rjw@sisk.pl> <200803192237.43123.rjw@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and	hibernation callbacks
+Date: Thu, 20 Mar 2008 14:33:28 +1100
+Message-ID: <1205984008.26869.408.camel__28489.7138983526$1205984281$gmane$org@pasglop>
+References: <Pine.LNX.4.44L0.0803191101050.4958-100000@netrider.rowland.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803192237.43123.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0803191101050.4958-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,145 +19,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 March 2008, Rafael J. Wysocki wrote:
-> From: Alan Stern <stern@rowland.harvard.edu>
-> 
-> The various wakeup flags and their accessor macros in struct
-> dev_pm_info should be available whenever CONFIG_PM is enabled, not
-> just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
-> be configurable for runtime power management.  This patch (as1056b)
-> fixes the oversight.
 
-More accurately, fixes the "regression" ... as noted sometime
-last summer, after 296699de6bdc717189a331ab6bbe90e05c94db06
-introduced CONFIG_SUSPEND.  But that didn't make the regression
-list for that kernel, ergo the delay in fixing it.
+> That was in fact the original plan, before Rafael changed over to
+> calling prepare() just prior to suspend().
 
-- Dave
+Heh, ok :-)
 
+> Your analysis is right.  Removal isn't a problem; we don't care if 
+> drivers are prohibited from registering new children when they are 
+> unbound.  In general we want to make it possible to unregister devices 
+> at any time during the suspend-resume procedure (except of course that 
+> a device can't be unregistered while one of its methods is running).
+> 
+> An important point I tried to make in the earlier email is that drivers
+> will want a simple way to know when it is illegal for them to register
+> new children.  For example, suppose the registration is done by a
+> workqueue routine.  The most reliable way for the driver to insure that
+> the routine won't try to register new children improperly is to have
+> the routine check a flag which gets set _before_ prepare() is called.
 
-> [rjw: rebased]
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/main.c  |    2 --
->  drivers/base/power/sysfs.c |    2 ++
->  include/linux/pm.h         |   36 +++++++++++++++++++++---------------
->  3 files changed, 23 insertions(+), 17 deletions(-)
-> 
-> Index: linux-2.6/include/linux/pm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pm.h
-> +++ linux-2.6/include/linux/pm.h
-> @@ -183,9 +183,9 @@ typedef struct pm_message {
->  struct dev_pm_info {
->  	pm_message_t		power_state;
->  	unsigned		can_wakeup:1;
-> +	unsigned		should_wakeup:1;
->  	bool			sleeping:1;	/* Owned by the PM core */
->  #ifdef	CONFIG_PM_SLEEP
-> -	unsigned		should_wakeup:1;
->  	struct list_head	entry;
->  #endif
->  };
-> @@ -198,11 +198,6 @@ extern void device_resume(void);
->  extern int device_suspend(pm_message_t state);
->  extern int device_prepare_suspend(pm_message_t state);
->  
-> -#define device_set_wakeup_enable(dev,val) \
-> -	((dev)->power.should_wakeup = !!(val))
-> -#define device_may_wakeup(dev) \
-> -	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-> -
->  extern void __suspend_report_result(const char *function, void *fn, int ret);
->  
->  #define suspend_report_result(fn, ret)					\
-> @@ -210,6 +205,24 @@ extern void __suspend_report_result(cons
->  		__suspend_report_result(__FUNCTION__, fn, ret);		\
->  	} while (0)
->  
-> +#else /* !CONFIG_PM_SLEEP */
-> +
-> +static inline int device_suspend(pm_message_t state)
-> +{
-> +	return 0;
-> +}
-> +
-> +#define suspend_report_result(fn, ret) do { } while (0)
-> +
-> +#endif /* !CONFIG_PM_SLEEP */
-> +
-> +#ifdef CONFIG_PM
-> +
-> +#define device_set_wakeup_enable(dev,val) \
-> +	((dev)->power.should_wakeup = !!(val))
-> +#define device_may_wakeup(dev) \
-> +	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-> +
->  /*
->   * Platform hook to activate device wakeup capability, if that's not already
->   * handled by enable_irq_wake() etc.
-> @@ -224,24 +237,17 @@ static inline int call_platform_enable_w
->  	return 0;
->  }
->  
-> -#else /* !CONFIG_PM_SLEEP */
-> -
-> -static inline int device_suspend(pm_message_t state)
-> -{
-> -	return 0;
-> -}
-> +#else /* !CONFIG_PM */
->  
->  #define device_set_wakeup_enable(dev,val)	do{}while(0)
->  #define device_may_wakeup(dev)			(0)
->  
-> -#define suspend_report_result(fn, ret) do { } while (0)
-> -
->  static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
->  {
->  	return 0;
->  }
->  
-> -#endif /* !CONFIG_PM_SLEEP */
-> +#endif /* !CONFIG_PM */
->  
->  /* changes to device_may_wakeup take effect on the next pm state change.
->   * by default, devices should wakeup if they can.
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
->  /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
->  static bool all_sleeping;
->  
-> -int (*platform_enable_wakeup)(struct device *dev, int is_on);
-> -
->  /**
->   *	device_pm_add - add a device to the list of active devices
->   *	@dev:	Device to be added to the list
-> Index: linux-2.6/drivers/base/power/sysfs.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/sysfs.c
-> +++ linux-2.6/drivers/base/power/sysfs.c
-> @@ -6,6 +6,8 @@
->  #include <linux/string.h>
->  #include "power.h"
->  
-> +int (*platform_enable_wakeup)(struct device *dev, int is_on);
-> +
->  
->  /*
->   *	wakeup - Report/change current wakeup option for device
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> 
+I don't totally agree here. Drivers could have their own flag set
+internally with appropriate locking. The problem with your approach is
+locking. Just setting a flag is mostly useless, -unless- there
+appropriate locking between setter and testers. 
+
+For example, the flags we talked about previously, the one set _after_
+prepare that causes device_add() to fail, this one must have its setting
+done within the same mutex/lock as device_add() internally uses to
+protect the list. Or something along those lines.
+
+Now, your idea of having the core set some other flag to tell drivers to
+stop doing addition wouldn't work here because the driver would -not-
+hold the core device list mutex between testing it and performing the
+addition.
+
+As a general matter, the driver would need to internally, using it's own
+locking mechanisms, ensure that it will not do any further device_add,
+and that's not something the core can help with. In our case, that could
+be acheived by flushing the work queues and ensuring we don't queue
+another one, or using some driver internal semaphore to set a "stop
+adding" flag whatever... 
+
+However, I think this is mostly a non-issue, because the core _does_
+provide something here that is useful for drivers who don't want to
+bother with the above: The failure return from device_add. If drivers
+don't want to do something akin to what I described, they can just be
+made to deal gracefully with the failure from device_add that would
+happen due to the core internal flag being set after the return from
+prepare().
+
+So I don't think we need anything else.
+
+Cheers,
+Ben.
