@@ -1,21 +1,15 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation	patchset against -rc6)
-Date: Thu, 20 Mar 2008 19:26:33 -0300
-Message-ID: <20080320222633.GA20788__30051.0250767276$1206052172$gmane$org@khazad-dum.debian.net>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
-	<20080318130642.GA1609@elf.ucw.cz>
-	<20080318130710.GB1609@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
-	<20080318232037.GA1670@elf.ucw.cz>
-	<20080320151931.GD5615@khazad-dum.debian.net>
-	<47E287D4.3060906@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and	hibernation callbacks
+Date: Fri, 21 Mar 2008 09:32:00 +1100
+Message-ID: <1206052320.8420.23.camel__20054.5624633834$1206052661$gmane$org@pasglop>
+References: <Pine.LNX.4.44L0.0803201037590.9468-100000@netrider.rowland.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <47E287D4.3060906@gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0803201037590.9468-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,42 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Mar 2008, Alexey Starikovskiy wrote:
-> Henrique de Moraes Holschuh wrote:
->> On Wed, 19 Mar 2008, Pavel Machek wrote:
->>   
->>>     Also, for polling mode to work on Acers, we need
->>>     to insert a delay.
->>
->> Can we, in the future, always trigger any such performance damaging "fixups"
->> based on DMI white/black lists?  As a rule?
->>   
-> Poll mode is not supposed to be entered on any non-broken HW.
 
-We have seen just how much we can trust that, haven't we?
+On Thu, 2008-03-20 at 10:45 -0400, Alan Stern wrote:
+> 
+> I didn't mention locking because it seemed obvious that locking is
+> needed.  Of course a flag alone is mostly useless.
+> 
+> But we already _do_ have a lock (dev->sem) and we _don't_ have a flag.  
+> I was pointing out that some drivers will want to have a flag added.
+> Maybe so many drivers will want it that the flag should be added to the
+> PM structure, where it will be available for every device.  If only a
+> few drivers want this new flag, then yes, they can put it in their
+> private data structures.
 
-The truth is that even secondary last-resort paths like this need to work
-well, and as fast as possible.  As things stand, we DO excercise them a lot
-more than we'd expect...
+What I'm saying is that a flag set prior to prepare() would be almost
+impossible to get right in term of locking for the reasons I explained.
 
-> The fact that it happens now with Thinkpads at suspend is a bug.
+I think this should be under driver reponsibility, using it's own
+internal locking. Or else, drivers can rely on failure.
 
-Sure, and one we should fix.  That doesn't change the fact that any broken
-HW (or one hit by a kernel bug) that is not as broken as some Acers don't
-need to take that 5ms hit on every EC transaction, in an EC mode that is
-already way too slow without extra help.
+> > However, I think this is mostly a non-issue, because the core _does_
+> > provide something here that is useful for drivers who don't want to
+> > bother with the above: The failure return from device_add. If drivers
+> > don't want to do something akin to what I described, they can just be
+> > made to deal gracefully with the failure from device_add that would
+> > happen due to the core internal flag being set after the return from
+> > prepare().
+> 
+> Relying on a registration failure to handle this sort of thing is _not_
+> a good idea.  For example, how would the driver distinguish failure
+> caused by impending suspend from other sorts of failure?
 
-> EC region should not be accessed with interrupts of GPEs disabled.
+By the precise error code of course. But as I said, I would expect most
+bus drivers to have their own proper implementation that does the right
+thing, it's not like it was hard and there aren't that many bus drivers.
+Relying on failure is a possibility for simple ones that don't want to
+care much, in which case, there is little need to differenciate the
+failure caused by suspend from other failures other than maybe printing
+some garbage in the log vs. not :-)
 
-Looks like something we should tack a WARN_ONCE to, at least when in a debug
-mode compile?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Ben.
