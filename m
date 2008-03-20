@@ -1,8 +1,8 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.25-rc6 5/7] ACPI sets up
+Subject: [patch 2.6.25-rc6 7/7] PCI set up
 	device.power.can_wakeup flags
-Date: Thu, 20 Mar 2008 14:20:40 -0700
-Message-ID: <200803201420.40660.david-b__35657.4337035001$1206049158$gmane$org@pacbell.net>
+Date: Thu, 20 Mar 2008 14:25:54 -0700
+Message-ID: <200803201425.54587.david-b__42994.2319904969$1206049364$gmane$org@pacbell.net>
 References: <200803201408.33466.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,82 +23,80 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This exports the "acpi_device.wakeup.flags.valid" flag to the driver
-model as "device.power.can_wakeup".  That is, each "ACPI device" in
-the /proc/acpi/wakeup file that corresponds to a "real" device will
-initialize the can_wakeup flag to true.
+This patch teaches "pci_dev" about the driver model wakeup support, by
+marking devices as supporting wakeup when the PME# capability is listed
+in a PCI PM capability.  Right now, few PCI drivers support wakeup events:
+only USB hosts, and various network drivers.
 
-A separate patch is needed to make ACPI pay attention to the userspace
-input:  devices that can_wakeup have a should_wakeup flag, initially
-true, which is settable via sysfs and tested using device_may_wakeup().
-That's intended to be the primary policy input to the system, not the
-ACPI-specific /proc/acpi/wakeup file.
+A previous version of this patch broke on PowerPC platforms after they
+changed how they do early PCI initialization (following the first version
+of this patch).  Potentially the real fix involves switching PCI init on
+all platforms so they all adopt the driver model "init() then add()" model,
+calling device_initialize() early and pci_setup_device() before device_add().
 
-Note also that the ACPI tables list only motherboard devices, but many
-systems include more peripherals than those.  While the USB framework
-handles USB peripherals, nothing in Linux currently sets those flags
-for wakeup-capable devices on other expansion busses (like PCI).
+Also, note that ACPI has its own notions of what devices are wakeup-capable.
+Assuming that the PCI PM# capability is queried before calling device_add()
+to initialize driver model wakeup flags, ACPI overrides those settings for
+devices with entries in ACPI tables in its platform_notify().
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+That's how ACPI kicks in legacy PCI PM (e.g. Intel's UHCI controllers
+don't use PME#), declares that _it_ will handle SMBUSALERT# thank you, and
+handles various other board quirks.
+
+The fact that ACPI flags some bridges as wakeup-capable is puzzling though.
+I'm guessing it relates to whether PME# (or WAKE# on PCIE, etc) is actually
+wired up for use by add-on cards, and this marks an area where ACPI doesn't
+yet work correctly (it doesn't handle such wakeups).
+
+
+NOT YET READY FOR PRIME TIME ... expected to still break PowerPC.
 ---
- drivers/acpi/button.c |    3 +++
- drivers/acpi/glue.c   |    1 +
- drivers/acpi/power.c  |    4 ++++
- 3 files changed, 8 insertions(+)
+ drivers/pci/probe.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
---- g26.orig/drivers/acpi/button.c	2008-03-20 03:02:45.000000000 -0700
-+++ g26/drivers/acpi/button.c	2008-03-20 03:27:24.000000000 -0700
-@@ -476,6 +476,9 @@ static int acpi_button_add(struct acpi_d
- 	if (button->type == ACPI_BUTTON_TYPE_LID)
- 		acpi_lid_send_state(button);
+--- g26.orig/drivers/pci/probe.c	2008-02-24 00:18:23.000000000 -0800
++++ g26/drivers/pci/probe.c	2008-02-24 01:02:30.000000000 -0800
+@@ -678,6 +678,7 @@ static void pci_read_irq(struct pci_dev 
+ static int pci_setup_device(struct pci_dev * dev)
+ {
+ 	u32 class;
++	u16 pm;
  
-+	/* for these devices the ACPI node *IS* the "physical" device */
-+	device_init_wakeup(&device->dev, device->wakeup.flags.valid);
+ 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
+ 		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+@@ -707,6 +708,19 @@ static int pci_setup_device(struct pci_d
+ 		pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
+ 		pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
+ 
++		/* PCI PM capable devices may be able to issue PME# (wakeup) */
++		pm = pci_find_capability(dev, PCI_CAP_ID_PM);
++		if (pm) {
++			pci_read_config_word(dev, pm + PCI_PM_PMC, &pm);
++			if (pm & PCI_PM_CAP_PME_MASK)
++				device_init_wakeup(&dev->dev, 1);
 +
- 	if (device->wakeup.flags.valid) {
- 		/* Button's GPE is run-wake GPE */
- 		acpi_set_gpe_type(device->wakeup.gpe_device,
---- g26.orig/drivers/acpi/glue.c	2008-03-20 03:27:11.000000000 -0700
-+++ g26/drivers/acpi/glue.c	2008-03-20 03:27:25.000000000 -0700
-@@ -162,6 +162,7 @@ static int acpi_bind_one(struct device *
- 	if (!ACPI_FAILURE(status)) {
- 		int ret;
++			/* REVISIT: if (pm & PCI_PM_CAP_PME_D3cold) then
++			 * pci pm spec 1.2, section 3.2.4 says we should
++			 * init PCI_PM_CTRL_PME_{STATUS,ENABLE} ...
++			 */
++		}
++
+ 		/*
+ 		 *	Do the ugly legacy mode stuff here rather than broken chip
+ 		 *	quirk code. Legacy mode ATA controllers have fixed
+@@ -903,6 +917,7 @@ pci_scan_device(struct pci_bus *bus, int
  
-+		device_init_wakeup(dev, acpi_dev->wakeup.flags.valid);
- 		ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
- 				"firmware_node");
- 		if (ret != 0)
---- g26.orig/drivers/acpi/power.c	2008-03-20 03:02:45.000000000 -0700
-+++ g26/drivers/acpi/power.c	2008-03-20 03:27:25.000000000 -0700
-@@ -313,6 +313,7 @@ int acpi_enable_wakeup_device_power(stru
- 		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
-+			device_init_wakeup(&dev->dev, 0);
- 			dev->wakeup.flags.valid = 0;
- 			return -1;
- 		}
-@@ -322,6 +323,7 @@ int acpi_enable_wakeup_device_power(stru
- 	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
- 		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
-+		device_init_wakeup(&dev->dev, 0);
- 		dev->wakeup.flags.valid = 0;
- 		ret = -1;
- 	}
-@@ -351,6 +353,7 @@ int acpi_disable_wakeup_device_power(str
- 	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
- 		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
-+		device_init_wakeup(&dev->dev, 0);
- 		dev->wakeup.flags.valid = 0;
- 		return -1;
- 	}
-@@ -360,6 +363,7 @@ int acpi_disable_wakeup_device_power(str
- 		ret = acpi_power_off_device(dev->wakeup.resources.handles[i], dev);
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
-+			device_init_wakeup(&dev->dev, 0);
- 			dev->wakeup.flags.valid = 0;
- 			return -1;
- 		}
+ 	dev->bus = bus;
+ 	dev->sysdata = bus->sysdata;
++	device_initialize(&dev->dev);
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
+ 	dev->devfn = devfn;
+@@ -927,7 +942,6 @@ pci_scan_device(struct pci_bus *bus, int
+ 
+ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ {
+-	device_initialize(&dev->dev);
+ 	dev->dev.release = pci_release_dev;
+ 	pci_dev_get(dev);
+ 
