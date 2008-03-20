@@ -1,15 +1,21 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.25-rc6 7/7] PCI set up
-	device.power.can_wakeup flags
-Date: Thu, 20 Mar 2008 15:22:26 -0700
-Message-ID: <200803201522.26587.david-b__35784.0772405781$1206051865$gmane$org@pacbell.net>
-References: <Pine.LNX.4.44L0.0803201750010.881-100000@netrider.rowland.org>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
+	hibernation	patchset against -rc6)
+Date: Thu, 20 Mar 2008 19:26:33 -0300
+Message-ID: <20080320222633.GA20788__30051.0250767276$1206052172$gmane$org@khazad-dum.debian.net>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
+	<20080318130642.GA1609@elf.ucw.cz>
+	<20080318130710.GB1609@elf.ucw.cz>
+	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
+	<20080318232037.GA1670@elf.ucw.cz>
+	<20080320151931.GD5615@khazad-dum.debian.net>
+	<47E287D4.3060906@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803201750010.881-100000@netrider.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <47E287D4.3060906@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +25,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 20 March 2008, Alan Stern wrote:
-> On Thu, 20 Mar 2008, David Brownell wrote:
-> 
-> > A previous version of this patch broke on PowerPC platforms after they
-> > changed how they do early PCI initialization (following the first version
-> > of this patch).  Potentially the real fix involves switching PCI init on
-> > all platforms so they all adopt the driver model "init() then add()" model,
-> > calling device_initialize() early and pci_setup_device() before device_add().
-> 
-> Would it help to break this apart into two patches: the first to switch 
-> PCI over to the driver model approach, and the second to set up the 
-> can_wakeup flags?  Those really are two very different goals.
+On Thu, 20 Mar 2008, Alexey Starikovskiy wrote:
+> Henrique de Moraes Holschuh wrote:
+>> On Wed, 19 Mar 2008, Pavel Machek wrote:
+>>   
+>>>     Also, for polling mode to work on Acers, we need
+>>>     to insert a delay.
+>>
+>> Can we, in the future, always trigger any such performance damaging "fixups"
+>> based on DMI white/black lists?  As a rule?
+>>   
+> Poll mode is not supposed to be entered on any non-broken HW.
 
-Presumably, yes.  I'm not sure why there isn't a more
-homogeneous approach to PCI init, between arch/* trees,
-so I suspect there may be some down'n'dirty voodoo to
-avoid tripping over.
+We have seen just how much we can trust that, haven't we?
 
-That said, I'd sure *hope* that it could be cleaned up
-in a way that all platforms can share one chunk of code
-doing setup (like this) based on config space access.
+The truth is that even secondary last-resort paths like this need to work
+well, and as fast as possible.  As things stand, we DO excercise them a lot
+more than we'd expect...
 
+> The fact that it happens now with Thinkpads at suspend is a bug.
 
-> What are the barriers to doing the first part right now?  Is it just 
-> PPC?
+Sure, and one we should fix.  That doesn't change the fact that any broken
+HW (or one hit by a kernel bug) that is not as broken as some Acers don't
+need to take that 5ms hit on every EC transaction, in an EC mode that is
+already way too slow without extra help.
 
-I have no idea, since I've not really looked at this in
-any detail for some time now.  (The relevant PPC change
-was more than two years ago...)  Heck, maybe it's even
-been done already, and I just didn't notice!
+> EC region should not be accessed with interrupts of GPEs disabled.
 
-- Dave
+Looks like something we should tack a WARN_ONCE to, at least when in a debug
+mode compile?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
