@@ -1,8 +1,8 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.25-rc6 7/7] PCI set up
-	device.power.can_wakeup flags
-Date: Thu, 20 Mar 2008 14:25:54 -0700
-Message-ID: <200803201425.54587.david-b__42994.2319904969$1206049364$gmane$org@pacbell.net>
+Subject: [patch 2.6.25-rc6 6/7] ACPI uses device_may_wakeup()
+	policy inputs
+Date: Thu, 20 Mar 2008 14:22:54 -0700
+Message-ID: <200803201422.55014.david-b__2788.91653656519$1206049397$gmane$org@pacbell.net>
 References: <200803201408.33466.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,80 +23,134 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch teaches "pci_dev" about the driver model wakeup support, by
-marking devices as supporting wakeup when the PME# capability is listed
-in a PCI PM capability.  Right now, few PCI drivers support wakeup events:
-only USB hosts, and various network drivers.
+This imports the driver model device.power.may_wakeup flags to ACPI,
+using it to *REPLACE* the /proc/acpi/wakeup flags for some devices.
+It depends on the previous patch making device.power.can_wakeup behave.
+It does that by:
 
-A previous version of this patch broke on PowerPC platforms after they
-changed how they do early PCI initialization (following the first version
-of this patch).  Potentially the real fix involves switching PCI init on
-all platforms so they all adopt the driver model "init() then add()" model,
-calling device_initialize() early and pci_setup_device() before device_add().
+ - Implementing platform_enable_wakeup(), which is currently invoked only
+   by pci_enable_wake().  When that's called -- probably in the driver
+   suspend() call -- it updates acpi_device.wakeup.state.enabled flag in
+   the same way writing to /proc/acpi/wakeup updates it.
+   
+ - Updating the usage of the corresponding ACPI flags when turning on
+   wakeup power domains and GPEs.
 
-Also, note that ACPI has its own notions of what devices are wakeup-capable.
-Assuming that the PCI PM# capability is queried before calling device_add()
-to initialize driver model wakeup flags, ACPI overrides those settings for
-devices with entries in ACPI tables in its platform_notify().
+THIS PATCH NEEDS MORE ATTENTION because of the way the ACPI method
+invocations have been changing, e.g. the 1.0 vs 2.0 sequencing.
 
-That's how ACPI kicks in legacy PCI PM (e.g. Intel's UHCI controllers
-don't use PME#), declares that _it_ will handle SMBUSALERT# thank you, and
-handles various other board quirks.
+Right now it's not clear to me whether the GPEs are always enabled at
+the right time, and for that matter whether the rules haven't changed
+so that drivers can no longer effectively control those settings from
+suspend() unless acpi_new_pts_ordering is in effect...
 
-The fact that ACPI flags some bridges as wakeup-capable is puzzling though.
-I'm guessing it relates to whether PME# (or WAKE# on PCIE, etc) is actually
-wired up for use by add-on cards, and this marks an area where ACPI doesn't
-yet work correctly (it doesn't handle such wakeups).
-
-
-NOT YET READY FOR PRIME TIME ... expected to still break PowerPC.
 ---
- drivers/pci/probe.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ drivers/acpi/sleep/main.c   |    2 +-
+ drivers/acpi/sleep/wakeup.c |   44 ++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 43 insertions(+), 3 deletions(-)
 
---- g26.orig/drivers/pci/probe.c	2008-02-24 00:18:23.000000000 -0800
-+++ g26/drivers/pci/probe.c	2008-02-24 01:02:30.000000000 -0800
-@@ -678,6 +678,7 @@ static void pci_read_irq(struct pci_dev 
- static int pci_setup_device(struct pci_dev * dev)
- {
- 	u32 class;
-+	u16 pm;
+--- g26.orig/drivers/acpi/sleep/main.c	2008-02-24 02:07:57.000000000 -0800
++++ g26/drivers/acpi/sleep/main.c	2008-02-24 02:08:04.000000000 -0800
+@@ -470,7 +470,7 @@ int acpi_pm_device_sleep_state(struct de
+ 	 * can wake the system.  _S0W may be valid, too.
+ 	 */
+ 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
+-	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
++	    (device_may_wakeup(dev) &&
+ 	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
+ 		acpi_status status;
  
- 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
- 		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
-@@ -707,6 +708,19 @@ static int pci_setup_device(struct pci_d
- 		pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
- 		pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
+--- g26.orig/drivers/acpi/sleep/wakeup.c	2008-02-24 02:03:27.000000000 -0800
++++ g26/drivers/acpi/sleep/wakeup.c	2008-02-24 02:08:04.000000000 -0800
+@@ -35,12 +35,22 @@ void acpi_enable_wakeup_device_prep(u8 s
+ 		struct acpi_device *dev = container_of(node,
+ 						       struct acpi_device,
+ 						       wakeup_list);
++		struct device *ldev;
  
-+		/* PCI PM capable devices may be able to issue PME# (wakeup) */
-+		pm = pci_find_capability(dev, PCI_CAP_ID_PM);
-+		if (pm) {
-+			pci_read_config_word(dev, pm + PCI_PM_PMC, &pm);
-+			if (pm & PCI_PM_CAP_PME_MASK)
-+				device_init_wakeup(&dev->dev, 1);
+ 		if (!dev->wakeup.flags.valid ||
+ 		    !dev->wakeup.state.enabled ||
+ 		    (sleep_state > (u32) dev->wakeup.sleep_state))
+ 			continue;
+ 
++		ldev = acpi_get_physical_device(dev->handle);
++		if (ldev) {
++			int flag = device_may_wakeup(ldev);
 +
-+			/* REVISIT: if (pm & PCI_PM_CAP_PME_D3cold) then
-+			 * pci pm spec 1.2, section 3.2.4 says we should
-+			 * init PCI_PM_CTRL_PME_{STATUS,ENABLE} ...
-+			 */
++			put_device(ldev);
++			if (!flag)
++				continue;
 +		}
 +
- 		/*
- 		 *	Do the ugly legacy mode stuff here rather than broken chip
- 		 *	quirk code. Legacy mode ATA controllers have fixed
-@@ -903,6 +917,7 @@ pci_scan_device(struct pci_bus *bus, int
- 
- 	dev->bus = bus;
- 	dev->sysdata = bus->sysdata;
-+	device_initialize(&dev->dev);
- 	dev->dev.parent = bus->bridge;
- 	dev->dev.bus = &pci_bus_type;
- 	dev->devfn = devfn;
-@@ -927,7 +942,6 @@ pci_scan_device(struct pci_bus *bus, int
- 
- void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ 		spin_unlock(&acpi_device_lock);
+ 		acpi_enable_wakeup_device_power(dev);
+ 		spin_lock(&acpi_device_lock);
+@@ -57,8 +67,8 @@ void acpi_enable_wakeup_device(u8 sleep_
  {
--	device_initialize(&dev->dev);
- 	dev->dev.release = pci_release_dev;
- 	pci_dev_get(dev);
+ 	struct list_head *node, *next;
  
+-	/* 
+-	 * Caution: this routine must be invoked when interrupt is disabled 
++	/*
++	 * Caution: this routine must be invoked when interrupt is disabled
+ 	 * Refer ACPI2.0: P212
+ 	 */
+ 	ACPI_FUNCTION_TRACE("acpi_enable_wakeup_device");
+@@ -107,6 +117,7 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
++		struct device *ldev;
+ 
+ 		if (!dev->wakeup.flags.valid)
+ 			continue;
+@@ -125,6 +136,15 @@ void acpi_disable_wakeup_device(u8 sleep
+ 			continue;
+ 		}
+ 
++		ldev = acpi_get_physical_device(dev->handle);
++		if (ldev) {
++			int flag = device_may_wakeup(ldev);
++
++			put_device(ldev);
++			if (!flag)
++				continue;
++		}
++
+ 		spin_unlock(&acpi_device_lock);
+ 		acpi_disable_wakeup_device_power(dev);
+ 		/* Never disable run-wake GPE */
+@@ -139,6 +159,24 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	spin_unlock(&acpi_device_lock);
+ }
+ 
++static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
++{
++	struct acpi_device	*adev;
++	int			status;
++
++	if (!device_can_wakeup(dev))
++		return -EINVAL;
++	if (is_on && !device_may_wakeup(dev))
++		return -EINVAL;
++
++	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
++	if (status < 0)
++		return status;
++
++	adev->wakeup.state.enabled = !!is_on;
++	return 0;
++}
++
+ static int __init acpi_wakeup_device_init(void)
+ {
+ 	struct list_head *node, *next;
+@@ -146,6 +184,8 @@ static int __init acpi_wakeup_device_ini
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	platform_enable_wakeup = acpi_platform_enable_wakeup;
++
+ 	spin_lock(&acpi_device_lock);
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev = container_of(node,
