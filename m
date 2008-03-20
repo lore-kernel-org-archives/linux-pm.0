@@ -1,20 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and
-	hibernation patchset against -rc6)
-Date: Thu, 20 Mar 2008 16:53:59 +0100
-Message-ID: <20080320155359.GA4044__8613.28288815475$1206028638$gmane$org@ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
-	<20080318130642.GA1609@elf.ucw.cz>
-	<20080318130710.GB1609@elf.ucw.cz>
-	<alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
-	<20080318225201.GA2115@elf.ucw.cz>
-	<20080320150637.GC5615@khazad-dum.debian.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+ and hibernation callbacks
+Date: Thu, 20 Mar 2008 14:26:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803201412210.22752-100000__28796.7700548053$1206037722$gmane$org@netrider.rowland.org>
+References: <1205984008.26869.408.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080320150637.GC5615@khazad-dum.debian.net>
+In-Reply-To: <1205984008.26869.408.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,21 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-03-20 12:06:37, Henrique de Moraes Holschuh wrote:
-> On Tue, 18 Mar 2008, Pavel Machek wrote:
-> >     ACPI: Ignore _BQC object when registering backlight device
+On Thu, 20 Mar 2008, Benjamin Herrenschmidt wrote:
+
+> > An important point I tried to make in the earlier email is that drivers
+> > will want a simple way to know when it is illegal for them to register
+> > new children.  For example, suppose the registration is done by a
+> > workqueue routine.  The most reliable way for the driver to insure that
+> > the routine won't try to register new children improperly is to have
+> > the routine check a flag which gets set _before_ prepare() is called.
 > 
-> Thinkpads always have them all, or none at all.
+> I don't totally agree here. Drivers could have their own flag set
+> internally with appropriate locking. The problem with your approach is
+> locking. Just setting a flag is mostly useless, -unless- there
+> appropriate locking between setter and testers. 
 
-Yep, this was not issue after all.
+Here's an example of what I mean.
 
-I tried to do bisect, but it looks like the X-and-lid-close/open  problem is present in
-2.6.24, too. I'll try to do some meaningfull bisect tonight.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+One of the things we don't want to do is bind a new driver to a device
+after it has gone through the prepare() stage.  Doing so would involve
+calling the driver's probe() routine, which is likely to want to
+register new children and who knows what else.  The probe routine might 
+even end up running after the device was suspended!  Clearly this 
+should be avoided.
+
+But the user can force a binding to occur by writing the device's path
+to the driver's "bind" attribute in sysfs.  This means that
+driver_bind() in drivers/base/bus.c will need to know whether or not
+the device has gone through the prepare() stage, which means the device
+structure will need to have a flag set before prepare() is called (more 
+precisely, the flag must be set before dev->sem is released following 
+the call to prepare).
+
+Either that or else driver_bind() must always block whenever a system
+sleep is in progress.  That would be easier -- but it's a lot like what 
+the freezer would do.  Which would you prefer?
+
+Alan Stern
