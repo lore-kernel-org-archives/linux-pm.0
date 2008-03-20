@@ -1,15 +1,16 @@
-From: <gregkh@suse.de>
-Subject: patch
-	pm-fix-misuse-of-wakeup-flag-accessors-in-serial-core.patch
-	added to gregkh-2.6 tree
-Date: Thu, 20 Mar 2008 16:23:48 -0700
-Message-ID: <120605542858__4252.49233744598$1206055578$gmane$org@kroah.org>
-References: <200803192235.14645.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Fri, 21 Mar 2008 00:40:32 +0100
+Message-ID: <200803210040.33982.rjw__17765.0482081392$1206056596$gmane$org@sisk.pl>
+References: <200803202345.25083.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0803201858030.8453-100000@netrider.rowland.org>
+	<20080320232205.GF17431@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803192235.14645.rjw@sisk.pl>
+In-Reply-To: <20080320232205.GF17431@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +20,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu, akpm@linux-foundation.org, greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 21 of March 2008, Pavel Machek wrote:
+> On Thu 2008-03-20 19:01:56, Alan Stern wrote:
+> > On Thu, 20 Mar 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > > >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> > > > > >> use S5 instead of entering S4, the fan doesn't work correctly after the
+> > > > > >> resume.  Plain and simple.
+> > > > > >> 
+> > > > > >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> > > > > >> but I have no idea what that can be at the moment.
+> > > > > >
+> > > > > > IMO it would be worthwhile to track this down.  It's a clear indication 
+> > > > > > that something is wrong somewhere.
+> > > > > >
+> > > > > > Could it be connected with the way the boot kernel hands control over
+> > > > > > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > > > > > sort of thing during a boot from S5.  It would have to be fooled into
+> > > > > > thinking the two kernels were one and the same.
+> > > > > 
+> > > > > It should be easy to test if it is a hand over problem, by turning off
+> > > > > the laptop by placing it in S5 (shutdown -h now) and then booting same
+> > > > > kernel again.
+> > > > 
+> > > > Feel free to help with testing.
+> > > > 
+> > > > I believe ACPI is simply getting confused by us overwriting memory
+> > > > with that from old image. I don't see how you can emulate it with
+> > > > shutdown.
+> > > 
+> > > Well, in fact ACPI has something called the NVS memory, which we're supposed
+> > > to restore during the resume and which we're not doing.  The problem may be
+> > > related to this.
+> > 
+> > No, it can't be.  ACPI won't expect the NVS memory to be restored 
+> > following an S5-shutdown.  In fact, as far as ACPI is concerned, 
+> > resuming from an S5-type hibernation should not be considered a resume 
+> > at all but just an ordinary reboot.
 
-This is a note to let you know that I've just added the patch titled
+I agree here.
 
-     Subject: PM: Fix misuse of wakeup flag accessors in serial core
+> > All ACPI-related memory areas in the boot kernel should be passed directly
+> > through to the image kernel.
 
-to my gregkh-2.6 tree.  Its filename is
+However, the image kernel is supposed to restore the NVS area (from the
+image) before executing _WAK.
 
-     pm-fix-misuse-of-wakeup-flag-accessors-in-serial-core.patch
+> How can we pass interpretter state? I do not think we do this kind of
+> passing.
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+The interpreter state is passed withing the image.  The platform state is not.
 
+> If it was enough to pass some static area, we could just mark it
+> nosave...
+> 
+> Len: Is ACPI AML permitted to allocate memory (like in ACPI_ALLOC or
+> something)? Could we easily identify BIOS data so we could mark them
+> nosave?
 
->From rjw@sisk.pl  Thu Mar 20 16:20:16 2008
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Wed, 19 Mar 2008 22:35:13 +0100
-Subject: PM: Fix misuse of wakeup flag accessors in serial core
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, lenb@kernel.org
-Message-ID: <200803192235.14645.rjw@sisk.pl>
-Content-Disposition: inline
+This wouldn't work even if we could (at least on x86-64).
 
+In fact I'm going to remove the 'nosave' section in the future (another
+thing on the todo list).
 
-From: Alan Stern <stern@rowland.harvard.edu>
-
-This patch (as1059) fixes a mistake in the way the serial core
-initializes a device's wakeup settings.  It should use the accessor
-routine instead of relying on a macro producing an lvalue.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/serial/serial_core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2356,7 +2356,7 @@ int uart_add_one_port(struct uart_driver
- 	 */
- 	tty_dev = tty_register_device(drv->tty_driver, port->line, port->dev);
- 	if (likely(!IS_ERR(tty_dev))) {
--		device_can_wakeup(tty_dev) = 1;
-+		device_init_wakeup(tty_dev, 1);
- 		device_set_wakeup_enable(tty_dev, 0);
- 	} else
- 		printk(KERN_ERR "Cannot register tty device on line %d\n",
-
-
-Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
-
-usb/usb-convert-usb.h-struct-usb_device-to-kernel-doc.patch
-usb/usb-make-usb_storage_onetouch-available-with-pm.patch
-usb/usb-usb-ohci-sm501-driver-use-the-conventional-convention-for-suspend-and-resume.patch
-usb/usb-reorganize-code-in-hub.c.patch
-usb/usb-ehci-carry-out-port-handover-during-each-root-hub-resume.patch
-usb/usb-new-quirk-flag-to-avoid-set-interface.patch
-usb/drivers-usb-core-devio.c-suppress-warning-with-64k-page_size.patch
-usb/usb-make-usb-persist-work-after-every-system-sleep.patch
-usb/usb-remove-config_usb_persist-setting.patch
-usb/usb-check-serial-number-string-after-device-reset.patch
-usb/usb-enable-usb-persist-by-default.patch
-usb/usb-remove-dev-power.power_state.patch
-usb/usb-isd200-fix-memory-leak-in-isd200_get_inquiry_data.patch
-usb/usb-remove-experimental-tags-from-some-usb-gadget-kconfig-entries.patch
-driver-core/pm-handle-device-registrations-during-suspend-resume.patch
-driver-core/pm-convert-wakeup-flag-accessors-to-inline-functions.patch
-driver-core/driver-core-call-device_pm_add-after-bus_add_device-in-device_add.patch
-driver-core/pm-fix-misuse-of-wakeup-flag-accessors-in-serial-core.patch
-driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+Thanks,
+Rafael
