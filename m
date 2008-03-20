@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
- and hibernation callbacks
-Date: Thu, 20 Mar 2008 14:26:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803201412210.22752-100000__28796.7700548053$1206037722$gmane$org@netrider.rowland.org>
-References: <1205984008.26869.408.camel@pasglop>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Thu, 20 Mar 2008 11:40:19 +0100
+Message-ID: <20080320104019.GA6870__18308.0129595057$1206046607$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0803182228520.10154-100000@netrider.rowland.org>
+	<m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1205984008.26869.408.camel@pasglop>
+Content-Disposition: inline
+In-Reply-To: <m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Mar 2008, Benjamin Herrenschmidt wrote:
-
-> > An important point I tried to make in the earlier email is that drivers
-> > will want a simple way to know when it is illegal for them to register
-> > new children.  For example, suppose the registration is done by a
-> > workqueue routine.  The most reliable way for the driver to insure that
-> > the routine won't try to register new children improperly is to have
-> > the routine check a flag which gets set _before_ prepare() is called.
+On Tue 2008-03-18 21:25:27, Eric W. Biederman wrote:
+> Alan Stern <stern@rowland.harvard.edu> writes:
 > 
-> I don't totally agree here. Drivers could have their own flag set
-> internally with appropriate locking. The problem with your approach is
-> locking. Just setting a flag is mostly useless, -unless- there
-> appropriate locking between setter and testers. 
+> > On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
+> >
+> >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> >> use S5 instead of entering S4, the fan doesn't work correctly after the
+> >> resume.  Plain and simple.
+> >> 
+> >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> >> but I have no idea what that can be at the moment.
+> >
+> > IMO it would be worthwhile to track this down.  It's a clear indication 
+> > that something is wrong somewhere.
+> >
+> > Could it be connected with the way the boot kernel hands control over
+> > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > sort of thing during a boot from S5.  It would have to be fooled into
+> > thinking the two kernels were one and the same.
+> 
+> It should be easy to test if it is a hand over problem, by turning off
+> the laptop by placing it in S5 (shutdown -h now) and then booting same
+> kernel again.
 
-Here's an example of what I mean.
+Feel free to help with testing.
 
-One of the things we don't want to do is bind a new driver to a device
-after it has gone through the prepare() stage.  Doing so would involve
-calling the driver's probe() routine, which is likely to want to
-register new children and who knows what else.  The probe routine might 
-even end up running after the device was suspended!  Clearly this 
-should be avoided.
-
-But the user can force a binding to occur by writing the device's path
-to the driver's "bind" attribute in sysfs.  This means that
-driver_bind() in drivers/base/bus.c will need to know whether or not
-the device has gone through the prepare() stage, which means the device
-structure will need to have a flag set before prepare() is called (more 
-precisely, the flag must be set before dev->sem is released following 
-the call to prepare).
-
-Either that or else driver_bind() must always block whenever a system
-sleep is in progress.  That would be easier -- but it's a lot like what 
-the freezer would do.  Which would you prefer?
-
-Alan Stern
+I believe ACPI is simply getting confused by us overwriting memory
+with that from old image. I don't see how you can emulate it with
+shutdown.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
