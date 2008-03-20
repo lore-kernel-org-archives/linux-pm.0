@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Thu, 20 Mar 2008 11:40:19 +0100
-Message-ID: <20080320104019.GA6870__18308.0129595057$1206046607$gmane$org@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0803182228520.10154-100000@netrider.rowland.org>
-	<m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: [patch 2.6.25-rc6 0/7] misc pm wake patches
+Date: Thu, 20 Mar 2008 14:08:33 -0700
+Message-ID: <200803201408.33466.david-b__49929.0269487121$1206048781$gmane$org@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-03-18 21:25:27, Eric W. Biederman wrote:
-> Alan Stern <stern@rowland.harvard.edu> writes:
-> 
-> > On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
-> >
-> >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
-> >> use S5 instead of entering S4, the fan doesn't work correctly after the
-> >> resume.  Plain and simple.
-> >> 
-> >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
-> >> but I have no idea what that can be at the moment.
-> >
-> > IMO it would be worthwhile to track this down.  It's a clear indication 
-> > that something is wrong somewhere.
-> >
-> > Could it be connected with the way the boot kernel hands control over
-> > to the image kernel?  Presumably ACPI isn't prepared to deal with that
-> > sort of thing during a boot from S5.  It would have to be fooled into
-> > thinking the two kernels were one and the same.
-> 
-> It should be easy to test if it is a hand over problem, by turning off
-> the laptop by placing it in S5 (shutdown -h now) and then booting same
-> kernel again.
+Here are patches I've had sitting around for a while ... many of
+them are IMO now mergeable, but I think the last two need work
+to integrate better with ACPI and PCI.
 
-Feel free to help with testing.
+ - Crosslink ACPI and matching "real" device nodes in sysfs.
+   Updated version of a patch from early last year.
 
-I believe ACPI is simply getting confused by us overwriting memory
-with that from old image. I don't see how you can emulate it with
-shutdown.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+ - acpi_pm_device_sleep_state() cleanup
+
+ - pci_choose_state() cleanup and fixes (but arguably this
+   needs to change given the new method scheme)
+
+ - USB uses pci_choose_state(), seems safe given those fixes
+
+ - Make ACPI set up device.power.can_wakeup driver model flags
+
+ - Make ACPI use device_may_wakeup(dev) policy inputs from
+   userspace, instead of /proc/acpi/wakeup ... probably needs
+   work yet given the method reordering stuff
+
+ - Make PCI set up device.power.can_wakeup flags ... presumably
+   this still breaks on PPC, which needs more work.
