@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 2.6.25-rc6 3/7] pci_choose_state() cleanup
-	and fixes
-Date: Fri, 21 Mar 2008 02:47:18 +0100
-Message-ID: <200803210247.18686.rjw__42092.8530082621$1206064198$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803202053270.11234-100000@netrider.rowland.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 2)
+Date: Fri, 21 Mar 2008 03:14:54 +0100
+Message-ID: <200803210314.55149.rjw__2682.14954198829$1206065833$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803202104090.11234-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803202053270.11234-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803202104090.11234-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,43 +20,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
 On Friday, 21 of March 2008, Alan Stern wrote:
 > On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
 > 
-> > The original code executed platform_pci_choose_state() first, if defined, and
-> > if that succeeded, it just returned the result.  You put
-> > platform_pci_choose_state() under the switch(). :-)
+> > Hi,
+> > 
+> > Below is an updated version of the $subject patch.  It has only been
+> > compilation tested, but I'd like to get as much feedback as reasonably possible
+> > at this stage to avoid redesigning things later in the process.
+> > 
+> > The most important changes from the previous one are the following:
+> > * Callbacks to be executed with interrupts disabled are now separated from
+> >   the "regular" ones.  There still are six of them, but IMHO this is what may
+> >   be necessary in the most general case (eg. a driver may have to carry out
+> >   some operations with interrupts disabled, which are different for SUSPEND,
+> >   FREEZE and HIBERNATE; the complementary "resume" callbacks are needed for
+> >   error recovery, for example)
+> > * It occured to me that the ->freeze() and ->quiesce() callbacks were
+> >   essentially the same, so I removed the latter
+> > * The ->recover() callback was also dropped, as ->thaw() may well be used instead
+> >   just fine (it seems)
+> > * ->prepare() and ->complete() are now called in separate loops which causes
+> >   some funny complications with error recovery.  Namely, we must remember which
+> >   devices have already been ->prepare()d, so that we call ->complete() for them
+> >   in the error path.  Moreover, there may be some ->prepare()d and some
+> >   ->suspend()ed devices at the same time, so if there's an error we should
+> >   ->resume() the ->suspend()ed ones and ->complete() everything etc.
+> >   This may be handled in many different ways, but I decided to introduce a new
+> >   list on which the ->complete()d devices are stored.  Accordingly, the
+> >   registration of new children of a device is blocked between ->prepare() and
+> >   ->complete() (it was only blocked between ->prepare() and ->resume() in the
+> >   previous version).
+> > 
+> > Please have a look.
 > 
-> For FREEZE and QUIESCE, is there ever any reason to leave D0?
+> I don't have time to go through this in detail now, but a few things 
+> stand out.
+> 
+> One trivial problem is that your dpm_prepare and dpm_complete routines 
+> go through the list in the wrong order.
 
-No, but there's a reason to leave it for HIBERNATE and that's what my original
-comment was about.
+I'm not all so sure that the order is actually wrong.  What would be the
+advantage of the forward order over the current one?
 
-> These calls are documented as not requiring (and not desiring!) any change
-> in power level.
+> More importantly, the situation with prepare and complete is getting
+> rather complicated.  Now that you're adding dev->power.state, why not
+> go all the way?  Get rid of all the different lists, keeping just
+> dpm_active and possibly dpm_destroy.
 
-Correct, but that's not the point.
+dpm_destroy is not necessary and I'm going to drop it (later).
 
-Is there any reason why pci_choose_state() should try to figure out what kind
-of operation is being performed by the driver and tailor its output to that?
-I don't think so.  Rather, the driver should know what it's doing and either
-call pci_choose_state() or not.  If the state of the device is not to be
-changed, there's no reason to call pci_choose_state() at all.
+> Instead of moving devices between different lists, just store in
+> dev->power.state an identification for which list the device is supposed
+> to be on or is supposed to be moving to.  (Or else have a bunch of bitfields
+> indicating which methods have been called.)  This has the advantage that
+> the entries will never get out of order, even if devices are registered at
+> the wrong time. 
 
-My opinion is that drivers should only use pci_choose_state() if they _intend_
-to change the state of the device and they should expect that the result may
-not depend on the 'state' argument passed to it, but on the target state set by
-the platform.  [Note that with the new suspend/hibernation callbacks there
-won't be the pm_message_t argument to pass to pci_choose_state().]
+That's correct.
+ 
+> There's some question about when we want the PM core to start
+> preventing new children from being registered.  Should this start right
+> after prepare() returns, or should it start right before suspend() is
+> called?  The first alternative sounds better to me.  Not only does it
+> agree with the purpose of the prepare method, it also makes race
+> situations easier to handle.
 
-Now, we need to settle _what_ exactly pci_choose_state() is supposed
-to return, because it's not clear right now.  Should that be the lowest power
-state in which the device can be in given system state (that's what
-platform_pci_choose_state() will return)?  Or should that be the highest power
-state in which the device can be in given system state?  Or anything else?
+I agree and that's implemented in the patch (ie. the registrations of new
+children are blocked immediately after ->prepare() has returned).
+
+> Since dpm_prepare is supposed to go through the list in the forward
+> direction, logically the "root" of the device tree should be the first
+> thing "prepared".  This means you should not allow parentless devices
+> to be registered any time after dpm_prepare has started.  Is that 
+> liable to cause problems?
+
+I'm still not seeing the advantage of the forward direction in the first place.
+
+Although I don't see what particular problems that may cause, I think the
+current approach (first, block registrations of new children for each
+->prepare()d device and finally block any registrations of new devices) is
+more natural.
+
+> There may be similar problems with complete().  A number of drivers
+> check during their resume method for the presence of new children
+> plugged in while the system was asleep.  All these drivers would have
+> to be converted over to the new scheme if they weren't permitted to
+> register the new children before complete() was called.  Of course,
+> this is easily fixed by permitting new children starting from when
+> resume() is called rather than when complete() is called.
+
+Well, the problem here was the protection of the correct ordering of the
+various lists.  However, if the approach with changing 'status' is adopted
+instead, which seems to be better, we'll be able to unblock the registering
+of new children before ->resume().
 
 Thanks,
 Rafael
