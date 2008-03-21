@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch 2.6.25-rc6 3/7] pci_choose_state() cleanup
- and fixes
-Date: Thu, 20 Mar 2008 20:55:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803202053270.11234-100000__16771.7381417335$1206061062$gmane$org@netrider.rowland.org>
-References: <200803210122.44188.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+ hibernation callbacks (rev. 2)
+Date: Thu, 20 Mar 2008 21:21:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803202104090.11234-100000__35907.4257234626$1206062607$gmane$org@netrider.rowland.org>
+References: <200803210101.04706.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803210122.44188.rjw@sisk.pl>
+In-Reply-To: <200803210101.04706.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +19,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
 
-> The original code executed platform_pci_choose_state() first, if defined, and
-> if that succeeded, it just returned the result.  You put
-> platform_pci_choose_state() under the switch(). :-)
+> Hi,
+> 
+> Below is an updated version of the $subject patch.  It has only been
+> compilation tested, but I'd like to get as much feedback as reasonably possible
+> at this stage to avoid redesigning things later in the process.
+> 
+> The most important changes from the previous one are the following:
+> * Callbacks to be executed with interrupts disabled are now separated from
+>   the "regular" ones.  There still are six of them, but IMHO this is what may
+>   be necessary in the most general case (eg. a driver may have to carry out
+>   some operations with interrupts disabled, which are different for SUSPEND,
+>   FREEZE and HIBERNATE; the complementary "resume" callbacks are needed for
+>   error recovery, for example)
+> * It occured to me that the ->freeze() and ->quiesce() callbacks were
+>   essentially the same, so I removed the latter
+> * The ->recover() callback was also dropped, as ->thaw() may well be used instead
+>   just fine (it seems)
+> * ->prepare() and ->complete() are now called in separate loops which causes
+>   some funny complications with error recovery.  Namely, we must remember which
+>   devices have already been ->prepare()d, so that we call ->complete() for them
+>   in the error path.  Moreover, there may be some ->prepare()d and some
+>   ->suspend()ed devices at the same time, so if there's an error we should
+>   ->resume() the ->suspend()ed ones and ->complete() everything etc.
+>   This may be handled in many different ways, but I decided to introduce a new
+>   list on which the ->complete()d devices are stored.  Accordingly, the
+>   registration of new children of a device is blocked between ->prepare() and
+>   ->complete() (it was only blocked between ->prepare() and ->resume() in the
+>   previous version).
+> 
+> Please have a look.
 
-For FREEZE and QUIESCE, is there ever any reason to leave D0?  These 
-calls are documented as not requiring (and not desiring!) any change in 
-power level.
+I don't have time to go through this in detail now, but a few things 
+stand out.
 
-> Consequently, the 'state' argument would simply be unnecessary (and in fact
-> it's ignored if platform_pci_choose_state() is defined).
+One trivial problem is that your dpm_prepare and dpm_complete routines 
+go through the list in the wrong order.
 
-It should not be ignored, for the reason given above.
+More importantly, the situation with prepare and complete is getting
+rather complicated.  Now that you're adding dev->power.state, why not
+go all the way?  Get rid of all the different lists, keeping just
+dpm_active and possibly dpm_destroy.  Instead of moving devices between
+different lists, just store in dev->power.state an identification for
+which list the device is supposed to be on or is supposed to be moving
+to.  (Or else have a bunch of bitfields indicating which methods have
+been called.)  This has the advantage that the entries will never get
+out of order, even if devices are registered at the wrong time.
+
+There's some question about when we want the PM core to start
+preventing new children from being registered.  Should this start right
+after prepare() returns, or should it start right before suspend() is
+called?  The first alternative sounds better to me.  Not only does it
+agree with the purpose of the prepare method, it also makes race
+situations easier to handle.
+
+Since dpm_prepare is supposed to go through the list in the forward
+direction, logically the "root" of the device tree should be the first
+thing "prepared".  This means you should not allow parentless devices
+to be registered any time after dpm_prepare has started.  Is that 
+liable to cause problems?
+
+There may be similar problems with complete().  A number of drivers
+check during their resume method for the presence of new children
+plugged in while the system was asleep.  All these drivers would have
+to be converted over to the new scheme if they weren't permitted to
+register the new children before complete() was called.  Of course,
+this is easily fixed by permitting new children starting from when
+resume() is called rather than when complete() is called.
 
 Alan Stern
