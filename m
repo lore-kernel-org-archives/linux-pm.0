@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 2)
-Date: Fri, 21 Mar 2008 01:26:31 +0100
-Message-ID: <200803210126.32683.rjw__7387.19225996665$1206059476$gmane$org@sisk.pl>
-References: <200803210101.04706.rjw@sisk.pl>
-	<1206058863.16475.165.camel@johannes.berg>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Fri, 21 Mar 2008 01:36:51 +0100
+Message-ID: <200803210136.52310.rjw__23708.2794112668$1206059939$gmane$org@sisk.pl>
+References: <200803202345.25083.rjw@sisk.pl>
+	<20080320232205.GF17431@elf.ucw.cz>
+	<200803210040.33982.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1206058863.16475.165.camel@johannes.berg>
+In-Reply-To: <200803210040.33982.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,31 +20,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 21 of March 2008, Johannes Berg wrote:
+On Friday, 21 of March 2008, Rafael J. Wysocki wrote:
+> On Friday, 21 of March 2008, Pavel Machek wrote:
+> > On Thu 2008-03-20 19:01:56, Alan Stern wrote:
+> > > On Thu, 20 Mar 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > > > >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> > > > > > >> use S5 instead of entering S4, the fan doesn't work correctly after the
+> > > > > > >> resume.  Plain and simple.
+> > > > > > >> 
+> > > > > > >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> > > > > > >> but I have no idea what that can be at the moment.
+> > > > > > >
+> > > > > > > IMO it would be worthwhile to track this down.  It's a clear indication 
+> > > > > > > that something is wrong somewhere.
+> > > > > > >
+> > > > > > > Could it be connected with the way the boot kernel hands control over
+> > > > > > > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > > > > > > sort of thing during a boot from S5.  It would have to be fooled into
+> > > > > > > thinking the two kernels were one and the same.
+> > > > > > 
+> > > > > > It should be easy to test if it is a hand over problem, by turning off
+> > > > > > the laptop by placing it in S5 (shutdown -h now) and then booting same
+> > > > > > kernel again.
+> > > > > 
+> > > > > Feel free to help with testing.
+> > > > > 
+> > > > > I believe ACPI is simply getting confused by us overwriting memory
+> > > > > with that from old image. I don't see how you can emulate it with
+> > > > > shutdown.
+> > > > 
+> > > > Well, in fact ACPI has something called the NVS memory, which we're supposed
+> > > > to restore during the resume and which we're not doing.  The problem may be
+> > > > related to this.
+> > > 
+> > > No, it can't be.  ACPI won't expect the NVS memory to be restored 
+> > > following an S5-shutdown.  In fact, as far as ACPI is concerned, 
+> > > resuming from an S5-type hibernation should not be considered a resume 
+> > > at all but just an ordinary reboot.
 > 
-> > + * All of the above callbacks, except for @complete(), return error codes.
-> > + * However, the error codes returned by the resume operations, @resume(),
-> > + * @thaw(), and @restore(), are only printed in the system logs, since the PM
-> > + * core cannot do anything else about them.
+> I agree here.
 > 
-> Why bother and not just make them return void, the error printing can
-> most likely be done much much better in the callback since that possibly
-> has information on why it failed.
+> > > All ACPI-related memory areas in the boot kernel should be passed directly
+> > > through to the image kernel.
 > 
-> > + * All of the above callbacks, return error codes, but the error codes returned
-> > + * by the resume operations, @resume_noirq(), @thaw_noirq(), and
-> > + * @restore_noirq(), are only printed in the system logs, since the PM core
-> > + * cannot do anything else about them.
+> However, the image kernel is supposed to restore the NVS area (from the
+> image) before executing _WAK.
 > 
-> Same here, of course.
+> > How can we pass interpretter state? I do not think we do this kind of
+> > passing.
+> 
+> The interpreter state is passed withing the image.  The platform state is not.
+> 
+> > If it was enough to pass some static area, we could just mark it
+> > nosave...
+> > 
+> > Len: Is ACPI AML permitted to allocate memory (like in ACPI_ALLOC or
+> > something)? Could we easily identify BIOS data so we could mark them
+> > nosave?
+> 
+> This wouldn't work even if we could (at least on x86-64).
 
-The errors returned are used by TRACE_RESUME(), for example.
+Ah, I misunderstood your comment, sorry.
 
-Well, perhaps the comments should be changed instead. :-)
+The regions used by ACPI are registered as 'nosave' by the arch code and
+we don't save them.  However, the ACPI NVS area is exceptional in that we
+are supposed to save and restore it.  The problem is to restore it at the right
+time and it's quite hard to figure out from the spec what time is the right
+one (the only thing it says is we should do that before calling _WAK).
 
 Thanks,
 Rafael
