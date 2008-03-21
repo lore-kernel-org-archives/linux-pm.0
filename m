@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Proper way to invoke suspend?
-Date: Fri, 21 Mar 2008 22:05:09 +0100
-Message-ID: <200803212205.10327.rjw__4034.76140131733$1206133639$gmane$org@sisk.pl>
-References: <20080321203040.99655491.Kristoffer.Ericson@Gmail.com>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Sat, 22 Mar 2008 09:05:47 +1100
+Message-ID: <1206137147.30885.6.camel__8738.96069028906$1206137387$gmane$org@nigel-laptop>
+References: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080321203040.99655491.Kristoffer.Ericson@Gmail.com>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,22 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-main <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 22 of March 2008, Kristoffer Ericson wrote:
-> Rafael,
+Hi.
 
-Hi,
+On Thu, 2008-03-20 at 20:52 -0400, Alan Stern wrote:
+> For an S5 hibernation, the interpreter state within the image is wrong.  
+> The image kernel needs to have the interpreter state from the boot 
+> kernel -- I don't know if this is possible.
 
-> Been looking around for examples, but obviously something I don't understand. 
-> Currently I set apm_queue_event(APM_USER_SUSPEND) inside the power button interrupt, this does nothing.
-> 
-> However if I cat the state, it goes into suspend. Resume fails but thats another question.
+It's possible.
 
-Well, I have a little experience with APM.  If you told me some more details
-about what you're after, that would be helpful.
+1) When hibernating, allocate a page (or pages if one isn't enough) for
+the data to end up in after the atomic restore.
+2) Put the location(s) in the image header.
+3) At resume time, allocate an equivalent number of extra 'safe' pages
+and set up extra pbes for the atomic restore to copy data from the extra
+pages to the ones allocated when hibernating.
+4) At the appropriate point in time, copy the NVS data to the extra
+'safe' pages allocated in step 3.
 
-Thanks,
-Rafael
+The data will then be available to the resumed kernel post-resume.
+
+I've been using this method to pass data from the boot kernel to the
+resumed kernel for a while now. (I'm using it for I/O speed statistics
+and state preservation).
+
+Regards,
+
+Nigel
