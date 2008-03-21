@@ -1,15 +1,15 @@
 From: Zhao Yakui <yakui.zhao@intel.com>
-Subject: Re: [patch 2.6.25-rc6 1/7] crosslink ACPI and "real"
-	device nodes
-Date: Fri, 21 Mar 2008 14:43:28 +0800
-Message-ID: <1206081808.4109.23.camel__2931.1899481856$1206375018$gmane$org@localhost.localdomain>
+Subject: Re: [patch 2.6.25-rc6 5/7] ACPI sets up
+	device.power.can_wakeup	flags
+Date: Fri, 21 Mar 2008 15:43:06 +0800
+Message-ID: <1206085386.4109.34.camel__14148.6898450696$1206375018$gmane$org@localhost.localdomain>
 References: <200803201408.33466.david-b@pacbell.net>
-	<200803201409.28330.david-b@pacbell.net>
+	<200803201420.40660.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803201409.28330.david-b@pacbell.net>
+In-Reply-To: <200803201420.40660.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,94 +23,91 @@ To: David Brownell <david-b@pacbell.net>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2008-03-20 at 14:09 -0700, David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
+On Thu, 2008-03-20 at 14:20 -0700, David Brownell wrote:
+> This exports the "acpi_device.wakeup.flags.valid" flag to the driver
+> model as "device.power.can_wakeup".  That is, each "ACPI device" in
+> the /proc/acpi/wakeup file that corresponds to a "real" device will
+> initialize the can_wakeup flag to true.
 > 
-> Add cross-links between ACPI device and "real" devices in sysfs,
-> exposing otherwise-hidden interrelationships between the various
-> device nodes which ACPI creates.  As a representative example one
-> hardware device is exposed as two logical devices (PNP and ACPI):
+For the button device it is good to set the wakeup flag. 
+Good. When the acpi device supports the _PRW object, the wakeup flag bit
+is set.( Can_wakeup; should_wakeup).
+> A separate patch is needed to make ACPI pay attention to the userspace
+> input:  devices that can_wakeup have a should_wakeup flag, initially
+> true, which is settable via sysfs and tested using device_may_wakeup().
+> That's intended to be the primary policy input to the system, not the
+> ACPI-specific /proc/acpi/wakeup file.
+
+
+> Note also that the ACPI tables list only motherboard devices, but many
+> systems include more peripherals than those.  While the USB framework
+> handles USB peripherals, nothing in Linux currently sets those flags
+> for wakeup-capable devices on other expansion busses (like PCI).
 > 
->   .../pnp0/00:06/
->   .../LNXSYSTM:00/device:00/PNP0A03:00/device:15/PNP0B00:00/
-> 
-> The PNP device gets a "firmware_node" link pointing to the ACPI device.
-> The ACPI device has a "physical_node" link pointing to the PNP device.
-> Linux drivers currently bind only to the "physical" device nodes.
-Very good idea. 
-But maybe there is a lot of ACPI devices on the laptops. And we take a
-little care about the association between the acpi device and "real"
-device.
-Maybe it is more useful if the link is set up for the acpi device with
-the _PRW object. Maybe the link that points to ACPI device with the _PRW
-object is created in the /sys/power/.
-> 
-> Other device trees provided by firmware tables could be exported
-> using the same scheme; these names aren't ACPI-specific.
-> 
-> (Based on a patch from Zhang Rui.  This version is modified to not
-> depend on the patch teaching ACPI about driver model wakeup flags.)
 > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Zhang Rui <rui.zhang@intel.com> 
 > ---
-> Change from previous version:  if creating the link fails, a
-> pr_debug level message is emitted.
+>  drivers/acpi/button.c |    3 +++
+>  drivers/acpi/glue.c   |    1 +
+>  drivers/acpi/power.c  |    4 ++++
+>  3 files changed, 8 insertions(+)
 > 
->  drivers/acpi/glue.c |   27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> --- g26.orig/drivers/acpi/glue.c	2008-03-08 11:11:18.000000000 -0800
-> +++ g26/drivers/acpi/glue.c	2008-03-08 11:29:07.000000000 -0800
-> @@ -142,6 +142,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
+> --- g26.orig/drivers/acpi/button.c	2008-03-20 03:02:45.000000000 -0700
+> +++ g26/drivers/acpi/button.c	2008-03-20 03:27:24.000000000 -0700
+> @@ -476,6 +476,9 @@ static int acpi_button_add(struct acpi_d
+>  	if (button->type == ACPI_BUTTON_TYPE_LID)
+>  		acpi_lid_send_state(button);
 >  
->  static int acpi_bind_one(struct device *dev, acpi_handle handle)
->  {
-> +	struct acpi_device *acpi_dev;
->  	acpi_status status;
+> +	/* for these devices the ACPI node *IS* the "physical" device */
+> +	device_init_wakeup(&device->dev, device->wakeup.flags.valid);
+> +
+
+>  	if (device->wakeup.flags.valid) {
+>  		/* Button's GPE is run-wake GPE */
+>  		acpi_set_gpe_type(device->wakeup.gpe_device,
+> --- g26.orig/drivers/acpi/glue.c	2008-03-20 03:27:11.000000000 -0700
+> +++ g26/drivers/acpi/glue.c	2008-03-20 03:27:25.000000000 -0700
+> @@ -162,6 +162,7 @@ static int acpi_bind_one(struct device *
+>  	if (!ACPI_FAILURE(status)) {
+>  		int ret;
 >  
->  	if (dev->archdata.acpi_handle) {
-> @@ -157,6 +158,23 @@ static int acpi_bind_one(struct device *
+> +		device_init_wakeup(dev, acpi_dev->wakeup.flags.valid);
+>  		ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
+>  				"firmware_node");
+>  		if (ret != 0)
+> --- g26.orig/drivers/acpi/power.c	2008-03-20 03:02:45.000000000 -0700
+> +++ g26/drivers/acpi/power.c	2008-03-20 03:27:25.000000000 -0700
+> @@ -313,6 +313,7 @@ int acpi_enable_wakeup_device_power(stru
+>  		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
+>  		if (ret) {
+>  			printk(KERN_ERR PREFIX "Transition power state\n");
+> +			device_init_wakeup(&dev->dev, 0);
+>  			dev->wakeup.flags.valid = 0;
+>  			return -1;
+>  		}
+> @@ -322,6 +323,7 @@ int acpi_enable_wakeup_device_power(stru
+>  	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
+>  	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+>  		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
+> +		device_init_wakeup(&dev->dev, 0);
+>  		dev->wakeup.flags.valid = 0;
+>  		ret = -1;
 >  	}
->  	dev->archdata.acpi_handle = handle;
->  
-> +	status = acpi_bus_get_device(handle, &acpi_dev);
-> +	if (!ACPI_FAILURE(status)) {
-> +		int ret;
-> +
-> +		ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
-> +				"firmware_node");
-> +		if (ret != 0)
-> +			pr_debug(PREFIX "Can't create %s link for %s\n",
-> +				"firmware_node", dev->bus_id);
-> +
-> +		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
-> +				"physical_node");
-> +		if (ret != 0)
-> +			pr_debug(PREFIX "Can't create %s link for %s\n",
-> +				"physical_node", acpi_dev->dev.bus_id);
-> +	}
-> +
->  	return 0;
->  }
->  
-> @@ -165,8 +183,17 @@ static int acpi_unbind_one(struct device
->  	if (!dev->archdata.acpi_handle)
->  		return 0;
->  	if (dev == acpi_get_physical_device(dev->archdata.acpi_handle)) {
-> +		struct acpi_device *acpi_dev;
-> +
->  		/* acpi_get_physical_device increase refcnt by one */
->  		put_device(dev);
-> +
-> +		if (!acpi_bus_get_device(dev->archdata.acpi_handle,
-> +					&acpi_dev)) {
-> +			sysfs_remove_link(&dev->kobj, "firmware_node");
-> +			sysfs_remove_link(&acpi_dev->dev.kobj, "physical_node");
-> +		}
-> +
->  		acpi_detach_data(dev->archdata.acpi_handle,
->  				 acpi_glue_data_handler);
->  		dev->archdata.acpi_handle = NULL;
+> @@ -351,6 +353,7 @@ int acpi_disable_wakeup_device_power(str
+>  	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
+>  	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+>  		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
+> +		device_init_wakeup(&dev->dev, 0);
+>  		dev->wakeup.flags.valid = 0;
+>  		return -1;
+>  	}
+> @@ -360,6 +363,7 @@ int acpi_disable_wakeup_device_power(str
+>  		ret = acpi_power_off_device(dev->wakeup.resources.handles[i], dev);
+>  		if (ret) {
+>  			printk(KERN_ERR PREFIX "Transition power state\n");
+> +			device_init_wakeup(&dev->dev, 0);
+>  			dev->wakeup.flags.valid = 0;
+>  			return -1;
+>  		}
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
 > the body of a message to majordomo@vger.kernel.org
