@@ -1,15 +1,17 @@
 From: Zhao Yakui <yakui.zhao@intel.com>
-Subject: Re: [patch 2.6.25-rc6 5/7] ACPI sets up
-	device.power.can_wakeup	flags
-Date: Fri, 21 Mar 2008 15:43:06 +0800
-Message-ID: <1206085386.4109.34.camel__14148.6898450696$1206375018$gmane$org@localhost.localdomain>
+Subject: Re: [patch 2.6.25-rc6 1/7] crosslink ACPI and "real"
+	device nodes
+Date: Fri, 21 Mar 2008 16:34:31 +0800
+Message-ID: <1206088471.4109.56.camel__8762.57073036886$1206375029$gmane$org@localhost.localdomain>
 References: <200803201408.33466.david-b@pacbell.net>
-	<200803201420.40660.david-b@pacbell.net>
+	<200803201409.28330.david-b@pacbell.net>
+	<1206081808.4109.23.camel@localhost.localdomain>
+	<200803210031.35174.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803201420.40660.david-b@pacbell.net>
+In-Reply-To: <200803210031.35174.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,91 +25,59 @@ To: David Brownell <david-b@pacbell.net>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2008-03-20 at 14:20 -0700, David Brownell wrote:
-> This exports the "acpi_device.wakeup.flags.valid" flag to the driver
-> model as "device.power.can_wakeup".  That is, each "ACPI device" in
-> the /proc/acpi/wakeup file that corresponds to a "real" device will
-> initialize the can_wakeup flag to true.
+On Fri, 2008-03-21 at 00:31 -0700, David Brownell wrote:
+> On Thursday 20 March 2008, Zhao Yakui wrote:
+> > On Thu, 2008-03-20 at 14:09 -0700, David Brownell wrote:
+> > > From: David Brownell <dbrownell@users.sourceforge.net>
+> > > 
+> > > Add cross-links between ACPI device and "real" devices in sysfs,
+> > > exposing otherwise-hidden interrelationships between the various
+> > > device nodes which ACPI creates.  As a representative example one
+> > > hardware device is exposed as two logical devices (PNP and ACPI):
+> > > 
+> > >   .../pnp0/00:06/
+> > >   .../LNXSYSTM:00/device:00/PNP0A03:00/device:15/PNP0B00:00/
+> > > 
+> > > The PNP device gets a "firmware_node" link pointing to the ACPI device.
+> > > The ACPI device has a "physical_node" link pointing to the PNP device.
+> > > Linux drivers currently bind only to the "physical" device nodes.
+> >  
+> > Very good idea. 
+> > But maybe there is a lot of ACPI devices on the laptops. And we take a
+> > little care about the association between the acpi device and "real"
+> > device.
 > 
-For the button device it is good to set the wakeup flag. 
-Good. When the acpi device supports the _PRW object, the wakeup flag bit
-is set.( Can_wakeup; should_wakeup).
-> A separate patch is needed to make ACPI pay attention to the userspace
-> input:  devices that can_wakeup have a should_wakeup flag, initially
-> true, which is settable via sysfs and tested using device_may_wakeup().
-> That's intended to be the primary policy input to the system, not the
-> ACPI-specific /proc/acpi/wakeup file.
-
-
-> Note also that the ACPI tables list only motherboard devices, but many
-> systems include more peripherals than those.  While the USB framework
-> handles USB peripherals, nothing in Linux currently sets those flags
-> for wakeup-capable devices on other expansion busses (like PCI).
+> Are you suggesting that the ACPI nodes shouldn't exist at all?
+> Or that something is wrong with how they're set up or used?
+No. The ACPI nodes should exist. What I said is whether it is necessary
+to create the link for all the ACPI devices between the ACPI device and
+"real" node device.  Of course it is also OK if link is created for the
+ACPI device with the ability to wake the sleeping system. 
+> For now, there's some confusion.  Devices listed in ACPI tables
+> have one or two extra sysfs device nodes.  I think *something*
+> should help sort out the confusion -- this patch (originally
+> from Zhang Rui, a co-worker of yours) is the only help for that
+> which I've seen so far.  Do you propose some other solution?
+> If so, what is it ... and what are its advantages?
+> > Maybe it is more useful if the link is set up for the acpi device with
+> > the _PRW object. Maybe the link that points to ACPI device with the _PRW
+> > object is created in the /sys/power/.
 > 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/acpi/button.c |    3 +++
->  drivers/acpi/glue.c   |    1 +
->  drivers/acpi/power.c  |    4 ++++
->  3 files changed, 8 insertions(+)
+> That's way too many "maybes" for my taste!  Maybe I don't see
+> how "_PRW" could be the only interesting thing, when most of
+> the ACPI nodes don't even *have* such records ... and when not
+> all power-manageable devices are even known to ACPI.
+Sorry. What I means is that the link(point to the ACPI device with the
+ability to wake the sleeping system) is created in the /sys/power/. 
+After doing so, we can easily check which device has the ability to wake
+the sleeping system. (The _PRW object indicates that the device have the
+ability to wake the sleeping system). 
 > 
-> --- g26.orig/drivers/acpi/button.c	2008-03-20 03:02:45.000000000 -0700
-> +++ g26/drivers/acpi/button.c	2008-03-20 03:27:24.000000000 -0700
-> @@ -476,6 +476,9 @@ static int acpi_button_add(struct acpi_d
->  	if (button->type == ACPI_BUTTON_TYPE_LID)
->  		acpi_lid_send_state(button);
->  
-> +	/* for these devices the ACPI node *IS* the "physical" device */
-> +	device_init_wakeup(&device->dev, device->wakeup.flags.valid);
-> +
-
->  	if (device->wakeup.flags.valid) {
->  		/* Button's GPE is run-wake GPE */
->  		acpi_set_gpe_type(device->wakeup.gpe_device,
-> --- g26.orig/drivers/acpi/glue.c	2008-03-20 03:27:11.000000000 -0700
-> +++ g26/drivers/acpi/glue.c	2008-03-20 03:27:25.000000000 -0700
-> @@ -162,6 +162,7 @@ static int acpi_bind_one(struct device *
->  	if (!ACPI_FAILURE(status)) {
->  		int ret;
->  
-> +		device_init_wakeup(dev, acpi_dev->wakeup.flags.valid);
->  		ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
->  				"firmware_node");
->  		if (ret != 0)
-> --- g26.orig/drivers/acpi/power.c	2008-03-20 03:02:45.000000000 -0700
-> +++ g26/drivers/acpi/power.c	2008-03-20 03:27:25.000000000 -0700
-> @@ -313,6 +313,7 @@ int acpi_enable_wakeup_device_power(stru
->  		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
->  		if (ret) {
->  			printk(KERN_ERR PREFIX "Transition power state\n");
-> +			device_init_wakeup(&dev->dev, 0);
->  			dev->wakeup.flags.valid = 0;
->  			return -1;
->  		}
-> @@ -322,6 +323,7 @@ int acpi_enable_wakeup_device_power(stru
->  	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
->  	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
->  		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
-> +		device_init_wakeup(&dev->dev, 0);
->  		dev->wakeup.flags.valid = 0;
->  		ret = -1;
->  	}
-> @@ -351,6 +353,7 @@ int acpi_disable_wakeup_device_power(str
->  	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
->  	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
->  		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
-> +		device_init_wakeup(&dev->dev, 0);
->  		dev->wakeup.flags.valid = 0;
->  		return -1;
->  	}
-> @@ -360,6 +363,7 @@ int acpi_disable_wakeup_device_power(str
->  		ret = acpi_power_off_device(dev->wakeup.resources.handles[i], dev);
->  		if (ret) {
->  			printk(KERN_ERR PREFIX "Transition power state\n");
-> +			device_init_wakeup(&dev->dev, 0);
->  			dev->wakeup.flags.valid = 0;
->  			return -1;
->  		}
+> The notion of adding ACPI-specific stuff to generic areas (like
+> /sys/power) really bothers me...
+> 
+> - Dave
+> 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
 > the body of a message to majordomo@vger.kernel.org
