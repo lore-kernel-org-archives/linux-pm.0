@@ -1,13 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend	and
-	hibernation callbacks (rev. 2)
-Date: Fri, 21 Mar 2008 01:21:03 +0100
-Message-ID: <1206058863.16475.165.camel__9871.19297865338$1206058993$gmane$org@johannes.berg>
-References: <200803210101.04706.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch 2.6.25-rc6 3/7] pci_choose_state() cleanup
+	and fixes
+Date: Fri, 21 Mar 2008 01:22:43 +0100
+Message-ID: <200803210122.44188.rjw__5663.01185540414$1206059103$gmane$org@sisk.pl>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803202337.07465.rjw@sisk.pl>
+	<20080320230301.8EFB235F4AF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7288466917383533559=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803210101.04706.rjw@sisk.pl>
+In-Reply-To: <20080320230301.8EFB235F4AF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,76 +19,76 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 21 of March 2008, David Brownell wrote:
+> > > +	switch (mesg.event) {
+> > >  	case PM_EVENT_SUSPEND:
+> > > +		/* NOTE:  platform_pci_choose_state() should only return
+> > > +		 * states where wakeup won't work if
+> > > +		 *   - !device_may_wakeup(&dev->dev), or
+> > > +		 *   - dev can't wake from the target system state
+> > > +		 */
+> > > +		if (platform_pci_choose_state) {
+> > > +			ret = platform_pci_choose_state(dev, mesg);
+> > > +			if (ret == PCI_POWER_ERROR)
+> > > +				ret = PCI_D3hot;
+> > > +			else if ((ret == PCI_D1 || ret == PCI_D2)
+> > > +					&& pci_no_d1d2(dev))
+> > > +				ret = PCI_D3hot;
+> > > +			break;
+> > > +		}
+> > > +		/* FALLTHROUGH ... D3hot works, but may be suboptimal */
+> > >  	case PM_EVENT_HIBERNATE:
+> > > -		return PCI_D3hot;
+> > > +		ret = PCI_D3hot;
+> >
+> > This is clearly wrong.  It should do the same as for suspend here (_S4D may be
+> > defined and we should take it into account if it is).
+> 
+> So you're saying the original code was wrong, and this patch should
+> change that behavior too?
 
---===============7288466917383533559==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vQriGRPJDJzKklLQ9jsd"
+The original code executed platform_pci_choose_state() first, if defined, and
+if that succeeded, it just returned the result.  You put
+platform_pci_choose_state() under the switch(). :-)
 
+In fact the entire switch() in pci_choose_state() is just confusing.  I'd make
+it return PCI_D3hot if platform_pci_choose_state() is undefined or fails (I
+wonder if pci_choose_state() is ever called with PMSG_ON).  That at least
+would be consistent with the behavior of acpi_pm_device_sleep_state().
 
---=-vQriGRPJDJzKklLQ9jsd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Consequently, the 'state' argument would simply be unnecessary (and in fact
+it's ignored if platform_pci_choose_state() is defined).
 
+> > > +		break;
+> > >  	default:
+> > > -		printk("Unrecognized suspend event %d\n", state.event);
+> > > -		BUG();
+> > > +		ret = PCI_D0;
+> > > +		break;
+> > >  	}
+> > > -	return PCI_D0;
+> > > +	return ret;
+> > >  }
+> > >  
+> > >  EXPORT_SYMBOL(pci_choose_state);
+> >
+> > I really don't think pci_choose_state() should take the state argument at all.
+> 
+> There is no "state" argument.  It's a pm_message_t, which does
+> not package the target state.
 
-> + * All of the above callbacks, except for @complete(), return error code=
-s.
-> + * However, the error codes returned by the resume operations, @resume()=
-,
-> + * @thaw(), and @restore(), are only printed in the system logs, since t=
-he PM
-> + * core cannot do anything else about them.
+Correct, but the pm_message_t argument is called 'state', confusingly so.
 
-Why bother and not just make them return void, the error printing can
-most likely be done much much better in the callback since that possibly
-has information on why it failed.
+> A patch to change the calling syntax for this would necessarily
+> be a different patch... and would need to change the callers too.
 
-> + * All of the above callbacks, return error codes, but the error codes r=
-eturned
-> + * by the resume operations, @resume_noirq(), @thaw_noirq(), and
-> + * @restore_noirq(), are only printed in the system logs, since the PM c=
-ore
-> + * cannot do anything else about them.
+Agreed.
 
-Same here, of course.
-
-johannes
-
---=-vQriGRPJDJzKklLQ9jsd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR+L/baVg1VMiehFYAQJnWQ/6AuPtndPWLgLpc5zd2BHXP5G/sV51xRYp
-hIk9R6Kskrnxy0aRsZlOJD4BUq8PwL0g//2D1m1yhSsqwa8TEZ5AS7CTRgxGWZ78
-aXePkqNbqhcfVWpI6oUSwr+XvZU2emMJN41pLiE6HgFHlO9BitSC+41jNagzbUg7
-V9eDfsDknDsS6Clzw5ttiwU91BsSCUOcjRq97XdlbNbs2DKgFzLTAxDzveZyNWux
-JZ+VZ0tPr7+oqy8RdtOnaCL/k6t7OGHpP19rBpa1mfHhgKwj2BRBgfMc9JVLkGdA
-ToIhojNrC4Pl+vB1F2pa3DlaclKiWcmhYj02OFp/4FKkJeYZLRjTi5EMBLKwqQ7K
-pN5kKjIHCLb69k0QcV2iU6sAsnbD4+1GdAS5ACMu1VdDzXP01VO3VAHOuFiEx1b8
-VwrRgva8/AnyCdOuun+GY55FO7ZlP2Qp0uePIwarJJR9rRh3lh6l7RUfn1ip8Tnp
-9Ult7OWlPTi/onmeb72xpniMlnVITJ+/BduyeWqcbzfr9cbu0R/2UKUxXGeHRb3D
-ORM/8cK2KqAO8u22o5jfXkXwM/MP0TIQjZvK12wvGQydQlSkrxKwa/JYZaUvHFkO
-vC25ase7/VbsgMvT2q6fEG+c5KOdgMC+QtkT7Q97pURkFk5A2ByZfqf4WQU9zcB/
-vI6+Thybyok=
-=ZzFh
------END PGP SIGNATURE-----
-
---=-vQriGRPJDJzKklLQ9jsd--
-
-
---===============7288466917383533559==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7288466917383533559==--
+Thanks,
+Rafael
