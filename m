@@ -1,15 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.25-rc6 3/7] pci_choose_state() cleanup
-	and fixes
-Date: Fri, 21 Mar 2008 01:15:03 -0700
-Message-ID: <200803210115.04210.david-b__19130.1206629307$1206087811$gmane$org@pacbell.net>
-References: <Pine.LNX.4.44L0.0803202053270.11234-100000@netrider.rowland.org>
-	<200803210247.18686.rjw@sisk.pl>
+Subject: Re: [patch 2.6.25-rc6 1/7] crosslink ACPI and "real"
+	device nodes
+Date: Fri, 21 Mar 2008 02:04:15 -0700
+Message-ID: <200803210204.15843.david-b__47486.3929478035$1206090462$gmane$org@pacbell.net>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803210031.35174.david-b@pacbell.net>
+	<1206088471.4109.56.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803210247.18686.rjw@sisk.pl>
+In-Reply-To: <1206088471.4109.56.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,83 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Zhao Yakui <yakui.zhao@intel.com>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 20 March 2008, Rafael J. Wysocki wrote:
-> Is there any reason why pci_choose_state() should try to figure out what =
-kind
-> of operation is being performed by the driver and tailor its output to th=
-at?
+On Friday 21 March 2008, Zhao Yakui wrote:
+> On Fri, 2008-03-21 at 00:31 -0700, David Brownell wrote:
+> > > > The PNP device gets a "firmware_node" link pointing to the ACPI dev=
+ice.
+> > > > The ACPI device has a "physical_node" link pointing to the PNP devi=
+ce.
+> > > > Linux drivers currently bind only to the "physical" device nodes.
+> > >  =
 
-It's always been specified to do that ... but it's always done
-that in a buggy way.  (Which is why USB never used it.)
+> > > Very good idea. =
 
+> > > But maybe there is a lot of ACPI devices on the laptops. And we take a
+> > > little care about the association between the acpi device and "real"
+> > > device.
+> > =
 
-> I don't think so. =A0Rather, the driver should know what it's doing and e=
-ither
-> call pci_choose_state() or not. =A0If the state of the device is not to be
-> changed, there's no reason to call pci_choose_state() at all.
+> > Are you suggesting that the ACPI nodes shouldn't exist at all?
+> > Or that something is wrong with how they're set up or used?
+> =
 
-You seem to object to letting drivers offload this particular
-bit of work to infrastructure.  What's the dividing line between
-being OK to offload vs not eing OK?  Why not let the drivers make
-that choice?
-
-
-> 	[Note that with the new suspend/hibernation callbacks there
-> won't be the pm_message_t argument to pass to pci_choose_state().]
-
-The pm_message_t will necessarily linger until all drivers have
-been converted and re-tested.  Which can't be an overnight thing.
+> No. The ACPI nodes should exist. What I said is whether it is necessary
+> to create the link for all the ACPI devices between the ACPI device and
+> "real" node device.  Of course it is also OK if link is created for the
+> ACPI device with the ability to wake the sleeping system. =
 
 
-> Now, we need to settle _what_ exactly pci_choose_state() is supposed
-> to return, because it's not clear right now.
+The confusion exists for all ACPI device nodes that
+mirror "real" device nodes (like PNP or PCI devices).
 
-Kerneldoc says:
-
- * Returns PCI power state suitable for given device and given system
- * power state transition.
-
-Some comments added by $SUBJECT also clarify:
-
-                /* NOTE:  platform_pci_choose_state() should only return
-                 * states where wakeup won't work if
-                 *   - !device_may_wakeup(&dev->dev), or
-                 *   - dev can't wake from the target system state
-                 */
-
-That happens to be what acpi_pm_device_sleep_state() computes;
-there may not be other implementations of that call, yet.  I can
-imagine a default that would look at PCI PM capabilities, to be
-used on non-ACPI platforms.
+It's *not* limited to wake-capable devices.
 
 
->	 Should that be the lowest power =
+> > For now, there's some confusion. =A0Devices listed in ACPI tables
+> > have one or two extra sysfs device nodes. =A0I think *something*
+> > should help sort out the confusion ...
 
-> state in which the device can be in given system state (that's what
-> platform_pci_choose_state() will return)?
-
-Actually the comment above is the *entirety* of the docs for
-that call:  it chooses a state.  You're asking a question of
-policy (how/why it chooses); that's outside the scope of PCI.
+(Minor correction:  *most* devices listed in ACPI tables have
+the problem of extra sysfs nodes.  A few don't; like buttons.)
 
 
-> Or should that be the highest power =
+> Sorry. What I means is that the link(point to the ACPI device with the
+> ability to wake the sleeping system) is created in the /sys/power/. =
 
-> state in which the device can be in given system state?
-> Or anything else? =
+> After doing so, we can easily check which device has the ability to wake
+> the sleeping system. =
 
 
-It happens that the current Linux ACPI glue chooses the
-lowest power PCI state that's compatible with the target
-system state ... optimizing for power savings rather than
-for quick resumes.
+There's no need for symlinks to do that ... or ACPI.
 
-It might make sense to support a policy that optimizes for
-fast resumes from some states.  But I can't see that'd be
-worth much effort at this point, with bigger fish to fry!
+I've been meaning to repost my script that scans sysfs
+for the wakeup-capable devices ... I updated it a short
+while ago to work right without "legacy" sysfs nodes.
 
 - Dave
