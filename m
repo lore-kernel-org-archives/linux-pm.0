@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
- hibernation callbacks (rev. 2)
-Date: Sat, 22 Mar 2008 19:28:02 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803221920150.8044-100000__12492.7319157452$1206228622$gmane$org@netrider.rowland.org>
-References: <200803222317.58206.rjw@sisk.pl>
+	hibernation callbacks (rev. 2)
+Date: Sun, 23 Mar 2008 00:44:27 +0100
+Message-ID: <200803230044.29132.rjw__18853.3602086411$1206229630$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803221920150.8044-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803222317.58206.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0803221920150.8044-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 22 Mar 2008, Rafael J. Wysocki wrote:
-
-> > Yep.  The only thing to watch out for is in device_pm_remove(); it
-> > would be a disaster if somehow a device was removed while it was being
-> > prepared/suspended/resumed/completed/whatever.  I know that's not
-> > supposed to happen but there's nothing to prevent it, especially if
-> > the device in question doesn't have a driver.  No doubt you can invent
-> > a way to allow this to happen safely.
+On Sunday, 23 of March 2008, Alan Stern wrote:
+> On Sat, 22 Mar 2008, Rafael J. Wysocki wrote:
 > 
-> Well, that's a separate issue that IMO should be addressed in a separate patch.
-> Something like the one below comes to mind.
+[--snip--]
 > 
-> The comment removed by the patch is wrong IMO, because it implies that
-> device_add() may be called with the device semaphore held and that might
-> deadlock in bus_attach_device().
+> No, you have missed the entire point.  The problem doesn't exist in the
+> current code; it exists only if we switch over to using a single list.  
+> Routines like dpm_suspend() won't be able to use list_for_each_entry()
+> to traverse the list because entries may be removed by other threads
+> during the traversal.  Even list_for_each_entry_safe() won't work
+> correctly without careful attention to details.
 
-Are you talking about this comment?
+Ah, ok.  Thanks for the clarification.
 
-> - * Since device_pm_add() may be called with a device semaphore held,
-> - * we must never try to acquire a device semaphore while holding
-> - * dpm_list_mutex.
+Doesn't it help that we traverse the list under dpm_list_mtx?  Anyone who
+removes an entry is required to take dpm_list_mtx that we're holding while
+the list is traversed except when the callbacks are invoked.
 
-It isn't wrong.  device_add() may indeed be called with a device 
-semaphore held -- just not the semaphore for the device being added.  
-Quite often it is called with device's parent's semaphore held.  The 
-implication is not that we may deadlock in bus_attach_device(); rather 
-it is that the order of acquisition must always be device semaphore 
-first, dev_list_mutex second.
+The only problem I see is when the device currently being handled is removed
+from the list by a concurrent thread.  Is that you were referring to?
 
->  Thus, I think we can acquire dev->sem
-> in device_pm_add() and in device_pm_remove().
-
-No, you have missed the entire point.  The problem doesn't exist in the
-current code; it exists only if we switch over to using a single list.  
-Routines like dpm_suspend() won't be able to use list_for_each_entry()
-to traverse the list because entries may be removed by other threads
-during the traversal.  Even list_for_each_entry_safe() won't work
-correctly without careful attention to details.
-
-Alan Stern
+Rafael
