@@ -1,13 +1,14 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Sat, 22 Mar 2008 09:05:47 +1100
-Message-ID: <1206137147.30885.6.camel__8738.96069028906$1206137387$gmane$org@nigel-laptop>
-References: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
-Reply-To: nigel@nigel.suspend2.net
+Date: Sat, 22 Mar 2008 17:21:10 +0100
+Message-ID: <20080322162110.GA32058__28203.8069832653$1206203094$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <200803210040.33982.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,33 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On Thu, 2008-03-20 at 20:52 -0400, Alan Stern wrote:
+> On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+> 
+> > > > > Well, in fact ACPI has something called the NVS memory, which we're supposed
+> > > > > to restore during the resume and which we're not doing.  The problem may be
+> > > > > related to this.
+> > > > 
+> > > > No, it can't be.  ACPI won't expect the NVS memory to be restored 
+> > > > following an S5-shutdown.  In fact, as far as ACPI is concerned, 
+> > > > resuming from an S5-type hibernation should not be considered a resume 
+> > > > at all but just an ordinary reboot.
+> > 
+> > I agree here.
+> > 
+> > > > All ACPI-related memory areas in the boot kernel should be passed directly
+> > > > through to the image kernel.
+> > 
+> > However, the image kernel is supposed to restore the NVS area (from the
+> > image) before executing _WAK.
+> 
+> It's supposed to do that when resuming from an S4 hibernation, not 
+> when resuming from an S5 hibernation.
+> 
+> > > How can we pass interpretter state? I do not think we do this kind of
+> > > passing.
+> > 
+> > The interpreter state is passed withing the image.  The platform state is not.
+> 
 > For an S5 hibernation, the interpreter state within the image is wrong.  
 > The image kernel needs to have the interpreter state from the boot 
 > kernel -- I don't know if this is possible.
 
-It's possible.
+yes, nosave pages could be used to do this passing -- if we can put
+interpretter state into pre-allocated memory block.
 
-1) When hibernating, allocate a page (or pages if one isn't enough) for
-the data to end up in after the atomic restore.
-2) Put the location(s) in the image header.
-3) At resume time, allocate an equivalent number of extra 'safe' pages
-and set up extra pbes for the atomic restore to copy data from the extra
-pages to the ones allocated when hibernating.
-4) At the appropriate point in time, copy the NVS data to the extra
-'safe' pages allocated in step 3.
-
-The data will then be available to the resumed kernel post-resume.
-
-I've been using this method to pass data from the boot kernel to the
-resumed kernel for a while now. (I'm using it for I/O speed statistics
-and state preservation).
-
-Regards,
-
-Nigel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
