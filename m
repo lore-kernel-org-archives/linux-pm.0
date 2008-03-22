@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Sat, 22 Mar 2008 18:45:12 +0100
-Message-ID: <200803221845.13826.rjw__26292.2348491431$1206208060$gmane$org@sisk.pl>
-References: <200803210040.33982.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
-	<20080322162110.GA32058@atrey.karlin.mff.cuni.cz>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [patch 2.6.25-rc6 3/7] pci_choose_state() cleanup
+	and fixes
+Date: Sat, 22 Mar 2008 10:49:15 -0700
+Message-ID: <200803221049.16696.david-b__5664.98539778895$1206208371$gmane$org@pacbell.net>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803210053.04330.david-b@pacbell.net>
+	<200803211738.35867.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080322162110.GA32058@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <200803211738.35867.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,60 +21,194 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 22 of March 2008, Pavel Machek wrote:
-> > On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
-> > 
-> > > > > > Well, in fact ACPI has something called the NVS memory, which we're supposed
-> > > > > > to restore during the resume and which we're not doing.  The problem may be
-> > > > > > related to this.
-> > > > > 
-> > > > > No, it can't be.  ACPI won't expect the NVS memory to be restored 
-> > > > > following an S5-shutdown.  In fact, as far as ACPI is concerned, 
-> > > > > resuming from an S5-type hibernation should not be considered a resume 
-> > > > > at all but just an ordinary reboot.
-> > > 
-> > > I agree here.
-> > > 
-> > > > > All ACPI-related memory areas in the boot kernel should be passed directly
-> > > > > through to the image kernel.
-> > > 
-> > > However, the image kernel is supposed to restore the NVS area (from the
-> > > image) before executing _WAK.
-> > 
-> > It's supposed to do that when resuming from an S4 hibernation, not 
-> > when resuming from an S5 hibernation.
-> > 
-> > > > How can we pass interpretter state? I do not think we do this kind of
-> > > > passing.
-> > > 
-> > > The interpreter state is passed withing the image.  The platform state is not.
-> > 
-> > For an S5 hibernation, the interpreter state within the image is wrong.  
-> > The image kernel needs to have the interpreter state from the boot 
-> > kernel -- I don't know if this is possible.
+On Friday 21 March 2008, Rafael J. Wysocki wrote:
+> On Friday, 21 of March 2008, David Brownell wrote:
+> > All it does is implement the rules that have been defined for
+> > ages now:  most of the pm_message_t transitions should not
+> > change device power states.
 > 
-> yes, nosave pages could be used to do this passing -- if we can put
-> interpretter state into pre-allocated memory block.
+> But they do at the moment, so you're going to change how the code
+> currently works on a quite large scale.
 
-On x86-64 there's no guarantee that the "nosave" pages will be at the same
-locations in both the image kernel and the boot kernel.  What we could do
-is to pass the data in the image header, preallocate some "safe" pages from
-the boot kernel, put the data in there and pass a pointer to them to the
-image kernel.
+Are you arguing that this bug "should not be fixed"?
 
-However, as far as the ACPI NVS area is concerned, this is probably not
-necessary, because the spec wants us to restore the ACPI NVS before calling
-_WAK, which is just after the image kernel gets the control back.  So, in
-theory, the ACPI NVS data could be stored in the image and restored by
-the image kernel from a location known to it (the procedure may be to copy
-the ACPI NVS data into a region of regular RAM before creating the image and
-copy them back into the ACPI NVS area in platform->leave(), for example), but
-I suspect that for this to work we'll have to switch ACPI off in the boot
-kernel, just prior to passing control back to the image kernel.
+Or are you arguing that there's something wrong with
+the rules, so that they "should not be followed"?
 
-Thanks,
-Rafael
+Or something else?
+
+
+> > > I'd make it return PCI_D3hot if platform_pci_choose_state()
+> > > is undefined or fails 
+> > 
+> > See above:  this implements the current rules, which say
+> > that in most cases devices shoudn't change powerstates.
+> 
+> Okay, say you're changing pci_choose_state() to follow the
+> documentation. 
+
+Not just documentation -- the current architecture of the
+whole suspend process.  Surely it's essential not to have
+bugs like those at the core of that process?
+
+If that process is broken, but this PCI bug hides it, we'll
+be having a boatload of unexpected trouble in a while...
+
+
+> Are you sure, however, that it won't cause any regressions to appear?
+
+No more than any other bugfix turning up other latent bugs.
+That's why we have a process which lets fixes cook for a while
+before they merge.
+
+
+> > +	switch (mesg.event) {
+> >  	case PM_EVENT_SUSPEND:
+> >  	case PM_EVENT_HIBERNATE:
+> > -		return PCI_D3hot;
+> > +		/* NOTE:  platform_pci_choose_state() should only return
+> > +		 * states where wakeup won't work if
+> > +		 *   - !device_may_wakeup(&dev->dev), or
+> > +		 *   - dev can't wake from the target system state
+> > +		 */
+> > +		if (platform_pci_choose_state) {
+> > +			ret = platform_pci_choose_state(dev, mesg);
+> > +			if (ret == PCI_POWER_ERROR)
+> > +				ret = PCI_D3hot;
+> > +			else if ((ret == PCI_D1 || ret == PCI_D2)
+> > +					&& pci_no_d1d2(dev))
+> > +				ret = PCI_D3hot;
+> > +			break;
+> > +		}
+> > +		/* D3hot works, but may be suboptimal */
+> > +		ret = PCI_D3hot;
+> > +		break;
+> 
+> I would do:
+> 
+> +		if (platform_pci_choose_state) {
+> +			ret = platform_pci_choose_state(dev, mesg);
+> +			if (ret == PCI_POWER_ERROR || (pci_no_d1d2(dev)
+> +			    && (ret == PCI_D1 || ret == PCI_D2)))
+
+That's ... phenomenally ugly and incomprehensible!  It hides
+almost the entire structure of the conditionals.
+
+
+> +				ret = PCI_D3hot;
+> +		} else {
+> +			/* D3hot works, but may be suboptimal */
+> +			ret = PCI_D3hot;
+> +		}
+
+Extra/pointless brackets after "else" ... so you think the quickie
+fix should have removed that first "break"?  Simpler to just have
+said so.
+
+
+> +		break;
+
+
+======== CUT HERE
+Clean up pci_choose_state():
+
+ - pci_choose_state() should only return PCI_D0, unless the system is
+   entering a suspend (or hibernate) system state.
+
+ - Only use platform_pci_choose_state() when entering a suspend
+   state ... and avoid PCI_D1 and PCI_D2 when appropriate.
+
+ - Corrrect kerneldoc.
+
+Note that for now only ACPI provides platform_pci_choose_state(), so
+this could be a minor change in behavior on some non-PC systems:  it
+avoids D3 except in the final stage of hibernation.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/pci/pci.c |   53 ++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 30 insertions(+), 23 deletions(-)
+
+--- g26.orig/drivers/pci/pci.c	2008-03-22 10:25:48.000000000 -0700
++++ g26/drivers/pci/pci.c	2008-03-22 10:44:28.000000000 -0700
+@@ -523,46 +523,53 @@ pci_set_power_state(struct pci_dev *dev,
+ }
+ 
+ pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev, pm_message_t state);
+- 
++
+ /**
+  * pci_choose_state - Choose the power state of a PCI device
+  * @dev: PCI device to be suspended
+- * @state: target sleep state for the whole system. This is the value
+- *	that is passed to suspend() function.
++ * @mesg: value passed to suspend() function.
+  *
+  * Returns PCI power state suitable for given device and given system
+- * message.
++ * power state transition.
+  */
+-
+-pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state)
++pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t mesg)
+ {
+ 	pci_power_t ret;
+ 
++	/* PCI legacy PM? */
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+ 		return PCI_D0;
+ 
+-	if (platform_pci_choose_state) {
+-		ret = platform_pci_choose_state(dev, state);
+-		if (ret != PCI_POWER_ERROR)
+-			return ret;
+-	}
+-
+-	switch (state.event) {
+-	case PM_EVENT_ON:
+-		return PCI_D0;
+-	case PM_EVENT_FREEZE:
+-	case PM_EVENT_PRETHAW:
+-		/* REVISIT both freeze and pre-thaw "should" use D0 */
++	switch (mesg.event) {
+ 	case PM_EVENT_SUSPEND:
+ 	case PM_EVENT_HIBERNATE:
+-		return PCI_D3hot;
++		/*
++		 * D3hot works on all devices, but may be suboptimal on
++		 * a given system.  Factors include wakeups, power use,
++		 * the optional D3hot->D0 reset, latency, and more.
++		 *
++		 * If there's a platform_pci_choose_state(), it could
++		 * provide better answers for this system.  It should
++		 * only return states where wakeup won't work if:
++		 *   - !device_may_wakeup(&dev->dev), or
++		 *   - dev can't wake from the target system state
++		 */
++		ret = PCI_D3hot;
++		if (platform_pci_choose_state) {
++			ret = platform_pci_choose_state(dev, mesg);
++			if (ret == PCI_POWER_ERROR)
++				ret = PCI_D3hot;
++			else if ((ret == PCI_D1 || ret == PCI_D2)
++					&& pci_no_d1d2(dev))
++				ret = PCI_D3hot;
++		}
++		break;
+ 	default:
+-		printk("Unrecognized suspend event %d\n", state.event);
+-		BUG();
++		ret = PCI_D0;
++		break;
+ 	}
+-	return PCI_D0;
++	return ret;
+ }
+-
+ EXPORT_SYMBOL(pci_choose_state);
+ 
+ static int pci_save_pcie_state(struct pci_dev *dev)
