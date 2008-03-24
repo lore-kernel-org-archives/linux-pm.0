@@ -1,17 +1,13 @@
-From: Zhao Yakui <yakui.zhao@intel.com>
-Subject: Re: [patch 2.6.25-rc6 1/7] crosslink ACPI and "real"
-	device nodes
-Date: Fri, 21 Mar 2008 16:34:31 +0800
-Message-ID: <1206088471.4109.56.camel__8762.57073036886$1206375029$gmane$org@localhost.localdomain>
-References: <200803201408.33466.david-b@pacbell.net>
-	<200803201409.28330.david-b@pacbell.net>
-	<1206081808.4109.23.camel@localhost.localdomain>
-	<200803210031.35174.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 3)
+Date: Mon, 24 Mar 2008 18:39:38 +0100
+Message-ID: <200803241839.39469.rjw__22008.7084956051$1206380564$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803210031.35174.david-b@pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,64 +17,1554 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2008-03-21 at 00:31 -0700, David Brownell wrote:
-> On Thursday 20 March 2008, Zhao Yakui wrote:
-> > On Thu, 2008-03-20 at 14:09 -0700, David Brownell wrote:
-> > > From: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > Add cross-links between ACPI device and "real" devices in sysfs,
-> > > exposing otherwise-hidden interrelationships between the various
-> > > device nodes which ACPI creates.  As a representative example one
-> > > hardware device is exposed as two logical devices (PNP and ACPI):
-> > > 
-> > >   .../pnp0/00:06/
-> > >   .../LNXSYSTM:00/device:00/PNP0A03:00/device:15/PNP0B00:00/
-> > > 
-> > > The PNP device gets a "firmware_node" link pointing to the ACPI device.
-> > > The ACPI device has a "physical_node" link pointing to the PNP device.
-> > > Linux drivers currently bind only to the "physical" device nodes.
-> >  
-> > Very good idea. 
-> > But maybe there is a lot of ACPI devices on the laptops. And we take a
-> > little care about the association between the acpi device and "real"
-> > device.
-> 
-> Are you suggesting that the ACPI nodes shouldn't exist at all?
-> Or that something is wrong with how they're set up or used?
-No. The ACPI nodes should exist. What I said is whether it is necessary
-to create the link for all the ACPI devices between the ACPI device and
-"real" node device.  Of course it is also OK if link is created for the
-ACPI device with the ability to wake the sleeping system. 
-> For now, there's some confusion.  Devices listed in ACPI tables
-> have one or two extra sysfs device nodes.  I think *something*
-> should help sort out the confusion -- this patch (originally
-> from Zhang Rui, a co-worker of yours) is the only help for that
-> which I've seen so far.  Do you propose some other solution?
-> If so, what is it ... and what are its advantages?
-> > Maybe it is more useful if the link is set up for the acpi device with
-> > the _PRW object. Maybe the link that points to ACPI device with the _PRW
-> > object is created in the /sys/power/.
-> 
-> That's way too many "maybes" for my taste!  Maybe I don't see
-> how "_PRW" could be the only interesting thing, when most of
-> the ACPI nodes don't even *have* such records ... and when not
-> all power-manageable devices are even known to ACPI.
-Sorry. What I means is that the link(point to the ACPI device with the
-ability to wake the sleeping system) is created in the /sys/power/. 
-After doing so, we can easily check which device has the ability to wake
-the sleeping system. (The _PRW object indicates that the device have the
-ability to wake the sleeping system). 
-> 
-> The notion of adding ACPI-specific stuff to generic areas (like
-> /sys/power) really bothers me...
-> 
-> - Dave
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi,
+
+This is the 3rd revision of the patch introducing new callbacks for suspend
+and hibernation.  It has been tested on x86-64.
+
+I did my best to address the Alan's comments regarding the 2nd revision of =
+the
+patch.  In particular:
+* The ->prepare() callbacks are now executed in the forward order to avoid
+  races between the PM core and the registration of new devices.  Analogous=
+ly,
+  the ->complete() callbacks are executed in the reverse order.
+* Only one list, called dpm_list, is used by the PM core its operations and
+  the dev->power.status field is used to mark the current status of the dev=
+ice
+  wrt the suspend/hibernation operations.
+* The registrations of parentless devices are disabled before the first
+  ->prepare() method is called and enabled before the first ->resume() meth=
+od
+  is called
+* The registration of new devices with a parent is disabled right after the
+  parent's ->prepare() is called and enabled just prior to calling the pare=
+nt's
+  ->resume().
+
+The patch is on top of the "PM: Remove destroy_suspended_device()" patch
+I sent yesterday.
+
+Please review.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Introduce 'struct pm_ops' and 'struct pm_noirq_ops' representing
+suspend and hibernation operations for bus types, device classes and
+device types.
+
+Modify the PM core to use 'struct pm_ops' and 'struct pm_noirq_ops'
+objects, if defined, instead of the ->suspend() and ->resume() or,
+respectively, ->suspend_late() and ->resume_early() callbacks that
+will be considered as legacy and gradually phased out.
+
+The main purpose of doing this is to separate suspend (aka S2RAM and
+standby) callbacks from hibernation callbacks in such a way that the
+new callbacks won't take arguments and the semantics of each of them
+will be clearly specified. =A0This has been requested for multiple
+times by many people, including Linus himself, and the reason is that
+within the current scheme if ->resume() is called, for example, it's
+difficult to say why it's been called (ie. is it a resume from RAM or
+from hibernation or a suspend/hibernation failure etc.?).
+
+The second purpose is to make the suspend/hibernation callbacks more
+flexible so that device drivers can handle more than they can within
+the current scheme.  For example, some drivers may need to prevent
+new children of the device from being registered before their
+->suspend() callbacks are executed or they may want to carry out some
+operations requiring the availability of some other devices, not
+directly bound via the parent-child relationship, in order to prepare
+for the execution of ->suspend(), etc.
+
+Ultimately, we'd like to stop using the freezing of tasks for suspend
+and therefore the drivers' suspend/hibernation code will have to take
+care of the handling of the user space during suspend/hibernation.
+That, in turn, would be difficult within the current scheme, without
+the new ->prepare() and ->complete() callbacks.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+
+ arch/x86/kernel/apm_32.c   |    4 =
+
+ drivers/base/power/main.c  |  650 +++++++++++++++++++++++++++++++++-------=
+-----
+ drivers/base/power/power.h |    2 =
+
+ drivers/base/power/trace.c |    4 =
+
+ include/linux/device.h     |    8 =
+
+ include/linux/pm.h         |  278 +++++++++++++++++--
+ kernel/power/disk.c        |   14 =
+
+ kernel/power/main.c        |    4 =
+
+ 8 files changed, 763 insertions(+), 201 deletions(-)
+
+Index: linux-2.6/include/linux/pm.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -114,7 +114,9 @@ typedef struct pm_message {
+ 	int event;
+ } pm_message_t;
+ =
+
+-/*
++/**
++ * struct pm_ops - device PM callbacks
++ *
+  * Several driver power state transitions are externally visible, affecting
+  * the state of pending I/O queues and (for drivers that touch hardware)
+  * interrupts, wakeups, DMA, and other hardware state.  There may also be
+@@ -122,6 +124,250 @@ typedef struct pm_message {
+  * to the rest of the driver stack (such as a driver that's ON gating off
+  * clocks which are not in active use).
+  *
++ * The externally visible transitions are handled with the help of the fol=
+lowing
++ * callbacks included in this structure:
++ *
++ * @prepare: Prepare the device for the upcoming transition, but do NOT ch=
+ange
++ *	its hardware state.  Prevent new children of the device from being
++ *	registered and prevent new calls to the probe method from being made
++ *	after @prepare() returns.  If @prepare() detects a situation it cannot
++ *	handle (e.g. registration of a child already in progress), it may return
++ *	-EAGAIN, so that the PM core can execute it once again (e.g. after the
++ *	new child has been registered) to recover from the race condition. This
++ *	method is executed for all kinds of suspend transitions and is followed
++ *	by one of the suspend callbacks: @suspend(), @freeze(), or @poweroff().
++ *	The PM core executes @prepare() for all devices before starting to
++ *	execute suspend callbacks for any of them, so drivers may assume all of
++ *	the other devices to be present and functional while @prepare() is being
++ *	executed.  However, they may NOT assume anything about the availability
++ *	of the user space at that time.
++ *
++ * @complete: Undo the changes made by @prepare().  This method is execute=
+d for
++ *	all kinds of resume transitions, following one of the resume callbacks:
++ *	@resume(), @thaw(), @restore().  Also called if the state transition
++ *	fails before the driver's suspend callback (@suspend(), @freeze(),
++ *	@poweroff()) can be executed (e.g. if the suspend callback fails for one
++ *	of the other devices that the PM core has unsucessfully attempted to
++ *	suspend earlier).
++ *	The PM core executes @complete() after it has executed the appropriate
++ *	resume callback for all devices.
++ *
++ * @suspend: Executed before putting the system into a sleep state in whic=
+h the
++ *	contents of main memory are preserved.  Quiesce the device, put it into
++ *	a low power state appropriate for the upcoming system state (such as
++ *	PCI_D3hot), and enable wakeup events as appropriate.
++ *
++ * @resume: Executed after waking the system up from a sleep state in whic=
+h the
++ *	contents of main memory were preserved.  Put the device into the
++ *	appropriate state, according to the information saved in memory by the
++ *	preceding @suspend().  The driver starts working again, responding to
++ *	hardware events and software requests.  The hardware may have gone
++ *	through a power-off reset, or it may have maintained state from the
++ *	previous suspend() which the driver may rely on while resuming.  On most
++ *	platforms, there are no restrictions on availability of resources like
++ *	clocks during @resume().
++ *
++ * @freeze: Hibernation-specific, executed before creating a hibernation i=
+mage.
++ *	Quiesce operations so that a consistent image can be created, but do NOT
++ *	otherwise put the device into a low power device state and do NOT emit
++ *	system wakeup events.  Save in main memory the device settings to be
++ *	used by @restore() during the subsequent resume from hibernation or by
++ *	the subsequent @thaw(), if the creation of the image or the restoration
++ *	of main memory contents from it fails.
++ *
++ * @thaw: Hibernation-specific, executed after creating a hibernation imag=
+e OR
++ *	if the creation of the image fails.  Also executed after a failing
++ *	attempt to restore the contents of main memory from such an image.
++ *	Undo the changes made by the preceding @freeze(), so the device can be
++ *	operated in the same way as immediately before the call to @freeze().
++ *
++ * @poweroff: Hibernation-specific, executed after saving a hibernation im=
+age.
++ *	Quiesce the device, put it into a low power state appropriate for the
++ *	upcoming system state (such as PCI_D3hot), and enable wakeup events as
++ *	appropriate.
++ *
++ * @restore: Hibernation-specific, executed after restoring the contents o=
+f main
++ *	memory from a hibernation image.  Driver starts working again,
++ *	responding to hardware events and software requests.  Drivers may NOT
++ *	make ANY assumptions about the hardware state right prior to @restore().
++ *	On most platforms, there are no restrictions on availability of
++ *	resources like clocks during @restore().
++ *
++ * All of the above callbacks, except for @complete(), return error codes.
++ * However, the error codes returned by the resume operations, @resume(),
++ * @thaw(), and @restore(), do not cause the PM core to abort the resume
++ * transition during which they are returned.
++ */
++
++struct pm_ops {
++	int (*prepare)(struct device *dev);
++	void (*complete)(struct device *dev);
++	int (*suspend)(struct device *dev);
++	int (*resume)(struct device *dev);
++	int (*freeze)(struct device *dev);
++	int (*thaw)(struct device *dev);
++	int (*poweroff)(struct device *dev);
++	int (*restore)(struct device *dev);
++};
++
++/**
++ * struct pm_noirq_ops - device PM callbacks executed with interrupts disa=
+bled
++ *
++ * The following callbacks included in 'struct pm_noirq_ops' are executed =
+with
++ * interrupts disabled and with the nonboot CPUs switched off:
++ *
++ * @suspend_noirq: Complete the operations of ->suspend() by carrying out =
+any
++ *	actions required for suspending the device that need interrupts to be
++ *	disabled
++ *
++ * @resume_noirq: Prepare for the execution of ->resume() by carrying out =
+any
++ *	actions required for resuming the device that need interrupts to be
++ *	disabled
++ *
++ * @freeze_noirq: Complete the operations of ->freeze() by carrying out any
++ *	actions required for freezing the device that need interrupts to be
++ *	disabled
++ *
++ * @thaw_noirq: Prepare for the execution of ->thaw() by carrying out any
++ *	actions required for thawing the device that need interrupts to be
++ *	disabled
++ *
++ * @poweroff_noirq: Complete the operations of ->poweroff() by carrying ou=
+t any
++ *	actions required for handling the device that need interrupts to be
++ *	disabled
++ *
++ * @restore_noirq: Prepare for the execution of ->restore() by carrying ou=
+t any
++ *	actions required for restoring the operations of the device that need
++ *	interrupts to be disabled
++ *
++ * All of the above callbacks, return error codes, but the error codes ret=
+urned
++ * by the resume operations, @resume_noirq(), @thaw_noirq(), and
++ * @restore_noirq(), do not cause the PM core to abort the resume transiti=
+on
++ * during which they are returned.
++ */
++
++struct pm_noirq_ops {
++	int (*suspend_noirq)(struct device *dev);
++	int (*resume_noirq)(struct device *dev);
++	int (*freeze_noirq)(struct device *dev);
++	int (*thaw_noirq)(struct device *dev);
++	int (*poweroff_noirq)(struct device *dev);
++	int (*restore_noirq)(struct device *dev);
++};
++
++/**
++ * PM_EVENT_ messages
++ *
++ * The following PM_EVENT_ messages are defined for the internal use of th=
+e PM
++ * core, in order to provide a mechanism allowing the high level suspend a=
+nd
++ * hibernation code to convey the necessary information to the device PM c=
+ore
++ * code:
++ *
++ * ON		No transition.
++ *
++ * FREEZE 	System is going to hibernate, call ->prepare() and ->freeze()
++ *		for all devices.
++ *
++ * SUSPEND	System is going to suspend, call ->prepare() and ->suspend()
++ *		for all devices.
++ *
++ * HIBERNATE	Hibernation image has been saved, call ->prepare() and
++ *		->poweroff() for all devices.
++ *
++ * QUIESCE	Contents of main memory are going to be restored from a (loaded)
++ *		hibernation image, call ->prepare() and ->freeze() for all
++ *		devices.
++ *
++ * RESUME	System is resuming, call ->resume() and ->complete() for all
++ *		devices.
++ *
++ * THAW		Hibernation image has been created, call ->thaw() and
++ *		->complete() for all devices.
++ *
++ * RESTORE	Contents of main memory have been restored from a hibernation
++ *		image, call ->restore() and ->complete() for all devices.
++ *
++ * RECOVER	Creation of a hibernation image or restoration of the main
++ *		memory contents from a hibernation image has failed, call
++ *		->thaw() and ->complete() for all devices.
++ */
++
++#define PM_EVENT_ON		0x0000
++#define PM_EVENT_FREEZE 	0x0001
++#define PM_EVENT_SUSPEND	0x0002
++#define PM_EVENT_HIBERNATE	0x0004
++#define PM_EVENT_QUIESCE	0x0008
++#define PM_EVENT_RESUME		0x0010
++#define PM_EVENT_THAW		0x0020
++#define PM_EVENT_RESTORE	0x0040
++#define PM_EVENT_RECOVER	0x0080
++
++#define PM_EVENT_SLEEP	(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
++
++#define PMSG_FREEZE	((struct pm_message){ .event =3D PM_EVENT_FREEZE, })
++#define PMSG_QUIESCE	((struct pm_message){ .event =3D PM_EVENT_QUIESCE, })
++#define PMSG_SUSPEND	((struct pm_message){ .event =3D PM_EVENT_SUSPEND, })
++#define PMSG_HIBERNATE	((struct pm_message){ .event =3D PM_EVENT_HIBERNATE=
+, })
++#define PMSG_RESUME	((struct pm_message){ .event =3D PM_EVENT_RESUME, })
++#define PMSG_THAW	((struct pm_message){ .event =3D PM_EVENT_THAW, })
++#define PMSG_RESTORE	((struct pm_message){ .event =3D PM_EVENT_RESTORE, })
++#define PMSG_RECOVER	((struct pm_message){ .event =3D PM_EVENT_RECOVER, })
++#define PMSG_ON		((struct pm_message){ .event =3D PM_EVENT_ON, })
++
++/**
++ * Device power management states
++ *
++ * These state labels are used internally by the PM core to indicate the c=
+urrent
++ * status of a device with respect to the PM core operations.
++ *
++ * DPM_ON		Device is regarded as operational.  Set this way
++ *			initially and when ->complete() is about to be called.
++ *			Also set when ->prepare() fails.
++ *
++ * DPM_RESUMING		Device is going to be resumed.  Set when ->resume(),
++ *			->thaw(), or ->restore() is about to be called.
++ *
++ * DPM_SUSPENDING	Device has been prepared for a power transition.  Set
++ *			when ->prepare() has just succeeded.
++ *
++ * DPM_OFF		Device is regarded as inactive.  Set immediately after
++ *			->suspend(), ->freeze(), or ->poweroff() has succeeded.
++ *			Also set when ->resume()_noirq, ->thaw_noirq(), or
++ *			->restore_noirq() is about to be called.
++ *
++ * DPM_OFF_IRQ		Device is in a "deep sleep".  Set immediately after
++ *			->suspend_noirq(), ->freeze_noirq(), or
++ *			->poweroff_noirq() has just succeeded.
++ */
++
++enum dpm_state {
++	DPM_ON,
++	DPM_RESUMING,
++	DPM_SUSPENDING,
++	DPM_OFF,
++	DPM_OFF_IRQ,
++};
++
++struct dev_pm_info {
++	pm_message_t		power_state;
++	unsigned		can_wakeup:1;
++	unsigned		should_wakeup:1;
++	enum dpm_state		status;		/* Owned by the PM core */
++#ifdef	CONFIG_PM_SLEEP
++	struct list_head	entry;
++#endif
++};
++
++/*
++ * The PM_EVENT_ messages are also used by drivers implementing the legacy
++ * suspend framework, based on the ->suspend() and ->resume() callbacks co=
+mmon
++ * for suspend and hibernation transitions, according to the rules below.
++ */
++
++/* Necessary, because several drivers use PM_EVENT_PRETHAW */
++#define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
++
++/*
+  * One transition is triggered by resume(), after a suspend() call; the
+  * message is implicit:
+  *
+@@ -166,35 +412,11 @@ typedef struct pm_message {
+  * or from system low-power states such as standby or suspend-to-RAM.
+  */
+ =
+
+-#define PM_EVENT_ON 0
+-#define PM_EVENT_FREEZE 1
+-#define PM_EVENT_SUSPEND 2
+-#define PM_EVENT_HIBERNATE 4
+-#define PM_EVENT_PRETHAW 8
+-
+-#define PM_EVENT_SLEEP	(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
+-
+-#define PMSG_FREEZE	((struct pm_message){ .event =3D PM_EVENT_FREEZE, })
+-#define PMSG_PRETHAW	((struct pm_message){ .event =3D PM_EVENT_PRETHAW, })
+-#define PMSG_SUSPEND	((struct pm_message){ .event =3D PM_EVENT_SUSPEND, })
+-#define PMSG_HIBERNATE	((struct pm_message){ .event =3D PM_EVENT_HIBERNATE=
+, })
+-#define PMSG_ON		((struct pm_message){ .event =3D PM_EVENT_ON, })
+-
+-struct dev_pm_info {
+-	pm_message_t		power_state;
+-	unsigned		can_wakeup:1;
+-	unsigned		should_wakeup:1;
+-	bool			sleeping:1;	/* Owned by the PM core */
+-#ifdef	CONFIG_PM_SLEEP
+-	struct list_head	entry;
+-#endif
+-};
++#ifdef CONFIG_PM_SLEEP
++extern void device_power_up(pm_message_t state);
++extern void device_resume(pm_message_t state);
+ =
+
+ extern int device_power_down(pm_message_t state);
+-extern void device_power_up(void);
+-extern void device_resume(void);
+-
+-#ifdef CONFIG_PM_SLEEP
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ =
+
+Index: linux-2.6/drivers/base/power/main.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -12,11 +12,9 @@
+  * and add it to the list of power-controlled devices. sysfs entries for
+  * controlling device power management will also be added.
+  *
+- * A different set of lists than the global subsystem list are used to
+- * keep track of power info because we use different lists to hold
+- * devices based on what stage of the power management process they
+- * are in. The power domain dependencies may also differ from the
+- * ancestral dependencies that the subsystem list maintains.
++ * A separate list is used for keeping track of power info, because the po=
+wer
++ * domain dependencies may differ from the ancestral dependencies that the
++ * subsystem list maintains.
+  */
+ =
+
+ #include <linux/device.h>
+@@ -30,31 +28,24 @@
+ #include "power.h"
+ =
+
+ /*
+- * The entries in the dpm_active list are in a depth first order, simply
++ * The entries in the dpm_list list are in a depth first order, simply
+  * because children are guaranteed to be discovered after parents, and
+  * are inserted at the back of the list on discovery.
+  *
+- * All the other lists are kept in the same order, for consistency.
+- * However the lists aren't always traversed in the same order.
+- * Semaphores must be acquired from the top (i.e., front) down
+- * and released in the opposite order.  Devices must be suspended
+- * from the bottom (i.e., end) up and resumed in the opposite order.
+- * That way no parent will be suspended while it still has an active
+- * child.
+- *
+  * Since device_pm_add() may be called with a device semaphore held,
+  * we must never try to acquire a device semaphore while holding
+  * dpm_list_mutex.
+  */
+ =
+
+-LIST_HEAD(dpm_active);
+-static LIST_HEAD(dpm_off);
+-static LIST_HEAD(dpm_off_irq);
++LIST_HEAD(dpm_list);
+ =
+
+ static DEFINE_MUTEX(dpm_list_mtx);
+ =
+
+-/* 'true' if all devices have been suspended, protected by dpm_list_mtx */
+-static bool all_sleeping;
++/*
++ * Set once the preparation of devices for a PM transition has started, re=
+set
++ * before starting to resume devices.  Protected by dpm_list_mtx.
++ */
++static bool transition_started;
+ =
+
+ /**
+  *	device_pm_add - add a device to the list of active devices
+@@ -68,22 +59,30 @@ int device_pm_add(struct device *dev)
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+-	if ((dev->parent && dev->parent->power.sleeping) || all_sleeping) {
+-		if (dev->parent->power.sleeping)
+-			dev_warn(dev,
+-				"parent %s is sleeping, will not add\n",
++	if (dev->parent) {
++		if (dev->parent->power.status > DPM_RESUMING) {
++			dev_warn(dev, "parent %s is sleeping, will not add\n",
+ 				dev->parent->bus_id);
+-		else
+-			dev_warn(dev, "devices are sleeping, will not add\n");
+-		WARN_ON(true);
+-		error =3D -EBUSY;
+-	} else {
+-		error =3D dpm_sysfs_add(dev);
+-		if (!error)
+-			list_add_tail(&dev->power.entry, &dpm_active);
++			goto Refuse;
++		}
++	} else if (transition_started) {
++		/*
++		 * We refuse to register parentless devices while a PM
++		 * transition is in progress in order to avoid leaving them
++		 * unhandled down the road
++		 */
++		goto Refuse;
+ 	}
++	error =3D dpm_sysfs_add(dev);
++	if (!error)
++		list_add_tail(&dev->power.entry, &dpm_list);
++ End:
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
++ Refuse:
++	WARN_ON(true);
++	error =3D -EBUSY;
++	goto End;
+ }
+ =
+
+ /**
+@@ -103,73 +102,230 @@ void device_pm_remove(struct device *dev
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ =
+
++/**
++ *	pm_op - execute the PM operation appropiate for given PM event
++ *	@dev:	Device.
++ *	@ops:	PM operations to choose from.
++ *	@state:	PM transition of the system being carried out.
++ */
++static int pm_op(struct device *dev, struct pm_ops *ops, pm_message_t stat=
+e)
++{
++	int error =3D 0;
++
++	switch (state.event) {
++#ifdef CONFIG_SUSPEND
++	case PM_EVENT_SUSPEND:
++		if (ops->suspend) {
++			error =3D ops->suspend(dev);
++			suspend_report_result(ops->suspend, error);
++		}
++		break;
++	case PM_EVENT_RESUME:
++		if (ops->resume) {
++			error =3D ops->resume(dev);
++			suspend_report_result(ops->resume, error);
++		}
++		break;
++#endif /* CONFIG_SUSPEND */
++#ifdef CONFIG_HIBERNATION
++	case PM_EVENT_FREEZE:
++	case PM_EVENT_QUIESCE:
++		if (ops->freeze) {
++			error =3D ops->freeze(dev);
++			suspend_report_result(ops->freeze, error);
++		}
++		break;
++	case PM_EVENT_HIBERNATE:
++		if (ops->poweroff) {
++			error =3D ops->poweroff(dev);
++			suspend_report_result(ops->poweroff, error);
++		}
++		break;
++	case PM_EVENT_THAW:
++	case PM_EVENT_RECOVER:
++		if (ops->thaw) {
++			error =3D ops->thaw(dev);
++			suspend_report_result(ops->thaw, error);
++		}
++		break;
++	case PM_EVENT_RESTORE:
++		if (ops->restore) {
++			error =3D ops->restore(dev);
++			suspend_report_result(ops->restore, error);
++		}
++		break;
++#endif /* CONFIG_HIBERNATION */
++	default:
++		error =3D -EINVAL;
++	}
++	return error;
++}
++
++/**
++ *	pm_noirq_op - execute the PM operation appropiate for given PM event
++ *	@dev:	Device.
++ *	@ops:	PM operations to choose from.
++ *	@state: PM transition of the system being carried out.
++ *
++ *	The operation is executed with interrupts disabled by the only remaining
++ *	functional CPU in the system.
++ */
++static int pm_noirq_op(struct device *dev, struct pm_noirq_ops *ops,
++			pm_message_t state)
++{
++	int error =3D 0;
++
++	switch (state.event) {
++#ifdef CONFIG_SUSPEND
++	case PM_EVENT_SUSPEND:
++		if (ops->suspend_noirq) {
++			error =3D ops->suspend_noirq(dev);
++			suspend_report_result(ops->suspend_noirq, error);
++		}
++		break;
++	case PM_EVENT_RESUME:
++		if (ops->resume_noirq) {
++			error =3D ops->resume_noirq(dev);
++			suspend_report_result(ops->resume_noirq, error);
++		}
++		break;
++#endif /* CONFIG_SUSPEND */
++#ifdef CONFIG_HIBERNATION
++	case PM_EVENT_FREEZE:
++	case PM_EVENT_QUIESCE:
++		if (ops->freeze_noirq) {
++			error =3D ops->freeze_noirq(dev);
++			suspend_report_result(ops->freeze_noirq, error);
++		}
++		break;
++	case PM_EVENT_HIBERNATE:
++		if (ops->poweroff_noirq) {
++			error =3D ops->poweroff_noirq(dev);
++			suspend_report_result(ops->poweroff_noirq, error);
++		}
++		break;
++	case PM_EVENT_THAW:
++	case PM_EVENT_RECOVER:
++		if (ops->thaw_noirq) {
++			error =3D ops->thaw_noirq(dev);
++			suspend_report_result(ops->thaw_noirq, error);
++		}
++		break;
++	case PM_EVENT_RESTORE:
++		if (ops->restore_noirq) {
++			error =3D ops->restore_noirq(dev);
++			suspend_report_result(ops->restore_noirq, error);
++		}
++		break;
++#endif /* CONFIG_HIBERNATION */
++	default:
++		error =3D -EINVAL;
++	}
++	return error;
++}
++
++static char *pm_verb(int event)
++{
++	switch (event) {
++	case PM_EVENT_SUSPEND:
++		return "suspend";
++	case PM_EVENT_RESUME:
++		return "resume";
++	case PM_EVENT_FREEZE:
++		return "freeze";
++	case PM_EVENT_QUIESCE:
++		return "quiesce";
++	case PM_EVENT_HIBERNATE:
++		return "hibernate";
++	case PM_EVENT_THAW:
++		return "thaw";
++	case PM_EVENT_RESTORE:
++		return "restore";
++	default:
++		return "(unknown PM event)";
++	}
++}
++
++static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
++{
++	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
++		((state.event & PM_EVENT_SLEEP) && device_may_wakeup(dev)) ?
++		", may wakeup" : "");
++}
++
+ /*------------------------- Resume routines -------------------------*/
+ =
+
+ /**
+- *	resume_device_early - Power on one device (early resume).
++ *	resume_device_noirq - Power on one device (early resume).
+  *	@dev:	Device.
++ *	@state: PM transition of the system being carried out.
+  *
+  *	Must be called with interrupts disabled.
+  */
+-static int resume_device_early(struct device *dev)
++static int resume_device_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error =3D 0;
+ =
+
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+ =
+
+-	if (dev->bus && dev->bus->resume_early) {
+-		dev_dbg(dev, "EARLY resume\n");
++	if (!dev->bus)
++		goto End;
++
++	if (dev->bus->pm_noirq) {
++		pm_dev_dbg(dev, state, "EARLY ");
++		error =3D pm_noirq_op(dev, dev->bus->pm_noirq, state);
++	} else if (dev->bus->resume_early) {
++		pm_dev_dbg(dev, state, "legacy EARLY ");
+ 		error =3D dev->bus->resume_early(dev);
+ 	}
+-
++ End:
+ 	TRACE_RESUME(error);
+ 	return error;
+ }
+ =
+
+ /**
+  *	dpm_power_up - Power on all regular (non-sysdev) devices.
++ *	@state: PM transition of the system being carried out.
+  *
+- *	Walk the dpm_off_irq list and power each device up. This
+- *	is used for devices that required they be powered down with
+- *	interrupts disabled. As devices are powered on, they are moved
+- *	to the dpm_off list.
++ *	Execute the appropriate "noirq resume" callback for all devices marked
++ *	as DPM_OFF_IRQ.
+  *
+  *	Must be called with interrupts disabled and only one CPU running.
+  */
+-static void dpm_power_up(void)
++static void dpm_power_up(pm_message_t state)
+ {
++	struct device *dev;
+ =
+
+-	while (!list_empty(&dpm_off_irq)) {
+-		struct list_head *entry =3D dpm_off_irq.next;
+-		struct device *dev =3D to_device(entry);
+-
+-		list_move_tail(entry, &dpm_off);
+-		resume_device_early(dev);
+-	}
++	list_for_each_entry(dev, &dpm_list, power.entry)
++		if (dev->power.status > DPM_OFF) {
++			dev->power.status =3D DPM_OFF;
++			resume_device_noirq(dev, state);
++		}
+ }
+ =
+
+ /**
+  *	device_power_up - Turn on all devices that need special attention.
++ *	@state: PM transition of the system being carried out.
+  *
+  *	Power on system devices, then devices that required we shut them down
+  *	with interrupts disabled.
+  *
+  *	Must be called with interrupts disabled.
+  */
+-void device_power_up(void)
++void device_power_up(pm_message_t state)
+ {
+ 	sysdev_resume();
+-	dpm_power_up();
++	dpm_power_up(state);
+ }
+ EXPORT_SYMBOL_GPL(device_power_up);
+ =
+
+ /**
+  *	resume_device - Restore state for one device.
+  *	@dev:	Device.
+- *
++ *	@state: PM transition of the system being carried out.
+  */
+-static int resume_device(struct device *dev)
++static int resume_device(struct device *dev, pm_message_t state)
+ {
+ 	int error =3D 0;
+ =
+
+@@ -178,21 +334,40 @@ static int resume_device(struct device *
+ =
+
+ 	down(&dev->sem);
+ =
+
+-	if (dev->bus && dev->bus->resume) {
+-		dev_dbg(dev,"resuming\n");
+-		error =3D dev->bus->resume(dev);
++	if (dev->bus) {
++		if (dev->bus->pm) {
++			pm_dev_dbg(dev, state, "");
++			error =3D pm_op(dev, dev->bus->pm, state);
++		} else if (dev->bus->resume) {
++			pm_dev_dbg(dev, state, "legacy ");
++			error =3D dev->bus->resume(dev);
++		}
++		if (error)
++			goto End;
+ 	}
+ =
+
+-	if (!error && dev->type && dev->type->resume) {
+-		dev_dbg(dev,"resuming\n");
+-		error =3D dev->type->resume(dev);
++	if (dev->type) {
++		if (dev->type->pm) {
++			pm_dev_dbg(dev, state, "type ");
++			error =3D pm_op(dev, dev->type->pm, state);
++		} else if (dev->type->resume) {
++			pm_dev_dbg(dev, state, "legacy type ");
++			error =3D dev->type->resume(dev);
++		}
++		if (error)
++			goto End;
+ 	}
+ =
+
+-	if (!error && dev->class && dev->class->resume) {
+-		dev_dbg(dev,"class resume\n");
+-		error =3D dev->class->resume(dev);
++	if (dev->class) {
++		if (dev->class->pm) {
++			pm_dev_dbg(dev, state, "class ");
++			error =3D pm_op(dev, dev->class->pm, state);
++		} else if (dev->class->resume) {
++			pm_dev_dbg(dev, state, "legacy class ");
++			error =3D dev->class->resume(dev);
++		}
+ 	}
+-
++ End:
+ 	up(&dev->sem);
+ =
+
+ 	TRACE_RESUME(error);
+@@ -201,78 +376,154 @@ static int resume_device(struct device *
+ =
+
+ /**
+  *	dpm_resume - Resume every device.
++ *	@state: PM transition of the system being carried out.
+  *
+- *	Resume the devices that have either not gone through
+- *	the late suspend, or that did go through it but also
+- *	went through the early resume.
++ *	Execute the appropriate "resume" callback for all devices the status of
++ *	which indicates that they are inactive.
++ */
++static void dpm_resume(pm_message_t state)
++{
++	struct list_head list;
++
++	INIT_LIST_HEAD(&list);
++	mutex_lock(&dpm_list_mtx);
++	transition_started =3D false;
++	while (!list_empty(&dpm_list)) {
++		struct device *dev =3D to_device(dpm_list.next);
++
++		if (dev->power.status > DPM_SUSPENDING) {
++			dev->power.status =3D DPM_RESUMING;
++			get_device(dev);
++			mutex_unlock(&dpm_list_mtx);
++
++			resume_device(dev, state);
++
++			mutex_lock(&dpm_list_mtx);
++			put_device(dev);
++		}
++		if (!list_empty(&dev->power.entry))
++			list_move_tail(&dev->power.entry, &list);
++	}
++	list_splice(&list, &dpm_list);
++	mutex_unlock(&dpm_list_mtx);
++}
++
++/**
++ *	complete_device - Complete a PM transition for given device
++ *	@dev:	Device.
++ *	@state: PM transition of the system being carried out.
++ */
++static void complete_device(struct device *dev, pm_message_t state)
++{
++	down(&dev->sem);
++
++	if (dev->bus && dev->bus->pm && dev->bus->pm->complete) {
++		pm_dev_dbg(dev, state, "completing ");
++		dev->bus->pm->complete(dev);
++	}
++
++	if (dev->type && dev->type->pm && dev->type->pm->complete) {
++		pm_dev_dbg(dev, state, "completing type ");
++		dev->type->pm->complete(dev);
++	}
++
++	if (dev->class && dev->class->pm && dev->class->pm->complete) {
++		pm_dev_dbg(dev, state, "completing class ");
++		dev->class->pm->complete(dev);
++	}
++
++	up(&dev->sem);
++}
++
++/**
++ *	dpm_complete - Complete a PM transition for all devices.
++ *	@state: PM transition of the system being carried out.
+  *
+- *	Take devices from the dpm_off_list, resume them,
+- *	and put them on the dpm_locked list.
++ *	Execute the ->complete() callbacks for all devices that are not marked
++ *	as DPM_ON.
+  */
+-static void dpm_resume(void)
++static void dpm_complete(pm_message_t state)
+ {
++	struct list_head list;
++
++	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+-	all_sleeping =3D false;
+-	while(!list_empty(&dpm_off)) {
+-		struct list_head *entry =3D dpm_off.next;
+-		struct device *dev =3D to_device(entry);
++	while (!list_empty(&dpm_list)) {
++		struct device *dev =3D to_device(dpm_list.prev);
+ =
+
+-		list_move_tail(entry, &dpm_active);
+-		dev->power.sleeping =3D false;
+-		mutex_unlock(&dpm_list_mtx);
+-		resume_device(dev);
+-		mutex_lock(&dpm_list_mtx);
++		if (dev->power.status > DPM_ON) {
++			dev->power.status =3D DPM_ON;
++			get_device(dev);
++			mutex_unlock(&dpm_list_mtx);
++
++			complete_device(dev, state);
++
++			mutex_lock(&dpm_list_mtx);
++			put_device(dev);
++		}
++		if (!list_empty(&dev->power.entry))
++			list_move(&dev->power.entry, &list);
+ 	}
++	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ =
+
+ /**
+  *	device_resume - Restore state of each device in system.
++ *	@state: PM transition of the system being carried out.
+  *
+  *	Resume all the devices, unlock them all, and allow new
+  *	devices to be registered once again.
+  */
+-void device_resume(void)
++void device_resume(pm_message_t state)
+ {
+ 	might_sleep();
+-	dpm_resume();
++	dpm_resume(state);
++	dpm_complete(state);
+ }
+ EXPORT_SYMBOL_GPL(device_resume);
+ =
+
+ =
+
+ /*------------------------- Suspend routines -------------------------*/
+ =
+
+-static inline char *suspend_verb(u32 event)
++/**
++ *	resume_event - return a PM message representing the resume event
++ *	               corresponding to given sleep state.
++ *	@sleep_state: PM message representing a sleep state.
++ */
++static pm_message_t resume_event(pm_message_t sleep_state)
+ {
+-	switch (event) {
+-	case PM_EVENT_SUSPEND:	return "suspend";
+-	case PM_EVENT_FREEZE:	return "freeze";
+-	case PM_EVENT_PRETHAW:	return "prethaw";
+-	default:		return "(unknown suspend event)";
++	switch (sleep_state.event) {
++	case PM_EVENT_SUSPEND:
++		return PMSG_RESUME;
++	case PM_EVENT_FREEZE:
++	case PM_EVENT_QUIESCE:
++		return PMSG_RECOVER;
++	case PM_EVENT_HIBERNATE:
++		return PMSG_RESTORE;
+ 	}
+-}
+-
+-static void
+-suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
+-{
+-	dev_dbg(dev, "%s%s%s\n", info, suspend_verb(state.event),
+-		((state.event =3D=3D PM_EVENT_SUSPEND) && device_may_wakeup(dev)) ?
+-		", may wakeup" : "");
++	return PMSG_ON;
+ }
+ =
+
+ /**
+- *	suspend_device_late - Shut down one device (late suspend).
++ *	suspend_device_noirq - Shut down one device (late suspend).
+  *	@dev:	Device.
+- *	@state:	Power state device is entering.
++ *	@state: PM transition of the system being carried out.
+  *
+  *	This is called with interrupts off and only a single CPU running.
+  */
+-static int suspend_device_late(struct device *dev, pm_message_t state)
++static int suspend_device_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error =3D 0;
+ =
+
+-	if (dev->bus && dev->bus->suspend_late) {
+-		suspend_device_dbg(dev, state, "LATE ");
++	if (!dev->bus)
++		return 0;
++
++	if (dev->bus->pm_noirq) {
++		pm_dev_dbg(dev, state, "LATE ");
++		error =3D pm_noirq_op(dev, dev->bus->pm_noirq, state);
++	} else if (dev->bus->suspend_late) {
++		pm_dev_dbg(dev, state, "legacy LATE ");
+ 		error =3D dev->bus->suspend_late(dev, state);
+ 		suspend_report_result(dev->bus->suspend_late, error);
+ 	}
+@@ -281,37 +532,32 @@ static int suspend_device_late(struct de
+ =
+
+ /**
+  *	device_power_down - Shut down special devices.
+- *	@state:		Power state to enter.
++ *	@state: PM transition of the system being carried out.
+  *
+- *	Power down devices that require interrupts to be disabled
+- *	and move them from the dpm_off list to the dpm_off_irq list.
++ *	Power down devices that require interrupts to be disabled.
+  *	Then power down system devices.
+  *
+  *	Must be called with interrupts disabled and only one CPU running.
+  */
+ int device_power_down(pm_message_t state)
+ {
++	struct device *dev;
+ 	int error =3D 0;
+ =
+
+-	while (!list_empty(&dpm_off)) {
+-		struct list_head *entry =3D dpm_off.prev;
+-		struct device *dev =3D to_device(entry);
+-
+-		error =3D suspend_device_late(dev, state);
++	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
++		error =3D suspend_device_noirq(dev, state);
+ 		if (error) {
+ 			printk(KERN_ERR "Could not power down device %s: "
+ 					"error %d\n",
+ 					kobject_name(&dev->kobj), error);
+ 			break;
+ 		}
+-		if (!list_empty(&dev->power.entry))
+-			list_move(&dev->power.entry, &dpm_off_irq);
++		dev->power.status =3D DPM_OFF_IRQ;
+ 	}
+-
+ 	if (!error)
+ 		error =3D sysdev_suspend(state);
+ 	if (error)
+-		dpm_power_up();
++		dpm_power_up(resume_event(state));
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(device_power_down);
+@@ -319,7 +565,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
+ /**
+  *	suspend_device - Save state of one device.
+  *	@dev:	Device.
+- *	@state:	Power state device is entering.
++ *	@state: PM transition of the system being carried out.
+  */
+ static int suspend_device(struct device *dev, pm_message_t state)
+ {
+@@ -327,29 +573,43 @@ static int suspend_device(struct device =
+
+ =
+
+ 	down(&dev->sem);
+ =
+
+-	if (dev->power.power_state.event) {
+-		dev_dbg(dev, "PM: suspend %d-->%d\n",
+-			dev->power.power_state.event, state.event);
+-	}
+-
+-	if (dev->class && dev->class->suspend) {
+-		suspend_device_dbg(dev, state, "class ");
+-		error =3D dev->class->suspend(dev, state);
+-		suspend_report_result(dev->class->suspend, error);
++	if (dev->class) {
++		if (dev->class->pm) {
++			pm_dev_dbg(dev, state, "class ");
++			error =3D pm_op(dev, dev->class->pm, state);
++		} else if (dev->class->suspend) {
++			pm_dev_dbg(dev, state, "legacy class ");
++			error =3D dev->class->suspend(dev, state);
++			suspend_report_result(dev->class->suspend, error);
++		}
++		if (error)
++			goto End;
+ 	}
+ =
+
+-	if (!error && dev->type && dev->type->suspend) {
+-		suspend_device_dbg(dev, state, "type ");
+-		error =3D dev->type->suspend(dev, state);
+-		suspend_report_result(dev->type->suspend, error);
++	if (dev->type) {
++		if (dev->type->pm) {
++			pm_dev_dbg(dev, state, "type ");
++			error =3D pm_op(dev, dev->type->pm, state);
++		} else if (dev->type->suspend) {
++			pm_dev_dbg(dev, state, "legacy type ");
++			error =3D dev->type->suspend(dev, state);
++			suspend_report_result(dev->type->suspend, error);
++		}
++		if (error)
++			goto End;
+ 	}
+ =
+
+-	if (!error && dev->bus && dev->bus->suspend) {
+-		suspend_device_dbg(dev, state, "");
+-		error =3D dev->bus->suspend(dev, state);
+-		suspend_report_result(dev->bus->suspend, error);
++	if (dev->bus) {
++		if (dev->bus->pm) {
++			pm_dev_dbg(dev, state, "");
++			error =3D pm_op(dev, dev->bus->pm, state);
++		} else if (dev->bus->suspend) {
++			pm_dev_dbg(dev, state, "legacy ");
++			error =3D dev->bus->suspend(dev, state);
++			suspend_report_result(dev->bus->suspend, error);
++		}
+ 	}
+-
++ End:
+ 	up(&dev->sem);
+ =
+
+ 	return error;
+@@ -357,67 +617,139 @@ static int suspend_device(struct device =
+
+ =
+
+ /**
+  *	dpm_suspend - Suspend every device.
+- *	@state:	Power state to put each device in.
+- *
+- *	Walk the dpm_locked list.  Suspend each device and move it
+- *	to the dpm_off list.
++ *	@state: PM transition of the system being carried out.
+  *
+- *	(For historical reasons, if it returns -EAGAIN, that used to mean
+- *	that the device would be called again with interrupts disabled.
+- *	These days, we use the "suspend_late()" callback for that, so we
+- *	print a warning and consider it an error).
++ *	Execute the appropriate "suspend" callbacks for all devices.
+  */
+ static int dpm_suspend(pm_message_t state)
+ {
++	struct list_head list;
+ 	int error =3D 0;
+ =
+
++	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_active)) {
+-		struct list_head *entry =3D dpm_active.prev;
+-		struct device *dev =3D to_device(entry);
++	while (!list_empty(&dpm_list)) {
++		struct device *dev =3D to_device(dpm_list.prev);
+ =
+
+-		WARN_ON(dev->parent && dev->parent->power.sleeping);
+-
+-		dev->power.sleeping =3D true;
++		get_device(dev);
+ 		mutex_unlock(&dpm_list_mtx);
++
+ 		error =3D suspend_device(dev, state);
++
+ 		mutex_lock(&dpm_list_mtx);
++		put_device(dev);
+ 		if (error) {
+ 			printk(KERN_ERR "Could not suspend device %s: "
+-					"error %d%s\n",
+-					kobject_name(&dev->kobj),
+-					error,
+-					(error =3D=3D -EAGAIN ?
+-					" (please convert to suspend_late)" :
+-					""));
+-			dev->power.sleeping =3D false;
++				"error %d\n", kobject_name(&dev->kobj), error);
++			list_splice_init(&dpm_list, &list);
+ 			break;
+ 		}
+-		if (!list_empty(&dev->power.entry))
+-			list_move(&dev->power.entry, &dpm_off);
++		if (!list_empty(&dev->power.entry)) {
++			dev->power.status =3D DPM_OFF;
++			list_move(&dev->power.entry, &list);
++		}
+ 	}
+-	if (!error)
+-		all_sleeping =3D true;
++	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
++	return error;
++}
++
++/**
++ *	prepare_device - Execute the ->prepare() callback(s) for given device.
++ *	@dev:	Device.
++ *	@state: PM transition of the system being carried out.
++ */
++static int prepare_device(struct device *dev, pm_message_t state)
++{
++	int error =3D 0;
++
++	down(&dev->sem);
++
++	if (dev->bus && dev->bus->pm && dev->bus->pm->prepare) {
++		pm_dev_dbg(dev, state, "preparing ");
++		error =3D dev->bus->pm->prepare(dev);
++		suspend_report_result(dev->bus->pm->prepare, error);
++		if (error)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm && dev->type->pm->prepare) {
++		pm_dev_dbg(dev, state, "preparing type ");
++		error =3D dev->type->pm->prepare(dev);
++		suspend_report_result(dev->type->pm->prepare, error);
++		if (error)
++			goto End;
++	}
++
++	if (dev->class && dev->class->pm && dev->class->pm->prepare) {
++		pm_dev_dbg(dev, state, "preparing class ");
++		error =3D dev->class->pm->prepare(dev);
++		suspend_report_result(dev->class->pm->prepare, error);
++	}
++ End:
++	up(&dev->sem);
+ =
+
+ 	return error;
+ }
+ =
+
+ /**
++ *	dpm_prepare - Prepare all devices for a PM transition.
++ *	@state: PM transition of the system being carried out.
++ *
++ *	Execute the ->prepare() callback for all devices.
++ */
++static int dpm_prepare(pm_message_t state)
++{
++	struct list_head list;
++	int error =3D 0;
++
++	INIT_LIST_HEAD(&list);
++	mutex_lock(&dpm_list_mtx);
++	transition_started =3D true;
++	while (!list_empty(&dpm_list)) {
++		struct device *dev =3D to_device(dpm_list.next);
++
++		get_device(dev);
++		mutex_unlock(&dpm_list_mtx);
++
++		error =3D prepare_device(dev, state);
++
++		mutex_lock(&dpm_list_mtx);
++		put_device(dev);
++		if (error) {
++			if (error =3D=3D -EAGAIN)
++				continue;
++			printk(KERN_ERR "Could not prepare device %s "
++				"for suspend: error %d\n",
++				kobject_name(&dev->kobj), error);
++			break;
++		}
++		if (!list_empty(&dev->power.entry)) {
++			dev->power.status =3D DPM_SUSPENDING;
++			list_move_tail(&dev->power.entry, &list);
++		}
++	}
++	list_splice(&list, &dpm_list);
++	mutex_unlock(&dpm_list_mtx);
++	return error;
++}
++
++/**
+  *	device_suspend - Save state and stop all devices in system.
+- *	@state: new power management state
++ *	@state: PM transition of the system being carried out.
+  *
+- *	Prevent new devices from being registered, then lock all devices
+- *	and suspend them.
++ *	Prepare and suspend all devices.
+  */
+ int device_suspend(pm_message_t state)
+ {
+ 	int error;
+ =
+
+ 	might_sleep();
+-	error =3D dpm_suspend(state);
++	error =3D dpm_prepare(state);
++	if (!error)
++		error =3D dpm_suspend(state);
+ 	if (error)
+-		device_resume();
++		device_resume(resume_event(state));
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(device_suspend);
+Index: linux-2.6/include/linux/device.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -69,6 +69,9 @@ struct bus_type {
+ 	int (*resume_early)(struct device *dev);
+ 	int (*resume)(struct device *dev);
+ =
+
++	struct pm_ops *pm;
++	struct pm_noirq_ops *pm_noirq;
++
+ 	struct bus_type_private *p;
+ };
+ =
+
+@@ -202,6 +205,8 @@ struct class {
+ =
+
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+ 	int (*resume)(struct device *dev);
++
++	struct pm_ops *pm;
+ };
+ =
+
+ extern int __must_check class_register(struct class *class);
+@@ -345,8 +350,11 @@ struct device_type {
+ 	struct attribute_group **groups;
+ 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
+ 	void (*release)(struct device *dev);
++
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+ 	int (*resume)(struct device *dev);
++
++	struct pm_ops *pm;
+ };
+ =
+
+ /* interface for exporting device attributes */
+Index: linux-2.6/kernel/power/disk.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -224,7 +224,7 @@ static int create_image(int platform_mod
+ 	/* NOTE:  device_power_up() is just a resume() for devices
+ 	 * that suspended with irqs off ... no overall powerup.
+ 	 */
+-	device_power_up();
++	device_power_up(in_suspend ? PMSG_RECOVER : PMSG_RESTORE);
+  Enable_irqs:
+ 	local_irq_enable();
+ 	return error;
+@@ -280,7 +280,7 @@ int hibernation_snapshot(int platform_mo
+  Finish:
+ 	platform_finish(platform_mode);
+  Resume_devices:
+-	device_resume();
++	device_resume(in_suspend ? PMSG_RECOVER : PMSG_RESTORE);
+  Resume_console:
+ 	resume_console();
+  Close:
+@@ -301,7 +301,7 @@ static int resume_target_kernel(void)
+ 	int error;
+ =
+
+ 	local_irq_disable();
+-	error =3D device_power_down(PMSG_PRETHAW);
++	error =3D device_power_down(PMSG_QUIESCE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting resume\n");
+@@ -329,7 +329,7 @@ static int resume_target_kernel(void)
+ 	swsusp_free();
+ 	restore_processor_state();
+ 	touch_softlockup_watchdog();
+-	device_power_up();
++	device_power_up(PMSG_THAW);
+  Enable_irqs:
+ 	local_irq_enable();
+ 	return error;
+@@ -350,7 +350,7 @@ int hibernation_restore(int platform_mod
+ =
+
+ 	pm_prepare_console();
+ 	suspend_console();
+-	error =3D device_suspend(PMSG_PRETHAW);
++	error =3D device_suspend(PMSG_QUIESCE);
+ 	if (error)
+ 		goto Finish;
+ =
+
+@@ -362,7 +362,7 @@ int hibernation_restore(int platform_mod
+ 		enable_nonboot_cpus();
+ 	}
+ 	platform_restore_cleanup(platform_mode);
+-	device_resume();
++	device_resume(PMSG_RECOVER);
+  Finish:
+ 	resume_console();
+ 	pm_restore_console();
+@@ -419,7 +419,7 @@ int hibernation_platform_enter(void)
+  Finish:
+ 	hibernation_ops->finish();
+  Resume_devices:
+-	device_resume();
++	device_resume(PMSG_RESTORE);
+  Resume_console:
+ 	resume_console();
+  Close:
+Index: linux-2.6/kernel/power/main.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -239,7 +239,7 @@ static int suspend_enter(suspend_state_t
+ 	if (!suspend_test(TEST_CORE))
+ 		error =3D suspend_ops->enter(state);
+ =
+
+-	device_power_up();
++	device_power_up(PMSG_RESUME);
+  Done:
+ 	arch_suspend_enable_irqs();
+ 	BUG_ON(irqs_disabled());
+@@ -291,7 +291,7 @@ int suspend_devices_and_enter(suspend_st
+ 	if (suspend_ops->finish)
+ 		suspend_ops->finish();
+  Resume_devices:
+-	device_resume();
++	device_resume(PMSG_RESUME);
+  Resume_console:
+ 	resume_console();
+  Close:
+Index: linux-2.6/arch/x86/kernel/apm_32.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/arch/x86/kernel/apm_32.c
++++ linux-2.6/arch/x86/kernel/apm_32.c
+@@ -1208,9 +1208,9 @@ static int suspend(int vetoable)
+ 	if (err !=3D APM_SUCCESS)
+ 		apm_error("suspend", err);
+ 	err =3D (err =3D=3D APM_SUCCESS) ? 0 : -EIO;
+-	device_power_up();
++	device_power_up(PMSG_RESUME);
+ 	local_irq_enable();
+-	device_resume();
++	device_resume(PMSG_RESUME);
+ 	queue_event(APM_NORMAL_RESUME, NULL);
+  out:
+ 	spin_lock(&user_list_lock);
+Index: linux-2.6/drivers/base/power/power.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -4,7 +4,7 @@
+  * main.c
+  */
+ =
+
+-extern struct list_head dpm_active;	/* The active device list */
++extern struct list_head dpm_list;	/* The active device list */
+ =
+
+ static inline struct device *to_device(struct list_head *entry)
+ {
+Index: linux-2.6/drivers/base/power/trace.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/base/power/trace.c
++++ linux-2.6/drivers/base/power/trace.c
+@@ -188,9 +188,9 @@ static int show_file_hash(unsigned int v
+ static int show_dev_hash(unsigned int value)
+ {
+ 	int match =3D 0;
+-	struct list_head * entry =3D dpm_active.prev;
++	struct list_head * entry =3D dpm_list.prev;
+ =
+
+-	while (entry !=3D &dpm_active) {
++	while (entry !=3D &dpm_list) {
+ 		struct device * dev =3D to_device(entry);
+ 		unsigned int hash =3D hash_string(DEVSEED, dev->bus_id, DEVHASH);
+ 		if (hash =3D=3D value) {
