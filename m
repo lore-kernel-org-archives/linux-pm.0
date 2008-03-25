@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
- hibernation callbacks (rev. 3)
-Date: Tue, 25 Mar 2008 10:24:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803251020530.4838-100000__1991.5941441015$1206455195$gmane$org@iolanthe.rowland.org>
-References: <200803251437.17268.oliver@neukum.org>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re:
+	=?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
+	=?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28?=
+	=?iso-8859-1?q?rev=2E_2=29?=
+Date: Tue, 25 Mar 2008 15:24:33 +0100
+Message-ID: <200803251524.34147.oliver__42774.7729038403$1206455231$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0803251011110.4838-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803251437.17268.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803251011110.4838-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 Mar 2008, Oliver Neukum wrote:
-
-> Am Dienstag, 25. M=E4rz 2008 13:40:53 schrieb Rafael J. Wysocki:
-> > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> > > Am Montag 24 M=E4rz 2008 schrieb Rafael J. Wysocki:
+Am Dienstag, 25. M=E4rz 2008 15:19:45 schrieb Alan Stern:
+> On Tue, 25 Mar 2008, Oliver Neukum wrote:
 > =
 
-> > > > + *=A0=A0=A0=A0=A0after @prepare() returns. =A0If @prepare() detect=
-s a situation it cannot
-> > > > + *=A0=A0=A0=A0=A0handle (e.g. registration of a child already in p=
-rogress), it may return
-> > > > + *=A0=A0=A0=A0=A0-EAGAIN, so that the PM core can execute it once =
-again (e.g. after the
-> > > > + *=A0=A0=A0=A0=A0new child has been registered) to recover from th=
-e race condition. This
-> > > > + *=A0=A0=A0=A0=A0method is executed for all kinds of suspend trans=
-itions and is followed
-> > > > + *=A0=A0=A0=A0=A0by one of the suspend callbacks: @suspend(), @fre=
-eze(), or @poweroff().
-> > > =
-
-> > > This could be understood so that disconnect() cannot be called.
+> > Am Dienstag, 25. M=C3=A4rz 2008 14:06:15 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
 > > =
 
-> > At what time exactly?
+> > > > A device that cannot wake up is unusable. Shouldn't the pm core dis=
+connect()
+> > > > such a device?
 > =
 
-> I see no locking that would would prevent disconnect() in the window betw=
-een
-> prepare() and suspend()/...
+> It's not safe for the PM core to do such things unilaterally. =A0The =
 
-There is no such locking.  It's perfectly legal for a device to be =
+> decision to unregister a device should be made by the driver or the =
 
-unregistered between prepare() and suspend().  I suppose it wouldn't =
+> subsystem.
 
-hurt to add a general comment explaining that a device can be =
+Why? You can trigger it from user space via sysfs and in many cases
+suspending to disk will disconnect all devices on a bus, so I'd say a
+failure to resume is just a limited subcase of a device vanishing during
+sleep.
 
-unregistered at any time except when one of its methods is running.
-
-Alan Stern
+	Regards
+		Oliver
