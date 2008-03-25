@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
- hibernation callbacks (rev. 3)
-Date: Tue, 25 Mar 2008 11:12:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803251111260.4838-100000__3718.04895480654$1206458097$gmane$org@iolanthe.rowland.org>
-References: <200803242318.21052.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re:
+	=?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
+	=?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28?=
+	=?iso-8859-1?q?rev=2E_2=29?=
+Date: Tue, 25 Mar 2008 20:48:42 +0100
+Message-ID: <200803252048.43792.oliver__46422.9602403522$1206474786$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0803251030220.4838-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803242318.21052.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0803251030220.4838-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 Mar 2008, Rafael J. Wysocki wrote:
+Am Dienstag, 25. M=E4rz 2008 15:33:22 schrieb Alan Stern:
+> > so I'd say a
+> > failure to resume is just a limited subcase of a device vanishing during
+> > sleep.
+> =
 
-> The patch below should address all of your comments above.  It also seems to
-> work.
-> 
-> If it looks good to you, please let me know and I'll repost it in a new thread
-> along with the platform and PCI patches adapted to it.
+> I'll go along with that. =A0If a device vanishes during sleep, the PM =
 
-I don't see anything else to change.  ACK.
+> core isn't responsible for unregistering it -- the device's subsystem =
 
-Alan Stern
+> is.
+
+Yes, that makes sense. You are right.
+
+	Regards
+		Oliver
