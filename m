@@ -1,19 +1,18 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 25 Mar 2008 15:25:10 +0800
-Message-ID: <1206429910.29518.32.camel__19037.7561877996$1206430154$gmane$org@caritas-dev.intel.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
-	<1205286326.29069.16.camel@caritas-dev.intel.com>
-	<m1abl4znw6.fsf@ebiederm.dsl.xmission.com>
-	<20080312193740.GE13549@redhat.com>
-	<1205481808.867.0.camel@caritas-dev.intel.com>
-	<20080321191226.GA12609@redhat.com>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re:
+	=?utf-8?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_new_top?=
+	=?utf-8?q?_level_suspend=09and_hibernation_callbacks_=28rev=2E_2?=
+	=?utf-8?q?=29?=
+Date: Tue, 25 Mar 2008 10:49:24 +0100
+Message-ID: <200803251049.27696.oliver__21009.7692943693$1206438956$gmane$org@neukum.org>
+References: <200803210101.04706.rjw@sisk.pl>
+	<1206058863.16475.165.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080321191226.GA12609@redhat.com>
+In-Reply-To: <1206058863.16475.165.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,84 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2008-03-21 at 15:12 -0400, Vivek Goyal wrote:
-[...]
-> Hi Huang,
-> 
-> I am kind of ok with both the methods.
-> 
-> - Communicate information between two kernels using an ELF NOTE
->   prepared by kernel.
-> 
-> - Communicate information between user space tools using initrd.
-
-I think the ELF_NOTES mechanism is sufficient for communication between
-two kernel. Because it can be written from user space tool in the kernel
-A (/sbin/kexec via sys_kexec_load), and read from user space tool in the
-kernel B (via /proc/vmcore). It can be used as user space communication
-mechanism. So I think it may be not necessary to communicate with
-initrd.
-
-If we want to load the hibernated image with sys_kexec_load (/sbin/kexec
--l), we must add "multiple stages loading" feature to sys_kexec_load.
-Because the segments in the hibernated image can exceed
-KEXEC_SEGMENT_MAX (16) easily, considering there will be many memory
-holes when free pages are excluded. Multiple sys_kexec_load must be used
-to load a normal hibernated image. If multiple stage loading is
-unavoidable, I think the better method to communicate information like
-"jump back entry" and "backup pages map" is "multiple stage loading"
-like you said in previous mail. And they can be encapsulated as
-ELF_NOTES. So the only information need to be passed on stack is address
-of ELF core header.
-
-> But which method to use will depend on what information we want to 
-> exchange between two kernels. 
-> 
-> For example, re-entry points can be on stack or in ELF NOTE.
-> 
-> Backup page map probably can be communicated using initrd as only user
-> space need to access that (ELF Core headers can be put in a memory area
-> which is not swapped during transition from kernel A to B. This way
-> kernel B never needs to know that kernel A had done some swapping of
-> pages?). 
-
-ELF core headers are in destination memory range of kernel B, so they
-can be accessed by kernel B directly without knowing pages swapping in
-kernel A.
-
-> So far I have understood only following.
-> 
-> 1. We need to pass around entry/re-entry points between kernels.
-> 
-> 2. We need to pass backup pages map from kernel A to kernel B, so that user
->   space tool can do filtering.
-> 
-> 3. We need to pass address of ELF core headers from kernel A to kernel B so
->   that a valid vmcore of kernel A can be exported.
-> 
-> 	- For first time boot of kernel B, address of ELF core header is
-> 	  passed through command line.
-> 
-> 	- For re-entry into B, ELF core header address can be passed
->  	  using some register, or on stack or using kernel ELF NOTE.
-> 
-> What else? What information do we need to communicate from kernel B to 
-> kernel A or from kernel C to kernel A?
-> 
-> I am sure that you have told it in the past. Just that I don't recollect
-> it.
-
-For now, there is no information need to be passed from kernel B/C to
-kernel A. But I think in the future, there should be some ACPI related
-information need to be passed in this way, such as from kernel C to
-kernel A: whether system is restored from ACPI S4 or ACPI S5. So I think
-it is necessary to make it possible to pass some information from kernel
-B/C to kernel A. But I think an ELF core header and some memory is
-sufficient to do this.
-
-Best Regards,
-Huang Ying
+QW0gRnJlaXRhZywgMjEuIE3DpHJ6IDIwMDggMDE6MjE6MDMgc2NocmllYiBKb2hhbm5lcyBCZXJn
+Ogo+ID4gKyAqIEFsbCBvZiB0aGUgYWJvdmUgY2FsbGJhY2tzLCBleGNlcHQgZm9yIEBjb21wbGV0
+ZSgpLCByZXR1cm4gZXJyb3IgY29kZXMuCj4gPiArICogSG93ZXZlciwgdGhlIGVycm9yIGNvZGVz
+IHJldHVybmVkIGJ5IHRoZSByZXN1bWUgb3BlcmF0aW9ucywgQHJlc3VtZSgpLAo+ID4gKyAqIEB0
+aGF3KCksIGFuZCBAcmVzdG9yZSgpLCBhcmUgb25seSBwcmludGVkIGluIHRoZSBzeXN0ZW0gbG9n
+cywgc2luY2UgdGhlIFBNCj4gPiArICogY29yZSBjYW5ub3QgZG8gYW55dGhpbmcgZWxzZSBhYm91
+dCB0aGVtLgo+IAo+IFdoeSBib3RoZXIgYW5kIG5vdCBqdXN0IG1ha2UgdGhlbSByZXR1cm4gdm9p
+ZCwgdGhlIGVycm9yIHByaW50aW5nIGNhbgo+IG1vc3QgbGlrZWx5IGJlIGRvbmUgbXVjaCBtdWNo
+IGJldHRlciBpbiB0aGUgY2FsbGJhY2sgc2luY2UgdGhhdCBwb3NzaWJseQo+IGhhcyBpbmZvcm1h
+dGlvbiBvbiB3aHkgaXQgZmFpbGVkLgoKQSBkZXZpY2UgdGhhdCBjYW5ub3Qgd2FrZSB1cCBpcyB1
+bnVzYWJsZS4gU2hvdWxkbid0IHRoZSBwbSBjb3JlIGRpc2Nvbm5lY3QoKQpzdWNoIGEgZGV2aWNl
+PwoKCVJlZ2FyZHMKCQlPbGl2ZXIKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
+bGlzdGluZm8vbGludXgtcG0=
