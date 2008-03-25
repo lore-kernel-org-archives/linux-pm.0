@@ -1,17 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 3)
-Date: Tue, 25 Mar 2008 14:37:16 +0100
-Message-ID: <200803251437.17268.oliver__14699.2165515714$1206452422$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0803241519090.24400-100000@iolanthe.rowland.org>
-	<200803251255.31482.oliver@neukum.org>
-	<200803251340.55210.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re:
+ =?utf-8?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_new_top?=
+ =?utf-8?q?_level_suspend=09and_hibernation_callbacks_=28rev=2E_2=29?=
+Date: Tue, 25 Mar 2008 10:19:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803251011110.4838-100000__36388.6600280695$1206455001$gmane$org@iolanthe.rowland.org>
+References: <200803251415.09088.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803251340.55210.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200803251415.09088.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,65 +19,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 25. M=E4rz 2008 13:40:53 schrieb Rafael J. Wysocki:
-> On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> > Am Montag 24 M=E4rz 2008 schrieb Rafael J. Wysocki:
+On Tue, 25 Mar 2008, Oliver Neukum wrote:
 
-> > > + *=A0=A0=A0=A0=A0after @prepare() returns. =A0If @prepare() detects =
-a situation it cannot
-> > > + *=A0=A0=A0=A0=A0handle (e.g. registration of a child already in pro=
-gress), it may return
-> > > + *=A0=A0=A0=A0=A0-EAGAIN, so that the PM core can execute it once ag=
-ain (e.g. after the
-> > > + *=A0=A0=A0=A0=A0new child has been registered) to recover from the =
-race condition. This
-> > > + *=A0=A0=A0=A0=A0method is executed for all kinds of suspend transit=
-ions and is followed
-> > > + *=A0=A0=A0=A0=A0by one of the suspend callbacks: @suspend(), @freez=
-e(), or @poweroff().
-> > =
-
-> > This could be understood so that disconnect() cannot be called.
+> Am Dienstag, 25. M=C3=A4rz 2008 14:06:15 schrieb Rafael J. Wysocki:
+> > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
 > =
 
-> At what time exactly?
+> > > A device that cannot wake up is unusable. Shouldn't the pm core disco=
+nnect()
+> > > such a device?
 
-I see no locking that would would prevent disconnect() in the window between
-prepare() and suspend()/...
-  =
+It's not safe for the PM core to do such things unilaterally.  The =
 
-> > > + *=A0=A0=A0=A0=A0The PM core executes @prepare() for all devices bef=
-ore starting to
-> > > + *=A0=A0=A0=A0=A0execute suspend callbacks for any of them, so drive=
-rs may assume all of
-> > > + *=A0=A0=A0=A0=A0the other devices to be present and functional whil=
-e @prepare() is being
-> > > + *=A0=A0=A0=A0=A0executed. =A0However, they may NOT assume anything =
-about the availability
-> > > + *=A0=A0=A0=A0=A0of the user space at that time.
-> > =
+decision to unregister a device should be made by the driver or the =
 
-> > Probably it should be mentioned that this is the time to allocate memory
-> > if you have to.
+subsystem.
+
+(The only problem is that it's impossible to unregister a device from =
+
+within its suspend or resume methods.  Perhaps there should be a way =
+
+for the driver to tell the PM core that the core should unregister the =
+
+device as soon as the method returns.  I don't know if such a facility =
+
+would get used...)
+
+> > Well, if ->resume() returns an error, the driver already knows there's a
+> > problem and it can act upon that, at least in principle.
 > =
 
-> Well, not exactly.  Afterwards you cannot use GFP_KERNEL allocations, but
-> GFP_NOIO should still work, although for hibernation it's quite possible =
-that
-> they'll fail if substantial amounts of memory are requested.
+> Then why return an error? If a driver returns an error I would assume that
+> to indicate an irrecoverable error.
+
+The PM core prints a warning in the system log whenever an error is =
+
+returned.  There isn't much more it can do.
+
+> > However, the PM core probably shouldn't try to resume the children of a=
+ failing
+> > device.  Also, if ->resume_noirq() fails, it probably is not a good ide=
+a to
+> > call ->resume() and ->complete() for the same device and for it's child=
+ren.
 > =
 
-> > And it is too late to request firmware. =
+> Exactly. But we need to define what happens in these cases. If we simply
+> ignore the errors, the drivers must be able to deal with IO to half suspe=
+nded
+> devices.
 
-> =
+Just so -- it's up to the drivers to deal with this sort of thing.  The =
 
-> Yes.
+PM core can't know the details of what should be done in each case.
 
-This is better documented explicitly.
+For example, if a USB hub can't be resumed then usbcore marks all of
+its descendants with USB_STATE_NOTATTACHED.  When the children's resume
+methods are called, they return without trying to do anything.  Later
+on khubd takes care of unregistering everything.
 
-	Regards
-		Oliver
+Alan Stern
