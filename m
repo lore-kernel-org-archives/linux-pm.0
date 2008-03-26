@@ -1,17 +1,15 @@
-From: Corentin CHARY <corentincj@iksaif.net>
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for
-	2.6.25-rc6)
-Date: Wed, 26 Mar 2008 16:45:00 +0100
-Message-ID: <200803261645.01343.corentincj__5336.30364011532$1206575975$gmane$org@iksaif.net>
-References: <200803180510.47670.lenb@kernel.org>
-	<20080326081653.GA8247@elte.hu>
-	<200803261132.21448.lenb@kernel.org>
-Reply-To: corentincj@iksaif.net
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and hibernation callbacks (rev. 4)
+Date: Thu, 27 Mar 2008 00:59:13 +0100
+Message-ID: <200803270059.14417.rjw__16307.7611513019$1206576066$gmane$org@sisk.pl>
+References: <200803262353.30566.rjw@sisk.pl> <200803270003.51570.rjw@sisk.pl>
+	<47EADBD0.6040400@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803261132.21448.lenb@kernel.org>
+In-Reply-To: <47EADBD0.6040400@suse.de>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,35 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 March 2008 16:32:20 Len Brown wrote:
-> So if this is correct or not depends on what the BIOS programmer
-> for the Asus A1x choose to write. =A0Perhaps Corentin 'Iksaif' CHARY
-> can confirm if the driver is working properly on that system.
+On Thursday, 27 of March 2008, Alexey Starikovskiy wrote:
+> Rafael J. Wysocki wrote:
+> > This is the 4th revision of the patch.
+> > + * struct pm_noirq_ops - device PM callbacks executed with interrupts disabled
+> > + *
+> > + * The following callbacks included in 'struct pm_noirq_ops' are executed with
+> > + * the nonboot CPUs switched off and with interrupts disabled on the only
+> > + * functional CPU.  They also are executed with the PM core list of devices
+> > + * locked, so they must NOT unregister any devices.
+> > + *
+> > + * @suspend_noirq: Complete the operations of ->suspend() by carrying out any
+> > + *	actions required for suspending the device that need interrupts to be
+> > + *	disabled
+> IMHO, no need to add _noirq in both struct and struct members.
+> pm_noirq->suspend_noirq does not look good...
 
-Hi,
-Sorry I don't have an A1x to test that, and this was here a long time befor=
-e I start working on acpi4asus.
-But, see that grep :
+I added the _noirq part to the names of the callbacks, since otherwise the
+second struct looks confusingly similar to the first one.
 
-chary_c@foo /usr/src/linux/drivers/misc $ grep ISA *
-asus-laptop.c:      "\\_SB.PCI0.ISA.EC0._Q10",  /* A1x */
-thinkpad_acpi.c:IBM_HANDLE(ec, root, "\\_SB.PCI0.ISA.EC0",      /* 240, 240=
-x */
-thinkpad_acpi.c:           "\\_SB.PCI.ISA.EC",  /* 570 */
-thinkpad_acpi.c:           "\\_SB.PCI0.ISA0.EC0",       /* 600e/x, 770e, 77=
-0x */
-thinkpad_acpi.c:           "\\_SB.PCI0.ISA.EC", /* A21e, A2xm/p, T20-22, X2=
-0-21 */
-thinkpad_acpi.c:           "\\_SB.PCI.ISA.SLCE",        /* 570 */
+I also could have put the _noirq callbacks into the first struct, but that
+would have been wasteful, since device types and device classes don't
+use them.  Also, the majority of bus types won't use them and the vast majority
+of drivers won't use them as well.
 
-So it seems to work for thinkpads.
-I think this patch isn't needed.
-
--- =
-
-Corentin 'Iksaif' CHARY
-http://xf.iksaif.net
+Thanks,
+Rafael
