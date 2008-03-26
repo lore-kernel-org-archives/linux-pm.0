@@ -1,18 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re:
-	=?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
-	=?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28?=
-	=?iso-8859-1?q?rev=2E_2=29?=
-Date: Tue, 25 Mar 2008 21:56:11 +0100
-Message-ID: <200803252156.12185.rjw__18739.5839406692$1206478951$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803251030220.4838-100000@iolanthe.rowland.org>
-	<200803252141.49049.rjw@sisk.pl>
-	<200803252149.37552.oliver@neukum.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2.6.25-rc3] cpuidle: fix cpuidle time and
+	usage overflow
+Date: Wed, 26 Mar 2008 00:46:41 -0400
+Message-ID: <200803260046.41250.lenb@kernel.org>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	<1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
+	<1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803252149.37552.oliver@neukum.org>
+In-Reply-To: <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,47 +21,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
+To: yi.y.yang@intel.com
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> Am Dienstag, 25. M=E4rz 2008 21:41:48 schrieb Rafael J. Wysocki:
-> > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> > > Am Dienstag, 25. M=E4rz 2008 15:33:22 schrieb Alan Stern:
-> > > > > so I'd say a
-> > > > > failure to resume is just a limited subcase of a device vanishing=
- during
-> > > > > sleep.
-> > > > =
+applied
 
-> > > > I'll go along with that. =A0If a device vanishes during sleep, the =
-PM =
+thanks,
+-len
 
-> > > > core isn't responsible for unregistering it -- the device's subsyst=
-em =
-
-> > > > is.
-> > > =
-
-> > > Yes, that makes sense. You are right.
-> > =
-
-> > Still, if ->resume() returns an error, does it make sense, from the PM =
-core's
-> > point of view, to execute ->complete() for that device, for example?
-> =
-
-> IMO you must always keep the ordering invariant. If a parent returns an e=
-rror
-> the PM core must not wake its children.
-
-I'm agreeing here, but one of the previous Alan's comments suggests he has a
-differing opinion.  Alan?
-
-I'm considering to make the PM core skip the resuming of the children of
-devices that failed to resume and skip calling ->complete() for that devices
-and their children.
-
-Thanks,
-Rafael
+On Sunday 24 February 2008, Yi Yang wrote:
+> cpuidle C-state sysfs node time and usage are very easy to overflow because
+> they are all of unsigned int type, time will overflow within about two hours,
+> usage will take longer time to overflow, but they are increasing for ever.
+> 
+> This patch will convert them to unsigned long long.
+> 
+> 
+> Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+> ---
+>  drivers/cpuidle/cpuidle.c |    2 +-
+>  drivers/cpuidle/sysfs.c   |   10 ++++++++--
+>  include/linux/cpuidle.h   |    4 ++--
+> 
+> --- a/include/linux/cpuidle.h	2008-02-25 02:31:26.000000000 -0500
+> +++ b/include/linux/cpuidle.h	2008-02-25 04:30:24.000000000 -0500
+> @@ -38,8 +38,8 @@ struct cpuidle_state {
+>  	unsigned int	power_usage; /* in mW */
+>  	unsigned int	target_residency; /* in US */
+>  
+> -	unsigned int	usage;
+> -	unsigned int	time; /* in US */
+> +	unsigned long long	usage;
+> +	unsigned long long	time; /* in US */
+>  
+>  	int (*enter)	(struct cpuidle_device *dev,
+>  			 struct cpuidle_state *state);
+> --- a/drivers/cpuidle/cpuidle.c	2008-02-25 02:37:14.000000000 -0500
+> +++ b/drivers/cpuidle/cpuidle.c	2008-02-25 04:29:19.000000000 -0500
+> @@ -67,7 +67,7 @@ static void cpuidle_idle_call(void)
+>  	/* enter the state and update stats */
+>  	dev->last_residency = target_state->enter(dev, target_state);
+>  	dev->last_state = target_state;
+> -	target_state->time += dev->last_residency;
+> +	target_state->time += (unsigned long long)dev->last_residency;
+>  	target_state->usage++;
+>  
+>  	/* give the governor an opportunity to reflect on the outcome */
+> --- a/drivers/cpuidle/sysfs.c	2008-02-25 02:33:14.000000000 -0500
+> +++ b/drivers/cpuidle/sysfs.c	2008-02-25 03:10:50.000000000 -0500
+> @@ -218,6 +218,12 @@ static ssize_t show_state_##_name(struct
+>  	return sprintf(buf, "%u\n", state->_name);\
+>  }
+>  
+> +#define define_show_state_ull_function(_name) \
+> +static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
+> +{ \
+> +	return sprintf(buf, "%llu\n", state->_name);\
+> +}
+> +
+>  #define define_show_state_str_function(_name) \
+>  static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
+>  { \
+> @@ -228,8 +234,8 @@ static ssize_t show_state_##_name(struct
+>  
+>  define_show_state_function(exit_latency)
+>  define_show_state_function(power_usage)
+> -define_show_state_function(usage)
+> -define_show_state_function(time)
+> +define_show_state_ull_function(usage)
+> +define_show_state_ull_function(time)
+>  define_show_state_str_function(name)
+>  define_show_state_str_function(desc)
+>  
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
