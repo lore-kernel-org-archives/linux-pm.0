@@ -1,17 +1,15 @@
-From: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for
-	2.6.25-rc6)
-Date: Wed, 26 Mar 2008 22:21:42 +0300
-Message-ID: <47EAA246.3050707__10241.9712850407$1206559506$gmane$org@gmail.com>
-References: <200803180510.47670.lenb@kernel.org>
-	<200803260956.55804.bjorn.helgaas@hp.com>
-	<47EA86D9.7040404@gmail.com>
-	<200803261247.31531.bjorn.helgaas@hp.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 3)
+Date: Wed, 26 Mar 2008 21:26:56 +0100
+Message-ID: <200803262126.58357.rjw__27632.4844024659$1206563393$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803261247.31531.bjorn.helgaas@hp.com>
+In-Reply-To: <Pine.LNX.4.44L0.0803261001080.4755-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,43 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Corentin CHARY <corentincj@iksaif.net>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Wednesday 26 March 2008 11:24:41 am Alexey Starikovskiy wrote:
->   
->> Bjorn Helgaas wrote:
->>     
->>> I'm curious about how this works.  I disassembled the DSDT from
->>> http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
->>> at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
->>> the _PRT contains "_SB" and "ISA" (no trailing underscores):
->>>
->>>                 Package (0x04)
->>>                 {
->>>                     0x000DFFFF, 
->>>                     0x00, 
->>>                     \_SB.PCI0.ISA.LNKA, 
->>>                     0x00
->>>                 }
->>>
->>> But by the time we get to acpi_pci_irq_add_entry(), we've added the
->>> underscores somewhere (see
->>> http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
->>>
->>>   0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
->>>
->>> I don't know where this happens, but it certainly confused me, and
->>> it seems like it could lead to other bugs.
->>>   
->>>       
->> ACPI is supposed to add trailing underscore for pad all names to 4 bytes.
->> So ISA will be padded to ISA_.
->>     
->
-> The questions are "where does this happen?" and "why does it not
-> apply to other things like asus_acpi.c?"
->   
-1. drivers/acpi/namespace/nsutils.c:419
+On Wednesday, 26 of March 2008, Alan Stern wrote:
+> On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
+> 
+> > > I just thought of another problem.  At the point where
+> > > local_irq_disable() is called, in between device_suspend() and
+> > > device_power_down(), it is possible in a preemptible kernel that
+> > > another task is holding dpm_list_mtx and is in the middle of updating
+> > > the list pointers.  This would mess up the traversal in
+> > > device_power_down().
+> > > 
+> > > I'm not sure about the best way to prevent this.  Is it legal to call
+> > > unlock_mutex() while interrupts or preemption are disabled?
+> > 
+> > Well, I think it is, but I'm not sure how that can help.
+> > 
+> > To prevent the race from happening, we can lock dpm_list_mtx before switching
+> > interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+> > kernel/power/disk.c .
+> 
+> That's right.  And once interrupts are turned off you should unlock 
+> dpm_list_mtx again, in case a noirq method wants to unregister a 
+> device.
+
+Why would a noirq method want to do that?  IMO, it's not a big deal if noirq
+methods are not allowed to unregister devices.
+
+> Hence my question: Is it legal to call unlock_mutex() while interrupts are
+> disabled? 
+
+Well, I suspect that will confuse lockdep quite a bit.  Otherwise, I don't see
+a problem with it (it's just changing the value of a shared variable after
+all).
+
+Thanks,
+Rafael
