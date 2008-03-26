@@ -1,14 +1,16 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
- hibernation callbacks (rev. 3)
-Date: Wed, 26 Mar 2008 10:03:38 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803261001080.4755-100000__11028.4544564367$1206540742$gmane$org@iolanthe.rowland.org>
-References: <200803252135.04247.rjw@sisk.pl>
+Subject: Re:
+ =?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
+ =?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28rev=2E_?=
+ =?iso-8859-1?q?2=29?=
+Date: Wed, 26 Mar 2008 10:10:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803261003540.4755-100000__26524.7510084466$1206541160$gmane$org@iolanthe.rowland.org>
+References: <200803252156.12185.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803252135.04247.rjw@sisk.pl>
+In-Reply-To: <200803252156.12185.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +21,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
 On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
 
-> > I just thought of another problem.  At the point where
-> > local_irq_disable() is called, in between device_suspend() and
-> > device_power_down(), it is possible in a preemptible kernel that
-> > another task is holding dpm_list_mtx and is in the middle of updating
-> > the list pointers.  This would mess up the traversal in
-> > device_power_down().
-> > 
-> > I'm not sure about the best way to prevent this.  Is it legal to call
-> > unlock_mutex() while interrupts or preemption are disabled?
-> 
-> Well, I think it is, but I'm not sure how that can help.
-> 
-> To prevent the race from happening, we can lock dpm_list_mtx before switching
-> interrupts off in kernel/power/main.c:suspend_enter() and analogously in
-> kernel/power/disk.c .
+> On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> > Am Dienstag, 25. M=E4rz 2008 21:41:48 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> > > > Am Dienstag, 25. M=E4rz 2008 15:33:22 schrieb Alan Stern:
+> > > > > > so I'd say a
+> > > > > > failure to resume is just a limited subcase of a device vanishi=
+ng during
+> > > > > > sleep.
+> > > > > =
 
-That's right.  And once interrupts are turned off you should unlock 
-dpm_list_mtx again, in case a noirq method wants to unregister a 
-device.  Hence my question: Is it legal to call unlock_mutex() while 
-interrupts are disabled?
+> > > > > I'll go along with that. =A0If a device vanishes during sleep, th=
+e PM =
+
+> > > > > core isn't responsible for unregistering it -- the device's subsy=
+stem =
+
+> > > > > is.
+> > > > =
+
+> > > > Yes, that makes sense. You are right.
+> > > =
+
+> > > Still, if ->resume() returns an error, does it make sense, from the P=
+M core's
+> > > point of view, to execute ->complete() for that device, for example?
+> > =
+
+> > IMO you must always keep the ordering invariant. If a parent returns an=
+ error
+> > the PM core must not wake its children.
+
+Don't think of it that way.  The PM core doesn't wake anything.  It
+merely notifies drivers that the system sleep is ending, so that the
+drivers can wake their devices.  It's up to the driver to detect
+whether the parent failed to resume, in which case the driver should
+take appropriate action.
+
+The situation is no different from what happens when the user tries to =
+
+access a mounted USB disk drive after the USB cable has been unplugged.  =
+
+The drivers take care of everything.
+
+> I'm agreeing here, but one of the previous Alan's comments suggests he ha=
+s a
+> differing opinion.  Alan?
+> =
+
+> I'm considering to make the PM core skip the resuming of the children of
+> devices that failed to resume and skip calling ->complete() for that devi=
+ces
+> and their children.
+
+While that might in principle be a reasonable thing to do, it's =
+
+different from how the PM core has behaved in the past.  I don't see =
+
+any point in making a change like that now.
 
 Alan Stern
