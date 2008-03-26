@@ -1,16 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks (rev. 4)
-Date: Thu, 27 Mar 2008 10:43:02 +1100
-Message-ID: <1206574982.6926.53.camel@pasglop>
-References: <200803262353.30566.rjw@sisk.pl>
-	<200803270003.51570.rjw@sisk.pl>  <47EADBD0.6040400@suse.de>
-Reply-To: benh@kernel.crashing.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Suspend and hibernation patchset against -rc7
+Date: Thu, 27 Mar 2008 00:51:31 +0100
+Message-ID: <200803270051.31778.rjw__49554.6383121566$1206575697$gmane$org@sisk.pl>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47EADBD0.6040400@suse.de>
+In-Reply-To: <200803172317.33745.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday, 17 of March 2008, Rafael J. Wysocki wrote:
+> On Wednesday, 12 of March 2008, Rafael J. Wysocki wrote:
+> >
+> > For everyone interested, I have put together a patchset containing some "fresh"
+> > patches related to suspend and hibernation, on top of 2.6.25-rc5, located at:
+> > 
+> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc5/patches/
+> 
+> There's a new patchset against 2.6.25-rc6 at:
+> 
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc6/patches/
 
-On Thu, 2008-03-27 at 02:27 +0300, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> > This is the 4th revision of the patch.
-> > + * struct pm_noirq_ops - device PM callbacks executed with interrupts disabled
-> > + *
-> > + * The following callbacks included in 'struct pm_noirq_ops' are executed with
-> > + * the nonboot CPUs switched off and with interrupts disabled on the only
-> > + * functional CPU.  They also are executed with the PM core list of devices
-> > + * locked, so they must NOT unregister any devices.
-> > + *
-> > + * @suspend_noirq: Complete the operations of ->suspend() by carrying out any
-> > + *	actions required for suspending the device that need interrupts to be
-> > + *	disabled
-> IMHO, no need to add _noirq in both struct and struct members.
-> pm_noirq->suspend_noirq does not look good...
+There's a new patchset against 2.6.25-rc7 at:
 
-There is absolutely no point getting a second struct anymore.
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc7/patches/
 
-BTW. I haven't had a chance to review the rest of the discussion on that
-thread yet, been busy with other things, I'll try to go back to it today
-or tomorrow.
+It contains some more patches than the previous one.  Most importantly,
+there are pm-remove-destroy_suspended_device.patch (from me) and
+ACPI-force-acpi_new_pts_ordering-for-ASUS-A6VC-laptop.patch (from Shaohua) in
+it.
 
-Cheers,
-Ben.
+I still have not decided what to do with patches 01-03.  Patch 03 will probably
+be sent upstream soon, as well as patches 12 and 14.
+
+Patch 04 is currently in the "test" branch of the ACPI tree and has been
+tested already for some time in -mm and linux-next.
+
+Patches 05-11 are in the Greg's tree and have been tested in -mm and
+linux-next.
+
+Patch 13 is in -mm.
+
+Patches 15-17 are new, but they don't crash my box, so hopefully they're not
+broken. ;-)
+ 
+Everything has been compiled and (lightly) tested on HP nx6325 (64-bit).
+
+Thanks,
+Rafael
