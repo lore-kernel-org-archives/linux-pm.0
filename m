@@ -1,14 +1,14 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc6
-Date: Wed, 26 Mar 2008 09:16:53 +0100
-Message-ID: <20080326081653.GA8247__20988.4002841592$1206519565$gmane$org@elte.hu>
-References: <200803180510.47670.lenb@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+ hibernation callbacks (rev. 3)
+Date: Wed, 26 Mar 2008 10:03:38 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803261001080.4755-100000__11028.4544564367$1206540742$gmane$org@iolanthe.rowland.org>
+References: <200803252135.04247.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200803180510.47670.lenb@kernel.org>
+In-Reply-To: <200803252135.04247.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
 
-* Len Brown <lenb@kernel.org> wrote:
-
-> Hi Linus,
+> > I just thought of another problem.  At the point where
+> > local_irq_disable() is called, in between device_suspend() and
+> > device_power_down(), it is possible in a preemptible kernel that
+> > another task is holding dpm_list_mtx and is in the middle of updating
+> > the list pointers.  This would mess up the traversal in
+> > device_power_down().
+> > 
+> > I'm not sure about the best way to prevent this.  Is it legal to call
+> > unlock_mutex() while interrupts or preemption are disabled?
 > 
-> please pull from: 
+> Well, I think it is, but I'm not sure how that can help.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> 
-> This will update the files shown below.
+> To prevent the race from happening, we can lock dpm_list_mtx before switching
+> interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+> kernel/power/disk.c .
 
-btw., saw this ACPI-ish commit in rc7:
+That's right.  And once interrupts are turned off you should unlock 
+dpm_list_mtx again, in case a noirq method wants to unregister a 
+device.  Hence my question: Is it legal to call unlock_mutex() while 
+interrupts are disabled?
 
-| commit b97d4803400a4442b0e4ae14d0bd8e83994b9004
-| Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-| Date:   Tue Mar 25 11:21:11 2008 -0600
-|
-|    ACPI: fix Medion _PRT quirk (use "ISA_", not "ISA")
-
-a grep shows that we've got one other case of an "ISA" string in the 
-ACPI code - is the patch below needed too?
-
-	Ingo
-
--------------------->
-Subject: acpi: fix asus isa
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Mar 26 09:05:07 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/acpi/asus_acpi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-x86.q/drivers/acpi/asus_acpi.c
-===================================================================
---- linux-x86.q.orig/drivers/acpi/asus_acpi.c
-+++ linux-x86.q/drivers/acpi/asus_acpi.c
-@@ -149,7 +149,7 @@ struct asus_hotk {
- };
- 
- /* Here we go */
--#define A1x_PREFIX "\\_SB.PCI0.ISA.EC0."
-+#define A1x_PREFIX "\\_SB.PCI0.ISA_.EC0."
- #define L3C_PREFIX "\\_SB.PCI0.PX40.ECD0."
- #define M1A_PREFIX "\\_SB.PCI0.PX40.EC0."
- #define P30_PREFIX "\\_SB.PCI0.LPCB.EC0."
+Alan Stern
