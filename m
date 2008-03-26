@@ -1,16 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re:
- =?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
- =?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28rev=2E_?=
- =?iso-8859-1?q?2=29?=
-Date: Wed, 26 Mar 2008 12:36:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0803261236080.7344-100000__39070.1479664587$1206549982$gmane$org@iolanthe.rowland.org>
-References: <200803261642.29801.oliver@neukum.org>
+From: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for
+	2.6.25-rc6)
+Date: Wed, 26 Mar 2008 20:24:41 +0300
+Message-ID: <47EA86D9.7040404__41596.0718448789$1206552699$gmane$org@gmail.com>
+References: <200803180510.47670.lenb@kernel.org>
+	<20080326081653.GA8247@elte.hu>
+	<200803261132.21448.lenb@kernel.org>
+	<200803260956.55804.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803261642.29801.oliver@neukum.org>
+In-Reply-To: <200803260956.55804.bjorn.helgaas@hp.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Corentin CHARY <corentincj@iksaif.net>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 Mar 2008, Oliver Neukum wrote:
+Bjorn Helgaas wrote:
+> I'm curious about how this works.  I disassembled the DSDT from
+> http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
+> at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
+> the _PRT contains "_SB" and "ISA" (no trailing underscores):
+>
+>                 Package (0x04)
+>                 {
+>                     0x000DFFFF, 
+>                     0x00, 
+>                     \_SB.PCI0.ISA.LNKA, 
+>                     0x00
+>                 }
+>
+> But by the time we get to acpi_pci_irq_add_entry(), we've added the
+> underscores somewhere (see
+> http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
+>
+>   0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
+>
+> I don't know where this happens, but it certainly confused me, and
+> it seems like it could lead to other bugs.
+>   
+ACPI is supposed to add trailing underscore for pad all names to 4 bytes.
+So ISA will be padded to ISA_.
 
-> Am Mittwoch, 26. M=E4rz 2008 15:40:27 schrieb Alan Stern:
-> > Remember, the whole purpose of this is to let drivers know when the =
-
-> > system is going to sleep or waking up. =A0Proper handling of devices is =
-
-> > up to the drivers, not up to the core.
-> =
-
-> Then declare these methods void. We cannot introduce methods that deliber=
-ately
-> ignore errors. Reporting is also better done in the drivers.
-
-That decision is up to Rafael.  Changing the methods to return void is =
-
-okay with me.
-
-Alan Stern
+Regards,
+Alex.
