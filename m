@@ -1,18 +1,16 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for
-	2.6.25-rc6)
-Date: Wed, 26 Mar 2008 13:33:56 -0300
-Message-ID: <20080326163356.GC3562@khazad-dum.debian.net>
-References: <200803180510.47670.lenb@kernel.org>
-	<20080326081653.GA8247@elte.hu>
-	<200803261132.21448.lenb@kernel.org>
-	<200803261645.01343.corentincj@iksaif.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re:
+ =?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
+ =?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28rev=2E_?=
+ =?iso-8859-1?q?2=29?=
+Date: Wed, 26 Mar 2008 12:36:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803261236080.7344-100000__39070.1479664587$1206549982$gmane$org@iolanthe.rowland.org>
+References: <200803261642.29801.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200803261645.01343.corentincj@iksaif.net>
+In-Reply-To: <200803261642.29801.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,26 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Corentin CHARY <corentincj@iksaif.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 Mar 2008, Corentin CHARY wrote:
-> thinkpad_acpi.c:IBM_HANDLE(ec, root, "\\_SB.PCI0.ISA.EC0",      /* 240, 240x */
-> thinkpad_acpi.c:           "\\_SB.PCI.ISA.EC",  /* 570 */
-> thinkpad_acpi.c:           "\\_SB.PCI0.ISA0.EC0",       /* 600e/x, 770e, 770x */
-> thinkpad_acpi.c:           "\\_SB.PCI0.ISA.EC", /* A21e, A2xm/p, T20-22, X20-21 */
-> thinkpad_acpi.c:           "\\_SB.PCI.ISA.SLCE",        /* 570 */
-> 
-> So it seems to work for thinkpads.
+On Wed, 26 Mar 2008, Oliver Neukum wrote:
 
-ThinkPads use "ISA" as the node (not ISA_ or anything else like that),
-and the ACPICA node match routine works properly.
+> Am Mittwoch, 26. M=E4rz 2008 15:40:27 schrieb Alan Stern:
+> > Remember, the whole purpose of this is to let drivers know when the =
 
-So please don't touch thinkpad-acpi's ".ISA." stuff.
+> > system is going to sleep or waking up. =A0Proper handling of devices is =
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> > up to the drivers, not up to the core.
+> =
+
+> Then declare these methods void. We cannot introduce methods that deliber=
+ately
+> ignore errors. Reporting is also better done in the drivers.
+
+That decision is up to Rafael.  Changing the methods to return void is =
+
+okay with me.
+
+Alan Stern
