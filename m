@@ -1,17 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2.6.25-rc3] cpuidle: fix cpuidle time and
-	usage overflow
-Date: Wed, 26 Mar 2008 00:46:41 -0400
-Message-ID: <200803260046.41250.lenb@kernel.org>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	<1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
-	<1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc6
+Date: Wed, 26 Mar 2008 09:16:53 +0100
+Message-ID: <20080326081653.GA8247__20988.4002841592$1206519565$gmane$org@elte.hu>
+References: <200803180510.47670.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
 Content-Disposition: inline
+In-Reply-To: <200803180510.47670.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,84 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: yi.y.yang@intel.com
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-applied
 
-thanks,
--len
+* Len Brown <lenb@kernel.org> wrote:
 
-On Sunday 24 February 2008, Yi Yang wrote:
-> cpuidle C-state sysfs node time and usage are very easy to overflow because
-> they are all of unsigned int type, time will overflow within about two hours,
-> usage will take longer time to overflow, but they are increasing for ever.
+> Hi Linus,
 > 
-> This patch will convert them to unsigned long long.
+> please pull from: 
 > 
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 > 
-> Signed-off-by: Yi Yang <yi.y.yang@intel.com>
-> ---
->  drivers/cpuidle/cpuidle.c |    2 +-
->  drivers/cpuidle/sysfs.c   |   10 ++++++++--
->  include/linux/cpuidle.h   |    4 ++--
-> 
-> --- a/include/linux/cpuidle.h	2008-02-25 02:31:26.000000000 -0500
-> +++ b/include/linux/cpuidle.h	2008-02-25 04:30:24.000000000 -0500
-> @@ -38,8 +38,8 @@ struct cpuidle_state {
->  	unsigned int	power_usage; /* in mW */
->  	unsigned int	target_residency; /* in US */
->  
-> -	unsigned int	usage;
-> -	unsigned int	time; /* in US */
-> +	unsigned long long	usage;
-> +	unsigned long long	time; /* in US */
->  
->  	int (*enter)	(struct cpuidle_device *dev,
->  			 struct cpuidle_state *state);
-> --- a/drivers/cpuidle/cpuidle.c	2008-02-25 02:37:14.000000000 -0500
-> +++ b/drivers/cpuidle/cpuidle.c	2008-02-25 04:29:19.000000000 -0500
-> @@ -67,7 +67,7 @@ static void cpuidle_idle_call(void)
->  	/* enter the state and update stats */
->  	dev->last_residency = target_state->enter(dev, target_state);
->  	dev->last_state = target_state;
-> -	target_state->time += dev->last_residency;
-> +	target_state->time += (unsigned long long)dev->last_residency;
->  	target_state->usage++;
->  
->  	/* give the governor an opportunity to reflect on the outcome */
-> --- a/drivers/cpuidle/sysfs.c	2008-02-25 02:33:14.000000000 -0500
-> +++ b/drivers/cpuidle/sysfs.c	2008-02-25 03:10:50.000000000 -0500
-> @@ -218,6 +218,12 @@ static ssize_t show_state_##_name(struct
->  	return sprintf(buf, "%u\n", state->_name);\
->  }
->  
-> +#define define_show_state_ull_function(_name) \
-> +static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
-> +{ \
-> +	return sprintf(buf, "%llu\n", state->_name);\
-> +}
-> +
->  #define define_show_state_str_function(_name) \
->  static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
->  { \
-> @@ -228,8 +234,8 @@ static ssize_t show_state_##_name(struct
->  
->  define_show_state_function(exit_latency)
->  define_show_state_function(power_usage)
-> -define_show_state_function(usage)
-> -define_show_state_function(time)
-> +define_show_state_ull_function(usage)
-> +define_show_state_ull_function(time)
->  define_show_state_str_function(name)
->  define_show_state_str_function(desc)
->  
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> This will update the files shown below.
+
+btw., saw this ACPI-ish commit in rc7:
+
+| commit b97d4803400a4442b0e4ae14d0bd8e83994b9004
+| Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+| Date:   Tue Mar 25 11:21:11 2008 -0600
+|
+|    ACPI: fix Medion _PRT quirk (use "ISA_", not "ISA")
+
+a grep shows that we've got one other case of an "ISA" string in the 
+ACPI code - is the patch below needed too?
+
+	Ingo
+
+-------------------->
+Subject: acpi: fix asus isa
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Mar 26 09:05:07 CET 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/acpi/asus_acpi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/drivers/acpi/asus_acpi.c
+===================================================================
+--- linux-x86.q.orig/drivers/acpi/asus_acpi.c
++++ linux-x86.q/drivers/acpi/asus_acpi.c
+@@ -149,7 +149,7 @@ struct asus_hotk {
+ };
+ 
+ /* Here we go */
+-#define A1x_PREFIX "\\_SB.PCI0.ISA.EC0."
++#define A1x_PREFIX "\\_SB.PCI0.ISA_.EC0."
+ #define L3C_PREFIX "\\_SB.PCI0.PX40.ECD0."
+ #define M1A_PREFIX "\\_SB.PCI0.PX40.EC0."
+ #define P30_PREFIX "\\_SB.PCI0.LPCB.EC0."
