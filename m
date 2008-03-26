@@ -1,16 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re:
-	=?iso-8859-1?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_ne?=
-	=?iso-8859-1?q?w_top_level_suspend=09and_hibernation_callbacks_=28?=
-	=?iso-8859-1?q?rev=2E_2=29?=
-Date: Wed, 26 Mar 2008 16:42:28 +0100
-Message-ID: <200803261642.29801.oliver__37770.5953702845$1206546497$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0803261032140.4969-100000@iolanthe.rowland.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for
+	2.6.25-rc6)
+Date: Wed, 26 Mar 2008 09:56:53 -0600
+Message-ID: <200803260956.55804.bjorn.helgaas__21549.547595396$1206547396$gmane$org@hp.com>
+References: <200803180510.47670.lenb@kernel.org>
+	<20080326081653.GA8247@elte.hu>
+	<200803261132.21448.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803261032140.4969-100000@iolanthe.rowland.org>
+In-Reply-To: <200803261132.21448.lenb@kernel.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,20 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Johannes Berg <johannes@sipsolutions.net>
+To: Len Brown <lenb@kernel.org>
+Cc: Corentin CHARY <corentincj@iksaif.net>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 26. M=E4rz 2008 15:40:27 schrieb Alan Stern:
-> Remember, the whole purpose of this is to let drivers know when the =
+On Wednesday 26 March 2008 09:32:20 am Len Brown wrote:
+> >  /* Here we go */
+> > -#define A1x_PREFIX "\\_SB.PCI0.ISA.EC0."
+> > +#define A1x_PREFIX "\\_SB.PCI0.ISA_.EC0."
+> 
+> From an AML point of view, ISA is just as legal as "ISA_"
+> The NameString paramter to Device() can be 1 to 4 characters.
+> 
+> So if this is correct or not depends on what the BIOS programmer
+> for the Asus A1x choose to write.  Perhaps Corentin 'Iksaif' CHARY
+> can confirm if the driver is working properly on that system.
 
-> system is going to sleep or waking up. =A0Proper handling of devices is =
+I'm curious about how this works.  I disassembled the DSDT from
+http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
+at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
+the _PRT contains "_SB" and "ISA" (no trailing underscores):
 
-> up to the drivers, not up to the core.
+                Package (0x04)
+                {
+                    0x000DFFFF, 
+                    0x00, 
+                    \_SB.PCI0.ISA.LNKA, 
+                    0x00
+                }
 
-Then declare these methods void. We cannot introduce methods that deliberat=
-ely
-ignore errors. Reporting is also better done in the drivers.
+But by the time we get to acpi_pci_irq_add_entry(), we've added the
+underscores somewhere (see
+http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
 
-	Regards
-		Oliver
+  0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
+
+I don't know where this happens, but it certainly confused me, and
+it seems like it could lead to other bugs.
+
+Bjorn
