@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and hibernation callbacks (rev. 4)
-Date: Thu, 27 Mar 2008 17:33:13 +0100
-Message-ID: <200803271733.14480.rjw__9224.66511042348$1206635789$gmane$org@sisk.pl>
-References: <200803262353.30566.rjw@sisk.pl> <200803270223.06715.rjw@sisk.pl>
-	<1206586358.6926.68.camel@pasglop>
+From: Len Brown <lenb@kernel.org>
+Subject: Ottawa Linux Power Management Mini-Summit -- July 22,
+	2008
+Date: Thu, 27 Mar 2008 13:40:25 -0400
+Message-ID: <200803271340.26040.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1206586358.6926.68.camel@pasglop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,59 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: benh@kernel.crashing.org
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Thu, 2008-03-27 at 02:23 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
-> > > 
-> > > > > There is absolutely no point getting a second struct anymore.
-> > > > 
-> > > > I obviously disagree with that opinion, so please elaborate.
-> > > 
-> > > Well, what does it bring you ? Why can't it be one struct ? To save
-> > > space in the data area ?
-> > 
-> > Mostly, but not only that.
-> > 
-> > There are users of 'struct pm_ops' that aren't even supposed to define the
-> > _noirq callbacks (device types and device classes), so I thought it would be
-> > better to introduce a separate _noirq struct after all.
-> 
-> Make sense... USB has no use of noirq for example.
+We are again planning a Linux Power Management Mini-Summit preceeding OLS.
+This year we are looking at a single day, Tuesday July 22nd.
 
-Well, FWIW, we can also do something like this:
+OLS is generously supporting mini-summits by providing the room
+and projector: http://www.linuxsymposium.org/2008/minisummits.php
 
-struct pm_ops {
-	int (*prepare)(struct device *dev);
-	void (*complete)(struct device *dev);
-	int (*suspend)(struct device *dev);
-	int (*resume)(struct device *dev);
-	int (*freeze)(struct device *dev);
-	int (*thaw)(struct device *dev);
-	int (*poweroff)(struct device *dev);
-	int (*restore)(struct device *dev);
-};
+If you are interested in sponsoring the food or
+other forum needs, please let me know.
 
-struct pm_ext_ops {
-	struct pm_ops base;
-	int (*suspend_noirq)(struct device *dev);
-	int (*resume_noirq)(struct device *dev);
-	int (*freeze_noirq)(struct device *dev);
-	int (*thaw_noirq)(struct device *dev);
-	int (*poweroff_noirq)(struct device *dev);
-	int (*restore_noirq)(struct device *dev);
-};
+Minutes from last year's meeting can be found here:
+http://lwn.net/Articles/249019
 
-and use 'struct pm_ext_ops' for the entities that may need to implement the
-_noirq callbacks.  This way we'll avoid the duplication of "_noirq" in the code
-pointed to by Alex and there will be one "pm" pointer per bus type, device
-type, device class, etc.
+If you have feedback on last year's meeting that
+we can use to improve this year's, please speak up.
 
-Thoughts?
+The feedback at the time was pretty positive, so I'm thinking
+that unless there are new best-known-methods, that we'll stick
+with the same open method of self-nominated attendees,
+an agenda provoked by discussion on linux-pm ahead of time
+and consensus of attendees, and a forum small enough to support
+a single focused discussion.
 
-Thanks,
-Rafael
+(yes, one improvement I plan on this year is to publish minutes immediately.
+ OLS was sort of hectic for me last year and that caused a delay)
+
+thanks,
+-Len
