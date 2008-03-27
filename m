@@ -1,17 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks (rev. 4)
-Date: Thu, 27 Mar 2008 13:52:38 +1100
-Message-ID: <1206586358.6926.68.camel@pasglop>
-References: <200803262353.30566.rjw@sisk.pl>
-	<200803270054.58546.rjw@sisk.pl> <1206576403.6926.62.camel@pasglop>
-	<200803270223.06715.rjw@sisk.pl>
-Reply-To: benh@kernel.crashing.org
+ and hibernation callbacks (rev. 4)
+Date: Wed, 26 Mar 2008 23:09:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0803262305580.21714-100000__47122.1666237854$1206587500$gmane$org@netrider.rowland.org>
+References: <200803270212.36465.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803270223.06715.rjw@sisk.pl>
+In-Reply-To: <200803270212.36465.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,23 +22,21 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 27 Mar 2008, Rafael J. Wysocki wrote:
 
-On Thu, 2008-03-27 at 02:23 +0100, Rafael J. Wysocki wrote:
-> On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > > > There is absolutely no point getting a second struct anymore.
-> > > 
-> > > I obviously disagree with that opinion, so please elaborate.
-> > 
-> > Well, what does it bring you ? Why can't it be one struct ? To save
-> > space in the data area ?
-> 
-> Mostly, but not only that.
-> 
-> There are users of 'struct pm_ops' that aren't even supposed to define the
-> _noirq callbacks (device types and device classes), so I thought it would be
-> better to introduce a separate _noirq struct after all.
+> @@ -68,22 +75,32 @@ int device_pm_add(struct device *dev)
+>  		 dev->bus ? dev->bus->name : "No Bus",
+>  		 kobject_name(&dev->kobj));
+>  	mutex_lock(&dpm_list_mtx);
+> -	if ((dev->parent && dev->parent->power.sleeping) || all_sleeping) {
+> -		if (dev->parent->power.sleeping)
+> -			dev_warn(dev,
+> -				"parent %s is sleeping, will not add\n",
+> +	if (dev->parent) {
+> +		if (dev->parent->power.status >= DPM_SUSPENDING) {
+> +			dev_warn(dev, "parent %s is sleeping, will not add\n",
+>  				dev->parent->bus_id);
 
-Make sense... USB has no use of noirq for example.
+You forgot to check for dev->parent->power.status == DPM_INVALID.
 
-Ben.
+Alan Stern
