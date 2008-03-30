@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Date: Sun, 30 Mar 2008 02:19:07 +0100
-Message-ID: <200803300319.08398.rjw__28518.3963751935$1206840085$gmane$org@sisk.pl>
+Subject: Re: [RFC][PATCH 2/3] PM: New suspend and hibernation
+	callbacks for platform bus type (rev. 3)
+Date: Sun, 30 Mar 2008 04:56:29 +0200
+Message-ID: <200803300456.30687.rjw__23056.0323027477$1206845939$gmane$org@sisk.pl>
+References: <200803292317.50218.rjw@sisk.pl> <200803292322.05051.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200803292322.05051.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,218 +19,393 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Felix =?iso-8859-2?q?M=F6ller?= <fm@opensuse.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On Saturday, 29 of March 2008, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Implement new suspend and hibernation callbacks for the platform bus
+> type.
 
-Please consider pushing the appended patch for 2.6.25.
+I found a bug in this patch.  Namely, platform_legacy_suspend_late() was used
+instead of platform_legacy_suspend() and vice versa in platform_pm_freeze() and
+platform_pm_freeze_noirq().
 
-It fixed the regression described at:
-https://bugzilla.novell.com/show_bug.cgi?id=374217
-http://bugzilla.kernel.org/show_bug.cgi?id=10340
-
-details in the changelog.
+Corrected patch follows.
 
 Thanks,
 Rafael
 
-
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Some time ago it turned out that our suspend code ordering broke
-some NVidia-based systems that hung if _PTS was executed with one of
-the PCI devices, specifically a USB controller, in a low power state.
-Then, it was noticed that the suspend code ordering was not compliant
-with ACPI 1.0, although it was compliant with ACPI 2.0 (and later),
-and it was argued that the code had to be changed for that reason
-(ref. http://bugzilla.kernel.org/show_bug.cgi?id=9528).  So we did,
-but evidently we did wrong, because it's now turning out that some
-systems have been broken by this change (refs.
-http://bugzilla.kernel.org/show_bug.cgi?id=10340 ,
-https://bugzilla.novell.com/show_bug.cgi?id=374217#c16).  [I said
-at that time that something like this might happend, but the majority
-of people involved thought that it was improbable due to the
-necessity to preserve the compliance of hardware with ACPI 1.0.]
-This actually is a quite serious regression from 2.6.24.
-
-Moreover, the ACPI 1.0 ordering of suspend code introduced another
-issue that I have only noticed recently.  Namely, if the suspend of
-one of devices fails, the already suspended devices will be resumed
-without executing _WAK before, which leads to problems on some
-systems (for example, in such situations thermal management is
-broken on my HP nx6325).  Consequently, it also breaks suspend
-debugging on the affected systems.
-
-Note also, that the requirement to execute _PTS before suspending
-devices does not really make sense, because the device in question
-may be put into a low power state at run time for a reason unrelated
-to a system-wide suspend.
-
-For the reasons outlined above, the change of the suspend ordering
-should be reverted, which is done by the patch below.
+Implement new suspend and hibernation callbacks for the platform bus
+type.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/kernel-parameters.txt |    5 --
- drivers/acpi/sleep/main.c           |   71 +++++++-----------------------------
- 2 files changed, 14 insertions(+), 62 deletions(-)
+ drivers/base/platform.c         |  296 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/platform_device.h |    1 
+ 2 files changed, 289 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
+Index: linux-2.6/include/linux/platform_device.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -26,21 +26,6 @@ u8 sleep_states[ACPI_S_STATE_COUNT];
+--- linux-2.6.orig/include/linux/platform_device.h
++++ linux-2.6/include/linux/platform_device.h
+@@ -53,6 +53,7 @@ struct platform_driver {
+ 	int (*suspend_late)(struct platform_device *, pm_message_t state);
+ 	int (*resume_early)(struct platform_device *);
+ 	int (*resume)(struct platform_device *);
++	struct pm_ext_ops *pm;
+ 	struct device_driver driver;
+ };
  
- #ifdef CONFIG_PM_SLEEP
- static u32 acpi_target_sleep_state = ACPI_STATE_S0;
--static bool acpi_sleep_finish_wake_up;
--
--/*
-- * ACPI 2.0 and later want us to execute _PTS after suspending devices, so we
-- * allow the user to request that behavior by using the 'acpi_new_pts_ordering'
-- * kernel command line option that causes the following variable to be set.
-- */
--static bool new_pts_ordering;
--
--static int __init acpi_new_pts_ordering(char *str)
--{
--	new_pts_ordering = true;
--	return 1;
--}
--__setup("acpi_new_pts_ordering", acpi_new_pts_ordering);
- #endif
- 
- static int acpi_sleep_prepare(u32 acpi_state)
-@@ -91,14 +76,6 @@ static int acpi_pm_begin(suspend_state_t
- 
- 	if (sleep_states[acpi_state]) {
- 		acpi_target_sleep_state = acpi_state;
--		if (new_pts_ordering)
--			return 0;
--
--		error = acpi_sleep_prepare(acpi_state);
--		if (error)
--			acpi_target_sleep_state = ACPI_STATE_S0;
--		else
--			acpi_sleep_finish_wake_up = true;
- 	} else {
- 		printk(KERN_ERR "ACPI does not support this state: %d\n",
- 			pm_state);
-@@ -116,14 +93,11 @@ static int acpi_pm_begin(suspend_state_t
- 
- static int acpi_pm_prepare(void)
- {
--	if (new_pts_ordering) {
--		int error = acpi_sleep_prepare(acpi_target_sleep_state);
-+	int error = acpi_sleep_prepare(acpi_target_sleep_state);
- 
--		if (error) {
--			acpi_target_sleep_state = ACPI_STATE_S0;
--			return error;
--		}
--		acpi_sleep_finish_wake_up = true;
-+	if (error) {
-+		acpi_target_sleep_state = ACPI_STATE_S0;
-+		return error;
- 	}
- 
- 	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
-@@ -212,7 +186,6 @@ static void acpi_pm_finish(void)
- 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
- 
- 	acpi_target_sleep_state = ACPI_STATE_S0;
--	acpi_sleep_finish_wake_up = false;
- 
- #ifdef CONFIG_X86
- 	if (init_8259A_after_S1) {
-@@ -229,11 +202,10 @@ static void acpi_pm_finish(void)
- static void acpi_pm_end(void)
- {
- 	/*
--	 * This is necessary in case acpi_pm_finish() is not called directly
--	 * during a failing transition to a sleep state.
-+	 * This is necessary in case acpi_pm_finish() is not called during a
-+	 * failing transition to a sleep state.
- 	 */
--	if (acpi_sleep_finish_wake_up)
--		acpi_pm_finish();
-+	acpi_target_sleep_state = ACPI_STATE_S0;
- }
- 
- static int acpi_pm_state_valid(suspend_state_t pm_state)
-@@ -296,31 +268,18 @@ __setup("acpi_s4_nosigcheck", acpi_s4_no
- 
- static int acpi_hibernation_begin(void)
- {
--	int error;
--
- 	acpi_target_sleep_state = ACPI_STATE_S4;
--	if (new_pts_ordering)
--		return 0;
- 
--	error = acpi_sleep_prepare(ACPI_STATE_S4);
--	if (error)
--		acpi_target_sleep_state = ACPI_STATE_S0;
--	else
--		acpi_sleep_finish_wake_up = true;
--
--	return error;
-+	return 0;
- }
- 
- static int acpi_hibernation_prepare(void)
- {
--	if (new_pts_ordering) {
--		int error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	int error = acpi_sleep_prepare(ACPI_STATE_S4);
- 
--		if (error) {
--			acpi_target_sleep_state = ACPI_STATE_S0;
--			return error;
--		}
--		acpi_sleep_finish_wake_up = true;
-+	if (error) {
-+		acpi_target_sleep_state = ACPI_STATE_S0;
-+		return error;
- 	}
- 
- 	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
-@@ -370,17 +329,15 @@ static void acpi_hibernation_finish(void
- 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
- 
- 	acpi_target_sleep_state = ACPI_STATE_S0;
--	acpi_sleep_finish_wake_up = false;
- }
- 
- static void acpi_hibernation_end(void)
- {
- 	/*
- 	 * This is necessary in case acpi_hibernation_finish() is not called
--	 * directly during a failing transition to the sleep state.
-+	 * during a failing transition to the sleep state.
- 	 */
--	if (acpi_sleep_finish_wake_up)
--		acpi_hibernation_finish();
-+	acpi_target_sleep_state = ACPI_STATE_S0;
- }
- 
- static int acpi_hibernation_pre_restore(void)
-Index: linux-2.6/Documentation/kernel-parameters.txt
+Index: linux-2.6/drivers/base/platform.c
 ===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -170,11 +170,6 @@ and is between 256 and 4096 characters. 
- 	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
- 			Format: <irq>,<irq>...
+--- linux-2.6.orig/drivers/base/platform.c
++++ linux-2.6/drivers/base/platform.c
+@@ -453,6 +453,8 @@ int platform_driver_register(struct plat
+ 		drv->driver.suspend = platform_drv_suspend;
+ 	if (drv->resume)
+ 		drv->driver.resume = platform_drv_resume;
++	if (drv->pm)
++		drv->driver.pm = &drv->pm->base;
+ 	return driver_register(&drv->driver);
+ }
+ EXPORT_SYMBOL_GPL(platform_driver_register);
+@@ -560,7 +562,9 @@ static int platform_match(struct device 
+ 	return (strncmp(pdev->name, drv->name, BUS_ID_SIZE) == 0);
+ }
  
--	acpi_new_pts_ordering [HW,ACPI]
--			Enforce the ACPI 2.0 ordering of the _PTS control
--			method wrt putting devices into low power states
--			default: pre ACPI 2.0 ordering of _PTS
--
- 	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
+-static int platform_suspend(struct device *dev, pm_message_t mesg)
++#ifdef CONFIG_PM_SLEEP
++
++static int platform_legacy_suspend(struct device *dev, pm_message_t mesg)
+ {
+ 	int ret = 0;
  
- 	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
+@@ -570,7 +574,7 @@ static int platform_suspend(struct devic
+ 	return ret;
+ }
+ 
+-static int platform_suspend_late(struct device *dev, pm_message_t mesg)
++static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
+ {
+ 	struct platform_driver *drv = to_platform_driver(dev->driver);
+ 	struct platform_device *pdev;
+@@ -583,7 +587,7 @@ static int platform_suspend_late(struct 
+ 	return ret;
+ }
+ 
+-static int platform_resume_early(struct device *dev)
++static int platform_legacy_resume_early(struct device *dev)
+ {
+ 	struct platform_driver *drv = to_platform_driver(dev->driver);
+ 	struct platform_device *pdev;
+@@ -596,7 +600,7 @@ static int platform_resume_early(struct 
+ 	return ret;
+ }
+ 
+-static int platform_resume(struct device *dev)
++static int platform_legacy_resume(struct device *dev)
+ {
+ 	int ret = 0;
+ 
+@@ -606,15 +610,291 @@ static int platform_resume(struct device
+ 	return ret;
+ }
+ 
++static int platform_pm_prepare(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		ret = drv->pm->prepare(dev);
++
++	return ret;
++}
++
++static void platform_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
++
++#ifdef CONFIG_SUSPEND
++
++static int platform_pm_suspend(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->suspend)
++			ret = drv->pm->suspend(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int platform_pm_suspend_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->suspend_noirq)
++			ret = pdrv->pm->suspend_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int platform_pm_resume(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->resume)
++			ret = drv->pm->resume(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_resume_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->resume_noirq)
++			ret = pdrv->pm->resume_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_SUSPEND */
++
++#define platform_pm_suspend		NULL
++#define platform_pm_resume		NULL
++#define platform_pm_suspend_noirq	NULL
++#define platform_pm_resume_noirq	NULL
++
++#endif /* !CONFIG_SUSPEND */
++
++#ifdef CONFIG_HIBERNATION
++
++static int platform_pm_freeze(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze)
++			ret = drv->pm->freeze(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_freeze_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->freeze_noirq)
++			ret = pdrv->pm->freeze_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_thaw(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->thaw)
++			ret = drv->pm->thaw(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_thaw_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->thaw_noirq)
++			ret = pdrv->pm->thaw_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_poweroff(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->poweroff)
++			ret = drv->pm->poweroff(dev);
++	} else {
++		ret = platform_legacy_suspend(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_poweroff_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->poweroff_noirq)
++			ret = pdrv->pm->poweroff_noirq(dev);
++	} else {
++		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int platform_pm_restore(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->restore)
++			ret = drv->pm->restore(dev);
++	} else {
++		ret = platform_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int platform_pm_restore_noirq(struct device *dev)
++{
++	struct platform_driver *pdrv;
++	int ret = 0;
++
++	if (!dev->driver)
++		return 0;
++
++	pdrv = to_platform_driver(dev->driver);
++	if (pdrv->pm) {
++		if (pdrv->pm->restore_noirq)
++			ret = pdrv->pm->restore_noirq(dev);
++	} else {
++		ret = platform_legacy_resume_early(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_HIBERNATION */
++
++#define platform_pm_freeze		NULL
++#define platform_pm_thaw		NULL
++#define platform_pm_poweroff		NULL
++#define platform_pm_restore		NULL
++#define platform_pm_freeze_noirq	NULL
++#define platform_pm_thaw_noirq		NULL
++#define platform_pm_poweroff_noirq	NULL
++#define platform_pm_restore_noirq	NULL
++
++#endif /* !CONFIG_HIBERNATION */
++
++struct pm_ext_ops platform_pm_ops = {
++	.base = {
++		.prepare = platform_pm_prepare,
++		.complete = platform_pm_complete,
++		.suspend = platform_pm_suspend,
++		.resume = platform_pm_resume,
++		.freeze = platform_pm_freeze,
++		.thaw = platform_pm_thaw,
++		.poweroff = platform_pm_poweroff,
++		.restore = platform_pm_restore,
++	},
++	.suspend_noirq = platform_pm_suspend_noirq,
++	.resume_noirq = platform_pm_resume_noirq,
++	.freeze_noirq = platform_pm_freeze_noirq,
++	.thaw_noirq = platform_pm_thaw_noirq,
++	.poweroff_noirq = platform_pm_poweroff_noirq,
++	.restore_noirq = platform_pm_restore_noirq,
++};
++
++#define PLATFORM_PM_OPS_PTR	&platform_pm_ops
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define PLATFORM_PM_OPS_PTR	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
+ struct bus_type platform_bus_type = {
+ 	.name		= "platform",
+ 	.dev_attrs	= platform_dev_attrs,
+ 	.match		= platform_match,
+ 	.uevent		= platform_uevent,
+-	.suspend	= platform_suspend,
+-	.suspend_late	= platform_suspend_late,
+-	.resume_early	= platform_resume_early,
+-	.resume		= platform_resume,
++	.pm		= PLATFORM_PM_OPS_PTR,
+ };
+ EXPORT_SYMBOL_GPL(platform_bus_type);
+ 
