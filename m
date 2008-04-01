@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Date: Tue, 1 Apr 2008 10:45:23 +0200
-Message-ID: <20080401084523.GA25278__26896.6665761129$1207039638$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <200803300319.08398.rjw@sisk.pl> <200803301358.39831.rjw@sisk.pl>
-	<20080330122838.GA7093@elf.ucw.cz> <200803301515.33922.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
+ hibernation callbacks (rev. 6)
+Date: Tue, 1 Apr 2008 10:31:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0804011029010.3993-100000__7373.94885295561$1207060486$gmane$org@iolanthe.rowland.org>
+References: <1207038460.10388.214.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200803301515.33922.rjw@sisk.pl>
+In-Reply-To: <1207038460.10388.214.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Felix M?ller <fm@opensuse.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 1 Apr 2008, Benjamin Herrenschmidt wrote:
 
-> > > > > For the reasons outlined above, the change of the suspend ordering
-> > > > > should be reverted, which is done by the patch below.
-> > > > 
-> > > > But this will break those few nvidia-based systems, no?
-> > > > 
-> > > > this may have been a good idea in -rc1 days, but we are in -rc7
-> > > > now... and the patch is slightly big.
-> > > 
-> > > It's quite obvious, though.
+> On Tue, 2008-04-01 at 19:15 +1100, Nigel Cunningham wrote:
+> > > + *   However, drivers may NOT assume anything about the availability of the
+> > > + *   user space at that time and it is not correct to request firmware from
+> > > + *   within @prepare() (it's too late to do that).
 > > 
-> > Yes, but breaking systems between -rc7 and final is _very_ unnice.
+> > That doesn't sound good. It would be good to be able to get drivers to
+> > request firmware early in the process.
 > 
-> Breaking systems between 2.6.24 and 2.6.25 is even worse, which is why
-> I've posted this patch.
-> 
-> IOW, we tried to fix systems that were broken with 2.6.24, but it didn't work,
-> because our "fix" broke systems that were OK with 2.6.24.  Solution: revert
-> the "fix" and go back to the design board.  That's all we can do so late in
-> the release cycle, IMO.
+> Agreed. Prepare() should still allow request_firmware and full userspace
+> communication / helper usage.
 
-Well, I agree that regression from 2.6.24 is worse, but it is
-_slightly_ worse... -rcs are really expected to improve...
+Pepare() is called after userspace has been frozen.  (Of course, once 
+the freezer goes away this won't matter any more.)
 
-...plus it no longer looks like macbook regression is caused by _PTS
-ordering?
+There is a separate notifier chain which drivers can subscribe to;
+notifications about impending sleeps are sent out while userspace is
+still alive.  Drivers can use that for request_firmware, memory
+allocation, and other things.
 
-> > > I think we _can_ do something about the failing NVidia systems in the 2.6.26
-> > > time frame, but that will require some more consideration.
-> > 
-> > We could simply blacklist them, no?
-> 
-> Yes, but for this purpose we'll have to redesign the core so that everything
-> (including debugging and the error paths) works if _PTS is executed before
-> suspending devices.  _That_, however, is not a 2.6.25 thing.
-
-So we have solution that fixes 2.6.24 systems, makes system that
-worked in 2.6.25-rc5 work with command line option, but gets error
-handling wrong.
-
-I guess we could use that?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan Stern
