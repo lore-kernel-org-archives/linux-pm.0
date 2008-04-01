@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and
 	hibernation callbacks (rev. 6)
-Date: Tue, 1 Apr 2008 23:57:29 +0200
-Message-ID: <200804012357.30529.rjw__37452.3474638865$1207087191$gmane$org@sisk.pl>
-References: <200803292317.50218.rjw@sisk.pl> <200804012212.48609.rjw@sisk.pl>
-	<1207085713.23143.111.camel@nigel-laptop>
+Date: Tue, 1 Apr 2008 23:59:52 +0200
+Message-ID: <200804012359.54031.rjw__7283.35772078044$1207087334$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0804011653140.9362-100000@netrider.rowland.org>
+	<1207085886.23143.114.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1207085713.23143.111.camel@nigel-laptop>
+In-Reply-To: <1207085886.23143.114.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,54 +25,43 @@ Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger
 List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, 1 of April 2008, Nigel Cunningham wrote:
-> Hi Rafael etc.
+> Hi.
 > 
-> On Tue, 2008-04-01 at 22:12 +0200, Rafael J. Wysocki wrote:
-> > 'ext' means 'extended'.  The idea is that the 'extended' version will be used
-> > by bus types / driver types that don't need to implement the _noirq callbacks.
-> > Both the platform and PCI bus types generally allow drivers to use _noirq
-> > callbacks, so they use 'struct pm_ext_ops', as well as their corresponding
-> > driver types.
-> 
-> Do you mean to say in the first sentence "...that _do_ need to implement..."?
-
-Yes, sorry.
-
-> If not, then extended sounds like a misnomer and the two 
-> sentences seem to contradict one another.
-> 
-> [...]
-> 
-> > > > + *	However, drivers may NOT assume anything about the availability of the
-> > > > + *	user space at that time and it is not correct to request firmware from
-> > > > + *	within @prepare() (it's too late to do that).
-> > > 
-> > > That doesn't sound good. It would be good to be able to get drivers to
-> > > request firmware early in the process.
+> On Tue, 2008-04-01 at 16:56 -0400, Alan Stern wrote:
+> > On Tue, 1 Apr 2008, Rafael J. Wysocki wrote:
 > > 
-> > That will be possible when we drop the freezer.
+> > > > Does ..._ext_... mean extended? (external?) If 'extended' (or if not),
+> > > > does that imply that they're mutually exclusive alternatives for drivers
+> > > > to use?
+> > > 
+> > > 'ext' means 'extended'.  The idea is that the 'extended' version will be used
+> > > by bus types / driver types that don't need to implement the _noirq callbacks.
+> > 
+> > Something's wrong here.  This seems to say that the "extended" version
+> > has _fewer_ method pointers -- in which case it should be called 
+> > "restricted" instead.
 > 
-> Yeah, but right now, it seems to me to be a bogus limitation for drivers
-> to have no way of automatically loading firmware when you're about to
-> hibernate. (Of course I've since been reminded of the notifier chain -
-> that should probably be mentioned here as the way of achieving this).
+> Agreed.
 
-This is a tricky stuff, though, because the notifier is used for disabling the
-user mode helpers too ...
- 
-> By the way, I'm going to go on record now as saying I think dropping the
-> freezer is a silly idea. I'm therefore currently considering including
-> the freezer in TuxOnice from the time it gets dropped from mainline. I
-> know that will only make it less likely that TuxOnIce gets merged, but
-> I've given up caring about that anyway - caring about merging is
-> pointless when the people who decide if it gets merged don't care.
+This was a mistake explained in another message.  The "don't" should not be
+present in the above sentence.
 
-Well, I'm just not sure if dropping the freezer entirely will actually work,
-but we won't know that if we don't try.
+> > > > So drivers can never validly fail to resume. That sounds fair enough. If
+> > > > the hardware has gone away while in lower power mode (USB, say), should
+> > > > the driver then just printk an error and return success?
+> > > 
+> > > I think so.
+> > > 
+> > > IMO, an error code returned by a driver's ->resume() should mean "the device
+> > > hasn't resumed and is presumably dead".  Otherwise, ->resume() should return
+> > > success.
+> > 
+> > If the device is gone, it doesn't much matter what resume() returns.
+> 
+> What if the same driver is handling multiple instances and only some of
+> them fail to resume?
 
-There's been a lot of pressure on going into this direction recently and
-in principle it seems to be doable at least for suspend.  Hibernation is
-another issue, but IMO it's better to focus on suspend first.
+->resume() will be called separately for each of them.
 
 Thanks,
 Rafael
