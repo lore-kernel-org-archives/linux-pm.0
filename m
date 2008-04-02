@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Suspend and hibernation patchset against -rc8
-Date: Wed, 2 Apr 2008 02:27:11 +0200
-Message-ID: <200804020227.12943.rjw__44836.832691408$1207096129$gmane$org@sisk.pl>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
-	<200803270051.31778.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
+Date: Wed, 2 Apr 2008 15:00:20 +0200
+Message-ID: <20080402130020.GB5295__42623.133902862$1207141381$gmane$org@ucw.cz>
+References: <200803300319.08398.rjw@sisk.pl> <200803301515.33922.rjw@sisk.pl>
+	<20080401084523.GA25278@atrey.karlin.mff.cuni.cz>
+	<200804012155.52547.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803270051.31778.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <200804012155.52547.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Felix M?ller <fm@opensuse.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 27 of March 2008, Rafael J. Wysocki wrote:
-> On Monday, 17 of March 2008, Rafael J. Wysocki wrote:
-> > On Wednesday, 12 of March 2008, Rafael J. Wysocki wrote:
-> > >
-> > > For everyone interested, I have put together a patchset containing some "fresh"
-> > > patches related to suspend and hibernation, on top of 2.6.25-rc5, located at:
+Hi!
+
+> > > > We could simply blacklist them, no?
 > > > 
-> > > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc5/patches/
+> > > Yes, but for this purpose we'll have to redesign the core so that everything
+> > > (including debugging and the error paths) works if _PTS is executed before
+> > > suspending devices.  _That_, however, is not a 2.6.25 thing.
 > > 
-> > There's a new patchset against 2.6.25-rc6 at:
+> > So we have solution that fixes 2.6.24 systems, makes system that
+> > worked in 2.6.25-rc5 work with command line option, but gets error
+> > handling wrong.
 > > 
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc6/patches/
+> > I guess we could use that?
 > 
-> There's a new patchset against 2.6.25-rc7 at:
-> 
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc7/patches/
+> IMO we should not use that, because it's broken.  That's why I posted the
+> patch.
 
-There's a new patchset against 2.6.25-rc8 at:
- 
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc8/patches/
-
-It contains some changes with respect to the previous one.  Most importantly,
-dropped ACPI-force-acpi_new_pts_ordering-for-ASUS-A6VC-laptop.patch (not needed
-any more) and added patch 14, which is experimental.
-
-I still have not decided what to do with patches 01-03.  Patch 03 will probably
-be sent upstream soon, as well as patches 12 and 14.
- 
-Patch 04 is currently in the "test" branch of the ACPI tree and has been
-tested already for some time in -mm and linux-next.
- 
-Patches 05-11 are in the Greg's tree and have been tested in -mm and
-linux-next.
- 
-Patch 13 is in -mm.
-
-Patches 15-17 are the 4th revision of the patches to introduce new suspend and
-hibernation callbacks for drivers.
-
-The series has been compiled and (lightly) tested on HP nx6325 (64-bit).
-
-Thanks,
-Rafael
+I understand that. World will not fall down one way or another, but
+I'd slightly prefer the 'only change default' version. That's why I
+objected to your patch :-).
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
