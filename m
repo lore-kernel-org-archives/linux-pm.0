@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI PM: Restore the 2.6.24 suspend ordering
-Date: Wed, 2 Apr 2008 15:00:20 +0200
-Message-ID: <20080402130020.GB5295__42623.133902862$1207141381$gmane$org@ucw.cz>
-References: <200803300319.08398.rjw@sisk.pl> <200803301515.33922.rjw@sisk.pl>
-	<20080401084523.GA25278@atrey.karlin.mff.cuni.cz>
-	<200804012155.52547.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend
+	and hibernation callbacks (rev. 7)
+Date: Wed, 2 Apr 2008 15:12:15 +0200
+Message-ID: <20080402131215.GC5295__37478.0790567913$1207142156$gmane$org@ucw.cz>
+References: <200804020207.40278.rjw@sisk.pl> <200804020209.47207.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200804012155.52547.rjw@sisk.pl>
+In-Reply-To: <200804020209.47207.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, Arthur Erhardt <erhardt@pit.physik.uni-tuebingen.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Felix M?ller <fm@opensuse.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed 2008-04-02 02:09:46, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> =
 
-> > > > We could simply blacklist them, no?
-> > > 
-> > > Yes, but for this purpose we'll have to redesign the core so that everything
-> > > (including debugging and the error paths) works if _PTS is executed before
-> > > suspending devices.  _That_, however, is not a 2.6.25 thing.
-> > 
-> > So we have solution that fixes 2.6.24 systems, makes system that
-> > worked in 2.6.25-rc5 work with command line option, but gets error
-> > handling wrong.
-> > 
-> > I guess we could use that?
-> 
-> IMO we should not use that, because it's broken.  That's why I posted the
-> patch.
+> Introduce 'struct pm_ops' and 'struct pm_ext_ops' ('ext' meaning
+> 'extended') representing suspend and hibernation operations for bus
+> types, device classes, device types and device drivers.
+> =
 
-I understand that. World will not fall down one way or another, but
-I'd slightly prefer the 'only change default' version. That's why I
-objected to your patch :-).
-							Pavel
--- 
+> Modify the PM core to use 'struct pm_ops' and 'struct pm_ext_ops'
+> objects, if defined, instead of the ->suspend() and ->resume(),
+> ->suspend_late(), and ->resume_early() callbacks (the old callbacks
+> will be considered as legacy and gradually phased out).
+> =
+
+> The main purpose of doing this is to separate suspend (aka S2RAM and
+> standby) callbacks from hibernation callbacks in such a way that the
+> new callbacks won't take arguments and the semantics of each of them
+> will be clearly specified. =A0This has been requested for multiple
+> times by many people, including Linus himself, and the reason is that
+> within the current scheme if ->resume() is called, for example, it's
+> difficult to say why it's been called (ie. is it a resume from RAM or
+> from hibernation or a suspend/hibernation failure etc.?).
+> =
+
+> The second purpose is to make the suspend/hibernation callbacks more
+> flexible so that device drivers can handle more than they can within
+> the current scheme.  For example, some drivers may need to prevent
+> new children of the device from being registered before their
+> ->suspend() callbacks are executed or they may want to carry out some
+> operations requiring the availability of some other devices, not
+> directly bound via the parent-child relationship, in order to prepare
+> for the execution of ->suspend(), etc.
+> =
+
+> Ultimately, we'd like to stop using the freezing of tasks for suspend
+> and therefore the drivers' suspend/hibernation code will have to take
+> care of the handling of the user space during suspend/hibernation.
+> That, in turn, would be difficult within the current scheme, without
+> the new ->prepare() and ->complete() callbacks.
+> =
+
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+ACK.
+
+-- =
+
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
