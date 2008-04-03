@@ -1,15 +1,11 @@
 From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH 4/4] Container Freezer: Skip frozen cgroups
-	during power management resume
-Date: Wed, 02 Apr 2008 17:15:33 -0700
-Message-ID: <24220.5618335449$1207235052@news.gmane.org>
-References: <20080403001529.052250759@us.ibm.com>>
+Subject: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+Date: Wed, 02 Apr 2008 17:15:29 -0700
+Message-ID: <565.437755040143$1207235057@news.gmane.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline;
-	filename=cgroup-freezer/cgroup-freezer-do-not-unfreeze-a-frozen-cgroup-when-system-is-resumed.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,49 +19,78 @@ To: Linux-Kernel <linux-kernel@vger.kernel.org>
 Cc: linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-When a system is resumed after a suspend, it will also unfreeze 
-frozen cgroups. 
+This patchset is a prototype using the container infrastructure and
+the swsusp freezer to freeze a group of tasks. I've merely taken Cedric's
+patches, forward-ported them to 2.6.25-rc8-mm1 and done a small amount of
+testing.
 
-This patchs modifies the resume sequence to skip the tasks which 
-are part of a frozen control group. 
+2 files are defined by the freezer subsystem in the container
+filesystem :
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Tested-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org
----
- kernel/power/process.c |    4 ++++
- 1 file changed, 4 insertions(+)
+   * "freezer.freeze"
 
-Index: linux-2.6.25-rc5-mm1/kernel/power/process.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/kernel/power/process.c
-+++ linux-2.6.25-rc5-mm1/kernel/power/process.c
-@@ -11,10 +11,11 @@
- #include <linux/interrupt.h>
- #include <linux/suspend.h>
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/freezer.h>
-+#include <linux/cgroup_freezer.h>
+     writing 1 will freeze all tasks and 0 unfreeze
+     reading will return the status of the freezer
  
- /* 
-  * Timeout for stopping processes
-  */
- #define TIMEOUT	(20 * HZ)
-@@ -150,10 +151,13 @@ static void thaw_tasks(int thaw_user_spa
- 			continue;
- 
- 		if (!p->mm == thaw_user_space)
- 			continue;
- 
-+		if (cgroup_frozen(p))
-+			continue;
-+
- 		thaw_process(p);
- 	} while_each_thread(g, p);
- 	read_unlock(&tasklist_lock);
- }
- 
+   * "freezer.kill"
+
+     writing <n> will send signal number <n> to all tasks
+
+* Usage :
+
+   # mkdir /containers/freezer
+   # mount -t container -ofreezer freezer  /containers/freezer
+   # mkdir /containers/freezer/0
+   # echo $some_pid > /containers/freezer/0/tasks
+
+to get status of the freezer subsystem :
+
+   # cat /containers/freezer/0/freezer.freeze
+   RUNNING
+
+to freeze all tasks in the container :
+
+   # echo 1 > /containers/freezer/0/freezer.freeze
+   # cat /containers/freezer/0/freezer.freeze
+   FREEZING
+   # cat /containers/freezer/0/freezer.freeze
+   FROZEN
+
+to unfreeze all tasks in the container :
+
+   # echo 1 > /containers/freezer/0/freezer.freeze
+   # cat /containers/freezer/0/freezer.freeze
+   RUNNING
+
+to kill all tasks in the container :
+
+   # echo 9 > /containers/freezer/0/freezer.kill
+
+* Caveats: 
+
+  - the FROZEN status is calculated and changed when the container
+    file "freezer.freeze" is read.
+  - frozen containers will be unfrozen when a system is resumed after 
+    a suspend. This is addressed by the last patch.
+
+* Series
+
+  Applies to 2.6.25-rc8-mm1
+
+  The first patches make the freezer available to all architectures
+  before implementing the freezer subsystem.
+
+[PATCH 1/4] Add TIF_FREEZE flag to all architectures
+[PATCH 2/4] Make refrigerator always available
+[PATCH 3/4] Implement freezer cgroup subsystem
+[PATCH 4/4] Skip frozen cgroups during power management resume
+
+  Each patch compiles, boots, and survives basic LTP containers and controllers 
+  	tests.
+  
+Comments are welcome.
+
+Cheers,
+	-Matt Helsley
 
 -- 
