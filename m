@@ -1,14 +1,15 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC][PATCH 1/3] use new pm_ops in DRM drivers
-Date: Thu, 3 Apr 2008 11:50:55 -0700
-Message-ID: <200804031150.55967.jbarnes__11861.9185327136$1207250407$gmane$org@virtuousgeek.org>
-References: <200804020207.40278.rjw@sisk.pl> <200804020209.47207.rjw@sisk.pl>
+From: matthltc@us.ibm.com
+Subject: [RFC PATCH 1/4] Container Freezer: Add TIF_FREEZE flag
+	to all architectures
+Date: Thu, 03 Apr 2008 14:03:17 -0700
+Message-ID: <20080403210316.659937801@us.ibm.com>
+References: <20080403210316.397506379@us.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804020209.47207.rjw@sisk.pl>
-Content-Disposition: inline
+Content-Disposition: inline;
+	filename=cgroup-freezer/cgroup-freezer-add-the-tif-freeze-flag-to-all-archs.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,157 +19,285 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 01, 2008 5:09 pm Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Introduce 'struct pm_ops' and 'struct pm_ext_ops' ('ext' meaning
-> 'extended') representing suspend and hibernation operations for bus
-> types, device classes, device types and device drivers.
->
-> Modify the PM core to use 'struct pm_ops' and 'struct pm_ext_ops'
-> objects, if defined, instead of the ->suspend() and ->resume(),
-> ->suspend_late(), and ->resume_early() callbacks (the old callbacks
-> will be considered as legacy and gradually phased out).
->
-> The main purpose of doing this is to separate suspend (aka S2RAM and
-> standby) callbacks from hibernation callbacks in such a way that the
-> new callbacks won't take arguments and the semantics of each of them
-> will be clearly specified. =A0This has been requested for multiple
-> times by many people, including Linus himself, and the reason is that
-> within the current scheme if ->resume() is called, for example, it's
-> difficult to say why it's been called (ie. is it a resume from RAM or
-> from hibernation or a suspend/hibernation failure etc.?).
+This patch is the first step in making the refrigerator() available 
+to all architectures, even for those without power management. 
 
-I like the new ops much better; their purpose is clearer and better separat=
-ed =
+The purpose of such a change is to be able to use the refrigerator() 
+in a new control group subsystem which will implement a control group
+freezer.
 
-than before.  I think the i915 changes should look something like this?
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+Tested-by: Matt Helsley <matthltc@us.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org
+---
+ include/asm-alpha/thread_info.h     |    2 ++
+ include/asm-avr32/thread_info.h     |    2 ++
+ include/asm-cris/thread_info.h      |    2 ++
+ include/asm-h8300/thread_info.h     |    2 ++
+ include/asm-m68k/thread_info.h      |    1 +
+ include/asm-m68knommu/thread_info.h |    2 ++
+ include/asm-parisc/thread_info.h    |    2 ++
+ include/asm-s390/thread_info.h      |    2 ++
+ include/asm-sparc/thread_info.h     |    2 ++
+ include/asm-sparc64/thread_info.h   |    2 ++
+ include/asm-um/thread_info.h        |    2 ++
+ include/asm-v850/thread_info.h      |    2 ++
+ include/asm-xtensa/thread_info.h    |    2 ++
+ 13 files changed, 25 insertions(+)
 
-Also, what about class devices?  Right now, they just have suspend & resume =
+Index: 2.6.25-rc3-mm1/include/asm-alpha/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-alpha/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-alpha/thread_info.h
+@@ -76,12 +76,14 @@ register struct thread_info *__current_t
+ #define TIF_UAC_SIGBUS		7
+ #define TIF_MEMDIE		8
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ /* Work to do on interrupt/exception return.  */
+ #define _TIF_WORK_MASK		(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
+Index: 2.6.25-rc3-mm1/include/asm-avr32/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-avr32/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-avr32/thread_info.h
+@@ -88,6 +88,7 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE		6
+ #define TIF_RESTORE_SIGMASK	7	/* restore signal mask in do_signal */
+ #define TIF_CPU_GOING_TO_SLEEP	8	/* CPU is entering sleep 0 mode */
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ #define TIF_DEBUG		30	/* debugging enabled */
+ #define TIF_USERSPACE		31      /* true if FS sets userspace */
+ 
+@@ -99,6 +100,7 @@ static inline struct thread_info *curren
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_CPU_GOING_TO_SLEEP (1 << TIF_CPU_GOING_TO_SLEEP)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ /* Note: The masks below must never span more than 16 bits! */
+ 
+Index: 2.6.25-rc3-mm1/include/asm-cris/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-cris/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-cris/thread_info.h
+@@ -86,6 +86,7 @@ struct thread_info {
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		17
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -93,6 +94,7 @@ struct thread_info {
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
+Index: 2.6.25-rc3-mm1/include/asm-h8300/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-h8300/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-h8300/thread_info.h
+@@ -92,6 +92,7 @@ static inline struct thread_info *curren
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		4
+ #define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -99,6 +100,7 @@ static inline struct thread_info *curren
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ 
+Index: 2.6.25-rc3-mm1/include/asm-m68k/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-m68k/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-m68k/thread_info.h
+@@ -58,5 +58,6 @@ struct thread_info {
+ #define TIF_DELAYED_TRACE	14	/* single step a syscall */
+ #define TIF_SYSCALL_TRACE	15	/* syscall trace active */
+ #define TIF_MEMDIE		16
++#define TIF_FREEZE		19
+ 
+ #endif	/* _ASM_M68K_THREAD_INFO_H */
+Index: 2.6.25-rc3-mm1/include/asm-m68knommu/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-m68knommu/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-m68knommu/thread_info.h
+@@ -88,12 +88,14 @@ static inline struct thread_info *curren
+ #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		4
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ 
+Index: 2.6.25-rc3-mm1/include/asm-parisc/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-parisc/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-parisc/thread_info.h
+@@ -62,6 +62,7 @@ struct thread_info {
+ #define TIF_32BIT               4       /* 32 bit binary */
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore saved signal mask */
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -69,6 +70,7 @@ struct thread_info {
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1 << TIF_32BIT)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ #define _TIF_USER_WORK_MASK     (_TIF_SIGPENDING | \
+                                  _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
+Index: 2.6.25-rc3-mm1/include/asm-s390/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-s390/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-s390/thread_info.h
+@@ -101,6 +101,7 @@ static inline struct thread_info *curren
+ 					   TIF_NEED_RESCHED */
+ #define TIF_31BIT		18	/* 32bit process */ 
+ #define TIF_MEMDIE		19
++#define TIF_FREEZE		20	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+@@ -113,6 +114,7 @@ static inline struct thread_info *curren
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_31BIT		(1<<TIF_31BIT)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: 2.6.25-rc3-mm1/include/asm-sparc/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-sparc/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-sparc/thread_info.h
+@@ -137,6 +137,7 @@ BTFIXUPDEF_CALL(void, free_thread_info, 
+ #define TIF_POLLING_NRFLAG	9	/* true if poll_idle() is polling
+ 					 * TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		10
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -145,6 +146,7 @@ BTFIXUPDEF_CALL(void, free_thread_info, 
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: 2.6.25-rc3-mm1/include/asm-sparc64/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-sparc64/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-sparc64/thread_info.h
+@@ -236,6 +236,7 @@ register struct thread_info *current_thr
+ #define TIF_ABI_PENDING		12
+ #define TIF_MEMDIE		13
+ #define TIF_POLLING_NRFLAG	14
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+@@ -249,6 +250,7 @@ register struct thread_info *current_thr
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_USER_WORK_MASK	((0xff << TI_FLAG_WSAVED_SHIFT) | \
+ 				 (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK | \
+Index: 2.6.25-rc3-mm1/include/asm-um/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-um/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-um/thread_info.h
+@@ -83,6 +83,7 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE	 	5
+ #define TIF_SYSCALL_AUDIT	6
+ #define TIF_RESTORE_SIGMASK	7
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -91,5 +92,6 @@ static inline struct thread_info *curren
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ #endif
+Index: 2.6.25-rc3-mm1/include/asm-v850/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-v850/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-v850/thread_info.h
+@@ -82,12 +82,14 @@ struct thread_info {
+ #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		4
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ 
+ /* Size of kernel stack for each process.  */
+Index: 2.6.25-rc3-mm1/include/asm-xtensa/thread_info.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-xtensa/thread_info.h
++++ 2.6.25-rc3-mm1/include/asm-xtensa/thread_info.h
+@@ -138,6 +138,7 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
++#define TIF_FREEZE		19	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+@@ -146,6 +147,7 @@ static inline struct thread_info *curren
+ #define _TIF_IRET		(1<<TIF_IRET)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
 
-callbacks, not full pm_ops structures.  But maybe they're not really =
+-- 
 
-necessary anyway, I could set the pm_ops.prepare & complete callbacks to DR=
-M =
-
-core routines in order to suspend & resume DRM client requests...
-
-Also, it looks like the PCI bits I had in i915 aren't really necessary?
-
-Thanks,
-Jesse
-
-diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
-index b2b451d..ec6356a 100644
---- a/drivers/char/drm/i915_drv.c
-+++ b/drivers/char/drm/i915_drv.c
-@@ -239,8 +239,9 @@ static void i915_restore_vga(struct drm_device *dev)
- =
-
- }
- =
-
--static int i915_suspend(struct drm_device *dev, pm_message_t state)
-+static int i915_save(struct device *device)
- {
-+	struct drm_device *dev =3D container_of(device, struct drm_device, dev);
- 	struct drm_i915_private *dev_priv =3D dev->dev_private;
- 	int i;
- =
-
-@@ -250,10 +251,6 @@ static int i915_suspend(struct drm_device *dev, =
-
-pm_message_t state)
- 		return -ENODEV;
- 	}
- =
-
--	if (state.event =3D=3D PM_EVENT_PRETHAW)
--		return 0;
--
--	pci_save_state(dev->pdev);
- 	pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
- =
-
- 	/* Pipe & plane A info */
-@@ -367,24 +364,16 @@ static int i915_suspend(struct drm_device *dev, =
-
-pm_message_t state)
- =
-
- 	i915_save_vga(dev);
- =
-
--	if (state.event =3D=3D PM_EVENT_SUSPEND) {
--		/* Shut down the device */
--		pci_disable_device(dev->pdev);
--		pci_set_power_state(dev->pdev, PCI_D3hot);
--	}
--
- 	return 0;
- }
- =
-
--static int i915_resume(struct drm_device *dev)
-+static int i915_restore(struct device *device)
- {
-+	struct drm_device *dev =3D container_of(device, struct drm_device, dev);
- 	struct drm_i915_private *dev_priv =3D dev->dev_private;
- 	int i;
- =
-
- 	pci_set_power_state(dev->pdev, PCI_D0);
--	pci_restore_state(dev->pdev);
--	if (pci_enable_device(dev->pdev))
--		return -1;
- =
-
- 	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
- =
-
-@@ -527,6 +516,23 @@ static int i915_resume(struct drm_device *dev)
- 	return 0;
- }
- =
-
-+static int i915_poweroff(struct device *dev)
-+{
-+	/* Shut down the device */
-+	pci_disable_device(dev->pdev);
-+	pci_set_power_state(dev->pdev, PCI_D3hot);
-+}
-+
-+static struct pm_ops i915_pm_ops =3D {
-+	.prepare =3D NULL, /* DRM core should prevent any new ioctls? */
-+	.complete =3D NULL, /* required to re-enable DRM client requests */
-+	.suspend =3D i915_save,
-+	.resume =3D i915_restore,
-+	.freeze =3D i915_save,
-+	.restore =3D i915_restore,
-+	.poweroff =3D i915_poweroff,
-+};
-+
- static struct drm_driver driver =3D {
- 	/* don't use mtrr's here, the Xserver or user space app should
- 	 * deal with them for intel hardware.
-@@ -539,8 +545,6 @@ static struct drm_driver driver =3D {
- 	.unload =3D i915_driver_unload,
- 	.lastclose =3D i915_driver_lastclose,
- 	.preclose =3D i915_driver_preclose,
--	.suspend =3D i915_suspend,
--	.resume =3D i915_resume,
- 	.device_is_agp =3D i915_driver_device_is_agp,
- 	.vblank_wait =3D i915_driver_vblank_wait,
- 	.vblank_wait2 =3D i915_driver_vblank_wait2,
-@@ -581,6 +585,7 @@ static struct drm_driver driver =3D {
- static int __init i915_init(void)
- {
- 	driver.num_ioctls =3D i915_max_ioctl;
-+	driver->dev.pm_ops =3D &i915_pm_ops;
- 	return drm_init(&driver);
- }
- =
+-- 
