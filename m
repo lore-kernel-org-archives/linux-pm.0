@@ -1,19 +1,14 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [Devel] [RFC PATCH 0/4] Container Freezer:
-	Reuse	Suspend	Freezer
-Date: Fri, 04 Apr 2008 17:54:03 -0700
-Message-ID: <1207356843.30178.180.camel__15244.6905886338$1207357068$gmane$org@localhost.localdomain>
-References: <20080403210316.397506379@us.ibm.com>
-	<6599ad830804031649p6bbc60f3s59fb7c25a7260505@mail.gmail.com>
-	<1207278180.30178.94.camel@localhost.localdomain>
-	<47F64FBB.2080207@cs.columbia.edu>
-	<1207348060.30178.166.camel@localhost.localdomain>
-	<47F6C829.4010109@cs.columbia.edu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 9 Apr 2008 11:34:45 +0200
+Message-ID: <20080409093444.GA6957__33231.0356236578$1207736146$gmane$org@ucw.cz>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47F6C829.4010109@cs.columbia.edu>
+Content-Disposition: inline
+In-Reply-To: <1204773188.4707.109.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,92 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Paul Menage <menage@google.com>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Fri, 2008-04-04 at 20:30 -0400, Oren Laadan wrote:
-> 
-> Matt Helsley wrote:
+> This is a minimal patch with only the essential features. All
+> additional features are split out and can be discussed later. I think
+> it may be easier to get consensus on this minimal patch.
 
-<snip>
 
-> > 	I don't have an upper limit on how many more states we will need and I
-> > think that number impacts the interface significantly. Can you give us
-> > an estimate?
-> 
-> In Zap there are (using the current terminology):
-> RUNNING - running
-> FREEZING - transition to FROZEN
-> FROZEN - frozen
-> THAWING - transition to RUNNING
-> CKPTING - being checkpointed (needs special semantics* for some ops)
-> RSTRTING - being restarted (may need special semantics* for some ops)
-> ABORTING - transition to DEAD (mainly when aborting a failed restart)
-> DEAD - dead (but not fully cleaned up yet)
-> 
-> There is also "SPECIAL" in which some operations are not allowed;
-> this simplifies dealing with a bunch of races related to checkpoint/
-> restart, but I'm not sure it's a must. If anything, it only stays
-> for very short times (like an uninterruptible sleep) saying "don't
-> mess with this container now, it's busy".
-> 
-> I have very good justifications for almost all the states, a good
-> reasoning for DEAD, and a case for SPECIAL (although there may be
-> a way to do without it).
-> 
-> Despite the "many" states, there are very few transitions: CKPTING
-> can only be reached from- and changed to- FROZEN. A similar rule holds
-> for RSTRTING. ABORTING is reached from RSTRTING, and leads to DEAD.
-> The only one I don't cover is reaching DEAD from any other state
-> (except SPECIAL) but I never saw a reason to explicitly encode that.
-> Something like this (without SPECIAL):
-> 
->           ->  FREEZING  ->          <-> CKPTING
-> RUNNING                    FROZEN
->           <-  THAWING   <-          <-> RSTRTING -> ABORTING -> DEAD
-> 
-> Out of curiosity - why does the number of states impact the interface
-> so much ?
+Eric, can we get some reviewing/merging going on? Patches seem pretty
+clean to me, and I do not think holding them outside mainline will
+help them... they will only get bigger and harder to merge :-(.
 
-	Only that, if you're trying to keep the interface human readable, then
-having too many names for things (states and transitions) can make the
-interface less than intuitive. Doesn't look like that's an issue for the
-above state machine though so I think you're right -- a single file with
-transitions encoded as states seems best.
+> Now, only the i386 architecture is supported. The patchset is based on
+> Linux kernel 2.6.25-rc3-mm1, and has been tested on IBM T42 with ACPI
+> on and off.
+> 
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-> > 
-> >> Second, my gut feeling is that a single, atomic operation to get the
-> >> status is preferred over multiple (non-atomic) operations. In other
-> >> words, I suggest a single state file instead of two. You can encode
-> >> every possible transition in a single state. It's not that the kernel
-> > 
-> > 	If the transitions are to be human-readable and there are more than a
-> > small number of states it may not be desirable to encode transitions as
-> > states. Paul's reason for suggesting the additional file(s), as best I
-> > could tell, was to keep the interface human-readable.
-> 
-> The scheme above has very few transitions. Whatever be the final scheme,
-> I would prefer not to have many possible transition (the full matrix).
-> It probably isn't necessary either.
-> 
-> The main idea behind limiting the transitions above, is that checkpoint
-> requires to first freeze the container to be able to capture a consistent
-> view of the state of its processes; that means, for example, that we also
-> would like to prevent signals from being delivered to tasks in a frozen
-> state (if you do want to signal - thaw it first).
-> 
-> There is also the issue of a pre-checkpoint (a.k.a live migration) where
-> significant state (mainly memory) of the container is recorded while the
-> container is still running, and when it's finally frozen little state
-> remains to be saved, reducing the application downtime. I didn't see a
-> need for a special state for this case; instead Zap uses a status flag
-> that belongs to the container.
-> 
-> Oren.
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-Thanks for the explanation of the states.
-
-Cheers,
-	-Matt Helsley
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
