@@ -1,15 +1,16 @@
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 9 Apr 2008 08:30:28 -0400
-Message-ID: <20080409123028.GC15469__3419.05699247054$1207744399$gmane$org@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080409093444.GA6957@ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH 1/4] Container Freezer: Add TIF_FREEZE
+	flag to all	architectures
+Date: Fri, 11 Apr 2008 13:49:30 +0200
+Message-ID: <20080411114930.GB1740__35895.7807453864$1207914691$gmane$org@elf.ucw.cz>
+References: <20080403210316.397506379@us.ibm.com>
+	<20080403210316.659937801@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080409093444.GA6957@ucw.cz>
+In-Reply-To: <20080403210316.659937801@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: matthltc@us.ibm.com
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Cedric Le Goater <clg@fr.ibm.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 09, 2008 at 11:34:45AM +0200, Pavel Machek wrote:
-> Hi!
+On Thu 2008-04-03 14:03:17, matthltc@us.ibm.com wrote:
+> This patch is the first step in making the refrigerator() available 
+> to all architectures, even for those without power management. 
 > 
-> > This is a minimal patch with only the essential features. All
-> > additional features are split out and can be discussed later. I think
-> > it may be easier to get consensus on this minimal patch.
+> The purpose of such a change is to be able to use the refrigerator() 
+> in a new control group subsystem which will implement a control group
+> freezer.
 > 
-> 
-> Eric, can we get some reviewing/merging going on? Patches seem pretty
-> clean to me, and I do not think holding them outside mainline will
-> help them... they will only get bigger and harder to merge :-(.
-> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> Cc: linux-pm@lists.linux-foundation.org
 
-Pavel, I think Huang is working on v10 based on feedback last time. So
-probably we can get into line by line review in next version.
-
-Thanks
-Vivek
+ACK.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
