@@ -1,36 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] s2ram: warn when interrupts should be disabled but are not
-Date: Sat, 12 Apr 2008 21:11:52 +0200
-Message-ID: <20080412191151.GA4212@ucw.cz>
-References: <20080412095311.GA1729@elf.ucw.cz> <Pine.LNX.4.44L0.0804121135350.10697-100000@netrider.rowland.org>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend
+	and	hibernation callbacks (rev. 7)
+Date: Fri, 11 Apr 2008 17:23:02 -0700
+Message-ID: <20080412002302.GA27656__42700.2287506641$1208039307$gmane$org@kroah.com>
+References: <200804040111.15255.rjw@sisk.pl> <200804040112.45769.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757617AbYDLTMP@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0804121135350.10697-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <200804040112.45769.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2008-04-12 11:36:32, Alan Stern wrote:
-> On Sat, 12 Apr 2008, Pavel Machek wrote:
+On Fri, Apr 04, 2008 at 01:12:44AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > ---
-> > commit fc3bccaf69e6c05464e7154369639bd5c96ccdc1
-> > tree bf960093ddb840242a00b4ec456ec79472b1c2ad
-> > parent 308e9d5309f378209e931f63f729806ec0a4d9f1
-> > author Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
-> > committer Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
-> > 
-> >  drivers/ata/ahci.c |    2 +-
-> >  drivers/base/sys.c |    3 +++
-> >  2 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> What happened to the drivers/ata/ahci.c part of the patch?
+> Introduce 'struct pm_ops' and 'struct pm_ext_ops' ('ext' meaning
+> 'extended') representing suspend and hibernation operations for bus
+> types, device classes, device types and device drivers.
 
-Sorry, bad diffstat (but correct patch).
+<snip>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This is probably because I took a few days to merge this, but it doesn't
+apply to my tree anymore, with some wierd merge errors that I don't
+think I can easily resolve without having to totally guess as to what it
+should be (the apm_32.c area especially...)
+
+Care to respin these patches?  Sorry for the delay.
+
+thanks,
+
+greg k-h
