@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Suspend and hibernation patchset against -rc9
-Date: Sun, 13 Apr 2008 19:39:13 +0200
-Message-ID: <200804131939.14965.rjw__38670.2747121037$1208108556$gmane$org@sisk.pl>
-References: <200803120129.25585.rjw@sisk.pl> <200803270051.31778.rjw@sisk.pl>
-	<200804020227.12943.rjw@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend
+	and	hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 07:05:11 +1000
+Message-ID: <1208120711.6958.52.camel@pasglop>
+References: <200804040111.15255.rjw@sisk.pl>
+	<20080412002302.GA27656@kroah.com> <200804131531.11650.rjw@sisk.pl>
+	<200804131533.03150.rjw@sisk.pl>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804020227.12943.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200804131533.03150.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Alexey Starikovskiy <astarikovskiy@suse.de>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-For everyone interested, there's a new suspend/hibernation patchset against
-2.6.25-rc8 at:
-  
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc9/patches/
- 
-It contains one new patch picked up from -mm,
-gregkh-driver-power_state-remove-it-from-driver-core.patch , that patch 16 is
-based on.
+On Sun, 2008-04-13 at 15:33 +0200, Rafael J. Wysocki wrote:
+> + *     The PM core executes @prepare() for all devices before starting to
+> + *     execute suspend callbacks for any of them, so drivers may assume all of
+> + *     the other devices to be present and functional while @prepare() is being
+> + *     executed.  In particular, it is safe to make GFP_KERNEL memory
+> + *     allocations from within @prepare().  However, drivers may NOT assume
+> + *     anything about the availability of the user space at that time and it
+> + *     is not correct to request firmware from within @prepare() (it's too
+> + *     late to do that).  [To work around this limitation, drivers may
+> + *     register suspend and hibernation notifiers that are executed before the
+> + *     freezing of tasks.]
 
-I still have not decided what to do with patches 01-03.  Patch 03 will probably 
-be sent upstream.
+Can you tell me why you kept that limitation with user space ?
 
-A new version of patch 04 has recently been included into the x86 git tree and
-before it had been tested in -mm and linux-next for quite some time.
+I don't see the point... On the contrary, prepare() is the pefect place
+to implement handshaking with userspace for drivers that need to do so,
+such as the DRM.
 
-Patches 05-11 and 13 are in the Greg's tree and have been tested in -mm and
-linux-next.
-  
-Patch 12 is in the ACPI test tree and has been tested in -mm and linux-next.
-
-Patches 16-18 are the 5th revision of the patchset introducing new suspend and
-hibernation callbacks for drivers.  They are in -mm and have just been resent to
-Greg.
-
-Thanks,
-Rafael
+Ben.
