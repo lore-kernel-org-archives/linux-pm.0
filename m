@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
 	hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 02:50:15 +0200
-Message-ID: <200804140250.16893.rjw__40585.77003093$1208134415$gmane$org@sisk.pl>
+Date: Mon, 14 Apr 2008 02:59:19 +0200
+Message-ID: <200804140259.20962.rjw__28278.0105867007$1208134875$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0804131916420.3060-100000@netrider.rowland.org>
-	<200804140207.19340.rjw@sisk.pl> <1208133790.6958.89.camel@pasglop>
+	<200804140207.19340.rjw@sisk.pl> <1208133631.6958.85.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1208133790.6958.89.camel@pasglop>
+In-Reply-To: <1208133631.6958.85.camel@pasglop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -30,29 +30,30 @@ On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
 > > http://lkml.org/lkml/2008/3/21/322
 > > (in short, the reporter sees APM suspend breakage under stress, occuring
 > > because APM uses our suspending of devices without the freezer).
+> > 
+> > It mostly appears to work without the freezer, but that's bacuse no one
+> > actually does things that might break it.  I don't think we can rely on users
+> > being so kind to us forever. :-)
 > 
-> Note that the above seems to lack any useful information (as usual) such
-> as what block driver is involved etc...
-> 
-> We fixed IDE to be robust vs. pending IOs a while ago. It's possible
-> that libata isn't as solid yet, I don't know.
-> 
-> This needs to be done regardless of feezer vs. not freezer. There are
-> thins in the kernel that can trigger BIOs at any time pretty much
-> regardless of user space being frozen or not, again, it's a case of
-> sticking our head in the sand and hoping the freezer hides all our
-> design bugs.
+> As far as I'm concerned, it's yet another case of the freezer papering
+> over a problem rather than fixing it properly.
 
-Now, you are talking about a completely different thing I agree with.
+Well, this is not a user's point of view.
 
-I gave this example just to show that some drivers break without the freezer
-if suspend is carried out under stress, nothing else.
+> If we're going to introduce new callbacks, we should have the right
+> semantic from day 1 -and- fix those problems, rather than going to the
+> same old recursive nonsensical arguments and do things to paper over
+> problems.
 
-My point is (and has always been) that we can't just drop the freezer right now
-without causing functional regressions to appear, at least for some users.
+Still, we're not supposed to break things, as far as the functionality is
+concerned, and that's important, because it means we _have_ _to_ make changes
+in steps.
 
-If there had not been _any_ other way to do things, we could do that, but IMO
-there is a way (that I described in the previous message).
+To be more precise, what you suggest (move ->prepare() before the freezer
+right now) means a patch with _functional_ changes (it's impossible to register
+new children of dev after ->prepare(dev) has run which can affect the user
+space in the window before ->prepare() and the freezer), whereas what I'd like
+to do is the (present) patch without functional changes.
 
 Thanks,
 Rafael
