@@ -1,15 +1,15 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend
 	and	hibernation callbacks (rev. 8)
-Date: Tue, 15 Apr 2008 06:47:36 +1000
-Message-ID: <1208206056.6958.176.camel@pasglop>
-References: <Pine.LNX.4.44L0.0804141049370.2236-100000@iolanthe.rowland.org>
+Date: Tue, 15 Apr 2008 06:48:50 +1000
+Message-ID: <1208206130.6958.178.camel@pasglop>
+References: <Pine.LNX.4.44L0.0804141105460.2406-100000@iolanthe.rowland.org>
 Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804141049370.2236-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0804141105460.2406-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,20 +24,33 @@ Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.o
 List-Id: linux-pm@vger.kernel.org
 
 
-On Mon, 2008-04-14 at 10:51 -0400, Alan Stern wrote:
-> On Sun, 13 Apr 2008, David Brownell wrote:
+On Mon, 2008-04-14 at 11:13 -0400, Alan Stern wrote:
+> On Mon, 14 Apr 2008, Rafael J. Wysocki wrote:
 > 
-> > I sort of agree.  Looking at it from a whole-system perspective,
-> > suspending needs to be able to chitchat with userspace ... and I
-> > don't think that can be done *before* writing to /sys/power/state
-> > in an acceptably generic/portable way.  (Briefly, applications
-> > need to have clean stopping points and be able to arrange system
-> > wakeup.  They may well have more work to do than most drivers.)
+> >     "you can assume that the user space is there while ->prepare() is running,
+> >     but you are supposed to prevent new children of the device from being
+> >     registered from that point on _and_ you have to make sure that freezable
+> >     tasks will be able to freeze after ->prepare() has run" (but why on Earth a
+> >     driver writer is now required to know what's a freezable task etc.?)
 > 
-> Pavel's recent work aside, the only way to initiate a system sleep is 
-> from userspace.  So it seems natural for all application notifications 
-> to be made by the initiating program, perhaps via dbus.
+> This reminds me...  We're going to need a way to make certain
+> activities mutually exclusive with system sleep.  The simplest example
+> is loading a kernel module; init and probe routines often end up
+> causing new child devices to be registered.
+> 
+> The most straightforward approach is to use an rwsem like the one we 
+> used to have.  However I'm concerned that under some circumstances 
+> there might be recursive read-locking.  (For example, the init routine 
+> in a newly-loaded module decides to load yet another module.  Can this 
+> actually happen?  libusual does something much like it.)
+> 
+> So it's quite possible we'll end up needing a mechanism that resembles 
+> an rwsem but allows recursive (properly nested) read-locking.  Does 
+> such a thing exist already, or would it have to be invented?
 
-No. Certainly not via dbus.
+Despite what Oliver says, that's a perfect example where the module load
+syscalls should return an error. Maybe something like -EAGAIN would do
+tho... that might need a minor update of the module init tools so they
+retry instead of failing.
 
 Ben.
