@@ -1,15 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks (rev. 8)
-Date: Tue, 15 Apr 2008 06:48:50 +1000
-Message-ID: <1208206130.6958.178.camel@pasglop>
-References: <Pine.LNX.4.44L0.0804141105460.2406-100000@iolanthe.rowland.org>
-Reply-To: benh@kernel.crashing.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 22:56:01 +0200
+Message-ID: <200804142256.03514.rjw__10151.4250309721$1208206725$gmane$org@sisk.pl>
+References: <200804040111.15255.rjw@sisk.pl> <20080414105522.GA4716@ucw.cz>
+	<1208205952.6958.174.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0804141105460.2406-100000@iolanthe.rowland.org>
+In-Reply-To: <1208205952.6958.174.camel@pasglop>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: benh@kernel.crashing.org
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
+> 
+> On Mon, 2008-04-14 at 12:55 +0200, Pavel Machek wrote:
+> > On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > Well, I'm not sure and I'm not going to introduce the change right now, after
+> > > > the paches have been included in -mm.
+> > > > 
+> > > > That would require quite some changes in the core code that I'd prefer to
+> > > > avoid for now.  We can do something like this in a separate patch series after
+> > > > the present one settles down a bit.
+> > > 
+> > > I disagree.
+> > > 
+> > > Doing it later would introduce yet another major semantic change.
+> > 
+> > 'allow load_firmware from prepare that was not allowed before' is not 'major'.
+> 
+> Having user space fully operating is major.
 
-On Mon, 2008-04-14 at 11:13 -0400, Alan Stern wrote:
-> On Mon, 14 Apr 2008, Rafael J. Wysocki wrote:
-> 
-> >     "you can assume that the user space is there while ->prepare() is running,
-> >     but you are supposed to prevent new children of the device from being
-> >     registered from that point on _and_ you have to make sure that freezable
-> >     tasks will be able to freeze after ->prepare() has run" (but why on Earth a
-> >     driver writer is now required to know what's a freezable task etc.?)
-> 
-> This reminds me...  We're going to need a way to make certain
-> activities mutually exclusive with system sleep.  The simplest example
-> is loading a kernel module; init and probe routines often end up
-> causing new child devices to be registered.
-> 
-> The most straightforward approach is to use an rwsem like the one we 
-> used to have.  However I'm concerned that under some circumstances 
-> there might be recursive read-locking.  (For example, the init routine 
-> in a newly-loaded module decides to load yet another module.  Can this 
-> actually happen?  libusual does something much like it.)
-> 
-> So it's quite possible we'll end up needing a mechanism that resembles 
-> an rwsem but allows recursive (properly nested) read-locking.  Does 
-> such a thing exist already, or would it have to be invented?
+Please tell me what exactly is wrong with doing things that depend on the
+user space being available from notifiers.
 
-Despite what Oliver says, that's a perfect example where the module load
-syscalls should return an error. Maybe something like -EAGAIN would do
-tho... that might need a minor update of the module init tools so they
-retry instead of failing.
-
-Ben.
+Thanks,
+Rafael
