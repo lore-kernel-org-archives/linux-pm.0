@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
 	hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 12:55:22 +0200
-Message-ID: <20080414105522.GA4716__16575.2154229724$1208170709$gmane$org@ucw.cz>
-References: <200804040111.15255.rjw@sisk.pl> <200804132339.45280.rjw@sisk.pl>
-	<1208124646.6958.61.camel@pasglop> <200804140027.12161.rjw@sisk.pl>
-	<1208126822.6958.63.camel@pasglop>
+Date: Mon, 14 Apr 2008 14:11:17 +0200
+Message-ID: <200804141411.19385.rjw__46497.8006006733$1208175222$gmane$org@sisk.pl>
+References: <200804040111.15255.rjw@sisk.pl> <200804140309.22057.rjw@sisk.pl>
+	<1208143380.6958.105.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1208143380.6958.105.camel@pasglop>
 Content-Disposition: inline
-In-Reply-To: <1208126822.6958.63.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +20,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: benh@kernel.crashing.org
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-04-14 08:47:02, Benjamin Herrenschmidt wrote:
+On Monday, 14 of April 2008, Benjamin Herrenschmidt wrote:
 > 
-> > Well, I'm not sure and I'm not going to introduce the change right now, after
-> > the paches have been included in -mm.
+> > To avoid breaking things (from the functional point of view) unnecessarily.
 > > 
-> > That would require quite some changes in the core code that I'd prefer to
-> > avoid for now.  We can do something like this in a separate patch series after
-> > the present one settles down a bit.
+> > In short, I don't really see the difference between moving ->prepare() before
+> > the freezer and droppig the freezer, which I'm not going to do right now.
 > 
-> I disagree.
-> 
-> Doing it later would introduce yet another major semantic change.
+> I believe the use of prepare for things like request_firmware etc... is
+> worth the effort of fixing the known breakage of not having the freezer
+> while preventing insertion of new devices (mostly USB). In fact, it
+> won't be such a big issue as the core should/will return an error from
+> attempting to add the device in that case.
 
-'allow load_firmware from prepare that was not allowed before' is not 'major'.
+Okay, this was a shortcut.  [If we're discussing things when there's 2 am here,
+I'm at a big disadvantage. :-)]
 
-If you feel strongly about that, please prepare patch at the top of
-Rafael's and we can discuss it.
+I think we agree that finally there should be no freezer and the things should
+go like this:
 
-But it really should be separate patch.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(1) notifiers
+(2) platform ->begin()
+(3) ->prepare()
+(4) ->suspend()
+(5) platform ->prepare()
+(6) ->suspend_noirq()
+(7) platform ->enter()
+(8) (we are in the sleep state)
+(9) ->resume_noirq()
+(10) platform ->finish()
+(11) ->resume()
+(12) ->complete()
+(13) platform ->end()
+(14) notifiers
+
+Now, the question arises how to reach that status from what we have at the
+moment and IMO there are two ways to go.
+
+The first one is what I've implemented in the $subject patch:
+(1) make ->prepare() be executed after the freezer with the current semantics
+    (ie. you can assume the user space do be there when ->prepare() is running
+    and use a notifier for things depending on that assumption)
+(2) after we've dropped the freezer, change the semantics of ->prepare() (now
+    you can assume that the user space is there)
+(3) move code from notifiers to ->prepare() - this is entirely optional from
+    the functionality point of view, the code can stay in the notifiers.
+The advantage of this is that it doesn't require nontrivial modifications of
+the core suspend/hibernation code.
+
+The second one is a bit more complicated:
+(1) make ->prepare() be executed before the freezer with the semantics like
+    "you can assume that the user space is there while ->prepare() is running,
+    but you are supposed to prevent new children of the device from being
+    registered from that point on _and_ you have to make sure that freezable
+    tasks will be able to freeze after ->prepare() has run" (but why on Earth a
+    driver writer is now required to know what's a freezable task etc.?)
+(2) after we've dropped the freezer, change the semantics of ->prepare() (now
+    there are no freezable tasks to care for)
+(3) remove the code necessary to make the freezer happy from ->prepare()
+    (if any) - this need not be totally optional, IMO
+Also, to implement this we'd have to change the core code (ie. add two
+additional routines, device_prepare() and device_complete() to be called by it,
+rework the error paths, move the platform ->begin()/->end() invocations
+before/after the freezer etc.).  In the end, we'll end up with a more
+complicated core in this case (we can simplify it afterwards, but that means
+one patchset more).
+
+[See how the semantics of ->prepare() changes in both cases, BTW.  We can't
+avoid changing it in the future, we can only choose _how_ to change it.]
+
+I prefer the first one quite a lot.
+
+Thanks,
+Rafael
