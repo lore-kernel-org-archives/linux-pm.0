@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend and
- hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 11:13:40 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0804141105460.2406-100000__20517.1583024368$1208186965$gmane$org@iolanthe.rowland.org>
-References: <200804141411.19385.rjw@sisk.pl>
+	hibernation callbacks (rev. 8)
+Date: Mon, 14 Apr 2008 22:41:08 +0200
+Message-ID: <200804142241.11545.oliver__32512.3164956041$1208205850$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0804141043001.2236-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804141411.19385.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0804141043001.2236-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 Apr 2008, Rafael J. Wysocki wrote:
+Am Montag, 14. April 2008 16:49:26 schrieb Alan Stern:
+> Now, I don't see what the big deal is here. =A0We all agree that it would =
 
->     "you can assume that the user space is there while ->prepare() is running,
->     but you are supposed to prevent new children of the device from being
->     registered from that point on _and_ you have to make sure that freezable
->     tasks will be able to freeze after ->prepare() has run" (but why on Earth a
->     driver writer is now required to know what's a freezable task etc.?)
+> be nice and appropriate if drivers could do things like =
 
-This reminds me...  We're going to need a way to make certain
-activities mutually exclusive with system sleep.  The simplest example
-is loading a kernel module; init and probe routines often end up
-causing new child devices to be registered.
+> request_firmware() during prepare(). =A0But for the moment they can't. =
+=A0
+> It's not like this is some tremendous hardship -- you aren't going to =
 
-The most straightforward approach is to use an rwsem like the one we 
-used to have.  However I'm concerned that under some circumstances 
-there might be recursive read-locking.  (For example, the init routine 
-in a newly-loaded module decides to load yet another module.  Can this 
-actually happen?  libusual does something much like it.)
+> have to rip out all the existing prepare() implementations and rewrite =
 
-So it's quite possible we'll end up needing a mechanism that resembles 
-an rwsem but allows recursive (properly nested) read-locking.  Does 
-such a thing exist already, or would it have to be invented?
+> them, because they don't exist yet!
 
-Alan Stern
+True. You cannot request firmware in the current suspend() call either.
+Rafael's code is a clear improvement over the existing code. Removal
+of the freezer will need a lot of rewriting in any case.
+
+	Regards
+		Oliver
