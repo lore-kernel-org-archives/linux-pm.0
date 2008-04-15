@@ -1,47 +1,70 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/3] PM: Introduce new top level suspend
-	and	hibernation callbacks (rev. 8)
-Date: Mon, 14 Apr 2008 23:21:43 +0200
-Message-ID: <20080414212142.GC26246__4259.01627536422$1208208183$gmane$org@elf.ucw.cz>
-References: <200804132147.03579.david-b@pacbell.net>
-	<Pine.LNX.4.44L0.0804141049370.2236-100000@iolanthe.rowland.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: s2ram: warn when interrupts should be disabled but are not
+Date: Mon, 14 Apr 2008 23:48:40 -0700
+Message-ID: <20080414234840.917594ea.akpm@linux-foundation.org>
+References: <20080412095311.GA1729@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0804141049370.2236-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756855AbYDOGt1@vger.kernel.org>
+In-Reply-To: <20080412095311.GA1729@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-04-14 10:51:34, Alan Stern wrote:
-> On Sun, 13 Apr 2008, David Brownell wrote:
-> 
-> > I sort of agree.  Looking at it from a whole-system perspective,
-> > suspending needs to be able to chitchat with userspace ... and I
-> > don't think that can be done *before* writing to /sys/power/state
-> > in an acceptably generic/portable way.  (Briefly, applications
-> > need to have clean stopping points and be able to arrange system
-> > wakeup.  They may well have more work to do than most drivers.)
-> 
-> Pavel's recent work aside, the only way to initiate a system sleep is 
-> from userspace.  So it seems natural for all application notifications 
-> to be made by the initiating program, perhaps via dbus.
+On Sat, 12 Apr 2008 11:53:11 +0200 Pavel Machek <pavel@ucw.cz> wrote:
 
-Actually, my plan is to do without notifications. Userspace should
-tell kernel "I'm prepared, you can suspend any time now"...
+> 
+> sysdevs should be suspended/resumed with IRQs disabled; if something
+> reenables them by mistake, we want to know early.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> ---
+> commit fc3bccaf69e6c05464e7154369639bd5c96ccdc1
+> tree bf960093ddb840242a00b4ec456ec79472b1c2ad
+> parent 308e9d5309f378209e931f63f729806ec0a4d9f1
+> author Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
+> committer Pavel <pavel@amd.ucw.cz> Sat, 12 Apr 2008 11:52:05 +0200
+> 
+>  drivers/ata/ahci.c |    2 +-
+>  drivers/base/sys.c |    3 +++
+>  2 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> index 8e13fd9..e214467 100644
+> --- a/drivers/base/sys.c
+> +++ b/drivers/base/sys.c
+> @@ -22,6 +22,7 @@ #include <linux/string.h>
+>  #include <linux/pm.h>
+>  #include <linux/device.h>
+>  #include <linux/mutex.h>
+> +#include <linux/hardirq.h>
+>  
+>  #include "base.h"
+>  
+> @@ -367,6 +368,7 @@ int sysdev_suspend(pm_message_t state)
+>  			/* Call auxillary drivers first */
+>  			list_for_each_entry(drv, &cls->drivers, entry) {
+>  				if (drv->suspend) {
+> +					WARN_ON(!irqs_disabled());
+>  					ret = drv->suspend(sysdev, state);
+>  					if (ret)
+>  						goto aux_driver;
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Is this warning ever triggers I expect we'll really really wish that
+we'd done the check _after_ calling drv->suspend, and that we had also
+done a print_symbol(drv->suspend).  No?
+
+
+> @@ -442,6 +444,7 @@ int sysdev_resume(void)
+>  		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
+>  			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
+>  
+> +			WARN_ON(!irqs_disabled());
+>  			__sysdev_resume(sysdev);
+>  		}
+>  	}
+
+Perhaps here too.
