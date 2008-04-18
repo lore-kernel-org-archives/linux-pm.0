@@ -1,14 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-mm1: suspend-to-disk warning, resume failure
-Date: Fri, 18 Apr 2008 04:33:29 -0700
-Message-ID: <20080418043329.e08241b1.akpm@linux-foundation.org>
-References: <20080417222125.99e807b6.akpm@linux-foundation.org>
-	<20080418110440.GA5455@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-mm1: not looking good
+Date: Fri, 18 Apr 2008 13:07:21 +0200
+Message-ID: <20080418110721.GA5478@elf.ucw.cz>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	<20080418005034.6e4dd9e7.akpm@linux-foundation.org>
+	<20080418005323.7c015c42.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080418110440.GA5455@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <20080418005323.7c015c42.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Stephen Smalley <sds@tycho.nsa.gov>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 18 Apr 2008 13:08:13 +0200 Pavel Machek <pavel@ucw.cz> wrote:
+Hi!
 
-> Hi!
+> On Fri, 18 Apr 2008 00:50:34 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > This is the Vaio.
-> > 
-> > This:
-> > 
-> > <cold boot>
-> > <suspend-to-ram>
-> > <resume-from-ram>
-> > <suspend-to-ram>
-> > <resume-from-ram>
-> > 
-> > works OK.
-> > 
-> > 
-> > This:
-> > 
-> > <cold boot>
-> > <suspend-to-disk>
-> > <resume-from-disk>
-> > 
-> > works OK.
-> > 
-> > 
-> > But this:
-> > 
-> > <cold boot>
-> > <suspend-to-ram>
-> > <resume-from-ram>
-> > <suspend-to-disk>
-> > <resume-from-disk>
+> > dmesg: http://userweb.kernel.org/~akpm/x.txt
+> > config: http://userweb.kernel.org/~akpm/config-t61p.txt
 > 
-> Works for me on thinkpad x60.
+> oop, there's more:
 > 
-> Problems I'm aware in this area: MCE driver does not like suspend
-> (compile it out), and iommu has problems (iommu=soft solves it).
+> 
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> firewire_core: created device fw0: GUID 00016c2000174bad, S400
+> PM: Device usb4 failed to restore: error -113
+> eth0: Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+> eth0: 10/100 speed: disabling TSO
+> PM: Device usb5 failed to restore: error -113
+> PM: Device usb7 failed to restore: error -113
+> sd 0:0:0:0: [sda] Starting disk
+> PM: Image restored successfully.
+> Restarting tasks ... done.
+> PM: Basic memory bitmaps freed
+> 
+> Those USB restore failures are new.  They're similar to the ones on the
+> doesnt-resume-properly-any-more Vaio.  They came out from the machine's
+> second (successful) resume-from-disk.
 
-Yeah.  I got down to bisect the Vaio failure and it went away.  But it was
-there.
+I got USB messages after s2ram + suspend to disk combination, too, but
+machine seems to work.
+
+ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
+ata1.00: configured for UDMA/100
+ata1.00: configured for UDMA/100
+ata1: EH complete
+sd 0:0:0:0: [sda] 117210240 512-byte hardware sectors (60012 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+sd 0:0:0:0: [sda] 117210240 512-byte hardware sectors (60012 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+PM: Device usb2 failed to restore: error -113
+PM: Device usb3 failed to restore: error -113
+PM: Device usb4 failed to restore: error -113
+PM: Image restored successfully.
+Restarting tasks ... done.
+PM: Basic memory bitmaps freed
+wlan0: RX disassociation from 00:11:2f:0e:95:a0 (reason=7)
+wlan0: disassociated
+
+(Apart from some wireless problems, solved by reconnecting...)
+
+(And ipw3945 LED indication now seems to work, good!)
+									Pavel 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
