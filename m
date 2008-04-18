@@ -1,16 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: [RESEND patch 2.6.25] acpi_pm_device_sleep_state()
-	cleanup
-Date: Fri, 18 Apr 2008 21:11:34 -0700
-Message-ID: <200804182111.34999.david-b@pacbell.net>
-References: <200803201408.33466.david-b@pacbell.net>
-	<200803201410.57801.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-mm1: suspend-to-disk warning, resume failure
+Date: Sat, 19 Apr 2008 01:19:10 +0200
+Message-ID: <20080418231910.GE13847@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0804181116590.6252-100000@iolanthe.rowland.org>
+	<200804182047.40724.rjw@sisk.pl> <200804182214.14376.rjw@sisk.pl>
+	<200804182238.45512.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200803201410.57801.david-b@pacbell.net>
 Content-Disposition: inline
+In-Reply-To: <200804182238.45512.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,93 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+> > > > > ipw2200: Radio Frequency Kill Switch is On:
+> > > > > Kill switch must be turned off for wireless networking to work.
+> > > > > PM: Device usb1 failed to (unknown PM event): error -113
+> > > > > PM: Device usb2 failed to (unknown PM event): error -113
+> > > > > PM: Device usb3 failed to (unknown PM event): error -113
+> > > > > PM: Device usb4 failed to (unknown PM event): error -113
+> > > > 
+> > > > These -113 errors can be ignored.  They are fallout from the recent 
+> > > > conversion of the driver core's suspend/resume API.  Matching changes 
+> > > > have not yet been added to the USB core.
+> > > > 
+> > > > The "(unknown PM event)" strings look like a bug, though.
+> > > 
+> > > Yes, it does.
+> > > 
+> > > I'm trying to figure this out.
+> > 
+> > This particular problem should be fixed by the appended patch.
+> 
+> The following patch is also necessary to make hibernation work as documented
+> in pm.h.
 
-Get rid of a superfluous acpi_pm_device_sleep_state() parameter.  The
-only legitimate value of that parameter must be derived from the first
-parameter, which is what all the callers already do.  (However, this
-does not address the fact that ACPI still doesn't set up those flags.)
+ACK.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- drivers/acpi/sleep/main.c  |    8 ++++----
- drivers/pci/pci-acpi.c     |    3 +--
- drivers/pnp/pnpacpi/core.c |    4 +---
- include/acpi/acpi_bus.h    |    4 ++--
- 4 files changed, 8 insertions(+), 11 deletions(-)
-
---- g26.orig/drivers/acpi/sleep/main.c	2008-04-18 19:26:19.000000000 -0700
-+++ g26/drivers/acpi/sleep/main.c	2008-04-18 20:08:23.000000000 -0700
-@@ -369,8 +369,8 @@ int acpi_suspend(u32 acpi_state)
- /**
-  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
-  *		in the system sleep state given by %acpi_target_sleep_state
-- *	@dev: device to examine
-- *	@wake: if set, the device should be able to wake up the system
-+ *	@dev: device to examine; its driver model wakeup flags control
-+ *		whether it should be able to wake up the system
-  *	@d_min_p: used to store the upper limit of allowed states range
-  *	Return value: preferred power state of the device on success, -ENODEV on
-  *		failure (ie. if there's no 'struct acpi_device' for @dev)
-@@ -388,7 +388,7 @@ int acpi_suspend(u32 acpi_state)
-  *	via @wake.
-  */
- 
--int acpi_pm_device_sleep_state(struct device *dev, int wake, int *d_min_p)
-+int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
- {
- 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
- 	struct acpi_device *adev;
-@@ -427,7 +427,7 @@ int acpi_pm_device_sleep_state(struct de
- 	 * can wake the system.  _S0W may be valid, too.
- 	 */
- 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
--	    (wake && adev->wakeup.state.enabled &&
-+	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
- 	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
- 		acpi_status status;
- 
---- g26.orig/drivers/pci/pci-acpi.c	2008-04-18 19:26:19.000000000 -0700
-+++ g26/drivers/pci/pci-acpi.c	2008-04-18 20:08:23.000000000 -0700
-@@ -249,8 +249,7 @@ static pci_power_t acpi_pci_choose_state
- {
- 	int acpi_state;
- 
--	acpi_state = acpi_pm_device_sleep_state(&pdev->dev,
--		device_may_wakeup(&pdev->dev), NULL);
-+	acpi_state = acpi_pm_device_sleep_state(&pdev->dev, NULL);
- 	if (acpi_state < 0)
- 		return PCI_POWER_ERROR;
- 
---- g26.orig/drivers/pnp/pnpacpi/core.c	2008-04-18 19:26:19.000000000 -0700
-+++ g26/drivers/pnp/pnpacpi/core.c	2008-04-18 20:08:23.000000000 -0700
-@@ -132,9 +132,7 @@ static int pnpacpi_suspend(struct pnp_de
- {
- 	int power_state;
- 
--	power_state = acpi_pm_device_sleep_state(&dev->dev,
--						device_may_wakeup(&dev->dev),
--						NULL);
-+	power_state = acpi_pm_device_sleep_state(&dev->dev, NULL);
- 	if (power_state < 0)
- 		power_state = (state.event == PM_EVENT_ON) ?
- 				ACPI_STATE_D0 : ACPI_STATE_D3;
---- g26.orig/include/acpi/acpi_bus.h	2008-04-18 19:26:19.000000000 -0700
-+++ g26/include/acpi/acpi_bus.h	2008-04-18 20:08:23.000000000 -0700
-@@ -376,9 +376,9 @@ acpi_handle acpi_get_pci_rootbridge_hand
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
- 
- #ifdef CONFIG_PM_SLEEP
--int acpi_pm_device_sleep_state(struct device *, int, int *);
-+int acpi_pm_device_sleep_state(struct device *, int *);
- #else /* !CONFIG_PM_SLEEP */
--static inline int acpi_pm_device_sleep_state(struct device *d, int w, int *p)
-+static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
- {
- 	if (p)
- 		*p = ACPI_STATE_D0;
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
