@@ -1,18 +1,14 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-mm1: not looking good
-Date: Fri, 18 Apr 2008 14:18:53 +0200
-Message-ID: <20080418121853.GA13623@elte.hu>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080418005034.6e4dd9e7.akpm@linux-foundation.org>
-	<20080418005323.7c015c42.akpm@linux-foundation.org>
-	<20080418005733.aa3e8250.akpm@linux-foundation.org>
-	<20080418092254.GA20661@elte.hu>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.25-mm1: suspend-to-disk warning, resume failure
+Date: Fri, 18 Apr 2008 04:33:29 -0700
+Message-ID: <20080418043329.e08241b1.akpm@linux-foundation.org>
+References: <20080417222125.99e807b6.akpm@linux-foundation.org>
+	<20080418110440.GA5455@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080418092254.GA20661@elte.hu>
+In-Reply-To: <20080418110440.GA5455@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,56 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Alan Mayer <ajm@sgi.com>, linux-usb@vger.kernel.org, James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>, Stephen Smalley <sds@tycho.nsa.gov>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 18 Apr 2008 13:08:13 +0200 Pavel Machek <pavel@ucw.cz> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> Hi!
+> 
+> > This is the Vaio.
+> > 
+> > This:
+> > 
+> > <cold boot>
+> > <suspend-to-ram>
+> > <resume-from-ram>
+> > <suspend-to-ram>
+> > <resume-from-ram>
+> > 
+> > works OK.
+> > 
+> > 
+> > This:
+> > 
+> > <cold boot>
+> > <suspend-to-disk>
+> > <resume-from-disk>
+> > 
+> > works OK.
+> > 
+> > 
+> > But this:
+> > 
+> > <cold boot>
+> > <suspend-to-ram>
+> > <resume-from-ram>
+> > <suspend-to-disk>
+> > <resume-from-disk>
+> 
+> Works for me on thinkpad x60.
+> 
+> Problems I'm aware in this area: MCE driver does not like suspend
+> (compile it out), and iommu has problems (iommu=soft solves it).
 
-> Subject: x86: disable preemption in native_smp_prepare_cpus
-
-that should be the patch below.
-
-	Ingo
-
------------->
-Subject: x86: disable preemption in native_smp_prepare_cpus
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Apr 18 11:07:10 CEST 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/smpboot.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/smpboot.c
-+++ linux-x86.q/arch/x86/kernel/smpboot.c
-@@ -1181,6 +1181,7 @@ static void __init smp_cpu_index_default
-  */
- void __init native_smp_prepare_cpus(unsigned int max_cpus)
- {
-+	preempt_disable();
- 	nmi_watchdog_default();
- 	smp_cpu_index_default();
- 	current_cpu_data = boot_cpu_data;
-@@ -1197,7 +1198,7 @@ void __init native_smp_prepare_cpus(unsi
- 	if (smp_sanity_check(max_cpus) < 0) {
- 		printk(KERN_INFO "SMP disabled\n");
- 		disable_smp();
--		return;
-+		goto out;
- 	}
- 
- 	preempt_disable();
-@@ -1237,6 +1238,8 @@ void __init native_smp_prepare_cpus(unsi
- 	printk(KERN_INFO "CPU%d: ", 0);
- 	print_cpu_info(&cpu_data(0));
- 	setup_boot_clock();
-+out:
-+	preempt_enable();
- }
- /*
-  * Early setup to make printk work.
+Yeah.  I got down to bisect the Vaio failure and it went away.  But it was
+there.
