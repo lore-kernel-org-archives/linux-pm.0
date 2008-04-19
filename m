@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.25-mm1: not looking good
-Date: Fri, 18 Apr 2008 13:07:21 +0200
-Message-ID: <20080418110721.GA5478@elf.ucw.cz>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080418005034.6e4dd9e7.akpm@linux-foundation.org>
-	<20080418005323.7c015c42.akpm@linux-foundation.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Higer latency with dynamic tick (need for an
+	io-ondemand govenor?)
+Date: Fri, 18 Apr 2008 20:45:56 -0700
+Message-ID: <200804182045.56893.david-b__10740.5429742814$1208618110$gmane$org@pacbell.net>
+References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
+	<1179474567.12981.53.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
 Content-Disposition: inline
-In-Reply-To: <20080418005323.7c015c42.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Stephen Smalley <sds@tycho.nsa.gov>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Friday 18 April 2008, Woodruff, Richard wrote:
+> When capturing some traces with dynamic tick we were noticing the
+> interrupt latency seems to go up a good amount. If you look at the trace
+> the gpio IRQ is now offset a good amount. =A0Good news I guess is its
+> pretty predictable.
 
-> On Fri, 18 Apr 2008 00:50:34 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > dmesg: http://userweb.kernel.org/~akpm/x.txt
-> > config: http://userweb.kernel.org/~akpm/config-t61p.txt
-> 
-> oop, there's more:
-> 
-> 
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> firewire_core: created device fw0: GUID 00016c2000174bad, S400
-> PM: Device usb4 failed to restore: error -113
-> eth0: Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
-> eth0: 10/100 speed: disabling TSO
-> PM: Device usb5 failed to restore: error -113
-> PM: Device usb7 failed to restore: error -113
-> sd 0:0:0:0: [sda] Starting disk
-> PM: Image restored successfully.
-> Restarting tasks ... done.
-> PM: Basic memory bitmaps freed
-> 
-> Those USB restore failures are new.  They're similar to the ones on the
-> doesnt-resume-properly-any-more Vaio.  They came out from the machine's
-> second (successful) resume-from-disk.
+That is, about 24 usec on this CPU ... an ARM v7, which I'm guessing
+is an OMAP34xx running fairly fast (order of 4x faster than most ARMs).
 
-I got USB messages after s2ram + suspend to disk combination, too, but
-machine seems to work.
+Similar issues were noted, also using ETM trace, on an ARM920 core [1]
+from Atmel.  There, the overhead of NO_HZ was observed to be more like
+150 usec of per-IRQ overhead, which is enough to make NO_HZ non-viable
+in some configurations.
 
-ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
-ata1.00: configured for UDMA/100
-ata1.00: configured for UDMA/100
-ata1: EH complete
-sd 0:0:0:0: [sda] 117210240 512-byte hardware sectors (60012 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-sd 0:0:0:0: [sda] 117210240 512-byte hardware sectors (60012 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-PM: Device usb2 failed to restore: error -113
-PM: Device usb3 failed to restore: error -113
-PM: Device usb4 failed to restore: error -113
-PM: Image restored successfully.
-Restarting tasks ... done.
-PM: Basic memory bitmaps freed
-wlan0: RX disassociation from 00:11:2f:0e:95:a0 (reason=7)
-wlan0: disassociated
 
-(Apart from some wireless problems, solved by reconnecting...)
+> I was wondering what thoughts of optimizing this might be.
 
-(And ipw3945 LED indication now seems to work, good!)
-									Pavel 
+Cutting down the math implied by jiffies updates might help.
+The 64 bit math for ktime structs isn't cheap; purely by eyeball,
+that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+- Dave
+
+[1] http://marc.info/?l=3Dlinux-kernel&m=3D120471594714499&w=3D2
