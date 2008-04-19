@@ -1,17 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-mm1: not looking good
-Date: Fri, 18 Apr 2008 11:22:55 +0200
-Message-ID: <20080418092254.GA20661@elte.hu>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080418005034.6e4dd9e7.akpm@linux-foundation.org>
-	<20080418005323.7c015c42.akpm@linux-foundation.org>
-	<20080418005733.aa3e8250.akpm@linux-foundation.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
+	policy inputs
+Date: Fri, 18 Apr 2008 21:18:04 -0700
+Message-ID: <200804182118.05228.david-b@pacbell.net>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803201422.55014.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200803201422.55014.david-b@pacbell.net>
 Content-Disposition: inline
-In-Reply-To: <20080418005733.aa3e8250.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,60 +20,158 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Alan Mayer <ajm@sgi.com>, linux-usb@vger.kernel.org, James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>, Stephen Smalley <sds@tycho.nsa.gov>, linux-pm@lists.linux-foundation.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+This imports the driver model device.power.may_wakeup flags to ACPI,
+using it to *REPLACE* the /proc/acpi/wakeup flags for some devices.
+It depends on the previous patch making device.power.can_wakeup behave.
+It does that by:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+ - Implementing platform_enable_wakeup(), which is currently invoked only
+   by pci_enable_wake().  When that's called -- probably in the driver
+   suspend() call -- it updates acpi_device.wakeup.state.enabled flag in
+   the same way writing to /proc/acpi/wakeup updates it.
+   
+ - Updating the usage of the corresponding ACPI flags when turning on
+   wakeup power domains and GPEs.
 
-> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x31/0x67()
->
-> [<ffffffff803523e6>] ? debug_smp_processor_id+0x32/0xc4
-> [<ffffffff8021ede5>] read_apic_id+0x31/0x67
-> [<ffffffff8066f7f2>] verify_local_APIC+0xa7/0x163
-> [<ffffffff8066e837>] native_smp_prepare_cpus+0x1ed/0x301
-> [<ffffffff80669ab2>] kernel_init+0x5a/0x276
+THIS PATCH NEEDS MORE ATTENTION because of the way the ACPI method
+invocations have been changing, e.g. the 1.0 vs 2.0 sequencing.
 
-that came in via the UV-APIC patchset but the warning is entirely 
-harmless. At that point we've got a single CPU running only so 
-preemption of that code to another CPU is not possible.
+Right now it's not clear to me whether the GPEs are always enabled at
+the right time, and for that matter whether the rules haven't changed
+so that drivers can no longer effectively control those settings from
+suspend() unless acpi_new_pts_ordering is in effect.
 
-native_smp_prepare_cpus() should probably just disable preemption, that 
-way we could remove all those ugly preempt disable-enable calls from the 
-called functions - per the patch below. (not boot tested yet - might 
-provoke atomic-scheduling warnings if i forgot about some schedule point 
-in this rather large codepath)
+ACPI systems see behavioral changes as follows:
 
-	Ingo
+   * Wakeup-aware PCI drivers no longer need to have someone override the
+     initial system config by writing to /proc/acpi/wakeup; existing calls
+     to pci_enable_wake() suffice.  For wakeup-unaware drivers, it's still
+     not clearly safe to enable wakeup in /proc/acpi/wakeup.
 
-------------------->
-Subject: x86: disable preemption in native_smp_prepare_cpus
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Apr 18 11:07:10 CEST 2008
+   * Non-PCI frameworks (as for PS2 serial ports) could call the platform
+     hook like PCI does, supporting wakeup-aware drivers.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+   * The /sys/devices/.../power/wakeup flags are a different kind of manual
+     override.  They _disable_ wakeup for broken hardware or drivers, rather
+     than _enabling_ it in the hope that unmodified drivers won't break when
+     their hardware triggers wakeup events.
+
+NOT YET SIGNED-OFF ... primarily because of the confusion about
+the order in which ACPI methods get called during entry to suspend
+states.  Presumably one of the "new style" PM methods calls will
+now always work for drivers wanting to enable wakeup methods...
+
 ---
- arch/x86/kernel/smpboot.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/acpi/sleep/main.c   |    2 +-
+ drivers/acpi/sleep/wakeup.c |   44 ++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 43 insertions(+), 3 deletions(-)
 
-Index: linux-x86.q/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/smpboot.c
-+++ linux-x86.q/arch/x86/kernel/smpboot.c
-@@ -1181,6 +1181,7 @@ static void __init smp_cpu_index_default
-  */
- void __init native_smp_prepare_cpus(unsigned int max_cpus)
+--- g26.orig/drivers/acpi/sleep/main.c	2008-02-24 02:07:57.000000000 -0800
++++ g26/drivers/acpi/sleep/main.c	2008-02-24 02:08:04.000000000 -0800
+@@ -470,7 +470,7 @@ int acpi_pm_device_sleep_state(struct de
+ 	 * can wake the system.  _S0W may be valid, too.
+ 	 */
+ 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
+-	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
++	    (device_may_wakeup(dev) &&
+ 	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
+ 		acpi_status status;
+ 
+--- g26.orig/drivers/acpi/sleep/wakeup.c	2008-02-24 02:03:27.000000000 -0800
++++ g26/drivers/acpi/sleep/wakeup.c	2008-02-24 02:08:04.000000000 -0800
+@@ -35,12 +35,22 @@ void acpi_enable_wakeup_device_prep(u8 s
+ 		struct acpi_device *dev = container_of(node,
+ 						       struct acpi_device,
+ 						       wakeup_list);
++		struct device *ldev;
+ 
+ 		if (!dev->wakeup.flags.valid ||
+ 		    !dev->wakeup.state.enabled ||
+ 		    (sleep_state > (u32) dev->wakeup.sleep_state))
+ 			continue;
+ 
++		ldev = acpi_get_physical_device(dev->handle);
++		if (ldev) {
++			int flag = device_may_wakeup(ldev);
++
++			put_device(ldev);
++			if (!flag)
++				continue;
++		}
++
+ 		spin_unlock(&acpi_device_lock);
+ 		acpi_enable_wakeup_device_power(dev);
+ 		spin_lock(&acpi_device_lock);
+@@ -57,8 +67,8 @@ void acpi_enable_wakeup_device(u8 sleep_
  {
-+	preempt_disable();
- 	nmi_watchdog_default();
- 	smp_cpu_index_default();
- 	current_cpu_data = boot_cpu_data;
-@@ -1237,6 +1238,7 @@ void __init native_smp_prepare_cpus(unsi
- 	printk(KERN_INFO "CPU%d: ", 0);
- 	print_cpu_info(&cpu_data(0));
- 	setup_boot_clock();
-+	preempt_enable();
+ 	struct list_head *node, *next;
+ 
+-	/* 
+-	 * Caution: this routine must be invoked when interrupt is disabled 
++	/*
++	 * Caution: this routine must be invoked when interrupt is disabled
+ 	 * Refer ACPI2.0: P212
+ 	 */
+ 	ACPI_FUNCTION_TRACE("acpi_enable_wakeup_device");
+@@ -107,6 +117,7 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
++		struct device *ldev;
+ 
+ 		if (!dev->wakeup.flags.valid)
+ 			continue;
+@@ -125,6 +136,15 @@ void acpi_disable_wakeup_device(u8 sleep
+ 			continue;
+ 		}
+ 
++		ldev = acpi_get_physical_device(dev->handle);
++		if (ldev) {
++			int flag = device_may_wakeup(ldev);
++
++			put_device(ldev);
++			if (!flag)
++				continue;
++		}
++
+ 		spin_unlock(&acpi_device_lock);
+ 		acpi_disable_wakeup_device_power(dev);
+ 		/* Never disable run-wake GPE */
+@@ -139,6 +159,24 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	spin_unlock(&acpi_device_lock);
  }
- /*
-  * Early setup to make printk work.
+ 
++static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
++{
++	struct acpi_device	*adev;
++	int			status;
++
++	if (!device_can_wakeup(dev))
++		return -EINVAL;
++	if (is_on && !device_may_wakeup(dev))
++		return -EINVAL;
++
++	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
++	if (status < 0)
++		return status;
++
++	adev->wakeup.state.enabled = !!is_on;
++	return 0;
++}
++
+ static int __init acpi_wakeup_device_init(void)
+ {
+ 	struct list_head *node, *next;
+@@ -146,6 +184,8 @@ static int __init acpi_wakeup_device_ini
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	platform_enable_wakeup = acpi_platform_enable_wakeup;
++
+ 	spin_lock(&acpi_device_lock);
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev = container_of(node,
