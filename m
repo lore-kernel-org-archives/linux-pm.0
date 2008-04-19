@@ -1,16 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Higer latency with dynamic tick (need for an
-	io-ondemand govenor?)
-Date: Fri, 18 Apr 2008 20:45:56 -0700
-Message-ID: <200804182045.56893.david-b__10740.5429742814$1208618110$gmane$org@pacbell.net>
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
-	<1179474567.12981.53.camel@chaos>
-	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
+Subject: [RESEND patch 2.6.25] ACPI sets up
+	device.power.can_wakeup flags
+Date: Fri, 18 Apr 2008 21:14:34 -0700
+Message-ID: <200804182114.34282.david-b__27345.657736487$1208618182$gmane$org@pacbell.net>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803201420.40660.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
+In-Reply-To: <200803201420.40660.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,31 +20,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 18 April 2008, Woodruff, Richard wrote:
-> When capturing some traces with dynamic tick we were noticing the
-> interrupt latency seems to go up a good amount. If you look at the trace
-> the gpio IRQ is now offset a good amount. =A0Good news I guess is its
-> pretty predictable.
+This exports the "acpi_device.wakeup.flags.valid" flag to the driver
+model as "device.power.can_wakeup".  That is, each "ACPI device" in
+the /proc/acpi/wakeup file that corresponds to a "real" device will
+initialize the can_wakeup flag to true.
 
-That is, about 24 usec on this CPU ... an ARM v7, which I'm guessing
-is an OMAP34xx running fairly fast (order of 4x faster than most ARMs).
+A separate patch is needed to make ACPI pay attention to the userspace
+input:  devices that can_wakeup have a should_wakeup flag, initially
+true, which is settable via sysfs and tested using device_may_wakeup().
+That's intended to be the primary policy input to the system, not the
+ACPI-specific /proc/acpi/wakeup file.
 
-Similar issues were noted, also using ETM trace, on an ARM920 core [1]
-from Atmel.  There, the overhead of NO_HZ was observed to be more like
-150 usec of per-IRQ overhead, which is enough to make NO_HZ non-viable
-in some configurations.
+Note also that the ACPI tables list only motherboard devices, but many
+systems include more peripherals than those.  While the USB framework
+handles USB peripherals, nothing in Linux currently sets those flags
+for wakeup-capable devices on other expansion busses (like PCI).
 
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+NOTE:  this should probably not merge upstream until the patch to
+make ACPI actually *use* these flags gets merged, since otherwise
+these flags won't reflect actual behavior.
 
-> I was wondering what thoughts of optimizing this might be.
+ drivers/acpi/button.c |    3 +++
+ drivers/acpi/glue.c   |    1 +
+ drivers/acpi/power.c  |    4 ++++
+ 3 files changed, 8 insertions(+)
 
-Cutting down the math implied by jiffies updates might help.
-The 64 bit math for ktime structs isn't cheap; purely by eyeball,
-that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
-
-- Dave
-
-[1] http://marc.info/?l=3Dlinux-kernel&m=3D120471594714499&w=3D2
+--- g26.orig/drivers/acpi/button.c	2008-03-20 03:02:45.000000000 -0700
++++ g26/drivers/acpi/button.c	2008-03-20 03:27:24.000000000 -0700
+@@ -476,6 +476,9 @@ static int acpi_button_add(struct acpi_d
+ 	if (button->type == ACPI_BUTTON_TYPE_LID)
+ 		acpi_lid_send_state(button);
+ 
++	/* for these devices the ACPI node *IS* the "physical" device */
++	device_init_wakeup(&device->dev, device->wakeup.flags.valid);
++
+ 	if (device->wakeup.flags.valid) {
+ 		/* Button's GPE is run-wake GPE */
+ 		acpi_set_gpe_type(device->wakeup.gpe_device,
+--- g26.orig/drivers/acpi/glue.c	2008-03-20 03:27:11.000000000 -0700
++++ g26/drivers/acpi/glue.c	2008-03-20 03:27:25.000000000 -0700
+@@ -162,6 +162,7 @@ static int acpi_bind_one(struct device *
+ 	if (!ACPI_FAILURE(status)) {
+ 		int ret;
+ 
++		device_init_wakeup(dev, acpi_dev->wakeup.flags.valid);
+ 		ret = sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj,
+ 				"firmware_node");
+ 		if (ret != 0)
+--- g26.orig/drivers/acpi/power.c	2008-03-20 03:02:45.000000000 -0700
++++ g26/drivers/acpi/power.c	2008-03-20 03:27:25.000000000 -0700
+@@ -313,6 +313,7 @@ int acpi_enable_wakeup_device_power(stru
+ 		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
+ 		if (ret) {
+ 			printk(KERN_ERR PREFIX "Transition power state\n");
++			device_init_wakeup(&dev->dev, 0);
+ 			dev->wakeup.flags.valid = 0;
+ 			return -1;
+ 		}
+@@ -322,6 +323,7 @@ int acpi_enable_wakeup_device_power(stru
+ 	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
+ 	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+ 		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
++		device_init_wakeup(&dev->dev, 0);
+ 		dev->wakeup.flags.valid = 0;
+ 		ret = -1;
+ 	}
+@@ -351,6 +353,7 @@ int acpi_disable_wakeup_device_power(str
+ 	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
+ 	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+ 		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
++		device_init_wakeup(&dev->dev, 0);
+ 		dev->wakeup.flags.valid = 0;
+ 		return -1;
+ 	}
+@@ -360,6 +363,7 @@ int acpi_disable_wakeup_device_power(str
+ 		ret = acpi_power_off_device(dev->wakeup.resources.handles[i], dev);
+ 		if (ret) {
+ 			printk(KERN_ERR PREFIX "Transition power state\n");
++			device_init_wakeup(&dev->dev, 0);
+ 			dev->wakeup.flags.valid = 0;
+ 			return -1;
+ 		}
