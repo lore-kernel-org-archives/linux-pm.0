@@ -1,17 +1,20 @@
-From: David Brownell <david-b@pacbell.net>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: Higer latency with dynamic tick (need for an
-	io-ondemand govenor?)
-Date: Sat, 19 Apr 2008 20:51:22 -0700
-Message-ID: <200804192051.22492.david-b__38669.3813758486$1208663613$gmane$org@pacbell.net>
+ io-ondemand govenor?)
+Date: Sat, 19 Apr 2008 23:19:48 -0700
+Message-ID: <20080419231948.149f2783__22535.2732501507$1208672529$gmane$org@laptopd505.fenrus.org>
 References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
-	<alpine.LFD.1.10.0804190839140.3261@apollo.tec.linutronix.de>
-	<alpine.DEB.1.10.0804191546430.4670@asgard>
+	<1179396659.3764.40.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com>
+	<1179434296.12981.14.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D913027429010259ED@dlee13.ent.ti.com>
+	<1179474567.12981.53.camel@chaos>
+	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0804191546430.4670@asgard>
-Content-Disposition: inline
+In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,85 +24,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 19 April 2008, david@lang.hm wrote:
-> On Sat, 19 Apr 2008, Thomas Gleixner wrote:
+On Fri, 18 Apr 2008 10:43:32 -0500
+"Woodruff, Richard" <r-woodruff2@ti.com> wrote:
+
+> Hi,
 > 
-> > On Fri, 18 Apr 2008, David Brownell wrote:
-> >> On Friday 18 April 2008, Woodruff, Richard wrote:
-> >>> When capturing some traces with dynamic tick we were noticing the
-> >>> interrupt latency seems to go up a good amount. 
-> >>
-> >>> I was wondering what thoughts of optimizing this might be.
-> >>
-> >> Cutting down the math implied by jiffies updates might help.
-
-And update_wall_time() costs, too.
-
-
-> >> The 64 bit math for ktime structs isn't cheap; purely by eyeball,
-> >> that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
-> >
-> > Hmm, I have no real good idea to avoid the div64 in the case of a long
-> > idle sleep. Any brilliant patches are welcome :)
-
-That is, in tick_do_update_jiffies64()?
-
-                delta = ktime_sub(delta, tick_period);
-                last_jiffies_update = ktime_add(last_jiffies_update,
-                                                tick_period);
-
-                /* Slow path for long timeouts */
-                if (unlikely(delta.tv64 >= tick_period.tv64)) {
-                        s64 incr = ktime_to_ns(tick_period);
-
-                        ticks = ktime_divns(delta, incr);
-
-                        last_jiffies_update = ktime_add_ns(last_jiffies_update,
-                                                           incr * ticks);
-                }
-                do_timer(++ticks);
-
-Some math not shown here is converting clocksource values
-to ktimes ... cyc2ns() has a comment about needing some
-optimization, I wonder if that's an issue here.
-
-Maybe turning tick_period into an *actual* constant (it's
-a function of HZ) would help a bit; "incr" too.
-
-Re the "ticks = ktime_divns(...)":  since "incr" is constant,
-the first thing that comes to mind is a binary search over a
-precomputed table.
-
-For HZ=100 (common for ARM) a table of size 128 would exceed
-the normal range of NO_HZ tick rates ... down to below 1 HZ.
+> When capturing some traces with dynamic tick we were noticing the
+> interrupt latency seems to go up a good amount. If you look at the
+> trace the gpio IRQ is now offset a good amount.  Good news I guess is
+> its pretty predictable.
+> 
+> * If we couple this with progressively higher latency C-States we see
+> that IO speed can fall by a good amount, especially for PIO mixes.
+> Now if QOS is maintained you may or may-not care.
+> 
+> I was wondering what thoughts of optimizing this might be.
+> 
+> One thought was if an io-ondemand of some sort was used.  It could
+> track interrupt statistics and be feed back into cpu-idle.  When
+> there is a high interrupt load period it could shrink the acceptable
+> latency and thus help choose a good a C-State which favors
+> throughput.  Some moving average window could be used to track it.
+> 
+> Perhaps a new interrupt attribute could be attached at irq request
+> time to allow the tracking of bandwidth important devices.
+> 
+> The attached is captured on a .22 kernel.  The same should be
+> available in a bit on a .24 kernel.
 
 
-> how long is 'long idle sleep'? and how common are such sleeps?
+So right now we have the pmqos framework (and before that we had a simpler version of this);
+so if your realtime (or realtime-like) system cannot deal with latency longer then X usec,
+you can just tell the kernel,, and the deeper power states that have this latency, just won't get used.
 
-The above code says "unlikely()" but that presumes very busy
-systems.  I would have assumed taking more than one tick was
-the most common case, since most systems spend more time idle
-than working.  I certainly observe it to be the common case,
-and it's a power management optimization goal.
+What you're mentioning is sort-of-kinda different. It's the "most of the time go as deep as you can,
+but when I do IO, it hurts throughput".
+There's two approaches to that in principle
+1) Work based on historic behavior, and go less deep when there's lots of activity in the (recent) past
+   A few folks at Intel are working on something like this
+2) You have the IO layer tell the kernel "heads up, something coming down soon"
+   This is more involved, especially since it's harder to predict when the disk will be done.
+   (it could be a 10msec seek, but it could also be in the disks cache memory, or it could be an SSD or,
+   the disk may have to read the sector 5 times because of weak magnetics... it's all over the map)
+   Another complication is that we need to only do this for "synchronous" IO's.. which is known at higher layers
+   in the block stack, but I think gets lost towards the bottom.
+
+There's another problem with 2); in a multicore world; all packages EXACPT for the one which will get the irq can go to a deeper state anyway....
+but it might be hard to predict which CPU will get the completion irq.
 
 
-> is it  
-> possibly worth the cost of a test in the hotpath to see if you need to do 
-> the 64 bit math or can get away with 32 bit math (at least on some 
-> platforms)
-
-Possibly opening a can of worms, I'll observe that when the
-concern is just to update jiffies, converting to ktime values
-seems all but needless.  Deltas at the level of a clocksource
-can be mapped to jiffies as easily as deltas at the nsec level,
-saving some work...
-
-Those delta tables could use just 32 bit values in the most
-common cases:  clocksource ticking at less than 4 GHz, and
-the IRQs firing more often than once a second. 
-
-- Dave
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
