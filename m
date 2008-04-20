@@ -1,18 +1,17 @@
-From: david@lang.hm
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: Higer latency with dynamic tick (need for an
- io-ondemand govenor?)
-Date: Sat, 19 Apr 2008 15:49:23 -0700 (PDT)
-Message-ID: <alpine.DEB.1.10.0804191546430.4670__41890.4716418639$1208645166$gmane$org@asgard>
+	io-ondemand govenor?)
+Date: Sat, 19 Apr 2008 20:51:22 -0700
+Message-ID: <200804192051.22492.david-b__38669.3813758486$1208663613$gmane$org@pacbell.net>
 References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
-	<1179474567.12981.53.camel@chaos>
-	<3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
-	<200804182045.56893.david-b@pacbell.net>
 	<alpine.LFD.1.10.0804190839140.3261@apollo.tec.linutronix.de>
+	<alpine.DEB.1.10.0804191546430.4670@asgard>
 Mime-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY="8323328-307532848-1208589223=:3261"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804190839140.3261@apollo.tec.linutronix.de>
-Content-ID: <alpine.DEB.1.10.0804191546431.4670@asgard>
+In-Reply-To: <alpine.DEB.1.10.0804191546430.4670@asgard>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,60 +21,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+To: david@lang.hm
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Saturday 19 April 2008, david@lang.hm wrote:
+> On Sat, 19 Apr 2008, Thomas Gleixner wrote:
+> 
+> > On Fri, 18 Apr 2008, David Brownell wrote:
+> >> On Friday 18 April 2008, Woodruff, Richard wrote:
+> >>> When capturing some traces with dynamic tick we were noticing the
+> >>> interrupt latency seems to go up a good amount. 
+> >>
+> >>> I was wondering what thoughts of optimizing this might be.
+> >>
+> >> Cutting down the math implied by jiffies updates might help.
 
---8323328-307532848-1208589223=:3261
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8; format=flowed
-Content-ID: <alpine.DEB.1.10.0804191546432.4670@asgard>
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id m3JMhCcj031341
-
-On Sat, 19 Apr 2008, Thomas Gleixner wrote:
-
-> On Fri, 18 Apr 2008, David Brownell wrote:
->> On Friday 18 April 2008, Woodruff, Richard wrote:
->>> When capturing some traces with dynamic tick we were noticing the
->>> interrupt latency seems to go up a good amount. If you look at the tr=
-ace
->>> the gpio IRQ is now offset a good amount. =C2=A0Good news I guess is =
-its
->>> pretty predictable.
->>
->> That is, about 24 usec on this CPU ... an ARM v7, which I'm guessing
->> is an OMAP34xx running fairly fast (order of 4x faster than most ARMs).
->>
->> Similar issues were noted, also using ETM trace, on an ARM920 core [1]
->> from Atmel.  There, the overhead of NO_HZ was observed to be more like
->> 150 usec of per-IRQ overhead, which is enough to make NO_HZ non-viable
->> in some configurations.
->>
->>
->>> I was wondering what thoughts of optimizing this might be.
->>
->> Cutting down the math implied by jiffies updates might help.
->> The 64 bit math for ktime structs isn't cheap; purely by eyeball,
->> that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
->
-> Hmm, I have no real good idea to avoid the div64 in the case of a long
-> idle sleep. Any brilliant patches are welcome :)
-
-how long is 'long idle sleep'? and how common are such sleeps? is it=20
-possibly worth the cost of a test in the hotpath to see if you need to do=
-=20
-the 64 bit math or can get away with 32 bit math (at least on some=20
-platforms)
-
-David Lang
---8323328-307532848-1208589223=:3261
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+And update_wall_time() costs, too.
 
 
---8323328-307532848-1208589223=:3261--
+> >> The 64 bit math for ktime structs isn't cheap; purely by eyeball,
+> >> that was almost 1/3 the cost of that 24 usec (mostly __do_div64).
+> >
+> > Hmm, I have no real good idea to avoid the div64 in the case of a long
+> > idle sleep. Any brilliant patches are welcome :)
+
+That is, in tick_do_update_jiffies64()?
+
+                delta = ktime_sub(delta, tick_period);
+                last_jiffies_update = ktime_add(last_jiffies_update,
+                                                tick_period);
+
+                /* Slow path for long timeouts */
+                if (unlikely(delta.tv64 >= tick_period.tv64)) {
+                        s64 incr = ktime_to_ns(tick_period);
+
+                        ticks = ktime_divns(delta, incr);
+
+                        last_jiffies_update = ktime_add_ns(last_jiffies_update,
+                                                           incr * ticks);
+                }
+                do_timer(++ticks);
+
+Some math not shown here is converting clocksource values
+to ktimes ... cyc2ns() has a comment about needing some
+optimization, I wonder if that's an issue here.
+
+Maybe turning tick_period into an *actual* constant (it's
+a function of HZ) would help a bit; "incr" too.
+
+Re the "ticks = ktime_divns(...)":  since "incr" is constant,
+the first thing that comes to mind is a binary search over a
+precomputed table.
+
+For HZ=100 (common for ARM) a table of size 128 would exceed
+the normal range of NO_HZ tick rates ... down to below 1 HZ.
+
+
+> how long is 'long idle sleep'? and how common are such sleeps?
+
+The above code says "unlikely()" but that presumes very busy
+systems.  I would have assumed taking more than one tick was
+the most common case, since most systems spend more time idle
+than working.  I certainly observe it to be the common case,
+and it's a power management optimization goal.
+
+
+> is it  
+> possibly worth the cost of a test in the hotpath to see if you need to do 
+> the 64 bit math or can get away with 32 bit math (at least on some 
+> platforms)
+
+Possibly opening a can of worms, I'll observe that when the
+concern is just to update jiffies, converting to ktime values
+seems all but needless.  Deltas at the level of a clocksource
+can be mapped to jiffies as easily as deltas at the nsec level,
+saving some work...
+
+Those delta tables could use just 32 bit values in the most
+common cases:  clocksource ticking at less than 4 GHz, and
+the IRQs firing more often than once a second. 
+
+- Dave
