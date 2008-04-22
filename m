@@ -1,16 +1,17 @@
-From: Zhao Yakui <yakui.zhao@intel.com>
-Subject: Re: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
-	policy	inputs
-Date: Tue, 22 Apr 2008 21:30:17 +0800
-Message-ID: <1208871017.14474.52.camel__10501.09570283$1208842838$gmane$org@yakui_zhao.sh.intel.com>
-References: <200803201408.33466.david-b@pacbell.net>
-	<200803201422.55014.david-b@pacbell.net>
-	<200804182118.05228.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: device_pm_add (was: Re: 2.6.25-git2: BUG: unable to
+	handle kernel paging request at ffffffffffffffff)
+Date: Tue, 22 Apr 2008 22:34:18 +0200
+Message-ID: <200804222234.19936.rjw__29340.5661861927$1208896628$gmane$org@sisk.pl>
+References: <alpine.LFD.1.10.0804201410090.2779@woody.linux-foundation.org>
+	<c4e36d110804221135v1dbfaf1bn4557052d1ead6060@mail.gmail.com>
+	<alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804182118.05228.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.1.10.0804221144130.2779@woody.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,169 +21,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, paulmck@linux.vnet.ibm.com, David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2008-04-18 at 21:18 -0700, David Brownell wrote:
-> This imports the driver model device.power.may_wakeup flags to ACPI,
-> using it to *REPLACE* the /proc/acpi/wakeup flags for some devices.
-> It depends on the previous patch making device.power.can_wakeup behave.
-> It does that by:
+On Tuesday, 22 of April 2008, Linus Torvalds wrote:
 > 
->  - Implementing platform_enable_wakeup(), which is currently invoked only
->    by pci_enable_wake().  When that's called -- probably in the driver
->    suspend() call -- it updates acpi_device.wakeup.state.enabled flag in
->    the same way writing to /proc/acpi/wakeup updates it.
->    
->  - Updating the usage of the corresponding ACPI flags when turning on
->    wakeup power domains and GPEs.
+> On Tue, 22 Apr 2008, Zdenek Kabelac wrote:
+> > 
+> > Unsure how it is related to my orginal Oops post - but now when I've
+> > debug pagealloc enabled this appeared in my log after resume - should
+> > I open new bug for this - or could this be part of the problem I've
+> > experienced later?
+> > 
+> > (Note - now I'm running commit: 8a81f2738f10ca817c975cec893aa58497e873b2
+> > 
+> >  sd 0:0:0:0: [sda] Starting disk
+> >  mmc0: new SD card at address 5a61
+> >  mmc mmc0:5a61: parent mmc0 is sleeping, will not add
+> >  ------------[ cut here ]------------
+> >  WARNING: at drivers/base/power/main.c:78 device_pm_add+0x6c/0xf0()
 > 
-> THIS PATCH NEEDS MORE ATTENTION because of the way the ACPI method
-> invocations have been changing, e.g. the 1.0 vs 2.0 sequencing.
+> This is unrelated to the other issue, I think.
 > 
-> Right now it's not clear to me whether the GPEs are always enabled at
-> the right time, and for that matter whether the rules haven't changed
-> so that drivers can no longer effectively control those settings from
-> suspend() unless acpi_new_pts_ordering is in effect.
-Agree with what Rui said. The patch doesn't change the time when GPEs
-are enabled/disabled.
+> Your warning comes from commit 58aca23226a19983571bd3b65167521fc64f5869, 
+> which admittedly looks like total crap.
 
-But after the patch is applied, some PCI device(the ACPI device with the
-_PRW object) can wake the sleeping system by default. And it is totally
-opposite to the current flowchart. 
+Well, I'm sorry that you think so.
 
-> ACPI systems see behavioral changes as follows:
+> Rafael, what's the point of that commit?
+
+More or less as stated in the changelog.  If we register a child of a sleeping
+device, the child ends up on dpm_active before the parent, so the ordering will
+be wrong during the next suspend.
+
+That was discussed on linux-pm, mainly with Alan Stern.
+
+> I read the commit message, but I can't make myself agree with the commit 
+> code itself. If it's a "checking that the order is correct" thing, it 
+> should be a warning, but not change the actual _action_ of the code.
+
+That is easy to change.  Please find appended a patch for that.
+
+> Because the commit refused to add the device, it is also then the direct 
+> reason for the oops you get later, as far as I can tell:
 > 
->    * Wakeup-aware PCI drivers no longer need to have someone override the
->      initial system config by writing to /proc/acpi/wakeup; existing calls
->      to pci_enable_wake() suffice.  For wakeup-unaware drivers, it's still
->      not clearly safe to enable wakeup in /proc/acpi/wakeup.
-> 
->    * Non-PCI frameworks (as for PS2 serial ports) could call the platform
->      hook like PCI does, supporting wakeup-aware drivers.
-> 
->    * The /sys/devices/.../power/wakeup flags are a different kind of manual
->      override.  They _disable_ wakeup for broken hardware or drivers, rather
->      than _enabling_ it in the hope that unmodified drivers won't break when
->      their hardware triggers wakeup events.
-> 
-> NOT YET SIGNED-OFF ... primarily because of the confusion about
-> the order in which ACPI methods get called during entry to suspend
-> states.  Presumably one of the "new style" PM methods calls will
-> now always work for drivers wanting to enable wakeup methods...
-> 
-> ---
->  drivers/acpi/sleep/main.c   |    2 +-
->  drivers/acpi/sleep/wakeup.c |   44 ++++++++++++++++++++++++++++++++++++++++++--
->  2 files changed, 43 insertions(+), 3 deletions(-)
-> 
-> --- g26.orig/drivers/acpi/sleep/main.c	2008-02-24 02:07:57.000000000 -0800
-> +++ g26/drivers/acpi/sleep/main.c	2008-02-24 02:08:04.000000000 -0800
-> @@ -470,7 +470,7 @@ int acpi_pm_device_sleep_state(struct de
->  	 * can wake the system.  _S0W may be valid, too.
->  	 */
->  	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
-> -	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
-> +	    (device_may_wakeup(dev) &&
->  	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
->  		acpi_status status;
->  
-> --- g26.orig/drivers/acpi/sleep/wakeup.c	2008-02-24 02:03:27.000000000 -0800
-> +++ g26/drivers/acpi/sleep/wakeup.c	2008-02-24 02:08:04.000000000 -0800
-> @@ -35,12 +35,22 @@ void acpi_enable_wakeup_device_prep(u8 s
->  		struct acpi_device *dev = container_of(node,
->  						       struct acpi_device,
->  						       wakeup_list);
-> +		struct device *ldev;
->  
->  		if (!dev->wakeup.flags.valid ||
->  		    !dev->wakeup.state.enabled ||
->  		    (sleep_state > (u32) dev->wakeup.sleep_state))
->  			continue;
->  
-> +		ldev = acpi_get_physical_device(dev->handle);
-> +		if (ldev) {
-> +			int flag = device_may_wakeup(ldev);
-> +
-> +			put_device(ldev);
-> +			if (!flag)
-> +				continue;
-> +		}
-> +
->  		spin_unlock(&acpi_device_lock);
->  		acpi_enable_wakeup_device_power(dev);
->  		spin_lock(&acpi_device_lock);
-> @@ -57,8 +67,8 @@ void acpi_enable_wakeup_device(u8 sleep_
->  {
->  	struct list_head *node, *next;
->  
-> -	/* 
-> -	 * Caution: this routine must be invoked when interrupt is disabled 
-> +	/*
-> +	 * Caution: this routine must be invoked when interrupt is disabled
->  	 * Refer ACPI2.0: P212
->  	 */
->  	ACPI_FUNCTION_TRACE("acpi_enable_wakeup_device");
-> @@ -107,6 +117,7 @@ void acpi_disable_wakeup_device(u8 sleep
->  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
->  		struct acpi_device *dev =
->  			container_of(node, struct acpi_device, wakeup_list);
-> +		struct device *ldev;
->  
->  		if (!dev->wakeup.flags.valid)
->  			continue;
-> @@ -125,6 +136,15 @@ void acpi_disable_wakeup_device(u8 sleep
->  			continue;
->  		}
->  
-> +		ldev = acpi_get_physical_device(dev->handle);
-> +		if (ldev) {
-> +			int flag = device_may_wakeup(ldev);
-> +
-> +			put_device(ldev);
-> +			if (!flag)
-> +				continue;
-> +		}
-> +
->  		spin_unlock(&acpi_device_lock);
->  		acpi_disable_wakeup_device_power(dev);
->  		/* Never disable run-wake GPE */
-> @@ -139,6 +159,24 @@ void acpi_disable_wakeup_device(u8 sleep
->  	spin_unlock(&acpi_device_lock);
->  }
->  
-> +static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
-> +{
-> +	struct acpi_device	*adev;
-> +	int			status;
-> +
-> +	if (!device_can_wakeup(dev))
-> +		return -EINVAL;
-> +	if (is_on && !device_may_wakeup(dev))
-> +		return -EINVAL;
-> +
-> +	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
-> +	if (status < 0)
-> +		return status;
-> +
-> +	adev->wakeup.state.enabled = !!is_on;
-> +	return 0;
-> +}
-> +
->  static int __init acpi_wakeup_device_init(void)
->  {
->  	struct list_head *node, *next;
-> @@ -146,6 +184,8 @@ static int __init acpi_wakeup_device_ini
->  	if (acpi_disabled)
->  		return 0;
->  
-> +	platform_enable_wakeup = acpi_platform_enable_wakeup;
-> +
->  	spin_lock(&acpi_device_lock);
->  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
->  		struct acpi_device *dev = container_of(node,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >  BUG: unable to handle kernel NULL pointer dereference at 0000000000000050
+> >  IP: [klist_del+29/128] klist_del+0x1d/0x80
+> >  PGD 0
+> >  Oops: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> >  CPU 0
+> >  Call Trace:
+> >   [bus_remove_device+158/208] bus_remove_device+0x9e/0xd0
+> >   [device_add+1358/1376] device_add+0x54e/0x560
+
+There is a bug in device_add() that IMO can be fixed this way:
+
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -820,11 +820,11 @@ int device_add(struct device *dev)
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	bus_attach_device(dev);
+ 	error = device_pm_add(dev);
+ 	if (error)
+ 		goto PMError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+-	bus_attach_device(dev);
+ 	if (parent)
+ 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
+ 
+The problem is that bus_remove_device() assumes bus_attach_device() to have
+run, AFAICS.
+
+> So I would suggest reverting that commit, or at least just making it a 
+> warning (while still registering the device).
+
+Are drivers supposed to register children of suspended devices?  That doesn't
+make much sense IMO ...
+
+Thanks,
+Rafael
+
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -76,12 +76,10 @@ int device_pm_add(struct device *dev)
+ 		else
+ 			dev_warn(dev, "devices are sleeping, will not add\n");
+ 		WARN_ON(true);
+-		error = -EBUSY;
+-	} else {
+-		error = dpm_sysfs_add(dev);
+-		if (!error)
+-			list_add_tail(&dev->power.entry, &dpm_active);
+ 	}
++	error = dpm_sysfs_add(dev);
++	if (!error)
++		list_add_tail(&dev->power.entry, &dpm_active);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
+ }
