@@ -1,16 +1,16 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Higer latency with dynamic tick (need for an
-	io-ondemand govenor?)
-Date: Sun, 20 Apr 2008 16:26:33 +0200
-Message-ID: <480B5299.9090904__18656.2541210607$1208701753$gmane$org@firstfloor.org>
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com><1179396659.3764.40.camel@chaos><3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com><1179434296.12981.14.camel@chaos><3B6D69C3A9EBCA4BA5DA60D913027429010259ED@dlee13.ent.ti.com><1179474567.12981.53.camel@chaos><3B6D69C3A9EBCA4BA5DA60D91302742904131BED@dlee13.ent.ti.com>
-	<87ej90aece.fsf@basil.nowhere.org>
-	<3B6D69C3A9EBCA4BA5DA60D9130274290413207D@dlee13.ent.ti.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
+	policy	inputs
+Date: Tue, 22 Apr 2008 10:42:12 +0800
+Message-ID: <1208832132.3550.35.camel__41569.1146896735$1208832378$gmane$org@rzhang-1.sh.intel.com>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200803201422.55014.david-b@pacbell.net>
+	<200804182118.05228.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D9130274290413207D@dlee13.ent.ti.com>
+In-Reply-To: <200804182118.05228.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,23 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Woodruff, Richard wrote:
-> "Andi Kleen" <andi@firstfloor.org> writes:
->> Are you talking about x86?
+
+On Fri, 2008-04-18 at 21:18 -0700, David Brownell wrote:
+> This imports the driver model device.power.may_wakeup flags to ACPI,
+> using it to *REPLACE* the /proc/acpi/wakeup flags for some devices.
+> It depends on the previous patch making device.power.can_wakeup
+> behave.
+> It does that by:
 > 
-> ARM (TI-OMAP)
+>  - Implementing platform_enable_wakeup(), which is currently invoked
+> only
+>    by pci_enable_wake().  When that's called -- probably in the driver
+>    suspend() call -- it updates acpi_device.wakeup.state.enabled flag
+> in
+>    the same way writing to /proc/acpi/wakeup updates it.
+>    
+>  - Updating the usage of the corresponding ACPI flags when turning on
+>    wakeup power domains and GPEs.
+> 
+> THIS PATCH NEEDS MORE ATTENTION because of the way the ACPI method
+> invocations have been changing, e.g. the 1.0 vs 2.0 sequencing.
+> 
+> Right now it's not clear to me whether the GPEs are always enabled at
+> the right time, and for that matter whether the rules haven't changed
+> so that drivers can no longer effectively control those settings from
+> suspend() unless acpi_new_pts_ordering is in effect.
+Sorry. It's such a long sentence which is hard for me to understand. :(
 
-Sorry I was confused because you used the term "C-state" which is normally ACPI (x86/ia64) 
-specific. If someone says C states I assume ACPI and usually x86 by default
-due to lack of deeper sleep states on most ia64s.
+> it's not clear to me whether the GPEs are always enabled at
+> the right time
+this patch doesn't change the time when GPEs are enabled.
+when do you think should be the right time to enable the GPEs?
 
-> Not sure about the underlying X86 hardware implementation.
+> 
+> ACPI systems see behavioral changes as follows:
+> 
+>    * Wakeup-aware PCI drivers no longer need to have someone override
+> the
+>      initial system config by writing to /proc/acpi/wakeup; existing
+> calls
+>      to pci_enable_wake() suffice.  For wakeup-unaware drivers, it's
+> still
+>      not clearly safe to enable wakeup in /proc/acpi/wakeup.
+> 
+>    * Non-PCI frameworks (as for PS2 serial ports) could call the
+> platform
+>      hook like PCI does, supporting wakeup-aware drivers.
+> 
+>    * The /sys/devices/.../power/wakeup flags are a different kind of
+> manual
+>      override.  They _disable_ wakeup for broken hardware or drivers,
+> rather
+>      than _enabling_ it in the hope that unmodified drivers won't
+> break when
+>      their hardware triggers wakeup events.
+> 
+> NOT YET SIGNED-OFF ... primarily because of the confusion about
+> the order in which ACPI methods get called during entry to suspend
+> states.
+I think it's safe to apply this patch.
+But I don't know what's the relationship between this patch and the
+"acpi_new_pts_ordering" stuff you stated earlier, do I miss something?
 
-On x86 the trend is for the hardware/firmware/SMM doing more and more of this on its own,
-as in deciding by itself how deep it wants to sleep.
+thanks,
+rui
 
--Andi
+> Presumably one of the "new style" PM methods calls will
+> now always work for drivers wanting to enable wakeup methods...
