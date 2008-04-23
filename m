@@ -1,11 +1,13 @@
-From: Len Brown <lenb@kernel.org>
-Subject: pm_prepare_console()
-Date: Wed, 23 Apr 2008 14:57:44 -0400
-Message-ID: <200804231457.45354.lenb@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pm_prepare_console()
+Date: Wed, 23 Apr 2008 21:41:51 +0200
+Message-ID: <200804232141.52195.rjw@sisk.pl>
+References: <200804231457.45354.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200804231457.45354.lenb@kernel.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,16 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael, Pavel,
+On Wednesday, 23 of April 2008, Len Brown wrote:
+> Rafael, Pavel,
+> 
+> suspend_prepare() ignores the return value of pm_prepare_console() -- assuming it always succceeds.
+> 
+> Is that a bug or a feature?
+> (same in the hibernate code)
 
-suspend_prepare() ignores the return value of pm_prepare_console() -- assuming it always succceeds.
+A feature, I'd say.
 
-Is that a bug or a feature?
-(same in the hibernate code)
+The failures of pm_prepare_console() are not considered as serious enough to
+abort suspend or hibernation.
 
-thanks,
--Len
+Thanks,
+Rafael
