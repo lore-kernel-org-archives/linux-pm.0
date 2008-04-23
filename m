@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: device_pm_add (was: Re: 2.6.25-git2: BUG: unable to
- handle kernel paging request at ffffffffffffffff)
-Date: Wed, 23 Apr 2008 10:56:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0804231047500.2104-100000__11035.2553231225$1208962807$gmane$org@iolanthe.rowland.org>
-References: <200804230250.26159.rjw@sisk.pl>
+From: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC PATCH 5/5] Add a Signal Control Group Subsystem
+Date: Wed, 23 Apr 2008 17:17:53 +0200
+Message-ID: <480F5321.9030008__3391.13211161948$1208964237$gmane$org@fr.ibm.com>
+References: <20080423142517.062433911@us.ibm.com>
+	<20080423142518.703428301@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804230250.26159.rjw@sisk.pl>
+In-Reply-To: <20080423142518.703428301@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, paulmck@linux.vnet.ibm.com, Linus Torvalds <torvalds@linux-foundation.org>, David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Apr 2008, Rafael J. Wysocki wrote:
+Hello Matt !
 
-> > > Are drivers supposed to register children of suspended devices?  That doesn't
-> > > make much sense IMO ...
-> > 
-> > Well, that's why I think the warning itself makes sense - and then we can 
-> > decide whether it makes sense for that particular case or not. Clearly it 
-> > happens (since it triggered), now we need to figure out _why_ it happened. 
+> Add a signal control group subsystem that allows us to send signals to all tasks
+> in the control group by writing the desired signal(7) number to the kill file.
 > 
-> Well, this particular case looks like a race to me.
+> NOTE: We don't really need per-cgroup state, but control groups doesn't support
+> stateless subsystems yet.
+> 
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> ---
+>  include/linux/cgroup_signal.h |   28 +++++++++
+>  include/linux/cgroup_subsys.h |    6 +
+>  init/Kconfig                  |    6 +
+>  kernel/Makefile               |    1 
+>  kernel/cgroup_signal.c        |  129 ++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 170 insertions(+)
 
-I think the reason it happened is clear enough.  Call it a race if you 
-want, but the window is so large that it hardly qualifies.
 
-It's a result of the way the MMC core is written.  There's an
-upper-level controller device, and below that is a host device, and
-below that is the card itself.  The code that adds and removes children
-of the host device runs as part of the controller driver.
+I think there is a small race with new tasks entering the cgroup
+while it's beeing killed, and a _fork ops would handle that. nop ? 
 
-Hence the problem: The driver adds children below the _host_ as soon as 
-the _controller_ is resumed, even though the host is still suspended.  
-It's not as big an error as it sounds -- the host was originally a 
-class_device and then got converted over to a regular device.  It 
-doesn't have a driver of its own.
+Thanks,
 
-This is one of the things that needs to be fixed up as part of the 
-reworking of the system-sleep API.  I simply haven't had any time to 
-work on it (and I'm not likely to in the near future).
-
-You ought to be able to provoke this more or less at will, depending on
-the order in which your PCI devices are probed, by inserting or
-removing an MMC card during the disk spin-up interval while the system
-is waking up.
-
-Alan Stern
+C. 
