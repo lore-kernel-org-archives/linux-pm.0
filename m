@@ -1,11 +1,15 @@
 From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [RFC][PATCH 0/5] Container Freezer: Reuse Suspend Freezer
-Date: Wed, 23 Apr 2008 23:47:56 -0700
-Message-ID: <20080424064756.643890130__22073.3908041895$1209020444$gmane$org@us.ibm.com>
+Subject: Re: [RFC PATCH 5/5] Add a Signal Control Group Subsystem
+Date: Thu, 24 Apr 2008 00:00:27 -0700
+Message-ID: <1209020428.20681.5.camel@localhost.localdomain>
+References: <20080423142517.062433911@us.ibm.com>
+	<20080423142518.703428301@us.ibm.com> <480F5321.9030008@fr.ibm.com>
+	<6599ad830804230837x48860632m7c41e425458ba6b3@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <6599ad830804230837x48860632m7c41e425458ba6b3@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,92 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, Linux Containers <containers@lists.linux-foundation.org>, Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Paul Menage <menage@google.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-This patchset reuses the container infrastructure and the swsusp freezer to
-freeze a group of tasks. I've merely taken Cedric's patches, forward-ported 
-them to 2.6.25-mm1 and tested the expected common cases.
+On Wed, 2008-04-23 at 08:37 -0700, Paul Menage wrote:
+> On Wed, Apr 23, 2008 at 8:17 AM, Cedric Le Goater <clg@fr.ibm.com> wrote:
+> > Hello Matt !
+> >
+> >  > Add a signal control group subsystem that allows us to send signals to all tasks
+> >  > in the control group by writing the desired signal(7) number to the kill file.
+> >  >
+> >  > NOTE: We don't really need per-cgroup state, but control groups doesn't support
+> >  > stateless subsystems yet.
+> >  >
+> >  > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> >  > ---
+> >  >  include/linux/cgroup_signal.h |   28 +++++++++
+> >  >  include/linux/cgroup_subsys.h |    6 +
+> >  >  init/Kconfig                  |    6 +
+> >  >  kernel/Makefile               |    1
+> >  >  kernel/cgroup_signal.c        |  129 ++++++++++++++++++++++++++++++++++++++++++
+> >  >  5 files changed, 170 insertions(+)
+> >
+> >
+> >  I think there is a small race with new tasks entering the cgroup
+> >  while it's beeing killed, and a _fork ops would handle that. nop ?
+> >
+> 
+> I never saw the actual patch (what lists did it go out to?) but I
 
-Changes since v1:
-v2 (roughly patches 3 and 5):
-	Moved the "kill" file into a separate cgroup subsystem (signal) and
-		it's own patch.
-	Changed the name of the file from freezer.freeze to freezer.state.
-	Switched from taking 1 and 0 as input to the strings "FROZEN" and 
-		"RUNNING", respectively. This helps keep the interface
-		human-usable if/when we need to more states.
-	Checked that stopped or interrupted is "frozen enough"
-		Since try_to_freeze() is called upon wakeup of these tasks
-		this should be fine. This idea comes from recent changes to
-		the freezer.
-	Checked that if (task == current) whilst freezing cgroup we're ok
-	Fixed bug where -EBUSY would always be returned when freezing
-	Added code to handle userspace retries for any remaining -EBUSY
+Hi Paul,
 
-The freezer subsystem in the container filesystem defines a file named
-freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup. 
-Reading will return the current state. 
-
-* Examples of usage :
-
-   # mkdir /containers/freezer
-   # mount -t cgroup -ofreezer,signal freezer  /containers/freezer
-   # mkdir /containers/freezer/0
-   # echo $some_pid > /containers/freezer/0/tasks
-
-to get status of the freezer subsystem :
-
-   # cat /containers/freezer/0/freezer.state
-   RUNNING
-
-to freeze all tasks in the container :
-
-   # echo FROZEN > /containers/freezer/0/freezer.state
-   # cat /containers/freezer/0/freezer.state
-   FREEZING
-   # cat /containers/freezer/0/freezer.state
-   FROZEN
-
-to unfreeze all tasks in the container :
-
-   # echo RUNNING > /containers/freezer/0/freezer.state
-   # cat /containers/freezer/0/freezer.state
-   RUNNING
-
-to kill all tasks in the container :
-
-   # echo 9 > /containers/freezer/0/signal.kill
-
-* Caveats: 
-
-  - The cgroup moves into the FROZEN state once all tasks in the cgroup are
-	frozen. This is calculated and changed when the container file 
-	"freezer.state" is read or written.
-  - Frozen containers will be unfrozen when a system is resumed after 
-    a suspend. This is addressed by a subsequent patch.
-
-* Series
-
-  Applies to 2.6.25-mm1
-
-  The first patches make the freezer available to all architectures
-  before implementing the freezer cgroup subsystem.
-
-[RFC PATCH 1/5] Add TIF_FREEZE flag to all architectures
-[RFC PATCH 2/5] Make refrigerator always available
-[RFC PATCH 3/5] Implement freezer cgroup subsystem
-[RFC PATCH 4/5] Skip frozen cgroups during power management resume
-[RFC PATCH 5/5] Implement signal cgroup subsytem
-
-Comments are welcome. I'm planning to finish up testing with ptrace'd and 
-vforking processes and then, if it still seems appropriate, resubmit as a
-non-RFC series next.
+	Sorry about this. MTA issues again :(. I think I've gotten them fixed
+*this* time. I've resent them and you should have received your own copy
+this time. Please let me know if you still aren't receiving them.
 
 Cheers,
-	-Matt Helsley
-
--- 
+	-Matt
