@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
 	policy inputs
-Date: Mon, 28 Apr 2008 15:20:05 -0700
-Message-ID: <200804281520.05683.david-b__39659.322895068$1209421407$gmane$org@pacbell.net>
+Date: Mon, 28 Apr 2008 15:24:14 -0700
+Message-ID: <200804281524.15170.david-b__108.706524088298$1209421713$gmane$org@pacbell.net>
 References: <200803201408.33466.david-b@pacbell.net>
+	<200804261237.26499.david-b@pacbell.net>
 	<1209386885.884.9.camel@yakui_zhao.sh.intel.com>
-	<20080428213553.GA3489@khazad-dum.debian.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080428213553.GA3489@khazad-dum.debian.net>
+In-Reply-To: <1209386885.884.9.camel@yakui_zhao.sh.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,46 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Zhao Yakui <yakui.zhao@intel.com>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Zhao Yakui <yakui.zhao@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 28 April 2008, Henrique de Moraes Holschuh wrote:
-> On Mon, 28 Apr 2008, Zhao Yakui wrote:
-> > Yes. What your said is right. If your patch is applied, whether the PCI
-> > device can wake the sleeping system is controlled by device driver. In
-> > such case the /proc/acpi/wakeup will be useless.
-> 
-> Which calls for a new standard interface to let userpace control that,
-> doesn't it?  Issues with wake-up devices are not uncommon, the user
-> really has to have a way to configure that, and IMHO it better be a
-> generic one...
+On Monday 28 April 2008, Zhao Yakui wrote:
+> =
 
-That "new standard interface" has been in the kernel for quite
-some time now:  /sys/devices/.../power/wakeup attributes, which
-default to "enabled" for wake-capable devices.  Set to "disabled"
-if it's not behaving on your system for some reason.  It's part
-of the driver model infrastructure.
+> > > But after the patch is applied, some PCI device(the ACPI device with =
+the
+> > > _PRW object) can wake the sleeping system by default. And it is total=
+ly
+> > > opposite to the current flowchart. =
 
-These patches have been nudging ACPI switch over to that generic
-mechanism, instead of needing an ACPI-specific one... first posted
-on the order of 18 months ago, FWIW.
+> > =
 
+> > That's not true. =A0Behavior could only change for devices with
+> > drivers which already call pci_enable_wake()!
+> =
 
-Note that there are (broadly) two categories of issue here.  One
-is with the hardware/firmware ... e.g. ACPI, on systems where that
-exists.  (By far the minority in terms of Linux platforms, and maybe
-in terms of individual systems too, despite the fact that most of
-us developers run x86 Linux somewhere.)  The other is inside the driver
-itself:  does it arrange for the right things to be wake events, and
-handle them OK.
+> Yes. But in fact a lot of PCI device will call pci_enable_wake when the
+> system enters the suspend state. And the behaviour will be changed.
 
-When I last did a survey of what drivers use PCI wakeup mechanisms,
-the result was pretty weak:  a handful of network drivers, and the
-USB host controllers.  Such support has been, if anything, declining
-since we acquired "pm_message_t".  But I believe that most of those
-drivers actually behave, at least on non-ACPI systems.
+I'm not sure what your point is.  That "behavior change" is a bugfix.
+The previous behavior was specific to ACPI, and obviously was not what
+the driver writer expected.
 
-Try "cd linux-2.6; grep -lr pci_enable_wake *" for current results...
+And it's *NOT* how things work on non-ACPI systems which have both PCI
+and functional system suspend/resume.  (Various PowerPC, MIPS, and ARM
+systems meet those requirements, as I understand.)
+
+I sympathize with the desire to avoid driver-related surprises.  In
+this case, it's trivial to disable that behavior by modifyi
 
 - Dave
