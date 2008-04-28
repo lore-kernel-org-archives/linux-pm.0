@@ -1,8 +1,8 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
 	policy inputs
-Date: Mon, 28 Apr 2008 15:24:14 -0700
-Message-ID: <200804281524.15170.david-b__108.706524088298$1209421713$gmane$org@pacbell.net>
+Date: Mon, 28 Apr 2008 15:26:47 -0700
+Message-ID: <200804281526.48217.david-b__33134.0344892398$1209421826$gmane$org@pacbell.net>
 References: <200803201408.33466.david-b@pacbell.net>
 	<200804261237.26499.david-b@pacbell.net>
 	<1209386885.884.9.camel@yakui_zhao.sh.intel.com>
@@ -24,6 +24,8 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Zhao Yakui <yakui.zhao@intel.com>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
+
+[ grr, mousepad sent an incomplete message for me ... ]
 
 On Monday 28 April 2008, Zhao Yakui wrote:
 > =
@@ -52,6 +54,8 @@ and functional system suspend/resume.  (Various PowerPC, MIPS, and ARM
 systems meet those requirements, as I understand.)
 
 I sympathize with the desire to avoid driver-related surprises.  In
-this case, it's trivial to disable that behavior by modifyi
+this case, it's trivial to disable that behavior using sysfs.  And I
+believe you'll observe that not many drivers could actually turn up
+surprises here:  who calls pci_enable_wake()?
 
 - Dave
