@@ -1,15 +1,13 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/7] mpc83xx: timer driver for PM wakeup
-Date: Mon, 28 Apr 2008 13:15:43 -0500
-Message-ID: <20080428181543.GL9849__27129.427312366$1209406674$gmane$org@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0804281714000.7897@axis700.grange>
-	<Pine.LNX.4.64.0804281721050.7897@axis700.grange>
+From: "=?ISO-8859-1?Q?Carlos_Augusto_de_Ara=FAjo_Mar?="
+	<carlos.augusto.mar@gmail.com>
+Subject: More info about this group
+Date: Mon, 28 Apr 2008 16:16:14 -0400
+Message-ID: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804281721050.7897@axis700.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,15 +17,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 05:39:32PM +0200, Guennadi Liakhovetski wrote:
-> This is a driver for the mpc83xx's GTM4 timer.  It's functionality
-> is limited to providing a wakeup source for suspend-to-RAM.
+Hi All,
 
-This driver should be redone as a client of Anton's more general GTM
-driver.
+           my name is Carlos Mar, I am master student of Science
+Computer Department of Federal University of Amazonas - Brazil. My
+research group have interest in embedded systems, particulary in power
+management. I would like to know where I can found more information
+about this list (todo list, projects in development, etc), is there
+some web page ?
+       Our group would like to participate by contributing to this
+community. We can start by building a web page to provide information
+about you, case it does not exist.
 
--Scott
+Best regards,
+
+Carlos Mar
