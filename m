@@ -1,13 +1,19 @@
-From: "=?ISO-8859-1?Q?Carlos_Augusto_de_Ara=FAjo_Mar?="
-	<carlos.augusto.mar@gmail.com>
-Subject: More info about this group
-Date: Mon, 28 Apr 2008 16:16:14 -0400
-Message-ID: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [RESEND patch 2.6.25] ACPI uses device_may_wakeup()
+	policy	inputs
+Date: Mon, 28 Apr 2008 18:35:53 -0300
+Message-ID: <20080428213553.GA3489__32483.9766406969$1209418670$gmane$org@khazad-dum.debian.net>
+References: <200803201408.33466.david-b@pacbell.net>
+	<200804182118.05228.david-b@pacbell.net>
+	<1208871017.14474.52.camel@yakui_zhao.sh.intel.com>
+	<200804261237.26499.david-b@pacbell.net>
+	<1209386885.884.9.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <1209386885.884.9.camel@yakui_zhao.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +23,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Zhao Yakui <yakui.zhao@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+On Mon, 28 Apr 2008, Zhao Yakui wrote:
+> Yes. What your said is right. If your patch is applied, whether the PCI
+> device can wake the sleeping system is controlled by device driver. In
+> such case the /proc/acpi/wakeup will be useless.
 
-           my name is Carlos Mar, I am master student of Science
-Computer Department of Federal University of Amazonas - Brazil. My
-research group have interest in embedded systems, particulary in power
-management. I would like to know where I can found more information
-about this list (todo list, projects in development, etc), is there
-some web page ?
-       Our group would like to participate by contributing to this
-community. We can start by building a web page to provide information
-about you, case it does not exist.
+Which calls for a new standard interface to let userpace control that,
+doesn't it?  Issues with wake-up devices are not uncommon, the user
+really has to have a way to configure that, and IMHO it better be a
+generic one...
 
-Best regards,
-
-Carlos Mar
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
