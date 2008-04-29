@@ -1,16 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RE-RESEND patch 2.6.25-git]
-	acpi_pm_device_sleep_state() cleanup
-Date: Tue, 29 Apr 2008 15:12:53 -0700
-Message-ID: <200804291512.53841.david-b__19098.1806641959$1209507374$gmane$org@pacbell.net>
-References: <200803201408.33466.david-b@pacbell.net>
-	<200804291333.50054.david-b@pacbell.net>
-	<200804292349.02906.rjw@sisk.pl>
+Subject: Re: More info about this group
+Date: Tue, 29 Apr 2008 16:35:33 -0700
+Message-ID: <200804291635.33874.david-b@pacbell.net>
+References: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200804292349.02906.rjw@sisk.pl>
+In-Reply-To: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,19 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 29 April 2008, Rafael J. Wysocki wrote:
-> I picked up the previous version of this patch and I'm going to push it f=
-or
-> 2.6.27. =A0Is this version different from the previous one?
+On Monday 28 April 2008, Carlos Augusto de Ara=FAjo Mar wrote:
+> Hi All,
+> =
 
-I probably regenerated it to cope with line number differences,
-but that's all that I recall.
+>            my name is Carlos Mar, I am master student of Science
+> Computer Department of Federal University of Amazonas - Brazil.
+
+Would that happen to be in Manaus?  What kinds of platforms
+are you working with?
 
 
-> > It seems patches sent to the ACPI list are often ignored. =A0This patch
-> > was sent against 2.6.25-rc6 for 2.6.26-rc0 merge, then resent 18-apr
-> > against 2.6.25 ... maybe the third time can finally do the trick.
+> My =
+
+> research group have interest in embedded systems, particulary in power
+> management. I would like to know where I can found more information
+> about this list (todo list, projects in development, etc), is there
+> some web page ?
+
+I don't think it's that organized.  :(
+
+Check the list archives.  Maybe you can describe a few specific
+problems you're looking at, and get some discussion going there.
+
+
+>        Our group would like to participate by contributing to this
+> community. We can start by building a web page to provide information
+> about you, case it does not exist.
+> =
