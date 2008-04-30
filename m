@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc0
-Date: Wed, 30 Apr 2008 21:00:25 +0200
-Message-ID: <200804302100.26294.rjw__39074.1635965698$1209582601$gmane$org@sisk.pl>
-References: <200804301420.11696.lenb@kernel.org>
-	<20080430114348.9ffd8dfc.akpm@linux-foundation.org>
+From: Gabriel C <nix.or.die@googlemail.com>
+Subject: Some sort corruption of my Thermal Subsystem after
+	suspend to ram
+Date: Wed, 30 Apr 2008 22:42:19 +0200
+Message-ID: <4818D9AB.3040402__42652.231679722$1209588323$gmane$org@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080430114348.9ffd8dfc.akpm@linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,103 +16,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 30 of April 2008, Andrew Morton wrote:
-> On Wed, 30 Apr 2008 14:20:11 -0400
-> Len Brown <lenb@kernel.org> wrote:
-> 
-> > Hi Linus,
-> > 
-> > please pull from: 
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> > 
-> > This batch is a proper super-set of the pull request I made a week ago.
-> > It will update the files shown below.
-> > 
-> 
-> 
-> I have four acpi-related reports here from 2.6.25-rcX-mmY.  Can you please check
-> that they were addressed?  I don't recall seeing any feedback for any of
-> them.
-> 
-> Thanks.
-> 
-> 
-> 
-> 
-> 
-> From: "Miles Lane" <miles.lane@gmail.com>
-> To: "Andrew Morton" <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com
-> Subject: 2.6.25-rc8-mm2 -- initcall acpi_init+0x0/0x216() returned with preemption imbalance
-> Date: Fri, 11 Apr 2008 15:41:17 -0400
-> 
-> Is this indicative of a kernel or hardware problem?
-> 
-> [    0.279606] ACPI: Using IOAPIC for interrupt routing
-> [    0.279789] initcall acpi_init+0x0/0x216() returned with preemption imbalance
-> [    0.330789] ACPI: PCI Root Bridge [PCI0] (0000:00)
-> 
-> 
-> 
-> From: "Dave Young" <hidave.darkstar@gmail.com>
-> To: "Andrew Morton" <akpm@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, "Len Brown" <lenb@kernel.org>
-> Subject: Re: 2.6.25-rc5-mm1
-> Date: Wed, 12 Mar 2008 09:14:55 +0800
-> 
-> Hi, I got the following lockdep warning:
-> (add linux-acpi to cc)
-> 
-> [    0.097109] ACPI: Core revision 20070126
-> [    0.097282] INFO: trying to register non-static key.
-> [    0.097355] the code is fine but needs lockdep annotation.
-> [    0.097428] turning off the locking correctness validator.
-> [    0.097503] Pid: 0, comm: swapper Not tainted 2.6.25-rc5-mm1 #3
-> [    0.097578]  [<c0127bf8>] ? printk+0x18/0x20
-> [    0.097716]  [<c014b01c>] __lock_acquire+0x40c/0x760
-> [    0.097822]  [<c0181ba0>] ? alloc_debug_processing+0xb0/0x140
-> [    0.097959]  [<c014b969>] lock_acquire+0x79/0xb0
-> [    0.098063]  [<c0140204>] ? down_trylock+0x14/0x40
-> [    0.098197]  [<c03df9e8>] _spin_lock_irqsave+0x48/0xa0
-> [    0.098303]  [<c0140204>] ? down_trylock+0x14/0x40
-> [    0.098436]  [<c0140204>] down_trylock+0x14/0x40
-> [    0.098540]  [<c027c7ea>] acpi_os_wait_semaphore+0x3e/0xb9
-> [    0.098647]  [<c029263e>] acpi_ut_acquire_mutex+0x34/0x72
-> [    0.098753]  [<c0289ab1>] acpi_ns_root_initialize+0x19/0x250
-> [    0.098859]  [<c05453e6>] acpi_initialize_subsystem+0x42/0x64
-> [    0.098966]  [<c0545725>] acpi_early_init+0x50/0xef
-> [    0.099070]  [<c052b7f6>] start_kernel+0x1e6/0x250
-> [    0.099175]  [<c052b1a0>] ? unknown_bootoption+0x0/0x130
-> [    0.099310]  [<c052b008>] __init_begin+0x8/0x10
-> [    0.099414]  =======================
-> 
-> 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> To: Andrew Morton <akpm@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org, len.brown@intel.com
-> Subject: Re: 2.6.25-rc2-mm1 (build failure)
-> Date: Sat, 16 Feb 2008 21:32:25 -0800
-> Organization: Oracle Linux Eng.
-> X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-> 
-> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
-> 
-> When SMP=n, x86_64 build gets:
-> 
-> arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
-> (.text+0xfd7f): undefined reference to `setup_trampoline'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+Hi all,
 
-This code has already been merged via the x86 tree, with the problem fixed
-IIRC (at least it hasn't been reported against the mainline so far).
+I thought I've found all issue with that new box but I was wrong ;)
 
-Thanks,
-Rafael
+On an ASUS P5E-VM DO , 4G RAM , Q9300 CPU after suspend to ram Thermal 
+Subsystem gets corrupted in some way.
+
+I got some reboot , halt problems and was hunting the issue and noticed these problems only
+occurred when I've suspend the box to ram , at least once.
+
+I've tested 2.6.{24*,25,linus-git(before ACPI merge),x86-latest-git} and all got that problem.
+
+Also on x86-latest-git I've tested with MTRR_SANITIZER on/off. It does not make any difference.
+
+
+lspci output before s2r is :
+
+..
+
+
+00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev 02)
+        Subsystem: ASUSTeK Computer Inc. Device [1043:8277]
+        Flags: fast devsel
+        Memory at fed08000 (64-bit, non-prefetchable) [size=4K]
+        Capabilities: [50] Power Management version 3                                                                                                       
+
+...
+
+
+and after :
+
+...
+
+00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev ff) (prog-if ff)
+        !!! Unknown header type 7f
+
+...
+
+dmesg | grep 00:1f.6
+[21520.103062] PM: Writing back config space on device 0000:00:1f.6 at offset f (was ffffffff, writing 300)
+[21520.103066] PM: Writing back config space on device 0000:00:1f.6 at offset e (was ffffffff, writing 0)
+[21520.103070] PM: Writing back config space on device 0000:00:1f.6 at offset d (was ffffffff, writing 50)
+[21520.103074] PM: Writing back config space on device 0000:00:1f.6 at offset c (was ffffffff, writing 0)
+[21520.103078] PM: Writing back config space on device 0000:00:1f.6 at offset b (was ffffffff, writing 82771043)
+[21520.103083] PM: Writing back config space on device 0000:00:1f.6 at offset a (was ffffffff, writing 0)
+[21520.103087] PM: Writing back config space on device 0000:00:1f.6 at offset 9 (was ffffffff, writing 0)
+[21520.103091] PM: Writing back config space on device 0000:00:1f.6 at offset 8 (was ffffffff, writing 0)
+[21520.103095] PM: Writing back config space on device 0000:00:1f.6 at offset 7 (was ffffffff, writing 0)
+[21520.103099] PM: Writing back config space on device 0000:00:1f.6 at offset 6 (was ffffffff, writing 0)
+[21520.103103] PM: Writing back config space on device 0000:00:1f.6 at offset 5 (was ffffffff, writing 0)
+[21520.103107] PM: Writing back config space on device 0000:00:1f.6 at offset 4 (was ffffffff, writing fed08004)
+[21520.103111] PM: Writing back config space on device 0000:00:1f.6 at offset 3 (was ffffffff, writing 0)
+[21520.103115] PM: Writing back config space on device 0000:00:1f.6 at offset 2 (was ffffffff, writing 11800002)
+[21520.103119] PM: Writing back config space on device 0000:00:1f.6 at offset 1 (was ffffffff, writing 100002)
+[21520.103123] PM: Writing back config space on device 0000:00:1f.6 at offset 0 (was ffffffff, writing 29328086)
+
+..
+
+
+Please let me know if you need my config , dmesg or any other informations.
+
+
+Best Regards,
+
+Gabriel C
