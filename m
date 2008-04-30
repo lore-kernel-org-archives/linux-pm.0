@@ -1,15 +1,15 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: PM: New suspend and hibernation callbacks for PCI
-	bus type
-Date: Tue, 29 Apr 2008 15:26:58 -0700
-Message-ID: <20080429222658.GA5437__5682.09886919266$1209521086$gmane$org@kroah.com>
-References: <200804131534.52548.rjw@sisk.pl>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [RFC][PATCH 5/5] Add a Signal Control Group Subsystem
+Date: Wed, 30 Apr 2008 00:48:34 -0700
+Message-ID: <1209541714.6095.72.camel__37094.6590592668$1209541883$gmane$org@localhost.localdomain>
+References: <20080424064756.643890130@us.ibm.com>
+	<20080424064758.113999091@us.ibm.com>
+	<20080424143032.7e659522.pj@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200804131534.52548.rjw@sisk.pl>
+In-Reply-To: <20080424143032.7e659522.pj@sgi.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jackson <pj@sgi.com>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, clg@fr.ibm.com, menage@google.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 13, 2008 at 03:34:51PM +0200, Rafael J. Wysocki wrote:
+
+On Thu, 2008-04-24 at 14:30 -0500, Paul Jackson wrote:
+> > +static struct cftype kill_file = {
+> > +	.name = "kill",
 > 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> The name "kill" seems ambiguous to me.  It suggests that any write
+> will send some default signal (TERM or KILL?) to all tasks in the
+> cgroup, rather like the 'killall' command.
 > 
-> Implement new suspend and hibernation callbacks for the PCI bus type.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> I'm guessing that more people, on seeing this file in a cgroup
+> directory, will guess correctly what it does if it were named
+> "signal" or "send_signal" or some such.
 
-Changes in Linus's tree broke merging this one really badly, so much so
-that I can't see what should be done with a quick scan.
+OK, I renamed it signal.send and replaced all uses of "kill" in the code
+to indicate that we're actually sending a signal -- not "KILL"ing
+things :).
 
-I'll drop this from my tree for now, can you regenerate it?
-
-thanks,
-
-greg k-h
+Cheers,
+	-Matt
