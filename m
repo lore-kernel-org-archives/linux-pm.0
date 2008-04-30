@@ -1,14 +1,15 @@
 From: Ingo Molnar <mingo@elte.hu>
-Subject: [patch] acpi: acpi_numa_init() build fix
-Date: Wed, 30 Apr 2008 22:56:15 +0200
-Message-ID: <20080430205615.GA23694__10732.200012035$1209589272$gmane$org@elte.hu>
+Subject: [patch] acpi: fix drivers/acpi/glue.c build error
+Date: Wed, 30 Apr 2008 23:00:26 +0200
+Message-ID: <20080430210026.GA24121__35356.8616476425$1209589353$gmane$org@elte.hu>
 References: <200804301420.11696.lenb@kernel.org>
+	<20080430205615.GA23694@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200804301420.11696.lenb@kernel.org>
+In-Reply-To: <20080430205615.GA23694@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,71 +24,48 @@ Cc: linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus
 List-Id: linux-pm@vger.kernel.org
 
 
-* Len Brown <lenb@kernel.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
 > This batch is a proper super-set of the pull request I made a week 
 > ago. It will update the files shown below.
 
-something in this batch broke the build on x86 on current -git. Somewhat 
-band-aid-ish fix below.
+another build bug triggered - fixed below.
 
 	Ingo
 
-------------->
-Subject: acpi: acpi_numa_init() build fix
+------------------->
+Subject: acpi: fix drivers/acpi/glue.c build error
 From: Ingo Molnar <mingo@elte.hu>
-Date: Tue Apr 29 00:40:16 CEST 2008
+Date: Wed Apr 30 22:56:57 CEST 2008
 
-x86.git testing found the following build error on latest -git:
+x86.git testing found the following build bug:
 
- drivers/acpi/numa.c: In function 'acpi_numa_init':
- drivers/acpi/numa.c:226: error: 'NR_NODE_MEMBLKS' undeclared (first use in this function)
- drivers/acpi/numa.c:226: error: (Each undeclared identifier is reported only once
- drivers/acpi/numa.c:226: error: for each function it appears in.)
+  drivers/built-in.o: In function `acpi_rtc_init':
+  glue.c:(.init.text+0x16c3): undefined reference to `pnp_bus_type'
 
-with this config:
-
- http://redhat.com/~mingo/misc/config-Wed_Apr_30_22_42_42_CEST_2008.bad
-
-i suspect we dont want SRAT parsing when CONFIG_HAVE_ARCH_PARSE_SRAT
-is unset - but the fix looks a bit ugly. Perhaps we should define
-NR_NODE_MEMBLKS even in this case and just let the code fall back
-to some sane behavior?
+this tries to use PNP bus infrastructure even in the !PNP case.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/acpi/numa.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/acpi/glue.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux/drivers/acpi/numa.c
+Index: linux/drivers/acpi/glue.c
 ===================================================================
---- linux.orig/drivers/acpi/numa.c
-+++ linux/drivers/acpi/numa.c
-@@ -176,6 +176,7 @@ acpi_parse_processor_affinity(struct acp
- 	return 0;
- }
+--- linux.orig/drivers/acpi/glue.c
++++ linux/drivers/acpi/glue.c
+@@ -299,6 +299,7 @@ static void rtc_wake_off(struct device *
  
-+#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
- static int __init
- acpi_parse_memory_affinity(struct acpi_subtable_header * header,
- 			   const unsigned long end)
-@@ -193,6 +194,7 @@ acpi_parse_memory_affinity(struct acpi_s
+ static struct cmos_rtc_board_info rtc_info;
  
- 	return 0;
- }
-+#endif
++#ifdef CONFIG_PNP
  
- static int __init acpi_parse_srat(struct acpi_table_header *table)
- {
-@@ -221,9 +223,11 @@ int __init acpi_numa_init(void)
- 	if (!acpi_table_parse(ACPI_SIG_SRAT, acpi_parse_srat)) {
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_CPU_AFFINITY,
- 				      acpi_parse_processor_affinity, NR_CPUS);
-+#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
- 				      acpi_parse_memory_affinity,
- 				      NR_NODE_MEMBLKS);
-+#endif
- 	}
+ /* PNP devices are registered in a subsys_initcall();
+  * ACPI specifies the PNP IDs to use.
+@@ -360,4 +361,6 @@ static int __init acpi_rtc_init(void)
+ /* do this between RTC subsys_initcall() and rtc_cmos driver_initcall() */
+ fs_initcall(acpi_rtc_init);
  
- 	/* SLIT: System Locality Information Table */
++#endif /* CONFIG_PNP */
++
+ #endif
