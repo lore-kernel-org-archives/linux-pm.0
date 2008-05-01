@@ -1,13 +1,15 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc0
-Date: Thu, 1 May 2008 10:26:41 +1000
-Message-ID: <20080501102641.b7970395.sfr__44793.2916730226$1209601824$gmane$org@canb.auug.org.au>
-References: <200804301420.11696.lenb@kernel.org>
-	<alpine.LFD.1.10.0804301153100.2980@woody.linux-foundation.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Some sort corruption of my Thermal Subsystem after
+	suspend to ram
+Date: Thu, 1 May 2008 01:57:58 -0400
+Message-ID: <200805010157.58607.lenb__11873.4118798331$1209621643$gmane$org@kernel.org>
+References: <4818D9AB.3040402@googlemail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0796788195741225661=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804301153100.2980@woody.linux-foundation.org>
+In-Reply-To: <4818D9AB.3040402@googlemail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,77 +17,102 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: postmaster@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
---===============0796788195741225661==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_May_2008_10_26_41_+1000_cousAr.6IDldLgrM"
+The ICH9 apparently provides a pair of memory mapped on-die thermal sensors.
 
---Signature=_Thu__1_May_2008_10_26_41_+1000_cousAr.6IDldLgrM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The sensors basically shut off your hardware if it gets too hot.
 
-On Wed, 30 Apr 2008 11:55:57 -0700 (PDT) Linus Torvalds <torvalds@linux-fou=
-ndation.org> wrote:
->
-> There were some (smaller) rejects in drivers/misc/intel_menlow.c due to=20
-> two different versions of the same patch from Julia Lawall (again, the=20
-> other came through Andrew), and I picked the one from Andrew because it=20
-> had the later date. But again, you should double-check.
+ICH9 exports the base address for the sensors via a PCI device -- D31:F6, aka Linux 00:1f.6
 
-I reported these to Len yesterday at 14:13 (+1000) but hera and zeus1
-rejected this email with "451 4.3.2 Please try again later" until 4:41
-(+1000) this morning ... Does anyone know why?
+I'm not aware of a native Linux device driver that talks to this device
+(nor can I think of a useful purpose for such a driver)
+So it seems what is in play here is any BIOS code that talks to this device,
+and Linux's standard PCI config space restore.
 
-In fact, even then the logs said:
+My guess is that the BIOS is enabling the device on cold boot,
+but not enabling it after resume from S3.
+Is there a BIOS SETUP option that controls if the ICH9 thermal device is enabled or not?
 
-May  1 04:41:17 chilli postfix/qmgr[25076]: BFB2F36800C: from=3D<sfr@canb.a=
-uug.org
-.au>, size=3D1742, nrcpt=3D2 (queue active)
-May  1 04:41:19 chilli postfix/smtp[29167]: BFB2F36800C: host zeus1.kernel.=
-org[2
-04.152.191.4] said: 451 4.3.2 Please try again later (in reply to MAIL FROM=
- comm
-and)
-May  1 04:41:21 chilli postfix/smtp[29167]: BFB2F36800C: to=3D<lenb@kernel.=
-org>, r
-elay=3Dzeus2.kernel.org[204.152.191.36]:25, delay=3D52057, delays=3D52053/0=
-.03/3.2/0.6
-8, dsn=3D2.0.0, status=3Dsent (250 2.0.0 m3UIfK9Z027193 Message accepted fo=
-r deliver
-y)
-
-And, as you can see, it was eventually delivered via zeus2.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_May_2008_10_26_41_+1000_cousAr.6IDldLgrM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIGQ5FTgG2atn1QN8RAt7zAKCFhhz/J3BagUT8CeK9WEIueXPoDACdFr1Y
-nXSAv+PA3DIfBr5lBerSv1E=
-=jKhE
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_May_2008_10_26_41_+1000_cousAr.6IDldLgrM--
-
---===============0796788195741225661==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+-Len
 
 
---===============0796788195741225661==--
+
+
+On Wednesday 30 April 2008, Gabriel C wrote:
+> Hi all,
+> 
+> I thought I've found all issue with that new box but I was wrong ;)
+> 
+> On an ASUS P5E-VM DO , 4G RAM , Q9300 CPU after suspend to ram Thermal 
+> Subsystem gets corrupted in some way.
+> 
+> I got some reboot , halt problems and was hunting the issue and noticed these problems only
+> occurred when I've suspend the box to ram , at least once.
+> 
+> I've tested 2.6.{24*,25,linus-git(before ACPI merge),x86-latest-git} and all got that problem.
+> 
+> Also on x86-latest-git I've tested with MTRR_SANITIZER on/off. It does not make any difference.
+> 
+> 
+> lspci output before s2r is :
+> 
+> ..
+> 
+> 
+> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev 02)
+>         Subsystem: ASUSTeK Computer Inc. Device [1043:8277]
+>         Flags: fast devsel
+>         Memory at fed08000 (64-bit, non-prefetchable) [size=4K]
+>         Capabilities: [50] Power Management version 3                                                                                                       
+> 
+> ...
+> 
+> 
+> and after :
+> 
+> ...
+> 
+> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev ff) (prog-if ff)
+>         !!! Unknown header type 7f
+> 
+> ...
+> 
+> dmesg | grep 00:1f.6
+> [21520.103062] PM: Writing back config space on device 0000:00:1f.6 at offset f (was ffffffff, writing 300)
+> [21520.103066] PM: Writing back config space on device 0000:00:1f.6 at offset e (was ffffffff, writing 0)
+> [21520.103070] PM: Writing back config space on device 0000:00:1f.6 at offset d (was ffffffff, writing 50)
+> [21520.103074] PM: Writing back config space on device 0000:00:1f.6 at offset c (was ffffffff, writing 0)
+> [21520.103078] PM: Writing back config space on device 0000:00:1f.6 at offset b (was ffffffff, writing 82771043)
+> [21520.103083] PM: Writing back config space on device 0000:00:1f.6 at offset a (was ffffffff, writing 0)
+> [21520.103087] PM: Writing back config space on device 0000:00:1f.6 at offset 9 (was ffffffff, writing 0)
+> [21520.103091] PM: Writing back config space on device 0000:00:1f.6 at offset 8 (was ffffffff, writing 0)
+> [21520.103095] PM: Writing back config space on device 0000:00:1f.6 at offset 7 (was ffffffff, writing 0)
+> [21520.103099] PM: Writing back config space on device 0000:00:1f.6 at offset 6 (was ffffffff, writing 0)
+> [21520.103103] PM: Writing back config space on device 0000:00:1f.6 at offset 5 (was ffffffff, writing 0)
+> [21520.103107] PM: Writing back config space on device 0000:00:1f.6 at offset 4 (was ffffffff, writing fed08004)
+> [21520.103111] PM: Writing back config space on device 0000:00:1f.6 at offset 3 (was ffffffff, writing 0)
+> [21520.103115] PM: Writing back config space on device 0000:00:1f.6 at offset 2 (was ffffffff, writing 11800002)
+> [21520.103119] PM: Writing back config space on device 0000:00:1f.6 at offset 1 (was ffffffff, writing 100002)
+> [21520.103123] PM: Writing back config space on device 0000:00:1f.6 at offset 0 (was ffffffff, writing 29328086)
+> 
+> ..
+> 
+> 
+> Please let me know if you need my config , dmesg or any other informations.
+> 
+> 
+> Best Regards,
+> 
+> Gabriel C
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
