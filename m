@@ -1,14 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: console (ttyX) forgot the font after hibernation
-Date: Thu, 1 May 2008 18:15:24 +0200
-Message-ID: <20080501161524.GB26089@elf.ucw.cz>
-References: <200805011742.23548.toralf.foerster@gmx.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Some sort corruption of my Thermal Subsystem after
+	suspend to ram
+Date: Thu, 1 May 2008 19:14:37 +0200
+Message-ID: <200805011914.38511.rjw__3038.794353097$1209662317$gmane$org@sisk.pl>
+References: <4818D9AB.3040402@googlemail.com> <200805011457.51238.rjw@sisk.pl>
+	<20080501130612.GB19922@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080501130612.GB19922@srcf.ucam.org>
 Content-Disposition: inline
-In-Reply-To: <200805011742.23548.toralf.foerster@gmx.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: pavel@suse.cz, Gabriel C <nix.or.die@googlemail.com>, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-05-01 17:42:23, Toralf F=F6rster wrote:
-> Hello,
-> =
+On Thursday, 1 of May 2008, Matthew Garrett wrote:
+> On Thu, May 01, 2008 at 02:57:49PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 1 of May 2008, Matthew Garrett wrote:
+> > > Perhaps we should be more aggressive about restoring PCI config space if 
+> > > there's no driver bound to a device. The alternative in this case would 
+> > > seem to be to write a driver for this device that does nothing other 
+> > > than handle suspend/resume.
+> > 
+> > Well, we have default suspend/resume for PCI devices.  They are called for
+> > devices that have no drivers bound to them and execute
+> > pci_restore_state()/pci_restore_state(), among other things.  Isn't that
+> > sufficient?
+> 
+> That only saves the "standard" registers, not the rest of config space.
 
-> under my (stable) Gentoo I use the consolefont lat9w-10 instead of the de=
-fault
-> (and much larger) font. If I hibernate my ThinkPad T41 and wake it up aga=
-in,
-> the console uses the default font instead :-(
-> =
+Hm, in that case I'd probably opt for writing a special driver for this
+particular device.
 
-> This doesn't happen with suspend to ram, only if I hibernate the system:
-> =
-
-> tfoerste@n22 ~/devel/linux-2.6 $ uname -a
-> Linux n22 2.6.24-gentoo-r4 #4 Sun Apr 20 12:16:18 CEST 2008 i686 Intel(R)=
- Pentium(R) M processor 1700MHz GenuineIntel GNU/Linux
-> =
-
-> I tested this with 2.6.25 and older kernels, always I goi the described b=
-ehaviour.
-
-It always worked like this, and I'm not sure it is worth fixing. You
-can use framebuffer console to "fix" this.. or perhaps we could add
-save/restore of font data, but I'm unlikely to code that patch.
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Thanks,
+Rafael
