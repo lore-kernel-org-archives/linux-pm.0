@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Alan" <alan@clueserver.org>
 Subject: Re: Some sort corruption of my Thermal Subsystem after
-	suspend to ram
-Date: Thu, 1 May 2008 19:14:37 +0200
-Message-ID: <200805011914.38511.rjw__3038.794353097$1209662317$gmane$org@sisk.pl>
-References: <4818D9AB.3040402@googlemail.com> <200805011457.51238.rjw@sisk.pl>
-	<20080501130612.GB19922@srcf.ucam.org>
+ suspend to ram
+Date: Thu, 1 May 2008 09:30:50 -0700 (PDT)
+Message-ID: <33216.75.164.221.130.1209659450.squirrel__9441.56959089941$1209680586$gmane$org@clueserver.org>
+References: <4818D9AB.3040402@googlemail.com>
+	<200805010157.58607.lenb@kernel.org>
+	<20080501160946.GA26089@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080501130612.GB19922@srcf.ucam.org>
-Content-Disposition: inline
+In-Reply-To: <20080501160946.GA26089@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: pavel@suse.cz, Gabriel C <nix.or.die@googlemail.com>, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 1 of May 2008, Matthew Garrett wrote:
-> On Thu, May 01, 2008 at 02:57:49PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 1 of May 2008, Matthew Garrett wrote:
-> > > Perhaps we should be more aggressive about restoring PCI config space if 
-> > > there's no driver bound to a device. The alternative in this case would 
-> > > seem to be to write a driver for this device that does nothing other 
-> > > than handle suspend/resume.
-> > 
-> > Well, we have default suspend/resume for PCI devices.  They are called for
-> > devices that have no drivers bound to them and execute
-> > pci_restore_state()/pci_restore_state(), among other things.  Isn't that
-> > sufficient?
-> 
-> That only saves the "standard" registers, not the rest of config space.
+> Hi!
+>
+>> The ICH9 apparently provides a pair of memory mapped on-die thermal
+>> sensors.
+>>
+>> The sensors basically shut off your hardware if it gets too hot.
+>
+> Are the sensors driven by ACPI? Probably yes, otherwise they would be
+> unable to shut down the system.
+>
+>> ICH9 exports the base address for the sensors via a PCI device --
+>> D31:F6, aka Linux 00:1f.6
+>>
+>> I'm not aware of a native Linux device driver that talks to this device
+>> (nor can I think of a useful purpose for such a driver)
+>> So it seems what is in play here is any BIOS code that talks to this
+>> device,
+>> and Linux's standard PCI config space restore.
+>>
+>> My guess is that the BIOS is enabling the device on cold boot,
+>> but not enabling it after resume from S3.
+>
+> That sounds like a BIOS problem, right? If the piece of hardware is
+> driven by BIOS, Linux can't be responsible for saving/restoring it.
 
-Hm, in that case I'd probably opt for writing a special driver for this
-particular device.
+I was having a similar problem on my old laptop. It seemed a lot more
+sensitive to the problem on later kernels.
 
-Thanks,
-Rafael
+What was actually happening is that the last time the laptop went in for
+repairs they did not seat the heat sink correctly.  It slowly worked
+itself loose.  After regreasing it with heat sink grease (not a heat sink
+pad, but actual silver grease) and reseating it and tightening it down,
+the machine worked fine.  (I also found some nasty tool marks in the soft
+metal next to the heat sink that shows that whoever did it slipped at
+least once.)
+
+Sometimes hardware problems increase slowly.
