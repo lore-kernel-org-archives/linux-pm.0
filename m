@@ -1,15 +1,12 @@
-From: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Some sort corruption of my Thermal Subsystem after
- suspend to ram
-Date: Thu, 01 May 2008 15:19:25 +0200
-Message-ID: <4819C35D.6000300__23530.8368261487$1209648144$gmane$org@googlemail.com>
-References: <4818D9AB.3040402@googlemail.com>
-	<200805010157.58607.lenb@kernel.org>
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: console (ttyX) forgot the font after hibernation
+Date: Thu, 1 May 2008 17:42:23 +0200
+Message-ID: <200805011742.23548.toralf.foerster@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805010157.58607.lenb@kernel.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,110 +16,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz
+To: pavel@suse.cz
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Len Brown wrote:
-> The ICH9 apparently provides a pair of memory mapped on-die thermal sensors.
-> 
-> The sensors basically shut off your hardware if it gets too hot.
-> 
-> ICH9 exports the base address for the sensors via a PCI device -- D31:F6, aka Linux 00:1f.6
-> 
-> I'm not aware of a native Linux device driver that talks to this device
-> (nor can I think of a useful purpose for such a driver)
-> So it seems what is in play here is any BIOS code that talks to this device,
-> and Linux's standard PCI config space restore.
-> 
-> My guess is that the BIOS is enabling the device on cold boot,
-> but not enabling it after resume from S3.
-> Is there a BIOS SETUP option that controls if the ICH9 thermal device is enabled or not?
+Hello,
 
-I have some options for the ASUS HW monitoring things where I can set fan profile and see the speed of the fans
-but I cannot find something where I can enable/disable the whole thermal devices.
+under my (stable) Gentoo I use the consolefont lat9w-10 instead of the defa=
+ult
+(and much larger) font. If I hibernate my ThinkPad T41 and wake it up again,
+the console uses the default font instead :-(
 
-There is a option to ignore some fans but that is.
+This doesn't happen with suspend to ram, only if I hibernate the system:
 
-> 
-> -Len
-> 
-> 
-> 
-> 
-> On Wednesday 30 April 2008, Gabriel C wrote:
->> Hi all,
->>
->> I thought I've found all issue with that new box but I was wrong ;)
->>
->> On an ASUS P5E-VM DO , 4G RAM , Q9300 CPU after suspend to ram Thermal 
->> Subsystem gets corrupted in some way.
->>
->> I got some reboot , halt problems and was hunting the issue and noticed these problems only
->> occurred when I've suspend the box to ram , at least once.
->>
->> I've tested 2.6.{24*,25,linus-git(before ACPI merge),x86-latest-git} and all got that problem.
->>
->> Also on x86-latest-git I've tested with MTRR_SANITIZER on/off. It does not make any difference.
->>
->>
->> lspci output before s2r is :
->>
->> ..
->>
->>
->> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev 02)
->>         Subsystem: ASUSTeK Computer Inc. Device [1043:8277]
->>         Flags: fast devsel
->>         Memory at fed08000 (64-bit, non-prefetchable) [size=4K]
->>         Capabilities: [50] Power Management version 3                                                                                                       
->>
->> ...
->>
->>
->> and after :
->>
->> ...
->>
->> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev ff) (prog-if ff)
->>         !!! Unknown header type 7f
->>
->> ...
->>
->> dmesg | grep 00:1f.6
->> [21520.103062] PM: Writing back config space on device 0000:00:1f.6 at offset f (was ffffffff, writing 300)
->> [21520.103066] PM: Writing back config space on device 0000:00:1f.6 at offset e (was ffffffff, writing 0)
->> [21520.103070] PM: Writing back config space on device 0000:00:1f.6 at offset d (was ffffffff, writing 50)
->> [21520.103074] PM: Writing back config space on device 0000:00:1f.6 at offset c (was ffffffff, writing 0)
->> [21520.103078] PM: Writing back config space on device 0000:00:1f.6 at offset b (was ffffffff, writing 82771043)
->> [21520.103083] PM: Writing back config space on device 0000:00:1f.6 at offset a (was ffffffff, writing 0)
->> [21520.103087] PM: Writing back config space on device 0000:00:1f.6 at offset 9 (was ffffffff, writing 0)
->> [21520.103091] PM: Writing back config space on device 0000:00:1f.6 at offset 8 (was ffffffff, writing 0)
->> [21520.103095] PM: Writing back config space on device 0000:00:1f.6 at offset 7 (was ffffffff, writing 0)
->> [21520.103099] PM: Writing back config space on device 0000:00:1f.6 at offset 6 (was ffffffff, writing 0)
->> [21520.103103] PM: Writing back config space on device 0000:00:1f.6 at offset 5 (was ffffffff, writing 0)
->> [21520.103107] PM: Writing back config space on device 0000:00:1f.6 at offset 4 (was ffffffff, writing fed08004)
->> [21520.103111] PM: Writing back config space on device 0000:00:1f.6 at offset 3 (was ffffffff, writing 0)
->> [21520.103115] PM: Writing back config space on device 0000:00:1f.6 at offset 2 (was ffffffff, writing 11800002)
->> [21520.103119] PM: Writing back config space on device 0000:00:1f.6 at offset 1 (was ffffffff, writing 100002)
->> [21520.103123] PM: Writing back config space on device 0000:00:1f.6 at offset 0 (was ffffffff, writing 29328086)
->>
->> ..
->>
->>
->> Please let me know if you need my config , dmesg or any other informations.
->>
->>
->> Best Regards,
->>
->> Gabriel C
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> 
-> 
+tfoerste@n22 ~/devel/linux-2.6 $ uname -a
+Linux n22 2.6.24-gentoo-r4 #4 Sun Apr 20 12:16:18 CEST 2008 i686 Intel(R) P=
+entium(R) M processor 1700MHz GenuineIntel GNU/Linux
+
+I tested this with 2.6.25 and older kernels, always I goi the described beh=
+aviour.
+-- =
+
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
