@@ -1,16 +1,12 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: More info about this group
-Date: Mon, 5 May 2008 23:14:55 +0100
-Message-ID: <20080505221454.GA2087@srcf.ucam.org>
-References: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
-	<200804291635.33874.david-b@pacbell.net>
-	<eb62f8bb0805050947k2f76c793id16ce29926f14b19@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/4] Patches for 2.6.27
+Date: Tue, 6 May 2008 23:31:38 +0200
+Message-ID: <200805062331.39454.rjw__3918.47729119963$1210110107$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <eb62f8bb0805050947k2f76c793id16ce29926f14b19@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +16,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Carlos Augusto de =?iso-8859-1?Q?Ara=FAjo?= Mar <carlos.augusto.mar@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 05, 2008 at 12:47:23PM -0400, Carlos Augusto de Ara=FAjo Mar wr=
-ote:
+Hi Len,
 
-> Our group, named Group of Interest in Embedded Systems (GISE), is researc=
-hing
-> about power management and other subjects related to embedded systems.
-> We began our researches last year and as a first result We developed a
-> tool for apply Dynamic Voltage and Frequency Scale (DVFS) in C codes.
-> Now, We are applying this tool in real codes and doing adjusts. This
-> tool was developed
-> under open source filosofy and will be available in sourceforge even
-> end next month (june) . The next step to be taken for us is to
-> participate of groups which interest is the same ours. In a first
-> moment, our tool was designed to work with ARM platform, more
-> specifically ARM 9.
+The following patches are for inclusion in the 2.6.27 patch queue.  They apply
+on top of the latest -git, AFAICS.
 
-How is this different to the cpufreq code and governors already present =
+Thanks,
+Rafael
 
-in the Linux kernel?
 
--- =
-
-Matthew Garrett | mjg59@srcf.ucam.org
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
