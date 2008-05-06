@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] ACPI PM: Add suspend sequence workaround
-Date: Wed, 7 May 2008 00:09:52 +0200
-Message-ID: <200805070009.53120.rjw__38438.6232741692$1210112012$gmane$org@sisk.pl>
-References: <200805062342.42789.rjw@sisk.pl> <200805062344.31117.rjw@sisk.pl>
-	<200805062257.55554.carlos@strangeworlds.co.uk>
+Subject: [RFC][PATCH 0/2] Freezer face lifting
+Date: Wed, 7 May 2008 00:03:55 +0200
+Message-ID: <200805070003.56387.rjw__4993.35779245502$1210112013$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805062257.55554.carlos@strangeworlds.co.uk>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,27 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 6 of May 2008, Carlos Corbacho wrote:
-> On Tuesday 06 May 2008 22:44:30 Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > There are some systems out there that don't work correctly with
-> > our current suspend/hibernation code ordering.  Provide a workaround
-> > for these systems allowing them to pass the
-> > 'acpi_old_suspend_ordering' command line parameter to the kernel that
-> > will make it use the pre-ACPI 2.0 suspend code ordering.
-> 
-> Can we tack on a set of DMI matches to this somewhere to automatically apply 
-> this to the systems we know so far that need the old ordering?
+Hi,
 
-Yes, that will be the next step.
+Although the freezer is generally considered as a bad thing, it still is
+being used for suspend and hibernation and will be used for these purposes in
+the near future.  For this reason, it seems reasonable to try to reduce some
+known problems with it.  The following two patches attempt to do that.
 
-I think the command line argument may be useful anyway for checking if given
-system is affected.
+First, it is the known weakness of the freezer that it tries to distinguish
+user space processes from kernel threads in a slightly artificial way.  The
+first patch is intended to change that.
 
-Thanks,
+Second, in principle, the freezer can use the recently introduced TASK_KILLABLE
+state to handle some cases that it couldn't have handled previously, which is
+the purpose of the second patch.
+
+Please review and tell me what you think.
+
 Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
