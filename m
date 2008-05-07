@@ -1,13 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] PCI PM: Introduce pci_preferred_state
-Date: Wed, 7 May 2008 20:32:57 +0200
-Message-ID: <200805072032.58472.rjw__37265.116981189$1210185326$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0805071139020.3701-100000@iolanthe.rowland.org>
+Subject: Re: [RFC][PATCH 2/2] Freezer: Try to handle killable
+	tasks
+Date: Wed, 7 May 2008 20:35:55 +0200
+Message-ID: <200805072035.57450.rjw__46421.3024861694$1210185542$gmane$org@sisk.pl>
+References: <200805070003.56387.rjw@sisk.pl>
+	<20080507094150.GG13858@elf.ucw.cz>
+	<20080507135757.GT19219@parisc-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0805071139020.3701-100000@iolanthe.rowland.org>
+In-Reply-To: <20080507135757.GT19219@parisc-linux.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,111 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cedric Le Goater <clg@fr.ibm.com>, Liam Howlett <howlett@gmail.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Alan Stern wrote:
-> On Wed, 7 May 2008, Rafael J. Wysocki wrote:
-> 
-> > On Wednesday, 7 of May 2008, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > The new suspend and hibernation callbacks introduced with
-> > > > 'struct pm_ops' and 'struct pm_ext_ops' do not take a
-> > > > pm_message_t argument, so the drivers using them will not be able
-> > > > to use pci_choose_state() in its present form.  For this reason,
-> > > > introduce the new function pci_preferred_state() playing the role
-> > > > of pci_choose_state(), but taking only a pointer to the device
-> > > > object.
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > ---
-> > > >  drivers/pci/pci.c   |   33 ++++++++++++++++++++++++++++++++-
-> > > >  include/linux/pci.h |    1 +
-> > > >  include/linux/pm.h  |   10 ++++++++++
-> > > >  3 files changed, 43 insertions(+), 1 deletion(-)
-> > > > 
-> > > > Index: linux-2.6/drivers/pci/pci.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/drivers/pci/pci.c
-> > > > +++ linux-2.6/drivers/pci/pci.c
-> > > > @@ -509,7 +509,38 @@ pci_set_power_state(struct pci_dev *dev,
-> > > >  }
-> > > >  
-> > > >  pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
-> > > > - 
-> > > > +
-> > > > +/**
-> > > > + * pci_preferred_state - Choose the preferred power state of a PCI device
-> > > > + * @dev: PCI device to be put into the low power state
-> > > > + * @sp: Information aboutabout what the driver would prefer to do with
-> > > > + *	the device if there were no platform-implemeted policy.
-> > > > + *
-> > > > + * Returns PCI power state suitable for given device and given suspend policy.
-> > > > + * The policy, however, is only used if platform_pci_choose_state() fails or is
-> > > > + * not present.  Otherwise, it is assumed that platform_pci_choose_state()
-> > > > + * implements the right policy.
-> > > > + */
-> > > > +
-> > > > +pci_power_t pci_preferred_state(struct pci_dev *dev, enum suspend_policy sp)
-> > > > +{
-> > > > +	pci_power_t ret;
-> > > > +
-> > > > +	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
-> > > > +		return PCI_D0;
-> > > > +
-> > > > +	ret = (sp == SP_TURN_OFF) ? PCI_D3hot : PCI_D0;
-> > > > +	if (platform_pci_choose_state) {
-> > > > +		pci_power_t platform_ret = platform_pci_choose_state(dev);
-> > > > +
-> > > > +		if (platform_ret != PCI_POWER_ERROR)
-> > > > +			ret = platform_ret;
-> > > > +	}
-> > > > +	return ret;
-> > > > +}
-> > > > +
-> > > > +EXPORT_SYMBOL(pci_preferred_state);
-> > > 
-> > > I don't get it. How is driver supposed to use this? How does the
-> > > driver decide between SP_TURN_OFF and SP_TURN_ON?
-> > > 
-> > > ...and it seems to be clearer to just inline this in the driver... or
-> > > pass  PCI_D3hot/PCI_D0 to it, instead of inventing yet another
-> > > define...
+On Wednesday, 7 of May 2008, Matthew Wilcox wrote:
+> On Wed, May 07, 2008 at 11:41:50AM +0200, Pavel Machek wrote:
+> > > @@ -182,6 +183,8 @@ __mutex_lock_common(struct mutex *lock, 
+> > >  		/* didnt get the lock, go to sleep: */
+> > >  		spin_unlock_mutex(&lock->wait_lock, flags);
+> > >  		schedule();
+> > > +		if (state == TASK_KILLABLE)
+> > > +			try_to_freeze();
+> > >  		spin_lock_mutex(&lock->wait_lock, flags);
+> > >  	}
+> > >  
 > > 
-> > I thought about that too.  I'd like to know what the other people think,
-> > though.
+> > I'm not comfortable with this one. Can the task be killable, but still
+> > hold some _other_ mutex? (and then release it only if it actually gets
+> > the signal?)
 > 
-> The point of this isn't at all clear.
-> 
-> Is this routine meant to be called during a hibernation 
-> transition?
+> Yes, that's exactly what's supposed to happen.
 
-Yes, it is.
-
-> Or is it just for suspend? 
-> 
-> And why would the return value ever be anything other than D3_hot?  (Or 
-> why would the driver ever want to put a device in a different state?)
-
-In principle, the driver may want to put the device into a state having shorter
-wake up latency than D3_hot.
-
-> AFAICS, the only reason would be because platform_pci_choose_state() 
-> suggested something else.  In which case there's no need for the 
-> "policy" argument.
-
-There is a need in two cases:
-- if platform_pci_choose_state() is not defined (it only is defined for ACPI
-  systems at the moment),
-- if platform_pci_choose_state() returns PCI_POWER_ERROR meaning that it cannot
-  handle the device.
-
-I agree with Pavel that the driver could pass a "fallback state" as a second
-argument to be used in case the platform cannot provide it with one.
+The question, though, is whether there is a driver that will try to lock this
+mutex in its .suspend() or .resume() callback.  If there is one, TASK_KILLABLE
+won't help the freezer indeed.
 
 Thanks,
 Rafael
