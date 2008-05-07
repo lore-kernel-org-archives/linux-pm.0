@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 2/2] PCI PM: Introduce pci_preferred_state
-Date: Wed, 7 May 2008 11:33:09 +0200
-Message-ID: <20080507093309.GE13858__31904.6384458945$1210152941$gmane$org@elf.ucw.cz>
-References: <200805062342.42789.rjw@sisk.pl> <200805062349.18683.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/2] Freezer: Introduce PF_FREEZER_NOSIG
+Date: Wed, 7 May 2008 11:36:21 +0200
+Message-ID: <20080507093621.GF13858__6547.05256824872$1210153135$gmane$org@elf.ucw.cz>
+References: <200805070003.56387.rjw@sisk.pl> <200805070005.20403.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200805062349.18683.rjw@sisk.pl>
+In-Reply-To: <200805070005.20403.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,75 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> The new suspend and hibernation callbacks introduced with
-> 'struct pm_ops' and 'struct pm_ext_ops' do not take a
-> pm_message_t argument, so the drivers using them will not be able
-> to use pci_choose_state() in its present form.  For this reason,
-> introduce the new function pci_preferred_state() playing the role
-> of pci_choose_state(), but taking only a pointer to the device
-> object.
+> The freezer currently attempts to distinguish kernel threads from
+> user space tasks by checking if their mm pointer is unset and it
+> does not send fake signals to kernel threads.  However, there are
+> kernel threads, mostly related to networking, that behave like
+> user space tasks and may want to be sent a fake signal to be frozen.
+> 
+> Introduce the new process flag PF_FREEZER_NOSIG that will be set
+> by default for all kernel threads and make the freezer only send
+> fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
+> the set_freezable_with_signal() function to be called by the kernel
+> threads that want to be sent a fake signal for freezing.
+> 
+> This patch should not change the freezer's observable behavior.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/pci/pci.c   |   33 ++++++++++++++++++++++++++++++++-
->  include/linux/pci.h |    1 +
->  include/linux/pm.h  |   10 ++++++++++
->  3 files changed, 43 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -509,7 +509,38 @@ pci_set_power_state(struct pci_dev *dev,
+
+ACK.
+
+
+> -static int has_mm(struct task_struct *p)
+> +static inline bool should_send_signal(struct task_struct *p)
+>  {
+> -	return (p->mm && !(p->flags & PF_BORROWED_MM));
+> +	return !(current->flags & PF_FREEZER_NOSIG);
 >  }
+>
+
+Note that we used to tell kernel threads by ->mm, and now you assume
+that anything created by ktrheadd is kernel thread, ->mm or not.
+
+I'm not sure if those can differ (->mm = NULL somewhere? Or ->mm =
+something somewhere else?). I guess this should go to -mm for a long
+test...
+
+> @@ -234,7 +234,7 @@ int kthreadd(void *unused)
+>  	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+>  	set_cpus_allowed(tsk, CPU_MASK_ALL);
 >  
->  pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
-> - 
-> +
-> +/**
-> + * pci_preferred_state - Choose the preferred power state of a PCI device
-> + * @dev: PCI device to be put into the low power state
-> + * @sp: Information aboutabout what the driver would prefer to do with
-> + *	the device if there were no platform-implemeted policy.
-> + *
-> + * Returns PCI power state suitable for given device and given suspend policy.
-> + * The policy, however, is only used if platform_pci_choose_state() fails or is
-> + * not present.  Otherwise, it is assumed that platform_pci_choose_state()
-> + * implements the right policy.
-> + */
-> +
-> +pci_power_t pci_preferred_state(struct pci_dev *dev, enum suspend_policy sp)
-> +{
-> +	pci_power_t ret;
-> +
-> +	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
-> +		return PCI_D0;
-> +
-> +	ret = (sp == SP_TURN_OFF) ? PCI_D3hot : PCI_D0;
-> +	if (platform_pci_choose_state) {
-> +		pci_power_t platform_ret = platform_pci_choose_state(dev);
-> +
-> +		if (platform_ret != PCI_POWER_ERROR)
-> +			ret = platform_ret;
-> +	}
-> +	return ret;
-> +}
-> +
-> +EXPORT_SYMBOL(pci_preferred_state);
+> -	current->flags |= PF_NOFREEZE;
+> +	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+>  
+>  	for (;;) {
+>  		set_current_state(TASK_INTERRUPTIBLE);
 
-I don't get it. How is driver supposed to use this? How does the
-driver decide between SP_TURN_OFF and SP_TURN_ON?
-
-...and it seems to be clearer to just inline this in the driver... or
-pass  PCI_D3hot/PCI_D0 to it, instead of inventing yet another
-define...
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
