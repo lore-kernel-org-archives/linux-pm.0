@@ -1,15 +1,15 @@
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC][PATCH 1/2] Freezer: Introduce PF_FREEZER_NOSIG
-Date: Wed, 7 May 2008 06:08:29 +0530
-Message-ID: <20080507003829.GA13608__12394.5071980872$1210120817$gmane$org@in.ibm.com>
-References: <200805070003.56387.rjw@sisk.pl> <200805070005.20403.rjw@sisk.pl>
-Reply-To: ego@in.ibm.com
+From: <gregkh@suse.de>
+Subject: patch
+	pm-new-suspend-and-hibernation-callbacks-for-pci-bus-type.patch
+	added to gregkh-2.6 tree
+Date: Tue, 06 May 2008 22:08:09 -0700
+Message-ID: <12101368891140__17691.2064118826$1210137201$gmane$org@kroah.org>
+References: <200804301409.26554.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200805070005.20403.rjw@sisk.pl>
+In-Reply-To: <200804301409.26554.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,280 +19,502 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl, akpm@linux-foundation.org, astarikovskiy@suse.de, benh@kernel.crashing.org, david-b@pacbell.net, greg@kroah.com, gregkh@suse.de, jbarnes@virtuousgeek.org, le
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-On Wed, May 07, 2008 at 12:05:19AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The freezer currently attempts to distinguish kernel threads from
-> user space tasks by checking if their mm pointer is unset and it
-> does not send fake signals to kernel threads.  However, there are
-> kernel threads, mostly related to networking, that behave like
-> user space tasks and may want to be sent a fake signal to be frozen.
-> 
-> Introduce the new process flag PF_FREEZER_NOSIG that will be set
-> by default for all kernel threads and make the freezer only send
-> fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
-> the set_freezable_with_signal() function to be called by the kernel
-> threads that want to be sent a fake signal for freezing.
-> 
-> This patch should not change the freezer's observable behavior.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  include/linux/freezer.h |   10 ++++
->  include/linux/sched.h   |    1 
->  kernel/kthread.c        |    2 
->  kernel/power/process.c  |   97 ++++++++++++++++++++----------------------------
->  4 files changed, 54 insertions(+), 56 deletions(-)
-> 
-> Index: linux-2.6/include/linux/freezer.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/freezer.h
-> +++ linux-2.6/include/linux/freezer.h
-> @@ -128,6 +128,15 @@ static inline void set_freezable(void)
->  }
-> 
->  /*
-> + * Tell the freezer that the current task should be frozen by it and that it
-> + * should send a fake signal to the task to freeze it.
-> + */
-> +static inline void set_freezable_with_signal(void)
-> +{
-> +	current->flags &= ~(PF_NOFREEZE | PF_FREEZER_NOSIG);
-> +}
-> +
-> +/*
->   * Freezer-friendly wrappers around wait_event_interruptible() and
->   * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
->   */
-> @@ -174,6 +183,7 @@ static inline void freezer_do_not_count(
->  static inline void freezer_count(void) {}
->  static inline int freezer_should_skip(struct task_struct *p) { return 0; }
->  static inline void set_freezable(void) {}
-> +static inline void set_freezable_with_signal(void) {}
-> 
->  #define wait_event_freezable(wq, condition)				\
->  		wait_event_interruptible(wq, condition)
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
->  #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
->  #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
->  #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-> +#define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
-> 
->  /*
->   * Only the _current_ task can read/write to tsk->flags, but other
-> Index: linux-2.6/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/process.c
-> +++ linux-2.6/kernel/power/process.c
-> @@ -19,9 +19,6 @@
->   */
->  #define TIMEOUT	(20 * HZ)
-> 
-> -#define FREEZER_KERNEL_THREADS 0
-> -#define FREEZER_USER_SPACE 1
-> -
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -84,63 +81,53 @@ static void fake_signal_wake_up(struct t
->  	spin_unlock_irqrestore(&p->sighand->siglock, flags);
->  }
-> 
-> -static int has_mm(struct task_struct *p)
-> +static inline bool should_send_signal(struct task_struct *p)
->  {
-> -	return (p->mm && !(p->flags & PF_BORROWED_MM));
-> +	return !(current->flags & PF_FREEZER_NOSIG);
-		^^^^^^^^^^^^^^
-		p->flags ?
+This is a note to let you know that I've just added the patch titled
+
+     Subject: PM: New suspend and hibernation callbacks for PCI bus type
+
+to my gregkh-2.6 tree.  Its filename is
+
+     pm-new-suspend-and-hibernation-callbacks-for-pci-bus-type.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->  }
-> 
->  /**
->   *	freeze_task - send a freeze request to given task
->   *	@p: task to send the request to
-> - *	@with_mm_only: if set, the request will only be sent if the task has its
-> - *		own mm
-> - *	Return value: 0, if @with_mm_only is set and the task has no mm of its
-> - *		own or the task is frozen, 1, otherwise
-> + *	@sig_only: if set, the request will only be sent if the task has the
-> + *		PF_FREEZER_NOSIG flag unset
-> + *	Return value: 'false', if @sig_only is set and the task has
-> + *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
->   *
-> - *	The freeze request is sent by seting the tasks's TIF_FREEZE flag and
-> + *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
->   *	either sending a fake signal to it or waking it up, depending on whether
-> - *	or not it has its own mm (ie. it is a user land task).  If @with_mm_only
-> - *	is set and the task has no mm of its own (ie. it is a kernel thread),
-> - *	its TIF_FREEZE flag should not be set.
-> - *
-> - *	The task_lock() is necessary to prevent races with exit_mm() or
-> - *	use_mm()/unuse_mm() from occuring.
-> + *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
-> + *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
-> + *	TIF_FREEZE flag will not be set.
->   */
-> -static int freeze_task(struct task_struct *p, int with_mm_only)
-> +static bool freeze_task(struct task_struct *p, bool sig_only)
->  {
-> -	int ret = 1;
-> +	/*
-> +	 * We first check if the task is freezing and next if it has already
-> +	 * been frozen to avoid the race with frozen_process() which first marks
-> +	 * the task as frozen and next clears its TIF_FREEZE.
-> +	 */
-> +	if (!freezing(p)) {
-> +		rmb();
-> +		if (frozen(p))
-> +			return false;
-> 
-> -	task_lock(p);
-> -	if (freezing(p)) {
-> -		if (has_mm(p)) {
-> -			if (!signal_pending(p))
-> -				fake_signal_wake_up(p);
-> -		} else {
-> -			if (with_mm_only)
-> -				ret = 0;
-> -			else
-> -				wake_up_state(p, TASK_INTERRUPTIBLE);
-> -		}
-> +		if (!sig_only || should_send_signal(p))
-> +			set_freeze_flag(p);
-> +		else
-> +			return false;
-> +	}
-> +
-> +	if (should_send_signal(p)) {
-> +		if (!signal_pending(p))
-> +			fake_signal_wake_up(p);
-> +	} else if (sig_only) {
-> +		return false;
->  	} else {
-> -		rmb();
-> -		if (frozen(p)) {
-> -			ret = 0;
-> -		} else {
-> -			if (has_mm(p)) {
-> -				set_freeze_flag(p);
-> -				fake_signal_wake_up(p);
-> -			} else {
-> -				if (with_mm_only) {
-> -					ret = 0;
-> -				} else {
-> -					set_freeze_flag(p);
-> -					wake_up_state(p, TASK_INTERRUPTIBLE);
-> -				}
-> -			}
-> -		}
-> +		wake_up_state(p, TASK_INTERRUPTIBLE);
->  	}
-> -	task_unlock(p);
-> -	return ret;
-> +
-> +	return true;
->  }
-> 
->  static void cancel_freezing(struct task_struct *p)
-> @@ -156,7 +143,7 @@ static void cancel_freezing(struct task_
->  	}
->  }
-> 
-> -static int try_to_freeze_tasks(int freeze_user_space)
-> +static int try_to_freeze_tasks(bool sig_only)
->  {
->  	struct task_struct *g, *p;
->  	unsigned long end_time;
-> @@ -175,7 +162,7 @@ static int try_to_freeze_tasks(int freez
->  			if (frozen(p) || !freezeable(p))
->  				continue;
-> 
-> -			if (!freeze_task(p, freeze_user_space))
-> +			if (!freeze_task(p, sig_only))
->  				continue;
-> 
->  			/*
-> @@ -235,13 +222,13 @@ int freeze_processes(void)
->  	int error;
-> 
->  	printk("Freezing user space processes ... ");
-> -	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
-> +	error = try_to_freeze_tasks(true);
->  	if (error)
->  		goto Exit;
->  	printk("done.\n");
-> 
->  	printk("Freezing remaining freezable tasks ... ");
-> -	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
-> +	error = try_to_freeze_tasks(false);
->  	if (error)
->  		goto Exit;
->  	printk("done.");
-> @@ -251,7 +238,7 @@ int freeze_processes(void)
->  	return error;
->  }
-> 
-> -static void thaw_tasks(int thaw_user_space)
-> +static void thaw_tasks(bool sig_only)
->  {
->  	struct task_struct *g, *p;
-> 
-> @@ -260,7 +247,7 @@ static void thaw_tasks(int thaw_user_spa
->  		if (!freezeable(p))
->  			continue;
-> 
-> -		if (!p->mm == thaw_user_space)
-> +		if (sig_only && !should_send_signal(p))
->  			continue;
-> 
->  		thaw_process(p);
-> @@ -271,8 +258,8 @@ static void thaw_tasks(int thaw_user_spa
->  void thaw_processes(void)
->  {
->  	printk("Restarting tasks ... ");
-> -	thaw_tasks(FREEZER_KERNEL_THREADS);
-> -	thaw_tasks(FREEZER_USER_SPACE);
-> +	thaw_tasks(true);
-> +	thaw_tasks(false);
+>From rjw@sisk.pl Wed Apr 30 05:09:52 2008
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Wed, 30 Apr 2008 14:09:24 +0200
+Subject: PM: New suspend and hibernation callbacks for PCI bus type
+To: Greg KH <greg@kroah.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oliver Neukum <oliver@neukum.org>, Nigel Cunningham <ncunningham@crca.org.au>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <200804301409.26554.rjw@sisk.pl>
+Content-Disposition: inline
 
-Shouldn't the order be 
-	thaw_tasks(false);
-	thaw_tasks(true);
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Implement new suspend and hibernation callbacks for the PCI bus type.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/pci/pci-driver.c |  376 ++++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/pci.h      |    2 
+ 2 files changed, 337 insertions(+), 41 deletions(-)
+
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -274,7 +274,57 @@ static int pci_device_remove(struct devi
+ 	return 0;
+ }
+ 
+-static int pci_device_suspend(struct device * dev, pm_message_t state)
++static void pci_device_shutdown(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++
++	if (drv && drv->shutdown)
++		drv->shutdown(pci_dev);
++	pci_msi_shutdown(pci_dev);
++	pci_msix_shutdown(pci_dev);
++}
++
++#ifdef CONFIG_PM_SLEEP
++
++/*
++ * Default "suspend" method for devices that have no driver provided suspend,
++ * or not even a driver at all.
++ */
++static void pci_default_pm_suspend(struct pci_dev *pci_dev)
++{
++	pci_save_state(pci_dev);
++	/*
++	 * mark its power state as "unknown", since we don't know if
++	 * e.g. the BIOS will change its device state when we suspend.
++	 */
++	if (pci_dev->current_state == PCI_D0)
++		pci_dev->current_state = PCI_UNKNOWN;
++}
++
++/*
++ * Default "resume" method for devices that have no driver provided resume,
++ * or not even a driver at all.
++ */
++static int pci_default_pm_resume(struct pci_dev *pci_dev)
++{
++	int retval = 0;
++
++	/* restore the PCI config space */
++	pci_restore_state(pci_dev);
++	/* if the device was enabled before suspend, reenable */
++	retval = pci_reenable_device(pci_dev);
++	/*
++	 * if the device was busmaster before the suspend, make it busmaster
++	 * again
++	 */
++	if (pci_dev->is_busmaster)
++		pci_set_master(pci_dev);
++
++	return retval;
++}
++
++static int pci_legacy_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+@@ -284,18 +334,12 @@ static int pci_device_suspend(struct dev
+ 		i = drv->suspend(pci_dev, state);
+ 		suspend_report_result(drv->suspend, i);
+ 	} else {
+-		pci_save_state(pci_dev);
+-		/*
+-		 * mark its power state as "unknown", since we don't know if
+-		 * e.g. the BIOS will change its device state when we suspend.
+-		 */
+-		if (pci_dev->current_state == PCI_D0)
+-			pci_dev->current_state = PCI_UNKNOWN;
++		pci_default_pm_suspend(pci_dev);
+ 	}
+ 	return i;
+ }
+ 
+-static int pci_device_suspend_late(struct device * dev, pm_message_t state)
++static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+@@ -308,26 +352,7 @@ static int pci_device_suspend_late(struc
+ 	return i;
+ }
+ 
+-/*
+- * Default resume method for devices that have no driver provided resume,
+- * or not even a driver at all.
+- */
+-static int pci_default_resume(struct pci_dev *pci_dev)
+-{
+-	int retval = 0;
+-
+-	/* restore the PCI config space */
+-	pci_restore_state(pci_dev);
+-	/* if the device was enabled before suspend, reenable */
+-	retval = pci_reenable_device(pci_dev);
+-	/* if the device was busmaster before the suspend, make it busmaster again */
+-	if (pci_dev->is_busmaster)
+-		pci_set_master(pci_dev);
+-
+-	return retval;
+-}
+-
+-static int pci_device_resume(struct device * dev)
++static int pci_legacy_resume(struct device *dev)
+ {
+ 	int error;
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+@@ -336,11 +361,11 @@ static int pci_device_resume(struct devi
+ 	if (drv && drv->resume)
+ 		error = drv->resume(pci_dev);
+ 	else
+-		error = pci_default_resume(pci_dev);
++		error = pci_default_pm_resume(pci_dev);
+ 	return error;
+ }
+ 
+-static int pci_device_resume_early(struct device * dev)
++static int pci_legacy_resume_early(struct device *dev)
+ {
+ 	int error = 0;
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+@@ -353,17 +378,288 @@ static int pci_device_resume_early(struc
+ 	return error;
+ }
+ 
+-static void pci_device_shutdown(struct device *dev)
++static int pci_pm_prepare(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		error = drv->pm->prepare(dev);
++
++	return error;
++}
++
++static void pci_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
++
++#ifdef CONFIG_SUSPEND
++
++static int pci_pm_suspend(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct device_driver *drv = dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->suspend) {
++			error = drv->pm->suspend(dev);
++			suspend_report_result(drv->pm->suspend, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
++	} else {
++		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
++	}
++
++	return error;
++}
++
++static int pci_pm_suspend_noirq(struct device *dev)
+ {
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
+ 
+-	if (drv && drv->shutdown)
+-		drv->shutdown(pci_dev);
+-	pci_msi_shutdown(pci_dev);
+-	pci_msix_shutdown(pci_dev);
++	if (drv && drv->pm) {
++		if (drv->pm->suspend_noirq) {
++			error = drv->pm->suspend_noirq(dev);
++			suspend_report_result(drv->pm->suspend_noirq, error);
++		}
++	} else {
++		error = pci_legacy_suspend_late(dev, PMSG_SUSPEND);
++	}
++
++	return error;
+ }
+ 
++static int pci_pm_resume(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct device_driver *drv = dev->driver;
++	int error;
++
++	if (drv && drv->pm) {
++		error = drv->pm->resume ? drv->pm->resume(dev) :
++			pci_default_pm_resume(pci_dev);
++	} else {
++		error = pci_legacy_resume(dev);
++	}
++
++	return error;
++}
++
++static int pci_pm_resume_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	pci_fixup_device(pci_fixup_resume, pci_dev);
++
++	if (drv && drv->pm) {
++		if (drv->pm->resume_noirq)
++			error = drv->pm->resume_noirq(dev);
++	} else {
++		error = pci_legacy_resume_early(dev);
++	}
++
++	return error;
++}
++
++#else /* !CONFIG_SUSPEND */
++
++#define pci_pm_suspend		NULL
++#define pci_pm_suspend_noirq	NULL
++#define pci_pm_resume		NULL
++#define pci_pm_resume_noirq	NULL
++
++#endif /* !CONFIG_SUSPEND */
++
++#ifdef CONFIG_HIBERNATION
++
++static int pci_pm_freeze(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct device_driver *drv = dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->freeze) {
++			error = drv->pm->freeze(dev);
++			suspend_report_result(drv->pm->freeze, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
++	} else {
++		error = pci_legacy_suspend(dev, PMSG_FREEZE);
++	}
++
++	return error;
++}
++
++static int pci_pm_freeze_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->freeze_noirq) {
++			error = drv->pm->freeze_noirq(dev);
++			suspend_report_result(drv->pm->freeze_noirq, error);
++		}
++	} else {
++		error = pci_legacy_suspend_late(dev, PMSG_FREEZE);
++	}
++
++	return error;
++}
++
++static int pci_pm_thaw(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->thaw)
++			error =  drv->pm->thaw(dev);
++	} else {
++		error = pci_legacy_resume(dev);
++	}
++
++	return error;
++}
++
++static int pci_pm_thaw_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->thaw_noirq)
++			error = drv->pm->thaw_noirq(dev);
++	} else {
++		error = pci_legacy_resume_early(dev);
++	}
++
++	return error;
++}
++
++static int pci_pm_poweroff(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->poweroff) {
++			error = drv->pm->poweroff(dev);
++			suspend_report_result(drv->pm->poweroff, error);
++		}
++	} else {
++		error = pci_legacy_suspend(dev, PMSG_HIBERNATE);
++	}
++
++	return error;
++}
++
++static int pci_pm_poweroff_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (drv && drv->pm) {
++		if (drv->pm->poweroff_noirq) {
++			error = drv->pm->poweroff_noirq(dev);
++			suspend_report_result(drv->pm->poweroff_noirq, error);
++		}
++	} else {
++		error = pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
++	}
++
++	return error;
++}
++
++static int pci_pm_restore(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct device_driver *drv = dev->driver;
++	int error;
++
++	if (drv && drv->pm) {
++		error = drv->pm->restore ? drv->pm->restore(dev) :
++			pci_default_pm_resume(pci_dev);
++	} else {
++		error = pci_legacy_resume(dev);
++	}
++
++	return error;
++}
++
++static int pci_pm_restore_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	pci_fixup_device(pci_fixup_resume, pci_dev);
++
++	if (drv && drv->pm) {
++		if (drv->pm->restore_noirq)
++			error = drv->pm->restore_noirq(dev);
++	} else {
++		error = pci_legacy_resume_early(dev);
++	}
++
++	return error;
++}
++
++#else /* !CONFIG_HIBERNATION */
++
++#define pci_pm_freeze		NULL
++#define pci_pm_freeze_noirq	NULL
++#define pci_pm_thaw		NULL
++#define pci_pm_thaw_noirq	NULL
++#define pci_pm_poweroff		NULL
++#define pci_pm_poweroff_noirq	NULL
++#define pci_pm_restore		NULL
++#define pci_pm_restore_noirq	NULL
++
++#endif /* !CONFIG_HIBERNATION */
++
++struct pm_ext_ops pci_pm_ops = {
++	.base = {
++		.prepare = pci_pm_prepare,
++		.complete = pci_pm_complete,
++		.suspend = pci_pm_suspend,
++		.resume = pci_pm_resume,
++		.freeze = pci_pm_freeze,
++		.thaw = pci_pm_thaw,
++		.poweroff = pci_pm_poweroff,
++		.restore = pci_pm_restore,
++	},
++	.suspend_noirq = pci_pm_suspend_noirq,
++	.resume_noirq = pci_pm_resume_noirq,
++	.freeze_noirq = pci_pm_freeze_noirq,
++	.thaw_noirq = pci_pm_thaw_noirq,
++	.poweroff_noirq = pci_pm_poweroff_noirq,
++	.restore_noirq = pci_pm_restore_noirq,
++};
++
++#define PCI_PM_OPS_PTR	&pci_pm_ops
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define PCI_PM_OPS_PTR	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
+ /**
+  * __pci_register_driver - register a new pci driver
+  * @drv: the driver structure to register
+@@ -386,6 +682,9 @@ int __pci_register_driver(struct pci_dri
+ 	drv->driver.owner = owner;
+ 	drv->driver.mod_name = mod_name;
+ 
++	if (drv->pm)
++		drv->driver.pm = &drv->pm->base;
++
+ 	spin_lock_init(&drv->dynids.lock);
+ 	INIT_LIST_HEAD(&drv->dynids.list);
+ 
+@@ -511,12 +810,9 @@ struct bus_type pci_bus_type = {
+ 	.uevent		= pci_uevent,
+ 	.probe		= pci_device_probe,
+ 	.remove		= pci_device_remove,
+-	.suspend	= pci_device_suspend,
+-	.suspend_late	= pci_device_suspend_late,
+-	.resume_early	= pci_device_resume_early,
+-	.resume		= pci_device_resume,
+ 	.shutdown	= pci_device_shutdown,
+ 	.dev_attrs	= pci_dev_attrs,
++	.pm		= PCI_PM_OPS_PTR,
+ };
+ 
+ static int __init pci_driver_init(void)
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -389,7 +389,7 @@ struct pci_driver {
+ 	int  (*resume_early) (struct pci_dev *dev);
+ 	int  (*resume) (struct pci_dev *dev);	                /* Device woken up */
+ 	void (*shutdown) (struct pci_dev *dev);
+-
++	struct pm_ext_ops *pm;
+ 	struct pci_error_handlers *err_handler;
+ 	struct device_driver	driver;
+ 	struct pci_dynids dynids;
 
 
->  	schedule();
->  	printk("done.\n");
->  }
-> Index: linux-2.6/kernel/kthread.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/kthread.c
-> +++ linux-2.6/kernel/kthread.c
-> @@ -234,7 +234,7 @@ int kthreadd(void *unused)
->  	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
->  	set_cpus_allowed(tsk, CPU_MASK_ALL);
-> 
-> -	current->flags |= PF_NOFREEZE;
-> +	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
-> 
->  	for (;;) {
->  		set_current_state(TASK_INTERRUPTIBLE);
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+Patches currently in gregkh-2.6 which might be from rjw@sisk.pl are
 
--- 
-Thanks and Regards
-gautham
+driver-core/pm-introduce-new-top-level-suspend-and-hibernation-callbacks.patch
+driver-core/pm-new-suspend-and-hibernation-callbacks-for-pci-bus-type.patch
+driver-core/pm-new-suspend-and-hibernation-callbacks-for-platform-bus-type.patch
