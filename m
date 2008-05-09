@@ -1,15 +1,15 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 2/2] PCI PM: Introduce pci_preferred_state
-Date: Fri, 9 May 2008 10:24:52 -0700
-Message-ID: <200805091024.53027.jbarnes@virtuousgeek.org>
-References: <Pine.LNX.4.44L0.0805071139020.3701-100000@iolanthe.rowland.org>
-	<200805090947.08620.jbarnes@virtuousgeek.org>
-	<200805091913.40197.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 1/2] ACPI PM: Remove obsolete Toshiba
+	workaround
+Date: Fri, 9 May 2008 19:21:47 +0200
+Message-ID: <200805091921.47902.rjw__28824.9417594217$1210354027$gmane$org@sisk.pl>
+References: <200805062342.42789.rjw@sisk.pl> <200805071421.19788.rjw@sisk.pl>
+	<200805091920.27756.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805091913.40197.rjw@sisk.pl>
+In-Reply-To: <200805091920.27756.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,63 +20,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 09, 2008 10:13 am Rafael J. Wysocki wrote:
-> > So why not make platform_pci_choose_state do:
-> > + pci_power_t noacpi_pci_choose_state(struct pci_dev *dev, pci_message_t
-> > state)
-> > + {
-> > +       if (!pci_find_capability(dev, PCI_CAP_ID_PM))
-> > +               return state;
-> > + }
-> >
-> > instead?  Then in the PCI core we would assign either
-> > platform_pci_choose_state to acpi_pci_choose_state or
-> > noacpi_pci_choose_state
->
-> Good idea.
->
-> > (though that's a bad name).
->
-> Does generic_pci_choose_state() sound better?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Yeah, that's better.
+Remove an obsolete workaround for a Toshiba Satellite 4030cdt
+S1 problem from drivers/acpi/sleep/main.c .
 
-> > But really, since drivers should probably know what power state to put
-> > their devices in for suspend & hibernate, maybe on non-ACPI systems the
-> > function should just return an error and the driver can choose...
->
-> That's one possibility too, but in that case many drivers will do
->
-> state = pci_preferred_state(dev);
-> if (state == PCI_POWER_ERROR)
-> 	state = something;
->
-> It's just shorter to write
->
-> state = pci_preferred_state(dev, something);
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |   31 -------------------------------
+ 1 file changed, 31 deletions(-)
 
-But really that's the idea, since if the core doesn't know what state your 
-device should be in (and in many non-ACPI cases I'd argue that to be true) 
-your driver should be picking something sensible.  After all, states other 
-than D0 and D3 are really device dependent, right?
-
-One way to avoid some ugliness like you show above would be:
-
-device_suspend(...)
-{
-  ...
-  state = PCI_D3hot;
-  pci_choose_state(dev, pm_state, &state);
-  pci_set_power_state(dev, state);
-  ...
-}
-
-So in this case pci_choose_state would either change state or leave it 
-untouched if it didn't have a better idea about things.  But now that I look 
-at it I'm not sure it's an improvement. :)
-
-Jesse
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -62,8 +62,6 @@ static u32 acpi_suspend_states[] = {
+ 	[PM_SUSPEND_MAX] = ACPI_STATE_S5
+ };
+ 
+-static int init_8259A_after_S1;
+-
+ /**
+  *	acpi_suspend_begin - Set the target system sleep state to the state
+  *		associated with given @pm_state, if supported.
+@@ -186,13 +184,6 @@ static void acpi_suspend_finish(void)
+ 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+ 
+ 	acpi_target_sleep_state = ACPI_STATE_S0;
+-
+-#ifdef CONFIG_X86
+-	if (init_8259A_after_S1) {
+-		printk("Broken toshiba laptop -> kicking interrupts\n");
+-		init_8259A(0);
+-	}
+-#endif
+ }
+ 
+ /**
+@@ -232,26 +223,6 @@ static struct platform_suspend_ops acpi_
+ 	.finish = acpi_suspend_finish,
+ 	.end = acpi_suspend_end,
+ };
+-
+-/*
+- * Toshiba fails to preserve interrupts over S1, reinitialization
+- * of 8259 is needed after S1 resume.
+- */
+-static int __init init_ints_after_s1(const struct dmi_system_id *d)
+-{
+-	printk(KERN_WARNING "%s with broken S1 detected.\n", d->ident);
+-	init_8259A_after_S1 = 1;
+-	return 0;
+-}
+-
+-static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+-	{
+-	 .callback = init_ints_after_s1,
+-	 .ident = "Toshiba Satellite 4030cdt",
+-	 .matches = {DMI_MATCH(DMI_PRODUCT_NAME, "S4030CDT/4.3"),},
+-	 },
+-	{},
+-};
+ #endif /* CONFIG_SUSPEND */
+ 
+ #ifdef CONFIG_HIBERNATION
+@@ -490,8 +461,6 @@ int __init acpi_sleep_init(void)
+ 	u8 type_a, type_b;
+ #ifdef CONFIG_SUSPEND
+ 	int i = 0;
+-
+-	dmi_check_system(acpisleep_dmi_table);
+ #endif
+ 
+ 	if (acpi_disabled)
