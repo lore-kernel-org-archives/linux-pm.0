@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] ACPI PM: Add suspend sequence workaround
-Date: Fri, 9 May 2008 19:20:26 +0200
-Message-ID: <200805091920.27756.rjw__12709.0056463659$1210353983$gmane$org@sisk.pl>
-References: <200805062342.42789.rjw@sisk.pl>
-	<20080507092931.GD13858@elf.ucw.cz>
-	<200805071421.19788.rjw@sisk.pl>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 2/2] PCI PM: Introduce pci_preferred_state
+Date: Fri, 9 May 2008 10:24:52 -0700
+Message-ID: <200805091024.53027.jbarnes@virtuousgeek.org>
+References: <Pine.LNX.4.44L0.0805071139020.3701-100000@iolanthe.rowland.org>
+	<200805090947.08620.jbarnes@virtuousgeek.org>
+	<200805091913.40197.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805071421.19788.rjw@sisk.pl>
+In-Reply-To: <200805091913.40197.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,67 +20,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 7 of May 2008, Pavel Machek wrote:
-> > Hi!
-> > > ---
-> > >  Documentation/kernel-parameters.txt |    5 
-> > >  drivers/acpi/sleep/main.c           |  301 +++++++++++++++++++++---------------
-> > >  drivers/base/power/main.c           |   15 +
-> > >  include/linux/pm.h                  |    2 
-> > >  4 files changed, 201 insertions(+), 122 deletions(-)
-> > > 
-> > > Index: linux-2.6/Documentation/kernel-parameters.txt
-> > > ===================================================================
-> > > --- linux-2.6.orig/Documentation/kernel-parameters.txt
-> > > +++ linux-2.6/Documentation/kernel-parameters.txt
-> > > @@ -170,6 +170,11 @@ and is between 256 and 4096 characters. 
-> > >  	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
-> > >  			Format: <irq>,<irq>...
-> > >  
-> > > +       acpi_old_suspend_ordering [HW,ACPI]
-> > > +                       Enforce the ACPI 1.0 ordering of the _PTS control
-> > > +                       method wrt putting devices into low power states
-> > > +                       default: ACPI 2.0 ordering of _PTS
-> > > +
-> > 
-> > Space vs. tabs issue here, not too important...
-> > 
-> > > +#ifdef CONFIG_PM_SLEEP
-> > > +static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-> > > +
-> > > +static int init_8259A_after_S1;
-> > 
-> > 8259A after S1 init is workaround for bug in toshiba 4030cdt. We can
-> > probably remove it now.
-> > 
-> > > +#ifdef CONFIG_X86
-> > > +	if (acpi_state == ACPI_STATE_S1 && init_8259A_after_S1) {
-> > > +		printk("Broken toshiba laptop -> kicking interrupts\n");
-> > > +		init_8259A(0);
-> > > +	}
-> > > +#endif
-> > 
-> > This can die. I believe I've removed it already, but apparently not.
-> 
-> Yes, but I'm going to add some analogous code for machines that are known to
-> need the "old" suspend ordering, so I've left that as a template. ;-)
+On Friday, May 09, 2008 10:13 am Rafael J. Wysocki wrote:
+> > So why not make platform_pci_choose_state do:
+> > + pci_power_t noacpi_pci_choose_state(struct pci_dev *dev, pci_message_t
+> > state)
+> > + {
+> > +       if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+> > +               return state;
+> > + }
+> >
+> > instead?  Then in the PCI core we would assign either
+> > platform_pci_choose_state to acpi_pci_choose_state or
+> > noacpi_pci_choose_state
+>
+> Good idea.
+>
+> > (though that's a bad name).
+>
+> Does generic_pci_choose_state() sound better?
 
-Okay, I guess we the $subject patch can be replaced with the two following
-ones.
+Yeah, that's better.
 
-The first of them removes the Toshiba hook.
+> > But really, since drivers should probably know what power state to put
+> > their devices in for suspend & hibernate, maybe on non-ACPI systems the
+> > function should just return an error and the driver can choose...
+>
+> That's one possibility too, but in that case many drivers will do
+>
+> state = pci_preferred_state(dev);
+> if (state == PCI_POWER_ERROR)
+> 	state = something;
+>
+> It's just shorter to write
+>
+> state = pci_preferred_state(dev, something);
 
-The second one adds a suspend sequence workaround by midifying the high-level
-code and introducing new "recover" callbacks for the platform.
+But really that's the idea, since if the core doesn't know what state your 
+device should be in (and in many non-ACPI cases I'd argue that to be true) 
+your driver should be picking something sensible.  After all, states other 
+than D0 and D3 are really device dependent, right?
 
-Then have only been compilation tested.
+One way to avoid some ugliness like you show above would be:
 
-Please have a look.
+device_suspend(...)
+{
+  ...
+  state = PCI_D3hot;
+  pci_choose_state(dev, pm_state, &state);
+  pci_set_power_state(dev, state);
+  ...
+}
 
-Thanks,
-Rafael
+So in this case pci_choose_state would either change state or leave it 
+untouched if it didn't have a better idea about things.  But now that I look 
+at it I'm not sure it's an improvement. :)
+
+Jesse
