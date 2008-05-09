@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4] ACPI Hibernation: Use ACPI hardware
-	signature
-Date: Fri, 9 May 2008 17:27:39 +0200
-Message-ID: <200805091727.40905.rjw__20927.0860920244$1210347094$gmane$org@sisk.pl>
-References: <200805062331.39454.rjw@sisk.pl> <200805071428.02613.rjw@sisk.pl>
-	<20080507210438.GD18516@elf.ucw.cz>
+Subject: Re: [PATCH 2/2] PCI PM: Introduce pci_preferred_state
+Date: Fri, 9 May 2008 17:44:04 +0200
+Message-ID: <200805091744.04749.rjw__36004.4920038947$1210348074$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0805071139020.3701-100000@iolanthe.rowland.org>
+	<200805072032.58472.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080507210438.GD18516@elf.ucw.cz>
+In-Reply-To: <200805072032.58472.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,121 +19,183 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Pavel Machek wrote:
-> Hi!
-
-Hi,
-
-> > > > +static int __init acpi_s4_nosigcheck(char *str)
-> > > > +{
-> > > > +	nosigcheck = true;
-> > > > +	return 1;
-> > > > +}
-> > > > +__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-> > > > +
+On Wednesday, 7 of May 2008, Rafael J. Wysocki wrote:
+> On Wednesday, 7 of May 2008, Alan Stern wrote:
+> > On Wed, 7 May 2008, Rafael J. Wysocki wrote:
+> > 
+> > > On Wednesday, 7 of May 2008, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > 
+> > > > > The new suspend and hibernation callbacks introduced with
+> > > > > 'struct pm_ops' and 'struct pm_ext_ops' do not take a
+> > > > > pm_message_t argument, so the drivers using them will not be able
+> > > > > to use pci_choose_state() in its present form.  For this reason,
+> > > > > introduce the new function pci_preferred_state() playing the role
+> > > > > of pci_choose_state(), but taking only a pointer to the device
+> > > > > object.
+> > > > > 
+> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > ---
+> > > > >  drivers/pci/pci.c   |   33 ++++++++++++++++++++++++++++++++-
+> > > > >  include/linux/pci.h |    1 +
+> > > > >  include/linux/pm.h  |   10 ++++++++++
+> > > > >  3 files changed, 43 insertions(+), 1 deletion(-)
+> > > > > 
+> > > > > Index: linux-2.6/drivers/pci/pci.c
+> > > > > ===================================================================
+> > > > > --- linux-2.6.orig/drivers/pci/pci.c
+> > > > > +++ linux-2.6/drivers/pci/pci.c
+> > > > > @@ -509,7 +509,38 @@ pci_set_power_state(struct pci_dev *dev,
+> > > > >  }
+> > > > >  
+> > > > >  pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+> > > > > - 
+> > > > > +
+> > > > > +/**
+> > > > > + * pci_preferred_state - Choose the preferred power state of a PCI device
+> > > > > + * @dev: PCI device to be put into the low power state
+> > > > > + * @sp: Information aboutabout what the driver would prefer to do with
+> > > > > + *	the device if there were no platform-implemeted policy.
+> > > > > + *
+> > > > > + * Returns PCI power state suitable for given device and given suspend policy.
+> > > > > + * The policy, however, is only used if platform_pci_choose_state() fails or is
+> > > > > + * not present.  Otherwise, it is assumed that platform_pci_choose_state()
+> > > > > + * implements the right policy.
+> > > > > + */
+> > > > > +
+> > > > > +pci_power_t pci_preferred_state(struct pci_dev *dev, enum suspend_policy sp)
+> > > > > +{
+> > > > > +	pci_power_t ret;
+> > > > > +
+> > > > > +	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+> > > > > +		return PCI_D0;
+> > > > > +
+> > > > > +	ret = (sp == SP_TURN_OFF) ? PCI_D3hot : PCI_D0;
+> > > > > +	if (platform_pci_choose_state) {
+> > > > > +		pci_power_t platform_ret = platform_pci_choose_state(dev);
+> > > > > +
+> > > > > +		if (platform_ret != PCI_POWER_ERROR)
+> > > > > +			ret = platform_ret;
+> > > > > +	}
+> > > > > +	return ret;
+> > > > > +}
+> > > > > +
+> > > > > +EXPORT_SYMBOL(pci_preferred_state);
+> > > > 
+> > > > I don't get it. How is driver supposed to use this? How does the
+> > > > driver decide between SP_TURN_OFF and SP_TURN_ON?
+> > > > 
+> > > > ...and it seems to be clearer to just inline this in the driver... or
+> > > > pass  PCI_D3hot/PCI_D0 to it, instead of inventing yet another
+> > > > define...
 > > > 
-> > > Needs a patch to Documentation/ , too.
+> > > I thought about that too.  I'd like to know what the other people think,
+> > > though.
 > > 
-> > Yes, thanks.
+> > The point of this isn't at all clear.
 > > 
-> > > > +	/* Check the hardware signature */
-> > > > +	if (facs && s4_hardware_signature != facs->hardware_signature)
-> > > 
-> > > do you need && !nosigcheck here ?
-> > 
-> > No, facs is NULL if !nosigcheck.
+> > Is this routine meant to be called during a hibernation 
+> > transition?
 > 
-> Aha, ook. You can add my ACK when you add the Documentation/.
+> Yes, it is.
+> 
+> > Or is it just for suspend? 
+> > 
+> > And why would the return value ever be anything other than D3_hot?  (Or 
+> > why would the driver ever want to put a device in a different state?)
+> 
+> In principle, the driver may want to put the device into a state having shorter
+> wake up latency than D3_hot.
+> 
+> > AFAICS, the only reason would be because platform_pci_choose_state() 
+> > suggested something else.  In which case there's no need for the 
+> > "policy" argument.
+> 
+> There is a need in two cases:
+> - if platform_pci_choose_state() is not defined (it only is defined for ACPI
+>   systems at the moment),
+> - if platform_pci_choose_state() returns PCI_POWER_ERROR meaning that it cannot
+>   handle the device.
+> 
+> I agree with Pavel that the driver could pass a "fallback state" as a second
+> argument to be used in case the platform cannot provide it with one.
 
-Corrected patch is appended.
+Modified patch follows.
 
 Thanks,
 Rafael
 
 ---
-From: Shaohua Li <shaohua.li@intel.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI defines a hardware signature. BIOS calculates the signature
-according to hardware configure, if hardware changes, the signature
-will change, in this case, S4 resume should fail.
+The new suspend and hibernation callbacks introduced with
+'struct pm_ops' and 'struct pm_ext_ops' do not take a
+pm_message_t argument, so the drivers using them will not be able
+to use pci_choose_state() in its present form.  For this reason,
+introduce the new function pci_preferred_state() playing the role
+of pci_choose_state(), but taking only the pointer to the device
+object.
 
-[rjw: The kernel command line switch acpi_s4_nosigcheck is added for
-systems on which this mechanism is broken.]
-
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/kernel-parameters.txt |    5 +++++
- drivers/acpi/sleep/main.c           |   24 ++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
+ drivers/pci/pci.c   |   28 +++++++++++++++++++++++++++-
+ include/linux/pci.h |    1 +
+ 2 files changed, 28 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -255,6 +255,17 @@ static struct dmi_system_id __initdata a
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
-+static unsigned long s4_hardware_signature;
-+static struct acpi_table_facs *facs;
-+static bool nosigcheck;
-+
-+static int __init acpi_s4_nosigcheck(char *str)
-+{
-+	nosigcheck = true;
-+	return 1;
-+}
-+__setup("acpi_s4_nosigcheck", acpi_s4_nosigcheck);
-+
- static int acpi_hibernation_begin(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
-@@ -301,6 +312,12 @@ static void acpi_hibernation_leave(void)
- 	acpi_enable();
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+	/* Check the hardware signature */
-+	if (facs && s4_hardware_signature != facs->hardware_signature) {
-+		printk(KERN_EMERG "ACPI: Hardware changed while hibernated, "
-+			"cannot resume!\n");
-+		panic("ACPI S4 hardware signature mismatch");
-+	}
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -509,7 +509,33 @@ pci_set_power_state(struct pci_dev *dev,
  }
  
- static void acpi_hibernation_finish(void)
-@@ -501,6 +518,13 @@ int __init acpi_sleep_init(void)
- 		hibernation_set_ops(&acpi_hibernation_ops);
- 		sleep_states[ACPI_STATE_S4] = 1;
- 		printk(" S4");
-+		if (!nosigcheck) {
-+			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
-+				(struct acpi_table_header **)&facs);
-+			if (facs)
-+				s4_hardware_signature =
-+					facs->hardware_signature;
-+		}
- 	}
- #endif
- 	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -152,6 +152,11 @@ and is between 256 and 4096 characters. 
- 			s3_beep is for debugging; it makes the PC's speaker beep
- 			as soon as the kernel's real-mode entry point is called.
- 
-+	acpi_s4_nosigcheck [HW,ACPI] S4 hardware signature
-+			ACPI will ignore the S4 hardware signature
-+			default: The hardware signature is checked during
-+			         resume from S4.
+ pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+- 
 +
- 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
- 			Format: { level | edge | high | low }
++/**
++ * pci_preferred_state - Choose the preferred power state of a PCI device
++ * @dev: PCI device to be put into the low power state
++ * @state: State to put the device into if the platform cannot handle it
++ *
++ * Returns PCI power state suitable for given device according to the platform.
++ * However, if platform_pci_choose_state() is not defined or returns
++ * PCI_POWER_ERROR, @state is returned.
++ */
++
++pci_power_t pci_preferred_state(struct pci_dev *dev, pci_power_t state)
++{
++	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
++		return state;
++
++	if (platform_pci_choose_state) {
++		pci_power_t ret = platform_pci_choose_state(dev);
++
++		if (ret != PCI_POWER_ERROR)
++			state = ret;
++	}
++	return state;
++}
++
++EXPORT_SYMBOL(pci_preferred_state);
++
+ /**
+  * pci_choose_state - Choose the power state of a PCI device
+  * @dev: PCI device to be suspended
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -615,6 +615,7 @@ size_t pci_get_rom_size(void __iomem *ro
+ int pci_save_state(struct pci_dev *dev);
+ int pci_restore_state(struct pci_dev *dev);
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
++pci_power_t pci_preferred_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
  
