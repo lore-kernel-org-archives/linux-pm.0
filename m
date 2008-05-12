@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH 1/2] ACPI PM: Remove obsolete Toshiba
-	workaround
-Date: Mon, 12 May 2008 09:18:35 +0200
-Message-ID: <20080512071834.GB24094__28341.8468934999$1210576845$gmane$org@elf.ucw.cz>
+Subject: Re: [RFC][PATCH 2/2] ACPI PM: Add possibility to change
+	suspend	sequence
+Date: Mon, 12 May 2008 09:23:01 +0200
+Message-ID: <20080512072301.GC24094__7079.69513391635$1210577066$gmane$org@elf.ucw.cz>
 References: <200805062342.42789.rjw@sisk.pl> <200805071421.19788.rjw@sisk.pl>
-	<200805091920.27756.rjw@sisk.pl> <200805091921.47902.rjw@sisk.pl>
+	<200805091920.27756.rjw@sisk.pl> <200805091923.36763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200805091921.47902.rjw@sisk.pl>
+In-Reply-To: <200805091923.36763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,15 +24,37 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2008-05-09 19:21:47, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Remove an obsolete workaround for a Toshiba Satellite 4030cdt
-> S1 problem from drivers/acpi/sleep/main.c .
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hi!
 
-ACK.
+> Index: linux-2.6/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/kernel-parameters.txt
+> +++ linux-2.6/Documentation/kernel-parameters.txt
+> @@ -157,6 +157,11 @@ and is between 256 and 4096 characters. 
+>  			default: The hardware signature is checked during
+>  			         resume from S4.
+>  
+> +	acpi_old_suspend_ordering [HW,ACPI] ACPI suspend ordering
+> +			Enforce the ACPI 1.0 ordering of the _PTS control
+> +			method wrt putting devices into low power states
+> +			default: ACPI 2.0 ordering of _PTS
+> +
+>  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+>  			Format: { level | edge | high | low }
+>
+
+Hmm, I have a wild idea...
+
+acpi_sleep=old_ordering
+
+...and reuse the same variable we already use for
+s3_bios/s3_mode. Then, we'd be able to blacklist the systems needing
+old_ordering from s2ram...
+
+I guess this whitelist should better be done in kernel, but short-term
+ability to whitelist from userland could not hurt...?
+
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
