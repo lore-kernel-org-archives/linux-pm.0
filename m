@@ -1,15 +1,18 @@
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 14 May 2008 13:49:34 -0400
-Message-ID: <20080514174934.GG30469__21471.1039131091$1210787519$gmane$org@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080514160329.GF30469@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Suspend, followed by immediate resume
+Date: Wed, 14 May 2008 21:19:52 +0200
+Message-ID: <20080514191749.GB6296@ucw.cz>
+References: <20080501214437.0ae618c5@osprey.hogchain.net>
+	<200805031450.19960.rjw@sisk.pl>
+	<20080503075821.673b1b14@osprey.hogchain.net>
+	<200805031509.01883.rjw@sisk.pl>
+	<20080503083514.0b62638e@osprey.hogchain.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080514160329.GF30469@redhat.com>
+In-Reply-To: <20080503083514.0b62638e@osprey.hogchain.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +22,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 14, 2008 at 12:03:29PM -0400, Vivek Goyal wrote:
-> On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
-> > This is a minimal patch with only the essential features. All
-> > additional features are split out and can be discussed later. I think
-> > it may be easier to get consensus on this minimal patch.
-> > 
-> 
-> Hi Huang,
-> 
-> Ok, after a long time, I am back to testing and reviewing this patch.
-> 
-> 
-> [..]
-> > 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
-> >    root file system.
-> > 
-> > 8. In kernel C, load the memory image of kernel A as follow:
-> > 
-> >    /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
-> > 
-> 
-> How do I got back to original kernel without loading dump.elf. I mean,
-> original kernel is already in memory and I don't have to first save
-> it to disk and then reload back. Is there a way to do it? If not, then
-> we need to modify kexec-tools to support that.
-> 
-> Something like
-> 
-> kexec --entry=<entry point>, should tell kexec that kernel is already
-> loaded. Just do the bit to set the entry point properly.
-> 
+Hi!
 
-Never mind. I found it. Following worked for me for returning back to
-original kernel.
+> > Set your BIOS setting to "Auto" and boot the kernel with
+> > init=/bin/bash. You should get a root shell as a result of this.
+> > From this shell run:
+> > 
+> > # mount /proc
+> > # mount /sys
+> > # echo 8 > /proc/sys/kernel/printk
+> > # eche mem > /sys/power/state
+> > 
+> > and see if it suspends.  If it does, try to wake it up and see what
+> > happens.
+> 
+> The system suspends and does not spontaneously resume.  That's an
+> improvement.
 
-kexec --load-jump-back-helper --entry=<entry point>
+Good. So load the modlues one-by-one to find out which one breaks it.
 
-Just wondering if "--load-jump-back-helper" should be an explicit option
-or kexec should silently assume it if no "-l" or "-p" is given.
+> Unfortunately I can't awaken it.  It's a desktop system and pressing
+> keys, shaking the mouse, or momentarily pressing the power switch has no
+> effect, despite setting these things in BIOS.  (There are some APM
+> settings in there that selectively enable waking on various events.)
+> 
+> Ctrl-alt-del actually did cause a reboot, though.
 
-Thanks
-Vivek
+Sounds like it must have resumed, maybe with a black screen?
+
+Always check numlock to see if it is alive.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
