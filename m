@@ -1,16 +1,14 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
+From: Vivek Goyal <vgoyal@redhat.com>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 14 May 2008 23:41:51 +0300
-Message-ID: <200805142341.52078.maximlevitsky__28173.5180564739$1210797888$gmane$org@gmail.com>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803140231.39282.rjw@sisk.pl>
-	<m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
+Date: Wed, 14 May 2008 16:52:04 -0400
+Message-ID: <20080514205204.GJ30469__39742.6336691298$1210798811$gmane$org@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
 Content-Disposition: inline
+In-Reply-To: <1204773188.4707.109.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,118 +18,166 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 18 March 2008 18:56:09 Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
+> This is a minimal patch with only the essential features. All
+> additional features are split out and can be discussed later. I think
+> it may be easier to get consensus on this minimal patch.
 > 
-> > On Friday, 14 of March 2008, Eric W. Biederman wrote:
-> >
-> >> > Still, it would be sufficient if we disconnected the drivers from the
-> > hardware
-> >> > and thus prevented applications from accessing that hardware.
-> >> 
-> >> My gut feeling is that except for a handful of drivers we could even
-> >> get away with simply implementing hot unplug and hot replug.  Disks
-> >> are the big exception here.
-> >> 
-> >> Which suggests to me that it is at least possible that the methods we
-> >> want for a kexec jump hibernation may be different from an in-kernel
-> >> hibernation and quite possibly are easier to implement.
-> >
-> > I'm not sure about the "easier" part, quite frankly.  Also, with our current
-> > ordering of code the in-kernel hibernation will need the same callbacks
-> > as the kexec-based thing.  However, with the in-kernel approach we can
-> > attempt (in the future) to be more ACPI compliant, so to speak, but with the
-> > kexec-based approach that won't be possible.
-> >
-> > Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
-> > a separate question, but IMO we won't be able to answer it without _lots_ of
-> > testing on vaious BIOS/firmware configurations.  Our experience so far
-> > indicates that at least some BIOSes expect us to follow ACPI and misbehave
-> > otherwise, so for those systems there should be an "ACPI way" available.
-> > [Others just don't work well if we try to follow ACPI and those may be handled
-> > using the kexec-based approach, but that doesn't mean that we can just ignore
-> > the ACPI compliance issue, at least for now.]
+> Best Regards,
+> Huang Ying
 > 
-> If we do use the ACPI S4 state I completely agree we should be at
-> least spec compliant in how we use it.
+> ------------------------------------>
 > 
-> I took a quick skim through my copy of the ACPI spec so I could get a
-> feel for this issue.  Hibernation maps to the ACPI S4 state.  The only
-> thing we appear to gain from S4 is the ability to tell the BIOS (so it
-> can tell a bootloader) that this was a hibernation power off instead
-> of simply a software power off.
+> This patch provides an enhancement to kexec/kdump. It implements
+> the following features:
 > 
-> It looks like entering the ACPI S4 state has a few advantages with
-> respect to how the system wakes up.  In general using the ACPI S5
-> state (soft off) appears simpler, and potentially more reliable.
+> - Jumping between the original kernel and the kexeced kernel.
 > 
-> The sequence we appear to want is:
-> - Disconnecting drivers from devices.
-> - Saving the image.
-> - Placing the system in a low power or off state.
+> - Backup/restore memory used by both the original kernel and the
+>   kexeced kernel.
 > 
-> - Coming out of the low power state.
-> - Restoring the image.
-> - Reconnecting drivers to devices.
->   (We must assume the device state could have changed here
->    no matter what we do)
+> - Save/restore CPU and devices state before after kexec.
 > 
-> It is mostly a matter of where we place the code.
-> 
-> Right now I don't see a limitation either with a kexec based approach
-> or without one.  Especially since the common case would be using
-> the same kernel with the same drivers both before and after the
-> hibernation event.
-> 
-> The low power states for S4 seem to be just so that we can
-> decide which devices have enough life that they can wake up
-> the system.  If we handle all of that as a second pass after
-> we have the system in a state where we have saved it we should
-> be in good shape.
-> 
-> My inclination is to just use S5 (soft off).
-> 
-> One of the cool things about hibernation to disk was that we were
-> supposed to get the BIOS totally out of that path so we could get
-> something that was rock solid and reliable.  I don't see why we should
-> use ACPI S4 when the BIOS doesn't seem to give us anything useful, and
-> causes us headaches we should even consider using S4.
-> 
-> Does using the S4 state have advantages that I currently do not
-> see?
-First of all S4 ACPI code turns some leds on some systems,
-cosmetic thing, but still nice.
 
-Secondary, what about wakeup devices?
-Hardware can disable some devices in S5 while leave them running in S4
-on my system for example network card will do WOL in S4,
-but to make it WOL in S5 I have to turn a specific option in BIOS.
+Hi Huang,
 
-While my system doesn't have this, it isn't uncommon for system to leave USB ports
-running so one can turn the PC with keyboard/mouse even in S4.
-in S5 those ports  will probably  be disabled.
-My system on have this for S3 only.
+Ok, I have done some testing on this patch. Currently I have just
+tested switching back and forth between two kernels and it is working for
+me.
 
-On laptops we can expect even more ACPI functionality, so some more differences between
-S4 and S5 can happen.
+Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
+comments/questions are inline.
 
-Last thing that I want to say is that, when linux puts PC in S? state, on top of executing 
-_PTS, _GTS acpi functions, it writes the destination S state to a fixed register, thus the hardware
-can (and does) behave differently.
+[..]
+>  	.text
+>  	.align PAGE_ALIGNED
+> +	.global kexec_relocate_page
+> +kexec_relocate_page:
+> +
+> +/*
+> + * Entry point for jumping back from kexeced kernel, the paging is
+> + * turned off.
+> + */
+> +kexec_jump_back_entry:
+> +	call	1f
+> +1:
+> +	popl	%ebx
+> +	subl	$(1b - kexec_relocate_page), %ebx
+> +	movl	%edi, KJUMP_ENTRY_OFF(%ebx)
+> +	movl	CP_VA_CONTROL_PAGE(%ebx), %edi
+> +	lea	STACK_TOP(%ebx), %esp
+> +	movl	CP_PA_SWAP_PAGE(%ebx), %eax
+> +	movl	CP_PA_BACKUP_PAGES_MAP(%ebx), %edx
+> +	pushl	%eax
+> +	pushl	%edx
+> +	call	swap_pages
+> +	addl	$8, %esp
+> +	movl	CP_PA_PGD(%ebx), %eax
+> +	movl	%eax, %cr3
+> +	movl	%cr0, %eax
+> +	orl	$(1<<31), %eax
+> +	movl	%eax, %cr0
+> +	lea	STACK_TOP(%edi), %esp
+> +	movl	%edi, %eax
+> +	addl	$(virtual_mapped - kexec_relocate_page), %eax
+> +	pushl	%eax
+> +	ret
 
-Best regards,
-	Maxim Levitsky
+Upon re-entering the kernel, what happens to GDT table? So gdtr will be
+pointing to GDT of other kernel (which is not there as pages have been
+swapped)? Do we need to reload the gdtr upon re-entering the kernel.
 
-> 
-> Len? Rafael? Anyone?
-> 
-> Eric
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> 
+[..]
+> @@ -197,8 +282,54 @@ identity_mapped:
+>  	xorl	%eax, %eax
+>  	movl	%eax, %cr3
+>  
+> +	movl	CP_PA_SWAP_PAGE(%edi), %eax
+> +	pushl	%eax
+> +	pushl	%ebx
+> +	call	swap_pages
+> +	addl	$8, %esp
+> +
+> +	/* To be certain of avoiding problems with self-modifying code
+> +	 * I need to execute a serializing instruction here.
+> +	 * So I flush the TLB, it's handy, and not processor dependent.
+> +	 */
+> +	xorl	%eax, %eax
+> +	movl	%eax, %cr3
+> +
+> +	/* set all of the registers to known values */
+> +	/* leave %esp alone */
+> +
+> +	movl	KJUMP_MAGIC_OFF(%edi), %eax
+> +	cmpl	$KJUMP_MAGIC_NUMBER, %eax
+> +	jz 1f
+> +	xorl	%edi, %edi
+> +	xorl	%eax, %eax
+> +	xorl	%ebx, %ebx
+> +	xorl    %ecx, %ecx
+> +	xorl    %edx, %edx
+> +	xorl    %esi, %esi
+> +	xorl    %ebp, %ebp
+> +	ret
+> +1:
+> +	popl	%edx
+> +	movl	CP_PA_SWAP_PAGE(%edi), %esp
+> +	addl	$PAGE_SIZE_asm, %esp
+> +	pushl	%edx
+> +2:
+> +	call	*%edx
+
+> +	movl	%edi, %edx
+> +	popl	%edi
+> +	pushl	%edx
+> +	jmp	2b
+> +
+
+What does above piece of code do? Looks like redundant for switching
+between the kernels? After call *%edx, we never return here. Instead
+we come back to "kexec_jump_back_entry"?
+
+
+[..]
+> --- /dev/null
+> +++ b/Documentation/i386/jump_back_protocol.txt
+> @@ -0,0 +1,66 @@
+> +		THE LINUX/I386 JUMP BACK PROTOCOL
+> +		---------------------------------
+> +
+> +		Huang Ying <ying.huang@intel.com>
+> +		    Last update 2007-12-19
+> +
+> +Currently, the following versions of the jump back protocol exist.
+> +
+> +Protocol 1.00:	Jumping between original kernel and kexeced kernel
+> +		support. Calling ordinary C function support.
+> +
+> +
+> +*** JUMP BACK ENTRY
+> +
+> +At jump back entry of callee, the CPU must be in 32-bit protected mode
+> +with paging disabled; the CS, DS, ES and SS must be 4G flat segments;
+> +CS must have execute/read permission, and DS, ES and SS must have
+> +read/write permission; interrupt must be disabled; the contents of
+> +registers and corresponding memory must be as follow:
+> +
+> +Offset/Size	Meaning
+> +
+> +%edi		Real jump back entry of caller if supported,
+> +		otherwise 0.
+> +%esp		Stack top pointer, the size of stack is about 4k bytes.
+> +(%esp)/4	Helper jump back entry of caller if %edi != 0,
+> +		otherwise undefined.
+> +
+
+I am not sure what is helper jump back entry? I understand that you 
+are using %edi to pass around entry point between two kernels. Can
+you please shed some more light on this?
+
+Thanks
+Vivek
