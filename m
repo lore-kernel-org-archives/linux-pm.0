@@ -1,17 +1,18 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Wed, 14 May 2008 16:34:48 -0700
-Message-ID: <m1od78tq7b.fsf__4476.79495341635$1210808648$gmane$org@frodo.ebiederm.org>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803140231.39282.rjw@sisk.pl>
-	<m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
-	<200805142341.52078.maximlevitsky@gmail.com>
+From: "=?ISO-8859-1?Q?Carlos_Augusto_de_Ara=FAjo_Mar?="
+	<carlos.augusto.mar@gmail.com>
+Subject: Re: More info about this group
+Date: Wed, 14 May 2008 20:42:25 -0300
+Message-ID: <eb62f8bb0805141642s506820e4jd3e569564a549031@mail.gmail.com>
+References: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
+	<200804291635.33874.david-b@pacbell.net>
+	<eb62f8bb0805050947k2f76c793id16ce29926f14b19@mail.gmail.com>
+	<20080505221454.GA2087@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805142341.52078.maximlevitsky@gmail.com> (Maxim Levitsky's
-	message of "Wed, 14 May 2008 23:41:51 +0300")
+In-Reply-To: <20080505221454.GA2087@srcf.ucam.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,73 +22,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Maxim Levitsky <maximlevitsky@gmail.com> writes:
+Hi Matthew,
 
-> First of all S4 ACPI code turns some leds on some systems,
-> cosmetic thing, but still nice.
+answering your question:
+
+> How is this different to the cpufreq code and governors already present
+> in the Linux kernel?
+
+The goal of our tool is to support embedded systems developers in the
+translation from their code (power unware) to a power aware code. We
+consider that this developers are usually not familiar with power
+management and timing constraints. Our tool performs a static analysis
+of the input code in order to find places where voltage and frequency
+scaling code could be included. In fact, our tool also makes use of
+cpufreq libs. So, our intention is not to create another cpufreq or
+anything else, but to use existing tools/libs available in the open
+source community.
+
+
+Regards,
+
+Carlos Mar
+
+
+2008/5/5 Matthew Garrett <mjg59@srcf.ucam.org>:
+> On Mon, May 05, 2008 at 12:47:23PM -0400, Carlos Augusto de Ara=FAjo Mar =
+wrote:
 >
-> Secondary, what about wakeup devices?
-> Hardware can disable some devices in S5 while leave them running in S4
-> on my system for example network card will do WOL in S4,
-> but to make it WOL in S5 I have to turn a specific option in BIOS.
+>> Our group, named Group of Interest in Embedded Systems (GISE), is resear=
+ching
+>> about power management and other subjects related to embedded systems.
+>> We began our researches last year and as a first result We developed a
+>> tool for apply Dynamic Voltage and Frequency Scale (DVFS) in C codes.
+>> Now, We are applying this tool in real codes and doing adjusts. This
+>> tool was developed
+>> under open source filosofy and will be available in sourceforge even
+>> end next month (june) . The next step to be taken for us is to
+>> participate of groups which interest is the same ours. In a first
+>> moment, our tool was designed to work with ARM platform, more
+>> specifically ARM 9.
 >
-> While my system doesn't have this, it isn't uncommon for system to leave USB
-> ports
-> running so one can turn the PC with keyboard/mouse even in S4.
-> in S5 those ports  will probably  be disabled.
-> My system on have this for S3 only.
+> How is this different to the cpufreq code and governors already present
+> in the Linux kernel?
 >
-> On laptops we can expect even more ACPI functionality, so some more differences
-> between
-> S4 and S5 can happen.
+> --
+> Matthew Garrett | mjg59@srcf.ucam.org
 >
-> Last thing that I want to say is that, when linux puts PC in S? state, on top of
-> executing
-> _PTS, _GTS acpi functions, it writes the destination S state to a fixed
-> register, thus the hardware
-> can (and does) behave differently.
-
-Yes.
-
-S4 looks interesting.  Especially the weird fans don't work on restore
-from S5 case.
-
-S4 still appears to be a premature optimization, that ads lots of
-complexity and reduces the reliability of the code.
-
-Software hibernation to disk should be a rock solid proposition, that
-needs little if any cooperation from drivers, and it should work on
-every box, because fundamentally it is hardware agnostic.  The only
-cooperation we need from drivers is for devices that we can't tolerate
-at upper layers an unplug and replug event like block devices because
-we would loose our filesystems.
-
-All of the reports say hibernation is not rock solid reliable.
-Things like S4 support keep us from being hardware agnostic.
-Therefore it appears to me we have a design bug.
-
-Which is why I'm not at all happy with S4 support.
-
-
-
-It actually occurs to me that the first mode we should really support
-is the mode where the user hits the power button themselves.  That
-totally removes the hibernation path from any weird hardware
-interactions.
-
-Then S5 is an optimization upon that (just a little more work on the
-shutdown path).
-
-Then ultimately S4 reusing and refactoring the work for S3? suspend to
-ram to allow us to leave very specific devices on.  But that is lot
-of complexity, for a little bit of gain.
-
-We should have code that works by design. Code that practically
-every time.  Something that is easy to diagnose.
-
-
-Eric
