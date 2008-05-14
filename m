@@ -1,17 +1,15 @@
-From: "=?ISO-8859-1?Q?Carlos_Augusto_de_Ara=FAjo_Mar?="
-	<carlos.augusto.mar@gmail.com>
-Subject: Re: More info about this group
-Date: Wed, 14 May 2008 20:42:25 -0300
-Message-ID: <eb62f8bb0805141642s506820e4jd3e569564a549031@mail.gmail.com>
-References: <eb62f8bb0804281316o3f805657ucaac47bcded2e0d8@mail.gmail.com>
-	<200804291635.33874.david-b@pacbell.net>
-	<eb62f8bb0805050947k2f76c793id16ce29926f14b19@mail.gmail.com>
-	<20080505221454.GA2087@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Thu, 15 May 2008 01:47:23 +0200
+Message-ID: <200805150147.24968.rjw__2992.24659470401$1210809032$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0803221645190.27399-100000@netrider.rowland.org>
+	<200803222229.45673.rjw@sisk.pl>
+	<m1k5hwzf2z.fsf@frodo.ebiederm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080505221454.GA2087@srcf.ucam.org>
+In-Reply-To: <m1k5hwzf2z.fsf@frodo.ebiederm.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,53 +20,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthew,
+On Thursday, 15 of May 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Saturday, 22 of March 2008, Alan Stern wrote:
+> 
+> > The spec doesn't say much about that, so we'll need to carry out some
+> > experiments.
+> 
+> > Still, as far as I can figure out what the spec authors _might_ mean, I think
+> > that it would be inappropriate to restore the ACPI NVS area if S5 was entered
+> > on "power off".  The idea seems to be that the restoration of the ACPI NVS area
+> > should complement whatever has been preserved by the platform over the
+> > hibernation/resume cycle.
+> 
+> > IMO, if S5 was entered on "powe off", there are two possible ways to go.
+> > Either ACPI is initialized by the boot kernel, in which case the image kernel
+> > should not touch things like _WAK and similar, just throw away whatever
+> > ACPI-related state it got from the image and try to rebuild the ACPI-related
+> > data from scratch.  Or the boot kernel doesn't touch ACPI and the image kernel
+> > initializes it in the same way as during a fresh boot (that might be difficult,
+> > though).
+> 
+> Just an added data partial point.  In the kexec case I have had not heard
+> anyone screaming to me that ACPI doesn't work after we switch kernels.
 
-answering your question:
+You don't remove power from devices while doing that.
 
-> How is this different to the cpufreq code and governors already present
-> in the Linux kernel?
+> So I expect shutting down ACPI and restarting it should work reliably
+> and that is easy to test as that is already implemented with kexec.
 
-The goal of our tool is to support embedded systems developers in the
-translation from their code (power unware) to a power aware code. We
-consider that this developers are usually not familiar with power
-management and timing constraints. Our tool performs a static analysis
-of the input code in order to find places where voltage and frequency
-scaling code could be included. In fact, our tool also makes use of
-cpufreq libs. So, our intention is not to create another cpufreq or
-anything else, but to use existing tools/libs available in the open
-source community.
+You can't program devices to generate wakeup events without ACPI, among
+other things.
 
+Anyway, I don't think you should focus on replacing the current hibernation
+code entirely so much.
 
-Regards,
-
-Carlos Mar
-
-
-2008/5/5 Matthew Garrett <mjg59@srcf.ucam.org>:
-> On Mon, May 05, 2008 at 12:47:23PM -0400, Carlos Augusto de Ara=FAjo Mar =
-wrote:
->
->> Our group, named Group of Interest in Embedded Systems (GISE), is resear=
-ching
->> about power management and other subjects related to embedded systems.
->> We began our researches last year and as a first result We developed a
->> tool for apply Dynamic Voltage and Frequency Scale (DVFS) in C codes.
->> Now, We are applying this tool in real codes and doing adjusts. This
->> tool was developed
->> under open source filosofy and will be available in sourceforge even
->> end next month (june) . The next step to be taken for us is to
->> participate of groups which interest is the same ours. In a first
->> moment, our tool was designed to work with ARM platform, more
->> specifically ARM 9.
->
-> How is this different to the cpufreq code and governors already present
-> in the Linux kernel?
->
-> --
-> Matthew Garrett | mjg59@srcf.ucam.org
->
+Thanks,
+Rafael
