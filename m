@@ -1,14 +1,14 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: Suspend, followed by immediate resume
-Date: Thu, 15 May 2008 10:04:16 +0800
-Message-ID: <1210817056.2929.14.camel__3695.9663186737$1210817302$gmane$org@rzhang-crestline.sh.intel.com>
-References: <20080501214437.0ae618c5@osprey.hogchain.net>
-	<20080514144253.GB6260@ucw.cz>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Thu, 15 May 2008 10:32:42 +0800
+Message-ID: <1210818762.23707.102.camel__47496.8632021502$1210818552$gmane$org@caritas-dev.intel.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080514205204.GJ30469@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080514144253.GB6260@ucw.cz>
+In-Reply-To: <20080514205204.GJ30469@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +18,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, Jay Cliburn <jacliburn@bellsouth.net>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On Wed, 2008-05-14 at 16:42 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > I'm trying to get wake-on-lan working on the network driver I maintain
-> > (atl1), but I can't get my system to suspend to memory long enough to
-> > test it.  Seems that my system suspends and immediately wakes up again
-> > without any intervention on my part.  This is with kernel 2.6.25.1, but
-> > I've always encountered this phenomenon, going back to 2.6.21 when the
-> > driver was merged into mainline.  I've finally resolved to get to the
-> > bottom of it, and I'm hoping linux-pm can help.
-> > 
-> > To suspend, I execute
-> > 
-> > echo mem > /sys/power/state
-> > 
-> > and the system actually suspends (as far as I can tell), but within a
-> > few seconds it wakes up without any intervention on my part.  I've
-> 
-> Check /proc/acpi/wakeup?
-Please try the patches here:
-http://bugzilla.kernel.org/show_bug.cgi?id=10503#c5
-http://bugzilla.kernel.org/show_bug.cgi?id=10503#c7
-
-thanks,
-rui
+T24gV2VkLCAyMDA4LTA1LTE0IGF0IDE2OjUyIC0wNDAwLCBWaXZlayBHb3lhbCB3cm90ZToKWy4u
+Ll0KPiBPaywgSSBoYXZlIGRvbmUgc29tZSB0ZXN0aW5nIG9uIHRoaXMgcGF0Y2guIEN1cnJlbnRs
+eSBJIGhhdmUganVzdAo+IHRlc3RlZCBzd2l0Y2hpbmcgYmFjayBhbmQgZm9ydGggYmV0d2VlbiB0
+d28ga2VybmVscyBhbmQgaXQgaXMgd29ya2luZyBmb3IKPiBtZS4KClRoYW5rcy4KClsuLi5dCj4g
+PiArLyoKPiA+ICsgKiBFbnRyeSBwb2ludCBmb3IganVtcGluZyBiYWNrIGZyb20ga2V4ZWNlZCBr
+ZXJuZWwsIHRoZSBwYWdpbmcgaXMKPiA+ICsgKiB0dXJuZWQgb2ZmLgo+ID4gKyAqLwo+ID4gK2tl
+eGVjX2p1bXBfYmFja19lbnRyeToKPiA+ICsJY2FsbAkxZgo+ID4gKzE6Cj4gPiArCXBvcGwJJWVi
+eAo+ID4gKwlzdWJsCSQoMWIgLSBrZXhlY19yZWxvY2F0ZV9wYWdlKSwgJWVieAo+ID4gKwltb3Zs
+CSVlZGksIEtKVU1QX0VOVFJZX09GRiglZWJ4KQo+ID4gKwltb3ZsCUNQX1ZBX0NPTlRST0xfUEFH
+RSglZWJ4KSwgJWVkaQo+ID4gKwlsZWEJU1RBQ0tfVE9QKCVlYngpLCAlZXNwCj4gPiArCW1vdmwJ
+Q1BfUEFfU1dBUF9QQUdFKCVlYngpLCAlZWF4Cj4gPiArCW1vdmwJQ1BfUEFfQkFDS1VQX1BBR0VT
+X01BUCglZWJ4KSwgJWVkeAo+ID4gKwlwdXNobAklZWF4Cj4gPiArCXB1c2hsCSVlZHgKPiA+ICsJ
+Y2FsbAlzd2FwX3BhZ2VzCj4gPiArCWFkZGwJJDgsICVlc3AKPiA+ICsJbW92bAlDUF9QQV9QR0Qo
+JWVieCksICVlYXgKPiA+ICsJbW92bAklZWF4LCAlY3IzCj4gPiArCW1vdmwJJWNyMCwgJWVheAo+
+ID4gKwlvcmwJJCgxPDwzMSksICVlYXgKPiA+ICsJbW92bAklZWF4LCAlY3IwCj4gPiArCWxlYQlT
+VEFDS19UT1AoJWVkaSksICVlc3AKPiA+ICsJbW92bAklZWRpLCAlZWF4Cj4gPiArCWFkZGwJJCh2
+aXJ0dWFsX21hcHBlZCAtIGtleGVjX3JlbG9jYXRlX3BhZ2UpLCAlZWF4Cj4gPiArCXB1c2hsCSVl
+YXgKPiA+ICsJcmV0Cj4gCj4gVXBvbiByZS1lbnRlcmluZyB0aGUga2VybmVsLCB3aGF0IGhhcHBl
+bnMgdG8gR0RUIHRhYmxlPyBTbyBnZHRyIHdpbGwgYmUKPiBwb2ludGluZyB0byBHRFQgb2Ygb3Ro
+ZXIga2VybmVsICh3aGljaCBpcyBub3QgdGhlcmUgYXMgcGFnZXMgaGF2ZSBiZWVuCj4gc3dhcHBl
+ZCk/IERvIHdlIG5lZWQgdG8gcmVsb2FkIHRoZSBnZHRyIHVwb24gcmUtZW50ZXJpbmcgdGhlIGtl
+cm5lbC4KCkFmdGVyIHJlLWVudGVyaW5nIHRoZSBrZXJuZWwgYW5kIHJldHVybmluZyBmcm9tIG1h
+Y2hpbmVfa2V4ZWMsCnJlc3RvcmVfcHJvY2Vzc29yX3N0YXRlKCkgaXMgY2FsbGVkLCB3aGVyZSB0
+aGUgR0RUUiBhbmQgc29tZSBvdGhlciBDUFUKc3RhdGUgc3VjaCBhcyBGUFUsIElEVCwgZXRjIGFy
+ZSByZXN0b3JlZC4KCj4gWy4uXQo+ID4gQEAgLTE5Nyw4ICsyODIsNTQgQEAgaWRlbnRpdHlfbWFw
+cGVkOgo+ID4gIAl4b3JsCSVlYXgsICVlYXgKPiA+ICAJbW92bAklZWF4LCAlY3IzCj4gPiAgCj4g
+PiArCW1vdmwJQ1BfUEFfU1dBUF9QQUdFKCVlZGkpLCAlZWF4Cj4gPiArCXB1c2hsCSVlYXgKPiA+
+ICsJcHVzaGwJJWVieAo+ID4gKwljYWxsCXN3YXBfcGFnZXMKPiA+ICsJYWRkbAkkOCwgJWVzcAo+
+ID4gKwo+ID4gKwkvKiBUbyBiZSBjZXJ0YWluIG9mIGF2b2lkaW5nIHByb2JsZW1zIHdpdGggc2Vs
+Zi1tb2RpZnlpbmcgY29kZQo+ID4gKwkgKiBJIG5lZWQgdG8gZXhlY3V0ZSBhIHNlcmlhbGl6aW5n
+IGluc3RydWN0aW9uIGhlcmUuCj4gPiArCSAqIFNvIEkgZmx1c2ggdGhlIFRMQiwgaXQncyBoYW5k
+eSwgYW5kIG5vdCBwcm9jZXNzb3IgZGVwZW5kZW50Lgo+ID4gKwkgKi8KPiA+ICsJeG9ybAklZWF4
+LCAlZWF4Cj4gPiArCW1vdmwJJWVheCwgJWNyMwo+ID4gKwo+ID4gKwkvKiBzZXQgYWxsIG9mIHRo
+ZSByZWdpc3RlcnMgdG8ga25vd24gdmFsdWVzICovCj4gPiArCS8qIGxlYXZlICVlc3AgYWxvbmUg
+Ki8KPiA+ICsKPiA+ICsJbW92bAlLSlVNUF9NQUdJQ19PRkYoJWVkaSksICVlYXgKPiA+ICsJY21w
+bAkkS0pVTVBfTUFHSUNfTlVNQkVSLCAlZWF4Cj4gPiArCWp6IDFmCj4gPiArCXhvcmwJJWVkaSwg
+JWVkaQo+ID4gKwl4b3JsCSVlYXgsICVlYXgKPiA+ICsJeG9ybAklZWJ4LCAlZWJ4Cj4gPiArCXhv
+cmwgICAgJWVjeCwgJWVjeAo+ID4gKwl4b3JsICAgICVlZHgsICVlZHgKPiA+ICsJeG9ybCAgICAl
+ZXNpLCAlZXNpCj4gPiArCXhvcmwgICAgJWVicCwgJWVicAo+ID4gKwlyZXQKPiA+ICsxOgo+ID4g
+Kwlwb3BsCSVlZHgKPiA+ICsJbW92bAlDUF9QQV9TV0FQX1BBR0UoJWVkaSksICVlc3AKPiA+ICsJ
+YWRkbAkkUEFHRV9TSVpFX2FzbSwgJWVzcAo+ID4gKwlwdXNobAklZWR4Cj4gPiArMjoKPiA+ICsJ
+Y2FsbAkqJWVkeAo+IAo+ID4gKwltb3ZsCSVlZGksICVlZHgKPiA+ICsJcG9wbAklZWRpCj4gPiAr
+CXB1c2hsCSVlZHgKPiA+ICsJam1wCTJiCj4gPiArCj4gCj4gV2hhdCBkb2VzIGFib3ZlIHBpZWNl
+IG9mIGNvZGUgZG8/IExvb2tzIGxpa2UgcmVkdW5kYW50IGZvciBzd2l0Y2hpbmcKPiBiZXR3ZWVu
+IHRoZSBrZXJuZWxzPyBBZnRlciBjYWxsIColZWR4LCB3ZSBuZXZlciByZXR1cm4gaGVyZS4gSW5z
+dGVhZAo+IHdlIGNvbWUgYmFjayB0byAia2V4ZWNfanVtcF9iYWNrX2VudHJ5Ij8KCkZvciBzd2l0
+Y2hpbmcgYmV0d2VlbiB0aGUga2VybmVscywgdGhpcyBpcyByZWR1bmRhbnQuIE9yaWdpbmFsbHkg
+YW5vdGhlcgpmZWF0dXJlIG9mIGtleGVjIGp1bXAgaXMgdG8gY2FsbCBzb21lIGNvZGUgaW4gcGh5
+c2ljYWwgbW9kZS4g77u/VGhpcyBpcwp1c2VkIHRvIHByb3ZpZGUgYSBDIEFCSSB0byBjYWxsZWQg
+Y29kZS4KCk5vdywgRXJpYyBzdWdnZXN0cyB0byB1c2UgYSBDIEFCSSBjb21wYXRpYmxlIG1vZGUg
+dG8gcGFzcyB0aGUganVtcCBiYWNrCmVudHJ5IHBvaW50IHRvbywgdGhhdCBpcywgdXNlIHRoZSBy
+ZXR1cm4gYWRkcmVzcyBvbiBzdGFjayBpbnN0ZWFkIG9mICUKZWRpLiBJIHRoaW5rIHRoYXQgaXMg
+cmVhc29uYWJsZS4gTWF5YmUgd2UgY2FuIHJldmlzZSB0aGlzIGNvZGUgdG8gYmUKY29tcGF0aWJs
+ZSB3aXRoIEMgQUJJIGFuZCBwcm92aWRlIGEgY29udmVuaWVudCBpbnRlcmZhY2UgZm9yIGJvdGgg
+a2VybmVsCmFuZCBvdGhlciBwaHlzaWNhbCBtb2RlIGNvZGUuCgo+IFsuLl0KPiA+IC0tLSAvZGV2
+L251bGwKPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vaTM4Ni9qdW1wX2JhY2tfcHJvdG9jb2wudHh0
+Cj4gPiBAQCAtMCwwICsxLDY2IEBACj4gPiArCQlUSEUgTElOVVgvSTM4NiBKVU1QIEJBQ0sgUFJP
+VE9DT0wKPiA+ICsJCS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+ID4gKwo+ID4g
+KwkJSHVhbmcgWWluZyA8eWluZy5odWFuZ0BpbnRlbC5jb20+Cj4gPiArCQkgICAgTGFzdCB1cGRh
+dGUgMjAwNy0xMi0xOQo+ID4gKwo+ID4gK0N1cnJlbnRseSwgdGhlIGZvbGxvd2luZyB2ZXJzaW9u
+cyBvZiB0aGUganVtcCBiYWNrIHByb3RvY29sIGV4aXN0Lgo+ID4gKwo+ID4gK1Byb3RvY29sIDEu
+MDA6CUp1bXBpbmcgYmV0d2VlbiBvcmlnaW5hbCBrZXJuZWwgYW5kIGtleGVjZWQga2VybmVsCj4g
+PiArCQlzdXBwb3J0LiBDYWxsaW5nIG9yZGluYXJ5IEMgZnVuY3Rpb24gc3VwcG9ydC4KPiA+ICsK
+PiA+ICsKPiA+ICsqKiogSlVNUCBCQUNLIEVOVFJZCj4gPiArCj4gPiArQXQganVtcCBiYWNrIGVu
+dHJ5IG9mIGNhbGxlZSwgdGhlIENQVSBtdXN0IGJlIGluIDMyLWJpdCBwcm90ZWN0ZWQgbW9kZQo+
+ID4gK3dpdGggcGFnaW5nIGRpc2FibGVkOyB0aGUgQ1MsIERTLCBFUyBhbmQgU1MgbXVzdCBiZSA0
+RyBmbGF0IHNlZ21lbnRzOwo+ID4gK0NTIG11c3QgaGF2ZSBleGVjdXRlL3JlYWQgcGVybWlzc2lv
+biwgYW5kIERTLCBFUyBhbmQgU1MgbXVzdCBoYXZlCj4gPiArcmVhZC93cml0ZSBwZXJtaXNzaW9u
+OyBpbnRlcnJ1cHQgbXVzdCBiZSBkaXNhYmxlZDsgdGhlIGNvbnRlbnRzIG9mCj4gPiArcmVnaXN0
+ZXJzIGFuZCBjb3JyZXNwb25kaW5nIG1lbW9yeSBtdXN0IGJlIGFzIGZvbGxvdzoKPiA+ICsKPiA+
+ICtPZmZzZXQvU2l6ZQlNZWFuaW5nCj4gPiArCj4gPiArJWVkaQkJUmVhbCBqdW1wIGJhY2sgZW50
+cnkgb2YgY2FsbGVyIGlmIHN1cHBvcnRlZCwKPiA+ICsJCW90aGVyd2lzZSAwLgo+ID4gKyVlc3AJ
+CVN0YWNrIHRvcCBwb2ludGVyLCB0aGUgc2l6ZSBvZiBzdGFjayBpcyBhYm91dCA0ayBieXRlcy4K
+PiA+ICsoJWVzcCkvNAlIZWxwZXIganVtcCBiYWNrIGVudHJ5IG9mIGNhbGxlciBpZiAlZWRpICE9
+IDAsCj4gPiArCQlvdGhlcndpc2UgdW5kZWZpbmVkLgo+ID4gKwo+IAo+IEkgYW0gbm90IHN1cmUg
+d2hhdCBpcyBoZWxwZXIganVtcCBiYWNrIGVudHJ5PyBJIHVuZGVyc3RhbmQgdGhhdCB5b3UgCj4g
+YXJlIHVzaW5nICVlZGkgdG8gcGFzcyBhcm91bmQgZW50cnkgcG9pbnQgYmV0d2VlbiB0d28ga2Vy
+bmVscy4gQ2FuCj4geW91IHBsZWFzZSBzaGVkIHNvbWUgbW9yZSBsaWdodCBvbiB0aGlzPwoKSGVs
+cGVyIGp1bXAgYmFjayBlbnRyeSBpcyB1c2VkIHRvIHByb3ZpZGUgYSBDIEFCSSB0byBzb21lIHBo
+eXNpY2FsIG1vZGUKY29kZSBvdGhlciB0aGFuIGtlcm5lbC4gSXQgaXMgdGhlIGFib3ZlIHJlZHVu
+ZGFudCBjb2RlLgoKQmVzdCBSZWdhcmRzLApIdWFuZyBZaW5nCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
+cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
