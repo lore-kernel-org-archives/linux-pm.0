@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: ebiederm@xmission.com (Eric W. Biederman)
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Thu, 15 May 2008 23:20:13 +0200
-Message-ID: <200805152320.14016.rjw__36891.275100834$1210886665$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0803221645190.27399-100000@netrider.rowland.org>
-	<200805150147.24968.rjw@sisk.pl>
-	<m1fxsjp9ry.fsf@frodo.ebiederm.org>
+Date: Thu, 15 May 2008 15:03:17 -0700
+Message-ID: <m163tfi5sq.fsf__16701.9194960178$1210889674$gmane$org@frodo.ebiederm.org>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<m13aok1pt1.fsf@frodo.ebiederm.org> <200805150155.33787.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1fxsjp9ry.fsf@frodo.ebiederm.org>
-Content-Disposition: inline
+In-Reply-To: <200805150155.33787.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Thu, 15 May 2008 01:55:32 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,50 +19,156 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Len Brown <len.brown@intel.com>, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 15 of May 2008, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Thursday, 15 of May 2008, Eric W. Biederman wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >> Just an added data partial point.  In the kexec case I have had not heard
-> >> anyone screaming to me that ACPI doesn't work after we switch kernels.
-> >
-> > You don't remove power from devices while doing that.
-> 
-> No.  It is the second half of S5.  When we go from the boot kernel
-> to the restored kernel I am talking about.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Well, you don't remove the power from devices doing that, do you?
+> Well, it looks like we do similar things concurrently.  Please have a look 
+> here: http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
 
-I was referring to the fact that you remove the power from devices after saving
-the image (ie. in the "poweroff" stage).  Then, you initialize them and pass
-all that to the restored kernel and the question here is:
-(a) Should they be reinitialized before the restored kernel has a chance to
-    access them?
-(b) If they should, what state they ought to be in when the restored kernel
-    accesses them.
+Yes.  Part of the reason I wanted to separate these two conversations
+I knew something was going on.
 
-That basically depends on how you're going to handle the resuming of devices,
-especially on the ACPI bus, in the restored kernel.
+> Similar patches are in the Greg's tree already.
 
-If we are to follow ACPI, the answer to (a) is "no", except for devices used to
-read the image and it's better if the boot kernel doesn't touch ACPI at all.
-Then, the benefit of putting the system into S4 during the "poweroff" stage is
-that (a) the resume can be carried out faster and (b) the restored kernel may
-use some context preserved by the platform over the sleep state.
+Taking a look.
 
-Also, that allows you to use the wake up capabilities of some devices that
-need not be available from S5.
+I just can't get past the fact in that the only reason hibernation can
+not use the widely implemented and tested probe/remove is because of
+filesystems on block devices, and that you are proposing to add 4
+methods for each and every driver to handle that case, when they
+don't need ANYTHING!
 
-In any case, however, I don't really think that doing the kexec jump before
-creating the image is really necessary.  The kexec jump during resume is in
-fact very similar to what the current hibernation code does, but it's slightly
-more complicated. :-)
+I wonder how hard teaching the upper layers to deal with
+hotplug/remove is?
 
-Thanks,
-Rafael
+The more I look at this the more I get the impression that
+hibernation and suspend should be solved in separate patches.  I'm
+not at all convinced that is what is good for the goose is good for
+the gander for things like your prepare method.
+
+Hibernation seems to be an extreme case of hotplug.
+
+Suspend seems to be just an extreme case of putting unused
+devices in low power state.
+
+....
+
+
+I don't like the fact that these methods are power management specific.
+How should this impact the greater kernel ecosystem.
+
++ * The externally visible transitions are handled with the help of the following
++ * callbacks included in this structure:
++ *
++ * @prepare: Prepare the device for the upcoming transition, but do NOT change
++ *	its hardware state.  Prevent new children of the device from being
++ *	registered after @prepare() returns (the driver's subsystem and
++ *	generally the rest of the kernel is supposed to prevent new calls to the
++ *	probe method from being made too once @prepare() has succeeded).  If
++ *	@prepare() detects a situation it cannot handle (e.g. registration of a
++ *	child already in progress), it may return -EAGAIN, so that the PM core
++ *	can execute it once again (e.g. after the new child has been registered)
++ *	to recover from the race condition.  This method is executed for all
++ *	kinds of suspend transitions and is followed by one of the suspend
++ *	callbacks: @suspend(), @freeze(), or @poweroff().
++ *	The PM core executes @prepare() for all devices before starting to
++ *	execute suspend callbacks for any of them, so drivers may assume all of
++ *	the other devices to be present and functional while @prepare() is being
++ *	executed.  In particular, it is safe to make GFP_KERNEL memory
++ *	allocations from within @prepare(), although they are likely to fail in
++ *	case of hibernation, if a substantial amount of memory is requested.
++ *	However, drivers may NOT assume anything about the availability of the
++ *	user space at that time and it is not correct to request firmware from
++ *	within @prepare() (it's too late to do that).
++ *
++ * @complete: Undo the changes made by @prepare().  This method is executed for
++ *	all kinds of resume transitions, following one of the resume callbacks:
++ *	@resume(), @thaw(), @restore().  Also called if the state transition
++ *	fails before the driver's suspend callback (@suspend(), @freeze(),
++ *	@poweroff()) can be executed (e.g. if the suspend callback fails for one
++ *	of the other devices that the PM core has unsucessfully attempted to
++ *	suspend earlier).
++ *	The PM core executes @complete() after it has executed the appropriate
++ *	resume callback for all devices.
+
+The names above are terrible.  Perhaps: @pause/@unpause.
+
+@pause Stop all device driver user space facing activities, and prepare
+       for a possible power state transition.
+
+Essentially these should be very much like bringing an ethernet
+interface down.  The device is still there but we can't do anything
+with it.  The only difference is that this may not be user visible.
+
++ * @suspend: Executed before putting the system into a sleep state in which the
++ *	contents of main memory are preserved.  Quiesce the device, put it into
++ *	a low power state appropriate for the upcoming system state (such as
++ *	PCI_D3hot), and enable wakeup events as appropriate.
++ *
++ * @resume: Executed after waking the system up from a sleep state in which the
++ *	contents of main memory were preserved.  Put the device into the
++ *	appropriate state, according to the information saved in memory by the
++ *	preceding @suspend().  The driver starts working again, responding to
++ *	hardware events and software requests.  The hardware may have gone
++ *	through a power-off reset, or it may have maintained state from the
++ *	previous suspend() which the driver may rely on while resuming.  On most
++ *	platforms, there are no restrictions on availability of resources like
++ *	clocks during @resume().
+
+Unless I have misread something.  These are exactly the same as
+@poweroff and @restore.
+
+@suspend place the device in a low power state.
+         Enable wakeup events.
+
+         Can we use this for cases when we need low power but haven't
+         stopped the cpu?  I think so.
+
+
++ * @freeze: Hibernation-specific, executed before creating a hibernation image.
++ *	Quiesce operations so that a consistent image can be created, but do NOT
++ *	otherwise put the device into a low power device state and do NOT emit
++ *	system wakeup events.  Save in main memory the device settings to be
++ *	used by @restore() during the subsequent resume from hibernation or by
++ *	the subsequent @thaw(), if the creation of the image or the restoration
++ *	of main memory contents from it fails.
++ *
++ * @thaw: Hibernation-specific, executed after creating a hibernation image OR
++ *	if the creation of the image fails.  Also executed after a failing
++ *	attempt to restore the contents of main memory from such an image.
++ *	Undo the changes made by the preceding @freeze(), so the device can be
++ *	operated in the same way as immediately before the call to @freeze().
+
+Just @detach/@reattach.
+
+@detach Detach the driver from the hardware, while keeping the driver
+        instance for the hardware alive.
+
+        Essentially this is what the shutdown method is today.
+        Except for being ready for a reattach.
+
+@reattach
+        See if the hardware for the driver is present and reclaim
+        it and bring it up to speed for processing requests.
+
++ * @poweroff: Hibernation-specific, executed after saving a hibernation image.
++ *	Quiesce the device, put it into a low power state appropriate for the
++ *	upcoming system state (such as PCI_D3hot), and enable wakeup events as
++ *	appropriate.
++ *
++ * @restore: Hibernation-specific, executed after restoring the contents of main
++ *	memory from a hibernation image.  Driver starts working again,
++ *	responding to hardware events and software requests.  Drivers may NOT
++ *	make ANY assumptions about the hardware state right prior to @restore().
++ *	On most platforms, there are no restrictions on availability of
++ *	resources like clocks during @restore().
++ *
+
+If we have events we care about we just need to do:
+reattach(); suspend();  It is all the same from the point of view of
+the device.  Not the system but the device.
+
+Eric
