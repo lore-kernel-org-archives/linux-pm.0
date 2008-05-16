@@ -1,16 +1,12 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Fri, 16 May 2008 14:18:36 +0200
-Message-ID: <20080516121836.GE22264__39712.3938113966$1210940424$gmane$org@elf.ucw.cz>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<m13aok1pt1.fsf@frodo.ebiederm.org>
-	<200805150155.33787.rjw@sisk.pl>
-	<m163tfi5sq.fsf@frodo.ebiederm.org>
+Date: Fri, 16 May 2008 10:20:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0805160955320.25035-100000__8031.0192345225$1210947928$gmane$org@netrider.rowland.org>
+References: <m163tfi5sq.fsf@frodo.ebiederm.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <m163tfi5sq.fsf@frodo.ebiederm.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,33 +21,100 @@ To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-05-15 15:03:17, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > Well, it looks like we do similar things concurrently.  Please have a look 
-> > here: http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
-> 
-> Yes.  Part of the reason I wanted to separate these two conversations
-> I knew something was going on.
-> 
-> > Similar patches are in the Greg's tree already.
-> 
-> Taking a look.
-> 
+On Thu, 15 May 2008, Eric W. Biederman wrote:
+
 > I just can't get past the fact in that the only reason hibernation can
 > not use the widely implemented and tested probe/remove is because of
 > filesystems on block devices, and that you are proposing to add 4
 > methods for each and every driver to handle that case, when they
 > don't need ANYTHING!
+
+You are mixing together several distinct concepts: powering-down
+devices, quiescing devices, blocking request queues, and so on.
+
+> The more I look at this the more I get the impression that
+> hibernation and suspend should be solved in separate patches.  I'm
+> not at all convinced that is what is good for the goose is good for
+> the gander for things like your prepare method.
+
+Isn't that exactly what Rafael has been doing?  Why do you think the 
+new PM framework has different methods for suspend and hibernate?
+
+> Hibernation seems to be an extreme case of hotplug.
+
+?  I don't follow this at all.
+
+> Suspend seems to be just an extreme case of putting unused
+> devices in low power state.
+
+To a large extent that is true.  But there is more to it.
+
+Normally, when a device is put in a low-power state while the system is 
+running, it's expected that an I/O request will cause the device to 
+return to full power.  But during suspend things don't work that way; 
+instead I/O requests are supposed to be blocked and the device is 
+supposed to remain at low power.
+
+There are other requirements too.  While the system is running, more or
+less arbitrary devices can go to low power at more or less arbitrary
+times (as appropriate, of course).  But during suspend, the PM core has
+to arrange that _all_ devices go to low power.  This means, among other
+things, that drivers have to be prevented from registering new devices
+while the transition is taking place.  (Not to mention the races 
+involved in registering a new child device at the same time as its 
+parent is being powered down.)
+
+> + * @prepare: Prepare the device for the upcoming transition, but do NOT change
+> + *	its hardware state.  Prevent new children of the device from being
+> + *	registered after @prepare() returns (the driver's subsystem and
+...
+> + * @complete: Undo the changes made by @prepare().  This method is executed for
+...
+
+> The names above are terrible.  Perhaps: @pause/@unpause.
+
+I think you have missed the point of these methods.  What they do is
+unrelated to pausing or unpausing; their main purpose is to prevent and
+to allow new children from being registered.
+
+> @pause Stop all device driver user space facing activities, and prepare
+>        for a possible power state transition.
 > 
-> I wonder how hard teaching the upper layers to deal with
-> hotplug/remove is?
+> Essentially these should be very much like bringing an ethernet
+> interface down.  The device is still there but we can't do anything
+> with it.  The only difference is that this may not be user visible.
 
-It looked _too_ hard when I was looking... at least if we are thinking
-off "keep the filesystem mounted over unplug-replug".
+Why do we need this?  Why can't user-space-facing activities be stopped 
+when the power-level change occurs?
 
-Or do you have something else in mind?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> + * @freeze: Hibernation-specific, executed before creating a hibernation image.
+> + *	Quiesce operations so that a consistent image can be created, but do NOT
+> + *	otherwise put the device into a low power device state and do NOT emit
+> + *	system wakeup events.  Save in main memory the device settings to be
+> + *	used by @restore() during the subsequent resume from hibernation or by
+> + *	the subsequent @thaw(), if the creation of the image or the restoration
+> + *	of main memory contents from it fails.
+> + *
+> + * @thaw: Hibernation-specific, executed after creating a hibernation image OR
+> + *	if the creation of the image fails.  Also executed after a failing
+> + *	attempt to restore the contents of main memory from such an image.
+> + *	Undo the changes made by the preceding @freeze(), so the device can be
+> + *	operated in the same way as immediately before the call to @freeze().
+> 
+> Just @detach/@reattach.
+> 
+> @detach Detach the driver from the hardware, while keeping the driver
+>         instance for the hardware alive.
+
+This isn't the same thing at all.  @freeze doesn't detach the driver 
+from anything.  It merely tells the driver to quiesce the device.
+
+> If we have events we care about we just need to do:
+> reattach(); suspend();  It is all the same from the point of view of
+> the device.  Not the system but the device.
+
+?  Why are you worried about what the device sees?  The device can't 
+even tell the difference between a detach and a period of time with no 
+I/O.
+
+Alan Stern
