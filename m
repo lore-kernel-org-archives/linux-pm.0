@@ -1,13 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/7] ACPI PM: Remove obsolete Toshiba workaround
-Date: Tue, 20 May 2008 01:38:10 +0200
-Message-ID: <200805200138.11333.rjw__32741.1092039712$1211241352$gmane$org@sisk.pl>
-References: <200805200129.19904.rjw@sisk.pl>
+Subject: [PATCH 0/7] Patches for 2.6.27
+Date: Tue, 20 May 2008 01:29:19 +0200
+Message-ID: <200805200129.19904.rjw__7568.20091414756$1211241356$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805200129.19904.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,77 +20,18 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Len,
 
-Remove the obsolete workaround for a Toshiba Satellite 4030cdt
-S1 problem from drivers/acpi/sleep/main.c .
+The following series of patches is targeted at 2.6.27.  They have already been
+discussed on mailing lists a bit and tested on my systems, but they certainly
+require more testing.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
----
- drivers/acpi/sleep/main.c |   31 -------------------------------
- 1 file changed, 31 deletions(-)
+Patches 1/7 - 6/7 should apply on top of the current -git, but the patch 7/7
+depends on one patch in the Greg's tree (should apply to linux-next, though).
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -62,8 +62,6 @@ static u32 acpi_suspend_states[] = {
- 	[PM_SUSPEND_MAX] = ACPI_STATE_S5
- };
- 
--static int init_8259A_after_S1;
--
- /**
-  *	acpi_suspend_begin - Set the target system sleep state to the state
-  *		associated with given @pm_state, if supported.
-@@ -186,13 +184,6 @@ static void acpi_suspend_finish(void)
- 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
- 
- 	acpi_target_sleep_state = ACPI_STATE_S0;
--
--#ifdef CONFIG_X86
--	if (init_8259A_after_S1) {
--		printk("Broken toshiba laptop -> kicking interrupts\n");
--		init_8259A(0);
--	}
--#endif
- }
- 
- /**
-@@ -232,26 +223,6 @@ static struct platform_suspend_ops acpi_
- 	.finish = acpi_suspend_finish,
- 	.end = acpi_suspend_end,
- };
--
--/*
-- * Toshiba fails to preserve interrupts over S1, reinitialization
-- * of 8259 is needed after S1 resume.
-- */
--static int __init init_ints_after_s1(const struct dmi_system_id *d)
--{
--	printk(KERN_WARNING "%s with broken S1 detected.\n", d->ident);
--	init_8259A_after_S1 = 1;
--	return 0;
--}
--
--static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
--	{
--	 .callback = init_ints_after_s1,
--	 .ident = "Toshiba Satellite 4030cdt",
--	 .matches = {DMI_MATCH(DMI_PRODUCT_NAME, "S4030CDT/4.3"),},
--	 },
--	{},
--};
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
-@@ -490,8 +461,6 @@ int __init acpi_sleep_init(void)
- 	u8 type_a, type_b;
- #ifdef CONFIG_SUSPEND
- 	int i = 0;
--
--	dmi_check_system(acpisleep_dmi_table);
- #endif
- 
- 	if (acpi_disabled)
+Thanks,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
