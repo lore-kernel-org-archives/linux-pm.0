@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/7] ACPI PM: acpi_pm_device_sleep_state() cleanup
-Date: Tue, 20 May 2008 01:34:48 +0200
-Message-ID: <200805200134.49129.rjw__40651.949044741$1211241371$gmane$org@sisk.pl>
+Subject: [PATCH 4/7] PCI ACPI: Drop the second argument of
+	platform_pci_choose_state
+Date: Tue, 20 May 2008 01:36:16 +0200
+Message-ID: <200805200136.16805.rjw__34709.2966236689$1211241381$gmane$org@sisk.pl>
 References: <200805200129.19904.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,102 +20,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, David Brownell <dbrownell@users.sourceforge.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Get rid of a superfluous acpi_pm_device_sleep_state() parameter.  The
-only legitimate value of that parameter must be derived from the first
-parameter, which is what all the callers already do.  (However, this
-does not address the fact that ACPI still doesn't set up those flags.)
+Since the second argument of acpi_pci_choose_state() and
+platform_pci_choose_state() is never used, remove it.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/acpi/sleep/main.c  |    8 ++++----
- drivers/pci/pci-acpi.c     |    3 +--
- drivers/pnp/pnpacpi/core.c |    4 +---
- include/acpi/acpi_bus.h    |    4 ++--
- 4 files changed, 8 insertions(+), 11 deletions(-)
+ drivers/pci/pci-acpi.c |    3 +--
+ drivers/pci/pci.c      |    4 ++--
+ drivers/pci/pci.h      |    3 +--
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -386,8 +386,8 @@ int acpi_suspend(u32 acpi_state)
- /**
-  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
-  *		in the system sleep state given by %acpi_target_sleep_state
-- *	@dev: device to examine
-- *	@wake: if set, the device should be able to wake up the system
-+ *	@dev: device to examine; its driver model wakeup flags control
-+ *		whether it should be able to wake up the system
-  *	@d_min_p: used to store the upper limit of allowed states range
-  *	Return value: preferred power state of the device on success, -ENODEV on
-  *		failure (ie. if there's no 'struct acpi_device' for @dev)
-@@ -405,7 +405,7 @@ int acpi_suspend(u32 acpi_state)
-  *	via @wake.
-  */
- 
--int acpi_pm_device_sleep_state(struct device *dev, int wake, int *d_min_p)
-+int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
- {
- 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
- 	struct acpi_device *adev;
-@@ -444,7 +444,7 @@ int acpi_pm_device_sleep_state(struct de
- 	 * can wake the system.  _S0W may be valid, too.
- 	 */
- 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
--	    (wake && adev->wakeup.state.enabled &&
-+	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
- 	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
- 		acpi_status status;
- 
 Index: linux-2.6/drivers/pci/pci-acpi.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-acpi.c
 +++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -298,8 +298,7 @@ static pci_power_t acpi_pci_choose_state
+@@ -293,8 +293,7 @@ EXPORT_SYMBOL(pci_osc_control_set);
+  * 	choose highest power _SxD or any lower power
+  */
+ 
+-static pci_power_t acpi_pci_choose_state(struct pci_dev *pdev,
+-	pm_message_t state)
++static pci_power_t acpi_pci_choose_state(struct pci_dev *pdev)
  {
  	int acpi_state;
  
--	acpi_state = acpi_pm_device_sleep_state(&pdev->dev,
--		device_may_wakeup(&pdev->dev), NULL);
-+	acpi_state = acpi_pm_device_sleep_state(&pdev->dev, NULL);
- 	if (acpi_state < 0)
- 		return PCI_POWER_ERROR;
- 
-Index: linux-2.6/drivers/pnp/pnpacpi/core.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/pnp/pnpacpi/core.c
-+++ linux-2.6/drivers/pnp/pnpacpi/core.c
-@@ -117,9 +117,7 @@ static int pnpacpi_suspend(struct pnp_de
- {
- 	int power_state;
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -508,7 +508,7 @@ pci_set_power_state(struct pci_dev *dev,
+ 	return 0;
+ }
  
--	power_state = acpi_pm_device_sleep_state(&dev->dev,
--						device_may_wakeup(&dev->dev),
--						NULL);
-+	power_state = acpi_pm_device_sleep_state(&dev->dev, NULL);
- 	if (power_state < 0)
- 		power_state = (state.event == PM_EVENT_ON) ?
- 				ACPI_STATE_D0 : ACPI_STATE_D3;
-Index: linux-2.6/include/acpi/acpi_bus.h
+-pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev, pm_message_t state);
++pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+  
+ /**
+  * pci_choose_state - Choose the power state of a PCI device
+@@ -528,7 +528,7 @@ pci_power_t pci_choose_state(struct pci_
+ 		return PCI_D0;
+ 
+ 	if (platform_pci_choose_state) {
+-		ret = platform_pci_choose_state(dev, state);
++		ret = platform_pci_choose_state(dev);
+ 		if (ret != PCI_POWER_ERROR)
+ 			return ret;
+ 	}
+Index: linux-2.6/drivers/pci/pci.h
 ===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -376,9 +376,9 @@ acpi_handle acpi_get_pci_rootbridge_hand
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -6,8 +6,7 @@ extern void pci_remove_sysfs_dev_files(s
+ extern void pci_cleanup_rom(struct pci_dev *dev);
  
- #ifdef CONFIG_PM_SLEEP
--int acpi_pm_device_sleep_state(struct device *, int, int *);
-+int acpi_pm_device_sleep_state(struct device *, int *);
- #else /* !CONFIG_PM_SLEEP */
--static inline int acpi_pm_device_sleep_state(struct device *d, int w, int *p)
-+static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
- {
- 	if (p)
- 		*p = ACPI_STATE_D0;
+ /* Firmware callbacks */
+-extern pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev,
+-						pm_message_t state);
++extern pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+ extern int (*platform_pci_set_power_state)(struct pci_dev *dev,
+ 						pci_power_t state);
+ 
