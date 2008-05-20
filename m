@@ -1,15 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 7/7] ACPI PM: Add possibility to change
-	suspend sequence
-Date: Tue, 20 May 2008 17:20:11 +0200
-Message-ID: <20080520152011.GB2067__17316.2331608639$1211296945$gmane$org@elf.ucw.cz>
-References: <200805200129.19904.rjw@sisk.pl> <200805200141.58518.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/7] ACPI Hibernation: Use ACPI hardware
+	signature
+Date: Tue, 20 May 2008 21:51:10 +0200
+Message-ID: <200805202151.11448.rjw__39694.513710174$1211313292$gmane$org@sisk.pl>
+References: <200805200129.19904.rjw@sisk.pl> <200805200131.33913.rjw@sisk.pl>
+	<20080520151748.GA2067@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080520151748.GA2067@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200805200141.58518.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +20,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-05-20 01:41:57, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tuesday, 20 of May 2008, Pavel Machek wrote:
+> Hi!
 > 
-> There are some systems out there that don't work correctly with
-> our current suspend/hibernation code ordering.  Provide a workaround
-> for these systems allowing them to pass the
-> 'acpi_old_suspend_ordering' command line parameter to the kernel that
-> will make it use the pre-ACPI 2.0 suspend code ordering.
+> > From: Shaohua Li <shaohua.li@intel.com>
+> > 
+> > ACPI defines a hardware signature. BIOS calculates the signature
+> > according to hardware configure, if hardware changes, the signature
+> > will change, in this case, S4 resume should fail.
+> > 
+> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > Acked-by: Pavel Machek <pavel@suse.cz>
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> I guess I'm quite late to the party, but... could we make this use
+> acpi_sleep= command line option, and related variable?
+> 
+> That brings advantage of existing /proc/sys interface, so that s2disk
+> could do blacklist in userspace, and easily...
 
-Command line option is now  acpi_sleep=old_ordering, but I guess that
-does not matter much.
+If I have the time.
 
-Thanks for the patch!
-							Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
