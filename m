@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/7] ACPI Hibernation: Use ACPI hardware
-	signature (rev. 2)
-Date: Wed, 21 May 2008 23:16:00 +0200
-Message-ID: <200805212316.01025.rjw__11258.2270092846$1211404685$gmane$org@sisk.pl>
-References: <200805200129.19904.rjw@sisk.pl> <20080520151748.GA2067@elf.ucw.cz>
-	<200805202151.11448.rjw@sisk.pl>
+Subject: Re: [PATCH 7/7] ACPI PM: Add possibility to change
+	suspend sequence (rev. 2)
+Date: Wed, 21 May 2008 23:18:12 +0200
+Message-ID: <200805212318.12899.rjw__21926.4256455519$1211404793$gmane$org@sisk.pl>
+References: <200805200129.19904.rjw@sisk.pl> <200805200141.58518.rjw@sisk.pl>
+	<20080520152011.GB2067@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200805202151.11448.rjw@sisk.pl>
+In-Reply-To: <20080520152011.GB2067@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,135 +21,646 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@suse.cz>, Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Carlos Corbacho <carlos@strangeworlds.co.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 20 of May 2008, Rafael J. Wysocki wrote:
-> On Tuesday, 20 of May 2008, Pavel Machek wrote:
-> > Hi!
+On Tuesday, 20 of May 2008, Pavel Machek wrote:
+> On Tue 2008-05-20 01:41:57, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > > From: Shaohua Li <shaohua.li@intel.com>
-> > > 
-> > > ACPI defines a hardware signature. BIOS calculates the signature
-> > > according to hardware configure, if hardware changes, the signature
-> > > will change, in this case, S4 resume should fail.
-> > > 
-> > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > Acked-by: Pavel Machek <pavel@suse.cz>
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > I guess I'm quite late to the party, but... could we make this use
-> > acpi_sleep= command line option, and related variable?
-> > 
-> > That brings advantage of existing /proc/sys interface, so that s2disk
-> > could do blacklist in userspace, and easily...
+> > There are some systems out there that don't work correctly with
+> > our current suspend/hibernation code ordering.  Provide a workaround
+> > for these systems allowing them to pass the
+> > 'acpi_old_suspend_ordering' command line parameter to the kernel that
+> > will make it use the pre-ACPI 2.0 suspend code ordering.
 > 
-> If I have the time.
+> Command line option is now  acpi_sleep=old_ordering, but I guess that
+> does not matter much.
+> 
+> Thanks for the patch!
 
-Okay, patch reworked.
+I rebased it on top of the new 1/7 patch (already sent).
 
-Len, please disregard the previous version, the current one is appended.
+Len, please disregard the previous version of this patch, the new one is
+appended.
 
 Thanks,
 Rafael
 
 ---
-From: Shaohua Li <shaohua.li@intel.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI defines a hardware signature.  BIOS calculates the signature
-according to hardware configure and if hardware changes while
-hibernated, the signature will change.  In that case, S4 resume
-should fail.
+There are some systems out there that don't work correctly with
+our current suspend/hibernation code ordering.  Provide a workaround
+for these systems allowing them to pass 'acpi_sleep=old_ordering' in
+the kernel command line so that it will use the pre-ACPI 2.0 ("old")
+suspend code ordering.
 
-Still, there may be systems on which this mechanism does not work
-correctly, so it is better to provide a workaround for them.  For
-this reason, add a new switch to the acpi_sleep= command line
-argument allowing one to disable hardware signature checking.
+Unfortunately, this requires us to add a platform hook to the
+resuming of devices for recovering the platform in case one of the
+device drivers' .suspend() routines returns error code.  Namely,
+ACPI 1.0 specifies that _PTS should be called before suspending
+devices, but _WAK still should be called before resuming them in
+order to undo the changes made by _PTS.  However, if there is an
+error during suspending devices, they are automatically resumed
+without returning control to the PM core, so the _WAK has to be
+called from within device_resume() in that cases.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+The patch also reorders and refactors the ACPI suspend/hibernation
+code to avoid duplication as far as reasonably possible.
+
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@suse.cz>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>
 ---
- Documentation/kernel-parameters.txt |    4 +++-
- arch/x86/kernel/acpi/sleep.c        |    2 ++
- drivers/acpi/sleep/main.c           |   22 ++++++++++++++++++++++
- include/linux/acpi.h                |    3 +++
- 4 files changed, 30 insertions(+), 1 deletion(-)
+ Documentation/kernel-parameters.txt |    6 
+ arch/x86/kernel/acpi/sleep.c        |    2 
+ drivers/acpi/sleep/main.c           |  276 +++++++++++++++++++++---------------
+ drivers/base/power/main.c           |    2 
+ include/linux/acpi.h                |    1 
+ include/linux/suspend.h             |   14 +
+ kernel/power/disk.c                 |   28 ++-
+ kernel/power/main.c                 |   10 -
+ 8 files changed, 213 insertions(+), 126 deletions(-)
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -255,6 +255,15 @@ static struct dmi_system_id __initdata a
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
-+static unsigned long s4_hardware_signature;
-+static struct acpi_table_facs *facs;
-+static bool nosigcheck;
-+
-+void __init acpi_no_s4_hw_signature(void)
-+{
-+	nosigcheck = true;
-+}
-+
- static int acpi_hibernation_begin(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
-@@ -301,6 +310,12 @@ static void acpi_hibernation_leave(void)
- 	acpi_enable();
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+	/* Check the hardware signature */
-+	if (facs && s4_hardware_signature != facs->hardware_signature) {
-+		printk(KERN_EMERG "ACPI: Hardware changed while hibernated, "
-+			"cannot resume!\n");
-+		panic("ACPI S4 hardware signature mismatch");
-+	}
- }
- 
- static void acpi_hibernation_finish(void)
-@@ -501,6 +516,13 @@ int __init acpi_sleep_init(void)
- 		hibernation_set_ops(&acpi_hibernation_ops);
- 		sleep_states[ACPI_STATE_S4] = 1;
- 		printk(" S4");
-+		if (!nosigcheck) {
-+			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
-+				(struct acpi_table_header **)&facs);
-+			if (facs)
-+				s4_hardware_signature =
-+					facs->hardware_signature;
-+		}
- 	}
- #endif
- 	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
 Index: linux-2.6/Documentation/kernel-parameters.txt
 ===================================================================
 --- linux-2.6.orig/Documentation/kernel-parameters.txt
 +++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -147,10 +147,12 @@ and is between 256 and 4096 characters. 
+@@ -147,12 +147,16 @@ and is between 256 and 4096 characters. 
  			default: 0
  
  	acpi_sleep=	[HW,ACPI] Sleep options
--			Format: { s3_bios, s3_mode, s3_beep }
-+			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig }
+-			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig }
++			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig, old_ordering }
  			See Documentation/power/video.txt for s3_bios and s3_mode.
  			s3_beep is for debugging; it makes the PC's speaker beep
  			as soon as the kernel's real-mode entry point is called.
-+			s4_nohwsig prevents ACPI hardware signature from being
-+			used during resume from hibernation.
+ 			s4_nohwsig prevents ACPI hardware signature from being
+ 			used during resume from hibernation.
++			old_ordering causes the ACPI 1.0 ordering of the _PTS
++			control method, wrt putting devices into low power
++			states, to be enforced (the ACPI 2.0 ordering of _PTS is
++			used by default).
  
  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
  			Format: { level | edge | high | low }
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -24,10 +24,6 @@
+ 
+ u8 sleep_states[ACPI_S_STATE_COUNT];
+ 
+-#ifdef CONFIG_PM_SLEEP
+-static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+-#endif
+-
+ static int acpi_sleep_prepare(u32 acpi_state)
+ {
+ #ifdef CONFIG_ACPI_SLEEP
+@@ -50,9 +46,96 @@ static int acpi_sleep_prepare(u32 acpi_s
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_SUSPEND
+-static struct platform_suspend_ops acpi_suspend_ops;
++#ifdef CONFIG_PM_SLEEP
++static u32 acpi_target_sleep_state = ACPI_STATE_S0;
++
++/*
++ * ACPI 1.0 wants us to execute _PTS before suspending devices, so we allow the
++ * user to request that behavior by using the 'acpi_old_suspend_ordering'
++ * kernel command line option that causes the following variable to be set.
++ */
++static bool old_suspend_ordering;
++
++void __init acpi_old_suspend_ordering(void)
++{
++	old_suspend_ordering = true;
++}
++
++/**
++ *	acpi_pm_disable_gpes - Disable the GPEs.
++ */
++static int acpi_pm_disable_gpes(void)
++{
++	acpi_hw_disable_all_gpes();
++	return 0;
++}
++
++/**
++ *	__acpi_pm_prepare - Prepare the platform to enter the target state.
++ *
++ *	If necessary, set the firmware waking vector and do arch-specific
++ *	nastiness to get the wakeup code to the waking vector.
++ */
++static int __acpi_pm_prepare(void)
++{
++	int error = acpi_sleep_prepare(acpi_target_sleep_state);
++
++	if (error)
++		acpi_target_sleep_state = ACPI_STATE_S0;
++	return error;
++}
++
++/**
++ *	acpi_pm_prepare - Prepare the platform to enter the target sleep
++ *		state and disable the GPEs.
++ */
++static int acpi_pm_prepare(void)
++{
++	int error = __acpi_pm_prepare();
++
++	if (!error)
++		acpi_hw_disable_all_gpes();
++	return error;
++}
++
++/**
++ *	acpi_pm_finish - Instruct the platform to leave a sleep state.
++ *
++ *	This is called after we wake back up (or if entering the sleep state
++ *	failed).
++ */
++static void acpi_pm_finish(void)
++{
++	u32 acpi_state = acpi_target_sleep_state;
++
++	if (acpi_state == ACPI_STATE_S0)
++		return;
++
++	printk(KERN_INFO PREFIX "Waking up from system sleep state S%d\n",
++		acpi_state);
++	acpi_disable_wakeup_device(acpi_state);
++	acpi_leave_sleep_state(acpi_state);
++
++	/* reset firmware waking vector */
++	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
++
++	acpi_target_sleep_state = ACPI_STATE_S0;
++}
++
++/**
++ *	acpi_pm_end - Finish up suspend sequence.
++ */
++static void acpi_pm_end(void)
++{
++	/*
++	 * This is necessary in case acpi_pm_finish() is not called during a
++	 * failing transition to a sleep state.
++	 */
++	acpi_target_sleep_state = ACPI_STATE_S0;
++}
++#endif /* CONFIG_PM_SLEEP */
+ 
++#ifdef CONFIG_SUSPEND
+ extern void do_suspend_lowlevel(void);
+ 
+ static u32 acpi_suspend_states[] = {
+@@ -66,7 +149,6 @@ static u32 acpi_suspend_states[] = {
+  *	acpi_suspend_begin - Set the target system sleep state to the state
+  *		associated with given @pm_state, if supported.
+  */
+-
+ static int acpi_suspend_begin(suspend_state_t pm_state)
+ {
+ 	u32 acpi_state = acpi_suspend_states[pm_state];
+@@ -83,25 +165,6 @@ static int acpi_suspend_begin(suspend_st
+ }
+ 
+ /**
+- *	acpi_suspend_prepare - Do preliminary suspend work.
+- *
+- *	If necessary, set the firmware waking vector and do arch-specific
+- *	nastiness to get the wakeup code to the waking vector.
+- */
+-
+-static int acpi_suspend_prepare(void)
+-{
+-	int error = acpi_sleep_prepare(acpi_target_sleep_state);
+-
+-	if (error) {
+-		acpi_target_sleep_state = ACPI_STATE_S0;
+-		return error;
+-	}
+-
+-	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
+-}
+-
+-/**
+  *	acpi_suspend_enter - Actually enter a sleep state.
+  *	@pm_state: ignored
+  *
+@@ -109,7 +172,6 @@ static int acpi_suspend_prepare(void)
+  *	assembly, which in turn call acpi_enter_sleep_state().
+  *	It's unfortunate, but it works. Please fix if you're feeling frisky.
+  */
+-
+ static int acpi_suspend_enter(suspend_state_t pm_state)
+ {
+ 	acpi_status status = AE_OK;
+@@ -166,39 +228,6 @@ static int acpi_suspend_enter(suspend_st
+ 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+ }
+ 
+-/**
+- *	acpi_suspend_finish - Instruct the platform to leave a sleep state.
+- *
+- *	This is called after we wake back up (or if entering the sleep state
+- *	failed). 
+- */
+-
+-static void acpi_suspend_finish(void)
+-{
+-	u32 acpi_state = acpi_target_sleep_state;
+-
+-	acpi_disable_wakeup_device(acpi_state);
+-	acpi_leave_sleep_state(acpi_state);
+-
+-	/* reset firmware waking vector */
+-	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+-
+-	acpi_target_sleep_state = ACPI_STATE_S0;
+-}
+-
+-/**
+- *	acpi_suspend_end - Finish up suspend sequence.
+- */
+-
+-static void acpi_suspend_end(void)
+-{
+-	/*
+-	 * This is necessary in case acpi_suspend_finish() is not called during a
+-	 * failing transition to a sleep state.
+-	 */
+-	acpi_target_sleep_state = ACPI_STATE_S0;
+-}
+-
+ static int acpi_suspend_state_valid(suspend_state_t pm_state)
+ {
+ 	u32 acpi_state;
+@@ -218,10 +247,39 @@ static int acpi_suspend_state_valid(susp
+ static struct platform_suspend_ops acpi_suspend_ops = {
+ 	.valid = acpi_suspend_state_valid,
+ 	.begin = acpi_suspend_begin,
+-	.prepare = acpi_suspend_prepare,
++	.prepare = acpi_pm_prepare,
++	.enter = acpi_suspend_enter,
++	.finish = acpi_pm_finish,
++	.end = acpi_pm_end,
++};
++
++/**
++ *	acpi_suspend_begin_old - Set the target system sleep state to the
++ *		state associated with given @pm_state, if supported, and
++ *		execute the _PTS control method.  This function is used if the
++ *		pre-ACPI 2.0 suspend ordering has been requested.
++ */
++static int acpi_suspend_begin_old(suspend_state_t pm_state)
++{
++	int error = acpi_suspend_begin(pm_state);
++
++	if (!error)
++		error = __acpi_pm_prepare();
++	return error;
++}
++
++/*
++ * The following callbacks are used if the pre-ACPI 2.0 suspend ordering has
++ * been requested.
++ */
++static struct platform_suspend_ops acpi_suspend_ops_old = {
++	.valid = acpi_suspend_state_valid,
++	.begin = acpi_suspend_begin_old,
++	.prepare = acpi_pm_disable_gpes,
+ 	.enter = acpi_suspend_enter,
+-	.finish = acpi_suspend_finish,
+-	.end = acpi_suspend_end,
++	.finish = acpi_pm_finish,
++	.end = acpi_pm_end,
++	.recover = acpi_pm_finish,
+ };
+ #endif /* CONFIG_SUSPEND */
+ 
+@@ -238,22 +296,9 @@ void __init acpi_no_s4_hw_signature(void
+ static int acpi_hibernation_begin(void)
+ {
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+-
+ 	return 0;
+ }
+ 
+-static int acpi_hibernation_prepare(void)
+-{
+-	int error = acpi_sleep_prepare(ACPI_STATE_S4);
+-
+-	if (error) {
+-		acpi_target_sleep_state = ACPI_STATE_S0;
+-		return error;
+-	}
+-
+-	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
+-}
+-
+ static int acpi_hibernation_enter(void)
+ {
+ 	acpi_status status = AE_OK;
+@@ -289,52 +334,55 @@ static void acpi_hibernation_leave(void)
+ 	}
+ }
+ 
+-static void acpi_hibernation_finish(void)
++static void acpi_pm_enable_gpes(void)
+ {
+-	acpi_disable_wakeup_device(ACPI_STATE_S4);
+-	acpi_leave_sleep_state(ACPI_STATE_S4);
+-
+-	/* reset firmware waking vector */
+-	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
+-
+-	acpi_target_sleep_state = ACPI_STATE_S0;
++	acpi_hw_enable_all_runtime_gpes();
+ }
+ 
+-static void acpi_hibernation_end(void)
+-{
+-	/*
+-	 * This is necessary in case acpi_hibernation_finish() is not called
+-	 * during a failing transition to the sleep state.
+-	 */
+-	acpi_target_sleep_state = ACPI_STATE_S0;
+-}
++static struct platform_hibernation_ops acpi_hibernation_ops = {
++	.begin = acpi_hibernation_begin,
++	.end = acpi_pm_end,
++	.pre_snapshot = acpi_pm_prepare,
++	.finish = acpi_pm_finish,
++	.prepare = acpi_pm_prepare,
++	.enter = acpi_hibernation_enter,
++	.leave = acpi_hibernation_leave,
++	.pre_restore = acpi_pm_disable_gpes,
++	.restore_cleanup = acpi_pm_enable_gpes,
++};
+ 
+-static int acpi_hibernation_pre_restore(void)
++/**
++ *	acpi_hibernation_begin_old - Set the target system sleep state to
++ *		ACPI_STATE_S4 and execute the _PTS control method.  This
++ *		function is used if the pre-ACPI 2.0 suspend ordering has been
++ *		requested.
++ */
++static int acpi_hibernation_begin_old(void)
+ {
+-	acpi_status status;
+-
+-	status = acpi_hw_disable_all_gpes();
+-
+-	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+-}
++	int error = acpi_sleep_prepare(ACPI_STATE_S4);
+ 
+-static void acpi_hibernation_restore_cleanup(void)
+-{
+-	acpi_hw_enable_all_runtime_gpes();
++	if (!error)
++		acpi_target_sleep_state = ACPI_STATE_S4;
++	return error;
+ }
+ 
+-static struct platform_hibernation_ops acpi_hibernation_ops = {
+-	.begin = acpi_hibernation_begin,
+-	.end = acpi_hibernation_end,
+-	.pre_snapshot = acpi_hibernation_prepare,
+-	.finish = acpi_hibernation_finish,
+-	.prepare = acpi_hibernation_prepare,
++/*
++ * The following callbacks are used if the pre-ACPI 2.0 suspend ordering has
++ * been requested.
++ */
++static struct platform_hibernation_ops acpi_hibernation_ops_old = {
++	.begin = acpi_hibernation_begin_old,
++	.end = acpi_pm_end,
++	.pre_snapshot = acpi_pm_disable_gpes,
++	.finish = acpi_pm_finish,
++	.prepare = acpi_pm_disable_gpes,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_hibernation_pre_restore,
+-	.restore_cleanup = acpi_hibernation_restore_cleanup,
++	.pre_restore = acpi_pm_disable_gpes,
++	.restore_cleanup = acpi_pm_enable_gpes,
++	.recover = acpi_pm_finish,
+ };
+-#endif				/* CONFIG_HIBERNATION */
++#endif /* CONFIG_HIBERNATION */
+ 
+ int acpi_suspend(u32 acpi_state)
+ {
+@@ -476,13 +524,15 @@ int __init acpi_sleep_init(void)
+ 		}
+ 	}
+ 
+-	suspend_set_ops(&acpi_suspend_ops);
++	suspend_set_ops(old_suspend_ordering ?
++		&acpi_suspend_ops_old : &acpi_suspend_ops);
+ #endif
+ 
+ #ifdef CONFIG_HIBERNATION
+ 	status = acpi_get_sleep_type_data(ACPI_STATE_S4, &type_a, &type_b);
+ 	if (ACPI_SUCCESS(status)) {
+-		hibernation_set_ops(&acpi_hibernation_ops);
++		hibernation_set_ops(old_suspend_ordering ?
++			&acpi_hibernation_ops_old : &acpi_hibernation_ops);
+ 		sleep_states[ACPI_STATE_S4] = 1;
+ 		printk(" S4");
+ 		if (!nosigcheck) {
+Index: linux-2.6/include/linux/suspend.h
+===================================================================
+--- linux-2.6.orig/include/linux/suspend.h
++++ linux-2.6/include/linux/suspend.h
+@@ -86,6 +86,11 @@ typedef int __bitwise suspend_state_t;
+  *	that implement @begin(), but platforms implementing @begin() should
+  *	also provide a @end() which cleans up transitions aborted before
+  *	@enter().
++ *
++ * @recover: Recover the platform from a suspend failure.
++ *	Called by the PM core if the suspending of devices fails.
++ *	This callback is optional and should only be implemented by platforms
++ *	which require special recovery actions in that situation.
+  */
+ struct platform_suspend_ops {
+ 	int (*valid)(suspend_state_t state);
+@@ -94,6 +99,7 @@ struct platform_suspend_ops {
+ 	int (*enter)(suspend_state_t state);
+ 	void (*finish)(void);
+ 	void (*end)(void);
++	void (*recover)(void);
+ };
+ 
+ #ifdef CONFIG_SUSPEND
+@@ -149,7 +155,7 @@ extern void mark_free_pages(struct zone 
+  * The methods in this structure allow a platform to carry out special
+  * operations required by it during a hibernation transition.
+  *
+- * All the methods below must be implemented.
++ * All the methods below, except for @recover(), must be implemented.
+  *
+  * @begin: Tell the platform driver that we're starting hibernation.
+  *	Called right after shrinking memory and before freezing devices.
+@@ -189,6 +195,11 @@ extern void mark_free_pages(struct zone 
+  * @restore_cleanup: Clean up after a failing image restoration.
+  *	Called right after the nonboot CPUs have been enabled and before
+  *	thawing devices (runs with IRQs on).
++ *
++ * @recover: Recover the platform from a failure to suspend devices.
++ *	Called by the PM core if the suspending of devices during hibernation
++ *	fails.  This callback is optional and should only be implemented by
++ *	platforms which require special recovery actions in that situation.
+  */
+ struct platform_hibernation_ops {
+ 	int (*begin)(void);
+@@ -200,6 +211,7 @@ struct platform_hibernation_ops {
+ 	void (*leave)(void);
+ 	int (*pre_restore)(void);
+ 	void (*restore_cleanup)(void);
++	void (*recover)(void);
+ };
+ 
+ #ifdef CONFIG_HIBERNATION
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -269,11 +269,11 @@ int suspend_devices_and_enter(suspend_st
+ 	error = device_suspend(PMSG_SUSPEND);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to suspend\n");
+-		goto Resume_console;
++		goto Recover_platform;
+ 	}
+ 
+ 	if (suspend_test(TEST_DEVICES))
+-		goto Resume_devices;
++		goto Recover_platform;
+ 
+ 	if (suspend_ops->prepare) {
+ 		error = suspend_ops->prepare();
+@@ -294,12 +294,16 @@ int suspend_devices_and_enter(suspend_st
+ 		suspend_ops->finish();
+  Resume_devices:
+ 	device_resume(PMSG_RESUME);
+- Resume_console:
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
+ 		suspend_ops->end();
+ 	return error;
++
++ Recover_platform:
++	if (suspend_ops->recover)
++		suspend_ops->recover();
++	goto Resume_devices;
+ }
+ 
+ /**
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -180,6 +180,17 @@ static void platform_restore_cleanup(int
+ }
+ 
+ /**
++ *	platform_recover - recover the platform from a failure to suspend
++ *	devices.
++ */
++
++static void platform_recover(int platform_mode)
++{
++	if (platform_mode && hibernation_ops && hibernation_ops->recover)
++		hibernation_ops->recover();
++}
++
++/**
+  *	create_image - freeze devices that need to be frozen with interrupts
+  *	off, create the hibernation image and thaw those devices.  Control
+  *	reappears in this routine after a restore.
+@@ -258,10 +269,10 @@ int hibernation_snapshot(int platform_mo
+ 	suspend_console();
+ 	error = device_suspend(PMSG_FREEZE);
+ 	if (error)
+-		goto Resume_console;
++		goto Recover_platform;
+ 
+ 	if (hibernation_test(TEST_DEVICES))
+-		goto Resume_devices;
++		goto Recover_platform;
+ 
+ 	error = platform_pre_snapshot(platform_mode);
+ 	if (error || hibernation_test(TEST_PLATFORM))
+@@ -285,11 +296,14 @@ int hibernation_snapshot(int platform_mo
+  Resume_devices:
+ 	device_resume(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+- Resume_console:
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+ 	return error;
++
++ Recover_platform:
++	platform_recover(platform_mode);
++	goto Resume_devices;
+ }
+ 
+ /**
+@@ -398,8 +412,11 @@ int hibernation_platform_enter(void)
+ 
+ 	suspend_console();
+ 	error = device_suspend(PMSG_HIBERNATE);
+-	if (error)
+-		goto Resume_console;
++	if (error) {
++		if (hibernation_ops->recover)
++			hibernation_ops->recover();
++		goto Resume_devices;
++	}
+ 
+ 	error = hibernation_ops->prepare();
+ 	if (error)
+@@ -428,7 +445,6 @@ int hibernation_platform_enter(void)
+ 	hibernation_ops->finish();
+  Resume_devices:
+ 	device_resume(PMSG_RESTORE);
+- Resume_console:
+ 	resume_console();
+  Close:
+ 	hibernation_ops->end();
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -781,8 +781,6 @@ int device_suspend(pm_message_t state)
+ 	error = dpm_prepare(state);
+ 	if (!error)
+ 		error = dpm_suspend(state);
+-	if (error)
+-		device_resume(resume_event(state));
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(device_suspend);
 Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
 +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -124,6 +124,8 @@ static int __init acpi_sleep_setup(char 
- 			acpi_realmode_flags |= 2;
- 		if (strncmp(str, "s3_beep", 7) == 0)
+@@ -126,6 +126,8 @@ static int __init acpi_sleep_setup(char 
  			acpi_realmode_flags |= 4;
-+		if (strncmp(str, "s4_nohwsig", 10) == 0)
-+			acpi_no_s4_hw_signature();
+ 		if (strncmp(str, "s4_nohwsig", 10) == 0)
+ 			acpi_no_s4_hw_signature();
++		if (strncmp(str, "old_ordering", 12) == 0)
++			acpi_old_suspend_ordering();
  		str = strchr(str, ',');
  		if (str != NULL)
  			str += strspn(str, ", \t");
@@ -157,13 +668,11 @@ Index: linux-2.6/include/linux/acpi.h
 ===================================================================
 --- linux-2.6.orig/include/linux/acpi.h
 +++ linux-2.6/include/linux/acpi.h
-@@ -234,6 +234,9 @@ int acpi_check_region(resource_size_t st
- int acpi_check_mem_region(resource_size_t start, resource_size_t n,
- 		      const char *name);
+@@ -236,6 +236,7 @@ int acpi_check_mem_region(resource_size_
  
-+#ifdef CONFIG_PM_SLEEP
-+void __init acpi_no_s4_hw_signature(void);
-+#endif /* CONFIG_PM_SLEEP */
+ #ifdef CONFIG_PM_SLEEP
+ void __init acpi_no_s4_hw_signature(void);
++void __init acpi_old_suspend_ordering(void);
+ #endif /* CONFIG_PM_SLEEP */
  #else	/* CONFIG_ACPI */
  
- static inline int early_acpi_boot_init(void)
