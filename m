@@ -1,7 +1,8 @@
 From: "Huang, Ying" <ying.huang@intel.com>
-Subject: [PATCH] kexec jump -v10: kexec jump
-Date: Thu, 22 May 2008 17:33:30 +0800
-Message-ID: <1211448810.12819.8.camel__14336.8962257684$1211449161$gmane$org@caritas-dev.intel.com>
+Subject: [PATCH 1/2] kexec jump -v10: kexec jump (resend,
+	fix subject, please ignore previous one)
+Date: Thu, 22 May 2008 17:38:18 +0800
+Message-ID: <1211449098.12819.14.camel__27166.3914704279$1211449282$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
