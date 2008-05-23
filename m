@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: In Embedded system the dev_pm_info.power_state is
- useful
-Date: Fri, 23 May 2008 14:19:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0805231415310.3106-100000@iolanthe.rowland.org>
-References: <4836D570.2020905@st.com>
+Subject: Re: [PATCH] SCSI: remove dev->power.power_state from
+ mesh driver
+Date: Fri, 23 May 2008 16:53:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0805231651440.3106-100000__7785.53638742796$1211576110$gmane$org@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0803071118040.4398-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4836D570.2020905@st.com>
+In-Reply-To: <Pine.LNX.4.44L0.0803071118040.4398-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +18,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Francesco VIRLINZI <francesco.virlinzi@st.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Paul Mackerras <paulus@au.ibm.com>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 May 2008, Francesco VIRLINZI wrote:
-
-> Hi Alan
-> Thank for your reply.
-> > That isn't the only way to check the power state.  You should have a 
-> > private data structure associated with each of the devices you care 
-> > about.  The address of the private data structure is what you store in 
-> > platform_set_drvdata().  In the private data structure you can have a 
-> > field to indicate the device's power state.
-> >   
-> Yes you are right.
-> The problem is that each driver can use the private_data as it wants, 
-> while I need a generic
->  API to understand the power state of device.
-
-That's not the only problem.  Each driver can also use 
-dev->power.power_state.event the way it wants.  So looking at that 
-field won't tell you anything.
-
-> Your suggestion works fine if (internally) we assume an agreement
->  (i.e.: the first word in the private data is the power state) and in 
-> this manner
->  I can analyse several IP with a single API.
-> But to do that (at the moment) I just do
->     (dev->power.power_state.event == xx)
-> 
-> and PM_EVENT_ON/PM_EVENT_SUSPEND are good enough.
-> 
-> Why did you decide to remove it?
-
-Because it is almost meaningless.  For example, suppose a particular
-platform device has 3 power states: On with high performance, on with
-low performance, and off.  Then how can you tell which state it is in
-by looking at dev->power.power_state.event?
-
-I suspect that you are trying to solve some problem in the wrong way.  
-But without knowing what that problem is, I can't advise you on better
-ways to solve it.
+There hasn't been any comment on the patch below, and it hasn't been 
+applied yet.  Do I need to submit it somewhere else?
 
 Alan Stern
+
+
+On Fri, 7 Mar 2008, Alan Stern wrote:
+
+> power.power_state is scheduled for removal.  This patch (as1055)
+> removes all uses of that field from the SCSI mesh driver.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> CC: Paul Mackerras <paulus@au.ibm.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> ---
+> 
+> Index: usb-2.6/drivers/scsi/mesh.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/scsi/mesh.c
+> +++ usb-2.6/drivers/scsi/mesh.c
+> @@ -1765,7 +1765,7 @@ static int mesh_suspend(struct macio_dev
+>  	default:
+>  		return 0;
+>  	}
+> -	if (mesg.event == mdev->ofdev.dev.power.power_state.event)
+> +	if (ms->phase == sleeping)
+>  		return 0;
+>  
+>  	scsi_block_requests(ms->host);
+> @@ -1780,8 +1780,6 @@ static int mesh_suspend(struct macio_dev
+>  	disable_irq(ms->meshintr);
+>  	set_mesh_power(ms, 0);
+>  
+> -	mdev->ofdev.dev.power.power_state = mesg;
+> -
+>  	return 0;
+>  }
+>  
+> @@ -1790,7 +1788,7 @@ static int mesh_resume(struct macio_dev 
+>  	struct mesh_state *ms = (struct mesh_state *)macio_get_drvdata(mdev);
+>  	unsigned long flags;
+>  
+> -	if (mdev->ofdev.dev.power.power_state.event == PM_EVENT_ON)
+> +	if (ms->phase != sleeping)
+>  		return 0;
+>  
+>  	set_mesh_power(ms, 1);
+> @@ -1801,8 +1799,6 @@ static int mesh_resume(struct macio_dev 
+>  	enable_irq(ms->meshintr);
+>  	scsi_unblock_requests(ms->host);
+>  
+> -	mdev->ofdev.dev.power.power_state.event = PM_EVENT_ON;
+> -
+>  	return 0;
+>  }
