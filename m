@@ -1,18 +1,18 @@
-From: Vivek Goyal <vgoyal@redhat.com>
+From: "Huang, Ying" <ying.huang@intel.com>
 Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 27 May 2008 18:15:14 -0400
-Message-ID: <20080527221514.GA20037__42931.0733838522$1211926777$gmane$org@redhat.com>
+Date: Wed, 28 May 2008 09:35:52 +0800
+Message-ID: <1211938552.12819.122.camel__19596.8365449973$1211938713$gmane$org@caritas-dev.intel.com>
 References: <1204773188.4707.109.camel@caritas-dev.intel.com>
 	<20080514205204.GJ30469@redhat.com>
 	<1210830110.23707.141.camel@caritas-dev.intel.com>
 	<20080516005121.GA6926@redhat.com>
 	<1211873263.12819.103.camel@caritas-dev.intel.com>
+	<20080527221514.GA20037@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1211873263.12819.103.camel@caritas-dev.intel.com>
+In-Reply-To: <20080527221514.GA20037@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,103 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 27, 2008 at 03:27:43PM +0800, Huang, Ying wrote:
-> On Thu, 2008-05-15 at 20:51 -0400, Vivek Goyal wrote:
-> > On Thu, May 15, 2008 at 01:41:50PM +0800, Huang, Ying wrote:
-> > > Hi, Vivek,
-> > > 
-> > > On Wed, 2008-05-14 at 16:52 -0400, Vivek Goyal wrote:
-> > > [...]
-> > > > Ok, I have done some testing on this patch. Currently I have just
-> > > > tested switching back and forth between two kernels and it is working for
-> > > > me.
-> > > > 
-> > > > Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
-> > > > comments/questions are inline.
-> > > 
-> > > It seems that for LAPIC and IOAPIC, there is
-> > > lapic_suspend()/lapic_resume() and ioapic_suspend()/ioapic_resume(),
-> > > which will be called before/after kexec jump through
-> > > device_power_down()/device_power_up(). So, the mechanism for
-> > > LAPIC/IOAPIC is there, we may need to check the corresponding
-> > > implementation.
-> > > 
-> > 
-> > ioapic_suspend() is not putting APICs in Legacy mode and that's why
-> > we are seeing the issue. It only saves the IOAPIC routing table entries
-> > and these entries are restored during ioapic_resume().
-> > 
-> > But I think somebody has to put APICs in legacy mode for normal 
-> > hibernation also. Not sure who does it. May be BIOS, so that during
-> > resume, second kernel can get the timer interrupts.
+On Tue, 2008-05-27 at 18:15 -0400, Vivek Goyal wrote:
+[...]
+> > But, because IOAPIC may need to be in original state during
+> > suspend/resume, so it is not appropriate to call disable_IO_APIC() in
+> > ioapic_suspend(). So I think we can call disable_IO_APIC() in new
+> > hibernation/restore callback.
 > 
-> As for IOAPIC legacy mode, is it related to the following code which set
-> the routing table entry for i8259?
-> 
-> 
+> My hunch is suspend/resume will still work if we put this call in
+> ioapic_suspend() but I would not recommend that. suspend/resume does
+> not need to put IOAPIC in legacy mode.
+>   
+> I am not sure what is "new hibernation/restore callback"? Are you
+> referring to new patches from Rafel?
 
-Yes.
+Yes. Rafel has a new patch to separate suspend and hibernation device
+call backs.
+http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
 
-> void disable_IO_APIC(void)
-> {
->         /*
->          * Clear the IO-APIC before rebooting:
->          */
->         clear_IO_APIC();
+> I think this issue is specifc to kexec and kjump so probably we should
+> not tweaking any suspend/resume related bit.
 > 
->         /*
->          * If the i8259 is routed through an IOAPIC
->          * Put that IOAPIC in virtual wire mode
->          * so legacy interrupts can be delivered.
->          */
->         if (ioapic_i8259.pin != -1) {
->                 struct IO_APIC_route_entry entry;
-> 
->                 memset(&entry, 0, sizeof(entry));
->                 entry.mask            = 0; /* Enabled */
->                 entry.trigger         = 0; /* Edge */
->                 entry.irr             = 0;
->                 entry.polarity        = 0; /* High */
->                 entry.delivery_status = 0;
->                 entry.dest_mode       = 0; /* Physical */
->                 entry.delivery_mode   = dest_ExtINT; /* ExtInt */
->                 entry.vector          = 0;
->                 entry.dest.physical.physical_dest =
->                                         GET_APIC_ID(apic_read(APIC_ID));
-> 
->                 /*
->                  * Add it to the IO-APIC irq-routing table:
->                  */
->                 ioapic_write_entry(ioapic_i8259.apic, ioapic_i8259.pin,
-> entry);
->         }
->         disconnect_bsp_APIC(ioapic_i8259.pin != -1);
-> }
-> 
-> 
-> But, because IOAPIC may need to be in original state during
-> suspend/resume, so it is not appropriate to call disable_IO_APIC() in
-> ioapic_suspend(). So I think we can call disable_IO_APIC() in new
-> hibernation/restore callback.
+> How about calling disable_IO_APIC() in kexec_jump()? We can probably even
+> optimize it by calling it only when we are transitioning into new image
+> for the first time and not for subsquent transitions (by keeping some kind of
+> count in kimage). This is little hackish but, should work...
 
-My hunch is suspend/resume will still work if we put this call in
-ioapic_suspend() but I would not recommend that. suspend/resume does
-not need to put IOAPIC in legacy mode.
-  
-I am not sure what is "new hibernation/restore callback"? Are you
-referring to new patches from Rafel?
+Yes. This issue is kexec/kjump specific. We can call it in kexec_jump().
+Maybe we also need call something other in native_machine_shutdown()?
 
-I think this issue is specifc to kexec and kjump so probably we should
-not tweaking any suspend/resume related bit.
+BTW: I have a new version -v10: http://lkml.org/lkml/2008/5/22/106, do
+you have time to review it?
 
-How about calling disable_IO_APIC() in kexec_jump()? We can probably even
-optimize it by calling it only when we are transitioning into new image
-for the first time and not for subsquent transitions (by keeping some kind of
-count in kimage). This is little hackish but, should work...
-
-Thanks
-Vivek
+Best Regards,
+Huang Ying
