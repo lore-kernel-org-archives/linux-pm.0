@@ -1,16 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
-Date: Thu, 29 May 2008 21:34:19 -0700
-Message-ID: <200805292134.19388.david-b__48917.8882599392$1212122412$gmane$org@pacbell.net>
+Date: Fri, 30 May 2008 12:59:48 +0200
+Message-ID: <20080530105948.GA12236__43595.0192892507$1212145331$gmane$org@elte.hu>
 References: <200805291333.42057.david-b@pacbell.net>
-	<200805292329.48896.rjw@sisk.pl>
-	<20080529160632.816e1720.akpm@linux-foundation.org>
+	<20080529162257.03426e48.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080529160632.816e1720.akpm@linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <20080529162257.03426e48.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org, pavel@suse.cz
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 29 May 2008, Andrew Morton wrote:
-> =
 
-> > Could you check, please? =A0The previous version didn't.
-> > =
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> =
+> > +	WARN_ON_ONCE(msec > (TEST_SUSPEND_SECONDS * 1000));
+> 
+> We should have a comment here explaining what we're warning about.  
+> Why would it take more that five seconds?
 
-> There's just one trivial reject against the PCI tree's
-> pm-introduce-new-top-level-suspend-and-hibernation-callbacks:
+i asked for that because we had regressions in the past in the form of 
+"it takes one minute to resume".
 
-Thanks Andrew ... in that case I'm not going to worry
-about any "-next" issues for now.
+> Better might be to just add a nice printk - I don't think we need the 
+> stack trace here.
 
-- Dave
+please keep the warn-on so that it can be detected automatically. Adding 
+yet another printk just complicates the automated answer to the "is this 
+kernel that just booted up fine or not" question.
 
+In fact i'd love to have the analogue to /proc/lockdep_debug's 
+"debug_locks: 0" output. I.e. the kernel should know it via one central 
+flag whether any bugs that need human review have been detected so far. 
 
-> ***************
-> *** 293,299 ****
-> =A0 =A0=A0=A0=A0=A0=A0if (suspend_ops->finish)
-> =A0 =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0suspend_ops->finish();
-> =A0 =A0Resume_devices:
-> =A0 =A0=A0=A0=A0=A0=A0device_resume();
-> =A0 =A0Resume_console:
-> =A0 =A0=A0=A0=A0=A0=A0resume_console();
-> =A0 =A0Close:
-> --- 342,350 ----
-> =A0 =A0=A0=A0=A0=A0=A0if (suspend_ops->finish)
-> =A0 =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0suspend_ops->finish();
-> =A0 =A0Resume_devices:
-> + =A0=A0=A0=A0=A0=A0suspend_test_start();
-> =A0 =A0=A0=A0=A0=A0=A0device_resume();
-> + =A0=A0=A0=A0=A0=A0suspend_test_finish("resume devices");
-> =A0 =A0Resume_console:
-> =A0 =A0=A0=A0=A0=A0=A0resume_console();
-> =A0 =A0Close:
+Say /proc/sys/kernel/kernel_is_buggy. This value could even be 
+multi-level: a WARN_ON() increases it by +1, a kernel crash increases it 
+by +1000. ( That way i could run overnight tests that will only stop on 
+a kernel_is_buggy >= 1000 condition, while it could ignore simpler 
+WARN_ON()s. )
+
+	Ingo
