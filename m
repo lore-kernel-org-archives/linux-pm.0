@@ -1,19 +1,15 @@
 From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
+Subject: Re: [PATCH 6/4] Fix forcedeth hibernate/wake-on-lan
 	problems
-Date: Sun, 1 Jun 2008 00:12:24 +0200
-Message-ID: <20080531221223.GA2630__25587.0686531582$1212272234$gmane$org@yamamaya.is-a-geek.org>
+Date: Sun, 1 Jun 2008 01:20:05 +0200
+Message-ID: <20080531232005.GA2613__34623.3565979221$1212276182$gmane$org@yamamaya.is-a-geek.org>
 References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
-	<20080518150908.GA4606@yamamaya.is-a-geek.org>
-	<20080525150444.GA29739@yamamaya.is-a-geek.org>
-	<20080525181329.GA5044@yamamaya.is-a-geek.org>
-	<20080527062153.GA3651@yamamaya.is-a-geek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080527062153.GA3651@yamamaya.is-a-geek.org>
+In-Reply-To: <20080518125715.GA19229@yamamaya.is-a-geek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,86 +22,65 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Hemminger <shemminger@linux-foundatio>
 List-Id: linux-pm@vger.kernel.org
 
-VG9iaWFzIERpZWRyaWNoIHdyb3RlOgo+IFRvYmlhcyBEaWVkcmljaCB3cm90ZToKPiA+IFRvYmlh
-cyBEaWVkcmljaCB3cm90ZToKPiA+ID4gU28gbXkgQklPUyBpcyBub3QgYXMgYm9ya2VkIGFzIEkg
-dGhvdWdodCBhbmQgaXQgc2hvdWxkIGJlIHBvc3NpYmxlCj4gPiA+IHRvIHdha2UgdXAgdGhlIG1h
-Y2hpbmUgZXZlbiB3aXRoIHBsYXRmb3JtLiAgRnVydGhlciBkZWJ1Z2dpbmcgd2lsbAo+ID4gPiBo
-YXZlIHRvIHdhaXQgdW50aWwgYXQgbGVhc3QgbmV4dCB3ZWVrZW5kIHRob3VnaCAobWF5YmUgbG9u
-Z2VyKS4uLgo+ID4gCj4gPiBPciBtYXliZSBpdCBkb2Vzbid0IGhhdmUgdG8gd2FpdCwgSSB3YXMg
-anVzdCB0b28gY3VyaW91czoKPiA+IAo+ID4gU3VtbWFyeSBmaXJzdDogSSBnb3QgcGxhdGZvcm0g
-bW9kZSB0byB3b3JrIQo+ID4gCj4gPiBBZnRlciBncmVwcGluZyBhbmQgcmVhZGluZyB0aHJvdWdo
-IGtlcm5lbC9wb3dlci9kaXNrLmMgYW5kCj4gPiAocmF0aGVyIG9iZnVzY2F0ZWQpIGRyaXZlcnMv
-YWNwaS8uKiBjb2RlLCBhbmQgcmVhZGluZyB1cCBvbgo+ID4gQUNQSSBfR1BFIChHZW5lcmFsIFB1
-cnBvc2UgRXZlbnQ/KSwgYW5kIGhhdmluZyBhIGxvb2sgYXQgbXkgRFNEVCBJCj4gPiBub3RpY2Vk
-IHR3byB0aGluZ3M6Cj4gPiAKPiA+IDEpIFRoZSBuZXR3b3JrIGNvbnRyb2xsZXJzIGFyZSBhc3Np
-Z25lZCB0byB0aGVpciBvd24gX0dQRSBiaXRzKHBpbnM/KToKPiA+IHxbLi4uXQo+ID4gfCAgICBT
-Y29wZSAoXF9HUEUpCj4gPiB8ICAgIHsKPiA+IHxbLi4uXQo+ID4gfCAgICAgICAgTWV0aG9kIChf
-TDBCLCAwLCBOb3RTZXJpYWxpemVkKQo+ID4gfCAgICAgICAgewo+ID4gfCAgICAgICAgICAgIE5v
-dGlmeSAoXF9TQi5QQ0kwLk1NQUMsIDB4MDIpCj4gPiB8ICAgICAgICB9Cj4gPiB8Cj4gPiB8ICAg
-ICAgICBNZXRob2QgKF9MMEEsIDAsIE5vdFNlcmlhbGl6ZWQpCj4gPiB8ICAgICAgICB7Cj4gPiB8
-ICAgICAgICAgICAgTm90aWZ5IChcX1NCLlBDSTAuTUFDMSwgMHgwMikKPiA+IHwgICAgICAgIH0K
-PiA+IHxbLi4uXQo+ID4gCj4gPiAyKSBkcml2ZXJzL2FjcGkvc2xlZXAvcHJvYy5jIHJlZ2lzdGVy
-cyBhICd3YWtldXAnIGZpbGU6Cj4gPiB8ICAgICAgICBwcm9jX2NyZWF0ZSgid2FrZXVwIiwgU19J
-RlJFRyB8IFNfSVJVR08gfCBTX0lXVVNSLAo+ID4gfCAgICAgICAgICAgICAgICAgICAgYWNwaV9y
-b290X2RpciwgJmFjcGlfc3lzdGVtX3dha2V1cF9kZXZpY2VfZm9wcyk7Cj4gPiAKPiA+IEFuZCBJ
-IHRoZW4gcmVtZW1iZXJlZCB0aGF0IHNvbWVvbmUgc2FpZCBpbgo+ID4gaHR0cDovL2J1Z3ppbGxh
-Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTgzODEKPiA+IGl0IHdvcmtzIGZvciBoaW0gaWYg
-aGUgd3JpdGVzICRNQUdJQ1ZBTFVFIGludG8gYSBwcm9jIGZpbGUuCj4gPiAKPiA+IEFuZCB5ZXMs
-IGlmIEkgd3JpdGUgJ01NQUMnIGFuZCAnTUFDMScgaW50byAvcHJvYy9hY3BpL3dha2V1cCwgdGhl
-bgo+ID4gd2FrZS1vbi1sYW4gd29ya3MgZXZlbiBpbiBwbGF0Zm9ybSBtb2RlLgo+ID4gCj4gPiBT
-by4uLgo+ID4gQUZBSUNTIHRoaXMgYml0IG9mIHNldHVwIG1hZ2ljIHNob3VsZCBub3QgYmUgcmVx
-dWlyZWQsIGJlY2F1c2U6Cj4gPiAKPiA+IDEpIC9wcm9jL2FjcGkvd2FrZXVwIGtub3dzIHdoaWNo
-IHBjaSBkZXZpY2UgaXMgYXNzb2NpYXRlZCB0byBlYWNoIEdQRSBiaXQKPiA+IHxyYW5tYUBtZWxj
-aGlvcjp+JCBjYXQgL3Byb2MvYWNwaS93YWtldXAgCj4gPiB8RGV2aWNlCVMtc3RhdGUJICBTdGF0
-dXMgICBTeXNmcyBub2RlCj4gPiB8SFVCMAkgIFM1CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MDYu
-MAo+ID4gfFhWUjAJICBTNQkgZGlzYWJsZWQgIAo+ID4gfFhWUjEJICBTNQkgZGlzYWJsZWQgIHBj
-aTowMDAwOjAwOjBlLjAKPiA+IHxYVlIyCSAgUzUJIGRpc2FibGVkICAKPiA+IHxYVlIzCSAgUzUJ
-IGRpc2FibGVkICAKPiA+IHxYVlI0CSAgUzUJIGRpc2FibGVkICAKPiA+IHxYVlI1CSAgUzUJIGRp
-c2FibGVkICBwY2k6MDAwMDowMDowYS4wCj4gPiB8VUFSMQkgIFM1CSBkaXNhYmxlZCAgcG5wOjAw
-OjA5Cj4gPiB8UFMySwkgIFM0CSBkaXNhYmxlZCAgcG5wOjAwOjBiCj4gPiB8VVNCMAkgIFM0CSBk
-aXNhYmxlZCAgcGNpOjAwMDA6MDA6MDIuMAo+ID4gfFVTQjIJICBTNAkgZGlzYWJsZWQgIHBjaTow
-MDAwOjAwOjAyLjEKPiA+IHxBWkFECSAgUzUJIGRpc2FibGVkICBwY2k6MDAwMDowMDowNi4xCj4g
-PiB8TU1BQwkgIFM1CSBlbmFibGVkICAgcGNpOjAwMDA6MDA6MDguMAo+ID4gfE1BQzEJICBTNQkg
-ZW5hYmxlZCAgIHBjaTowMDAwOjAwOjA5LjAKPiA+ICh2YWx1ZXMgYWZ0ZXIgbWFudWFsbHkgZW5h
-YmxpbmcgTU1BQyBhbmQgTUFDMSkKPiA+IAo+ID4gMikga2VybmVsL3Bvd2VyL2Rpc2suYyBjYWxs
-cyBoaWJlcm5hdGlvbl9vcHMtPmVudGVyKCksIHdoaWNoIGlzCj4gPiBhY3BpX3N1c3BlbmRfZW50
-ZXIsIHdoaWNoIGNhbGxzIGFjcGlfZW5hYmxlX3dha2V1cF9kZXZpY2UsIHdoaWNoCj4gPiBzZXRz
-IHVwIEdQRSB3YWt1cCBiaXRzLiAgVGhpcyBfc2hvdWxkXyB0YWtlIGNhcmUgb2YgZW5hYmxpbmcg
-TU1BQwo+ID4gYW5kIE1BQzEgYXV0b21hdGljYWxseSwgYnV0IGFwcGFyZW50bHkgZG9lcyBub3Qg
-d29yayBjb3JyZWN0bHkgYXQKPiA+IHNvbWUgcG9pbnQuCj4gPiAKPiA+IEkgZ3Vlc3Mgc29tZW9u
-ZSBtb3JlIGtub3dsZWRnYWJsZSBpbiBBQ1BJIHN0dWZmIHNob3VsZCBoYXZlIGEgbG9vawo+ID4g
-YXQgdGhpcy4KPiAKPiBBbnkgcmVhc29uIHRoaXMgcGF0Y2ggaGFzbid0IG1hZGUgaXQgaW50byB0
-aGUga2VybmVsIHNvIGZhcj8KPiBodHRwOi8vbGlzdHMubGFwdG9wLm9yZy9waXBlcm1haWwvZGV2
-ZWwvMjAwNy1BcHJpbC8wMDQ2OTEuaHRtbAo+IAo+IChPaywgSSB0cmllZCBnZXR0aW5nIGl0IHRv
-IGFwcGx5IHRvIGEgY3VycmVudCBrZXJuZWwsIGJ1dCBpdAo+IGEgc3Bsb2RlcyAocmVib290cyBp
-bnN0ZWFkIG9mIHBvd2VyaW5nIG9mZiwgbGFzdCBtZXNzYWdlIG9uIHRoZQo+IHNlcmlhbCBjb25z
-b2xlIGlzICJBQ1BJIGhhbmRsZSBoYXMgbm8gY29udGV4dCEiLCBzZWUgYmVsb3cpKQo+IAo+IFRo
-ZSBwbGF0Zm9ybV9lbmFibGVfd2FrZXVwKCkgaG9vayBpcyBzdGlsbCB0aGVyZSwgYnV0IHVudXNl
-ZC4KPiBBRkFJQ1MgdGhpcyBwYXRjaCBzaG91bGQgc29sdmUgdGhlICInZXRodG9vbCAtcyBldGgw
-IHdvbCBnJyBkb2Vzbid0Cj4gc3VmZmljZSwgSSBhbHNvIGhhdmUgdG8gd3JpdGUgbWFnaWMgdmFs
-dWVzIGludG8gL3Byb2MvYWNwaS93YWtldXAiCj4gaXNzdWUuCgpPaywgYWZ0ZXIgYW5vdGhlciBs
-b25nIGRlYnVnZ2luZyBzZXNzaW9uIEkgZmluYWxseSBmb3VuZCBvdXQgdGhlCnJlYXNvbiBmb3Ig
-dGhlIGltbWVkaWF0ZSByZWJvb3QgKGFmdGVyIGZpbmRpbmcgdGhlIHBsYWNlIHRoYXQKc3VzcGVu
-ZHMgdGhlIHNlcmlhbCBjb25zb2xlIChkcml2ZXJzL3BucCkgYW5kIGRpc2FibGluZyB0aGF0IHN1
-c3BlbmQKcGF0aCk6ClRoZSBzeXN0ZW0gaXMgd29rZW4gdXAgYnkgVVNCIGFjdGl2aXR5ISAoT3B0
-aWNhbCBtb3VzZSwgYW55b25lPykKCkxvIGFuZCBiZWhvbGQ6CmRyaXZlcnMvdXNiL2NvcmUvaGNk
-LXBjaS5jIHRyaWVzIGl0J3MgYmVzdCB0byBhY3RpdmF0ZSAnd2FrZSBvbgp1c2InLCB3aGljaCBJ
-IGRpZG4ndCBrbm93IHNpbmNlIGl0IGFwcGFyZW50bHkgYWxzbyBuZXZlciB3b3JrZWQuCkhvd2V2
-ZXIsIGFmdGVyIGFwcGx5aW5nIHRoZSAndXNlIHBsYXRmb3JtX2VuYWJsZV93YWtldXAnLXBhdGNo
-LApub3Qgb25seSBmb3JjZWRldGggd2FrZSBzdGFydHMgd29ya2luZywgYWxzbyB1c2Igd2FrZS4K
-SWYgSSBwcmV2ZW50IHVzYiB3YWtlOgp8ZWNobyBkaXNhYmxlZCA+IC9zeXMvZGV2aWNlcy9wY2kw
-MDAwXDowMC8wMDAwXDowMFw6MDIuMC9wb3dlci93YWtldXAnCnxlY2hvIGRpc2FibGVkID4gL3N5
-cy9kZXZpY2VzL3BjaTAwMDBcOjAwLzAwMDBcOjAwXDowMi4xL3Bvd2VyL3dha2V1cCcKQW5kIHRo
-ZW4gaGliZXJuYXRlIGluIHBsYXRmb3JtIG1vZGUsIHRoZSBpbW1lZGlhdGUgcmVib290IGlzIGdv
-bmUKYW5kIHdha2luZyB1cCB1c2luZyBtYWdpYyBwYWNrZXRzIHdvcmtzIGZpbmUgZXZlbiB3aXRo
-b3V0IHNldHRpbmcgdXAKL3Byb2MvYWNwaS93YWtldXAgZmlyc3QuCgpNYXliZSBJIHNob3VsZCB0
-cnkgaG9va2luZyBtb3VzZSBhbmQga2V5Ym9hcmQgb250byBkaWZmZXJlbnQgdXNiCmhvc3QgY29u
-dHJvbGxlcnMsIHNvIEkgY2FuIGRpc2FibGUgd2FrZXVwIGZvciB0aGUgbW91c2UgaG9zdApjb250
-cm9sbGVyIGFuZCBlbmFibGUgd2FrZXVwIGZvciB0aGUga2V5Ym9hcmQgaG9zdCBjb250cm9sbGVy
-LAp0aGVuIGl0IHNob3VsZCBiZSBwb3NzaWJsZSB0byB3YWtlIHRoZSBzeXN0ZW0gYnkgcHJlc3Np
-bmcgYSBrZXkuIDopCgotLSAKVG9iaWFzCQkJCQkJUEdQOiBodHRwOi8vOWFjN2UwYmMudWd1dS5k
-ZQrjgZPjga7jg6Hjg7zjg6vjga/ljYHlibLlho3liKnnlKjjgZXjgozjgZ/jg5Pjg4Pjg4jjgafk
-vZzjgonjgozjgabjgYTjgb7jgZnjgIIKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1h
-bi9saXN0aW5mby9saW51eC1wbQ==
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+
+This patch is the minimal amount of code needed to support
+wake-on-lan in platform mode properly (i.e. "ethtool -s eth0 wol g"
+is sufficient, no additional magic needed) for me.
+
+This is derived from David Brownells patch
+(http://lists.laptop.org/pipermail/devel/2007-April/004691.html).
+However I decided to move the hook into pci-acpi.c since the other
+two pci hooks also live there and pci and acpi are the only users of
+the platform_enable_wakeup-hook.
+
+As a 'side-effect' this also makes wake on usb activity work for me
+and I had to disable usb wakeup (which is enabled by default) using
+the power/wakeup sysfs functionality ("echo disabled >
+${sysfs_path_to_device}/power/wakeup").
+
+(BTW I first thought the 'immediate reboot because of usb wake' effect is
+caused by the optical mouse generating a wake event, but it rather
+seems to be a problem with a flaky secondary usb host controller,
+which sees a connected device where nothing is attached)
+
+Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+
+Index: linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.26-rc4.forcedwol.orig/drivers/pci/pci-acpi.c	2008-06-01 00:40:23.000000000 +0200
++++ linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c	2008-06-01 00:46:55.000000000 +0200
+@@ -315,6 +315,25 @@
+ 	}
+ 	return PCI_POWER_ERROR;
+ }
++
++static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
++{
++	struct acpi_device	*adev;
++	int			status;
++
++	if (!device_can_wakeup(dev))
++		return -EINVAL;
++
++	if (is_on && !device_may_wakeup(dev))
++		return -EINVAL;
++
++	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
++	if (status < 0)
++		return status;
++
++	adev->wakeup.state.enabled = !!is_on;
++	return 0;
++}
+ #endif
+ 
+ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+@@ -399,6 +418,7 @@
+ 		return 0;
+ #ifdef	CONFIG_ACPI_SLEEP
+ 	platform_pci_choose_state = acpi_pci_choose_state;
++	platform_enable_wakeup = acpi_platform_enable_wakeup;
+ #endif
+ 	platform_pci_set_power_state = acpi_pci_set_power_state;
+ 	return 0;
