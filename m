@@ -1,15 +1,14 @@
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: [PATCH 6/4] Fix forcedeth hibernate/wake-on-lan
-	problems
-Date: Sun, 1 Jun 2008 01:20:05 +0200
-Message-ID: <20080531232005.GA2613__34623.3565979221$1212276182$gmane$org@yamamaya.is-a-geek.org>
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
+ problems
+Date: Sat, 31 May 2008 22:51:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0805312247100.18240-100000__36420.915000099$1212288893$gmane$org@netrider.rowland.org>
+References: <20080531221223.GA2630@yamamaya.is-a-geek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+In-Reply-To: <20080531221223.GA2630@yamamaya.is-a-geek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,68 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Hemminger <shemminger@linux-foundatio>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+On Sun, 1 Jun 2008, Tobias Diedrich wrote:
 
-This patch is the minimal amount of code needed to support
-wake-on-lan in platform mode properly (i.e. "ethtool -s eth0 wol g"
-is sufficient, no additional magic needed) for me.
+> Ok, after another long debugging session I finally found out the
+> reason for the immediate reboot (after finding the place that
+> suspends the serial console (drivers/pnp) and disabling that suspend
+> path):
+> The system is woken up by USB activity! (Optical mouse, anyone?)
+> 
+> Lo and behold:
+> drivers/usb/core/hcd-pci.c tries it's best to activate 'wake on
+> usb', which I didn't know since it apparently also never worked.
+> However, after applying the 'use platform_enable_wakeup'-patch,
+> not only forcedeth wake starts working, also usb wake.
+> If I prevent usb wake:
+> |echo disabled > /sys/devices/pci0000\:00/0000\:00\:02.0/power/wakeup'
+> |echo disabled > /sys/devices/pci0000\:00/0000\:00\:02.1/power/wakeup'
+> And then hibernate in platform mode, the immediate reboot is gone
+> and waking up using magic packets works fine even without setting up
+> /proc/acpi/wakeup first.
+> 
+> Maybe I should try hooking mouse and keyboard onto different usb
+> host controllers, so I can disable wakeup for the mouse host
+> controller and enable wakeup for the keyboard host controller,
+> then it should be possible to wake the system by pressing a key. :)
 
-This is derived from David Brownells patch
-(http://lists.laptop.org/pipermail/devel/2007-April/004691.html).
-However I decided to move the hook into pci-acpi.c since the other
-two pci hooks also live there and pci and acpi are the only users of
-the platform_enable_wakeup-hook.
+You don't need to do that.  Wakeup can be set specifically for each 
+individual USB device, provided CONFIG_USB_SUSPEND is enabled.
 
-As a 'side-effect' this also makes wake on usb activity work for me
-and I had to disable usb wakeup (which is enabled by default) using
-the power/wakeup sysfs functionality ("echo disabled >
-${sysfs_path_to_device}/power/wakeup").
 
-(BTW I first thought the 'immediate reboot because of usb wake' effect is
-caused by the optical mouse generating a wake event, but it rather
-seems to be a problem with a flaky secondary usb host controller,
-which sees a connected device where nothing is attached)
+On Sun, 1 Jun 2008, Tobias Diedrich wrote:
 
-Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> (BTW I first thought the 'immediate reboot because of usb wake' effect is
+> caused by the optical mouse generating a wake event, but it rather
+> seems to be a problem with a flaky secondary usb host controller,
+> which sees a connected device where nothing is attached)
 
-Index: linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c
-===================================================================
---- linux-2.6.26-rc4.forcedwol.orig/drivers/pci/pci-acpi.c	2008-06-01 00:40:23.000000000 +0200
-+++ linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c	2008-06-01 00:46:55.000000000 +0200
-@@ -315,6 +315,25 @@
- 	}
- 	return PCI_POWER_ERROR;
- }
-+
-+static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
-+{
-+	struct acpi_device	*adev;
-+	int			status;
-+
-+	if (!device_can_wakeup(dev))
-+		return -EINVAL;
-+
-+	if (is_on && !device_may_wakeup(dev))
-+		return -EINVAL;
-+
-+	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
-+	if (status < 0)
-+		return status;
-+
-+	adev->wakeup.state.enabled = !!is_on;
-+	return 0;
-+}
- #endif
- 
- static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
-@@ -399,6 +418,7 @@
- 		return 0;
- #ifdef	CONFIG_ACPI_SLEEP
- 	platform_pci_choose_state = acpi_pci_choose_state;
-+	platform_enable_wakeup = acpi_platform_enable_wakeup;
- #endif
- 	platform_pci_set_power_state = acpi_pci_set_power_state;
- 	return 0;
+Can you provide debugging information (i.e., CONFIG_USB_DEBUG) with the 
+details on this bogus wakeup?
+
+Alan Stern
