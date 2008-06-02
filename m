@@ -1,13 +1,10 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [QUESTION] How to reset TCP connections when resuming
-	system from disk/ram
-Date: Mon, 2 Jun 2008 00:26:56 +0300
-Message-ID: <200806020026.56875.maximlevitsky@gmail.com>
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Subject: [PATCH] Add i.MX1/L power management driver
+Date: Mon, 02 Jun 2008 14:47:56 +0300
+Message-ID: <4843DDEC.9080200__21489.5974183039$1212417759$gmane$org@teltonika.lt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------080908010200050202000009"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +14,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Thanks to your effort, the suspend to ram/disk works flawlessly on my
-desktop system.
-
-But I still have rather small, but annoying problem, that system doesn't
-understands that a long suspend cycle was done, and still waits for long closed
-TCP connections.
-
-I remember there was a patch to close all TCP connections on suspend, but it was rejected
-due to the fact that TCP sessions can live through short suspend/resume cycles.
-
-What can you suggest here?
-Is there a tool to close all TCP connections?
-
-I noticed that sockets aren't dependent on network drivers, 
-so even removing network driver doesn't close them.
-( I guess that it is possible for TCP session to migrate from one to another
-network hardware too)
+This is a multi-part message in MIME format.
+--------------080908010200050202000009
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
-Another thing I want to know, is this possible to set socket timeout
-and how? 
+--------------080908010200050202000009
+Content-Type: text/plain;
+ name="patch-pm-imx"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-pm-imx"
 
-(There is a settings page for that in KDE, but I don't yet know what this changes,
-a KDE specific settings or not)
+Add power management support for i.MX1/L
 
-I want something CLI based.
+Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+
+Index: linux-2.6.26-rc1/arch/arm/mach-imx/Makefile
+===================================================================
+--- linux-2.6.26-rc1.orig/arch/arm/mach-imx/Makefile
++++ linux-2.6.26-rc1/arch/arm/mach-imx/Makefile
+@@ -6,8 +6,14 @@
+ 
+ obj-y			+= irq.o time.o dma.o generic.o
+ 
++# Power management
++obj-$(CONFIG_PM)		+= pm.o
+ obj-$(CONFIG_CPU_FREQ_IMX)	+= cpufreq.o
+ 
++ifeq ($(CONFIG_PM_DEBUG),y)
++CFLAGS_pm.o += -DDEBUG
++endif
++
+ # Specific board support
+ obj-$(CONFIG_ARCH_MX1ADS) += mx1ads.o
+ 
+Index: linux-2.6.26-rc1/arch/arm/mach-imx/pm.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc1/arch/arm/mach-imx/pm.c
+@@ -0,0 +1,53 @@
++/*
++ * i.MX Power Management
++ *
++ * Copyright (c) 2008 Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
++ *
++ * This file may be distributed under the terms of the GNU General
++ * Public License, version 2.
++ */
++
++#include <linux/suspend.h>
++#include <asm/arch/hardware.h>
++
++static int imx_pm_valid_state(suspend_state_t state)
++{
++	if (state == PM_SUSPEND_STANDBY)
++		return 1;
++
++	return 0;
++}
++
++static int imx_pm_enter(suspend_state_t state)
++{
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		/* disable System PLL and MCU PLL */
++		CSCR &= ~(CSCR_SPEN | CSCR_MPEN);
++		break;
++	default:
++		pr_debug("i.MX: PM - bogus suspend state %d\n", state);
++		goto exit;
++	}
++
++	pr_debug("i.MX: PM - wakeup\n");
++
++exit:
++	return 0;
++}
++
++static struct platform_suspend_ops imx_pm_ops ={
++	.valid	= imx_pm_valid_state,
++	.enter	= imx_pm_enter,
++};
++
++static int __init imx_pm_init(void)
++{
++	pr_info("i.MX: Power Management\n");
++
++	suspend_set_ops(&imx_pm_ops);
++
++	return 0;
++}
++
++arch_initcall(imx_pm_init);
+
+--------------080908010200050202000009
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-Btw, I recently bought an acer laptop (5720G), and there are few suspend/resume issues,
-namely:
-
-*attempt to do a second suspend to ram freezes the system hard on resume.
-for example this works:
-
-suspend to ram
-suspend to disk
-suspend to ram
-suspend to disk
-
-but this doesn't
-
-suspend to ram
-suspend to ram
-
-Best regards,
-	Maxim Levitsky
+--------------080908010200050202000009--
