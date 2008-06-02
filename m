@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
- problems
-Date: Mon, 2 Jun 2008 17:09:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0806021706130.17236-100000__43463.1885066212$1212441191$gmane$org@iolanthe.rowland.org>
-References: <20080601074935.GA2529@yamamaya.is-a-geek.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] snapshot: Use pm_mutex for mutual exclusion
+Date: Mon, 2 Jun 2008 23:33:56 +0200
+Message-ID: <200806022333.56939.rjw__42924.7225788005$1212442609$gmane$org@sisk.pl>
+References: <20080522222500.0f5873ff@core> <20080523120452.6feefed0@core>
+	<200805231322.33321.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080601074935.GA2529@yamamaya.is-a-geek.org>
+In-Reply-To: <200805231322.33321.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +19,232 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: akpm@osdl.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 1 Jun 2008, Tobias Diedrich wrote:
-
-> > > (BTW I first thought the 'immediate reboot because of usb wake' effect is
-> > > caused by the optical mouse generating a wake event, but it rather
-> > > seems to be a problem with a flaky secondary usb host controller,
-> > > which sees a connected device where nothing is attached)
+On Friday, 23 of May 2008, Rafael J. Wysocki wrote:
+> On Friday, 23 of May 2008, Alan Cox wrote:
+> > > >  
+> > > > +	lock_kernel();
+> > > > +
+> > > 
+> > > Hm, well, I admit I'm a bit ignorant as far as the chardev locking is
+> > > concerned, but can you please tell me why would that be wrong if we didn't call
+> > > lock_kernel() here at all?
 > > 
-> > Can you provide debugging information (i.e., CONFIG_USB_DEBUG) with the 
-> > details on this bogus wakeup?
+> > I've just been pushing the lock down. If the code already has enough
+> > internal locking for things like multiple ioctls in parallel then you can
+> > probably kill it entirely - but that needs someone who knows that driver
+> > well to decide and evaluate.
 > 
-> Sure.
-> Here is the complete log of one boot and two s2disk_platform cycles
-> captured using the serial console (in the first s2disk I forgot to
-> remove the 'turn off /sys/bus/usb/device/usb?/power/wakeup' part).
-> 
-> Interestingly even with power/wakeup disabled for usb1 and usb2,
-> which I assume to be the usb root ports, I could wake up the system
-> by pressing a key on my keyboard (which didn't work before turning
-> on CONFIG_USB_SUSPEND).
-> 
-> On the second suspend the system rebooted immediately as expected
-> (I power/wakeup for usb1 and usb2 back on and disabled the part in
-> the script).
-> 
-> I think this might be some general usb hw flakiness, since it seems
-> to detect (and has so for a long time) a non-existing device:
-> 
-> lsusb output:
-> Bus 002 Device 003: ID 045e:00db Microsoft Corp. Natural Ergonomic Keyboard 4000 V1.0
-> Bus 002 Device 002: ID 045e:0040 Microsoft Corp. Wheel Mouse Optical
-> Bus 002 Device 001: ID 1d6b:0001  
-> Bus 001 Device 001: ID 1d6b:0002  
-> 
-> bogus device?:
-> [14316046.469949] usb 2-4: new full speed USB device using ohci_hcd and address 12
-> [14316046.679951] usb 2-4: device descriptor read/64, error -62
-> [14316046.986619] usb 2-4: device descriptor read/64, error -62
-> [14316047.263284] usb 2-4: new full speed USB device using ohci_hcd and address 13
-> [14316047.476614] usb 2-4: device descriptor read/64, error -62
-> [14316047.786618] usb 2-4: device descriptor read/64, error -62
-> [14316048.063282] usb 2-4: new full speed USB device using ohci_hcd and address 14
-> [14316048.499945] usb 2-4: device not accepting address 14, error -62
-> [14316048.669950] usb 2-4: new full speed USB device using ohci_hcd and address 15
-> [14316049.106612] usb 2-4: device not accepting address 15, error -62
-> [14316049.112960] hub 2-0:1.0: unable to enumerate USB device on port 4
+> Thanks, I'll have a look.
 
-It's possible.  Maybe there's a builtin broken USB device, or maybe the 
-D+ pin on port 4 is wired to a positive voltage source.
+Appended is what I think we can do.
 
-The log didn't reveal anything.  Perhaps you can learn more by looking 
-at the "registers" file for that OHCI controller in debugfs.
+Thanks,
+Rafael
 
-Also, you should run "lspci -vv" as root to see what wakeup signals the 
-USB controllers are issuing.
+---
+We can avoid taking the BKL in snapshot_ioctl() if pm_mutex is used to prevent
+the ioctls from being executed concurrently.
 
-Alan Stern
+In addition, although it is only possible to open /dev/snapshot once, the task
+which has done that may spawn a child that will inherit the open descriptor,
+so in theory they can call snapshot_write(), snapshot_read() and
+snapshot_release() concurrently.  pm_mutex can also be used for mutual
+exclusion in such cases.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/user.c |   68 ++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 42 insertions(+), 26 deletions(-)
+
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -70,16 +70,22 @@ static int snapshot_open(struct inode *i
+ 	struct snapshot_data *data;
+ 	int error;
+ 
+-	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+-		return -EBUSY;
++	mutex_lock(&pm_mutex);
++
++	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
++		error = -EBUSY;
++		goto Unlock;
++	}
+ 
+ 	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
+ 		atomic_inc(&snapshot_device_available);
+-		return -ENOSYS;
++		error = -ENOSYS;
++		goto Unlock;
+ 	}
+ 	if(create_basic_memory_bitmaps()) {
+ 		atomic_inc(&snapshot_device_available);
+-		return -ENOMEM;
++		error = -ENOMEM;
++		goto Unlock;
+ 	}
+ 	nonseekable_open(inode, filp);
+ 	data = &snapshot_state;
+@@ -99,33 +105,36 @@ static int snapshot_open(struct inode *i
+ 		if (error)
+ 			pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 	}
+-	if (error) {
++	if (error)
+ 		atomic_inc(&snapshot_device_available);
+-		return error;
+-	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+ 	data->platform_support = 0;
+ 
+-	return 0;
++ Unlock:
++	mutex_unlock(&pm_mutex);
++
++	return error;
+ }
+ 
+ static int snapshot_release(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
+ 
++	mutex_lock(&pm_mutex);
++
+ 	swsusp_free();
+ 	free_basic_memory_bitmaps();
+ 	data = filp->private_data;
+ 	free_all_swap_pages(data->swap);
+-	if (data->frozen) {
+-		mutex_lock(&pm_mutex);
++	if (data->frozen)
+ 		thaw_processes();
+-		mutex_unlock(&pm_mutex);
+-	}
+ 	pm_notifier_call_chain(data->mode == O_WRONLY ?
+ 			PM_POST_HIBERNATION : PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
++
++	mutex_unlock(&pm_mutex);
++
+ 	return 0;
+ }
+ 
+@@ -135,9 +144,13 @@ static ssize_t snapshot_read(struct file
+ 	struct snapshot_data *data;
+ 	ssize_t res;
+ 
++	mutex_lock(&pm_mutex);
++
+ 	data = filp->private_data;
+-	if (!data->ready)
+-		return -ENODATA;
++	if (!data->ready) {
++		res = -ENODATA;
++		goto Unlock;
++	}
+ 	res = snapshot_read_next(&data->handle, count);
+ 	if (res > 0) {
+ 		if (copy_to_user(buf, data_of(data->handle), res))
+@@ -145,6 +158,10 @@ static ssize_t snapshot_read(struct file
+ 		else
+ 			*offp = data->handle.offset;
+ 	}
++
++ Unlock:
++	mutex_unlock(&pm_mutex);
++
+ 	return res;
+ }
+ 
+@@ -154,6 +171,8 @@ static ssize_t snapshot_write(struct fil
+ 	struct snapshot_data *data;
+ 	ssize_t res;
+ 
++	mutex_lock(&pm_mutex);
++
+ 	data = filp->private_data;
+ 	res = snapshot_write_next(&data->handle, count);
+ 	if (res > 0) {
+@@ -162,6 +181,9 @@ static ssize_t snapshot_write(struct fil
+ 		else
+ 			*offp = data->handle.offset;
+ 	}
++
++	mutex_unlock(&pm_mutex);
++
+ 	return res;
+ }
+ 
+@@ -180,16 +202,16 @@ static long snapshot_ioctl(struct file *
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	data = filp->private_data;
++	if (!mutex_trylock(&pm_mutex))
++		return -EBUSY;
+ 
+-	lock_kernel();
++	data = filp->private_data;
+ 
+ 	switch (cmd) {
+ 
+ 	case SNAPSHOT_FREEZE:
+ 		if (data->frozen)
+ 			break;
+-		mutex_lock(&pm_mutex);
+ 		printk("Syncing filesystems ... ");
+ 		sys_sync();
+ 		printk("done.\n");
+@@ -197,7 +219,6 @@ static long snapshot_ioctl(struct file *
+ 		error = freeze_processes();
+ 		if (error)
+ 			thaw_processes();
+-		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen = 1;
+ 		break;
+@@ -205,9 +226,7 @@ static long snapshot_ioctl(struct file *
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen || data->ready)
+ 			break;
+-		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
+ 
+@@ -310,16 +329,11 @@ static long snapshot_ioctl(struct file *
+ 			error = -EPERM;
+ 			break;
+ 		}
+-		if (!mutex_trylock(&pm_mutex)) {
+-			error = -EBUSY;
+-			break;
+-		}
+ 		/*
+ 		 * Tasks are frozen and the notifiers have been called with
+ 		 * PM_HIBERNATION_PREPARE
+ 		 */
+ 		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
+-		mutex_unlock(&pm_mutex);
+ 		break;
+ 
+ 	case SNAPSHOT_PLATFORM_SUPPORT:
+@@ -392,7 +406,9 @@ static long snapshot_ioctl(struct file *
+ 		error = -ENOTTY;
+ 
+ 	}
+-	unlock_kernel();
++
++	mutex_unlock(&pm_mutex);
++
+ 	return error;
+ }
+ 
