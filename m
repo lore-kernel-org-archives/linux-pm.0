@@ -1,14 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
- problems
-Date: Tue, 3 Jun 2008 10:12:38 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0806031002510.2363-100000__21095.6570379951$1212502558$gmane$org@iolanthe.rowland.org>
-References: <20080603061618.GB9301@yamamaya.is-a-geek.org>
+From: Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH] add a printk_init variant storing format strings
+	in __initdata
+Date: Tue, 3 Jun 2008 10:27:32 +0100
+Message-ID: <1212485252.0__36835.5486113161$1212509953$gmane$org@pinky>
+References: <20080529162257.03426e48.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080603061618.GB9301@yamamaya.is-a-geek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,69 +17,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: pavel@suse.cz, mingo@elte.hu, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 3 Jun 2008, Tobias Diedrich wrote:
 
-> One of the ports on the back of the board seems to be broken (Maybe
-> esd?), the other three work fine, but nothing happens when I plug a
-> device into that one, so I guess that's the culprit.
+[As gcc seems unable to help us out selecting the appropriate data segment
+for the code, how about we did something like this?]
 
-Sounds like it.
+When using printk from __init functions it would be desirable to place
+the printk format strings in __initdata.  Add a printk_init() variant
+which does this.
 
-> > The log didn't reveal anything.  Perhaps you can learn more by looking 
-> > at the "registers" file for that OHCI controller in debugfs.
-> 
-> Ok, I can try that this evening...
-> 
-> > Also, you should run "lspci -vv" as root to see what wakeup signals the 
-> > USB controllers are issuing.
+This printk_init() is necessarily a #define so that we can declare the
+format string in static scope and mark it __initdata.  We then call a
+newly introduced __printk_init() variant which is identicle to printk() but
+marked __init itself.  By ensuring that an __init variant of printk is used
+we get proper section violation warnings when this is used incorrectly:
 
-...
+    WARNING: vmlinux.o(.text+0x3): Section mismatch in reference from the
+	function something() to the variable .init.data:__printk_init_fmt.31426
+    The function something() references
+    the variable __initdata __printk_init_fmt.31426.
+    This is often because something lacks a __initdata
+    annotation or the annotation of __printk_init_fmt.31426 is wrong.
 
-> 00:02.0 USB Controller: nVidia Corporation MCP55 USB Controller (rev a1) (prog-if 10 [OHCI])
-> 	Subsystem: ASUSTeK Computer Inc. Unknown device 8239
-> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0 (750ns min, 250ns max)
-> 	Interrupt: pin A routed to IRQ 23
-> 	Region 0: Memory at fe02f000 (32-bit, non-prefetchable) [size=4K]
-> 	Capabilities: [44] Power Management version 2
-> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-> 	Kernel driver in use: ohci_hcd
+Note I have followed printk's pattern for __cold annotations.
 
-The OHCI controller settings look normal.  It doesn't appear to be 
-sending a wakeup signal.
-
-> 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
-> 	Subsystem: ASUSTeK Computer Inc. Unknown device 8239
-> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0 (750ns min, 250ns max)
-> 	Interrupt: pin B routed to IRQ 20
-> 	Region 0: Memory at fe02e000 (32-bit, non-prefetchable) [size=256]
-> 	Capabilities: [44] Debug port: BAR=1 offset=0098
-> 	Capabilities: [80] Power Management version 2
-> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-> 	Kernel driver in use: ehci_hcd
-
-The EHCI controller settings, however, are strange.  The relevant part 
-is the Power Management Status line near the end:
-
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-
-This means the controller is in the D0 state (as expected) and 
-PME-Enable is currently turned off ("PME" stands for "Power Management 
-Event").  But the PME+ at the end means that as soon as PME does get 
-enabled -- like when the controller is suspended at the start of a 
-system sleep -- it _will_ send a PME signal.
-
-So for some reason your EHCI controller thinks a wakeup event is 
-pending.  This means you should examine the contents of the "registers" 
-file in the debugfs directory for the EHCI controller, not OHCI.
-
-Alan Stern
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ include/linux/kernel.h |   10 ++++++++++
+ kernel/printk.c        |   12 ++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 792bf0a..7754196 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -180,6 +180,13 @@ struct pid;
+ extern struct pid *session_of_pgrp(struct pid *pgrp);
+ 
+ #ifdef CONFIG_PRINTK
++#define printk_init(fmt, args...) \
++do { \
++        static char __printk_init_fmt[] __initdata = fmt; \
++        __printk_init(__printk_init_fmt, ##args); \
++} while (0)
++asmlinkage int __printk_init(const char * fmt, ...)
++	__attribute__ ((format (printf, 1, 2))) __cold;
+ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	__attribute__ ((format (printf, 1, 0)));
+ asmlinkage int printk(const char * fmt, ...)
+@@ -196,6 +203,9 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
+ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ 				   unsigned int interval_msec);
+ #else
++asmlinkage int printk_init(const char * fmt, ...)
++	__attribute__ ((format (printf, 1, 2))) __cold;
++static inline int __cold printk_init(const char *s, ...) { return 0; }
+ static inline int vprintk(const char *s, va_list args)
+ 	__attribute__ ((format (printf, 1, 0)));
+ static inline int vprintk(const char *s, va_list args) { return 0; }
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 8fb01c3..992a5c0 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -616,6 +616,18 @@ asmlinkage int printk(const char *fmt, ...)
+ 	return r;
+ }
+ 
++asmlinkage __init int __printk_init(const char *fmt, ...)
++{
++	va_list args;
++	int r;
++
++	va_start(args, fmt);
++	r = vprintk(fmt, args);
++	va_end(args);
++
++	return r;
++}
++
+ /* cpu currently holding logbuf_lock */
+ static volatile unsigned int printk_cpu = UINT_MAX;
+ 
