@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
- problems
-Date: Tue, 3 Jun 2008 16:06:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0806031603410.3524-100000__45319.5107904778$1212523775$gmane$org@iolanthe.rowland.org>
-References: <20080603173013.GA9490@yamamaya.is-a-geek.org>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC][PATCH] snapshot: Use pm_mutex for mutual
+	exclusion
+Date: Wed, 4 Jun 2008 00:20:05 +0200
+Message-ID: <20080603222005.GA10929__47215.7148448334$1212531687$gmane$org@elf.ucw.cz>
+References: <20080522222500.0f5873ff@core> <20080523120452.6feefed0@core>
+	<200805231322.33321.rjw@sisk.pl> <200806022333.56939.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080603173013.GA9490@yamamaya.is-a-geek.org>
+Content-Disposition: inline
+In-Reply-To: <200806022333.56939.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +20,220 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: akpm@osdl.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 3 Jun 2008, Tobias Diedrich wrote:
+Hi!
 
-> > So for some reason your EHCI controller thinks a wakeup event is 
-> > pending.  This means you should examine the contents of the "registers" 
-> > file in the debugfs directory for the EHCI controller, not OHCI.
+> Appended is what I think we can do.
+
+Looks ok to me. ACK.
+								Pavel
+> ---
+> We can avoid taking the BKL in snapshot_ioctl() if pm_mutex is used to prevent
+> the ioctls from being executed concurrently.
 > 
-> melchior:/mnt/ehci/0000:00:02.1# cat registers
-> bus pci, device 0000:00:02.1 (driver 10 Dec 2004)
-> EHCI Host Controller
-> EHCI 1.00, hcd state 1
-> ownership 00000001
-> SMI sts/enable 0xc0080000
-> structural params 0x00101a8a
-> capability params 0x0000a086
-> status 0008 FLR
-> command 010009 (park)=0 ithresh=1 period=256 RUN
-> intrenable 37 IAA FATAL PCD ERR INT
-> uframe 3f3a
-> port 1 status 003400 POWER OWNER sig=k
-> port 2 status 001000 POWER sig=se0
-> port 3 status 003400 POWER OWNER sig=k
-> port 4 status 003400 POWER OWNER sig=k
-> port 5 status 001000 POWER sig=se0
-> port 6 status 001000 POWER sig=se0
-> port 7 status 001000 POWER sig=se0
-> port 8 status 001000 POWER sig=se0
-> port 9 status 001000 POWER sig=se0
-> port 10 status 001000 POWER sig=se0
-> irq normal 0 err 0 reclaim 0 (lost 0)
-> complete 0 unlink 0
+> In addition, although it is only possible to open /dev/snapshot once, the task
+> which has done that may spawn a child that will inherit the open descriptor,
+> so in theory they can call snapshot_write(), snapshot_read() and
+> snapshot_release() concurrently.  pm_mutex can also be used for mutual
+> exclusion in such cases.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/user.c |   68 ++++++++++++++++++++++++++++++++--------------------
+>  1 file changed, 42 insertions(+), 26 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/user.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/user.c
+> +++ linux-2.6/kernel/power/user.c
+> @@ -70,16 +70,22 @@ static int snapshot_open(struct inode *i
+>  	struct snapshot_data *data;
+>  	int error;
+>  
+> -	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+> -		return -EBUSY;
+> +	mutex_lock(&pm_mutex);
+> +
+> +	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+> +		error = -EBUSY;
+> +		goto Unlock;
+> +	}
+>  
+>  	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
+>  		atomic_inc(&snapshot_device_available);
+> -		return -ENOSYS;
+> +		error = -ENOSYS;
+> +		goto Unlock;
+>  	}
+>  	if(create_basic_memory_bitmaps()) {
+>  		atomic_inc(&snapshot_device_available);
+> -		return -ENOMEM;
+> +		error = -ENOMEM;
+> +		goto Unlock;
+>  	}
+>  	nonseekable_open(inode, filp);
+>  	data = &snapshot_state;
+> @@ -99,33 +105,36 @@ static int snapshot_open(struct inode *i
+>  		if (error)
+>  			pm_notifier_call_chain(PM_POST_HIBERNATION);
+>  	}
+> -	if (error) {
+> +	if (error)
+>  		atomic_inc(&snapshot_device_available);
+> -		return error;
+> -	}
+>  	data->frozen = 0;
+>  	data->ready = 0;
+>  	data->platform_support = 0;
+>  
+> -	return 0;
+> + Unlock:
+> +	mutex_unlock(&pm_mutex);
+> +
+> +	return error;
+>  }
+>  
+>  static int snapshot_release(struct inode *inode, struct file *filp)
+>  {
+>  	struct snapshot_data *data;
+>  
+> +	mutex_lock(&pm_mutex);
+> +
+>  	swsusp_free();
+>  	free_basic_memory_bitmaps();
+>  	data = filp->private_data;
+>  	free_all_swap_pages(data->swap);
+> -	if (data->frozen) {
+> -		mutex_lock(&pm_mutex);
+> +	if (data->frozen)
+>  		thaw_processes();
+> -		mutex_unlock(&pm_mutex);
+> -	}
+>  	pm_notifier_call_chain(data->mode == O_WRONLY ?
+>  			PM_POST_HIBERNATION : PM_POST_RESTORE);
+>  	atomic_inc(&snapshot_device_available);
+> +
+> +	mutex_unlock(&pm_mutex);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -135,9 +144,13 @@ static ssize_t snapshot_read(struct file
+>  	struct snapshot_data *data;
+>  	ssize_t res;
+>  
+> +	mutex_lock(&pm_mutex);
+> +
+>  	data = filp->private_data;
+> -	if (!data->ready)
+> -		return -ENODATA;
+> +	if (!data->ready) {
+> +		res = -ENODATA;
+> +		goto Unlock;
+> +	}
+>  	res = snapshot_read_next(&data->handle, count);
+>  	if (res > 0) {
+>  		if (copy_to_user(buf, data_of(data->handle), res))
+> @@ -145,6 +158,10 @@ static ssize_t snapshot_read(struct file
+>  		else
+>  			*offp = data->handle.offset;
+>  	}
+> +
+> + Unlock:
+> +	mutex_unlock(&pm_mutex);
+> +
+>  	return res;
+>  }
+>  
+> @@ -154,6 +171,8 @@ static ssize_t snapshot_write(struct fil
+>  	struct snapshot_data *data;
+>  	ssize_t res;
+>  
+> +	mutex_lock(&pm_mutex);
+> +
+>  	data = filp->private_data;
+>  	res = snapshot_write_next(&data->handle, count);
+>  	if (res > 0) {
+> @@ -162,6 +181,9 @@ static ssize_t snapshot_write(struct fil
+>  		else
+>  			*offp = data->handle.offset;
+>  	}
+> +
+> +	mutex_unlock(&pm_mutex);
+> +
+>  	return res;
+>  }
+>  
+> @@ -180,16 +202,16 @@ static long snapshot_ioctl(struct file *
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  
+> -	data = filp->private_data;
+> +	if (!mutex_trylock(&pm_mutex))
+> +		return -EBUSY;
+>  
+> -	lock_kernel();
+> +	data = filp->private_data;
+>  
+>  	switch (cmd) {
+>  
+>  	case SNAPSHOT_FREEZE:
+>  		if (data->frozen)
+>  			break;
+> -		mutex_lock(&pm_mutex);
+>  		printk("Syncing filesystems ... ");
+>  		sys_sync();
+>  		printk("done.\n");
+> @@ -197,7 +219,6 @@ static long snapshot_ioctl(struct file *
+>  		error = freeze_processes();
+>  		if (error)
+>  			thaw_processes();
+> -		mutex_unlock(&pm_mutex);
+>  		if (!error)
+>  			data->frozen = 1;
+>  		break;
+> @@ -205,9 +226,7 @@ static long snapshot_ioctl(struct file *
+>  	case SNAPSHOT_UNFREEZE:
+>  		if (!data->frozen || data->ready)
+>  			break;
+> -		mutex_lock(&pm_mutex);
+>  		thaw_processes();
+> -		mutex_unlock(&pm_mutex);
+>  		data->frozen = 0;
+>  		break;
+>  
+> @@ -310,16 +329,11 @@ static long snapshot_ioctl(struct file *
+>  			error = -EPERM;
+>  			break;
+>  		}
+> -		if (!mutex_trylock(&pm_mutex)) {
+> -			error = -EBUSY;
+> -			break;
+> -		}
+>  		/*
+>  		 * Tasks are frozen and the notifiers have been called with
+>  		 * PM_HIBERNATION_PREPARE
+>  		 */
+>  		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
+> -		mutex_unlock(&pm_mutex);
+>  		break;
+>  
+>  	case SNAPSHOT_PLATFORM_SUPPORT:
+> @@ -392,7 +406,9 @@ static long snapshot_ioctl(struct file *
+>  		error = -ENOTTY;
+>  
+>  	}
+> -	unlock_kernel();
+> +
+> +	mutex_unlock(&pm_mutex);
+> +
+>  	return error;
+>  }
+>  
 
-Got to admit, I'm stumped.  There's nothing in the state description to 
-indicate why the controller should want to signal a wakeup event.
-
-As an experiment, you could try disabling wakeup on the EHCI controller 
-alone, leaving it enabled on the OHCI controller.  Since the keyboard 
--- and in fact all your USB devices -- is attached to the OHCI 
-controller, it should do what you want.
-
-Alan Stern
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
