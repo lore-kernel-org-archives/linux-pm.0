@@ -1,14 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] add a printk_init variant storing
-	format	strings in __initdata
-Date: Tue, 03 Jun 2008 19:49:32 +0200
-Message-ID: <1212515372.27643.29.camel__34900.0184484341$1212515579$gmane$org@johannes.berg>
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
-	<1212485252.0@pinky>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
+ problems
+Date: Tue, 3 Jun 2008 16:06:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0806031603410.3524-100000__45319.5107904778$1212523775$gmane$org@iolanthe.rowland.org>
+References: <20080603173013.GA9490@yamamaya.is-a-geek.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0504597672758342501=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1212485252.0@pinky>
+In-Reply-To: <20080603173013.GA9490@yamamaya.is-a-geek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,70 +16,49 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, linux-pm@lists.linux-foundation.org, pavel@suse.cz, linux-kernel@vger.kernel.org
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 3 Jun 2008, Tobias Diedrich wrote:
 
---===============0504597672758342501==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Omh/+UuJajw+ueDMyn4C"
+> > So for some reason your EHCI controller thinks a wakeup event is 
+> > pending.  This means you should examine the contents of the "registers" 
+> > file in the debugfs directory for the EHCI controller, not OHCI.
+> 
+> melchior:/mnt/ehci/0000:00:02.1# cat registers
+> bus pci, device 0000:00:02.1 (driver 10 Dec 2004)
+> EHCI Host Controller
+> EHCI 1.00, hcd state 1
+> ownership 00000001
+> SMI sts/enable 0xc0080000
+> structural params 0x00101a8a
+> capability params 0x0000a086
+> status 0008 FLR
+> command 010009 (park)=0 ithresh=1 period=256 RUN
+> intrenable 37 IAA FATAL PCD ERR INT
+> uframe 3f3a
+> port 1 status 003400 POWER OWNER sig=k
+> port 2 status 001000 POWER sig=se0
+> port 3 status 003400 POWER OWNER sig=k
+> port 4 status 003400 POWER OWNER sig=k
+> port 5 status 001000 POWER sig=se0
+> port 6 status 001000 POWER sig=se0
+> port 7 status 001000 POWER sig=se0
+> port 8 status 001000 POWER sig=se0
+> port 9 status 001000 POWER sig=se0
+> port 10 status 001000 POWER sig=se0
+> irq normal 0 err 0 reclaim 0 (lost 0)
+> complete 0 unlink 0
 
+Got to admit, I'm stumped.  There's nothing in the state description to 
+indicate why the controller should want to signal a wakeup event.
 
---=-Omh/+UuJajw+ueDMyn4C
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+As an experiment, you could try disabling wakeup on the EHCI controller 
+alone, leaving it enabled on the OHCI controller.  Since the keyboard 
+-- and in fact all your USB devices -- is attached to the OHCI 
+controller, it should do what you want.
 
-
-> +asmlinkage __init int __printk_init(const char *fmt, ...)
-> +{
-> +	va_list args;
-> +	int r;
-> +
-> +	va_start(args, fmt);
-> +	r =3D vprintk(fmt, args);
-> +	va_end(args);
-> +
-> +	return r;
-> +}
-> +
-
-Wouldn't you have to export that?
-
-johannes
-
---=-Omh/+UuJajw+ueDMyn4C
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASEWEK6Vg1VMiehFYAQLwgg/+KKqdxxoTlI8Sy0ah6x+zoLd2n8dscVuM
-x4SjkdsMbocL7g2+PcL0upK2+w9LjylBpl4zAviE5Q62nhMIwwjkeIGeQU54Y1q6
-eBV1c5NEp6xS8+9JQYBXizkTVpkUQb0BfKne2O1+TPqLctFuhgxafvRrjjAQERW/
-2ZsBRe6Q6dO8nIZBX+PywduOXohsDIiV6cLezBTJCxlw3GHn3IIAvz7JkvcpkEd3
-kH4//Uoz66crUasmr01nR7phXub+MzM335//UBk66dFi5KteNApXXiYRYGvaQA+d
-TErBJJ1K5/Grk3RaKUsk5QVl6NbCMSt6YyaxQIgizTbPXeMoQH0rEuk+4CJzh17J
-T+jOoLGNVQaHS1SyZgI3kgCZWj+aHAgRSw8VYbWJI4xtBtIFXKKGnxDcN/saFxLH
-caimbzv6rMrXng8g6dwpDnkU8Bzy94unKeR4yEVWQ8GM+54q4PaM6Fa0dyRe41gK
-lymg//lgoB6sIWgCym0pj6fHql90gMamFMT88u7ZOcKEf82DFv/odW5ITjbkG/xU
-rj0dlTlWvU4AaqcQqcAxU2SZ2fn+y/eD4DZku5xoAhha4E6naGk7Slt4dTjpB4Ui
-is97P8yrPGopaFZGjsW98U84sRa9tRzdkwG0lSt8lFP0Q8U1SXHjtrQ5EjfM3/vu
-Alz3zy/rUlg=
-=YgC3
------END PGP SIGNATURE-----
-
---=-Omh/+UuJajw+ueDMyn4C--
-
-
---===============0504597672758342501==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0504597672758342501==--
+Alan Stern
