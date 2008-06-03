@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] snapshot: Use pm_mutex for mutual
-	exclusion
-Date: Wed, 4 Jun 2008 00:20:05 +0200
-Message-ID: <20080603222005.GA10929__47215.7148448334$1212531687$gmane$org@elf.ucw.cz>
-References: <20080522222500.0f5873ff@core> <20080523120452.6feefed0@core>
-	<200805231322.33321.rjw@sisk.pl> <200806022333.56939.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
+	AHCI: Hard Disk Corruption
+Date: Wed, 4 Jun 2008 00:33:20 +0200
+Message-ID: <200806040033.20736.rjw__11923.2374513105$1212532485$gmane$org@sisk.pl>
+References: <1211717435.6038.53.camel@localhost.localdomain>
+	<1211815881.6140.19.camel@localhost.localdomain>
+	<20080527112236.GA13957@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080527112236.GA13957@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200806022333.56939.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,220 +21,213 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: akpm@osdl.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Patrick <ragamuffin@datacomm.ch>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Appended is what I think we can do.
-
-Looks ok to me. ACK.
-								Pavel
-> ---
-> We can avoid taking the BKL in snapshot_ioctl() if pm_mutex is used to prevent
-> the ioctls from being executed concurrently.
+On Tuesday, 27 of May 2008, Pavel Machek wrote:
+> Hi!
 > 
-> In addition, although it is only possible to open /dev/snapshot once, the task
-> which has done that may spawn a child that will inherit the open descriptor,
-> so in theory they can call snapshot_write(), snapshot_read() and
-> snapshot_release() concurrently.  pm_mutex can also be used for mutual
-> exclusion in such cases.
+> > > Can you try this one? It should prevent suspend in the broken cases,
+> > > but allow it in mem=4G config.
+> > 
+> > Sure!
+> > 
+> > root@babar:/usr/src/linux-2.6.25# patch -p1 < /home/pat/patch-2.6.26-rc3.gart-suspend
+> > patching file arch/x86/kernel/pci-gart_64.c
+> > Hunk #4 succeeded at 629 with fuzz 2 (offset 11 lines).
+> > 
+> > .....make; cp bzImage /boot; reboot....
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/user.c |   68 ++++++++++++++++++++++++++++++++--------------------
->  1 file changed, 42 insertions(+), 26 deletions(-)
+> Thanks!
 > 
-> Index: linux-2.6/kernel/power/user.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/user.c
-> +++ linux-2.6/kernel/power/user.c
-> @@ -70,16 +70,22 @@ static int snapshot_open(struct inode *i
->  	struct snapshot_data *data;
->  	int error;
->  
-> -	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
-> -		return -EBUSY;
-> +	mutex_lock(&pm_mutex);
-> +
-> +	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-> +		error = -EBUSY;
-> +		goto Unlock;
-> +	}
->  
->  	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
->  		atomic_inc(&snapshot_device_available);
-> -		return -ENOSYS;
-> +		error = -ENOSYS;
-> +		goto Unlock;
->  	}
->  	if(create_basic_memory_bitmaps()) {
->  		atomic_inc(&snapshot_device_available);
-> -		return -ENOMEM;
-> +		error = -ENOMEM;
-> +		goto Unlock;
->  	}
->  	nonseekable_open(inode, filp);
->  	data = &snapshot_state;
-> @@ -99,33 +105,36 @@ static int snapshot_open(struct inode *i
->  		if (error)
->  			pm_notifier_call_chain(PM_POST_HIBERNATION);
->  	}
-> -	if (error) {
-> +	if (error)
->  		atomic_inc(&snapshot_device_available);
-> -		return error;
-> -	}
->  	data->frozen = 0;
->  	data->ready = 0;
->  	data->platform_support = 0;
->  
-> -	return 0;
-> + Unlock:
-> +	mutex_unlock(&pm_mutex);
-> +
-> +	return error;
->  }
->  
->  static int snapshot_release(struct inode *inode, struct file *filp)
->  {
->  	struct snapshot_data *data;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	swsusp_free();
->  	free_basic_memory_bitmaps();
->  	data = filp->private_data;
->  	free_all_swap_pages(data->swap);
-> -	if (data->frozen) {
-> -		mutex_lock(&pm_mutex);
-> +	if (data->frozen)
->  		thaw_processes();
-> -		mutex_unlock(&pm_mutex);
-> -	}
->  	pm_notifier_call_chain(data->mode == O_WRONLY ?
->  			PM_POST_HIBERNATION : PM_POST_RESTORE);
->  	atomic_inc(&snapshot_device_available);
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return 0;
->  }
->  
-> @@ -135,9 +144,13 @@ static ssize_t snapshot_read(struct file
->  	struct snapshot_data *data;
->  	ssize_t res;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	data = filp->private_data;
-> -	if (!data->ready)
-> -		return -ENODATA;
-> +	if (!data->ready) {
-> +		res = -ENODATA;
-> +		goto Unlock;
-> +	}
->  	res = snapshot_read_next(&data->handle, count);
->  	if (res > 0) {
->  		if (copy_to_user(buf, data_of(data->handle), res))
-> @@ -145,6 +158,10 @@ static ssize_t snapshot_read(struct file
->  		else
->  			*offp = data->handle.offset;
->  	}
-> +
-> + Unlock:
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return res;
->  }
->  
-> @@ -154,6 +171,8 @@ static ssize_t snapshot_write(struct fil
->  	struct snapshot_data *data;
->  	ssize_t res;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	data = filp->private_data;
->  	res = snapshot_write_next(&data->handle, count);
->  	if (res > 0) {
-> @@ -162,6 +181,9 @@ static ssize_t snapshot_write(struct fil
->  		else
->  			*offp = data->handle.offset;
->  	}
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return res;
->  }
->  
-> @@ -180,16 +202,16 @@ static long snapshot_ioctl(struct file *
->  	if (!capable(CAP_SYS_ADMIN))
->  		return -EPERM;
->  
-> -	data = filp->private_data;
-> +	if (!mutex_trylock(&pm_mutex))
-> +		return -EBUSY;
->  
-> -	lock_kernel();
-> +	data = filp->private_data;
->  
->  	switch (cmd) {
->  
->  	case SNAPSHOT_FREEZE:
->  		if (data->frozen)
->  			break;
-> -		mutex_lock(&pm_mutex);
->  		printk("Syncing filesystems ... ");
->  		sys_sync();
->  		printk("done.\n");
-> @@ -197,7 +219,6 @@ static long snapshot_ioctl(struct file *
->  		error = freeze_processes();
->  		if (error)
->  			thaw_processes();
-> -		mutex_unlock(&pm_mutex);
->  		if (!error)
->  			data->frozen = 1;
->  		break;
-> @@ -205,9 +226,7 @@ static long snapshot_ioctl(struct file *
->  	case SNAPSHOT_UNFREEZE:
->  		if (!data->frozen || data->ready)
->  			break;
-> -		mutex_lock(&pm_mutex);
->  		thaw_processes();
-> -		mutex_unlock(&pm_mutex);
->  		data->frozen = 0;
->  		break;
->  
-> @@ -310,16 +329,11 @@ static long snapshot_ioctl(struct file *
->  			error = -EPERM;
->  			break;
->  		}
-> -		if (!mutex_trylock(&pm_mutex)) {
-> -			error = -EBUSY;
-> -			break;
-> -		}
->  		/*
->  		 * Tasks are frozen and the notifiers have been called with
->  		 * PM_HIBERNATION_PREPARE
->  		 */
->  		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
-> -		mutex_unlock(&pm_mutex);
->  		break;
->  
->  	case SNAPSHOT_PLATFORM_SUPPORT:
-> @@ -392,7 +406,9 @@ static long snapshot_ioctl(struct file *
->  		error = -ENOTTY;
->  
->  	}
-> -	unlock_kernel();
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return error;
->  }
->  
+> This goes on top of the second patch... it makes it work.
+> 
+> 								Pavel
+> 
+> For iommu suspend/resume code to work, functions it calls may not be
+> __init.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I consolidated some of your patches sent in this thread and made the result
+apply to the current -git.  It hasn't been tested yet, but does it look good?
+
+It's on top of the patch that adds the GART sysdev.
+
+Thanks,
+Rafael
+
+---
+Handle GART IOMMU suspend and resume.
+
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/aperture_64.c |   34 ++++++++++++++++---------
+ arch/x86/kernel/k8.c          |    2 -
+ arch/x86/kernel/pci-gart_64.c |   55 +++++++++++++++++++++++++++++-------------
+ include/asm-x86/gart.h        |    2 +
+ 4 files changed, 63 insertions(+), 30 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/pci-gart_64.c
++++ linux-2.6/arch/x86/kernel/pci-gart_64.c
+@@ -549,14 +549,50 @@ static __init unsigned read_aperture(str
+ 	return aper_base;
+ }
+ 
++static void enable_gart_translations(void)
++{
++	int i;
++
++	for (i = 0; i < num_k8_northbridges; i++) {
++		struct pci_dev *dev;
++		u32 gatt_reg;
++		u32 ctl;
++
++		dev = k8_northbridges[i];
++		gatt_reg = __pa(agp_gatt_table) >> 12;
++		gatt_reg <<= 4;
++		pci_write_config_dword(dev, 0x98, gatt_reg);
++		pci_read_config_dword(dev, 0x90, &ctl);
++
++		ctl |= 1;
++		ctl &= ~((1<<4) | (1<<5));
++
++		pci_write_config_dword(dev, 0x90, ctl);
++	}
++}
++
++static bool fix_north_bridges;	/* call fix_up_north_bridges() on resume */
++static u32 aperture_order;	/* arguments for fix_up_north_bridges() */
++static u32 aperture_alloc;
++
++void set_gart_resume_data(u32 aper_order, u32 aper_alloc)
++{
++	fix_north_bridges = true;
++	aperture_order = aper_order;
++	aperture_alloc = aper_alloc;
++}
++
+ static int gart_resume(struct sys_device *dev)
+ {
++	if (fix_north_bridges)
++		fix_up_north_bridges(aperture_order, aperture_alloc);
++	enable_gart_translations();
+ 	return 0;
+ }
+ 
+ static int gart_suspend(struct sys_device *dev, pm_message_t state)
+ {
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static struct sysdev_class gart_sysdev_class = {
+@@ -613,27 +649,14 @@ static __init int init_k8_gatt(struct ag
+ 	memset(gatt, 0, gatt_size);
+ 	agp_gatt_table = gatt;
+ 
+-	for (i = 0; i < num_k8_northbridges; i++) {
+-		u32 gatt_reg;
+-		u32 ctl;
+-
+-		dev = k8_northbridges[i];
+-		gatt_reg = __pa(gatt) >> 12;
+-		gatt_reg <<= 4;
+-		pci_write_config_dword(dev, 0x98, gatt_reg);
+-		pci_read_config_dword(dev, 0x90, &ctl);
+-
+-		ctl |= 1;
+-		ctl &= ~((1<<4) | (1<<5));
+-
+-		pci_write_config_dword(dev, 0x90, ctl);
+-	}
++	enable_gart_translations();
+ 
+ 	error = sysdev_class_register(&gart_sysdev_class);
+ 	if (!error)
+ 		error = sysdev_register(&device_gart);
+ 	if (error)
+ 		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
++
+ 	flush_gart();
+ 
+ 	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
+Index: linux-2.6/arch/x86/kernel/k8.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/k8.c
++++ linux-2.6/arch/x86/kernel/k8.c
+@@ -76,7 +76,7 @@ EXPORT_SYMBOL_GPL(cache_k8_northbridges)
+ 
+ /* Ignores subdevice/subvendor but as far as I can figure out
+    they're useless anyways */
+-int __init early_is_k8_nb(u32 device)
++int early_is_k8_nb(u32 device)
+ {
+ 	struct pci_device_id *id;
+ 	u32 vendor = device & 0xffff;
+Index: linux-2.6/arch/x86/kernel/aperture_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/aperture_64.c
++++ linux-2.6/arch/x86/kernel/aperture_64.c
+@@ -310,6 +310,25 @@ void __init early_gart_iommu_check(void)
+ 
+ }
+ 
++void fix_up_north_bridges(u32 aper_order, u32 aper_alloc)
++{
++	int num;
++
++	/* Fix up the north bridges */
++	for (num = 24; num < 32; num++) {
++		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
++			continue;
++
++		/*
++		 * Don't enable translation yet. That is done later.
++		 * Assume this BIOS didn't initialise the GART so
++		 * just overwrite all previous bits
++		 */
++		write_pci_config(0, num, 3, 0x90, aper_order << 1);
++		write_pci_config(0, num, 3, 0x94, aper_alloc >> 25);
++	}
++}
++
+ void __init gart_iommu_hole_init(void)
+ {
+ 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
+@@ -400,17 +419,6 @@ void __init gart_iommu_hole_init(void)
+ 		return;
+ 	}
+ 
+-	/* Fix up the north bridges */
+-	for (num = 24; num < 32; num++) {
+-		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+-			continue;
+-
+-		/*
+-		 * Don't enable translation yet. That is done later.
+-		 * Assume this BIOS didn't initialise the GART so
+-		 * just overwrite all previous bits
+-		 */
+-		write_pci_config(0, num, 3, 0x90, aper_order<<1);
+-		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
+-	}
++	fix_up_north_bridges(aper_order, aper_alloc);
++	set_gart_resume_data(aper_order, aper_alloc);
+ }
+Index: linux-2.6/include/asm-x86/gart.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/gart.h
++++ linux-2.6/include/asm-x86/gart.h
+@@ -11,6 +11,8 @@ extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
+ extern void early_gart_iommu_check(void);
+ extern void gart_iommu_hole_init(void);
++extern void set_gart_resume_data(u32, u32);
++extern void fix_up_north_bridges(u32, u32);
+ extern int fallback_aper_order;
+ extern int fallback_aper_force;
+ extern int gart_iommu_aperture;
