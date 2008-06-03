@@ -1,16 +1,14 @@
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: [PATCH 0/4] Fix forcedeth
-	hibernate/wake-on-lan	problems
-Date: Tue, 3 Jun 2008 19:30:13 +0200
-Message-ID: <20080603173013.GA9490__29247.8875410326$1212514572$gmane$org@yamamaya.is-a-geek.org>
-References: <20080603061618.GB9301@yamamaya.is-a-geek.org>
-	<Pine.LNX.4.44L0.0806031002510.2363-100000@iolanthe.rowland.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] add a printk_init variant storing
+	format	strings in __initdata
+Date: Tue, 03 Jun 2008 19:49:32 +0200
+Message-ID: <1212515372.27643.29.camel__34900.0184484341$1212515579$gmane$org@johannes.berg>
+References: <20080529162257.03426e48.akpm@linux-foundation.org>
+	<1212485252.0@pinky>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============0504597672758342501=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0806031002510.2363-100000@iolanthe.rowland.org>
+In-Reply-To: <1212485252.0@pinky>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +16,70 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, linux-pm@lists.linux-foundation.org, pavel@suse.cz, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-QWxhbiBTdGVybiB3cm90ZToKPiA+ID4gQWxzbywgeW91IHNob3VsZCBydW4gImxzcGNpIC12diIg
-YXMgcm9vdCB0byBzZWUgd2hhdCB3YWtldXAgc2lnbmFscyB0aGUgCj4gPiA+IFVTQiBjb250cm9s
-bGVycyBhcmUgaXNzdWluZy4KWy4uLl0KPiA+IDAwOjAyLjEgVVNCIENvbnRyb2xsZXI6IG5WaWRp
-YSBDb3Jwb3JhdGlvbiBNQ1A1NSBVU0IgQ29udHJvbGxlciAocmV2IGEyKSAocHJvZy1pZiAyMCBb
-RUhDSV0pCj4gPiAJU3Vic3lzdGVtOiBBU1VTVGVLIENvbXB1dGVyIEluYy4gVW5rbm93biBkZXZp
-Y2UgODIzOQo+ID4gCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVt
-V0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgt
-Cj4gPiAJU3RhdHVzOiBDYXArIDY2TUh6KyBVREYtIEZhc3RCMkIrIFBhckVyci0gREVWU0VMPWZh
-c3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQo+ID4gCUxh
-dGVuY3k6IDAgKDc1MG5zIG1pbiwgMjUwbnMgbWF4KQo+ID4gCUludGVycnVwdDogcGluIEIgcm91
-dGVkIHRvIElSUSAyMAo+ID4gCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZmUwMmUwMDAgKDMyLWJpdCwg
-bm9uLXByZWZldGNoYWJsZSkgW3NpemU9MjU2XQo+ID4gCUNhcGFiaWxpdGllczogWzQ0XSBEZWJ1
-ZyBwb3J0OiBCQVI9MSBvZmZzZXQ9MDA5OAo+ID4gCUNhcGFiaWxpdGllczogWzgwXSBQb3dlciBN
-YW5hZ2VtZW50IHZlcnNpb24gMgo+ID4gCQlGbGFnczogUE1FQ2xrLSBEU0ktIEQxKyBEMisgQXV4
-Q3VycmVudD0wbUEgUE1FKEQwKyxEMSssRDIrLEQzaG90KyxEM2NvbGQrKQo+ID4gCQlTdGF0dXM6
-IEQwIFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUrCj4gPiAJS2VybmVsIGRyaXZlciBp
-biB1c2U6IGVoY2lfaGNkCj4gCj4gVGhlIEVIQ0kgY29udHJvbGxlciBzZXR0aW5ncywgaG93ZXZl
-ciwgYXJlIHN0cmFuZ2UuICBUaGUgcmVsZXZhbnQgcGFydCAKPiBpcyB0aGUgUG93ZXIgTWFuYWdl
-bWVudCBTdGF0dXMgbGluZSBuZWFyIHRoZSBlbmQ6Cj4gCj4gPiAJCVN0YXR1czogRDAgUE1FLUVu
-YWJsZS0gRFNlbD0wIERTY2FsZT0wIFBNRSsKPiAKPiBUaGlzIG1lYW5zIHRoZSBjb250cm9sbGVy
-IGlzIGluIHRoZSBEMCBzdGF0ZSAoYXMgZXhwZWN0ZWQpIGFuZCAKPiBQTUUtRW5hYmxlIGlzIGN1
-cnJlbnRseSB0dXJuZWQgb2ZmICgiUE1FIiBzdGFuZHMgZm9yICJQb3dlciBNYW5hZ2VtZW50IAo+
-IEV2ZW50IikuICBCdXQgdGhlIFBNRSsgYXQgdGhlIGVuZCBtZWFucyB0aGF0IGFzIHNvb24gYXMg
-UE1FIGRvZXMgZ2V0IAo+IGVuYWJsZWQgLS0gbGlrZSB3aGVuIHRoZSBjb250cm9sbGVyIGlzIHN1
-c3BlbmRlZCBhdCB0aGUgc3RhcnQgb2YgYSAKPiBzeXN0ZW0gc2xlZXAgLS0gaXQgX3dpbGxfIHNl
-bmQgYSBQTUUgc2lnbmFsLgo+IAo+IFNvIGZvciBzb21lIHJlYXNvbiB5b3VyIEVIQ0kgY29udHJv
-bGxlciB0aGlua3MgYSB3YWtldXAgZXZlbnQgaXMgCj4gcGVuZGluZy4gIFRoaXMgbWVhbnMgeW91
-IHNob3VsZCBleGFtaW5lIHRoZSBjb250ZW50cyBvZiB0aGUgInJlZ2lzdGVycyIgCj4gZmlsZSBp
-biB0aGUgZGVidWdmcyBkaXJlY3RvcnkgZm9yIHRoZSBFSENJIGNvbnRyb2xsZXIsIG5vdCBPSENJ
-LgoKbWVsY2hpb3I6L21udC9laGNpLzAwMDA6MDA6MDIuMSMgY2F0IHJlZ2lzdGVycwpidXMgcGNp
-LCBkZXZpY2UgMDAwMDowMDowMi4xIChkcml2ZXIgMTAgRGVjIDIwMDQpCkVIQ0kgSG9zdCBDb250
-cm9sbGVyCkVIQ0kgMS4wMCwgaGNkIHN0YXRlIDEKb3duZXJzaGlwIDAwMDAwMDAxClNNSSBzdHMv
-ZW5hYmxlIDB4YzAwODAwMDAKc3RydWN0dXJhbCBwYXJhbXMgMHgwMDEwMWE4YQpjYXBhYmlsaXR5
-IHBhcmFtcyAweDAwMDBhMDg2CnN0YXR1cyAwMDA4IEZMUgpjb21tYW5kIDAxMDAwOSAocGFyayk9
-MCBpdGhyZXNoPTEgcGVyaW9kPTI1NiBSVU4KaW50cmVuYWJsZSAzNyBJQUEgRkFUQUwgUENEIEVS
-UiBJTlQKdWZyYW1lIDNmM2EKcG9ydCAxIHN0YXR1cyAwMDM0MDAgUE9XRVIgT1dORVIgc2lnPWsK
-cG9ydCAyIHN0YXR1cyAwMDEwMDAgUE9XRVIgc2lnPXNlMApwb3J0IDMgc3RhdHVzIDAwMzQwMCBQ
-T1dFUiBPV05FUiBzaWc9awpwb3J0IDQgc3RhdHVzIDAwMzQwMCBQT1dFUiBPV05FUiBzaWc9awpw
-b3J0IDUgc3RhdHVzIDAwMTAwMCBQT1dFUiBzaWc9c2UwCnBvcnQgNiBzdGF0dXMgMDAxMDAwIFBP
-V0VSIHNpZz1zZTAKcG9ydCA3IHN0YXR1cyAwMDEwMDAgUE9XRVIgc2lnPXNlMApwb3J0IDggc3Rh
-dHVzIDAwMTAwMCBQT1dFUiBzaWc9c2UwCnBvcnQgOSBzdGF0dXMgMDAxMDAwIFBPV0VSIHNpZz1z
-ZTAKcG9ydCAxMCBzdGF0dXMgMDAxMDAwIFBPV0VSIHNpZz1zZTAKaXJxIG5vcm1hbCAwIGVyciAw
-IHJlY2xhaW0gMCAobG9zdCAwKQpjb21wbGV0ZSAwIHVubGluayAwCgpIVEgsCgotLSAKVG9iaWFz
-CQkJCQkJUEdQOiBodHRwOi8vOWFjN2UwYmMudWd1dS5kZQrjgZPjga7jg6Hjg7zjg6vjga/ljYHl
-ibLlho3liKnnlKjjgZXjgozjgZ/jg5Pjg4Pjg4jjgafkvZzjgonjgozjgabjgYTjgb7jgZnjgIIK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
-bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+
+--===============0504597672758342501==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Omh/+UuJajw+ueDMyn4C"
+
+
+--=-Omh/+UuJajw+ueDMyn4C
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+> +asmlinkage __init int __printk_init(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r =3D vprintk(fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +
+
+Wouldn't you have to export that?
+
+johannes
+
+--=-Omh/+UuJajw+ueDMyn4C
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASEWEK6Vg1VMiehFYAQLwgg/+KKqdxxoTlI8Sy0ah6x+zoLd2n8dscVuM
+x4SjkdsMbocL7g2+PcL0upK2+w9LjylBpl4zAviE5Q62nhMIwwjkeIGeQU54Y1q6
+eBV1c5NEp6xS8+9JQYBXizkTVpkUQb0BfKne2O1+TPqLctFuhgxafvRrjjAQERW/
+2ZsBRe6Q6dO8nIZBX+PywduOXohsDIiV6cLezBTJCxlw3GHn3IIAvz7JkvcpkEd3
+kH4//Uoz66crUasmr01nR7phXub+MzM335//UBk66dFi5KteNApXXiYRYGvaQA+d
+TErBJJ1K5/Grk3RaKUsk5QVl6NbCMSt6YyaxQIgizTbPXeMoQH0rEuk+4CJzh17J
+T+jOoLGNVQaHS1SyZgI3kgCZWj+aHAgRSw8VYbWJI4xtBtIFXKKGnxDcN/saFxLH
+caimbzv6rMrXng8g6dwpDnkU8Bzy94unKeR4yEVWQ8GM+54q4PaM6Fa0dyRe41gK
+lymg//lgoB6sIWgCym0pj6fHql90gMamFMT88u7ZOcKEf82DFv/odW5ITjbkG/xU
+rj0dlTlWvU4AaqcQqcAxU2SZ2fn+y/eD4DZku5xoAhha4E6naGk7Slt4dTjpB4Ui
+is97P8yrPGopaFZGjsW98U84sRa9tRzdkwG0lSt8lFP0Q8U1SXHjtrQ5EjfM3/vu
+Alz3zy/rUlg=
+=YgC3
+-----END PGP SIGNATURE-----
+
+--=-Omh/+UuJajw+ueDMyn4C--
+
+
+--===============0504597672758342501==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0504597672758342501==--
