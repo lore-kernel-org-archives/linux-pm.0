@@ -1,13 +1,15 @@
 From: Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH] add a printk_init variant storing format strings
-	in __initdata
-Date: Tue, 3 Jun 2008 10:27:32 +0100
-Message-ID: <1212485252.0__36835.5486113161$1212509953$gmane$org@pinky>
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Date: Tue, 3 Jun 2008 11:45:38 +0100
+Message-ID: <20080603104538.GQ27013__16464.3187811182$1212509980$gmane$org@shadowen.org>
+References: <200805291333.42057.david-b@pacbell.net>
+	<20080529162257.03426e48.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20080529162257.03426e48.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,85 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: pavel@suse.cz, mingo@elte.hu, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, May 29, 2008 at 04:22:57PM -0700, Andrew Morton wrote:
 
-[As gcc seems unable to help us out selecting the appropriate data segment
-for the code, how about we did something like this?]
+> > +static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+> > +{
+> > +	static char		err_readtime [] __initdata =
+> > +		KERN_ERR "PM: can't read %s time, err %d\n";
+> > +	static char		err_wakealarm [] __initdata =
+> > +		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
+> > +	static char		err_suspend [] __initdata =
+> > +		KERN_ERR "PM: suspend test failed, error %d\n";
+> > +	static char		info_test [] __initdata =
+> > +		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
+> 
+> - One tab before the variable space is a waste of space.  Two tabs is
+>   just extravagant.
+> 
+> - The space before the [] shouldn't be there.  checkpatch misses this.
 
-When using printk from __init functions it would be desirable to place
-the printk format strings in __initdata.  Add a printk_init() variant
-which does this.
+Ok, this should be picked up in the next release:
 
-This printk_init() is necessarily a #define so that we can declare the
-format string in static scope and mark it __initdata.  We then call a
-newly introduced __printk_init() variant which is identicle to printk() but
-marked __init itself.  By ensuring that an __init variant of printk is used
-we get proper section violation warnings when this is used incorrectly:
+ERROR: space prohibited before open square bracket '['
+#1: FILE: Z152.c:1:
++       static char             info_test [] __initdata =
 
-    WARNING: vmlinux.o(.text+0x3): Section mismatch in reference from the
-	function something() to the variable .init.data:__printk_init_fmt.31426
-    The function something() references
-    the variable __initdata __printk_init_fmt.31426.
-    This is often because something lacks a __initdata
-    annotation or the annotation of __printk_init_fmt.31426 is wrong.
-
-Note I have followed printk's pattern for __cold annotations.
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- include/linux/kernel.h |   10 ++++++++++
- kernel/printk.c        |   12 ++++++++++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 792bf0a..7754196 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -180,6 +180,13 @@ struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
- 
- #ifdef CONFIG_PRINTK
-+#define printk_init(fmt, args...) \
-+do { \
-+        static char __printk_init_fmt[] __initdata = fmt; \
-+        __printk_init(__printk_init_fmt, ##args); \
-+} while (0)
-+asmlinkage int __printk_init(const char * fmt, ...)
-+	__attribute__ ((format (printf, 1, 2))) __cold;
- asmlinkage int vprintk(const char *fmt, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
- asmlinkage int printk(const char * fmt, ...)
-@@ -196,6 +203,9 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
- extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 				   unsigned int interval_msec);
- #else
-+asmlinkage int printk_init(const char * fmt, ...)
-+	__attribute__ ((format (printf, 1, 2))) __cold;
-+static inline int __cold printk_init(const char *s, ...) { return 0; }
- static inline int vprintk(const char *s, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
- static inline int vprintk(const char *s, va_list args) { return 0; }
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 8fb01c3..992a5c0 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -616,6 +616,18 @@ asmlinkage int printk(const char *fmt, ...)
- 	return r;
- }
- 
-+asmlinkage __init int __printk_init(const char *fmt, ...)
-+{
-+	va_list args;
-+	int r;
-+
-+	va_start(args, fmt);
-+	r = vprintk(fmt, args);
-+	va_end(args);
-+
-+	return r;
-+}
-+
- /* cpu currently holding logbuf_lock */
- static volatile unsigned int printk_cpu = UINT_MAX;
- 
+-apw
