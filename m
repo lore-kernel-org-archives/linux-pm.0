@@ -1,17 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
-	problems
-Date: Wed, 4 Jun 2008 19:38:01 -0700
-Message-ID: <200806041938.02045.david-b__28536.0319227495$1212633720$gmane$org@pacbell.net>
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
-	<200805271432.12881.david-b@pacbell.net>
-	<20080531072036.GC5405@ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [QUESTION] How to reset TCP connections when
+	resuming system from disk/ram
+Date: Wed, 4 Jun 2008 16:59:00 +0200
+Message-ID: <20080604145900.GA6762@ucw.cz>
+References: <200806020026.56875.maximlevitsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080531072036.GC5405@ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200806020026.56875.maximlevitsky@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Tobias Diedrich <ranma+kernel@tdiedrich.de>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 31 May 2008, Pavel Machek wrote:
-> =
+Hi!
 
-> > Yeah; under ACPI, PCI does not act like it does everywhere else.
-> > Nor does wakeup in general.
-> > =
+> Thanks to your effort, the suspend to ram/disk works flawlessly on my
+> desktop system.
+> 
+> But I still have rather small, but annoying problem, that system doesn't
+> understands that a long suspend cycle was done, and still waits for long closed
+> TCP connections.
+> 
+> I remember there was a patch to close all TCP connections on suspend, but it was rejected
+> due to the fact that TCP sessions can live through short suspend/resume cycles.
 
-> > After sending patches to fix that for a couple years now, I'm
-> > well past being tired of doing that. =A0I suggest it's overdue for
-> > the ACPI team to get this part of their act together.
-> =
+Well... tcp sessions can survive even long suspends ... if there's no
+NAT nearby and both sides are quiescent...
 
-> I'm afraid you expect too much from the acpi team.
+Dig out the patch and lets see if it can be made acceptable?
 
-I'm likewise "afraid" that may be too much to expect.
+> Btw, I recently bought an acer laptop (5720G), and there are few suspend/resume issues,
+> namely:
+> 
+> *attempt to do a second suspend to ram freezes the system hard on resume.
+> for example this works:
+> 
+> suspend to ram
+> suspend to disk
+> suspend to ram
+> suspend to disk
+> 
+> but this doesn't
+> 
+> suspend to ram
+> suspend to ram
 
-If that's true, it's going to be even harder making
-the cross-platform Linux PM framework do what it needs
-to do.  Having various devices (not just laptop lids or
-power buttons, or RTC alarms) wake systems from low power
-states is pretty fundamental to the "P" part of ACPI.
-And it's not like wakeup events are unique to ACPI.
+Try it from minimum system, but this looks like acpi problem...
 
-
-> If you can't merge =
-
-> patches yourself, perhaps someone interested (Tobias? me?) can push
-> them for you?
-
-I kind of think the ACPI team needs to just become more
-responsive.  They helped Windows do this stuff; why has
-Linux only seen delays and obstacles in this area?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
