@@ -1,16 +1,14 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] add a printk_init variant storing format
- strings in __initdata
-Date: Wed, 4 Jun 2008 12:43:36 +0100
-Message-ID: <20080604124336.578d86ae__43243.8177326278$1212580926$gmane$org@core>
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
-	<1212485252.0@pinky>
-	<20080604011607.15dec5a7.akpm@linux-foundation.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [QUESTION] How to reset TCP connections when
+ resuming system from disk/ram
+Date: Wed, 04 Jun 2008 18:41:29 +0300
+Message-ID: <4846B7A9.4020904@gmail.com>
+References: <200806020026.56875.maximlevitsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080604011607.15dec5a7.akpm@linux-foundation.org>
+In-Reply-To: <200806020026.56875.maximlevitsky@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, Andy Whitcroft <apw@shadowen.org>, mingo@elte.hu, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > When using printk from __init functions it would be desirable to place
-> > the printk format strings in __initdata.  Add a printk_init() variant
-> > which does this.
+Maxim Levitsky wrote:
+> Hi,
+> 
+> Thanks to your effort, the suspend to ram/disk works flawlessly on my
+> desktop system.
+> 
+> But I still have rather small, but annoying problem, that system doesn't
+> understands that a long suspend cycle was done, and still waits for long closed
+> TCP connections.
+> 
+> I remember there was a patch to close all TCP connections on suspend, but it was rejected
+> due to the fact that TCP sessions can live through short suspend/resume cycles.
+> 
+> What can you suggest here?
+> Is there a tool to close all TCP connections?
+> 
+> I noticed that sockets aren't dependent on network drivers, 
+> so even removing network driver doesn't close them.
+> ( I guess that it is possible for TCP session to migrate from one to another
+> network hardware too)
+> 
+> 
+> Another thing I want to know, is this possible to set socket timeout
+> and how? 
+> 
+> (There is a settings page for that in KDE, but I don't yet know what this changes,
+> a KDE specific settings or not)
+> 
+> I want something CLI based.
+> 
+> 
+> Btw, I recently bought an acer laptop (5720G), and there are few suspend/resume issues,
+> namely:
+> 
+> *attempt to do a second suspend to ram freezes the system hard on resume.
+> for example this works:
+> 
+> suspend to ram
+> suspend to disk
+> suspend to ram
+> suspend to disk
+> 
+> but this doesn't
+> 
+> suspend to ram
+> suspend to ram
+> 
+> Best regards,
+> 	Maxim Levitsky
 
-Russell played with this years ago I seem to remember and broke the ARM
-gcc in the process. If we have any compilers generating near pointer
-references for string constants then suddenely hiding them in another
-section is going to be interesting.
 
-> Wouldn't it be great if checkpatch were to detect
-> fail-to-use-printk_init() in an __init function?
+Meanwhile I found a tcpkill utility,
+but doesn't do what I want, since this tool gets a list of TCP
+connections by sniffing network traffic, thus it can't detect
+all connections during suspend.
 
-Can we have a 'correctpatch' to go with it someday perhaps ;)
+Any ideas?
+
+Best regards,
+	Maxim Levitsky
