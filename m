@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
-	AHCI: Hard Disk Corruption
-Date: Wed, 4 Jun 2008 00:33:20 +0200
-Message-ID: <200806040033.20736.rjw__11923.2374513105$1212532485$gmane$org@sisk.pl>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	<1211815881.6140.19.camel@localhost.localdomain>
-	<20080527112236.GA13957@elf.ucw.cz>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] add a printk_init variant storing format
+ strings in __initdata
+Date: Wed, 4 Jun 2008 01:16:07 -0700
+Message-ID: <20080604011607.15dec5a7.akpm__48242.5116388642$1212567611$gmane$org@linux-foundation.org>
+References: <20080529162257.03426e48.akpm@linux-foundation.org>
+	<1212485252.0@pinky>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080527112236.GA13957@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <1212485252.0@pinky>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,213 +19,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Patrick <ragamuffin@datacomm.ch>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: pavel@suse.cz, mingo@elte.hu, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 27 of May 2008, Pavel Machek wrote:
-> Hi!
-> 
-> > > Can you try this one? It should prevent suspend in the broken cases,
-> > > but allow it in mem=4G config.
-> > 
-> > Sure!
-> > 
-> > root@babar:/usr/src/linux-2.6.25# patch -p1 < /home/pat/patch-2.6.26-rc3.gart-suspend
-> > patching file arch/x86/kernel/pci-gart_64.c
-> > Hunk #4 succeeded at 629 with fuzz 2 (offset 11 lines).
-> > 
-> > .....make; cp bzImage /boot; reboot....
-> 
-> Thanks!
-> 
-> This goes on top of the second patch... it makes it work.
-> 
-> 								Pavel
-> 
-> For iommu suspend/resume code to work, functions it calls may not be
-> __init.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
+On Tue, 3 Jun 2008 10:27:32 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
 
-I consolidated some of your patches sent in this thread and made the result
-apply to the current -git.  It hasn't been tested yet, but does it look good?
+> 
+> [As gcc seems unable to help us out selecting the appropriate data segment
+> for the code, how about we did something like this?]
+> 
+> When using printk from __init functions it would be desirable to place
+> the printk format strings in __initdata.  Add a printk_init() variant
+> which does this.
+> 
+> This printk_init() is necessarily a #define so that we can declare the
+> format string in static scope and mark it __initdata.  We then call a
+> newly introduced __printk_init() variant which is identicle to printk() but
+> marked __init itself.  By ensuring that an __init variant of printk is used
+> we get proper section violation warnings when this is used incorrectly:
+> 
+>     WARNING: vmlinux.o(.text+0x3): Section mismatch in reference from the
+> 	function something() to the variable .init.data:__printk_init_fmt.31426
+>     The function something() references
+>     the variable __initdata __printk_init_fmt.31426.
+>     This is often because something lacks a __initdata
+>     annotation or the annotation of __printk_init_fmt.31426 is wrong.
+> 
+> Note I have followed printk's pattern for __cold annotations.
+> 
 
-It's on top of the patch that adds the GART sysdev.
+Ho hum.  This give everyone another way in which to bury everyone else
+with patches.
 
-Thanks,
-Rafael
+Wouldn't it be great if checkpatch were to detect
+fail-to-use-printk_init() in an __init function?
 
----
-Handle GART IOMMU suspend and resume.
+oh, speaking of checkpatch: please use it :)
 
-Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/aperture_64.c |   34 ++++++++++++++++---------
- arch/x86/kernel/k8.c          |    2 -
- arch/x86/kernel/pci-gart_64.c |   55 +++++++++++++++++++++++++++++-------------
- include/asm-x86/gart.h        |    2 +
- 4 files changed, 63 insertions(+), 30 deletions(-)
+> ---
+>  include/linux/kernel.h |   10 ++++++++++
+>  kernel/printk.c        |   12 ++++++++++++
+>  2 files changed, 22 insertions(+), 0 deletions(-)
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index 792bf0a..7754196 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -180,6 +180,13 @@ struct pid;
+>  extern struct pid *session_of_pgrp(struct pid *pgrp);
+>  
+>  #ifdef CONFIG_PRINTK
+> +#define printk_init(fmt, args...) \
+> +do { \
+> +        static char __printk_init_fmt[] __initdata = fmt; \
+> +        __printk_init(__printk_init_fmt, ##args); \
+> +} while (0)
+> +asmlinkage int __printk_init(const char * fmt, ...)
+> +	__attribute__ ((format (printf, 1, 2))) __cold;
+>  asmlinkage int vprintk(const char *fmt, va_list args)
+>  	__attribute__ ((format (printf, 1, 0)));
+>  asmlinkage int printk(const char * fmt, ...)
+> @@ -196,6 +203,9 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
+>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+>  				   unsigned int interval_msec);
+>  #else
+> +asmlinkage int printk_init(const char * fmt, ...)
+> +	__attribute__ ((format (printf, 1, 2))) __cold;
+> +static inline int __cold printk_init(const char *s, ...) { return 0; }
+>  static inline int vprintk(const char *s, va_list args)
+>  	__attribute__ ((format (printf, 1, 0)));
+>  static inline int vprintk(const char *s, va_list args) { return 0; }
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 8fb01c3..992a5c0 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -616,6 +616,18 @@ asmlinkage int printk(const char *fmt, ...)
+>  	return r;
+>  }
+>  
+> +asmlinkage __init int __printk_init(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = vprintk(fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
 
-Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/pci-gart_64.c
-+++ linux-2.6/arch/x86/kernel/pci-gart_64.c
-@@ -549,14 +549,50 @@ static __init unsigned read_aperture(str
- 	return aper_base;
- }
- 
-+static void enable_gart_translations(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < num_k8_northbridges; i++) {
-+		struct pci_dev *dev;
-+		u32 gatt_reg;
-+		u32 ctl;
-+
-+		dev = k8_northbridges[i];
-+		gatt_reg = __pa(agp_gatt_table) >> 12;
-+		gatt_reg <<= 4;
-+		pci_write_config_dword(dev, 0x98, gatt_reg);
-+		pci_read_config_dword(dev, 0x90, &ctl);
-+
-+		ctl |= 1;
-+		ctl &= ~((1<<4) | (1<<5));
-+
-+		pci_write_config_dword(dev, 0x90, ctl);
-+	}
-+}
-+
-+static bool fix_north_bridges;	/* call fix_up_north_bridges() on resume */
-+static u32 aperture_order;	/* arguments for fix_up_north_bridges() */
-+static u32 aperture_alloc;
-+
-+void set_gart_resume_data(u32 aper_order, u32 aper_alloc)
-+{
-+	fix_north_bridges = true;
-+	aperture_order = aper_order;
-+	aperture_alloc = aper_alloc;
-+}
-+
- static int gart_resume(struct sys_device *dev)
- {
-+	if (fix_north_bridges)
-+		fix_up_north_bridges(aperture_order, aperture_alloc);
-+	enable_gart_translations();
- 	return 0;
- }
- 
- static int gart_suspend(struct sys_device *dev, pm_message_t state)
- {
--	return -EINVAL;
-+	return 0;
- }
- 
- static struct sysdev_class gart_sysdev_class = {
-@@ -613,27 +649,14 @@ static __init int init_k8_gatt(struct ag
- 	memset(gatt, 0, gatt_size);
- 	agp_gatt_table = gatt;
- 
--	for (i = 0; i < num_k8_northbridges; i++) {
--		u32 gatt_reg;
--		u32 ctl;
--
--		dev = k8_northbridges[i];
--		gatt_reg = __pa(gatt) >> 12;
--		gatt_reg <<= 4;
--		pci_write_config_dword(dev, 0x98, gatt_reg);
--		pci_read_config_dword(dev, 0x90, &ctl);
--
--		ctl |= 1;
--		ctl &= ~((1<<4) | (1<<5));
--
--		pci_write_config_dword(dev, 0x90, ctl);
--	}
-+	enable_gart_translations();
- 
- 	error = sysdev_class_register(&gart_sysdev_class);
- 	if (!error)
- 		error = sysdev_register(&device_gart);
- 	if (error)
- 		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
-+
- 	flush_gart();
- 
- 	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
-Index: linux-2.6/arch/x86/kernel/k8.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/k8.c
-+++ linux-2.6/arch/x86/kernel/k8.c
-@@ -76,7 +76,7 @@ EXPORT_SYMBOL_GPL(cache_k8_northbridges)
- 
- /* Ignores subdevice/subvendor but as far as I can figure out
-    they're useless anyways */
--int __init early_is_k8_nb(u32 device)
-+int early_is_k8_nb(u32 device)
- {
- 	struct pci_device_id *id;
- 	u32 vendor = device & 0xffff;
-Index: linux-2.6/arch/x86/kernel/aperture_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/aperture_64.c
-+++ linux-2.6/arch/x86/kernel/aperture_64.c
-@@ -310,6 +310,25 @@ void __init early_gart_iommu_check(void)
- 
- }
- 
-+void fix_up_north_bridges(u32 aper_order, u32 aper_alloc)
-+{
-+	int num;
-+
-+	/* Fix up the north bridges */
-+	for (num = 24; num < 32; num++) {
-+		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
-+			continue;
-+
-+		/*
-+		 * Don't enable translation yet. That is done later.
-+		 * Assume this BIOS didn't initialise the GART so
-+		 * just overwrite all previous bits
-+		 */
-+		write_pci_config(0, num, 3, 0x90, aper_order << 1);
-+		write_pci_config(0, num, 3, 0x94, aper_alloc >> 25);
-+	}
-+}
-+
- void __init gart_iommu_hole_init(void)
- {
- 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
-@@ -400,17 +419,6 @@ void __init gart_iommu_hole_init(void)
- 		return;
- 	}
- 
--	/* Fix up the north bridges */
--	for (num = 24; num < 32; num++) {
--		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
--			continue;
--
--		/*
--		 * Don't enable translation yet. That is done later.
--		 * Assume this BIOS didn't initialise the GART so
--		 * just overwrite all previous bits
--		 */
--		write_pci_config(0, num, 3, 0x90, aper_order<<1);
--		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
--	}
-+	fix_up_north_bridges(aper_order, aper_alloc);
-+	set_gart_resume_data(aper_order, aper_alloc);
- }
-Index: linux-2.6/include/asm-x86/gart.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/gart.h
-+++ linux-2.6/include/asm-x86/gart.h
-@@ -11,6 +11,8 @@ extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
- extern void early_gart_iommu_check(void);
- extern void gart_iommu_hole_init(void);
-+extern void set_gart_resume_data(u32, u32);
-+extern void fix_up_north_bridges(u32, u32);
- extern int fallback_aper_order;
- extern int fallback_aper_force;
- extern int gart_iommu_aperture;
+We're going to want to be able to call printk_init() from modules. 
+Please fix and test that, if we decide to proceed.
+
+Oh, and we're going to need printk_meminit() and printk_cpuinit() and
+whatever.  
+
+Which probably means that __printk_init() can't be __init, unless all
+the CONFIG_ settings which control __cpuinit, __meminit etc are blowing
+in the right direction.
+
+It would be good if we could get some idea of the savings here, because
+boy this is going to be a pain.
