@@ -1,17 +1,14 @@
-From: "MinChan Kim" <minchan.kim@gmail.com>
-Subject: Re: [PATCH] add a printk_init variant storing format
-	strings in __initdata
-Date: Wed, 4 Jun 2008 17:32:14 +0900
-Message-ID: <28c262360806040132i50a7cd4ep900600ce1d91464e__36825.2278109596$1212595576$gmane$org@mail.gmail.com>
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
-	<1212485252.0@pinky>
-	<20080604011607.15dec5a7.akpm@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [QUESTION] How to reset TCP connections when
+ resuming system from disk/ram
+Date: Wed, 4 Jun 2008 14:54:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0806041452590.4505-100000@iolanthe.rowland.org>
+References: <4846B7A9.4020904@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080604011607.15dec5a7.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <4846B7A9.4020904@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,122 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-embedded <linux-embedded@vger.kernel.org>, linux-kernel@vger.kernel.org, pavel@suse.cz, Andy Whitcroft <apw@shadowen.org>, mingo@elte.hu, linux-pm@lists.linux-foundation.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-It is important about embedded system, too.
-So I add CC, linux-embedded.
+On Wed, 4 Jun 2008, Maxim Levitsky wrote:
 
-On Wed, Jun 4, 2008 at 5:16 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 3 Jun 2008 10:27:32 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
->
->>
->> [As gcc seems unable to help us out selecting the appropriate data segment
->> for the code, how about we did something like this?]
->>
->> When using printk from __init functions it would be desirable to place
->> the printk format strings in __initdata.  Add a printk_init() variant
->> which does this.
->>
->> This printk_init() is necessarily a #define so that we can declare the
->> format string in static scope and mark it __initdata.  We then call a
->> newly introduced __printk_init() variant which is identicle to printk() but
->> marked __init itself.  By ensuring that an __init variant of printk is used
->> we get proper section violation warnings when this is used incorrectly:
->>
->>     WARNING: vmlinux.o(.text+0x3): Section mismatch in reference from the
->>       function something() to the variable .init.data:__printk_init_fmt.31426
->>     The function something() references
->>     the variable __initdata __printk_init_fmt.31426.
->>     This is often because something lacks a __initdata
->>     annotation or the annotation of __printk_init_fmt.31426 is wrong.
->>
->> Note I have followed printk's pattern for __cold annotations.
->>
->
-> Ho hum.  This give everyone another way in which to bury everyone else
-> with patches.
->
-> Wouldn't it be great if checkpatch were to detect
-> fail-to-use-printk_init() in an __init function?
->
-> oh, speaking of checkpatch: please use it :)
->
->> ---
->>  include/linux/kernel.h |   10 ++++++++++
->>  kernel/printk.c        |   12 ++++++++++++
->>  2 files changed, 22 insertions(+), 0 deletions(-)
->> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->> index 792bf0a..7754196 100644
->> --- a/include/linux/kernel.h
->> +++ b/include/linux/kernel.h
->> @@ -180,6 +180,13 @@ struct pid;
->>  extern struct pid *session_of_pgrp(struct pid *pgrp);
->>
->>  #ifdef CONFIG_PRINTK
->> +#define printk_init(fmt, args...) \
->> +do { \
->> +        static char __printk_init_fmt[] __initdata = fmt; \
->> +        __printk_init(__printk_init_fmt, ##args); \
->> +} while (0)
->> +asmlinkage int __printk_init(const char * fmt, ...)
->> +     __attribute__ ((format (printf, 1, 2))) __cold;
->>  asmlinkage int vprintk(const char *fmt, va_list args)
->>       __attribute__ ((format (printf, 1, 0)));
->>  asmlinkage int printk(const char * fmt, ...)
->> @@ -196,6 +203,9 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->>                                  unsigned int interval_msec);
->>  #else
->> +asmlinkage int printk_init(const char * fmt, ...)
->> +     __attribute__ ((format (printf, 1, 2))) __cold;
->> +static inline int __cold printk_init(const char *s, ...) { return 0; }
->>  static inline int vprintk(const char *s, va_list args)
->>       __attribute__ ((format (printf, 1, 0)));
->>  static inline int vprintk(const char *s, va_list args) { return 0; }
->> diff --git a/kernel/printk.c b/kernel/printk.c
->> index 8fb01c3..992a5c0 100644
->> --- a/kernel/printk.c
->> +++ b/kernel/printk.c
->> @@ -616,6 +616,18 @@ asmlinkage int printk(const char *fmt, ...)
->>       return r;
->>  }
->>
->> +asmlinkage __init int __printk_init(const char *fmt, ...)
->> +{
->> +     va_list args;
->> +     int r;
->> +
->> +     va_start(args, fmt);
->> +     r = vprintk(fmt, args);
->> +     va_end(args);
->> +
->> +     return r;
->> +}
->
-> We're going to want to be able to call printk_init() from modules.
-> Please fix and test that, if we decide to proceed.
->
-> Oh, and we're going to need printk_meminit() and printk_cpuinit() and
-> whatever.
->
-> Which probably means that __printk_init() can't be __init, unless all
-> the CONFIG_ settings which control __cpuinit, __meminit etc are blowing
-> in the right direction.
->
-> It would be good if we could get some idea of the savings here, because
-> boy this is going to be a pain.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Maxim Levitsky wrote:
+> > Hi,
+> > 
+> > Thanks to your effort, the suspend to ram/disk works flawlessly on my
+> > desktop system.
+> > 
+> > But I still have rather small, but annoying problem, that system doesn't
+> > understands that a long suspend cycle was done, and still waits for long closed
+> > TCP connections.
+> > 
+> > I remember there was a patch to close all TCP connections on suspend, but it was rejected
+> > due to the fact that TCP sessions can live through short suspend/resume cycles.
+> > 
+> > What can you suggest here?
+> > Is there a tool to close all TCP connections?
 
+I don't know the answer to your question.
 
+However you should note that closing all TCP connections is overkill.  
+It's quite possible that some processes on your computer are 
+communicating among themselves using TCP; there's no reason those 
+connections should be killed.
 
--- 
-Kinds regards,
-MinChan Kim
+Alan Stern
