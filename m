@@ -1,14 +1,17 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [QUESTION] How to reset TCP connections when
- resuming system from disk/ram
-Date: Wed, 04 Jun 2008 23:38:59 +0300
-Message-ID: <4846FD63.9030208@gmail.com>
-References: <Pine.LNX.4.44L0.0806041452590.4505-100000@iolanthe.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
+	problems
+Date: Wed, 4 Jun 2008 19:38:01 -0700
+Message-ID: <200806041938.02045.david-b__28536.0319227495$1212633720$gmane$org@pacbell.net>
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+	<200805271432.12881.david-b@pacbell.net>
+	<20080531072036.GC5405@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806041452590.4505-100000@iolanthe.rowland.org>
+In-Reply-To: <20080531072036.GC5405@ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,49 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Tobias Diedrich <ranma+kernel@tdiedrich.de>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern wrote:
-> On Wed, 4 Jun 2008, Maxim Levitsky wrote:
-> 
->> Maxim Levitsky wrote:
->>> Hi,
->>>
->>> Thanks to your effort, the suspend to ram/disk works flawlessly on my
->>> desktop system.
->>>
->>> But I still have rather small, but annoying problem, that system doesn't
->>> understands that a long suspend cycle was done, and still waits for long closed
->>> TCP connections.
->>>
->>> I remember there was a patch to close all TCP connections on suspend, but it was rejected
->>> due to the fact that TCP sessions can live through short suspend/resume cycles.
->>>
->>> What can you suggest here?
->>> Is there a tool to close all TCP connections?
-> 
-> I don't know the answer to your question.
-> 
-> However you should note that closing all TCP connections is overkill.  
-> It's quite possible that some processes on your computer are 
-> communicating among themselves using TCP; there's no reason those 
-> connections should be killed.
-Thanks a lot for the pointer, I agree completely
-I guess such connections can be filtered by filtering out
-connections with all local addresses (localhost, and each nic address)
+On Saturday 31 May 2008, Pavel Machek wrote:
+> =
 
-When I have time I will probably write such a tool
-(I need to look at /proc/net/.. for list of open TCP sockets,
-and then I need to send RST to both ends of those sockets).
+> > Yeah; under ACPI, PCI does not act like it does everywhere else.
+> > Nor does wakeup in general.
+> > =
 
-I can even parse netstat output for list of open sockets.
+> > After sending patches to fix that for a couple years now, I'm
+> > well past being tired of doing that. =A0I suggest it's overdue for
+> > the ACPI team to get this part of their act together.
+> =
 
-> 
-> Alan Stern
-> 
+> I'm afraid you expect too much from the acpi team.
 
-Thanks a lot,
-	Best regards,
-		Maxim Levitsky
+I'm likewise "afraid" that may be too much to expect.
+
+If that's true, it's going to be even harder making
+the cross-platform Linux PM framework do what it needs
+to do.  Having various devices (not just laptop lids or
+power buttons, or RTC alarms) wake systems from low power
+states is pretty fundamental to the "P" part of ACPI.
+And it's not like wakeup events are unique to ACPI.
+
+
+> If you can't merge =
+
+> patches yourself, perhaps someone interested (Tobias? me?) can push
+> them for you?
+
+I kind of think the ACPI team needs to just become more
+responsive.  They helped Windows do this stuff; why has
+Linux only seen delays and obstacles in this area?
