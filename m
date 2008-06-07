@@ -1,18 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
-	AHCI: Hard Disk Corruption
-Date: Fri, 6 Jun 2008 15:20:11 +0200
-Message-ID: <20080606132011.GA9027__13594.7602954277$1212763506$gmane$org@ucw.cz>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	<1211815881.6140.19.camel@localhost.localdomain>
-	<20080527112236.GA13957@elf.ucw.cz>
-	<200806040033.20736.rjw@sisk.pl>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: Suspend and hibernation patchset for 2.6.26-rc3
+Date: Sat, 7 Jun 2008 11:21:57 +0100
+Message-ID: <200806071121.59619.carlos@strangeworlds.co.uk>
+References: <200805212329.59539.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200805212329.59539.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <200806040033.20736.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Patrick <ragamuffin@datacomm.ch>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday 21 May 2008 22:29:57 Rafael J. Wysocki wrote:
+> Patches 01-06 and 11 have been sent to Len as 2.6.27 material.  They have
+> been tested by me for some time (except for the most recent changes in
+> patches 01 and 11) and have not lead to any problems so far.
 
-> > > > Can you try this one? It should prevent suspend in the broken cases,
-> > > > but allow it in mem=4G config.
-> > > 
-> > > Sure!
-> > > 
-> > > root@babar:/usr/src/linux-2.6.25# patch -p1 < /home/pat/patch-2.6.26-rc3.gart-suspend
-> > > patching file arch/x86/kernel/pci-gart_64.c
-> > > Hunk #4 succeeded at 629 with fuzz 2 (offset 11 lines).
-> > > 
-> > > .....make; cp bzImage /boot; reboot....
-> > 
-> > Thanks!
-> > 
-> > This goes on top of the second patch... it makes it work.
-> > 
-> > 								Pavel
-> > 
-> > For iommu suspend/resume code to work, functions it calls may not be
-> > __init.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> I consolidated some of your patches sent in this thread and made the result
-> apply to the current -git.  It hasn't been tested yet, but does it look good?
-> 
-> It's on top of the patch that adds the GART sysdev.
+Patch 11:
 
-Looks ok to me.
+Tested-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-							Pavel
+My box can now suspend & resume quite happily with acpi_sleep=old_ordering
+
+(That's on latest 2.6.26 git + the patch series on top).
+
+-Carlos
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
