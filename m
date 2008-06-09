@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
-	AHCI: Hard Disk Corruption
-Date: Mon, 9 Jun 2008 00:36:31 +0200
-Message-ID: <200806090036.32267.rjw__8314.31153133071$1212964781$gmane$org@sisk.pl>
+Subject: [PATCH] x86 GART: Add resume handling (was: Re: >3G =>
+	iommu => suspend problems -- was Re: SB600 AHCI: Hard Disk
+	Corruption)
+Date: Tue, 10 Jun 2008 00:10:48 +0200
+Message-ID: <200806100010.49194.rjw__33364.3683734865$1213049591$gmane$org@sisk.pl>
 References: <1211717435.6038.53.camel@localhost.localdomain>
-	<200806040033.20736.rjw@sisk.pl> <20080606132011.GA9027@ucw.cz>
+	<200806090036.32267.rjw@sisk.pl> <20080609124630.GA28799@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080606132011.GA9027@ucw.cz>
+In-Reply-To: <20080609124630.GA28799@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,52 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Patrick <ragamuffin@datacomm.ch>, Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 6 of June 2008, Pavel Machek wrote:
-> Hi!
+On Monday, 9 of June 2008, Ingo Molnar wrote:
 > 
-> > > > > Can you try this one? It should prevent suspend in the broken cases,
-> > > > > but allow it in mem=4G config.
-> > > > 
-> > > > Sure!
-> > > > 
-> > > > root@babar:/usr/src/linux-2.6.25# patch -p1 < /home/pat/patch-2.6.26-rc3.gart-suspend
-> > > > patching file arch/x86/kernel/pci-gart_64.c
-> > > > Hunk #4 succeeded at 629 with fuzz 2 (offset 11 lines).
-> > > > 
-> > > > .....make; cp bzImage /boot; reboot....
-> > > 
-> > > Thanks!
-> > > 
-> > > This goes on top of the second patch... it makes it work.
-> > > 
-> > > 								Pavel
-> > > 
-> > > For iommu suspend/resume code to work, functions it calls may not be
-> > > __init.
-> > > 
-> > > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > I consolidated some of your patches sent in this thread and made the result
-> > apply to the current -git.  It hasn't been tested yet, but does it look good?
-> > 
-> > It's on top of the patch that adds the GART sysdev.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> Looks ok to me.
+> > > Looks ok to me.
+> > 
+> > Still, it may be improved. :-)
+> > 
+> > First, we shouldn't mix the "early PCI config access" thing with the 
+> > "normal" method.  Second, we don't have to check for the K8 north 
+> > bridges on resume, because we already know where they are in the 
+> > configuration space and we can use this information.
+> > 
+> > Updated patch follows.  It has been tested a little on my new 4 GB 
+> > test box on which 2.6.26-rc4 failed miserably with severe 
+> > consequences.  More testing welcome, but please be careful.
+> 
+> Rafael, could we try this against the tip/x86/gart tree perhaps? It 
+> already has a couple of fixes from Pavel and your patch collides with 
+> them in a non-obvious way.
+> 
+>   http://people.redhat.com/mingo/tip.git/README
 
-Still, it may be improved. :-)
+Okay, appended is the patch rebased on tip/x86/gart with (mainline) commit
+cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: prevent suspend if
+we could not resume" (which appears to be missing from tip/x86/gart) applied.
 
-First, we shouldn't mix the "early PCI config access" thing with the "normal"
-method.  Second, we don't have to check for the K8 north bridges on resume,
-because we already know where they are in the configuration space and we can
-use this information.
-
-Updated patch follows.  It has been tested a little on my new 4 GB test box on
-which 2.6.26-rc4 failed miserably with severe consequences.  More testing
-welcome, but please be careful.
+This version of the patch doesn't break compilation, but it hasn't been really
+tested yet.
 
 Thanks,
 Rafael
@@ -76,15 +64,26 @@ Add resume handling to GART IOMMU.
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
  arch/x86/kernel/aperture_64.c |    2 +
- arch/x86/kernel/pci-gart_64.c |   75 +++++++++++++++++++++++++++++++++---------
+ arch/x86/kernel/pci-gart_64.c |   57 ++++++++++++++++++++++++++++++++++++++----
  include/asm-x86/gart.h        |    1 
- 3 files changed, 62 insertions(+), 16 deletions(-)
+ 3 files changed, 55 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
+Index: tip.git/arch/x86/kernel/aperture_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/pci-gart_64.c
-+++ linux-2.6/arch/x86/kernel/pci-gart_64.c
-@@ -549,14 +549,70 @@ static __init unsigned read_aperture(str
+--- tip.git.orig/arch/x86/kernel/aperture_64.c
++++ tip.git/arch/x86/kernel/aperture_64.c
+@@ -496,4 +496,6 @@ out:
+ 			write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
+ 		}
+ 	}
++
++	set_up_gart_resume(aper_order, aper_alloc);
+ }
+Index: tip.git/arch/x86/kernel/pci-gart_64.c
+===================================================================
+--- tip.git.orig/arch/x86/kernel/pci-gart_64.c
++++ tip.git/arch/x86/kernel/pci-gart_64.c
+@@ -549,14 +549,63 @@ static __init unsigned read_aperture(str
  	return aper_base;
  }
  
@@ -93,20 +92,9 @@ Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
 +	int i;
 +
 +	for (i = 0; i < num_k8_northbridges; i++) {
-+		struct pci_dev *dev;
-+		u32 gatt_reg;
-+		u32 ctl;
++		struct pci_dev *dev = k8_northbridges[i];
 +
-+		dev = k8_northbridges[i];
-+		gatt_reg = __pa(agp_gatt_table) >> 12;
-+		gatt_reg <<= 4;
-+		pci_write_config_dword(dev, 0x98, gatt_reg);
-+		pci_read_config_dword(dev, 0x90, &ctl);
-+
-+		ctl |= 1;
-+		ctl &= ~((1<<4) | (1<<5));
-+
-+		pci_write_config_dword(dev, 0x90, ctl);
++		enable_gart_translation(dev, __pa(agp_gatt_table));
 +	}
 +}
 +
@@ -132,6 +120,8 @@ Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
 +	if (fix_up_north_bridges) {
 +		int i;
 +
++		printk(KERN_INFO "PCI-DMA: Restoring GART aperture settings\n");
++
 +		for (i = 0; i < num_k8_northbridges; i++) {
 +			struct pci_dev *dev = k8_northbridges[i];
 +
@@ -139,8 +129,10 @@ Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
 +			 * Don't enable translations just yet.  That is the next
 +			 * step.  Restore the pre-suspend aperture settings.
 +			 */
-+			pci_write_config_dword(dev, 0x90, aperture_order << 1);
-+			pci_write_config_dword(dev, 0x94, aperture_alloc >> 25);
++			pci_write_config_dword(dev, AMD64_GARTAPERTURECTL,
++						aperture_order << 1);
++			pci_write_config_dword(dev, AMD64_GARTAPERTUREBASE,
++						aperture_alloc >> 25);
 +		}
 +	}
 +
@@ -156,24 +148,13 @@ Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
  }
  
  static struct sysdev_class gart_sysdev_class = {
-@@ -614,27 +670,14 @@ static __init int init_k8_gatt(struct ag
+@@ -614,16 +663,14 @@ static __init int init_k8_gatt(struct ag
  	memset(gatt, 0, gatt_size);
  	agp_gatt_table = gatt;
  
 -	for (i = 0; i < num_k8_northbridges; i++) {
--		u32 gatt_reg;
--		u32 ctl;
--
 -		dev = k8_northbridges[i];
--		gatt_reg = __pa(gatt) >> 12;
--		gatt_reg <<= 4;
--		pci_write_config_dword(dev, 0x98, gatt_reg);
--		pci_read_config_dword(dev, 0x90, &ctl);
--
--		ctl |= 1;
--		ctl &= ~((1<<4) | (1<<5));
--
--		pci_write_config_dword(dev, 0x90, ctl);
+-		enable_gart_translation(dev, __pa(gatt));
 -	}
 +	enable_gart_translations();
  
@@ -186,22 +167,11 @@ Index: linux-2.6/arch/x86/kernel/pci-gart_64.c
  	flush_gart();
  
  	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
-Index: linux-2.6/arch/x86/kernel/aperture_64.c
+Index: tip.git/include/asm-x86/gart.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/aperture_64.c
-+++ linux-2.6/arch/x86/kernel/aperture_64.c
-@@ -413,4 +413,6 @@ void __init gart_iommu_hole_init(void)
- 		write_pci_config(0, num, 3, 0x90, aper_order<<1);
- 		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
- 	}
-+
-+	set_up_gart_resume(aper_order, aper_alloc);
- }
-Index: linux-2.6/include/asm-x86/gart.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/gart.h
-+++ linux-2.6/include/asm-x86/gart.h
-@@ -11,6 +11,7 @@ extern void gart_iommu_shutdown(void);
+--- tip.git.orig/include/asm-x86/gart.h
++++ tip.git/include/asm-x86/gart.h
+@@ -14,6 +14,7 @@ extern void gart_iommu_shutdown(void);
  extern void __init gart_parse_options(char *);
  extern void early_gart_iommu_check(void);
  extern void gart_iommu_hole_init(void);
