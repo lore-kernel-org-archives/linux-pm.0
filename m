@@ -1,17 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] x86 GART: Add resume handling (was: Re: >3G =>
-	iommu => suspend problems -- was Re: SB600 AHCI: Hard Disk
-	Corruption)
-Date: Tue, 10 Jun 2008 00:10:48 +0200
-Message-ID: <200806100010.49194.rjw__33364.3683734865$1213049591$gmane$org@sisk.pl>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	<200806090036.32267.rjw@sisk.pl> <20080609124630.GA28799@elte.hu>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: [PATCH -mm 2/2] kexec jump -v11: save/restore device
+	state
+Date: Tue, 10 Jun 2008 15:15:06 +0800
+Message-ID: <1213082106.22608.30.camel__11993.5746457942$1213082474$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080609124630.GA28799@elte.hu>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,161 +16,256 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundatio>
+Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 9 of June 2008, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > Looks ok to me.
-> > 
-> > Still, it may be improved. :-)
-> > 
-> > First, we shouldn't mix the "early PCI config access" thing with the 
-> > "normal" method.  Second, we don't have to check for the K8 north 
-> > bridges on resume, because we already know where they are in the 
-> > configuration space and we can use this information.
-> > 
-> > Updated patch follows.  It has been tested a little on my new 4 GB 
-> > test box on which 2.6.26-rc4 failed miserably with severe 
-> > consequences.  More testing welcome, but please be careful.
-> 
-> Rafael, could we try this against the tip/x86/gart tree perhaps? It 
-> already has a couple of fixes from Pavel and your patch collides with 
-> them in a non-obvious way.
-> 
->   http://people.redhat.com/mingo/tip.git/README
+This patch implements devices state save/restore before after kexec.
 
-Okay, appended is the patch rebased on tip/x86/gart with (mainline) commit
-cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: prevent suspend if
-we could not resume" (which appears to be missing from tip/x86/gart) applied.
 
-This version of the patch doesn't break compilation, but it hasn't been really
-tested yet.
+This patch together with features in kexec_jump patch can be used for
+following:
 
-Thanks,
-Rafael
+- A simple hibernation implementation without ACPI support. You can
+  kexec a hibernating kernel, save the memory image of original system
+  and shutdown the system. When resuming, you restore the memory image
+  of original system via ordinary kexec load then jump back.
+
+- Kernel/system debug through making system snapshot. You can make
+  system snapshot, jump back, do some thing and make another system
+  snapshot.
+
+- Cooperative multi-kernel/system. With kexec jump, you can switch
+  between several kernels/systems quickly without boot process except
+  the first time. This appears like swap a whole kernel/system out/in.
+
+- A general method to call program in physical mode (paging turning
+  off). This can be used to invoke BIOS code under Linux.
+
+
+The following user-space tools can be used with kexec jump:
+
+- kexec-tools needs to be patched to support kexec jump. The patches
+  and the precompiled kexec can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
+
+- makedumpfile with patches are used as memory image saving tool, it
+  can exclude free pages from original kernel memory image file. The
+  patches and the precompiled makedumpfile can be download from the
+  following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-src_cvs_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-patches_cvs_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile_cvs_kh10
+
+- An initramfs image can be used as the root file system of kexeced
+  kernel. An initramfs image built with "BuildRoot" can be downloaded
+  from the following URL:
+       initramfs image: http://khibernation.sourceforge.net/download/release_v10/initramfs/rootfs_cvs_kh10.gz
+  All user space tools above are included in the initramfs image.
+
+
+Usage example of simple hibernation:
+
+1. Compile and install patched kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y
+CONFIG_PM=y
+
+2. Build an initramfs image contains kexec-tool and makedumpfile, or
+   download the pre-built initramfs image, called rootfs.gz in
+   following text.
+
+3. Prepare a partition to save memory image of original kernel, called
+   hibernating partition in following text.
+
+4. Boot kernel compiled in step 1 (kernel A).
+
+5. In the kernel A, load kernel compiled in step 1 (kernel B) with
+   /sbin/kexec. The shell command line can be as follow:
+
+   /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
+     --mem-max=0xffffff --initrd=rootfs.gz
+
+6. Boot the kernel B with following shell command line:
+
+   /sbin/kexec -e
+
+7. The kernel B will boot as normal kexec. In kernel B the memory
+   image of kernel A can be saved into hibernating partition as
+   follow:
+
+   jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
+   echo $jump_back_entry > kexec_jump_back_entry
+   cp /proc/vmcore dump.elf
+
+   Then you can shutdown the machine as normal.
+
+8. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+   root file system.
+
+9. In kernel C, load the memory image of kernel A as follow:
+
+   /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
+
+10. Jump back to the kernel A as follow:
+
+   /sbin/kexec -e
+
+   Then, kernel A is resumed.
+
+
+Implementation point:
+
+To support jumping between two kernels, before jumping to (executing)
+the new kernel and jumping back to the original kernel, the devices
+are put into quiescent state, and the state of devices and CPU is
+saved. After jumping back from kexeced kernel and jumping to the new
+kernel, the state of devices and CPU are restored accordingly. The
+devices/CPU state save/restore code of software suspend is called to
+implement corresponding function.
+
+
+Known issues:
+
+- Because the segment number supported by sys_kexec_load is limited,
+  hibernation image with many segments may not be load. This is
+  planned to be eliminated by adding a new flag to sys_kexec_load to
+  make a image can be loaded with multiple sys_kexec_load invoking.
+
+
+ChangeLog:
+
+v11:
+
+- Add disable_IO_APIC() to machine_kexec() to put IO APIC into legacy
+  mode before executing new kernel.
+
+- Base on top of new hibernation/restore device driver callback.
+
+v10:
+
+- Split from original kexec_jump patch.
+
+
+Now, only the i386 architecture is supported. The patchset is based on
+Linux kernel 2.6.26-rc5-mm1, and has been tested on IBM T42 with ACPI
+on and off.
+
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
-Add resume handling to GART IOMMU.
+ arch/x86/kernel/machine_kexec_32.c |    6 +++++
+ include/linux/suspend.h            |    2 +
+ kernel/kexec.c                     |   43 ++++++++++++++++++++++++++++++++++++-
+ kernel/power/power.h               |    2 -
+ 4 files changed, 50 insertions(+), 3 deletions(-)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/aperture_64.c |    2 +
- arch/x86/kernel/pci-gart_64.c |   57 ++++++++++++++++++++++++++++++++++++++----
- include/asm-x86/gart.h        |    1 
- 3 files changed, 55 insertions(+), 5 deletions(-)
-
-Index: tip.git/arch/x86/kernel/aperture_64.c
-===================================================================
---- tip.git.orig/arch/x86/kernel/aperture_64.c
-+++ tip.git/arch/x86/kernel/aperture_64.c
-@@ -496,4 +496,6 @@ out:
- 			write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
- 		}
- 	}
-+
-+	set_up_gart_resume(aper_order, aper_alloc);
- }
-Index: tip.git/arch/x86/kernel/pci-gart_64.c
-===================================================================
---- tip.git.orig/arch/x86/kernel/pci-gart_64.c
-+++ tip.git/arch/x86/kernel/pci-gart_64.c
-@@ -549,14 +549,63 @@ static __init unsigned read_aperture(str
- 	return aper_base;
- }
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -25,6 +25,10 @@
+ #include <linux/utsname.h>
+ #include <linux/numa.h>
+ #include <linux/suspend.h>
++#include <linux/freezer.h>
++#include <linux/pm.h>
++#include <linux/cpu.h>
++#include <linux/console.h>
  
-+static void enable_gart_translations(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < num_k8_northbridges; i++) {
-+		struct pci_dev *dev = k8_northbridges[i];
-+
-+		enable_gart_translation(dev, __pa(agp_gatt_table));
-+	}
-+}
-+
-+/*
-+ * If fix_up_north_bridges is set, the north bridges have to be fixed up on
-+ * resume in the same way as they are handled in gart_iommu_hole_init().
-+ */
-+static bool fix_up_north_bridges;
-+static u32 aperture_order;
-+static u32 aperture_alloc;
-+
-+void set_up_gart_resume(u32 aper_order, u32 aper_alloc)
-+{
-+	fix_up_north_bridges = true;
-+	aperture_order = aper_order;
-+	aperture_alloc = aper_alloc;
-+}
-+
- static int gart_resume(struct sys_device *dev)
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1427,8 +1431,34 @@ module_init(crash_save_vmcoreinfo_init)
+ 
+ int kexec_jump(struct kimage *image)
  {
-+	printk(KERN_INFO "PCI-DMA: Resuming GART IOMMU\n");
++	int error = 0;
 +
-+	if (fix_up_north_bridges) {
-+		int i;
-+
-+		printk(KERN_INFO "PCI-DMA: Restoring GART aperture settings\n");
-+
-+		for (i = 0; i < num_k8_northbridges; i++) {
-+			struct pci_dev *dev = k8_northbridges[i];
-+
-+			/*
-+			 * Don't enable translations just yet.  That is the next
-+			 * step.  Restore the pre-suspend aperture settings.
-+			 */
-+			pci_write_config_dword(dev, AMD64_GARTAPERTURECTL,
-+						aperture_order << 1);
-+			pci_write_config_dword(dev, AMD64_GARTAPERTUREBASE,
-+						aperture_alloc >> 25);
++	mutex_lock(&pm_mutex);
+ 	if (image->preserve_context) {
++		pm_prepare_console();
++		error = freeze_processes();
++		if (error) {
++			error = -EBUSY;
++			goto Exit;
 +		}
++		suspend_console();
++		error = device_suspend(PMSG_FREEZE);
++		if (error)
++			goto Resume_console;
++		error = disable_nonboot_cpus();
++		if (error)
++			goto Resume_devices;
+ 		local_irq_disable();
++		/* At this point, device_suspend() has been called,
++		 * but *not* device_power_down(). We *must*
++		 * device_power_down() now.  Otherwise, drivers for
++		 * some devices (e.g. interrupt controllers) become
++		 * desynchronized with the actual state of the
++		 * hardware at resume time, and evil weirdness ensues.
++		 */
++		error = device_power_down(PMSG_FREEZE);
++		if (error)
++			goto Enable_irqs;
+ 		save_processor_state();
+ 	}
+ 
+@@ -1436,7 +1466,18 @@ int kexec_jump(struct kimage *image)
+ 
+ 	if (image->preserve_context) {
+ 		restore_processor_state();
++		device_power_up(PMSG_RESTORE);
++ Enable_irqs:
+ 		local_irq_enable();
++		enable_nonboot_cpus();
++ Resume_devices:
++		device_resume(PMSG_RESTORE);
++ Resume_console:
++		resume_console();
++		thaw_processes();
++ Exit:
++		pm_restore_console();
+ 	}
+-	return 0;
++	mutex_unlock(&pm_mutex);
++	return error;
+ }
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -53,8 +53,6 @@ extern int hibernation_platform_enter(vo
+ 
+ extern int pfn_is_nosave(unsigned long);
+ 
+-extern struct mutex pm_mutex;
+-
+ #define power_attr(_name) \
+ static struct kobj_attribute _name##_attr = {	\
+ 	.attr	= {				\
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -266,4 +266,6 @@ static inline void register_nosave_regio
+ }
+ #endif
+ 
++extern struct mutex pm_mutex;
++
+ #endif /* _LINUX_SUSPEND_H */
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -125,6 +125,12 @@ void machine_kexec(struct kimage *image)
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
++	if (image->preserve_context) {
++#ifdef CONFIG_X86_IO_APIC
++		disable_IO_APIC();
++#endif
 +	}
 +
-+	enable_gart_translations();
-+
- 	return 0;
- }
+ 	control_page = page_address(image->control_code_page);
+ 	memcpy(control_page, relocate_kernel, PAGE_SIZE/2);
  
- static int gart_suspend(struct sys_device *dev, pm_message_t state)
- {
--	return -EINVAL;
-+	return 0;
- }
- 
- static struct sysdev_class gart_sysdev_class = {
-@@ -614,16 +663,14 @@ static __init int init_k8_gatt(struct ag
- 	memset(gatt, 0, gatt_size);
- 	agp_gatt_table = gatt;
- 
--	for (i = 0; i < num_k8_northbridges; i++) {
--		dev = k8_northbridges[i];
--		enable_gart_translation(dev, __pa(gatt));
--	}
-+	enable_gart_translations();
- 
- 	error = sysdev_class_register(&gart_sysdev_class);
- 	if (!error)
- 		error = sysdev_register(&device_gart);
- 	if (error)
- 		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
-+
- 	flush_gart();
- 
- 	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
-Index: tip.git/include/asm-x86/gart.h
-===================================================================
---- tip.git.orig/include/asm-x86/gart.h
-+++ tip.git/include/asm-x86/gart.h
-@@ -14,6 +14,7 @@ extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
- extern void early_gart_iommu_check(void);
- extern void gart_iommu_hole_init(void);
-+extern void set_up_gart_resume(u32, u32);
- extern int fallback_aper_order;
- extern int fallback_aper_force;
- extern int gart_iommu_aperture;
