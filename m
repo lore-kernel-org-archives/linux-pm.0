@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/5] snapshot: Push BKL down into ioctl handlers
-Date: Wed, 11 Jun 2008 22:07:52 +0200
-Message-ID: <200806112207.53217.rjw__43261.078632395$1213215404$gmane$org@sisk.pl>
+Subject: [PATCH 1/5] ACPI Hibernation: Use ACPI hardware signature
+Date: Wed, 11 Jun 2008 22:01:47 +0200
+Message-ID: <200806112201.48142.rjw__23315.8321622343$1213215480$gmane$org@sisk.pl>
 References: <200806112158.20806.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,66 +19,120 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: Alan Cox <alan@redhat.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+From: Shaohua Li <shaohua.li@intel.com>
 
-Push BKL down into ioctl handlers - snapshot device.
+ACPI defines a hardware signature.  BIOS calculates the signature
+according to hardware configure and if hardware changes while
+hibernated, the signature will change.  In that case, S4 resume
+should fail.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Still, there may be systems on which this mechanism does not work
+correctly, so it is better to provide a workaround for them.  For
+this reason, add a new switch to the acpi_sleep= command line
+argument allowing one to disable hardware signature checking.
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/user.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ Documentation/kernel-parameters.txt |    4 +++-
+ arch/x86/kernel/acpi/sleep.c        |    2 ++
+ drivers/acpi/sleep/main.c           |   22 ++++++++++++++++++++++
+ include/linux/acpi.h                |    3 +++
+ 4 files changed, 30 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/kernel/power/user.c
+Index: linux-2.6/drivers/acpi/sleep/main.c
 ===================================================================
---- linux-2.6.orig/kernel/power/user.c
-+++ linux-2.6/kernel/power/user.c
-@@ -23,6 +23,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <linux/smp_lock.h>
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -255,6 +255,15 @@ static struct dmi_system_id __initdata a
+ #endif /* CONFIG_SUSPEND */
  
- #include <asm/uaccess.h>
- 
-@@ -164,8 +165,8 @@ static ssize_t snapshot_write(struct fil
- 	return res;
- }
- 
--static int snapshot_ioctl(struct inode *inode, struct file *filp,
--                          unsigned int cmd, unsigned long arg)
-+static long snapshot_ioctl(struct file *filp, unsigned int cmd,
-+							unsigned long arg)
- {
- 	int error = 0;
- 	struct snapshot_data *data;
-@@ -181,6 +182,8 @@ static int snapshot_ioctl(struct inode *
- 
- 	data = filp->private_data;
- 
-+	lock_kernel();
+ #ifdef CONFIG_HIBERNATION
++static unsigned long s4_hardware_signature;
++static struct acpi_table_facs *facs;
++static bool nosigcheck;
 +
- 	switch (cmd) {
- 
- 	case SNAPSHOT_FREEZE:
-@@ -389,7 +392,7 @@ static int snapshot_ioctl(struct inode *
- 		error = -ENOTTY;
- 
- 	}
--
-+	unlock_kernel();
- 	return error;
++void __init acpi_no_s4_hw_signature(void)
++{
++	nosigcheck = true;
++}
++
+ static int acpi_hibernation_begin(void)
+ {
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+@@ -301,6 +310,12 @@ static void acpi_hibernation_leave(void)
+ 	acpi_enable();
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
++	/* Check the hardware signature */
++	if (facs && s4_hardware_signature != facs->hardware_signature) {
++		printk(KERN_EMERG "ACPI: Hardware changed while hibernated, "
++			"cannot resume!\n");
++		panic("ACPI S4 hardware signature mismatch");
++	}
  }
  
-@@ -399,7 +402,7 @@ static const struct file_operations snap
- 	.read = snapshot_read,
- 	.write = snapshot_write,
- 	.llseek = no_llseek,
--	.ioctl = snapshot_ioctl,
-+	.unlocked_ioctl = snapshot_ioctl,
- };
+ static void acpi_hibernation_finish(void)
+@@ -501,6 +516,13 @@ int __init acpi_sleep_init(void)
+ 		hibernation_set_ops(&acpi_hibernation_ops);
+ 		sleep_states[ACPI_STATE_S4] = 1;
+ 		printk(" S4");
++		if (!nosigcheck) {
++			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
++				(struct acpi_table_header **)&facs);
++			if (facs)
++				s4_hardware_signature =
++					facs->hardware_signature;
++		}
+ 	}
+ #endif
+ 	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -147,10 +147,12 @@ and is between 256 and 4096 characters. 
+ 			default: 0
  
- static struct miscdevice snapshot_device = {
+ 	acpi_sleep=	[HW,ACPI] Sleep options
+-			Format: { s3_bios, s3_mode, s3_beep }
++			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig }
+ 			See Documentation/power/video.txt for s3_bios and s3_mode.
+ 			s3_beep is for debugging; it makes the PC's speaker beep
+ 			as soon as the kernel's real-mode entry point is called.
++			s4_nohwsig prevents ACPI hardware signature from being
++			used during resume from hibernation.
+ 
+ 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+ 			Format: { level | edge | high | low }
+Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
++++ linux-2.6/arch/x86/kernel/acpi/sleep.c
+@@ -124,6 +124,8 @@ static int __init acpi_sleep_setup(char 
+ 			acpi_realmode_flags |= 2;
+ 		if (strncmp(str, "s3_beep", 7) == 0)
+ 			acpi_realmode_flags |= 4;
++		if (strncmp(str, "s4_nohwsig", 10) == 0)
++			acpi_no_s4_hw_signature();
+ 		str = strchr(str, ',');
+ 		if (str != NULL)
+ 			str += strspn(str, ", \t");
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -234,6 +234,9 @@ int acpi_check_region(resource_size_t st
+ int acpi_check_mem_region(resource_size_t start, resource_size_t n,
+ 		      const char *name);
+ 
++#ifdef CONFIG_PM_SLEEP
++void __init acpi_no_s4_hw_signature(void);
++#endif /* CONFIG_PM_SLEEP */
+ #else	/* CONFIG_ACPI */
+ 
+ static inline int early_acpi_boot_init(void)
