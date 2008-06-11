@@ -1,15 +1,14 @@
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mm 2/2] kexec jump -v11: save/restore device
-	state
-Date: Wed, 11 Jun 2008 12:30:26 -0400
-Message-ID: <20080611163026.GG6450__2474.02137979424$1213202217$gmane$org@redhat.com>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 3/5] Freezer: Introduce PF_FREEZER_NOSIG
+Date: Wed, 11 Jun 2008 22:04:29 +0200
+Message-ID: <200806112204.30435.rjw__23817.507204558$1213215174$gmane$org@sisk.pl>
+References: <200806112158.20806.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200806112158.20806.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <1213082106.22608.30.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,128 +18,261 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 03:15:06PM +0800, Huang, Ying wrote:
-> This patch implements devices state save/restore before after kexec.
-> 
-> 
-> This patch together with features in kexec_jump patch can be used for
-> following:
-> 
-> - A simple hibernation implementation without ACPI support. You can
->   kexec a hibernating kernel, save the memory image of original system
->   and shutdown the system. When resuming, you restore the memory image
->   of original system via ordinary kexec load then jump back.
-> 
-> - Kernel/system debug through making system snapshot. You can make
->   system snapshot, jump back, do some thing and make another system
->   snapshot.
-> 
-> - Cooperative multi-kernel/system. With kexec jump, you can switch
->   between several kernels/systems quickly without boot process except
->   the first time. This appears like swap a whole kernel/system out/in.
-> 
-> - A general method to call program in physical mode (paging turning
->   off). This can be used to invoke BIOS code under Linux.
-> 
-> 
-> The following user-space tools can be used with kexec jump:
-> 
-> - kexec-tools needs to be patched to support kexec jump. The patches
->   and the precompiled kexec can be download from the following URL:
->        source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
->        patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
->        binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
-> 
-> - makedumpfile with patches are used as memory image saving tool, it
->   can exclude free pages from original kernel memory image file. The
->   patches and the precompiled makedumpfile can be download from the
->   following URL:
->        source: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-src_cvs_kh10.tar.bz2
->        patches: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-patches_cvs_kh10.tar.bz2
->        binary: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile_cvs_kh10
-> 
-> - An initramfs image can be used as the root file system of kexeced
->   kernel. An initramfs image built with "BuildRoot" can be downloaded
->   from the following URL:
->        initramfs image: http://khibernation.sourceforge.net/download/release_v10/initramfs/rootfs_cvs_kh10.gz
->   All user space tools above are included in the initramfs image.
-> 
-> 
-> Usage example of simple hibernation:
-> 
-> 1. Compile and install patched kernel with following options selected:
-> 
-> CONFIG_X86_32=y
-> CONFIG_RELOCATABLE=y
-> CONFIG_KEXEC=y
-> CONFIG_CRASH_DUMP=y
-> CONFIG_PM=y
-> 
-> 2. Build an initramfs image contains kexec-tool and makedumpfile, or
->    download the pre-built initramfs image, called rootfs.gz in
->    following text.
-> 
-> 3. Prepare a partition to save memory image of original kernel, called
->    hibernating partition in following text.
-> 
-> 4. Boot kernel compiled in step 1 (kernel A).
-> 
-> 5. In the kernel A, load kernel compiled in step 1 (kernel B) with
->    /sbin/kexec. The shell command line can be as follow:
-> 
->    /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
->      --mem-max=0xffffff --initrd=rootfs.gz
-> 
-> 6. Boot the kernel B with following shell command line:
-> 
->    /sbin/kexec -e
-> 
-> 7. The kernel B will boot as normal kexec. In kernel B the memory
->    image of kernel A can be saved into hibernating partition as
->    follow:
-> 
->    jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
->    echo $jump_back_entry > kexec_jump_back_entry
->    cp /proc/vmcore dump.elf
-> 
->    Then you can shutdown the machine as normal.
-> 
-> 8. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
->    root file system.
-> 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-One of the concerns raised by hibernation people in the past was to use
-single boot loader entry to boot normally as well while resuming a kernel.
+The freezer currently attempts to distinguish kernel threads from
+user space tasks by checking if their mm pointer is unset and it
+does not send fake signals to kernel threads.  However, there are
+kernel threads, mostly related to networking, that behave like
+user space tasks and may want to be sent a fake signal to be frozen.
 
-So in this case a user either needs to maintain two boot-loader entries
-or modify it on the fly. I wished there was a better way to handle that.
+Introduce the new process flag PF_FREEZER_NOSIG that will be set
+by default for all kernel threads and make the freezer only send
+fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
+the set_freezable_with_signal() function to be called by the kernel
+threads that want to be sent a fake signal for freezing.
 
-I am more interested in ability to have multiple kernel loaded in RAM
-and capability to switch between them. Allows me to take non-disruptive
-core dumps and somebody wanted to snapshots the kernels. That should
-still work.
+This patch should not change the freezer's observable behavior.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@suse.cz>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+---
+ include/linux/freezer.h |   10 ++++
+ include/linux/sched.h   |    1 
+ kernel/kthread.c        |    2 
+ kernel/power/process.c  |   97 ++++++++++++++++++++----------------------------
+ 4 files changed, 54 insertions(+), 56 deletions(-)
 
-[..]
-> --- a/arch/x86/kernel/machine_kexec_32.c
-> +++ b/arch/x86/kernel/machine_kexec_32.c
-> @@ -125,6 +125,12 @@ void machine_kexec(struct kimage *image)
->  	/* Interrupts aren't acceptable while we reboot */
->  	local_irq_disable();
->  
-> +	if (image->preserve_context) {
-> +#ifdef CONFIG_X86_IO_APIC
-> +		disable_IO_APIC();
-> +#endif
-
-I think it would be a good idea to put some kind of comment here. We
-need to put APICs in legacy mode so that we can get timer interrupts
-in second kernel. kexec/kdump paths already have calls to
-disable_IO_APIC() in one form or other. kexec jump path also needs one.
-
-Thanks
-Vivek
+Index: linux-2.6/include/linux/freezer.h
+===================================================================
+--- linux-2.6.orig/include/linux/freezer.h
++++ linux-2.6/include/linux/freezer.h
+@@ -128,6 +128,15 @@ static inline void set_freezable(void)
+ }
+ 
+ /*
++ * Tell the freezer that the current task should be frozen by it and that it
++ * should send a fake signal to the task to freeze it.
++ */
++static inline void set_freezable_with_signal(void)
++{
++	current->flags &= ~(PF_NOFREEZE | PF_FREEZER_NOSIG);
++}
++
++/*
+  * Freezer-friendly wrappers around wait_event_interruptible() and
+  * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
+  */
+@@ -174,6 +183,7 @@ static inline void freezer_do_not_count(
+ static inline void freezer_count(void) {}
+ static inline int freezer_should_skip(struct task_struct *p) { return 0; }
+ static inline void set_freezable(void) {}
++static inline void set_freezable_with_signal(void) {}
+ 
+ #define wait_event_freezable(wq, condition)				\
+ 		wait_event_interruptible(wq, condition)
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -1507,6 +1507,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+Index: linux-2.6/kernel/power/process.c
+===================================================================
+--- linux-2.6.orig/kernel/power/process.c
++++ linux-2.6/kernel/power/process.c
+@@ -19,9 +19,6 @@
+  */
+ #define TIMEOUT	(20 * HZ)
+ 
+-#define FREEZER_KERNEL_THREADS 0
+-#define FREEZER_USER_SPACE 1
+-
+ static inline int freezeable(struct task_struct * p)
+ {
+ 	if ((p == current) ||
+@@ -84,63 +81,53 @@ static void fake_signal_wake_up(struct t
+ 	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ }
+ 
+-static int has_mm(struct task_struct *p)
++static inline bool should_send_signal(struct task_struct *p)
+ {
+-	return (p->mm && !(p->flags & PF_BORROWED_MM));
++	return !(p->flags & PF_FREEZER_NOSIG);
+ }
+ 
+ /**
+  *	freeze_task - send a freeze request to given task
+  *	@p: task to send the request to
+- *	@with_mm_only: if set, the request will only be sent if the task has its
+- *		own mm
+- *	Return value: 0, if @with_mm_only is set and the task has no mm of its
+- *		own or the task is frozen, 1, otherwise
++ *	@sig_only: if set, the request will only be sent if the task has the
++ *		PF_FREEZER_NOSIG flag unset
++ *	Return value: 'false', if @sig_only is set and the task has
++ *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
+  *
+- *	The freeze request is sent by seting the tasks's TIF_FREEZE flag and
++ *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
+  *	either sending a fake signal to it or waking it up, depending on whether
+- *	or not it has its own mm (ie. it is a user land task).  If @with_mm_only
+- *	is set and the task has no mm of its own (ie. it is a kernel thread),
+- *	its TIF_FREEZE flag should not be set.
+- *
+- *	The task_lock() is necessary to prevent races with exit_mm() or
+- *	use_mm()/unuse_mm() from occuring.
++ *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
++ *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
++ *	TIF_FREEZE flag will not be set.
+  */
+-static int freeze_task(struct task_struct *p, int with_mm_only)
++static bool freeze_task(struct task_struct *p, bool sig_only)
+ {
+-	int ret = 1;
++	/*
++	 * We first check if the task is freezing and next if it has already
++	 * been frozen to avoid the race with frozen_process() which first marks
++	 * the task as frozen and next clears its TIF_FREEZE.
++	 */
++	if (!freezing(p)) {
++		rmb();
++		if (frozen(p))
++			return false;
+ 
+-	task_lock(p);
+-	if (freezing(p)) {
+-		if (has_mm(p)) {
+-			if (!signal_pending(p))
+-				fake_signal_wake_up(p);
+-		} else {
+-			if (with_mm_only)
+-				ret = 0;
+-			else
+-				wake_up_state(p, TASK_INTERRUPTIBLE);
+-		}
++		if (!sig_only || should_send_signal(p))
++			set_freeze_flag(p);
++		else
++			return false;
++	}
++
++	if (should_send_signal(p)) {
++		if (!signal_pending(p))
++			fake_signal_wake_up(p);
++	} else if (sig_only) {
++		return false;
+ 	} else {
+-		rmb();
+-		if (frozen(p)) {
+-			ret = 0;
+-		} else {
+-			if (has_mm(p)) {
+-				set_freeze_flag(p);
+-				fake_signal_wake_up(p);
+-			} else {
+-				if (with_mm_only) {
+-					ret = 0;
+-				} else {
+-					set_freeze_flag(p);
+-					wake_up_state(p, TASK_INTERRUPTIBLE);
+-				}
+-			}
+-		}
++		wake_up_state(p, TASK_INTERRUPTIBLE);
+ 	}
+-	task_unlock(p);
+-	return ret;
++
++	return true;
+ }
+ 
+ static void cancel_freezing(struct task_struct *p)
+@@ -156,7 +143,7 @@ static void cancel_freezing(struct task_
+ 	}
+ }
+ 
+-static int try_to_freeze_tasks(int freeze_user_space)
++static int try_to_freeze_tasks(bool sig_only)
+ {
+ 	struct task_struct *g, *p;
+ 	unsigned long end_time;
+@@ -175,7 +162,7 @@ static int try_to_freeze_tasks(int freez
+ 			if (frozen(p) || !freezeable(p))
+ 				continue;
+ 
+-			if (!freeze_task(p, freeze_user_space))
++			if (!freeze_task(p, sig_only))
+ 				continue;
+ 
+ 			/*
+@@ -235,13 +222,13 @@ int freeze_processes(void)
+ 	int error;
+ 
+ 	printk("Freezing user space processes ... ");
+-	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
++	error = try_to_freeze_tasks(true);
+ 	if (error)
+ 		goto Exit;
+ 	printk("done.\n");
+ 
+ 	printk("Freezing remaining freezable tasks ... ");
+-	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
++	error = try_to_freeze_tasks(false);
+ 	if (error)
+ 		goto Exit;
+ 	printk("done.");
+@@ -251,7 +238,7 @@ int freeze_processes(void)
+ 	return error;
+ }
+ 
+-static void thaw_tasks(int thaw_user_space)
++static void thaw_tasks(bool nosig_only)
+ {
+ 	struct task_struct *g, *p;
+ 
+@@ -260,7 +247,7 @@ static void thaw_tasks(int thaw_user_spa
+ 		if (!freezeable(p))
+ 			continue;
+ 
+-		if (!p->mm == thaw_user_space)
++		if (nosig_only && should_send_signal(p))
+ 			continue;
+ 
+ 		thaw_process(p);
+@@ -271,8 +258,8 @@ static void thaw_tasks(int thaw_user_spa
+ void thaw_processes(void)
+ {
+ 	printk("Restarting tasks ... ");
+-	thaw_tasks(FREEZER_KERNEL_THREADS);
+-	thaw_tasks(FREEZER_USER_SPACE);
++	thaw_tasks(true);
++	thaw_tasks(false);
+ 	schedule();
+ 	printk("done.\n");
+ }
+Index: linux-2.6/kernel/kthread.c
+===================================================================
+--- linux-2.6.orig/kernel/kthread.c
++++ linux-2.6/kernel/kthread.c
+@@ -234,7 +234,7 @@ int kthreadd(void *unused)
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+ 	set_cpus_allowed(tsk, CPU_MASK_ALL);
+ 
+-	current->flags |= PF_NOFREEZE;
++	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
+ 	for (;;) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
