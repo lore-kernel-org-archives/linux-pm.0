@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: pm_wakeup.h
-Date: Thu, 12 Jun 2008 09:17:33 +0200
-Message-ID: <200806120917.33762.rjw@sisk.pl>
+Subject: [PATCH 0/4] Remove some obsolete PM stuff
+Date: Thu, 12 Jun 2008 10:25:23 +0200
+Message-ID: <200806121025.24668.rjw__5515.88189923695$1213259954$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,14 +16,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+Hi,
 
-Can you please tell me what the exact reason for not putting the contents of
-pm_wakeup.h into device.h was?
+The following series of patches removes some PM stuff that is obsolete and not
+used any more, AFAICS.
 
 Thanks,
 Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
