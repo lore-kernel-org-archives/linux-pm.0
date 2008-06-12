@@ -1,16 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH - supplement] PM: Remove remaining obsolete
-	definitions from pm.h (was: Re: [PATCH 0/4] Remove some
-	obsolete PM stuff)
-Date: Thu, 12 Jun 2008 11:26:27 +0200
-Message-ID: <200806121126.27862.rjw__12798.0859055699$1213262938$gmane$org@sisk.pl>
-References: <200806121025.24668.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 GART: Add resume handling (was: Re: >3G
+	=> iommu	=> suspend problems -- was Re: SB600 AHCI: Hard Disk
+	Corruption)
+Date: Thu, 12 Jun 2008 11:34:30 +0200
+Message-ID: <20080612093430.GA641__33404.8739322045$1213263514$gmane$org@elte.hu>
+References: <1211717435.6038.53.camel@localhost.localdomain>
+	<20080609124630.GA28799@elte.hu> <200806100010.49194.rjw@sisk.pl>
+	<200806101203.01836.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200806121025.24668.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <200806101203.01836.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,92 +22,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the remaining obsolete definitions from
-include/linux/pm.h and move the definitions of PM_SUSPEND and
-PM_RESUME to the header of h3600 which is the only user of them.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/asm-arm/arch-sa1100/h3600.h |    5 ++++
- include/linux/pm.h                  |   41 ------------------------------------
- 2 files changed, 5 insertions(+), 41 deletions(-)
+> > Okay, appended is the patch rebased on tip/x86/gart with (mainline) 
+> > commit cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: 
+> > prevent suspend if we could not resume" (which appears to be missing 
+> > from tip/x86/gart) applied.
+> > 
+> > This version of the patch doesn't break compilation, but it hasn't 
+> > been really tested yet.
+> 
+> Now it has been (successfully) tested too. :-)
 
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -26,52 +26,6 @@
- #include <asm/errno.h>
- 
- /*
-- * Power management requests... these are passed to pm_send_all() and friends.
-- *
-- * these functions are old and deprecated, see below.
-- */
--typedef int __bitwise pm_request_t;
--
--#define PM_SUSPEND	((__force pm_request_t) 1)	/* enter D1-D3 */
--#define PM_RESUME	((__force pm_request_t) 2)	/* enter D0 */
--
--
--/*
-- * Device types... these are passed to pm_register
-- */
--typedef int __bitwise pm_dev_t;
--
--#define PM_UNKNOWN_DEV	((__force pm_dev_t) 0)	/* generic */
--#define PM_SYS_DEV	((__force pm_dev_t) 1)	/* system device (fan, KB controller, ...) */
--#define PM_PCI_DEV	((__force pm_dev_t) 2)	/* PCI device */
--#define PM_USB_DEV	((__force pm_dev_t) 3)	/* USB device */
--#define PM_SCSI_DEV	((__force pm_dev_t) 4)	/* SCSI device */
--#define PM_ISA_DEV	((__force pm_dev_t) 5)	/* ISA device */
--#define	PM_MTD_DEV	((__force pm_dev_t) 6)	/* Memory Technology Device */
--
--/*
-- * System device hardware ID (PnP) values
-- */
--enum
--{
--	PM_SYS_UNKNOWN = 0x00000000, /* generic */
--	PM_SYS_KBC =	 0x41d00303, /* keyboard controller */
--	PM_SYS_COM =	 0x41d00500, /* serial port */
--	PM_SYS_IRDA =	 0x41d00510, /* IRDA controller */
--	PM_SYS_FDC =	 0x41d00700, /* floppy controller */
--	PM_SYS_VGA =	 0x41d00900, /* VGA controller */
--	PM_SYS_PCMCIA =	 0x41d00e00, /* PCMCIA controller */
--};
--
--/*
-- * Device identifier
-- */
--#define PM_PCI_ID(dev) ((dev)->bus->number << 16 | (dev)->devfn)
--
--/* Functions above this comment are list-based old-style power
-- * management. Please avoid using them.  */
--
--/*
-  * Callbacks for platform drivers to implement.
-  */
- extern void (*pm_idle)(void);
-Index: linux-2.6/include/asm-arm/arch-sa1100/h3600.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-sa1100/h3600.h
-+++ linux-2.6/include/asm-arm/arch-sa1100/h3600.h
-@@ -23,6 +23,11 @@
- #ifndef _INCLUDE_H3600_H_
- #define _INCLUDE_H3600_H_
- 
-+typedef int __bitwise pm_request_t;
-+
-+#define PM_SUSPEND	((__force pm_request_t) 1)	/* enter D1-D3 */
-+#define PM_RESUME	((__force pm_request_t) 2)	/* enter D0 */
-+
- /* generalized support for H3xxx series Compaq Pocket PC's */
- #define machine_is_h3xxx() (machine_is_h3100() || machine_is_h3600() || machine_is_h3800())
- 
+applied to tip/x86/gart, thanks Rafael.
+
+	Ingo
