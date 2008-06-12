@@ -1,14 +1,13 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 3/4] Remove definition of struct pm_dev
-Date: Thu, 12 Jun 2008 15:10:05 +0200
-Message-ID: <20080612131005.GC5455__21750.9562070065$1213278512$gmane$org@ucw.cz>
-References: <200806121025.24668.rjw@sisk.pl> <200806121030.26099.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: pm_wakeup.h
+Date: Thu, 12 Jun 2008 10:48:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0806121046270.2567-100000@iolanthe.rowland.org>
+References: <200806120917.33762.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200806121030.26099.rjw@sisk.pl>
+In-Reply-To: <200806120917.33762.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +18,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-06-12 10:30:25, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Remove the definition of 'struct pm_dev', which is not used any more,
-> along with some related stuff from include/linux/pm.h .
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, 12 Jun 2008, Rafael J. Wysocki wrote:
 
-ACK.
+> Hi Alan,
+> 
+> Can you please tell me what the exact reason for not putting the contents of
+> pm_wakeup.h into device.h was?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Just for consistency.  None of the other PM declarations are in 
+device.h; they are all in pm.h.
+
+If you would prefer to merge the two files, please feel free to do so.
+
+Alan Stern
