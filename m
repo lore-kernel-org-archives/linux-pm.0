@@ -1,11 +1,15 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 4/4] Remove obsolete piece of PM documentation
-Date: Thu, 12 Jun 2008 21:29:35 +0000 (GMT)
-Message-ID: <4053695.1213306175480.JavaMail.oracle__33308.2648613074$1213306724$gmane$org@web241.oracle.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] ACPI Hibernation: Use ACPI hardware
+	signature
+Date: Fri, 13 Jun 2008 00:07:35 +0200
+Message-ID: <200806130007.36476.rjw__18156.7310043194$1213308539$gmane$org@sisk.pl>
+References: <200806112158.20806.rjw@sisk.pl> <200806112201.48142.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200806112201.48142.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,82 +19,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---- Original Message ---
-> On Thu 2008-06-12 22:48:58, Rafael J. Wysocki wrote:
-> > On Thursday, 12 of June 2008, Randy Dunlap wrote:
-> > > --- Original Message ---
-> > > > On Thu 2008-06-12 10:31:38, Rafael J. Wysocki wrote:
-> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > 
-> > > > > Remove an obsolete piece of PM documentation.
-> > > > > 
-> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > ---
-> > > > >  Documentation/power/pm.txt |  257 ---------------------------------------------
-> > > > >  1 file changed, 257 deletions(-)
-> > > > > 
-> > > > > Index: linux-2.6/Documentation/power/pm.txt
-> > > > > ===================================================================
-> > > > > --- linux-2.6.orig/Documentation/power/pm.txt
-> > > > > +++ /dev/null
-> > > > > @@ -1,257 +0,0 @@
-> > > > > -               Linux Power Management Support
-> > > > > -
-> > > > > -This document briefly describes how to use power management with your
-> > > > > -Linux system and how to add power management support to Linux drivers.
-> > > > > -
-> > > > > -APM or ACPI?
-> > > > > -------------
-> > > > > -If you have a relatively recent x86 mobile, desktop, or server system,
-> > > > > -odds are it supports either Advanced Power Management (APM) or
-> > > > > -Advanced Configuration and Power Interface (ACPI).  ACPI is the newer
-> > > > > -of the two technologies and puts power management in the hands of the
-> > > > > -operating system, allowing for more intelligent power management than
-> > > > > -is possible with BIOS controlled APM.
-> > > > > -
-> > > > > -The best way to determine which, if either, your system supports is to
-> > > > > -build a kernel with both ACPI and APM enabled (as of 2.3.x ACPI is
-> > > > > -enabled by default).  If a working ACPI implementation is found, the
-> > > > > -ACPI driver will override and disable APM, otherwise the APM driver
-> > > > > -will be used.
-> > > > > -
-> > > > > -No, sorry, you cannot have both ACPI and APM enabled and running at
-> > > > > -once.  Some people with broken ACPI or broken APM implementations
-> > > > > -would like to use both to get a full set of working features, but you
-> > > > > -simply cannot mix and match the two.  Only one power management
-> > > > > -interface can be in control of the machine at once.  Think about it..
-> > > > 
-> > > > I'd keep this; it is still true, and we still support both.
-> > > > 
-> > > > Maybe it should be moved into Doc*/power/apm.txt or something.
-> > > 
-> > > Yes, if there is a good sub-directory for it, please put it there.
-> > > 
-> > > > ACK on rest.
-> > 
-> > Updated patch is appended.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Remove some obsolete PM documentation.
-> > 
-> > The majority of contents of Documentation/power/pm.txt are
-> > outdated.  Remove the outdated parts of this file and move the rest
-> > to Documentation/power/apm-acpi.txt .  Update the index in
-> > Documentation/power/ as appropriate.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday, 11 of June 2008, Rafael J. Wysocki wrote:
+> From: Shaohua Li <shaohua.li@intel.com>
 > 
-> ACK and thanks.
+> ACPI defines a hardware signature.  BIOS calculates the signature
+> according to hardware configure and if hardware changes while
+> hibernated, the signature will change.  In that case, S4 resume
+> should fail.
+> 
+> Still, there may be systems on which this mechanism does not work
+> correctly, so it is better to provide a workaround for them.  For
+> this reason, add a new switch to the acpi_sleep= command line
+> argument allowing one to disable hardware signature checking.
+> 
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> Acked-by: Pavel Machek <pavel@suse.cz>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Same here.
+Unfortunately this patch will conflict with the one the Jesse has just put into
+his linux-next branch, so please ignore it for now.  I'll repost it during the
+2.6.27 cycle.
 
-~Randy
+Thanks,
+Rafael
+
+
+> ---
+>  Documentation/kernel-parameters.txt |    4 +++-
+>  arch/x86/kernel/acpi/sleep.c        |    2 ++
+>  drivers/acpi/sleep/main.c           |   22 ++++++++++++++++++++++
+>  include/linux/acpi.h                |    3 +++
+>  4 files changed, 30 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/acpi/sleep/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/sleep/main.c
+> +++ linux-2.6/drivers/acpi/sleep/main.c
+> @@ -255,6 +255,15 @@ static struct dmi_system_id __initdata a
+>  #endif /* CONFIG_SUSPEND */
+>  
+>  #ifdef CONFIG_HIBERNATION
+> +static unsigned long s4_hardware_signature;
+> +static struct acpi_table_facs *facs;
+> +static bool nosigcheck;
+> +
+> +void __init acpi_no_s4_hw_signature(void)
+> +{
+> +	nosigcheck = true;
+> +}
+> +
+>  static int acpi_hibernation_begin(void)
+>  {
+>  	acpi_target_sleep_state = ACPI_STATE_S4;
+> @@ -301,6 +310,12 @@ static void acpi_hibernation_leave(void)
+>  	acpi_enable();
+>  	/* Reprogram control registers and execute _BFS */
+>  	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
+> +	/* Check the hardware signature */
+> +	if (facs && s4_hardware_signature != facs->hardware_signature) {
+> +		printk(KERN_EMERG "ACPI: Hardware changed while hibernated, "
+> +			"cannot resume!\n");
+> +		panic("ACPI S4 hardware signature mismatch");
+> +	}
+>  }
+>  
+>  static void acpi_hibernation_finish(void)
+> @@ -501,6 +516,13 @@ int __init acpi_sleep_init(void)
+>  		hibernation_set_ops(&acpi_hibernation_ops);
+>  		sleep_states[ACPI_STATE_S4] = 1;
+>  		printk(" S4");
+> +		if (!nosigcheck) {
+> +			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
+> +				(struct acpi_table_header **)&facs);
+> +			if (facs)
+> +				s4_hardware_signature =
+> +					facs->hardware_signature;
+> +		}
+>  	}
+>  #endif
+>  	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+> Index: linux-2.6/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/kernel-parameters.txt
+> +++ linux-2.6/Documentation/kernel-parameters.txt
+> @@ -147,10 +147,12 @@ and is between 256 and 4096 characters. 
+>  			default: 0
+>  
+>  	acpi_sleep=	[HW,ACPI] Sleep options
+> -			Format: { s3_bios, s3_mode, s3_beep }
+> +			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig }
+>  			See Documentation/power/video.txt for s3_bios and s3_mode.
+>  			s3_beep is for debugging; it makes the PC's speaker beep
+>  			as soon as the kernel's real-mode entry point is called.
+> +			s4_nohwsig prevents ACPI hardware signature from being
+> +			used during resume from hibernation.
+>  
+>  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+>  			Format: { level | edge | high | low }
+> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
+> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
+> @@ -124,6 +124,8 @@ static int __init acpi_sleep_setup(char 
+>  			acpi_realmode_flags |= 2;
+>  		if (strncmp(str, "s3_beep", 7) == 0)
+>  			acpi_realmode_flags |= 4;
+> +		if (strncmp(str, "s4_nohwsig", 10) == 0)
+> +			acpi_no_s4_hw_signature();
+>  		str = strchr(str, ',');
+>  		if (str != NULL)
+>  			str += strspn(str, ", \t");
+> Index: linux-2.6/include/linux/acpi.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/acpi.h
+> +++ linux-2.6/include/linux/acpi.h
+> @@ -234,6 +234,9 @@ int acpi_check_region(resource_size_t st
+>  int acpi_check_mem_region(resource_size_t start, resource_size_t n,
+>  		      const char *name);
+>  
+> +#ifdef CONFIG_PM_SLEEP
+> +void __init acpi_no_s4_hw_signature(void);
+> +#endif /* CONFIG_PM_SLEEP */
+>  #else	/* CONFIG_ACPI */
+>  
+>  static inline int early_acpi_boot_init(void)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
