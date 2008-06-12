@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] Remove definition of struct pm_dev
-Date: Thu, 12 Jun 2008 10:30:25 +0200
-Message-ID: <200806121030.26099.rjw__19418.9230482609$1213260194$gmane$org@sisk.pl>
+Subject: [PATCH 2/4] Remove references to struct pm_dev from IRDA
+	headers
+Date: Thu, 12 Jun 2008 10:29:30 +0200
+Message-ID: <200806121029.30961.rjw__17288.0557635382$1213260248$gmane$org@sisk.pl>
 References: <200806121025.24668.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,51 +20,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Samuel Ortiz <samuel@sortiz.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the definition of 'struct pm_dev', which is not used any more,
-along with some related stuff from include/linux/pm.h .
+Some IRDA headers contain references to 'struct pm_dev' that are not
+necessary any more and may be removed.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/pm.h |   24 ------------------------
- 1 file changed, 24 deletions(-)
+ drivers/net/irda/ali-ircc.h    |    2 --
+ drivers/net/irda/au1000_ircc.h |    1 -
+ drivers/net/irda/via-ircc.h    |    1 -
+ 3 files changed, 4 deletions(-)
 
-Index: linux-2.6/include/linux/pm.h
+Index: linux-2.6/drivers/net/irda/au1000_ircc.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -68,30 +68,6 @@ enum
-  */
- #define PM_PCI_ID(dev) ((dev)->bus->number << 16 | (dev)->devfn)
+--- linux-2.6.orig/drivers/net/irda/au1000_ircc.h
++++ linux-2.6/drivers/net/irda/au1000_ircc.h
+@@ -122,6 +122,5 @@ struct au1k_private {
+ 	struct timer_list timer;
  
--/*
-- * Request handler callback
-- */
--struct pm_dev;
+ 	spinlock_t lock;           /* For serializing operations */
+-        struct pm_dev *dev;
+ };
+ #endif /* AU1000_IRCC_H */
+Index: linux-2.6/drivers/net/irda/ali-ircc.h
+===================================================================
+--- linux-2.6.orig/drivers/net/irda/ali-ircc.h
++++ linux-2.6/drivers/net/irda/ali-ircc.h
+@@ -219,8 +219,6 @@ struct ali_ircc_cb {
+ 	int index;                 /* Instance index */
+ 	
+ 	unsigned char fifo_opti_buf;
 -
--typedef int (*pm_callback)(struct pm_dev *dev, pm_request_t rqst, void *data);
--
--/*
-- * Dynamic device information
-- */
--struct pm_dev
--{
--	pm_dev_t	 type;
--	unsigned long	 id;
--	pm_callback	 callback;
--	void		*data;
--
--	unsigned long	 flags;
--	unsigned long	 state;
--	unsigned long	 prev_state;
--
--	struct list_head entry;
--};
--
- /* Functions above this comment are list-based old-style power
-  * management. Please avoid using them.  */
+-        struct pm_dev *dev;
+ };
  
+ static inline void switch_bank(int iobase, int bank)
+Index: linux-2.6/drivers/net/irda/via-ircc.h
+===================================================================
+--- linux-2.6.orig/drivers/net/irda/via-ircc.h
++++ linux-2.6/drivers/net/irda/via-ircc.h
+@@ -118,7 +118,6 @@ struct via_ircc_cb {
+ 	int index;		/* Instance index */
+ 
+ 	struct eventflag EventFlag;
+-	struct pm_dev *dev;
+ 	unsigned int chip_id;	/* to remember chip id */
+ 	unsigned int RetryCount;
+ 	unsigned int RxDataReady;
