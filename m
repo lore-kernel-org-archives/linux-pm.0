@@ -1,18 +1,17 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 GART: Add resume handling (was: Re: >3G
-	=> iommu	=> suspend problems -- was Re: SB600 AHCI: Hard Disk
-	Corruption)
-Date: Thu, 12 Jun 2008 11:34:30 +0200
-Message-ID: <20080612093430.GA641__33404.8739322045$1213263514$gmane$org@elte.hu>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	<20080609124630.GA28799@elte.hu> <200806100010.49194.rjw@sisk.pl>
-	<200806101203.01836.rjw@sisk.pl>
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mm 2/2] kexec jump -v11: save/restore device
+	state
+Date: Thu, 12 Jun 2008 09:02:25 -0400
+Message-ID: <20080612130225.GA9654__2495.73807600445$1213275989$gmane$org@redhat.com>
+References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+	<20080611163026.GG6450@redhat.com>
+	<1213232019.21353.8.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200806101203.01836.rjw@sisk.pl>
+In-Reply-To: <1213232019.21353.8.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,23 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> > Okay, appended is the patch rebased on tip/x86/gart with (mainline) 
-> > commit cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: 
-> > prevent suspend if we could not resume" (which appears to be missing 
-> > from tip/x86/gart) applied.
-> > 
-> > This version of the patch doesn't break compilation, but it hasn't 
-> > been really tested yet.
-> 
-> Now it has been (successfully) tested too. :-)
-
-applied to tip/x86/gart, thanks Rafael.
-
-	Ingo
+T24gVGh1LCBKdW4gMTIsIDIwMDggYXQgMDg6NTM6MzlBTSArMDgwMCwgSHVhbmcsIFlpbmcgd3Jv
+dGU6Cj4gT24gV2VkLCAyMDA4LTA2LTExIGF0IDEyOjMwIC0wNDAwLCBWaXZlayBHb3lhbCB3cm90
+ZToKPiBbLi4uXQo+ID4gPiBVc2FnZSBleGFtcGxlIG9mIHNpbXBsZSBoaWJlcm5hdGlvbjoKPiA+
+ID4gCj4gPiA+IDEuIENvbXBpbGUgYW5kIGluc3RhbGwgcGF0Y2hlZCBrZXJuZWwgd2l0aCBmb2xs
+b3dpbmcgb3B0aW9ucyBzZWxlY3RlZDoKPiA+ID4gCj4gPiA+IENPTkZJR19YODZfMzI9eQo+ID4g
+PiBDT05GSUdfUkVMT0NBVEFCTEU9eQo+ID4gPiBDT05GSUdfS0VYRUM9eQo+ID4gPiBDT05GSUdf
+Q1JBU0hfRFVNUD15Cj4gPiA+IENPTkZJR19QTT15Cj4gPiA+IAo+ID4gPiAyLiBCdWlsZCBhbiBp
+bml0cmFtZnMgaW1hZ2UgY29udGFpbnMga2V4ZWMtdG9vbCBhbmQgbWFrZWR1bXBmaWxlLCBvcgo+
+ID4gPiAgICBkb3dubG9hZCB0aGUgcHJlLWJ1aWx0IGluaXRyYW1mcyBpbWFnZSwgY2FsbGVkIHJv
+b3Rmcy5neiBpbgo+ID4gPiAgICBmb2xsb3dpbmcgdGV4dC4KPiA+ID4gCj4gPiA+IDMuIFByZXBh
+cmUgYSBwYXJ0aXRpb24gdG8gc2F2ZSBtZW1vcnkgaW1hZ2Ugb2Ygb3JpZ2luYWwga2VybmVsLCBj
+YWxsZWQKPiA+ID4gICAgaGliZXJuYXRpbmcgcGFydGl0aW9uIGluIGZvbGxvd2luZyB0ZXh0Lgo+
+ID4gPiAKPiA+ID4gNC4gQm9vdCBrZXJuZWwgY29tcGlsZWQgaW4gc3RlcCAxIChrZXJuZWwgQSku
+Cj4gPiA+IAo+ID4gPiA1LiBJbiB0aGUga2VybmVsIEEsIGxvYWQga2VybmVsIGNvbXBpbGVkIGlu
+IHN0ZXAgMSAoa2VybmVsIEIpIHdpdGgKPiA+ID4gICAgL3NiaW4va2V4ZWMuIFRoZSBzaGVsbCBj
+b21tYW5kIGxpbmUgY2FuIGJlIGFzIGZvbGxvdzoKPiA+ID4gCj4gPiA+ICAgIC9zYmluL2tleGVj
+IC0tbG9hZC1wcmVzZXJ2ZS1jb250ZXh0IC9ib290L2J6SW1hZ2UgLS1tZW0tbWluPTB4MTAwMDAw
+Cj4gPiA+ICAgICAgLS1tZW0tbWF4PTB4ZmZmZmZmIC0taW5pdHJkPXJvb3Rmcy5nego+ID4gPiAK
+PiA+ID4gNi4gQm9vdCB0aGUga2VybmVsIEIgd2l0aCBmb2xsb3dpbmcgc2hlbGwgY29tbWFuZCBs
+aW5lOgo+ID4gPiAKPiA+ID4gICAgL3NiaW4va2V4ZWMgLWUKPiA+ID4gCj4gPiA+IDcuIFRoZSBr
+ZXJuZWwgQiB3aWxsIGJvb3QgYXMgbm9ybWFsIGtleGVjLiBJbiBrZXJuZWwgQiB0aGUgbWVtb3J5
+Cj4gPiA+ICAgIGltYWdlIG9mIGtlcm5lbCBBIGNhbiBiZSBzYXZlZCBpbnRvIGhpYmVybmF0aW5n
+IHBhcnRpdGlvbiBhcwo+ID4gPiAgICBmb2xsb3c6Cj4gPiA+IAo+ID4gPiAgICBqdW1wX2JhY2tf
+ZW50cnk9YGNhdCAvcHJvYy9jbWRsaW5lIHwgdHIgJyAnICdcbicgfCBncmVwIGtleGVjX2p1bXBf
+YmFja19lbnRyeSB8IGN1dCAtZCAnPSdgCj4gPiA+ICAgIGVjaG8gJGp1bXBfYmFja19lbnRyeSA+
+IGtleGVjX2p1bXBfYmFja19lbnRyeQo+ID4gPiAgICBjcCAvcHJvYy92bWNvcmUgZHVtcC5lbGYK
+PiA+ID4gCj4gPiA+ICAgIFRoZW4geW91IGNhbiBzaHV0ZG93biB0aGUgbWFjaGluZSBhcyBub3Jt
+YWwuCj4gPiA+IAo+ID4gPiA4LiBCb290IGtlcm5lbCBjb21waWxlZCBpbiBzdGVwIDEgKGtlcm5l
+bCBDKS4gVXNlIHRoZSByb290ZnMuZ3ogYXMKPiA+ID4gICAgcm9vdCBmaWxlIHN5c3RlbS4KPiA+
+ID4gCj4gPiAKPiA+IE9uZSBvZiB0aGUgY29uY2VybnMgcmFpc2VkIGJ5IGhpYmVybmF0aW9uIHBl
+b3BsZSBpbiB0aGUgcGFzdCB3YXMgdG8gdXNlCj4gPiBzaW5nbGUgYm9vdCBsb2FkZXIgZW50cnkg
+dG8gYm9vdCBub3JtYWxseSBhcyB3ZWxsIHdoaWxlIHJlc3VtaW5nIGEga2VybmVsLgo+ID4gCj4g
+PiBTbyBpbiB0aGlzIGNhc2UgYSB1c2VyIGVpdGhlciBuZWVkcyB0byBtYWludGFpbiB0d28gYm9v
+dC1sb2FkZXIgZW50cmllcwo+ID4gb3IgbW9kaWZ5IGl0IG9uIHRoZSBmbHkuIEkgd2lzaGVkIHRo
+ZXJlIHdhcyBhIGJldHRlciB3YXkgdG8gaGFuZGxlIHRoYXQuCj4gCj4g77u/Tm93IGl0IGlzIG5v
+dCBuZWVkZWQgdG8gaGF2ZSB0d28gYm9vdC1sb2FkZXIgZW50cmllcywganVzdCBvbmUgaXMKPiBl
+bm91Z2guIFN0ZXAgNCBhbmQgc3RlcCA4IGNhbiBzaGFyZSB0aGUgc2FtZSBib290LWxvYWRlciBl
+bnRyaWVzLiBUaGUKPiByb290ZnMuZ3ogY2FuIGJlIHRoZSBub3JtYWwgaW5pdHJhbWZzIG9yIGlu
+aXRyZCB3aGVuIGRlcGxveW1lbnQuIEluCj4gcm9vdGZzLmd6LCBpZiB0aGVyZSBpcyBhIHZhbGlk
+IGhpYmVybmF0aW9uIGltYWdlLCB0aGUgaGliZXJuYXRlZCBzeXN0ZW0KPiB3aWxsIGJlIHJlc3Rv
+cmVkLCBvdGhlcndpc2UsIG5vcm1hbCBib290IHByb2Nlc3MgZm9sbG93cy4KPiAKCkZldyB0aGlu
+Z3MgSSBkb24ndCB1bmRlcnN0YW5kLgoKLSBBcmUgeW91IHNheWluZyB0aGF0IGhpYmVybmF0ZWQg
+aW1hZ2Ugd2lsbCBiZSBzYXZlZCBpbiBpbml0cmQKICAocm9vdGZzLmd6KT8gQnV0IHRoYXQgc2F2
+aW5nIGlzIG9ubHkgaW4gUkFNLCB3ZSBuZXZlciB3cml0ZSBiYWNrCiAgaXQgdG8gZGlzaz8KCi0g
+SSB0aG91Z2h0IHdlIHByb2JhYmx5IGhhdmUgdG8gZGVkaWNhdGUgYSByYXcgcGFydGl0aW9uIGtp
+bmQgb2YgdGhpbmcKICBmb3Igc2F2aW5nIGltYWdlIGFuZCB0aGVuIG1vZGlmeSBib290IGxvYWRl
+ciBjb21tYW5kIGxpbmUgdG8gc29tZXRoaW5nCiAgc2ltaWxhciB0bywgInJlc3VtZT1wYXJ0aXRp
+b24iLiBUaGVuIGluaXRyZCBjYW4gZ28gaHVudGluZyBmb3IgaW1hZ2UKICBpbiByZXNwZWN0aXZl
+IHBhcnRpdGlvbiAoYXMgc3BlY2lmaWVkIGJ5IGNvbW1hbmQgbGluZSBwYXJhbWV0ZXIpIGFuZCBp
+ZgogIGltYWdlIGlzIG5vdCBhdmFpbGFibGUgdGhlbiBjb250aW51ZSB3aXRoIG5vcm1hbCBib290
+LgoKVGhhbmtzClZpdmVrCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcG0=
