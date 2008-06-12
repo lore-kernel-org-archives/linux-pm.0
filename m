@@ -1,82 +1,45 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH -mm 2/2] kexec jump -v11: save/restore device
-	state
-Date: Thu, 12 Jun 2008 08:53:39 +0800
-Message-ID: <1213232019.21353.8.camel__1583.45392342216$1213232077$gmane$org@caritas-dev.intel.com>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com>
-	<20080611163026.GG6450@redhat.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc5
+Date: Wed, 11 Jun 2008 23:08:17 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0806112301570.12191@localhost.localdomain>
+References: <alpine.LFD.1.10.0806111942510.12191@localhost.localdomain>
+ <alpine.LFD.1.10.0806111718240.3101@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080611163026.GG6450@redhat.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-reply-to: <alpine.LFD.1.10.0806111718240.3101@woody.linux-foundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDA4LTA2LTExIGF0IDEyOjMwIC0wNDAwLCBWaXZlayBHb3lhbCB3cm90ZToKWy4u
-Ll0KPiA+IFVzYWdlIGV4YW1wbGUgb2Ygc2ltcGxlIGhpYmVybmF0aW9uOgo+ID4gCj4gPiAxLiBD
-b21waWxlIGFuZCBpbnN0YWxsIHBhdGNoZWQga2VybmVsIHdpdGggZm9sbG93aW5nIG9wdGlvbnMg
-c2VsZWN0ZWQ6Cj4gPiAKPiA+IENPTkZJR19YODZfMzI9eQo+ID4gQ09ORklHX1JFTE9DQVRBQkxF
-PXkKPiA+IENPTkZJR19LRVhFQz15Cj4gPiBDT05GSUdfQ1JBU0hfRFVNUD15Cj4gPiBDT05GSUdf
-UE09eQo+ID4gCj4gPiAyLiBCdWlsZCBhbiBpbml0cmFtZnMgaW1hZ2UgY29udGFpbnMga2V4ZWMt
-dG9vbCBhbmQgbWFrZWR1bXBmaWxlLCBvcgo+ID4gICAgZG93bmxvYWQgdGhlIHByZS1idWlsdCBp
-bml0cmFtZnMgaW1hZ2UsIGNhbGxlZCByb290ZnMuZ3ogaW4KPiA+ICAgIGZvbGxvd2luZyB0ZXh0
-Lgo+ID4gCj4gPiAzLiBQcmVwYXJlIGEgcGFydGl0aW9uIHRvIHNhdmUgbWVtb3J5IGltYWdlIG9m
-IG9yaWdpbmFsIGtlcm5lbCwgY2FsbGVkCj4gPiAgICBoaWJlcm5hdGluZyBwYXJ0aXRpb24gaW4g
-Zm9sbG93aW5nIHRleHQuCj4gPiAKPiA+IDQuIEJvb3Qga2VybmVsIGNvbXBpbGVkIGluIHN0ZXAg
-MSAoa2VybmVsIEEpLgo+ID4gCj4gPiA1LiBJbiB0aGUga2VybmVsIEEsIGxvYWQga2VybmVsIGNv
-bXBpbGVkIGluIHN0ZXAgMSAoa2VybmVsIEIpIHdpdGgKPiA+ICAgIC9zYmluL2tleGVjLiBUaGUg
-c2hlbGwgY29tbWFuZCBsaW5lIGNhbiBiZSBhcyBmb2xsb3c6Cj4gPiAKPiA+ICAgIC9zYmluL2tl
-eGVjIC0tbG9hZC1wcmVzZXJ2ZS1jb250ZXh0IC9ib290L2J6SW1hZ2UgLS1tZW0tbWluPTB4MTAw
-MDAwCj4gPiAgICAgIC0tbWVtLW1heD0weGZmZmZmZiAtLWluaXRyZD1yb290ZnMuZ3oKPiA+IAo+
-ID4gNi4gQm9vdCB0aGUga2VybmVsIEIgd2l0aCBmb2xsb3dpbmcgc2hlbGwgY29tbWFuZCBsaW5l
-Ogo+ID4gCj4gPiAgICAvc2Jpbi9rZXhlYyAtZQo+ID4gCj4gPiA3LiBUaGUga2VybmVsIEIgd2ls
-bCBib290IGFzIG5vcm1hbCBrZXhlYy4gSW4ga2VybmVsIEIgdGhlIG1lbW9yeQo+ID4gICAgaW1h
-Z2Ugb2Yga2VybmVsIEEgY2FuIGJlIHNhdmVkIGludG8gaGliZXJuYXRpbmcgcGFydGl0aW9uIGFz
-Cj4gPiAgICBmb2xsb3c6Cj4gPiAKPiA+ICAgIGp1bXBfYmFja19lbnRyeT1gY2F0IC9wcm9jL2Nt
-ZGxpbmUgfCB0ciAnICcgJ1xuJyB8IGdyZXAga2V4ZWNfanVtcF9iYWNrX2VudHJ5IHwgY3V0IC1k
-ICc9J2AKPiA+ICAgIGVjaG8gJGp1bXBfYmFja19lbnRyeSA+IGtleGVjX2p1bXBfYmFja19lbnRy
-eQo+ID4gICAgY3AgL3Byb2Mvdm1jb3JlIGR1bXAuZWxmCj4gPiAKPiA+ICAgIFRoZW4geW91IGNh
-biBzaHV0ZG93biB0aGUgbWFjaGluZSBhcyBub3JtYWwuCj4gPiAKPiA+IDguIEJvb3Qga2VybmVs
-IGNvbXBpbGVkIGluIHN0ZXAgMSAoa2VybmVsIEMpLiBVc2UgdGhlIHJvb3Rmcy5neiBhcwo+ID4g
-ICAgcm9vdCBmaWxlIHN5c3RlbS4KPiA+IAo+IAo+IE9uZSBvZiB0aGUgY29uY2VybnMgcmFpc2Vk
-IGJ5IGhpYmVybmF0aW9uIHBlb3BsZSBpbiB0aGUgcGFzdCB3YXMgdG8gdXNlCj4gc2luZ2xlIGJv
-b3QgbG9hZGVyIGVudHJ5IHRvIGJvb3Qgbm9ybWFsbHkgYXMgd2VsbCB3aGlsZSByZXN1bWluZyBh
-IGtlcm5lbC4KPiAKPiBTbyBpbiB0aGlzIGNhc2UgYSB1c2VyIGVpdGhlciBuZWVkcyB0byBtYWlu
-dGFpbiB0d28gYm9vdC1sb2FkZXIgZW50cmllcwo+IG9yIG1vZGlmeSBpdCBvbiB0aGUgZmx5LiBJ
-IHdpc2hlZCB0aGVyZSB3YXMgYSBiZXR0ZXIgd2F5IHRvIGhhbmRsZSB0aGF0LgoK77u/Tm93IGl0
-IGlzIG5vdCBuZWVkZWQgdG8gaGF2ZSB0d28gYm9vdC1sb2FkZXIgZW50cmllcywganVzdCBvbmUg
-aXMKZW5vdWdoLiBTdGVwIDQgYW5kIHN0ZXAgOCBjYW4gc2hhcmUgdGhlIHNhbWUgYm9vdC1sb2Fk
-ZXIgZW50cmllcy4gVGhlCnJvb3Rmcy5neiBjYW4gYmUgdGhlIG5vcm1hbCBpbml0cmFtZnMgb3Ig
-aW5pdHJkIHdoZW4gZGVwbG95bWVudC4gSW4Kcm9vdGZzLmd6LCBpZiB0aGVyZSBpcyBhIHZhbGlk
-IGhpYmVybmF0aW9uIGltYWdlLCB0aGUgaGliZXJuYXRlZCBzeXN0ZW0Kd2lsbCBiZSByZXN0b3Jl
-ZCwgb3RoZXJ3aXNlLCBub3JtYWwgYm9vdCBwcm9jZXNzIGZvbGxvd3MuCgoKPiBJIGFtIG1vcmUg
-aW50ZXJlc3RlZCBpbiBhYmlsaXR5IHRvIGhhdmUgbXVsdGlwbGUga2VybmVsIGxvYWRlZCBpbiBS
-QU0KPiBhbmQgY2FwYWJpbGl0eSB0byBzd2l0Y2ggYmV0d2VlbiB0aGVtLiBBbGxvd3MgbWUgdG8g
-dGFrZSBub24tZGlzcnVwdGl2ZQo+IGNvcmUgZHVtcHMgYW5kIHNvbWVib2R5IHdhbnRlZCB0byBz
-bmFwc2hvdHMgdGhlIGtlcm5lbHMuIFRoYXQgc2hvdWxkCj4gc3RpbGwgd29yay4KPiAKPiAKPiBb
-Li5dCj4gPiAtLS0gYS9hcmNoL3g4Ni9rZXJuZWwvbWFjaGluZV9rZXhlY18zMi5jCj4gPiArKysg
-Yi9hcmNoL3g4Ni9rZXJuZWwvbWFjaGluZV9rZXhlY18zMi5jCj4gPiBAQCAtMTI1LDYgKzEyNSwx
-MiBAQCB2b2lkIG1hY2hpbmVfa2V4ZWMoc3RydWN0IGtpbWFnZSAqaW1hZ2UpCj4gPiAgCS8qIElu
-dGVycnVwdHMgYXJlbid0IGFjY2VwdGFibGUgd2hpbGUgd2UgcmVib290ICovCj4gPiAgCWxvY2Fs
-X2lycV9kaXNhYmxlKCk7Cj4gPiAgCj4gPiArCWlmIChpbWFnZS0+cHJlc2VydmVfY29udGV4dCkg
-ewo+ID4gKyNpZmRlZiBDT05GSUdfWDg2X0lPX0FQSUMKPiA+ICsJCWRpc2FibGVfSU9fQVBJQygp
-Owo+ID4gKyNlbmRpZgo+IAo+IEkgdGhpbmsgaXQgd291bGQgYmUgYSBnb29kIGlkZWEgdG8gcHV0
-IHNvbWUga2luZCBvZiBjb21tZW50IGhlcmUuIFdlCj4gbmVlZCB0byBwdXQgQVBJQ3MgaW4gbGVn
-YWN5IG1vZGUgc28gdGhhdCB3ZSBjYW4gZ2V0IHRpbWVyIGludGVycnVwdHMKPiBpbiBzZWNvbmQg
-a2VybmVsLiBrZXhlYy9rZHVtcCBwYXRocyBhbHJlYWR5IGhhdmUgY2FsbHMgdG8KPiBkaXNhYmxl
-X0lPX0FQSUMoKSBpbiBvbmUgZm9ybSBvciBvdGhlci4ga2V4ZWMganVtcCBwYXRoIGFsc28gbmVl
-ZHMgb25lLgoKT0suIEkgd2lsbCBhZGQgaXQuCgpCZXN0IFJlZ2FyZHMsCkh1YW5nIFlpbmcKCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
-aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+
+> >  27 files changed, 255 insertions(+), 180 deletions(-)
+> 
+> Hmm. I get very different statistics:
+> 
+>  27 files changed, 434 insertions(+), 359 deletions(-)
+> 
+> You seem to use "git diff -w" to ignore whitespace changes, which explains 
+> it, but please don't - it makes it harder to compare with expected 
+> results, and it hides some changes entirely.
+> 
+> I do agree that using '-w' is often useful, but especially for the purpose 
+> of letting people know what changed it kind of avoids the point by hiding 
+> many things.
+
+Yes, I've been using "-b" recently:
+
+git diff -b -M --stat linus..$RELEASE
+
+and if I remove the "-b", we match:
+
+ 27 files changed, 434 insertions(+), 359 deletions(-)
+
+I have a vague memory of having a good reason to cut over to "-b"
+a while back and noting that in my pull request, but if you prefer
+no -b, no problem.
+
+thanks,
+-Len
