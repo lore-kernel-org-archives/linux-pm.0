@@ -1,12 +1,14 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH] PM: for-mm: Fix compile failure in boot time
-	suspend	selftest
-Date: Thu, 12 Jun 2008 16:24:36 -0700
-Message-ID: <1213313076.7066.37.camel@localhost.localdomain>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v11: kexec jump
+Date: Fri, 13 Jun 2008 09:04:00 +0800
+Message-ID: <1213319040.20431.8.camel__8528.32554742253$1213319081$gmane$org@caritas-dev.intel.com>
+References: <1213082104.22608.29.camel@caritas-dev.intel.com>
+	<20080612192015.GH9654@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080612192015.GH9654@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,61 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Power Management <linux-pm@lists.linux-foundation.org>, David Brownell <dbrownell@users.sourceforge.net>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-The following config revealed a compilation problem in the suspend
-self test program included in 2.6.26-rc5-mm2:
+On Thu, 2008-06-12 at 15:20 -0400, Vivek Goyal wrote:
+> On Tue, Jun 10, 2008 at 03:15:04PM +0800, Huang, Ying wrote:
+> > This patch provides an enhancement to kexec/kdump. It implements
+> > the following features:
+> > 
+> > - Backup/restore memory used by the original kernel before/after
+> >   kexec.
+> > 
+> > - Save/restore CPU state before/after kexec.
+> > 
+> > The features of this patch can be used as a general method to call
+> > program in physical mode (paging turning off). This can be used to
+> > call BIOS code under Linux.
+> > 
+> > 
+> 
+> Hi Huang,
+> 
+> I was testing these patches and I get following error on my machine.
+> 
+> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> Suspending console(s) (use no_console_suspend to debug)
+> PM: Device i8042 failed to freeze: error -22
+> Restarting tasks ... done.
+> 
+> Any idea why keyboard controller would not freeze?
 
-kernel/power/main.c: In function 'test_suspend':
-kernel/power/main.c:688: warning: passing argument 2 of 'class_find_device' from incompatible pointer type
-kernel/power/main.c:688: error: too few arguments to function 'class_find_device'
-make[2]: *** [kernel/power/main.o] Error 1
+Which kernel version do you use?
 
-#
-# Power management options
-#
-CONFIG_PM=y
-CONFIG_PM_DEBUG=y
-CONFIG_PM_VERBOSE=y
-CONFIG_CAN_PM_TRACE=y
-CONFIG_PM_TRACE=y
-CONFIG_PM_TRACE_RTC=y
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND=y
-CONFIG_PM_TEST_SUSPEND=y
-CONFIG_SUSPEND_FREEZER=y
-# CONFIG_HIBERNATION is not set
+Does original hibernation work? It can be setup easily. Just add
+following parameters to kernel command line:
 
-Fix the compilation error by using NULL to tell
-class_find_device() that we're initiating an iteration rather than
-resuming a previously-initiated one.
+resume=/dev/<xxx>
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
----
-Applies to 2.6.26-rc5-mm2
-WARNING: Compiles (for me) but is otherwise untested. I'll be
-	 booting with this soon when I start testing some other
-	 work that's not in 2.6.26-rc5-mm2.
+Where <xxx> is the swap partition.
 
- kernel/power/main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+And execute following command:
 
-Index: linux-2.6.26-rc5-mm2/kernel/power/main.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/kernel/power/main.c
-+++ linux-2.6.26-rc5-mm2/kernel/power/main.c
-@@ -683,11 +683,11 @@ static int __init test_suspend(void)
- 		printk(warn_bad_state, pm_states[test_state]);
- 		goto done;
- 	}
- 
- 	/* RTCs have initialized by now too ... can we use one? */
--	class_find_device(rtc_class, &pony, has_wakealarm);
-+	class_find_device(rtc_class, NULL, &pony, has_wakealarm);
- 	if (pony)
- 		rtc = rtc_class_open(pony);
- 	if (!rtc) {
- 		printk(warn_no_rtc);
- 		goto done;
+echo reboot > /sys/power/disk
+echo disk > /sys/power/state
+
+Best Regards,
+Huang Ying
