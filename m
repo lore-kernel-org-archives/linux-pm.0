@@ -1,17 +1,11 @@
-From: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mm 2/2] kexec jump -v11: save/restore	device
-	state
-Date: Fri, 13 Jun 2008 14:05:55 -0400
-Message-ID: <20080613180555.GB4906__42203.7062388428$1213380979$gmane$org@redhat.com>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com>
-	<alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
-	<1213146074.21923.10.camel@caritas-dev.intel.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Double suspend to ram doesn't work on acer aspire 5720g
+Date: Sun, 15 Jun 2008 19:16:22 +0300
+Message-ID: <48554056.6070902@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1213146074.21923.10.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +15,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 09:01:14AM +0800, Huang, Ying wrote:
-> On Tue, 2008-06-10 at 14:01 -0400, Len Brown wrote:
-> > 
-> > On Tue, 10 Jun 2008, Huang, Ying wrote:
-> > 
-> > > This patch implements devices state save/restore before after kexec.
-> > > 
-> > > 
-> > > This patch together with features in kexec_jump patch can be used for
-> > > following:
-> > > 
-> > > - A simple hibernation implementation without ACPI support. You can
-> > >   kexec a hibernating kernel, save the memory image of original system
-> > >   and shutdown the system. When resuming, you restore the memory image
-> > >   of original system via ordinary kexec load then jump back.
-> > 
-> > What part of ACPI's role in hibernation are you trying to avoid
-> > 1. enabling wake devices
-> > 2. removing power from the system
-> > 3. something else?
-> 
-> ACPI S5 is used instead of S4 for this simple hibernation
-> implementation. That is, before creating the hibernation image, the ACPI
-> _PTS is not executed, devices are not put into low power state and wake
-> devices are not enabled. After creating the hibernation image, the image
-> is saved to disk and system is shutdown (go to S5). When resuming from
-> hibernated image, ACPI _BFS and _WAK are not executed too.
+Hi,
 
-Hi huang,
+If I suspend system to ram twice, the system hangs on resume.
 
-Can't we implement ACPI S5 state as an option in current hibernation
-framework? Or kexec jump is a requirement for that? 
+Otherwise system suspends fine.
 
-Thanks
-Vivek
+I can do the following:
+
+suspend to disk
+suspend to disk
+suspend to ram
+suspend to disk
+suspend to ram
+suspend to disk
+suspend to disk.
+
+but not this:
+
+suspend to ram
+suspend to ram.
+<-> hang
+
+
+Before I start digging deeper, are there patches floating around that 
+could fix this issue?
+
+(I use latest linus -git kernel)
+
+(I tried to use minimal system and got same results)
+
+Have to confess that I use nvidia binary drivers, and without them
+video doesn't resume, but I did test this issue without them, and
+got same results.
+
+(after first suspend to ram video didn't resume, but I was able to 
+control the system with keyboard, and I then put it to sleep again, and 
+on resume, system didn't respond.)
+
+Best regards,
+	Maxim Levitsky
