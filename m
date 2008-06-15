@@ -1,14 +1,14 @@
-From: Francesco VIRLINZI <francesco.virlinzi@st.com>
-Subject: Re: Problem on Suspend to RAM vs ext3
-Date: Mon, 16 Jun 2008 15:32:44 +0200
-Message-ID: <48566B7C.4090903@st.com>
-References: <48560D3E.8060303@st.com> <200806161458.22706.rjw@sisk.pl>
-	<485668F9.3080502@st.com> <200806161530.49979.rjw@sisk.pl>
+From: Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH -mm] PM: fix 2.6.26-rc5-mm3 build error with
+	CONFIG_PM_TEST_SUSPEND=y
+Date: Sun, 15 Jun 2008 16:28:32 +0200
+Message-ID: <1213540112-2918-1-git-send-email-righi.andrea__40946.0851028145$1213627738$gmane$org@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200806161530.49979.rjw@sisk.pl>
+In-Reply-To: <>
+References: <>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,73 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>, David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Andrea Righi <righi.andrea@gmail.com>, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael
-I will try to update my kernel
-> This is a problem with the SATA driver IMO.  There's a good chance it's been
-> fixed in one of the more recent kernels.
->
-> Please try 2.6.25.x.
->   
-Thanks for your support
-Regards
- Francesco
-> Thanks,
-> Rafael
->
->  
->   
->> sd 0:0:1:0: [sda] Starting disk
->> ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->> ata1.01: cmd 40/00:01:00:00:00/00:00:00:00:00/f0 tag 0 cdb 0x0 data 0
->>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
->> ata1: port is slow to respond, please be patient (Status 0xd0)
->> ata1: device not ready (errno=-16), forcing hardreset
->> ata1: soft resetting port
->> ata1.01: failed to IDENTIFY (I/O error, err_mask=0x3)
->> ata1.01: revalidation failed (errno=-5)
->> ata1: failed to recover some devices, retrying in 5 secs
->> ata1: soft resetting port
->> ata1.01: failed to IDENTIFY (I/O error, err_mask=0x3)
->> ata1.01: revalidation failed (errno=-5)
->> ata1.01: limiting speed to UDMA7:PIO5
->> ata1: failed to recover some devices, retrying in 5 secs
->> ata1: soft resetting port
->> ata1.01: failed to IDENTIFY (I/O error, err_mask=0x3)
->> ata1.01: revalidation failed (errno=-5)
->> ata1.01: disabled
->> ata1: EH pending after completion, repeating EH (cnt=4)
->> ata1: soft resetting port
->> ata1: EH complete
->> sd 0:0:1:0: [sda] START_STOP FAILED
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> Restarting tasks ... done.
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 6042767
->> Buffer I/O error on device sda1, logical block 755338
->> lost page write due to I/O error on sda1
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 6042927
->> Buffer I/O error on device sda1, logical block 755358
->> lost page write due to I/O error on sda1
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 6042839
->> Buffer I/O error on device sda1, logical block 755347
->> lost page write due to I/O error on sda1
->> Aborting journal on device sda1.
->> ext3_abort called.
->> EXT3-fs error (device sda1): ext3_journal_start_sb: Detected aborted 
->> journal
->> Remounting filesystem read-only
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 5767247
->> Buffer I/O error on device sda1, logical block 720898
->> lost page write due to I/O error on sda1
->> sd 0:0:1:0: [sda] Result: hostbyte=0x04 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 7140655
->>     
->
->   
+a2VybmVsL3Bvd2VyL21haW4uYzogSW4gZnVuY3Rpb24g4oCYdGVzdF9zdXNwZW5k4oCZOgprZXJu
+ZWwvcG93ZXIvbWFpbi5jOjY4ODogd2FybmluZzogcGFzc2luZyBhcmd1bWVudCAyIG9mIOKAmGNs
+YXNzX2ZpbmRfZGV2aWNl4oCZIGZyb20gaW5jb21wYXRpYmxlIHBvaW50ZXIgdHlwZQprZXJuZWwv
+cG93ZXIvbWFpbi5jOjY4ODogZXJyb3I6IHRvbyBmZXcgYXJndW1lbnRzIHRvIGZ1bmN0aW9uIOKA
+mGNsYXNzX2ZpbmRfZGV2aWNl4oCZCm1ha2VbMl06ICoqKiBba2VybmVsL3Bvd2VyL21haW4ub10g
+RXJyb3IgMQptYWtlWzFdOiAqKiogW2tlcm5lbC9wb3dlcl0gRXJyb3IgMgptYWtlOiAqKiogW2tl
+cm5lbF0gRXJyb3IgMgoKU2lnbmVkLW9mZi1ieTogQW5kcmVhIFJpZ2hpIDxyaWdoaS5hbmRyZWFA
+Z21haWwuY29tPgotLS0KIGtlcm5lbC9wb3dlci9tYWluLmMgfCAgICAyICstCiAxIGZpbGVzIGNo
+YW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9rZXJu
+ZWwvcG93ZXIvbWFpbi5jIGIva2VybmVsL3Bvd2VyL21haW4uYwppbmRleCBlOTM3Y2M4Li4yYmYz
+ZDViIDEwMDY0NAotLS0gYS9rZXJuZWwvcG93ZXIvbWFpbi5jCisrKyBiL2tlcm5lbC9wb3dlci9t
+YWluLmMKQEAgLTY4NSw3ICs2ODUsNyBAQCBzdGF0aWMgaW50IF9faW5pdCB0ZXN0X3N1c3BlbmQo
+dm9pZCkKIAl9CiAKIAkvKiBSVENzIGhhdmUgaW5pdGlhbGl6ZWQgYnkgbm93IHRvbyAuLi4gY2Fu
+IHdlIHVzZSBvbmU/ICovCi0JY2xhc3NfZmluZF9kZXZpY2UocnRjX2NsYXNzLCAmcG9ueSwgaGFz
+X3dha2VhbGFybSk7CisJY2xhc3NfZmluZF9kZXZpY2UocnRjX2NsYXNzLCBOVUxMLCAmcG9ueSwg
+aGFzX3dha2VhbGFybSk7CiAJaWYgKHBvbnkpCiAJCXJ0YyA9IHJ0Y19jbGFzc19vcGVuKHBvbnkp
+OwogCWlmICghcnRjKSB7Ci0tIAoxLjUuNC4zCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
