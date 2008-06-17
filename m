@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 3/3] PCI PM: Rework pci_set_power_state
-Date: Tue, 17 Jun 2008 02:17:23 +0200
-Message-ID: <200806170217.23693.rjw__40815.133348997$1213662261$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 2/3] PCI PM: Introduce
+	platform_pci_power_manageable
+Date: Tue, 17 Jun 2008 02:14:50 +0200
+Message-ID: <200806170214.51160.rjw__10045.7762754106$1213662401$gmane$org@sisk.pl>
 References: <200806170206.26616.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,131 +25,69 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rework pci_set_power_state() so that the platform callback is
-invoked before the native mechanism, if necessary.  Also, make
-the function check if the device is power manageable by the
-platform before invoking the platform callback.
+Introduce function pointer platform_pci_power_manageable to be used
+by the platform-related code to point to a function allowing us to
+check if given device is power manageable by the platform.
 
-This may matter if the device dependent on additional power
-resources controlled by the platform is being put into D0, in which
-case those power resources must be turned on before we attempt to
-handle the device itself. 
+Introduce acpi_pci_power_manageable() playing that role for ACPI.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-acpi.c |    2 +-
- drivers/pci/pci.c      |   44 +++++++++++++++++++++++++++++++-------------
- 2 files changed, 32 insertions(+), 14 deletions(-)
+ drivers/pci/pci-acpi.c |   11 +++++++++++
+ drivers/pci/pci.c      |    1 +
+ drivers/pci/pci.h      |    1 +
+ 3 files changed, 13 insertions(+)
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -398,7 +398,8 @@ int (*platform_pci_set_power_state)(stru
- int
- pci_set_power_state(struct pci_dev *dev, pci_power_t state)
- {
--	int pm, need_restore = 0;
-+	int pm;
-+	bool platform_pm, platform_done = false, need_restore = false;
- 	u16 pmcsr, pmc;
- 
- 	/* bound the state we're entering */
-@@ -413,12 +414,35 @@ pci_set_power_state(struct pci_dev *dev,
- 	if ((state == PCI_D1 || state == PCI_D2) && pci_no_d1d2(dev))
- 		return 0;
- 
-+	platform_pm = (platform_pci_power_manageable
-+			&& platform_pci_power_manageable(dev));
-+	if (platform_pm) {
-+		/*
-+		 * Allow the platform to change the state, for example via ACPI
-+		 * _PRx, _PSx and some such, but do not trust it.
-+		 */
-+		platform_done = !platform_pci_set_power_state(dev, state);
-+		if (platform_done)
-+			printk(KERN_INFO
-+			"PCI: Power state of %s set by the platform\n",
-+			pci_name(dev));
-+	}
-+
- 	/* find PCI PM capability in list */
- 	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
- 
- 	/* abort if the device doesn't support PM capabilities */
- 	if (!pm)
--		return -EIO;
-+		return platform_done ? 0 : -EIO;
-+
-+	if (platform_pm) {
-+		/*
-+		 * The platform might have changed the state, make sure that
-+		 * the cached value is still valid.
-+		 */
-+		pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-+		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-+	}
- 
- 	/* Validate current state:
- 	 * Can enter D0 from any state, but if we can only go deeper 
-@@ -427,12 +451,12 @@ pci_set_power_state(struct pci_dev *dev,
- 	if (state != PCI_D0 && dev->current_state > state) {
- 		printk(KERN_ERR "%s(): %s: state=%d, current state=%d\n",
- 			__func__, pci_name(dev), state, dev->current_state);
--		return -EINVAL;
-+		return platform_done ? 0 : -EINVAL;
- 	} else if (dev->current_state == state)
- 		return 0;        /* we're already there */
- 
- 
--	pci_read_config_word(dev,pm + PCI_PM_PMC,&pmc);
-+	pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
- 	if ((pmc & PCI_PM_CAP_VER_MASK) > 3) {
- 		printk(KERN_DEBUG
- 		       "PCI: %s has unsupported PM cap regs version (%u)\n",
-@@ -446,7 +470,8 @@ pci_set_power_state(struct pci_dev *dev,
- 	else if (state == PCI_D2 && !(pmc & PCI_PM_CAP_D2))
- 		return -EIO;
- 
--	pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-+	if (!platform_pm)
-+		pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
- 
- 	/* If we're (effectively) in D3, force entire word to 0.
- 	 * This doesn't affect PME_Status, disables PME_En, and
-@@ -462,7 +487,7 @@ pci_set_power_state(struct pci_dev *dev,
- 	case PCI_UNKNOWN: /* Boot-up */
- 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
- 		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET))
--			need_restore = 1;
-+			need_restore = true;
- 		/* Fall-through: force to D0 */
- 	default:
- 		pmcsr = 0;
-@@ -479,13 +504,6 @@ pci_set_power_state(struct pci_dev *dev,
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(200);
- 
--	/*
--	 * Give firmware a chance to be called, such as ACPI _PRx, _PSx
--	 * Firmware method after native method ?
--	 */
--	if (platform_pci_set_power_state)
--		platform_pci_set_power_state(dev, state);
--
- 	dev->current_state = state;
- 
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
 Index: linux-2.6/drivers/pci/pci-acpi.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-acpi.c
 +++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -341,7 +341,7 @@ static int acpi_pci_set_power_state(stru
- 		return -ENODEV;
- 	/* If the ACPI device has _EJ0, ignore the device */
- 	if (ACPI_SUCCESS(acpi_get_handle(handle, "_EJ0", &tmp)))
--		return 0;
-+		return -EINVAL;
+@@ -315,6 +315,16 @@ static pci_power_t acpi_pci_choose_state
+ }
+ #endif
  
- 	switch (state) {
- 	case PCI_D0:
++static bool acpi_pci_power_manageable(struct pci_dev *dev)
++{
++	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
++
++	if (!handle)
++		return -ENODEV;
++
++	return acpi_bus_power_manageable(handle);
++}
++
+ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+ {
+ 	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
+@@ -398,6 +408,7 @@ static int __init acpi_pci_init(void)
+ #ifdef	CONFIG_ACPI_SLEEP
+ 	platform_pci_choose_state = acpi_pci_choose_state;
+ #endif
++	platform_pci_power_manageable = acpi_pci_power_manageable;
+ 	platform_pci_set_power_state = acpi_pci_set_power_state;
+ 	return 0;
+ }
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -378,6 +378,7 @@ pci_restore_bars(struct pci_dev *dev)
+ 		pci_update_resource(dev, &dev->resource[i], i);
+ }
+ 
++bool (*platform_pci_power_manageable)(struct pci_dev *dev);
+ int (*platform_pci_set_power_state)(struct pci_dev *dev, pci_power_t t);
+ 
+ /**
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -6,6 +6,7 @@ extern void pci_remove_sysfs_dev_files(s
+ extern void pci_cleanup_rom(struct pci_dev *dev);
+ 
+ /* Firmware callbacks */
++extern bool (*platform_pci_power_manageable)(struct pci_dev *dev);
+ extern pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+ extern int (*platform_pci_set_power_state)(struct pci_dev *dev,
+ 						pci_power_t state);
