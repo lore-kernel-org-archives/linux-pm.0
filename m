@@ -1,13 +1,13 @@
-From: "Chen, Huacai" <huacai.chen@intel.com>
-Subject: [PATCH] RTC: Fix CMOS time error after writing
-	/proc/acpi/alarm
-Date: Mon, 23 Jun 2008 18:52:21 +0800
-Message-ID: <42DFA526FC41B1429CE7279EF83C6BDC014E42D5__43327.7133074172$1214218517$gmane$org@pdsmsx415.ccr.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/11] PCI PM: Handling of PCI devices wake-up
+	functionality
+Date: Mon, 23 Jun 2008 19:34:07 +0200
+Message-ID: <200806231934.08565.rjw__40191.4986935028$1214243646$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, rtc-linux@googlegroups.com, lenb@kernel.org, p_gortmaker@yahoo.com, a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Huacai Chen <huacai.chen@intel.com>
+Hi,
 
-When writing /proc/acpi/alarm in adjust mode, e.g. 
-	echo "+0000-00-00 00:00:15" >/proc/acpi/alarm 
-The "century" field should be read and added to "year" field before
-writing, otherwise the CMOS time will go back to 2000 years ago, e.g.
-	# cat /proc/acpi/alarm
-	0008-06-21 11:38:46 
-Then the system time may be reset to the date of manufacture after
-rebooting. This patch fixed this issue.
+The purpose of the following series of patches is to rework the power
+management of PCI devices so that the handling of their wake-up functionality
+is consistent with the other PM operations and so that the user space can
+manage the wake-up functionality of PCI devices using the
+/sys/devices/.../power/wakeup interface regardless of whether the wake-up
+function is based on the native PCI mechanism (PME#), or it is handled by the
+platform (eg. ACPI).
 
-Signed-off-by: Huacai Chen <huacai.chen@intel.com>
-Acked-by: Pavel Machek <pavel@suse.cz>
----
-diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
-index 224c57c..c9fdf7b 100644
---- a/drivers/acpi/sleep/proc.c
-+++ b/drivers/acpi/sleep/proc.c
-@@ -315,8 +315,11 @@ acpi_system_write_alarm(struct file *file,
- 		cmos_bcd_write(day, acpi_gbl_FADT.day_alarm,
-rtc_control);
- 	if (acpi_gbl_FADT.month_alarm)
- 		cmos_bcd_write(mo, acpi_gbl_FADT.month_alarm,
-rtc_control);
--	if (acpi_gbl_FADT.century)
-+	if (acpi_gbl_FADT.century) {
-+		if (adjust) 
-+			yr += cmos_bcd_read(acpi_gbl_FADT.century,
-rtc_control) * 100;
- 		cmos_bcd_write(yr / 100, acpi_gbl_FADT.century,
-rtc_control);
-+	}
- 	/* enable the rtc alarm interrupt */
- 	rtc_control |= RTC_AIE;
- 	CMOS_WRITE(rtc_control, RTC_CONTROL);
----
-This is for Linux 2.6.26-rc7.
+Apart from the ACPI and PCI changes necessary for this purpose, the series
+includes some clean-ups that are not strictly required, but make the code more
+straightforward and (IMHO) easier to follow.
+
+Please review.
+
+Thanks,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
