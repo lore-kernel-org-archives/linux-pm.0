@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 10/11] PCI PM: Introduce pci_prepare_to_sleep and
-	pci_back_from_sleep
-Date: Mon, 23 Jun 2008 19:44:59 +0200
-Message-ID: <200806231945.00404.rjw__26536.4294210032$1214243701$gmane$org@sisk.pl>
+Subject: [PATCH 02/11] PCI: Introduce
+	platform_pci_power_manageable function
+Date: Mon, 23 Jun 2008 19:45:25 +0200
+Message-ID: <200806231945.26068.rjw__17924.5243467905$1214243777$gmane$org@sisk.pl>
 References: <200806231934.08565.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,132 +25,178 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-PCI PM: Introduce pci_prepare_to_sleep and pci_back_from_sleep
+PCI: Introduce platform_pci_power_manageable function
 
-Introduce functions pci_prepare_to_sleep() and pci_back_from_sleep(),
-to be used by the PCI drivers that want to place their devices into
-the lowest power state appropiate for them (PCI_D3hot, if the device
-is not supposed to wake up the system, or the deepest state from
-which the wake-up is possible, otherwise) while the system is being
-prepared to go into a sleeping state and to put them back into D0
-during the subsequent transition to the working state.
+Introduce function pointer platform_pci_power_manageable to be used
+by the platform-related code to point to a function allowing us to
+check if given device is power manageable by the platform.
+
+Introduce acpi_pci_power_manageable() playing that role for ACPI.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c   |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci.h |    2 +
- 2 files changed, 85 insertions(+)
+ drivers/pci/pci-acpi.c |   19 +++++++++++++------
+ drivers/pci/pci.c      |   40 ++++++++++++++++++++++++++++++----------
+ drivers/pci/pci.h      |   26 ++++++++++++++++++++++----
+ 3 files changed, 65 insertions(+), 20 deletions(-)
 
+Index: linux-next/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-next.orig/drivers/pci/pci-acpi.c
++++ linux-next/drivers/pci/pci-acpi.c
+@@ -215,7 +215,6 @@ acpi_status pci_osc_control_set(acpi_han
+ }
+ EXPORT_SYMBOL(pci_osc_control_set);
+ 
+-#ifdef CONFIG_ACPI_SLEEP
+ /*
+  * _SxD returns the D-state with the highest power
+  * (lowest D-state number) supported in the S-state "x".
+@@ -259,7 +258,13 @@ static pci_power_t acpi_pci_choose_state
+ 	}
+ 	return PCI_POWER_ERROR;
+ }
+-#endif
++
++static bool acpi_pci_power_manageable(struct pci_dev *dev)
++{
++	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
++
++	return handle ? acpi_bus_power_manageable(handle) : false;
++}
+ 
+ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+ {
+@@ -290,6 +295,11 @@ static int acpi_pci_set_power_state(stru
+ 	return -EINVAL;
+ }
+ 
++static struct pci_platform_pm_ops acpi_pci_platform_pm = {
++	.is_manageable = acpi_pci_power_manageable,
++	.set_state = acpi_pci_set_power_state,
++	.choose_state = acpi_pci_choose_state,
++};
+ 
+ /* ACPI bus type */
+ static int acpi_pci_find_device(struct device *dev, acpi_handle *handle)
+@@ -341,10 +351,7 @@ static int __init acpi_pci_init(void)
+ 	ret = register_acpi_bus_type(&acpi_pci_bus);
+ 	if (ret)
+ 		return 0;
+-#ifdef	CONFIG_ACPI_SLEEP
+-	platform_pci_choose_state = acpi_pci_choose_state;
+-#endif
+-	platform_pci_set_power_state = acpi_pci_set_power_state;
++	pci_set_platform_pm(&acpi_pci_platform_pm);
+ 	return 0;
+ }
+ arch_initcall(acpi_pci_init);
 Index: linux-next/drivers/pci/pci.c
 ===================================================================
 --- linux-next.orig/drivers/pci/pci.c
 +++ linux-next/drivers/pci/pci.c
-@@ -1145,6 +1145,87 @@ int pci_enable_wake(struct pci_dev *dev,
+@@ -376,7 +376,32 @@ pci_restore_bars(struct pci_dev *dev)
+ 		pci_update_resource(dev, &dev->resource[i], i);
  }
  
+-int (*platform_pci_set_power_state)(struct pci_dev *dev, pci_power_t t);
++static struct pci_platform_pm_ops *pci_platform_pm;
++
++int pci_set_platform_pm(struct pci_platform_pm_ops *ops)
++{
++	if (!ops->is_manageable || !ops->set_state || !ops->choose_state)
++		return -EINVAL;
++	pci_platform_pm = ops;
++	return 0;
++}
++
++static inline bool platform_pci_power_manageable(struct pci_dev *dev)
++{
++	return pci_platform_pm ? pci_platform_pm->is_manageable(dev) : false;
++}
++
++static inline int platform_pci_set_power_state(struct pci_dev *dev,
++                                                pci_power_t t)
++{
++	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
++}
++
++static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
++{
++	return pci_platform_pm ?
++			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
++}
+ 
  /**
-+ * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
-+ *                        a sleep state
-+ * @dev: Device to handle.
-+ *
-+ * Choose the power state appropriate for the device depending on whether
-+ * it can wake-up the system and/or is power manageable by the platform
-+ * (PCI_D3hot is the default) and put the device into that state.
-+ */
-+int pci_prepare_to_sleep(struct pci_dev *dev)
-+{
-+	pci_power_t target_state = PCI_D3hot;
-+	int pm = pci_find_capability(dev, PCI_CAP_ID_PM);
-+	int error;
-+
-+	if (platform_pci_power_manageable(dev)) {
-+		/*
-+		 * Call the platform to choose the target state of the device
-+		 * and enable wake-up from this state if supported.
-+		 */
-+		pci_power_t state = platform_pci_choose_state(dev);
-+
-+		switch (state) {
-+		case PCI_POWER_ERROR:
-+		case PCI_UNKNOWN:
-+			break;
-+		case PCI_D1:
-+		case PCI_D2:
-+			if (pci_no_d1d2(dev))
-+				break;
-+		default:
-+			target_state = state;
-+			pci_enable_wake(dev, target_state, true);
-+		}
-+	} else if (device_may_wakeup(&dev->dev)) {
-+		/*
-+		 * Find the deepest state from which the device can generate
-+		 * wake-up events, make it the target state and enable device
-+		 * to generate PME#.
-+		 */
-+		u16 pmc;
-+
-+		if (!pm)
-+			return -EIO;
-+
-+		pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
-+		if (pmc & PCI_PM_CAP_PME_MASK) {
-+			if (!(pmc & PCI_PM_CAP_PME_D3)) {
-+				/* Device cannot generate PME# from D3_hot */
-+				if (pmc & PCI_PM_CAP_PME_D2)
-+					target_state = PCI_D2;
-+				else if (pmc & PCI_PM_CAP_PME_D1)
-+					target_state = PCI_D1;
-+				else
-+					target_state = PCI_D0;
-+			}
-+			pci_pme_active(dev, pm, true);
-+		}
-+	}
-+
-+	error = pci_set_power_state(dev, target_state);
-+
-+	if (error)
-+		pci_enable_wake(dev, target_state, false);
-+
-+	return error;
-+}
-+
-+/**
-+ * pci_back_from_sleep - turn PCI device on during system-wide transition into
-+ *                       the working state a sleep state
-+ * @dev: Device to handle.
-+ *
-+ * Disable device's sytem wake-up capability and put it into D0.
-+ */
-+int pci_back_from_sleep(struct pci_dev *dev)
-+{
-+	pci_enable_wake(dev, PCI_D0, false);
-+	return pci_set_power_state(dev, PCI_D0);
-+}
-+
-+/**
-  * pci_pm_init - Initialize PM functions of given PCI device
-  * @dev: PCI device to handle.
-  */
-@@ -1843,5 +1924,7 @@ EXPORT_SYMBOL(pci_set_power_state);
- EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
- EXPORT_SYMBOL(pci_enable_wake);
-+EXPORT_SYMBOL(pci_prepare_to_sleep);
-+EXPORT_SYMBOL(pci_back_from_sleep);
- EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+  * pci_set_power_state - Set the power state of a PCI device
+@@ -480,8 +505,7 @@ pci_set_power_state(struct pci_dev *dev,
+ 	 * Give firmware a chance to be called, such as ACPI _PRx, _PSx
+ 	 * Firmware method after native method ?
+ 	 */
+-	if (platform_pci_set_power_state)
+-		platform_pci_set_power_state(dev, state);
++	platform_pci_set_power_state(dev, state);
  
-Index: linux-next/include/linux/pci.h
+ 	dev->current_state = state;
+ 
+@@ -506,8 +530,6 @@ pci_set_power_state(struct pci_dev *dev,
+ 	return 0;
+ }
+ 
+-pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+- 
+ /**
+  * pci_choose_state - Choose the power state of a PCI device
+  * @dev: PCI device to be suspended
+@@ -525,11 +547,9 @@ pci_power_t pci_choose_state(struct pci_
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+ 		return PCI_D0;
+ 
+-	if (platform_pci_choose_state) {
+-		ret = platform_pci_choose_state(dev);
+-		if (ret != PCI_POWER_ERROR)
+-			return ret;
+-	}
++	ret = platform_pci_choose_state(dev);
++	if (ret != PCI_POWER_ERROR)
++		return ret;
+ 
+ 	switch (state.event) {
+ 	case PM_EVENT_ON:
+Index: linux-next/drivers/pci/pci.h
 ===================================================================
---- linux-next.orig/include/linux/pci.h
-+++ linux-next/include/linux/pci.h
-@@ -633,6 +633,8 @@ int pci_restore_state(struct pci_dev *de
- int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
-+int pci_prepare_to_sleep(struct pci_dev *dev);
-+int pci_back_from_sleep(struct pci_dev *dev);
+--- linux-next.orig/drivers/pci/pci.h
++++ linux-next/drivers/pci/pci.h
+@@ -5,10 +5,28 @@ extern int pci_create_sysfs_dev_files(st
+ extern void pci_remove_sysfs_dev_files(struct pci_dev *pdev);
+ extern void pci_cleanup_rom(struct pci_dev *dev);
  
- /* Functions for PCI Hotplug drivers to use */
- int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
+-/* Firmware callbacks */
+-extern pci_power_t (*platform_pci_choose_state)(struct pci_dev *dev);
+-extern int (*platform_pci_set_power_state)(struct pci_dev *dev,
+-						pci_power_t state);
++/**
++ * Firmware PM callbacks
++ *
++ * @is_manageable - returns 'true' if given device is power manageable by the
++ *                  platform firmware
++ *
++ * @set_state - invokes the platform firmware to set the device's power state
++ *
++ * @choose_state - returns PCI power state of given device preferred by the
++ *                 platform; to be used during system-wide transitions from a
++ *                 sleeping state to the working state and vice versa
++ *
++ * If given platform is generally capable of power managing PCI devices, all of
++ * these callbacks are mandatory.
++ */
++struct pci_platform_pm_ops {
++	bool (*is_manageable)(struct pci_dev *dev);
++	int (*set_state)(struct pci_dev *dev, pci_power_t state);
++	pci_power_t (*choose_state)(struct pci_dev *dev);
++};
++
++extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ 
+ extern int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
+ extern int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
