@@ -1,16 +1,15 @@
-From: "Paul Menage" <menage@google.com>
-Subject: Re: [patch 3/4] Container Freezer: Implement freezer
-	cgroup subsystem
-Date: Tue, 24 Jun 2008 14:27:10 -0700
-Message-ID: <6599ad830806241427n4e174994oce21e93a034b7051__34580.4311255508$1214343172$gmane$org@mail.gmail.com>
-References: <20080624135823.417569216@us.ibm.com>
-	<20080624135824.420875709@us.ibm.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor
+	register on	resume
+Date: Tue, 24 Jun 2008 23:46:10 +0200
+Message-ID: <20080624214610.GC18679__6883.09519687227$1214344112$gmane$org@elf.ucw.cz>
+References: <200806242303.49498.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080624135824.420875709@us.ibm.com>
 Content-Disposition: inline
+In-Reply-To: <200806242303.49498.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,144 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 24, 2008 at 6:58 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
-> From: Cedric Le Goater <clg@fr.ibm.com>
-> Subject: [patch 3/4] Container Freezer: Implement freezer cgroup subsystem
->
-> This patch implements a new freezer subsystem for Paul Menage's
-> control groups framework.
+Hi!
 
-You can s/Paul Menage's// now that it's in mainline.
-> +static const char *freezer_state_strs[] = {
-> +       "RUNNING",
-> +       "FREEZING",
-> +       "FROZEN",
-> +};
-> +
-> +/* Check and update whenever adding new freezer states. Currently is:
-> +   strlen("FREEZING") */
-> +#define STATE_MAX_STRLEN 8
-> +
+> From: H. Peter Anvin <hpa@zytor.com>
+> 
+> x86 ACPI: normalize segment descriptor register on resume
+> 
+> Some Dell laptops enter resume with apparent garbage in the segment
+> descriptor registers (almost certainly the result of a botched
+> transition from protected to real mode.)  The only way to clean that
+> up is to enter protected mode ourselves and clean out the descriptor
+> registers.
+> 
+> This fixes resume on Dell XPS M1210 and Dell D620.
+> 
+> Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10927
+> 
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> Tested-by: Kirill A. Shutemov <kirill@shutemov.name>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-That's a bit nasty ...
+Thanks for great work.
 
-But hopefully it could go away when the write_string() method is
-available in cgroups? (See my patchset from earlier this week).
+I still consider this one slightly risky, and would like to get it as
+much testing as possible, but all the risks are hypothetical and
+regression from 2.6.25 is real, so...
 
-> +
-> +struct cgroup_subsys freezer_subsys;
-> +
-> +/* Locking and lock ordering:
-> + *
-> + * can_attach(), cgroup_frozen():
-> + * rcu (task->cgroup, freezer->state)
-> + *
-> + * freezer_fork():
-> + * rcu (task->cgroup, freezer->state)
-> + *  freezer->lock
-> + *   task_lock
-> + *    sighand->siglock
-> + *
-> + * freezer_read():
-> + * rcu (freezer->state)
-> + *  freezer->lock (upgrade to write)
-> + *   read_lock css_set_lock
-> + *
-> + * freezer_write()
-> + * cgroup_lock
-> + *  rcu
-> + *   freezer->lock
-> + *    read_lock css_set_lock
-> + *     task_lock
-> + *      sighand->siglock
-> + *
-> + * freezer_create(), freezer_destroy():
-> + * cgroup_lock [ by cgroup core ]
-> + */
+Acked-by: Pavel Machek <pavel@suse.cz>
 
+If this could be sneaked into Ingo's tree for some automated testing,
+that would be good.
 
-> +static int freezer_can_attach(struct cgroup_subsys *ss,
-> +                             struct cgroup *new_cgroup,
-> +                             struct task_struct *task)
-> +{
-> +       struct freezer *freezer;
-> +       int retval = 0;
-> +
-> +       /*
-> +        * The call to cgroup_lock() in the freezer.state write method prevents
-> +        * a write to that file racing against an attach, and hence the
-> +        * can_attach() result will remain valid until the attach completes.
-> +        */
-> +       rcu_read_lock();
-> +       freezer = cgroup_freezer(new_cgroup);
-> +       if (freezer->state == STATE_FROZEN)
-> +               retval = -EBUSY;
-
-Is it meant to be OK to move a task into a cgroup that's currently in
-the FREEZING state but not yet fully frozen?
-> +       struct freezer *freezer;
-> +
-> +       rcu_read_lock(); /* needed to fetch task's cgroup
-> +                           can't use task_lock() here because
-> +                           freeze_task() grabs that */
-
-I'm not sure that RCU is the right thing for this. All that the RCU
-lock will guarantee is that the freezer structure you get a pointer to
-doesn't go away. It doesn't guarantee that the task doesn't move
-cgroup, or that the cgroup doesn't get a freeze request via a write.
-But in this case, the fork callback is called before the task is added
-to the task_list/pidhash, or to its cgroups' linked lists. So it
-shouldn't be able to change groups. Racing against a concurrent write
-to the cgroup's freeze file may be more of an issue.
-
-Can you add a __freeze_task() that has to be called with task_lock(p)
-already held?
-
-> +       freezer = task_freezer(task);
-
-Maybe BUG_ON(freezer->state == STATE_FROZEN) ?
-> +
-> +static ssize_t freezer_read(struct cgroup *cgroup,
-> +                           struct cftype *cft,
-> +                           struct file *file, char __user *buf,
-> +                           size_t nbytes, loff_t *ppos)
-> +{
-> +       struct freezer *freezer;
-> +       enum freezer_state state;
-> +
-> +       rcu_read_lock();
-> +       freezer = cgroup_freezer(cgroup);
-> +       state = freezer->state;
-> +       if (state == STATE_FREEZING) {
-> +               /* We change from FREEZING to FROZEN lazily if the cgroup was
-> +                * only partially frozen when we exitted write. */
-> +               spin_lock_irq(&freezer->lock);
-> +               if (freezer_check_if_frozen(cgroup)) {
-> +                       freezer->state = STATE_FROZEN;
-> +                       state = STATE_FROZEN;
-> +               }
-> +               spin_unlock_irq(&freezer->lock);
-> +       }
-> +       rcu_read_unlock();
-> +
-> +       return simple_read_from_buffer(buf, nbytes, ppos,
-> +                                      freezer_state_strs[state],
-> +                                      strlen(freezer_state_strs[state]));
-> +}
-
-Technically this could return weird results if someone read it
-byte-by-byte and the status changed between reads. If you used
-read_seq_string rather than read you'd avoid that.
-
-> +               return -EIO;
-> +
-> +       cgroup_lock();
-
-If you're taking cgroup_lock() here in freezer_write(), there's no
-need for the rcu_read_lock() in freezer_freeze()
-
-Paul
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
