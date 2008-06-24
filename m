@@ -1,12 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] x86 ACPI: normalize segment descriptor register
-	on resume
-Date: Tue, 24 Jun 2008 23:03:48 +0200
-Message-ID: <200806242303.49498.rjw__13047.6459199146$1214341565$gmane$org@sisk.pl>
+From: "Paul Menage" <menage@google.com>
+Subject: Re: [patch 3/4] Container Freezer: Implement freezer
+	cgroup subsystem
+Date: Tue, 24 Jun 2008 14:27:10 -0700
+Message-ID: <6599ad830806241427n4e174994oce21e93a034b7051__34580.4311255508$1214343172$gmane$org@mail.gmail.com>
+References: <20080624135823.417569216@us.ibm.com>
+	<20080624135824.420875709@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080624135824.420875709@us.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,189 +20,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Jun 24, 2008 at 6:58 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> From: Cedric Le Goater <clg@fr.ibm.com>
+> Subject: [patch 3/4] Container Freezer: Implement freezer cgroup subsystem
+>
+> This patch implements a new freezer subsystem for Paul Menage's
+> control groups framework.
 
-The patch below fixes the regression described at
-http://bugzilla.kernel.org/show_bug.cgi?id=10927
-which is caused by the fact that some BIOSes call the kernel's resume code with
-post-protected mode garbage in segment registers.
+You can s/Paul Menage's// now that it's in mainline.
+> +static const char *freezer_state_strs[] = {
+> +       "RUNNING",
+> +       "FREEZING",
+> +       "FROZEN",
+> +};
+> +
+> +/* Check and update whenever adding new freezer states. Currently is:
+> +   strlen("FREEZING") */
+> +#define STATE_MAX_STRLEN 8
+> +
 
-Apart from Dell laptops referred to in the chagelog it has a potential to fix
-some other systems on which resume from suspend to RAM fails in a mysterious
-way and the probability of it breaking things is rather small, so IMO it would
-be nice to have in 2.6.26.
+That's a bit nasty ...
 
-Thanks,
-Rafael
+But hopefully it could go away when the write_string() method is
+available in cgroups? (See my patchset from earlier this week).
+
+> +
+> +struct cgroup_subsys freezer_subsys;
+> +
+> +/* Locking and lock ordering:
+> + *
+> + * can_attach(), cgroup_frozen():
+> + * rcu (task->cgroup, freezer->state)
+> + *
+> + * freezer_fork():
+> + * rcu (task->cgroup, freezer->state)
+> + *  freezer->lock
+> + *   task_lock
+> + *    sighand->siglock
+> + *
+> + * freezer_read():
+> + * rcu (freezer->state)
+> + *  freezer->lock (upgrade to write)
+> + *   read_lock css_set_lock
+> + *
+> + * freezer_write()
+> + * cgroup_lock
+> + *  rcu
+> + *   freezer->lock
+> + *    read_lock css_set_lock
+> + *     task_lock
+> + *      sighand->siglock
+> + *
+> + * freezer_create(), freezer_destroy():
+> + * cgroup_lock [ by cgroup core ]
+> + */
 
 
----
-From: H. Peter Anvin <hpa@zytor.com>
+> +static int freezer_can_attach(struct cgroup_subsys *ss,
+> +                             struct cgroup *new_cgroup,
+> +                             struct task_struct *task)
+> +{
+> +       struct freezer *freezer;
+> +       int retval = 0;
+> +
+> +       /*
+> +        * The call to cgroup_lock() in the freezer.state write method prevents
+> +        * a write to that file racing against an attach, and hence the
+> +        * can_attach() result will remain valid until the attach completes.
+> +        */
+> +       rcu_read_lock();
+> +       freezer = cgroup_freezer(new_cgroup);
+> +       if (freezer->state == STATE_FROZEN)
+> +               retval = -EBUSY;
 
-x86 ACPI: normalize segment descriptor register on resume
+Is it meant to be OK to move a task into a cgroup that's currently in
+the FREEZING state but not yet fully frozen?
+> +       struct freezer *freezer;
+> +
+> +       rcu_read_lock(); /* needed to fetch task's cgroup
+> +                           can't use task_lock() here because
+> +                           freeze_task() grabs that */
 
-Some Dell laptops enter resume with apparent garbage in the segment
-descriptor registers (almost certainly the result of a botched
-transition from protected to real mode.)  The only way to clean that
-up is to enter protected mode ourselves and clean out the descriptor
-registers.
+I'm not sure that RCU is the right thing for this. All that the RCU
+lock will guarantee is that the freezer structure you get a pointer to
+doesn't go away. It doesn't guarantee that the task doesn't move
+cgroup, or that the cgroup doesn't get a freeze request via a write.
+But in this case, the fork callback is called before the task is added
+to the task_list/pidhash, or to its cgroups' linked lists. So it
+shouldn't be able to change groups. Racing against a concurrent write
+to the cgroup's freeze file may be more of an issue.
 
-This fixes resume on Dell XPS M1210 and Dell D620.
+Can you add a __freeze_task() that has to be called with task_lock(p)
+already held?
 
-Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10927
+> +       freezer = task_freezer(task);
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Tested-by: Kirill A. Shutemov <kirill@shutemov.name>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/acpi/realmode/wakeup.S |   38 ++++++++++++++++++++++++++++++++-
- arch/x86/kernel/acpi/realmode/wakeup.h |    5 ++++
- arch/x86/kernel/acpi/sleep.c           |   16 +++++++++++++
- drivers/acpi/sleep/main.c              |    5 +---
- 4 files changed, 59 insertions(+), 5 deletions(-)
+Maybe BUG_ON(freezer->state == STATE_FROZEN) ?
+> +
+> +static ssize_t freezer_read(struct cgroup *cgroup,
+> +                           struct cftype *cft,
+> +                           struct file *file, char __user *buf,
+> +                           size_t nbytes, loff_t *ppos)
+> +{
+> +       struct freezer *freezer;
+> +       enum freezer_state state;
+> +
+> +       rcu_read_lock();
+> +       freezer = cgroup_freezer(cgroup);
+> +       state = freezer->state;
+> +       if (state == STATE_FREEZING) {
+> +               /* We change from FREEZING to FROZEN lazily if the cgroup was
+> +                * only partially frozen when we exitted write. */
+> +               spin_lock_irq(&freezer->lock);
+> +               if (freezer_check_if_frozen(cgroup)) {
+> +                       freezer->state = STATE_FROZEN;
+> +                       state = STATE_FROZEN;
+> +               }
+> +               spin_unlock_irq(&freezer->lock);
+> +       }
+> +       rcu_read_unlock();
+> +
+> +       return simple_read_from_buffer(buf, nbytes, ppos,
+> +                                      freezer_state_strs[state],
+> +                                      strlen(freezer_state_strs[state]));
+> +}
 
-Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.S
-+++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.S
-@@ -5,6 +5,7 @@
- #include <asm/msr-index.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-+#include <asm/processor-flags.h>
- 
- 	.code16
- 	.section ".header", "a"
-@@ -24,6 +25,11 @@ pmode_gdt:	.quad	0
- realmode_flags:	.long	0
- real_magic:	.long	0
- trampoline_segment:	.word 0
-+_pad1:		.byte	0
-+wakeup_jmp:	.byte	0xea	/* ljmpw */
-+wakeup_jmp_off:	.word	3f
-+wakeup_jmp_seg:	.word	0
-+wakeup_gdt:	.quad	0, 0, 0
- signature:	.long	0x51ee1111
- 
- 	.text
-@@ -34,11 +40,34 @@ _start:
- 	cli
- 	cld
- 
-+	/* Apparently some dimwit BIOS programmers don't know how to
-+	   program a PM to RM transition, and we might end up here with
-+	   junk in the data segment descriptor registers.  The only way
-+	   to repair that is to go into PM and fix it ourselves... */
-+	movw	$16, %cx
-+	lgdtl	%cs:wakeup_gdt
-+	movl	%cr0, %eax
-+	orb	$X86_CR0_PE, %al
-+	movl	%eax, %cr0
-+	jmp	1f
-+1:	ljmpw	$8, $2f
-+2:
-+	movw	%cx, %ds
-+	movw	%cx, %es
-+	movw	%cx, %ss
-+	movw	%cx, %fs
-+	movw	%cx, %gs
-+
-+	andb	$~X86_CR0_PE, %al
-+	movl	%eax, %cr0
-+	jmp	wakeup_jmp
-+3:
- 	/* Set up segments */
- 	movw	%cs, %ax
- 	movw	%ax, %ds
- 	movw	%ax, %es
- 	movw	%ax, %ss
-+	lidtl	wakeup_idt
- 
- 	movl	$wakeup_stack_end, %esp
- 
-@@ -98,7 +127,14 @@ bogus_real_magic:
- 	jmp	1b
- 
- 	.data
--	.balign	4
-+	.balign	8
-+
-+	/* This is the standard real-mode IDT */
-+wakeup_idt:
-+	.word	0xffff		/* limit */
-+	.long	0		/* address */
-+	.word	0
-+
- 	.globl	HEAP, heap_end
- HEAP:
- 	.long	wakeup_heap
-Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.h
-+++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.h
-@@ -24,6 +24,11 @@ struct wakeup_header {
- 	u32 realmode_flags;
- 	u32 real_magic;
- 	u16 trampoline_segment;	/* segment with trampoline code, 64-bit only */
-+	u8  _pad1;
-+	u8  wakeup_jmp;
-+	u16 wakeup_jmp_off;
-+	u16 wakeup_jmp_seg;
-+	u64 wakeup_gdt[3];
- 	u32 signature;		/* To check we have correct structure */
- } __attribute__((__packed__));
- 
-Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -50,6 +50,20 @@ int acpi_save_state_mem(void)
- 
- 	header->video_mode = saved_video_mode;
- 
-+	header->wakeup_jmp_seg = acpi_wakeup_address >> 4;
-+	/* GDT[0]: GDT self-pointer */
-+	header->wakeup_gdt[0] =
-+		(u64)(sizeof(header->wakeup_gdt) - 1) +
-+		((u64)(acpi_wakeup_address +
-+			((char *)&header->wakeup_gdt - (char *)acpi_realmode))
-+				<< 16);
-+	/* GDT[1]: real-mode-like code segment */
-+	header->wakeup_gdt[1] = (0x009bULL << 40) +
-+		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	/* GDT[2]: real-mode-like data segment */
-+	header->wakeup_gdt[2] = (0x0093ULL << 40) +
-+		((u64)acpi_wakeup_address << 16) + 0xffff;
-+
- #ifndef CONFIG_64BIT
- 	store_gdt((struct desc_ptr *)&header->pmode_gdt);
- 
-@@ -111,7 +125,7 @@ void __init acpi_reserve_bootmem(void)
- 		return;
- 	}
- 
--	acpi_wakeup_address = acpi_realmode;
-+	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
- }
- 
- 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -32,9 +32,8 @@ static int acpi_sleep_prepare(u32 acpi_s
- 		if (!acpi_wakeup_address) {
- 			return -EFAULT;
- 		}
--		acpi_set_firmware_waking_vector((acpi_physical_address)
--						virt_to_phys((void *)
--							     acpi_wakeup_address));
-+		acpi_set_firmware_waking_vector(
-+				(acpi_physical_address)acpi_wakeup_address);
- 
- 	}
- 	ACPI_FLUSH_CPU_CACHE();
+Technically this could return weird results if someone read it
+byte-by-byte and the status changed between reads. If you used
+read_seq_string rather than read you'd avoid that.
+
+> +               return -EIO;
+> +
+> +       cgroup_lock();
+
+If you're taking cgroup_lock() here in freezer_write(), there's no
+need for the rcu_read_lock() in freezer_freeze()
+
+Paul
