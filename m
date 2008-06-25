@@ -1,70 +1,43 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor
-	register on	resume
-Date: Wed, 25 Jun 2008 19:01:26 +0200
-Message-ID: <20080625170126.GA2482__3723.31396579302$1214413446$gmane$org@elte.hu>
-References: <200806242303.49498.rjw@sisk.pl>
-	<20080624214610.GC18679@elf.ucw.cz>
+From: Len Brown <lenb@kernel.org>
+Subject: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
+Date: Wed, 25 Jun 2008 14:44:01 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080624214610.GC18679@elf.ucw.cz>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758448AbYFYSpm@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux Power Management List <linux-pm@lists.osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+This is an open invitation to participate in
+a Linux Power Management mini-summit
+9AM Tuesday July 22, 2008 in Ottawa.
 
-* Pavel Machek <pavel@suse.cz> wrote:
+This is the day before the Ottawa Linux Symposium.
+OLS is generously supporting Linux mini-summits by providing the room
+and projector: http://www.linuxsymposium.org/2008/minisummits.php
 
-> Acked-by: Pavel Machek <pavel@suse.cz>
-> 
-> If this could be sneaked into Ingo's tree for some automated testing, 
-> that would be good.
+The meeting format will be round-table discussion.
+There will be no phone bridge or audio/video recording.
+However, there will be written minutes as there
+were last year:  http://lwn.net/Articles/249019
 
-sure - i have applied it to tip/out-of-tree. I'm equally nervous about 
-this change - it affects every suspend+resume cycle that people do on 
-those boxes which are working just fine currently.
+Send suggestions for topics to linux-pm@lists.osdl.org,
+whether you plan to attend or not.  The attendees will
+form the agenda by consensus at the start of the session.
 
-btw., it would get a lot more coverage on my test-systems if this commit 
-in tip/out-of-tree:
+If you would like to attend, please send a note to
+linux-pm@lists.osdl.org announcing your intent,
+and what you would like to discuss.
 
-| commit 01259383c345d13b70efcc549439927ae64dc66d
-| Author: David Brownell <david-b@pacbell.net>
-| Date:   Fri May 16 10:12:36 2008 +0200
-|
-|     sleepy linux self-test
+Last year we were were cautious about presentations, for fear they
+would not support discussion.  But the short ones we had actually
+facilitied discussion, so we'll allow them again this year.
 
-was upstream and if it was enabled more prominently, instead of hidden 
-behind the rather obscure condition of:
+thanks,
+-Len
 
-  config PM_TEST_SUSPEND
-        bool "Test suspend/resume and wakealarm during bootup"
-        depends on SUSPEND && PM_DEBUG && RTC_LIB=y
-
-and even then it needs certain other config options related to RTC_LIB 
-to actually work during bootup.
-
-As a result of all this obstruction, the automated testing i do, which 
-builds and boots more than 1 random kernel per minute, will only run 
-this self-test once every hour or so.
-
-I dont mind if this option breaks boxes (that its purpose: it does the 
-same thing that a real suspend+resume does and suspend+resume frequently 
-breaks boxes), but right now it's all obscured so heavily which makes 
-automated testing a lot harder than it should be.
-
-it would be wonderful if this excellent suspend+resume self-test was 
-upstream and was more prominent! :-)
-
-	Ingo
+ps. There is an opportunity for your company to help sponsor
+the event -- for right now we are on our own for food.
+If you are interseted, please contact me and OLS.
