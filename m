@@ -1,33 +1,33 @@
-From: Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: Linux Power Management Mini-Summit -- Ottawa --	July
-	22, 2008
-Date: Thu, 26 Jun 2008 01:12:19 +0530
-Message-ID: <20080625194219.GD11102@in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
+Date: Wed, 25 Jun 2008 22:15:51 +0200
+Message-ID: <200806252215.52428.rjw@sisk.pl>
 References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-Reply-To: dipankar@in.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755158AbYFYUOz@vger.kernel.org>
 In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 25, 2008 at 02:44:01PM -0400, Len Brown wrote:
+On Wednesday, 25 of June 2008, Len Brown wrote:
 > This is an open invitation to participate in
 > a Linux Power Management mini-summit
 > 9AM Tuesday July 22, 2008 in Ottawa.
+> 
+> This is the day before the Ottawa Linux Symposium.
+> OLS is generously supporting Linux mini-summits by providing the room
+> and projector: http://www.linuxsymposium.org/2008/minisummits.php
+> 
+> The meeting format will be round-table discussion.
+> There will be no phone bridge or audio/video recording.
+> However, there will be written minutes as there
+> were last year:  http://lwn.net/Articles/249019
 > 
 > Send suggestions for topics to linux-pm@lists.osdl.org,
 > whether you plan to attend or not.  The attendees will
@@ -37,28 +37,9 @@ On Wed, Jun 25, 2008 at 02:44:01PM -0400, Len Brown wrote:
 > linux-pm@lists.osdl.org announcing your intent,
 > and what you would like to discuss.
 
-I would like to attend if there is a slot still available.
-I could request only after knowing for sure I would be able
-to travel.
+I would like to attend and I'd like to discuss the new framework for suspending
+and resuming devices and related things (like example implemetations of the
+new callbacks, the handling of wake-up etc.).
 
-I have been working mostly with our server h/w folks lately and it would
-be nice to see some of our upcoming challenges discussed at the mini-summit.
-
-1. CPU power management
-	- CPU consolidation strategy (getting work done on fewer CPUs) 
-	- scheduler issues
-
-2. Memory power management 
-	- Strategies for upcoming technologies
-
-3. I/O power management through hotplug
-
-4. Overall server power management
-	- Per-subsystem control vs global powersave modes
-
-5. Power management in virtuaized environment
-	- #1/#2/#3 in virtualized environment
-	- OS-KVM/Xen interaction needed for it
-
-Thanks
-Dipankar
+Thanks,
+Rafael
