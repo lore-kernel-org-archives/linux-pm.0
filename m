@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 6/9] PCI ACPI: Introduce
-	acpi_pm_device_sleep_wake function
-Date: Thu, 26 Jun 2008 22:31:34 +0200
-Message-ID: <200806262231.35375.rjw__31571.951081469$1214512402$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0806261538310.3893-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 4/4] Remove obsolete piece of PM documentation
+Date: Thu, 26 Jun 2008 22:34:08 +0200
+Message-ID: <200806262234.09104.rjw__1720.32793420858$1214512737$gmane$org@sisk.pl>
+References: <200806121025.24668.rjw@sisk.pl>
+	<20080612205118.GB11761@elf.ucw.cz>
+	<alpine.LFD.1.10.0806261535140.2988@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806261538310.3893-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LFD.1.10.0806261535140.2988@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,78 +20,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Zhao Yakui <yakui.zhao@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 26 of June 2008, Alan Stern wrote:
-> On Thu, 26 Jun 2008, Rafael J. Wysocki wrote:
+On Thursday, 26 of June 2008, Len Brown wrote:
 > 
-> > > Question: Does the PME Status ever get cleared at any other times?
-> > 
-> > Currently, PME# status is only cleared when executing pci_pme_active() (for
-> > example via pci_enable_wake()).
-> > 
-> > > For instance, suppose a PCI device does use PME# to wake up the system.  
-> > > Does its status get cleared?
-> > 
-> > If the driver of the device executes pci_enable_wake(dev, PCI_D0, false) during
-> > resume, then the PME# status will be cleared.
+> > > > > > -               Linux Power Management Support
+> > > > > > -
+> > > > > > -This document briefly describes how to use power management with your
+> > > > > > -Linux system and how to add power management support to Linux drivers.
+> > > > > > -
+> > > > > > -APM or ACPI?
+> > > > > > -------------
+> > > > > > -If you have a relatively recent x86 mobile, desktop, or server system,
+> > > > > > -odds are it supports either Advanced Power Management (APM) or
+> > > > > > -Advanced Configuration and Power Interface (ACPI).  ACPI is the newer
+> > > > > > -of the two technologies and puts power management in the hands of the
+> > > > > > -operating system, allowing for more intelligent power management than
+> > > > > > -is possible with BIOS controlled APM.
+> > > > > > -
+> > > > > > -The best way to determine which, if either, your system supports is to
+> > > > > > -build a kernel with both ACPI and APM enabled (as of 2.3.x ACPI is
+> > > > > > -enabled by default).  If a working ACPI implementation is found, the
+> > > > > > -ACPI driver will override and disable APM, otherwise the APM driver
+> > > > > > -will be used.
+> > > > > > -
+> > > > > > -No, sorry, you cannot have both ACPI and APM enabled and running at
+> > > > > > -once.  Some people with broken ACPI or broken APM implementations
+> > > > > > -would like to use both to get a full set of working features, but you
+> > > > > > -simply cannot mix and match the two.  Only one power management
+> > > > > > -interface can be in control of the machine at once.  Think about it..
+> > > > > 
+> > > > > I'd keep this; it is still true, and we still support both.
+> > > > > 
+> > > > > Maybe it should be moved into Doc*/power/apm.txt or something.
+> > > > 
+> > > > Yes, if there is a good sub-directory for it, please put it there.
 > 
-> Hmm.  So if the resume routine doesn't get called for some reason then
-> most likely the status won't get cleared.
+> I think this is already covered in the Kconfig help for ACPI and APM
+> and doesn't need a Documentation file.
 
-That's correct.
+It won't hurt to have the file, though.
 
-> > Do you think the core should clear PME# status automatically in that case?
-> 
-> Yes.
-
-Okay, but that will require us to add the clearing of PME# to the PCI
-resume/restore callbacks.  Perfectly doable, but I'd prefer to do that on top
-of the $subject patch.
-
-> > > Or suppose a PCI device is runtime-suspended and it generates a wakeup
-> > > request?  This will turn on PME# at a time when the system isn't asleep
-> > > -- what happens then?  Does it get lost somewhere in the bowels of
-> > > ACPI?
-> > 
-> > Currently, yes, AFAICS.
-> 
-> Back around last November some initial patches were posted by Shaohua
-> Li, as part of Bugzilla #6892.
-
-OK, I will.
-
-> You'd probably be interested to read through the entire bug report.  Maybe we
-> should start working on it again.
-
-I have nothing against that, but quite frankly I wouldn't like it to become a
-road block for the present patch series.  Thus, I'd like to add new patches on
-top of it rather than to modify it to achieve new goals.
-
-> > > Does the PCI core need new code to handle such things? 
-> > 
-> > Well, I thought of adding such things like the clearing of PME# status to the
-> > PCI bus type suspend/resume callbacks.
-> > 
-> > Apart from this, I think that to implement PCI runtime PM we'll need to add
-> > some new code.  First of all, we need to handle the case when some devices are
-> > in low power states before suspend/hibernation.  Second, we need to handle PME#
-> > generated by devices being in low power states (or even in D0) at run time and
-> > that will certainly require new code.
-> 
-> Yes it will.  We don't have any runtime PM infrastructure for PCI yet.  
-> 
-> Although to tell the truth, I'm not sure how important it is.  How much
-> power can we save by doing runtime suspends of PCI devices?  With USB
-> controllers, for example, much or most of the savings comes from
-> disabling the USB portions of the device, which we _are_ doing.  It's
-> not clear how much more would be gained by shutting down the PCI
-> portions as well.
-
-That can only be determined by experimentation, IMO, so in fact we'll need a
-prototype implementation to find that out.
+I have reworked the patch already and I'd rather not do that again the other
+way around. ;-)
 
 Thanks,
 Rafael
