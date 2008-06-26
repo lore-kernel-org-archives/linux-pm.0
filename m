@@ -1,15 +1,18 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH 4/9] ACPI: Introduce
-	acpi_device_sleep_wake function
-Date: Tue, 24 Jun 2008 14:38:53 +0200
-Message-ID: <20080624123852.GF5642__29187.6419251368$1214468867$gmane$org@ucw.cz>
-References: <200806200145.33053.rjw@sisk.pl> <200806200149.31090.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 ACPI: normalize segment descriptor
+	register on	resume
+Date: Thu, 26 Jun 2008 10:29:43 +0200
+Message-ID: <20080626082943.GC10973__42976.1423882612$1214469125$gmane$org@elte.hu>
+References: <200806242303.49498.rjw@sisk.pl>
+	<20080624214610.GC18679@elf.ucw.cz> <20080625170126.GA2482@elte.hu>
+	<200806252217.27059.rjw@sisk.pl>
+	<20080626011716.e8c412dd.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200806200149.31090.rjw@sisk.pl>
+In-Reply-To: <20080626011716.e8c412dd.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +22,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2008-06-20 01:49:30, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACPI: Introduce acpi_device_sleep_wake function
-> 
-> The currect ACPI code attempts to execute _PSW at three different
-> places and in one of them only it tries to execute _DSW before _PSW,
-> which is inconsistent with the other two cases.
-> 
-> Move the execution of _DSW and _PSW into a separate function called
-> acpi_device_sleep_wake() and call it wherever appropriate instead of
-> executing _DSW and/or _PSW directly.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> Len seems to think that Rafael seems to think that Ingo seems to think 
+> that this patch broke one of his boxes.
+> 
+> Is it so?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+No! :-)
+
+it found a pre-existing suspend+resume breakage on a testbox. (I.e. the 
+debug patch worked as i'd expect it to work. Every good debug patch 
+starts its lifetime with a sharp spike of breakages it finds.)
+
+( my kernel test-setup does in excess of 100,000 random kernel bootups 
+  per year and me not having to hit the keyboard or close+open the lid a 
+  hundred thousand times, day and night, to find the occasional 
+  suspend+resume regression is a not to be under-estimated plus. )
+
+	Ingo
