@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/8] ACPI: Introduce acpi_device_sleep_wake
-	function
-Date: Fri, 27 Jun 2008 00:26:40 +0200
-Message-ID: <200806270026.41057.rjw__26755.3553371274$1214520305$gmane$org@sisk.pl>
+Subject: [PATCH 7/8] PCI PM: Introduce pci_prepare_to_sleep and
+	pci_back_from_sleep (rev. 2)
+Date: Fri, 27 Jun 2008 00:29:24 +0200
+Message-ID: <200806270029.25193.rjw__29912.4483405196$1214520425$gmane$org@sisk.pl>
 References: <200806270022.24496.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,273 +25,132 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI: Introduce acpi_device_sleep_wake function
+PCI PM: Introduce pci_prepare_to_sleep and pci_back_from_sleep (rev. 2)
 
-The currect ACPI code attempts to execute _PSW at three different
-places and in one of them only it tries to execute _DSW before _PSW,
-which is inconsistent with the other two cases.
-
-Move the execution of _DSW and _PSW into a separate function called
-acpi_device_sleep_wake() and call it wherever appropriate instead of
-executing _DSW and/or _PSW directly.
+Introduce functions pci_prepare_to_sleep() and pci_back_from_sleep(),
+to be used by the PCI drivers that want to place their devices into
+the lowest power state appropiate for them (PCI_D3hot, if the device
+is not supposed to wake up the system, or the deepest state from
+which the wake-up is possible, otherwise) while the system is being
+prepared to go into a sleeping state and to put them back into D0
+during the subsequent transition to the working state.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/power.c        |  118 ++++++++++++++++++++++++++++++--------------
- drivers/acpi/scan.c         |   42 ++-------------
- drivers/acpi/sleep/wakeup.c |    2 
- include/acpi/acpi_drivers.h |    4 +
- 4 files changed, 92 insertions(+), 74 deletions(-)
+ drivers/pci/pci.c   |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci.h |    2 +
+ 2 files changed, 85 insertions(+)
 
-Index: linux-next/drivers/acpi/power.c
+Index: linux-next/drivers/pci/pci.c
 ===================================================================
---- linux-next.orig/drivers/acpi/power.c
-+++ linux-next/drivers/acpi/power.c
-@@ -292,69 +292,115 @@ static int acpi_power_off_device(acpi_ha
- 	return 0;
+--- linux-next.orig/drivers/pci/pci.c
++++ linux-next/drivers/pci/pci.c
+@@ -1148,6 +1148,87 @@ int pci_enable_wake(struct pci_dev *dev,
  }
  
-+/**
-+ * acpi_device_sleep_wake - execute _DSW (Device Sleep Wake) or (deprecated in
-+ *                          ACPI 3.0) _PSW (Power State Wake)
+ /**
++ * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
++ *                        a sleep state
 + * @dev: Device to handle.
-+ * @enable: 0 - disable, 1 - enable the wake capabilities of the device.
-+ * @sleep_state: Target sleep state of the system.
-+ * @dev_state: Target power state of the device.
 + *
-+ * Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ * State Wake) for the device, if present.  On failure reset the device's
-+ * wakeup.flags.valid flag.
-+ *
-+ * RETURN VALUE:
-+ * 0 if either _DSW or _PSW has been successfully executed
-+ * 0 if neither _DSW nor _PSW has been found
-+ * -ENODEV if the execution of either _DSW or _PSW has failed
++ * Choose the power state appropriate for the device depending on whether
++ * it can wake up the system and/or is power manageable by the platform
++ * (PCI_D3hot is the default) and put the device into that state.
 + */
-+int acpi_device_sleep_wake(struct acpi_device *dev,
-+                           int enable, int sleep_state, int dev_state)
++int pci_prepare_to_sleep(struct pci_dev *dev)
 +{
-+	union acpi_object in_arg[3];
-+	struct acpi_object_list arg_list = { 3, in_arg };
-+	acpi_status status = AE_OK;
++	pci_power_t target_state = PCI_D3hot;
++	int pm = pci_find_capability(dev, PCI_CAP_ID_PM);
++	int error;
 +
-+	/*
-+	 * Try to execute _DSW first.
-+	 *
-+	 * Three agruments are needed for the _DSW object:
-+	 * Argument 0: enable/disable the wake capabilities
-+	 * Argument 1: target system state
-+	 * Argument 2: target device state
-+	 * When _DSW object is called to disable the wake capabilities, maybe
-+	 * the first argument is filled. The values of the other two agruments
-+	 * are meaningless.
-+	 */
-+	in_arg[0].type = ACPI_TYPE_INTEGER;
-+	in_arg[0].integer.value = enable;
-+	in_arg[1].type = ACPI_TYPE_INTEGER;
-+	in_arg[1].integer.value = sleep_state;
-+	in_arg[2].type = ACPI_TYPE_INTEGER;
-+	in_arg[2].integer.value = dev_state;
-+	status = acpi_evaluate_object(dev->handle, "_DSW", &arg_list, NULL);
-+	if (ACPI_SUCCESS(status)) {
-+		return 0;
-+	} else if (status != AE_NOT_FOUND) {
-+		printk(KERN_ERR PREFIX "_DSW execution failed\n");
-+		dev->wakeup.flags.valid = 0;
-+		return -ENODEV;
++	if (platform_pci_power_manageable(dev)) {
++		/*
++		 * Call the platform to choose the target state of the device
++		 * and enable wake-up from this state if supported.
++		 */
++		pci_power_t state = platform_pci_choose_state(dev);
++
++		switch (state) {
++		case PCI_POWER_ERROR:
++		case PCI_UNKNOWN:
++			break;
++		case PCI_D1:
++		case PCI_D2:
++			if (pci_no_d1d2(dev))
++				break;
++		default:
++			target_state = state;
++			pci_enable_wake(dev, target_state, true);
++		}
++	} else if (device_may_wakeup(&dev->dev)) {
++		/*
++		 * Find the deepest state from which the device can generate
++		 * wake-up events, make it the target state and enable device
++		 * to generate PME#.
++		 */
++		u16 pmc;
++
++		if (!pm)
++			return -EIO;
++
++		pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
++		if (pmc & PCI_PM_CAP_PME_MASK) {
++			if (!(pmc & PCI_PM_CAP_PME_D3)) {
++				/* Device cannot generate PME# from D3_hot */
++				if (pmc & PCI_PM_CAP_PME_D2)
++					target_state = PCI_D2;
++				else if (pmc & PCI_PM_CAP_PME_D1)
++					target_state = PCI_D1;
++				else
++					target_state = PCI_D0;
++			}
++			pci_pme_active(dev, pm, true);
++		}
 +	}
 +
-+	/* Execute _PSW */
-+	arg_list.count = 1;
-+	in_arg[0].integer.value = enable;
-+	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
-+		printk(KERN_ERR PREFIX "_PSW execution failed\n");
-+		dev->wakeup.flags.valid = 0;
-+		return -ENODEV;
-+	}
++	error = pci_set_power_state(dev, target_state);
 +
-+	return 0;
++	if (error)
++		pci_enable_wake(dev, target_state, false);
++
++	return error;
 +}
 +
- /*
-  * Prepare a wakeup device, two steps (Ref ACPI 2.0:P229):
-  * 1. Power on the power resources required for the wakeup device 
-- * 2. Enable _PSW (power state wake) for the device if present
-+ * 2. Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ *    State Wake) for the device, if present
-  */
--int acpi_enable_wakeup_device_power(struct acpi_device *dev)
-+int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state)
- {
--	union acpi_object arg = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg };
--	acpi_status status = AE_OK;
- 	int i;
--	int ret = 0;
- 
- 	if (!dev || !dev->wakeup.flags.valid)
--		return -1;
-+		return -EINVAL;
- 
--	arg.integer.value = 1;
- 	/* Open power resource */
- 	for (i = 0; i < dev->wakeup.resources.count; i++) {
--		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
-+		int ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
- 			dev->wakeup.flags.valid = 0;
--			return -1;
-+			return -ENODEV;
- 		}
- 	}
- 
--	/* Execute PSW */
--	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
--	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
--		dev->wakeup.flags.valid = 0;
--		ret = -1;
--	}
--
--	return ret;
-+	/*
-+	 * Passing 3 as the third argument below means the device may be placed
-+	 * in arbitrary power state afterwards.
-+	 */
-+	return acpi_device_sleep_wake(dev, 1, sleep_state, 3);
- }
- 
- /*
-  * Shutdown a wakeup device, counterpart of above method
-- * 1. Disable _PSW (power state wake)
-+ * 1. Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ *    State Wake) for the device, if present
-  * 2. Shutdown down the power resources
-  */
- int acpi_disable_wakeup_device_power(struct acpi_device *dev)
- {
--	union acpi_object arg = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg };
--	acpi_status status = AE_OK;
--	int i;
--	int ret = 0;
--
-+	int i, ret;
- 
- 	if (!dev || !dev->wakeup.flags.valid)
--		return -1;
-+		return -EINVAL;
- 
--	arg.integer.value = 0;
--	/* Execute PSW */
--	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
--	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
--		dev->wakeup.flags.valid = 0;
--		return -1;
--	}
-+	ret = acpi_device_sleep_wake(dev, 0, 0, 0);
-+	if (ret)
-+		return ret;
- 
- 	/* Close power resource */
- 	for (i = 0; i < dev->wakeup.resources.count; i++) {
-@@ -362,7 +408,7 @@ int acpi_disable_wakeup_device_power(str
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
- 			dev->wakeup.flags.valid = 0;
--			return -1;
-+			return -ENODEV;
- 		}
- 	}
- 
-Index: linux-next/drivers/acpi/sleep/wakeup.c
-===================================================================
---- linux-next.orig/drivers/acpi/sleep/wakeup.c
-+++ linux-next/drivers/acpi/sleep/wakeup.c
-@@ -42,7 +42,7 @@ void acpi_enable_wakeup_device_prep(u8 s
- 			continue;
- 
- 		spin_unlock(&acpi_device_lock);
--		acpi_enable_wakeup_device_power(dev);
-+		acpi_enable_wakeup_device_power(dev, sleep_state);
- 		spin_lock(&acpi_device_lock);
- 	}
- 	spin_unlock(&acpi_device_lock);
-Index: linux-next/include/acpi/acpi_drivers.h
-===================================================================
---- linux-next.orig/include/acpi/acpi_drivers.h
-+++ linux-next/include/acpi/acpi_drivers.h
-@@ -87,7 +87,9 @@ struct pci_bus *pci_acpi_scan_root(struc
-    -------------------------------------------------------------------------- */
- 
- #ifdef CONFIG_ACPI_POWER
--int acpi_enable_wakeup_device_power(struct acpi_device *dev);
-+int acpi_device_sleep_wake(struct acpi_device *dev,
-+                           int enable, int sleep_state, int dev_state);
-+int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state);
- int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- int acpi_power_get_inferred_state(struct acpi_device *device);
- int acpi_power_transition(struct acpi_device *device, int state);
-Index: linux-next/drivers/acpi/scan.c
-===================================================================
---- linux-next.orig/drivers/acpi/scan.c
-+++ linux-next/drivers/acpi/scan.c
-@@ -703,9 +703,7 @@ static int acpi_bus_get_wakeup_device_fl
- 	acpi_status status = 0;
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *package = NULL;
--	union acpi_object in_arg[3];
--	struct acpi_object_list arg_list = { 3, in_arg };
--	acpi_status psw_status = AE_OK;
-+	int psw_error;
- 
- 	struct acpi_device_id button_device_ids[] = {
- 		{"PNP0C0D", 0},
-@@ -737,39 +735,11 @@ static int acpi_bus_get_wakeup_device_fl
- 	 * So it is necessary to call _DSW object first. Only when it is not
- 	 * present will the _PSW object used.
- 	 */
--	/*
--	 * Three agruments are needed for the _DSW object.
--	 * Argument 0: enable/disable the wake capabilities
--	 * When _DSW object is called to disable the wake capabilities, maybe
--	 * the first argument is filled. The value of the other two agruments
--	 * is meaningless.
--	 */
--	in_arg[0].type = ACPI_TYPE_INTEGER;
--	in_arg[0].integer.value = 0;
--	in_arg[1].type = ACPI_TYPE_INTEGER;
--	in_arg[1].integer.value = 0;
--	in_arg[2].type = ACPI_TYPE_INTEGER;
--	in_arg[2].integer.value = 0;
--	psw_status = acpi_evaluate_object(device->handle, "_DSW",
--						&arg_list, NULL);
--	if (ACPI_FAILURE(psw_status) && (psw_status != AE_NOT_FOUND))
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "error in evaluate _DSW\n"));
--	/*
--	 * When the _DSW object is not present, OSPM will call _PSW object.
--	 */
--	if (psw_status == AE_NOT_FOUND) {
--		/*
--		 * Only one agruments is required for the _PSW object.
--		 * agrument 0: enable/disable the wake capabilities
--		 */
--		arg_list.count = 1;
--		in_arg[0].integer.value = 0;
--		psw_status = acpi_evaluate_object(device->handle, "_PSW",
--						&arg_list, NULL);
--		if (ACPI_FAILURE(psw_status) && (psw_status != AE_NOT_FOUND))
--			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "error in "
--						"evaluate _PSW\n"));
--	}
-+	psw_error = acpi_device_sleep_wake(device, 0, 0, 0);
-+	if (psw_error)
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+				"error in _DSW or _PSW evaluation\n"));
++/**
++ * pci_back_from_sleep - turn PCI device on during system-wide transition into
++ *                       the working state a sleep state
++ * @dev: Device to handle.
++ *
++ * Disable device's sytem wake-up capability and put it into D0.
++ */
++int pci_back_from_sleep(struct pci_dev *dev)
++{
++	pci_enable_wake(dev, PCI_D0, false);
++	return pci_set_power_state(dev, PCI_D0);
++}
 +
- 	/* Power button, Lid switch always enable wakeup */
- 	if (!acpi_match_device_ids(device, button_device_ids))
- 		device->wakeup.flags.run_wake = 1;
++/**
+  * pci_pm_init - Initialize PM functions of given PCI device
+  * @dev: PCI device to handle.
+  */
+@@ -1854,5 +1935,7 @@ EXPORT_SYMBOL(pci_set_power_state);
+ EXPORT_SYMBOL(pci_save_state);
+ EXPORT_SYMBOL(pci_restore_state);
+ EXPORT_SYMBOL(pci_enable_wake);
++EXPORT_SYMBOL(pci_prepare_to_sleep);
++EXPORT_SYMBOL(pci_back_from_sleep);
+ EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+ 
+Index: linux-next/include/linux/pci.h
+===================================================================
+--- linux-next.orig/include/linux/pci.h
++++ linux-next/include/linux/pci.h
+@@ -633,6 +633,8 @@ int pci_restore_state(struct pci_dev *de
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
++int pci_prepare_to_sleep(struct pci_dev *dev);
++int pci_back_from_sleep(struct pci_dev *dev);
+ 
+ /* Functions for PCI Hotplug drivers to use */
+ int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
