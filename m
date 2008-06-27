@@ -1,72 +1,126 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/8] PCI ACPI: Rework PCI handling of wake-up
-Date: Fri, 27 Jun 2008 17:12:17 +0200
-Message-ID: <200806271712.18694.rjw__19410.8799020343$1214579559$gmane$org@sisk.pl>
-References: <200806270022.24496.rjw@sisk.pl>
-	<1214532498.26388.2.camel@sli10-desk.sh.intel.com>
-	<200806271526.46932.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [RFC] serio driver: speed up resume
+Date: Fri, 27 Jun 2008 11:49:23 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0806271148140.2988@localhost.localdomain>
+References: <1213607375.31950.2.camel@sli10-desk.sh.intel.com>
+ <1214272978.29380.2.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200806271526.46932.rjw@sisk.pl>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <1214272978.29380.2.camel@sli10-desk.sh.intel.com>
+Sender: linux-input-owner@vger.kernel.org
 To: Shaohua Li <shaohua.li@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, "Zhao,
-	Yakui" <yakui.zhao@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, linux acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 27 of June 2008, Rafael J. Wysocki wrote:
-> On Friday, 27 of June 2008, Shaohua Li wrote:
-> > On Fri, 2008-06-27 at 06:28 +0800, Rafael J. Wysocki wrote:
-> [--snip--]
-> > > +
-> > > +       if (pmc & PCI_PM_CAP_PME_MASK) {
-> > > +               dev_printk(KERN_INFO, &dev->dev,
-> > > +                       "PME# supported from%s%s%s%s%s\n",
-> > > +                       (pmc & PCI_PM_CAP_PME_D0) ? " D0" : "",
-> > > +                       (pmc & PCI_PM_CAP_PME_D1) ? " D1" : "",
-> > > +                       (pmc & PCI_PM_CAP_PME_D2) ? " D2" : "",
-> > > +                       (pmc & PCI_PM_CAP_PME_D3) ? " D3hot" : "",
-> > > +                       (pmc & PCI_PM_CAP_PME_D3cold) ? " D3cold" :
-> > > "");
-> > > +               /*
-> > > +                * Make device's PM flags reflect the wake-up
-> > > capability, but
-> > > +                * let the user space enable it to wake up the system
-> > > as needed.
-> > > +                */
-> > > +               device_set_wakeup_capable(&dev->dev, true);
-> > > +               device_set_wakeup_enable(&dev->dev, false);
-> > > +               /* Disable the PME# generation functionality */
-> > > +               pci_pme_active(dev, pm, false);
-> > > +       }
-> > >  }
-> > It appears a lot of drivers will call device_init_wakeup(dev, 1)
-> > regardless if userspace enable wakeup for the device. Will you fix the
-> > drivers?
+
+<rafael and linux-pm cc'd>
+
+On Tue, 24 Jun 2008, Shaohua Li wrote:
+
+> On Mon, 2008-06-16 at 17:09 +0800, Shaohua Li wrote:
+> > serio_resume will call into psmouse_extensions(). In my test, the
+> > routine is very slow, it blocks resume about 1 sec. Below patch (move
+> > resume to kseriod, just like boot time probe) cures the issue in my
+> > test, and seems no side effect. I'm no familiar with serio driver, so
+> > please check.
+
+> Any comments from input guys?
+
+none that i can see.
+
+Rafael,
+can you put this patch in with your suspend test patches?
+I would do so, but as I'll be out for a bit I'll not
+be here to babysit it if something breaks.
+
+thanks,
+-Len
+
 > 
-> Either fix the drivers, or change device_init_wakeup() so that it doesn't
-> set power.should_wakeup to the same value as power.can_wakeup, which IMO is
-> a mistake.
+> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > 
+> > diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
+> > index 7f52938..7dad33f 100644
+> > --- a/drivers/input/serio/serio.c
+> > +++ b/drivers/input/serio/serio.c
+> > @@ -163,6 +163,7 @@ enum serio_event_type {
+> >         SERIO_RECONNECT_PORT,
+> >         SERIO_REGISTER_PORT,
+> >         SERIO_ATTACH_DRIVER,
+> > +       SERIO_RESUME_PORT,
+> >  };
+> > 
+> >  struct serio_event {
+> > @@ -287,6 +288,13 @@ static struct serio_event *serio_get_event(void)
+> >         return event;
+> >  }
+> > 
+> > +#ifdef CONFIG_PM
+> > +static void serio_resume_port(struct device *dev);
+> > +#else
+> > +static inline void serio_resume_port(struct device *dev)
+> > +{
+> > +}
+> > +#endif /* CONFIG_PM */
+> >  static void serio_handle_event(void)
+> >  {
+> >         struct serio_event *event;
+> > @@ -319,6 +327,10 @@ static void serio_handle_event(void)
+> >                                 serio_attach_driver(event->object);
+> >                                 break;
+> > 
+> > +                       case SERIO_RESUME_PORT:
+> > +                               serio_resume_port(event->object);
+> > +                               break;
+> > +
+> >                         default:
+> >                                 break;
+> >                 }
+> > @@ -922,21 +934,26 @@ static int serio_suspend(struct device *dev,
+> > pm_message_t state)
+> >         return 0;
+> >  }
+> > 
+> > -static int serio_resume(struct device *dev)
+> > +static void serio_resume_port(struct device *dev)
+> >  {
+> >         struct serio *serio = to_serio_port(dev);
+> > 
+> > -       if (dev->power.power_state.event != PM_EVENT_ON &&
+> > -           serio_reconnect_driver(serio)) {
+> > -               /*
+> > -                * Driver re-probing can take a while, so better let
+> > kseriod
+> > -                * deal with it.
+> > -                */
+> > -               serio_rescan(serio);
+> > +       if (serio_reconnect_driver(serio)) {
+> > +               serio_disconnect_port(serio);
+> > +               serio_find_driver(serio);
+> >         }
+> > 
+> >         dev->power.power_state = PMSG_ON;
+> > +}
+> > 
+> > +static int serio_resume(struct device *dev)
+> > +{
+> > +       /*
+> > +        * Driver reconnect can take a while, so better let kseriod
+> > +        * deal with it.
+> > +        */
+> > +       if (dev->power.power_state.event != PM_EVENT_ON)
+> > +               serio_queue_event(dev, NULL, SERIO_RESUME_PORT);
+> >         return 0;
+> >  }
+> >  #endif /* CONFIG_PM */
+> > 
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-acpi"
+> > in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> > 
 > 
-> Perhaps it's better to drop device_init_wakeup() altogether.
-
-Note, however, that in any case this will only change the default from
-'wake-up enabled' to 'wake-up disabled' and the user space will be able to
-change the value later on anyway.
-
-That said, setting power.can_wakeup for devices that in fact can't wake up is
-plain wrong and the drivers that do such things will have to be fixed.
-
-Thanks,
-Rafael
