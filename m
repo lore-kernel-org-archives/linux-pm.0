@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/9] PCI PM: Handling of PCI devices wake-up
-	functionality (rev. 3)
-Date: Tue, 1 Jul 2008 23:56:25 +0200
-Message-ID: <200807012356.26669.rjw__6515.97178443826$1214950560$gmane$org@sisk.pl>
+Subject: [PATCH 6/9] ACPI: Introduce new device wakeup flag
+	'prepared'
+Date: Wed, 2 Jul 2008 00:07:43 +0200
+Message-ID: <200807020007.44047.rjw__13226.9580536105$1214950582$gmane$org@sisk.pl>
+References: <200807012356.26669.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200807012356.26669.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,29 +23,84 @@ To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Zhao Yakui <yakui.zhao@intel.com>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This is a new (3rd) iteration of the series of patches intended to rework the power
-management of PCI devices so that the handling of their wake-up functionality
-is consistent with the other PM operations and so that the user space can
-manage the wake-up functionality of PCI devices using the
-/sys/devices/.../power/wakeup interface regardless of whether the wake-up
-function is based on the native PCI mechanism (PME#), or it is handled by the
-platform (eg. ACPI).
+ACPI: Introduce new device wakeup flag 'prepared'
 
-Apart from the ACPI and PCI changes necessary for this purpose, the series
-includes some clean-ups that are not strictly required, but make the code more
-straightforward and (IMHO) easier to follow.
+Introduce additional flag 'prepared' in
+struct acpi_device_wakeup_flags and use it to prevent devices from
+being enable/disabled do wake up the system multiple times in a row
+(this does not happen currently, but will be possible after some of
+the following patches).
 
-The patchset is on top of the linux-next from today.  It contains one
-additional patch [1/9] which is a revert of another patch that shouldn't have
-been put into linux-next (at least not in the way it was done).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/power.c    |   24 ++++++++++++++++++++++--
+ include/acpi/acpi_bus.h |    1 +
+ 2 files changed, 23 insertions(+), 2 deletions(-)
 
-Please review.
-
-Thanks,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: linux-next/drivers/acpi/power.c
+===================================================================
+--- linux-next.orig/drivers/acpi/power.c
++++ linux-next/drivers/acpi/power.c
+@@ -363,11 +363,18 @@ int acpi_device_sleep_wake(struct acpi_d
+  */
+ int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state)
+ {
+-	int i;
++	int i, err;
+ 
+ 	if (!dev || !dev->wakeup.flags.valid)
+ 		return -EINVAL;
+ 
++	/*
++	 * Do not execute the code below twice in a row without calling
++	 * acpi_disable_wakeup_device_power() in between for the same device
++	 */
++	if (dev->wakeup.flags.prepared)
++		return 0;
++
+ 	/* Open power resource */
+ 	for (i = 0; i < dev->wakeup.resources.count; i++) {
+ 		int ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
+@@ -382,7 +389,11 @@ int acpi_enable_wakeup_device_power(stru
+ 	 * Passing 3 as the third argument below means the device may be placed
+ 	 * in arbitrary power state afterwards.
+ 	 */
+-	return acpi_device_sleep_wake(dev, 1, sleep_state, 3);
++	err = acpi_device_sleep_wake(dev, 1, sleep_state, 3);
++	if (!err)
++		dev->wakeup.flags.prepared = 1;
++
++	return err;
+ }
+ 
+ /*
+@@ -398,6 +409,15 @@ int acpi_disable_wakeup_device_power(str
+ 	if (!dev || !dev->wakeup.flags.valid)
+ 		return -EINVAL;
+ 
++	/*
++	 * Do not execute the code below twice in a row without calling
++	 * acpi_enable_wakeup_device_power() in between for the same device
++	 */
++	if (!dev->wakeup.flags.prepared)
++		return 0;
++
++	dev->wakeup.flags.prepared = 0;
++
+ 	ret = acpi_device_sleep_wake(dev, 0, 0, 0);
+ 	if (ret)
+ 		return ret;
+Index: linux-next/include/acpi/acpi_bus.h
+===================================================================
+--- linux-next.orig/include/acpi/acpi_bus.h
++++ linux-next/include/acpi/acpi_bus.h
+@@ -259,6 +259,7 @@ struct acpi_device_perf {
+ /* Wakeup Management */
+ struct acpi_device_wakeup_flags {
+ 	u8 valid:1;		/* Can successfully enable wakeup? */
++	u8 prepared:1;		/* Has the wake-up capability been enabled? */
+ 	u8 run_wake:1;		/* Run-Wake GPE devices */
+ };
+ 
