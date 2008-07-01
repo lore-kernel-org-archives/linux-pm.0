@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/8] PCI ACPI: Rework PCI handling of wake-up
-	(rev. 3)
-Date: Tue, 1 Jul 2008 15:57:20 +0200
-Message-ID: <200807011557.21707.rjw__24590.3503768661$1214920750$gmane$org@sisk.pl>
-References: <200806270022.24496.rjw@sisk.pl> <200806301219.02189.rjw@sisk.pl>
-	<1214879200.31478.10.camel@yakui_zhao.sh.intel.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor
+	register on resume
+Date: Tue, 01 Jul 2008 08:55:36 -0700
+Message-ID: <486A5378.7020601__21018.459814559$1214927977$gmane$org@zytor.com>
+References: <200807010148.02135.rjw@sisk.pl> <20080701063133.GC16642@elte.hu>
+	<4869D67B.4060902@zytor.com> <486A2AC3.2060107@firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1214879200.31478.10.camel@yakui_zhao.sh.intel.com>
-Content-Disposition: inline
+In-Reply-To: <486A2AC3.2060107@firstfloor.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, kernel-testers@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 1 of July 2008, Zhao Yakui wrote:
-> On Mon, 2008-06-30 at 12:19 +0200, Rafael J. Wysocki wrote:
-> > On Monday, 30 of June 2008, Zhao Yakui wrote:
-> > > On Sat, 2008-06-28 at 02:40 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday, 27 of June 2008, Rafael J. Wysocki wrote:
-> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > > > @@ -107,10 +113,15 @@ void acpi_disable_wakeup_device(u8 sleep
-> > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > >  		struct acpi_device *dev =
-> > > >  		    container_of(node, struct acpi_device, wakeup_list);
-> > > > +		struct device *ldev;
-> > > > +		bool wakeup_enabled;
-> > > >  
-> > > >  		if (!dev->wakeup.flags.valid)
-> > > >  			continue;
-> > > > -		if (!dev->wakeup.state.enabled ||
-> > > > +		ldev = acpi_get_physical_device(dev->handle);
-> > > > +		wakeup_enabled = dev->wakeup.state.enabled ||
-> > > > +			(ldev ? device_may_wakeup(ldev) : false);
-> > > > +		if (!wakeup_enabled ||
-> > > >  		    sleep_state > (u32) dev->wakeup.sleep_state) {
-> > > >  			if (dev->wakeup.flags.run_wake) {
-> > > >  				spin_unlock(&acpi_device_lock);
-> > > It seems that the device_init_wakeup(dev,1) will be called in many
-> > > drivers regardless of userspace, which will enable the corresponding
-> > > GPE. Maybe some laptops will be resumed immediately from the sleeping
-> > > state.
-> > > 
-> > > Is it more reasonable that default state is set as "wake-up disabled" in
-> > > driver and userspace can change it from "disabled" to "enabled"?
-> > 
-> > Yes, it is, IMO.
-> > 
-> > One possible way to make it happen is to modify device_init_wakeup() so that
-> > it always clears power.should_wakeup.
-> > 
-> > Still, that may lead to functional "regressions", ie. if we do that, some
-> > people will have to manually write "enable" to /sys/devices/.../power/wakeup to
-> > make their usual wake-up devices work.
-> What you said is right. If the power.should_wakeup is clear in
-> device_init_wakeup, some people need to write "enable" so that the
-> device can wake up the sleeping system. 
-> But it can avoid that some system will be resumed immediately from the
-> sleeping state.
+Andi Kleen wrote:
+>> It still seems incredibly risky to push this for 2.6.26, especially
+>> given the Elan revelation.
+> 
+> Do Elans even support S3?
 
-I think I can override this issue by using the 'prepared' bit introduced in one
-of the previous patches to check whether the GPE should be enabled.
+I don't know if they do, but I don't know offhand the extent of machines 
+that may have that problem, especially since Intel now document it as 
+"failures are readily seen".
 
-While this won't solve the problem entirely, it will restrict it to the devices
-that call pci_enable_wake(dev, state, true).
+>>  I think it needs to be tested on the 2.6.27
+>> track, and then possibly be pushed back via the 2.6.26-stable route.
+> 
+> I'm just not sure how many suspend/resume cycles people really do
+> on a early (pre -rc) mainline kernel (or in linux-next for that
+> matter). You usually have to install on a laptop and actually
+> use it.
+ >
+> Since this code is only executed on resume some directed testing
+> would be better. That is what Rafael asked for in this mail.
 
-Please have a look at the next iteration of the patchset that I'm going to send
-later today.
+The issue is mostly if it breaks some obscure system.  I have put it on 
+my laptop, Ingo has it on this test system with a suspend-testing cycle, 
+and so on, but the number of systems exposed is going to be small.
 
-Thanks,
-Rafael
+> I think it would be ok for .26 if we can get confirmation it works
+> on a few systems with S3 suspend/resume.
+
+That we already know it does, but it took a long time even until the 
+regression came to light.
+
+	-hpa
