@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/9] PCI: Simplify PCI device PM code (rev. 4)
-Date: Wed, 2 Jul 2008 00:10:30 +0200
-Message-ID: <200807020010.30915.rjw__23618.3546403938$1214951174$gmane$org@sisk.pl>
-References: <200807012356.26669.rjw@sisk.pl>
+From: Zhao Yakui <yakui.zhao@intel.com>
+Subject: Re: [PATCH 7/9] PCI ACPI: Rework PCI handling of wake-up
+	(rev. 4)
+Date: Wed, 02 Jul 2008 15:30:04 +0800
+Message-ID: <1214983804.6559.26.camel__15581.2568882995$1214983433$gmane$org@yakui_zhao.sh.intel.com>
+References: <200807012356.26669.rjw@sisk.pl> <200807020008.44033.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807012356.26669.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200807020008.44033.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,346 +18,630 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Zhao Yakui <yakui.zhao@intel.com>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, 2008-07-02 at 00:08 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> PCI ACPI: Rework PCI handling of wake-up (rev. 4)
+> 
+> * Introduce function acpi_pm_device_sleep_wake() for enabling and
+>   disabling the system wake-up capability of devices that are power
+>   manageable by ACPI.
+> 
+> * Introduce function acpi_bus_can_wakeup() allowing other (dependent)
+>   subsystems to check if ACPI is able to enable the system wake-up
+>   capability of given device.
+> 
+> * Introduce callback .sleep_wake() in struct pci_platform_pm_ops and
+>   for the ACPI PCI 'driver' make it use acpi_pm_device_sleep_wake().
+> 
+> * Introduce callback .can_wakeup() in struct pci_platform_pm_ops and
+>   for the ACPI 'driver' make it use acpi_bus_can_wakeup().
+> 
+> * Move the PME# handlig code out of pci_enable_wake() and split it
+>   into two functions, pci_pme_capable() and pci_pme_active(),
+>   allowing the caller to check if given device is capable of
+>   generating PME# from given power state and to enable/disable the
+>   device's PME# functionality, respectively.
+> 
+> * Modify pci_enable_wake() to use the new ACPI callbacks and the new
+>   PME#-related functions.
+> 
+> * Drop the generic .platform_enable_wakeup() callback that is not
+>   used any more.
+> 
+> * Introduce device_set_wakeup_capable() that will set the
+>   power.can_wakeup flag of given device.
+> 
+> * Rework PCI device PM initialization so that, if given device is
+>   capable of generating wake-up events, either natively through the
+>   PME# mechanism, or with the help of the platform, its
+>   power.can_wakeup flag is set and its power.should_wakeup flag is
+>   unset as appropriate.
+> 
+> * Make ACPI set the power.can_wakeup flag for devices found to be
+>   wake-up capable by it.
+> 
+> * Make the ACPI wake-up code enable/disable GPEs for devices that
+>   have the wakeup.flags.prepared flag set (which means that their
+>   wake-up power has been enabled).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/acpi/bus.c          |   11 ++
+>  drivers/acpi/glue.c         |    2 
+>  drivers/acpi/sleep/main.c   |   25 ++++++
+>  drivers/acpi/sleep/wakeup.c |   11 +-
+>  drivers/base/power/sysfs.c  |    3 
+>  drivers/pci/pci-acpi.c      |   19 ++++
+>  drivers/pci/pci.c           |  169 ++++++++++++++++++++++++++++++++------------
+>  drivers/pci/pci.h           |    8 ++
+>  drivers/pci/probe.c         |   47 ------------
+>  include/acpi/acpi_bus.h     |    2 
+>  include/linux/pm_wakeup.h   |   26 +-----
+>  11 files changed, 207 insertions(+), 116 deletions(-)
+> 
+> Index: linux-next/drivers/acpi/sleep/main.c
+> ===================================================================
+> --- linux-next.orig/drivers/acpi/sleep/main.c
+> +++ linux-next/drivers/acpi/sleep/main.c
+> @@ -467,6 +467,31 @@ int acpi_pm_device_sleep_state(struct de
+>  		*d_min_p = d_min;
+>  	return d_max;
+>  }
+> +
+> +/**
+> + *	acpi_pm_device_sleep_wake - enable or disable the system wake-up
+> + *                                  capability of given device
+> + *	@dev: device to handle
+> + *	@enable: 'true' - enable, 'false' - disable the wake-up capability
+> + */
+> +int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+> +{
+> +	acpi_handle handle;
+> +	struct acpi_device *adev;
+> +
+> +	if (!device_may_wakeup(dev))
+> +		return -EINVAL;
+> +
+> +	handle = DEVICE_ACPI_HANDLE(dev);
+> +	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
+> +		printk(KERN_DEBUG "ACPI handle has no context!\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	return enable ?
+> +		acpi_enable_wakeup_device_power(adev, acpi_target_sleep_state) :
+> +		acpi_disable_wakeup_device_power(adev);
+> +}
+>  #endif
+>  
+>  static void acpi_power_off_prepare(void)
+> Index: linux-next/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-next.orig/drivers/pci/pci-acpi.c
+> +++ linux-next/drivers/pci/pci-acpi.c
+> @@ -299,10 +299,29 @@ static int acpi_pci_set_power_state(stru
+>  	return error;
+>  }
+>  
+> +static bool acpi_pci_can_wakeup(struct pci_dev *dev)
+> +{
+> +	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
+> +
+> +	return handle ? acpi_bus_can_wakeup(handle) : false;
+> +}
+> +
+> +static int acpi_pci_sleep_wake(struct pci_dev *dev, bool enable)
+> +{
+> +	int error = acpi_pm_device_sleep_wake(&dev->dev, enable);
+> +
+> +	if (!error)
+> +		printk(KERN_INFO "PCI: Wake-up capability of %s %s by ACPI\n",
+> +			pci_name(dev), enable ? "enabled" : "disabled");
+> +	return error;
+> +}
+> +
+>  static struct pci_platform_pm_ops acpi_pci_platform_pm = {
+>  	.is_manageable = acpi_pci_power_manageable,
+>  	.set_state = acpi_pci_set_power_state,
+>  	.choose_state = acpi_pci_choose_state,
+> +	.can_wakeup = acpi_pci_can_wakeup,
+> +	.sleep_wake = acpi_pci_sleep_wake,
+>  };
+>  
+>  /* ACPI bus type */
+> Index: linux-next/drivers/pci/pci.h
+> ===================================================================
+> --- linux-next.orig/drivers/pci/pci.h
+> +++ linux-next/drivers/pci/pci.h
+> @@ -17,6 +17,11 @@ extern void pci_cleanup_rom(struct pci_d
+>   *                 platform; to be used during system-wide transitions from a
+>   *                 sleeping state to the working state and vice versa
+>   *
+> + * @can_wakeup - returns 'true' if given device is capable of waking up the
+> + *               system from a sleeping state
+> + *
+> + * @sleep_wake - enables/disables the system wake up capability of given device
+> + *
+>   * If given platform is generally capable of power managing PCI devices, all of
+>   * these callbacks are mandatory.
+>   */
+> @@ -24,9 +29,12 @@ struct pci_platform_pm_ops {
+>  	bool (*is_manageable)(struct pci_dev *dev);
+>  	int (*set_state)(struct pci_dev *dev, pci_power_t state);
+>  	pci_power_t (*choose_state)(struct pci_dev *dev);
+> +	bool (*can_wakeup)(struct pci_dev *dev);
+> +	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+>  };
+>  
+>  extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+> +extern void pci_pm_init(struct pci_dev *dev);
+>  
+>  extern int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
+>  extern int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
+> Index: linux-next/include/acpi/acpi_bus.h
+> ===================================================================
+> --- linux-next.orig/include/acpi/acpi_bus.h
+> +++ linux-next/include/acpi/acpi_bus.h
+> @@ -337,6 +337,7 @@ int acpi_bus_get_status(struct acpi_devi
+>  int acpi_bus_get_power(acpi_handle handle, int *state);
+>  int acpi_bus_set_power(acpi_handle handle, int state);
+>  bool acpi_bus_power_manageable(acpi_handle handle);
+> +bool acpi_bus_can_wakeup(acpi_handle handle);
+>  #ifdef CONFIG_ACPI_PROC_EVENT
+>  int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
+>  int acpi_bus_generate_proc_event4(const char *class, const char *bid, u8 type, int data);
+> @@ -379,6 +380,7 @@ acpi_handle acpi_get_pci_rootbridge_hand
+>  
+>  #ifdef CONFIG_PM_SLEEP
+>  int acpi_pm_device_sleep_state(struct device *, int *);
+> +int acpi_pm_device_sleep_wake(struct device *, bool);
+>  #else /* !CONFIG_PM_SLEEP */
+>  static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
+>  {
+> Index: linux-next/drivers/pci/pci.c
+> ===================================================================
+> --- linux-next.orig/drivers/pci/pci.c
+> +++ linux-next/drivers/pci/pci.c
+> @@ -380,7 +380,8 @@ static struct pci_platform_pm_ops *pci_p
+>  
+>  int pci_set_platform_pm(struct pci_platform_pm_ops *ops)
+>  {
+> -	if (!ops->is_manageable || !ops->set_state || !ops->choose_state)
+> +	if (!ops->is_manageable || !ops->set_state || !ops->choose_state
+> +	    || !ops->sleep_wake || !ops->can_wakeup)
+>  		return -EINVAL;
+>  	pci_platform_pm = ops;
+>  	return 0;
+> @@ -403,6 +404,17 @@ static inline pci_power_t platform_pci_c
+>  			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
+>  }
+>  
+> +static inline bool platform_pci_can_wakeup(struct pci_dev *dev)
+> +{
+> +	return pci_platform_pm ? pci_platform_pm->can_wakeup(dev) : false;
+> +}
+> +
+> +static inline int platform_pci_sleep_wake(struct pci_dev *dev, bool enable)
+> +{
+> +	return pci_platform_pm ?
+> +			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+> +}
+> +
+>  /**
+>   * pci_raw_set_power_state - Use PCI PM registers to set the power state of
+>   *                           given PCI device
+> @@ -1036,6 +1048,56 @@ int pci_set_pcie_reset_state(struct pci_
+>  }
+>  
+>  /**
+> + * pci_pme_capable - check the capability of PCI device to generate PME#
+> + * @dev: PCI device to handle.
+> + * @pm: PCI PM capability offset of the device.
+> + * @state: PCI state from which device will issue PME#.
+> + */
+> +static bool pci_pme_capable(struct pci_dev *dev, int pm, pci_power_t state)
+> +{
+> +	u16 pmc;
+> +
+> +	if (!pm)
+> +		return false;
+> +
+> +	/* Check device's ability to generate PME# from given state */
+> +	pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
+> +
+> +	pmc &= PCI_PM_CAP_PME_MASK;
+> +	pmc >>= ffs(PCI_PM_CAP_PME_MASK) - 1;   /* First bit of mask */
+> +
+> +	return !!(pmc & (1 << state));
+> +}
+> +
+> +/**
+> + * pci_pme_active - enable or disable PCI device's PME# function
+> + * @dev: PCI device to handle.
+> + * @pm: PCI PM capability offset of the device.
+> + * @enable: 'true' to enable PME# generation; 'false' to disable it.
+> + *
+> + * The caller must verify that the device is capable of generating PME# before
+> + * calling this function with @enable equal to 'true'.
+> + */
+> +static void pci_pme_active(struct pci_dev *dev, int pm, bool enable)
+> +{
+> +	u16 pmcsr;
+> +
+> +	if (!pm)
+> +		return;
+> +
+> +	pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
+> +	/* Clear PME_Status by writing 1 to it and enable PME# */
+> +	pmcsr |= PCI_PM_CTRL_PME_STATUS | PCI_PM_CTRL_PME_ENABLE;
+> +	if (!enable)
+> +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
+> +
+> +	pci_write_config_word(dev, pm + PCI_PM_CTRL, pmcsr);
+> +
+> +	printk(KERN_INFO "PCI: PME# from device %s %s\n", pci_name(dev),
+> +		enable ? "enabled" : "disabled");
+> +}
+> +
+> +/**
+>   * pci_enable_wake - enable PCI device as wakeup event source
+>   * @dev: PCI device affected
+>   * @state: PCI state from which device will issue wakeup events
+> @@ -1046,66 +1108,83 @@ int pci_set_pcie_reset_state(struct pci_
+>   * called automatically by this routine.
+>   *
+>   * Devices with legacy power management (no standard PCI PM capabilities)
+> - * always require such platform hooks.  Depending on the platform, devices
+> - * supporting the standard PCI PME# signal may require such platform hooks;
+> - * they always update bits in config space to allow PME# generation.
+> - *
+> - * -EIO is returned if the device can't ever be a wakeup event source.
+> - * -EINVAL is returned if the device can't generate wakeup events from
+> - * the specified PCI state.  Returns zero if the operation is successful.
+> + * always require such platform hooks.
+> + *
+> + * RETURN VALUE:
+> + * 0 is returned on success
+> + * -EINVAL is returned if device is not supposed to wake up the system
+> + * Error code depending on the platform is returned if both the platform and
+> + * the native mechanism fail to enable the generation of wake-up events
+>   */
+>  int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable)
+>  {
+>  	int pm;
+> -	int status;
+> -	u16 value;
+> +	int error = 0;
+> +	bool pme_done = false;
+> +
+> +	if (!device_may_wakeup(&dev->dev))
+> +		return -EINVAL;
+>  
+> -	/* Note that drivers should verify device_may_wakeup(&dev->dev)
+> -	 * before calling this function.  Platform code should report
+> -	 * errors when drivers try to enable wakeup on devices that
+> -	 * can't issue wakeups, or on which wakeups were disabled by
+> -	 * userspace updating the /sys/devices.../power/wakeup file.
+> +	/*
+> +	 * According to "PCI System Architecture" 4th ed. by Tom Shanley & Don
+> +	 * Anderson we should be doing PME# wake enable followed by ACPI wake
+> +	 * enable.  To disable wake-up we call the platform first, for symmetry.
+>  	 */
+>  
+> -	status = call_platform_enable_wakeup(&dev->dev, enable);
+> +	if (!enable && platform_pci_can_wakeup(dev))
+> +		error = platform_pci_sleep_wake(dev, false);
+>  
+> -	/* find PCI PM capability in list */
+>  	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
+> +	if (!enable || pci_pme_capable(dev, pm, state)) {
+> +		pci_pme_active(dev, pm, enable);
+> +		pme_done = true;
+> +	}
+>  
+> -	/* If device doesn't support PM Capabilities, but caller wants to
+> -	 * disable wake events, it's a NOP.  Otherwise fail unless the
+> -	 * platform hooks handled this legacy device already.
+> -	 */
+> -	if (!pm)
+> -		return enable ? status : 0;
+> +	if (enable && platform_pci_can_wakeup(dev))
+> +		error = platform_pci_sleep_wake(dev, true);
+>  
+> +	return pme_done ? 0 : error;
+> +}
+> +
+> +/**
+> + * pci_pm_init - Initialize PM functions of given PCI device
+> + * @dev: PCI device to handle.
+> + */
+> +void pci_pm_init(struct pci_dev *dev)
+> +{
+> +	int pm;
+> +	u16 pmc;
+> +
+> +	/* find PCI PM capability in list */
+> +	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
+> +	if (!pm)
+> +		return;
+>  	/* Check device's ability to generate PME# */
+> -	pci_read_config_word(dev,pm+PCI_PM_PMC,&value);
+> +	pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
+>  
+> -	value &= PCI_PM_CAP_PME_MASK;
+> -	value >>= ffs(PCI_PM_CAP_PME_MASK) - 1;   /* First bit of mask */
+> +	if ((pmc & PCI_PM_CAP_VER_MASK) > 3) {
+> +		dev_err(&dev->dev, "unsupported PM cap regs version (%u)\n",
+> +			pmc & PCI_PM_CAP_VER_MASK);
+> +		return;
+> +	}
+>  
+> -	/* Check if it can generate PME# from requested state. */
+> -	if (!value || !(value & (1 << state))) {
+> -		/* if it can't, revert what the platform hook changed,
+> -		 * always reporting the base "EINVAL, can't PME#" error
+> +	if (pmc & PCI_PM_CAP_PME_MASK) {
+> +		dev_printk(KERN_INFO, &dev->dev,
+> +			"PME# supported from%s%s%s%s%s\n",
+> +			(pmc & PCI_PM_CAP_PME_D0) ? " D0" : "",
+> +			(pmc & PCI_PM_CAP_PME_D1) ? " D1" : "",
+> +			(pmc & PCI_PM_CAP_PME_D2) ? " D2" : "",
+> +			(pmc & PCI_PM_CAP_PME_D3) ? " D3hot" : "",
+> +			(pmc & PCI_PM_CAP_PME_D3cold) ? " D3cold" : "");
+> +		/*
+> +		 * Make device's PM flags reflect the wake-up capability, but
+> +		 * let the user space enable it to wake up the system as needed.
+>  		 */
+> -		if (enable)
+> -			call_platform_enable_wakeup(&dev->dev, 0);
+> -		return enable ? -EINVAL : 0;
+> +		device_set_wakeup_capable(&dev->dev, true);
+> +		device_set_wakeup_enable(&dev->dev, false);
+> +		/* Disable the PME# generation functionality */
+> +		pci_pme_active(dev, pm, false);
+Agree. The dev.power.should_wakeup is unset for the PCI device that
+supports PME. When it is required to wakeup the sleeping system, user
+space can set the flag of dev->power.should_wakeup again. 
+      But the device_init_wakeup(dev, 1) is still called in some
+drivers, which means that dev->power.should_wakeup is set. For example:
+USB driver for USB host controllers.
+>  	}
+> -
+> -	pci_read_config_word(dev, pm + PCI_PM_CTRL, &value);
+> -
+> -	/* Clear PME_Status by writing 1 to it and enable PME# */
+> -	value |= PCI_PM_CTRL_PME_STATUS | PCI_PM_CTRL_PME_ENABLE;
+> -
+> -	if (!enable)
+> -		value &= ~PCI_PM_CTRL_PME_ENABLE;
+> -
+> -	pci_write_config_word(dev, pm + PCI_PM_CTRL, value);
+> -
+> -	return 0;
+>  }
+>  
+>  int
+> Index: linux-next/include/linux/pm_wakeup.h
+> ===================================================================
+> --- linux-next.orig/include/linux/pm_wakeup.h
+> +++ linux-next/include/linux/pm_wakeup.h
+> @@ -35,6 +35,11 @@ static inline void device_init_wakeup(st
+>  	dev->power.can_wakeup = dev->power.should_wakeup = !!val;
+>  }
+>  
+> +static inline void device_set_wakeup_capable(struct device *dev, int val)
+> +{
+> +	dev->power.can_wakeup = !!val;
+> +}
+> +
+>  static inline int device_can_wakeup(struct device *dev)
+>  {
+>  	return dev->power.can_wakeup;
+> @@ -47,21 +52,7 @@ static inline void device_set_wakeup_ena
+>  
+>  static inline int device_may_wakeup(struct device *dev)
+>  {
+> -	return dev->power.can_wakeup & dev->power.should_wakeup;
+> -}
+> -
+> -/*
+> - * Platform hook to activate device wakeup capability, if that's not already
+> - * handled by enable_irq_wake() etc.
+> - * Returns zero on success, else negative errno
+> - */
+> -extern int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> -
+> -static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+> -{
+> -	if (platform_enable_wakeup)
+> -		return (*platform_enable_wakeup)(dev, is_on);
+> -	return 0;
+> +	return dev->power.can_wakeup && dev->power.should_wakeup;
+>  }
+>  
+>  #else /* !CONFIG_PM */
+> @@ -80,11 +71,6 @@ static inline int device_can_wakeup(stru
+>  #define device_set_wakeup_enable(dev, val)	do {} while (0)
+>  #define device_may_wakeup(dev)			0
+>  
+> -static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+> -{
+> -	return 0;
+> -}
+> -
+>  #endif /* !CONFIG_PM */
+>  
+>  #endif /* _LINUX_PM_WAKEUP_H */
+> Index: linux-next/drivers/base/power/sysfs.c
+> ===================================================================
+> --- linux-next.orig/drivers/base/power/sysfs.c
+> +++ linux-next/drivers/base/power/sysfs.c
+> @@ -6,9 +6,6 @@
+>  #include <linux/string.h>
+>  #include "power.h"
+>  
+> -int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> -
+> -
+>  /*
+>   *	wakeup - Report/change current wakeup option for device
+>   *
+> Index: linux-next/drivers/acpi/bus.c
+> ===================================================================
+> --- linux-next.orig/drivers/acpi/bus.c
+> +++ linux-next/drivers/acpi/bus.c
+> @@ -306,6 +306,17 @@ bool acpi_bus_power_manageable(acpi_hand
+>  
+>  EXPORT_SYMBOL(acpi_bus_power_manageable);
+>  
+> +bool acpi_bus_can_wakeup(acpi_handle handle)
+> +{
+> +	struct acpi_device *device;
+> +	int result;
+> +
+> +	result = acpi_bus_get_device(handle, &device);
+> +	return result ? false : device->wakeup.flags.valid;
+> +}
+> +
+> +EXPORT_SYMBOL(acpi_bus_can_wakeup);
+> +
+>  /* --------------------------------------------------------------------------
+>                                  Event Management
+>     -------------------------------------------------------------------------- */
+> Index: linux-next/drivers/pci/probe.c
+> ===================================================================
+> --- linux-next.orig/drivers/pci/probe.c
+> +++ linux-next/drivers/pci/probe.c
+> @@ -860,49 +860,6 @@ int pci_cfg_space_size_ext(struct pci_de
+>  	return PCI_CFG_SPACE_SIZE;
+>  }
+>  
+> -/**
+> - * pci_disable_pme - Disable the PME function of PCI device
+> - * @dev: PCI device affected
+> - * -EINVAL is returned if PCI device doesn't support PME.
+> - * Zero is returned if the PME is supported and can be disabled.
+> - */
+> -static int pci_disable_pme(struct pci_dev *dev)
+> -{
+> -	int pm;
+> -	u16 value;
+> -
+> -	/* find PCI PM capability in list */
+> -	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
+> -
+> -	/* If device doesn't support PM Capabilities, it means that PME is
+> -	 * not supported.
+> -	 */
+> -	if (!pm)
+> -		return -EINVAL;
+> -	/* Check device's ability to generate PME# */
+> -	pci_read_config_word(dev, pm + PCI_PM_PMC, &value);
+> -
+> -	value &= PCI_PM_CAP_PME_MASK;
+> -	/* Check if it can generate PME# */
+> -	if (!value) {
+> -		/*
+> -		 * If it is zero, it means that PME is still unsupported
+> -		 * although there exists the PM capability.
+> -		 */
+> -		return -EINVAL;
+> -	}
+> -
+> -	pci_read_config_word(dev, pm + PCI_PM_CTRL, &value);
+> -
+> -	/* Clear PME_Status by writing 1 to it */
+> -	value |= PCI_PM_CTRL_PME_STATUS ;
+> -	/* Disable PME enable bit */
+> -	value &= ~PCI_PM_CTRL_PME_ENABLE;
+> -	pci_write_config_word(dev, pm + PCI_PM_CTRL, value);
+> -
+> -	return 0;
+> -}
+> -
+>  int pci_cfg_space_size(struct pci_dev *dev)
+>  {
+>  	int pos;
+> @@ -1010,7 +967,6 @@ static struct pci_dev *pci_scan_device(s
+>  	}
+>  
+>  	pci_vpd_pci22_init(dev);
+> -	pci_disable_pme(dev);
+>  
+>  	return dev;
+>  }
+> @@ -1031,6 +987,9 @@ void pci_device_add(struct pci_dev *dev,
+>  	/* Fix up broken headers */
+>  	pci_fixup_device(pci_fixup_header, dev);
+>  
+> +	/* Initialize power management of the device */
+> +	pci_pm_init(dev);
+> +
+>  	/*
+>  	 * Add the device to our list of discovered devices
+>  	 * and the bus list for fixup functions, etc.
+> Index: linux-next/drivers/acpi/glue.c
+> ===================================================================
+> --- linux-next.orig/drivers/acpi/glue.c
+> +++ linux-next/drivers/acpi/glue.c
+> @@ -165,6 +165,8 @@ static int acpi_bind_one(struct device *
+>  				"firmware_node");
+>  		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
+>  				"physical_node");
+> +		if (acpi_dev->wakeup.flags.valid)
+> +			device_set_wakeup_capable(dev, true);
+>  	}
+>  
+>  	return 0;
+> Index: linux-next/drivers/acpi/sleep/wakeup.c
+> ===================================================================
+> --- linux-next.orig/drivers/acpi/sleep/wakeup.c
+> +++ linux-next/drivers/acpi/sleep/wakeup.c
+> @@ -66,13 +66,15 @@ void acpi_enable_wakeup_device(u8 sleep_
+>  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+>  		struct acpi_device *dev =
+>  			container_of(node, struct acpi_device, wakeup_list);
+> +
+>  		if (!dev->wakeup.flags.valid)
+>  			continue;
+> +
+>  		/* If users want to disable run-wake GPE,
+>  		 * we only disable it for wake and leave it for runtime
+>  		 */
+> -		if (!dev->wakeup.state.enabled ||
+> -		    sleep_state > (u32) dev->wakeup.sleep_state) {
+> +		if ((!dev->wakeup.state.enabled && !dev->wakeup.flags.prepared)
+> +		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+>  			if (dev->wakeup.flags.run_wake) {
+>  				spin_unlock(&acpi_device_lock);
+>  				/* set_gpe_type will disable GPE, leave it like that */
+If the dev->wakeup.flags.preprared is introduced, it seems that the
+problem becomes more complex. Whether acpi_enable_wakeup_device_power is
+called is related with the flags of dev->wakeup.state.enabled. 
+   If the dev->wakeup.state.enabled is set, the
+acpi_enable_wakeup_device_power will be called, in which the
+dev->wakeup.flags.prepared is set. Otherwise the
+dev->wakeup.flags.prepared is still unset.
+   In such case it seems that whether the GPE is enabled is related with
+the dev->wakeup.state.enabled.
+   Of course it is also OK.
 
-PCI: Simplify PCI device PM code (rev. 4)
-
-If the offset of PCI device's PM capability in its configuration
-space, the mask of states that the device supports PME# from and the
-D1 and D2 support bits are cached in the corresponding
-struct pci_dev, the PCI device PM code can be simplified quite a bit.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c        |  118 ++++++++++++++++++++---------------------------
- include/linux/pci.h      |    8 ++-
- include/linux/pci_regs.h |    1 
- 3 files changed, 60 insertions(+), 67 deletions(-)
-
-Index: linux-next/include/linux/pci.h
-===================================================================
---- linux-next.orig/include/linux/pci.h
-+++ linux-next/include/linux/pci.h
-@@ -177,6 +177,13 @@ struct pci_dev {
- 	pci_power_t     current_state;  /* Current operating state. In ACPI-speak,
- 					   this is D0-D3, D0 being fully functional,
- 					   and D3 being off. */
-+	int		pm_cap;		/* PM capability offset in the
-+					   configuration space */
-+	unsigned int	pme_support:5;	/* Bitmask of states from which PME#
-+					   can be generated */
-+	unsigned int	d1_support:1;	/* Low power state D1 is supported */
-+	unsigned int	d2_support:1;	/* Low power state D2 is supported */
-+	unsigned int	no_d1d2:1;	/* Only allow D0 and D3 */
- 
- #ifdef CONFIG_PCIEASPM
- 	struct pcie_link_state	*link_state;	/* ASPM link state. */
-@@ -201,7 +208,6 @@ struct pci_dev {
- 	unsigned int	is_added:1;
- 	unsigned int	is_busmaster:1; /* device is busmaster */
- 	unsigned int	no_msi:1;	/* device may not use msi */
--	unsigned int	no_d1d2:1;   /* only allow d0 or d3 */
- 	unsigned int	block_ucfg_access:1;	/* userspace config space access is blocked */
- 	unsigned int	broken_parity_status:1;	/* Device generates false positive parity */
- 	unsigned int 	msi_enabled:1;
-Index: linux-next/drivers/pci/pci.c
-===================================================================
---- linux-next.orig/drivers/pci/pci.c
-+++ linux-next/drivers/pci/pci.c
-@@ -419,7 +419,6 @@ static inline int platform_pci_sleep_wak
-  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
-  *                           given PCI device
-  * @dev: PCI device to handle.
-- * @pm: PCI PM capability offset of the device.
-  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
-  *
-  * RETURN VALUE:
-@@ -430,12 +429,12 @@ static inline int platform_pci_sleep_wak
-  * 0 if device's power state has been successfully changed.
-  */
- static int
--pci_raw_set_power_state(struct pci_dev *dev, int pm, pci_power_t state)
-+pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
- {
--	u16 pmcsr, pmc;
-+	u16 pmcsr;
- 	bool need_restore = false;
- 
--	if (!pm)
-+	if (!dev->pm_cap)
- 		return -EIO;
- 
- 	if (state < PCI_D0 || state > PCI_D3hot)
-@@ -455,20 +454,12 @@ pci_raw_set_power_state(struct pci_dev *
- 		return -EINVAL;
- 	}
- 
--	pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
--
--	if ((pmc & PCI_PM_CAP_VER_MASK) > 3) {
--		dev_err(&dev->dev, "unsupported PM cap regs version (%u)\n",
--			pmc & PCI_PM_CAP_VER_MASK);
--		return -EIO;
--	}
--
- 	/* check if this device supports the desired state */
--	if ((state == PCI_D1 && !(pmc & PCI_PM_CAP_D1))
--	   || (state == PCI_D2 && !(pmc & PCI_PM_CAP_D2)))
-+	if ((state == PCI_D1 && !dev->d1_support)
-+	   || (state == PCI_D2 && !dev->d2_support))
- 		return -EIO;
- 
--	pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
- 
- 	/* If we're (effectively) in D3, force entire word to 0.
- 	 * This doesn't affect PME_Status, disables PME_En, and
-@@ -492,7 +483,7 @@ pci_raw_set_power_state(struct pci_dev *
- 	}
- 
- 	/* enter specified state */
--	pci_write_config_word(dev, pm + PCI_PM_CTRL, pmcsr);
-+	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
- 
- 	/* Mandatory power management transition delays */
- 	/* see PCI PM 1.1 5.6.1 table 18 */
-@@ -528,14 +519,13 @@ pci_raw_set_power_state(struct pci_dev *
-  * pci_update_current_state - Read PCI power state of given device from its
-  *                            PCI PM registers and cache it
-  * @dev: PCI device to handle.
-- * @pm: PCI PM capability offset of the device.
-  */
--static void pci_update_current_state(struct pci_dev *dev, int pm)
-+static void pci_update_current_state(struct pci_dev *dev)
- {
--	if (pm) {
-+	if (dev->pm_cap) {
- 		u16 pmcsr;
- 
--		pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-+		pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
- 		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
- 	}
- }
-@@ -557,7 +547,7 @@ static void pci_update_current_state(str
-  */
- int pci_set_power_state(struct pci_dev *dev, pci_power_t state)
- {
--	int pm, error;
-+	int error;
- 
- 	/* bound the state we're entering */
- 	if (state > PCI_D3hot)
-@@ -572,9 +562,6 @@ int pci_set_power_state(struct pci_dev *
- 		 */
- 		return 0;
- 
--	/* Find PCI PM capability in the list */
--	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
--
- 	if (state == PCI_D0 && platform_pci_power_manageable(dev)) {
- 		/*
- 		 * Allow the platform to change the state, for example via ACPI
-@@ -582,16 +569,16 @@ int pci_set_power_state(struct pci_dev *
- 		 */
- 		int ret = platform_pci_set_power_state(dev, PCI_D0);
- 		if (!ret)
--			pci_update_current_state(dev, pm);
-+			pci_update_current_state(dev);
- 	}
- 
--	error = pci_raw_set_power_state(dev, pm, state);
-+	error = pci_raw_set_power_state(dev, state);
- 
- 	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
- 		/* Allow the platform to finalize the transition */
- 		int ret = platform_pci_set_power_state(dev, state);
- 		if (!ret) {
--			pci_update_current_state(dev, pm);
-+			pci_update_current_state(dev);
- 			error = 0;
- 		}
- 	}
-@@ -1050,48 +1037,38 @@ int pci_set_pcie_reset_state(struct pci_
- /**
-  * pci_pme_capable - check the capability of PCI device to generate PME#
-  * @dev: PCI device to handle.
-- * @pm: PCI PM capability offset of the device.
-  * @state: PCI state from which device will issue PME#.
-  */
--static bool pci_pme_capable(struct pci_dev *dev, int pm, pci_power_t state)
-+static bool pci_pme_capable(struct pci_dev *dev, pci_power_t state)
- {
--	u16 pmc;
--
--	if (!pm)
-+	if (!dev->pm_cap)
- 		return false;
- 
--	/* Check device's ability to generate PME# from given state */
--	pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
--
--	pmc &= PCI_PM_CAP_PME_MASK;
--	pmc >>= ffs(PCI_PM_CAP_PME_MASK) - 1;   /* First bit of mask */
--
--	return !!(pmc & (1 << state));
-+	return !!(dev->pme_support & (1 << state));
- }
- 
- /**
-  * pci_pme_active - enable or disable PCI device's PME# function
-  * @dev: PCI device to handle.
-- * @pm: PCI PM capability offset of the device.
-  * @enable: 'true' to enable PME# generation; 'false' to disable it.
-  *
-  * The caller must verify that the device is capable of generating PME# before
-  * calling this function with @enable equal to 'true'.
-  */
--static void pci_pme_active(struct pci_dev *dev, int pm, bool enable)
-+static void pci_pme_active(struct pci_dev *dev, bool enable)
- {
- 	u16 pmcsr;
- 
--	if (!pm)
-+	if (!dev->pm_cap)
- 		return;
- 
--	pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
- 	/* Clear PME_Status by writing 1 to it and enable PME# */
- 	pmcsr |= PCI_PM_CTRL_PME_STATUS | PCI_PM_CTRL_PME_ENABLE;
- 	if (!enable)
- 		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
- 
--	pci_write_config_word(dev, pm + PCI_PM_CTRL, pmcsr);
-+	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
- 
- 	printk(KERN_INFO "PCI: PME# from device %s %s\n", pci_name(dev),
- 		enable ? "enabled" : "disabled");
-@@ -1118,7 +1095,6 @@ static void pci_pme_active(struct pci_de
-  */
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable)
- {
--	int pm;
- 	int error = 0;
- 	bool pme_done = false;
- 
-@@ -1134,9 +1110,8 @@ int pci_enable_wake(struct pci_dev *dev,
- 	if (!enable && platform_pci_can_wakeup(dev))
- 		error = platform_pci_sleep_wake(dev, false);
- 
--	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
--	if (!enable || pci_pme_capable(dev, pm, state)) {
--		pci_pme_active(dev, pm, enable);
-+	if (!enable || pci_pme_capable(dev, state)) {
-+		pci_pme_active(dev, enable);
- 		pme_done = true;
- 	}
- 
-@@ -1158,7 +1133,6 @@ int pci_enable_wake(struct pci_dev *dev,
- int pci_prepare_to_sleep(struct pci_dev *dev)
- {
- 	pci_power_t target_state = PCI_D3hot;
--	int pm = pci_find_capability(dev, PCI_CAP_ID_PM);
- 	int error;
- 
- 	if (platform_pci_power_manageable(dev)) {
-@@ -1186,23 +1160,14 @@ int pci_prepare_to_sleep(struct pci_dev 
- 		 * wake-up events, make it the target state and enable device
- 		 * to generate PME#.
- 		 */
--		u16 pmc;
--
--		if (!pm)
-+		if (!dev->pm_cap)
- 			return -EIO;
- 
--		pci_read_config_word(dev, pm + PCI_PM_PMC, &pmc);
--		if (pmc & PCI_PM_CAP_PME_MASK) {
--			if (!(pmc & PCI_PM_CAP_PME_D3)) {
--				/* Device cannot generate PME# from D3_hot */
--				if (pmc & PCI_PM_CAP_PME_D2)
--					target_state = PCI_D2;
--				else if (pmc & PCI_PM_CAP_PME_D1)
--					target_state = PCI_D1;
--				else
--					target_state = PCI_D0;
--			}
--			pci_pme_active(dev, pm, true);
-+		if (dev->pme_support) {
-+			while (target_state
-+			      && !(dev->pme_support & (1 << target_state)))
-+				target_state--;
-+			pci_pme_active(dev, true);
- 		}
- 	}
- 
-@@ -1236,6 +1201,8 @@ void pci_pm_init(struct pci_dev *dev)
- 	int pm;
- 	u16 pmc;
- 
-+	dev->pm_cap = 0;
-+
- 	/* find PCI PM capability in list */
- 	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
- 	if (!pm)
-@@ -1249,7 +1216,23 @@ void pci_pm_init(struct pci_dev *dev)
- 		return;
- 	}
- 
--	if (pmc & PCI_PM_CAP_PME_MASK) {
-+	dev->pm_cap = pm;
-+
-+	dev->d1_support = false;
-+	dev->d2_support = false;
-+	if (!pci_no_d1d2(dev)) {
-+		if (pmc & PCI_PM_CAP_D1) {
-+			dev_printk(KERN_DEBUG, &dev->dev, "supports D1\n");
-+			dev->d1_support = true;
-+		}
-+		if (pmc & PCI_PM_CAP_D2) {
-+			dev_printk(KERN_DEBUG, &dev->dev, "supports D2\n");
-+			dev->d2_support = true;
-+		}
-+	}
-+
-+	pmc &= PCI_PM_CAP_PME_MASK;
-+	if (pmc) {
- 		dev_printk(KERN_INFO, &dev->dev,
- 			"PME# supported from%s%s%s%s%s\n",
- 			(pmc & PCI_PM_CAP_PME_D0) ? " D0" : "",
-@@ -1257,6 +1240,7 @@ void pci_pm_init(struct pci_dev *dev)
- 			(pmc & PCI_PM_CAP_PME_D2) ? " D2" : "",
- 			(pmc & PCI_PM_CAP_PME_D3) ? " D3hot" : "",
- 			(pmc & PCI_PM_CAP_PME_D3cold) ? " D3cold" : "");
-+		dev->pme_support = pmc >> PCI_PM_CAP_PME_SHIFT;
- 		/*
- 		 * Make device's PM flags reflect the wake-up capability, but
- 		 * let the user space enable it to wake up the system as needed.
-@@ -1264,7 +1248,9 @@ void pci_pm_init(struct pci_dev *dev)
- 		device_set_wakeup_capable(&dev->dev, true);
- 		device_set_wakeup_enable(&dev->dev, false);
- 		/* Disable the PME# generation functionality */
--		pci_pme_active(dev, pm, false);
-+		pci_pme_active(dev, false);
-+	} else {
-+		dev->pme_support = 0;
- 	}
- }
- 
-Index: linux-next/include/linux/pci_regs.h
-===================================================================
---- linux-next.orig/include/linux/pci_regs.h
-+++ linux-next/include/linux/pci_regs.h
-@@ -231,6 +231,7 @@
- #define  PCI_PM_CAP_PME_D2	0x2000	/* PME# from D2 */
- #define  PCI_PM_CAP_PME_D3	0x4000	/* PME# from D3 (hot) */
- #define  PCI_PM_CAP_PME_D3cold	0x8000	/* PME# from D3 (cold) */
-+#define  PCI_PM_CAP_PME_SHIFT	11	/* Start of the PME Mask in PMC */
- #define PCI_PM_CTRL		4	/* PM control and status register */
- #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
- #define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
+Thanks.
+   Yakui
+> @@ -110,8 +112,9 @@ void acpi_disable_wakeup_device(u8 sleep
+>  
+>  		if (!dev->wakeup.flags.valid)
+>  			continue;
+> -		if (!dev->wakeup.state.enabled ||
+> -		    sleep_state > (u32) dev->wakeup.sleep_state) {
+> +
+> +		if ((!dev->wakeup.state.enabled && !dev->wakeup.flags.prepared)
+> +		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+>  			if (dev->wakeup.flags.run_wake) {
+>  				spin_unlock(&acpi_device_lock);
+>  				acpi_set_gpe_type(dev->wakeup.gpe_device,
