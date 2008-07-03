@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/2] introduce new interface schedule_work_on
-Date: Thu, 3 Jul 2008 10:04:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0807031001580.2410-100000__27482.0642815486$1215094046$gmane$org@iolanthe.rowland.org>
-References: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
+From: Patrick <ragamuffin@datacomm.ch>
+Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
+	AHCI: Hard	Disk Corruption
+Date: Thu, 03 Jul 2008 19:35:47 +0200
+Message-ID: <1215106548.5194.22.camel@localhost.localdomain>
+References: <1211717435.6038.53.camel@localhost.localdomain>
+	<200806090036.32267.rjw@sisk.pl>
+	<1213184587.6376.37.camel@localhost.localdomain>
+	<200806111638.50933.rjw@sisk.pl>  <484FE97D.4040805@firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
+In-Reply-To: <484FE97D.4040805@firstfloor.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,40 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: harbour@sfinx.od.ua, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Jul 2008, Zhang Rui wrote:
+*bump*
 
-> This interface allows adding a job on a specific cpu.
-> 
-> Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
-> there is a recursion if a work task tries to offline the cpu it's running on.
-> we need to schedule the task to a specific cpu in this case.
-> http://bugzilla.kernel.org/show_bug.cgi?id=10897
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Tested-by: Rus <harbour@sfinx.od.ua>
-> ---
->  include/linux/workqueue.h |    1 +
->  kernel/workqueue.c        |   38 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+)
-> 
-> Index: linux-2.6/include/linux/workqueue.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/workqueue.h	2008-07-03 11:13:23.000000000 +0800
-> +++ linux-2.6/include/linux/workqueue.h	2008-07-03 11:13:25.000000000 +0800
-> @@ -188,6 +188,7 @@
->  extern void flush_scheduled_work(void);
->  
->  extern int schedule_work(struct work_struct *work);
-> +extern int schedule_work_on(int cpu, struct work_struct *work);
->  extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
->  extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
->  					unsigned long delay);
+Why "too late" ??? It (2.6.26) is still not out! Please (;-) oh please!)
+reconsider / push it a bit! It's tested and working perfectly here ever
+since. But I'd like for example vmware to work again as will and it
+doesn't yet even with 2.6.25... Please let this patch go into 2.6.26 so
+there's a chance of having a stock kernel with working vmware, fglrx,
+and such again soon!
 
-Is there some reason you don't export queue_work_on?  After all, 
-queue_delayed_work_on is exported.
+Thx
 
-Alan Stern
+Greets - Patrick
+
+On Mit, 2008-06-11 at 17:04 +0200, Andi Kleen wrote:
+> > Well, I was hoping to be able to get this patch into 2.6.26, as I don't really
+> > like the temporary hack, preventing the affected systems from resuming
+> > at all, that we have in there, but it seems to be too late. :-(
+> 
+> I agree with you that this patch would be far better than the hack.
+> 
+> -Andi
