@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/9] PCI PM: Handling of PCI devices wake-up
-	functionality (rev. 3)
-Date: Thu, 3 Jul 2008 14:04:57 +0200
-Message-ID: <200807031404.58108.rjw@sisk.pl>
-References: <200807012356.26669.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] introduce new interface schedule_work_on
+Date: Thu, 3 Jul 2008 10:04:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0807031001580.2410-100000__27482.0642815486$1215094046$gmane$org@iolanthe.rowland.org>
+References: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807012356.26669.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Tobias Diedrich <ranma@tdiedrich.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Zhao Yakui <yakui.zhao@intel.com>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: harbour@sfinx.od.ua, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 1 of July 2008, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> This is a new (3rd) iteration of the series of patches intended to rework the power
-> management of PCI devices so that the handling of their wake-up functionality
-> is consistent with the other PM operations and so that the user space can
-> manage the wake-up functionality of PCI devices using the
-> /sys/devices/.../power/wakeup interface regardless of whether the wake-up
-> function is based on the native PCI mechanism (PME#), or it is handled by the
-> platform (eg. ACPI).
-> 
-> Apart from the ACPI and PCI changes necessary for this purpose, the series
-> includes some clean-ups that are not strictly required, but make the code more
-> straightforward and (IMHO) easier to follow.
-> 
-> The patchset is on top of the linux-next from today.  It contains one
-> additional patch [1/9] which is a revert of another patch that shouldn't have
-> been put into linux-next (at least not in the way it was done).
-> 
-> Please review.
+On Thu, 3 Jul 2008, Zhang Rui wrote:
 
-FWIW, I have tested this patchset on top of the yesterday's linux-next on a box
-with the Asus A8N SLI mainboard and the WOL using Magic Packet works after
-hibernation (forcedeth driver).
+> This interface allows adding a job on a specific cpu.
+> 
+> Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
+> there is a recursion if a work task tries to offline the cpu it's running on.
+> we need to schedule the task to a specific cpu in this case.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10897
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Tested-by: Rus <harbour@sfinx.od.ua>
+> ---
+>  include/linux/workqueue.h |    1 +
+>  kernel/workqueue.c        |   38 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+)
+> 
+> Index: linux-2.6/include/linux/workqueue.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/workqueue.h	2008-07-03 11:13:23.000000000 +0800
+> +++ linux-2.6/include/linux/workqueue.h	2008-07-03 11:13:25.000000000 +0800
+> @@ -188,6 +188,7 @@
+>  extern void flush_scheduled_work(void);
+>  
+>  extern int schedule_work(struct work_struct *work);
+> +extern int schedule_work_on(int cpu, struct work_struct *work);
+>  extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
+>  extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+>  					unsigned long delay);
 
-Full dmesg including boot and one hibernation/resume cycle is at:
-http://www.sisk.pl/kernel/debug/20080702/dmesg-A8N-SLI.log
+Is there some reason you don't export queue_work_on?  After all, 
+queue_delayed_work_on is exported.
 
-Thanks,
-Rafael
+Alan Stern
