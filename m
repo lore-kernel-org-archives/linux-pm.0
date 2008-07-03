@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 2/2] run sysrq poweroff on boot cpu
-Date: Thu, 03 Jul 2008 15:56:54 +0800
-Message-ID: <1215071814.3214.1.camel@rzhang-dt.sh.intel.com>
+Subject: [PATCH 1/2] introduce new interface schedule_work_on
+Date: Thu, 03 Jul 2008 15:56:49 +0800
+Message-ID: <1215071809.3214.0.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,31 +19,85 @@ To: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@v
 Cc: harbour@sfinx.od.ua
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+This interface allows adding a job on a specific cpu.
 
-schedule sysrq poweroff on boot cpu.
-
-sysrq poweroff needs to disable nonboot cpus, and we need to run this
-on boot cpu to avoid any recursion.
+Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
+there is a recursion if a work task tries to offline the cpu it's running on.
+we need to schedule the task to a specific cpu in this case.
 http://bugzilla.kernel.org/show_bug.cgi?id=10897
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-tested-by: Rus <harbour@sfinx.od.ua>
+Tested-by: Rus <harbour@sfinx.od.ua>
 ---
- kernel/power/poweroff.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/workqueue.h |    1 +
+ kernel/workqueue.c        |   38 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+)
 
-Index: linux-2.6/kernel/power/poweroff.c
+Index: linux-2.6/include/linux/workqueue.h
 ===================================================================
---- linux-2.6.orig/kernel/power/poweroff.c	2008-06-30 16:01:35.000000000 +0800
-+++ linux-2.6/kernel/power/poweroff.c	2008-07-03 10:50:05.000000000 +0800
-@@ -25,7 +25,8 @@
+--- linux-2.6.orig/include/linux/workqueue.h	2008-07-03 11:13:23.000000000 +0800
++++ linux-2.6/include/linux/workqueue.h	2008-07-03 11:13:25.000000000 +0800
+@@ -188,6 +188,7 @@
+ extern void flush_scheduled_work(void);
  
- static void handle_poweroff(int key, struct tty_struct *tty)
- {
--	schedule_work(&poweroff_work);
-+	/* run sysrq poweroff on boot cpu */
-+	schedule_work_on(first_cpu(cpu_online_map), &poweroff_work);
+ extern int schedule_work(struct work_struct *work);
++extern int schedule_work_on(int cpu, struct work_struct *work);
+ extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
+ extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+ 					unsigned long delay);
+Index: linux-2.6/kernel/workqueue.c
+===================================================================
+--- linux-2.6.orig/kernel/workqueue.c	2008-07-03 11:13:23.000000000 +0800
++++ linux-2.6/kernel/workqueue.c	2008-07-03 11:14:56.000000000 +0800
+@@ -175,6 +175,31 @@
  }
+ EXPORT_SYMBOL_GPL(queue_work);
  
- static struct sysrq_key_op	sysrq_poweroff_op = {
++/**
++ * queue_work_on - queue work on specific cpu
++ * @cpu: CPU number to execute work on
++ * @wq: workqueue to use
++ * @work: work to queue
++ *
++ * Returns 0 if @work was already on a queue, non-zero otherwise.
++ *
++ * We queue the work to a specific CPU
++ */
++static int
++queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
++{
++	int ret = 0;
++
++	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++		BUG_ON(!list_empty(&work->entry));
++		preempt_disable();
++		__queue_work(wq_per_cpu(wq, cpu), work);
++		preempt_enable();
++		ret = 1;
++	}
++	return ret;
++}
++
+ static void delayed_work_timer_fn(unsigned long __data)
+ {
+ 	struct delayed_work *dwork = (struct delayed_work *)__data;
+@@ -553,6 +578,19 @@
+ }
+ EXPORT_SYMBOL(schedule_work);
+ 
++/*
++ * schedule_work_on - put work task on a specific cpu
++ * @cpu: cpu to put the work task on
++ * @work: job to be done
++ *
++ * This puts a job on a specific cpu
++ */
++int schedule_work_on(int cpu, struct work_struct *work)
++{
++	return queue_work_on(cpu, keventd_wq, work);
++}
++EXPORT_SYMBOL(schedule_work_on);
++
+ /**
+  * schedule_delayed_work - put work task in global workqueue after delay
+  * @dwork: job to be done
