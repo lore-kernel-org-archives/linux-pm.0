@@ -1,11 +1,15 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH] AHCI: speed up resume
-Date: Thu, 03 Jul 2008 16:48:02 +0800
-Message-ID: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/9] PCI PM: Handling of PCI devices wake-up
+	functionality (rev. 3)
+Date: Thu, 3 Jul 2008 14:04:57 +0200
+Message-ID: <200807031404.58108.rjw@sisk.pl>
+References: <200807012356.26669.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200807012356.26669.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,58 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: tj@kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Tobias Diedrich <ranma@tdiedrich.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Zhao Yakui <yakui.zhao@intel.com>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-During S3 resume, AHCI driver sleeps 1 second to wait for the HBA reset
-to finish. This is luxurious, :)
+On Tuesday, 1 of July 2008, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> This is a new (3rd) iteration of the series of patches intended to rework the power
+> management of PCI devices so that the handling of their wake-up functionality
+> is consistent with the other PM operations and so that the user space can
+> manage the wake-up functionality of PCI devices using the
+> /sys/devices/.../power/wakeup interface regardless of whether the wake-up
+> function is based on the native PCI mechanism (PME#), or it is handled by the
+> platform (eg. ACPI).
+> 
+> Apart from the ACPI and PCI changes necessary for this purpose, the series
+> includes some clean-ups that are not strictly required, but make the code more
+> straightforward and (IMHO) easier to follow.
+> 
+> The patchset is on top of the linux-next from today.  It contains one
+> additional patch [1/9] which is a revert of another patch that shouldn't have
+> been put into linux-next (at least not in the way it was done).
+> 
+> Please review.
 
-According to the AHCI 1.2 spec, We should poll the HOST_CTL register,
-and return error if the host reset is not finished within 1 second.
+FWIW, I have tested this patchset on top of the yesterday's linux-next on a box
+with the Asus A8N SLI mainboard and the WOL using Magic Packet works after
+hibernation (forcedeth driver).
 
-Test results show that the HBA reset can be done quickly(in usecs).
-And this patch may save nearly 1 second during resume.
+Full dmesg including boot and one hibernation/resume cycle is at:
+http://www.sisk.pl/kernel/debug/20080702/dmesg-A8N-SLI.log
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
---
- drivers/ata/ahci.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/drivers/ata/ahci.c
-===================================================================
---- linux-2.6.orig/drivers/ata/ahci.c	2007-05-03 11:06:33.000000000 +0800
-+++ linux-2.6/drivers/ata/ahci.c	2008-07-02 16:25:54.000000000 +0800
-@@ -1073,18 +1073,29 @@
- 
- 	/* global controller reset */
- 	if (!ahci_skip_host_reset) {
-+		int delay = msecs_to_jiffies(1000);
-+		int timeout;
-+
- 		tmp = readl(mmio + HOST_CTL);
- 		if ((tmp & HOST_RESET) == 0) {
- 			writel(tmp | HOST_RESET, mmio + HOST_CTL);
- 			readl(mmio + HOST_CTL); /* flush */
- 		}
- 
--		/* reset must complete within 1 second, or
-+		/*
-+ 		 * to perform host reset, OS should set HOST_RESET
-+		 * and poll until this bit is read to be "0"
-+ 		 * reset must complete within 1 second, or
- 		 * the hardware should be considered fried.
- 		 */
--		ssleep(1);
-+		timeout = jiffies + delay;
-+		while (jiffies < timeout) {
-+			tmp = readl(mmio + HOST_CTL);
-+			if (!(tmp & HOST_RESET))
-+				break;
-+			cpu_relax();
-+		}
- 
--		tmp = readl(mmio + HOST_CTL);
- 		if (tmp & HOST_RESET) {
- 			dev_printk(KERN_ERR, host->dev,
- 				   "controller reset failed (0x%x)\n", tmp);
+Thanks,
+Rafael
