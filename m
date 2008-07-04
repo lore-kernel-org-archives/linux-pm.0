@@ -1,14 +1,13 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH] AHCI: speed up resume
-Date: Fri, 04 Jul 2008 09:48:07 +0800
-Message-ID: <1215136087.3068.7.camel__32744.7813855999$1215136228$gmane$org@rzhang-dt.sh.intel.com>
-References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
-	<200807040123.50337.rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] introduce new interface schedule_work_on
+Date: Fri, 04 Jul 2008 10:34:33 +0800
+Message-ID: <1215138873.3068.15.camel__11956.0731378899$1215139008$gmane$org@rzhang-dt.sh.intel.com>
+References: <Pine.LNX.4.44L0.0807031001580.2410-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807040123.50337.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0807031001580.2410-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,130 +17,147 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tj@kernel.org, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: harbour@sfinx.od.ua, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-On Fri, 2008-07-04 at 07:23 +0800, Rafael J. Wysocki wrote:
-> On Thursday, 3 of July 2008, Zhang Rui wrote:
-> > During S3 resume, AHCI driver sleeps 1 second to wait for the HBA
-> reset
-> > to finish. This is luxurious, :)
-> >
-> > According to the AHCI 1.2 spec, We should poll the HOST_CTL
-> register,
-> > and return error if the host reset is not finished within 1 second.
-> >
-> > Test results show that the HBA reset can be done quickly(in usecs).
-> > And this patch may save nearly 1 second during resume.
+On Thu, 2008-07-03 at 22:04 +0800, Alan Stern wrote:
+> On Thu, 3 Jul 2008, Zhang Rui wrote:
 > 
-> That's a lot.
+> > This interface allows adding a job on a specific cpu.
+> >
+> > Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
+> > there is a recursion if a work task tries to offline the cpu it's
+> running on.
+> > we need to schedule the task to a specific cpu in this case.
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10897
+> >
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > Tested-by: Rus <harbour@sfinx.od.ua>
+> > ---
+> >  include/linux/workqueue.h |    1 +
+> >  kernel/workqueue.c        |   38
+> ++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 39 insertions(+)
+> >
+> > Index: linux-2.6/include/linux/workqueue.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/workqueue.h  2008-07-03
+> 11:13:23.000000000 +0800
+> > +++ linux-2.6/include/linux/workqueue.h       2008-07-03
+> 11:13:25.000000000 +0800
+> > @@ -188,6 +188,7 @@
+> >  extern void flush_scheduled_work(void);
+> > 
+> >  extern int schedule_work(struct work_struct *work);
+> > +extern int schedule_work_on(int cpu, struct work_struct *work);
+> >  extern int schedule_delayed_work(struct delayed_work *work,
+> unsigned long delay);
+> >  extern int schedule_delayed_work_on(int cpu, struct delayed_work
+> *work,
+> >                                       unsigned long delay);
 > 
-> How heavily has it been tested?
+> Is there some reason you don't export queue_work_on?  After all,
+> queue_delayed_work_on is exported.
 
-I only tested it on a SantaRosa laptop.
-
-w/o the patch,
-[  469.923186] ahci_pci_device_resume
-[  469.936105] PM: Writing back config space on device 0000:00:1f.2 at
-offset f (was 200, writing 20a)
-[  469.936145] PM: Writing back config space on device 0000:00:1f.2 at
-offset 1 (was 2b00007, writing 2b00407)
-[  469.936220] PCI: Setting latency timer of device 0000:00:1f.2 to 64
-[  470.092053] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-[  470.092053] ata4.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-[  470.107675] ata4.00: configured for UDMA/33
-[  470.942195] ahci_pci_device_resume done
-
-w/ the patch applied, run S3 for more than ten times in a row,
-[  571.150339] ahci_pci_device_resume
-[  571.163193] ahci_pci_device_resume done
-[  578.560382] ahci_pci_device_resume
-[  578.576410] ahci_pci_device_resume done
-[  586.065037] ahci_pci_device_resume
-[  586.080806] ahci_pci_device_resume done
-[  770.231756] ahci_pci_device_resume
-[  770.244431] ahci_pci_device_resume done
-[  777.537985] ahci_pci_device_resume
-[  777.553709] ahci_pci_device_resume done
-[  784.805554] ahci_pci_device_resume
-[  784.819660] ahci_pci_device_resume done
-[  791.888451] ahci_pci_device_resume
-[  791.905222] ahci_pci_device_resume done
-[  798.943719] ahci_pci_device_resume
-[  798.959437] ahci_pci_device_resume done
-[  806.438784] ahci_pci_device_resume
-[  806.452070] ahci_pci_device_resume done
-[  813.890609] ahci_pci_device_resume
-[  813.903247] ahci_pci_device_resume done
-[  821.265956] ahci_pci_device_resume
-[  821.278714] ahci_pci_device_resume done
-[  828.609051] ahci_pci_device_resume
-[  828.621795] ahci_pci_device_resume done
-[  835.731528] ahci_pci_device_resume
-[  835.744210] ahci_pci_device_resume done
-
-I don't know if this ssleep(1) is required for some platform specific
-problems, but this patch does work well for me. :)
-Hmm, we'd better get some comments from Tejun Heo first.
+Both are okay. I didn't export it just because no one would use it
+currently.
+Please review the patch below.
 
 thanks,
 rui
-> 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > --
-> >  drivers/ata/ahci.c |   17 ++++++++++++++---
-> >  1 file changed, 14 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/drivers/ata/ahci.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/ata/ahci.c 2007-05-03 11:06:33.000000000
-> +0800
-> > +++ linux-2.6/drivers/ata/ahci.c      2008-07-02 16:25:54.000000000
-> +0800
-> > @@ -1073,18 +1073,29 @@
-> > 
-> >       /* global controller reset */
-> >       if (!ahci_skip_host_reset) {
-> > +             int delay = msecs_to_jiffies(1000);
-> > +             int timeout;
-> > +
-> >               tmp = readl(mmio + HOST_CTL);
-> >               if ((tmp & HOST_RESET) == 0) {
-> >                       writel(tmp | HOST_RESET, mmio + HOST_CTL);
-> >                       readl(mmio + HOST_CTL); /* flush */
-> >               }
-> > 
-> > -             /* reset must complete within 1 second, or
-> > +             /*
-> > +              * to perform host reset, OS should set HOST_RESET
-> > +              * and poll until this bit is read to be "0"
-> > +              * reset must complete within 1 second, or
-> >                * the hardware should be considered fried.
-> >                */
-> > -             ssleep(1);
-> > +             timeout = jiffies + delay;
-> > +             while (jiffies < timeout) {
-> > +                     tmp = readl(mmio + HOST_CTL);
-> > +                     if (!(tmp & HOST_RESET))
-> > +                             break;
-> > +                     cpu_relax();
-> > +             }
-> > 
-> > -             tmp = readl(mmio + HOST_CTL);
-> >               if (tmp & HOST_RESET) {
-> >                       dev_printk(KERN_ERR, host->dev,
-> >                                  "controller reset failed (0x%x)\n",
-> tmp);
-> >
-> >
-> >
-> >
-> 
-> 
-> 
-> --
-> "Premature optimization is the root of all evil." - Donald Knuth
-> 
-> 
+
+Subject: introduce new interface schedule_work_on
+This interface allows adding a job on a specific cpu.
+
+Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
+there is a recursion if a work task tries to offline the cpu it's running on.
+we need to schedule the task to a specific cpu in this case.
+http://bugzilla.kernel.org/show_bug.cgi?id=10897
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Tested-by: Rus <harbour@sfinx.od.ua>
+---
+ include/linux/workqueue.h |    3 +++
+ kernel/workqueue.c        |   39 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
+
+Index: linux-2.6/include/linux/workqueue.h
+===================================================================
+--- linux-2.6.orig/include/linux/workqueue.h	2007-05-04 10:57:08.000000000 +0800
++++ linux-2.6/include/linux/workqueue.h	2008-07-04 10:03:21.000000000 +0800
+@@ -179,6 +179,8 @@
+ extern void destroy_workqueue(struct workqueue_struct *wq);
+ 
+ extern int queue_work(struct workqueue_struct *wq, struct work_struct *work);
++extern int queue_work_on(int cpu, struct workqueue_struct *wq,
++			struct work_struct *work);
+ extern int queue_delayed_work(struct workqueue_struct *wq,
+ 			struct delayed_work *work, unsigned long delay);
+ extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+@@ -188,6 +190,7 @@
+ extern void flush_scheduled_work(void);
+ 
+ extern int schedule_work(struct work_struct *work);
++extern int schedule_work_on(int cpu, struct work_struct *work);
+ extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
+ extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+ 					unsigned long delay);
+Index: linux-2.6/kernel/workqueue.c
+===================================================================
+--- linux-2.6.orig/kernel/workqueue.c	2007-05-04 10:57:08.000000000 +0800
++++ linux-2.6/kernel/workqueue.c	2008-07-04 10:05:01.000000000 +0800
+@@ -175,6 +175,32 @@
+ }
+ EXPORT_SYMBOL_GPL(queue_work);
+ 
++/**
++ * queue_work_on - queue work on specific cpu
++ * @cpu: CPU number to execute work on
++ * @wq: workqueue to use
++ * @work: work to queue
++ *
++ * Returns 0 if @work was already on a queue, non-zero otherwise.
++ *
++ * We queue the work to a specific CPU
++ */
++int
++queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
++{
++	int ret = 0;
++
++	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++		BUG_ON(!list_empty(&work->entry));
++		preempt_disable();
++		__queue_work(wq_per_cpu(wq, cpu), work);
++		preempt_enable();
++		ret = 1;
++	}
++	return ret;
++}
++EXPORT_SYMBOL_GPL(queue_work_on);
++
+ static void delayed_work_timer_fn(unsigned long __data)
+ {
+ 	struct delayed_work *dwork = (struct delayed_work *)__data;
+@@ -553,6 +579,19 @@
+ }
+ EXPORT_SYMBOL(schedule_work);
+ 
++/*
++ * schedule_work_on - put work task on a specific cpu
++ * @cpu: cpu to put the work task on
++ * @work: job to be done
++ *
++ * This puts a job on a specific cpu
++ */
++int schedule_work_on(int cpu, struct work_struct *work)
++{
++	return queue_work_on(cpu, keventd_wq, work);
++}
++EXPORT_SYMBOL(schedule_work_on);
++
+ /**
+  * schedule_delayed_work - put work task in global workqueue after delay
+  * @dwork: job to be done
