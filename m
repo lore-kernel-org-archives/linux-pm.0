@@ -1,14 +1,13 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH] AHCI: speed up resume
-Date: Fri, 04 Jul 2008 13:32:17 +0800
-Message-ID: <1215149537.3068.18.camel__21165.5273721137$1215149846$gmane$org@rzhang-dt.sh.intel.com>
-References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
-	<486D8F88.9000904@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] x86 ACPI: Fix resume from suspend to RAM on
+	uniprocessor x86-64
+Date: Sat, 5 Jul 2008 00:05:30 +0200
+Message-ID: <200807050005.31272.rjw__15824.7959254824$1215209334$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <486D8F88.9000904@kernel.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,114 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Ingo,
 
-On Fri, 2008-07-04 at 10:48 +0800, Tejun Heo wrote:
-> Hello, Zhang.
-> 
-> Zhang Rui wrote:
-> > During S3 resume, AHCI driver sleeps 1 second to wait for the HBA
-> reset
-> > to finish. This is luxurious, :)
-> >
-> > According to the AHCI 1.2 spec, We should poll the HOST_CTL
-> register,
-> > and return error if the host reset is not finished within 1 second.
-> >
-> > Test results show that the HBA reset can be done quickly(in usecs).
-> > And this patch may save nearly 1 second during resume.
-> >
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > --
-> >  drivers/ata/ahci.c |   17 ++++++++++++++---
-> >  1 file changed, 14 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/drivers/ata/ahci.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/ata/ahci.c 2007-05-03 11:06:33.000000000
-> +0800
-> > +++ linux-2.6/drivers/ata/ahci.c      2008-07-02 16:25:54.000000000
-> +0800
-> > @@ -1073,18 +1073,29 @@
-> > 
-> >       /* global controller reset */
-> >       if (!ahci_skip_host_reset) {
-> > +             int delay = msecs_to_jiffies(1000);
-> > +             int timeout;
-> > +
-> >               tmp = readl(mmio + HOST_CTL);
-> >               if ((tmp & HOST_RESET) == 0) {
-> >                       writel(tmp | HOST_RESET, mmio + HOST_CTL);
-> >                       readl(mmio + HOST_CTL); /* flush */
-> >               }
-> > 
-> > -             /* reset must complete within 1 second, or
-> > +             /*
-> > +              * to perform host reset, OS should set HOST_RESET
-> > +              * and poll until this bit is read to be "0"
-> > +              * reset must complete within 1 second, or
-> >                * the hardware should be considered fried.
-> >                */
-> > -             ssleep(1);
-> > +             timeout = jiffies + delay;
-> > +             while (jiffies < timeout) {
-> > +                     tmp = readl(mmio + HOST_CTL);
-> > +                     if (!(tmp & HOST_RESET))
-> > +                             break;
-> > +                     cpu_relax();
-> > +             }
-> 
-> Looks good in principle.  Just two things...
-> 
-> 1. Please don't busy-loop.  e.g. No one would notice 10ms delay
-> between
-> polls.
-> 
-> 2. Please use ata_wait_register().
-> 
-Thanks for review, refreshed patch attached. :)
+This is a regression fix, please push to Linus ASAP.
 
-From: Zhang Rui <rui.zhang@intel.com>
+Thanks,
+Rafael
 
-During resume, sleep 1 second to wait for the HBA reset
-to finish is a waste of time.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-According to the AHCI 1.2 spec,
-We should poll the HOST_CTL register,
-and return error if the host reset is not
-finished within 1 second.
+Since the trampoline code is now used for ACPI resume from suspend to RAM,
+the trampoline page tables have to be fixed up during boot not only on SMP
+systems, but also on UP systems that use the trampoline.
 
-Test results show that the HBA reset can be done quickly(in usecs).
-And this patch may save nearly 1 second during resume.
+Reference: http://bugzilla.kernel.org/show_bug.cgi?id=10923
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
---
- drivers/ata/ahci.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/head_64.S |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/ata/ahci.c
+Index: linux-2.6/arch/x86/kernel/head_64.S
 ===================================================================
---- linux-2.6.orig/drivers/ata/ahci.c	2008-07-04 09:49:05.000000000 +0800
-+++ linux-2.6/drivers/ata/ahci.c	2008-07-04 11:31:30.000000000 +0800
-@@ -1079,12 +1079,15 @@
- 			readl(mmio + HOST_CTL); /* flush */
- 		}
+--- linux-2.6.orig/arch/x86/kernel/head_64.S
++++ linux-2.6/arch/x86/kernel/head_64.S
+@@ -128,7 +128,7 @@ ident_complete:
+ 	/* Fixup phys_base */
+ 	addq	%rbp, phys_base(%rip)
  
--		/* reset must complete within 1 second, or
-+		/*
-+ 		 * to perform host reset, OS should set HOST_RESET
-+		 * and poll until this bit is read to be "0".
-+ 		 * reset must complete within 1 second, or
- 		 * the hardware should be considered fried.
- 		 */
--		ssleep(1);
-+		tmp = ata_wait_register(mmio + HOST_CTL, HOST_RESET,
-+					HOST_RESET, 10, 1000);
- 
--		tmp = readl(mmio + HOST_CTL);
- 		if (tmp & HOST_RESET) {
- 			dev_printk(KERN_ERR, host->dev,
- 				   "controller reset failed (0x%x)\n", tmp);
+-#ifdef CONFIG_SMP
++#ifdef CONFIG_X86_TRAMPOLINE
+ 	addq	%rbp, trampoline_level4_pgt + 0(%rip)
+ 	addq	%rbp, trampoline_level4_pgt + (511*8)(%rip)
+ #endif
