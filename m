@@ -1,12 +1,13 @@
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH 1/2] swsusp: simplify memory_bm_find_bit()
-Date: Sat, 5 Jul 2008 20:10:10 +0900
-Message-ID: <20080705110946.GA17071__47822.3767866895$1215440896$gmane$org@localhost.localdomain>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC PATCH] AHCI: speed up resume
+Date: Fri, 04 Jul 2008 11:48:40 +0900
+Message-ID: <486D8F88.9000904__17639.1499270268$1215440985$gmane$org@kernel.org>
+References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,37 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The bit obtained by the function memory_bm_find_bit() is represented
-by addr and bit_nr. The callers of memory_bm_find_bit() just use addr
-and bit_nr as the arguments of set_bit/clear_bit/test_bit.
+Hello, Zhang.
 
-This patch simplifies the representation of the obtained bit without
-using BM_BITS_PER_CHUNK.
+Zhang Rui wrote:
+> During S3 resume, AHCI driver sleeps 1 second to wait for the HBA reset
+> to finish. This is luxurious, :)
+> 
+> According to the AHCI 1.2 spec, We should poll the HOST_CTL register,
+> and return error if the host reset is not finished within 1 second.
+> 
+> Test results show that the HBA reset can be done quickly(in usecs).
+> And this patch may save nearly 1 second during resume.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> --
+>  drivers/ata/ahci.c |   17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/ata/ahci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/ata/ahci.c	2007-05-03 11:06:33.000000000 +0800
+> +++ linux-2.6/drivers/ata/ahci.c	2008-07-02 16:25:54.000000000 +0800
+> @@ -1073,18 +1073,29 @@
+>  
+>  	/* global controller reset */
+>  	if (!ahci_skip_host_reset) {
+> +		int delay = msecs_to_jiffies(1000);
+> +		int timeout;
+> +
+>  		tmp = readl(mmio + HOST_CTL);
+>  		if ((tmp & HOST_RESET) == 0) {
+>  			writel(tmp | HOST_RESET, mmio + HOST_CTL);
+>  			readl(mmio + HOST_CTL); /* flush */
+>  		}
+>  
+> -		/* reset must complete within 1 second, or
+> +		/*
+> + 		 * to perform host reset, OS should set HOST_RESET
+> +		 * and poll until this bit is read to be "0"
+> + 		 * reset must complete within 1 second, or
+>  		 * the hardware should be considered fried.
+>  		 */
+> -		ssleep(1);
+> +		timeout = jiffies + delay;
+> +		while (jiffies < timeout) {
+> +			tmp = readl(mmio + HOST_CTL);
+> +			if (!(tmp & HOST_RESET))
+> +				break;
+> +			cpu_relax();
+> +		}
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
----
- kernel/power/snapshot.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Looks good in principle.  Just two things...
 
-Index: 2.6-git/kernel/power/snapshot.c
-===================================================================
---- 2.6-git.orig/kernel/power/snapshot.c
-+++ 2.6-git/kernel/power/snapshot.c
-@@ -478,8 +478,8 @@ static int memory_bm_find_bit(struct mem
- 	}
- 	zone_bm->cur_block = bb;
- 	pfn -= bb->start_pfn;
--	*bit_nr = pfn % BM_BITS_PER_CHUNK;
--	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
-+	*bit_nr = pfn;
-+	*addr = bb->data;
- 	return 0;
- }
- 
+1. Please don't busy-loop.  e.g. No one would notice 10ms delay between
+polls.
+
+2. Please use ata_wait_register().
+
+Thanks.
+
+-- 
+tejun
