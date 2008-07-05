@@ -1,15 +1,11 @@
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 2/2] swsusp: simplify memory bitmap
-Date: Mon, 7 Jul 2008 22:26:47 +0900
-Message-ID: <961aa3350807070626m37b3e218sb29303987e6983a2__14850.8266582668$1215440875$gmane$org@mail.gmail.com>
-References: <20080705110946.GA17071@localhost.localdomain>
-	<20080705111123.GB17071@localhost.localdomain>
-	<200807071449.11817.rjw@sisk.pl>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH 1/2] swsusp: simplify memory_bm_find_bit()
+Date: Sat, 5 Jul 2008 20:10:10 +0900
+Message-ID: <20080705110946.GA17071__47822.3767866895$1215440896$gmane$org@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807071449.11817.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,26 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-2008/7/7 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Saturday, 5 of July 2008, Akinobu Mita wrote:
->> This patch simplifies the memory bitmap manipulations.
->>
->> - remove the member size in struct bm_block
->>
->> It is not necessary for struct bm_block to have the number of bit chunks
->> that can be calculated by using end_pfn and start_pfn.
->>
->> - use find_next_bit() for memory_bm_next_pfn
->>
->> No need to invent the bitmap library only for the memory bitmap.
->
-> Thanks for doing this change, it looks OK.
->
-> I haven't have the time to test it yet, but once it's been tested, I'll push
-> it to Andrew for merging.  I'll fold patch 1/2 into this one.
+The bit obtained by the function memory_bm_find_bit() is represented
+by addr and bit_nr. The callers of memory_bm_find_bit() just use addr
+and bit_nr as the arguments of set_bit/clear_bit/test_bit.
 
-Thanks. I have only tested it on an x86_64 box.
+This patch simplifies the representation of the obtained bit without
+using BM_BITS_PER_CHUNK.
+
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+---
+ kernel/power/snapshot.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: 2.6-git/kernel/power/snapshot.c
+===================================================================
+--- 2.6-git.orig/kernel/power/snapshot.c
++++ 2.6-git/kernel/power/snapshot.c
+@@ -478,8 +478,8 @@ static int memory_bm_find_bit(struct mem
+ 	}
+ 	zone_bm->cur_block = bb;
+ 	pfn -= bb->start_pfn;
+-	*bit_nr = pfn % BM_BITS_PER_CHUNK;
+-	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
++	*bit_nr = pfn;
++	*addr = bb->data;
+ 	return 0;
+ }
+ 
