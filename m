@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 01/11] ACPI: Introduce
-	acpi_bus_power_manageable function
-Date: Mon, 7 Jul 2008 09:03:30 +0200
-Message-ID: <20080707070330.GB5643@ucw.cz>
-References: <200806231934.08565.rjw@sisk.pl> <200806231945.19574.rjw@sisk.pl>
+Subject: Re: [PATCH 02/11] PCI: Introduce
+	platform_pci_power_manageable function
+Date: Mon, 7 Jul 2008 09:05:08 +0200
+Message-ID: <20080707070508.GC5643__33762.9238063984$1215524422$gmane$org@ucw.cz>
+References: <200806231934.08565.rjw@sisk.pl> <200806231945.26068.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200806231945.19574.rjw@sisk.pl>
+In-Reply-To: <200806231945.26068.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,15 +23,16 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-06-23 19:45:18, Rafael J. Wysocki wrote:
+On Mon 2008-06-23 19:45:25, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> ACPI: Introduce acpi_bus_power_manageable function
+> PCI: Introduce platform_pci_power_manageable function
 > 
-> Introduce function acpi_bus_power_manageable() allowing other
-> (dependent) subsystems to check if ACPI is able to power manage given
-> device.  This may be useful, for example, for PCI device power
-> management.
+> Introduce function pointer platform_pci_power_manageable to be used
+> by the platform-related code to point to a function allowing us to
+> check if given device is power manageable by the platform.
+> 
+> Introduce acpi_pci_power_manageable() playing that role for ACPI.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
