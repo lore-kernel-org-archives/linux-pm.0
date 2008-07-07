@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/8] ACPI: Introduce acpi_bus_power_manageable
-	function
-Date: Mon, 7 Jul 2008 03:30:55 +0200
-Message-ID: <200807070330.56671.rjw__20042.0586778366$1215394887$gmane$org@sisk.pl>
+Subject: [PATCH 5/8] ACPI: Introduce new device wakeup flag
+	'prepared'
+Date: Mon, 7 Jul 2008 03:34:11 +0200
+Message-ID: <200807070334.12948.rjw__381.067806347524$1215394961$gmane$org@sisk.pl>
 References: <200807012356.26669.rjw@sisk.pl> <200807070330.02849.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,51 +25,82 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI: Introduce acpi_bus_power_manageable function
+ACPI: Introduce new device wakeup flag 'prepared'
 
-Introduce function acpi_bus_power_manageable() allowing other
-(dependent) subsystems to check if ACPI is able to power manage given
-device.  This may be useful, for example, for PCI device power
-management.
+Introduce additional flag 'prepared' in
+struct acpi_device_wakeup_flags and use it to prevent devices from
+being enable/disabled do wake up the system multiple times in a row
+(this does not happen currently, but will be possible after some of
+the following patches).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/acpi/bus.c      |   11 +++++++++++
+ drivers/acpi/power.c    |   24 ++++++++++++++++++++++--
  include/acpi/acpi_bus.h |    1 +
- 2 files changed, 12 insertions(+)
+ 2 files changed, 23 insertions(+), 2 deletions(-)
 
-Index: linux-next/drivers/acpi/bus.c
+Index: linux-next/drivers/acpi/power.c
 ===================================================================
---- linux-next.orig/drivers/acpi/bus.c
-+++ linux-next/drivers/acpi/bus.c
-@@ -295,6 +295,17 @@ int acpi_bus_set_power(acpi_handle handl
+--- linux-next.orig/drivers/acpi/power.c
++++ linux-next/drivers/acpi/power.c
+@@ -363,11 +363,18 @@ int acpi_device_sleep_wake(struct acpi_d
+  */
+ int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state)
+ {
+-	int i;
++	int i, err;
  
- EXPORT_SYMBOL(acpi_bus_set_power);
+ 	if (!dev || !dev->wakeup.flags.valid)
+ 		return -EINVAL;
  
-+bool acpi_bus_power_manageable(acpi_handle handle)
-+{
-+	struct acpi_device *device;
-+	int result;
++	/*
++	 * Do not execute the code below twice in a row without calling
++	 * acpi_disable_wakeup_device_power() in between for the same device
++	 */
++	if (dev->wakeup.flags.prepared)
++		return 0;
 +
-+	result = acpi_bus_get_device(handle, &device);
-+	return result ? false : device->flags.power_manageable;
-+}
+ 	/* Open power resource */
+ 	for (i = 0; i < dev->wakeup.resources.count; i++) {
+ 		int ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
+@@ -382,7 +389,11 @@ int acpi_enable_wakeup_device_power(stru
+ 	 * Passing 3 as the third argument below means the device may be placed
+ 	 * in arbitrary power state afterwards.
+ 	 */
+-	return acpi_device_sleep_wake(dev, 1, sleep_state, 3);
++	err = acpi_device_sleep_wake(dev, 1, sleep_state, 3);
++	if (!err)
++		dev->wakeup.flags.prepared = 1;
 +
-+EXPORT_SYMBOL(acpi_bus_power_manageable);
++	return err;
+ }
+ 
+ /*
+@@ -398,6 +409,15 @@ int acpi_disable_wakeup_device_power(str
+ 	if (!dev || !dev->wakeup.flags.valid)
+ 		return -EINVAL;
+ 
++	/*
++	 * Do not execute the code below twice in a row without calling
++	 * acpi_enable_wakeup_device_power() in between for the same device
++	 */
++	if (!dev->wakeup.flags.prepared)
++		return 0;
 +
- /* --------------------------------------------------------------------------
-                                 Event Management
-    -------------------------------------------------------------------------- */
++	dev->wakeup.flags.prepared = 0;
++
+ 	ret = acpi_device_sleep_wake(dev, 0, 0, 0);
+ 	if (ret)
+ 		return ret;
 Index: linux-next/include/acpi/acpi_bus.h
 ===================================================================
 --- linux-next.orig/include/acpi/acpi_bus.h
 +++ linux-next/include/acpi/acpi_bus.h
-@@ -335,6 +335,7 @@ void acpi_bus_data_handler(acpi_handle h
- int acpi_bus_get_status(struct acpi_device *device);
- int acpi_bus_get_power(acpi_handle handle, int *state);
- int acpi_bus_set_power(acpi_handle handle, int state);
-+bool acpi_bus_power_manageable(acpi_handle handle);
- #ifdef CONFIG_ACPI_PROC_EVENT
- int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
- int acpi_bus_generate_proc_event4(const char *class, const char *bid, u8 type, int data);
+@@ -259,6 +259,7 @@ struct acpi_device_perf {
+ /* Wakeup Management */
+ struct acpi_device_wakeup_flags {
+ 	u8 valid:1;		/* Can successfully enable wakeup? */
++	u8 prepared:1;		/* Has the wake-up capability been enabled? */
+ 	u8 run_wake:1;		/* Run-Wake GPE devices */
+ };
+ 
