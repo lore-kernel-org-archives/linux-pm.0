@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/8] ACPI: Introduce acpi_device_sleep_wake
-	function
-Date: Mon, 7 Jul 2008 03:33:34 +0200
-Message-ID: <200807070333.35794.rjw__311.71824452958$1215395331$gmane$org@sisk.pl>
-References: <200807012356.26669.rjw@sisk.pl> <200807070330.02849.rjw@sisk.pl>
+From: Huang Ying <ying.huang@intel.com>
+Subject: [PATCH -mm 2/2] kexec jump -v12: save/restore device
+	state
+Date: Mon, 07 Jul 2008 11:25:24 +0800
+Message-ID: <1215401124.4660.5.camel__20671.6103399687$1215400990$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807070330.02849.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,280 +16,281 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Zhao Yakui <yakui.zhao@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundatio>
+Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+This patch implements devices state save/restore before after kexec.
 
-ACPI: Introduce acpi_device_sleep_wake function
 
-The currect ACPI code attempts to execute _PSW at three different
-places and in one of them only it tries to execute _DSW before _PSW,
-which is inconsistent with the other two cases.
+This patch together with features in kexec_jump patch can be used for
+following:
 
-Move the execution of _DSW and _PSW into a separate function called
-acpi_device_sleep_wake() and call it wherever appropriate instead of
-executing _DSW and/or _PSW directly.
+- A simple hibernation implementation without ACPI support. You can
+  kexec a hibernating kernel, save the memory image of original system
+  and shutdown the system. When resuming, you restore the memory image
+  of original system via ordinary kexec load then jump back.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
+- Kernel/system debug through making system snapshot. You can make
+  system snapshot, jump back, do some thing and make another system
+  snapshot.
+
+- Cooperative multi-kernel/system. With kexec jump, you can switch
+  between several kernels/systems quickly without boot process except
+  the first time. This appears like swap a whole kernel/system out/in.
+
+- A general method to call program in physical mode (paging turning
+  off). This can be used to invoke BIOS code under Linux.
+
+
+The following user-space tools can be used with kexec jump:
+
+- kexec-tools needs to be patched to support kexec jump. The patches
+  and the precompiled kexec can be download from the following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
+
+- makedumpfile with patches are used as memory image saving tool, it
+  can exclude free pages from original kernel memory image file. The
+  patches and the precompiled makedumpfile can be download from the
+  following URL:
+       source: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-src_cvs_kh10.tar.bz2
+       patches: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-patches_cvs_kh10.tar.bz2
+       binary: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile_cvs_kh10
+
+- An initramfs image can be used as the root file system of kexeced
+  kernel. An initramfs image built with "BuildRoot" can be downloaded
+  from the following URL:
+       initramfs image: http://khibernation.sourceforge.net/download/release_v10/initramfs/rootfs_cvs_kh10.gz
+  All user space tools above are included in the initramfs image.
+
+
+Usage example of simple hibernation:
+
+1. Compile and install patched kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y
+CONFIG_PM=y
+CONFIG_HIBERNATION=y
+CONFIG_KEXEC_JUMP=y
+
+2. Build an initramfs image contains kexec-tool and makedumpfile, or
+   download the pre-built initramfs image, called rootfs.gz in
+   following text.
+
+3. Prepare a partition to save memory image of original kernel, called
+   hibernating partition in following text.
+
+4. Boot kernel compiled in step 1 (kernel A).
+
+5. In the kernel A, load kernel compiled in step 1 (kernel B) with
+   /sbin/kexec. The shell command line can be as follow:
+
+   /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
+     --mem-max=0xffffff --initrd=rootfs.gz
+
+6. Boot the kernel B with following shell command line:
+
+   /sbin/kexec -e
+
+7. The kernel B will boot as normal kexec. In kernel B the memory
+   image of kernel A can be saved into hibernating partition as
+   follow:
+
+   jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
+   echo $jump_back_entry > kexec_jump_back_entry
+   cp /proc/vmcore dump.elf
+
+   Then you can shutdown the machine as normal.
+
+8. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+   root file system.
+
+9. In kernel C, load the memory image of kernel A as follow:
+
+   /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
+
+10. Jump back to the kernel A as follow:
+
+   /sbin/kexec -e
+
+   Then, kernel A is resumed.
+
+
+Implementation point:
+
+To support jumping between two kernels, before jumping to (executing)
+the new kernel and jumping back to the original kernel, the devices
+are put into quiescent state, and the state of devices and CPU is
+saved. After jumping back from kexeced kernel and jumping to the new
+kernel, the state of devices and CPU are restored accordingly. The
+devices/CPU state save/restore code of software suspend is called to
+implement corresponding function.
+
+
+Known issues:
+
+- Because the segment number supported by sys_kexec_load is limited,
+  hibernation image with many segments may not be load. This is
+  planned to be eliminated by adding a new flag to sys_kexec_load to
+  make a image can be loaded with multiple sys_kexec_load invoking.
+
+
+ChangeLog:
+
+v12:
+
+- Add dependency of HIBERNATION for CONFIG_KEXEC_JUMP to resolve
+  dependency problem.
+
+v11:
+
+- Add disable_IO_APIC() to machine_kexec() to put IO APIC into legacy
+  mode before executing new kernel.
+
+- Base on top of new hibernation/restore device driver callback.
+
+v10:
+
+- Split from original kexec_jump patch.
+
+
+Now, only the i386 architecture is supported. The patchset is based on
+Linux kernel 2.6.26-rc8-mm1, and has been tested on IBM T42 with ACPI
+on and off.
+
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
 ---
- drivers/acpi/power.c        |  118 ++++++++++++++++++++++++++++++--------------
- drivers/acpi/scan.c         |   42 ++-------------
- drivers/acpi/sleep/wakeup.c |    2 
- include/acpi/acpi_drivers.h |    4 +
- 4 files changed, 92 insertions(+), 74 deletions(-)
+ arch/x86/Kconfig                   |    5 ++--
+ arch/x86/kernel/machine_kexec_32.c |   12 +++++++++++
+ include/linux/suspend.h            |    2 +
+ kernel/kexec.c                     |   39 +++++++++++++++++++++++++++++++++++++
+ kernel/power/power.h               |    2 -
+ 5 files changed, 56 insertions(+), 4 deletions(-)
 
-Index: linux-pci/drivers/acpi/power.c
-===================================================================
---- linux-pci.orig/drivers/acpi/power.c
-+++ linux-pci/drivers/acpi/power.c
-@@ -292,69 +292,115 @@ static int acpi_power_off_device(acpi_ha
- 	return 0;
- }
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -26,6 +26,10 @@
+ #include <linux/numa.h>
+ #include <linux/suspend.h>
+ #include <linux/device.h>
++#include <linux/freezer.h>
++#include <linux/pm.h>
++#include <linux/cpu.h>
++#include <linux/console.h>
  
-+/**
-+ * acpi_device_sleep_wake - execute _DSW (Device Sleep Wake) or (deprecated in
-+ *                          ACPI 3.0) _PSW (Power State Wake)
-+ * @dev: Device to handle.
-+ * @enable: 0 - disable, 1 - enable the wake capabilities of the device.
-+ * @sleep_state: Target sleep state of the system.
-+ * @dev_state: Target power state of the device.
-+ *
-+ * Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ * State Wake) for the device, if present.  On failure reset the device's
-+ * wakeup.flags.valid flag.
-+ *
-+ * RETURN VALUE:
-+ * 0 if either _DSW or _PSW has been successfully executed
-+ * 0 if neither _DSW nor _PSW has been found
-+ * -ENODEV if the execution of either _DSW or _PSW has failed
-+ */
-+int acpi_device_sleep_wake(struct acpi_device *dev,
-+                           int enable, int sleep_state, int dev_state)
-+{
-+	union acpi_object in_arg[3];
-+	struct acpi_object_list arg_list = { 3, in_arg };
-+	acpi_status status = AE_OK;
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1441,7 +1445,31 @@ int kernel_kexec(void)
+ 
+ 	if (kexec_image->preserve_context) {
+ #ifdef CONFIG_KEXEC_JUMP
++		mutex_lock(&pm_mutex);
++		pm_prepare_console();
++		error = freeze_processes();
++		if (error) {
++			error = -EBUSY;
++			goto Restore_console;
++		}
++		suspend_console();
++		error = device_suspend(PMSG_FREEZE);
++		if (error)
++			goto Resume_console;
++		error = disable_nonboot_cpus();
++		if (error)
++			goto Resume_devices;
+ 		local_irq_disable();
++		/* At this point, device_suspend() has been called,
++		 * but *not* device_power_down(). We *must*
++		 * device_power_down() now.  Otherwise, drivers for
++		 * some devices (e.g. interrupt controllers) become
++		 * desynchronized with the actual state of the
++		 * hardware at resume time, and evil weirdness ensues.
++		 */
++		error = device_power_down(PMSG_FREEZE);
++		if (error)
++			goto Enable_irqs;
+ 		save_processor_state();
+ #endif
+ 	} else {
+@@ -1459,7 +1487,18 @@ int kernel_kexec(void)
+ 	if (kexec_image->preserve_context) {
+ #ifdef CONFIG_KEXEC_JUMP
+ 		restore_processor_state();
++		device_power_up(PMSG_RESTORE);
++ Enable_irqs:
+ 		local_irq_enable();
++		enable_nonboot_cpus();
++ Resume_devices:
++		device_resume(PMSG_RESTORE);
++ Resume_console:
++		resume_console();
++		thaw_processes();
++ Restore_console:
++		pm_restore_console();
++		mutex_unlock(&pm_mutex);
+ #endif
+ 	}
+ 
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -53,8 +53,6 @@ extern int hibernation_platform_enter(vo
+ 
+ extern int pfn_is_nosave(unsigned long);
+ 
+-extern struct mutex pm_mutex;
+-
+ #define power_attr(_name) \
+ static struct kobj_attribute _name##_attr = {	\
+ 	.attr	= {				\
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -278,4 +278,6 @@ static inline void register_nosave_regio
+ }
+ #endif
+ 
++extern struct mutex pm_mutex;
 +
-+	/*
-+	 * Try to execute _DSW first.
-+	 *
-+	 * Three agruments are needed for the _DSW object:
-+	 * Argument 0: enable/disable the wake capabilities
-+	 * Argument 1: target system state
-+	 * Argument 2: target device state
-+	 * When _DSW object is called to disable the wake capabilities, maybe
-+	 * the first argument is filled. The values of the other two agruments
-+	 * are meaningless.
-+	 */
-+	in_arg[0].type = ACPI_TYPE_INTEGER;
-+	in_arg[0].integer.value = enable;
-+	in_arg[1].type = ACPI_TYPE_INTEGER;
-+	in_arg[1].integer.value = sleep_state;
-+	in_arg[2].type = ACPI_TYPE_INTEGER;
-+	in_arg[2].integer.value = dev_state;
-+	status = acpi_evaluate_object(dev->handle, "_DSW", &arg_list, NULL);
-+	if (ACPI_SUCCESS(status)) {
-+		return 0;
-+	} else if (status != AE_NOT_FOUND) {
-+		printk(KERN_ERR PREFIX "_DSW execution failed\n");
-+		dev->wakeup.flags.valid = 0;
-+		return -ENODEV;
+ #endif /* _LINUX_SUSPEND_H */
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -125,6 +125,18 @@ void machine_kexec(struct kimage *image)
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
++	if (image->preserve_context) {
++#ifdef CONFIG_X86_IO_APIC
++		/* We need to put APICs in legacy mode so that we can
++		 * get timer interrupts in second kernel. kexec/kdump
++		 * paths already have calls to disable_IO_APIC() in
++		 * one form or other. kexec jump path also need
++		 * one.
++		 */
++		disable_IO_APIC();
++#endif
 +	}
 +
-+	/* Execute _PSW */
-+	arg_list.count = 1;
-+	in_arg[0].integer.value = enable;
-+	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
-+		printk(KERN_ERR PREFIX "_PSW execution failed\n");
-+		dev->wakeup.flags.valid = 0;
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Prepare a wakeup device, two steps (Ref ACPI 2.0:P229):
-  * 1. Power on the power resources required for the wakeup device 
-- * 2. Enable _PSW (power state wake) for the device if present
-+ * 2. Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ *    State Wake) for the device, if present
-  */
--int acpi_enable_wakeup_device_power(struct acpi_device *dev)
-+int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state)
- {
--	union acpi_object arg = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg };
--	acpi_status status = AE_OK;
- 	int i;
--	int ret = 0;
+ 	control_page = page_address(image->control_code_page);
+ 	memcpy(control_page, relocate_kernel, PAGE_SIZE/2);
  
- 	if (!dev || !dev->wakeup.flags.valid)
--		return -1;
-+		return -EINVAL;
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1276,9 +1276,10 @@ config CRASH_DUMP
+ config KEXEC_JUMP
+ 	bool "kexec jump (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+-	depends on KEXEC && PM_SLEEP && X86_32
++	depends on KEXEC && HIBERNATION && X86_32
+ 	help
+-	  Invoke code in physical address mode via KEXEC
++	  Jump between original kernel and kexeced kernel and invoke
++	  code in physical address mode via KEXEC
  
--	arg.integer.value = 1;
- 	/* Open power resource */
- 	for (i = 0; i < dev->wakeup.resources.count; i++) {
--		ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
-+		int ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
- 			dev->wakeup.flags.valid = 0;
--			return -1;
-+			return -ENODEV;
- 		}
- 	}
- 
--	/* Execute PSW */
--	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
--	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
--		dev->wakeup.flags.valid = 0;
--		ret = -1;
--	}
--
--	return ret;
-+	/*
-+	 * Passing 3 as the third argument below means the device may be placed
-+	 * in arbitrary power state afterwards.
-+	 */
-+	return acpi_device_sleep_wake(dev, 1, sleep_state, 3);
- }
- 
- /*
-  * Shutdown a wakeup device, counterpart of above method
-- * 1. Disable _PSW (power state wake)
-+ * 1. Execute _DSW (Device Sleep Wake) or (deprecated in ACPI 3.0) _PSW (Power
-+ *    State Wake) for the device, if present
-  * 2. Shutdown down the power resources
-  */
- int acpi_disable_wakeup_device_power(struct acpi_device *dev)
- {
--	union acpi_object arg = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg };
--	acpi_status status = AE_OK;
--	int i;
--	int ret = 0;
--
-+	int i, ret;
- 
- 	if (!dev || !dev->wakeup.flags.valid)
--		return -1;
-+		return -EINVAL;
- 
--	arg.integer.value = 0;
--	/* Execute PSW */
--	status = acpi_evaluate_object(dev->handle, "_PSW", &arg_list, NULL);
--	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
--		printk(KERN_ERR PREFIX "Evaluate _PSW\n");
--		dev->wakeup.flags.valid = 0;
--		return -1;
--	}
-+	ret = acpi_device_sleep_wake(dev, 0, 0, 0);
-+	if (ret)
-+		return ret;
- 
- 	/* Close power resource */
- 	for (i = 0; i < dev->wakeup.resources.count; i++) {
-@@ -362,7 +408,7 @@ int acpi_disable_wakeup_device_power(str
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
- 			dev->wakeup.flags.valid = 0;
--			return -1;
-+			return -ENODEV;
- 		}
- 	}
- 
-Index: linux-pci/drivers/acpi/sleep/wakeup.c
-===================================================================
---- linux-pci.orig/drivers/acpi/sleep/wakeup.c
-+++ linux-pci/drivers/acpi/sleep/wakeup.c
-@@ -42,7 +42,7 @@ void acpi_enable_wakeup_device_prep(u8 s
- 			continue;
- 
- 		spin_unlock(&acpi_device_lock);
--		acpi_enable_wakeup_device_power(dev);
-+		acpi_enable_wakeup_device_power(dev, sleep_state);
- 		spin_lock(&acpi_device_lock);
- 	}
- 	spin_unlock(&acpi_device_lock);
-Index: linux-pci/include/acpi/acpi_drivers.h
-===================================================================
---- linux-pci.orig/include/acpi/acpi_drivers.h
-+++ linux-pci/include/acpi/acpi_drivers.h
-@@ -87,7 +87,9 @@ struct pci_bus *pci_acpi_scan_root(struc
-    -------------------------------------------------------------------------- */
- 
- #ifdef CONFIG_ACPI_POWER
--int acpi_enable_wakeup_device_power(struct acpi_device *dev);
-+int acpi_device_sleep_wake(struct acpi_device *dev,
-+                           int enable, int sleep_state, int dev_state);
-+int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state);
- int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- int acpi_power_get_inferred_state(struct acpi_device *device);
- int acpi_power_transition(struct acpi_device *device, int state);
-Index: linux-pci/drivers/acpi/scan.c
-===================================================================
---- linux-pci.orig/drivers/acpi/scan.c
-+++ linux-pci/drivers/acpi/scan.c
-@@ -691,9 +691,7 @@ static int acpi_bus_get_wakeup_device_fl
- 	acpi_status status = 0;
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *package = NULL;
--	union acpi_object in_arg[3];
--	struct acpi_object_list arg_list = { 3, in_arg };
--	acpi_status psw_status = AE_OK;
-+	int psw_error;
- 
- 	struct acpi_device_id button_device_ids[] = {
- 		{"PNP0C0D", 0},
-@@ -725,39 +723,11 @@ static int acpi_bus_get_wakeup_device_fl
- 	 * So it is necessary to call _DSW object first. Only when it is not
- 	 * present will the _PSW object used.
- 	 */
--	/*
--	 * Three agruments are needed for the _DSW object.
--	 * Argument 0: enable/disable the wake capabilities
--	 * When _DSW object is called to disable the wake capabilities, maybe
--	 * the first argument is filled. The value of the other two agruments
--	 * is meaningless.
--	 */
--	in_arg[0].type = ACPI_TYPE_INTEGER;
--	in_arg[0].integer.value = 0;
--	in_arg[1].type = ACPI_TYPE_INTEGER;
--	in_arg[1].integer.value = 0;
--	in_arg[2].type = ACPI_TYPE_INTEGER;
--	in_arg[2].integer.value = 0;
--	psw_status = acpi_evaluate_object(device->handle, "_DSW",
--						&arg_list, NULL);
--	if (ACPI_FAILURE(psw_status) && (psw_status != AE_NOT_FOUND))
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "error in evaluate _DSW\n"));
--	/*
--	 * When the _DSW object is not present, OSPM will call _PSW object.
--	 */
--	if (psw_status == AE_NOT_FOUND) {
--		/*
--		 * Only one agruments is required for the _PSW object.
--		 * agrument 0: enable/disable the wake capabilities
--		 */
--		arg_list.count = 1;
--		in_arg[0].integer.value = 0;
--		psw_status = acpi_evaluate_object(device->handle, "_PSW",
--						&arg_list, NULL);
--		if (ACPI_FAILURE(psw_status) && (psw_status != AE_NOT_FOUND))
--			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "error in "
--						"evaluate _PSW\n"));
--	}
-+	psw_error = acpi_device_sleep_wake(device, 0, 0, 0);
-+	if (psw_error)
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+				"error in _DSW or _PSW evaluation\n"));
-+
- 	/* Power button, Lid switch always enable wakeup */
- 	if (!acpi_match_device_ids(device, button_device_ids))
- 		device->wakeup.flags.run_wake = 1;
+ config PHYSICAL_START
+ 	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
