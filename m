@@ -1,13 +1,15 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Power management microconf at Plumbers Conference,
-	Sep 17-19
-Date: Wed, 9 Jul 2008 11:00:07 +0100
-Message-ID: <20080709100004.GA16638__44955.2205428064$1215597768$gmane$org@srcf.ucam.org>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC PATCH 0/4] save and restore ACPI NVS memory
+	during hibernation
+Date: Tue, 8 Jul 2008 21:37:53 +0200
+Message-ID: <20080708193752.GD8694__47486.3977208317$1215614549$gmane$org@ucw.cz>
+References: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,34 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-As a complement to the PM miniconf at OLS, there will be a power 
-management microconference as part of the Linux Plumbers Conference in 
-Portland between September the 17th and 19th[1]. Rather than looking at 
-purely kernel or userspace issues, the focus of the conference will be 
-on the interaction between the two. We're interested in discussion of 
-what needs to be exposed by the kernel to facilitate maximum power 
-savings, and also what userspace needs to do to take advantage of that.
+Hi!
 
-The call for papers is now open at http://www.linuxplumbersconf.org/cfp/ 
-- priority will be given to papers that discuss issues that affect both 
-the kernel and userland, but please don't let that put you off if 
-there's an especially compelling topic you'd like to bring up. We're 
-also especially interested in topics covering the embedded world, since 
-desktop PM issues are converging in that direction very rapidly.
+> According to the ACPI spec, ACPI NVS memory region is required to
+> be saved/restored by OS during hibernation.
+> 
+> Section 15.3.2 ACPI Spec 3.0b,
+> "OSPM will call the _PTS control method some time before entering
+> a sleeping state, to allow the platform???s AML code to update
+> this memory image before entering the sleeping state.
+> After the system awakes from an S4 state, OSPM will restore this
+> memory area and call the _WAK control method to enable the BIOS
+> to reclaim its memory image."
+> 
+> This patch set add the mechanism to save/restore ACPI NVS memory
+> during hibernation.
+> 
+> Patch 01: call platform_begin before swsusp_shrink_memory.
+> 	So that we can allocate enough pages for ACPI NVS memory
+> 	before shrink the memory.
 
-The CFP closes on the 20th of July (sorry for the slightly late notice), 
-but if you'd otherwise miss the deadline then get something rough in now 
-and we'll accept a revised abstract later. Even if you don't want to 
-submit a paper, please do register for the conference. It ought to be an 
-ideal opportunity to hammer out issues that can't be solved by the 
-kernel or userland alone.
-
-Hope to see people there!
-
-[1] The schedule isn't entirely nailed down yet, so I'm not sure which 
-day
+Why is it neccessary to allocate memory for a copy? We should be able
+to save ACPI NVS area same way we are saving kernel pages, no?
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
