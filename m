@@ -1,45 +1,26 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 04/11] ACPI: Introduce acpi_device_sleep_wake
-	function
-Date: Mon, 7 Jul 2008 09:18:22 +0200
-Message-ID: <20080707071822.GE5643__23126.0813460269$1215524459$gmane$org@ucw.cz>
-References: <200806231934.08565.rjw@sisk.pl> <200806231945.39951.rjw@sisk.pl>
+Subject: Re: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
+Date: Tue, 8 Jul 2008 16:21:46 +0200
+Message-ID: <20080708142145.GA8694@ucw.cz>
+References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754784AbYGHOWE@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200806231945.39951.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-06-23 19:45:39, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACPI: Introduce acpi_device_sleep_wake function
-> 
-> The currect ACPI code attempts to execute _PSW at three different
-> places and in one of them only it tries to execute _DSW before _PSW,
-> which is inconsistent with the other two cases.
-> 
-> Move the execution of _DSW and _PSW into a separate function called
-> acpi_device_sleep_wake() and call it wherever appropriate instead of
-> executing _DSW and/or _PSW directly.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed 2008-06-25 14:44:01, Len Brown wrote:
+> This is an open invitation to participate in
+> a Linux Power Management mini-summit
+> 9AM Tuesday July 22, 2008 in Ottawa.
 
-ACK.
+I will not be able to make it :-(.
 
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
