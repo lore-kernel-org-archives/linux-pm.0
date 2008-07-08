@@ -1,13 +1,14 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
-Date: Tue, 8 Jul 2008 12:31:50 +0900
-Message-ID: <20080708123150.3034d83f.kamezawa.hiroyu__8159.02890540219$1215530077$gmane$org@jp.fujitsu.com>
-References: <20080707225823.502032693@us.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: next-0708: build failure at drivers/pci/pci-acpi.c
+Date: Tue, 8 Jul 2008 17:12:22 +0200
+Message-ID: <200807081712.23937.rjw__14087.2983065949$1215530092$gmane$org@sisk.pl>
+References: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080707225823.502032693@us.ibm.com>
+In-Reply-To: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Paul Menage <menage@google.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: ak@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, could I make brief questions ?
+On Tuesday, 8 of July 2008, Alexander Beregalov wrote:
+> Hi Rafael
+> 
+> drivers/pci/pci-acpi.c: In function 'acpi_pci_sleep_wake':
+> drivers/pci/pci-acpi.c:311: error: implicit declaration of function
+> 'acpi_pm_device_sleep_wake'
 
-On Mon, 07 Jul 2008 15:58:23 -0700
-Matt Helsley <matthltc@us.ibm.com> wrote:
-> to get status of the freezer subsystem :
-> 
->    # cat /containers/0/freezer.state
->    RUNNING
-> 
-> to freeze all tasks in the container :
-> 
->    # echo FROZEN > /containers/0/freezer.state
->    # cat /containers/0/freezer.state
->    FREEZING
->    # cat /containers/0/freezer.state
->    FROZEN
-> 
-I'm just curious.
+I guess this is a compilation with CONFIG_ACPI=y and CONFIG_PM_SLEEP unset.
 
-1. When we see FREEZING and have to retry ?
-   While there are some threads which wait for some event ?
-
-2. What happens when FROZEN threads are moved to other group ?
-   Can we move them ?
-   Can we wake them up (if it can be moved) ?
-   What operations are allowed to frozen threads ?
+In that case the appended patch should help.  Please test and report back (I
+can't test linux-next compilation at the moment).
 
 Thanks,
--Kame
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+PCI ACPI: Fix compilation of pci-acpi.c
+
+Fix compilation of pci-acpi.c with CONFIG_ACPI set and
+CONFIG_PM_SLEEP unset.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/acpi/acpi_bus.h |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: linux-next/include/acpi/acpi_bus.h
+===================================================================
+--- linux-next.orig/include/acpi/acpi_bus.h
++++ linux-next/include/acpi/acpi_bus.h
+@@ -388,6 +388,10 @@ static inline int acpi_pm_device_sleep_s
+ 		*p = ACPI_STATE_D0;
+ 	return ACPI_STATE_D3;
+ }
++static inline int acpi_pm_device_sleep_wake(struct device *d, bool b)
++{
++	return -ENOSYS;
++}
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ #endif				/* CONFIG_ACPI */
