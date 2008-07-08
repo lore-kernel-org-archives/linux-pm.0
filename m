@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC PATCH 0/4] save and restore ACPI NVS memory
-	during hibernation
-Date: Tue, 8 Jul 2008 21:37:53 +0200
-Message-ID: <20080708193752.GD8694__47486.3977208317$1215614549$gmane$org@ucw.cz>
-References: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com>
+Subject: Re: [RFC PATCH 2/4] ACPI: introduce the mechanism to
+	save/restore ACPI NVS memory
+Date: Tue, 8 Jul 2008 21:35:59 +0200
+Message-ID: <20080708193558.GC8694__20566.8679242537$1215614717$gmane$org@ucw.cz>
+References: <1215051874.5628.34.camel@rzhang-dt.sh.intel.com>
+	<200807040134.15094.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com>
+In-Reply-To: <200807040134.15094.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@zh-kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> According to the ACPI spec, ACPI NVS memory region is required to
-> be saved/restored by OS during hibernation.
+> >  static int acpi_hibernation_begin(void)
+> >  {
+> >  	acpi_target_sleep_state = ACPI_STATE_S4;
+> >  
+> > -	return 0;
+> > +	/* allocate pages for ACPI NVS memory before swsusp_shrink_memory */
+> > +	return acpi_allocate_nvs_pages();
 > 
-> Section 15.3.2 ACPI Spec 3.0b,
-> "OSPM will call the _PTS control method some time before entering
-> a sleeping state, to allow the platform???s AML code to update
-> this memory image before entering the sleeping state.
-> After the system awakes from an S4 state, OSPM will restore this
-> memory area and call the _WAK control method to enable the BIOS
-> to reclaim its memory image."
+> I think we shouldn't abort hibernation because of that.
 > 
-> This patch set add the mechanism to save/restore ACPI NVS memory
-> during hibernation.
-> 
-> Patch 01: call platform_begin before swsusp_shrink_memory.
-> 	So that we can allocate enough pages for ACPI NVS memory
-> 	before shrink the memory.
+> This may be an emergency hibernation due to critical battery status and we
+> surely don't want to about that.
 
-Why is it neccessary to allocate memory for a copy? We should be able
-to save ACPI NVS area same way we are saving kernel pages, no?
+I disagree here. If spec says 'you must save this', and we don't, we
+are asking for subtle, dangerous, and very hard to repoduce problems.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
