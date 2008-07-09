@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH 2/4] ACPI: introduce the mechanism to
-	save/restore ACPI NVS memory
-Date: Wed, 9 Jul 2008 22:26:11 +0200
-Message-ID: <200807092226.12195.rjw__24383.0089843415$1215635301$gmane$org@sisk.pl>
-References: <1215051874.5628.34.camel@rzhang-dt.sh.intel.com>
-	<20080708193558.GC8694@ucw.cz>
-	<20080709145850.GA18230@khazad-dum.debian.net>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+Date: Wed, 09 Jul 2008 14:58:43 -0700
+Message-ID: <1215640723.7149.35.camel__22954.7304487371$1215640883$gmane$org@localhost.localdomain>
+References: <20080707225823.502032693@us.ibm.com>
+	<20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
+	<1215545954.9023.120.camel@localhost.localdomain>
+	<6599ad830807081306l61622eadk215a25d02ee94b00@mail.gmail.com>
+	<6599ad830807081307j811689aldf0f6cb38579c450@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080709145850.GA18230@khazad-dum.debian.net>
-Content-Disposition: inline
+In-Reply-To: <6599ad830807081307j811689aldf0f6cb38579c450@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, linux-kernel <linux-kernel@zh-kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 9 of July 2008, Henrique de Moraes Holschuh wrote:
-> On Tue, 08 Jul 2008, Pavel Machek wrote:
-> > > >  static int acpi_hibernation_begin(void)
-> > > >  {
-> > > >  	acpi_target_sleep_state = ACPI_STATE_S4;
-> > > >  
-> > > > -	return 0;
-> > > > +	/* allocate pages for ACPI NVS memory before swsusp_shrink_memory */
-> > > > +	return acpi_allocate_nvs_pages();
-> > > 
-> > > I think we shouldn't abort hibernation because of that.
-> > > 
-> > > This may be an emergency hibernation due to critical battery status and we
-> > > surely don't want to about that.
-> > 
-> > I disagree here. If spec says 'you must save this', and we don't, we
-> > are asking for subtle, dangerous, and very hard to repoduce problems.
+
+On Tue, 2008-07-08 at 13:07 -0700, Paul Menage wrote:
+> On Tue, Jul 8, 2008 at 1:06 PM, Paul Menage <menage@google.com> wrote:
+> > On Tue, Jul 8, 2008 at 12:39 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> >>
+> >> One is to try and disallow users from moving frozen tasks. That doesn't
+> >> seem like a good approach since it would require a new cgroups interface
+> >> "can_detach()".
+> >
+> > Detaching from the old cgroup happens at the same time as attaching to
+> > the new cgroup, so can_attach() would work here.
+
+Update: I've made a patch implementing this. However it might be better
+to just modify attach() to thaw the moving task rather than disallow
+moving the frozen task. Serge, Cedric, Kame-san, do you have any
+thoughts on which is more useful and/or intuitive?
+
+> And the whole can_attach()/attach() protocol needs reworking anyway,
+> see my email (hopefully) later today.
 > 
-> Indeed.  Especially after we start doing the right thing, and vendors WILL
-> expect us to do the right thing (save the NVS memory) *always*, not just
-> "almost always".
-> 
-> If you don't want the hibernate path to fail because of OOM, have whatever
-> memory it needs pre-allocated, set aside and protected at startup so that it
-> will always be there when you need to hibernate.
+> Paul
 
-Okay, so be it.
+Interesting. I look forward to seeing this.
 
-However, speaking of vendors, I'd like us to be able to switch that off using
-an 'acpi_sleep=' option (s4_no_nvs comes to mind) and/or blacklist broken
-BIOSes.
-
-Thanks,
-Rafael
+Cheers,
+	-Matt
