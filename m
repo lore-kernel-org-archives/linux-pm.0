@@ -1,16 +1,13 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Wed, 09 Jul 2008 09:12:42 +0800
-Message-ID: <1215565962.16450.8.camel__41402.8888837949$1215565952$gmane$org@caritas-dev.intel.com>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com>
-	<20080707125010.GA21254@elf.ucw.cz>
-	<1215508209.29894.8.camel@caritas-dev.intel.com>
-	<20080708104044.GA15327@elf.ucw.cz>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Power management microconf at Plumbers Conference,
+	Sep 17-19
+Date: Wed, 9 Jul 2008 11:00:07 +0100
+Message-ID: <20080709100004.GA16638__44955.2205428064$1215597768$gmane$org@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080708104044.GA15327@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Pavel,
+As a complement to the PM miniconf at OLS, there will be a power 
+management microconference as part of the Linux Plumbers Conference in 
+Portland between September the 17th and 19th[1]. Rather than looking at 
+purely kernel or userspace issues, the focus of the conference will be 
+on the interaction between the two. We're interested in discussion of 
+what needs to be exposed by the kernel to facilitate maximum power 
+savings, and also what userspace needs to do to take advantage of that.
 
-On Tue, 2008-07-08 at 12:40 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > @@ -1411,3 +1421,50 @@ static int __init crash_save_vmcoreinfo_
-> > > >  }
-> > > > 
-> > > >  module_init(crash_save_vmcoreinfo_init)
-> > > > +
-> > > > +/**
-> > > > + *   kernel_kexec - reboot the system
-> > 
-> > > Really?
-> > 
-> > I will change the comments to reflect the changes to kernel_kexec.
-> > 
-> > > > + *   Move into place and start executing a preloaded standalone
-> > > > + *   executable.  If nothing was preloaded return an error.
-> > > > + */
-> > > > +int kernel_kexec(void)
-> > > > +{
-> > > > +     int error = 0;
-> > > > +
-> > > > +     if (xchg(&kexec_lock, 1))
-> > > > +             return -EBUSY;
-> > > 
-> > > That's quite a strange way to provide a lock. mutex_trylock?
-> > 
-> > I think this is because kexec_lock is used by crash_kexec() too, which
-> > may be called in some extreme environment, such as during panic().
-> > 
-> > > > +     if (!kexec_image) {
-> > > > +             error = -EINVAL;
-> > > > +             goto Unlock;
-> > > > +     }
-> > > > +
-> > > > +     if (kexec_image->preserve_context) {
-> > > > +#ifdef CONFIG_KEXEC_JUMP
-> > > > +             local_irq_disable();
-> > > > +             save_processor_state();
-> > > 
-> > > #else
-> > >         BUG()
-> > > 
-> > > ...because otherwise you silently do nothing?
-> > > 
-> > > > +#endif
-> > 
-> > If CONFIG_KEXEC_JUMP is defined, kexec_image->preserve_context will
-> > always be 0. So current code is safe. Here, #ifdef is used to resolve
-> > the dependency issue. For example, save_processor_state() may be
-> > undefined if CONFIG_KEXEC_JUMP is not defined.
-> 
-> Move the #ifdef outside the if (), then, so this is clear?
+The call for papers is now open at http://www.linuxplumbersconf.org/cfp/ 
+- priority will be given to papers that discuss issues that affect both 
+the kernel and userland, but please don't let that put you off if 
+there's an especially compelling topic you'd like to bring up. We're 
+also especially interested in topics covering the embedded world, since 
+desktop PM issues are converging in that direction very rapidly.
 
-I think this is reasonable, I will do it.
+The CFP closes on the 20th of July (sorry for the slightly late notice), 
+but if you'd otherwise miss the deadline then get something rough in now 
+and we'll accept a revised abstract later. Even if you don't want to 
+submit a paper, please do register for the conference. It ought to be an 
+ideal opportunity to hammer out issues that can't be solved by the 
+kernel or userland alone.
 
-> Actually, if preserve_context is always zero in !KEXEC_JUMP case, it
-> might make sense to remove whole variable...
+Hope to see people there!
 
-I think this will add too many #ifndef CONFIG_KEXEC_JUMP ... #endif that
-is necessary. The memory and performance gain is too little to
-compensate the code readability reduction.
-
-Best Regards,
-Huang Ying
+[1] The schedule isn't entirely nailed down yet, so I'm not sure which 
+day
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
