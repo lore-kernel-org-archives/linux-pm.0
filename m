@@ -1,15 +1,14 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: next-0708: build failure at drivers/pci/pci-acpi.c
-Date: Wed, 9 Jul 2008 16:21:37 -0700
-Message-ID: <200807091621.37697.jbarnes__36528.4215113663$1215645862$gmane$org@virtuousgeek.org>
-References: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
-	<200807081040.38777.jbarnes@virtuousgeek.org>
-	<200807082229.33016.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH -mm 1/8] PM: Add new PM_EVENT codes for runtime
+	power transitions
+Date: Thu, 10 Jul 2008 01:55:33 +0200
+Message-ID: <200807100155.34153.rjw__19215.5734556311$1215648601$gmane$org@sisk.pl>
+References: <200807100152.17755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807082229.33016.rjw@sisk.pl>
+In-Reply-To: <200807100152.17755.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,21 +19,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ak@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Alexander Beregalov <a.beregalov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 8, 2008 1:29:31 pm Rafael J. Wysocki wrote:
-> On Tuesday, 8 of July 2008, Jesse Barnes wrote:
-> > David sent me one just like this at 7am this morning, just applied and
-> > pushed (along with Alexander's tested-by).
->
-> OK, thanks.
->
-> Would you like me to send the Stephen's fix for compilation on ppc64
-> (CONFIG_PM unset)?
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: PM: Add new PM_EVENT codes for runtime power transitions
 
-Sure, unless it's already in the ppc tree...
+This patch (as1112) adds some new PM_EVENT_* codes for use by kernel
+subsystems.  They describe runtime power-state transitions of the sort
+already implemented by the USB subsystem.
 
-Thanks,
-Jesse
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+
+ include/linux/pm.h |   39 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 36 insertions(+), 3 deletions(-)
+
+Index: linux-next/include/linux/pm.h
+===================================================================
+--- linux-next.orig/include/linux/pm.h
++++ linux-next/include/linux/pm.h
+@@ -245,6 +245,21 @@ struct pm_ext_ops {
+  * RECOVER	Creation of a hibernation image or restoration of the main
+  *		memory contents from a hibernation image has failed, call
+  *		->thaw() and ->complete() for all devices.
++ *
++ * The following PM_EVENT_ messages are defined for internal use by
++ * kernel subsystems.  They are never issued by the PM core.
++ *
++ * USER_SUSPEND		Manual selective suspend was issued by userspace.
++ *
++ * USER_RESUME		Manual selective resume was issued by userspace.
++ *
++ * REMOTE_WAKEUP	Remote-wakeup request was received from the device.
++ *
++ * AUTO_SUSPEND		Automatic (device idle) runtime suspend was
++ *			initiated by the subsystem.
++ *
++ * AUTO_RESUME		Automatic (device needed) runtime resume was
++ *			requested by a driver.
+  */
+ 
+ #define PM_EVENT_ON		0x0000
+@@ -256,9 +271,18 @@ struct pm_ext_ops {
+ #define PM_EVENT_THAW		0x0020
+ #define PM_EVENT_RESTORE	0x0040
+ #define PM_EVENT_RECOVER	0x0080
++#define PM_EVENT_USER		0x0100
++#define PM_EVENT_REMOTE		0x0200
++#define PM_EVENT_AUTO		0x0400
++
++#define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
++#define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
++#define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
++#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
++#define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
++#define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
+ 
+-#define PM_EVENT_SLEEP	(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
+-
++#define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
+ #define PMSG_FREEZE	((struct pm_message){ .event = PM_EVENT_FREEZE, })
+ #define PMSG_QUIESCE	((struct pm_message){ .event = PM_EVENT_QUIESCE, })
+ #define PMSG_SUSPEND	((struct pm_message){ .event = PM_EVENT_SUSPEND, })
+@@ -267,7 +291,16 @@ struct pm_ext_ops {
+ #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
+ #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
+ #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
+-#define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
++#define PMSG_USER_SUSPEND	((struct pm_messge) \
++					{ .event = PM_EVENT_USER_SUSPEND, })
++#define PMSG_USER_RESUME	((struct pm_messge) \
++					{ .event = PM_EVENT_USER_RESUME, })
++#define PMSG_REMOTE_RESUME	((struct pm_messge) \
++					{ .event = PM_EVENT_REMOTE_RESUME, })
++#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
++					{ .event = PM_EVENT_AUTO_SUSPEND, })
++#define PMSG_AUTO_RESUME		((struct pm_messge) \
++					{ .event = PM_EVENT_AUTO_RESUME, })
+ 
+ /**
+  * Device power management states
