@@ -1,18 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC PATCH 2/4] ACPI: introduce the mechanism
-	to	save/restore ACPI NVS memory
-Date: Thu, 10 Jul 2008 00:44:58 +0200
-Message-ID: <20080709224457.GA5629__38686.8165493526$1215643564$gmane$org@elf.ucw.cz>
-References: <1215051874.5628.34.camel@rzhang-dt.sh.intel.com>
-	<20080708193558.GC8694@ucw.cz>
-	<20080709145850.GA18230@khazad-dum.debian.net>
-	<200807092226.12195.rjw@sisk.pl>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: next-0708: build failure at drivers/pci/pci-acpi.c
+Date: Wed, 9 Jul 2008 16:21:37 -0700
+Message-ID: <200807091621.37697.jbarnes__36528.4215113663$1215645862$gmane$org@virtuousgeek.org>
+References: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
+	<200807081040.38777.jbarnes@virtuousgeek.org>
+	<200807082229.33016.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200807082229.33016.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <200807092226.12195.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,16 +21,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel <linux-kernel@zh-kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: ak@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Alexander Beregalov <a.beregalov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, July 8, 2008 1:29:31 pm Rafael J. Wysocki wrote:
+> On Tuesday, 8 of July 2008, Jesse Barnes wrote:
+> > David sent me one just like this at 7am this morning, just applied and
+> > pushed (along with Alexander's tested-by).
+>
+> OK, thanks.
+>
+> Would you like me to send the Stephen's fix for compilation on ppc64
+> (CONFIG_PM unset)?
 
-> However, speaking of vendors, I'd like us to be able to switch that off using
-> an 'acpi_sleep=' option (s4_no_nvs comes to mind) and/or blacklist broken
-> BIOSes.
+Sure, unless it's already in the ppc tree...
 
-Works for me. (Plus, shutdown mode will not do any ACPI NVS saving, right?)
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Jesse
