@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 5/8] Introduce new interface schedule_work_on
-Date: Thu, 10 Jul 2008 02:03:26 +0200
-Message-ID: <200807100203.27170.rjw__11374.4617360227$1215650235$gmane$org@sisk.pl>
+Subject: [PATCH -mm 7/8] ACPI hibernation: Utilize hardware
+	signature
+Date: Thu, 10 Jul 2008 02:05:51 +0200
+Message-ID: <200807100205.52308.rjw__25166.1778231666$1215650235$gmane$org@sisk.pl>
 References: <200807100152.17755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,104 +20,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rus <harbour@sfinx.od.ua>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Introduce new interface schedule_work_on
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: ACPI hibernation: Utilize hardware signature
 
-This interface allows adding a job on a specific cpu.
+ACPI defines a hardware signature.  BIOS calculates the signature
+according to hardware configure and if hardware changes while
+hibernated, the signature will change.  In that case, S4 resume
+should fail.
 
-Although a work struct on a cpu will be scheduled to other cpu if the cpu dies,
-there is a recursion if a work task tries to offline the cpu it's running on.
-we need to schedule the task to a specific cpu in this case.
-http://bugzilla.kernel.org/show_bug.cgi?id=10897
+Still, there may be systems on which this mechanism does not work
+correctly, so it is better to provide a workaround for them.  For
+this reason, add a new switch to the acpi_sleep= command line
+argument allowing one to disable hardware signature checking.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Tested-by: Rus <harbour@sfinx.od.ua>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/workqueue.h |    3 +++
- kernel/workqueue.c        |   39 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
+ Documentation/kernel-parameters.txt |    4 +++-
+ arch/x86/kernel/acpi/sleep.c        |    2 ++
+ drivers/acpi/sleep/main.c           |   22 ++++++++++++++++++++++
+ include/linux/acpi.h                |    1 +
+ 4 files changed, 28 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/workqueue.h
+Index: linux-next/drivers/acpi/sleep/main.c
 ===================================================================
---- linux-2.6.orig/include/linux/workqueue.h	2007-05-04 10:57:08.000000000 +0800
-+++ linux-2.6/include/linux/workqueue.h	2008-07-04 10:03:21.000000000 +0800
-@@ -179,6 +179,8 @@
- extern void destroy_workqueue(struct workqueue_struct *wq);
+--- linux-next.orig/drivers/acpi/sleep/main.c
++++ linux-next/drivers/acpi/sleep/main.c
+@@ -283,6 +283,15 @@ static struct platform_suspend_ops acpi_
+ #endif /* CONFIG_SUSPEND */
  
- extern int queue_work(struct workqueue_struct *wq, struct work_struct *work);
-+extern int queue_work_on(int cpu, struct workqueue_struct *wq,
-+			struct work_struct *work);
- extern int queue_delayed_work(struct workqueue_struct *wq,
- 			struct delayed_work *work, unsigned long delay);
- extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-@@ -188,6 +190,7 @@
- extern void flush_scheduled_work(void);
- 
- extern int schedule_work(struct work_struct *work);
-+extern int schedule_work_on(int cpu, struct work_struct *work);
- extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay);
- extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
- 					unsigned long delay);
-Index: linux-2.6/kernel/workqueue.c
-===================================================================
---- linux-2.6.orig/kernel/workqueue.c	2007-05-04 10:57:08.000000000 +0800
-+++ linux-2.6/kernel/workqueue.c	2008-07-04 10:05:01.000000000 +0800
-@@ -175,6 +175,32 @@
- }
- EXPORT_SYMBOL_GPL(queue_work);
- 
-+/**
-+ * queue_work_on - queue work on specific cpu
-+ * @cpu: CPU number to execute work on
-+ * @wq: workqueue to use
-+ * @work: work to queue
-+ *
-+ * Returns 0 if @work was already on a queue, non-zero otherwise.
-+ *
-+ * We queue the work to a specific CPU
-+ */
-+int
-+queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
+ #ifdef CONFIG_HIBERNATION
++static unsigned long s4_hardware_signature;
++static struct acpi_table_facs *facs;
++static bool nosigcheck;
++
++void __init acpi_no_s4_hw_signature(void)
 +{
-+	int ret = 0;
-+
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-+		BUG_ON(!list_empty(&work->entry));
-+		preempt_disable();
-+		__queue_work(wq_per_cpu(wq, cpu), work);
-+		preempt_enable();
-+		ret = 1;
-+	}
-+	return ret;
++	nosigcheck = true;
 +}
-+EXPORT_SYMBOL_GPL(queue_work_on);
 +
- static void delayed_work_timer_fn(unsigned long __data)
+ static int acpi_hibernation_begin(void)
  {
- 	struct delayed_work *dwork = (struct delayed_work *)__data;
-@@ -553,6 +579,19 @@
+ 	acpi_target_sleep_state = ACPI_STATE_S4;
+@@ -316,6 +325,12 @@ static void acpi_hibernation_leave(void)
+ 	acpi_enable();
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
++	/* Check the hardware signature */
++	if (facs && s4_hardware_signature != facs->hardware_signature) {
++		printk(KERN_EMERG "ACPI: Hardware changed while hibernated, "
++			"cannot resume!\n");
++		panic("ACPI S4 hardware signature mismatch");
++	}
  }
- EXPORT_SYMBOL(schedule_work);
  
-+/*
-+ * schedule_work_on - put work task on a specific cpu
-+ * @cpu: cpu to put the work task on
-+ * @work: job to be done
-+ *
-+ * This puts a job on a specific cpu
-+ */
-+int schedule_work_on(int cpu, struct work_struct *work)
-+{
-+	return queue_work_on(cpu, keventd_wq, work);
-+}
-+EXPORT_SYMBOL(schedule_work_on);
-+
- /**
-  * schedule_delayed_work - put work task in global workqueue after delay
-  * @dwork: job to be done
-
-
+ static void acpi_pm_enable_gpes(void)
+@@ -544,6 +559,13 @@ int __init acpi_sleep_init(void)
+ 			&acpi_hibernation_ops_old : &acpi_hibernation_ops);
+ 		sleep_states[ACPI_STATE_S4] = 1;
+ 		printk(" S4");
++		if (!nosigcheck) {
++			acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
++				(struct acpi_table_header **)&facs);
++			if (facs)
++				s4_hardware_signature =
++					facs->hardware_signature;
++		}
+ 	}
+ #endif
+ 	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+Index: linux-next/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-next.orig/Documentation/kernel-parameters.txt
++++ linux-next/Documentation/kernel-parameters.txt
+@@ -147,10 +147,12 @@ and is between 256 and 4096 characters. 
+ 			default: 0
+ 
+ 	acpi_sleep=	[HW,ACPI] Sleep options
+-			Format: { s3_bios, s3_mode, s3_beep, old_ordering }
++			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig, old_ordering }
+ 			See Documentation/power/video.txt for s3_bios and s3_mode.
+ 			s3_beep is for debugging; it makes the PC's speaker beep
+ 			as soon as the kernel's real-mode entry point is called.
++			s4_nohwsig prevents ACPI hardware signature from being
++			used during resume from hibernation.
+ 			old_ordering causes the ACPI 1.0 ordering of the _PTS
+ 			control method, wrt putting devices into low power
+ 			states, to be enforced (the ACPI 2.0 ordering of _PTS is
+Index: linux-next/arch/x86/kernel/acpi/sleep.c
+===================================================================
+--- linux-next.orig/arch/x86/kernel/acpi/sleep.c
++++ linux-next/arch/x86/kernel/acpi/sleep.c
+@@ -142,6 +142,8 @@ static int __init acpi_sleep_setup(char 
+ 			acpi_realmode_flags |= 2;
+ 		if (strncmp(str, "s3_beep", 7) == 0)
+ 			acpi_realmode_flags |= 4;
++		if (strncmp(str, "s4_nohwsig", 10) == 0)
++			acpi_no_s4_hw_signature();
+ 		if (strncmp(str, "old_ordering", 12) == 0)
+ 			acpi_old_suspend_ordering();
+ 		str = strchr(str, ',');
+Index: linux-next/include/linux/acpi.h
+===================================================================
+--- linux-next.orig/include/linux/acpi.h
++++ linux-next/include/linux/acpi.h
+@@ -236,6 +236,7 @@ int acpi_check_mem_region(resource_size_
+ 		      const char *name);
+ 
+ #ifdef CONFIG_PM_SLEEP
++void __init acpi_no_s4_hw_signature(void);
+ void __init acpi_old_suspend_ordering(void);
+ #endif /* CONFIG_PM_SLEEP */
+ #else	/* CONFIG_ACPI */
