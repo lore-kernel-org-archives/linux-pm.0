@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 8/8] ACPI PM: Add DMI quirk list for ACPI 1.0
-	suspend ordering
-Date: Thu, 10 Jul 2008 02:07:02 +0200
-Message-ID: <200807100207.03636.rjw__29179.0046067492$1215650262$gmane$org@sisk.pl>
-References: <200807100152.17755.rjw@sisk.pl>
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 0/4] Container Freezer: Reuse Suspend Freezer
+Date: Thu, 10 Jul 2008 09:42:31 +0900
+Message-ID: <20080710094231.58d9e1b9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080707225823.502032693@us.ibm.com>
+	<20080708123150.3034d83f.kamezawa.hiroyu@jp.fujitsu.com>
+	<1215545954.9023.120.camel@localhost.localdomain>
+	<6599ad830807081306l61622eadk215a25d02ee94b00@mail.gmail.com>
+	<6599ad830807081307j811689aldf0f6cb38579c450@mail.gmail.com>
+	<1215640723.7149.35.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807100152.17755.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <1215640723.7149.35.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,64 +22,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Subject: ACPI PM: Add DMI quirk list for ACPI 1.0 suspend ordering
+On Wed, 09 Jul 2008 14:58:43 -0700
+Matt Helsley <matthltc@us.ibm.com> wrote:
 
-There are a few BIOS' that we know of already that need to use the
-ACPI 1.0 suspend order. This appears to be only be a small minority of
-mostly nVidia based systems.
+> 
+> On Tue, 2008-07-08 at 13:07 -0700, Paul Menage wrote:
+> > On Tue, Jul 8, 2008 at 1:06 PM, Paul Menage <menage@google.com> wrote:
+> > > On Tue, Jul 8, 2008 at 12:39 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> > >>
+> > >> One is to try and disallow users from moving frozen tasks. That doesn't
+> > >> seem like a good approach since it would require a new cgroups interface
+> > >> "can_detach()".
+> > >
+> > > Detaching from the old cgroup happens at the same time as attaching to
+> > > the new cgroup, so can_attach() would work here.
+> 
+> Update: I've made a patch implementing this. However it might be better
+> to just modify attach() to thaw the moving task rather than disallow
+> moving the frozen task. Serge, Cedric, Kame-san, do you have any
+> thoughts on which is more useful and/or intuitive?
+> 
 
-Based on observation of Windows behaviour, it's clear that Windows is
-also doing maintaining its own list of broken hardware that needs this
-workaround.
+Thank you for explanation in previous mail.
 
-Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+Hmm, just thawing seems atractive but it will confuse people (I think).
 
- drivers/acpi/sleep/main.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+I think some kind of process-group is freezed by this freezer and "moving
+freezed task" is wrong(unexpected) operation in general.  And there will
+be no demand to do that from users.
+I think just taking "moving freezed task" as error-operation and returning
+-EBUSY is better.
 
+Thanks,
+-Kame
 
-Index: linux-next/drivers/acpi/sleep/main.c
-===================================================================
---- linux-next.orig/drivers/acpi/sleep/main.c
-+++ linux-next/drivers/acpi/sleep/main.c
-@@ -280,6 +280,24 @@ static struct platform_suspend_ops acpi_
- 	.end = acpi_pm_end,
- 	.recover = acpi_pm_finish,
- };
-+
-+static int __init init_old_suspend_ordering(const struct dmi_system_id *d)
-+{
-+	old_suspend_ordering = true;
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
-+	{
-+	.callback = init_old_suspend_ordering,
-+	.ident = "Abit KN9 (nForce4 variant)",
-+	.matches = {
-+		DMI_MATCH(DMI_BOARD_VENDOR, "http://www.abit.com.tw/"),
-+		DMI_MATCH(DMI_BOARD_NAME, "KN9 Series(NF-CK804)"),
-+		},
-+	},
-+	{},
-+};
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
-@@ -531,6 +549,8 @@ int __init acpi_sleep_init(void)
- 	u8 type_a, type_b;
- #ifdef CONFIG_SUSPEND
- 	int i = 0;
-+
-+	dmi_check_system(acpisleep_dmi_table);
- #endif
- 
- 	if (acpi_disabled)
+> > And the whole can_attach()/attach() protocol needs reworking anyway,
+> > see my email (hopefully) later today.
+> > 
+> > Paul
+> 
+> Interesting. I look forward to seeing this.
+> 
+> Cheers,
+> 	-Matt
+> 
+> 
