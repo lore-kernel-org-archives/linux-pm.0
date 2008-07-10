@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: next-0708: build failure at drivers/pci/pci-acpi.c
-Date: Thu, 10 Jul 2008 02:16:44 +0200
-Message-ID: <200807100216.45690.rjw__25527.2426330068$1215649205$gmane$org@sisk.pl>
-References: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
-	<200807082229.33016.rjw@sisk.pl>
-	<200807091621.37697.jbarnes@virtuousgeek.org>
+Subject: [PATCH -mm 3/8] Hibernation: Simplify memory bitmap
+Date: Thu, 10 Jul 2008 02:00:54 +0200
+Message-ID: <200807100200.55473.rjw__24410.4431164034$1215650211$gmane$org@sisk.pl>
+References: <200807100152.17755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807091621.37697.jbarnes@virtuousgeek.org>
+In-Reply-To: <200807100152.17755.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,62 +18,217 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ak@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Alexander Beregalov <a.beregalov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 10 of July 2008, Jesse Barnes wrote:
-> On Tuesday, July 8, 2008 1:29:31 pm Rafael J. Wysocki wrote:
-> > On Tuesday, 8 of July 2008, Jesse Barnes wrote:
-> > > David sent me one just like this at 7am this morning, just applied and
-> > > pushed (along with Alexander's tested-by).
-> >
-> > OK, thanks.
-> >
-> > Would you like me to send the Stephen's fix for compilation on ppc64
-> > (CONFIG_PM unset)?
-> 
-> Sure, unless it's already in the ppc tree...
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Hibernation: Simplify memory bitmap
 
-It looks like Stephen had to apply it today too, so I guess it isn't.
+This patch simplifies the memory bitmap manipulations.
 
-Thanks,
-Rafael
+- remove the member size in struct bm_block
 
----
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] pci: include linux/pm_wakeup.h for device_set_wakeup_capable
+It is not necessary for struct bm_block to have the number of bit chunks
+that can be calculated by using end_pfn and start_pfn.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+- use find_next_bit() for memory_bm_next_pfn
+
+No need to invent the bitmap library only for the memory bitmap.
+
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c         |    1 +
- include/linux/pm_wakeup.h |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ kernel/power/snapshot.c |   88 +++++++++++-------------------------------------
+ 1 file changed, 21 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index e632a58..3d92b71 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -17,6 +17,7 @@
- #include <linux/string.h>
- #include <linux/log2.h>
- #include <linux/pci-aspm.h>
-+#include <linux/pm_wakeup.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
+Index: linux-next/kernel/power/snapshot.c
+===================================================================
+--- linux-next.orig/kernel/power/snapshot.c
++++ linux-next/kernel/power/snapshot.c
+@@ -205,8 +205,7 @@ static void chain_free(struct chain_allo
+  *	objects.  The main list's elements are of type struct zone_bitmap
+  *	and each of them corresonds to one zone.  For each zone bitmap
+  *	object there is a list of objects of type struct bm_block that
+- *	represent each blocks of bit chunks in which information is
+- *	stored.
++ *	represent each blocks of bitmap in which information is stored.
+  *
+  *	struct memory_bitmap contains a pointer to the main list of zone
+  *	bitmap objects, a struct bm_position used for browsing the bitmap,
+@@ -224,26 +223,27 @@ static void chain_free(struct chain_allo
+  *	pfns that correspond to the start and end of the represented zone.
+  *
+  *	struct bm_block contains a pointer to the memory page in which
+- *	information is stored (in the form of a block of bit chunks
+- *	of type unsigned long each).  It also contains the pfns that
+- *	correspond to the start and end of the represented memory area and
+- *	the number of bit chunks in the block.
++ *	information is stored (in the form of a block of bitmap)
++ *	It also contains the pfns that correspond to the start and end of
++ *	the represented memory area.
+  */
  
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 3af0c8d..0aae777 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -63,6 +63,8 @@ static inline void device_init_wakeup(struct device *dev, int val)
- 	dev->power.can_wakeup = !!val;
+ #define BM_END_OF_MAP	(~0UL)
+ 
+-#define BM_CHUNKS_PER_BLOCK	(PAGE_SIZE / sizeof(long))
+-#define BM_BITS_PER_CHUNK	(sizeof(long) << 3)
+ #define BM_BITS_PER_BLOCK	(PAGE_SIZE << 3)
+ 
+ struct bm_block {
+ 	struct bm_block *next;		/* next element of the list */
+ 	unsigned long start_pfn;	/* pfn represented by the first bit */
+ 	unsigned long end_pfn;	/* pfn represented by the last bit plus 1 */
+-	unsigned int size;	/* number of bit chunks */
+-	unsigned long *data;	/* chunks of bits representing pages */
++	unsigned long *data;	/* bitmap representing pages */
+ };
+ 
++static inline unsigned long bm_block_bits(struct bm_block *bb)
++{
++	return bb->end_pfn - bb->start_pfn;
++}
++
+ struct zone_bitmap {
+ 	struct zone_bitmap *next;	/* next element of the list */
+ 	unsigned long start_pfn;	/* minimal pfn in this zone */
+@@ -257,7 +257,6 @@ struct zone_bitmap {
+ struct bm_position {
+ 	struct zone_bitmap *zone_bm;
+ 	struct bm_block *block;
+-	int chunk;
+ 	int bit;
+ };
+ 
+@@ -272,12 +271,6 @@ struct memory_bitmap {
+ 
+ /* Functions that operate on memory bitmaps */
+ 
+-static inline void memory_bm_reset_chunk(struct memory_bitmap *bm)
+-{
+-	bm->cur.chunk = 0;
+-	bm->cur.bit = -1;
+-}
+-
+ static void memory_bm_position_reset(struct memory_bitmap *bm)
+ {
+ 	struct zone_bitmap *zone_bm;
+@@ -285,7 +278,7 @@ static void memory_bm_position_reset(str
+ 	zone_bm = bm->zone_bm_list;
+ 	bm->cur.zone_bm = zone_bm;
+ 	bm->cur.block = zone_bm->bm_blocks;
+-	memory_bm_reset_chunk(bm);
++	bm->cur.bit = 0;
  }
  
-+static inline void device_set_wakeup_capable(struct device *dev, int val) { }
-+
- static inline int device_can_wakeup(struct device *dev)
+ static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free);
+@@ -394,12 +387,10 @@ memory_bm_create(struct memory_bitmap *b
+ 			bb->start_pfn = pfn;
+ 			if (nr >= BM_BITS_PER_BLOCK) {
+ 				pfn += BM_BITS_PER_BLOCK;
+-				bb->size = BM_CHUNKS_PER_BLOCK;
+ 				nr -= BM_BITS_PER_BLOCK;
+ 			} else {
+ 				/* This is executed only once in the loop */
+ 				pfn += nr;
+-				bb->size = DIV_ROUND_UP(nr, BM_BITS_PER_CHUNK);
+ 			}
+ 			bb->end_pfn = pfn;
+ 			bb = bb->next;
+@@ -478,8 +469,8 @@ static int memory_bm_find_bit(struct mem
+ 	}
+ 	zone_bm->cur_block = bb;
+ 	pfn -= bb->start_pfn;
+-	*bit_nr = pfn % BM_BITS_PER_CHUNK;
+-	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
++	*bit_nr = pfn;
++	*addr = bb->data;
+ 	return 0;
+ }
+ 
+@@ -528,36 +519,6 @@ static int memory_bm_test_bit(struct mem
+ 	return test_bit(bit, addr);
+ }
+ 
+-/* Two auxiliary functions for memory_bm_next_pfn */
+-
+-/* Find the first set bit in the given chunk, if there is one */
+-
+-static inline int next_bit_in_chunk(int bit, unsigned long *chunk_p)
+-{
+-	bit++;
+-	while (bit < BM_BITS_PER_CHUNK) {
+-		if (test_bit(bit, chunk_p))
+-			return bit;
+-
+-		bit++;
+-	}
+-	return -1;
+-}
+-
+-/* Find a chunk containing some bits set in given block of bits */
+-
+-static inline int next_chunk_in_block(int n, struct bm_block *bb)
+-{
+-	n++;
+-	while (n < bb->size) {
+-		if (bb->data[n])
+-			return n;
+-
+-		n++;
+-	}
+-	return -1;
+-}
+-
+ /**
+  *	memory_bm_next_pfn - find the pfn that corresponds to the next set bit
+  *	in the bitmap @bm.  If the pfn cannot be found, BM_END_OF_MAP is
+@@ -571,40 +532,33 @@ static unsigned long memory_bm_next_pfn(
  {
- 	return dev->power.can_wakeup;
--- 
+ 	struct zone_bitmap *zone_bm;
+ 	struct bm_block *bb;
+-	int chunk;
+ 	int bit;
+ 
+ 	do {
+ 		bb = bm->cur.block;
+ 		do {
+-			chunk = bm->cur.chunk;
+ 			bit = bm->cur.bit;
+-			do {
+-				bit = next_bit_in_chunk(bit, bb->data + chunk);
+-				if (bit >= 0)
+-					goto Return_pfn;
+-
+-				chunk = next_chunk_in_block(chunk, bb);
+-				bit = -1;
+-			} while (chunk >= 0);
++			bit = find_next_bit(bb->data, bm_block_bits(bb), bit);
++			if (bit < bm_block_bits(bb))
++				goto Return_pfn;
++
+ 			bb = bb->next;
+ 			bm->cur.block = bb;
+-			memory_bm_reset_chunk(bm);
++			bm->cur.bit = 0;
+ 		} while (bb);
+ 		zone_bm = bm->cur.zone_bm->next;
+ 		if (zone_bm) {
+ 			bm->cur.zone_bm = zone_bm;
+ 			bm->cur.block = zone_bm->bm_blocks;
+-			memory_bm_reset_chunk(bm);
++			bm->cur.bit = 0;
+ 		}
+ 	} while (zone_bm);
+ 	memory_bm_position_reset(bm);
+ 	return BM_END_OF_MAP;
+ 
+  Return_pfn:
+-	bm->cur.chunk = chunk;
+-	bm->cur.bit = bit;
+-	return bb->start_pfn + chunk * BM_BITS_PER_CHUNK + bit;
++	bm->cur.bit = bit + 1;
++	return bb->start_pfn + bit;
+ }
+ 
+ /**
