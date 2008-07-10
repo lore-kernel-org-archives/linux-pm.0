@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 2/8] AHCI: Speed-up resume
-Date: Thu, 10 Jul 2008 01:58:48 +0200
-Message-ID: <200807100158.49341.rjw__36841.6539313786$1215649151$gmane$org@sisk.pl>
-References: <200807100152.17755.rjw@sisk.pl>
+Subject: Re: next-0708: build failure at drivers/pci/pci-acpi.c
+Date: Thu, 10 Jul 2008 02:16:44 +0200
+Message-ID: <200807100216.45690.rjw__25527.2426330068$1215649205$gmane$org@sisk.pl>
+References: <a4423d670807080518g31402f60j2f624a2ac2db03aa@mail.gmail.com>
+	<200807082229.33016.rjw@sisk.pl>
+	<200807091621.37697.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807100152.17755.rjw@sisk.pl>
+In-Reply-To: <200807091621.37697.jbarnes@virtuousgeek.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,51 +20,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Tejun Heo <tj@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ak@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, David Howells <dhowells@redhat.com>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Alexander Beregalov <a.beregalov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: AHCI: Speed-up resume
+On Thursday, 10 of July 2008, Jesse Barnes wrote:
+> On Tuesday, July 8, 2008 1:29:31 pm Rafael J. Wysocki wrote:
+> > On Tuesday, 8 of July 2008, Jesse Barnes wrote:
+> > > David sent me one just like this at 7am this morning, just applied and
+> > > pushed (along with Alexander's tested-by).
+> >
+> > OK, thanks.
+> >
+> > Would you like me to send the Stephen's fix for compilation on ppc64
+> > (CONFIG_PM unset)?
+> 
+> Sure, unless it's already in the ppc tree...
 
-During resume, sleep 1 second to wait for the HBA reset
-to finish is a waste of time.
+It looks like Stephen had to apply it today too, so I guess it isn't.
 
-According to the AHCI 1.2 spec,
-We should poll the HOST_CTL register,
-and return error if the host reset is not
-finished within 1 second.
+Thanks,
+Rafael
 
-Test results show that the HBA reset can be done quickly(in usecs).
-And this patch may save nearly 1 second during resume.
+---
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] pci: include linux/pm_wakeup.h for device_set_wakeup_capable
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Acked-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
---
- drivers/ata/ahci.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+---
+ drivers/pci/pci.c         |    1 +
+ include/linux/pm_wakeup.h |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-Index: linux-next/drivers/ata/ahci.c
-===================================================================
---- linux-next.orig/drivers/ata/ahci.c
-+++ linux-next/drivers/ata/ahci.c
-@@ -1142,12 +1142,15 @@ static int ahci_reset_controller(struct 
- 			readl(mmio + HOST_CTL); /* flush */
- 		}
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index e632a58..3d92b71 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -17,6 +17,7 @@
+ #include <linux/string.h>
+ #include <linux/log2.h>
+ #include <linux/pci-aspm.h>
++#include <linux/pm_wakeup.h>
+ #include <asm/dma.h>	/* isa_dma_bridge_buggy */
+ #include "pci.h"
  
--		/* reset must complete within 1 second, or
-+		/*
-+		 * to perform host reset, OS should set HOST_RESET
-+		 * and poll until this bit is read to be "0".
-+		 * reset must complete within 1 second, or
- 		 * the hardware should be considered fried.
- 		 */
--		ssleep(1);
-+		tmp = ata_wait_register(mmio + HOST_CTL, HOST_RESET,
-+					HOST_RESET, 10, 1000);
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index 3af0c8d..0aae777 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -63,6 +63,8 @@ static inline void device_init_wakeup(struct device *dev, int val)
+ 	dev->power.can_wakeup = !!val;
+ }
  
--		tmp = readl(mmio + HOST_CTL);
- 		if (tmp & HOST_RESET) {
- 			dev_printk(KERN_ERR, host->dev,
- 				   "controller reset failed (0x%x)\n", tmp);
++static inline void device_set_wakeup_capable(struct device *dev, int val) { }
++
+ static inline int device_can_wakeup(struct device *dev)
+ {
+ 	return dev->power.can_wakeup;
+-- 
