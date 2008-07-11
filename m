@@ -1,18 +1,15 @@
-From: "Hiroyuki Machida" <Hiroyuki.Mach@gmail.com>
-Subject: Re: Linux Power Management Mini-Summit -- Ottawa -- July
-	22, 2008
-Date: Fri, 11 Jul 2008 16:08:34 +0900
-Message-ID: <feaf5ed90807110008i2887f3e1qa71a1319d3f9aa55@mail.gmail.com>
-References: <alpine.LFD.1.10.0806251358060.3014@localhost.localdomain>
-	<20080625194219.GD11102@in.ibm.com>
-	<20080701032329.GA6429@linux-sh.org>
-Reply-To: Hiroyuki.Mach@gmail.com
+From: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC PATCH] AHCI: speed up resume
+Date: Fri, 11 Jul 2008 09:49:45 -0400
+Message-ID: <487764F9.20908@garzik.org>
+References: <1215074882.3214.15.camel@rzhang-dt.sh.intel.com>	
+	<486D8F88.9000904@kernel.org>
+	<1215149537.3068.18.camel@rzhang-dt.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080701032329.GA6429@linux-sh.org>
-Content-Disposition: inline
+In-Reply-To: <1215149537.3068.18.camel@rzhang-dt.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,56 +19,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>, Dipankar Sarma <dipankar@in.ibm.com>, Len Brown <lenb@kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-I'm also interesting to attend if there is a slot still available.
-I had some experience with old 2.6 kernel PM as part of
-trial project, http://www.linuxsymposium.org/2006/view_abstract.php?content_key=68.
-
-I'm intersting in CPUIDLE on non ACPI-based systems.
-
-Thanks,
-Hiroyuki Machida
-
-
-
-On Tue, Jul 1, 2008 at 12:23 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Thu, Jun 26, 2008 at 01:12:19AM +0530, Dipankar Sarma wrote:
->> On Wed, Jun 25, 2008 at 02:44:01PM -0400, Len Brown wrote:
->> > This is an open invitation to participate in
->> > a Linux Power Management mini-summit
->> > 9AM Tuesday July 22, 2008 in Ottawa.
->> >
->> > Send suggestions for topics to linux-pm@lists.osdl.org,
->> > whether you plan to attend or not.  The attendees will
->> > form the agenda by consensus at the start of the session.
->> >
->> > If you would like to attend, please send a note to
->> > linux-pm@lists.osdl.org announcing your intent,
->> > and what you would like to discuss.
+Zhang Rui wrote:
+> On Fri, 2008-07-04 at 10:48 +0800, Tejun Heo wrote:
+>> Hello, Zhang.
 >>
->> I would like to attend if there is a slot still available.
->> I could request only after knowing for sure I would be able
->> to travel.
+>> Zhang Rui wrote:
+>>> During S3 resume, AHCI driver sleeps 1 second to wait for the HBA
+>> reset
+>>> to finish. This is luxurious, :)
+>>>
+>>> According to the AHCI 1.2 spec, We should poll the HOST_CTL
+>> register,
+>>> and return error if the host reset is not finished within 1 second.
+>>>
+>>> Test results show that the HBA reset can be done quickly(in usecs).
+>>> And this patch may save nearly 1 second during resume.
+>>>
+>>> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>>> --
+>>>  drivers/ata/ahci.c |   17 ++++++++++++++---
+>>>  1 file changed, 14 insertions(+), 3 deletions(-)
+>>>
+>>> Index: linux-2.6/drivers/ata/ahci.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/ata/ahci.c 2007-05-03 11:06:33.000000000
+>> +0800
+>>> +++ linux-2.6/drivers/ata/ahci.c      2008-07-02 16:25:54.000000000
+>> +0800
+>>> @@ -1073,18 +1073,29 @@
+>>>
+>>>       /* global controller reset */
+>>>       if (!ahci_skip_host_reset) {
+>>> +             int delay = msecs_to_jiffies(1000);
+>>> +             int timeout;
+>>> +
+>>>               tmp = readl(mmio + HOST_CTL);
+>>>               if ((tmp & HOST_RESET) == 0) {
+>>>                       writel(tmp | HOST_RESET, mmio + HOST_CTL);
+>>>                       readl(mmio + HOST_CTL); /* flush */
+>>>               }
+>>>
+>>> -             /* reset must complete within 1 second, or
+>>> +             /*
+>>> +              * to perform host reset, OS should set HOST_RESET
+>>> +              * and poll until this bit is read to be "0"
+>>> +              * reset must complete within 1 second, or
+>>>                * the hardware should be considered fried.
+>>>                */
+>>> -             ssleep(1);
+>>> +             timeout = jiffies + delay;
+>>> +             while (jiffies < timeout) {
+>>> +                     tmp = readl(mmio + HOST_CTL);
+>>> +                     if (!(tmp & HOST_RESET))
+>>> +                             break;
+>>> +                     cpu_relax();
+>>> +             }
+>> Looks good in principle.  Just two things...
 >>
->> I have been working mostly with our server h/w folks lately and it would
->> be nice to see some of our upcoming challenges discussed at the mini-summit.
+>> 1. Please don't busy-loop.  e.g. No one would notice 10ms delay
+>> between
+>> polls.
 >>
->> 1. CPU power management
->>       - CPU consolidation strategy (getting work done on fewer CPUs)
->>       - scheduler issues
+>> 2. Please use ata_wait_register().
 >>
->> 2. Memory power management
->>       - Strategies for upcoming technologies
->>
-> I'm also interested in attending. This year I'd mostly like to talk about
-> memory power management as well, including some of the work we've done on
-> top of page migration for this.
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+> Thanks for review, refreshed patch attached. :)
+> 
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> During resume, sleep 1 second to wait for the HBA reset
+> to finish is a waste of time.
+> 
+> According to the AHCI 1.2 spec,
+> We should poll the HOST_CTL register,
+> and return error if the host reset is not
+> finished within 1 second.
+> 
+> Test results show that the HBA reset can be done quickly(in usecs).
+> And this patch may save nearly 1 second during resume.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> --
+>  drivers/ata/ahci.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/ata/ahci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/ata/ahci.c	2008-07-04 09:49:05.000000000 +0800
+> +++ linux-2.6/drivers/ata/ahci.c	2008-07-04 11:31:30.000000000 +0800
+> @@ -1079,12 +1079,15 @@
+>  			readl(mmio + HOST_CTL); /* flush */
+>  		}
+>  
+> -		/* reset must complete within 1 second, or
+> +		/*
+> + 		 * to perform host reset, OS should set HOST_RESET
+> +		 * and poll until this bit is read to be "0".
+> + 		 * reset must complete within 1 second, or
+>  		 * the hardware should be considered fried.
+>  		 */
+> -		ssleep(1);
+> +		tmp = ata_wait_register(mmio + HOST_CTL, HOST_RESET,
+> +					HOST_RESET, 10, 1000);
+>  
+> -		tmp = readl(mmio + HOST_CTL);
+>  		if (tmp & HOST_RESET) {
+>  			dev_printk(KERN_ERR, host->dev,
+>  				   "controller reset failed (0x%x)\n", tmp);
+> 
+
+applied
