@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH -mm 1/8] PM: Add new PM_EVENT codes for
-	runtime power	transitions
-Date: Thu, 10 Jul 2008 13:34:08 +0200
-Message-ID: <20080710113408.GA15412__28681.7010179677$1215717649$gmane$org@elf.ucw.cz>
-References: <200807100152.17755.rjw@sisk.pl> <200807100155.34153.rjw@sisk.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [linux-next] [PATCH V2 0/4] ACPI: save/restore ACPI NVS
+	memory	during hiberntion
+Date: Fri, 11 Jul 2008 13:29:05 +0800
+Message-ID: <1215754145.1617.57.camel__43829.0746453733$1215754804$gmane$org@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200807100155.34153.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-07-10 01:55:33, Rafael J. Wysocki wrote:
-> From: Alan Stern <stern@rowland.harvard.edu>
-> Subject: PM: Add new PM_EVENT codes for runtime power transitions
-> 
-> This patch (as1112) adds some new PM_EVENT_* codes for use by kernel
-> subsystems.  They describe runtime power-state transitions of the sort
-> already implemented by the USB subsystem.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-ACK.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+77u/SGksCgpUaGlzIGlzIHRoZSBzZWNvbmQgdmVyc2lvbiBvZiBwYXRjaGVzIHdoaWNoIHNhdmUv
+cmVzdG9yZSBBQ1BJIE5WUyBtZW1vcnkKZHVyaW5nIGhpYmVybmF0aW9uLgoKQWNjb3JkaW5nIHRv
+IHRoZSBBQ1BJIHNwZWMsIEFDUEkgTlZTIG1lbW9yeSByZWdpb24gaXMgcmVxdWlyZWQgdG8KYmUg
+c2F2ZWQvcmVzdG9yZWQgYnkgT1MgZHVyaW5nIGhpYmVybmF0aW9uLgoKU2VjdGlvbiAxNS4zLjIg
+QUNQSSBTcGVjIDMuMGIsCiJPU1BNIHdpbGwgY2FsbCB0aGUgX1BUUyBjb250cm9sIG1ldGhvZCBz
+b21lIHRpbWUgYmVmb3JlIGVudGVyaW5nCmEgc2xlZXBpbmcgc3RhdGUsIHRvIGFsbG93IHRoZSBw
+bGF0Zm9ybeKAmXMgQU1MIGNvZGUgdG8gdXBkYXRlCnRoaXMgbWVtb3J5IGltYWdlIGJlZm9yZSBl
+bnRlcmluZyB0aGUgc2xlZXBpbmcgc3RhdGUuCkFmdGVyIHRoZSBzeXN0ZW0gYXdha2VzIGZyb20g
+YW4gUzQgc3RhdGUsIE9TUE0gd2lsbCByZXN0b3JlIHRoaXMKbWVtb3J5IGFyZWEgYW5kIGNhbGwg
+dGhlIF9XQUsgY29udHJvbCBtZXRob2QgdG8gZW5hYmxlIHRoZSBCSU9TCnRvIHJlY2xhaW0gaXRz
+IG1lbW9yeSBpbWFnZS4iCgpUaGlzIHBhdGNoIHNldCBhZGQgdGhlIG1lY2hhbmlzbSB0byBzYXZl
+L3Jlc3RvcmUgQUNQSSBOVlMgbWVtb3J5CmR1cmluZyBoaWJlcm5hdGlvbi4KClBhdGNoIDAxOiBj
+YWxsIHBsYXRmb3JtX2JlZ2luIGJlZm9yZSBzd3N1c3Bfc2hyaW5rX21lbW9yeS4KICAgICAgICBT
+byB0aGF0IHdlIGNhbiBhbGxvY2F0ZSBlbm91Z2ggcGFnZXMgZm9yIEFDUEkgTlZTIG1lbW9yeQog
+ICAgICAgIGJlZm9yZSBzaHJpbmsgdGhlIG1lbW9yeS4KClBhdGNoIDAyOiBpbnRyb2R1Y2UgdGhl
+IG1lY2hhbmlzbSB0byBzYXZlL3Jlc3RvcmUgQUNQSSBOVlMgbWVtb3J5LgogICAgICAgIApQYXRj
+aCAwMzogbWFyayB0aGUgQUNQSSBOVlMgbWVtb3J5IHJlZ2lvbiBkdXJpbmcgc3RhcnR1cC4KClBh
+dGNoIDA0OiBpbnRyb2R1Y2Uga2VybmVsIHBhcmFtZXRlciBhY3BpX3NsZWVwPXM0X252c19ub3Nh
+dmUKCSAgd2hpY2ggcHJldmVudHMgT1MgZnJvbSBzYXZpbmcvcmVzdG9yaW5nIEFDUEkgTlZTIG1l
+bW9yeS4KCkFzIHBhdGNoIDAxIGNoYW5nZXMgdGhlIGdlbmVyaWMgY29kZSwgSSBkb24ndCBrbm93
+IGlmIHRoZXJlIGFyZQphbnkgc2lkZSBlZmZlY3RzIGludHJvZHVjZWQgYnkgdGhpcyBwYXRjaCwg
+YW5kIEknbSBub3QgYWJsZSB0bwp0ZXN0IG9uIG90aGVyIHBsYXRmb3Jtcy4KQnV0IHdpdGggUmFm
+YWVsJ3Mgc3VnZ2VzdGlvbiwgcGF0Y2ggMDEgY2FuIGJlIG9wdGlvbmFsbHkgZHJvcHBlZApiZWNh
+dXNlIHdlIGNhbiB1c2UgdGhlIHRoZSBJL08gYW5kIHNwYXJlIHBhZ2VzIHJlc2VydmVkLCB3aGlj
+aCBpcwo1TUIgYXQgcHJlc2VudCBhbmQgdGhlIE5WUyBtZW1vcnkgaXMgdXN1YWxseSB0ZW5zIG9m
+IHBhZ2VzIGR1cmluZwpteSB0ZXN0LgoKQW55IGNvbW1lbnRzIGFyZSB3ZWxjb21lLiA6KQoKdGhh
+bmtzLApydWkKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
+ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
+dXgtcG0=
