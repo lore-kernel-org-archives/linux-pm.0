@@ -1,11 +1,13 @@
-From: "Stoyan Gaydarov" <stoyboyker@gmail.com>
-Subject: [PATCH] ioctl conversion
-Date: Thu, 10 Jul 2008 19:28:16 -0500
-Message-ID: <6d291e080807101728j62be7c93qba11aa214a8dfe1__14842.9787638181$1215787135$gmane$org@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] ioctl conversion
+Date: Fri, 11 Jul 2008 10:08:20 +0200
+Message-ID: <200807111008.21497.arnd__40248.18176772$1215787148$gmane$org@arndb.de>
+References: <6d291e080807101728j62be7c93qba11aa214a8dfe1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <6d291e080807101728j62be7c93qba11aa214a8dfe1@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,74 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, pavel@suse.cz
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Stoyan Gaydarov <stoyboyker@gmail.com>
+Cc: pavel@suse.cz, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-This changes the ioctl usage of kernel/power/user.c to use the unlocked_ioctl
+On Friday 11 July 2008, Stoyan Gaydarov wrote:
+> - =A0 =A0 =A0 if (_IOC_TYPE(cmd) !=3D SNAPSHOT_IOC_MAGIC)
+> + =A0 =A0 =A0 lock_kernel();
+> +
+> + =A0 =A0 =A0 if (_IOC_TYPE(cmd) !=3D SNAPSHOT_IOC_MAGIC) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 unlock_kernel();
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOTTY;
+> - =A0 =A0 =A0 if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 unlock_kernel();
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOTTY;
+> - =A0 =A0 =A0 if (!capable(CAP_SYS_ADMIN))
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 if (!capable(CAP_SYS_ADMIN)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 unlock_kernel();
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EPERM;
+> + =A0 =A0 =A0 }
+> =
 
-Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+> =A0 =A0 =A0 =A0 data =3D filp->private_data;
 
-diff -uprN linux-2.6.26-rc9/kernel/power/user.c devel/kernel/power/user.c
---- linux-2.6.26-rc9/kernel/power/user.c        2008-07-05
-17:53:22.000000000 -0500
-+++ devel/kernel/power/user.c   2008-07-10 19:26:42.000000000 -0500
-@@ -18,6 +18,7 @@
- #include <linux/mm.h>
- #include <linux/swap.h>
- #include <linux/swapops.h>
-+#include <linux/smp_lock.h>
- #include <linux/pm.h>
- #include <linux/fs.h>
- #include <linux/console.h>
-@@ -164,20 +165,28 @@ static ssize_t snapshot_write(struct fil
-        return res;
- }
+The more common way to express this is to end the function with
 
--static int snapshot_ioctl(struct inode *inode, struct file *filp,
--                          unsigned int cmd, unsigned long arg)
-+static long snapshot_ioctl(struct file *filp, unsigned int cmd,
-+                          unsigned long arg)
- {
-        int error = 0;
-        struct snapshot_data *data;
-        loff_t size;
-        sector_t offset;
+out:
+	unlock_kernel();
+	return ret;
+}
 
--       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
-+       lock_kernel();
-+
-+       if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC) {
-+               unlock_kernel();
-                return -ENOTTY;
--       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
-+       }
-+       if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR) {
-+               unlock_kernel();
-                return -ENOTTY;
--       if (!capable(CAP_SYS_ADMIN))
-+       }
-+       if (!capable(CAP_SYS_ADMIN)) {
-+               unlock_kernel();
-                return -EPERM;
-+       }
+and then jump to that label in the error case. This makes it
+much easier to verify that you haven't missed a cased.
 
-        data = filp->private_data;
-
-@@ -390,6 +399,7 @@ static int snapshot_ioctl(struct inode *
-
-        }
-
-+       unlock_kernel();
-        return error;
- }
-
-@@ -399,7 +409,7 @@ static const struct file_operations snap
-        .read = snapshot_read,
-        .write = snapshot_write,
-        .llseek = no_llseek,
--       .ioctl = snapshot_ioctl,
-+       .unlocked_ioctl = snapshot_ioctl,
- };
-
- static struct miscdevice snapshot_device = {
+	Arnd <><
