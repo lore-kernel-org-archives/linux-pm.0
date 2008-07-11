@@ -1,11 +1,11 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [linux-next] [PATCH V2 0/4] ACPI: save/restore ACPI NVS
-	memory	during hiberntion
-Date: Fri, 11 Jul 2008 13:29:05 +0800
-Message-ID: <1215754145.1617.57.camel__43829.0746453733$1215754804$gmane$org@rzhang-dt>
+Subject: [linux-next] [PATCH V2 4/4] introduce new kernel
+	parameter	acpi_sleep=s4_nvs_nosave
+Date: Fri, 11 Jul 2008 13:29:14 +0800
+Message-ID: <1215754154.1617.61.camel__22467.6829217517$1215754805$gmane$org@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,33 +20,88 @@ To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-
 Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
-77u/SGksCgpUaGlzIGlzIHRoZSBzZWNvbmQgdmVyc2lvbiBvZiBwYXRjaGVzIHdoaWNoIHNhdmUv
-cmVzdG9yZSBBQ1BJIE5WUyBtZW1vcnkKZHVyaW5nIGhpYmVybmF0aW9uLgoKQWNjb3JkaW5nIHRv
-IHRoZSBBQ1BJIHNwZWMsIEFDUEkgTlZTIG1lbW9yeSByZWdpb24gaXMgcmVxdWlyZWQgdG8KYmUg
-c2F2ZWQvcmVzdG9yZWQgYnkgT1MgZHVyaW5nIGhpYmVybmF0aW9uLgoKU2VjdGlvbiAxNS4zLjIg
-QUNQSSBTcGVjIDMuMGIsCiJPU1BNIHdpbGwgY2FsbCB0aGUgX1BUUyBjb250cm9sIG1ldGhvZCBz
-b21lIHRpbWUgYmVmb3JlIGVudGVyaW5nCmEgc2xlZXBpbmcgc3RhdGUsIHRvIGFsbG93IHRoZSBw
-bGF0Zm9ybeKAmXMgQU1MIGNvZGUgdG8gdXBkYXRlCnRoaXMgbWVtb3J5IGltYWdlIGJlZm9yZSBl
-bnRlcmluZyB0aGUgc2xlZXBpbmcgc3RhdGUuCkFmdGVyIHRoZSBzeXN0ZW0gYXdha2VzIGZyb20g
-YW4gUzQgc3RhdGUsIE9TUE0gd2lsbCByZXN0b3JlIHRoaXMKbWVtb3J5IGFyZWEgYW5kIGNhbGwg
-dGhlIF9XQUsgY29udHJvbCBtZXRob2QgdG8gZW5hYmxlIHRoZSBCSU9TCnRvIHJlY2xhaW0gaXRz
-IG1lbW9yeSBpbWFnZS4iCgpUaGlzIHBhdGNoIHNldCBhZGQgdGhlIG1lY2hhbmlzbSB0byBzYXZl
-L3Jlc3RvcmUgQUNQSSBOVlMgbWVtb3J5CmR1cmluZyBoaWJlcm5hdGlvbi4KClBhdGNoIDAxOiBj
-YWxsIHBsYXRmb3JtX2JlZ2luIGJlZm9yZSBzd3N1c3Bfc2hyaW5rX21lbW9yeS4KICAgICAgICBT
-byB0aGF0IHdlIGNhbiBhbGxvY2F0ZSBlbm91Z2ggcGFnZXMgZm9yIEFDUEkgTlZTIG1lbW9yeQog
-ICAgICAgIGJlZm9yZSBzaHJpbmsgdGhlIG1lbW9yeS4KClBhdGNoIDAyOiBpbnRyb2R1Y2UgdGhl
-IG1lY2hhbmlzbSB0byBzYXZlL3Jlc3RvcmUgQUNQSSBOVlMgbWVtb3J5LgogICAgICAgIApQYXRj
-aCAwMzogbWFyayB0aGUgQUNQSSBOVlMgbWVtb3J5IHJlZ2lvbiBkdXJpbmcgc3RhcnR1cC4KClBh
-dGNoIDA0OiBpbnRyb2R1Y2Uga2VybmVsIHBhcmFtZXRlciBhY3BpX3NsZWVwPXM0X252c19ub3Nh
-dmUKCSAgd2hpY2ggcHJldmVudHMgT1MgZnJvbSBzYXZpbmcvcmVzdG9yaW5nIEFDUEkgTlZTIG1l
-bW9yeS4KCkFzIHBhdGNoIDAxIGNoYW5nZXMgdGhlIGdlbmVyaWMgY29kZSwgSSBkb24ndCBrbm93
-IGlmIHRoZXJlIGFyZQphbnkgc2lkZSBlZmZlY3RzIGludHJvZHVjZWQgYnkgdGhpcyBwYXRjaCwg
-YW5kIEknbSBub3QgYWJsZSB0bwp0ZXN0IG9uIG90aGVyIHBsYXRmb3Jtcy4KQnV0IHdpdGggUmFm
-YWVsJ3Mgc3VnZ2VzdGlvbiwgcGF0Y2ggMDEgY2FuIGJlIG9wdGlvbmFsbHkgZHJvcHBlZApiZWNh
-dXNlIHdlIGNhbiB1c2UgdGhlIHRoZSBJL08gYW5kIHNwYXJlIHBhZ2VzIHJlc2VydmVkLCB3aGlj
-aCBpcwo1TUIgYXQgcHJlc2VudCBhbmQgdGhlIE5WUyBtZW1vcnkgaXMgdXN1YWxseSB0ZW5zIG9m
-IHBhZ2VzIGR1cmluZwpteSB0ZXN0LgoKQW55IGNvbW1lbnRzIGFyZSB3ZWxjb21lLiA6KQoKdGhh
-bmtzLApydWkKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+
+Introduce new kernel parameter acpi_sleep=s4_nvs_nosave.
+
+This can be used to prevent OS from saving/restoring ACPI NVS memory.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ Documentation/kernel-parameters.txt |    5 ++++-
+ arch/x86/kernel/acpi/sleep.c        |    3 +++
+ drivers/acpi/sleep/main.c           |    3 +++
+ include/asm-x86/acpi.h              |    3 +++
+ 4 files changed, 13 insertions(+), 1 deletion(-)
+
+Index: linux-next/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-next.orig/Documentation/kernel-parameters.txt	2008-07-11 13:04:46.000000000 +0800
++++ linux-next/Documentation/kernel-parameters.txt	2008-07-11 13:05:15.000000000 +0800
+@@ -147,7 +147,8 @@
+ 			default: 0
+ 
+ 	acpi_sleep=	[HW,ACPI] Sleep options
+-			Format: { s3_bios, s3_mode, s3_beep, old_ordering }
++			Format: { s3_bios, s3_mode, s3_beep, old_ordering,
++				  s4_nvs_nosave }
+ 			See Documentation/power/video.txt for s3_bios and s3_mode.
+ 			s3_beep is for debugging; it makes the PC's speaker beep
+ 			as soon as the kernel's real-mode entry point is called.
+@@ -155,6 +156,8 @@
+ 			control method, wrt putting devices into low power
+ 			states, to be enforced (the ACPI 2.0 ordering of _PTS is
+ 			used by default).
++			s4_nvs_nosave prevents kernel from saving/restoring
++			ACPI NVS memory during hibernation.
+ 
+ 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+ 			Format: { level | edge | high | low }
+Index: linux-next/arch/x86/kernel/acpi/sleep.c
+===================================================================
+--- linux-next.orig/arch/x86/kernel/acpi/sleep.c	2008-07-11 13:04:46.000000000 +0800
++++ linux-next/arch/x86/kernel/acpi/sleep.c	2008-07-11 13:05:15.000000000 +0800
+@@ -15,6 +15,7 @@
+ 
+ unsigned long acpi_wakeup_address;
+ unsigned long acpi_realmode_flags;
++int acpi_sleep_flags;
+ 
+ /* address in low memory of the wakeup routine. */
+ static unsigned long acpi_realmode;
+@@ -142,6 +143,8 @@
+ 			acpi_realmode_flags |= 4;
+ 		if (strncmp(str, "old_ordering", 12) == 0)
+ 			acpi_old_suspend_ordering();
++		if (strncmp(str, "s4_nvs_nosave", 13) == 0)
++			acpi_sleep_flags |= ACPI_HIBERNATION_NVS_NOSAVE;
+ 		str = strchr(str, ',');
+ 		if (str != NULL)
+ 			str += strspn(str, ", \t");
+Index: linux-next/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-next.orig/drivers/acpi/sleep/main.c	2008-07-11 13:04:46.000000000 +0800
++++ linux-next/drivers/acpi/sleep/main.c	2008-07-11 13:05:15.000000000 +0800
+@@ -297,6 +297,9 @@
+ {
+ 	struct nvs_page *pos, *next;
+ 
++	if (acpi_sleep_flags & ACPI_HIBERNATION_NVS_NOSAVE)
++		return 0;
++
+ 	while (start <= end) {
+ 		pos = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
+ 		if (!pos)
+Index: linux-next/include/asm-x86/acpi.h
+===================================================================
+--- linux-next.orig/include/asm-x86/acpi.h	2008-07-10 13:29:18.000000000 +0800
++++ linux-next/include/asm-x86/acpi.h	2008-07-11 13:05:15.000000000 +0800
+@@ -94,6 +94,9 @@
+ extern int acpi_sci_override_gsi;
+ void acpi_pic_sci_set_trigger(unsigned int, u16);
+ 
++#define ACPI_HIBERNATION_NVS_NOSAVE 1
++extern int acpi_sleep_flags;
++
+ static inline void disable_acpi(void)
+ {
+ 	acpi_disabled = 1;
