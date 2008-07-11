@@ -1,8 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [linux-next] [PATCH V2 1/4] swsusp: call plaform_begin
-	before	swsusp_shrinnk_memory
-Date: Fri, 11 Jul 2008 13:29:06 +0800
-Message-ID: <1215754146.1617.58.camel__1978.74257942221$1215754855$gmane$org@rzhang-dt>
+Subject: [linux-next] [PATCH V2 3/4] ACPI: mark ACPI NVS memory
+	region
+Date: Fri, 11 Jul 2008 13:29:12 +0800
+Message-ID: <1215754152.1617.60.camel__8699.20830377868$1215754876$gmane$org@rzhang-dt>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,37 +16,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-acpi <linux-acpi@vger.kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
 
-call platform_begin before swsusp shrink memory so that
-we can allocate enough pages for ACPI NVS memory region
-in platform_begin.
+Mark ACPI NVS memory region during startup.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- kernel/power/disk.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/e820.c |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-Index: linux-2.6/kernel/power/disk.c
+Index: linux-next/arch/x86/kernel/e820.c
 ===================================================================
---- linux-2.6.orig/kernel/power/disk.c	2008-07-01 09:32:36.000000000 +0800
-+++ linux-2.6/kernel/power/disk.c	2008-07-03 09:08:20.000000000 +0800
-@@ -243,12 +243,12 @@
- {
- 	int error;
+--- linux-next.orig/arch/x86/kernel/e820.c	2008-07-11 11:44:54.000000000 +0800
++++ linux-next/arch/x86/kernel/e820.c	2008-07-11 11:52:22.000000000 +0800
+@@ -19,6 +19,8 @@
+ #include <linux/mm.h>
+ #include <linux/pfn.h>
+ #include <linux/suspend.h>
++#include <linux/efi.h>
++#include <linux/acpi.h>
  
--	/* Free memory before shutting down devices. */
--	error = swsusp_shrink_memory();
-+	error = platform_begin(platform_mode);
- 	if (error)
- 		return error;
+ #include <asm/pgtable.h>
+ #include <asm/page.h>
+@@ -623,6 +625,33 @@
+ }
+ #endif
  
--	error = platform_begin(platform_mode);
-+	/* Free memory before shutting down devices. */
-+	error = swsusp_shrink_memory();
- 	if (error)
- 		goto Close;
- 
++#ifdef CONFIG_HIBERNATION
++/* Mark ACPI NVS region, so that OS can save/restore it during hibernation */
++static int __init e820_mark_nvs_memory(void)
++{
++	int i;
++
++	if (efi_enabled)
++		return 0;
++
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		unsigned long start, end;
++
++		if (ei->type != E820_NVS)
++			continue;
++		start = PFN_UP(ei->addr);
++		end = PFN_DOWN(ei->addr + ei->size);
++		if (start >= end)
++			continue;
++
++		acpi_mark_nvs_region(start, end - 1);
++	}
++	return 0;
++}
++core_initcall(e820_mark_nvs_memory);
++#endif
++
+ /*
+  * Early reserved memory areas.
+  */
