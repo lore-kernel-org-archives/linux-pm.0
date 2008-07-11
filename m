@@ -1,11 +1,11 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [linux-next] [PATCH V2 4/4] introduce new kernel
-	parameter	acpi_sleep=s4_nvs_nosave
-Date: Fri, 11 Jul 2008 13:29:14 +0800
-Message-ID: <1215754154.1617.61.camel__22467.6829217517$1215754805$gmane$org@rzhang-dt>
+Subject: [linux-next] [PATCH V2 2/4] ACPI: introduce new
+	mechanism to	save/restore ACPI NVS memory
+Date: Fri, 11 Jul 2008 13:29:10 +0800
+Message-ID: <1215754150.1617.59.camel__33949.104746762$1215754836$gmane$org@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,88 +20,113 @@ To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-
 Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
-
-Introduce new kernel parameter acpi_sleep=s4_nvs_nosave.
-
-This can be used to prevent OS from saving/restoring ACPI NVS memory.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- Documentation/kernel-parameters.txt |    5 ++++-
- arch/x86/kernel/acpi/sleep.c        |    3 +++
- drivers/acpi/sleep/main.c           |    3 +++
- include/asm-x86/acpi.h              |    3 +++
- 4 files changed, 13 insertions(+), 1 deletion(-)
-
-Index: linux-next/Documentation/kernel-parameters.txt
-===================================================================
---- linux-next.orig/Documentation/kernel-parameters.txt	2008-07-11 13:04:46.000000000 +0800
-+++ linux-next/Documentation/kernel-parameters.txt	2008-07-11 13:05:15.000000000 +0800
-@@ -147,7 +147,8 @@
- 			default: 0
- 
- 	acpi_sleep=	[HW,ACPI] Sleep options
--			Format: { s3_bios, s3_mode, s3_beep, old_ordering }
-+			Format: { s3_bios, s3_mode, s3_beep, old_ordering,
-+				  s4_nvs_nosave }
- 			See Documentation/power/video.txt for s3_bios and s3_mode.
- 			s3_beep is for debugging; it makes the PC's speaker beep
- 			as soon as the kernel's real-mode entry point is called.
-@@ -155,6 +156,8 @@
- 			control method, wrt putting devices into low power
- 			states, to be enforced (the ACPI 2.0 ordering of _PTS is
- 			used by default).
-+			s4_nvs_nosave prevents kernel from saving/restoring
-+			ACPI NVS memory during hibernation.
- 
- 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
- 			Format: { level | edge | high | low }
-Index: linux-next/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-next.orig/arch/x86/kernel/acpi/sleep.c	2008-07-11 13:04:46.000000000 +0800
-+++ linux-next/arch/x86/kernel/acpi/sleep.c	2008-07-11 13:05:15.000000000 +0800
-@@ -15,6 +15,7 @@
- 
- unsigned long acpi_wakeup_address;
- unsigned long acpi_realmode_flags;
-+int acpi_sleep_flags;
- 
- /* address in low memory of the wakeup routine. */
- static unsigned long acpi_realmode;
-@@ -142,6 +143,8 @@
- 			acpi_realmode_flags |= 4;
- 		if (strncmp(str, "old_ordering", 12) == 0)
- 			acpi_old_suspend_ordering();
-+		if (strncmp(str, "s4_nvs_nosave", 13) == 0)
-+			acpi_sleep_flags |= ACPI_HIBERNATION_NVS_NOSAVE;
- 		str = strchr(str, ',');
- 		if (str != NULL)
- 			str += strspn(str, ", \t");
-Index: linux-next/drivers/acpi/sleep/main.c
-===================================================================
---- linux-next.orig/drivers/acpi/sleep/main.c	2008-07-11 13:04:46.000000000 +0800
-+++ linux-next/drivers/acpi/sleep/main.c	2008-07-11 13:05:15.000000000 +0800
-@@ -297,6 +297,9 @@
- {
- 	struct nvs_page *pos, *next;
- 
-+	if (acpi_sleep_flags & ACPI_HIBERNATION_NVS_NOSAVE)
-+		return 0;
-+
- 	while (start <= end) {
- 		pos = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
- 		if (!pos)
-Index: linux-next/include/asm-x86/acpi.h
-===================================================================
---- linux-next.orig/include/asm-x86/acpi.h	2008-07-10 13:29:18.000000000 +0800
-+++ linux-next/include/asm-x86/acpi.h	2008-07-11 13:05:15.000000000 +0800
-@@ -94,6 +94,9 @@
- extern int acpi_sci_override_gsi;
- void acpi_pic_sci_set_trigger(unsigned int, u16);
- 
-+#define ACPI_HIBERNATION_NVS_NOSAVE 1
-+extern int acpi_sleep_flags;
-+
- static inline void disable_acpi(void)
- {
- 	acpi_disabled = 1;
+QWNjb3JkaW5nIHRvIHRoZSBBQ1BJIHNwZWMsIEFDUEkgTlZTIG1lbW9yeSByZWdpb24gaXMgcmVx
+dWlyZWQgdG8gYmUKc2F2ZWQvcmVzdG9yZWQgYnkgT1MgZHVyaW5nIGhpYmVybmF0aW9uLgoKU2Vj
+dGlvbiAxNS4zLjIgQUNQSSBTcGVjIDMuMGIsCiJPU1BNIHdpbGwgY2FsbCB0aGUgX1BUUyBjb250
+cm9sIG1ldGhvZCBzb21lIHRpbWUgYmVmb3JlIGVudGVyaW5nIGEgc2xlZXBpbmcgc3RhdGUsCnRv
+IGFsbG93IHRoZSBwbGF0Zm9ybeKAmXMgQU1MIGNvZGUgdG8gdXBkYXRlIHRoaXMgbWVtb3J5IGlt
+YWdlIGJlZm9yZSBlbnRlcmluZyB0aGUKc2xlZXBpbmcgc3RhdGUuIEFmdGVyIHRoZSBzeXN0ZW0g
+YXdha2VzIGZyb20gYW4gUzQgc3RhdGUsIE9TUE0gd2lsbCByZXN0b3JlIHRoaXMgbWVtb3J5CmFy
+ZWEgYW5kIGNhbGwgdGhlIF9XQUsgY29udHJvbCBtZXRob2QgdG8gZW5hYmxlIHRoZSBCSU9TIHRv
+IHJlY2xhaW0gaXRzIG1lbW9yeSBpbWFnZS4iCgpBZGQgdGhlIG1lY2hhbmlzbSB0byBzYXZlL3Jl
+c3RvcmUgQUNQSSBOVlMgbWVtb3J5IGR1cmluZyBoaWJlcm5hdGlvbi4KCk5vdGU6IG5vdyBMaW51
+eCBzYXZlIEFDUEkgTlZTIG1lbW9yeSBpbiBhY3BpX2hpYmVybmF0aW9uX3ByZV9zbmFwc2hvdCwg
+YW5kIHJlc3RvcmUgaXQgaW4KCWFjcGlfaGliZXJuYXRpb25fbGVhdmUuIEJvdGggb2YgdGhlc2Ug
+ZnVuY3Rpb25zIHdpbGwgYmUgaW52b2tlZCBvbmx5IG9uY2UgZHVyaW5nCgl0aGUgaGliZXJuYXRl
+IGFuZCByZXN1bWUuCk5vdGU6IGluIFNlY3Rpb24gMTQuMyBBQ1BJIHNwZWMgMy4wYiwgSSBvbmx5
+IGdldAoJIkVmaUFDUElNZW1vcnlOVlM6IFRoZSBPUyBhbmQgbG9hZGVyIG11c3QgcHJlc2VydmUg
+dGhpcyBtZW1vcnkgcmFuZ2UgaW4KCXRoZSB3b3JraW5nIGFuZCBBQ1BJIFMx4oCTUzMgc3RhdGVz
+LiIKCXdoZXRoZXIgd2Ugc2hvdWxkIHNhdmUvcmVzdG9yZSB0aGlzIHBpZWNlIG9mIG1lbW9yeSBp
+cyBub3QgY2xlYXJlZC4KClNpZ25lZC1vZmYtYnk6IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVs
+LmNvbT4KLS0tCiBkcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jIHwgIDEyNiArKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tCiBpbmNsdWRlL2xpbnV4L2FjcGkuaCAg
+ICAgIHwgICAgMyArCiAyIGZpbGVzIGNoYW5nZWQsIDEyMiBpbnNlcnRpb25zKCspLCA3IGRlbGV0
+aW9ucygtKQoKSW5kZXg6IGxpbnV4LW5leHQvZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYwo9PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09Ci0tLSBsaW51eC1uZXh0Lm9yaWcvZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYwkyMDA4
+LTA3LTExIDA4OjQ3OjMzLjAwMDAwMDAwMCArMDgwMAorKysgbGludXgtbmV4dC9kcml2ZXJzL2Fj
+cGkvc2xlZXAvbWFpbi5jCTIwMDgtMDctMTEgMDk6MDY6MTIuMDAwMDAwMDAwICswODAwCkBAIC0x
+NSw2ICsxNSw3IEBACiAjaW5jbHVkZSA8bGludXgvZG1pLmg+CiAjaW5jbHVkZSA8bGludXgvZGV2
+aWNlLmg+CiAjaW5jbHVkZSA8bGludXgvc3VzcGVuZC5oPgorI2luY2x1ZGUgPGxpbnV4L2hpZ2ht
+ZW0uaD4KIAogI2luY2x1ZGUgPGFzbS9pby5oPgogCkBAIC0yODMsMTAgKzI4NCwxMDUgQEAKICNl
+bmRpZiAvKiBDT05GSUdfU1VTUEVORCAqLwogCiAjaWZkZWYgQ09ORklHX0hJQkVSTkFUSU9OCisK
+Ky8qIEFDUEkgTlZTIG1lbW9yeSBuZWVkIHRvIGJlIHNhdmVkL3N0b3JlZCBkdXJpbmcgaGliZXJu
+YXRpb24gKi8KK3N0cnVjdCBudnNfcGFnZSB7CisJdW5zaWduZWQgbG9uZyBwZm47CisJdm9pZCAq
+ZGF0YTsKKwlzdHJ1Y3QgbGlzdF9oZWFkIG5vZGU7Cit9Oworc3RhdGljIExJU1RfSEVBRChudnNf
+cGFnZXNfbGlzdCk7CisKK2ludCBhY3BpX21hcmtfbnZzX3JlZ2lvbih1bnNpZ25lZCBsb25nIHN0
+YXJ0LCB1bnNpZ25lZCBsb25nIGVuZCkKK3sKKwlzdHJ1Y3QgbnZzX3BhZ2UgKnBvcywgKm5leHQ7
+CisKKwl3aGlsZSAoc3RhcnQgPD0gZW5kKSB7CisJCXBvcyA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVj
+dCBudnNfcGFnZSksIEdGUF9LRVJORUwpOworCQlpZiAoIXBvcykKKwkJCWdvdG8gZXJyOworCQlw
+b3MtPnBmbiA9IHN0YXJ0OworCQlzdGFydCsrOworCQlsaXN0X2FkZF90YWlsKCZwb3MtPm5vZGUs
+ICZudnNfcGFnZXNfbGlzdCk7CisJfQorCXJldHVybiAwOworCitlcnI6CisJbGlzdF9mb3JfZWFj
+aF9lbnRyeV9zYWZlKHBvcywgbmV4dCwgJm52c19wYWdlc19saXN0LCBub2RlKSB7CisJCWxpc3Rf
+ZGVsKCZwb3MtPm5vZGUpOworCQlrZnJlZShwb3MpOworCX0KKwlyZXR1cm4gLUVOT01FTTsKK30K
+Kworc3RhdGljIHZvaWQgYWNwaV9mcmVlX252c19wYWdlcyh2b2lkKQoreworCXN0cnVjdCBudnNf
+cGFnZSAqcG9zOworCisJbGlzdF9mb3JfZWFjaF9lbnRyeShwb3MsICZudnNfcGFnZXNfbGlzdCwg
+bm9kZSkgeworCQlpZiAoIXBvcy0+ZGF0YSkKKwkJCWJyZWFrOworCQlmcmVlX3BhZ2UoKGxvbmcp
+cG9zLT5kYXRhKTsKKwkJcG9zLT5kYXRhID0gTlVMTDsKKwl9Cit9CisKK3N0YXRpYyBpbnQgYWNw
+aV9hbGxvY2F0ZV9udnNfcGFnZXModm9pZCkKK3sKKwlzdHJ1Y3QgbnZzX3BhZ2UgKnBvczsKKwor
+CWxpc3RfZm9yX2VhY2hfZW50cnkocG9zLCAmbnZzX3BhZ2VzX2xpc3QsIG5vZGUpIHsKKwkJcG9z
+LT5kYXRhID0gKHZvaWQgKilfX2dldF9mcmVlX3BhZ2UoR0ZQX0tFUk5FTCk7CisJCWlmICghcG9z
+LT5kYXRhKSB7CisJCQlhY3BpX2ZyZWVfbnZzX3BhZ2VzKCk7CisJCQlyZXR1cm4gLUVOT01FTTsK
+KwkJfQorCX0KKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHZvaWQgYWNwaV9zYXZlX252c19tZW1v
+cnkodm9pZCkKK3sKKwl2b2lkICprYWRkcjsKKwlzdHJ1Y3QgbnZzX3BhZ2UgKnBvczsKKworCXBy
+X2RlYnVnKCJBQ1BJOiBTYXZpbmcgQUNQSSBOVlMgbWVtb3J5XG4iKTsKKwlsaXN0X2Zvcl9lYWNo
+X2VudHJ5KHBvcywgJm52c19wYWdlc19saXN0LCBub2RlKSB7CisJCS8qIG52cyBwYWdlIG1pZ2h0
+IG5vdCBoYXZlIGEgJ3N0cnVjdCBwYWdlJyAqLworCQlrYWRkciA9IGttYXBfYXRvbWljX3Bmbihw
+b3MtPnBmbiwgS01fVVNFUjApOworCQljb3B5X3BhZ2UocG9zLT5kYXRhLCBrYWRkcik7CisJCWt1
+bm1hcF9hdG9taWMoa2FkZHIsIEtNX1VTRVIwKTsKKwl9CisJcmV0dXJuOworfQorCitzdGF0aWMg
+dm9pZCBhY3BpX3Jlc3RvcmVfbnZzX21lbW9yeSh2b2lkKQoreworCXZvaWQgKmthZGRyOworCXN0
+cnVjdCBudnNfcGFnZSAqcG9zOworCisJcHJfZGVidWcoIkFDUEk6IFJlc3RvcmluZyBBQ1BJIE5W
+UyBtZW1vcnlcbiIpOworCWxpc3RfZm9yX2VhY2hfZW50cnkocG9zLCAmbnZzX3BhZ2VzX2xpc3Qs
+IG5vZGUpIHsKKwkJa2FkZHIgPSBrbWFwX2F0b21pY19wZm4ocG9zLT5wZm4sIEtNX1VTRVIwKTsK
+KwkJY29weV9wYWdlKGthZGRyLCBwb3MtPmRhdGEpOworCQlrdW5tYXBfYXRvbWljKGthZGRyLCBL
+TV9VU0VSMCk7CisJfQorfQorCiBzdGF0aWMgaW50IGFjcGlfaGliZXJuYXRpb25fYmVnaW4odm9p
+ZCkKIHsKIAlhY3BpX3RhcmdldF9zbGVlcF9zdGF0ZSA9IEFDUElfU1RBVEVfUzQ7Ci0JcmV0dXJu
+IDA7CisKKwkvKiBhbGxvY2F0ZSBwYWdlcyBmb3IgQUNQSSBOVlMgbWVtb3J5IGJlZm9yZSBzd3N1
+c3Bfc2hyaW5rX21lbW9yeSAqLworCXJldHVybiBhY3BpX2FsbG9jYXRlX252c19wYWdlcygpOwor
+fQorCitzdGF0aWMgaW50IGFjcGlfaGliZXJuYXRpb25fcHJlX3NuYXBzaG90KHZvaWQpCit7CisJ
+aW50IHJlc3VsdCA9IGFjcGlfcG1fcHJlcGFyZSgpOworCisJYWNwaV9zYXZlX252c19tZW1vcnko
+KTsKKwlyZXR1cm4gcmVzdWx0OwogfQogCiBzdGF0aWMgaW50IGFjcGlfaGliZXJuYXRpb25fZW50
+ZXIodm9pZCkKQEAgLTMwNyw2ICs0MDMsMTIgQEAKIAlyZXR1cm4gQUNQSV9TVUNDRVNTKHN0YXR1
+cykgPyAwIDogLUVGQVVMVDsKIH0KIAorc3RhdGljIHZvaWQgYWNwaV9oaWJlcm5hdGlvbl9lbmQo
+dm9pZCkKK3sKKwlhY3BpX2ZyZWVfbnZzX3BhZ2VzKCk7CisJYWNwaV9wbV9lbmQoKTsKK30KKwog
+c3RhdGljIHZvaWQgYWNwaV9oaWJlcm5hdGlvbl9sZWF2ZSh2b2lkKQogewogCS8qCkBAIC0zMTYs
+NiArNDE4LDcgQEAKIAlhY3BpX2VuYWJsZSgpOwogCS8qIFJlcHJvZ3JhbSBjb250cm9sIHJlZ2lz
+dGVycyBhbmQgZXhlY3V0ZSBfQkZTICovCiAJYWNwaV9sZWF2ZV9zbGVlcF9zdGF0ZV9wcmVwKEFD
+UElfU1RBVEVfUzQpOworCWFjcGlfcmVzdG9yZV9udnNfbWVtb3J5KCk7CiB9CiAKIHN0YXRpYyB2
+b2lkIGFjcGlfcG1fZW5hYmxlX2dwZXModm9pZCkKQEAgLTMyNSw4ICs0MjgsOCBAQAogCiBzdGF0
+aWMgc3RydWN0IHBsYXRmb3JtX2hpYmVybmF0aW9uX29wcyBhY3BpX2hpYmVybmF0aW9uX29wcyA9
+IHsKIAkuYmVnaW4gPSBhY3BpX2hpYmVybmF0aW9uX2JlZ2luLAotCS5lbmQgPSBhY3BpX3BtX2Vu
+ZCwKLQkucHJlX3NuYXBzaG90ID0gYWNwaV9wbV9wcmVwYXJlLAorCS5lbmQgPSBhY3BpX2hpYmVy
+bmF0aW9uX2VuZCwKKwkucHJlX3NuYXBzaG90ID0gYWNwaV9oaWJlcm5hdGlvbl9wcmVfc25hcHNo
+b3QsCiAJLmZpbmlzaCA9IGFjcGlfcG1fZmluaXNoLAogCS5wcmVwYXJlID0gYWNwaV9wbV9wcmVw
+YXJlLAogCS5lbnRlciA9IGFjcGlfaGliZXJuYXRpb25fZW50ZXIsCkBAIC0zNDUsMTkgKzQ0OCwy
+OCBAQAogewogCWludCBlcnJvciA9IGFjcGlfc2xlZXBfcHJlcGFyZShBQ1BJX1NUQVRFX1M0KTsK
+IAotCWlmICghZXJyb3IpCi0JCWFjcGlfdGFyZ2V0X3NsZWVwX3N0YXRlID0gQUNQSV9TVEFURV9T
+NDsKKwlpZiAoIWVycm9yKSB7CisJCWVycm9yID0gYWNwaV9hbGxvY2F0ZV9udnNfcGFnZXMoKTsK
+KwkJaWYgKCFlcnJvcikKKwkJCWFjcGlfdGFyZ2V0X3NsZWVwX3N0YXRlID0gQUNQSV9TVEFURV9T
+NDsKKwl9CiAJcmV0dXJuIGVycm9yOwogfQogCitzdGF0aWMgaW50IGFjcGlfaGliZXJuYXRpb25f
+cHJlX3NuYXBzaG90X29sZCh2b2lkKQoreworCWFjcGlfc2F2ZV9udnNfbWVtb3J5KCk7CisJcmV0
+dXJuIGFjcGlfcG1fZGlzYWJsZV9ncGVzKCk7Cit9CisKIC8qCiAgKiBUaGUgZm9sbG93aW5nIGNh
+bGxiYWNrcyBhcmUgdXNlZCBpZiB0aGUgcHJlLUFDUEkgMi4wIHN1c3BlbmQgb3JkZXJpbmcgaGFz
+CiAgKiBiZWVuIHJlcXVlc3RlZC4KICAqLwogc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9oaWJlcm5h
+dGlvbl9vcHMgYWNwaV9oaWJlcm5hdGlvbl9vcHNfb2xkID0gewogCS5iZWdpbiA9IGFjcGlfaGli
+ZXJuYXRpb25fYmVnaW5fb2xkLAotCS5lbmQgPSBhY3BpX3BtX2VuZCwKLQkucHJlX3NuYXBzaG90
+ID0gYWNwaV9wbV9kaXNhYmxlX2dwZXMsCisJLmVuZCA9IGFjcGlfaGliZXJuYXRpb25fZW5kLAor
+CS5wcmVfc25hcHNob3QgPSBhY3BpX2hpYmVybmF0aW9uX3ByZV9zbmFwc2hvdF9vbGQsCiAJLmZp
+bmlzaCA9IGFjcGlfcG1fZmluaXNoLAogCS5wcmVwYXJlID0gYWNwaV9wbV9kaXNhYmxlX2dwZXMs
+CiAJLmVudGVyID0gYWNwaV9oaWJlcm5hdGlvbl9lbnRlciwKSW5kZXg6IGxpbnV4LW5leHQvaW5j
+bHVkZS9saW51eC9hY3BpLmgKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtbmV4dC5vcmlnL2luY2x1ZGUv
+bGludXgvYWNwaS5oCTIwMDgtMDctMTEgMDg6NDc6MzMuMDAwMDAwMDAwICswODAwCisrKyBsaW51
+eC1uZXh0L2luY2x1ZGUvbGludXgvYWNwaS5oCTIwMDgtMDctMTEgMDg6NDc6NDUuMDAwMDAwMDAw
+ICswODAwCkBAIC0xMDcsNiArMTA3LDkgQEAKIHZvaWQgYWNwaV9udW1hX2FyY2hfZml4dXAodm9p
+ZCk7CiAjZW5kaWYKIAorI2lmZGVmIENPTkZJR19ISUJFUk5BVElPTgoraW50IGFjcGlfbWFya19u
+dnNfcmVnaW9uKHVuc2lnbmVkIGxvbmcsIHVuc2lnbmVkIGxvbmcpOworI2VuZGlmCiAjaWZkZWYg
+Q09ORklHX0FDUElfSE9UUExVR19DUFUKIC8qIEFyY2ggZGVwZW5kZW50IGZ1bmN0aW9ucyBmb3Ig
+Y3B1IGhvdHBsdWcgc3VwcG9ydCAqLwogaW50IGFjcGlfbWFwX2xzYXBpYyhhY3BpX2hhbmRsZSBo
+YW5kbGUsIGludCAqcGNwdSk7CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9saW51eC1wbQ==
