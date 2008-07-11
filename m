@@ -1,7 +1,7 @@
-From: Vivek Goyal <vgoyal@redhat.com>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Fri, 11 Jul 2008 16:11:49 -0400
-Message-ID: <20080711201149.GB3298__46432.6799301945$1215807263$gmane$org@redhat.com>
+Date: Fri, 11 Jul 2008 22:24:35 +0200
+Message-ID: <20080711202434.GB6261__22114.1485999853$1215808015$gmane$org@elf.ucw.cz>
 References: <1215401122.4660.4.camel@caritas-dev.intel.com>
 	<20080708145051.GA14745@redhat.com>
 	<20080711122131.b6461ab1.akpm@linux-foundation.org>
@@ -21,10 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Horms <horms@verge.net.au>, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 12:21:31PM -0700, Andrew Morton wrote:
+On Fri 2008-07-11 12:21:31, Andrew Morton wrote:
 > On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
 > 
 > > On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
@@ -51,49 +51,15 @@ On Fri, Jul 11, 2008 at 12:21:31PM -0700, Andrew Morton wrote:
 > thought that this might become a new and better (or at least
 > better-code-sharing) way of doing suspend-to-disk.  How far are we from
 > that?
-> 
 
-Hi Andrew,
+Well, it will be tricky to get kjump-hibernation right with respect to
+ACPI, but we should be fairly close to basic hibernation working with
+this. It has major advantage of not needing refrigerator (and few
+disadvantages -- like doing aditional boot during suspend).
 
-We can use this patchset for hibernation, but can it be a better way of doing
-things than what we already have, I don't know. Last time I had raised
-this question and power people had various views. In the end, Pavel wanted
-this patchset to be in.  Pavel, can tell more here...
-
-To me this patchset looks interesting for couple of reasons.
-
-- Looks like an interesting feature where one can have a separate kernel
-  in memory and one can switch between the kernels on the fly. It can
-  be modified to have more than one kernel in memory at a time.
-
-- So far kexec was one directional. One can only kexec to new kernel and
-  old kernel was gone. Now this patchset makes kexec functionality kind
-  of bidirectional and this looks like logical extension and can lead
-  to intersting use cases in future.
-
-Huang also talks of using this feature for snapshotting kernel and
-invoking some BIOS code in protected mode. I am not very sure how exactly
-are they planning to use it. Huang, do you have more details on this?
-
-> What are the prospects of supporting other architectures?
-> 
-
-I think it should be doable on other architectures as well where kexec
-is supported. Can't think of a reason why it can't be. Huang, what do
-you think?
-
-> Who maintains kexec-tools, and are they OK with merging up the
-> corresponding changes?
-> 
-
-I think Eric still has the ownership of kexec-tools. But it has been
-long since kexec-tools has been updated. Now simon horman is maintaining
-a separate tree, kexec-tools-testing, and all the active development
-is taking place there.
-
-Huang has not exactly posted kexec-tools patches but has given link
-to kexec-tools patches and no body has objected so far. I am CCing it
-to Simon Horman, if he sees any issues.
-
-Thanks
-Vivek
+But main reason I'd like kjump to be in is different -- it should be
+useful to stuff like "dump but continue running", etc...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
