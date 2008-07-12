@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Sat, 12 Jul 2008 15:55:02 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0807121551590.17776-100000__27527.2700972439$1215892739$gmane$org@netrider.rowland.org>
-References: <m1ej5z4v7v.fsf@frodo.ebiederm.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor
+	register on resume
+Date: Sat, 12 Jul 2008 22:47:49 +0200
+Message-ID: <200807122247.50851.rjw__16022.6144748323$1215895711$gmane$org@sisk.pl>
+References: <200807010148.02135.rjw@sisk.pl> <200807122051.25634.rjw@sisk.pl>
+	<48791484.4010408@myrealbox.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1ej5z4v7v.fsf@frodo.ebiederm.org>
+In-Reply-To: <48791484.4010408@myrealbox.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Andy Lutomirski <luto@myrealbox.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Jul 2008, Eric W. Biederman wrote:
-
-> > Forcing the second set of requests to filter through an extra software 
-> > layer is a clumsy way of accomplishing this.  There ought to be a 
-> > better approach.
+On Saturday, 12 of July 2008, Andy Lutomirski wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday, 12 of July 2008, Andy Lutomirski wrote:
+> >> My Lenovo X61s fails to resume if I suspend it from within X, on both 
+> >> 2.6.26-rc9 and recent wireless-testing.  2.6.26-rc8 is fine, as is 
+> >> wireless-testing with 4b4f7280 reverted.  My in-progress bisect between 
+> >> -rc8 and -rc9 is also consistent with this being the problem.
+> >>
+> >> The symptom is that, when I push the power button to resume, the hard 
+> >> drive light turns on, the fan turns on, then the hard drive light turns 
+> >> off, the sleep light stays on, and the fan keeps running.  Sometimes the 
+> >> battery light will blink off very briefly (1/4 sec, maybe) every few 
+> >> seconds.  The system is locked hard at this point.
+> >>
+> >> I'm using Ubuntu Hardy userspace.
+> > 
+> > Well, that's bad.
+> > 
+> > There is the bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=11064
+> > for this bug and you've just confirmed my suspicion that this particular
+> > commit is to blame.
+> > 
+> > Can you please see if the appended patch changes anything?
 > 
-> The point was something different.  The reasons we can not store the
-> state of the system with the hardware devices logically hot unplugged
-> (and thus reuse all of the find device hotplug methods) is because
-> things like the filesystem layer don't know how to cope with their
-> block devices going away an coming back.
+> I suspended and resumed OK.  Then I rebooted and tried again, and it failed.
 
-This is not how the procedure works.  During hibernation, block devices
-are not logically hot-unplugged.  (If they were then they couldn't be
-used for writing the memory image.)  Instead, they are quiesced or
-suspended and their input queues are plugged.
+That's very strange.
 
-> That is the problem inserting an virtual software device in the middle
-> can solve.  If that works should there be a better way?  Certainly but
-> to prove it out starting with a block device wrapper is a trivial way to
-> go.
+Well, is suspend/resume 100% reliable without commit
+4b4f7280d7fd1feeff134c2cf2db32fd583b6c29 ?
 
-This sounds like a solution to a non-existent problem.
+Also, is the system 64-bit or 32-bit and do you use any user-space quirks to
+bring the graphics to life during resume?
 
-Alan Stern
+And what does happen if you suspend it from the console (no X)?
+
+Rafael
