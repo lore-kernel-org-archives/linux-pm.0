@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFT] x86 acpi: normalize segment descriptor
 	register on resume
-Date: Sat, 12 Jul 2008 22:47:49 +0200
-Message-ID: <200807122247.50851.rjw__16022.6144748323$1215895711$gmane$org@sisk.pl>
+Date: Sat, 12 Jul 2008 22:53:31 +0200
+Message-ID: <200807122253.32382.rjw__1868.23270419172$1215896027$gmane$org@sisk.pl>
 References: <200807010148.02135.rjw@sisk.pl> <200807122051.25634.rjw@sisk.pl>
-	<48791484.4010408@myrealbox.com>
+	<48791675.6060805@myrealbox.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48791484.4010408@myrealbox.com>
+In-Reply-To: <48791675.6060805@myrealbox.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,8 +20,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andy Lutomirski <luto@myrealbox.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Andy Lutomirski <luto@myrealbox.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Saturday, 12 of July 2008, Andy Lutomirski wrote:
@@ -48,16 +48,24 @@ On Saturday, 12 of July 2008, Andy Lutomirski wrote:
 > > 
 > > Can you please see if the appended patch changes anything?
 > 
-> I suspended and resumed OK.  Then I rebooted and tried again, and it failed.
+> More correctly:
+> 
+> If I suspend by typing pm-suspend or echo mem >/sys/power/state, then it 
+> resumes just fine.  If I log in to Gnome and push the suspend button, 
+> then it does not resume.  This seems to be the case with or without your 
+> patch.
 
-That's very strange.
+Is there an Intel graphics in your box?
 
-Well, is suspend/resume 100% reliable without commit
-4b4f7280d7fd1feeff134c2cf2db32fd583b6c29 ?
+> -rc8 and -rc9 with the original patch 4b4f7280 resume fine no matter how 
+> I suspend.
 
-Also, is the system 64-bit or 32-bit and do you use any user-space quirks to
-bring the graphics to life during resume?
+That's _really_ strange.
 
-And what does happen if you suspend it from the console (no X)?
+In fact I have only one explanation, which is that the Gnome suspend button
+causes some user-space quirks to be applied, which are harmful and break the
+resume.  Also, without commit 4b4f7280 those quirks might have not been really
+executed.  Peter, does it sound reasonable?
 
+Thanks,
 Rafael
