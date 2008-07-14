@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFT] x86 acpi: normalize segment descriptor
 	register on resume
-Date: Mon, 14 Jul 2008 22:09:53 +0200
-Message-ID: <200807142209.54841.rjw__25862.2371162803$1216066325$gmane$org@sisk.pl>
-References: <200807010148.02135.rjw@sisk.pl> <487A67C3.50000@zytor.com>
-	<487AD37A.2050903@zytor.com>
+Date: Mon, 14 Jul 2008 22:10:41 +0200
+Message-ID: <200807142210.43035.rjw__7693.53142609379$1216066464$gmane$org@sisk.pl>
+References: <200807010148.02135.rjw@sisk.pl> <200807132229.43140.rjw@sisk.pl>
+	<487ABB81.8020100@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <487AD37A.2050903@zytor.com>
+In-Reply-To: <487ABB81.8020100@zytor.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,18 +25,17 @@ Cc: Andy Lutomirski <luto@myrealbox.com>, LKML <linux-kernel@vger.kernel.org>, A
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, 14 of July 2008, H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
+> Rafael J. Wysocki wrote:
 > > 
-> > The most likely explanation for this is that the VESA BIOS expects to be 
-> > entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real 
-> > Mode.  Here is a completely untested patch which changes the segment 
-> > descriptors to Big Real Mode instead.  It would be worth testing out.
+> > If s3_bios depends on the (invalid) contents of the hidden part of any segment
+> > register, it's just terminally broken.
 > > 
 > 
-> ... and here is one that actually has a prayer of actually working.
+> Depending on it being in Big Real Mode isn't all that broken, however, 
+> especially on laptops where the vendor has control over the system 
+> BIOS/video BIOS.
+> 
+> Enabling BRM by default *shouldn't* break anything, so it might be what 
+> we want to do anyway.
 
-It works on my box and if that's the same as the one you attached to the
-Bugzilla entry, it has also been reported to work on an X61s.
-
-Thanks,
-Rafael
+Agreed.
