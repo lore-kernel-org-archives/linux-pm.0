@@ -1,15 +1,18 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor
-	register on resume
-Date: Sun, 13 Jul 2008 21:18:02 -0700
-Message-ID: <487AD37A.2050903@zytor.com>
-References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com>
-	<487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl>
-	<487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Date: Mon, 14 Jul 2008 07:46:44 +0200
+Message-ID: <20080714054644.GC20258__23251.4112060473$1216014487$gmane$org@elf.ucw.cz>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	<20080708145051.GA14745@redhat.com>
+	<20080711122131.b6461ab1.akpm@linux-foundation.org>
+	<20080711201149.GB3298@redhat.com>
+	<1215824537.7319.7.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------090300060600030007040608"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <487A67C3.50000@zytor.com>
+Content-Disposition: inline
+In-Reply-To: <1215824537.7319.7.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +22,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andy Lutomirski <luto@myrealbox.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Horms <horms@verge.net.au>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090300060600030007040608
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-H. Peter Anvin wrote:
+On Sat 2008-07-12 11:02:17, Nigel Cunningham wrote:
+> Hi.
 > 
-> The most likely explanation for this is that the VESA BIOS expects to be 
-> entered in Big Real Mode (*.limit = 0xffffffff) instead of ordinary Real 
-> Mode.  Here is a completely untested patch which changes the segment 
-> descriptors to Big Real Mode instead.  It would be worth testing out.
+> On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
+> > Hi Andrew,
+> > 
+> > We can use this patchset for hibernation, but can it be a better way of doing
+> > things than what we already have, I don't know. Last time I had raised
+> > this question and power people had various views. In the end, Pavel wanted
+> > this patchset to be in.  Pavel, can tell more here...
+> > 
+> > To me this patchset looks interesting for couple of reasons.
+> > 
+> > - Looks like an interesting feature where one can have a separate kernel
+> >   in memory and one can switch between the kernels on the fly. It can
+> >   be modified to have more than one kernel in memory at a time.
 > 
+> I'm not sure how useful that would be, though. I already have
+> functionality in TuxOnIce which allows you to resume a different image
+> instead of powering off (roughly the same thing when combined with not
+> removing the image after resuming). It was neat when testing to be
+> able
 
-... and here is one that actually has a prayer of actually working.
+Beaty of kjump is that it is supposed to used on half-broken system,
+so it is useful for debugging.
 
-	-hpa
+> > - So far kexec was one directional. One can only kexec to new kernel and
+> >   old kernel was gone. Now this patchset makes kexec functionality kind
+> >   of bidirectional and this looks like logical extension and can lead
+> >   to intersting use cases in future.
+> 
+> Ah. You mean keeping both kernels in memory at the same time? In the
+> above, I was replacing one image with another.
 
---------------090300060600030007040608
-Content-Type: text/x-patch;
- name="linux-2.6.26-bigrm-wakeup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6.26-bigrm-wakeup.patch"
-
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index 36af01f..130711f 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -23,6 +23,15 @@ static unsigned long acpi_realmode;
- static char temp_stack[10240];
- #endif
- 
-+/* XXX: this macro should move to asm-x86/segment.h and be shared with the
-+   boot code... */
-+#define GDT_ENTRY(flags, base, limit)		\
-+	(((u64)(base & 0xff000000) << 32) |	\
-+	 ((u64)flags << 40) |			\
-+	 ((u64)(limit & 0x00ff0000) << 32) |	\
-+	 ((u64)(base & 0x00ffffff) << 16) |	\
-+	 ((u64)(limit & 0x0000ffff)))
-+
- /**
-  * acpi_save_state_mem - save kernel state
-  *
-@@ -58,11 +67,11 @@ int acpi_save_state_mem(void)
- 			((char *)&header->wakeup_gdt - (char *)acpi_realmode))
- 				<< 16);
- 	/* GDT[1]: real-mode-like code segment */
--	header->wakeup_gdt[1] = (0x009bULL << 40) +
--		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	header->wakeup_gdt[1] =
-+		GDT_ENTRY(0x809b, acpi_wakeup_address, 0xfffff);
- 	/* GDT[2]: real-mode-like data segment */
--	header->wakeup_gdt[2] = (0x0093ULL << 40) +
--		((u64)acpi_wakeup_address << 16) + 0xffff;
-+	header->wakeup_gdt[2] =
-+		GDT_ENTRY(0x8093, acpi_wakeup_address, 0xfffff);
- 
- #ifndef CONFIG_64BIT
- 	store_gdt((struct desc_ptr *)&header->pmode_gdt);
-
---------------090300060600030007040608
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---------------090300060600030007040608--
+Yep, kjump keeps both kernels loaded at the same time.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
