@@ -1,16 +1,15 @@
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [RFC PATCH 0/4] save and restore ACPI NVS memory
-	during hibernation
-Date: Fri, 11 Jul 2008 14:56:17 -0700
-Message-ID: <86802c440807111456k5d46a46co18bee343541fed8c__33106.118362821$1216042957$gmane$org@mail.gmail.com>
-References: <1215051868.5628.32.camel@rzhang-dt.sh.intel.com>
-	<200807112118.35562.rjw@sisk.pl> <20080711205253.GI6843@elf.ucw.cz>
-	<200807112259.56263.rjw@sisk.pl>
+From: "huang ying" <huang.ying.caritas@gmail.com>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Date: Mon, 14 Jul 2008 21:30:31 +0800
+Message-ID: <851fc09e0807140630w6edfa613oc176c6479808a6bd__6816.00557077235$1216043328$gmane$org@mail.gmail.com>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	<20080708145051.GA14745@redhat.com>
+	<20080711122131.b6461ab1.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807112259.56263.rjw@sisk.pl>
+In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,59 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 11, 2008 at 1:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, 11 of July 2008, Pavel Machek wrote:
->> On Fri 2008-07-11 21:18:34, Rafael J. Wysocki wrote:
->> > On Friday, 11 of July 2008, Pavel Machek wrote:
->> > > On Wed 2008-07-09 21:37:18, Rafael J. Wysocki wrote:
->> > > > On Tuesday, 8 of July 2008, Pavel Machek wrote:
->> > > > > Hi!
->> > > > >
->> > > > > > According to the ACPI spec, ACPI NVS memory region is required to
->> > > > > > be saved/restored by OS during hibernation.
->> > > > > >
->> > > > > > Section 15.3.2 ACPI Spec 3.0b,
->> > > > > > "OSPM will call the _PTS control method some time before entering
->> > > > > > a sleeping state, to allow the platform???s AML code to update
->> > > > > > this memory image before entering the sleeping state.
->> > > > > > After the system awakes from an S4 state, OSPM will restore this
->> > > > > > memory area and call the _WAK control method to enable the BIOS
->> > > > > > to reclaim its memory image."
->> > > > > >
->> > > > > > This patch set add the mechanism to save/restore ACPI NVS memory
->> > > > > > during hibernation.
->> > > > > >
->> > > > > > Patch 01: call platform_begin before swsusp_shrink_memory.
->> > > > > >     So that we can allocate enough pages for ACPI NVS memory
->> > > > > >     before shrink the memory.
->> > > > >
->> > > > > Why is it neccessary to allocate memory for a copy? We should be able
->> > > > > to save ACPI NVS area same way we are saving kernel pages, no?
->> > > >
->> > > > Because we want to restore it from the hibernated kernel (when it gets control
->> > > > back again).
->> > >
->> > > Why is that important? So we can run some ACPI methods from hibernated
->> > > kernel before restoring it?
+On Sat, Jul 12, 2008 at 3:21 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
+>
+>> On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
+>> > This patch provides an enhancement to kexec/kdump. It implements
+>> > the following features:
 >> >
->> > We're supposed to restore it right prior to executing _WAK, which is after
->> > we've executed _BFS.  This is a bit theoretical, because no one seems to
->> > actaully implement _BFS, but well.
+>> > - Backup/restore memory used by the original kernel before/after
+>> >   kexec.
+>> >
+>> > - Save/restore CPU state before/after kexec.
+>> >
 >>
->> Could we just call _BFS from the "loading" kernel, instead? That would
->> save us that copying code...
+>> Hi Huang,
+>>
+>> In general this patch set looks good enough to live in -mm and
+>> get some testing going.
+>>
+>> To me, adding capability to return back to original kernel looks
+>> like a logical extension to kexec functionality.
 >
-> I'd prefer not to, because that would require the boot kernel to support ACPI,
-> which need not (and in fact should not IMO) be the case at present.
+> Exciting ;)  It's much less code than I expected.
 >
-> Anyway, we'd have to either copy the NVS data into memory which is mapped and
-> can be saved, or to map the NVS area in order to save/restore it, which I
-> wouldn't like to do.
+> I don't think I understand the feature any more.  Once upon a time we
+> thought that this might become a new and better (or at least
+> better-code-sharing) way of doing suspend-to-disk.  How far are we from
+> that?
 
-io_remap doesn't work at that time?
+At least there are still issues as follow:
 
-YH
+- We need a mechanism to pass some information (such as backup pages
+map) from hibernated kernel to hibernating kernel. Maybe in C calling
+convention.
+- To load hibernation image via /sbin/kexec, the segment number
+constraint of sys_kexec_load needs to be extended (maybe via
+multi-stage loading).
+- Make kexec based hibernation compatible with ACPI S4.
+- Extend makedumpfile utility for kexec based hibernation.
+
+> What are the prospects of supporting other architectures?
+
+I will work on x86_64 supporting.
+
+> Who maintains kexec-tools, and are they OK with merging up the
+> corresponding changes?
+
+I will work with kexec-tools mailing list for corresponding kexec-tools patches.
+
+Best Regards,
+Huang Ying
