@@ -1,22 +1,18 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [RFT] x86 acpi: normalize segment descriptor
-	register on resume
-Date: Mon, 14 Jul 2008 08:22:29 -0300
-Message-ID: <20080714112229.GA20593__13041.9810572223$1216034848$gmane$org@khazad-dum.debian.net>
-References: <48793A0E.3050803@myrealbox.com> <200807130133.12324.rjw@sisk.pl>
-	<20080713091524.GA29907@elte.hu>
-	<20080713120253.GA27582@srcf.ucam.org>
-	<487A2431.2050103@myrealbox.com>
-	<487A4CB7.1080001@firstfloor.org> <487A62B3.8010207@zytor.com>
-	<487A63D2.9040006@firstfloor.org>
-	<20080714012206.GA11882@khazad-dum.debian.net>
-	<20080714061429.GF20258@elf.ucw.cz>
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Date: Mon, 14 Jul 2008 09:09:55 -0400
+Message-ID: <20080714130955.GA16673__32275.1259235249$1216041126$gmane$org@redhat.com>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	<20080708145051.GA14745@redhat.com>
+	<20080711122131.b6461ab1.akpm@linux-foundation.org>
+	<20080711201149.GB3298@redhat.com>
+	<1215824537.7319.7.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080714061429.GF20258@elf.ucw.cz>
+In-Reply-To: <1215824537.7319.7.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,71 +22,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andy Lutomirski <luto@myrealbox.com>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Horms <horms@verge.net.au>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 Jul 2008, Pavel Machek wrote:
-> On Sun 2008-07-13 22:22:06, Henrique de Moraes Holschuh wrote:
-> > On Sun, 13 Jul 2008, Andi Kleen wrote:
-> > > It probably switches to protected mode. I noticed this on my old
-> > > Fujitsu laptop when I tried to make the S3 wakeup run in the s2ram x86 emulator
-> > > and found it entered protected mode at some point, which x86emu
-> > > didn't support.
-> > > 
-> > > I guess Lenovo is doing the same.
-> > > 
-> > > And that protected mode code relies on some GDT values that have been
-> > > loaded earlier when the BIOS also went into protected mode.
-> > > 
-> > > It seems the BIOS programmers really don't like real mode anymore.
-> > > Somehow understandable.
-> > 
-> > If it were just Lenovo, it shouldn't be too difficult to get them to fix the
-> > BIOS.  But since other vendors have the same problem, that won't fly as a
-> > solution.
+On Sat, Jul 12, 2008 at 11:02:17AM +1000, Nigel Cunningham wrote:
+> Hi.
 > 
-> With all the BIOSes in field, practically impossible to update? (My
-> x60 has no CDrom..) No, I don't think we can expect fix from BIOS vendors.
+> On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
+> > Hi Andrew,
+> > 
+> > We can use this patchset for hibernation, but can it be a better way of doing
+> > things than what we already have, I don't know. Last time I had raised
+> > this question and power people had various views. In the end, Pavel wanted
+> > this patchset to be in.  Pavel, can tell more here...
+> > 
+> > To me this patchset looks interesting for couple of reasons.
+> > 
+> > - Looks like an interesting feature where one can have a separate kernel
+> >   in memory and one can switch between the kernels on the fly. It can
+> >   be modified to have more than one kernel in memory at a time.
+> 
+> I'm not sure how useful that would be, though. I already have
+> functionality in TuxOnIce which allows you to resume a different image
+> instead of powering off (roughly the same thing when combined with not
+> removing the image after resuming). It was neat when testing to be able
+> to switch back and forth, and I developed the code because I imagined
+> that it could form part of the foundation for switching between a login
+> screen and users' stored sessions. Is this what you're imagining?
+> 
 
-I explicitly said it wouldn't fly as a solution, because I doubt we could
-expect a fix from EVERY BIOS vendor that has such problems.  That sort of
-account for machines that have not been updated, too.
+I did not think of that. I thought of two things.
 
-But I do think "your BIOS is broken and there is an update available from
-the vendor, apply it" *IS* a valid response if a workaround is not
-desireable for some reason (e.g. it is too complex, or it would make the
-kernel worse for a lot of others that did things right and don't have the
-bug).  I don't think we need to fear that happening on this particular
-issue, but still...
+- This can possibly be used for non-disruptive kernel crash dumping, where
+  if a user wants to capture the snapshot of kernel and then continue
+  to work. Thought, it might be little heavy weight solution and kernel
+  state also has changed a bit by the time dump is captured (because of
+  all the suspend code).
 
-As for your X60, you can use a USB mass storage device like a pendrive.
-Someone already did all the hard work:
-http://thinkwiki.org/wiki/BIOS_Upgrade/X_Series
+- One can have two distributions installed on a single system and switch
+  between two booted kernels in few seconds.
 
-In fact, as I rule, I cannot recommend using anything but the latest BIOS
-and EC releases on a ThinkPad.  That thing is too complex to live without
-updates, just like the kernel (even if, just like the kernel, upgrading the
-BIOS and EC can cause new bugs).  Look at the changelog for your X60 BIOS
-and EC firmware at
-http://www-307.ibm.com/pc/support/site.wss/MIGR-65345.html.  It has some
-scary stuff fixed, and that's just what Lenovo decided to disclose, those
-changelogs are NOT complete and often fail to list changes that are of
-interest to Linux (such as fixes to the ACPI tables).
+> > - So far kexec was one directional. One can only kexec to new kernel and
+> >   old kernel was gone. Now this patchset makes kexec functionality kind
+> >   of bidirectional and this looks like logical extension and can lead
+> >   to intersting use cases in future.
+> 
+> Ah. You mean keeping both kernels in memory at the same time? In the
+> above, I was replacing one image with another.
 
-In fact, look at this interesting entry on the X60 BIOS changelog:
-Version 7BETD3WW (2.14):
-	(Fix) Memory address more than 4GB can't be accessed under Vista
-	WindowsPE. (BIOS)
+Yes, here both the kernels will remain in the RAM. In fact it should be
+easily possible to keep more than 2 kernels in memory and switch between
+these.
 
-It is also listed for the X61 and the tablets on their BIOS updates.  Maybe
-that 4GB change could be related to the issue at hand?
-
-It would be nice to get a report on the Big Realmote patch, and also know
-the BIOS version of ThinkPads that have (and don't have) the bug.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Thanks
+Vivek
