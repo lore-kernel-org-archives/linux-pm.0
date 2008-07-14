@@ -1,16 +1,15 @@
-From: "huang ying" <huang.ying.caritas@gmail.com>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Mon, 14 Jul 2008 21:30:31 +0800
-Message-ID: <851fc09e0807140630w6edfa613oc176c6479808a6bd__6816.00557077235$1216043328$gmane$org@mail.gmail.com>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com>
-	<20080708145051.GA14745@redhat.com>
-	<20080711122131.b6461ab1.akpm@linux-foundation.org>
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mm 2/2] kexec jump -v12: save/restore device
+	state
+Date: Mon, 14 Jul 2008 09:48:05 -0400
+Message-ID: <20080714134805.GD16673__38350.0123549767$1216043712$gmane$org@redhat.com>
+References: <1215401124.4660.5.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080711122131.b6461ab1.akpm@linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <1215401124.4660.5.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 12, 2008 at 3:21 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 8 Jul 2008 10:50:51 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
->
->> On Mon, Jul 07, 2008 at 11:25:22AM +0800, Huang Ying wrote:
->> > This patch provides an enhancement to kexec/kdump. It implements
->> > the following features:
->> >
->> > - Backup/restore memory used by the original kernel before/after
->> >   kexec.
->> >
->> > - Save/restore CPU state before/after kexec.
->> >
->>
->> Hi Huang,
->>
->> In general this patch set looks good enough to live in -mm and
->> get some testing going.
->>
->> To me, adding capability to return back to original kernel looks
->> like a logical extension to kexec functionality.
->
-> Exciting ;)  It's much less code than I expected.
->
-> I don't think I understand the feature any more.  Once upon a time we
-> thought that this might become a new and better (or at least
-> better-code-sharing) way of doing suspend-to-disk.  How far are we from
-> that?
+On Mon, Jul 07, 2008 at 11:25:24AM +0800, Huang Ying wrote:
+> This patch implements devices state save/restore before after kexec.
+> 
+> 
+> This patch together with features in kexec_jump patch can be used for
+> following:
+> 
+> - A simple hibernation implementation without ACPI support. You can
+>   kexec a hibernating kernel, save the memory image of original system
+>   and shutdown the system. When resuming, you restore the memory image
+>   of original system via ordinary kexec load then jump back.
+> 
+> - Kernel/system debug through making system snapshot. You can make
+>   system snapshot, jump back, do some thing and make another system
+>   snapshot.
+> 
+> - Cooperative multi-kernel/system. With kexec jump, you can switch
+>   between several kernels/systems quickly without boot process except
+>   the first time. This appears like swap a whole kernel/system out/in.
+> 
+> - A general method to call program in physical mode (paging turning
+>   off). This can be used to invoke BIOS code under Linux.
+> 
 
-At least there are still issues as follow:
+Huang,
 
-- We need a mechanism to pass some information (such as backup pages
-map) from hibernated kernel to hibernating kernel. Maybe in C calling
-convention.
-- To load hibernation image via /sbin/kexec, the segment number
-constraint of sys_kexec_load needs to be extended (maybe via
-multi-stage loading).
-- Make kexec based hibernation compatible with ACPI S4.
-- Extend makedumpfile utility for kexec based hibernation.
+You have cited various possible use cases of this patchset. Which is
+the specific feature you are planning to use?
 
-> What are the prospects of supporting other architectures?
+Thinking more about it, what's the compelling feature out of this list
+which makes this patchset a strong candidate for inclusion?
 
-I will work on x86_64 supporting.
+Regarding hibernation, Rafael does not think this is the way to go 
+for future.
 
-> Who maintains kexec-tools, and are they OK with merging up the
-> corresponding changes?
+Regarding ability to have two kernels in memory at the same time and
+be able to jump between these two looks like a cool feature but who
+is actually planning to use it?
 
-I will work with kexec-tools mailing list for corresponding kexec-tools patches.
+So I am curious to know, which is the compelling feature you are planning
+to use?
 
-Best Regards,
-Huang Ying
+Thanks
+Vivek
