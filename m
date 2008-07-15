@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PCI PM: Fix pci_prepare_to_sleep
-Date: Mon, 14 Jul 2008 23:40:04 +0200
-Message-ID: <200807142340.05484.rjw__34680.1053187393$1216071611$gmane$org@sisk.pl>
-References: <200807012356.26669.rjw@sisk.pl> <200807132245.07414.rjw@sisk.pl>
-	<200807141427.34022.jbarnes@virtuousgeek.org>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH -mm 2/2] kexec jump -v12: save/restore device
+	state
+Date: Tue, 15 Jul 2008 13:19:04 +0800
+Message-ID: <1216099144.22944.35.camel__42114.5926615738$1216099020$gmane$org@caritas-dev.intel.com>
+References: <1215401124.4660.5.camel@caritas-dev.intel.com>
+	<20080714134805.GD16673@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807141427.34022.jbarnes@virtuousgeek.org>
-Content-Disposition: inline
+In-Reply-To: <20080714134805.GD16673@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Zhao Yakui <yakui.zhao@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 14 of July 2008, Jesse Barnes wrote:
-> On Sunday, July 13, 2008 1:45 pm Rafael J. Wysocki wrote:
-> > Hi Jesse,
-> >
-> > The recently introduced pci_prepare_to_sleep() needs the following fix,
-> > because there are systems which are not power manageable by ACPI (ie. ACPI
-> > doesn't provide methods to put the device into low power states and back),
-> > but require ACPI hooks to be executed for wake-up to work.
-> >
-> > Please apply.
-> >
-> > Thanks,
-> > Rafael
-> >
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Fix pci_prepare_to_sleep() to work on systems that are not power
-> > manageable by ACPI (ie. ACPI doesn't provide methods to put the
-> > device into low power states and back into the full power state), but
-> > require ACPI hooks to be executed for wake-up to work.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hi, Vivek,
+
+On Mon, 2008-07-14 at 09:48 -0400, Vivek Goyal wrote:
+[...]
+> You have cited various possible use cases of this patchset. Which is
+> the specific feature you are planning to use?
+
+I think two features are useful:
+
+1. Kexec based hibernation
+2. Do kdump then continue
+
+> Thinking more about it, what's the compelling feature out of this list
+> which makes this patchset a strong candidate for inclusion?
 > 
-> Based on what you've told me so far about the number of ACPI vs. native wakeup 
-> methods & problems, I'm starting to get a little worried that making this 
-> stuff work right will require lots of platform specific quirks.
+> Regarding hibernation, Rafael does not think this is the way to go 
+> for future.
 
-Yes, this is likely.
+I think kexec based hibernation can be a better hibernation scheme, at
+least more code sharing.
 
-Also, having looked at several network adapters' suspend and resume routines,
-I think we'll need to do some fine tuning here and there.
-
-> I guess that's just par for the course though, and this patch looks fine, so
-> I just applied it to my linux-next branch.
-
-Thanks!
-
-Rafael
+Best Regards,
+Huang Ying
