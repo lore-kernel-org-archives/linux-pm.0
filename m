@@ -1,15 +1,19 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATCH -mm 2/2] kexec jump -v12: save/restore device
-	state
-Date: Tue, 15 Jul 2008 13:19:04 +0800
-Message-ID: <1216099144.22944.35.camel__42114.5926615738$1216099020$gmane$org@caritas-dev.intel.com>
-References: <1215401124.4660.5.camel@caritas-dev.intel.com>
-	<20080714134805.GD16673@redhat.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFT] x86 acpi: normalize segment descriptor
+	register on resume
+Date: Wed, 16 Jul 2008 16:23:54 +0200
+Message-ID: <20080716142354.GA20897__3323.94241490892$1216218409$gmane$org@elte.hu>
+References: <200807010148.02135.rjw@sisk.pl> <487A2431.2050103@myrealbox.com>
+	<487A4CB7.1080001@firstfloor.org> <200807132115.08230.rjw@sisk.pl>
+	<487A617B.80707@firstfloor.org> <487A67C3.50000@zytor.com>
+	<487AD37A.2050903@zytor.com>
+	<cb0375e10807160713r5aa2bb82md1e0b3b349ca8115@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080714134805.GD16673@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <cb0375e10807160713r5aa2bb82md1e0b3b349ca8115@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +23,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Andrew Lutomirski <luto@myrealbox.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, public-kernel-testers-u79uwXL29TY76Z2rM5mHXA@lo.gmane.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Vivek,
 
-On Mon, 2008-07-14 at 09:48 -0400, Vivek Goyal wrote:
-[...]
-> You have cited various possible use cases of this patchset. Which is
-> the specific feature you are planning to use?
+* Andrew Lutomirski <luto@myrealbox.com> wrote:
 
-I think two features are useful:
+> Sorry for the delay in testing.  This appears to work and fix the problem.
 
-1. Kexec based hibernation
-2. Do kdump then continue
+great, thanks!
 
-> Thinking more about it, what's the compelling feature out of this list
-> which makes this patchset a strong candidate for inclusion?
-> 
-> Regarding hibernation, Rafael does not think this is the way to go 
-> for future.
+Peter's fix is now upstream as:
 
-I think kexec based hibernation can be a better hibernation scheme, at
-least more code sharing.
+| commit 3bf2e77453a87c22eb57ed4926760ac131c84459
+| Author: H. Peter Anvin <hpa@zytor.com>
+| Date:   Sun Jul 13 21:18:02 2008 -0700
+|
+|    x86, suspend, acpi: enter Big Real Mode
 
-Best Regards,
-Huang Ying
+and has been requested to be added to v2.6.26.1 as well.
+
+	Ingo
