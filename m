@@ -1,50 +1,75 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: Linux Power Management mini-summit at OLS
-Date: Thu, 17 Jul 2008 17:01:45 -0400 (EDT)
-Message-ID: <alpine.LFD.1.10.0807171701170.16742@localhost.localdomain>
-References: <486BB86B.9020803@redhat.com>
+Subject: Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
+Date: Thu, 17 Jul 2008 17:27:32 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <486BB86B.9020803@redhat.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-not full.
+We'll be in The Rideau Suite in Les-Suites
+Tuesday July 22nd 8:30-18:30.
 
-I look forward to seeing you Tuesday.
+Thanks to HP for sponsoring
+lunch at 12:30 as well as snacks at 10:00 and 15:30.
+We'll wing it for dinner.
 
-cheers,
+On linux-pm (sorry, on sabbatical I've been
+bad about keeping up on email) I've seen
+intent to attend from:
+
+Len Brown <len.brown@intel.com>
+Alan Stern <stern@rowland.harvard.edu>
+Dipankar Sarma <dipankar@in.ibm.com>
+Rafael J. Wysocki <rjw@sisk.pl>
+"Woodruff, Richard" <r-woodruff2@ti.com>
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Matt Domsch <Matt_Domsch@dell.com>
+Jarod Wilson <jwilson@redhat.com>
+Tim Bird <tim.bird@am.sony.com>
+Paul Mundt <lethal@linux-sh.org>
+Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
+
+Several send their regrets:
+Dave Jones
+Pavel Machek
+Arjan van de Ven
+
+If you plan to attend, please let me know,
+because the folks at OLS want to know,
+to simplify OLS registration.
+
+thanks,
+-Len
+---
+
+We are again planning a Linux Power Management Mini-Summit preceding OLS.
+This year we are looking at a single day, Tuesday July 22nd.
+
+OLS is generously supporting mini-summits by providing the room
+and projector: http://www.linuxsymposium.org/2008/minisummits.php
+
+If you are interested in sponsoring the food or
+other forum needs, please let me know.
+
+Minutes from last year's meeting can be found here:
+http://lwn.net/Articles/249019
+
+If you have feedback on last year's meeting that
+we can use to improve this year's, please speak up.
+
+The feedback at the time was pretty positive, so I'm thinking
+that unless there are new best-known-methods, that we'll stick
+with the same open method of self-nominated attendees,
+an agenda provoked by discussion on linux-pm ahead of time
+and consensus of attendees, and a forum small enough to support
+a single focused discussion.
+
+(yes, one improvement I plan on this year is to publish minutes immediately.
+ OLS was sort of hectic for me last year and that caused a delay)
+
+thanks,
 -Len
 
-On Wed, 2 Jul 2008, Jarod Wilson wrote:
-
-> Hi Len,
-> 
-> If its not already full, I'd like to sit in on the Linux Power Management
-> mini-summit at OLS. I maintain Red Hat's cpuspeed package, which has grown
-> into something more than an init script for the cpuspeed daemon -- it also
-> performs all our in-kernel cpu freq scaling bits.
-> 
-> In general, I'm interested in the entire power management space, but
-> specifically, I'd like to have some discussion on ways RH/Fedora can improve
-> what we're doing w/our freq scaling setup and/or hopefully ways to make the
-> initscript not need to do anything anymore for in-kernel governors.
-> 
-> Thanks much,
-> 
-> -- 
-> Jarod Wilson
-> jwilson@redhat.com
-> 
