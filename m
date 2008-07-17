@@ -1,23 +1,13 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 10/10] ARM: OMAP2: Clock: Combine 34xx l3_icks
-	and l4_icks
-Date: Wed, 16 Jul 2008 18:19:15 +0300
-Message-ID: <1216221555-18958-11-git-send-email-tony__14190.0876806632$1216221880$gmane$org@atomide.com>
-References: <1216221555-18958-1-git-send-email-tony@atomide.com>
-	<1216221555-18958-2-git-send-email-tony@atomide.com>
-	<1216221555-18958-3-git-send-email-tony@atomide.com>
-	<1216221555-18958-4-git-send-email-tony@atomide.com>
-	<1216221555-18958-5-git-send-email-tony@atomide.com>
-	<1216221555-18958-6-git-send-email-tony@atomide.com>
-	<1216221555-18958-7-git-send-email-tony@atomide.com>
-	<1216221555-18958-8-git-send-email-tony@atomide.com>
-	<1216221555-18958-9-git-send-email-tony@atomide.com>
-	<1216221555-18958-10-git-send-email-tony@atomide.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Linux Power Management mini-summit at OLS
+Date: Thu, 17 Jul 2008 17:01:45 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0807171701170.16742@localhost.localdomain>
+References: <486BB86B.9020803@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1216221555-18958-10-git-send-email-tony@atomide.com>
+In-reply-to: <486BB86B.9020803@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,78 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+To: Jarod Wilson <jwilson@redhat.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogSMO2Z2FuZGVyIEpvdW5pIDxqb3VuaS5ob2dhbmRlckBub2tpYS5jb20+CgpFLmcgZHNz
-X2wzX2ljayBhbmQgZHNzX2w0X2ljayBoYXZlIHNhbWUgZ2F0aW5nIGNvbnRyb2wuIEhhdmluZyBv
-d24KY2xvY2sgZm9yIGJvdGggb2YgdGhlbSBjYXVzZXMgcmFjZSBjb25kaXRpb24gYmV0d2VlbiBl
-bmFibGUgLyBkaXNhYmxlLgoKVGhpcyBwYXRjaCBjb21iaW5lcyB0aGlzIGtpbmQgb2YgY2xvY2tz
-IGFuZCBuYW1lcyBuZXcgY2xvY2sgYXMgPG1vZHVsZT5faWNrLgoKU2lnbmVkLW9mZi1ieTogSm91
-bmkgSG9nYW5kZXIgPGpvdW5pLmhvZ2FuZGVyQG5va2lhLmNvbT4KQWNrZWQtYnk6IFBhdWwgV2Fs
-bXNsZXkgPHBhdWxAcHdzYW4uY29tPgpTaWduZWQtb2ZmLWJ5OiBUb255IExpbmRncmVuIDx0b255
-QGF0b21pZGUuY29tPgoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtb21hcDIvY2xvY2szNHh4
-LmggYi9hcmNoL2FybS9tYWNoLW9tYXAyL2Nsb2NrMzR4eC5oCmluZGV4IGU4ZjIyYzQuLmExZGI1
-NTEgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL21hY2gtb21hcDIvY2xvY2szNHh4LmgKKysrIGIvYXJj
-aC9hcm0vbWFjaC1vbWFwMi9jbG9jazM0eHguaApAQCAtMTE4OSwyNyArMTE4OSwzNCBAQCBzdGF0
-aWMgY29uc3Qgc3RydWN0IGNsa3NlbCBnZnhfbDNfY2xrc2VsW10gPSB7CiAJeyAucGFyZW50ID0g
-TlVMTCB9CiB9OwogCi1zdGF0aWMgc3RydWN0IGNsayBnZnhfbDNfZmNrID0gewotCS5uYW1lCQk9
-ICJnZnhfbDNfZmNrIiwKKy8qIFZpcnR1YWwgcGFyZW50IGNsb2NrIGZvciBnZnhfbDNfaWNrIGFu
-ZCBnZnhfbDNfZmNrICovCitzdGF0aWMgc3RydWN0IGNsayBnZnhfbDNfY2sgPSB7CisJLm5hbWUJ
-CT0gImdmeF9sM19jayIsCiAJLnBhcmVudAkJPSAmbDNfaWNrLAogCS5pbml0CQk9ICZvbWFwMl9p
-bml0X2Nsa3NlbF9wYXJlbnQsCiAJLmVuYWJsZV9yZWcJPSBPTUFQX0NNX1JFR0FERFIoR0ZYX01P
-RCwgQ01fSUNMS0VOKSwKIAkuZW5hYmxlX2JpdAk9IE9NQVBfRU5fR0ZYX1NISUZULAorCS5mbGFn
-cwkJPSBDTE9DS19JTl9PTUFQMzQzMEVTMSwKKwkucmVjYWxjCQk9ICZmb2xsb3dwYXJlbnRfcmVj
-YWxjLAorfTsKKworc3RhdGljIHN0cnVjdCBjbGsgZ2Z4X2wzX2ZjayA9IHsKKwkubmFtZQkJPSAi
-Z2Z4X2wzX2ZjayIsCisJLnBhcmVudAkJPSAmZ2Z4X2wzX2NrLAorCS5pbml0CQk9ICZvbWFwMl9p
-bml0X2Nsa3NlbF9wYXJlbnQsCiAJLmNsa3NlbF9yZWcJPSBPTUFQX0NNX1JFR0FERFIoR0ZYX01P
-RCwgQ01fQ0xLU0VMKSwKIAkuY2xrc2VsX21hc2sJPSBPTUFQX0NMS1NFTF9HRlhfTUFTSywKIAku
-Y2xrc2VsCQk9IGdmeF9sM19jbGtzZWwsCi0JLmZsYWdzCQk9IENMT0NLX0lOX09NQVAzNDMwRVMx
-IHwgUkFURV9QUk9QQUdBVEVTLAorCS5mbGFncwkJPSBDTE9DS19JTl9PTUFQMzQzMEVTMSB8IFJB
-VEVfUFJPUEFHQVRFUyB8CisJCQkJUEFSRU5UX0NPTlRST0xTX0NMT0NLLAogCS5jbGtkbV9uYW1l
-CT0gImdmeF8zNDMwZXMxX2Nsa2RtIiwKIAkucmVjYWxjCQk9ICZvbWFwMl9jbGtzZWxfcmVjYWxj
-LAogfTsKIAogc3RhdGljIHN0cnVjdCBjbGsgZ2Z4X2wzX2ljayA9IHsKIAkubmFtZQkJPSAiZ2Z4
-X2wzX2ljayIsCi0JLnBhcmVudAkJPSAmbDNfaWNrLAotCS5pbml0CQk9ICZvbWFwMl9pbml0X2Ns
-a19jbGtkbSwKLQkuZW5hYmxlX3JlZwk9IE9NQVBfQ01fUkVHQUREUihHRlhfTU9ELCBDTV9JQ0xL
-RU4pLAotCS5lbmFibGVfYml0CT0gT01BUF9FTl9HRlhfU0hJRlQsCi0JLmZsYWdzCQk9IENMT0NL
-X0lOX09NQVAzNDMwRVMxLAorCS5wYXJlbnQJCT0gJmdmeF9sM19jaywKKwkuZmxhZ3MJCT0gQ0xP
-Q0tfSU5fT01BUDM0MzBFUzEgfCBQQVJFTlRfQ09OVFJPTFNfQ0xPQ0ssCiAJLmNsa2RtX25hbWUJ
-PSAiZ2Z4XzM0MzBlczFfY2xrZG0iLAogCS5yZWNhbGMJCT0gJmZvbGxvd3BhcmVudF9yZWNhbGMs
-CiB9OwpAQCAtMjE1MywxOSArMjE2MCw5IEBAIHN0YXRpYyBzdHJ1Y3QgY2xrIGNhbV9tY2xrID0g
-ewogCS5yZWNhbGMJCT0gJm9tYXAyX2Nsa3NlbF9yZWNhbGMsCiB9OwogCi1zdGF0aWMgc3RydWN0
-IGNsayBjYW1fbDNfaWNrID0gewotCS5uYW1lCQk9ICJjYW1fbDNfaWNrIiwKLQkucGFyZW50CQk9
-ICZsM19pY2ssCi0JLmluaXQJCT0gJm9tYXAyX2luaXRfY2xrX2Nsa2RtLAotCS5lbmFibGVfcmVn
-CT0gT01BUF9DTV9SRUdBRERSKE9NQVAzNDMwX0NBTV9NT0QsIENNX0lDTEtFTiksCi0JLmVuYWJs
-ZV9iaXQJPSBPTUFQMzQzMF9FTl9DQU1fU0hJRlQsCi0JLmZsYWdzCQk9IENMT0NLX0lOX09NQVAz
-NDNYLAotCS5jbGtkbV9uYW1lCT0gImNhbV9jbGtkbSIsCi0JLnJlY2FsYwkJPSAmZm9sbG93cGFy
-ZW50X3JlY2FsYywKLX07Ci0KLXN0YXRpYyBzdHJ1Y3QgY2xrIGNhbV9sNF9pY2sgPSB7Ci0JLm5h
-bWUJCT0gImNhbV9sNF9pY2siLAorc3RhdGljIHN0cnVjdCBjbGsgY2FtX2ljayA9IHsKKwkvKiBI
-YW5kbGVzIGJvdGggTDMgYW5kIEw0IGNsb2NrcyAqLworCS5uYW1lCQk9ICJjYW1faWNrIiwKIAku
-cGFyZW50CQk9ICZsNF9pY2ssCiAJLmluaXQJCT0gJm9tYXAyX2luaXRfY2xrX2Nsa2RtLAogCS5l
-bmFibGVfcmVnCT0gT01BUF9DTV9SRUdBRERSKE9NQVAzNDMwX0NBTV9NT0QsIENNX0lDTEtFTiks
-CkBAIC0yMTk5LDE5ICsyMTk2LDkgQEAgc3RhdGljIHN0cnVjdCBjbGsgdXNiaG9zdF80OG1fZmNr
-ID0gewogCS5yZWNhbGMJCT0gJmZvbGxvd3BhcmVudF9yZWNhbGMsCiB9OwogCi1zdGF0aWMgc3Ry
-dWN0IGNsayB1c2Job3N0X2wzX2ljayA9IHsKLQkubmFtZQkJPSAidXNiaG9zdF9sM19pY2siLAot
-CS5wYXJlbnQJCT0gJmwzX2ljaywKLQkuaW5pdAkJPSAmb21hcDJfaW5pdF9jbGtfY2xrZG0sCi0J
-LmVuYWJsZV9yZWcJPSBPTUFQX0NNX1JFR0FERFIoT01BUDM0MzBFUzJfVVNCSE9TVF9NT0QsIENN
-X0lDTEtFTiksCi0JLmVuYWJsZV9iaXQJPSBPTUFQMzQzMEVTMl9FTl9VU0JIT1NUX1NISUZULAot
-CS5mbGFncwkJPSBDTE9DS19JTl9PTUFQMzQzMEVTMiwKLQkuY2xrZG1fbmFtZQk9ICJ1c2Job3N0
-X2Nsa2RtIiwKLQkucmVjYWxjCQk9ICZmb2xsb3dwYXJlbnRfcmVjYWxjLAotfTsKLQotc3RhdGlj
-IHN0cnVjdCBjbGsgdXNiaG9zdF9sNF9pY2sgPSB7Ci0JLm5hbWUJCT0gInVzYmhvc3RfbDRfaWNr
-IiwKK3N0YXRpYyBzdHJ1Y3QgY2xrIHVzYmhvc3RfaWNrID0geworCS8qIEhhbmRsZXMgYm90aCBM
-MyBhbmQgTDQgY2xvY2tzICovCisJLm5hbWUJCT0gInVzYmhvc3RfaWNrIiwKIAkucGFyZW50CQk9
-ICZsNF9pY2ssCiAJLmluaXQJCT0gJm9tYXAyX2luaXRfY2xrX2Nsa2RtLAogCS5lbmFibGVfcmVn
-CT0gT01BUF9DTV9SRUdBRERSKE9NQVAzNDMwRVMyX1VTQkhPU1RfTU9ELCBDTV9JQ0xLRU4pLApA
-QCAtMzA5Myw2ICszMDgwLDcgQEAgc3RhdGljIHN0cnVjdCBjbGsgKm9uY2hpcF8zNHh4X2Nsa3Nb
-XSBfX2luaXRkYXRhID0gewogCSZsM19pY2ssCiAJJmw0X2ljaywKIAkmcm1faWNrLAorCSZnZnhf
-bDNfY2ssCiAJJmdmeF9sM19mY2ssCiAJJmdmeF9sM19pY2ssCiAJJmdmeF9jZzFfY2ssCkBAIC0z
-MTc0LDEyICszMTYyLDEwIEBAIHN0YXRpYyBzdHJ1Y3QgY2xrICpvbmNoaXBfMzR4eF9jbGtzW10g
-X19pbml0ZGF0YSA9IHsKIAkmZHNzMl9hbHdvbl9mY2ssCiAJJmRzc19pY2ssCiAJJmNhbV9tY2xr
-LAotCSZjYW1fbDNfaWNrLAotCSZjYW1fbDRfaWNrLAorCSZjYW1faWNrLAogCSZ1c2Job3N0XzEy
-MG1fZmNrLAogCSZ1c2Job3N0XzQ4bV9mY2ssCi0JJnVzYmhvc3RfbDNfaWNrLAotCSZ1c2Job3N0
-X2w0X2ljaywKKwkmdXNiaG9zdF9pY2ssCiAJJnVzYmhvc3Rfc2FyX2ZjaywKIAkmdXNpbV9mY2ss
-CiAJJmdwdDFfZmNrLApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LXBt
+not full.
+
+I look forward to seeing you Tuesday.
+
+cheers,
+-Len
+
+On Wed, 2 Jul 2008, Jarod Wilson wrote:
+
+> Hi Len,
+> 
+> If its not already full, I'd like to sit in on the Linux Power Management
+> mini-summit at OLS. I maintain Red Hat's cpuspeed package, which has grown
+> into something more than an init script for the cpuspeed daemon -- it also
+> performs all our in-kernel cpu freq scaling bits.
+> 
+> In general, I'm interested in the entire power management space, but
+> specifically, I'd like to have some discussion on ways RH/Fedora can improve
+> what we're doing w/our freq scaling setup and/or hopefully ways to make the
+> initscript not need to do anything anymore for in-kernel governors.
+> 
+> Thanks much,
+> 
+> -- 
+> Jarod Wilson
+> jwilson@redhat.com
+> 
