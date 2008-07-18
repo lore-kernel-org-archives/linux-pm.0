@@ -1,22 +1,22 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
 	July 22, 2008
-Date: Fri, 18 Jul 2008 10:00:40 +1000
-Message-ID: <1216339240.8665.38.camel@nigel-laptop>
+Date: Fri, 18 Jul 2008 08:30:48 +0530
+Message-ID: <20080718025710.GG5058@dirshya.in.ibm.com>
 References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761274AbYGRAAz@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
 Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+* Len Brown <lenb@kernel.org> [2008-07-17 17:27:32]:
 
-On Thu, 2008-07-17 at 17:27 -0400, Len Brown wrote:
 > We'll be in The Rideau Suite in Les-Suites
 > Tuesday July 22nd 8:30-18:30.
 > 
@@ -44,13 +44,13 @@ On Thu, 2008-07-17 at 17:27 -0400, Len Brown wrote:
 > Dave Jones
 > Pavel Machek
 > Arjan van de Ven
-
-Nigel Cunningham
-
+> 
 > If you plan to attend, please let me know,
-> because the folks at OLS want to know,
-> to simplify OLS registration.
 
-Regards,
+Hi Len,
 
-Nigel
+Thanks for including me.  I will attend the mini summit.
+
+--Vaidy
+
+
