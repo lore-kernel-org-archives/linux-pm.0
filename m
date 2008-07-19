@@ -1,100 +1,36 @@
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa --
-	July 22, 2008
-Date: Fri, 18 Jul 2008 04:50:00 -0500
-Message-ID: <20080718095000.GA5017@in.ibm.com>
-References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-Reply-To: ego@in.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/4] Use new PCI PM code for Wake-on-LAN in some
+	drivers
+Date: Sat, 19 Jul 2008 14:36:39 +0200
+Message-ID: <200807191436.40726.rjw__7792.54282028905$1216471452$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Stephen Hemminger <shemminger@vyatta.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 17, 2008 at 05:27:32PM -0400, Len Brown wrote:
-> We'll be in The Rideau Suite in Les-Suites
-> Tuesday July 22nd 8:30-18:30.
-> 
-> Thanks to HP for sponsoring
-> lunch at 12:30 as well as snacks at 10:00 and 15:30.
-> We'll wing it for dinner.
-> 
-> On linux-pm (sorry, on sabbatical I've been
-> bad about keeping up on email) I've seen
-> intent to attend from:
-> 
-> Len Brown <len.brown@intel.com>
-> Alan Stern <stern@rowland.harvard.edu>
-> Dipankar Sarma <dipankar@in.ibm.com>
-> Rafael J. Wysocki <rjw@sisk.pl>
-> "Woodruff, Richard" <r-woodruff2@ti.com>
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Matt Domsch <Matt_Domsch@dell.com>
-> Jarod Wilson <jwilson@redhat.com>
-> Tim Bird <tim.bird@am.sony.com>
-> Paul Mundt <lethal@linux-sh.org>
-> Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
-> 
-Hi Len,
-I would like to attend the pm-mini summit if there's a slot available. I
-am interested in discussing:
+Hi,
 
-a) the improvements to idle load balancing
-algorithm on multi-node multi-core systems, for better power savings.
+The following series of patches adapts some PCI LAN drivers to use the new core
+PCI wake-up code for Wake-on-LAN.  The following drivers are modified:
 
-b) Use of some kind of light-weight CPU-Hotplug for power-management
-on server systems.
+skge (tested on Asus L5D)
+tg3 (tested on HP nx6325)
+sky2 (tested on a desktop with the Asus M3A32-MVP mainboard)
 
-> Several send their regrets:
-> Dave Jones
-> Pavel Machek
-> Arjan van de Ven
-> 
-> If you plan to attend, please let me know,
-> because the folks at OLS want to know,
-> to simplify OLS registration.
-> 
-> thanks,
-> -Len
-> ---
-> 
-> We are again planning a Linux Power Management Mini-Summit preceding OLS.
-> This year we are looking at a single day, Tuesday July 22nd.
-> 
-> OLS is generously supporting mini-summits by providing the room
-> and projector: http://www.linuxsymposium.org/2008/minisummits.php
-> 
-> If you are interested in sponsoring the food or
-> other forum needs, please let me know.
-> 
-> Minutes from last year's meeting can be found here:
-> http://lwn.net/Articles/249019
-> 
-> If you have feedback on last year's meeting that
-> we can use to improve this year's, please speak up.
-> 
-> The feedback at the time was pretty positive, so I'm thinking
-> that unless there are new best-known-methods, that we'll stick
-> with the same open method of self-nominated attendees,
-> an agenda provoked by discussion on linux-pm ahead of time
-> and consensus of attendees, and a forum small enough to support
-> a single focused discussion.
-> 
-> (yes, one improvement I plan on this year is to publish minutes immediately.
->  OLS was sort of hectic for me last year and that caused a delay)
-> 
-> thanks,
-> -Len
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+The patches are on top of the current mainline.
 
--- 
-Thanks and Regards
-gautham
+Thanks,
+Rafael
