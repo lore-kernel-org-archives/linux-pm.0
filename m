@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/4] PCI PM: Make more PCI PM core functionality
-	available to drivers
-Date: Sat, 19 Jul 2008 14:39:24 +0200
-Message-ID: <200807191439.25371.rjw__8904.03152811832$1216471455$gmane$org@sisk.pl>
+Subject: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
+Date: Sat, 19 Jul 2008 14:42:51 +0200
+Message-ID: <200807191442.52759.rjw__14792.8298255012$1216471485$gmane$org@sisk.pl>
 References: <200807191436.40726.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,111 +24,127 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make more PCI PM core functionality available to drivers
-
-* Export pci_pme_capable() so that it can be called directly by
-  drivers (for example, tg3 needs that).
-
-* Move the state choosing part of pci_prepare_to_sleep() to a
-  separate function, pci_target_state(), that can be called directly
-  by drivers (for example, tg3 needs that).
+Adapt the sky2 driver to use the reworked PCI PM.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c   |   35 +++++++++++++++++++++++++----------
- include/linux/pci.h |    2 ++
- 2 files changed, 27 insertions(+), 10 deletions(-)
+ drivers/net/sky2.c |   42 +++++++++++++++---------------------------
+ 1 file changed, 15 insertions(+), 27 deletions(-)
 
-Index: linux-next/drivers/pci/pci.c
+Index: linux-2.6/drivers/net/sky2.c
 ===================================================================
---- linux-next.orig/drivers/pci/pci.c
-+++ linux-next/drivers/pci/pci.c
-@@ -1040,7 +1040,7 @@ int pci_set_pcie_reset_state(struct pci_
-  * @dev: PCI device to handle.
-  * @state: PCI state from which device will issue PME#.
-  */
--static bool pci_pme_capable(struct pci_dev *dev, pci_power_t state)
-+bool pci_pme_capable(struct pci_dev *dev, pci_power_t state)
- {
- 	if (!dev->pm_cap)
- 		return false;
-@@ -1123,18 +1123,11 @@ int pci_enable_wake(struct pci_dev *dev,
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -2988,7 +2988,8 @@ static int sky2_set_wol(struct net_devic
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
+ 
+-	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	    || !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
+@@ -2999,8 +3000,8 @@ static int sky2_set_wol(struct net_devic
+ 		sky2_write32(hw, B0_CTST, sky2->wol
+ 			     ? Y2_HW_WOL_ON : Y2_HW_WOL_OFF);
+ 
+-	if (!netif_running(dev))
+-		sky2_wol_init(sky2);
++	device_set_wakeup_enable(&hw->pdev->dev, sky2->wol);
++
+ 	return 0;
  }
  
- /**
-- * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
-- *                        a sleep state
-- * @dev: Device to handle.
-  *
-- * Choose the power state appropriate for the device depending on whether
-- * it can wake up the system and/or is power manageable by the platform
-- * (PCI_D3hot is the default) and put the device into that state.
-  */
--int pci_prepare_to_sleep(struct pci_dev *dev)
-+pci_power_t pci_target_state(struct pci_dev *dev)
+@@ -4120,18 +4121,6 @@ static int __devinit sky2_test_msi(struc
+ 	return err;
+ }
+ 
+-static int __devinit pci_wake_enabled(struct pci_dev *dev)
+-{
+-	int pm  = pci_find_capability(dev, PCI_CAP_ID_PM);
+-	u16 value;
+-
+-	if (!pm)
+-		return 0;
+-	if (pci_read_config_word(dev, pm + PCI_PM_CTRL, &value))
+-		return 0;
+-	return value & PCI_PM_CTRL_PME_ENABLE;
+-}
+-
+ static int __devinit sky2_probe(struct pci_dev *pdev,
+ 				const struct pci_device_id *ent)
  {
- 	pci_power_t target_state = PCI_D3hot;
--	int error;
- 
- 	if (platform_pci_power_manageable(dev)) {
- 		/*
-@@ -1161,7 +1154,7 @@ int pci_prepare_to_sleep(struct pci_dev 
- 		 * to generate PME#.
- 		 */
- 		if (!dev->pm_cap)
--			return -EIO;
-+			return PCI_POWER_ERROR;
- 
- 		if (dev->pme_support) {
- 			while (target_state
-@@ -1170,6 +1163,26 @@ int pci_prepare_to_sleep(struct pci_dev 
+@@ -4170,7 +4159,7 @@ static int __devinit sky2_probe(struct p
  		}
  	}
  
-+	return target_state;
-+}
-+
-+/**
-+ * pci_prepare_to_sleep - prepare PCI device for system-wide transition into
-+ *                        a sleep state
-+ * @dev: Device to handle.
-+ *
-+ * Choose the power state appropriate for the device depending on whether
-+ * it can wake up the system and/or is power manageable by the platform
-+ * (PCI_D3hot is the default) and put the device into that state.
-+ */
-+int pci_prepare_to_sleep(struct pci_dev *dev)
-+{
-+	pci_power_t target_state = pci_target_state(dev);
-+	int error;
-+
-+	if (target_state == PCI_POWER_ERROR)
-+		return -EIO;
-+
- 	pci_enable_wake(dev, target_state, true);
+-	wol_default = pci_wake_enabled(pdev) ? WAKE_MAGIC : 0;
++	wol_default = device_may_wakeup(&pdev->dev) ? WAKE_MAGIC : 0;
  
- 	error = pci_set_power_state(dev, target_state);
-@@ -1920,7 +1933,9 @@ EXPORT_SYMBOL(pci_select_bars);
- EXPORT_SYMBOL(pci_set_power_state);
- EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
-+EXPORT_SYMBOL(pci_pme_capable);
- EXPORT_SYMBOL(pci_enable_wake);
-+EXPORT_SYMBOL(pci_target_state);
- EXPORT_SYMBOL(pci_prepare_to_sleep);
- EXPORT_SYMBOL(pci_back_from_sleep);
- EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
-Index: linux-next/include/linux/pci.h
-===================================================================
---- linux-next.orig/include/linux/pci.h
-+++ linux-next/include/linux/pci.h
-@@ -638,7 +638,9 @@ int pci_save_state(struct pci_dev *dev);
- int pci_restore_state(struct pci_dev *dev);
- int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
-+bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable);
-+pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
- int pci_back_from_sleep(struct pci_dev *dev);
+ 	err = -ENOMEM;
+ 	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
+@@ -4335,7 +4324,8 @@ static void __devexit sky2_remove(struct
+ static int sky2_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-	int i, wol = 0;
++	int i;
++	bool wol = false;
  
+ 	if (!hw)
+ 		return 0;
+@@ -4351,10 +4341,10 @@ static int sky2_suspend(struct pci_dev *
+ 		if (netif_running(dev))
+ 			sky2_down(dev);
+ 
+-		if (sky2->wol)
++		if (sky2->wol) {
++			wol = true;
+ 			sky2_wol_init(sky2);
+-
+-		wol |= sky2->wol;
++		}
+ 	}
+ 
+ 	sky2_write32(hw, B0_IMSK, 0);
+@@ -4362,8 +4352,8 @@ static int sky2_suspend(struct pci_dev *
+ 	sky2_power_aux(hw);
+ 
+ 	pci_save_state(pdev);
+-	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++
++	pci_prepare_to_sleep(pdev);
+ 
+ 	return 0;
+ }
+@@ -4376,7 +4366,7 @@ static int sky2_resume(struct pci_dev *p
+ 	if (!hw)
+ 		return 0;
+ 
+-	err = pci_set_power_state(pdev, PCI_D0);
++	err = pci_back_from_sleep(pdev);
+ 	if (err)
+ 		goto out;
+ 
+@@ -4384,8 +4374,6 @@ static int sky2_resume(struct pci_dev *p
+ 	if (err)
+ 		goto out;
+ 
+-	pci_enable_wake(pdev, PCI_D0, 0);
+-
+ 	/* Re-enable all clocks */
+ 	if (hw->chip_id == CHIP_ID_YUKON_EX ||
+ 	    hw->chip_id == CHIP_ID_YUKON_EC_U ||
+@@ -4444,8 +4432,8 @@ static void sky2_shutdown(struct pci_dev
+ 	if (wol)
+ 		sky2_power_aux(hw);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, wol);
+-	pci_enable_wake(pdev, PCI_D3cold, wol);
++	if (pci_enable_wake(pdev, PCI_D3cold, wol))
++		pci_enable_wake(pdev, PCI_D3hot, wol);
+ 
+ 	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
