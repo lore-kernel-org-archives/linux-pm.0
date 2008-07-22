@@ -1,38 +1,95 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 0/0] Power domain and clock domain patches
-	for omap
-Date: Mon, 21 Jul 2008 23:29:08 +0100
-Message-ID: <20080721222908.GF18909__27896.6135731482$1216679675$gmane$org@flint.arm.linux.org.uk>
-References: <1216221555-18958-1-git-send-email-tony@atomide.com>
+From: "Wei, Gang" <gang.wei@intel.com>
+Subject: RE: [linux-pm] [RFC-PATCH] Improve Menu Governor Prediction of interrupted C states.
+Date: Tue, 22 Jul 2008 15:59:14 +0800
+Message-ID: <094BCE01AFBE9646AF220B0B3F367AAB034DBB7A@pdsmsx413.ccr.corp.intel.com>
+References: <13B9B4C6EF24D648824FF11BE8967162035BEA0EDF@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1216221555-18958-1-git-send-email-tony@atomide.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753750AbYGVH7a@vger.kernel.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <13B9B4C6EF24D648824FF11BE8967162035BEA0EDF@dlee02.ent.ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Woodruff, Richard" <r-woodruff2@ti.com>, Linux Power Management List <linux-pm@lists.osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 16, 2008 at 06:19:05PM +0300, Tony Lindgren wrote:
-> I'm reposting the series to a wider audience as Russell King suspected that
-> other archs may be interested in reviewing these too, or at least some
-> parts of the code.
+I also found current cpuidle Menu governor should have some problems
+while predicting next non-expected break-event after some expected
+break-events. The measured_us/elapsed_us/predicted_us will become larger
+and larger once (measured_us + BREAK_FUZZ >= data->expected_us -
+target->exit_latency). The major point is that it should be
+last_residency, not measured_us, that need to be used to do comparing
+and distinguish between expected & non-expected events.
 
-It would be nice to have some comment on these patches from other
-people.  My suspicions is that this infrastructure is solving a
-problem found on other SoCs in addition to OMAP, and, if this is
-useful to other people, it should become cross-SoC infrastructure.
+Below is my draft patch (not tested) for this. It is simple and should
+also be effective for high interrupt rates case.
 
-Since I don't know the answer to whether it would be useful, I'm
-trying to ensure that these patches have sufficient exposure to
-people who _may_ know the answer.
+Jimmy
+
+Signed-off-by: Wei Gang <gang.wei@intel.com>
+
+diff --git a/drivers/cpuidle/governors/menu.c
+b/drivers/cpuidle/governors/menu.c
+index 78d77c5..dea5250 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -80,18 +80,19 @@ static void menu_reflect(struct cpuidle_device *dev)
+        if (!(target->flags & CPUIDLE_FLAG_TIME_VALID))
+                measured_us = USEC_PER_SEC / HZ;
+
++       /* if wrapping, set to max uint (-1) */
++       measured_us = (data->elapsed_us < measured_us) ? measured_us :
+-1;
++
+        /* Predict time remaining until next break event */
+-       if (measured_us + BREAK_FUZZ < data->expected_us -
+target->exit_latency) {
+-               data->predicted_us = max(measured_us,
+data->last_measured_us);
++       data->predicted_us = max(measured_us, data->last_measured_us);
++
++       /* Distinguish between expected & non-expected events */
++       if (cpuidle_get_last_residency(dev) + BREAK_FUZZ
++               < data->expected_us - target->exit_latency) {
+                data->last_measured_us = measured_us;
+                data->elapsed_us = 0;
+-       } else {
+-               if (data->elapsed_us < data->elapsed_us + measured_us)
+-                       data->elapsed_us = measured_us;
+-               else
+-                       data->elapsed_us = -1;
+-               data->predicted_us = max(measured_us,
+data->last_measured_us);
+-       }
++       } else
++               data->elapsed_us = measured_us;
+ }
+
+ /**
+
+
+On Tuesday, July 15, 2008 5:02 AM, Woodruff, Richard wrote:
+> Hi,
+> 
+> Any comments on the following?
+> 
+> I'm finding with high interrupt rates for some USB devices the menu
+governor
+> guesses wrong enough that throughput drops. 
+> 
+> With the below tweak tests with fixed data sizes which were taking 12s
+to
+> complete drop back to 9s.  Also my standby idle doesn't change before
+and
+> after activity with our with out the patch.  
+> 
+> What it does is simply timestamp incoming irqs, then in the menu
+governor
+> will use current & last irq time delta to refine its guess as to how
+long
+> sleep will happen.  
+> 
+> Regards,
+> Richard W.
