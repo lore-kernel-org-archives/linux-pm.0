@@ -1,107 +1,224 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: RE: [linux-pm] [RFC-PATCH] Improve Menu Governor Prediction of
- interrupted C states.
-Date: Wed, 23 Jul 2008 13:59:55 -0500
-Message-ID: <13B9B4C6EF24D648824FF11BE8967162035C046A40@dlee02.ent.ti.com>
-References: <13B9B4C6EF24D648824FF11BE8967162035BEA0EDF@dlee02.ent.ti.com>
- <094BCE01AFBE9646AF220B0B3F367AAB034DBB7A@pdsmsx413.ccr.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
+Date: Thu, 24 Jul 2008 22:50:50 +0200
+Message-ID: <200807242250.51119.rjw__7215.94260908223$1216932670$gmane$org@sisk.pl>
+References: <200807191436.40726.rjw@sisk.pl> <200807191442.52759.rjw@sisk.pl>
+	<20080720190742.84258d7e.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753293AbYGWTAv@vger.kernel.org>
-In-Reply-To: <094BCE01AFBE9646AF220B0B3F367AAB034DBB7A@pdsmsx413.ccr.corp.intel.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Wei, Gang" <gang.wei@intel.com>, Linux Power Management List <linux-pm@lists.osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080720190742.84258d7e.akpm@linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Stephen Hemminger <shemminger@vyatta.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wei,
+[Sorry for the delayed response, I'm at OLS.]
 
-I'll give it a try and make some measurements.  It will probable be a week before I can give any feed back.  Its good to see others are looking at this.
+On Monday, 21 of July 2008, Andrew Morton wrote:
+> On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Adapt the sky2 driver to use the reworked PCI PM.
+> 
+> I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
+> PM code" but this patch has too many for me to want to fix them.
+> 
+> As usual, please at least take a look at what's in linux-next before
+> going and bypassing all that queued work.
+
+Sorry for that.
+
+Appended is a version of the patch applying to the current mainline on top of
+patches 1/4 - 3/4 without rejects.
+
+BTW, the sky2's WOL is broken on my test box because of commit
+db99b98885e717454feef1c6868b27d3f23c2e7c ("sky2: put PHY in sleep when down")
+that causes the box to hang solid in sky2_suspend() and sky2_shutdown() after
+WOL has been enabled with 'ethtool -s eth0 wol g'.
+
+This has already been reported to Stephen and Jeff.
 
 Thanks,
-Richard W.
+Rafael
 
-> I also found current cpuidle Menu governor should have some problems
-> while predicting next non-expected break-event after some expected
-> break-events. The measured_us/elapsed_us/predicted_us will become
-> larger
-> and larger once (measured_us + BREAK_FUZZ >= data->expected_us -
-> target->exit_latency). The major point is that it should be
-> last_residency, not measured_us, that need to be used to do comparing
-> and distinguish between expected & non-expected events.
->
-> Below is my draft patch (not tested) for this. It is simple and should
-> also be effective for high interrupt rates case.
->
-> Jimmy
->
-> Signed-off-by: Wei Gang <gang.wei@intel.com>
->
-> diff --git a/drivers/cpuidle/governors/menu.c
-> b/drivers/cpuidle/governors/menu.c
-> index 78d77c5..dea5250 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -80,18 +80,19 @@ static void menu_reflect(struct cpuidle_device
-> *dev)
->         if (!(target->flags & CPUIDLE_FLAG_TIME_VALID))
->                 measured_us = USEC_PER_SEC / HZ;
->
-> +       /* if wrapping, set to max uint (-1) */
-> +       measured_us = (data->elapsed_us < measured_us) ? measured_us :
-> -1;
-> +
->         /* Predict time remaining until next break event */
-> -       if (measured_us + BREAK_FUZZ < data->expected_us -
-> target->exit_latency) {
-> -               data->predicted_us = max(measured_us,
-> data->last_measured_us);
-> +       data->predicted_us = max(measured_us, data->last_measured_us);
-> +
-> +       /* Distinguish between expected & non-expected events */
-> +       if (cpuidle_get_last_residency(dev) + BREAK_FUZZ
-> +               < data->expected_us - target->exit_latency) {
->                 data->last_measured_us = measured_us;
->                 data->elapsed_us = 0;
-> -       } else {
-> -               if (data->elapsed_us < data->elapsed_us + measured_us)
-> -                       data->elapsed_us = measured_us;
-> -               else
-> -                       data->elapsed_us = -1;
-> -               data->predicted_us = max(measured_us,
-> data->last_measured_us);
-> -       }
-> +       } else
-> +               data->elapsed_us = measured_us;
->  }
->
->  /**
->
->
-> On Tuesday, July 15, 2008 5:02 AM, Woodruff, Richard wrote:
-> > Hi,
-> >
-> > Any comments on the following?
-> >
-> > I'm finding with high interrupt rates for some USB devices the menu
-> governor
-> > guesses wrong enough that throughput drops.
-> >
-> > With the below tweak tests with fixed data sizes which were taking
-> 12s
-> to
-> > complete drop back to 9s.  Also my standby idle doesn't change
-> before
-> and
-> > after activity with our with out the patch.
-> >
-> > What it does is simply timestamp incoming irqs, then in the menu
-> governor
-> > will use current & last irq time delta to refine its guess as to how
-> long
-> > sleep will happen.
-> >
-> > Regards,
-> > Richard W.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Adapt sky2 to use reworked PCI PM code
+
+Adapt the sky2 driver to use the reworked PCI PM and make it use
+the exported PCI PM core functions instead of accessing the PCI PM
+registers directly by itself.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/sky2.c |   55 ++++++++++++++++++-----------------------------------
+ 1 file changed, 19 insertions(+), 36 deletions(-)
+
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -277,7 +277,6 @@ static void sky2_power_aux(struct sky2_h
+ 
+ static void sky2_power_state(struct sky2_hw *hw, pci_power_t state)
+ {
+-	u16 power_control = sky2_pci_read16(hw, hw->pm_cap + PCI_PM_CTRL);
+ 	int pex = pci_find_capability(hw->pdev, PCI_CAP_ID_EXP);
+ 	u32 reg;
+ 
+@@ -285,19 +284,12 @@ static void sky2_power_state(struct sky2
+ 
+ 	switch (state) {
+ 	case PCI_D0:
+-		break;
+-
+ 	case PCI_D1:
+-		power_control |= 1;
+-		break;
+-
+ 	case PCI_D2:
+-		power_control |= 2;
+ 		break;
+ 
+ 	case PCI_D3hot:
+ 	case PCI_D3cold:
+-		power_control |= 3;
+ 		if (hw->flags & SKY2_HW_ADV_POWER_CTL) {
+ 			/* additional power saving measurements */
+ 			reg = sky2_pci_read32(hw, PCI_DEV_REG4);
+@@ -347,9 +339,8 @@ static void sky2_power_state(struct sky2
+ 		return;
+ 	}
+ 
+-	power_control |= PCI_PM_CTRL_PME_ENABLE;
+ 	/* Finally, set the new power state. */
+-	sky2_pci_write32(hw, hw->pm_cap + PCI_PM_CTRL, power_control);
++	pci_set_power_state(hw->pdev, state);
+ 
+ 	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
+ 	sky2_pci_read32(hw, B0_CTST);
+@@ -3084,7 +3075,8 @@ static int sky2_set_wol(struct net_devic
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
+ 
+-	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	    || !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
+@@ -3095,8 +3087,8 @@ static int sky2_set_wol(struct net_devic
+ 		sky2_write32(hw, B0_CTST, sky2->wol
+ 			     ? Y2_HW_WOL_ON : Y2_HW_WOL_OFF);
+ 
+-	if (!netif_running(dev))
+-		sky2_wol_init(sky2);
++	device_set_wakeup_enable(&hw->pdev->dev, sky2->wol);
++
+ 	return 0;
+ }
+ 
+@@ -4216,18 +4208,6 @@ static int __devinit sky2_test_msi(struc
+ 	return err;
+ }
+ 
+-static int __devinit pci_wake_enabled(struct pci_dev *dev)
+-{
+-	int pm  = pci_find_capability(dev, PCI_CAP_ID_PM);
+-	u16 value;
+-
+-	if (!pm)
+-		return 0;
+-	if (pci_read_config_word(dev, pm + PCI_PM_CTRL, &value))
+-		return 0;
+-	return value & PCI_PM_CTRL_PME_ENABLE;
+-}
+-
+ /* This driver supports yukon2 chipset only */
+ static const char *sky2_name(u8 chipid, char *buf, int sz)
+ {
+@@ -4288,7 +4268,7 @@ static int __devinit sky2_probe(struct p
+ 		}
+ 	}
+ 
+-	wol_default = pci_wake_enabled(pdev) ? WAKE_MAGIC : 0;
++	wol_default = device_may_wakeup(&pdev->dev) ? WAKE_MAGIC : 0;
+ 
+ 	err = -ENOMEM;
+ 	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
+@@ -4453,7 +4433,9 @@ static void __devexit sky2_remove(struct
+ static int sky2_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-	int i, wol = 0;
++	pci_power_t target_state;
++	int i;
++	bool wol = false;
+ 
+ 	if (!hw)
+ 		return 0;
+@@ -4469,10 +4451,10 @@ static int sky2_suspend(struct pci_dev *
+ 		if (netif_running(dev))
+ 			sky2_down(dev);
+ 
+-		if (sky2->wol)
++		if (sky2->wol) {
++			wol = true;
+ 			sky2_wol_init(sky2);
+-
+-		wol |= sky2->wol;
++		}
+ 	}
+ 
+ 	sky2_write32(hw, B0_IMSK, 0);
+@@ -4480,8 +4462,10 @@ static int sky2_suspend(struct pci_dev *
+ 	sky2_power_aux(hw);
+ 
+ 	pci_save_state(pdev);
+-	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
+-	sky2_power_state(hw, pci_choose_state(pdev, state));
++
++	target_state = pci_target_state(pdev);
++	pci_enable_wake(pdev, target_state, wol);
++	sky2_power_state(hw, target_state);
+ 
+ 	return 0;
+ }
+@@ -4494,14 +4478,13 @@ static int sky2_resume(struct pci_dev *p
+ 	if (!hw)
+ 		return 0;
+ 
++	pci_enable_wake(pdev, PCI_D0, false);
+ 	sky2_power_state(hw, PCI_D0);
+ 
+ 	err = pci_restore_state(pdev);
+ 	if (err)
+ 		goto out;
+ 
+-	pci_enable_wake(pdev, PCI_D0, 0);
+-
+ 	/* Re-enable all clocks */
+ 	if (hw->chip_id == CHIP_ID_YUKON_EX ||
+ 	    hw->chip_id == CHIP_ID_YUKON_EC_U ||
+@@ -4560,8 +4543,8 @@ static void sky2_shutdown(struct pci_dev
+ 	if (wol)
+ 		sky2_power_aux(hw);
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, wol);
+-	pci_enable_wake(pdev, PCI_D3cold, wol);
++	if (pci_enable_wake(pdev, PCI_D3cold, wol))
++		pci_enable_wake(pdev, PCI_D3hot, wol);
+ 
+ 	pci_disable_device(pdev);
+ 	sky2_power_state(hw, PCI_D3hot);
