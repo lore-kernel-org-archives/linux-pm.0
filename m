@@ -1,22 +1,120 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Suspend-to-RAM in Linux -- OLS '08 presentation
-Date: Thu, 24 Jul 2008 19:30:36 -0400 (EDT)
-Message-ID: <alpine.LFD.1.10.0807241926240.6098@localhost.localdomain>
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
+Date: Thu, 24 Jul 2008 16:50:16 -0700
+Message-ID: <20080724165016.7be588e9__44594.3428007469$1216943712$gmane$org@speedy>
+References: <200807191436.40726.rjw@sisk.pl>
+	<20080720190742.84258d7e.akpm@linux-foundation.org>
+	<200807242250.51119.rjw@sisk.pl>
+	<200807241352.18947.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200807241352.18947.jbarnes@virtuousgeek.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jeff@garzik.org>
 List-Id: linux-pm@vger.kernel.org
 
-presentation:
+On Thu, 24 Jul 2008 13:52:18 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-http://userweb.kernel.org/~lenb/doc/OLS2008-suspend-web/
+> On Thursday, July 24, 2008 1:50 pm Rafael J. Wysocki wrote:
+> > [Sorry for the delayed response, I'm at OLS.]
+> >
+> > On Monday, 21 of July 2008, Andrew Morton wrote:
+> > > On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> 
+> wrote:
+> > > > Adapt the sky2 driver to use the reworked PCI PM.
+> > >
+> > > I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
+> > > PM code" but this patch has too many for me to want to fix them.
+> > >
+> > > As usual, please at least take a look at what's in linux-next before
+> > > going and bypassing all that queued work.
+> >
+> > Sorry for that.
+> >
+> > Appended is a version of the patch applying to the current mainline on top
+> > of patches 1/4 - 3/4 without rejects.
+> >
+> > BTW, the sky2's WOL is broken on my test box because of commit
+> > db99b98885e717454feef1c6868b27d3f23c2e7c ("sky2: put PHY in sleep when
+> > down") that causes the box to hang solid in sky2_suspend() and
+> > sky2_shutdown() after WOL has been enabled with 'ethtool -s eth0 wol g'.
+> >
+> > This has already been reported to Stephen and Jeff.
+> 
+> Btw, I just asked Linus to pull the 2/4 part of this patchset, so the rest 
+> should be able to go upstream soon.
+> 
+> Thanks,
+> Jesse
 
-The paper is in volume 1 of the proceedings:
 
-http://www.linuxsymposium.org/2008/archives.php
+Does this fix your WOL issue?
 
-cheers,
--Len
+When doing wake on lan and resume, the PHY may need to get more
+power up bits tweaked.
 
+--- a/drivers/net/sky2.c	2008-07-24 15:35:33.000000000 -0700
++++ b/drivers/net/sky2.c	2008-07-24 15:43:44.000000000 -0700
+@@ -698,6 +698,7 @@ static const u32 coma_mode[] = { PCI_Y2_
+ static void sky2_phy_power_up(struct sky2_hw *hw, unsigned port)
+ {
+ 	u32 reg1;
++	u16 ctrl;
+ 
+ 	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
+ 	reg1 = sky2_pci_read32(hw, PCI_DEV_REG1);
+@@ -709,6 +710,33 @@ static void sky2_phy_power_up(struct sky
+ 	sky2_pci_write32(hw, PCI_DEV_REG1, reg1);
+ 	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
+ 	sky2_pci_read32(hw, PCI_DEV_REG1);
++
++	if (hw->chip_id != CHIP_ID_YUKON_EC) {
++		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
++			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
++			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
++
++			/* turn on GII power */
++			ctrl &= ~PHY_M_PC_POW_D_ENA;
++			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
++		}
++	}
++
++	if (hw->flags & SKY2_HW_NEWER_PHY) {
++		/* select page 2 to access MAC control register */
++		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
++
++		ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
++		/* allow GMII Power Down */
++		ctrl |= PHY_M_MAC_GMIF_PUP;
++		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
++
++		/* set page register back to 0 */
++		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
++	}
++
++	/* force phy reset and clear power down */
++	gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
+ }
+ 
+ static void sky2_phy_power_down(struct sky2_hw *hw, unsigned port)
+@@ -731,6 +759,9 @@ static void sky2_phy_power_down(struct s
+ 		ctrl &= ~PHY_M_MAC_GMIF_PUP;
+ 		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
+ 
++		/* this register change must be followed by a software reset */
++		gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
++
+ 		/* set page register back to 0 */
+ 		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+ 	}
