@@ -1,16 +1,16 @@
-From: Stephen Hemminger <stephen.hemminger@vyatta.com>
-Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
-Date: Thu, 24 Jul 2008 16:50:16 -0700
-Message-ID: <20080724165016.7be588e9__44594.3428007469$1216943712$gmane$org@speedy>
-References: <200807191436.40726.rjw@sisk.pl>
-	<20080720190742.84258d7e.akpm@linux-foundation.org>
-	<200807242250.51119.rjw@sisk.pl>
-	<200807241352.18947.jbarnes@virtuousgeek.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 0/0] Power domain and clock domain patches
+	for omap
+Date: Thu, 24 Jul 2008 17:53:56 -0700
+Message-ID: <200807241753.56893.david-b__17105.3911828951$1216947364$gmane$org@pacbell.net>
+References: <1216221555-18958-1-git-send-email-tony@atomide.com>
+	<20080721222908.GF18909@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200807241352.18947.jbarnes@virtuousgeek.org>
+In-Reply-To: <20080721222908.GF18909@flint.arm.linux.org.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,101 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jeff@garzik.org>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 24 Jul 2008 13:52:18 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Thursday, July 24, 2008 1:50 pm Rafael J. Wysocki wrote:
-> > [Sorry for the delayed response, I'm at OLS.]
-> >
-> > On Monday, 21 of July 2008, Andrew Morton wrote:
-> > > On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> 
-> wrote:
-> > > > Adapt the sky2 driver to use the reworked PCI PM.
-> > >
-> > > I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
-> > > PM code" but this patch has too many for me to want to fix them.
-> > >
-> > > As usual, please at least take a look at what's in linux-next before
-> > > going and bypassing all that queued work.
-> >
-> > Sorry for that.
-> >
-> > Appended is a version of the patch applying to the current mainline on top
-> > of patches 1/4 - 3/4 without rejects.
-> >
-> > BTW, the sky2's WOL is broken on my test box because of commit
-> > db99b98885e717454feef1c6868b27d3f23c2e7c ("sky2: put PHY in sleep when
-> > down") that causes the box to hang solid in sky2_suspend() and
-> > sky2_shutdown() after WOL has been enabled with 'ethtool -s eth0 wol g'.
-> >
-> > This has already been reported to Stephen and Jeff.
+On Monday 21 July 2008, Russell King - ARM Linux wrote:
+> On Wed, Jul 16, 2008 at 06:19:05PM +0300, Tony Lindgren wrote:
+> > I'm reposting the series to a wider audience as Russell King suspected that
+> > other archs may be interested in reviewing these too, or at least some
+> > parts of the code.
 > 
-> Btw, I just asked Linus to pull the 2/4 part of this patchset, so the rest 
-> should be able to go upstream soon.
-> 
-> Thanks,
-> Jesse
+> It would be nice to have some comment on these patches from other
+> people.  My suspicions is that this infrastructure is solving a
+> problem found on other SoCs in addition to OMAP,
+
+ISTR that DaVinci is similar ... but much simpler, with fewer
+power domains and more are "always on".  Not much of the DaVinci
+support is upstream yet though.
+
+I'm not sure how many non-TI parts will need similar software
+support.  It's my understanding that not many vendors put
+that much energy into support for leakage current management.
+
+(Here, a key observation is that when a section of a chip has
+gated all its clocks off, that leaves leakage current as the
+top source of power wastage.  Cooperative drivers could then
+let that section be powered down to eliminate leakage.  So the
+first level of power management is clock gating, at least in
+part with software support.  The power domain gating is a
+second level.)
 
 
-Does this fix your WOL issue?
+The "regulator" stuff is not unrelated ... except that this
+power domain stuff *only* needs on/off switches (like almost all
+power domains I've ever used), is tightly coupled to clocks,
+and unlike "regulators" is more oriented towards SOC-internal
+concerns than board-level ones.
 
-When doing wake on lan and resume, the PHY may need to get more
-power up bits tweaked.
 
---- a/drivers/net/sky2.c	2008-07-24 15:35:33.000000000 -0700
-+++ b/drivers/net/sky2.c	2008-07-24 15:43:44.000000000 -0700
-@@ -698,6 +698,7 @@ static const u32 coma_mode[] = { PCI_Y2_
- static void sky2_phy_power_up(struct sky2_hw *hw, unsigned port)
- {
- 	u32 reg1;
-+	u16 ctrl;
- 
- 	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
- 	reg1 = sky2_pci_read32(hw, PCI_DEV_REG1);
-@@ -709,6 +710,33 @@ static void sky2_phy_power_up(struct sky
- 	sky2_pci_write32(hw, PCI_DEV_REG1, reg1);
- 	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
- 	sky2_pci_read32(hw, PCI_DEV_REG1);
-+
-+	if (hw->chip_id != CHIP_ID_YUKON_EC) {
-+		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
-+			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
-+			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
-+
-+			/* turn on GII power */
-+			ctrl &= ~PHY_M_PC_POW_D_ENA;
-+			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
-+		}
-+	}
-+
-+	if (hw->flags & SKY2_HW_NEWER_PHY) {
-+		/* select page 2 to access MAC control register */
-+		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
-+
-+		ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
-+		/* allow GMII Power Down */
-+		ctrl |= PHY_M_MAC_GMIF_PUP;
-+		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
-+
-+		/* set page register back to 0 */
-+		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
-+	}
-+
-+	/* force phy reset and clear power down */
-+	gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
- }
- 
- static void sky2_phy_power_down(struct sky2_hw *hw, unsigned port)
-@@ -731,6 +759,9 @@ static void sky2_phy_power_down(struct s
- 		ctrl &= ~PHY_M_MAC_GMIF_PUP;
- 		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
- 
-+		/* this register change must be followed by a software reset */
-+		gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
-+
- 		/* set page register back to 0 */
- 		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
- 	}
+> and, if this is 
+> useful to other people, it should become cross-SoC infrastructure.
+
+My two cents:  merge the OMAP stuff first, then see what kinds
+of generalization would be needed before other chips could use it.
+
+Nobody wins by holding this back ... but everyone on OMAP2/OMAP3
+loses.
+
+- Dave
+
+
+
+> Since I don't know the answer to whether it would be useful, I'm
+> trying to ensure that these patches have sufficient exposure to
+> people who _may_ know the answer.
