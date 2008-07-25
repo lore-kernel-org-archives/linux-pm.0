@@ -1,16 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 0/0] Power domain and clock domain patches
-	for omap
-Date: Thu, 24 Jul 2008 17:53:56 -0700
-Message-ID: <200807241753.56893.david-b__17105.3911828951$1216947364$gmane$org@pacbell.net>
-References: <1216221555-18958-1-git-send-email-tony@atomide.com>
-	<20080721222908.GF18909@flint.arm.linux.org.uk>
+From: Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [Suspend-devel] TAP (and TUN?) devices not working
+	after resume
+Date: Thu, 24 Jul 2008 20:50:32 -0700
+Message-ID: <48894D88.9010104__11663.1546909504$1216996506$gmane$org@qualcomm.com>
+References: <20080714154720.791f6640@symphony> <200807141812.45264.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080721222908.GF18909@flint.arm.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <200807141812.45264.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,57 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, netdev@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, James Le Cuirot <chewi@aura-online.co.uk>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 21 July 2008, Russell King - ARM Linux wrote:
-> On Wed, Jul 16, 2008 at 06:19:05PM +0300, Tony Lindgren wrote:
-> > I'm reposting the series to a wider audience as Russell King suspected that
-> > other archs may be interested in reviewing these too, or at least some
-> > parts of the code.
+
+
+Rafael J. Wysocki wrote:
+> On Monday, 14 of July 2008, James Le Cuirot wrote:
+>> Hi,
 > 
-> It would be nice to have some comment on these patches from other
-> people.  My suspicions is that this infrastructure is solving a
-> problem found on other SoCs in addition to OMAP,
+> Hi,
+> 
+>> uswsusp works great on my machine except for one thing. I use a TAP
+>> device for QEMU and after resuming from suspend, it doesn't work
+>> anymore until I delete it and recreate it. This is rather annoying
+>> because if I have QEMU open, it means I have to close it before
+>> recreating the interface and then boot Windows up again. I use OpenVPN
+>> to create/delete the interface but I think that's all it does. The rest
+>> is done by the kernel. So I'm guessing something's up with the TUN/TAP
+>> driver or uswsusp itself. I'm using version 0.8. Sorry if this has
+>> already been fixed.
+> 
+> This is a kernel problem, adding kernel-related CCs.
 
-ISTR that DaVinci is similar ... but much simpler, with fewer
-power domains and more are "always on".  Not much of the DaVinci
-support is upstream yet though.
+I bet it's flow control related. I've fixed a bug in flow control handling for
+persistent devices recently.
+btw Does it still happen with >= 2.6.26 ?
 
-I'm not sure how many non-TI parts will need similar software
-support.  It's my understanding that not many vendors put
-that much energy into support for leakage current management.
+I'll play with some test code on my laptop and see if I can reproduce this issue.
 
-(Here, a key observation is that when a section of a chip has
-gated all its clocks off, that leaves leakage current as the
-top source of power wastage.  Cooperative drivers could then
-let that section be powered down to eliminate leakage.  So the
-first level of power management is clock gating, at least in
-part with software support.  The power domain gating is a
-second level.)
-
-
-The "regulator" stuff is not unrelated ... except that this
-power domain stuff *only* needs on/off switches (like almost all
-power domains I've ever used), is tightly coupled to clocks,
-and unlike "regulators" is more oriented towards SOC-internal
-concerns than board-level ones.
-
-
-> and, if this is 
-> useful to other people, it should become cross-SoC infrastructure.
-
-My two cents:  merge the OMAP stuff first, then see what kinds
-of generalization would be needed before other chips could use it.
-
-Nobody wins by holding this back ... but everyone on OMAP2/OMAP3
-loses.
-
-- Dave
-
-
-
-> Since I don't know the answer to whether it would be useful, I'm
-> trying to ensure that these patches have sufficient exposure to
-> people who _may_ know the answer.
+Max
