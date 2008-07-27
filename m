@@ -1,15 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.26-git] pm selftest:  rtc paranoia
-Date: Fri, 25 Jul 2008 15:22:02 -0700
-Message-ID: <200807251522.02789.david-b__45732.5518866584$1217024642$gmane$org@pacbell.net>
-References: <200807251326.51987.david-b@pacbell.net>
-	<20080725144946.5e1b78c8.akpm@linux-foundation.org>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] Fix suspend/resume of pxa_camera driver
+Date: Sun, 27 Jul 2008 21:11:43 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0807271337270.1604__11649.7070216157$1217186011$gmane$org@axis700.grange>
+References: <1217113647-20638-1-git-send-email-robert.jarzmik@free.fr>
+	<Pine.LNX.4.64.0807270155020.29126@axis700.grange>
+	<878wvnkd8n.fsf@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080725144946.5e1b78c8.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <878wvnkd8n.fsf@free.fr>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: video4linux-list@redhat.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 25 July 2008, Andrew Morton wrote:
-> On Fri, 25 Jul 2008 13:26:51 -0700
-> David Brownell <david-b@pacbell.net> wrote:
+On Sun, 27 Jul 2008, Robert Jarzmik wrote:
+
+> Yes, I have tested, with a complete suspend/resume cycle on a Mitac Mio A701
+> smartphone. And yes, the PXA suspend is based on SDRAM being in self refresh
+> state. I'm speaking of suspend, not standby, there's no confusion here.
 > 
-> > From: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > Cope with a quirk of some RTCs (notably ACPI ones) which
-> > aren't guaranteed to implement oneshot behavior when they
-> > woke the system from sleeep:  forcibly disable the alarm,
-> > just in case.
-> > 
-> > ...
+> Notice I always go into suspend while _not_ in active capturing. That could
+> change things.
+
+Yes, this is the difference. The sensor is attached to the camera host 
+only on open. In fact, I am not sure, how video applications should behave 
+during a suspend / resume cycle. If you suspend, while, say, recording 
+from your camera, should you directly continue recording after a wake up? 
+How do currect drivers implement this? Or, in general, for example with 
+audio - if you suspend while listening to a stream over the net, or to a 
+CD, or to a mp3-file on your local disk, should the sound resume after a 
+wake up? I added linux-pm for some authoritative answers:-)
+
+If you know how a v4l2 device should handle suspend/resume, or when we get 
+some answers, let's try to do it completely-
+
+> Have you previously tested the pxa_camera driver in suspend ?
+
+No, I have not. I didn't have power-management enabled on my board, and I 
+don't know how easy such tests would be on my hardware. That's why I just 
+removed all suspend/resume code from the pxa270 driver completely.
+
+> For history, my setup is :
+>  - a pxa272 on a Mio A701 board
+>  - a Micron MT9M111 chip (driver under construction)
 > 
-> I assume this fixes some reported bug?  Any references?
+> For the camera part, by now, I'm using standard suspend/resume functions of the
+> platform driver (mt9m111.c). It does work, but it's not clean ATM. The chaining
+> between the driver resume function and the availability of the I2C bus are not
+> properly chained. I'm still working on it.
 
-It's more paranoia than anything else ... I saw a version
-of this with on x86, but that was because of problems in
-the HPET glue (fixed by a previous patch).
+Yes, we have to clarify this too.
 
- 
-> Is this needed in 2.6.26.x?  2.6.25.x?
-
-The selftest only merged this week, so not 2.6.25;
-and since it's just paranoia, it shouldn't be critical
-for 2.6.26 either.
-
-- Dave
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
