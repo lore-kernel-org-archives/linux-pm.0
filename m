@@ -1,17 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: Jonathan Brossard <jonathan@iviztechnosolutions.com>
 Subject: Re: Vulnerability in Software Suspend 2 (all versions)
-Date: Mon, 28 Jul 2008 19:40:46 +1000
-Message-ID: <1217238046.8430.154.camel@nigel-laptop>
-References: <488D821D.5060603@iviztechnosolutions.com>
-	<1217234068.8430.108.camel@nigel-laptop>
-	<488D86BB.1050500@iviztechnosolutions.com>
-	<1217235150.8430.119.camel@nigel-laptop>
-	<488D89A8.2050101@iviztechnosolutions.com>
+Date: Mon, 28 Jul 2008 14:29:56 +0530
+Message-ID: <488D8A8C.7090101@iviztechnosolutions.com>
+References: <488D821D.5060603@iviztechnosolutions.com>	
+	<488D8449.2010006@iviztechnosolutions.com>	
+	<1217234901.8430.115.camel@nigel-laptop>	
+	<488D8853.7080907@iviztechnosolutions.com>
+	<1217235481.8430.124.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <488D89A8.2050101@iviztechnosolutions.com>
+In-Reply-To: <1217235481.8430.124.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +21,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jonathan Brossard <jonathan@iviztechnosolutions.com>
-Cc: ncunningham@users.sourceforge.net, chabaud@users.sourceforge.net, bernardb@users.sourceforge.net, seasons@users.sourceforge.net, techteam@ivizindia.com, "cer >> \"CERT(R) Coordination Center\"" <cert@cert.org>, mhfl@users.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Jonathan Brossard <jonathan@ivizindia.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: ncunningham@users.sourceforge.net, chabaud@users.sourceforge.net, bernardb@users.sourceforge.net, seasons@users.sourceforge.net, techteam@ivizindia.com, "CERT(R) Coordination Center" <cert@cert.org>, mhfl@users.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Jonathan Brossard <jonathan@ivizindia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Dear Nigel,
 
-On Mon, 2008-07-28 at 14:26 +0530, Jonathan Brossard wrote:
-> Dear Nigel,
-> 
->  >Why do you think I'm in Switzerland? I'm actually a New Zealander,
-> 
-> >living in Australia.
-> 
-> Nothing against aussies, the project was once uppon a time austed at the federal school
-> of Lausane, which afaik is in Switzerland...
+Feel free to put me in my place if I am wrong here :
 
-Ah, okay. Now I'm with you. Yeah, the original author was Gabor Kuti.
-After Gabor, Florent took over and then I took over from Florent. Gabor
-and Florent have contributed for about 5 years, as far as I recall.
+When you try to boot a tuxonice capable computer and
+restore the state of the computer using a hibernation file...
 
-> >Okay. As mentioned in the previous reply, I don't think this is a bug
-> >with TuxOnIce itself. If a BIOS data area needs clearing during resume,
-> >I would suggest that something like the ACPI device driver should be
-> >doing that, because if the memory needs clearing, it should need
-> >clearing irrespective of whether you've hibernated or not.
-> 
-> Ok. I gave you the exploit. I gave you the explaination. I gave you the fix.
-> Now, if you don't want to face the truth that you have a problem (why dont
-> you just test the exploit ?) because you don't know how to use the BIOS API
-> safely, that's fine : don't fix it, I don't really care.
+you are asked for a password, which is not the standard userland
+login prompt (for a imple reason : there is no kernel in memory at that 
+time).
+That password is part of tux on ice, right ?
 
-I understand what you're saying, but I disagree with your diagnosis as
-to where the problem lies. If you're talking about a password for
-encrypted swap not being cleared (you haven't said what password you're
-talking about yet), then the problem is with the program that's asking
-you for the password, or the program that's using it (dmsetup?). The
-TuxOnIce kernel patch doesn't ask for passwords or know anything about
-where in memory passwords might be stored.
+Well, that password can be retreived from RAM !
 
-I'm a little confused by the fact that you're mentioning BIOS data and
-TuxOnIce asking for a password. Are you talking about some buffer from
-the BIOS that keypresses are stored in prior to being consumed by the
-kernel's input driver (oh yeah, the kernel _is_ running when TuxOnIce
-starts). If that's the case, your bug should perhaps be filed against
-the input driver.
+Best regards,
 
-> Between : Can I quote you at my Defcon presentation  ?
+Jonathan-
 
-Can we leave that question until we've sorted out what we're talking
-about? I'm not at all unwilling to deal with a problem, but right now
-I'm still trying to get clear in my head what the issue is.
+Nigel Cunningham wrote:
+> Hi again.
+>
+> On Mon, 2008-07-28 at 14:20 +0530, Jonathan Brossard wrote:
+>   
+>> Dear Nigel,
+>>
+>>     
+>>> This is not a bug in TuxOnIce (or for that matter other Linux
+>>> hibernation implementations, which would have the same issue).
+>>>       
+>> Yes it is.
+>>
+>>     
+>>> TuxOnIce has no way to know what running applications have passwords
+>>> stored in memory or whether they are storing them in an encrypted format
+>>> or not. Bugs should be filed against applications that are storing
+>>> passwords in plain text.
+>>>       
+>> We are talking about the password of tuxonice itself here...
+>>     
+>
+> TuxOnIce itself doesn't have any password support. Do you mean a
+> password for encrypted swap or such like?
+>
+>   
+>> Please boot a computer using tuxonice, go for hibernation,
+>> reboot, and then type this (as root) :
+>>
+>> xxd -l 32 -s 0x041e  /dev/mem
+>>
+>>
+>>     
+>>> By the way, these contact email addresses are grossly out of date. For
+>>> TuxOnIce, the contact is nigel@tuxonice.net. For swsusp and uswsusp
+>>> (which would have the same problem), refer to linux-pm@lists.osdl.org.
+>>>       
+>> I did my best to find one on the site's website and ended up
+>> taking those of sourceforge.
+>>     
+>
+> Hmm, you're right there. I'll address that shortly.
+>
+> Regards,
+>
+> Nigel
+>
+>
+>   
 
-Regards,
 
-Nigel
+-- 
+    Jonathan Brossard
+    Security Research Engineer
+    iViZ Techno Solutions Pvt. Ltd.
+    Mobile: +91-9748772994
+
+    Kolkata:
+    iViZ Technolgy Solutions(P) Ltd
+    c/o Erevmax Technologies (P) Ltd
+    DLF IT Park,
+    Tower-1, 12th Floor
+    08 Major Arterial Road
+    New Town, Rajarhat
+    Kolkata- 700 156
+
+    Kharagpur:
+    iViZ Techno Solutions Pvt Ltd,
+    School of Information Technology,
+    Indian Institute of Technology,
+    2nd Floor, Takshashila,
+    Kharagpur 721302 West Bengal, India.
+    Phone: +91-3222-282300 ext 4324
+
+    Web page: http://www.ivizindia.com
