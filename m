@@ -1,15 +1,16 @@
 From: Nigel Cunningham <ncunningham@crca.org.au>
 Subject: Re: Vulnerability in Software Suspend 2 (all versions)
-Date: Mon, 28 Jul 2008 18:52:30 +1000
-Message-ID: <1217235150.8430.119.camel@nigel-laptop>
+Date: Mon, 28 Jul 2008 18:58:01 +1000
+Message-ID: <1217235481.8430.124.camel@nigel-laptop>
 References: <488D821D.5060603@iviztechnosolutions.com>
-	<1217234068.8430.108.camel@nigel-laptop>
-	<488D86BB.1050500@iviztechnosolutions.com>
+	<488D8449.2010006@iviztechnosolutions.com>
+	<1217234901.8430.115.camel@nigel-laptop>
+	<488D8853.7080907@iviztechnosolutions.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <488D86BB.1050500@iviztechnosolutions.com>
+In-Reply-To: <488D8853.7080907@iviztechnosolutions.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,69 +21,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jonathan Brossard <jonathan@iviztechnosolutions.com>
-Cc: ncunningham@users.sourceforge.net, chabaud@users.sourceforge.net, bernardb@users.sourceforge.net, seasons@users.sourceforge.net, techteam@ivizindia.com, mhfl@users.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Jonathan Brossard <jonathan@ivizindia.com>
+Cc: ncunningham@users.sourceforge.net, chabaud@users.sourceforge.net, bernardb@users.sourceforge.net, seasons@users.sourceforge.net, techteam@ivizindia.com, "CERT(R) Coordination Center" <cert@cert.org>, mhfl@users.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Jonathan Brossard <jonathan@ivizindia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi again.
 
-On Mon, 2008-07-28 at 14:13 +0530, Jonathan Brossard wrote:
-> Hi Nigel,
+On Mon, 2008-07-28 at 14:20 +0530, Jonathan Brossard wrote:
+> Dear Nigel,
 > 
-> Sorry for assuming (wrongly) that ppl in Switzerland all speak French ;)
+> >This is not a bug in TuxOnIce (or for that matter other Linux
+> >hibernation implementations, which would have the same issue).
+> 
+> Yes it is.
+> 
+> >TuxOnIce has no way to know what running applications have passwords
+> >stored in memory or whether they are storing them in an encrypted format
+> >or not. Bugs should be filed against applications that are storing
+> >passwords in plain text.
+> 
+> We are talking about the password of tuxonice itself here...
 
-Why do you think I'm in Switzerland? I'm actually a New Zealander,
-living in Australia.
+TuxOnIce itself doesn't have any password support. Do you mean a
+password for encrypted swap or such like?
 
-> In a nutshell, I discovered a new class of vulnerabilities that I will fully
-> disclose at the Defcon security conference in August. It happens to
-> affect your software, which I would like to help you fix before I go
-> public. (Note : I have used your patch for quite a time, thanks for
-> the good job ;)
+> Please boot a computer using tuxonice, go for hibernation,
+> reboot, and then type this (as root) :
 > 
-> The problem lies in a lack of sanitazation of the Bios Data Area
-> after reading the password using BIOS interruptions (you don't
-> have much choice at that early stage regarding the API anyway).
-> Once the password is read, it remains in RAM for ever, and can
-> be retreived by a (somehow) privileged user :
-> 
-> root@blackbox:~# xxd -l 32 -s 0x041e  /dev/mem
-> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~# xxd -l 32 -s 0x41e /dev/oldmem
-> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~# xxd -l 32 -s 0x041e /dev/.static/dev/mem
-> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~# xxd -l 32 -s 0x141e  /proc/kcore
-> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~# xxd -l 32 -s 0x141e /dev/core
-> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~# xxd -l 32 -s 0x141e /dev/.static/dev/core
-> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
-> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
-> root@blackbox:~#
+> xxd -l 32 -s 0x041e  /dev/mem
 > 
 > 
-> The patch was made against the latest vanilla kernel and checked
-> under gentoo 2006 and Ubuntu Gutsy. It *should* work even if you
-> don't have a standard 3Go/1Go user/kernel split. It simply sanitizes
-> the RAM areas in question.
+> >By the way, these contact email addresses are grossly out of date. For
+> >TuxOnIce, the contact is nigel@tuxonice.net. For swsusp and uswsusp
+> >(which would have the same problem), refer to linux-pm@lists.osdl.org.
 > 
-> Like I mentioned previously, I would appreciate credits. If you chose
-> to credit us for our work, you can quote :
-> Jonathan Brossard, endrazine@gmail.com, jonathan@ivizindia.com
-> 
-> 
-> Feel free to contact me if you have any additional questions or feedback :)
+> I did my best to find one on the site's website and ended up
+> taking those of sourceforge.
 
-Okay. As mentioned in the previous reply, I don't think this is a bug
-with TuxOnIce itself. If a BIOS data area needs clearing during resume,
-I would suggest that something like the ACPI device driver should be
-doing that, because if the memory needs clearing, it should need
-clearing irrespective of whether you've hibernated or not.
+Hmm, you're right there. I'll address that shortly.
 
 Regards,
 
