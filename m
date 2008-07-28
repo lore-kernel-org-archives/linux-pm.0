@@ -1,16 +1,18 @@
-From: Jonathan Brossard <jonathan@iviztechnosolutions.com>
-Subject: Re: Vulnerability in Software Suspend 2 (all versions)
-Date: Mon, 28 Jul 2008 14:26:08 +0530
-Message-ID: <488D89A8.2050101@iviztechnosolutions.com>
-References: <488D821D.5060603@iviztechnosolutions.com>	
-	<1217234068.8430.108.camel@nigel-laptop>	
-	<488D86BB.1050500@iviztechnosolutions.com>
-	<1217235150.8430.119.camel@nigel-laptop>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH] Fix suspend/resume of pxa_camera driver
+Date: Mon, 28 Jul 2008 20:33:29 +0200
+Message-ID: <87tze997uu.fsf__48178.8113750101$1217271538$gmane$org@free.fr>
+References: <1217113647-20638-1-git-send-email-robert.jarzmik@free.fr>
+	<Pine.LNX.4.64.0807270155020.29126@axis700.grange>
+	<878wvnkd8n.fsf@free.fr>
+	<Pine.LNX.4.64.0807271337270.1604@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1217235150.8430.119.camel@nigel-laptop>
+In-Reply-To: <Pine.LNX.4.64.0807271337270.1604@axis700.grange> (Guennadi
+	Liakhovetski's message of "Sun\,
+	27 Jul 2008 21\:11\:43 +0200 \(CEST\)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,134 +22,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: ncunningham@users.sourceforge.net, chabaud@users.sourceforge.net, bernardb@users.sourceforge.net, seasons@users.sourceforge.net, techteam@ivizindia.com, "cer >> \"CERT(R) Coordination Center\"" <cert@cert.org>, mhfl@users.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Jonathan Brossard <jonathan@ivizindia.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: video4linux-list@redhat.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Dear Nigel,
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
 
- >Why do you think I'm in Switzerland? I'm actually a New Zealander,
-
->living in Australia.
-
-Nothing against aussies, the project was once uppon a time austed at the federal school
-of Lausane, which afaik is in Switzerland...
-
-
->Okay. As mentioned in the previous reply, I don't think this is a bug
->with TuxOnIce itself. If a BIOS data area needs clearing during resume,
->I would suggest that something like the ACPI device driver should be
->doing that, because if the memory needs clearing, it should need
->clearing irrespective of whether you've hibernated or not.
-
-Ok. I gave you the exploit. I gave you the explaination. I gave you the fix.
-Now, if you don't want to face the truth that you have a problem (why dont
-you just test the exploit ?) because you don't know how to use the BIOS API
-safely, that's fine : don't fix it, I don't really care.
-
-Between : Can I quote you at my Defcon presentation  ?
-
-
-Regards,
-
-Jonathan-
-
-
-Nigel Cunningham wrote:
-> Hi.
+> On Sun, 27 Jul 2008, Robert Jarzmik wrote:
 >
-> On Mon, 2008-07-28 at 14:13 +0530, Jonathan Brossard wrote:
->   
->> Hi Nigel,
->>
->> Sorry for assuming (wrongly) that ppl in Switzerland all speak French ;)
->>     
->
-> Why do you think I'm in Switzerland? I'm actually a New Zealander,
-> living in Australia.
->
->   
->> In a nutshell, I discovered a new class of vulnerabilities that I will fully
->> disclose at the Defcon security conference in August. It happens to
->> affect your software, which I would like to help you fix before I go
->> public. (Note : I have used your patch for quite a time, thanks for
->> the good job ;)
->>
->> The problem lies in a lack of sanitazation of the Bios Data Area
->> after reading the password using BIOS interruptions (you don't
->> have much choice at that early stage regarding the API anyway).
->> Once the password is read, it remains in RAM for ever, and can
->> be retreived by a (somehow) privileged user :
->>
->> root@blackbox:~# xxd -l 32 -s 0x041e  /dev/mem
->> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~# xxd -l 32 -s 0x41e /dev/oldmem
->> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~# xxd -l 32 -s 0x041e /dev/.static/dev/mem
->> 000041e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000042e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~# xxd -l 32 -s 0x141e  /proc/kcore
->> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~# xxd -l 32 -s 0x141e /dev/core
->> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~# xxd -l 32 -s 0x141e /dev/.static/dev/core
->> 000141e: 7019 3405 731f 731f 7711 300b 7213 6420  p.4.s.s.w.0.r.d
->> 000142e: 0d1c 0d1c 0000 0000 0000 0000 0000 0000  ................
->> root@blackbox:~#
->>
->>
->> The patch was made against the latest vanilla kernel and checked
->> under gentoo 2006 and Ubuntu Gutsy. It *should* work even if you
->> don't have a standard 3Go/1Go user/kernel split. It simply sanitizes
->> the RAM areas in question.
->>
->> Like I mentioned previously, I would appreciate credits. If you chose
->> to credit us for our work, you can quote :
->> Jonathan Brossard, endrazine@gmail.com, jonathan@ivizindia.com
->>
->>
->> Feel free to contact me if you have any additional questions or feedback :)
->>     
->
-> Okay. As mentioned in the previous reply, I don't think this is a bug
-> with TuxOnIce itself. If a BIOS data area needs clearing during resume,
-> I would suggest that something like the ACPI device driver should be
-> doing that, because if the memory needs clearing, it should need
-> clearing irrespective of whether you've hibernated or not.
->
-> Regards,
->
-> Nigel
->
->
->   
+> Yes, this is the difference. The sensor is attached to the camera host 
+> only on open. In fact, I am not sure, how video applications should behave 
+> during a suspend / resume cycle. If you suspend, while, say, recording 
+> from your camera, should you directly continue recording after a wake up? 
+> How do currect drivers implement this? Or, in general, for example with 
+> audio - if you suspend while listening to a stream over the net, or to a 
+> CD, or to a mp3-file on your local disk, should the sound resume after a 
+> wake up? I added linux-pm for some authoritative answers:-)
+AFAIK, on resume, sound streams continues. So the normal behaviour would be to
+continue video stream too (as done in ALSA). This supposes the whole video chip
+state is saved on suspend and restored on resume, of course.
 
+> If you know how a v4l2 device should handle suspend/resume, or when we get 
+> some answers, let's try to do it completely-
+Of course. In a week or two, my mt9m111 driver will be ready for submission, and
+in the review process I'll post a submission for complete suspend/resume.
 
--- 
-    Jonathan Brossard
-    Security Research Engineer
-    iViZ Techno Solutions Pvt. Ltd.
-    Mobile: +91-9748772994
+>> For the camera part, by now, I'm using standard suspend/resume functions of the
+>> platform driver (mt9m111.c). It does work, but it's not clean ATM. The chaining
+>> between the driver resume function and the availability of the I2C bus are not
+>> properly chained. I'm still working on it.
+>
+> Yes, we have to clarify this too.
+Yes.
 
-    Kolkata:
-    iViZ Technolgy Solutions(P) Ltd
-    c/o Erevmax Technologies (P) Ltd
-    DLF IT Park,
-    Tower-1, 12th Floor
-    08 Major Arterial Road
-    New Town, Rajarhat
-    Kolkata- 700 156
+So, to sum up :
+ - I finish the mt9m111 driver
+ - I submit it
+ - I cook up a clean suspend/resume (unless you did it first of course :)
 
-    Kharagpur:
-    iViZ Techno Solutions Pvt Ltd,
-    School of Information Technology,
-    Indian Institute of Technology,
-    2nd Floor, Takshashila,
-    Kharagpur 721302 West Bengal, India.
-    Phone: +91-3222-282300 ext 4324
-
-    Web page: http://www.ivizindia.com
+--
+Robert
