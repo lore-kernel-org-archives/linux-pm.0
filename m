@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/7] pm: Config option to disable handling of
-	console during suspend/resume
-Date: Wed, 30 Jul 2008 00:18:34 +0200
-Message-ID: <200807300018.35086.rjw__40341.3967848339$1217369944$gmane$org@sisk.pl>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
-	<200807292315.36511.rjw@sisk.pl> <1217368310.6066.56.camel@cunning>
+Subject: Re: [PATCH 4/4] sky2: Adapt sky2 to use reworked PCI PM
+Date: Wed, 30 Jul 2008 00:31:23 +0200
+Message-ID: <200807300031.24071.rjw__26304.6542801478$1217370711$gmane$org@sisk.pl>
+References: <200807191436.40726.rjw@sisk.pl>
+	<200807241352.18947.jbarnes@virtuousgeek.org>
+	<20080724165016.7be588e9@speedy>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1217368310.6066.56.camel@cunning>
+In-Reply-To: <20080724165016.7be588e9@speedy>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,168 +20,119 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Collins <ben.collins@canonical.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jeff@garzik.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 29 of July 2008, Ben Collins wrote:
-> On Tue, 2008-07-29 at 23:15 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 29 of July 2008, Greg KH wrote:
-> > > On Sun, Jul 20, 2008 at 09:48:28PM -0400, Ben Collins wrote:
-> > > > Config option allows userspace to handle console during suspend/resume
-> > > > instead of the kernel.
-> > > > 
-> > > > Signed-off-by: Ben Collins <ben.collins@canonical.com>
-> > > > ---
-> > > >  kernel/power/Kconfig   |   15 +++++++++++++++
-> > > >  kernel/power/console.c |    4 ++++
-> > > >  2 files changed, 19 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > > > index b45da40..6855299 100644
-> > > > --- a/kernel/power/Kconfig
-> > > > +++ b/kernel/power/Kconfig
-> > > > @@ -105,6 +105,21 @@ config SUSPEND_FREEZER
-> > > >  
-> > > >  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-> > > >  
-> > > > +config PM_DISABLE_CONSOLE
-> > > > +	bool "Disable Power Management messing with the active console"
-> > > > +	depends on PM
-> > > > +	default n
-> > > > +	---help---
-> > > > +	  By default, PM will take over the active console (generally, this means
-> > > > +	  switching to the console when suspending from X). This can at times cause
-> > > > +	  problems, especially if userspace suspend scripts try to do things with
-> > > > +	  the console before or after suspending (e.g. calling vbestate).
-> > > > +
-> > > > +	  To work around this, enable this option so that PM will not handle the
-> > > > +	  console.
-> > > > +
-> > > > +	  If unsure, say N.
-> > > > +
-> > > >  config HIBERNATION
-> > > >  	bool "Hibernation (aka 'suspend to disk')"
-> > > >  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> > > > diff --git a/kernel/power/console.c b/kernel/power/console.c
-> > > > index b8628be..8b9706f 100644
-> > > > --- a/kernel/power/console.c
-> > > > +++ b/kernel/power/console.c
-> > > > @@ -33,6 +33,7 @@ EXPORT_SYMBOL(pm_set_vt_switch);
-> > > >  
-> > > >  int pm_prepare_console(void)
-> > > >  {
-> > > > +#ifndef CONFIG_PM_DISABLE_CONSOLE
-> > > 
-> > > Can't you do this in a .h file instead?
-> > > 
-> > > And is this really needed?  Why has no other distro needed this change?
-> > > What is so wierd about your suspend setup to require this?
-> > 
-> > Reportedly, some systems have problems with graphics restoration from user
-> > space if the switch is done.
-> > 
-> > Anyway, I'd prefer to use the (already existing) pm_set_vt_switch() thing for
-> > that, maybe with the help of a command line parameter, to adding the .config
-> > option like this.
+On Friday, 25 of July 2008, Stephen Hemminger wrote:
+> On Thu, 24 Jul 2008 13:52:18 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> Ah. I didn't notice pm_set_vt_switch(). Then what I would like better is
-> the config option to set a default. For us, not doing the vt switch is a
-> good default (I don't think we have a case where suspend/resume requires
-> it).
+> > On Thursday, July 24, 2008 1:50 pm Rafael J. Wysocki wrote:
+> > > [Sorry for the delayed response, I'm at OLS.]
+> > >
+> > > On Monday, 21 of July 2008, Andrew Morton wrote:
+> > > > On Sat, 19 Jul 2008 14:42:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> 
+> > wrote:
+> > > > > Adapt the sky2 driver to use the reworked PCI PM.
+> > > >
+> > > > I fixed the rejects in "[PATCH 3/4] tg3: Adapt tg3 to use reworked PCI
+> > > > PM code" but this patch has too many for me to want to fix them.
+> > > >
+> > > > As usual, please at least take a look at what's in linux-next before
+> > > > going and bypassing all that queued work.
+> > >
+> > > Sorry for that.
+> > >
+> > > Appended is a version of the patch applying to the current mainline on top
+> > > of patches 1/4 - 3/4 without rejects.
+> > >
+> > > BTW, the sky2's WOL is broken on my test box because of commit
+> > > db99b98885e717454feef1c6868b27d3f23c2e7c ("sky2: put PHY in sleep when
+> > > down") that causes the box to hang solid in sky2_suspend() and
+> > > sky2_shutdown() after WOL has been enabled with 'ethtool -s eth0 wol g'.
+> > >
+> > > This has already been reported to Stephen and Jeff.
+> > 
+> > Btw, I just asked Linus to pull the 2/4 part of this patchset, so the rest 
+> > should be able to go upstream soon.
+> > 
+> > Thanks,
+> > Jesse
+> 
+> 
+> Does this fix your WOL issue?
 
-As long as we freeze X, I don't think the switch is really necessary.  I might
-be wrong, though.
+Yes, the patch below fixes the issue in which the system hanged during
+hibernation/power off after 'ethtool -s eth0 wol g' had been used.  This
+actually is a regression fix, so please push it upstream ASAP.
 
-> Something like:
+However, even with this patch applied, the card doesn't work after a resume
+from hibernation (even if the system was woken up using it ;-)).  ISTR that it
+worked with vanilla 2.6.26, will verify tomorrow.
 
-Well, why not.
+[As a side note, my patch 4/4 is still necessary so that the device's
+/sys/devices/.../power/wakeup file is updated in accordance with the current
+WOL setting and so that the callbacks provided by the PCI core are used
+for accessing the standard PCI PM registers of the device.]
 
-[/me makes a note to change disable_vt_switch to 'bool' at some point in
-future]
 
-
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index e7bea3e..6a042f8 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
->  			Format: <command>
+> When doing wake on lan and resume, the PHY may need to get more
+> power up bits tweaked.
+> 
+> --- a/drivers/net/sky2.c	2008-07-24 15:35:33.000000000 -0700
+> +++ b/drivers/net/sky2.c	2008-07-24 15:43:44.000000000 -0700
+> @@ -698,6 +698,7 @@ static const u32 coma_mode[] = { PCI_Y2_
+>  static void sky2_phy_power_up(struct sky2_hw *hw, unsigned port)
+>  {
+>  	u32 reg1;
+> +	u16 ctrl;
 >  
-> +	vt_switch=	[PM] Switch vt's during suspend/resume
-> +			Format: { 0 | 1 }
-> +			Default is normally '1', but depends on value of
-> +			the PM_DISABLE_CONSOLE config option.
+>  	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
+>  	reg1 = sky2_pci_read32(hw, PCI_DEV_REG1);
+> @@ -709,6 +710,33 @@ static void sky2_phy_power_up(struct sky
+>  	sky2_pci_write32(hw, PCI_DEV_REG1, reg1);
+>  	sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
+>  	sky2_pci_read32(hw, PCI_DEV_REG1);
 > +
->  	waveartist=	[HW,OSS]
->  			Format: <io>,<irq>,<dma>,<dma2>
->  
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index dcd165f..202f9b3 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -116,6 +116,25 @@ config SUSPEND_FREEZER
->  
->  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
->  
-> +config PM_DISABLE_CONSOLE
-> +	bool "Disable Power Management messing with the active console"
-> +	depends on PM
-> +	default n
-> +	---help---
-> +	  By default, PM will take over the active console (generally, this means
-> +	  switching to the console when suspending from X). This can at times cause
-> +	  problems, especially if userspace suspend scripts try to do things with
-> +	  the console before or after suspending (e.g. calling vbestate).
+> +	if (hw->chip_id != CHIP_ID_YUKON_EC) {
+> +		if (hw->chip_id == CHIP_ID_YUKON_EC_U) {
+> +			gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+> +			ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
 > +
-> +	  To work around this, enable this option so that PM will not handle the
-> +	  console.
+> +			/* turn on GII power */
+> +			ctrl &= ~PHY_M_PC_POW_D_ENA;
+> +			gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
+> +		}
+> +	}
 > +
-> +	  Note, this is the same as passing vt_switch=0 command line option, but
-> +	  just hardcodes the default. You can still pass vt_switch=1 with this
-> +	  option to get original behavior.
+> +	if (hw->flags & SKY2_HW_NEWER_PHY) {
+> +		/* select page 2 to access MAC control register */
+> +		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 2);
 > +
-> +	  If unsure, say N.
+> +		ctrl = gm_phy_read(hw, port, PHY_MARV_PHY_CTRL);
+> +		/* allow GMII Power Down */
+> +		ctrl |= PHY_M_MAC_GMIF_PUP;
+> +		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
 > +
->  config HIBERNATION
->  	bool "Hibernation (aka 'suspend to disk')"
->  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> diff --git a/kernel/power/console.c b/kernel/power/console.c
-> index b8628be..db116d8 100644
-> --- a/kernel/power/console.c
-> +++ b/kernel/power/console.c
-> @@ -14,7 +14,11 @@
->  #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
->  
->  static int orig_fgconsole, orig_kmsg;
-> +#ifdef CONFIG_PM_DISABLE_CONSOLE
-> +static int disable_vt_switch = 1;
-> +#else
->  static int disable_vt_switch;
-> +#endif
->  
->  /*
->   * Normally during a suspend, we allocate a new console and switch to it.
-> @@ -80,4 +84,17 @@ void pm_restore_console(void)
->  	release_console_sem();
->  	kmsg_redirect = orig_kmsg;
+> +		/* set page register back to 0 */
+> +		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+> +	}
+> +
+> +	/* force phy reset and clear power down */
+> +	gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
 >  }
+>  
+>  static void sky2_phy_power_down(struct sky2_hw *hw, unsigned port)
+> @@ -731,6 +759,9 @@ static void sky2_phy_power_down(struct s
+>  		ctrl &= ~PHY_M_MAC_GMIF_PUP;
+>  		gm_phy_write(hw, port, PHY_MARV_PHY_CTRL, ctrl);
+>  
+> +		/* this register change must be followed by a software reset */
+> +		gm_phy_write(hw, port, PHY_MARV_CTRL, PHY_CT_RESET);
 > +
-> +static int __init set_vt_switch(char *str)
-> +{
-> +	if (str[0] == '0')
-> +		disable_vt_switch = 1;
-> +	else if (str[0] == '1')
-> +		disable_vt_switch = 0;
-> +	else
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +__setup("vt_switch=", set_vt_switch);
->  #endif
-> 
-> 
+>  		/* set page register back to 0 */
+>  		gm_phy_write(hw, port, PHY_MARV_EXT_ADR, 0);
+>  	}
 > 
 > 
