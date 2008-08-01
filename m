@@ -1,14 +1,11 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: suspend to  ram regression in current GIT, bisected
-Date: Thu, 31 Jul 2008 12:07:49 -0700
-Message-ID: <200807311207.49335.jbarnes__25938.4775803939$1217545234$gmane$org@virtuousgeek.org>
-References: <48920CF7.4060907@gmx.de>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: [PATCH 0/6] Container Freezer: Reuse Suspend Freezer
+Date: Thu, 31 Jul 2008 22:06:59 -0700
+Message-ID: <20080801050659.924495279__24839.0269618996$1217567624$gmane$org@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48920CF7.4060907@gmx.de>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,21 +15,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dieter Ries <clip2@gmx.de>
-Cc: len.brown@intel.com, linux-kernel@vger.kernel.org, pavel@suse.cz, willy@linux.intel.com, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 31, 2008 12:05 pm Dieter Ries wrote:
-> Hi,
->
-> starting from 2.6.27-rc1, my Laptop (Thinkpad T60) did not return from
-> suspend to ram anymore.
->
-> When it should resume, the sleep LED went off, power went on, HD LED
-> flashed once, but the display stayed black.
+This patch series introduces a cgroup subsystem that utilizes the swsusp
+freezer to freeze a group of tasks. It's immediately useful for batch job
+management scripts. It should also be useful in the future for implementing
+container checkpoint/restart.
 
-Can you test the fix in http://bugzilla.kernel.org/show_bug.cgi?id=11178?  
-Hopefully it's a DUP.
+The freezer subsystem in the container filesystem defines a cgroup file named
+freezer.state. Reading freezer.state will return the current state of the
+cgroup.  Writing "FROZEN" to the state file will freeze all tasks in the
+cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup. 
 
-Thanks,
-Jesse
+* Examples of usage :
+
+   # mkdir /containers/freezer
+   # mount -t cgroup -ofreezer freezer  /containers
+   # mkdir /containers/0
+   # echo $some_pid > /containers/0/tasks
+
+to get status of the freezer subsystem :
+
+   # cat /containers/0/freezer.state
+   RUNNING
+
+to freeze all tasks in the container :
+
+   # echo FROZEN > /containers/0/freezer.state
+   # cat /containers/0/freezer.state
+   FREEZING
+   # cat /containers/0/freezer.state
+   FROZEN
+
+to unfreeze all tasks in the container :
+
+   # echo RUNNING > /containers/0/freezer.state
+   # cat /containers/0/freezer.state
+   RUNNING
+
+Andrew, since I hear Rafael doesn't have time to review these (again) at this
+time, please consider these patches for -mm.
+
+Cheers,
+	-Matt Helsley
+
+Changes since v4:
+v5:
+	Split out write_string as a separate patch for easier merging
+		with trees lacking certain cgroup patches at the time.
+	Checked use of task alloc lock for races with swsusp freeze/thaw --
+		looks safe because there are explicit barriers to handle
+		freeze/thaw races for individual tasks, we explicitly
+		handle partial group freezing, and partial group thawing
+		should be resolved without changing swsusp's loop.
+	Updated the patches to Linus' git tree as of approximately
+		7/31/2008.
+	Added Pavel and Serge's Acked-by lines to Acked patches
+
+v4 (Almost all of these changes are confined to patch 3):
+	Reworked the series to use task_lock() instead of RCU.
+	Reworked the series to use write_string() and read_seq_string()
+		cgroup methods.
+	Fixed the race Paul Menage identified.
+	Fixed up check_if_frozen() to do more than just test the FROZEN
+		flag. In some cases tasks could be stopped (T) and marked
+		FREEZING. When that happens we can safely assume that it
+		will be frozen immediately upon waking up in the kernel.
+		Waiting for it to get marked with PF_FROZEN in order to
+		transition to the FROZEN state would block unnecessarily.
+	Removed freezer_ prefix from static functions in cgroup_freezer.c.
+	Simplified STATE_ switch.
+	Updated the locking comments.
+
+v3:
+	Ported to 2.6.26-rc5-mm2 with Rafael's freezer patches
+	Tested on 24 combinations of 3 architectures (x86, x86_64, ppc64)
+		with 8 different kernel configs varying power management
+		and cgroup config variables. Each patch builds and boots
+		in these 24 combinations.
+	Passes functional testing.
+
+v2 (roughly patches 3 and 5):
+	Moved the "kill" file into a separate cgroup subsystem (signal) and
+		it's own patch.
+	Changed the name of the file from freezer.freeze to freezer.state.
+	Switched from taking 1 and 0 as input to the strings "FROZEN" and 
+		"RUNNING", respectively. This helps keep the interface
+		human-usable if/when we need to more states.
+	Checked that stopped or interrupted is "frozen enough"
+		Since try_to_freeze() is called upon wakeup of these tasks
+		this should be fine. This idea comes from recent changes to
+		the freezer.
+	Checked that if (task == current) whilst freezing cgroup we're ok
+	Fixed bug where -EBUSY would always be returned when freezing
+	Added code to handle userspace retries for any remaining -EBUSY
+
+-- 
