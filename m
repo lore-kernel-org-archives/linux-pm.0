@@ -1,186 +1,70 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 3/6] Container Freezer: Implement freezer
-	cgroup	subsystem
-Date: Fri, 01 Aug 2008 17:11:31 -0700
-Message-ID: <1217635891.25300.292.camel__12678.5990935334$1217636022$gmane$org@localhost.localdomain>
-References: <20080801050659.924495279@us.ibm.com>
-	<20080801050700.797996261@us.ibm.com> <200808020058.37407.rjw@sisk.pl>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Memory Power Management - Was: Re: [linux-pm] Ottawa Linux Power
+	Management Summit, July 22, 2008 - Minutes
+Date: Sat, 02 Aug 2008 02:50:17 +0300
+Message-ID: <1217634617.28090.82.camel@localhost>
+References: <alpine.LFD.1.10.0807260205300.24819@localhost.localdomain>
+	 <alpine.LFD.1.10.0808011704490.3011@localhost.localdomain>
+Reply-To: igor.stoppa@nokia.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808020058.37407.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0808011704490.3011@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
+On Fri, 2008-08-01 at 17:05 -0400, ext Len Brown wrote:
 
-On Sat, 2008-08-02 at 00:58 +0200, Rafael J. Wysocki wrote:
-> On Friday, 1 of August 2008, Matt Helsley wrote:
-> > This patch implements a new freezer subsystem in the control groups framework.
-> > It provides a way to stop and resume execution of all tasks in a cgroup by
-> > writing in the cgroup filesystem.
-> > 
-> > The freezer subsystem in the container filesystem defines a file named
-> > freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
-> > cgroup. Subsequently writing "RUNNING" will unfreeze the tasks in the cgroup.
-> > Reading will return the current state.
-> > 
-> > * Examples of usage :
-> > 
-> >    # mkdir /containers/freezer
-> >    # mount -t cgroup -ofreezer freezer  /containers
-> >    # mkdir /containers/0
-> >    # echo $some_pid > /containers/0/tasks
-> > 
-> > to get status of the freezer subsystem :
-> > 
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > to freeze all tasks in the container :
-> > 
-> >    # echo FROZEN > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    FREEZING
-> >    # cat /containers/0/freezer.state
-> >    FROZEN
-> > 
-> > to unfreeze all tasks in the container :
-> > 
-> >    # echo RUNNING > /containers/0/freezer.state
-> >    # cat /containers/0/freezer.state
-> >    RUNNING
-> > 
-> > This is the basic mechanism which should do the right thing for user space task
-> > in a simple scenario.
-> > 
-> > It's important to note that freezing can be incomplete. In that case we return
-> > EBUSY. This means that some tasks in the cgroup are busy doing something that
-> > prevents us from completely freezing the cgroup at this time. After EBUSY,
-> > the cgroup will remain partially frozen -- reflected by freezer.state reporting
-> > "FREEZING" when read. The state will remain "FREEZING" until one of these
-> > things happens:
-> > 
-> > 	1) Userspace cancels the freezing operation by writing "RUNNING" to
-> > 		the freezer.state file
-> > 	2) Userspace retries the freezing operation by writing "FROZEN" to
-> > 		the freezer.state file (writing "FREEZING" is not legal
-> > 		and returns EIO)
-> > 	3) The tasks that blocked the cgroup from entering the "FROZEN"
-> > 		state disappear from the cgroup's set of tasks.
-> > 
-> > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> > Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> > ---
-> >  include/linux/cgroup_freezer.h |   71 ++++++++
-> >  include/linux/cgroup_subsys.h  |    6 
-> >  include/linux/freezer.h        |   16 +-
-> >  init/Kconfig                   |    7 
-> >  kernel/Makefile                |    1 
-> >  kernel/cgroup_freezer.c        |  328 +++++++++++++++++++++++++++++++++++++++++
-> >  6 files changed, 425 insertions(+), 4 deletions(-)
-> >  create mode 100644 include/linux/cgroup_freezer.h
-> >  create mode 100644 kernel/cgroup_freezer.c
-> > 
-> > Index: linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.27-rc1-mm1/include/linux/cgroup_freezer.h
-> > @@ -0,0 +1,71 @@
-> > +#ifndef _LINUX_CGROUP_FREEZER_H
-> > +#define _LINUX_CGROUP_FREEZER_H
-> > +/*
-> > + * cgroup_freezer.h -  control group freezer subsystem interface
-> > + *
-> > + * Copyright IBM Corporation, 2007
-> > + *
-> > + * Author : Cedric Le Goater <clg@fr.ibm.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify it
-> > + * under the terms of version 2.1 of the GNU Lesser General Public License
-> > + * as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope that it would be useful, but
-> > + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> > + */
-> > +
-> > +#include <linux/cgroup.h>
-> > +
-> > +#ifdef CONFIG_CGROUP_FREEZER
-> > +
-> > +enum freezer_state {
-> > +	STATE_RUNNING = 0,
-> > +	STATE_FREEZING,
-> > +	STATE_FROZEN,
-> > +};
-> > +
-> > +struct freezer {
-> > +	struct cgroup_subsys_state css;
-> > +	enum freezer_state state;
-> > +	spinlock_t lock; /* protects _writes_ to state */
-> > +};
-> > +
-> > +static inline struct freezer *cgroup_freezer(
-> > +		struct cgroup *cgroup)
-> > +{
-> > +	return container_of(
-> > +		cgroup_subsys_state(cgroup, freezer_subsys_id),
-> > +		struct freezer, css);
-> > +}
-> > +
-> > +static inline struct freezer *task_freezer(struct task_struct *task)
-> > +{
-> > +	return container_of(task_subsys_state(task, freezer_subsys_id),
-> > +			    struct freezer, css);
-> > +}
-> > +
-> > +static inline int cgroup_frozen(struct task_struct *task)
-> > +{
-> > +	struct freezer *freezer;
-> > +	enum freezer_state state;
-> > +
-> > +	task_lock(task);
-> > +	freezer = task_freezer(task);
-> > +	state = freezer->state;
-> > +	task_unlock(task);
-> > +
-> > +	return state == STATE_FROZEN;
-> > +}
-> > +
-> > +#else /* !CONFIG_CGROUP_FREEZER */
-> > +
-> > +static inline int cgroup_frozen(struct task_struct *task)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +#endif /* !CONFIG_CGROUP_FREEZER */
-> > +
-> > +#endif /* _LINUX_CGROUP_FREEZER_H */
+[snip]
+
+> Memory power management
+> -----------------------
 > 
-> Hmm.  I wonder if we really need a separate file for this.  I'd prefer it to be
-> in freezer.h, unless there's a good reason not to place it in there.
+> We discussed the challenges to memory power management
+> on servers.  Specifically, power-friendly interleaving
+> and the inability to migrate/free pages used by the kernel.
+> 
+> HSuperH may benefit soonest here b/c
+> not stopped by interleaving issue.
+> NUMA memory node for accounting.
+> 
+> Paul Mundt, using on SH
+> needs to be dynamic b/c cores turned on/off dynamically.
+> 
+> This is a common requirement between embedded and server platform
+> Consensus was to work on a common framework for page
+> placement based on frequency of reference.
+> 
+> Physical address to memory module (DIMM) information needs to be
+> exported by the platform to get started on any memory PM techniques.
+> Currently there is no information about fine grain memory topology
+> except for NUMA systems at node level.
 
-	Yeah, it's a pretty small header so combining it with another header
-would be nice. However if we combine it with freezer.h we'd be including
-cgroup.h in unrelated filesystem code. An alternative might be to put it
-into a cgroup header for "small" subsystems (which might just be
-cgroup.h for now..).
+I am interested about the embedded part: last year Nokia had an
+evaluation done on the memory chip used for n800, which can be set to
+perform self refresh of 1/4, 1/2 and 1/1 of the available SDRAM.
 
-Thanks for the review!
+The finding was that on average the energy spent for rearranging the
+pages so that those going to be preserved would be in the memory area
+kept in self refresh + the energy spent for reloading the other pages
+from flash was significantly higher than just using self refresh for the
+entire SDRAM.
 
-Cheers,
-	-Matt
+I can dig out the details if there is interest, however the SDRAM used
+is the mobile type with relatively low leakages and speed (133MHz).
+
+I'd be interested to know what's the case with SH and if there has been
+any study/verification.
+
+-- 
+
+Cheers, Igor
+
+---
+
+Igor Stoppa
+Maemo Software - Nokia Devices R&D - Helsinki
