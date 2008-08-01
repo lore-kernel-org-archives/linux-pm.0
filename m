@@ -1,13 +1,15 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 0/6] Container Freezer: Reuse Suspend Freezer
-Date: Thu, 31 Jul 2008 22:16:56 -0700
-Message-ID: <1217567816.25300.197.camel__44129.817284602$1217568560$gmane$org@localhost.localdomain>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 4/6] Container Freezer: Skip frozen cgroups
+	during	power management resume
+Date: Fri, 01 Aug 2008 20:24:40 +1000
+Message-ID: <1217586280.27551.18.camel__49760.2311465473$1217591904$gmane$org@nigel-laptop>
 References: <20080801050659.924495279@us.ibm.com>
+	<20080801050701.070484831@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080801050659.924495279@us.ibm.com>
+In-Reply-To: <20080801050701.070484831@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi.
 
-On Thu, 2008-07-31 at 22:06 -0700, Matt Helsley wrote:
-> This patch series introduces a cgroup subsystem that utilizes the swsusp
-> freezer to freeze a group of tasks. It's immediately useful for batch job
-> management scripts. It should also be useful in the future for implementing
-> container checkpoint/restart.
+On Thu, 2008-07-31 at 22:07 -0700, Matt Helsley wrote:
+> When a system is resumed after a suspend, it will also unfreeze
+> frozen cgroups.
+> 
+> This patchs modifies the resume sequence to skip the tasks which
+> are part of a frozen control group.
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+> Tested-by: Matt Helsley <matthltc@us.ibm.com>
 
-<snip>
+I understand the freezer pretty well, so maybe I can help a little.
 
-> Andrew, since I hear Rafael doesn't have time to review these (again) at this
-> time, please consider these patches for -mm.
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
 
-	Argh -- that "(again)" is ripe for misinterpretation! Rafael has
-reviewed and commented on these patches often in the past but, from what
-I hear, lacks the time to do so now. Hence I'm sending these to -mm.
-
-	Sorry about the wording Rafael.
-
-Cheers,
-	-Matt Helsley
+> ---
+>  kernel/power/process.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 444cea8..ce9e280 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/module.h>
+>  #include <linux/syscalls.h>
+>  #include <linux/freezer.h>
+> +#include <linux/cgroup_freezer.h>
+>  
+>  /* 
+>   * Timeout for stopping processes
+> @@ -135,6 +136,9 @@ static void thaw_tasks(bool nosig_only)
+>  		if (nosig_only && should_send_signal(p))
+>  			continue;
+>  
+> +		if (cgroup_frozen(p))
+> +			continue;
+> +
+>  		thaw_process(p);
+>  	} while_each_thread(g, p);
+>  	read_unlock(&tasklist_lock);
+> -- 
+> 1.5.3.7
+> 
