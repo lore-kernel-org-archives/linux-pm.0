@@ -1,17 +1,20 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
 Subject: Re: [PATCH] Fix suspend/resume of pxa_camera driver
-Date: Fri, 1 Aug 2008 22:16:07 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808012135300.14927__6112.51660525358$1217621944$gmane$org@axis700.grange>
+Date: Fri, 01 Aug 2008 22:58:59 +0200
+Message-ID: <87ljzgfo4s.fsf__31159.0321166024$1217624491$gmane$org@free.fr>
 References: <1217113647-20638-1-git-send-email-robert.jarzmik@free.fr>
 	<Pine.LNX.4.64.0807270155020.29126@axis700.grange>
 	<878wvnkd8n.fsf@free.fr>
 	<Pine.LNX.4.64.0807271337270.1604@axis700.grange>
 	<87tze997uu.fsf@free.fr> <87y73h204v.fsf@free.fr>
+	<Pine.LNX.4.64.0808012135300.14927@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87y73h204v.fsf@free.fr>
+In-Reply-To: <Pine.LNX.4.64.0808012135300.14927@axis700.grange> (Guennadi
+	Liakhovetski's message of "Fri\,
+	1 Aug 2008 22\:16\:07 +0200 \(CEST\)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,146 +24,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Cc: video4linux-list@redhat.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Jul 2008, Robert Jarzmik wrote:
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
 
-> > So, to sum up :
-> >  - I finish the mt9m111 driver
-> >  - I submit it
-> >  - I cook up a clean suspend/resume (unless you did it first of course :)
-> 
-> All right, I finished the pxa_camera part. The suspend/resume does work with a
-> opened video stream. The capture begins before the suspend and finished after
-> the resume.
-> 
-> I post the patch here attached for information. I'll submit later with the
-> complete suspend/resume serie. This is just for preliminary comments. Of course,
-> this patch superseeds the origin patch posted in this thread, which didn't work
-> for an opened video stream.
+> I think, you mean "loses" - with one "o".
+Typo. Will be fixed.
 
-Ok, some preliminary comments.
+> I think, it would look better in  plane lowercase, just name it "cicr" or 
+> even "save_cicr" if you prefer.
+OK. Will be fixed.
 
-> >From fb38f10c233a5b4e13f5ad42cf1c381ecc4215e9 Mon Sep 17 00:00:00 2001
-> From: Robert Jarzmik <robert.jarzmik@free.fr>
-> Date: Sun, 27 Jul 2008 00:52:22 +0200
-> Subject: [PATCH] Fix suspend/resume of pxa_camera driver
-> 
-> PXA suspend switches off DMA core, which looses all context
+>> +	if ((pcdev->icd) && (pcdev->icd->ops->resume))
+>> +		pcdev->icd->ops->resume(pcdev->icd);
+>
+> Are we sure, that i2c has been woken up by now?... I am sorry, I wasn't 
+> quite convinced by your argumentation in a previous email regarding in 
+> which order the drivers will be resumed. So, I re-added pm to the cc:-) As 
+> far as I understood, devices get resumed simply in the order they got 
+> registered. This does guarantee, that children are resumed after parents, 
+> but otherwise there are no guarantees. I guess, you load pxa-camera after 
+> i2c-pxa, right? What if you first load pxa-camera and then i2c-pxa? I'm 
+> almost prepared to bet, your resume will not work then:-)
 
-I think, you mean "loses" - with one "o".
+And you're probably right. I tested ... The order is bus before devices, parents
+before childs, but I see no link between i2c-pxa and pxa-camera.
 
-> of previously assigned descriptors. As pxa_camera driver
-> relies on DMA transfers, setup the lost descriptors on
-> resume and retrigger frame acquisition if needed.
-> 
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> ---
->  drivers/media/video/pxa_camera.c |   49 ++++++++++++++++++++++++++++++++++++++
->  1 files changed, 49 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/media/video/pxa_camera.c b/drivers/media/video/pxa_camera.c
-> index efb2d19..f00844c 100644
-> --- a/drivers/media/video/pxa_camera.c
-> +++ b/drivers/media/video/pxa_camera.c
-> @@ -128,6 +128,8 @@ struct pxa_camera_dev {
->  
->  	struct pxa_buffer	*active;
->  	struct pxa_dma_desc	*sg_tail[3];
-> +
-> +	u32			save_CICR[5];
+Yesterday, I moved that 2 lines into soc_camera_resume(), and
+soc_camera_suspend() was added too. I came to the same conclusion, which is that
+we can only be sure of the order if called from soc_camera_bus.
 
-I think, it would look better in  plane lowercase, just name it "cicr" or 
-even "save_cicr" if you prefer.
+> I think, I have an idea. Our soc_camera_device is registered the last - it 
+> is registered after the respective i2c device (at least in all drivers so 
+> far, and future drivers better keep it this way), and after the camera 
+> host it is on (see soc_camera.c::device_register_link()). So, all we have 
+> to do is add a suspend and a resume to soc_camera_bus_type and to 
+> soc_camera_ops and to soc_camera_host_ops. Then just call the latter two 
+> from soc_camera_bus_type .resume and .suspend. Now this should work, what 
+> do you think?
 
->  };
->  
->  static const char *pxa_cam_driver_description = "PXA_Camera";
-> @@ -1017,6 +1019,51 @@ static struct soc_camera_host pxa_soc_camera_host = {
->  	.ops			= &pxa_soc_camera_host_ops,
->  };
->  
-> +static int pxa_camera_suspend(struct platform_device *pdev, pm_message_t state)
-> +{
-> +	struct pxa_camera_dev *pcdev = platform_get_drvdata(pdev);
-> +	int i = 0;
-> +
-> +	pcdev->save_CICR[i++] = CICR0;
-> +	pcdev->save_CICR[i++] = CICR1;
-> +	pcdev->save_CICR[i++] = CICR2;
-> +	pcdev->save_CICR[i++] = CICR3;
-> +	pcdev->save_CICR[i++] = CICR4;
-> +
-> +	return 0;
-> +}
-> +
-> +static int pxa_camera_resume(struct platform_device *pdev)
-> +{
-> +	struct pxa_camera_dev *pcdev = platform_get_drvdata(pdev);
-> +	int i = 0;
-> +
-> +	DRCMR68 = pcdev->dma_chans[0] | DRCMR_MAPVLD;
-> +	DRCMR69 = pcdev->dma_chans[1] | DRCMR_MAPVLD;
-> +	DRCMR70 = pcdev->dma_chans[2] | DRCMR_MAPVLD;
-> +
-> +	CICR0 = pcdev->save_CICR[i++] & ~CICR0_ENB;
-> +	CICR1 = pcdev->save_CICR[i++];
-> +	CICR2 = pcdev->save_CICR[i++];
-> +	CICR3 = pcdev->save_CICR[i++];
-> +	CICR4 = pcdev->save_CICR[i++];
-> +
-> +	if ((pcdev->icd) && (pcdev->icd->ops->resume))
-> +		pcdev->icd->ops->resume(pcdev->icd);
+Ah, I didn't thought of soc_camera_host_ops ... But I agree, it may be better to
+call soc_camera_host_ops->suspend() rather than pxa-camera::suspend(). Which
+brings me to another question, in which order :
+ a) soc_camera_ops->suspend() then soc_camera_hosts->suspend()
+ b) soc_camera_hosts->suspend() then soc_camera_ops->suspend()
 
-Are we sure, that i2c has been woken up by now?... I am sorry, I wasn't 
-quite convinced by your argumentation in a previous email regarding in 
-which order the drivers will be resumed. So, I re-added pm to the cc:-) As 
-far as I understood, devices get resumed simply in the order they got 
-registered. This does guarantee, that children are resumed after parents, 
-but otherwise there are no guarantees. I guess, you load pxa-camera after 
-i2c-pxa, right? What if you first load pxa-camera and then i2c-pxa? I'm 
-almost prepared to bet, your resume will not work then:-)
+For me, the only working order can be (a), because I need
+soc_camera_host->resume() first to enable QIF Clock, so that i2c interface is
+usable on Micron chip, so that soc_camera->resume() can send i2c commands to the
+camera. Do you think the same ?
 
-I think, I have an idea. Our soc_camera_device is registered the last - it 
-is registered after the respective i2c device (at least in all drivers so 
-far, and future drivers better keep it this way), and after the camera 
-host it is on (see soc_camera.c::device_register_link()). So, all we have 
-to do is add a suspend and a resume to soc_camera_bus_type and to 
-soc_camera_ops and to soc_camera_host_ops. Then just call the latter two 
-from soc_camera_bus_type .resume and .suspend. Now this should work, what 
-do you think?
+> If we agree on the above just move these two to pxa_soc_camera_host_ops.
+Agreed for me.
 
-> +
-> +	/* Restart frame capture if active buffer exists */
-> +	if (pcdev->active) {
-> +		/* Reset the FIFOs */
-> +		CIFR |= CIFR_RESET_F;
-> +		/* Enable End-Of-Frame Interrupt */
-> +		CICR0 &= ~CICR0_EOFM;
-> +		/* Restart the Capture Interface */
-> +		CICR0 |= CICR0_ENB;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static int pxa_camera_probe(struct platform_device *pdev)
->  {
->  	struct pxa_camera_dev *pcdev;
-> @@ -1188,6 +1235,8 @@ static struct platform_driver pxa_camera_driver = {
->  	},
->  	.probe		= pxa_camera_probe,
->  	.remove		= __exit_p(pxa_camera_remove),
-> +	.suspend	= pxa_camera_suspend,
-> +	.resume		= pxa_camera_resume,
->  };
-
-If we agree on the above just move these two to pxa_soc_camera_host_ops.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+--
+Robert
