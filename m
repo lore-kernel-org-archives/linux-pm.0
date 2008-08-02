@@ -1,70 +1,36 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Memory Power Management - Was: Re: [linux-pm] Ottawa Linux Power
-	Management Summit, July 22, 2008 - Minutes
-Date: Sat, 02 Aug 2008 02:50:17 +0300
-Message-ID: <1217634617.28090.82.camel@localhost>
-References: <alpine.LFD.1.10.0807260205300.24819@localhost.localdomain>
-	 <alpine.LFD.1.10.0808011704490.3011@localhost.localdomain>
-Reply-To: igor.stoppa@nokia.com
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 1/6] Container Freezer: Add TIF_FREEZE flag
+	to all	architectures
+Date: Sat, 02 Aug 2008 11:13:28 +1000
+Message-ID: <1217639608.27551.33.camel__11349.0128460855$1217639934$gmane$org@nigel-laptop>
+References: <20080801050659.924495279@us.ibm.com>
+	<20080801050700.261080433@us.ibm.com>
+	<1217586735.27551.22.camel@nigel-laptop> <4893025D.9090801@fr.ibm.com>
+	<1217628325.25300.270.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808011704490.3011@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1217628325.25300.270.camel@localhost.localdomain>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Fri, 2008-08-01 at 17:05 -0400, ext Len Brown wrote:
+Hi.
 
-[snip]
+Please add my ack-ed by too:
 
-> Memory power management
-> -----------------------
-> 
-> We discussed the challenges to memory power management
-> on servers.  Specifically, power-friendly interleaving
-> and the inability to migrate/free pages used by the kernel.
-> 
-> HSuperH may benefit soonest here b/c
-> not stopped by interleaving issue.
-> NUMA memory node for accounting.
-> 
-> Paul Mundt, using on SH
-> needs to be dynamic b/c cores turned on/off dynamically.
-> 
-> This is a common requirement between embedded and server platform
-> Consensus was to work on a common framework for page
-> placement based on frequency of reference.
-> 
-> Physical address to memory module (DIMM) information needs to be
-> exported by the platform to get started on any memory PM techniques.
-> Currently there is no information about fine grain memory topology
-> except for NUMA systems at node level.
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
 
-I am interested about the embedded part: last year Nokia had an
-evaluation done on the memory chip used for n800, which can be set to
-perform self refresh of 1/4, 1/2 and 1/1 of the available SDRAM.
+Regards,
 
-The finding was that on average the energy spent for rearranging the
-pages so that those going to be preserved would be in the memory area
-kept in self refresh + the energy spent for reloading the other pages
-from flash was significantly higher than just using self refresh for the
-entire SDRAM.
-
-I can dig out the details if there is interest, however the SDRAM used
-is the mobile type with relatively low leakages and speed (133MHz).
-
-I'd be interested to know what's the case with SH and if there has been
-any study/verification.
-
--- 
-
-Cheers, Igor
-
----
-
-Igor Stoppa
-Maemo Software - Nokia Devices R&D - Helsinki
+Nigel
