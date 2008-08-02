@@ -1,38 +1,80 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 2/6] Container Freezer: Make refrigerator
- always available
-Date: Sat, 2 Aug 2008 12:39:36 +0200
-Message-ID: <20080802123936.5f8613bd__8296.60693784735$1217673904$gmane$org@surf>
-References: <20080801050659.924495279@us.ibm.com>
-	<20080801050700.528446138@us.ibm.com>
-	<20080801162712.63721e8c@surf>
-	<1217617689.25300.213.camel@localhost.localdomain>
+From: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [BUG] 2.6.27-rc1 in ext3_find_entry
+Date: Sat, 2 Aug 2008 14:18:01 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0808021352001.15876@blonde.site>
+References: <48932F07.9090407@tuffmail.co.uk> <48942E23.7070402@tuffmail.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1217617689.25300.213.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: linux-embedded@vger.kernel.org, Michael Opdenacker <michael@free-electrons.com>, Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, Linux@smtp1.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Paul Menage <menage@google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-ext4-owner@vger.kernel.org>
+In-Reply-To: <48942E23.7070402@tuffmail.co.uk>
+Sender: linux-ext4-owner@vger.kernel.org
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Rafael Wysocki <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-TGUgRnJpLCAwMSBBdWcgMjAwOCAxMjowODowOSAtMDcwMCwKTWF0dCBIZWxzbGV5IDxtYXR0aGx0
-Y0B1cy5pYm0uY29tPiBhIMOpY3JpdCA6Cgo+IAlIb3cgYWJvdXQgbWFraW5nIGl0IGRlcGVuZCBv
-biBhIGNvbWJpbmF0aW9uIG9mIENPTkZJRwo+IHZhcmlhYmxlcz8gSGVyZSdzIGFuIFJGQyBQQVRD
-SC4gQ29tcGxldGVseSB1bnRlc3RlZC4KCkl0IHNvbHZlcyBteSBrZXJuZWwgc2l6ZSBpbmNyZWFz
-ZSBwcm9ibGVtLCBzbyBpdCdzIHBlcmZlY3RseSBmaW5lIGZvcgptZS4KClRoYW5rcyEKClRob21h
-cwotLSAKVGhvbWFzIFBldGF6em9uaSwgRnJlZSBFbGVjdHJvbnMKS2VybmVsLCBkcml2ZXJzIGFu
-ZCBlbWJlZGRlZCBMaW51eCBkZXZlbG9wbWVudCwKY29uc3VsdGluZywgdHJhaW5pbmcgYW5kIHN1
-cHBvcnQuCmh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Sat, 2 Aug 2008, Alan Jenkins wrote:
+> Alan Jenkins wrote:
+> > ...followed by several secondary BUGs; most happened as I tried to open
+> > new Konsole instances.  My computer soon became unusable - X restarted
+> > and then froze, but it responded to SysRQs.  It may just have been all
+> > my processes dying, but there was more disk activity than I expected.
+> >
+> > Strictly speaking I was running v2.6.26-8042-gce6fce4, with a two-line
+> > patch to fix a different problem (see
+> > <http://bugzilla.kernel.org/show_bug.cgi?id=11178>).
+
+(Yes, I owe you for that patch: saved me a bisect, thank you!)
+
+> >
+> > In case it matters, this happened some time after a series of maybe 3
+> > suspend/resume cycles in quick succession.  As you can see it happened
+> > in the middle of running git; I forget exactly what I was doing.
+> 
+> It happened again.  I didn't get any BUG in ext3 this time; just a
+> disabling stream of BUGs in copy_page_c.  They started a few seconds
+> after resume.  So I'm now confident that this is triggered by suspend to
+> ram.
+> 
+> I first noticed it after running an ls command (ls /var/cache/polipo),
+> which was Killed.  I was running polipo at the time; it wouldn't have
+> been the first access to this directory.  However it was probably the
+> first access to this directory after the computer was woken from suspend
+> to ram.
+> 
+> I had the same two-line PCI patch applied.  This time it was atop a
+> genuine descendant of v2.6.27-rc1, viz v2.6.27-rc1-156-g94ad374.
+> 
+> I've put the full trace showing all the BUGs at
+> <http://www-student.cs.york.ac.uk/~aj504/dmesg-suspend-BUG-copy_page_c.txt>. 
+
+Your first report had twenty oopses of this kind:
+[  228.358397] BUG: unable to handle kernel paging request at ffff88004fcXXXXX
+[  228.358423] PGD 202063 PUD 8067 PMD 800000004fc03000 
+whereas it should be               PMD 800000004fc001e3
+
+Your second report had six oopses of this kind:
+[19280.236437] BUG: unable to handle kernel paging request at ffff88004fbXXXXX
+[19280.236645] PGD 202063 PUD 8067 PMD 803c85370cfc01e3 
+whereas it should be               PMD 800000004fa001e3
+
+Those corrupted PMD entries are why it's crashing: not (or very unlikely
+to be) a problem with ext3 or copy_page_c themselves.  But it does seem
+likely that it's connected with suspend/resume.
+
+I think I'd try editing my drivers/base/power/main.c, inserting some
+tests and printks in suspend_device, suspend_device_noirq, resume_device,
+resume_device_noirq (hope they're sensible places: Rafael may have better
+advice).
+
+You want to check that the unsigned long at 0xffff8800000083e8
+is                                          0x800000004fa001e3
+and the unsigned long at                    0xffff8800000083f0
+is                                          0x800000004fc001e3
+with printk of device name where it goes wrong.
+
+Or you may find I'm wrong and those are different from the start
+(changing a page attribute within a 0x200000 range would have to
+break up the 0x1e3 entries: I do wonder whether a change of page
+attribute might even be responsible).
+
+Hugh
