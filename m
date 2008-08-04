@@ -1,20 +1,20 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 6/7] pm: Config option to disable handling of
-	console during suspend/resume
-Date: Mon, 4 Aug 2008 08:28:23 +0200
-Message-ID: <20080804062823.GA22015@atrey.karlin.mff.cuni.cz>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
-	<E1KKl4J-00068V-6f@swissweb.swissdisk.com>
-	<20080729033309.GB12085@kroah.com> <200807292315.36511.rjw@sisk.pl>
-	<1217368310.6066.56.camel@cunning>
-	<20080730044716.GA2954@kroah.com>
-	<1217427607.5976.104.camel@cunning>
+Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
+Date: Mon, 4 Aug 2008 13:01:00 +0200
+Message-ID: <20080804110100.GF12341__46890.9090421677$1217847880$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <1215401122.4660.4.camel@caritas-dev.intel.com>
+	<20080708145051.GA14745@redhat.com>
+	<20080711122131.b6461ab1.akpm@linux-foundation.org>
+	<20080711201149.GB3298@redhat.com>
+	<1215824537.7319.7.camel@nigel-laptop>
+	<20080714054644.GC20258@elf.ucw.cz>
+	<20080714133221.GC16673@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1217427607.5976.104.camel@cunning>
+In-Reply-To: <20080714133221.GC16673@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,41 +24,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Collins <ben.collins@canonical.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Horms <horms@verge.net.au>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > > index e7bea3e..6a042f8 100644
-> > > --- a/Documentation/kernel-parameters.txt
-> > > +++ b/Documentation/kernel-parameters.txt
-> > > @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
-> > >  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
-> > >  			Format: <command>
-> > >  
-> > > +	vt_switch=	[PM] Switch vt's during suspend/resume
-> > > +			Format: { 0 | 1 }
-> > > +			Default is normally '1', but depends on value of
-> > > +			the PM_DISABLE_CONSOLE config option.
-> > > +
+> On Mon, Jul 14, 2008 at 07:46:44AM +0200, Pavel Machek wrote:
+> > On Sat 2008-07-12 11:02:17, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
+> > > > Hi Andrew,
+> > > > 
+> > > > We can use this patchset for hibernation, but can it be a better way of doing
+> > > > things than what we already have, I don't know. Last time I had raised
+> > > > this question and power people had various views. In the end, Pavel wanted
+> > > > this patchset to be in.  Pavel, can tell more here...
+> > > > 
+> > > > To me this patchset looks interesting for couple of reasons.
+> > > > 
+> > > > - Looks like an interesting feature where one can have a separate kernel
+> > > >   in memory and one can switch between the kernels on the fly. It can
+> > > >   be modified to have more than one kernel in memory at a time.
+> > > 
+> > > I'm not sure how useful that would be, though. I already have
+> > > functionality in TuxOnIce which allows you to resume a different image
+> > > instead of powering off (roughly the same thing when combined with not
+> > > removing the image after resuming). It was neat when testing to be
+> > > able
 > > 
-> > Why a build time config option?  Why not just set the command line
-> > option if you need this?  And/or make it a sysctrl?
+> > Beaty of kjump is that it is supposed to used on half-broken system,
+> > so it is useful for debugging.
 > > 
-> > That way we don't have to add yet-another-config-option for distros and
-> > users to get wrong.
-> > 
-> > thanks,
 > 
-> Sysctl makes sense. I would rather not have to add a cmdline option to
-> default installs (and on upgrades). I'll redo the patch that way and
-> resend.
+> What do you mean by supposed to be used on half-broken system?
 
-Maybe have acpi_sleep=no_vt_switch? THat is already settable from
-userspace...?
-									Pavel
+Maybe some network driver went wrong (but rest of machine keeps
+working), so you want to do kdump but do not want to kill the machine
+(as the remaining network drivers make the server useful).
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
