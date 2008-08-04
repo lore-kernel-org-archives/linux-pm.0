@@ -1,20 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v12: kexec jump
-Date: Mon, 4 Aug 2008 13:01:00 +0200
-Message-ID: <20080804110100.GF12341__46890.9090421677$1217847880$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <1215401122.4660.4.camel@caritas-dev.intel.com>
-	<20080708145051.GA14745@redhat.com>
-	<20080711122131.b6461ab1.akpm@linux-foundation.org>
-	<20080711201149.GB3298@redhat.com>
-	<1215824537.7319.7.camel@nigel-laptop>
-	<20080714054644.GC20258@elf.ucw.cz>
-	<20080714133221.GC16673@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs
+ without CONFIG_PM_SLEEP
+Date: Mon, 4 Aug 2008 10:45:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808041041070.2815-100000__21293.629697948$1217861461$gmane$org@iolanthe.rowland.org>
+References: <B85A65D85D7EB246BE421B3FB0FBB593013C91EF11@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20080714133221.GC16673@redhat.com>
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB593013C91EF11@dbde02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,44 +18,120 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Horms <horms@verge.net.au>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Dasgupta, Romit" <romit@ti.com>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, David Engraf <david.engraf@netcom.eu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Mon, Jul 14, 2008 at 07:46:44AM +0200, Pavel Machek wrote:
-> > On Sat 2008-07-12 11:02:17, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Fri, 2008-07-11 at 16:11 -0400, Vivek Goyal wrote:
-> > > > Hi Andrew,
-> > > > 
-> > > > We can use this patchset for hibernation, but can it be a better way of doing
-> > > > things than what we already have, I don't know. Last time I had raised
-> > > > this question and power people had various views. In the end, Pavel wanted
-> > > > this patchset to be in.  Pavel, can tell more here...
-> > > > 
-> > > > To me this patchset looks interesting for couple of reasons.
-> > > > 
-> > > > - Looks like an interesting feature where one can have a separate kernel
-> > > >   in memory and one can switch between the kernels on the fly. It can
-> > > >   be modified to have more than one kernel in memory at a time.
-> > > 
-> > > I'm not sure how useful that would be, though. I already have
-> > > functionality in TuxOnIce which allows you to resume a different image
-> > > instead of powering off (roughly the same thing when combined with not
-> > > removing the image after resuming). It was neat when testing to be
-> > > able
-> > 
-> > Beaty of kjump is that it is supposed to used on half-broken system,
-> > so it is useful for debugging.
-> > 
-> 
-> What do you mean by supposed to be used on half-broken system?
+On Sun, 3 Aug 2008, Dasgupta, Romit wrote:
 
-Maybe some network driver went wrong (but rest of machine keeps
-working), so you want to do kdump but do not want to kill the machine
-(as the remaining network drivers make the server useful).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Alan,
+>          Here is a patch for you. Tested with
+> 
+> 1) CONFIG_SUSPEND, CONFIG_HIBERNATION i.e. with CONFIG_PM_SLEEP
+> 2) without CONFIG_PM_SLEEP but with CONFIG_PM
+> 3) without CONFIG_PM
+
+I'd prefer to use the patch below.  Although it's a little longer, the 
+end result is slightly less complicated.  Also, it fixes two problems:
+
+	dpm_sysfs_add/remove should be called whenever CONFIG_PM
+	is defined, regardless of CONFIG_PM_SLEEP.
+
+	dev->power.status should be initialized to DPM_ON even if
+	CONFIG_PM isn't defined.
+
+Can you make sure it compiles properly under all three configurations?
+
+Rafael, any objections?
+
+Alan Stern
+
+
+
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -1,3 +1,8 @@
++static inline void device_pm_init(struct device *dev)
++{
++	dev->power.status = DPM_ON;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ 
+ /*
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -542,6 +542,7 @@ void device_initialize(struct device *de
+ 	spin_lock_init(&dev->devres_lock);
+ 	INIT_LIST_HEAD(&dev->devres_head);
+ 	device_init_wakeup(dev, 0);
++	device_pm_init(dev);
+ 	set_dev_node(dev, -1);
+ }
+ 
+@@ -898,6 +899,9 @@ int device_add(struct device *dev)
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = dpm_sysfs_add(dev);
++	if (error)
++		goto DPMError;
+ 	error = device_pm_add(dev);
+ 	if (error)
+ 		goto PMError;
+@@ -922,6 +926,8 @@ int device_add(struct device *dev)
+ 	put_device(dev);
+ 	return error;
+  PMError:
++	dpm_sysfs_remove(dev);
++ DPMError:
+ 	bus_remove_device(dev);
+  BusError:
+ 	if (dev->bus)
+@@ -1008,6 +1014,7 @@ void device_del(struct device *dev)
+ 	struct class_interface *class_intf;
+ 
+ 	device_pm_remove(dev);
++	dpm_sysfs_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt)) {
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -69,7 +69,7 @@ void device_pm_unlock(void)
+  */
+ int device_pm_add(struct device *dev)
+ {
+-	int error;
++	int error = 0;
+ 
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+@@ -89,11 +89,8 @@ int device_pm_add(struct device *dev)
+ 		 */
+ 		WARN_ON(true);
+ 	}
+-	error = dpm_sysfs_add(dev);
+-	if (!error) {
+-		dev->power.status = DPM_ON;
+-		list_add_tail(&dev->power.entry, &dpm_list);
+-	}
++
++	list_add_tail(&dev->power.entry, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
+ }
+@@ -110,7 +107,6 @@ void device_pm_remove(struct device *dev
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+-	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
