@@ -1,16 +1,16 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 2/6] Container Freezer: Make refrigerator
-	always	available
-Date: Fri, 01 Aug 2008 19:30:26 -0700
-Message-ID: <1217644226.25300.296.camel__48486.3740428866$1217888057$gmane$org@localhost.localdomain>
-References: <20080801050659.924495279@us.ibm.com>
-	<20080801162712.63721e8c@surf>
-	<1217617689.25300.213.camel@localhost.localdomain>
-	<200808020053.18638.rjw@sisk.pl>
+From: "Dasgupta, Romit" <romit@ti.com>
+Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs
+ without CONFIG_PM_SLEEP
+Date: Tue, 5 Aug 2008 05:49:36 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB593013C9AE7E8__4510.98654089055$1217897214$gmane$org@dbde02.ent.ti.com>
+References: <200808041724.24016.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4865641831580519610=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808020053.18638.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0808041143350.3818-100000@iolanthe.rowland.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,73 +18,248 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-embedded@vger.kernel.org, Michael Opdenacker <michael@free-electrons.com>, Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>
+To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm@smtp1.linux-foundation.org, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, David Engraf <david.engraf@netcom.eu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4865641831580519610==
-Content-Type: text/plain; charset=UTF-7
-Content-Transfer-Encoding: 7bit
+A minor change below: Removed old goto label PMError and introduced SysFSError.
+Tested with CONFIG_PM, CONFIG_PM_SLEEP, without CONFIG_PM and ofcourse with CONFIG_USB_SUSPEND. Works fine.
 
 
-On Sat, 2008-08-02 at 00:53 +-0200, Rafael J. Wysocki wrote:
-+AD4 On Friday, 1 of August 2008, Matt Helsley wrote:
-+AD4 +AD4 
-+AD4 +AD4 On Fri, 2008-08-01 at 16:27 +-0200, Thomas Petazzoni wrote:
-+AD4 +AD4 +AD4 Hi,
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 Le Thu, 31 Jul 2008 22:07:01 -0700,
-+AD4 +AD4 +AD4 Matt Helsley +ADw-matthltc+AEA-us.ibm.com+AD4 a +AOk-crit :
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 +AD4 --- a/kernel/Makefile
-+AD4 +AD4 +AD4 +AD4 +-+-+- b/kernel/Makefile
-+AD4 +AD4 +AD4 +AD4 +AEAAQA -5,7 +-5,7 +AEAAQA
-+AD4 +AD4 +AD4 +AD4  obj-y     +AD0 sched.o fork.o exec+AF8-domain.o panic.o printk.o +AFw
-+AD4 +AD4 +AD4 +AD4  	    cpu.o exit.o itimer.o time.o softirq.o resource.o +AFw
-+AD4 +AD4 +AD4 +AD4  	    sysctl.o capability.o ptrace.o timer.o user.o +AFw
-+AD4 +AD4 +AD4 +AD4 -	    signal.o sys.o kmod.o workqueue.o pid.o +AFw
-+AD4 +AD4 +AD4 +AD4 +-	    signal.o sys.o kmod.o workqueue.o pid.o freezer.o +AFw
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 I have the impression that the code in kernel/power/process.c was
-+AD4 +AD4 +AD4 compiled only if CONFIG+AF8-PM+AF8-SLEEP was set. Now that the code has been
-+AD4 +AD4 +AD4 moved to kernel/freezer.c, it is unconditionnaly compiled in every
-+AD4 +AD4 +AD4 kernel. Is that correct ?
-+AD4 +AD4 +AD4
-+AD4 +AD4 +AD4 If so, is it possible to put this new feature under some
-+AD4 +AD4 +AD4 CONFIG+AF8-SOMETHING option, for people who care about the kernel size ?
-+AD4 +AD4 
-+AD4 +AD4 	How about making it depend on a combination of CONFIG variables?
-+AD4 +AD4 Here's an RFC PATCH. Completely untested.
-+AD4 +AD4 
-+AD4 +AD4 Signed-off-by: Matt Helsley +ADw-matthltc+AEA-us.ibm.com+AD4
-+AD4 
-+AD4 Can you please also make the contents of include/linux/freezer.h depend on
-+AD4 CONFIG+AF8-FREEZER instead of CONFIG+AF8-PM+AF8-SLEEP?
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 068aa1c..9c77939 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -541,6 +541,7 @@ void device_initialize(struct device *dev)
+        spin_lock_init(&dev->devres_lock);
+        INIT_LIST_HEAD(&dev->devres_head);
+        device_init_wakeup(dev, 0);
++       device_pm_init(dev);
+        set_dev_node(dev, -1);
+ }
 
-Done.
+@@ -897,9 +898,10 @@ int device_add(struct device *dev)
+        error = bus_add_device(dev);
+        if (error)
+                goto BusError;
+-       error = device_pm_add(dev);
++       error = dpm_sysfs_add(dev);
+        if (error)
+-               goto PMError;
++               goto SysFSError;
++       device_pm_add(dev);
+        kobject_uevent(&dev->kobj, KOBJ_ADD);
+        bus_attach_device(dev);
+        if (parent)
+@@ -920,7 +922,7 @@ int device_add(struct device *dev)
+  Done:
+        put_device(dev);
+        return error;
+- PMError:
++ SysFSError:
+        bus_remove_device(dev);
+  BusError:
+        if (dev->bus)
+@@ -1007,6 +1009,7 @@ void device_del(struct device *dev)
+        struct class_interface *class_intf;
 
-+AD4 Also, I'm not really sure if kernel/power/Kconfig is the right place to define
-+AD4 CONFIG+AF8-FREEZER.
-+AD4 
-+AD4 Perhaps we should even move freezer.c from kernel/power to kernel
-+AD4 and define CONFIG+AF8-FREEZER in Kconfig in there.  Andrew, what do you think?
+        device_pm_remove(dev);
++       dpm_sysfs_remove(dev);
+        if (parent)
+                klist_del(&dev->knode_parent);
+        if (MAJOR(dev->devt)) {
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3250c52..d1f752b 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -67,10 +67,8 @@ void device_pm_unlock(void)
+  *     device_pm_add - add a device to the list of active devices
+  *     @dev:   Device to be added to the list
+  */
+-int device_pm_add(struct device *dev)
++void device_pm_add(struct device *dev)
+ {
+-       int error;
+-
+        pr_debug("PM: Adding info for %s:%s\n",
+                 dev->bus ? dev->bus->name : "No Bus",
+                 kobject_name(&dev->kobj));
+@@ -89,13 +87,8 @@ int device_pm_add(struct device *dev)
+                 */
+                WARN_ON(true);
+        }
+-       error = dpm_sysfs_add(dev);
+-       if (!error) {
+-               dev->power.status = DPM_ON;
+-               list_add_tail(&dev->power.entry, &dpm_list);
+-       }
++       list_add_tail(&dev->power.entry, &dpm_list);
+        mutex_unlock(&dpm_list_mtx);
+-       return error;
+ }
 
-	I'll check this weekend for replies and repost the RFC PATCH on Monday
-if I don't hear anything. In the meantime I'll be doing some config
-build testing with the above changes to make sure it's correct.
+ /**
+@@ -110,7 +103,6 @@ void device_pm_remove(struct device *dev)
+                 dev->bus ? dev->bus->name : "No Bus",
+                 kobject_name(&dev->kobj));
+        mutex_lock(&dpm_list_mtx);
+-       dpm_sysfs_remove(dev);
+        list_del_init(&dev->power.entry);
+        mutex_unlock(&dpm_list_mtx);
+ }
+diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+index a3252c0..41f51fa 100644
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -1,3 +1,8 @@
++static inline void device_pm_init(struct device *dev)
++{
++       dev->power.status = DPM_ON;
++}
++
+ #ifdef CONFIG_PM_SLEEP
 
-Cheers,
-	-Matt
+ /*
+@@ -11,12 +16,12 @@ static inline struct device *to_device(struct list_head *entry)
+        return container_of(entry, struct device, power.entry);
+ }
 
+-extern int device_pm_add(struct device *);
++extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
 
---===============4865641831580519610==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ #else /* CONFIG_PM_SLEEP */
 
+-static inline int device_pm_add(struct device *dev) { return 0; }
++static inline void device_pm_add(struct device *dev) {}
+ static inline void device_pm_remove(struct device *dev) {}
 
---===============4865641831580519610==--
+ #endif
+
+>-----Original Message-----
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>Sent: Monday, August 04, 2008 9:15 PM
+>To: Rafael J. Wysocki
+>Cc: Dasgupta, Romit; David Engraf; Greg KH; linux-usb@vger.kernel.org; linux-
+>kernel@vger.kernel.org; Linux-pm mailing list
+>Subject: Re: [PATCH] [PM] Fixes missing PM entries in sysfs without
+>CONFIG_PM_SLEEP
+>
+>On Mon, 4 Aug 2008, Rafael J. Wysocki wrote:
+>
+>> > Do you think we will want to make device_pm_add() return an error at
+>> > some point in the future?
+>>
+>> Well, maybe, but not any time soon. :-)
+>
+>Okay, here's the updated patch.  Awaiting comments from the testers...
+>
+>Alan Stern
+>
+>
+>
+>Index: usb-2.6/drivers/base/power/power.h
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/power/power.h
+>+++ usb-2.6/drivers/base/power/power.h
+>@@ -1,3 +1,8 @@
+>+static inline void device_pm_init(struct device *dev)
+>+{
+>+       dev->power.status = DPM_ON;
+>+}
+>+
+> #ifdef CONFIG_PM_SLEEP
+>
+> /*
+>@@ -11,12 +16,12 @@ static inline struct device *to_device(s
+>        return container_of(entry, struct device, power.entry);
+> }
+>
+>-extern int device_pm_add(struct device *);
+>+extern void device_pm_add(struct device *);
+> extern void device_pm_remove(struct device *);
+>
+> #else /* CONFIG_PM_SLEEP */
+>
+>-static inline int device_pm_add(struct device *dev) { return 0; }
+>+static inline void device_pm_add(struct device *dev) {}
+> static inline void device_pm_remove(struct device *dev) {}
+>
+> #endif
+>Index: usb-2.6/drivers/base/core.c
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/core.c
+>+++ usb-2.6/drivers/base/core.c
+>@@ -542,6 +542,7 @@ void device_initialize(struct device *de
+>        spin_lock_init(&dev->devres_lock);
+>        INIT_LIST_HEAD(&dev->devres_head);
+>        device_init_wakeup(dev, 0);
+>+       device_pm_init(dev);
+>        set_dev_node(dev, -1);
+> }
+>
+>@@ -898,9 +899,10 @@ int device_add(struct device *dev)
+>        error = bus_add_device(dev);
+>        if (error)
+>                goto BusError;
+>-       error = device_pm_add(dev);
+>+       error = dpm_sysfs_add(dev);
+>        if (error)
+>                goto PMError;
+>+       device_pm_add(dev);
+>        kobject_uevent(&dev->kobj, KOBJ_ADD);
+>        bus_attach_device(dev);
+>        if (parent)
+>@@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
+>        struct class_interface *class_intf;
+>
+>        device_pm_remove(dev);
+>+       dpm_sysfs_remove(dev);
+>        if (parent)
+>                klist_del(&dev->knode_parent);
+>        if (MAJOR(dev->devt)) {
+>Index: usb-2.6/drivers/base/power/main.c
+>================================================================
+>===
+>--- usb-2.6.orig/drivers/base/power/main.c
+>+++ usb-2.6/drivers/base/power/main.c
+>@@ -67,10 +67,8 @@ void device_pm_unlock(void)
+>  *     device_pm_add - add a device to the list of active devices
+>  *     @dev:   Device to be added to the list
+>  */
+>-int device_pm_add(struct device *dev)
+>+void device_pm_add(struct device *dev)
+> {
+>-       int error;
+>-
+>        pr_debug("PM: Adding info for %s:%s\n",
+>                 dev->bus ? dev->bus->name : "No Bus",
+>                 kobject_name(&dev->kobj));
+>@@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
+>                 */
+>                WARN_ON(true);
+>        }
+>-       error = dpm_sysfs_add(dev);
+>-       if (!error) {
+>-               dev->power.status = DPM_ON;
+>-               list_add_tail(&dev->power.entry, &dpm_list);
+>-       }
+>+
+>+       list_add_tail(&dev->power.entry, &dpm_list);
+>        mutex_unlock(&dpm_list_mtx);
+>-       return error;
+> }
+>
+> /**
+>@@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
+>                 dev->bus ? dev->bus->name : "No Bus",
+>                 kobject_name(&dev->kobj));
+>        mutex_lock(&dpm_list_mtx);
+>-       dpm_sysfs_remove(dev);
+>        list_del_init(&dev->power.entry);
+>        mutex_unlock(&dpm_list_mtx);
+> }
