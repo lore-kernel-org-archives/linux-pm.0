@@ -1,43 +1,71 @@
-From: "Wei, Gang" <gang.wei@intel.com>
-Subject: RE: [linux-pm] [RFC-PATCH] Improve Menu Governor Prediction of interrupted C states.
-Date: Wed, 6 Aug 2008 09:51:14 +0800
-Message-ID: <094BCE01AFBE9646AF220B0B3F367AAB035B08D0@pdsmsx413.ccr.corp.intel.com>
-References: <13B9B4C6EF24D648824FF11BE8967162035BEA0EDF@dlee02.ent.ti.com> <094BCE01AFBE9646AF220B0B3F367AAB034DBB7A@pdsmsx413.ccr.corp.intel.com> <13B9B4C6EF24D648824FF11BE89671620361F4E439@dlee02.ent.ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Software Suspend status in latest GIT?
+Date: Wed, 6 Aug 2008 14:35:54 +0200
+Message-ID: <200808061435.55421.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0808051552401.4955@hp9800.localdomain>
+	<200808060114.31881.rjw@sisk.pl>
+	<Pine.LNX.4.64.0808051653440.7367@hp9800.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1764269AbYHFBwr@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <13B9B4C6EF24D648824FF11BE89671620361F4E439@dlee02.ent.ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Woodruff, Richard" <r-woodruff2@ti.com>, Linux Power Management List <linux-pm@lists.osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0808051653440.7367@hp9800.localdomain>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Kenneth Crudup <kenny@panix.com>
+Cc: pavel@suse.cz, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Hi,
+On Wednesday, 6 of August 2008, Kenneth Crudup wrote:
 > 
->> I also found current cpuidle Menu governor should have some problems
->> while predicting next non-expected break-event after some expected
->> break-events. The measured_us/elapsed_us/predicted_us will become
-larger
->> and larger once (measured_us + BREAK_FUZZ >= data->expected_us -
->> target->exit_latency). The major point is that it should be
->> last_residency, not measured_us, that need to be used to do comparing
->> and distinguish between expected & non-expected events.
->> 
->> Below is my draft patch (not tested) for this. It is simple and
-should
->> also be effective for high interrupt rates case.
+> On Wed, 6 Aug 2008, Rafael J. Wysocki wrote:
 > 
-> This does seem to give better guesses.  However, first tests are not
-showing
-> as well as the irq time stamp version I posted. 
+> > They all are 64-bit.  Except from this, they are quite different.
+> > http://www.sisk.pl/kernel/debug/mainline/2.6.27-rc1-git6-dirty/M3A32-MVP-config
 > 
-> I'll need to grab some hardware trace to see what is going on.
+> Thanks for that.
+> 
+> I'd made the only obvious change I could see differently (I'd specified a
+> resume-to swap partition explicitly) but that had no effect.
+> 
+> Essentially what happens is I begin the suspend (very generically, by
+> writing "disk" to /sys/power/state), and it appears to start, but hangs
+> up. I have my syslog also redirected to tty12, and if I switch over to
+> that, I see:
+> 
+> ----
+> Aug  5 16:35:49 hp9800 kernel: [   71.049504] PM: Marking nosave pages: 000000000009f000 - 0000000000100000
+> Aug  5 16:35:49 hp9800 kernel: [   71.049508] PM: Marking nosave pages: 00000000bfed0000 - 0000000100000000
+> Aug  5 16:35:49 hp9800 kernel: [   71.054734] PM: Basic memory bitmaps created
+> ---
+> 
+> ... then it just hangs, no apparent disk activity. All of a sudden
+> (~20 sec(?) later), a series of errors spit out from syslog, mostly related
+> to trying to write to the disk, then I get a large number when it tries
+> to remount/access my root (XFS) which fails due to I/O errors.
+> Unfortunately these can't be saved and scrolling up the screen won't
+> work (there's too much output anyway).
+> 
+> One guess is that the suspend is stopping my hard drive (/dev/sda, SATA
+> on the AHCI driver) and therefore nothing can continue. I wish I had
+> more, but I'd have to find another box and see if that "serial console
+> on USB" stuff actually works.
+> 
+> So, based on *that* nearly-as-useless bug report, anything else I could
+> try? This config works mostly w/o molestation on 2.6.26 generic (and with
+> the TuxOnIce version, as well). I've attached both .config files, just
+> in case.
 
-Thanks for the trial. My original patch has already been merged into
-another patch "[patch 2/3] cpuidle: Menu governor fix wrong usage of
-measured_us" sent out by Venkatesh. The new patch should be more intact.
+Can you try with the patch from
+http://bugzilla.kernel.org/show_bug.cgi?id=11178#c10
+please?
 
-Jimmy
+Rafael
