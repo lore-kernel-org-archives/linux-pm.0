@@ -1,16 +1,12 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: "e100_probe: Error clearing wake event" when booting
-	2.6.27-rc1
-Date: Thu, 7 Aug 2008 09:47:37 -0700
-Message-ID: <200808070947.37534.jbarnes__41682.0201011889$1218127816$gmane$org@virtuousgeek.org>
-References: <200808051730.27599.alessandro.guido@gmail.com>
-	<200808052203.07815.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: don't skip device PM init when
+ CONFIG_PM_SLEEP isn't set and CONFIG_PM is set (resend)
+Date: Thu, 7 Aug 2008 13:06:12 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808071305210.2598-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808052203.07815.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +16,134 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alessandro Guido <alessandro.guido@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 5, 2008 1:03 pm Rafael J. Wysocki wrote:
-> On Tuesday, 5 of August 2008, Alessandro Guido wrote:
-> > [please cc me on replies]
-> >
-> > I'm getting this error message when booting my laptop.
-> >
-> > The commit that causes this is:
-> >
-> > commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
-> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date:   Mon Jul 7 03:34:48 2008 +0200
-> >
-> >     PCI ACPI: Rework PCI handling of wake-up
-> >
-> > [very long commit message snipped]
-> >
-> > Should I ignore that?
->
-> The message is harmless, but it exposes the problem that e100_probe()
-> should not use pci_enable_wake() for this purpose.
->
-> The appended patch makes it use pci_pme_active() instead.
+This patch (as1124) fixes a couple of bugs in the PM core.  The new
+dev->power.status field should be initialized regardless of whether
+CONFIG_PM_SLEEP is enabled, and similarly dpm_sysfs_add() should be
+called whenever CONFIG_PM is enabled.
 
-I can take the pci_pme_active bits, but the e100 stuff should go in through 
-Jeff probably.  Care to respin?
+The patch separates out the call to dpm_sysfs_add() from the call to
+device_pm_add().  As a result device_pm_add() can no longer return an
+error, so its return type is changed to void.
 
-Thanks,
-Jesse
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Romit Dasgupta <romit@ti.com>
+
+---
+
+This should be queued for 2.6.27.
+
+
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -1,3 +1,8 @@
++static inline void device_pm_init(struct device *dev)
++{
++	dev->power.status = DPM_ON;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ 
+ /*
+@@ -11,12 +16,12 @@ static inline struct device *to_device(s
+ 	return container_of(entry, struct device, power.entry);
+ }
+ 
+-extern int device_pm_add(struct device *);
++extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+ 
+ #else /* CONFIG_PM_SLEEP */
+ 
+-static inline int device_pm_add(struct device *dev) { return 0; }
++static inline void device_pm_add(struct device *dev) {}
+ static inline void device_pm_remove(struct device *dev) {}
+ 
+ #endif
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -542,6 +542,7 @@ void device_initialize(struct device *de
+ 	spin_lock_init(&dev->devres_lock);
+ 	INIT_LIST_HEAD(&dev->devres_head);
+ 	device_init_wakeup(dev, 0);
++	device_pm_init(dev);
+ 	set_dev_node(dev, -1);
+ }
+ 
+@@ -898,9 +899,10 @@ int device_add(struct device *dev)
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
+-	error = device_pm_add(dev);
++	error = dpm_sysfs_add(dev);
+ 	if (error)
+-		goto PMError;
++		goto DPMError;
++	device_pm_add(dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -921,7 +923,7 @@ int device_add(struct device *dev)
+  Done:
+ 	put_device(dev);
+ 	return error;
+- PMError:
++ DPMError:
+ 	bus_remove_device(dev);
+  BusError:
+ 	if (dev->bus)
+@@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
+ 	struct class_interface *class_intf;
+ 
+ 	device_pm_remove(dev);
++	dpm_sysfs_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt)) {
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -67,10 +67,8 @@ void device_pm_unlock(void)
+  *	device_pm_add - add a device to the list of active devices
+  *	@dev:	Device to be added to the list
+  */
+-int device_pm_add(struct device *dev)
++void device_pm_add(struct device *dev)
+ {
+-	int error;
+-
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+@@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
+ 		 */
+ 		WARN_ON(true);
+ 	}
+-	error = dpm_sysfs_add(dev);
+-	if (!error) {
+-		dev->power.status = DPM_ON;
+-		list_add_tail(&dev->power.entry, &dpm_list);
+-	}
++
++	list_add_tail(&dev->power.entry, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+-	return error;
+ }
+ 
+ /**
+@@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+-	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
