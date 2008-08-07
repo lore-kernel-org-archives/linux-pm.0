@@ -1,19 +1,17 @@
-From: Ben Collins <ben.collins@canonical.com>
-Subject: Re: [PATCH 6/7] pm: Config option to disable handling of
- console during suspend/resume
-Date: Thu, 07 Aug 2008 17:23:18 -0400
-Message-ID: <1218144198.10040.196.camel__32508.8379242972$1218145120$gmane$org@cunning>
-References: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
-	<E1KKl4J-00068V-6f@swissweb.swissdisk.com>
-	<20080729033309.GB12085@kroah.com> <200807292315.36511.rjw@sisk.pl>
-	<1217368310.6066.56.camel@cunning> <20080730044716.GA2954@kroah.com>
-	<1217427607.5976.104.camel@cunning>
-	<20080804062823.GA22015@atrey.karlin.mff.cuni.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: "e100_probe: Error clearing wake event" when booting
+	2.6.27-rc1
+Date: Fri, 8 Aug 2008 00:00:06 +0200
+Message-ID: <200808080000.07156.rjw__9185.68451093069$1218146384$gmane$org@sisk.pl>
+References: <200808051730.27599.alessandro.guido@gmail.com>
+	<200808052203.07815.rjw@sisk.pl>
+	<200808070947.37534.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080804062823.GA22015@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <200808070947.37534.jbarnes@virtuousgeek.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Alessandro Guido <alessandro.guido@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2008-08-04 at 08:28 +0200, Pavel Machek wrote:
-> Hi!
+On Thursday, 7 of August 2008, Jesse Barnes wrote:
+> On Tuesday, August 5, 2008 1:03 pm Rafael J. Wysocki wrote:
+> > On Tuesday, 5 of August 2008, Alessandro Guido wrote:
+> > > [please cc me on replies]
+> > >
+> > > I'm getting this error message when booting my laptop.
+> > >
+> > > The commit that causes this is:
+> > >
+> > > commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
+> > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Date:   Mon Jul 7 03:34:48 2008 +0200
+> > >
+> > >     PCI ACPI: Rework PCI handling of wake-up
+> > >
+> > > [very long commit message snipped]
+> > >
+> > > Should I ignore that?
+> >
+> > The message is harmless, but it exposes the problem that e100_probe()
+> > should not use pci_enable_wake() for this purpose.
+> >
+> > The appended patch makes it use pci_pme_active() instead.
 > 
-> > > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > > > index e7bea3e..6a042f8 100644
-> > > > --- a/Documentation/kernel-parameters.txt
-> > > > +++ b/Documentation/kernel-parameters.txt
-> > > > @@ -2247,6 +2247,11 @@ and is between 256 and 4096 characters. It is defined in the file
-> > > >  	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
-> > > >  			Format: <command>
-> > > >  
-> > > > +	vt_switch=	[PM] Switch vt's during suspend/resume
-> > > > +			Format: { 0 | 1 }
-> > > > +			Default is normally '1', but depends on value of
-> > > > +			the PM_DISABLE_CONSOLE config option.
-> > > > +
-> > > 
-> > > Why a build time config option?  Why not just set the command line
-> > > option if you need this?  And/or make it a sysctrl?
-> > > 
-> > > That way we don't have to add yet-another-config-option for distros and
-> > > users to get wrong.
-> > > 
-> > > thanks,
-> > 
-> > Sysctl makes sense. I would rather not have to add a cmdline option to
-> > default installs (and on upgrades). I'll redo the patch that way and
-> > resend.
-> 
-> Maybe have acpi_sleep=no_vt_switch? THat is already settable from
-> userspace...?
+> I can take the pci_pme_active bits, but the e100 stuff should go in through 
+> Jeff probably.  Care to respin?
 
-Where is this setting?
-									Pavel
+Sure, in replies to this message.
+
+Thanks,
+Rafael
