@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: don't skip device PM init when
-	CONFIG_PM_SLEEP isn't set and CONFIG_PM is set (resend)
-Date: Thu, 7 Aug 2008 20:53:25 +0200
-Message-ID: <200808072053.25784.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0808071305210.2598-100000@iolanthe.rowland.org>
+Subject: Re: 2.6.27-rc0 Power Bugs with HP/Compaq Laptops
+Date: Thu, 7 Aug 2008 23:00:20 +0200
+Message-ID: <200808072300.21771.rjw__160.508955787186$1218143193$gmane$org@sisk.pl>
+References: <680ad8bc0808070757u49e13b3br1f69fb4881dc44ce@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808071305210.2598-100000@iolanthe.rowland.org>
+In-Reply-To: <680ad8bc0808070757u49e13b3br1f69fb4881dc44ce@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,143 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Matt Parnell <mparnell@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 7 of August 2008, Alan Stern wrote:
-> This patch (as1124) fixes a couple of bugs in the PM core.  The new
-> dev->power.status field should be initialized regardless of whether
-> CONFIG_PM_SLEEP is enabled, and similarly dpm_sysfs_add() should be
-> called whenever CONFIG_PM is enabled.
-> 
-> The patch separates out the call to dpm_sysfs_add() from the call to
-> device_pm_add().  As a result device_pm_add() can no longer return an
-> error, so its return type is changed to void.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Tested-by: Romit Dasgupta <romit@ti.com>
+[Adding CCs]
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-> ---
+On Thursday, 7 of August 2008, Matt Parnell wrote:
+> I have had a long ongoing ordeal dealing with the problems associated
+> with the HP Pavilion Laptops, mine being a dv9000 series. It seems
+> that these either have a broken HPET table, a missing HPET table, or
+> some other ACPI issue, as this thing has always had many issues
+> regarding ACPI. First, C1E was broken until I totally disabled it with
+> a patch, but since .27, that code has been rewritten, and now for some
+> reason HPET isn't working anymore, as I have to set the
+> clocksource=tsc. On top of that, the tsc clocksource is unstable, and
+> with or without dynticks the .27 kernels on my laptop feel slower, and
+> laggy, as even KDE slows down whilest using it. Everything works fine
+> if I disable the local apic (lapic), but when I do, only one of my CPU
+> cores is detected and used, and the CPU frequency scaling doesn't work
+> either. No matter what I do with .27, it just won't work.
 > 
-> This should be queued for 2.6.27.
+> I've tried with the linux next kernel as suggested by Eduard Munteanu,
+> to no avail with the same problem. He said this:
 > 
+> "This is not the right fix. Instead, HPET should be used as a timer
+> source for dynticks. This is not in 2.6.26, but I tried the linux-next
+> tree (google it) and it looked like dynticks worked fine, without
+> disabling C1E. Can't place my finger on the exact commit, but you could
+> check."
 > 
-> Index: usb-2.6/drivers/base/power/power.h
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/power.h
-> +++ usb-2.6/drivers/base/power/power.h
-> @@ -1,3 +1,8 @@
-> +static inline void device_pm_init(struct device *dev)
-> +{
-> +	dev->power.status = DPM_ON;
-> +}
-> +
->  #ifdef CONFIG_PM_SLEEP
->  
->  /*
-> @@ -11,12 +16,12 @@ static inline struct device *to_device(s
->  	return container_of(entry, struct device, power.entry);
->  }
->  
-> -extern int device_pm_add(struct device *);
-> +extern void device_pm_add(struct device *);
->  extern void device_pm_remove(struct device *);
->  
->  #else /* CONFIG_PM_SLEEP */
->  
-> -static inline int device_pm_add(struct device *dev) { return 0; }
-> +static inline void device_pm_add(struct device *dev) {}
->  static inline void device_pm_remove(struct device *dev) {}
->  
->  #endif
-> Index: usb-2.6/drivers/base/core.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/core.c
-> +++ usb-2.6/drivers/base/core.c
-> @@ -542,6 +542,7 @@ void device_initialize(struct device *de
->  	spin_lock_init(&dev->devres_lock);
->  	INIT_LIST_HEAD(&dev->devres_head);
->  	device_init_wakeup(dev, 0);
-> +	device_pm_init(dev);
->  	set_dev_node(dev, -1);
->  }
->  
-> @@ -898,9 +899,10 @@ int device_add(struct device *dev)
->  	error = bus_add_device(dev);
->  	if (error)
->  		goto BusError;
-> -	error = device_pm_add(dev);
-> +	error = dpm_sysfs_add(dev);
->  	if (error)
-> -		goto PMError;
-> +		goto DPMError;
-> +	device_pm_add(dev);
->  	kobject_uevent(&dev->kobj, KOBJ_ADD);
->  	bus_attach_device(dev);
->  	if (parent)
-> @@ -921,7 +923,7 @@ int device_add(struct device *dev)
->   Done:
->  	put_device(dev);
->  	return error;
-> - PMError:
-> + DPMError:
->  	bus_remove_device(dev);
->   BusError:
->  	if (dev->bus)
-> @@ -1008,6 +1010,7 @@ void device_del(struct device *dev)
->  	struct class_interface *class_intf;
->  
->  	device_pm_remove(dev);
-> +	dpm_sysfs_remove(dev);
->  	if (parent)
->  		klist_del(&dev->knode_parent);
->  	if (MAJOR(dev->devt)) {
-> Index: usb-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/main.c
-> +++ usb-2.6/drivers/base/power/main.c
-> @@ -67,10 +67,8 @@ void device_pm_unlock(void)
->   *	device_pm_add - add a device to the list of active devices
->   *	@dev:	Device to be added to the list
->   */
-> -int device_pm_add(struct device *dev)
-> +void device_pm_add(struct device *dev)
->  {
-> -	int error;
-> -
->  	pr_debug("PM: Adding info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
-> @@ -89,13 +87,9 @@ int device_pm_add(struct device *dev)
->  		 */
->  		WARN_ON(true);
->  	}
-> -	error = dpm_sysfs_add(dev);
-> -	if (!error) {
-> -		dev->power.status = DPM_ON;
-> -		list_add_tail(&dev->power.entry, &dpm_list);
-> -	}
-> +
-> +	list_add_tail(&dev->power.entry, &dpm_list);
->  	mutex_unlock(&dpm_list_mtx);
-> -	return error;
->  }
->  
->  /**
-> @@ -110,7 +104,6 @@ void device_pm_remove(struct device *dev
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
->  	mutex_lock(&dpm_list_mtx);
-> -	dpm_sysfs_remove(dev);
->  	list_del_init(&dev->power.entry);
->  	mutex_unlock(&dpm_list_mtx);
->  }
+> Apparently, it's either this or something closely related that is
+> causing such calamity for users of these HP/Compaq laptops as myself.
+> I say this not just for me, as there are many thousands who have
+> issues with these laptops and their crappy bios implementations. Most
+> are n00bs using Ubuntu, who can't even voice what's wrong, as they are
+> new to linux anyway.
 > 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> That said, here are system specifics regarding the motherboard and make.
+> 
+> HP Pavilion dv9205us
+> Motherboard: Quanta 30B7
+> Processor: AMD Turion 64 x2 3.2ghz, TL-50
+> Bios: Phoenix (this is known to be buggy, but until now I had no
+> problems since 2.6.24. Compiled on Windows, this bios is.)
+> 
+> Other than that, I have no pertinent information, at least until
+> someone asks something specific. I wouldn't be contacting you all if I
+> wasn't at the end of my own resources, as I am part of the Zen kernel
+> community, and they can usually help out with these sorts of things.
+> (zen-sources.org).
+> 
+> Anyway, I appreciate any help/response I can get out of this.
+> 
+> Thanks!
+> Matt Parnell
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 > 
