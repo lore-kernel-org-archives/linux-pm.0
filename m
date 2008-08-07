@@ -1,16 +1,19 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Software Suspend status in latest GIT?
-Date: Thu, 07 Aug 2008 10:21:34 +1000
-Message-ID: <1218068494.10175.2.camel@nigel-laptop>
-References: <Pine.LNX.4.64.0808051552401.4955@hp9800.localdomain>
-	<200808060114.31881.rjw@sisk.pl>
-	<Pine.LNX.4.64.0808051653440.7367@hp9800.localdomain>
-	<200808061435.55421.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: >3G => iommu => suspend problems -- was Re: SB600
+	AHCI: Hard	Disk Corruption
+Date: Thu, 7 Aug 2008 10:17:47 +0200
+Message-ID: <20080807081747.GC1647@elf.ucw.cz>
+References: <1211717435.6038.53.camel@localhost.localdomain>
+	<200806090036.32267.rjw@sisk.pl>
+	<1213184587.6376.37.camel@localhost.localdomain>
+	<200806111638.50933.rjw@sisk.pl> <484FE97D.4040805@firstfloor.org>
+	<1215106548.5194.22.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808061435.55421.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <1215106548.5194.22.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +23,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pavel@suse.cz, Kenneth Crudup <kenny@panix.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Patrick <ragamuffin@datacomm.ch>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi!
 
-On Wed, 2008-08-06 at 14:35 +0200, Rafael J. Wysocki wrote:
-> Can you try with the patch from
-> http://bugzilla.kernel.org/show_bug.cgi?id=11178#c10
-> please?
+> *bump*
+> 
+> Why "too late" ??? It (2.6.26) is still not out! Please (;-) oh please!)
+> reconsider / push it a bit! It's tested and working perfectly here ever
+> since. But I'd like for example vmware to work again as will and it
+> doesn't yet even with 2.6.25... Please let this patch go into 2.6.26 so
+> there's a chance of having a stock kernel with working vmware, fglrx,
+> and such again soon!
 
-This fixes things for me, too.
+Can you test 2.6.27-rc2? It should be all there...
+								Pavel
 
-Regards,
-
-Nigel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
