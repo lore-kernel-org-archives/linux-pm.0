@@ -1,7 +1,7 @@
-From: Kenneth Crudup <root@panix.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
 Subject: Re: Software Suspend status in latest GIT?
-Date: Wed, 6 Aug 2008 09:20:24 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0808060918360.7610@hp9800.localdomain>
+Date: Thu, 07 Aug 2008 10:21:34 +1000
+Message-ID: <1218068494.10175.2.camel@nigel-laptop>
 References: <Pine.LNX.4.64.0808051552401.4955@hp9800.localdomain>
 	<200808060114.31881.rjw@sisk.pl>
 	<Pine.LNX.4.64.0808051653440.7367@hp9800.localdomain>
@@ -21,16 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pavel@suse.cz, pm list <linux-pm@lists.linux-foundation.org>
+Cc: pavel@suse.cz, Kenneth Crudup <kenny@panix.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi.
 
+On Wed, 2008-08-06 at 14:35 +0200, Rafael J. Wysocki wrote:
+> Can you try with the patch from
+> http://bugzilla.kernel.org/show_bug.cgi?id=11178#c10
+> please?
 
-Doh! Explicitly setting the "resume" parameter fixed the resume issue
-(which, co-incidentally is what I'd pulled out for testing :)
+This fixes things for me, too.
 
-	-Kenny
+Regards,
 
--- 
-Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
-O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
+Nigel
