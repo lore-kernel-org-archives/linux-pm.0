@@ -1,56 +1,70 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
-Date: Sat, 9 Aug 2008 13:09:10 +0200
-Message-ID: <20080809110909.GA12539@ucw.cz>
-References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain> <20080718095000.GA5017@in.ibm.com>
+From: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: Tyan S2923-E suspend to ram fails to resume
+Date: Sat, 09 Aug 2008 15:42:22 +0100
+Message-ID: <489DACCE.7050000__25907.1836983368$1218293120$gmane$org@simon.arlott.org.uk>
+References: <48977AF7.2070300@simon.arlott.org.uk>	<20080808071430.GA10370@ucw.cz>
+	<21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080718095000.GA5017@in.ibm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Len Brown <lenb@kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2008-07-18 04:50:00, Gautham R Shenoy wrote:
-> On Thu, Jul 17, 2008 at 05:27:32PM -0400, Len Brown wrote:
-> > We'll be in The Rideau Suite in Les-Suites
-> > Tuesday July 22nd 8:30-18:30.
-> > 
-> > Thanks to HP for sponsoring
-> > lunch at 12:30 as well as snacks at 10:00 and 15:30.
-> > We'll wing it for dinner.
-> > 
-> > On linux-pm (sorry, on sabbatical I've been
-> > bad about keeping up on email) I've seen
-> > intent to attend from:
-> > 
-> > Len Brown <len.brown@intel.com>
-> > Alan Stern <stern@rowland.harvard.edu>
-> > Dipankar Sarma <dipankar@in.ibm.com>
-> > Rafael J. Wysocki <rjw@sisk.pl>
-> > "Woodruff, Richard" <r-woodruff2@ti.com>
-> > Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > Matt Domsch <Matt_Domsch@dell.com>
-> > Jarod Wilson <jwilson@redhat.com>
-> > Tim Bird <tim.bird@am.sony.com>
-> > Paul Mundt <lethal@linux-sh.org>
-> > Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
-> > 
-> Hi Len,
-> I would like to attend the pm-mini summit if there's a slot available. I
-> am interested in discussing:
-> 
-> a) the improvements to idle load balancing
-> algorithm on multi-node multi-core systems, for better power savings.
-> 
-> b) Use of some kind of light-weight CPU-Hotplug for power-management
-> on server systems.
+On 08/08/08 12:20, Simon Arlott wrote:
+> On Fri, August 8, 2008 08:14, Pavel Machek wrote:
+>> On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
+>>> My system (Tyan S2923-E, dmesg attached) suspends ok in
+>>> all pm_test modes, but it won't resume with pm_test
+>>> "none".
+>>>
+>>> [    6.423515] mem full: hash matches
+>>>
+>>> When I press the power button, the port 80 display shows:
+>>> FF D0 23 01 D0 ... DE
+>>> (and again each time I press it)
+>>>
+>>> If I force it to turn off, then on again:
+>>> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5
+>>> D6 <normal boot>
+>>>
+>>> Any ideas? (onboard SAS is disabled, watchdog is
+>>> disabled, everything else is enabled, PCI-E graphics
+>>> card)
+>>
+>> Try verifying if it reaches assembly code under realmode/ ...
 
-Step one, fix cpu hotplug not to eat more power than idle cpu...?
+I've tried acpi_sleep=s3_beep, and this:
 
-I wonder, how can cpu hotplug help, relative to inteligent scheduler?
+diff --git a/arch/x86/kernel/acpi/realmode/wakeup.S b/arch/x86/kernel/acpi/realmode/wakeup.S
+index 3355973..50e50df 100644
+--- a/arch/x86/kernel/acpi/realmode/wakeup.S
++++ b/arch/x86/kernel/acpi/realmode/wakeup.S
+@@ -37,6 +37,11 @@ signature:	.long	0x51ee1111
+	.code16
+wakeup_code:
+_start:
++	movb $0xC1, %al
++	outb %al, $0x80
++	cli
++	hlt
++
+	cli
+	cld
+
+
+Which doesn't work either.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Simon Arlott
