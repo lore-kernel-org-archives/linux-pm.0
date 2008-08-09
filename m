@@ -1,111 +1,56 @@
-From: Patrick <ragamuffin@datacomm.ch>
-Subject: YOUR SPAM FILTER IS BROCKEN -- was Re: >3G => iommu =>
-	suspend	problems -- was Re: SB600 AHCI: Hard Disk Corruption
-Date: Sat, 09 Aug 2008 00:53:12 +0200
-Message-ID: <1218235992.5590.27.camel@localhost.localdomain>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	<200806090036.32267.rjw@sisk.pl>
-	<1213184587.6376.37.camel@localhost.localdomain>
-	<200806111638.50933.rjw@sisk.pl> <484FE97D.4040805@firstfloor.org>
-	<1215106548.5194.22.camel@localhost.localdomain>
-	<20080807081747.GC1647@elf.ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [linux-pm] Linux Power Management Mini-Summit -- Ottawa -- July 22, 2008
+Date: Sat, 9 Aug 2008 13:09:10 +0200
+Message-ID: <20080809110909.GA12539@ucw.cz>
+References: <alpine.LFD.1.10.0807171724070.16742@localhost.localdomain> <20080718095000.GA5017@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080807081747.GC1647@elf.ucw.cz>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080718095000.GA5017@in.ibm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Len Brown <lenb@kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Please remove zefir.890m.com from spam urls list!!!
+On Fri 2008-07-18 04:50:00, Gautham R Shenoy wrote:
+> On Thu, Jul 17, 2008 at 05:27:32PM -0400, Len Brown wrote:
+> > We'll be in The Rideau Suite in Les-Suites
+> > Tuesday July 22nd 8:30-18:30.
+> > 
+> > Thanks to HP for sponsoring
+> > lunch at 12:30 as well as snacks at 10:00 and 15:30.
+> > We'll wing it for dinner.
+> > 
+> > On linux-pm (sorry, on sabbatical I've been
+> > bad about keeping up on email) I've seen
+> > intent to attend from:
+> > 
+> > Len Brown <len.brown@intel.com>
+> > Alan Stern <stern@rowland.harvard.edu>
+> > Dipankar Sarma <dipankar@in.ibm.com>
+> > Rafael J. Wysocki <rjw@sisk.pl>
+> > "Woodruff, Richard" <r-woodruff2@ti.com>
+> > Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> > Matt Domsch <Matt_Domsch@dell.com>
+> > Jarod Wilson <jwilson@redhat.com>
+> > Tim Bird <tim.bird@am.sony.com>
+> > Paul Mundt <lethal@linux-sh.org>
+> > Hiroyuki Machida <Hiroyuki.Mach@gmail.com>
+> > 
+> Hi Len,
+> I would like to attend the pm-mini summit if there's a slot available. I
+> am interested in discussing:
+> 
+> a) the improvements to idle load balancing
+> algorithm on multi-node multi-core systems, for better power savings.
+> 
+> b) Use of some kind of light-weight CPU-Hotplug for power-management
+> on server systems.
 
----------------
-<linux-pm@lists.linux-foundation.org>: host
-    lists.linux-foundation.org[140.211.169.51] said: 554 5.7.1 Email body
-    contains Spam URI (in reply to end of DATA command)
----------------
-To: 	Pavel Machek <pavel@suse.cz>
-Cc: 	Andi Kleen <andi@firstfloor.org>, Rafael J. Wysocki <rjw@sisk.pl>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
------------------
+Step one, fix cpu hotplug not to eat more power than idle cpu...?
 
-On Thu, 2008-08-07 at 10:17 +0200, Pavel Machek wrote:
-
-> Can you test 2.6.27-rc2? It should be all there...
-
-Ja, sure! I noticed that it's there already... thank you all!
-
-So as you requested, I got myself a -rc2 tree, compiled and tested
-#s2ram and #s2disk. It works!
-
-pat@babar:~/tmp/dmesg$ grep -C3 GART dmesg.2.6.27-rc2-gart-suspend.txt
-
-[    0.208013] PCI: Using ACPI for IRQ routing
-[    0.228126] PCI-DMA: Disabling AGP.
-[    0.228918] PCI-DMA: aperture base @ 20000000 size 65536 KB
-[    0.228956] PCI-DMA: using GART IOMMU.
-[    0.228993] PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
-[    0.229429] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
-[    0.229615] hpet0: 4 32-bit timers, 14318180 Hz
---
-[   45.170754] [drm] Initialized drm 1.1.0 20060810
-[   45.199305] pci 0000:01:05.0: PCI INT A -> GSI 18 (level, low) -> IRQ
-18
-[   45.199447] [drm] Initialized radeon 1.29.0 20080528 on minor 0
-[   46.127083] [drm] Setting GART location based on new memory map
-[   46.128083] [drm] Loading RS690 Microcode
-[   46.128116] [drm] Num pipes: 1
-[   46.128123] [drm] writeback test succeeded in 1 usecs
---
-[ 5341.902040]   groups: 0
-[ 5341.902511] CPU1 is down
-[ 5341.902511] Back to C!
-[ 5341.902535] PCI-DMA: Resuming GART IOMMU
-[ 5341.902537] PCI-DMA: Restoring GART aperture settings
-[ 5341.902831] Enabling non-boot CPUs ...
-[ 5341.903244] SMP alternatives: switching to SMP code
-[ 5341.914231] Booting processor 1/1 ip 6000
---
-[ 5778.246557] CPU1 is down
-[ 5778.246726] PM: Creating hibernation image:
-[ 5778.256008] PM: Need to copy 236714 pages
-[ 5778.256008] PCI-DMA: Resuming GART IOMMU
-[ 5778.256008] PCI-DMA: Restoring GART aperture settings
-[ 5778.256008] Enabling non-boot CPUs ...
-[ 5778.256008] SMP alternatives: switching to SMP code
-[ 5778.267186] Booting processor 1/1 ip 6000
-
---------
-
-full log and small test report is here:
-http://zefir dot 890m dot com/kernel-testing/
-http://zefir dot 890m dot com/kernel-testing/dmesg.2.6.27-rc2.txt
-
-I have no clue what caused the oops (see dmesg), but I think it's
-unrelated (look at the time stamps).
-
-Maybe it's got something to do with the fact that I'm using
-https://launchpad.net/~xorg-edgers xserver now to have 3d acceleration
-working for my radeon X1200 (RS690 builtin) and the drm module versions
-don't match. Xserver wants 1.30 but starts anyway. I can't fix this
-because the script can't compile the
-git://anongit.freedesktop.org/git/mesa/drm modules for 2.6.27-rc2 ....
-This creates some unpredictable problems with the X server process when
-I log into my account (can't find out what triggers it ... cpu usage
-goes to 100%, have to reboot) As a workaround, I could log into a guest
-account to do the tests but switched back to my patched 2.6.26-rc5 for
-now for everyday PC usage.
-
-BTW, if somebody would like to explain to me, why the simultanious usage
-of the GART by drm and as iommu DON'T bite each other, I'd be quiet
-interrested to learn.
-
-Patrick
+I wonder, how can cpu hotplug help, relative to inteligent scheduler?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
