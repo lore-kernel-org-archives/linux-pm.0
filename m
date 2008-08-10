@@ -1,11 +1,12 @@
-From: Huang Weiyi <weiyi.huang@gmail.com>
-Subject: arch/x86/kernel/apm_32.c: removed duplicated #include
-Date: Sun, 10 Aug 2008 21:05:12 +0800
-Message-ID: <20080810210401.2EFA.WEIYI.HUANG@gmail.com>
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: resume from s2ram regression (bisected to ftrace...)
+Date: Sun, 10 Aug 2008 19:08:15 +0200
+Message-ID: <20080810170801.GA5739__22310.0105919459$1218466801$gmane$org@joi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,24 +16,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@suse.cz, rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <srostedt@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Removed duplicated include file <linux/smp_lock.h> in 
-arch/x86/kernel/apm_32.c.
+Hi
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Few days ago I discovered that resume from suspend to ram does not work anymore
+on my 2.6.27-rc2 (actually 796aadeb1b2db9b5d463946766c5bbfd7717158c) gentoo box.
+My computer just boots on resume. Today I had enough time to bisect it and found
+(after 1 panic and 1 build breakage) out "the reason":
 
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index bf9b441..f499808 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -229,7 +229,6 @@
- #include <linux/suspend.h>
- #include <linux/kthread.h>
- #include <linux/jiffies.h>
--#include <linux/smp_lock.h>
+$ git bisect good
+d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b is first bad commit
+commit d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b
+Author: Steven Rostedt <rostedt@goodmis.org>
+Date:   Mon May 12 21:20:54 2008 +0200
 
- #include <asm/system.h>
- #include <asm/uaccess.h>
+    ftrace: fix dynamic ftrace selftest
+
+    With the adding of the configuration changes in the Makefile to prevent
+    tracing of functions in the ftrace code, all tracing of all the ftrace
+    code has been removed. Unfortunately, one of the selftests, relied on
+    a function to be traced. With the new change, the function was no longer
+    traced and the test failed.
+
+    This patch separates out the test function into its own file so that
+    we can add the "-pg" flag to the compilation of that function and the
+    adding of the mcount call to that function.
+
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+:040000 040000 0fe901f75979b8a110e58133e1d31e304d4214d5 6a63e96d5afe318a2f6f541cc48a8cf224088611 M      kernel
+
+$ git bisect log
+git-bisect start
+# bad: [0967d61ea0d8e8a7826bd8949cd93dd1e829ac55] Linux 2.6.27-rc2
+git-bisect bad 0967d61ea0d8e8a7826bd8949cd93dd1e829ac55
+# good: [bce7f793daec3e65ec5c5705d2457b81fe7b5725] Linux 2.6.26
+git-bisect good bce7f793daec3e65ec5c5705d2457b81fe7b5725
+# bad: [49997d75152b3d23c53b0fa730599f2f74c92c65] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/torvalds/linux-2.6
+git-bisect bad 49997d75152b3d23c53b0fa730599f2f74c92c65
+# bad: [43d2548bb2ef7e6d753f91468a746784041e522d] Merge commit '85082fd7cbe3173198aac0eb5e85ab1edcc6352c' into test-build
+git-bisect bad 43d2548bb2ef7e6d753f91468a746784041e522d
+# bad: [5806b81ac1c0c52665b91723fd4146a4f86e386b] Merge branch 'auto-ftrace-next' into tracing/for-linus
+git-bisect bad 5806b81ac1c0c52665b91723fd4146a4f86e386b
+# good: [6236af82d8a989e150a02800c210eb61cb1e17be] Merge branch 'x86/fixmap' into x86/devel
+git-bisect good 6236af82d8a989e150a02800c210eb61cb1e17be
+# good: [32b23e9a7331fce57eb0af52e19e8409fdef831b] x86: max_low_pfn_mapped fix #4
+git-bisect good 32b23e9a7331fce57eb0af52e19e8409fdef831b
+# bad: [e0fd5c2fa188311667267c02a702ae699a9fc2bd] mmiotrace: do not print bogus pid for maps either
+git-bisect bad e0fd5c2fa188311667267c02a702ae699a9fc2bd
+# good: [5429db2d26a59903c81a4f6c6dae7eb9daaea5fc] ftrace: fix wakeup callback
+git-bisect good 5429db2d26a59903c81a4f6c6dae7eb9daaea5fc
+# bad: [2bb6f8d6389cbfadd657e7dc069f6986abf35e4f] ftrace: use raw_smp_processor_id for mcount functions
+git-bisect bad 2bb6f8d6389cbfadd657e7dc069f6986abf35e4f
+# bad: [8487c23765b6e0444ec6b5f1530766d63fe68e35] ftrace: allow trace_pipe to block on all reads
+git-bisect bad 8487c23765b6e0444ec6b5f1530766d63fe68e35
+# bad: [1d09daa55d2e9bab7e7d30f0d05e5a7bc60b2a4a] ftrace: use Makefile to remove tracing from lockdep
+git-bisect bad 1d09daa55d2e9bab7e7d30f0d05e5a7bc60b2a4a
+# bad: [d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b] ftrace: fix dynamic ftrace selftest
+git-bisect bad d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b
+# good: [8f96da02c14d722ad9a3713cd7273ce28c9036ad] ftrace: remove wakeup from function trace
+git-bisect good 8f96da02c14d722ad9a3713cd7273ce28c9036ad
+# good: [06fa75ab566c50e01bfd7b055bde85cf9b1bc98a] ftrace: add TRACE_STACK and TRACE_SPECIAL to selftest validation
+git-bisect good 06fa75ab566c50e01bfd7b055bde85cf9b1bc98a
+
+This commit looks completely unrelated to s2ram, but funny thing happened -
+when I reverted it on top of 796aadeb1b2db9b5d463946766c5bbfd7717158c
+(2.6.27-rc2+), suspend to ram started to work... 
+
+You can find my .config, successful s2ram dmesg and lspci at
+http://www.kadu.net/~joi/kernel/2008.08.10/
+
+Marcin
