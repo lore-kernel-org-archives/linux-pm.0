@@ -1,14 +1,13 @@
-From: Steven Rostedt <srostedt@redhat.com>
-Subject: Re: resume from s2ram regression (bisected to ftrace...)
-Date: Mon, 11 Aug 2008 14:27:01 -0400
-Message-ID: <48A08475.1090805__6768.6507980854$1218480178$gmane$org@redhat.com>
-References: <20080810170801.GA5739@joi> <200808101940.13753.rjw@sisk.pl>
-	<20080810192444.GA5296@joi> <200808102148.03046.rjw@sisk.pl>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: [PATCH 1/5] Container Freezer: Add TIF_FREEZE flag to
+	all architectures
+Date: Mon, 11 Aug 2008 16:53:24 -0700
+Message-ID: <20080811235324.279345521__23791.3031284281$1218499106$gmane$org@us.ibm.com>
+References: <20080811235323.872291138@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808102148.03046.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +17,258 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Marcin Slusarz <marcin.slusarz@gmail.com>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cedric Le Goater <clg@fr.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday, 10 of August 2008, Marcin Slusarz wrote:
->   
->> On Sun, Aug 10, 2008 at 07:40:12PM +0200, Rafael J. Wysocki wrote:
->>     
->>> On Sunday, 10 of August 2008, Marcin Slusarz wrote:
->>>       
->>>> Hi
->>>>
->>>> Few days ago I discovered that resume from suspend to ram does not work anymore
->>>> on my 2.6.27-rc2 (actually 796aadeb1b2db9b5d463946766c5bbfd7717158c) gentoo box.
->>>> My computer just boots on resume. Today I had enough time to bisect it and found
->>>> (after 1 panic and 1 build breakage) out "the reason":
->>>>
->>>> $ git bisect good
->>>> d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b is first bad commit
->>>> commit d05cdb25d80f06f77aa6bddb53cd1390d4d91a0b
->>>> Author: Steven Rostedt <rostedt@goodmis.org>
->>>> Date:   Mon May 12 21:20:54 2008 +0200
->>>>
->>>>     ftrace: fix dynamic ftrace selftest
->>>>         
->>> Does it still happen if:
->>> - CONFIG_FTRACE is unset
->>>       
->> no
->>
->>     
->>> - CONFIG_FTRACE is set, but CONFIG_FTRACE_STARTUP_TEST is unset?
->>>       
->> yes
->>     
->
-> Thanks for testing.
->
-> Well, ftrace is a new feature in 2.6.27, IIRC, so this is not a regression in
-> the strict sense.
->
-> Still, of couse, there is a bug in ftrace that needs to be fixed.  Steven?
->   
-Sorry for the late response.
+This patch is the first step in making the refrigerator() available
+to all architectures, even for those without power management.
 
-Red Hat changed its mail servers, and my mail was in limbo for a while.
+The purpose of such a change is to be able to use the refrigerator()
+in a new control group subsystem which will implement a control group
+freezer.
 
-I'm not doubting that FTRACE enabled breaks suspend to ram, but I find 
-it highly unlikely that the commit you posted was the culprit. 
-Especially since it still breaks when STARTUP_TEST is disabled. That 
-change was a STARTUP_TEST change only.  Perhaps it just moved things 
-around enough to cause your issues.
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+Acked-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Tested-by: Matt Helsley <matthltc@us.ibm.com>
+---
+ arch/parisc/include/asm/thread_info.h   |    2 ++
+ arch/sparc/include/asm/thread_info_32.h |    2 ++
+ arch/sparc/include/asm/thread_info_64.h |    2 ++
+ include/asm-alpha/thread_info.h         |    2 ++
+ include/asm-avr32/thread_info.h         |    1 +
+ include/asm-cris/thread_info.h          |    2 ++
+ include/asm-h8300/thread_info.h         |    2 ++
+ include/asm-m68k/thread_info.h          |    1 +
+ include/asm-m68knommu/thread_info.h     |    2 ++
+ include/asm-s390/thread_info.h          |    2 ++
+ include/asm-um/thread_info.h            |    2 ++
+ include/asm-xtensa/thread_info.h        |    2 ++
+ 12 files changed, 22 insertions(+)
 
-But you say that if you take Linus's latest git tree, and revert only 
-this change, it works??
+Index: linux-2.6.27-rc1-mm1/arch/sparc/include/asm/thread_info_32.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/arch/sparc/include/asm/thread_info_32.h
++++ linux-2.6.27-rc1-mm1/arch/sparc/include/asm/thread_info_32.h
+@@ -139,6 +139,7 @@ BTFIXUPDEF_CALL(void, free_thread_info, 
+ #define TIF_POLLING_NRFLAG	9	/* true if poll_idle() is polling
+ 					 * TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		10
++#define TIF_FREEZE		11	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -152,6 +153,7 @@ BTFIXUPDEF_CALL(void, free_thread_info, 
+ #define _TIF_DO_NOTIFY_RESUME_MASK	(_TIF_NOTIFY_RESUME | \
+ 					 _TIF_SIGPENDING | \
+ 					 _TIF_RESTORE_SIGMASK)
++#define TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: linux-2.6.27-rc1-mm1/arch/sparc/include/asm/thread_info_64.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/arch/sparc/include/asm/thread_info_64.h
++++ linux-2.6.27-rc1-mm1/arch/sparc/include/asm/thread_info_64.h
+@@ -237,6 +237,7 @@ register struct thread_info *current_thr
+ #define TIF_ABI_PENDING		12
+ #define TIF_MEMDIE		13
+ #define TIF_POLLING_NRFLAG	14
++#define TIF_FREEZE		15	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -249,6 +250,7 @@ register struct thread_info *current_thr
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_USER_WORK_MASK	((0xff << TI_FLAG_WSAVED_SHIFT) | \
+ 				 _TIF_DO_NOTIFY_RESUME_MASK | \
+Index: linux-2.6.27-rc1-mm1/include/asm-alpha/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-alpha/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-alpha/thread_info.h
+@@ -74,12 +74,14 @@ register struct thread_info *__current_t
+ #define TIF_UAC_SIGBUS		7
+ #define TIF_MEMDIE		8
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
++#define TIF_FREEZE		16	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ /* Work to do on interrupt/exception return.  */
+ #define _TIF_WORK_MASK		(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
+Index: linux-2.6.27-rc1-mm1/include/asm-avr32/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-avr32/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-avr32/thread_info.h
+@@ -96,6 +96,7 @@ static inline struct thread_info *curren
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_CPU_GOING_TO_SLEEP (1 << TIF_CPU_GOING_TO_SLEEP)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ /* Note: The masks below must never span more than 16 bits! */
+ 
+Index: linux-2.6.27-rc1-mm1/include/asm-cris/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-cris/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-cris/thread_info.h
+@@ -88,6 +88,7 @@ struct thread_info {
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		17
++#define TIF_FREEZE		18	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -95,6 +96,7 @@ struct thread_info {
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
+Index: linux-2.6.27-rc1-mm1/include/asm-h8300/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-h8300/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-h8300/thread_info.h
+@@ -89,6 +89,7 @@ static inline struct thread_info *curren
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		4
+ #define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
++#define TIF_FREEZE		16	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -96,6 +97,7 @@ static inline struct thread_info *curren
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ 
+Index: linux-2.6.27-rc1-mm1/include/asm-m68k/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-m68k/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-m68k/thread_info.h
+@@ -52,5 +52,6 @@ struct thread_info {
+ #define TIF_DELAYED_TRACE	14	/* single step a syscall */
+ #define TIF_SYSCALL_TRACE	15	/* syscall trace active */
+ #define TIF_MEMDIE		16
++#define TIF_FREEZE		17	/* thread is freezing for suspend */
+ 
+ #endif	/* _ASM_M68K_THREAD_INFO_H */
+Index: linux-2.6.27-rc1-mm1/include/asm-m68knommu/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-m68knommu/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-m68knommu/thread_info.h
+@@ -84,12 +84,14 @@ static inline struct thread_info *curren
+ #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		4
++#define TIF_FREEZE		16	/* is freezing for suspend */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ 
+Index: linux-2.6.27-rc1-mm1/include/asm-s390/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-s390/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-s390/thread_info.h
+@@ -98,6 +98,7 @@ static inline struct thread_info *curren
+ #define TIF_31BIT		18	/* 32bit process */ 
+ #define TIF_MEMDIE		19
+ #define TIF_RESTORE_SIGMASK	20	/* restore signal mask in do_signal() */
++#define TIF_FREEZE		21	/* thread is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+@@ -110,6 +111,7 @@ static inline struct thread_info *curren
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_31BIT		(1<<TIF_31BIT)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: linux-2.6.27-rc1-mm1/include/asm-um/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-um/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-um/thread_info.h
+@@ -69,6 +69,7 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE	 	5
+ #define TIF_SYSCALL_AUDIT	6
+ #define TIF_RESTORE_SIGMASK	7
++#define TIF_FREEZE		16	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -77,5 +78,6 @@ static inline struct thread_info *curren
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ #endif
+Index: linux-2.6.27-rc1-mm1/include/asm-xtensa/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/include/asm-xtensa/thread_info.h
++++ linux-2.6.27-rc1-mm1/include/asm-xtensa/thread_info.h
+@@ -134,6 +134,7 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
++#define TIF_FREEZE		17	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
+@@ -142,6 +143,7 @@ static inline struct thread_info *curren
+ #define _TIF_IRET		(1<<TIF_IRET)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
+Index: linux-2.6.27-rc1-mm1/arch/parisc/include/asm/thread_info.h
+===================================================================
+--- linux-2.6.27-rc1-mm1.orig/arch/parisc/include/asm/thread_info.h
++++ linux-2.6.27-rc1-mm1/arch/parisc/include/asm/thread_info.h
+@@ -58,6 +58,7 @@ struct thread_info {
+ #define TIF_32BIT               4       /* 32 bit binary */
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore saved signal mask */
++#define TIF_FREEZE		7	/* is freezing for suspend */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -65,6 +66,7 @@ struct thread_info {
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1 << TIF_32BIT)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
++#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ #define _TIF_USER_WORK_MASK     (_TIF_SIGPENDING | \
+                                  _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
 
-Hmm, this is very strange.
-
--- Steve
+-- 
