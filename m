@@ -1,13 +1,17 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH 5/5] Container Freezer: Prevent frozen tasks or
-	cgroups from changing
-Date: Mon, 11 Aug 2008 16:53:28 -0700
-Message-ID: <20080811235325.917183517__44450.7446642548$1218500315$gmane$org@us.ibm.com>
-References: <20080811235323.872291138@us.ibm.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: Tyan S2923-E suspend to ram fails to resume
+Date: Tue, 12 Aug 2008 12:31:43 +0200
+Message-ID: <20080812103143.GD2641__45351.5862151564$1218537454$gmane$org@elf.ucw.cz>
+References: <48977AF7.2070300@simon.arlott.org.uk>
+	<20080808071430.GA10370@ucw.cz>
+	<21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+	<489DACCE.7050000@simon.arlott.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <489DACCE.7050000@simon.arlott.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,108 +21,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Don't let frozen tasks or cgroups change. This means frozen tasks can't
-leave their current cgroup for another cgroup. It also means that tasks
-cannot be added to or removed from a cgroup in the FROZEN state. We
-enforce these rules by checking for frozen tasks and cgroups in the
-can_attach() function.
+On Sat 2008-08-09 15:42:22, Simon Arlott wrote:
+> On 08/08/08 12:20, Simon Arlott wrote:
+>> On Fri, August 8, 2008 08:14, Pavel Machek wrote:
+>>> On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
+>>>> My system (Tyan S2923-E, dmesg attached) suspends ok in
+>>>> all pm_test modes, but it won't resume with pm_test
+>>>> "none".
+>>>>
+>>>> [    6.423515] mem full: hash matches
+>>>>
+>>>> When I press the power button, the port 80 display shows:
+>>>> FF D0 23 01 D0 ... DE
+>>>> (and again each time I press it)
+>>>>
+>>>> If I force it to turn off, then on again:
+>>>> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5
+>>>> D6 <normal boot>
+>>>>
+>>>> Any ideas? (onboard SAS is disabled, watchdog is
+>>>> disabled, everything else is enabled, PCI-E graphics
+>>>> card)
+>>>
+>>> Try verifying if it reaches assembly code under realmode/ ...
+>
+> I've tried acpi_sleep=s3_beep, and this:
+>
+> diff --git a/arch/x86/kernel/acpi/realmode/wakeup.S b/arch/x86/kernel/acpi/realmode/wakeup.S
+> index 3355973..50e50df 100644
+> --- a/arch/x86/kernel/acpi/realmode/wakeup.S
+> +++ b/arch/x86/kernel/acpi/realmode/wakeup.S
+> @@ -37,6 +37,11 @@ signature:	.long	0x51ee1111
+> 	.code16
+> wakeup_code:
+> _start:
+> +	movb $0xC1, %al
+> +	outb %al, $0x80
+> +	cli
+> +	hlt
+> +
+> 	cli
+> 	cld
+>
+>
+> Which doesn't work either.
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
----
-Changes since v4:
-v5:
-	Checked use of task alloc lock for races with swsusp freeze/thaw --
-		looks safe because there are explicit barriers to handle
-		freeze/thaw races for individual tasks, we explicitly
-		handle partial group freezing, and partial group thawing
-		should be resolved without changing swsusp's loop. This should
-		answer Li Zefan's last comment re: races between freeze and
-		thaw.
-
- kernel/cgroup_freezer.c |   43 ++++++++++++++++++++++++++-----------------
- 1 file changed, 26 insertions(+), 17 deletions(-)
-
-Index: linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/kernel/cgroup_freezer.c
-+++ linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-@@ -145,22 +145,40 @@ static void freezer_destroy(struct cgrou
- 	kfree(cgroup_freezer(cgroup));
- }
- 
-+/* Task is frozen or will freeze immediately when next it gets woken */
-+static bool is_task_frozen_enough(struct task_struct *task)
-+{
-+	return frozen(task) ||
-+		(task_is_stopped_or_traced(task) && freezing(task));
-+}
- 
-+/*
-+ * The call to cgroup_lock() in the freezer.state write method prevents
-+ * a write to that file racing against an attach, and hence the
-+ * can_attach() result will remain valid until the attach completes.
-+ */
- static int freezer_can_attach(struct cgroup_subsys *ss,
- 			      struct cgroup *new_cgroup,
- 			      struct task_struct *task)
- {
- 	struct freezer *freezer;
--	int retval = 0;
-+	int retval;
-+
-+	/* Anything frozen can't move or be moved to/from */
-+
-+	if (is_task_frozen_enough(task))
-+		return -EBUSY;
- 
--	/*
--	 * The call to cgroup_lock() in the freezer.state write method prevents
--	 * a write to that file racing against an attach, and hence the
--	 * can_attach() result will remain valid until the attach completes.
--	 */
- 	freezer = cgroup_freezer(new_cgroup);
- 	if (freezer->state == STATE_FROZEN)
-+		return -EBUSY;
-+
-+	retval = 0;
-+	task_lock(task);
-+	freezer = task_freezer(task);
-+	if (freezer->state == STATE_FROZEN)
- 		retval = -EBUSY;
-+	task_unlock(task);
- 	return retval;
- }
- 
-@@ -193,12 +211,7 @@ static void check_if_frozen(struct cgrou
- 	cgroup_iter_start(cgroup, &it);
- 	while ((task = cgroup_iter_next(cgroup, &it))) {
- 		ntotal++;
--		/*
--		 * Task is frozen or will freeze immediately when next it gets
--		 * woken
--		 */
--		if (frozen(task) ||
--		    (task_is_stopped_or_traced(task) && freezing(task)))
-+		if (is_task_frozen_enough(task))
- 			nfrozen++;
- 	}
- 
-@@ -249,11 +262,7 @@ static int try_to_freeze_cgroup(struct c
- 	while ((task = cgroup_iter_next(cgroup, &it))) {
- 		if (!freeze_task(task, true))
- 			continue;
--		if (task_is_stopped_or_traced(task) && freezing(task))
--			/*
--			 * The freeze flag is set so these tasks will
--			 * immediately go into the fridge upon waking.
--			 */
-+		if (is_task_frozen_enough(task))
- 			continue;
- 		if (!freezing(task) && !freezer_should_skip(task))
- 			num_cant_freeze_now++;
-
+Yep, that should work. When it does not, it means BIOS is not
+returning to our real mode code :-(. You may want to try disabling
+APIC and similar stuff, in hope of working around BIOS bug you are
+hitting, but ...
+									Pavel
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
