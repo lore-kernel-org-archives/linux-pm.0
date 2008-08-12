@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 4/5] Container Freezer: Skip frozen cgroups
-	during power management resume
-Date: Tue, 12 Aug 2008 22:50:08 +0200
-Message-ID: <200808122250.08699.rjw__19392.0742291541$1218576478$gmane$org@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/5] Container Freezer v6: Reuse Suspend
+	Freezer
+Date: Tue, 12 Aug 2008 15:44:29 -0700
+Message-ID: <20080812154429.c5377bd0.akpm__35314.9349372417$1218581291$gmane$org@linux-foundation.org>
 References: <20080811235323.872291138@us.ibm.com>
-	<20080811235325.485466148@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080811235325.485466148@us.ibm.com>
-Content-Disposition: inline
+In-Reply-To: <20080811235323.872291138@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>, linux-pm@lists.linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>
+Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, menage@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 12 of August 2008, Matt Helsley wrote:
-> When a system is resumed after a suspend, it will also unfreeze
-> frozen cgroups.
-> 
-> This patchs modifies the resume sequence to skip the tasks which
-> are part of a frozen control group.
-> 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+On Mon, 11 Aug 2008 16:53:23 -0700
+Matt Helsley <matthltc@us.ibm.com> wrote:
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> This patch series introduces a cgroup subsystem that utilizes the swsusp
+> freezer to freeze a group of tasks. It's immediately useful for batch job
+> management scripts. It should also be useful in the future for implementing
+> container checkpoint/restart.
 
-> ---
->  kernel/power/process.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-2.6.27-rc1-mm1/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.27-rc1-mm1.orig/kernel/power/process.c
-> +++ linux-2.6.27-rc1-mm1/kernel/power/process.c
-> @@ -135,6 +135,9 @@ static void thaw_tasks(bool nosig_only)
->  		if (nosig_only && should_send_signal(p))
->  			continue;
->  
-> +		if (cgroup_frozen(p))
-> +			continue;
-> +
->  		thaw_process(p);
->  	} while_each_thread(g, p);
->  	read_unlock(&tasklist_lock);
-> 
+I don't think that this provides anything like sufficient detail to justify
+merging a whole bunch of stuff into Linux.
+
+What does "It's immediately useful for batch job management scripts."
+mean?  How is it useful?  Examples?  Why would an operator want this
+feature, and how would it be used?  _much_ more information is needed!
+
+Once we've actually found out what this work is useful for, we can move
+onto identification of and discussion of alternatives.  One would be "why not
+use plain old SIGSTOP?"  Another alternative is, of course "that's not useful
+enough to justify merging the code".  But we don't know yet, coz you didn't
+tell us.
