@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/5] Container Freezer: Make refrigerator
-	always available
-Date: Tue, 12 Aug 2008 22:49:26 +0200
-Message-ID: <200808122249.27553.rjw__48988.1850932308$1218576111$gmane$org@sisk.pl>
+Subject: Re: [PATCH 4/5] Container Freezer: Skip frozen cgroups
+	during power management resume
+Date: Tue, 12 Aug 2008 22:50:08 +0200
+Message-ID: <200808122250.08699.rjw__19392.0742291541$1218576478$gmane$org@sisk.pl>
 References: <20080811235323.872291138@us.ibm.com>
-	<20080811235324.661871296@us.ibm.com>
+	<20080811235325.485466148@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080811235324.661871296@us.ibm.com>
+In-Reply-To: <20080811235325.485466148@us.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,39 +25,35 @@ Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.
 List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, 12 of August 2008, Matt Helsley wrote:
-> Now that the TIF_FREEZE flag is available in all architectures,
-> extract the refrigerator() and freeze_task() from kernel/power/process.c
-> and make it available to all.
+> When a system is resumed after a suspend, it will also unfreeze
+> frozen cgroups.
 > 
-> The refrigerator() can now be used in a control group subsystem
-> implementing a control group freezer.
+> This patchs modifies the resume sequence to skip the tasks which
+> are part of a frozen control group.
 > 
 > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
 > Acked-by: Serge E. Hallyn <serue@us.ibm.com>
 > Tested-by: Matt Helsley <matthltc@us.ibm.com>
 
-Your Signed-off-by implies your Tested-by (at least it should ;-)).
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
 > ---
-[--snip--]
-> Index: linux-2.6.27-rc1-mm1/kernel/power/Kconfig
+>  kernel/power/process.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.27-rc1-mm1/kernel/power/process.c
 > ===================================================================
-> --- linux-2.6.27-rc1-mm1.orig/kernel/power/Kconfig
-> +++ linux-2.6.27-rc1-mm1/kernel/power/Kconfig
-> @@ -85,6 +85,9 @@ config PM_SLEEP
->  	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
->  	default y
+> --- linux-2.6.27-rc1-mm1.orig/kernel/power/process.c
+> +++ linux-2.6.27-rc1-mm1/kernel/power/process.c
+> @@ -135,6 +135,9 @@ static void thaw_tasks(bool nosig_only)
+>  		if (nosig_only && should_send_signal(p))
+>  			continue;
 >  
-> +config FREEZER
-> +	def_bool PM_SLEEP
+> +		if (cgroup_frozen(p))
+> +			continue;
 > +
-
-I'd still prefer this to go into a Kconfig in the parent directory (ie. where
-freezer.c and the Makefile building it are located).  Otherwise it's guaranteed
-to confuse someone.
-
->  config SUSPEND
->  	bool "Suspend to RAM and standby"
->  	depends on PM && ARCH_SUSPEND_POSSIBLE
+>  		thaw_process(p);
+>  	} while_each_thread(g, p);
+>  	read_unlock(&tasklist_lock);
 > 
