@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: Tyan S2923-E suspend to ram fails to resume
-Date: Tue, 12 Aug 2008 12:31:43 +0200
-Message-ID: <20080812103143.GD2641__45351.5862151564$1218537454$gmane$org@elf.ucw.cz>
-References: <48977AF7.2070300@simon.arlott.org.uk>
-	<20080808071430.GA10370@ucw.cz>
-	<21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
-	<489DACCE.7050000@simon.arlott.org.uk>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] PM: Remove WARN_ON from device_pm_add
+Date: Tue, 12 Aug 2008 15:59:02 +0300
+Message-ID: <20080812125902.GB13910__43826.2368007146$1218546361$gmane$org@cs181140183.pp.htv.fi>
+References: <200808090105.14770.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <489DACCE.7050000@simon.arlott.org.uk>
+In-Reply-To: <200808090105.14770.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,60 +18,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2008-08-09 15:42:22, Simon Arlott wrote:
-> On 08/08/08 12:20, Simon Arlott wrote:
->> On Fri, August 8, 2008 08:14, Pavel Machek wrote:
->>> On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
->>>> My system (Tyan S2923-E, dmesg attached) suspends ok in
->>>> all pm_test modes, but it won't resume with pm_test
->>>> "none".
->>>>
->>>> [    6.423515] mem full: hash matches
->>>>
->>>> When I press the power button, the port 80 display shows:
->>>> FF D0 23 01 D0 ... DE
->>>> (and again each time I press it)
->>>>
->>>> If I force it to turn off, then on again:
->>>> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5
->>>> D6 <normal boot>
->>>>
->>>> Any ideas? (onboard SAS is disabled, watchdog is
->>>> disabled, everything else is enabled, PCI-E graphics
->>>> card)
->>>
->>> Try verifying if it reaches assembly code under realmode/ ...
->
-> I've tried acpi_sleep=s3_beep, and this:
->
-> diff --git a/arch/x86/kernel/acpi/realmode/wakeup.S b/arch/x86/kernel/acpi/realmode/wakeup.S
-> index 3355973..50e50df 100644
-> --- a/arch/x86/kernel/acpi/realmode/wakeup.S
-> +++ b/arch/x86/kernel/acpi/realmode/wakeup.S
-> @@ -37,6 +37,11 @@ signature:	.long	0x51ee1111
-> 	.code16
-> wakeup_code:
-> _start:
-> +	movb $0xC1, %al
-> +	outb %al, $0x80
-> +	cli
-> +	hlt
-> +
-> 	cli
-> 	cld
->
->
-> Which doesn't work either.
+On Sat, Aug 09, 2008 at 01:05:13AM +0200, Rafael J. Wysocki wrote:
+> PM: Remove WARN_ON from device_pm_add
+> 
+> Fix message in device_pm_add() saying that the device will not be
+> added to dpm_list, although in fact the device is going to be added
+> to the list regardless of the ordering violation.
+> 
+> Remove the WARN_ON(true) triggered in that situation, because it is
+> hit by USB very often and spams the users' logs.
+> 
+> This patch fixes bug #11263
 
-Yep, that should work. When it does not, it means BIOS is not
-returning to our real mode code :-(. You may want to try disabling
-APIC and similar stuff, in hope of working around BIOS bug you are
-hitting, but ...
-									Pavel
+Michael Tsirkin said in #11284 (which is marked as a duplicate of #11263):
+
+<--  snip  -->
+
+> What exactly is this instability?
+
+X often crashes on resume, sometimes ACPI seems to stop working
+after resume. I am trying to figure exact way to reproduce first,
+or get some relevant logs, then I'll report.
+
+> Does 2.6.26 work fine?
+
+yes
+
+<--  snip  -->
+
+
+Is this a separate regression or did the WARN_ON different from the 
+first assumption indicate a functional regression?
+
+
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/base/power/main.c |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/main.c
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -74,11 +74,9 @@ void device_pm_add(struct device *dev)
+>  		 kobject_name(&dev->kobj));
+>  	mutex_lock(&dpm_list_mtx);
+>  	if (dev->parent) {
+> -		if (dev->parent->power.status >= DPM_SUSPENDING) {
+> -			dev_warn(dev, "parent %s is sleeping, will not add\n",
+> +		if (dev->parent->power.status >= DPM_SUSPENDING)
+> +			dev_warn(dev, "parent %s should not be sleeping\n",
+>  				dev->parent->bus_id);
+> -			WARN_ON(true);
+> -		}
+>  	} else if (transition_started) {
+>  		/*
+>  		 * We refuse to register parentless devices while a PM
+
+cu
+Adrian
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
