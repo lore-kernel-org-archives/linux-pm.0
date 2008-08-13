@@ -1,16 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] Container Freezer v6: Reuse Suspend
- Freezer
-Date: Tue, 12 Aug 2008 21:08:59 -0700
-Message-ID: <20080812210859.ff2fa2f4.akpm__16427.6836243973$1218600682$gmane$org@linux-foundation.org>
-References: <20080811235323.872291138@us.ibm.com>
-	<20080812154429.c5377bd0.akpm@linux-foundation.org>
-	<Pine.WNT.4.64.0808121927320.5336@IBM-8DE7FFDE2AB>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: arch/x86/kernel/apm_32.c: removed duplicated	#include
+Date: Wed, 13 Aug 2008 09:23:28 +0200
+Message-ID: <20080813072328.GA17873@elf.ucw.cz>
+References: <20080810210401.2EFA.WEIYI.HUANG@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.WNT.4.64.0808121927320.5336@IBM-8DE7FFDE2AB>
+Content-Disposition: inline
+In-Reply-To: <20080810210401.2EFA.WEIYI.HUANG@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vivek Kashyap <kashyapv@us.ibm.com>
-Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, menage@google.com, linux-pm@lists.linux-foundation.org
+To: Huang Weiyi <weiyi.huang@gmail.com>, Andrew Morton <akpm@osdl.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Aug 2008 20:47:10 -0700 (Pacific Daylight Time) Vivek Kashyap <kashyapv@us.ibm.com> wrote:
-
-> On Tue, 12 Aug 2008, Andrew Morton wrote:
+On Sun 2008-08-10 21:05:12, Huang Weiyi wrote:
+> Removed duplicated include file <linux/smp_lock.h> in 
+> arch/x86/kernel/apm_32.c.
 > 
-> > On Mon, 11 Aug 2008 16:53:23 -0700
-> > Matt Helsley <matthltc@us.ibm.com> wrote:
-> >
-> >> This patch series introduces a cgroup subsystem that utilizes the swsusp
-> >> freezer to freeze a group of tasks. It's immediately useful for batch job
-> >> management scripts. It should also be useful in the future for implementing
-> >> container checkpoint/restart.
-> >
-> > I don't think that this provides anything like sufficient detail to justify
-> > merging a whole bunch of stuff into Linux.
-> >
-> > What does "It's immediately useful for batch job management scripts."
-> > mean?  How is it useful?  Examples?  Why would an operator want this
-> > feature, and how would it be used?  _much_ more information is needed!
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+
+Acked-by: Pavel Machek <pavel@suse.cz>
+
 > 
-> A batch-manager/job scheduler (such as loadleveler)
+> diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+> index bf9b441..f499808 100644
+> --- a/arch/x86/kernel/apm_32.c
+> +++ b/arch/x86/kernel/apm_32.c
+> @@ -229,7 +229,6 @@
+>  #include <linux/suspend.h>
+>  #include <linux/kthread.h>
+>  #include <linux/jiffies.h>
+> -#include <linux/smp_lock.h>
+> 
+>  #include <asm/system.h>
+>  #include <asm/uaccess.h>
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
 
-what's that?
-
-> must at times stop all 
-> tasks associated with a workload being run in a container.
-
-why?
-
-I'm being deliberately obtuse here, but I'm afraid you guys haven't
-come anywhere into the vague nearby neighbourhood of adequately describing
-this feature.
-
-Please provide proper and full reasons for merging this code into
-Linux.  If they exist.  This shouldn't be too hard.
-
-Please put yourself in my position:
-
-me: [patch] <this stuff>
-Linus: why are you sending me this?
-me: I have not the faintest idea
-
-trust me - many others will be in my position too.
-
-> The workload may 
-> constitute of multiple tasks - some of which are in different sessions. 
-> A signal (STOP/CONT) to the Containers 'init' wont be transmitted to all 
-> the tasks in the Container. The 'freezer' mechanism allows this control
-> to be implemented in a clean way.
-
-So why not implement a send-signal-to-all-tasks-in-a-container
-controller?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
