@@ -1,58 +1,54 @@
-From: "Arun Kernel" <arun.kernel@gmail.com>
-Subject: Project
-Date: Thu, 14 Aug 2008 00:01:36 +0530
-Message-ID: <3f7bc8d20808131131v158ff1ccp906e42b590f92f50@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Wed, 13 Aug 2008 15:34:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808131525530.13982-100000@iolanthe.rowland.org>
+References: <200808131821.30564.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8572382361821683505=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756810AbYHMTem@vger.kernel.org>
+In-Reply-To: <200808131821.30564.oneukum@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Pavel Machek <pavel@suse.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
---===============8572382361821683505==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_30034_3100418.1218652296890"
+On Wed, 13 Aug 2008, Oliver Neukum wrote:
 
-------=_Part_30034_3100418.1218652296890
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> Am Mittwoch 13 August 2008 17:44:46 schrieb Alan Stern:
+> > > All children that are USB must be powered down. We know in fact t=
+hat most
+> > > drives don't care that the device is suspended. The problem was d=
+rive
+> > > enclosures that cut power upon suspension losing cached data.
+> >=20
+> > You misunderstood my question. =A0Are there SCSI transports other t=
+han
+> > USB sharing the requirement that all child devices must be suspende=
+d
+> > before the link can be powered down?
+>=20
+> I dispute that USB in general has this property.
 
-Hello,
-       I m  Arun. An undergraduate student from India. I like to do a main
-project( 1 year ) on Linux kernel-process management, as part of my
-academic program.
-I have done a miniproject on Linux. - A simple filesystem in Linux.  I
-implemented a  small filesystem like  ramfs.
-.  I assume that you  people have a lot of  experience  on linux kernel. Can
-you suggest some projects to me..
-                                   Arun.
+How can you dispute that?  You said it yourself, in the top quote
+above: "All children that are USB must be powered down."
 
-------=_Part_30034_3100418.1218652296890
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> Some storage devices
+> need their caches flushed. USB itself is perfectly happy with autosus=
+pending
+> the storage device (host) without telling the disks (devices)
+>=20
+> You could even argue that these storage devices violate the USB spec.
 
-<div dir="ltr"><br><br><div dir="ltr">Hello,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I m&nbsp; Arun. An undergraduate student from India. I like to do
-a main project( 1 year ) on Linux kernel-process management, as part of my&nbsp; academic program.<br>I have done a miniproject on Linux. - A simple filesystem in Linux.&nbsp; I&nbsp; implemented a&nbsp; small filesystem like&nbsp; ramfs.<br>.&nbsp; I assume that you&nbsp; people have a lot of&nbsp; experience&nbsp;
-on linux kernel.
-Can you suggest some projects to me..<br><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Arun.</font></font></font></font></div></div>
+Oliver, you can't have it both ways.  Either we do spin down disks and
+drain device caches before autosuspending usb-storage or we don't. =20
+=46or safety's sake, obviously we should.  The overhead is minimal sinc=
+e
+this happens only after the idle timeout has expired.  And for devices
+that don't support it (like flash storage), sd skips the spin-down
+command anway.
 
-------=_Part_30034_3100418.1218652296890--
+At any rate, Stefan Richter has answered my original question. =20
+=46irewire has essentially the same restrictions as USB.
 
---===============8572382361821683505==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8572382361821683505==--
+Alan Stern
