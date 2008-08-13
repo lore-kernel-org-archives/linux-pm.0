@@ -1,45 +1,38 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] Fix suspend/resume of pxa_camera driver
-Date: Wed, 13 Aug 2008 14:16:35 +0200
-Message-ID: <20080813121635.GC6153@ucw.cz>
-References: <Pine.LNX.4.44L0.0807271808550.23282-100000@netrider.rowland.org>
-	<87prox97oa.fsf@free.fr>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Power management for SCSI
+Date: Wed, 13 Aug 2008 10:31:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org>
+References: <20080813095055.GA475@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87prox97oa.fsf@free.fr>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: video4linux-list@redhat.com, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756603AbYHMObU@vger.kernel.org>
+In-Reply-To: <20080813095055.GA475@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, James.Bottomley@HansenPartnership.com, teheo@novell.com, oneukum@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-07-28 20:37:25, Robert Jarzmik wrote:
-> Alan Stern <stern@rowland.harvard.edu> writes:
-> 
-> > On Sun, 27 Jul 2008, Guennadi Liakhovetski wrote:
-> >
-> > IMO, suspend should be as transparent as possible for userspace.  So if
-> > a user program has started an audio or video stream before suspend,
-> > then after resume the stream should still be playing.
-> Yes, that's what I think too.
-> 
-> The only little thing that should change will be timeout problem (userspace
-> waits on a poll to get a video frame within 1 second for example).
-> I'm not sure how well this is handled, I didn't check.
+On Wed, 13 Aug 2008, Pavel Machek wrote:
 
-Userrland problem. Could hit you if you go deeply into swap, for
-example. Fix userland.
+> From: Alan Stern <stern@rowland.harvard.edu>
+> 
+> Add support for autosuspend/autoresume. Lowlevel driver can use it to
+> spin the disk down and power down its SATA link, to turn off the USB
+> interface, etc.
+> 
+> Spinning down the disk is useful - saves ~0.5W here. Powering down
+> SATA controller is even better -- should save ~1W.
+> 
+> Now, I guess the patch will need to be split to small pieces for
+> merge... I tried to rearrange it so that the documentation and hooks
+> go before stuff that needs the hooks, and before Kconfig enabler. If
+> it looks reasonably good, I'll split it into smaller pieces.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+James had a number of objections to my original patch; you can read 
+them here:
+
+https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
+
+I haven't had time yet to work on an improved version.
+
+Alan Stern
