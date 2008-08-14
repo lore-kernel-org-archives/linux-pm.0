@@ -1,66 +1,71 @@
-From: "Arun Kernel" <arun.kernel@gmail.com>
-Subject: Project
-Date: Thu, 14 Aug 2008 10:18:35 +0530
-Message-ID: <3f7bc8d20808132148k3abf447fud042d101819e446e@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Thu, 14 Aug 2008 08:08:26 +0200
+Message-ID: <200808140808.27022.oneukum@suse.de>
+References: <Pine.LNX.4.44L0.0808131525530.13982-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4109053768745874051=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754389AbYHNGHl@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808131525530.13982-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Pavel Machek <pavel@suse.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
---===============4109053768745874051==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_33515_5695074.1218689315607"
+Am Mittwoch 13 August 2008 21:34:30 schrieb Alan Stern:
+> On Wed, 13 Aug 2008, Oliver Neukum wrote:
+>=20
+> > Am Mittwoch 13 August 2008 17:44:46 schrieb Alan Stern:
+> > > > All children that are USB must be powered down. We know in fact=
+ that most
+> > > > drives don't care that the device is suspended. The problem was=
+ drive
+> > > > enclosures that cut power upon suspension losing cached data.
+> > >=20
+> > > You misunderstood my question. =A0Are there SCSI transports other=
+ than
+> > > USB sharing the requirement that all child devices must be suspen=
+ded
+> > > before the link can be powered down?
+> >=20
+> > I dispute that USB in general has this property.
+>=20
+> How can you dispute that?  You said it yourself, in the top quote
+> above: "All children that are USB must be powered down."
 
-------=_Part_33515_5695074.1218689315607
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+But the children are SCSI, not USB.
 
-Hello,
-       I m  Arun. An undergraduate student from India. I like to do a main
-project( 1 year ) on Linux kernel-process management, as part of my
-academic program. I want to know if any project is possible on process
-scheduling....
+> > Some storage devices
+> > need their caches flushed. USB itself is perfectly happy with autos=
+uspending
+> > the storage device (host) without telling the disks (devices)
+> >=20
+> > You could even argue that these storage devices violate the USB spe=
+c.
+>=20
+> Oliver, you can't have it both ways.  Either we do spin down disks an=
+d
+> drain device caches before autosuspending usb-storage or we don't.
 
-Is there any project possible based on Priority inversion, Avoiding
-Deadlocks, or Multiprocessor scheduling..
+That is true.
 
-In the last semester I have done a miniproject on Linux. - A simple
-filesystem in Linux.  I  implemented a  small filesystem like  ramfs. I
-assume that you  people have a lot of  experience  on linux kernel. Can you
-suggest some projects to me..
-                                   Arun joseph.
+> For safety's sake, obviously we should.  The overhead is minimal sinc=
+e
+> this happens only after the idle timeout has expired.  And for device=
+s
+> that don't support it (like flash storage), sd skips the spin-down
+> command anway.
 
-------=_Part_33515_5695074.1218689315607
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+But you cannot make the conclusion that the ultimate children should ha=
+ve
+any autosuspend attributes. We can implement autosuspend in usb storage
+and propagate the suspend calls down the tree without SCSI knowing abou=
+t
+autosuspend.
 
-<div dir="ltr">Hello,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I m&nbsp; Arun. An undergraduate student from India. I like to do
-a main <span>project</span>( 1 year ) on Linux kernel-process management, as part of my&nbsp; academic program. I want to know if any project is possible on <span style="color: rgb(0, 153, 0); background-color: rgb(255, 255, 0);">process scheduling....</span><br>
+Such a system would have it drawbacks, but it'd be a lot simpler.
 
-<br><span style="color: rgb(0, 153, 0); background-color: rgb(255, 255, 0);">Is there any project possible based on Priority inversion, Avoiding Deadlocks, or Multiprocessor scheduling..</span> <br><br>In the last semester I have done a miniproject on Linux. - A simple filesystem in Linux.&nbsp; I&nbsp; implemented a&nbsp; small filesystem like&nbsp; ramfs. I assume that you&nbsp; people have a lot of&nbsp; experience&nbsp;
-on linux kernel.<span style="color: rgb(255, 0, 0);">
-Can you suggest some projects to me..</span><br><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Arun joseph.</font></font></font></font></font></font></div>
-
-------=_Part_33515_5695074.1218689315607--
-
---===============4109053768745874051==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4109053768745874051==--
+	Regards
+		Oliver
