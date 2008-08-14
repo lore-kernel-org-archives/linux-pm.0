@@ -1,55 +1,44 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [linux-pm] Power management for SCSI
-Date: Thu, 14 Aug 2008 11:40:26 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808141134390.2846-100000@iolanthe.rowland.org>
-References: <200808140808.27022.oneukum@suse.de>
+Date: Thu, 14 Aug 2008 11:47:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808141141570.2846-100000@iolanthe.rowland.org>
+References: <200808141608.13431.oneukum@suse.de>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757514AbYHNPlB@vger.kernel.org>
-In-Reply-To: <200808140808.27022.oneukum@suse.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755856AbYHNPrT@vger.kernel.org>
+In-Reply-To: <200808141608.13431.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Oliver Neukum <oneukum@suse.de>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Pavel Machek <pavel@suse.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, 14 Aug 2008, Oliver Neukum wrote:
 
-> > > I dispute that USB in general has this property.
+> > > You could even argue that these storage devices violate the USB spec.
 > > 
-> > How can you dispute that?  You said it yourself, in the top quote
-> > above: "All children that are USB must be powered down."
+> > Hmm... but suspended devices have very little power budget, right?
+> > 
+> > So unless you have external power supply (2.5" frames generally
+> > don't), you can't really suspend and stay spinned up...
+> > 
 > 
-> But the children are SCSI, not USB.
+> True, but the spec says that no state shall be lost.
 
-Oh, I see.  All right, yes.  However USB in general _does_ have the
-property that child devices might not be able to accomplish much while
-the USB link is suspended, particularly if they are bus-powered.  This 
-includes draining caches.
+What can we do?...  Real world devices don't always obey the spec.
 
-> > Oliver, you can't have it both ways.  Either we do spin down disks and
-> > drain device caches before autosuspending usb-storage or we don't.
-> 
-> That is true.
-> 
-> > For safety's sake, obviously we should.  The overhead is minimal since
-> > this happens only after the idle timeout has expired.  And for devices
-> > that don't support it (like flash storage), sd skips the spin-down
-> > command anway.
-> 
-> But you cannot make the conclusion that the ultimate children should have
-> any autosuspend attributes. We can implement autosuspend in usb storage
-> and propagate the suspend calls down the tree without SCSI knowing about
-> autosuspend.
+You could argue that the suspend current should be sufficient to 
+maintain the contents of the cache, which would then be written out 
+after resume.  But even if that is true, it's a very fragile guarantee 
+to rely on.
 
-The way I designed the autosuspend framework, you _can't_ do that.  In
-my framework autosuspend and autoresume events propagate _up_ the
-device tree, not _down_.  This means an autosuspend has to be initiated
-by the child SCSI layer, not by the USB layer.  Which is as it should
-be, since the USB layer doesn't know when it is appropriate for a SCSI
-device to autosuspend.
+> I don't really argue against flushing the caches. But I cannot that this would
+> demand that we should implement autopsuspend for SCSI. It seems like
+> overengineering to me.
 
-> Such a system would have it drawbacks, but it'd be a lot simpler.
-
-It would be a layering violation.
+Think of it in two parts: idle-timeout detection and autosuspend.  
+Presumably you don't object to the idle-timeout detection (which is 
+needed for powering down links in general), and you don't argue against 
+the cache-flushing part of autosuspend.  Taken together, that's about 
+90% of my proposal.  So what is the objectionable 10%?
 
 Alan Stern
