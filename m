@@ -1,37 +1,60 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Thu, 14 Aug 2008 18:25:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
-References: <200808142343.56505.oneukum@suse.de>
+From: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked
+	PCI PM
+Date: Thu, 14 Aug 2008 15:23:18 -0700
+Message-ID: <20080814152318.625f8609__29698.0352759876$1218752818$gmane$org@extreme>
+References: <200808142335.56644.rjw@sisk.pl> <200808142338.18361.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753618AbYHNWZq@vger.kernel.org>
-In-Reply-To: <200808142343.56505.oneukum@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200808142338.18361.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Garzik <jeff@garzik.org>, Jeff@smtp1.linux-foundation.org, netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Brandeburg,
+	Jesse" <jesse.brandeburg@intel.com>, Stephen Hemminger <stephen.hemminger@vyatta.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 14 Aug 2008, Oliver Neukum wrote:
+On Thu, 14 Aug 2008 23:38:17 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> The core problem is that you insist on a rigid bottom-to-top flow of
-> autosuspensions. That's good for systems like USB and PCI which
-> are trees for PM purposes. It makes no sense for true busses with
-> equal members on the bus.
+> Adapt the sky2 driver to the reworked PCI PM
+> 
+> * Use device_set_wakeup_enable() and friends as needed
+> * Remove an open-coded reference to the standard PCI PM registers
+> * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+>   ->suspend() and ->resume() callbacks
+> * Use the observation that it is sufficient to call pci_enable_wake()
+>   once, unless it fails
+> 
+> Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/sky2.c |   34 ++++++++++------------------------
+>  1 file changed, 10 insertions(+), 24 deletions(-)
+> 
+> Index: linux-2.6/drivers/net/sky2.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/sky2.c
+> +++ linux-2.6/drivers/net/sky2.c
+> @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+>  	struct sky2_port *sky2 = netdev_priv(dev);
+>  	struct sky2_hw *hw = sky2->hw;
+>  
+> -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> +	    || !device_can_wakeup(&hw->pdev->dev))
+>  		return -EOPNOTSUPP;
+>  
 
-My framework is tree-oriented because it's based on the driver model, 
-which uses a tree of devices.
-
-Even on a true bus, the members can't be entirely equal -- one of them 
-has to be closer to the CPU than the others are.  If that one member is 
-in a low-power state then the CPU can't communicate with anything on 
-the bus, unlike when one of the other members is in a low-power state.
-
-(I suppose in theory there could be a situation in which the CPU has
-direct communication with a bunch of devices, which can also
-communicate among themselves over some other bus.  In such a situation
-we would represent the devices as members of separate branches in the
-device tree, so that suspending one would have no impact on suspending
-the others.  The presence of the interconnecting bus would be ignored.)
-
-Alan Stern
+There was a regression in earlier releases caused because some BIOS's
+are wrong, and device can wakeup.
