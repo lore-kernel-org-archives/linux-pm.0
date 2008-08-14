@@ -1,38 +1,43 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Thu, 14 Aug 2008 23:43:55 +0200
-Message-ID: <200808142343.56505.oneukum@suse.de>
-References: <Pine.LNX.4.44L0.0808141141570.2846-100000@iolanthe.rowland.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Power management for SCSI
+Date: Fri, 15 Aug 2008 00:11:06 +0200
+Message-ID: <48A4AD7A.1070903@s5r6.in-berlin.de>
+References: <20080813095055.GA475@elf.ucw.cz> <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org> <20080814130812.GC2262@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754821AbYHNVnK@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808141141570.2846-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756194AbYHNWL5@vger.kernel.org>
+In-Reply-To: <20080814130812.GC2262@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+To: Pavel Machek <pavel@suse.cz>
+Cc: Alan Stern <stern@rowland.harvard.edu>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, James.Bottomley@HansenPartnership.com, teheo@novell.com, oneukum@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag 14 August 2008 17:47:02 schrieb Alan Stern:
-> > I don't really argue against flushing the caches. But I cannot that=
- this would
-> > demand that we should implement autopsuspend for SCSI. It seems lik=
-e
-> > overengineering to me.
->=20
-> Think of it in two parts: idle-timeout detection and autosuspend. =A0
-> Presumably you don't object to the idle-timeout detection (which is=20
-> needed for powering down links in general), and you don't argue again=
-st=20
-> the cache-flushing part of autosuspend. =A0Taken together, that's abo=
-ut=20
-> 90% of my proposal. =A0So what is the objectionable 10%?
+Pavel Machek wrote:
+>> https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
+...
+> First the general comments/questions:
+> 
+> #
+> #1. It's done at the wrong level: suspend "device" is actually a target
+> #function.  There's no way on a multi-lun device we want to keep the
+> #flags and last_busy anywhere but in the target
+> 
+> So... if there's one device with Lun0==cdrom1 and Lun1==cdrom2, it is a
+> single target, and we want to keep flags/last busy common to all that?
 
-The core problem is that you insist on a rigid bottom-to-top flow of
-autosuspensions. That's good for systems like USB and PCI which
-are trees for PM purposes. It makes no sense for true busses with
-equal members on the bus.
+Actually a command set driver like sd surely wants last_busy (time of 
+last use) separate for each LU for auto-spindown, doesn't it?
 
-	Regards
-		Oliver
+I'm not sure about the rest, i.e. delay, counter, flags.
+
+> What is good data structure to add? I see scsi_tgt*.h, but it is very
+> short, and there does not seem to be good structure to hook into.
+
+include/scsi/scsi_tgt*.h are for local target implementations.  The 
+representation of "remote" targets, as seen by local initiators, is 
+include/scsi/scsi_device.h's struct scsi_target.
+-- 
+Stefan Richter
+-=====-==--- =--- -===-
+http://arcgraph.de/sr/
