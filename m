@@ -1,55 +1,55 @@
-From: Oliver Neukum <oneukum@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [linux-pm] Power management for SCSI
-Date: Thu, 14 Aug 2008 16:08:12 +0200
-Message-ID: <200808141608.13431.oneukum@suse.de>
-References: <Pine.LNX.4.44L0.0808131138110.2151-100000@iolanthe.rowland.org> <200808131821.30564.oneukum@suse.de> <20080814135021.GE2262@elf.ucw.cz>
+Date: Thu, 14 Aug 2008 11:40:26 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808141134390.2846-100000@iolanthe.rowland.org>
+References: <200808140808.27022.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752001AbYHNOHa@vger.kernel.org>
-In-Reply-To: <20080814135021.GE2262@elf.ucw.cz>
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757514AbYHNPlB@vger.kernel.org>
+In-Reply-To: <200808140808.27022.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, Alan Stern <stern@rowland.harvard.edu>, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+To: Oliver Neukum <oneukum@suse.de>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Pavel Machek <pavel@suse.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag 14 August 2008 15:50:21 schrieb Pavel Machek:
-> On Wed 2008-08-13 18:21:29, Oliver Neukum wrote:
-> > Am Mittwoch 13 August 2008 17:44:46 schrieb Alan Stern:
-> > > > All children that are USB must be powered down. We know in fact=
- that most
-> > > > drives don't care that the device is suspended. The problem was=
- drive
-> > > > enclosures that cut power upon suspension losing cached data.
-> > >=20
-> > > You misunderstood my question. =A0Are there SCSI transports other=
- than
-> > > USB sharing the requirement that all child devices must be suspen=
-ded
-> > > before the link can be powered down?
-> >=20
-> > I dispute that USB in general has this property. Some storage devic=
-es
-> > need their caches flushed. USB itself is perfectly happy with autos=
-uspending
-> > the storage device (host) without telling the disks (devices)
-> >=20
-> > You could even argue that these storage devices violate the USB spe=
-c.
->=20
-> Hmm... but suspended devices have very little power budget, right?
->=20
-> So unless you have external power supply (2.5" frames generally
-> don't), you can't really suspend and stay spinned up...
->=20
+On Thu, 14 Aug 2008, Oliver Neukum wrote:
 
-True, but the spec says that no state shall be lost.
+> > > I dispute that USB in general has this property.
+> > 
+> > How can you dispute that?  You said it yourself, in the top quote
+> > above: "All children that are USB must be powered down."
+> 
+> But the children are SCSI, not USB.
 
-I don't really argue against flushing the caches. But I cannot that thi=
-s would
-demand that we should implement autopsuspend for SCSI. It seems like
-overengineering to me.
+Oh, I see.  All right, yes.  However USB in general _does_ have the
+property that child devices might not be able to accomplish much while
+the USB link is suspended, particularly if they are bus-powered.  This 
+includes draining caches.
 
-	Regards
-		Oliver
+> > Oliver, you can't have it both ways.  Either we do spin down disks and
+> > drain device caches before autosuspending usb-storage or we don't.
+> 
+> That is true.
+> 
+> > For safety's sake, obviously we should.  The overhead is minimal since
+> > this happens only after the idle timeout has expired.  And for devices
+> > that don't support it (like flash storage), sd skips the spin-down
+> > command anway.
+> 
+> But you cannot make the conclusion that the ultimate children should have
+> any autosuspend attributes. We can implement autosuspend in usb storage
+> and propagate the suspend calls down the tree without SCSI knowing about
+> autosuspend.
+
+The way I designed the autosuspend framework, you _can't_ do that.  In
+my framework autosuspend and autoresume events propagate _up_ the
+device tree, not _down_.  This means an autosuspend has to be initiated
+by the child SCSI layer, not by the USB layer.  Which is as it should
+be, since the USB layer doesn't know when it is appropriate for a SCSI
+device to autosuspend.
+
+> Such a system would have it drawbacks, but it'd be a lot simpler.
+
+It would be a layering violation.
+
+Alan Stern
