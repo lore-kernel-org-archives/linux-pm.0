@@ -1,29 +1,66 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: [linux-pm] Power management for SCSI
-Date: Wed, 13 Aug 2008 16:38:39 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
-References: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net>
+From: "Arun Kernel" <arun.kernel@gmail.com>
+Subject: Project
+Date: Thu, 14 Aug 2008 10:18:35 +0530
+Message-ID: <3f7bc8d20808132148k3abf447fud042d101819e446e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755798AbYHMUiu@vger.kernel.org>
-In-Reply-To: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: Oliver Neukum <oneukum@suse.de>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com, James.Bottomley@hansenpartnership.com, Pavel Machek <pavel@suse.cz>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Content-Type: multipart/mixed; boundary="===============4109053768745874051=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Linux-pm mailing list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 Aug 2008, Leisner, Martin wrote:
+--===============4109053768745874051==
+Content-Type: multipart/alternative;
+	boundary="----=_Part_33515_5695074.1218689315607"
 
-> Regarding these scsi suspend patches, there's a general
-> problem to drop power on disk devices on a running system.
-> I discussed it in:
-> 
-> http://www.gossamer-threads.com/lists/linux/kernel/811598
+------=_Part_33515_5695074.1218689315607
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-There's a much worse problem which that thread completely ignored:
+Hello,
+       I m  Arun. An undergraduate student from India. I like to do a main
+project( 1 year ) on Linux kernel-process management, as part of my
+academic program. I want to know if any project is possible on process
+scheduling....
 
-When you turn off power to a disk device, to the system it looks like a 
-hot-unplug event.  Any mounted filesystems or memory mappings on that 
-disk will be lost.
+Is there any project possible based on Priority inversion, Avoiding
+Deadlocks, or Multiprocessor scheduling..
 
-Alan Stern
+In the last semester I have done a miniproject on Linux. - A simple
+filesystem in Linux.  I  implemented a  small filesystem like  ramfs. I
+assume that you  people have a lot of  experience  on linux kernel. Can you
+suggest some projects to me..
+                                   Arun joseph.
+
+------=_Part_33515_5695074.1218689315607
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Hello,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I m&nbsp; Arun. An undergraduate student from India. I like to do
+a main <span>project</span>( 1 year ) on Linux kernel-process management, as part of my&nbsp; academic program. I want to know if any project is possible on <span style="color: rgb(0, 153, 0); background-color: rgb(255, 255, 0);">process scheduling....</span><br>
+
+<br><span style="color: rgb(0, 153, 0); background-color: rgb(255, 255, 0);">Is there any project possible based on Priority inversion, Avoiding Deadlocks, or Multiprocessor scheduling..</span> <br><br>In the last semester I have done a miniproject on Linux. - A simple filesystem in Linux.&nbsp; I&nbsp; implemented a&nbsp; small filesystem like&nbsp; ramfs. I assume that you&nbsp; people have a lot of&nbsp; experience&nbsp;
+on linux kernel.<span style="color: rgb(255, 0, 0);">
+Can you suggest some projects to me..</span><br><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888"><font color="#888888">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Arun joseph.</font></font></font></font></font></font></div>
+
+------=_Part_33515_5695074.1218689315607--
+
+--===============4109053768745874051==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4109053768745874051==--
