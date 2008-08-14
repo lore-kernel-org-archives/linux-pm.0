@@ -1,43 +1,37 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Power management for SCSI
-Date: Fri, 15 Aug 2008 00:11:06 +0200
-Message-ID: <48A4AD7A.1070903@s5r6.in-berlin.de>
-References: <20080813095055.GA475@elf.ucw.cz> <Pine.LNX.4.44L0.0808131026320.2455-100000@iolanthe.rowland.org> <20080814130812.GC2262@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Thu, 14 Aug 2008 18:25:28 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808141819470.2148-100000@iolanthe.rowland.org>
+References: <200808142343.56505.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756194AbYHNWL5@vger.kernel.org>
-In-Reply-To: <20080814130812.GC2262@elf.ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753618AbYHNWZq@vger.kernel.org>
+In-Reply-To: <200808142343.56505.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Alan Stern <stern@rowland.harvard.edu>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, James.Bottomley@HansenPartnership.com, teheo@novell.com, oneukum@suse.de
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
->> https://lists.linux-foundation.org/pipermail/linux-pm/2008-March/016849.html
-...
-> First the general comments/questions:
-> 
-> #
-> #1. It's done at the wrong level: suspend "device" is actually a target
-> #function.  There's no way on a multi-lun device we want to keep the
-> #flags and last_busy anywhere but in the target
-> 
-> So... if there's one device with Lun0==cdrom1 and Lun1==cdrom2, it is a
-> single target, and we want to keep flags/last busy common to all that?
+On Thu, 14 Aug 2008, Oliver Neukum wrote:
 
-Actually a command set driver like sd surely wants last_busy (time of 
-last use) separate for each LU for auto-spindown, doesn't it?
+> The core problem is that you insist on a rigid bottom-to-top flow of
+> autosuspensions. That's good for systems like USB and PCI which
+> are trees for PM purposes. It makes no sense for true busses with
+> equal members on the bus.
 
-I'm not sure about the rest, i.e. delay, counter, flags.
+My framework is tree-oriented because it's based on the driver model, 
+which uses a tree of devices.
 
-> What is good data structure to add? I see scsi_tgt*.h, but it is very
-> short, and there does not seem to be good structure to hook into.
+Even on a true bus, the members can't be entirely equal -- one of them 
+has to be closer to the CPU than the others are.  If that one member is 
+in a low-power state then the CPU can't communicate with anything on 
+the bus, unlike when one of the other members is in a low-power state.
 
-include/scsi/scsi_tgt*.h are for local target implementations.  The 
-representation of "remote" targets, as seen by local initiators, is 
-include/scsi/scsi_device.h's struct scsi_target.
--- 
-Stefan Richter
--=====-==--- =--- -===-
-http://arcgraph.de/sr/
+(I suppose in theory there could be a situation in which the CPU has
+direct communication with a bunch of devices, which can also
+communicate among themselves over some other bus.  In such a situation
+we would represent the devices as members of separate branches in the
+device tree, so that suspending one would have no impact on suspending
+the others.  The presence of the interconnecting bus would be ignored.)
+
+Alan Stern
