@@ -1,95 +1,46 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] PM: Rework disabling of user mode
-	helpers during suspend/hibernation
-Date: Thu, 14 Aug 2008 07:32:35 +0200
-Message-ID: <20080814053235.GG6995__7241.10575761205$1218712146$gmane$org@ucw.cz>
-References: <200808080019.37057.rjw@sisk.pl>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Thu, 14 Aug 2008 15:50:21 +0200
+Message-ID: <20080814135021.GE2262@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0808131138110.2151-100000@iolanthe.rowland.org> <200808131821.30564.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756047AbYHNN7M@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200808080019.37057.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200808131821.30564.oneukum@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, Alan Stern <stern@rowland.harvard.edu>, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed 2008-08-13 18:21:29, Oliver Neukum wrote:
+> Am Mittwoch 13 August 2008 17:44:46 schrieb Alan Stern:
+> > > All children that are USB must be powered down. We know in fact t=
+hat most
+> > > drives don't care that the device is suspended. The problem was d=
+rive
+> > > enclosures that cut power upon suspension losing cached data.
+> >=20
+> > You misunderstood my question. =A0Are there SCSI transports other t=
+han
+> > USB sharing the requirement that all child devices must be suspende=
+d
+> > before the link can be powered down?
+>=20
+> I dispute that USB in general has this property. Some storage devices
+> need their caches flushed. USB itself is perfectly happy with autosus=
+pending
+> the storage device (host) without telling the disks (devices)
+>=20
+> You could even argue that these storage devices violate the USB spec.
 
-> PM: Rework disabling of user mode helpers during suspend/hibernation
-> 
-> We currently use a PM notifier to disable user mode helpers before
-> suspend and hibernation and to re-enable them during the resume.
-> However, this is not an ideal solution, because if any drivers want
-> to upolad firmware into memory before suspend, they have to use a
-> PM notifier for this purpose and there is not guarantee that the
-> ordering of PM notifiers will be as expected (ie. the notifier that
-> disables user mode helpers has to be run after the driver's notifier
-> used for uploading the firmware).
-> 
-> For this reason, it seems better to move the disabling and enabling
-> of user mode helpers to separate functions that will be called by the
-> PM core as necessary.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hmm... but suspended devices have very little power budget, right?
 
-ACK.
+So unless you have external power supply (2.5" frames generally
+don't), you can't really suspend and stay spinned up...
 
-> Index: linux-2.6/include/linux/kmod.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/kmod.h
-> +++ linux-2.6/include/linux/kmod.h
-> @@ -99,4 +99,9 @@ struct file;
->  extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
->  				    struct file **filp);
->  
-> +#ifdef CONFIG_PM_SLEEP
-> +extern int usermodehelper_disable(void);
-> +extern void usermodehelper_enable(void);
-> +#endif
-
-No #ifdef needed for prototypes?
-
-
->  #endif /* __LINUX_KMOD_H__ */
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -21,6 +21,7 @@
->  #include <linux/freezer.h>
->  #include <linux/vmstat.h>
->  #include <linux/syscalls.h>
-> +#include <linux/kmod.h>
->  
->  #include "power.h"
->  
-> @@ -236,6 +237,10 @@ static int suspend_prepare(void)
->  	if (error)
->  		goto Finish;
->  
-> +	error = usermodehelper_disable();
-> +	if (error)
-> +		goto Finish;
-> +
->  	if (suspend_freeze_processes()) {
->  		error = -EAGAIN;
->  		goto Thaw;
-
-Could this be moved into suspend_freeze_processes? It is related
-(usermode helper is disabled when no userland), and you will not have
-to call it from 3 places...?
-
-						Pavel
--- 
+--=20
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
