@@ -1,15 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] PM: Rework disabling of user mode
-	helpers during suspend/hibernation
-Date: Thu, 14 Aug 2008 07:32:35 +0200
-Message-ID: <20080814053235.GG6995__18803.1484875411$1218784881$gmane$org@ucw.cz>
-References: <200808080019.37057.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked
+	PCI PM
+Date: Fri, 15 Aug 2008 15:01:57 +0200
+Message-ID: <200808151501.58315.rjw__30297.3931575709$1218805489$gmane$org@sisk.pl>
+References: <200808142335.56644.rjw@sisk.pl> <200808142338.18361.rjw@sisk.pl>
+	<20080814152318.625f8609@extreme>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20080814152318.625f8609@extreme>
 Content-Disposition: inline
-In-Reply-To: <200808080019.37057.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +20,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Brandeburg,
+	Jesse" <jesse.brandeburg@intel.com>, Stephen Hemminger <stephen.hemminger@vyatta.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> PM: Rework disabling of user mode helpers during suspend/hibernation
+On Friday, 15 of August 2008, Stephen Hemminger wrote:
+> On Thu, 14 Aug 2008 23:38:17 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> We currently use a PM notifier to disable user mode helpers before
-> suspend and hibernation and to re-enable them during the resume.
-> However, this is not an ideal solution, because if any drivers want
-> to upolad firmware into memory before suspend, they have to use a
-> PM notifier for this purpose and there is not guarantee that the
-> ordering of PM notifiers will be as expected (ie. the notifier that
-> disables user mode helpers has to be run after the driver's notifier
-> used for uploading the firmware).
+> > Adapt the sky2 driver to the reworked PCI PM
+> > 
+> > * Use device_set_wakeup_enable() and friends as needed
+> > * Remove an open-coded reference to the standard PCI PM registers
+> > * Use pci_prepare_to_sleep() and pci_back_from_sleep() in the
+> >   ->suspend() and ->resume() callbacks
+> > * Use the observation that it is sufficient to call pci_enable_wake()
+> >   once, unless it fails
+> > 
+> > Tested on Asus M3A32-MVP (Yukon-2 EC Ultra rev 3).
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/net/sky2.c |   34 ++++++++++------------------------
+> >  1 file changed, 10 insertions(+), 24 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/net/sky2.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/net/sky2.c
+> > +++ linux-2.6/drivers/net/sky2.c
+> > @@ -3035,7 +3035,8 @@ static int sky2_set_wol(struct net_devic
+> >  	struct sky2_port *sky2 = netdev_priv(dev);
+> >  	struct sky2_hw *hw = sky2->hw;
+> >  
+> > -	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > +	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
+> > +	    || !device_can_wakeup(&hw->pdev->dev))
+> >  		return -EOPNOTSUPP;
+> >  
 > 
-> For this reason, it seems better to move the disabling and enabling
-> of user mode helpers to separate functions that will be called by the
-> PM core as necessary.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> There was a regression in earlier releases caused because some BIOS's
+> are wrong, and device can wakeup.
 
-ACK.
+device_can_wakeup() returns 'true' if the device is capable of generating PME#
+from at least one low power state (this is determined on the basis of the
+contents of the device's PCI PM registers - please have a look at
+drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
+IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
+generating PME#, so the regression must have been related to something else.
+I'm very interested in the details, if available.
 
-> Index: linux-2.6/include/linux/kmod.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/kmod.h
-> +++ linux-2.6/include/linux/kmod.h
-> @@ -99,4 +99,9 @@ struct file;
->  extern int call_usermodehelper_pipe(char *path, char *argv[], char *envp[],
->  				    struct file **filp);
->  
-> +#ifdef CONFIG_PM_SLEEP
-> +extern int usermodehelper_disable(void);
-> +extern void usermodehelper_enable(void);
-> +#endif
+Of course, since we rely on the ability of the device to generate PME# and
+device_can_wakeup() returning 'false' means that the device cannot generate
+PME# from any state, it's reasonable to check it IMO.
 
-No #ifdef needed for prototypes?
-
-
->  #endif /* __LINUX_KMOD_H__ */
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -21,6 +21,7 @@
->  #include <linux/freezer.h>
->  #include <linux/vmstat.h>
->  #include <linux/syscalls.h>
-> +#include <linux/kmod.h>
->  
->  #include "power.h"
->  
-> @@ -236,6 +237,10 @@ static int suspend_prepare(void)
->  	if (error)
->  		goto Finish;
->  
-> +	error = usermodehelper_disable();
-> +	if (error)
-> +		goto Finish;
-> +
->  	if (suspend_freeze_processes()) {
->  		error = -EAGAIN;
->  		goto Thaw;
-
-Could this be moved into suspend_freeze_processes? It is related
-(usermode helper is disabled when no userland), and you will not have
-to call it from 3 places...?
-
-						Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
