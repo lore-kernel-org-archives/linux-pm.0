@@ -1,50 +1,67 @@
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-Subject: Re: [PATCH 3/3] Adapt the e100 driver to the reworked
-	PCI PM
-Date: Thu, 14 Aug 2008 16:56:54 -0700
-Message-ID: <9929d2390808141656g1896657fm6802c520b036cacc__14005.4745170803$1218811143$gmane$org@mail.gmail.com>
-References: <200808142335.56644.rjw@sisk.pl> <200808142340.25574.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Fri, 15 Aug 2008 11:25:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808151110380.23570-100000@netrider.rowland.org>
+References: <200808150916.24258.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808142340.25574.rjw@sisk.pl>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Brandeburg,
-	Jesse" <jesse.brandeburg@intel.com>, Stephen Hemminger <stephen.hemminger@vyatta.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759661AbYHOPZ3@vger.kernel.org>
+In-Reply-To: <200808150916.24258.oneukum@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 14, 2008 at 2:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> [Note: I have no hardware to test this patch, but it seems pretty
-> straightforward.]
->
-> Adapt the e100 driver to the reworked PCI PM
->
-> * Use device_set_wakeup_enable() and friends as needed
-> * Use pci_pme_active() to clear PME_Status and disable PME#
-> * Use the observation that it is sufficient to call pci_enable_wake()
->  once, unless it fails
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/e100.c |   20 +++++++++++---------
->  1 file changed, 11 insertions(+), 9 deletions(-)
->
+On Fri, 15 Aug 2008, Oliver Neukum wrote:
 
-We have tested the patch in our labs and systems wake from S5 just fine.
+> Am Freitag 15 August 2008 00:25:28 schrieb Alan Stern:
+> > On Thu, 14 Aug 2008, Oliver Neukum wrote:
+> > 
+> > > The core problem is that you insist on a rigid bottom-to-top flow of
+> > > autosuspensions. That's good for systems like USB and PCI which
+> > > are trees for PM purposes. It makes no sense for true busses with
+> > > equal members on the bus.
+> > 
+> > My framework is tree-oriented because it's based on the driver model, 
+> > which uses a tree of devices.
+> 
+> Which uses a tree because PCI and USB are.
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+How do you know?  Is that just a guess based on some of Greg KH's and
+Pat Mochel's previous activities?  Did you ask them?
 
--- 
-Cheers,
-Jeff
+> > Even on a true bus, the members can't be entirely equal -- one of them 
+> > has to be closer to the CPU than the others are.  If that one member is 
+> > in a low-power state then the CPU can't communicate with anything on 
+> > the bus, unlike when one of the other members is in a low-power state.
+> 
+> Yes, that means under some circumstances you cannot suspend the
+> member closest to the CPU, but under others you can. In a tree this question
+> is very simply answered, on a bus you will actually need to compute whether
+> you need the connection to the bus.
+
+I don't see why any computation is needed.  If the CPU will need to
+communicate with any devices on the bus (i.e., if any of these devices
+are not idle) then you need the connection to the bus, otherwise you
+don't.  It's exactly the same with a tree.  The fact that the 
+interconnections form a bus rather than a tree is irrelevant.
+
+(Viewed in logical terms, even a true bus can be described as a tree.  
+The nodes are partially ordered by their communication paths to the 
+CPU.)
+
+More to the point is whether you should ever suspend any of these 
+devices if there can be multiple initiators.  But that's a separate 
+question.
+
+> It is true that you won't need the bus if all other members on the bus have
+> been suspended, but that's not very good because physically spinning
+> down and up a disk is a very expensive operation, while suspending a host
+> adapter can be trivial.
+
+What is your point?  You seem to be saying that it would be nice to
+suspend a host adapter at times when some of the SCSI targets beneath
+it are not suspended.  I agree, but how would you determine whether
+such a thing was safe?
+
+Alan Stern
