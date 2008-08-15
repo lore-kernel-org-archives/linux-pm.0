@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 2/3] Adapt the sky2 driver to the reworked
 	PCI PM
-Date: Fri, 15 Aug 2008 15:07:10 +0200
-Message-ID: <200808151507.11580.rjw__43629.5190862895$1218805690$gmane$org@sisk.pl>
+Date: Fri, 15 Aug 2008 15:32:13 +0200
+Message-ID: <200808151532.14327.rjw__2722.3251331181$1218807160$gmane$org@sisk.pl>
 References: <200808142335.56644.rjw@sisk.pl> <20080814152318.625f8609@extreme>
 	<200808151501.58315.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -67,5 +67,17 @@ On Friday, 15 of August 2008, Rafael J. Wysocki wrote:
 > from at least one low power state (this is determined on the basis of the
 > contents of the device's PCI PM registers - please have a look at
 > drivers/pci/pci_pm_init() for details) or if ACPI tells us it can wake up.
+> IOW, the BIOSes opinion doesn't matter if we find that the device is capable of
+> generating PME#, so the regression must have been related to something else.
+> I'm very interested in the details, if available.
+> 
+> Of course, since we rely on the ability of the device to generate PME# and
+> device_can_wakeup() returning 'false' means that the device cannot generate
+> PME# from any state, it's reasonable to check it IMO.
 
-drivers/pci/pci.c:pci_pm_init(), sorry.
+BTW, if device_can_wakeup(&pdev->dev) returns 'false',
+pci_enable_wake(pdev, state, true) will fail for any 'state', so the wake-up
+won't work regardless of the change above.
+
+Thanks,
+Rafael
