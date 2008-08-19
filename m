@@ -1,59 +1,60 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] PCI PM: Introduce function pci_wake_from_d3
-	(rev. 2)
-Date: Tue, 19 Aug 2008 11:29:57 +0200
-Message-ID: <20080819092957.GA26837__7423.48131393573$1219143911$gmane$org@elf.ucw.cz>
-References: <200808182057.22501.rjw@sisk.pl> <200808182138.00989.rjw@sisk.pl>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Tue, 19 Aug 2008 15:33:14 +0200
+Message-ID: <200808191533.15244.oneukum@suse.de>
+References: <Pine.LNX.4.44L0.0808151110380.23570-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753502AbYHSNd3@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808151110380.23570-100000@netrider.rowland.org>
 Content-Disposition: inline
-In-Reply-To: <200808182138.00989.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Am Freitag 15 August 2008 17:25:13 schrieb Alan Stern:
+> On Fri, 15 Aug 2008, Oliver Neukum wrote:
+> 
+> > Am Freitag 15 August 2008 00:25:28 schrieb Alan Stern:
 
-> [Sorry, it is more useful to define the function so that it takes a second
-> argument indicating whether to enable or disable wake-up.]
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> PCI PM: Introduce function pci_wake_from_d3 (rev. 2)
-> 
-> Many device drivers use the following sequence of statements to
-> enable the device to wake up the system while being in the D3_hot
-> or D3_cold low power state:
-> 
-> 	pci_enable_wake(pdev, PCI_D3hot, 1);
-> 	pci_enable_wake(pdev, PCI_D3cold, 1);
-> 
-> However, the second call is not necessary if the first one succeeds
-> (the ordering of the statements above doesn't matter here) and it
-> may even be harmful, because we are not supposed to enable PME#
-> after the wake-up power has been enabled for the device.
-> 
-> To allow drivers to overcome this problem, introduce function
-> pci_wake_from_d3() that will enable the device to wake up the system
-> from any of D3_hot and D3_cold as long as the wake-up from at least
-> one of them is supported.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-ACK.
-									Pavel
- 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > Yes, that means under some circumstances you cannot suspend the
+> > member closest to the CPU, but under others you can. In a tree this question
+> > is very simply answered, on a bus you will actually need to compute whether
+> > you need the connection to the bus.
+
+> More to the point is whether you should ever suspend any of these 
+> devices if there can be multiple initiators.  But that's a separate 
+> question.
+
+But one that needs to be addressed.
+
+> > It is true that you won't need the bus if all other members on the bus have
+> > been suspended, but that's not very good because physically spinning
+> > down and up a disk is a very expensive operation, while suspending a host
+> > adapter can be trivial.
+> 
+> What is your point?  You seem to be saying that it would be nice to
+> suspend a host adapter at times when some of the SCSI targets beneath
+> it are not suspended.  I agree, but how would you determine whether
+> such a thing was safe?
+
+I suggest by talking to the HLDs.
+
+It seems to me that abstractly talking there are three criteria for suspension
+
+- the cpu needs to talk to the device now
+- the device may need to talk to the CPU at unpredictable times
+- suspending has side effects
+
+Suspension in USB has always side effects. That's not true for other
+subsystems. It seems to me that for the general case we need to divorce
+the notion of a child being suspended itself from a child agreeing to its
+parent being suspended.
+
+	Regards
+		Oliver
