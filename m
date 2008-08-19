@@ -1,38 +1,90 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Power management for SCSI
-Date: Tue, 19 Aug 2008 10:32:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808191027070.2669-100000@iolanthe.rowland.org>
-References: <20080819073839.GA8726@atrey.karlin.mff.cuni.cz>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Tue, 19 Aug 2008 11:28:28 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
+References: <200808191533.15244.oneukum@suse.de>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753655AbYHSOcb@vger.kernel.org>
-In-Reply-To: <20080819073839.GA8726@atrey.karlin.mff.cuni.cz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755166AbYHSP2k@vger.kernel.org>
+In-Reply-To: <200808191533.15244.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, James.Bottomley@HansenPartnership.com, teheo@novell.com, oneukum@suse.de
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Aug 2008, Pavel Machek wrote:
+On Tue, 19 Aug 2008, Oliver Neukum wrote:
 
-> Would it make sense to split the patches into "autosuspend for SCSI
-> devices" and "autosuspend for SCSI controllers" for easier
-> review/merge? I guess I'll start with the devices, they seem easier...
+> > More to the point is whether you should ever suspend any of these 
+> > devices if there can be multiple initiators.  But that's a separate 
+> > question.
+> 
+> But one that needs to be addressed.
 
-It really should be split up differently.  The topics of interest are:
+One possibility is to have an attribute flag for SCSI transport
+classes, indicating whether the transport supports multiple initiators.
 
-	idle detection for SCSI devices,
+Besides, isn't this already an issue?  What happens when someone does a 
+system suspend or hibernate?  Don't the attached disk drives get spun 
+down, even if there are other initiators on the same SCSI bus?
 
-	autosuspend for SCSI targets and its relation to suspend
-	for SCSI devices,
+(And is this really a problem?  If an error occurs because a drive is 
+spun down when some other device tries to access it, that other device 
+should simply spin the drive back up again.)
 
-	passing suspend & resume notifications to the transport class,
+> > What is your point?  You seem to be saying that it would be nice to
+> > suspend a host adapter at times when some of the SCSI targets beneath
+> > it are not suspended.  I agree, but how would you determine whether
+> > such a thing was safe?
+> 
+> I suggest by talking to the HLDs.
 
-	adding a USB transport class so that usb-storage can respond
-	to those notifications,
+Why would the HLD (= ULD?) know?
 
-	modifying other transport classes as needed so that the LLDs
-	can power-down links or host adapters.
+For example, consider a USB disk drive.  How is sd.c (the HLD) supposed 
+to know that it's not safe to suspend the USB link without spinning 
+down the drive?  Or consider a traditional SCSI parallel interface 
+drive.  How is sd.c supposed to know that it is safe to suspend the 
+SPI host adapter without first spinning down the drive?
 
-I think that covers it.  Oliver may have some additional suggestions.
+> It seems to me that abstractly talking there are three criteria for suspension
+> 
+> - the cpu needs to talk to the device now
+
+I.e., whether the idle timeout has expired, right?
+
+> - the device may need to talk to the CPU at unpredictable times
+
+I.e, whether remote wakeup needs to be enabled, right?
+
+> - suspending has side effects
+
+I'm not sure what you mean by that.  Suspension always has side effects 
+of one kind or another.
+
+> Suspension in USB has always side effects. That's not true for other
+> subsystems.
+
+Name one.  At the very least, suspending a device means you can't use
+it again without first calling the driver's resume method.  That's a 
+side effect.
+
+Hopefully, in most subsystems suspending a device would reduce its 
+power usage.  Unfortunately this isn't true for SCSI at the moment...
+
+> It seems to me that for the general case we need to divorce
+> the notion of a child being suspended itself from a child agreeing to its
+> parent being suspended.
+
+This is already possible.  For example, you may remember a couple of
+years ago I posted a patch for usb-storage which would autosuspend it
+without regard for the state of its child devices.  The patch didn't
+work out, because some devices really did need to have their caches
+drained or disks spun down.
+
+There's nothing about my suspend framework to prevent a driver from 
+autosuspending its device while the children are still active.  
+Rather, the framework insists on notifications going the other way: 
+The driver has to be told whenever one of its device's children is 
+suspended or resumed.
 
 Alan Stern
