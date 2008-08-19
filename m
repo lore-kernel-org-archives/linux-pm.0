@@ -1,90 +1,59 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Tue, 19 Aug 2008 11:28:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
-References: <200808191533.15244.oneukum@suse.de>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: RE: [linux-pm] Power management for SCSI
+Date: Tue, 19 Aug 2008 17:08:58 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C09532734@USA0300MS03.na.xerox.net>
+References: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net> <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755166AbYHSP2k@vger.kernel.org>
-In-Reply-To: <200808191533.15244.oneukum@suse.de>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754399AbYHSVKi@vger.kernel.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com, James.Bottomley@hansenpartnership.com, Pavel Machek <pavel@suse.cz>, Stefan Richter <stefanr@s5r6.in-berlin.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Aug 2008, Oliver Neukum wrote:
+Being able to drop power on the disk on demand is a useful concept.
 
-> > More to the point is whether you should ever suspend any of these 
-> > devices if there can be multiple initiators.  But that's a separate 
-> > question.
-> 
-> But one that needs to be addressed.
+We do it, but need a number of custom patches in a number of places.
 
-One possibility is to have an attribute flag for SCSI transport
-classes, indicating whether the transport supports multiple initiators.
+When the system WANTS to access the disk, it does what is necessary to
+get the disk to spin up...
 
-Besides, isn't this already an issue?  What happens when someone does a 
-system suspend or hibernate?  Don't the attached disk drives get spun 
-down, even if there are other initiators on the same SCSI bus?
+I'm not sure dropping disk power in a control way should trigger a
+hot-plug
+event --if everyone EXPECTS it.
 
-(And is this really a problem?  If an error occurs because a drive is 
-spun down when some other device tries to access it, that other device 
-should simply spin the drive back up again.)
+I'm just looking for a more generic way to enable this...I'm going to be
+looking a 2.6.26/27 for this soon...
 
-> > What is your point?  You seem to be saying that it would be nice to
-> > suspend a host adapter at times when some of the SCSI targets beneath
-> > it are not suspended.  I agree, but how would you determine whether
-> > such a thing was safe?
-> 
-> I suggest by talking to the HLDs.
+marty
 
-Why would the HLD (= ULD?) know?
-
-For example, consider a USB disk drive.  How is sd.c (the HLD) supposed 
-to know that it's not safe to suspend the USB link without spinning 
-down the drive?  Or consider a traditional SCSI parallel interface 
-drive.  How is sd.c supposed to know that it is safe to suspend the 
-SPI host adapter without first spinning down the drive?
-
-> It seems to me that abstractly talking there are three criteria for suspension
-> 
-> - the cpu needs to talk to the device now
-
-I.e., whether the idle timeout has expired, right?
-
-> - the device may need to talk to the CPU at unpredictable times
-
-I.e, whether remote wakeup needs to be enabled, right?
-
-> - suspending has side effects
-
-I'm not sure what you mean by that.  Suspension always has side effects 
-of one kind or another.
-
-> Suspension in USB has always side effects. That's not true for other
-> subsystems.
-
-Name one.  At the very least, suspending a device means you can't use
-it again without first calling the driver's resume method.  That's a 
-side effect.
-
-Hopefully, in most subsystems suspending a device would reduce its 
-power usage.  Unfortunately this isn't true for SCSI at the moment...
-
-> It seems to me that for the general case we need to divorce
-> the notion of a child being suspended itself from a child agreeing to its
-> parent being suspended.
-
-This is already possible.  For example, you may remember a couple of
-years ago I posted a patch for usb-storage which would autosuspend it
-without regard for the state of its child devices.  The patch didn't
-work out, because some devices really did need to have their caches
-drained or disks spun down.
-
-There's nothing about my suspend framework to prevent a driver from 
-autosuspending its device while the children are still active.  
-Rather, the framework insists on notifications going the other way: 
-The driver has to be told whenever one of its device's children is 
-suspended or resumed.
-
-Alan Stern
+>   -----Original Message-----
+>   From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>   Sent: Wednesday, August 13, 2008 4:39 PM
+>   To: Leisner, Martin
+>   Cc: Oliver Neukum; Linux-pm mailing list; kernel list;
+teheo@novell.com;
+>   James.Bottomley@hansenpartnership.com; Pavel Machek; Stefan Richter
+>   Subject: RE: [linux-pm] Power management for SCSI
+>   
+>   On Wed, 13 Aug 2008, Leisner, Martin wrote:
+>   
+>   > Regarding these scsi suspend patches, there's a general
+>   > problem to drop power on disk devices on a running system.
+>   > I discussed it in:
+>   >
+>   > http://www.gossamer-threads.com/lists/linux/kernel/811598
+>   
+>   There's a much worse problem which that thread completely ignored:
+>   
+>   When you turn off power to a disk device, to the system it looks
+like a
+>   hot-unplug event.  Any mounted filesystems or memory mappings on
+that
+>   disk will be lost.
+>   
+>   Alan Stern
