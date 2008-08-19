@@ -1,59 +1,57 @@
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Subject: RE: [linux-pm] Power management for SCSI
-Date: Tue, 19 Aug 2008 17:08:58 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C09532734@USA0300MS03.na.xerox.net>
-References: <556445368AFA1C438794ABDA8901891C094876DA@USA0300MS03.na.xerox.net> <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Wed, 20 Aug 2008 01:22:49 +0200
+Message-ID: <48AB55C9.3010106@s5r6.in-berlin.de>
+References: <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754399AbYHSVKi@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <Pine.LNX.4.44L0.0808131636400.2144-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753359AbYHSXZf@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0808191108440.2669-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com, James.Bottomley@hansenpartnership.com, Pavel Machek <pavel@suse.cz>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Oliver Neukum <oneukum@suse.de>, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Being able to drop power on the disk on demand is a useful concept.
+Alan Stern wrote:
+> On Tue, 19 Aug 2008, Oliver Neukum wrote:
+> 
+>>> More to the point is whether you should ever suspend any of these 
+>>> devices if there can be multiple initiators.  But that's a separate 
+>>> question.
+>> But one that needs to be addressed.
+> 
+> One possibility is to have an attribute flag for SCSI transport
+> classes, indicating whether the transport supports multiple initiators.
+> 
+> Besides, isn't this already an issue?  What happens when someone does a 
+> system suspend or hibernate?  Don't the attached disk drives get spun 
+> down, even if there are other initiators on the same SCSI bus?
 
-We do it, but need a number of custom patches in a number of places.
+In (fw-)sbp2, we have for example this simple code:
 
-When the system WANTS to access the disk, it does what is necessary to
-get the disk to spin up...
+static int sbp2_scsi_slave_configure(struct scsi_device *sdev)
+{
+...
+	if (sbp2_param_exclusive_login)
+		sdev->manage_start_stop = 1;
+...
+By setting the exclusive_login module parameter from Y (default) to N, 
+multiple initiators per logical unit become possible.  We are too lazy 
+to check whether there are actually other initiators at a given moment; 
+after all they can come and go all the time.  So the simplest strategy 
+is to suppress managed START STOP when concurrent initiators are _possible_.
 
-I'm not sure dropping disk power in a control way should trigger a
-hot-plug
-event --if everyone EXPECTS it.
+I suppose though that all multiple initiator capable transports have 
+ways to query the presence of other initiators at any given time; but I 
+don't think the respective effort is justified.
 
-I'm just looking for a more generic way to enable this...I'm going to be
-looking a 2.6.26/27 for this soon...
+> (And is this really a problem?  If an error occurs because a drive is 
+> spun down when some other device tries to access it, that other device 
+> should simply spin the drive back up again.)
 
-marty
-
->   -----Original Message-----
->   From: Alan Stern [mailto:stern@rowland.harvard.edu]
->   Sent: Wednesday, August 13, 2008 4:39 PM
->   To: Leisner, Martin
->   Cc: Oliver Neukum; Linux-pm mailing list; kernel list;
-teheo@novell.com;
->   James.Bottomley@hansenpartnership.com; Pavel Machek; Stefan Richter
->   Subject: RE: [linux-pm] Power management for SCSI
->   
->   On Wed, 13 Aug 2008, Leisner, Martin wrote:
->   
->   > Regarding these scsi suspend patches, there's a general
->   > problem to drop power on disk devices on a running system.
->   > I discussed it in:
->   >
->   > http://www.gossamer-threads.com/lists/linux/kernel/811598
->   
->   There's a much worse problem which that thread completely ignored:
->   
->   When you turn off power to a disk device, to the system it looks
-like a
->   hot-unplug event.  Any mounted filesystems or memory mappings on
-that
->   disk will be lost.
->   
->   Alan Stern
+The high latency may be a problem.
+-- 
+Stefan Richter
+-=====-==--- =--- =-=--
+http://arcgraph.de/sr/
