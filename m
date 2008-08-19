@@ -1,8 +1,7 @@
 From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH 4/6] Container Freezer: Cleanup comment.
-Date: Tue, 19 Aug 2008 16:22:36 -0700
-Message-ID: <20080819232234.563323820__33950.7342469462$1219189063$gmane$org@us.ibm.com>
-References: <20080819232232.432973784@us.ibm.com>
+Subject: [PATCH 0/6] Container Freezer: fixes for -mm
+Date: Tue, 19 Aug 2008 16:22:32 -0700
+Message-ID: <20080819232232.432973784__32676.4910402291$1219189094$gmane$org@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,31 +19,22 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Make this comment clearer.
+Hi Andrew,
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-Andrew was wondering if the comment was in the right place. I think it is but
-suspect it could stand to be clarified.
+	These patches stack on top of the series you already have for the
+container freezer patches. I believe they address all of the comments from
+you and Rafael so far. 
 
- kernel/cgroup_freezer.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+	Please consider these for -mm.
 
-Index: linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-===================================================================
---- linux-2.6.27-rc1-mm1.orig/kernel/cgroup_freezer.c
-+++ linux-2.6.27-rc1-mm1/kernel/cgroup_freezer.c
-@@ -61,8 +61,8 @@ int cgroup_frozen(struct task_struct *ta
- }
- 
- /*
-- * Buffer size for freezer state is limited by cgroups write_string()
-- * interface. See cgroups code for the current size.
-+ * cgroups_write_string() limits the size of freezer state strings to
-+ * CGROUP_LOCAL_BUFFER_SIZE
-  */
- static const char *freezer_state_strs[] = {
- 	"THAWED",
+[PATCH 1/6] Container Freezer: Fix freezer Kconfig
+[PATCH 2/6] Container Freezer: uninline thaw_process()
+[PATCH 3/6] Container Freezer: Make freezer state names less generic
+[PATCH 4/6] Container Freezer: Cleanup comment
+[PATCH 5/6] Container Freezer: Rename check_if_frozen()
+[PATCH 6/6] Container Freezer: Document the cgroup freezer subsystem
+
+Cheers,
+	-Matt Helsley
 
 -- 
