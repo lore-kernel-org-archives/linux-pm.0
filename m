@@ -1,41 +1,41 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Fri, 22 Aug 2008 18:14:51 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808221810060.9561-100000@netrider.rowland.org>
-References: <20080822105246.GB3482@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11279] 2.6.27-rc0 Power Bugs with HP/Compaq
+	Laptops
+Date: Sat, 23 Aug 2008 12:26:38 +0200
+Message-ID: <200808231226.39080.rjw__36979.9115149819$1219487240$gmane$org@sisk.pl>
+References: <DLWXHEp37wB.A.duD.yZzpIB@albercik>
+	<200808230019.09040.rjw@sisk.pl>
+	<680ad8bc0808230032g458319b6nbcaddd24ad84f7a4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757218AbYHVWPF@vger.kernel.org>
-In-Reply-To: <20080822105246.GB3482@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <680ad8bc0808230032g458319b6nbcaddd24ad84f7a4@mail.gmail.com>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Matt Parnell <mparnell@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 22 Aug 2008, Pavel Machek wrote:
+On Saturday, 23 of August 2008, you wrote:
+> Arrgh...I spoke too soon. It'll boot if I disable hrtimers, but I also
+> have to make it use jiffies as the clocksource...so I guess we're back
+> to square one. If i have hrtimers enabled, with or without
+> clocksource=jiffies, I end up getting segfaults...so, I'm pretty much
+> not sure what to do at this point, but relay this message to the pros.
 
-> Hi!
-> 
-> > > - suspending has side effects
-> > 
-> > I'm not sure what you mean by that.  Suspension always has side effects 
-> > of one kind or another.
-> > 
-> > > Suspension in USB has always side effects. That's not true for other
-> > > subsystems.
-> > 
-> > Name one.  At the very least, suspending a device means you can't use
-> > it again without first calling the driver's resume method.  That's a 
-> > side effect.
-> 
-> IDE, actually. I don't think it is relevant, but you can do hdparm -y,
-> and it will automatically spin up when you try to talk to it next
-> time.
+Well, thanks for the update again.
 
-It's a matter of definitions...  "hdparm -y" doesn't call the driver's 
-suspend method, so in some sense it isn't truly a suspend.
+I've added some CCs to the message, perhaps someone will have an idea what to
+do next.
 
-But it's true that some systems can power down more or less
-transparently (with restart latency as the only visible side effect).
-
-Alan Stern
+Thanks,
+Rafafel
