@@ -1,82 +1,41 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Power management for SCSI
-Date: Mon, 25 Aug 2008 14:39:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0808251411420.6639-100000@iolanthe.rowland.org>
-References: <200808251934.03569.oneukum@suse.de>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: btusb hibernation/suspend breakage in current -git
+Date: Mon, 25 Aug 2008 14:45:17 +0200
+Message-ID: <20080825124517.GA1625__49541.5904945277$1219694470$gmane$org@elf.ucw.cz>
+References: <200808221520.19791.oliver@neukum.org>
+	<200808221551.57225.oliver@neukum.org>
+	<1219415470.7591.472.camel@violet.holtmann.net>
+	<200808251337.16076.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755889AbYHYSja@vger.kernel.org>
-In-Reply-To: <200808251934.03569.oneukum@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200808251337.16076.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-usb@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Aug 2008, Oliver Neukum wrote:
+Hi!
 
-> > possible then the link would probably want to have remote wakeup 
-> > enabled before autosuspending, even if none of the devices currently 
-> > attached actually wants to use it.
-> 
-> That supposes it doesn't matter in terms of power use. Is that true?
+> Speaking of btusb, I'm obseving a reproducible breakage of suspend and
+> hibernation (for hibernation it's 100% reproducible, for suspend to RAM about
+> 50%) on my hp nx6325 with the current -git kernel.
 
-I don't know -- it would depend on the particular transport.  In any 
-case, it's a decision the transport class can make.
-
-> > So sd.c might, in theory, want to respond in two different ways to an 
-> > autosuspend request:
-> > 
-> > 	(A) Drain the cache,
-> > 
-> > 	(B) Drain the cache and spin down the drive.
-> 
-> (C) Do nothing
-
-Possibly.
-
-> (D) Refuse (i.e. the user has opened a block device and used a vendor
-> specific command)
-
-Also possible, although I don't think your example is a good one since 
-sd.c wouldn't be aware of vendor-specific commands.
-
-> > How does it know which to do?  Ask the transport class for help 
-> > choosing?
-> 
-> I see no other way.
-> 
-> > (A) would leave us in an awkward "half-suspended" state.  Is the device
-> > suspended or not?  It is, in the sense that now the link can safely be
-> > suspended.  But it isn't, in the sense that a system sleep would still
-> > require the drive to be spun down.
-> > 
-> > It's kind of like the state we have following a PMSG_FREEZE --
-> > quiescent but not suspended.  Somehow this extra state needs to be
-> > incorporated into the autosuspend framework.
-> 
-> Why? Unless the device can be skipped for purposes of autosuspend and
-> system sleep, isn't it active?
-
-To my mind, if the driver has to do something special to prepare for
-the link going down (such as draining the cache), then afterward the
-device is in a special state -- not the same as the active state.  The
-difference between the two states is that in one the link may be
-autosuspended and in the other it mustn't.
-
-I see the driver making the transition between these states in response 
-to autosuspend and autoresume calls.
-
-This means a driver such as sd.c has to respond in different sorts of
-ways to various autosuspend scenarios, either doing a real power-down
-or merely preparing for the link to go down.  The implication is that
-we might want to send the driver two different autosuspend calls: One
-to prepare for the link to go down (after, say, a couple of seconds of
-idleness) and another to power-down the device (after, say, 15 minutes
-of idleness).
-
-Thus, there would be two "autosuspended" states: a shallow autosuspend
-(cache is drained) and a deep autosuspend (disk is spun down).  Such an
-approach could be made to work, even though it seems slightly
-artificial.
-
-Alan Stern
+I have been using btusb + s2ram for quite a long now... (and major
+difference between hci_usb and btusb is that btusb will not randomly
+corrupt memory when suspending with bluetooth in use...) lets see if I
+can update to latest git...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
