@@ -1,406 +1,89 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Mon, 25 Aug 2008 15:50:45 +0200
-Message-ID: <200808251550.46303.oliver__11073.2816545807$1219672415$gmane$org@neukum.org>
-References: <200808221520.19791.oliver@neukum.org>
-	<200808251337.16076.rjw@sisk.pl>
-	<BEF46EAA-4013-44BB-881F-F1740FE8BE6D@holtmann.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Power management for SCSI
+Date: Mon, 25 Aug 2008 10:45:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808251033460.6462-100000@iolanthe.rowland.org>
+References: <200808251450.09292.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BEF46EAA-4013-44BB-881F-F1740FE8BE6D@holtmann.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755407AbYHYOpb@vger.kernel.org>
+In-Reply-To: <200808251450.09292.oneukum@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag 25 August 2008 13:54:31 schrieb Marcel Holtmann:
-> Oliver, can you come up with a small test patch, that just kills all =A0
-> URB when suspend and submits the interrupt ones at resume. Such a =A0
-> patch might have to be merged for 2.6.27 if it fixes this problem.
+On Mon, 25 Aug 2008, Oliver Neukum wrote:
 
-Rafael,
+> Am Dienstag 19 August 2008 17:28:28 schrieb Alan Stern:
+> > On Tue, 19 Aug 2008, Oliver Neukum wrote:
+>  
+> > > I suggest by talking to the HLDs.
+> > 
+> > Why would the HLD (= ULD?) know?
+> > 
+> > For example, consider a USB disk drive.  How is sd.c (the HLD) supposed 
+> > to know that it's not safe to suspend the USB link without spinning 
+> > down the drive?  Or consider a traditional SCSI parallel interface
+> 
+> The HLD is responsible for suspending the disk in case the system is
+> suspended. The HLD must know how to safely suspend a device. It may be
+> overcautious, but it'll work.
 
-this patch implemts suspend/resume for btusb and fixes a disconnect
-problem. Does it help you?
+You didn't answer my question: How does the HLD know whether it's okay 
+to suspend the link without suspending the device?  I should think that 
+it _doesn't_ know.
 
-	Regards
-		Oliver
+The transport class code might know, or the link's driver -- but not
+the HLD.  The HLD probably doesn't even know what type of transport is
+being used!
 
----
+> > > It seems to me that abstractly talking there are three criteria for suspension
+> > > 
+> > > - the cpu needs to talk to the device now
+> > 
+> > I.e., whether the idle timeout has expired, right?
+> > 
+> > > - the device may need to talk to the CPU at unpredictable times
+> > 
+> > I.e, whether remote wakeup needs to be enabled, right?
+> 
+> I am talking about correctness for controllers. So remote wakeup may or may not
+> be available. Likewise the bus may be able to predict how long it'll be idle.
 
---- linux-2.6.27-rc4/drivers/usb/core/urb.c	2008-08-21 10:03:44.000000000 +=
-0200
-+++ linux-2.6.27-rc3/drivers/usb/core/urb.c	2008-08-22 17:25:49.000000000 +=
-0200
-@@ -601,15 +601,20 @@ EXPORT_SYMBOL_GPL(usb_kill_anchored_urbs
- void usb_unlink_anchored_urbs(struct usb_anchor *anchor)
- {
- 	struct urb *victim;
-+	unsigned long flags;
- =
+I don't understand.  Are you saying that whether or not it's correct to
+suspend a link depends on whether the device may need to talk to the
+CPU at unpredictable times?  And if so, isn't that the same as saying
+that remote wakeup for the link can be enabled?
 
--	spin_lock_irq(&anchor->lock);
-+	spin_lock_irqsave(&anchor->lock, flags);
- 	while (!list_empty(&anchor->urb_list)) {
- 		victim =3D list_entry(anchor->urb_list.prev, struct urb,
- 				    anchor_list);
-+		usb_get_urb(victim);
-+		spin_unlock_irqrestore(&anchor->lock, flags);
- 		/* this will unanchor the URB */
- 		usb_unlink_urb(victim);
-+		usb_put_urb(victim);
-+		spin_lock_irqsave(&anchor->lock, flags);
- 	}
--	spin_unlock_irq(&anchor->lock);
-+	spin_unlock_irqrestore(&anchor->lock, flags);
- }
- EXPORT_SYMBOL_GPL(usb_unlink_anchored_urbs);
- =
+As for predicting how long the link will be idle...  I doubt it is 
+possible to do that with any reliability.
 
---- linux-2.6.27-rc4/drivers/bluetooth/btusb.c.alt	2008-08-25 15:02:14.0000=
-00000 +0200
-+++ linux-2.6.27-rc4/drivers/bluetooth/btusb.c	2008-08-25 15:44:25.00000000=
-0 +0200
-@@ -169,6 +169,7 @@ static struct usb_device_id blacklist_ta
- struct btusb_data {
- 	struct hci_dev       *hdev;
- 	struct usb_device    *udev;
-+	struct usb_interface *acl;
- 	struct usb_interface *isoc;
- =
+> > I'm not sure what you mean by that.  Suspension always has side effects 
+> > of one kind or another.
+> 
+> But not outside the controller. If you suspend the root hub of a usb bus,
+> you suspend everything on the bus. It's a feature of the hardware. Other
+> busses are different.
 
- 	spinlock_t lock;
-@@ -176,6 +177,7 @@ struct btusb_data {
- 	unsigned long flags;
- =
+All right, granted.
 
- 	struct work_struct work;
-+	struct work_struct waker;
- =
+> > There's nothing about my suspend framework to prevent a driver from 
+> > autosuspending its device while the children are still active.  
+> > Rather, the framework insists on notifications going the other way: 
+> > The driver has to be told whenever one of its device's children is 
+> > suspended or resumed.
+> 
+> That's the problem. You don't tell the children when the parent might want
+> to suspend.
 
- 	struct usb_anchor tx_anchor;
- 	struct usb_anchor intr_anchor;
-@@ -189,6 +191,7 @@ struct btusb_data {
- 	struct usb_endpoint_descriptor *isoc_rx_ep;
- =
+Why should the children need to know?
 
- 	int isoc_altsetting;
-+	int susp_count;
- };
- =
+	If the children are already suspended then we certainly don't
+	need to tell them the link is going down.
 
- static void btusb_intr_complete(struct urb *urb)
-@@ -227,7 +230,7 @@ static void btusb_intr_complete(struct u
- 	}
- }
- =
+	If the children are active, then the link's driver or the
+	transport class must already have given the okay for
+	suspending the link while leaving the children active.
+	So again, why consult the children's drivers?
 
--static int btusb_submit_intr_urb(struct hci_dev *hdev)
-+static int btusb_submit_intr_urb(struct hci_dev *hdev, gfp_t gfp)
- {
- 	struct btusb_data *data =3D hdev->driver_data;
- 	struct urb *urb;
-@@ -240,13 +243,13 @@ static int btusb_submit_intr_urb(struct
- 	if (!data->intr_ep)
- 		return -ENODEV;
- =
-
--	urb =3D usb_alloc_urb(0, GFP_ATOMIC);
-+	urb =3D usb_alloc_urb(0, gfp);
- 	if (!urb)
- 		return -ENOMEM;
- =
-
- 	size =3D le16_to_cpu(data->intr_ep->wMaxPacketSize);
- =
-
--	buf =3D kmalloc(size, GFP_ATOMIC);
-+	buf =3D kmalloc(size, gfp);
- 	if (!buf) {
- 		usb_free_urb(urb);
- 		return -ENOMEM;
-@@ -262,7 +265,7 @@ static int btusb_submit_intr_urb(struct
- =
-
- 	usb_anchor_urb(urb, &data->intr_anchor);
- =
-
--	err =3D usb_submit_urb(urb, GFP_ATOMIC);
-+	err =3D usb_submit_urb(urb, gfp);
- 	if (err < 0) {
- 		BT_ERR("%s urb %p submission failed (%d)",
- 						hdev->name, urb, -err);
-@@ -311,7 +314,7 @@ static void btusb_bulk_complete(struct u
- 	}
- }
- =
-
--static int btusb_submit_bulk_urb(struct hci_dev *hdev)
-+static int btusb_submit_bulk_urb(struct hci_dev *hdev, gfp_t gfp)
- {
- 	struct btusb_data *data =3D hdev->driver_data;
- 	struct urb *urb;
-@@ -324,18 +327,19 @@ static int btusb_submit_bulk_urb(struct
- 	if (!data->bulk_rx_ep)
- 		return -ENODEV;
- =
-
--	urb =3D usb_alloc_urb(0, GFP_KERNEL);
-+	urb =3D usb_alloc_urb(0, gfp);
- 	if (!urb)
- 		return -ENOMEM;
- =
-
- 	size =3D le16_to_cpu(data->bulk_rx_ep->wMaxPacketSize);
- =
-
--	buf =3D kmalloc(size, GFP_KERNEL);
-+	buf =3D kmalloc(size, gfp);
- 	if (!buf) {
- 		usb_free_urb(urb);
- 		return -ENOMEM;
- 	}
- =
-
-+	usb_mark_last_busy(data->udev);
- 	pipe =3D usb_rcvbulkpipe(data->udev, data->bulk_rx_ep->bEndpointAddress);
- =
-
- 	usb_fill_bulk_urb(urb, data->udev, pipe,
-@@ -345,7 +349,7 @@ static int btusb_submit_bulk_urb(struct
- =
-
- 	usb_anchor_urb(urb, &data->bulk_anchor);
- =
-
--	err =3D usb_submit_urb(urb, GFP_KERNEL);
-+	err =3D usb_submit_urb(urb, gfp);
- 	if (err < 0) {
- 		BT_ERR("%s urb %p submission failed (%d)",
- 						hdev->name, urb, -err);
-@@ -514,7 +518,7 @@ static int btusb_open(struct hci_dev *hd
- 	if (test_and_set_bit(BTUSB_INTR_RUNNING, &data->flags))
- 		return 0;
- =
-
--	err =3D btusb_submit_intr_urb(hdev);
-+	err =3D btusb_submit_intr_urb(hdev, GFP_KERNEL);
- 	if (err < 0) {
- 		clear_bit(BTUSB_INTR_RUNNING, &hdev->flags);
- 		clear_bit(HCI_RUNNING, &hdev->flags);
-@@ -523,6 +527,13 @@ static int btusb_open(struct hci_dev *hd
- 	return err;
- }
- =
-
-+static void btusb_stop_traffic(struct btusb_data *data)
-+{
-+	usb_kill_anchored_urbs(&data->intr_anchor);
-+	usb_kill_anchored_urbs(&data->bulk_anchor);
-+	usb_kill_anchored_urbs(&data->isoc_anchor);
-+}
-+
- static int btusb_close(struct hci_dev *hdev)
- {
- 	struct btusb_data *data =3D hdev->driver_data;
-@@ -532,14 +543,12 @@ static int btusb_close(struct hci_dev *h
- 	if (!test_and_clear_bit(HCI_RUNNING, &hdev->flags))
- 		return 0;
- =
-
--	clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
--	usb_kill_anchored_urbs(&data->intr_anchor);
-+	flush_work(&data->work);
- =
-
-+	clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
- 	clear_bit(BTUSB_BULK_RUNNING, &data->flags);
--	usb_kill_anchored_urbs(&data->bulk_anchor);
--
- 	clear_bit(BTUSB_INTR_RUNNING, &data->flags);
--	usb_kill_anchored_urbs(&data->intr_anchor);
-+	btusb_stop_traffic(data);
- =
-
- 	return 0;
- }
-@@ -672,8 +681,19 @@ static void btusb_notify(struct hci_dev
- =
-
- 	BT_DBG("%s evt %d", hdev->name, evt);
- =
-
--	if (evt =3D=3D HCI_NOTIFY_CONN_ADD || evt =3D=3D HCI_NOTIFY_CONN_DEL)
--		schedule_work(&data->work);
-+	if (hdev->conn_hash.acl_num > 0) {
-+		if (!test_and_set_bit(BTUSB_BULK_RUNNING, &data->flags)) {
-+			if (btusb_submit_bulk_urb(hdev, GFP_ATOMIC) < 0)
-+				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
-+			else
-+				btusb_submit_bulk_urb(hdev, GFP_ATOMIC);
-+		}
-+	} else {
-+		clear_bit(BTUSB_BULK_RUNNING, &data->flags);
-+		usb_unlink_anchored_urbs(&data->bulk_anchor);
-+	}
-+
-+	schedule_work(&data->work);
- }
- =
-
- static int inline __set_isoc_interface(struct hci_dev *hdev, int altsettin=
-g)
-@@ -724,18 +744,6 @@ static void btusb_work(struct work_struc
- 	struct btusb_data *data =3D container_of(work, struct btusb_data, work);
- 	struct hci_dev *hdev =3D data->hdev;
- =
-
--	if (hdev->conn_hash.acl_num > 0) {
--		if (!test_and_set_bit(BTUSB_BULK_RUNNING, &data->flags)) {
--			if (btusb_submit_bulk_urb(hdev) < 0)
--				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
--			else
--				btusb_submit_bulk_urb(hdev);
--		}
--	} else {
--		clear_bit(BTUSB_BULK_RUNNING, &data->flags);
--		usb_kill_anchored_urbs(&data->bulk_anchor);
--	}
--
- 	if (hdev->conn_hash.sco_num > 0) {
- 		if (data->isoc_altsetting !=3D 2) {
- 			clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
-@@ -821,6 +829,7 @@ static int btusb_probe(struct usb_interf
- 	}
- =
-
- 	data->udev =3D interface_to_usbdev(intf);
-+	data->acl =3D intf;
- =
-
- 	spin_lock_init(&data->lock);
- =
-
-@@ -889,7 +898,7 @@ static int btusb_probe(struct usb_interf
- =
-
- 	if (data->isoc) {
- 		err =3D usb_driver_claim_interface(&btusb_driver,
--							data->isoc, NULL);
-+							data->isoc, data);
- 		if (err < 0) {
- 			hci_free_dev(hdev);
- 			kfree(data);
-@@ -921,20 +930,92 @@ static void btusb_disconnect(struct usb_
- =
-
- 	hdev =3D data->hdev;
- =
-
--	if (data->isoc)
--		usb_driver_release_interface(&btusb_driver, data->isoc);
-+	/* make sure we have a reference */
-+	__hci_dev_hold(hdev);
- =
-
--	usb_set_intfdata(intf, NULL);
-+	usb_set_intfdata(data->acl, NULL);
-+	if (data->isoc)
-+		usb_set_intfdata(data->isoc, NULL);
- =
-
-+	/* unregister before releasing any interface */
- 	hci_unregister_dev(hdev);
- =
-
-+	if (intf =3D=3D data->isoc)
-+		usb_driver_release_interface(&btusb_driver, data->acl);
-+	else if (data->isoc)
-+		usb_driver_release_interface(&btusb_driver, data->isoc);
-+
-+	/* release the reference */
-+	__hci_dev_put(hdev);
- 	hci_free_dev(hdev);
- }
- =
-
-+static int btusb_suspend(struct usb_interface *intf, pm_message_t message)
-+{
-+	struct btusb_data *data =3D usb_get_intfdata(intf);
-+
-+	BT_DBG("%s called\n", __func__);
-+
-+	if (data->susp_count++)
-+		return 0;
-+
-+	cancel_work_sync(&data->work);
-+	btusb_stop_traffic(data);
-+	usb_kill_anchored_urbs(&data->tx_anchor);
-+	return 0;
-+}
-+
-+static int btusb_resume(struct usb_interface *intf)
-+{
-+	struct btusb_data *data =3D usb_get_intfdata(intf);
-+	struct hci_dev *hdev =3D data->hdev;
-+	int ret;
-+
-+	if (--data->susp_count)
-+		return 0;
-+	if (test_bit(HCI_RUNNING, &hdev->flags)) {
-+		ret =3D btusb_submit_intr_urb(hdev, GFP_NOIO);
-+		if (ret < 0) {
-+			clear_bit(HCI_RUNNING, &hdev->flags);
-+			return ret;
-+		}
-+	}
-+
-+	if (hdev->conn_hash.acl_num > 0) {
-+		ret =3D btusb_submit_bulk_urb(hdev, GFP_NOIO);
-+		if (ret < 0) {
-+			clear_bit(BTUSB_BULK_RUNNING, &data->flags);
-+			return ret;
-+		} else {
-+			ret =3D btusb_submit_bulk_urb(hdev, GFP_NOIO);
-+			if (ret < 0) {
-+				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
-+				usb_kill_anchored_urbs(&data->bulk_anchor);
-+				return ret;
-+			}
-+		}
-+	}
-+
-+	if (data->isoc) {
-+		if (test_bit(BTUSB_ISOC_RUNNING, &data->flags)) {
-+			ret =3D btusb_submit_isoc_urb(hdev);
-+			if (ret < 0)
-+				clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
-+			else
-+				btusb_submit_isoc_urb(hdev);
-+		}
-+	}
-+
-+	schedule_work(&data->work);
-+	return 0;
-+}
-+
- static struct usb_driver btusb_driver =3D {
- 	.name		=3D "btusb",
- 	.probe		=3D btusb_probe,
- 	.disconnect	=3D btusb_disconnect,
-+	.suspend	=3D btusb_suspend,
-+	.resume		=3D btusb_resume,
- 	.id_table	=3D btusb_table,
- };
- =
+Alan Stern
