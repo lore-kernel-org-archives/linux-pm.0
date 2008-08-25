@@ -1,16 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Marcel Holtmann <marcel@holtmann.org>
 Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Mon, 25 Aug 2008 13:53:10 +0200
-Message-ID: <200808251353.12590.oliver__21912.9604324282$1219665384$gmane$org@neukum.org>
+Date: Mon, 25 Aug 2008 13:54:31 +0200
+Message-ID: <BEF46EAA-4013-44BB-881F-F1740FE8BE6D@holtmann.org>
 References: <200808221520.19791.oliver@neukum.org>
+	<200808221551.57225.oliver@neukum.org>
 	<1219415470.7591.472.camel@violet.holtmann.net>
 	<200808251337.16076.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <200808251337.16076.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,21 +21,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Marcel Holtmann <marcel@holtmann.org>, linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
+Cc: linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag 25 August 2008 13:37:14 schrieb Rafael J. Wysocki:
-> Since the bluetooth adapter in this box is apparently handled by btusb, I=
-'m
-> suspecting the problem may be related to it or to the USB subsystem (ehci=
--hcd
-> in particular). =A0I'm going to debug it further, but if you have any ide=
-as to
+Hi Rafael,
+
+> Speaking of btusb, I'm obseving a reproducible breakage of suspend and
+> hibernation (for hibernation it's 100% reproducible, for suspend to  
+> RAM about
+> 50%) on my hp nx6325 with the current -git kernel.
+>
+> The system crashes as soon as user space is thawed after a resume  
+> and it's
+> sufficient to switch the bluetooth subsystem off to avoid this.   
+> After such a
+> crash I'm usually unable to get any information from the box (from  
+> the stack
+> traces I've seen once after such a crash it looks like interrupt  
+> handlers are
+> involved somehow).
+>
+> Since the bluetooth adapter in this box is apparently handled by  
+> btusb, I'm
+> suspecting the problem may be related to it or to the USB subsystem  
+> (ehci-hcd
+> in particular).  I'm going to debug it further, but if you have any  
+> ideas to
 > try, I'll appreciate any help.
 
-btusb in current git doesn't implement suspend/resume. Thus the driver will=
- be
-unbound. Possibly the bluetooth subsystem cannot stand that while suspended.
+the current version has no suspend/resume callbacks. However in that  
+case the USB subystem should take of it, but I might be wrong here. So  
+in case of btusb and not using it, we only have interrupt URBs in fly.  
+However these might get screwed up.
 
-	Regards
-		Oliver
+So does unloading the driver before suspend fixes it? What about the  
+latest patch from Oliver. It will add the suspend/resume callbacks  
+that are needed.
+
+Oliver, can you come up with a small test patch, that just kills all  
+URB when suspend and submits the interrupt ones at resume. Such a  
+patch might have to be merged for 2.6.27 if it fixes this problem.
+
+Regards
+
+Marcel
