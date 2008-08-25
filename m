@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: btusb hibernation/suspend breakage in current -git
-Date: Mon, 25 Aug 2008 13:37:14 +0200
-Message-ID: <200808251337.16076.rjw__9385.70024814016$1219664223$gmane$org@sisk.pl>
+From: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [rft]autosuspend for btusb
+Date: Mon, 25 Aug 2008 13:51:30 +0200
+Message-ID: <72EBACB5-155E-4F42-9852-886AB6B10417__4874.58735374293$1219665254$gmane$org@holtmann.org>
 References: <200808221520.19791.oliver@neukum.org>
 	<200808221551.57225.oliver@neukum.org>
 	<1219415470.7591.472.camel@violet.holtmann.net>
-Mime-Version: 1.0
+	<200808251243.47569.oliver@neukum.org>
+Mime-Version: 1.0 (Apple Message framework v928.1)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1219415470.7591.472.camel@violet.holtmann.net>
-Content-Disposition: inline
+In-Reply-To: <200808251243.47569.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-usb@vger.kernel.org, Stefan Seyfried <seife@suse.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Oliver,
 
-Speaking of btusb, I'm obseving a reproducible breakage of suspend and
-hibernation (for hibernation it's 100% reproducible, for suspend to RAM about
-50%) on my hp nx6325 with the current -git kernel.
+>>>> Please explain the tx_in_flight stuff to me. It looks unneeded  
+>>>> since we
+>>>> anchor all TX URBs anyway.
+>>>
+>>> The completion of an URB may happen after the autosuspend timeout  
+>>> passed.
+>>> But we cannot use the pm counters as they are not accessible in  
+>>> interrupt.
+>>> Hence we must maintain a counter ourselves.
+>>
+>> Can we not just check the number of URBs in the anchor? I am against
+>> just duplicating a counter, but then lets call it it what it is to  
+>> make
+>> it gets not misused. It is a purely a PM counter.
+>>
+>
+> An excellent suggestion allowing major simplifications. This version  
+> works
+> for me. It required an extension of the anchor API, so it obsoletes
+> the split-up you've done. Therefore the whole thing comes as a big  
+> patch
+> against rc4, easy to test.
 
-The system crashes as soon as user space is thawed after a resume and it's
-sufficient to switch the bluetooth subsystem off to avoid this.  After such a
-crash I'm usually unable to get any information from the box (from the stack
-traces I've seen once after such a crash it looks like interrupt handlers are
-involved somehow).
+I will break up the patch into pieces. However right now I am missing  
+my beloved test machine since I am traveling. So everybody reporting  
+success or failure would be nice.
 
-Since the bluetooth adapter in this box is apparently handled by btusb, I'm
-suspecting the problem may be related to it or to the USB subsystem (ehci-hcd
-in particular).  I'm going to debug it further, but if you have any ideas to
-try, I'll appreciate any help.
+Can you break out the USB anchor extensions and make sure they get  
+merged into 2.6.28 in an early stage of the merge window. It really  
+wanna get all of this stuff into the next kernel release. Finally we  
+are getting somewhere with this driver and can kill the broken hci_usb.
 
-Thanks,
-Rafael
+Regards
+
+Marcel
