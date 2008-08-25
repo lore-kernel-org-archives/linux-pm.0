@@ -1,87 +1,82 @@
-From: Oliver Neukum <oneukum@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [linux-pm] Power management for SCSI
-Date: Mon, 25 Aug 2008 19:34:02 +0200
-Message-ID: <200808251934.03569.oneukum@suse.de>
-References: <Pine.LNX.4.44L0.0808251152030.6639-100000@iolanthe.rowland.org>
+Date: Mon, 25 Aug 2008 14:39:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0808251411420.6639-100000@iolanthe.rowland.org>
+References: <200808251934.03569.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755317AbYHYRdK@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0808251152030.6639-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755889AbYHYSja@vger.kernel.org>
+In-Reply-To: <200808251934.03569.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Oliver Neukum <oneukum@suse.de>
 Cc: Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag 25 August 2008 18:18:19 schrieb Alan Stern:
-> On Mon, 25 Aug 2008, Oliver Neukum wrote:
+On Mon, 25 Aug 2008, Oliver Neukum wrote:
 
-> > There's some truth to that. Unfortunately the transport does not know
-> > whether a device or link may be suspended. Take the case of a CD playing
-> > sound. The transport may know what the consequences of suspending
-> > a link will be to the devices, but only the devices know whether the
-> > consequences are acceptable.
+> > possible then the link would probably want to have remote wakeup 
+> > enabled before autosuspending, even if none of the devices currently 
+> > attached actually wants to use it.
 > 
-> Even the device (or more properly, the driver) might not know!  In your
-> example the driver might realize that playing had been started, but it
-> probably wouldn't know when the playing had ended.
+> That supposes it doesn't matter in terms of power use. Is that true?
 
-There is that possibility.
+I don't know -- it would depend on the particular transport.  In any 
+case, it's a decision the transport class can make.
 
-> That's not true at all.  Maybe the name is specific to USB, but the
-> concept isn't.  Notice how we have power/wakeup files in the sysfs
-> directory for every device, even non-USB devices?  Requesting a
-> low-power to high-power transition is a generic operation.
-
-True. Let's say that we have to deal with busses incapable of supporting it.
- 
-> > If you are writing for
-> > a generic system the question is indeed whether devices may want
-> > to talk to the host and whether they can.
-> > It seems to me that the ULD will know whether its devices will need
-> > to talk to the CPU.
+> > So sd.c might, in theory, want to respond in two different ways to an 
+> > autosuspend request:
+> > 
+> > 	(A) Drain the cache,
+> > 
+> > 	(B) Drain the cache and spin down the drive.
 > 
-> In general, the link or transport class will know whether it is 
-> possible for a device to initiate communication with the CPU.  If it is
+> (C) Do nothing
 
-Yes.
- 
-> possible then the link would probably want to have remote wakeup 
-> enabled before autosuspending, even if none of the devices currently 
-> attached actually wants to use it.
+Possibly.
 
-That supposes it doesn't matter in terms of power use. Is that true?
+> (D) Refuse (i.e. the user has opened a block device and used a vendor
+> specific command)
 
-> So sd.c might, in theory, want to respond in two different ways to an 
-> autosuspend request:
+Also possible, although I don't think your example is a good one since 
+sd.c wouldn't be aware of vendor-specific commands.
+
+> > How does it know which to do?  Ask the transport class for help 
+> > choosing?
 > 
-> 	(A) Drain the cache,
+> I see no other way.
 > 
-> 	(B) Drain the cache and spin down the drive.
-
-(C) Do nothing
-
-(D) Refuse (i.e. the user has opened a block device and used a vendor
-specific command)
-
-> How does it know which to do?  Ask the transport class for help 
-> choosing?
-
-I see no other way.
-
-> (A) would leave us in an awkward "half-suspended" state.  Is the device
-> suspended or not?  It is, in the sense that now the link can safely be
-> suspended.  But it isn't, in the sense that a system sleep would still
-> require the drive to be spun down.
+> > (A) would leave us in an awkward "half-suspended" state.  Is the device
+> > suspended or not?  It is, in the sense that now the link can safely be
+> > suspended.  But it isn't, in the sense that a system sleep would still
+> > require the drive to be spun down.
+> > 
+> > It's kind of like the state we have following a PMSG_FREEZE --
+> > quiescent but not suspended.  Somehow this extra state needs to be
+> > incorporated into the autosuspend framework.
 > 
-> It's kind of like the state we have following a PMSG_FREEZE --
-> quiescent but not suspended.  Somehow this extra state needs to be
-> incorporated into the autosuspend framework.
+> Why? Unless the device can be skipped for purposes of autosuspend and
+> system sleep, isn't it active?
 
-Why? Unless the device can be skipped for purposes of autosuspend and
-system sleep, isn't it active?
+To my mind, if the driver has to do something special to prepare for
+the link going down (such as draining the cache), then afterward the
+device is in a special state -- not the same as the active state.  The
+difference between the two states is that in one the link may be
+autosuspended and in the other it mustn't.
 
-	Regards
-		Oliver
+I see the driver making the transition between these states in response 
+to autosuspend and autoresume calls.
+
+This means a driver such as sd.c has to respond in different sorts of
+ways to various autosuspend scenarios, either doing a real power-down
+or merely preparing for the link to go down.  The implication is that
+we might want to send the driver two different autosuspend calls: One
+to prepare for the link to go down (after, say, a couple of seconds of
+idleness) and another to power-down the device (after, say, 15 minutes
+of idleness).
+
+Thus, there would be two "autosuspended" states: a shallow autosuspend
+(cache is drained) and a deep autosuspend (disk is spun down).  Such an
+approach could be made to work, even though it seems slightly
+artificial.
+
+Alan Stern
