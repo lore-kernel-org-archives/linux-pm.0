@@ -1,15 +1,17 @@
-From: Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [patch]full runtime power management for usbhid
-Date: Tue, 26 Aug 2008 12:49:15 +0300
-Message-ID: <20080826094915.GQ20450__33342.8417369307$1219761681$gmane$org@gandalf.research.nokia.com>
-References: <200808261139.14410.oliver@neukum.org>
-Reply-To: felipe.balbi@nokia.com
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: btusb hibernation/suspend breakage in current -git
+Date: Tue, 26 Aug 2008 13:41:39 +0200
+Message-ID: <20080826114138.GI32522__30902.7402465746$1219761805$gmane$org@suse.de>
+References: <200808221520.19791.oliver@neukum.org>
+	<200808261136.05666.rjw@sisk.pl>
+	<200808261143.20459.oliver@neukum.org>
+	<200808261210.09665.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200808261139.14410.oliver@neukum.org>
+In-Reply-To: <200808261210.09665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Oliver Neukum <oliver@neukum.org>
-Cc: jkosina@suse.cz, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-usb@vger.kernel.org, linux-input@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-usb@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 26, 2008 at 11:39:13AM +0200, ext Oliver Neukum wrote:
-> --- a/drivers/hid/usbhid/usbhid.h	2008-05-06 13:49:51.000000000 +0200
-> +++ b/drivers/hid/usbhid/usbhid.h	2008-05-06 14:58:49.000000000 +0200
-> @@ -37,7 +37,10 @@ int usbhid_wait_io(struct hid_device* hi
->  void usbhid_close(struct hid_device *hid);
->  int usbhid_open(struct hid_device *hid);
->  void usbhid_init_reports(struct hid_device *hid);
-> -void usbhid_submit_report(struct hid_device *hid, struct hid_report *report, unsigned char dir);
-> +void usbhid_submit_report
-> +(struct hid_device *hid, struct hid_report *report, unsigned char dir);
+On Tue, Aug 26, 2008 at 12:10:08PM +0200, Rafael J. Wysocki wrote:
+> > Good. Can you test what happens if you unplug the device while suspended
+> > and hibernated?
+> =
 
-void usbhid_submit_report(struct hid_device *hid,
-	struct hid_report *report, unsigned char dir);
+> It's built-in, I can't unplug it. :-)
 
-would look better. Matter of taste. ditto below.
+Maybe you can disable it in the BIOS, but this might change the DSDT / other
+system configuration, so it might break resume in other ways :-(
+-- =
 
->  	switch (urb->status) {
->  		case 0:			/* success */
-> +			usbhid_mark_busy(usbhid);	
-						 ^^^^^^^
-			you added whitespaces there
+Stefan Seyfried
+R&D Team Mobile Devices            |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg | "Well, surrounding them's out." =
 
--- 
-balbi
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG N=FCrnberg)
