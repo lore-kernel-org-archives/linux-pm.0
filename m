@@ -1,16 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [rft]autosuspend for btusb
-Date: Tue, 26 Aug 2008 13:02:51 +0200
-Message-ID: <200808261302.52400.oliver__9449.80989811501$1219748673$gmane$org@neukum.org>
-References: <200808221520.19791.oliver@neukum.org>
-	<20080826095647.GA30913@elf.ucw.cz>
-	<20080826100519.GA1599@elf.ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [patch]full runtime power management for usbhid
+Date: Tue, 26 Aug 2008 16:28:49 +0200
+Message-ID: <20080826142848.GB5496__46961.4837937572$1219761107$gmane$org@ucw.cz>
+References: <200808261139.14410.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080826100519.GA1599@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200808261139.14410.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,18 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, linux-usb@vger.kernel.org, Stefan Seyfried <seife@suse.de>, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: jkosina@suse.cz, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-usb@vger.kernel.org, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag 26 August 2008 12:05:19 schrieb Pavel Machek:
+Hi!
 
-Hi,
+> this patch enables full runtime power management for usbhid.
+> Currently usbhid supports autosuspend only upon open and close. Thus
+> it is useless for devices which are always opened, such as keyboards
+> and mice. This patch enables the use of remote wakeup for devices that
+> support it.
+> 
+> It suspends idle usb hid devices after a timeout if possible unless
+> 
+> - hiddev has opened the device
+> - error handling is under way
+> - a key is being held down
+> (keyboards don't signal remote wakeup upon release of a key)
+> - an led is active on the device
+> (leds use too much power for a suspend device to keep lit -
+> this can be overridden with a module parameter)
 
-> And it worked for me, but suspend died. I'll verify if that's a
-> problem in vanilla -rc4-git, too.
+Hmm... so numlock now costs ~3W... perhaps we should be defaulting to
+numlock=off, again?
 
-what exactly does "died" mean?
-
-	Regards
-		Oliver
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
