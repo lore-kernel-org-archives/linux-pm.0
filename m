@@ -1,8 +1,9 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Felipe Balbi <felipe.balbi@nokia.com>
 Subject: Re: [patch]full runtime power management for usbhid
-Date: Tue, 26 Aug 2008 16:28:49 +0200
-Message-ID: <20080826142848.GB5496__46961.4837937572$1219761107$gmane$org@ucw.cz>
+Date: Tue, 26 Aug 2008 12:49:15 +0300
+Message-ID: <20080826094915.GQ20450__33342.8417369307$1219761681$gmane$org@gandalf.research.nokia.com>
 References: <200808261139.14410.oliver@neukum.org>
+Reply-To: felipe.balbi@nokia.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,32 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: ext Oliver Neukum <oliver@neukum.org>
 Cc: jkosina@suse.cz, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-usb@vger.kernel.org, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, Aug 26, 2008 at 11:39:13AM +0200, ext Oliver Neukum wrote:
+> --- a/drivers/hid/usbhid/usbhid.h	2008-05-06 13:49:51.000000000 +0200
+> +++ b/drivers/hid/usbhid/usbhid.h	2008-05-06 14:58:49.000000000 +0200
+> @@ -37,7 +37,10 @@ int usbhid_wait_io(struct hid_device* hi
+>  void usbhid_close(struct hid_device *hid);
+>  int usbhid_open(struct hid_device *hid);
+>  void usbhid_init_reports(struct hid_device *hid);
+> -void usbhid_submit_report(struct hid_device *hid, struct hid_report *report, unsigned char dir);
+> +void usbhid_submit_report
+> +(struct hid_device *hid, struct hid_report *report, unsigned char dir);
 
-> this patch enables full runtime power management for usbhid.
-> Currently usbhid supports autosuspend only upon open and close. Thus
-> it is useless for devices which are always opened, such as keyboards
-> and mice. This patch enables the use of remote wakeup for devices that
-> support it.
-> 
-> It suspends idle usb hid devices after a timeout if possible unless
-> 
-> - hiddev has opened the device
-> - error handling is under way
-> - a key is being held down
-> (keyboards don't signal remote wakeup upon release of a key)
-> - an led is active on the device
-> (leds use too much power for a suspend device to keep lit -
-> this can be overridden with a module parameter)
+void usbhid_submit_report(struct hid_device *hid,
+	struct hid_report *report, unsigned char dir);
 
-Hmm... so numlock now costs ~3W... perhaps we should be defaulting to
-numlock=off, again?
+would look better. Matter of taste. ditto below.
 
-							Pavel
+>  	switch (urb->status) {
+>  		case 0:			/* success */
+> +			usbhid_mark_busy(usbhid);	
+						 ^^^^^^^
+			you added whitespaces there
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+balbi
