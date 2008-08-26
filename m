@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Tue, 26 Aug 2008 12:10:08 +0200
-Message-ID: <200808261210.09665.rjw__5791.12372729487$1219745686$gmane$org@sisk.pl>
-References: <200808221520.19791.oliver@neukum.org>
-	<200808261136.05666.rjw@sisk.pl>
-	<200808261143.20459.oliver@neukum.org>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: autosuspend for SCSI devices
+Date: Tue, 26 Aug 2008 13:01:43 +0200
+Message-ID: <200808261301.45167.oneukum__25558.2229853191$1219748587$gmane$org@suse.de>
+References: <20080822105626.GA9475@elf.ucw.cz>
+	<200808251055.45582.oneukum@suse.de>
+	<20080826094355.GA30062@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808261143.20459.oliver@neukum.org>
+In-Reply-To: <20080826094355.GA30062@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,43 +20,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Marcel Holtmann <marcel@holtmann.org>, linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org, teheo@novell.com, stefanr@s5r6.in-berlin.de, Martin.Leisner@xerox.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 26 of August 2008, Oliver Neukum wrote:
-> Am Dienstag 26 August 2008 11:36:04 schrieb Rafael J. Wysocki:
-> > [Sorry for the delayed reply.]
-> > =
+Am Dienstag 26 August 2008 11:43:55 schrieb Pavel Machek:
+> > firstly, it doesn't consider error handling before suspending.
+> 
+> What problems do you see with error handling? This patch does not
+> touch the error handling, and I do not think it needs to touch it.
 
-> > On Monday, 25 of August 2008, Oliver Neukum wrote:
-> > > Am Montag 25 August 2008 13:54:31 schrieb Marcel Holtmann:
-> > > > Oliver, can you come up with a small test patch, that just kills al=
-l =A0
-> > > > URB when suspend and submits the interrupt ones at resume. Such a =
-=A0
-> > > > patch might have to be merged for 2.6.27 if it fixes this problem.
-> > > =
+You'd make scsi driver writers' life easier if you made sure no autosuspends
+happen while they recover from errors. After all, you have no idea which
+commands will get through while the bus is in disarray.
 
-> > > Rafael,
-> > > =
-
-> > > this patch implemts suspend/resume for btusb and fixes a disconnect
-> > > problem. Does it help you?
-> > =
-
-> > Yes, the patch appears to help.
-> > =
-
-> > I haven't had a single crash since I applied it.  I'm going to test it =
-a bit
-> > more today, though.
-> =
-
-> Good. Can you test what happens if you unplug the device while suspended
-> and hibernated?
-
-It's built-in, I can't unplug it. :-)
-
-Thanks,
-Rafael
+	Regards
+		Oliver
