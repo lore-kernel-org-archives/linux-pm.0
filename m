@@ -1,16 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Tue, 26 Aug 2008 11:43:19 +0200
-Message-ID: <200808261143.20459.oliver__34256.0290745043$1219744172$gmane$org@neukum.org>
-References: <200808221520.19791.oliver@neukum.org>
-	<200808251550.46303.oliver@neukum.org>
-	<200808261136.05666.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: autosuspend for SCSI devices
+Date: Tue, 26 Aug 2008 11:44:26 +0200
+Message-ID: <20080826094426.GB30062__27611.2264291898$1219744963$gmane$org@elf.ucw.cz>
+References: <20080822105626.GA9475@elf.ucw.cz>
+	<20080825194702.GA31007@dose.home.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808261136.05666.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <20080825194702.GA31007@dose.home.local>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Marcel Holtmann <marcel@holtmann.org>, linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag 26 August 2008 11:36:04 schrieb Rafael J. Wysocki:
-> [Sorry for the delayed reply.]
-> =
+On Mon 2008-08-25 21:47:03, Tino Keitel wrote:
+> On Fri, Aug 22, 2008 at 12:56:27 +0200, Pavel Machek wrote:
+> > From: Alan Stern <stern@rowland.harvard.edu>
+> > 
+> > Add support for autosuspend/autoresume of the SCSI devices. Lowlevel
+> > driver can use it to spin the disk down... and it is neccessary step
+> > for powering down the controllers.
+> > 
+> > Spinning down the disk is useful - saves ~0.5W here, and it is last
+> > major thing we can do to save power on some small machines like
+> > Kohjinsha subnotebooks.
+> 
+> Is there a difference regarding power saving to the already existing
+> ways to spin down a disk, like noflushd? In a previous patch you
+> mentioned that this can be used to disable the SATA port so save even
+> more power. However, this part seems to be missing in this patch,
+> right?
 
-> On Monday, 25 of August 2008, Oliver Neukum wrote:
-> > Am Montag 25 August 2008 13:54:31 schrieb Marcel Holtmann:
-> > > Oliver, can you come up with a small test patch, that just kills all =
-=A0
-> > > URB when suspend and submits the interrupt ones at resume. Such a =A0
-> > > patch might have to be merged for 2.6.27 if it fixes this problem.
-> > =
+Correct. That is the plan for the next patch, when I get this one into
+reasonable form for acceptance.
+								Pavel
 
-> > Rafael,
-> > =
-
-> > this patch implemts suspend/resume for btusb and fixes a disconnect
-> > problem. Does it help you?
-> =
-
-> Yes, the patch appears to help.
-> =
-
-> I haven't had a single crash since I applied it.  I'm going to test it a =
-bit
-> more today, though.
-
-Good. Can you test what happens if you unplug the device while suspended
-and hibernated?
-
-	Regards
-		Oliver
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
