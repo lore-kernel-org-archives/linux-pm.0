@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Wed, 27 Aug 2008 15:04:55 +0200
-Message-ID: <200808271504.56824.rjw__45706.6839248457$1219842366$gmane$org@sisk.pl>
+Date: Wed, 27 Aug 2008 15:09:05 +0200
+Message-ID: <200808271509.06097.oliver__45076.595064211$1219842809$gmane$org@neukum.org>
 References: <200808221520.19791.oliver@neukum.org>
-	<200808270128.16052.rjw@sisk.pl>
 	<200808270955.12511.oliver@neukum.org>
+	<200808271504.56824.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808270955.12511.oliver@neukum.org>
+In-Reply-To: <200808271504.56824.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,40 +20,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Marcel Holtmann <marcel@holtmann.org>, linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 27 of August 2008, Oliver Neukum wrote:
-> Am Mittwoch 27 August 2008 01:28:15 schrieb Rafael J. Wysocki:
-> > > This doesn't explain the original failure. Can you comment out the su=
-pport
-> > > for suspend/resume in the driver and try again?
-> > =
+Am Mittwoch 27 August 2008 15:04:55 schrieb Rafael J. Wysocki:
+> I'm quite confident it's specific to bluetooth, because I only need to turn
+> the bluetooth user space off, most importantly hcid, to make the problem go
+> away even without the patch (that is, without the patch I don't even have to
+> uload btusb before suspend if the bluetoot user land is not running).
 
-> > With that commented out, I'm able to reproduce the failure. =A0With the=
- original
-> > patch, I'm not.
-> =
+But do you use any other usb driver without support for suspend/resume?
 
-> Now we know a driver without support for suspend/resume breaks suspend and
-> hibernate. We need to find out whether this is limited to btusb or everyt=
-hing.
-
-I'm quite confident it's specific to bluetooth, because I only need to turn
-the bluetooth user space off, most importantly hcid, to make the problem go
-away even without the patch (that is, without the patch I don't even have to
-uload btusb before suspend if the bluetoot user land is not running).
-
-> Can you test with anotherrrrr driver, like a mouse and remove suspend/res=
-ume
-> from usbhid? If this is specific to btusb we have a fix, if not, I am afr=
-aid
-> this has to be bisected.
-
-Is that really necessary?
-
-I can do that, but first I'll check if 2.6.26 is fine.
-
-Thanks,
-Rafael
+	Regards
+		Oliver
