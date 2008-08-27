@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: btusb hibernation/suspend breakage in current -git
-Date: Thu, 28 Aug 2008 00:33:06 +0200
-Message-ID: <200808280033.08006.rjw__49962.0902738117$1219876387$gmane$org@sisk.pl>
-References: <200808221520.19791.oliver@neukum.org>
-	<200808271509.06097.oliver@neukum.org>
-	<200808271528.48685.rjw@sisk.pl>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI PM: Introduce function pci_wake_from_d3
+	(rev. 2)
+Date: Wed, 27 Aug 2008 16:04:59 -0700
+Message-ID: <200808271605.01006.jbarnes__21902.6442071938$1219880829$gmane$org@virtuousgeek.org>
+References: <200808182057.22501.rjw@sisk.pl> <200808182138.00989.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808271528.48685.rjw@sisk.pl>
+In-Reply-To: <200808182138.00989.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,29 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-usb@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, Stefan Seyfried <seife@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 27 of August 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 27 of August 2008, Oliver Neukum wrote:
-> > Am Mittwoch 27 August 2008 15:04:55 schrieb Rafael J. Wysocki:
-> > > I'm quite confident it's specific to bluetooth, because I only need to turn
-> > > the bluetooth user space off, most importantly hcid, to make the problem go
-> > > away even without the patch (that is, without the patch I don't even have to
-> > > uload btusb before suspend if the bluetoot user land is not running).
-> > 
-> > But do you use any other usb driver without support for suspend/resume?
-> 
-> Well, probably not.
-> 
-> I'll check the hid, then.
+On Monday, August 18, 2008 12:38 pm Rafael J. Wysocki wrote:
+> [Sorry, it is more useful to define the function so that it takes a second
+> argument indicating whether to enable or disable wake-up.]
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> PCI PM: Introduce function pci_wake_from_d3 (rev. 2)
+>
+> Many device drivers use the following sequence of statements to
+> enable the device to wake up the system while being in the D3_hot
+> or D3_cold low power state:
+>
+> 	pci_enable_wake(pdev, PCI_D3hot, 1);
+> 	pci_enable_wake(pdev, PCI_D3cold, 1);
+>
+> However, the second call is not necessary if the first one succeeds
+> (the ordering of the statements above doesn't matter here) and it
+> may even be harmful, because we are not supposed to enable PME#
+> after the wake-up power has been enabled for the device.
+>
+> To allow drivers to overcome this problem, introduce function
+> pci_wake_from_d3() that will enable the device to wake up the system
+> from any of D3_hot and D3_cold as long as the wake-up from at least
+> one of them is supported.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I couldn't reproduce the breakage with suspend/resume support removed from
-usbhid.
+Applied to linux-next, thanks Rafael.
 
-Let's just say it's related to BT, since your patch evidently fixes the problem
-for me and I have just no reason to believe it's anything else than BT.
-
-Thanks,
-Rafael
+Jesse
