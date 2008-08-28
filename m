@@ -1,17 +1,11 @@
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Subject: Re: resume from ram hangs on 2.6.26+ kernels on thinkpad
-	z60m
-Date: Thu, 28 Aug 2008 20:45:55 +0200
-Message-ID: <200808282045.55281.arekm__23777.5659923956$1219942146$gmane$org@maven.pl>
-References: <200808201602.26848.arekm@maven.pl>
-	<200808211443.43690.rjw@sisk.pl>
-	<200808241631.14746.arekm@maven.pl>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: FW:  select with timeout across S3
+Date: Thu, 28 Aug 2008 13:32:47 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C09639B7A__4083.45702239803$1219945242$gmane$org@USA0300MS03.na.xerox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C90934.1740FDE4"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200808241631.14746.arekm@maven.pl>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,51 +16,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5IDI0IEF1Z3VzdCAyMDA4LCBBcmthZGl1c3ogTWlza2lld2ljeiB3cm90ZToKCj4g
-T2ssIHdpbGwgZ2V0IGJhY2sgdG8gdGhlIHByb2JsZW0gd2hlbiBJIGdldC9ub3RpY2Ugc29tZXRo
-aW5nIHRoYXQgY2FuIGdldAo+IHVzIGEgY2x1ZS4KClNvIGhlcmUgSSBhbS4gTm90IGRpcmVjdGx5
-IHJlc3VtZSBoYW5nIGJ1dCBtYXkgYmUgcmVsYXRlZC4gZ2l0IGtlcm5lbCBmcm9tIH4yIApkYXlz
-IGFnby4KCnJlc3VtZSBzdWNjZWVkZWQgYnV0IGRtZXNnIGluZGljYXRlZCB0b25zIG9mOgoKWzUx
-MDU1LjM1MjAxOV0gRnJlZXppbmcgb2YgdGFza3MgZmFpbGVkIGFmdGVyIDIwLjAwIHNlY29uZHMg
-KDEgdGFza3MgcmVmdXNpbmcgCnRvIGZyZWV6ZSk6Cls1MTA1NS4zNTIwMjVdICAgdGFzayAgICAg
-ICAgICAgICAgICBQQyBzdGFjayAgIHBpZCBmYXRoZXIKWzUxMDU1LjM1MjAzMV0gaW5pdCAgICAg
-ICAgICBEIDk3YWY2OGU0ICAgICAwICAgICAxICAgICAgMApbNTEwNTUuMzUyMDM4XSAgICAgICAg
-Zjc4NTFlOWMgMDAwMDAwODYgZjc4NDgwMDAgOTdhZjY4ZTQgMDAwMDJlNmEgYzg1NTkwMDUgCmY3
-ODUxZTgwIGY3ODQ4Mjc0Cls1MTA1NS4zNTIwNTBdICAgICAgICA5N2M4MTg3YiAwMDAwMmU2YSBm
-Nzg1MWU4YyBmNzJhNjAwMCAwMDAwMDAwMCAwMDAwMDAwMCAKMDAwMDAwMDAgMDAwMDAwMDAKWzUx
-MDU1LjM1MjA2MV0gICAgICAgIGY3ODUxZjEwIGY3ODUxZWE4IGMwMTM4Nzg4IDAwMDAwMDBiIGY3
-ODUxZWQ0IGMwMTI1OTEyIApjODU1OTAwMCAwMDAwMDAwMApbNTEwNTUuMzUyMDczXSBDYWxsIFRy
-YWNlOgpbNTEwNTUuMzUyMDc5XSAgWzxjMDEzODc4OD5dIHJlZnJpZ2VyYXRvcisweDVlLzB4NjYK
-WzUxMDU1LjM1MjA5Ml0gIFs8YzAxMjU5MTI+XSBnZXRfc2lnbmFsX3RvX2RlbGl2ZXIrMHgzZS8w
-eDJhYwpbNTEwNTUuMzUyMTAyXSAgWzxjMDEwMmIwND5dIGRvX25vdGlmeV9yZXN1bWUrMHg2OS8w
-eDZiYwpbNTEwNTUuMzUyMTExXSAgWzxjMDFjNmM4OD5dID8gY29weV90b191c2VyKzB4MmMvMHhm
-YwpbNTEwNTUuMzUyMTIyXSAgWzxjMDE3MmE1YT5dID8gc3lzX3NlbGVjdCsweDEyNC8weDE0Nwpb
-NTEwNTUuMzUyMTMxXSAgWzxjMDEwMzgwYT5dIHdvcmtfbm90aWZ5c2lnKzB4MTMvMHgxOQpbNTEw
-NTUuMzUyMTYxXSAgPT09PT09PT09PT09PT09PT09PT09PT0KWzUxMDU1LjM1MjE2NV0ga3RocmVh
-ZGQgICAgICBTIDNhZTg3Yzc4ICAgICAwICAgICAyICAgICAgMApbNTEwNTUuMzUyMTcyXSAgICAg
-ICAgZjc4NTNmYzQgMDAwMDAwNDYgZjc4NDhjNjAgM2FlODdjNzggMDAwMDA5OTggMDAwMDAwMDAg
-CjAwMDAwMDAzIGY3ODQ4ZWQ0Cls1MTA1NS4zNTIxODNdICAgICAgICAzYWU4ODhkNCAwMDAwMDk5
-OCAwMDAwMWY0NyBlOGE2NTU0MCBmNzg1M2ZjNCBjMDExNTg4YSAKZTgzZWZkNzAgMDAwMDFmNDcK
-WzUxMDU1LjM1MjE5NF0gICAgICAgIGMwMzRiMWE4IGY3ODUzZmUwIGMwMTJhNTQzIDAwMDAwMDAw
-IDAwMDAwMDAxIGMwMTJhNGU2IAowMDAwMDAwMCAwMDAwMDAwMApbNTEwNTUuMzUyMjA1XSBDYWxs
-IFRyYWNlOgpbNTEwNTUuMzUyMjA5XSAgWzxjMDExNTg4YT5dID8gY29tcGxldGUrMHgxZi8weDI4
-Cls1MTA1NS4zNTIyMTldICBbPGMwMTJhNTQzPl0ga3RocmVhZGQrMHg1ZC8weGVlCls1MTA1NS4z
-NTIyMjZdICBbPGMwMTJhNGU2Pl0gPyBrdGhyZWFkZCsweDAvMHhlZQpbNTEwNTUuMzUyMjMzXSAg
-WzxjMDEwNDI1Zj5dIGtlcm5lbF90aHJlYWRfaGVscGVyKzB4Ny8weDEwCls1MTA1NS4zNTIyNDFd
-ICA9PT09PT09PT09PT09PT09PT09PT09PQpbNTEwNTUuMzUyMjQ0XSBrc29mdGlycWQvMCAgIFMg
-OTc4ZjA0YWEgICAgIDAgICAgIDMgICAgICAyCls1MTA1NS4zNTIyNTFdICAgICAgICBmNzg1OWZj
-NCAwMDAwMDA0NiBmNzg0OThjMCA5NzhmMDRhYSAwMDAwMmU2YSBmMmZlNGE0MCAKMDAwMDAwMGEg
-Zjc4NDliMzQKWzUxMDU1LjM1MjI2Ml0gICAgICAgIDk3YTE4NjFlIDAwMDAyZTZhIGMwMTIwMTUw
-IGU3OGNjYTgwIGMwMTIwMTdmIDAwMDAwMDAwIAowMDAwMDAwMCBjMDEyMDE3ZgpbNTEwNTUuMzUy
-MjczXSAgICAgICAgMDAwMDAwMDAgZjc4NTlmZDAgYzAxMjAxYTAgMDAwMDAwMDAgZjc4NTlmZTAg
-YzAxMmE2MGQgCmMwMTJhNWQ0IDAwMDAwMDAwCgoKY29uZmlnOiBodHRwOi8vY2FybWUucGxkLWxp
-bnV4Lm9yZy9+YXJla20vc3VzcGVuZC1jb25maWctMjAwODA4MjgKZnVsbCBkbWVzZzogaHR0cDov
-L2Nhcm1lLnBsZC1saW51eC5vcmcvfmFyZWttL2RtZXNnLXN1c3BlbmQtMjAwODA4MjgKCi0tIApB
-cmthZGl1c3ogTWnFm2tpZXdpY3ogICAgICAgIFBMRC9MaW51eCBUZWFtCmFyZWttIC8gbWF2ZW4u
-cGwgICAgICAgICAgICBodHRwOi8vZnRwLnBsZC1saW51eC5vcmcvCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
-eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C90934.1740FDE4
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+The behavior of linux (in both 2.4.x and 2.6.x) is when the processor
+sleeps, timeouts on select don't take into account the sleep time,
+only the run time.
+
+For example, this program should pause for 10 minutes -- however
+if we go into S3 in the middle its pausing for (10 minutes + time in
+S3)
+
+I saw this on both 2.6.20 and 2.6.22...
+
+marty
+
+-----Original Message-----
+From: linux-pm-bounces@lists.linux-foundation.org
+[mailto:linux-pm-bounces@lists.linux-foundation.org] On Behalf Of Pavel
+Machek
+Sent: Thursday, August 28, 2008 10:30 AM
+To: Leisner, Martin
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] select with timeout across S3
+
+On Wed 2008-08-27 15:23:13, Leisner, Martin wrote:
+> What's a good way to "wait" across a transition to/from processor
+sleep
+> (acpi S3 or other means)?
+>=20
+>=20
+> It seems the timeouts on select(2) only deal with with time correctly
+> when the processor is awake -- when the processor is sleeping its not
+> subtracted from the request...
+>=20
+> The desirable behavior out of select would be for it to timeout
+whenever
+> the system wakes up if the desired interval has elapsed...
+
+That sounds like a bug. Can you write small demo program and post it
+to lkml?
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures)
+http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+_______________________________________________
+linux-pm mailing list
+linux-pm@lists.linux-foundation.org
+https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+
+------_=_NextPart_001_01C90934.1740FDE4
+Content-Type: application/octet-stream;
+	name="select.c"
+Content-Transfer-Encoding: base64
+Content-Description: select.c
+Content-Disposition: attachment;
+	filename="select.c"
+
+I2luY2x1ZGUgPHN5cy9zZWxlY3QuaD4KI2luY2x1ZGUgPHN0ZGlvLmg+CgptYWluKCkKewoJc3Ry
+dWN0IHRpbWV2YWwgdDsKCWludCByZXQ7CgoJdC50dl9zZWMgPSA2MCAqIDEwOwoJdC50dl91c2Vj
+ID0gMDsKCglyZXQgPSBzZWxlY3QoMCwgTlVMTCwgTlVMTCwgTlVMTCwgJnQpOwoJcHJpbnRmKCJy
+ZXQgPSAlZFxuIiwgcmV0KTsKfQoKCQo=
+
+------_=_NextPart_001_01C90934.1740FDE4
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------_=_NextPart_001_01C90934.1740FDE4--
