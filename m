@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 4/5] PCIe native PME detection
-Date: Mon, 8 Sep 2008 23:36:33 +0200
-Message-ID: <200809082336.34091.rjw__40187.5998163179$1220909778$gmane$org@sisk.pl>
-References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<20080908092305.546278414@sli10-desk.sh.intel.com>
+Subject: Re: btusb hibernation/suspend breakage in current -git
+Date: Mon, 8 Sep 2008 23:45:21 +0200
+Message-ID: <200809082345.22955.rjw__5152.95090522176$1220910185$gmane$org@sisk.pl>
+References: <200808221520.19791.oliver@neukum.org>
+	<200808280917.57020.oliver@neukum.org>
+	<1220906968.11655.7.camel@californication>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080908092305.546278414@sli10-desk.sh.intel.com>
+In-Reply-To: <1220906968.11655.7.camel@californication>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,471 +20,333 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: shaohua.li@intel.com
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dbrownell@users.sourceforge.net, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 8 of September 2008, shaohua.li@intel.com wrote:
-> This implements PCIe native PME detection.
-
-Could you please describe how this is done?
-
-Generally, please add kerneldoc comments to all of the functions and make it
-clear what they are for.
-
-> ---
->  drivers/pci/pcie/Kconfig  |    7 
->  drivers/pci/pcie/Makefile |    2 
->  drivers/pci/pcie/npme.c   |  341 ++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci_regs.h  |    1 
->  4 files changed, 351 insertions(+)
+On Monday, 8 of September 2008, Marcel Holtmann wrote:
+> Hi Oliver,
 > 
-> Index: linux/drivers/pci/pcie/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/pci/pcie/Kconfig	2008-09-08 13:55:55.000000000 +0800
-> +++ linux/drivers/pci/pcie/Kconfig	2008-09-08 14:26:13.000000000 +0800
-> @@ -46,3 +46,10 @@ config PCIEASPM_DEBUG
->  	help
->  	  This enables PCI Express ASPM debug support. It will add per-device
->  	  interface to control ASPM.
-> +
-> +config PCIENPME
-> +	bool "PCIE Native PME support(Experimental)"
-> +	depends on PCIEPORTBUS && EXPERIMENTAL
-> +	help
-> +	  This enables PCI Express Native PME Reporting.
-> +
-> Index: linux/drivers/pci/pcie/Makefile
-> ===================================================================
-> --- linux.orig/drivers/pci/pcie/Makefile	2008-09-08 13:55:55.000000000 +0800
-> +++ linux/drivers/pci/pcie/Makefile	2008-09-08 14:26:13.000000000 +0800
-> @@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
->  
->  # Build PCI Express AER if needed
->  obj-$(CONFIG_PCIEAER)		+= aer/
-> +
-> +obj-$(CONFIG_PCIENPME) += npme.o
-> Index: linux/drivers/pci/pcie/npme.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux/drivers/pci/pcie/npme.c	2008-09-08 14:26:13.000000000 +0800
-> @@ -0,0 +1,341 @@
-> +/*
-> + * PCIE Native PME support
-> + *
-> + * Copyright (C) 2007 - 2008 Intel Corp
-> + *  Shaohua Li <shaohua.li@intel.com>
-> + *
-> + * This file is subject to the terms and conditions of the GNU General Public
-> + * License.  See the file "COPYING" in the main directory of this archive
-> + * for more details.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/pci.h>
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/device.h>
-> +#include <linux/pcieport_if.h>
-> +#include <linux/acpi.h>
-> +#include <linux/pci-acpi.h>
-> +
-> +static int disabled;
-> +module_param(disabled, bool, 0);
-> +static int force = 1;
-> +module_param(force, bool, 0);
-> +
-> +static struct pcie_port_service_id npme_id[] = {
-> +	{
-> +	.vendor 	= PCI_ANY_ID,
-> +	.device 	= PCI_ANY_ID,
-> +	.port_type 	= PCIE_RC_PORT,
-> +	.service_type 	= PCIE_PORT_SERVICE_PME,
-> +	},
-> +	{ /* end: all zeroes */ }
-> +};
-> +
-> +struct npme_data {
-> +	spinlock_t lock;
-> +	struct pcie_device *dev;
-
-It looks like 'dev' will always be the root complex.  Is that correct?
-
-> +	struct work_struct work;
-> +	u16 bdf; /* device which invokes PME */
-> +	int exit;
-> +};
-> +
-
-This one is analogous to pci_pme_active(), isn't it?
-
-Why don't you want it to clear the status bit as well?
-
-> +static inline void npme_set_pme(struct pci_dev *pdev, int enable)
-> +{
-> +	int pos;
-> +	u16 reg16;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-
-OK, so we ask if this is a PCI Express device.  Shouldn't we also check if
-this actually is a root port?  Also, why don't we use ->is_pcie and
-->pcie_type here?
-
-> +	pci_read_config_word(pdev, pos + PCI_EXP_RTCTL, &reg16);
-> +	if (!enable)
-> +		reg16 &= ~PCI_EXP_RTCTL_PMEIE;
-> +	else
-> +		reg16 |= PCI_EXP_RTCTL_PMEIE;
-> +	pci_write_config_word(pdev, pos + PCI_EXP_RTCTL, reg16);
-> +}
-> +
-> +static inline void npme_clear_pme(struct pci_dev *pdev)
-> +{
-> +	int pos;
-> +	u32 reg32;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-
-Same here?
-
-> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &reg32);
-> +	reg32 |= PCI_EXP_RTSTA_PME;
-> +	pci_write_config_dword(pdev, pos + PCI_EXP_RTSTA, reg32);
-> +}
-
-The names npme_clear_pme() and npme_set_pme() are quite confusing, because
-they suggest the functions should just do opposite things to the same bit in a
-register, which is not the case.
-
-> +static int npme_pme_target_one(struct pci_dev *target)
-> +{
-> +	int ret = -ENODEV;
-> +	if (target->dev.bus->pm && target->dev.bus->pm->base.wakeup_event)
-> +		ret = target->dev.bus->pm->base.wakeup_event(&target->dev);
-
-I'd use
-
-	struct device *dev = &target->dev;
-	struct device_driver *drv = dev->driver;
-
-to simplify the references here.
-
-> +	if (!ret)
-> +		device_receive_wakeup_event(&target->dev);
-
-Do you have any potential use of device_receive_wakeup_event() in mind?
-
-> +	return ret;
-> +}
-> +
-> +static int npme_pme_target(struct pci_dev *target)
-> +{
-> +	int ret;
-> +	struct pci_dev *tmp = NULL;
-
-Why not to call it 'pdev' or just 'dev'?
-
-> +	int domain_nr, bus_start, bus_end;
-> +
-> +	ret = npme_pme_target_one(target);
-> +	/*
-> +	 * Because PCIe-PCI bridge or pci root port can take ownership, legacy
-> +	 * devices under the bridges might share a BDF. The BDF can be root
-> +	 * port's BDF or (PCIe-PCI bridge's secondary bus number, 0, 0)
-> +	 */
-> +	if (!target->subordinate || !target->is_pcie ||
-> +		(target->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
-> +		target->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE))
-> +		return ret;
-> +
-> +	/* check all legacy devices under bridge */
-> +	domain_nr = pci_domain_nr(target->bus);
-> +	bus_start = target->subordinate->secondary;
-> +	bus_end = target->subordinate->subordinate;
-> +	while ((tmp = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, tmp)) != NULL) {
-> +		if (!tmp->is_pcie && pci_domain_nr(tmp->bus) == domain_nr &&
-> +		   tmp->bus->number >= bus_start &&
-> +		   tmp->bus->number <= bus_end)
-> +			ret &= npme_pme_target_one(tmp);
-
-I'd do 
-			int dev_ret = npme_pme_target_one(dev);
-			if (!ret)
-				ret = dev_ret;
-
-> +	}
-> +	if (ret)
-> +		ret = -ENODEV;
-
-and drop the two lines above.
-
-> +	return ret;
-> +}
-> +
-> +static void npme_work_handle(struct work_struct *work)
-> +{
-> +	struct npme_data *data = container_of(work, struct npme_data, work);
-> +	struct pcie_device *dev = data->dev;
-> +	unsigned long flags;
-> +	struct pci_dev *target;
-> +	int ret = -ENODEV;
-> +
-> +	target = pci_get_bus_and_slot(data->bdf >> 8, data->bdf & 0xff);
-> +	/* PCIe-PCI bridge might change bdf to (secondary bus numer, 0, 0) */
-> +	if (!target && (data->bdf & 0xff) == 0) {
-> +		struct pci_bus *bus;
-> +
-> +		bus = pci_find_bus(pci_domain_nr(dev->port->bus),
-> +			data->bdf >> 8);
-> +		if (bus) {
-> +			target = bus->self;
-> +			if (!target->is_pcie || target->pcie_type !=
-> +					PCI_EXP_TYPE_PCI_BRIDGE)
-> +				target = NULL;
-> +		}
-> +		if (target)
-> +			pci_dev_get(target);
-> +	}
-> +
-> +	if (target)
-> +		ret = npme_pme_target(target);
-> +	else
-> +		printk(KERN_ERR"Can't find device %02d:%d.%d which invokes PME\n",
-> +			data->bdf >> 8, PCI_SLOT(data->bdf), PCI_FUNC(data->bdf));
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	/* clear pending PME */
-> +	npme_clear_pme(dev->port);
-> +	/* reenable native PME */
-> +	if (!data->exit)
-> +		npme_set_pme(dev->port, 1);
-> +
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	if (ret)
-> +		printk(KERN_ERR"Spurious Native PME interrupt %d received\n", dev->irq);
-> +
-> +	if (target)
-> +		pci_dev_put(target);
-> +}
-> +
-> +static irqreturn_t npme_irq(int irq, void *context)
-> +{
-> +	int pos;
-> +	struct pci_dev *pdev;
-> +	u32 reg32;
-
-More meaningful name (eg. the name of the register it's used to read), please?
-
-> +	struct npme_data *data;
-> +	unsigned long flags;
-> +
-> +	pdev = ((struct pcie_device *)context)->port;
-> +	data = get_service_data((struct pcie_device *)context);
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-
-Again, that has to be PCI Express root port IMO.
-
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &reg32);
-> +	if (!(reg32 & PCI_EXP_RTSTA_PME)) {
-> +		spin_unlock_irqrestore(&data->lock, flags);
-> +		return IRQ_NONE;
-> +	}
-> +
-> +	data->bdf = reg32;
-
-bdf has been defined as u16.  Is that intentional?
-
-> +
-> +	/* disable PME to avoid interrupt flood */
-> +	npme_set_pme(pdev, 0);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	schedule_work(&data->work);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +#ifdef CONFIG_ACPI
-> +static int npme_osc_setup(struct pcie_device *pciedev)
-> +{
-> +	acpi_status status = AE_NOT_FOUND;
-> +	struct pci_dev *pdev = pciedev->port;
-> +	acpi_handle handle = DEVICE_ACPI_HANDLE(&pdev->dev);
-> +
-> +	if (!handle)
-> +		return -EINVAL;
-> +	pcie_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
-> +	status = pci_osc_control_set(handle,
-> +			OSC_PCI_EXPRESS_NATIVE_HP_CONTROL |
-> +			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-> +
-> +	if (ACPI_FAILURE(status)) {
-> +		printk(KERN_DEBUG "Native PME service couldn't init device "
-> +			"%s - %s\n", pciedev->device.bus_id,
-> +			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-> +			"no _OSC support" : "Run ACPI _OSC fails");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +#else
-> +#define npme_osc_setup(e) (0)
-
-I'd prefer a static inline.  Also, is that safe to return 0 here?
-
-> +#endif
-> +
-> +static int __devinit npme_probe (struct pcie_device *dev,
-> +				const struct pcie_port_service_id *id )
-> +{
-> +	struct pci_dev *pdev;
-> +	int status;
-> +	struct npme_data *data;
-
-Why don't we check if dev is a root complex?
-
-> +	if (npme_osc_setup(dev) && !force)
-> +		return -EINVAL;
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +	spin_lock_init(&data->lock);
-> +	INIT_WORK(&data->work, npme_work_handle);
-> +	data->dev = dev;
-
-Isn't it necessary to do set_service_data(dev, data) before requesting the IRQ?
-
-> +	pdev = dev->port;
-> +
-> +	/* clear pending PME */
-> +	npme_clear_pme(pdev);
-> +
-> +	status = request_irq(dev->irq, npme_irq, IRQF_SHARED, "npme", dev);
-
-How exactly is dev->irq determined and where does that happen?
-
-> +	if (status) {
-> +		kfree(data);
-> +		return status;
-> +	}
-> +
-> +	/* enable PME interrupt */
-> +	npme_set_pme(pdev, 1);
-> +
-> +	set_service_data(dev, data);
-> +	return 0;
-> +}
-> +
-> +static void npme_remove(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev;
-> +	unsigned long flags;
-> +	struct npme_data *data = get_service_data(dev);
-> +
-> +	pdev = dev->port;
-> +
-> +	/* disable PME interrupt */
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	data->exit = 1;
-> +	npme_set_pme(pdev, 0);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	flush_scheduled_work();
-> +	free_irq(dev->irq, dev);
-> +
-> +	/* clear pending PME */
-> +	npme_clear_pme(pdev);
-> +
-> +	set_service_data(dev, NULL);
-> +	kfree(data);
-> +}
-> +
-> +static int npme_suspend(struct pcie_device *dev, pm_message_t state)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct npme_data *data;
-> +	unsigned long flags;
-> +
-> +	pdev = dev->port;
-> +	data = get_service_data(dev);
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	/* disable PME to avoid further interrupt */
-> +	npme_set_pme(pdev, 0);
-> +
-> +	/* clear pending PME */
-> +	npme_clear_pme(pdev);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int npme_resume(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev = dev->port;
-> +	unsigned long flags;
-> +	struct npme_data *data = get_service_data(dev);
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	npme_clear_pme(pdev);
-> +	npme_set_pme(pdev, 1);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct pcie_port_service_driver npme_driver = {
-> +	.name		= "npme",
-> +	.id_table	= &npme_id[0],
-> +
-> +	.probe		= npme_probe,
-> +	.remove		= npme_remove,
-> +	.suspend	= npme_suspend,
-> +	.resume		= npme_resume,
-> +};
-> +
-> +
-> +static int __init npme_service_init(void)
-> +{
-> +	if (disabled)
-> +		return -EINVAL;
-> +	return pcie_port_service_register(&npme_driver);
-> +}
-> +
-> +static void __exit npme_service_exit(void)
-> +{
-> +	pcie_port_service_unregister(&npme_driver);
-> +}
-> +
-> +module_init(npme_service_init);
-> +module_exit(npme_service_exit);
-> +
-> +MODULE_AUTHOR("Shaohua Li<shaohua.li@intel.com>");
-> +MODULE_LICENSE("GPL");
-> Index: linux/include/linux/pci_regs.h
-> ===================================================================
-> --- linux.orig/include/linux/pci_regs.h	2008-09-08 13:55:55.000000000 +0800
-> +++ linux/include/linux/pci_regs.h	2008-09-08 14:26:13.000000000 +0800
-> @@ -419,6 +419,7 @@
->  #define  PCI_EXP_RTCTL_CRSSVE	0x10	/* CRS Software Visibility Enable */
->  #define PCI_EXP_RTCAP		30	/* Root Capabilities */
->  #define PCI_EXP_RTSTA		32	/* Root Status */
-> +#define  PCI_EXP_RTSTA_PME	0x10000	/* PME status */
->  
->  /* Extended Capabilities (PCI-X 2.0 and Express) */
->  #define PCI_EXT_CAP_ID(header)		(header & 0x0000ffff)
+> > > I couldn't reproduce the breakage with suspend/resume support removed from
+> > > usbhid.
+> > > 
+> > > Let's just say it's related to BT, since your patch evidently fixes the problem
+> > > for me and I have just no reason to believe it's anything else than BT.
+> >
+> > Very good.
+> > 
+> > here it is again. You may need to cut the USB bits depending
+> > on which tree you want to apply it to.
 > 
+> do we have a version that could be applied to 2.6.27-rc5, because the
+> patch depends on unmerged USB stuff. I tend to leave this for 2.6.28 for
+> now.
 
-Apart from the above, I'd start the names of all functions from
-'native_pme' rather than from 'npme'.
+I've been using the one below recently.  It doesn't seem to depend on anything
+unmerged.
 
 Thanks,
 Rafael
+
+
+---
+ drivers/bluetooth/btusb.c |  145 +++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 113 insertions(+), 32 deletions(-)
+
+Index: linux-2.6/drivers/bluetooth/btusb.c
+===================================================================
+--- linux-2.6.orig/drivers/bluetooth/btusb.c
++++ linux-2.6/drivers/bluetooth/btusb.c
+@@ -169,6 +169,7 @@ static struct usb_device_id blacklist_ta
+ struct btusb_data {
+ 	struct hci_dev       *hdev;
+ 	struct usb_device    *udev;
++	struct usb_interface *acl;
+ 	struct usb_interface *isoc;
+ 
+ 	spinlock_t lock;
+@@ -176,6 +177,7 @@ struct btusb_data {
+ 	unsigned long flags;
+ 
+ 	struct work_struct work;
++	struct work_struct waker;
+ 
+ 	struct usb_anchor tx_anchor;
+ 	struct usb_anchor intr_anchor;
+@@ -189,6 +191,7 @@ struct btusb_data {
+ 	struct usb_endpoint_descriptor *isoc_rx_ep;
+ 
+ 	int isoc_altsetting;
++	int susp_count;
+ };
+ 
+ static void btusb_intr_complete(struct urb *urb)
+@@ -227,7 +230,7 @@ static void btusb_intr_complete(struct u
+ 	}
+ }
+ 
+-static int btusb_submit_intr_urb(struct hci_dev *hdev)
++static int btusb_submit_intr_urb(struct hci_dev *hdev, gfp_t gfp)
+ {
+ 	struct btusb_data *data = hdev->driver_data;
+ 	struct urb *urb;
+@@ -240,13 +243,13 @@ static int btusb_submit_intr_urb(struct 
+ 	if (!data->intr_ep)
+ 		return -ENODEV;
+ 
+-	urb = usb_alloc_urb(0, GFP_ATOMIC);
++	urb = usb_alloc_urb(0, gfp);
+ 	if (!urb)
+ 		return -ENOMEM;
+ 
+ 	size = le16_to_cpu(data->intr_ep->wMaxPacketSize);
+ 
+-	buf = kmalloc(size, GFP_ATOMIC);
++	buf = kmalloc(size, gfp);
+ 	if (!buf) {
+ 		usb_free_urb(urb);
+ 		return -ENOMEM;
+@@ -262,7 +265,7 @@ static int btusb_submit_intr_urb(struct 
+ 
+ 	usb_anchor_urb(urb, &data->intr_anchor);
+ 
+-	err = usb_submit_urb(urb, GFP_ATOMIC);
++	err = usb_submit_urb(urb, gfp);
+ 	if (err < 0) {
+ 		BT_ERR("%s urb %p submission failed (%d)",
+ 						hdev->name, urb, -err);
+@@ -311,7 +314,7 @@ static void btusb_bulk_complete(struct u
+ 	}
+ }
+ 
+-static int btusb_submit_bulk_urb(struct hci_dev *hdev)
++static int btusb_submit_bulk_urb(struct hci_dev *hdev, gfp_t gfp)
+ {
+ 	struct btusb_data *data = hdev->driver_data;
+ 	struct urb *urb;
+@@ -324,18 +327,19 @@ static int btusb_submit_bulk_urb(struct 
+ 	if (!data->bulk_rx_ep)
+ 		return -ENODEV;
+ 
+-	urb = usb_alloc_urb(0, GFP_KERNEL);
++	urb = usb_alloc_urb(0, gfp);
+ 	if (!urb)
+ 		return -ENOMEM;
+ 
+ 	size = le16_to_cpu(data->bulk_rx_ep->wMaxPacketSize);
+ 
+-	buf = kmalloc(size, GFP_KERNEL);
++	buf = kmalloc(size, gfp);
+ 	if (!buf) {
+ 		usb_free_urb(urb);
+ 		return -ENOMEM;
+ 	}
+ 
++	usb_mark_last_busy(data->udev);
+ 	pipe = usb_rcvbulkpipe(data->udev, data->bulk_rx_ep->bEndpointAddress);
+ 
+ 	usb_fill_bulk_urb(urb, data->udev, pipe,
+@@ -345,7 +349,7 @@ static int btusb_submit_bulk_urb(struct 
+ 
+ 	usb_anchor_urb(urb, &data->bulk_anchor);
+ 
+-	err = usb_submit_urb(urb, GFP_KERNEL);
++	err = usb_submit_urb(urb, gfp);
+ 	if (err < 0) {
+ 		BT_ERR("%s urb %p submission failed (%d)",
+ 						hdev->name, urb, -err);
+@@ -514,7 +518,7 @@ static int btusb_open(struct hci_dev *hd
+ 	if (test_and_set_bit(BTUSB_INTR_RUNNING, &data->flags))
+ 		return 0;
+ 
+-	err = btusb_submit_intr_urb(hdev);
++	err = btusb_submit_intr_urb(hdev, GFP_KERNEL);
+ 	if (err < 0) {
+ 		clear_bit(BTUSB_INTR_RUNNING, &hdev->flags);
+ 		clear_bit(HCI_RUNNING, &hdev->flags);
+@@ -523,6 +527,13 @@ static int btusb_open(struct hci_dev *hd
+ 	return err;
+ }
+ 
++static void btusb_stop_traffic(struct btusb_data *data)
++{
++	usb_kill_anchored_urbs(&data->intr_anchor);
++	usb_kill_anchored_urbs(&data->bulk_anchor);
++	usb_kill_anchored_urbs(&data->isoc_anchor);
++}
++
+ static int btusb_close(struct hci_dev *hdev)
+ {
+ 	struct btusb_data *data = hdev->driver_data;
+@@ -532,14 +543,12 @@ static int btusb_close(struct hci_dev *h
+ 	if (!test_and_clear_bit(HCI_RUNNING, &hdev->flags))
+ 		return 0;
+ 
+-	clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
+-	usb_kill_anchored_urbs(&data->intr_anchor);
++	flush_work(&data->work);
+ 
++	clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
+ 	clear_bit(BTUSB_BULK_RUNNING, &data->flags);
+-	usb_kill_anchored_urbs(&data->bulk_anchor);
+-
+ 	clear_bit(BTUSB_INTR_RUNNING, &data->flags);
+-	usb_kill_anchored_urbs(&data->intr_anchor);
++	btusb_stop_traffic(data);
+ 
+ 	return 0;
+ }
+@@ -672,8 +681,19 @@ static void btusb_notify(struct hci_dev 
+ 
+ 	BT_DBG("%s evt %d", hdev->name, evt);
+ 
+-	if (evt == HCI_NOTIFY_CONN_ADD || evt == HCI_NOTIFY_CONN_DEL)
+-		schedule_work(&data->work);
++	if (hdev->conn_hash.acl_num > 0) {
++		if (!test_and_set_bit(BTUSB_BULK_RUNNING, &data->flags)) {
++			if (btusb_submit_bulk_urb(hdev, GFP_ATOMIC) < 0)
++				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
++			else
++				btusb_submit_bulk_urb(hdev, GFP_ATOMIC);
++		}
++	} else {
++		clear_bit(BTUSB_BULK_RUNNING, &data->flags);
++		usb_unlink_anchored_urbs(&data->bulk_anchor);
++	}
++
++	schedule_work(&data->work);
+ }
+ 
+ static int inline __set_isoc_interface(struct hci_dev *hdev, int altsetting)
+@@ -724,18 +744,6 @@ static void btusb_work(struct work_struc
+ 	struct btusb_data *data = container_of(work, struct btusb_data, work);
+ 	struct hci_dev *hdev = data->hdev;
+ 
+-	if (hdev->conn_hash.acl_num > 0) {
+-		if (!test_and_set_bit(BTUSB_BULK_RUNNING, &data->flags)) {
+-			if (btusb_submit_bulk_urb(hdev) < 0)
+-				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
+-			else
+-				btusb_submit_bulk_urb(hdev);
+-		}
+-	} else {
+-		clear_bit(BTUSB_BULK_RUNNING, &data->flags);
+-		usb_kill_anchored_urbs(&data->bulk_anchor);
+-	}
+-
+ 	if (hdev->conn_hash.sco_num > 0) {
+ 		if (data->isoc_altsetting != 2) {
+ 			clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
+@@ -821,6 +829,7 @@ static int btusb_probe(struct usb_interf
+ 	}
+ 
+ 	data->udev = interface_to_usbdev(intf);
++	data->acl = intf;
+ 
+ 	spin_lock_init(&data->lock);
+ 
+@@ -889,7 +898,7 @@ static int btusb_probe(struct usb_interf
+ 
+ 	if (data->isoc) {
+ 		err = usb_driver_claim_interface(&btusb_driver,
+-							data->isoc, NULL);
++							data->isoc, data);
+ 		if (err < 0) {
+ 			hci_free_dev(hdev);
+ 			kfree(data);
+@@ -921,20 +930,92 @@ static void btusb_disconnect(struct usb_
+ 
+ 	hdev = data->hdev;
+ 
+-	if (data->isoc)
+-		usb_driver_release_interface(&btusb_driver, data->isoc);
++	/* make sure we have a reference */
++	__hci_dev_hold(hdev);
+ 
+-	usb_set_intfdata(intf, NULL);
++	usb_set_intfdata(data->acl, NULL);
++	if (data->isoc)
++		usb_set_intfdata(data->isoc, NULL);
+ 
++	/* unregister before releasing any interface */
+ 	hci_unregister_dev(hdev);
+ 
++	if (intf == data->isoc)
++		usb_driver_release_interface(&btusb_driver, data->acl);
++	else if (data->isoc)
++		usb_driver_release_interface(&btusb_driver, data->isoc);
++
++	/* release the reference */
++	__hci_dev_put(hdev);
+ 	hci_free_dev(hdev);
+ }
+ 
++static int btusb_suspend(struct usb_interface *intf, pm_message_t message)
++{
++	struct btusb_data *data = usb_get_intfdata(intf);
++
++	BT_DBG("%s called\n", __func__);
++
++	if (data->susp_count++)
++		return 0;
++
++	cancel_work_sync(&data->work);
++	btusb_stop_traffic(data);
++	usb_kill_anchored_urbs(&data->tx_anchor);
++	return 0;
++}
++
++static int btusb_resume(struct usb_interface *intf)
++{
++	struct btusb_data *data = usb_get_intfdata(intf);
++	struct hci_dev *hdev = data->hdev;
++	int ret;
++
++	if (--data->susp_count)
++		return 0;
++	if (test_bit(HCI_RUNNING, &hdev->flags)) {
++		ret = btusb_submit_intr_urb(hdev, GFP_NOIO);
++		if (ret < 0) {
++			clear_bit(HCI_RUNNING, &hdev->flags);
++			return ret;
++		}
++	}
++
++	if (hdev->conn_hash.acl_num > 0) {
++		ret = btusb_submit_bulk_urb(hdev, GFP_NOIO);
++		if (ret < 0) {
++			clear_bit(BTUSB_BULK_RUNNING, &data->flags);
++			return ret;
++		} else {
++			ret = btusb_submit_bulk_urb(hdev, GFP_NOIO);
++			if (ret < 0) {
++				clear_bit(BTUSB_BULK_RUNNING, &data->flags);
++				usb_kill_anchored_urbs(&data->bulk_anchor);
++				return ret;
++			}
++		}
++	}
++
++	if (data->isoc) {
++		if (test_bit(BTUSB_ISOC_RUNNING, &data->flags)) {
++			ret = btusb_submit_isoc_urb(hdev);
++			if (ret < 0)
++				clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
++			else
++				btusb_submit_isoc_urb(hdev);
++		}
++	}
++
++	schedule_work(&data->work);
++	return 0;
++}
++
+ static struct usb_driver btusb_driver = {
+ 	.name		= "btusb",
+ 	.probe		= btusb_probe,
+ 	.disconnect	= btusb_disconnect,
++	.suspend	= btusb_suspend,
++	.resume		= btusb_resume,
+ 	.id_table	= btusb_table,
+ };
+ 
