@@ -1,13 +1,15 @@
-From: shaohua.li@intel.com
-Subject: [RFC 5/5] ACPI GPE based wakeup event detection
-Date: Mon, 08 Sep 2008 17:19:31 +0800
-Message-ID: <20080908092305.658492314__10834.220928564$1220866591$gmane$org@sli10-desk.sh.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC 3/5] pci wakeup handler
+Date: Mon, 8 Sep 2008 15:09:50 +0200
+Message-ID: <200809081509.52070.rjw__3106.88871327347$1220879407$gmane$org@sisk.pl>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
+	<20080908092305.438330804@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=acpi-gpe.patch
+In-Reply-To: <20080908092305.438330804@sli10-desk.sh.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,169 +19,121 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
-Cc: dbrownell@users.sourceforge.net
+To: shaohua.li@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dbrownell@users.sourceforge.net, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-In ACPI platform, if native PME isn't enabled, GPE is used to report wakeup event.
----
- drivers/acpi/Kconfig        |    9 ++++++
- drivers/acpi/bus.c          |   15 ++++++++++
- drivers/acpi/sleep/wakeup.c |   66 ++++++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpi_bus.h     |    4 ++
- 4 files changed, 94 insertions(+)
+On Monday, 8 of September 2008, shaohua.li@intel.com wrote:
+> pci subsystem wakeup handler.
+> ---
+>  drivers/pci/pci-driver.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+> 
+> Index: linux/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux.orig/drivers/pci/pci-driver.c	2008-09-08 13:55:56.000000000 +0800
+> +++ linux/drivers/pci/pci-driver.c	2008-09-08 14:24:42.000000000 +0800
+> @@ -472,12 +472,57 @@ static int pci_pm_resume_noirq(struct de
+>  	return error;
+>  }
+>  
+> +/*
+> + * Called when dev is suspected to invoke a wakeup event, return 0 if yes
+> + * */
+> +static int pci_pm_wakeup_event(struct device *dev)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(dev);
+> +	int pme_pos = pci_find_capability(pdev, PCI_CAP_ID_PM);
 
-Index: linux/drivers/acpi/Kconfig
-===================================================================
---- linux.orig/drivers/acpi/Kconfig	2008-09-08 14:28:50.000000000 +0800
-+++ linux/drivers/acpi/Kconfig	2008-09-08 14:29:08.000000000 +0800
-@@ -45,6 +45,15 @@ config ACPI_SLEEP
- 	depends on PM_SLEEP
- 	default y
- 
-+config ACPI_GPE_WAKEUP
-+	bool "ACPI wakeup event support"
-+	depends on PM_SLEEP && EXPERIMENTAL
-+	help
-+	  Enable ACPI to detect wakeup event. For example, PCI device can
-+	  invoke PME, and in ACPI platform, the PME will invoke a GPE. With
-+	  the option, we can detect which device invokes wakeup event.
-+
-+
- config ACPI_PROCFS
- 	bool "Deprecated /proc/acpi files"
- 	depends on PROC_FS
-Index: linux/drivers/acpi/bus.c
-===================================================================
---- linux.orig/drivers/acpi/bus.c	2008-09-08 14:28:32.000000000 +0800
-+++ linux/drivers/acpi/bus.c	2008-09-08 14:29:03.000000000 +0800
-@@ -496,6 +496,19 @@ static int acpi_bus_check_scope(struct a
- 	return 0;
- }
- 
-+static BLOCKING_NOTIFIER_HEAD(acpi_bus_notify_list);
-+int register_acpi_bus_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&acpi_bus_notify_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(register_acpi_bus_notifier);
-+
-+void unregister_acpi_bus_notifier(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_unregister(&acpi_bus_notify_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(unregister_acpi_bus_notifier);
-+
- /**
-  * acpi_bus_notify
-  * ---------------
-@@ -506,6 +519,8 @@ static void acpi_bus_notify(acpi_handle 
- 	int result = 0;
- 	struct acpi_device *device = NULL;
- 
-+	blocking_notifier_call_chain(&acpi_bus_notify_list,
-+			type, (void *)handle);
- 
- 	if (acpi_bus_get_device(handle, &device))
- 		return;
-Index: linux/drivers/acpi/sleep/wakeup.c
-===================================================================
---- linux.orig/drivers/acpi/sleep/wakeup.c	2008-09-08 14:28:55.000000000 +0800
-+++ linux/drivers/acpi/sleep/wakeup.c	2008-09-08 15:04:23.000000000 +0800
-@@ -142,6 +142,70 @@ void acpi_disable_wakeup_device(u8 sleep
- 	spin_unlock(&acpi_device_lock);
- }
- 
-+#ifdef CONFIG_ACPI_GPE_WAKEUP
-+static int acpi_gpe_pme_check(struct acpi_device *dev)
-+{
-+	struct device *ldev;
-+
-+	ldev = acpi_get_physical_device(dev->handle);
-+	if (!ldev)
-+		return -ENODEV;
-+	/*
-+	 * AML code might already clear the event, so ignore the return value.
-+	 * Actually we can't correctly detect which device invokes GPE if the
-+	 * event is cleared.
-+	 */
-+	if (ldev->bus->pm && ldev->bus->pm->base.wakeup_event)
-+		ldev->bus->pm->base.wakeup_event(ldev);
-+
-+	/*
-+	 * We always send the event. AML code usually identifies the exact
-+	 * device of the GPE, let's trust it
-+	 */
-+	device_receive_wakeup_event(ldev);
-+
-+	put_device(ldev);
-+	return 0;
-+}
-+
-+static int acpi_gpe_pme_handler(struct notifier_block *nb,
-+	unsigned long type, void *data)
-+{
-+	int ret;
-+	acpi_handle handle = data;
-+	struct acpi_device *dev;
-+
-+	if (type != ACPI_NOTIFY_DEVICE_WAKE)
-+		return NOTIFY_DONE;
-+
-+	if (acpi_bus_get_device(handle, &dev))
-+		return NOTIFY_DONE;
-+
-+	ret = acpi_gpe_pme_check(dev);
-+
-+	acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-+		ACPI_NOT_ISR);
-+
-+	/* FIXME: spurious interrupt, disables it? */
-+	if (ret)
-+		printk(KERN_ERR"Spurious GPE %d detected\n",
-+			dev->wakeup.gpe_number);
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block acpi_gpe_pme_nb = {
-+	.notifier_call = acpi_gpe_pme_handler,
-+};
-+
-+static void acpi_init_gpe_pme(void)
-+{
-+	register_acpi_bus_notifier(&acpi_gpe_pme_nb);
-+}
-+#else
-+static inline void acpi_init_gpe_pme(void) {}
-+#endif
-+
- static int __init acpi_wakeup_device_init(void)
- {
- 	struct list_head *node, *next;
-@@ -167,6 +231,8 @@ static int __init acpi_wakeup_device_ini
- 		spin_lock(&acpi_device_lock);
- 	}
- 	spin_unlock(&acpi_device_lock);
-+
-+	acpi_init_gpe_pme();
- 	return 0;
- }
- 
-Index: linux/include/acpi/acpi_bus.h
-===================================================================
---- linux.orig/include/acpi/acpi_bus.h	2008-09-08 14:28:42.000000000 +0800
-+++ linux/include/acpi/acpi_bus.h	2008-09-08 14:29:03.000000000 +0800
-@@ -327,6 +327,10 @@ int acpi_bus_get_private_data(acpi_handl
- extern int acpi_notifier_call_chain(struct acpi_device *, u32, u32);
- extern int register_acpi_notifier(struct notifier_block *);
- extern int unregister_acpi_notifier(struct notifier_block *);
-+
-+extern int register_acpi_bus_notifier(struct notifier_block *nb);
-+extern void unregister_acpi_bus_notifier(struct notifier_block *nb);
-+
- /*
-  * External Functions
-  */
+Pleae use dev->pm_cap instead.
 
--- 
+> +	struct pci_driver *drv = pdev->driver;
+> +	u16 reg16;
+> +	int spurious = 0;
+
+Please use 'bool' for boolean variables.
+
+> +	int ret = -ENODEV;
+> +
+> +	if (pme_pos == 0) {
+> +		/*
+> +		 * Some USB devices haven't PME, but have specific registers to
+> +		 * control wakeup
+> +		 */
+> +		goto out;
+> +	}
+> +
+> +	/* clear PME status and disable PME to avoid interrupt flood */
+> +	pci_read_config_word(pdev, pme_pos + PCI_PM_CTRL, &reg16);
+
+The variable used for that is called 'pmcsr' in the other functions.  Perhaps
+call it 'pmcsr' instead of 'reg16' here too?
+
+> +	if (!(reg16 & PCI_PM_CTRL_PME_STATUS))
+> +		return -ENODEV;
+> +	/* I see spurious GPE here, just ignore it for now */
+> +	if (!(reg16 & PCI_PM_CTRL_PME_ENABLE))
+> +		spurious = 1;
+> +	reg16 &= ~PCI_PM_CTRL_PME_ENABLE;
+> +	reg16 |= PCI_PM_CTRL_PME_STATUS;
+> +	pci_write_config_word(pdev, pme_pos + PCI_PM_CTRL, reg16);
+
+I think you can use pci_pm_active() for clearing PME# and status.  That'll
+read the register once more, but that shouldn't be a problem.  Actually, you
+can do:
+
+	pci_read_config_word(pdev, pme_pos + PCI_PM_CTRL, &pmcsr);
+	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+		/* No event (why have we been called, actually? */
+		return -EINVAL;
+	pci_pm_active(dev, false);
+	if (!(pmcsr & PCI_PM_CTRL_PME_ENABLE))
+		/* Spurious event */
+		return -ENODEV;
+> +
+> +	if (spurious)
+> +		return -ENODEV;
+> +	ret = 0;
+> +	/* This device invokes PME, gives driver a chance to do something */
+> +out:
+> +	if (drv && drv->pm && drv->pm->base.wakeup_event) {
+> +		if (!ret) /* ignore return value in this case */
+> +			drv->pm->base.wakeup_event(&pdev->dev);
+> +		else
+> +			return drv->pm->base.wakeup_event(&pdev->dev);
+
+Hm, I'd do:
+
+	if (drv && drv->pm && drv->pm->base.wakeup_event) {
+		int dev_ret = drv->pm->base.wakeup_event(&pdev->dev);
+		if (ret)
+			ret = dev_ret;
+	}
+
+Also, why do you think we should ignore the returned value if ret is zero?
+
+> +	}
+> +	return ret;
+> +}
+>  #else /* !CONFIG_SUSPEND */
+>  
+>  #define pci_pm_suspend		NULL
+>  #define pci_pm_suspend_noirq	NULL
+>  #define pci_pm_resume		NULL
+>  #define pci_pm_resume_noirq	NULL
+> +#define pci_pm_wakeup_event	NULL
+>  
+>  #endif /* !CONFIG_SUSPEND */
+>  
+> @@ -651,6 +696,7 @@ struct pm_ext_ops pci_pm_ops = {
+>  		.thaw = pci_pm_thaw,
+>  		.poweroff = pci_pm_poweroff,
+>  		.restore = pci_pm_restore,
+> +		.wakeup_event = pci_pm_wakeup_event,
+>  	},
+>  	.suspend_noirq = pci_pm_suspend_noirq,
+>  	.resume_noirq = pci_pm_resume_noirq,
+> 
+
+Thanks,
+Rafael
