@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 5/5] ACPI GPE based wakeup event detection
-Date: Mon, 8 Sep 2008 22:57:34 +0200
-Message-ID: <200809082257.35009.rjw__10737.1683734984$1220907327$gmane$org@sisk.pl>
+Subject: Re: [RFC 4/5] PCIe native PME detection
+Date: Mon, 8 Sep 2008 23:36:33 +0200
+Message-ID: <200809082336.34091.rjw__40187.5998163179$1220909778$gmane$org@sisk.pl>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<20080908092305.658492314@sli10-desk.sh.intel.com>
+	<20080908092305.546278414@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080908092305.658492314@sli10-desk.sh.intel.com>
+In-Reply-To: <20080908092305.546278414@sli10-desk.sh.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,179 +20,470 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: shaohua.li@intel.com
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dbrownell@users.sourceforge.net
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, dbrownell@users.sourceforge.net, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, 8 of September 2008, shaohua.li@intel.com wrote:
-> In ACPI platform, if native PME isn't enabled, GPE is used to report wakeup event.
+> This implements PCIe native PME detection.
+
+Could you please describe how this is done?
+
+Generally, please add kerneldoc comments to all of the functions and make it
+clear what they are for.
+
 > ---
->  drivers/acpi/Kconfig        |    9 ++++++
->  drivers/acpi/bus.c          |   15 ++++++++++
->  drivers/acpi/sleep/wakeup.c |   66 ++++++++++++++++++++++++++++++++++++++++++++
->  include/acpi/acpi_bus.h     |    4 ++
->  4 files changed, 94 insertions(+)
+>  drivers/pci/pcie/Kconfig  |    7 
+>  drivers/pci/pcie/Makefile |    2 
+>  drivers/pci/pcie/npme.c   |  341 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pci_regs.h  |    1 
+>  4 files changed, 351 insertions(+)
 > 
-> Index: linux/drivers/acpi/Kconfig
+> Index: linux/drivers/pci/pcie/Kconfig
 > ===================================================================
-> --- linux.orig/drivers/acpi/Kconfig	2008-09-08 14:28:50.000000000 +0800
-> +++ linux/drivers/acpi/Kconfig	2008-09-08 14:29:08.000000000 +0800
-> @@ -45,6 +45,15 @@ config ACPI_SLEEP
->  	depends on PM_SLEEP
->  	default y
->  
-> +config ACPI_GPE_WAKEUP
-> +	bool "ACPI wakeup event support"
-> +	depends on PM_SLEEP && EXPERIMENTAL
+> --- linux.orig/drivers/pci/pcie/Kconfig	2008-09-08 13:55:55.000000000 +0800
+> +++ linux/drivers/pci/pcie/Kconfig	2008-09-08 14:26:13.000000000 +0800
+> @@ -46,3 +46,10 @@ config PCIEASPM_DEBUG
+>  	help
+>  	  This enables PCI Express ASPM debug support. It will add per-device
+>  	  interface to control ASPM.
+> +
+> +config PCIENPME
+> +	bool "PCIE Native PME support(Experimental)"
+> +	depends on PCIEPORTBUS && EXPERIMENTAL
 > +	help
-> +	  Enable ACPI to detect wakeup event. For example, PCI device can
-> +	  invoke PME, and in ACPI platform, the PME will invoke a GPE. With
-> +	  the option, we can detect which device invokes wakeup event.
+> +	  This enables PCI Express Native PME Reporting.
 > +
-> +
->  config ACPI_PROCFS
->  	bool "Deprecated /proc/acpi files"
->  	depends on PROC_FS
-> Index: linux/drivers/acpi/bus.c
+> Index: linux/drivers/pci/pcie/Makefile
 > ===================================================================
-> --- linux.orig/drivers/acpi/bus.c	2008-09-08 14:28:32.000000000 +0800
-> +++ linux/drivers/acpi/bus.c	2008-09-08 14:29:03.000000000 +0800
-> @@ -496,6 +496,19 @@ static int acpi_bus_check_scope(struct a
->  	return 0;
->  }
+> --- linux.orig/drivers/pci/pcie/Makefile	2008-09-08 13:55:55.000000000 +0800
+> +++ linux/drivers/pci/pcie/Makefile	2008-09-08 14:26:13.000000000 +0800
+> @@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
 >  
-> +static BLOCKING_NOTIFIER_HEAD(acpi_bus_notify_list);
-> +int register_acpi_bus_notifier(struct notifier_block *nb)
-> +{
-> +	return blocking_notifier_chain_register(&acpi_bus_notify_list, nb);
-> +}
-> +EXPORT_SYMBOL_GPL(register_acpi_bus_notifier);
+>  # Build PCI Express AER if needed
+>  obj-$(CONFIG_PCIEAER)		+= aer/
 > +
-> +void unregister_acpi_bus_notifier(struct notifier_block *nb)
-> +{
-> +	blocking_notifier_chain_unregister(&acpi_bus_notify_list, nb);
-> +}
-> +EXPORT_SYMBOL_GPL(unregister_acpi_bus_notifier);
-> +
->  /**
->   * acpi_bus_notify
->   * ---------------
-> @@ -506,6 +519,8 @@ static void acpi_bus_notify(acpi_handle 
->  	int result = 0;
->  	struct acpi_device *device = NULL;
->  
-> +	blocking_notifier_call_chain(&acpi_bus_notify_list,
-> +			type, (void *)handle);
-
-Hm, perhaps I'm too tired and I'm missing something obvious, but can you
-tell me please why that has to be a notifier chain?  It looks like you add only
-one notifier to it, so seemingly it could be replaced by a direct call to a
-function like acpi_gpe_pme_handler() (with modified list of arguments).
-
->  	if (acpi_bus_get_device(handle, &device))
->  		return;
-> Index: linux/drivers/acpi/sleep/wakeup.c
+> +obj-$(CONFIG_PCIENPME) += npme.o
+> Index: linux/drivers/pci/pcie/npme.c
 > ===================================================================
-> --- linux.orig/drivers/acpi/sleep/wakeup.c	2008-09-08 14:28:55.000000000 +0800
-> +++ linux/drivers/acpi/sleep/wakeup.c	2008-09-08 15:04:23.000000000 +0800
-> @@ -142,6 +142,70 @@ void acpi_disable_wakeup_device(u8 sleep
->  	spin_unlock(&acpi_device_lock);
->  }
->  
-> +#ifdef CONFIG_ACPI_GPE_WAKEUP
-> +static int acpi_gpe_pme_check(struct acpi_device *dev)
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux/drivers/pci/pcie/npme.c	2008-09-08 14:26:13.000000000 +0800
+> @@ -0,0 +1,341 @@
+> +/*
+> + * PCIE Native PME support
+> + *
+> + * Copyright (C) 2007 - 2008 Intel Corp
+> + *  Shaohua Li <shaohua.li@intel.com>
+> + *
+> + * This file is subject to the terms and conditions of the GNU General Public
+> + * License.  See the file "COPYING" in the main directory of this archive
+> + * for more details.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/device.h>
+> +#include <linux/pcieport_if.h>
+> +#include <linux/acpi.h>
+> +#include <linux/pci-acpi.h>
+> +
+> +static int disabled;
+> +module_param(disabled, bool, 0);
+> +static int force = 1;
+> +module_param(force, bool, 0);
+> +
+> +static struct pcie_port_service_id npme_id[] = {
+> +	{
+> +	.vendor 	= PCI_ANY_ID,
+> +	.device 	= PCI_ANY_ID,
+> +	.port_type 	= PCIE_RC_PORT,
+> +	.service_type 	= PCIE_PORT_SERVICE_PME,
+> +	},
+> +	{ /* end: all zeroes */ }
+> +};
+> +
+> +struct npme_data {
+> +	spinlock_t lock;
+> +	struct pcie_device *dev;
+
+It looks like 'dev' will always be the root complex.  Is that correct?
+
+> +	struct work_struct work;
+> +	u16 bdf; /* device which invokes PME */
+> +	int exit;
+> +};
+> +
+
+This one is analogous to pci_pme_active(), isn't it?
+
+Why don't you want it to clear the status bit as well?
+
+> +static inline void npme_set_pme(struct pci_dev *pdev, int enable)
 > +{
-> +	struct device *ldev;
+> +	int pos;
+> +	u16 reg16;
 > +
-> +	ldev = acpi_get_physical_device(dev->handle);
-> +	if (!ldev)
-> +		return -ENODEV;
+> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+
+OK, so we ask if this is a PCI Express device.  Shouldn't we also check if
+this actually is a root port?  Also, why don't we use ->is_pcie and
+->pcie_type here?
+
+> +	pci_read_config_word(pdev, pos + PCI_EXP_RTCTL, &reg16);
+> +	if (!enable)
+> +		reg16 &= ~PCI_EXP_RTCTL_PMEIE;
+> +	else
+> +		reg16 |= PCI_EXP_RTCTL_PMEIE;
+> +	pci_write_config_word(pdev, pos + PCI_EXP_RTCTL, reg16);
+> +}
+> +
+> +static inline void npme_clear_pme(struct pci_dev *pdev)
+> +{
+> +	int pos;
+> +	u32 reg32;
+> +
+> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+
+Same here?
+
+> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &reg32);
+> +	reg32 |= PCI_EXP_RTSTA_PME;
+> +	pci_write_config_dword(pdev, pos + PCI_EXP_RTSTA, reg32);
+> +}
+
+The names npme_clear_pme() and npme_set_pme() are quite confusing, because
+they suggest the functions should just do opposite things to the same bit in a
+register, which is not the case.
+
+> +static int npme_pme_target_one(struct pci_dev *target)
+> +{
+> +	int ret = -ENODEV;
+> +	if (target->dev.bus->pm && target->dev.bus->pm->base.wakeup_event)
+> +		ret = target->dev.bus->pm->base.wakeup_event(&target->dev);
+
+I'd use
+
+	struct device *dev = &target->dev;
+	struct device_driver *drv = dev->driver;
+
+to simplify the references here.
+
+> +	if (!ret)
+> +		device_receive_wakeup_event(&target->dev);
+
+Do you have any potential use of device_receive_wakeup_event() in mind?
+
+> +	return ret;
+> +}
+> +
+> +static int npme_pme_target(struct pci_dev *target)
+> +{
+> +	int ret;
+> +	struct pci_dev *tmp = NULL;
+
+Why not to call it 'pdev' or just 'dev'?
+
+> +	int domain_nr, bus_start, bus_end;
+> +
+> +	ret = npme_pme_target_one(target);
 > +	/*
-> +	 * AML code might already clear the event, so ignore the return value.
-> +	 * Actually we can't correctly detect which device invokes GPE if the
-> +	 * event is cleared.
+> +	 * Because PCIe-PCI bridge or pci root port can take ownership, legacy
+> +	 * devices under the bridges might share a BDF. The BDF can be root
+> +	 * port's BDF or (PCIe-PCI bridge's secondary bus number, 0, 0)
 > +	 */
-> +	if (ldev->bus->pm && ldev->bus->pm->base.wakeup_event)
-> +		ldev->bus->pm->base.wakeup_event(ldev);
+> +	if (!target->subordinate || !target->is_pcie ||
+> +		(target->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
+> +		target->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE))
+> +		return ret;
 > +
-> +	/*
-> +	 * We always send the event. AML code usually identifies the exact
-> +	 * device of the GPE, let's trust it
-> +	 */
-> +	device_receive_wakeup_event(ldev);
+> +	/* check all legacy devices under bridge */
+> +	domain_nr = pci_domain_nr(target->bus);
+> +	bus_start = target->subordinate->secondary;
+> +	bus_end = target->subordinate->subordinate;
+> +	while ((tmp = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, tmp)) != NULL) {
+> +		if (!tmp->is_pcie && pci_domain_nr(tmp->bus) == domain_nr &&
+> +		   tmp->bus->number >= bus_start &&
+> +		   tmp->bus->number <= bus_end)
+> +			ret &= npme_pme_target_one(tmp);
+
+I'd do 
+			int dev_ret = npme_pme_target_one(dev);
+			if (!ret)
+				ret = dev_ret;
+
+> +	}
+> +	if (ret)
+> +		ret = -ENODEV;
+
+and drop the two lines above.
+
+> +	return ret;
+> +}
 > +
-> +	put_device(ldev);
+> +static void npme_work_handle(struct work_struct *work)
+> +{
+> +	struct npme_data *data = container_of(work, struct npme_data, work);
+> +	struct pcie_device *dev = data->dev;
+> +	unsigned long flags;
+> +	struct pci_dev *target;
+> +	int ret = -ENODEV;
+> +
+> +	target = pci_get_bus_and_slot(data->bdf >> 8, data->bdf & 0xff);
+> +	/* PCIe-PCI bridge might change bdf to (secondary bus numer, 0, 0) */
+> +	if (!target && (data->bdf & 0xff) == 0) {
+> +		struct pci_bus *bus;
+> +
+> +		bus = pci_find_bus(pci_domain_nr(dev->port->bus),
+> +			data->bdf >> 8);
+> +		if (bus) {
+> +			target = bus->self;
+> +			if (!target->is_pcie || target->pcie_type !=
+> +					PCI_EXP_TYPE_PCI_BRIDGE)
+> +				target = NULL;
+> +		}
+> +		if (target)
+> +			pci_dev_get(target);
+> +	}
+> +
+> +	if (target)
+> +		ret = npme_pme_target(target);
+> +	else
+> +		printk(KERN_ERR"Can't find device %02d:%d.%d which invokes PME\n",
+> +			data->bdf >> 8, PCI_SLOT(data->bdf), PCI_FUNC(data->bdf));
+> +
+> +	spin_lock_irqsave(&data->lock, flags);
+> +	/* clear pending PME */
+> +	npme_clear_pme(dev->port);
+> +	/* reenable native PME */
+> +	if (!data->exit)
+> +		npme_set_pme(dev->port, 1);
+> +
+> +	spin_unlock_irqrestore(&data->lock, flags);
+> +
+> +	if (ret)
+> +		printk(KERN_ERR"Spurious Native PME interrupt %d received\n", dev->irq);
+> +
+> +	if (target)
+> +		pci_dev_put(target);
+> +}
+> +
+> +static irqreturn_t npme_irq(int irq, void *context)
+> +{
+> +	int pos;
+> +	struct pci_dev *pdev;
+> +	u32 reg32;
+
+More meaningful name (eg. the name of the register it's used to read), please?
+
+> +	struct npme_data *data;
+> +	unsigned long flags;
+> +
+> +	pdev = ((struct pcie_device *)context)->port;
+> +	data = get_service_data((struct pcie_device *)context);
+> +
+> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+
+Again, that has to be PCI Express root port IMO.
+
+> +	spin_lock_irqsave(&data->lock, flags);
+> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &reg32);
+> +	if (!(reg32 & PCI_EXP_RTSTA_PME)) {
+> +		spin_unlock_irqrestore(&data->lock, flags);
+> +		return IRQ_NONE;
+> +	}
+> +
+> +	data->bdf = reg32;
+
+bdf has been defined as u16.  Is that intentional?
+
+> +
+> +	/* disable PME to avoid interrupt flood */
+> +	npme_set_pme(pdev, 0);
+> +	spin_unlock_irqrestore(&data->lock, flags);
+> +
+> +	schedule_work(&data->work);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +#ifdef CONFIG_ACPI
+> +static int npme_osc_setup(struct pcie_device *pciedev)
+> +{
+> +	acpi_status status = AE_NOT_FOUND;
+> +	struct pci_dev *pdev = pciedev->port;
+> +	acpi_handle handle = DEVICE_ACPI_HANDLE(&pdev->dev);
+> +
+> +	if (!handle)
+> +		return -EINVAL;
+> +	pcie_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
+> +	status = pci_osc_control_set(handle,
+> +			OSC_PCI_EXPRESS_NATIVE_HP_CONTROL |
+> +			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
+> +
+> +	if (ACPI_FAILURE(status)) {
+> +		printk(KERN_DEBUG "Native PME service couldn't init device "
+> +			"%s - %s\n", pciedev->device.bus_id,
+> +			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
+> +			"no _OSC support" : "Run ACPI _OSC fails");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +#else
+> +#define npme_osc_setup(e) (0)
+
+I'd prefer a static inline.  Also, is that safe to return 0 here?
+
+> +#endif
+> +
+> +static int __devinit npme_probe (struct pcie_device *dev,
+> +				const struct pcie_port_service_id *id )
+> +{
+> +	struct pci_dev *pdev;
+> +	int status;
+> +	struct npme_data *data;
+
+Why don't we check if dev is a root complex?
+
+> +	if (npme_osc_setup(dev) && !force)
+> +		return -EINVAL;
+> +
+> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +	spin_lock_init(&data->lock);
+> +	INIT_WORK(&data->work, npme_work_handle);
+> +	data->dev = dev;
+
+Isn't it necessary to do set_service_data(dev, data) before requesting the IRQ?
+
+> +	pdev = dev->port;
+> +
+> +	/* clear pending PME */
+> +	npme_clear_pme(pdev);
+> +
+> +	status = request_irq(dev->irq, npme_irq, IRQF_SHARED, "npme", dev);
+
+How exactly is dev->irq determined and where does that happen?
+
+> +	if (status) {
+> +		kfree(data);
+> +		return status;
+> +	}
+> +
+> +	/* enable PME interrupt */
+> +	npme_set_pme(pdev, 1);
+> +
+> +	set_service_data(dev, data);
 > +	return 0;
 > +}
 > +
-> +static int acpi_gpe_pme_handler(struct notifier_block *nb,
-> +	unsigned long type, void *data)
+> +static void npme_remove(struct pcie_device *dev)
 > +{
-> +	int ret;
-> +	acpi_handle handle = data;
-> +	struct acpi_device *dev;
+> +	struct pci_dev *pdev;
+> +	unsigned long flags;
+> +	struct npme_data *data = get_service_data(dev);
 > +
-> +	if (type != ACPI_NOTIFY_DEVICE_WAKE)
-> +		return NOTIFY_DONE;
+> +	pdev = dev->port;
 > +
-> +	if (acpi_bus_get_device(handle, &dev))
-> +		return NOTIFY_DONE;
+> +	/* disable PME interrupt */
+> +	spin_lock_irqsave(&data->lock, flags);
+> +	data->exit = 1;
+> +	npme_set_pme(pdev, 0);
+> +	spin_unlock_irqrestore(&data->lock, flags);
 > +
-> +	ret = acpi_gpe_pme_check(dev);
+> +	flush_scheduled_work();
+> +	free_irq(dev->irq, dev);
 > +
-> +	acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-> +		ACPI_NOT_ISR);
+> +	/* clear pending PME */
+> +	npme_clear_pme(pdev);
 > +
-
-At which point are dev->wakeup.gpe_device and dev->wakeup.gpe_number
-determined, for example, for PCI devices, and how?
-
-> +	/* FIXME: spurious interrupt, disables it? */
-> +	if (ret)
-> +		printk(KERN_ERR"Spurious GPE %d detected\n",
-> +			dev->wakeup.gpe_number);
-> +
-> +	return NOTIFY_OK;
+> +	set_service_data(dev, NULL);
+> +	kfree(data);
 > +}
 > +
-> +static struct notifier_block acpi_gpe_pme_nb = {
-> +	.notifier_call = acpi_gpe_pme_handler,
+> +static int npme_suspend(struct pcie_device *dev, pm_message_t state)
+> +{
+> +	struct pci_dev *pdev;
+> +	struct npme_data *data;
+> +	unsigned long flags;
+> +
+> +	pdev = dev->port;
+> +	data = get_service_data(dev);
+> +
+> +	spin_lock_irqsave(&data->lock, flags);
+> +	/* disable PME to avoid further interrupt */
+> +	npme_set_pme(pdev, 0);
+> +
+> +	/* clear pending PME */
+> +	npme_clear_pme(pdev);
+> +	spin_unlock_irqrestore(&data->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int npme_resume(struct pcie_device *dev)
+> +{
+> +	struct pci_dev *pdev = dev->port;
+> +	unsigned long flags;
+> +	struct npme_data *data = get_service_data(dev);
+> +
+> +	spin_lock_irqsave(&data->lock, flags);
+> +	npme_clear_pme(pdev);
+> +	npme_set_pme(pdev, 1);
+> +	spin_unlock_irqrestore(&data->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct pcie_port_service_driver npme_driver = {
+> +	.name		= "npme",
+> +	.id_table	= &npme_id[0],
+> +
+> +	.probe		= npme_probe,
+> +	.remove		= npme_remove,
+> +	.suspend	= npme_suspend,
+> +	.resume		= npme_resume,
 > +};
 > +
-> +static void acpi_init_gpe_pme(void)
+> +
+> +static int __init npme_service_init(void)
 > +{
-> +	register_acpi_bus_notifier(&acpi_gpe_pme_nb);
+> +	if (disabled)
+> +		return -EINVAL;
+> +	return pcie_port_service_register(&npme_driver);
 > +}
-> +#else
-> +static inline void acpi_init_gpe_pme(void) {}
-> +#endif
 > +
->  static int __init acpi_wakeup_device_init(void)
->  {
->  	struct list_head *node, *next;
-> @@ -167,6 +231,8 @@ static int __init acpi_wakeup_device_ini
->  		spin_lock(&acpi_device_lock);
->  	}
->  	spin_unlock(&acpi_device_lock);
+> +static void __exit npme_service_exit(void)
+> +{
+> +	pcie_port_service_unregister(&npme_driver);
+> +}
 > +
-> +	acpi_init_gpe_pme();
->  	return 0;
->  }
->  
-> Index: linux/include/acpi/acpi_bus.h
+> +module_init(npme_service_init);
+> +module_exit(npme_service_exit);
+> +
+> +MODULE_AUTHOR("Shaohua Li<shaohua.li@intel.com>");
+> +MODULE_LICENSE("GPL");
+> Index: linux/include/linux/pci_regs.h
 > ===================================================================
-> --- linux.orig/include/acpi/acpi_bus.h	2008-09-08 14:28:42.000000000 +0800
-> +++ linux/include/acpi/acpi_bus.h	2008-09-08 14:29:03.000000000 +0800
-> @@ -327,6 +327,10 @@ int acpi_bus_get_private_data(acpi_handl
->  extern int acpi_notifier_call_chain(struct acpi_device *, u32, u32);
->  extern int register_acpi_notifier(struct notifier_block *);
->  extern int unregister_acpi_notifier(struct notifier_block *);
-> +
-> +extern int register_acpi_bus_notifier(struct notifier_block *nb);
-> +extern void unregister_acpi_bus_notifier(struct notifier_block *nb);
-> +
->  /*
->   * External Functions
->   */
+> --- linux.orig/include/linux/pci_regs.h	2008-09-08 13:55:55.000000000 +0800
+> +++ linux/include/linux/pci_regs.h	2008-09-08 14:26:13.000000000 +0800
+> @@ -419,6 +419,7 @@
+>  #define  PCI_EXP_RTCTL_CRSSVE	0x10	/* CRS Software Visibility Enable */
+>  #define PCI_EXP_RTCAP		30	/* Root Capabilities */
+>  #define PCI_EXP_RTSTA		32	/* Root Status */
+> +#define  PCI_EXP_RTSTA_PME	0x10000	/* PME status */
+>  
+>  /* Extended Capabilities (PCI-X 2.0 and Express) */
+>  #define PCI_EXT_CAP_ID(header)		(header & 0x0000ffff)
+> 
+
+Apart from the above, I'd start the names of all functions from
+'native_pme' rather than from 'npme'.
 
 Thanks,
 Rafael
