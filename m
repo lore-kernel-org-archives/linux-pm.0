@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC 3/5] pci wakeup handler
-Date: Mon, 8 Sep 2008 21:04:07 -0700
-Message-ID: <200809082104.07756.david-b__5344.48440089381$1220933282$gmane$org@pacbell.net>
+Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
+Date: Mon, 8 Sep 2008 22:26:11 -0700
+Message-ID: <200809082226.11399.david-b__37619.2464995713$1220938189$gmane$org@pacbell.net>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<200809081956.42663.david-b@pacbell.net>
-	<76780B19A496DC4B80439008DAD7076C01AC7F326A@PDSMSX501.ccr.corp.intel.com>
+	<200809081956.23522.david-b@pacbell.net>
+	<76780B19A496DC4B80439008DAD7076C01AC7F328B@PDSMSX501.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <76780B19A496DC4B80439008DAD7076C01AC7F326A@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <76780B19A496DC4B80439008DAD7076C01AC7F328B@PDSMSX501.ccr.corp.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,121 +25,132 @@ Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.l
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 08 September 2008, Li, Shaohua wrote:
-> >> +static int pci_pm_wakeup_event(struct device *dev)
-> >
-> >If wakeup notifications were bus-specific this would
-> >take "struct pci_dev *pdev" ... and we're missing a
-> >key part of this stuff, namely the code to sort out
-> >which devices get this call.
 > 
-> This device is suspected to invoke a wakeup event, might
-> not be true. I suppose other bus requires the same
-> mechanism, so should be a 'struct device'.
-
-But *THIS* call is PCI-specific, and will need to be
-called from PCI bridge code which knows that it only
-has to cope with PCI devices as sources of the PCI
-specific wake events.  Nothing generic there...
-
-But I'd rather see that addressed in the context of
-my comments to your patch [1/5].
-
-
-
-> >Another rather important case is bridges.  I observe that with ACPI
-> >the way PME# is handled for add-in cards _seems_ to be that the bridge
-> >for that PCI bus segment gets a GPE (presumably matching the PME#
-> >signal for that bus segment, and maybe for its subsidiaries).  That
-> >suggests the bridge will need to scan its children to find out which
-> >one(s) issued PME#.  You didn't include such code here, where that
-> >notification will be received...
+> >> + * @wakeup_event: Checks if a wakeup event occurs.
+> >> + *    If yes, wakeup event should be disabled.
+> >
+> >And ... what else??  What does the return value indicate?
+> >Should anything be done with it other than printing it out
+> >if it's nonzero and we're debugging?
 >
-> In GPE case, it appears BIOS will detect the exact wakeup device.
+> Return 0 if the device invokes a wakeup event. In this case, driver 
+> should clear/disable wakeup event. 
+> Return < 0 if device didn't invoke wakeup.
 
-The laptop on which I'm typing this response has two GPEs which
-are shared by several devices each.  (Not PCI devices though.)
-
-And ... read what I wrote more closely.  BIOS doesn't know anything
-about add-in cards, just mainboard devices.  If I have a board with
-six PCI slots, ACPI delivers a notification to the bridgesince that
-is the only mainboard device.  The bridge then has to sort out which
-add-in card issued the wakeup event.
+So it's effectively "bool"?  I'd declare it as "bool" then...
+and rename it to sound like a predicate; "is_wakedev()" maybe.
 
 
-> In native PME case, if a device is a pcie device, npme will
-> detect the exact device too.  If the device is a legacy device,
-> then npme driver will check devices under bridges, please see
-> the npme_pme_target().
+> If device follows standard wakeup mechanism which bus level can
+> handle, driver isn't required to provide this callback.
 
-This file relates to PCI not PCIE; I referred to PCI bridges
-not PCIE ones.  Are you saying the PCIE code is what I have
-to look at to see PCI bridge support?  Extremely confusing if
-that's the case!  Not to mention wrong ... since I have several
-systems here that have PCI support but not PCIE.  Linux will
-be supporting such things for a LONG time to come.
+There seems to be a semi-hidden distinction between bus-level
+code and device-level code.  Somewhat apparent in later code;
+but not at all clear in this initial set-the-stage patch.
 
 
-> We can directly scan children in pci_pm_wakeup_event() too,
-> but GPE case doesn't require it and actually is broken in GPE
-> case as duplication will be added.  
-> 
-> I thought this covers all cases in IA platform, right?
-
-Not the case I introduced above:  PCI bridges, where there's
-no PCIE in the house.  I've not looked at other cases.
-
-
-> >> +     /* I see spurious GPE here, just ignore it for now */
+> >> @@ -151,6 +153,7 @@ struct pm_ops {
+> >>         int (*thaw)(struct device *dev);
+> >>         int (*poweroff)(struct device *dev);
+> >>         int (*restore)(struct device *dev);
+> >> +       int (*wakeup_event)(struct device *dev);
 > >
-> >Comments about GPEs shouldn't be included here; they're ACPI-specific.
-> >This is PCI-generic code!
+> >My reaction to adding this method is:  why do it here rather
+> >than at the bus level?
+
+Your answer probably should have been:  "The recent method
+reshuffling makes that method work both at the level of the
+'struct bus_type' and at the level of 'struct device'.  So
+this _does_ add it at the bus level."
+
+:)
+
+
+> >In my particular experience there are two basic types of wakeup
+> >event:
+> >
+> > 	...
+> >
+> >     * ACPI GPEs.  Bus-specific ... and similar to GPIO IRQs.
+> >       Also sharable; bytecode is used to map the GPE and
+> >       some register state to the ACPI device(s) which
+> >       issued that GPE.
 >
-> A typo, it should be PME. And actually I found this in npme case instead of ACPI.
+> This isn't bus specific.
 
-OK, I guess.  But in that case are you sure it was really
-spurious?  Rather than just not being able to tell which
-device issued the PME until you checked the PME status bit?
+It's bus-specific in the sense of "ACPI bus" (/sys/bus/acpi).
+If the DSDT defines a GPE and maps it to an ACPI device, it will
+follow those rules.
 
-It'd really be routine to get a PME# event and then need
-to scan several devices to find which one raised it.  Not
-all those devices would have enabled PME# either...
+Devices not on the "ACPI bus" -- like add-on PCI cards, USB
+peripherals, and other devices which have some such ACPI device
+higher in the driver model tre -- don't use GPEs to wake up.
+(An ancestral device may well do so:  a PCI bridge, a USB
+host controller, etc.)
 
 
-> >Or perhaps more generically -- since I still have yet to
-> >hear an argument why resume() shouldn't suffice to handle
-> >the wakeup event processing, at least for PCI -- just
-> >
-> >        if (pdev->driver->wakeup)
-> >                return pdev->driver->wakeup(pdev);
-> >        if (pdev->driver->resume)
-> >                return pdev->driver->resume(pdev);
-> >
-> >Although I don't know what the return value here should
-> >be interpreted to mean.  Would it be better to return
-> >void, and just log all "interesting"/error cases?
-> 
-> In my mind, .wakeup_event() just returns if the device
-> invokes a wakeup event, ACPI or NPME will call corresponding
-> .resume method. Suspected device might not invoke wakeup
-> event as you said the bridge case.
+> ACPI devices can map to any physical devices, like PCI, IDE
+> drive, PNP device. In this case, a bus specific mechanism can't
+> handle all.
 
-I think I see some of what's going on here.  This routine
-is getting more attention than I think it deserves, because
-you have placed what I'd call a PCI-internal utility -- to
-find which devices have issued PME# signals -- into a driver
-model method rather than hiding it in the internals of code
-that dispatches PME# notifications (or some ACPI GPEs).
+Sure it can.  And it'd be more natural to do it that way too.
+I'd be tempted to call them from ACPI like
 
-I thought you were providing a set of patches grouped by
-functionality:  PCI, PCIE, ACPI.  Evidently not...
+	struct device *dev;
+	acpi_handle adev;
 
-PCI support for PME# would have an entry for use by an IRQ
-handler (on most non-ACPI hardware) or an ACPI GPE ... and
-everything else should be internal to that bus, except for
-the driver notification callback (which I'm happy to think
-is just the existing bus-specific resume method).
+	/* adev received a wake event notification */
 
-You've almost made my case that there shouldn't be such a
-hook in the driver model PM core.  :)
+	...
+	dev = acpi_get_physical_device(adev);
+	if (dev) {
+		/* this chunk of code should probably live in
+		 * drivers/base/power/... somewhere and be
+		 * part of this patch 1/5 so it's more clear
+		 * what the infrastructure is doing.
+		 */
+		if (... && dev->bus->pm.base->is_wakedev(dev)) {
+			... call dev->driver->pm.resume(dev)
+			... else if resume is null, issue diagnostic
+		} else {
+			... report suitable generic confusion ...
+		}
+	} else {
+		... report ACPI-specific confusion ...
+	}
+	...
+
+When that's a PCI device -- bridge or otherwise -- that
+would call something resembling your patch #3 (but fixed
+to handle the case of PCI bridges, so add-in cards will
+work properly).
+
+And for a non-ACPI system, whatever IRQ handler receives the
+PME# signal would just call that chunk of code for the PCI
+root bridge(s) it handles.  All done.  :)
+
+
+> For example the UHCI case. A GPE is fired, we need to clear/disable
+> the wakeup event. PCI bus can't handle it, as UHCI has special
+> registers for this, so we need call into device specific handling.  
+
+So the bus-level PCI operation would end up with a device
+that's either (a) known to have fired PME#, or (b) known
+to be a device with legacy PM -- like UHCI -- which it's
+presuming has been wakeup-enabled.
+
+Then in the (a) case it can clear PME# the normal way, and
+would rarely need to do anything else.
+
+While in the (b) case the UHCI driver would need to have
+provided some device-specific -- not bus-generic -- op
+called like dev->driver->pm.is_wakeup(), to diddle those
+registers (only for Intel silicon, not UHCI from VIA or
+Genesys or anyone else).
+
+
+I think I'm getting a bit more clear on what you're trying
+to do with this.  Restructure it a bit and I will be able
+to see that from reading the code (as will others).  :)
 
 - Dave
