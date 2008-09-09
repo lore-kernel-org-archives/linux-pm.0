@@ -1,15 +1,14 @@
 From: "Li, Shaohua" <shaohua.li@intel.com>
-Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
-Date: Tue, 9 Sep 2008 11:49:03 +0800
-Message-ID: <76780B19A496DC4B80439008DAD7076C01AC7F328B__25461.66039906$1220932369$gmane$org@PDSMSX501.ccr.corp.intel.com>
+Subject: Re: [RFC 0/5] device wakeup event support
+Date: Tue, 9 Sep 2008 11:54:04 +0800
+Message-ID: <76780B19A496DC4B80439008DAD7076C01AC7F3298__25102.9382729486$1220932670$gmane$org@PDSMSX501.ccr.corp.intel.com>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<20080908092305.221009807@sli10-desk.sh.intel.com>
-	<200809081956.23522.david-b@pacbell.net>
+	<200809081941.10546.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200809081956.23522.david-b@pacbell.net>
+In-Reply-To: <200809081941.10546.david-b@pacbell.net>
 Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -29,83 +28,78 @@ List-Id: linux-pm@vger.kernel.org
 >-----Original Message-----
 >From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
 >owner@vger.kernel.org] On Behalf Of David Brownell
->Sent: Tuesday, September 09, 2008 10:56 AM
+>Sent: Tuesday, September 09, 2008 10:41 AM
 >To: Li, Shaohua
 >Cc: linux-pm@lists.linux-foundation.org; linux-acpi@vger.kernel.org;
 >stern@rowland.harvard.edu
->Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
+>Subject: Re: [RFC 0/5] device wakeup event support
 >
 >On Monday 08 September 2008, shaohua.li@intel.com wrote:
->> --- linux.orig/include/linux/pm.h       2008-09-08 13:55:57.000000000
->+0800
->> +++ linux/include/linux/pm.h    2008-09-08 13:56:51.000000000 +0800
->> @@ -125,6 +125,8 @@ typedef struct pm_message {
->>   *     make ANY assumptions about the hardware state right prior to
->@restore().
->>   *     On most platforms, there are no restrictions on availability of
->>   *     resources like clocks during @restore().
->> + * @wakeup_event: Checks if a wakeup event occurs. If yes, wakeup event
->should
->> + *      be disabled.
+>> This series add device wakeup event detection support. This is the base
+>to
+>> implement runtime device suspend/resume, though we don't support it now.
+>> But David said USB is approaching to this. See this bugzilla
+>> http://bugzilla.kernel.org/show_bug.cgi?id=6892 for detail.
 >
->And ... what else??  What does the return value indicate?
->Should anything be done with it other than printing it out
->if it's nonzero and we're debugging?
-Return 0 if the device invokes a wakeup event. In this case, driver should clear/disable wakeup event.
-Return < 0 if device didn't invoke wakeup.
-
-If device follows standard wakeup mechanism which bus level can handle, driver isn't required to provide this callback.
-
->>   *
->>   * All of the above callbacks, except for @complete(), return error
->codes.
->>   * However, the error codes returned by the resume operations, @resume(),
->> @@ -151,6 +153,7 @@ struct pm_ops {
->>         int (*thaw)(struct device *dev);
->>         int (*poweroff)(struct device *dev);
->>         int (*restore)(struct device *dev);
->> +       int (*wakeup_event)(struct device *dev);
+>Glad to see more attention here.  :)
 >
->My reaction to adding this method is:  why do it here rather
->than at the bus level?
+>Note that this issue is specific to systems using PCI (at core),
+>with additional nuances for PCI systems which use ACPI.
 >
->In my particular experience there are two basic types of wakeup
->event:
+>Device wakeup through USB works fine on various non-PCI and
+>non-ACPI embedded systems, without needing these patches.
+>It's done so for several years now...
 >
->  - Regular IRQs.  Common on SOC systems; the IRQ comes in,
->    the driver knows it must wake up.  Does not need any
->    driver model hook; enable_irq_wake()/disable_irq_wake()
->    suffice.
 >
->    I've seen USB remote wakeup working just fine on several
->    different embedded Linuxes using only regular IRQ hooks.
-Ok, in such case, driver can just ignore the callback.
-
->  - Side-band signaling.  Think of this as an IRQ mechanism
->    that's not used for "normal" driver operation, and you
->    won't be far off.  Examples:
+>> The current process to handle wakeup event is:
+>> 1. driver enable wakeup event line pme and suspend
+>> 2. NPME or ACPI receives wake
+>> There are somethings we need discuss:up event
+>> 3. NPME or ACPI call .wakeup_event() to clear and disable wakeup
+>>    event. Driver can do extra things in .wakeup_event() too.
+>> 4. NPME or ACPI call generic wakeup event handler
+>(device_receive_wakeup_event())
+>> 5. device resumes, and goto 1 for next round of suspend
+>>
+>> 1. is this generic for other platforms?
+>> 2. what should the generic wakeup event handler do?
+>>
+>> Comments and suggestions are welcome!
 >
->     * PCI PME# (and its PCIE analogue).  Bus-specific; it's
->       pretty much a kind of shared IRQ line coupled with a
->       special config-space register protocol.
-Right, in this case, device doesn't require .wakeup_event too.
+>My reaction re "generic" is that these mechanisms should
+>be specific to the busses and platforms involved; see my
+>comments on patch #1.
 >
->     * ACPI GPEs.  Bus-specific ... and similar to GPIO IRQs.
->       Also sharable; bytecode is used to map the GPE and
->       some register state to the ACPI device(s) which
->       issued that GPE.
-This isn't bus specific. ACPI devices can map to any physical devices, like PCI, IDE drive, PNP device. In this case, a bus specific mechanism can't handle all.
-For example the UHCI case. A GPE is fired, we need to clear/disable the wakeup event. PCI bus can't handle it, as UHCI has special registers for this, so we need call into device specific handling.
-
->     * Pin-change events.  Not quite isomorphic with (GPIO)
->       IRQs; sometimes used with pins that aren't used for
->       events (or even GPIOs!) during normal operation.
->       Device-specific.
+>However this means that for PCI devices, or PCIE, this can
+>and should be generic enough to work on non-x86 systems.
 >
->That is, I don't see why these events should expect to be
->filtered through the driver core.  If there's a reason to
->do that, please enlighten me!
-The UHCI case.
+>It's not quite that generic yet, and there are interactions
+>between PCI/PCIE and ACPI that will need work.  But having
+>those layers clean is important; and you've got a decent
+>start on that.
+>
+>Plus there are various other wake-capable devices, like
+>the PS2 devices and UART in /proc/acpi/wakeup on one of
+>my systems:
+>
+>Device  S-state   Status   Sysfs node
+>PCI0      S4     disabled  no-bus:pci0000:00
+>PS2M      S4     disabled  pnp:00:05
+>PS2K      S4     disabled  pnp:00:06
+>UAR1      S4     disabled  pnp:00:08
+>USB1      S3     disabled  pci:0000:00:03.0
+>USB2      S3     disabled  pci:0000:00:03.1
+>USB3      S3     disabled       <-- BIOS bug: no such hardware
+>USB4      S3     disabled  pci:0000:00:03.3
+>S139      S4     disabled       <-- BIOS bug: no such hardware
+>LAN       S4     disabled  pci:0000:00:04.0
+>MDM       S4     disabled       <-- MDM and AUD are the same HW??
+>AUD       S4     disabled  pci:0000:00:02.7
+>SLPB      S4    *enabled
+>
+>But getting a good start on the PCI and ACPI runtime wake
+>framework will help a lot.
+The ACPI mechanism works for all devices you mentioned here. It's not just for ACPI device.
 
 Thanks,
 Shaohua
