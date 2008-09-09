@@ -1,15 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
-Date: Mon, 8 Sep 2008 19:56:23 -0700
-Message-ID: <200809081956.23522.david-b__31285.5643606328$1220930194$gmane$org@pacbell.net>
+From: "Li, Shaohua" <shaohua.li@intel.com>
+Subject: Re: [RFC 3/5] pci wakeup handler
+Date: Tue, 9 Sep 2008 11:33:57 +0800
+Message-ID: <76780B19A496DC4B80439008DAD7076C01AC7F326A__19794.2755221904$1220931490$gmane$org@PDSMSX501.ccr.corp.intel.com>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<20080908092305.221009807@sli10-desk.sh.intel.com>
+	<20080908092305.438330804@sli10-desk.sh.intel.com>
+	<200809081956.42663.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080908092305.221009807@sli10-desk.sh.intel.com>
-Content-Disposition: inline
+In-Reply-To: <200809081956.42663.david-b@pacbell.net>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,83 +20,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: shaohua.li@intel.com
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 September 2008, shaohua.li@intel.com wrote:
-> --- linux.orig/include/linux/pm.h=A0=A0=A0=A0=A0=A0=A02008-09-08 13:55:57=
-.000000000 +0800
-> +++ linux/include/linux/pm.h=A0=A0=A0=A02008-09-08 13:56:51.000000000 +08=
-00
-> @@ -125,6 +125,8 @@ typedef struct pm_message {
-> =A0 *=A0=A0=A0=A0=A0make ANY assumptions about the hardware state right p=
-rior to @restore().
-> =A0 *=A0=A0=A0=A0=A0On most platforms, there are no restrictions on avail=
-ability of
-> =A0 *=A0=A0=A0=A0=A0resources like clocks during @restore().
-> + * @wakeup_event: Checks if a wakeup event occurs. If yes, wakeup event =
-should
-> + * =A0 =A0 =A0be disabled.
-
-And ... what else??  What does the return value indicate?
-Should anything be done with it other than printing it out
-if it's nonzero and we're debugging?
 
 
-> =A0 *
-> =A0 * All of the above callbacks, except for @complete(), return error co=
-des.
-> =A0 * However, the error codes returned by the resume operations, @resume=
-(),
-> @@ -151,6 +153,7 @@ struct pm_ops {
-> =A0=A0=A0=A0=A0=A0=A0=A0int (*thaw)(struct device *dev);
-> =A0=A0=A0=A0=A0=A0=A0=A0int (*poweroff)(struct device *dev);
-> =A0=A0=A0=A0=A0=A0=A0=A0int (*restore)(struct device *dev);
-> +=A0=A0=A0=A0=A0=A0=A0int (*wakeup_event)(struct device *dev);
+>-----Original Message-----
+>From: David Brownell [mailto:david-b@pacbell.net]
+>Sent: Tuesday, September 09, 2008 10:57 AM
+>To: Li, Shaohua
+>Cc: linux-pm@lists.linux-foundation.org; linux-acpi@vger.kernel.org;
+>stern@rowland.harvard.edu
+>Subject: Re: [RFC 3/5] pci wakeup handler
+>
+>On Monday 08 September 2008, shaohua.li@intel.com wrote:
+>> --- linux.orig/drivers/pci/pci-driver.c       2008-09-08
+>13:55:56.000000000 +0800
+>> +++ linux/drivers/pci/pci-driver.c    2008-09-08 14:24:42.000000000 +0800
+>> @@ -472,12 +472,57 @@ static int pci_pm_resume_noirq(struct de
+>>       return error;
+>>  }
+>>
+>> +/*
+>> + * Called when dev is suspected to invoke a wakeup event, return 0 if
+>yes
+>> + * */
+>> +static int pci_pm_wakeup_event(struct device *dev)
+>
+>If wakeup notifications were bus-specific this would
+>take "struct pci_dev *pdev" ... and we're missing a
+>key part of this stuff, namely the code to sort out
+>which devices get this call.
+This device is suspected to invoke a wakeup event, might not be true. I suppose other bus requires the same mechanism, so should be a 'struct device'
 
-My reaction to adding this method is:  why do it here rather
-than at the bus level?
+>> +     struct pci_driver *drv = pdev->driver;
+>> +     u16 reg16;
+>> +     int spurious = 0;
+>> +     int ret = -ENODEV;
+>> +
+>> +     if (pme_pos == 0) {
+>> +             /*
+>> +              * Some USB devices haven't PME, but have specific
+>registers to
+>> +              * control wakeup
+>
+>The PCI PM spec has words some like:  "Some PCI devices support legacy
+>wakeup mechanisms instead of supporting PCI PM capabilities."  Today
+>the best example of that is Intel's UHCI controllers, but it's not
+>restricted to USB at all.
+>
+>I suspect that this particular path won't often need to handle anything
+>other than those Intel controllers, however.  And so I hope that they
+>never share GPEs.  ;)
+This is one of the reason calling drv->wakeup_event().
 
-In my particular experience there are two basic types of wakeup
-event:
+>Another rather important case is bridges.  I observe that with ACPI
+>the way PME# is handled for add-in cards _seems_ to be that the bridge
+>for that PCI bus segment gets a GPE (presumably matching the PME#
+>signal for that bus segment, and maybe for its subsidiaries).  That
+>suggests the bridge will need to scan its children to find out which
+>one(s) issued PME#.  You didn't include such code here, where that
+>notification will be received...
+In GPE case, it appears BIOS will detect the exact wakeup device.
 
-  - Regular IRQs.  Common on SOC systems; the IRQ comes in,
-    the driver knows it must wake up.  Does not need any
-    driver model hook; enable_irq_wake()/disable_irq_wake()
-    suffice.
+In native PME case, if a device is a pcie device, npme will detect the exact device too. If the device is a legacy device, then npme driver will check devices under bridges, please see the npme_pme_target().
 
-    I've seen USB remote wakeup working just fine on several
-    different embedded Linuxes using only regular IRQ hooks.
+We can directly scan children in pci_pm_wakeup_event() too, but GPE case doesn't require it and actually is broken in GPE case as duplication will be added.
 
-  - Side-band signaling.  Think of this as an IRQ mechanism
-    that's not used for "normal" driver operation, and you
-    won't be far off.  Examples:
+I thought this covers all cases in IA platform, right?
+>
+>> +     /* I see spurious GPE here, just ignore it for now */
+>
+>Comments about GPEs shouldn't be included here; they're ACPI-specific.
+>This is PCI-generic code!
+A typo, it should be PME. And actually I found this in npme case instead of ACPI.
 
-     * PCI PME# (and its PCIE analogue).  Bus-specific; it's
-       pretty much a kind of shared IRQ line coupled with a
-       special config-space register protocol.
-
-     * ACPI GPEs.  Bus-specific ... and similar to GPIO IRQs.
-       Also sharable; bytecode is used to map the GPE and
-       some register state to the ACPI device(s) which
-       issued that GPE.
-
-     * Pin-change events.  Not quite isomorphic with (GPIO)
-       IRQs; sometimes used with pins that aren't used for
-       events (or even GPIOs!) during normal operation.
-       Device-specific.
-
-That is, I don't see why these events should expect to be
-filtered through the driver core.  If there's a reason to
-do that, please enlighten me!
-
-- Dave
-
-p.s. Related to this, I don't see the point behind
-     patch 2/5 ...
+>> +     if (!(reg16 & PCI_PM_CTRL_PME_ENABLE))
+>> +             spurious = 1;
+>> +     reg16 &= ~PCI_PM_CTRL_PME_ENABLE;
+>> +     reg16 |= PCI_PM_CTRL_PME_STATUS;
+>> +     pci_write_config_word(pdev, pme_pos + PCI_PM_CTRL, reg16);
+>
+>If this device didn't issue PME, then don't clear PME_ENABLE.
+Ok, this is reasonable.
 
 
-> =A0};
-> =A0
-> =A0/**
+>> +     if (drv && drv->pm && drv->pm->base.wakeup_event) {
+>> +             if (!ret) /* ignore return value in this case */
+>> +                     drv->pm->base.wakeup_event(&pdev->dev);
+>> +             else
+>> +                     return drv->pm->base.wakeup_event(&pdev->dev);
+>
+>I'm also puzzled why you want the legacy PM case (UHCI etc)
+>to work differently from the "normal" one.
+>
+>And style-wise I'd really prefer to see
+>
+>        return pdev->driver->wakeup(pdev);
+>
+>Or perhaps more generically -- since I still have yet to
+>hear an argument why resume() shouldn't suffice to handle
+>the wakeup event processing, at least for PCI -- just
+>
+>        if (pdev->driver->wakeup)
+>                return pdev->driver->wakeup(pdev);
+>        if (pdev->driver->resume)
+>                return pdev->driver->resume(pdev);
+>
+>Although I don't know what the return value here should
+>be interpreted to mean.  Would it be better to return
+>void, and just log all "interesting"/error cases?
+In my mind, .wakeup_event() just returns if the device invokes a wakeup event, ACPI or NPME will call corresponding .resume method. Suspected device might not invoke wakeup event as you said the bridge case.
+
+Thanks,
+Shaohua
