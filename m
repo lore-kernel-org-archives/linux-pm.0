@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 3/5] pci wakeup handler
-Date: Tue, 9 Sep 2008 13:09:00 +0200
-Message-ID: <200809091309.01433.rjw__41788.3936469027$1220958575$gmane$org@sisk.pl>
+Subject: Re: [RFC 5/5] ACPI GPE based wakeup event detection
+Date: Tue, 9 Sep 2008 13:17:50 +0200
+Message-ID: <200809091317.51125.rjw__10319.1570881338$1220958923$gmane$org@sisk.pl>
 References: <20080908091926.785882370@sli10-desk.sh.intel.com>
-	<20080908092305.438330804@sli10-desk.sh.intel.com>
-	<200809081956.42663.david-b@pacbell.net>
+	<1220922812.3989.8.camel@yakui_zhao.sh.intel.com>
+	<76780B19A496DC4B80439008DAD7076C01AC7F3061@PDSMSX501.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200809081956.42663.david-b@pacbell.net>
+In-Reply-To: <76780B19A496DC4B80439008DAD7076C01AC7F3061@PDSMSX501.ccr.corp.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,72 +20,121 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+To: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: "Zhao, Yakui" <yakui.zhao@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 9 of September 2008, David Brownell wrote:
-> On Monday 08 September 2008, shaohua.li@intel.com wrote:
-> > --- linux.orig/drivers/pci/pci-driver.c	2008-09-08 13:55:56.000000000 +0800
-> > +++ linux/drivers/pci/pci-driver.c	2008-09-08 14:24:42.000000000 +0800
-> > @@ -472,12 +472,57 @@ static int pci_pm_resume_noirq(struct de
-> >  	return error;
-> >  }
-> >  
-> > +/*
-> > + * Called when dev is suspected to invoke a wakeup event, return 0 if yes
-> > + * */
-> > +static int pci_pm_wakeup_event(struct device *dev)
+On Tuesday, 9 of September 2008, Li, Shaohua wrote:
+> >> > +
+> >> >  /**
+> >> >   * acpi_bus_notify
+> >> >   * ---------------
+> >> > @@ -506,6 +519,8 @@ static void acpi_bus_notify(acpi_handle
+> >> >     int result = 0;
+> >> >     struct acpi_device *device = NULL;
+> >> >
+> >> > +   blocking_notifier_call_chain(&acpi_bus_notify_list,
+> >> > +                   type, (void *)handle);
+> >>
+> >> Hm, perhaps I'm too tired and I'm missing something obvious, but can you
+> >> tell me please why that has to be a notifier chain?  It looks like you
+> >add only
+> >> one notifier to it, so seemingly it could be replaced by a direct call to
+> >a
+> >> function like acpi_gpe_pme_handler() (with modified list of arguments).
+> >When the notifier chain is used, it can work regardless of whether the
+> >CONFIG_ACPI_GPE_WAKEUP is set.
+> >If the CONFIG_ACPI_GPE_WAKEUP is set, what you said is also OK.
+> I actually had another usage for this (I sent a patchset for docking station, which uses it)
 > 
-> If wakeup notifications were bus-specific this would
-> take "struct pci_dev *pdev" ... and we're missing a
-> key part of this stuff, namely the code to sort out
-> which devices get this call.
+> >> >     if (acpi_bus_get_device(handle, &device))
+> >> >             return;
+> >> > Index: linux/drivers/acpi/sleep/wakeup.c
+> >> > ===================================================================
+> >> > --- linux.orig/drivers/acpi/sleep/wakeup.c  2008-09-08
+> >14:28:55.000000000 +0800
+> >> > +++ linux/drivers/acpi/sleep/wakeup.c       2008-09-08
+> >15:04:23.000000000 +0800
+> >> > @@ -142,6 +142,70 @@ void acpi_disable_wakeup_device(u8 sleep
+> >> >     spin_unlock(&acpi_device_lock);
+> >> >  }
+> >> >
+> >> > +#ifdef CONFIG_ACPI_GPE_WAKEUP
+> >> > +static int acpi_gpe_pme_check(struct acpi_device *dev)
+> >> > +{
+> >> > +   struct device *ldev;
+> >> > +
+> >> > +   ldev = acpi_get_physical_device(dev->handle);
+> >> > +   if (!ldev)
+> >> > +           return -ENODEV;
+> >> > +   /*
+> >> > +    * AML code might already clear the event, so ignore the return
+> >value.
+> >> > +    * Actually we can't correctly detect which device invokes GPE if
+> >the
+> >> > +    * event is cleared.
+> >> > +    */
+> >> > +   if (ldev->bus->pm && ldev->bus->pm->base.wakeup_event)
+> >> > +           ldev->bus->pm->base.wakeup_event(ldev);
+> >> > +
+> >> > +   /*
+> >> > +    * We always send the event. AML code usually identifies the exact
+> >> > +    * device of the GPE, let's trust it
+> >> > +    */
+> >> > +   device_receive_wakeup_event(ldev);
+> >> > +
+> >> > +   put_device(ldev);
+> >> > +   return 0;
+> >> > +}
+> >> > +
+> >> > +static int acpi_gpe_pme_handler(struct notifier_block *nb,
+> >> > +   unsigned long type, void *data)
+> >> > +{
+> >> > +   int ret;
+> >> > +   acpi_handle handle = data;
+> >> > +   struct acpi_device *dev;
+> >> > +
+> >> > +   if (type != ACPI_NOTIFY_DEVICE_WAKE)
+> >> > +           return NOTIFY_DONE;
+> >> > +
+> >> > +   if (acpi_bus_get_device(handle, &dev))
+> >> > +           return NOTIFY_DONE;
+> >> > +
+> >> > +   ret = acpi_gpe_pme_check(dev);
+> >> > +
+> >> > +   acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+> >> > +           ACPI_NOT_ISR);
+> >> > +
+> >>
+> >> At which point are dev->wakeup.gpe_device and dev->wakeup.gpe_number
+> >> determined, for example, for PCI devices, and how?
+> >In the boot phase a PCI device will be bound with an ACPI device. In the
+> >system based on ACPI(GPE) when a PCI device generates a wakeup event, an
+> >ACPI interrupt will be triggered and the ACPI AML code will send the
+> >device wakeup event to the corresponding ACPI device. In such case we
+> >can get the gpe number for the PCI device.
+> This is correct. For example:
 > 
-> I think you're assuming ACPI can just use its event
-> notification scheme to map from GPE through AML to
-> the particular device.  That's partly OK; except, see
-> below about bridge nodes.
+>             Method (_L07, 0, NotSerialized)
+>             {
+>                 Notify (\_SB.PCI0.SMBS, 0x02)
+>             }
 > 
+>             Method (_L05, 0, NotSerialized)
+>             {
+>                 Notify (\_SB.PCI0.MODM, 0x02)
+>             }
 > 
-> > +{
-> > +	struct pci_dev *pdev = to_pci_dev(dev);
-> > +	int pme_pos = pci_find_capability(pdev, PCI_CAP_ID_PM);
-> 
-> Yes, use the cached value here (like Rafael said)...
-> 
-> 
-> > +	struct pci_driver *drv = pdev->driver;
-> > +	u16 reg16;
-> > +	int spurious = 0;
-> > +	int ret = -ENODEV;
-> > +
-> > +	if (pme_pos == 0) {
-> > +		/*
-> > +		 * Some USB devices haven't PME, but have specific registers to
-> > +		 * control wakeup
-> 
-> The PCI PM spec has words some like:  "Some PCI devices support legacy
-> wakeup mechanisms instead of supporting PCI PM capabilities."  Today
-> the best example of that is Intel's UHCI controllers, but it's not
-> restricted to USB at all.
-> 
-> I suspect that this particular path won't often need to handle anything
-> other than those Intel controllers, however.  And so I hope that they
-> never share GPEs.  ;)
-> 
-> Another rather important case is bridges.  I observe that with ACPI
-> the way PME# is handled for add-in cards _seems_ to be that the bridge
-> for that PCI bus segment gets a GPE (presumably matching the PME#
-> signal for that bus segment, and maybe for its subsidiaries).  That
-> suggests the bridge will need to scan its children to find out which
-> one(s) issued PME#.  You didn't include such code here, where that
-> notification will be received...
+> GPE 5,7 are wakeup GPEs
 
-AFAICS, the 'original' PCI PME# (as opposed to the PCI Express native PME)
-signal is supposed to be routed _around_ bridges and (presumably) the entire
-PME# network would share one GPE in that case.  Then, we'd actually have to
-check all of the PCI devices to see which of them caused the event to happen.
+Well, it is not clear to me, though, which one of them is associated with the
+PME# signal.
+
+Also, the question was what piece of code in the kernel was responsible for the
+identification of the wake-up GPEs and for setting dev->wakeup.gpe_device
+and dev->wakeup.gpe_number as appropriate.  In particular, how do we figure
+out which wake-up GPE will be used for signalling PME# for devices that are
+not on-board?
 
 Thanks,
 Rafael
