@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
-Date: Tue, 9 Sep 2008 14:39:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0809091428000.2375-100000__44517.0403145768$1220985997$gmane$org@iolanthe.rowland.org>
-References: <200809090852.59461.david-b@pacbell.net>
+From: Nick Moszer <nick.moszer@packetdigital.com>
+Subject: SATA Link PM & Partial
+Date: Tue, 09 Sep 2008 16:25:19 -0500
+Message-ID: <48C6E9BF.20103@packetdigital.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200809090852.59461.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,48 +15,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 9 Sep 2008, David Brownell wrote:
+Hello,
 
-> > (As a matter of fact, I have no idea whether or not Intel's legacy PM =
+I've been testing the Linux based SATA link pm capabilities of drives
+for a project. I have come across a curious set of drives and wonder if
+anyone on the list can shed light on the issues.
 
-> > for UHCI is implemented in AML. =A0It may vary from one BIOS to another=
-.)
-> =
 
-> One data point:  on the laptop used to type this message,
-> the GPE code block includes stuff like this for each UHCI:
-> =
+Some drives appear never to go to partial on the link when
+"medium_power" is written to link_power_management_policy at
+/sys/class/scsi_host/hostX..  All drives I've tested will go to slumber
+when "min_power" is written.  The drives that do go to partial when set
+through sysfs also allow manual transitions, a.k.a writing to the AHCI
+port command register directly to force it to a pm mode.  The drives
+that do not go to partial when set through sysfs will NOT allow any
+manual transitions.
 
->         Method (_L0C, 0, NotSerialized)
->         {
->             Notify (\_SB.PCI0.USB3, 0x02)
->         }
-> =
 
-> Without diving into the ICHx specs (which I believe DO have
-> such details, thanks be!), my first reaction is that this is
-> not a "case (c)".  Of course, the rest of the AML code is,
-> as usual, cryptic (I'd rather have C code), and such stuff
-> might be hidden elsewhere in the event sequence.
+I don't have a SATA bus sniffer handy so I can't see the primitives to
+find out exactly what is going on.
 
-Fortunately the interface is extremely simple.  It's an 8-bit register =
 
-in the PCI config space, where the two low-order bits enable =
+The drives I've found that won't go to partial when enabled through
+sysfs are:
+Seagate Momentus ST9160821AS
+Seagate Momentus ST9160823AS
+Lite-On DVDRW/CDRW DS-8A2S
 
-wakeup detection for each of the two ports.  It won't matter if the =
 
-driver and the AML both try to disable wakeup; the end result should =
+I saw the note about DIPM in libata-core.c ata_dev_set_dipm() and
+partial.  This does not appear to be the case as everything I'm talking
+about is HIPM.  I'm wondering if perhaps some drives just don't support
+partial on the link?  Using hdparm -I on the Seagate drives the output
+w/ regards to PM is the same "Advanced Power Management" is supported on
+both drives that work and don't work.
 
-work regardless.
 
-Anyway, the real problem here is not to enable or disable wakeup
-detection.  It is to determine whether or not the device really did
-issue a wakeup request.  With Intel's UHCI this involves reading an I/O
-register.  On all the systems I have tried it works even in D3hot, so
-we should be okay.
+Does anyone know of a way to tell if these drives actually support
+partial and the driver needs work or if these drives just plain don't
+support it?  I haven't come across anything in the AHCI or SATA specs
+that say if it's optional.  They make it seem like both partial and
+slumber are mandatory.
 
-Alan Stern
+Thanks!
+
+Nick Moszer
