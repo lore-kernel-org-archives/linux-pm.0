@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC 5/5] ACPI GPE based wakeup event detection
-Date: Tue, 9 Sep 2008 10:08:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0809091006280.2486-100000__1982.00670206479$1220969780$gmane$org@iolanthe.rowland.org>
-References: <1220922812.3989.8.camel@yakui_zhao.sh.intel.com>
+Subject: Re: [RFC 1/5] devcore introduce wakeup_event callback
+Date: Tue, 9 Sep 2008 10:18:06 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0809091014010.2486-100000__25155.0659923398$1220970121$gmane$org@iolanthe.rowland.org>
+References: <200809082226.11399.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1220922812.3989.8.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <200809082226.11399.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: linux-pm@lists.linux-foundation.org, dbrownell@users.sourceforge.net, linux-acpi@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 9 Sep 2008, Zhao Yakui wrote:
+On Mon, 8 Sep 2008, David Brownell wrote:
 
-> > > --- linux.orig/drivers/acpi/bus.c	2008-09-08 14:28:32.000000000 +0800
-> > > +++ linux/drivers/acpi/bus.c	2008-09-08 14:29:03.000000000 +0800
-> > > @@ -496,6 +496,19 @@ static int acpi_bus_check_scope(struct a
-> > >  	return 0;
-> > >  }
-> > >  
-> > > +static BLOCKING_NOTIFIER_HEAD(acpi_bus_notify_list);
-> > > +int register_acpi_bus_notifier(struct notifier_block *nb)
-> > > +{
-> > > +	return blocking_notifier_chain_register(&acpi_bus_notify_list, nb);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(register_acpi_bus_notifier);
-> > > +
-> > > +void unregister_acpi_bus_notifier(struct notifier_block *nb)
-> > > +{
-> > > +	blocking_notifier_chain_unregister(&acpi_bus_notify_list, nb);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(unregister_acpi_bus_notifier);
-> > > +
-> > >  /**
-> > >   * acpi_bus_notify
-> > >   * ---------------
-> > > @@ -506,6 +519,8 @@ static void acpi_bus_notify(acpi_handle 
-> > >  	int result = 0;
-> > >  	struct acpi_device *device = NULL;
-> > >  
-> > > +	blocking_notifier_call_chain(&acpi_bus_notify_list,
-> > > +			type, (void *)handle);
-> > 
-> > Hm, perhaps I'm too tired and I'm missing something obvious, but can you
-> > tell me please why that has to be a notifier chain?  It looks like you add only
-> > one notifier to it, so seemingly it could be replaced by a direct call to a
-> > function like acpi_gpe_pme_handler() (with modified list of arguments).
-> When the notifier chain is used, it can work regardless of whether the
-> CONFIG_ACPI_GPE_WAKEUP is set.
-> If the CONFIG_ACPI_GPE_WAKEUP is set, what you said is also OK. 
+> > For example the UHCI case. A GPE is fired, we need to clear/disable
+> > the wakeup event. PCI bus can't handle it, as UHCI has special
+> > registers for this, so we need call into device specific handling.  
+> 
+> So the bus-level PCI operation would end up with a device
+> that's either (a) known to have fired PME#, or (b) known
+> to be a device with legacy PM -- like UHCI -- which it's
+> presuming has been wakeup-enabled.
+> 
+> Then in the (a) case it can clear PME# the normal way, and
+> would rarely need to do anything else.
+> 
+> While in the (b) case the UHCI driver would need to have
+> provided some device-specific -- not bus-generic -- op
+> called like dev->driver->pm.is_wakeup(), to diddle those
+> registers (only for Intel silicon, not UHCI from VIA or
+> Genesys or anyone else).
 
-If CONFIG_ACPI_GPE_WAKEUP is not set then you should define 
-acpi_gpe_pme_handler() as a do-nothing function.  Then you could call 
-it always, regardless of the kconfig setting, with no need for a 
-notifier chain.
+What about case (c): The device uses legacy PM but the wakeup settings 
+have already been handled by the ACPI AML code?  There's no need to 
+clear any extra wakeup-related stuff, but it still is necessary to tell 
+the driver about the event.
+
+(As a matter of fact, I have no idea whether or not Intel's legacy PM 
+for UHCI is implemented in AML.  It may vary from one BIOS to another.)
 
 Alan Stern
