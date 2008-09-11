@@ -1,14 +1,11 @@
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Subject: Re: FW:  select with timeout across S3
-Date: Thu, 11 Sep 2008 02:17:10 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C0646024D__37399.9486015693$1221114257$gmane$org@USA0300MS03.na.xerox.net>
-References: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
-	<20080901062513.GA9851@ucw.cz>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: [RFC 0/5] device wakeup event support v2
+Date: Thu, 11 Sep 2008 14:30:37 +0800
+Message-ID: <20080911063037.698427944__45468.8011938289$1221115339$gmane$org@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +15,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: martyleisner@yahoo.com, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This series add device wakeup event detection support. This is the base to
+implement runtime device suspend/resume, though we don't support it now.
+But David said USB is approaching to this. See this bugzilla
+http://bugzilla.kernel.org/show_bug.cgi?id=6892 for detail.
 
-I finally got 2.6.27-rc5 running...no change in my test program...
+changes v1 -> v2:
+1. scan pci bridge for PME. Current implementation is just doing scan if target device is a bridge
+2. move device_receive_wakeup_event() call to pci, and provide an API (pci_handle_wakeup_event()) for non-ACPI & non-PCIe platform
+3. fixed a lot of coding style issues
 
-I'm going to look at the patches we're using for 2.4.20/2.6.20...
- 
-marty
-
-
------Original Message-----
-From: Pavel Machek [mailto:pavel@suse.cz]
-Sent: Mon 9/1/2008 2:25 AM
-To: Leisner, Martin
-Cc: linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
-Subject: Re: FW: [linux-pm] select with timeout across S3
- 
-Hi!
-
-> The behavior of linux (in both 2.4.x and 2.6.x) is when the processor
-> sleeps, timeouts on select don't take into account the sleep time,
-> only the run time.
-> 
-> For example, this program should pause for 10 minutes -- however
-> if we go into S3 in the middle its pausing for (10 minutes + time in
-> S3)
-> 
-> I saw this on both 2.6.20 and 2.6.22...
-
-Can you test this on 2.6.27-rc? We did have some fixes in that
-area....
-
-							Pavel
-
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
