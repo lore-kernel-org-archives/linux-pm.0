@@ -1,11 +1,14 @@
-From: Nick Moszer <nick.moszer@packetdigital.com>
-Subject: SATA Link PM & Partial
-Date: Tue, 09 Sep 2008 16:25:19 -0500
-Message-ID: <48C6E9BF.20103@packetdigital.com>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: Re: FW:  select with timeout across S3
+Date: Thu, 11 Sep 2008 02:17:10 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C0646024D__37399.9486015693$1221114257$gmane$org@USA0300MS03.na.xerox.net>
+References: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
+	<20080901062513.GA9851@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,51 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: martyleisner@yahoo.com, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi,
 
-I've been testing the Linux based SATA link pm capabilities of drives
-for a project. I have come across a curious set of drives and wonder if
-anyone on the list can shed light on the issues.
+I finally got 2.6.27-rc5 running...no change in my test program...
 
-
-Some drives appear never to go to partial on the link when
-"medium_power" is written to link_power_management_policy at
-/sys/class/scsi_host/hostX..  All drives I've tested will go to slumber
-when "min_power" is written.  The drives that do go to partial when set
-through sysfs also allow manual transitions, a.k.a writing to the AHCI
-port command register directly to force it to a pm mode.  The drives
-that do not go to partial when set through sysfs will NOT allow any
-manual transitions.
+I'm going to look at the patches we're using for 2.4.20/2.6.20...
+ 
+marty
 
 
-I don't have a SATA bus sniffer handy so I can't see the primitives to
-find out exactly what is going on.
+-----Original Message-----
+From: Pavel Machek [mailto:pavel@suse.cz]
+Sent: Mon 9/1/2008 2:25 AM
+To: Leisner, Martin
+Cc: linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
+Subject: Re: FW: [linux-pm] select with timeout across S3
+ 
+Hi!
 
+> The behavior of linux (in both 2.4.x and 2.6.x) is when the processor
+> sleeps, timeouts on select don't take into account the sleep time,
+> only the run time.
+> 
+> For example, this program should pause for 10 minutes -- however
+> if we go into S3 in the middle its pausing for (10 minutes + time in
+> S3)
+> 
+> I saw this on both 2.6.20 and 2.6.22...
 
-The drives I've found that won't go to partial when enabled through
-sysfs are:
-Seagate Momentus ST9160821AS
-Seagate Momentus ST9160823AS
-Lite-On DVDRW/CDRW DS-8A2S
+Can you test this on 2.6.27-rc? We did have some fixes in that
+area....
 
+							Pavel
 
-I saw the note about DIPM in libata-core.c ata_dev_set_dipm() and
-partial.  This does not appear to be the case as everything I'm talking
-about is HIPM.  I'm wondering if perhaps some drives just don't support
-partial on the link?  Using hdparm -I on the Seagate drives the output
-w/ regards to PM is the same "Advanced Power Management" is supported on
-both drives that work and don't work.
-
-
-Does anyone know of a way to tell if these drives actually support
-partial and the driver needs work or if these drives just plain don't
-support it?  I haven't come across anything in the AHCI or SATA specs
-that say if it's optional.  They make it seem like both partial and
-slumber are mandatory.
-
-Thanks!
-
-Nick Moszer
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
