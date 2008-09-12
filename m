@@ -1,66 +1,20 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: FW:  select with timeout across S3
-Date: Thu, 11 Sep 2008 11:24:10 +0200
-Message-ID: <20080911092408.GA14503__28856.2215552249$1221164740$gmane$org@elf.ucw.cz>
-References: <556445368AFA1C438794ABDA8901891C09639B7A@USA0300MS03.na.xerox.net>
-	<20080901062513.GA9851@ucw.cz>
-	<556445368AFA1C438794ABDA8901891C0646024D@USA0300MS03.na.xerox.net>
+Subject: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Date: Fri, 12 Sep 2008 10:31:14 +0200
+Message-ID: <20080912083113.GA1625@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755817AbYILKCa@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <556445368AFA1C438794ABDA8901891C0646024D@USA0300MS03.na.xerox.net>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: martyleisner@yahoo.com, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2008-09-11 02:17:10, Leisner, Martin wrote:
-> Hi,
-> 
-> I finally got 2.6.27-rc5 running...no change in my test program...
-> 
-> I'm going to look at the patches we're using for 2.4.20/2.6.20...
+Hi!
 
-So the bug is still there, or did 2.6.27-rc5 magically solve the problem?
-
-> marty
-> 
-> 
-> -----Original Message-----
-> From: Pavel Machek [mailto:pavel@suse.cz]
-> Sent: Mon 9/1/2008 2:25 AM
-> To: Leisner, Martin
-> Cc: linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
-> Subject: Re: FW: [linux-pm] select with timeout across S3
->  
-> Hi!
-> 
-> > The behavior of linux (in both 2.4.x and 2.6.x) is when the processor
-> > sleeps, timeouts on select don't take into account the sleep time,
-> > only the run time.
-> > 
-> > For example, this program should pause for 10 minutes -- however
-> > if we go into S3 in the middle its pausing for (10 minutes + time in
-> > S3)
-> > 
-> > I saw this on both 2.6.20 and 2.6.22...
-> 
-> Can you test this on 2.6.27-rc? We did have some fixes in that
-> area....
-> 
-> 							Pavel
-> 
-
+The old "you have to press keys to get machine to progress" seems to
+be back :-(. Thinkpad x60.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
