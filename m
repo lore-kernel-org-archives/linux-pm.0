@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] e100: Use pci_pme_active to clear PME_Status
-	and disable PME#
-Date: Mon, 15 Sep 2008 01:44:35 +0200
-Message-ID: <200809150144.36142.rjw__19034.7038246275$1221435816$gmane$org@sisk.pl>
-References: <200808051730.27599.alessandro.guido@gmail.com>
-	<200808080018.05887.rjw@sisk.pl> <48CC1F7C.7050908@garzik.org>
+Subject: Re: [RFC 0/5] device wakeup event support v2
+Date: Mon, 15 Sep 2008 01:50:00 +0200
+Message-ID: <200809150150.01687.rjw__19574.7745609426$1221436131$gmane$org@sisk.pl>
+References: <20080911063037.698427944@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48CC1F7C.7050908@garzik.org>
+In-Reply-To: <20080911063037.698427944@sli10-desk.sh.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,41 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alessandro Guido <alessandro.guido@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, netdev@vger.kernel.org
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 13 of September 2008, Jeff Garzik wrote:
-> Rafael J. Wysocki wrote:
-> > e100: Use pci_pme_active to clear PME_Status and disable PME#
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > ---
-> >  drivers/net/e100.c |    4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/net/e100.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/e100.c
-> > +++ linux-2.6/drivers/net/e100.c
-> > @@ -2738,9 +2738,7 @@ static int __devinit e100_probe(struct p
-> >  		nic->flags |= wol_magic;
-> >  
-> >  	/* ack any pending wake events, disable PME */
-> > -	err = pci_enable_wake(pdev, 0, 0);
-> > -	if (err)
-> > -		DPRINTK(PROBE, ERR, "Error clearing wake event\n");
-> > +	pci_pme_active(pdev, false);
+On Thursday, 11 of September 2008, Shaohua Li wrote:
+> This series add device wakeup event detection support. This is the base to
+> implement runtime device suspend/resume, though we don't support it now.
+> But David said USB is approaching to this. See this bugzilla
+> http://bugzilla.kernel.org/show_bug.cgi?id=6892 for detail.
 > 
-> Since I am rusty on my PCI...  why is this needed?
+> changes v1 -> v2:
+> 1. scan pci bridge for PME. Current implementation is just doing scan if target device is a bridge
+> 2. move device_receive_wakeup_event() call to pci, and provide an API (pci_handle_wakeup_event()) for non-ACPI & non-PCIe platform
+> 3. fixed a lot of coding style issues
+> 
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 
-Because we just want to clear PME_Status and disable PME#, but
-pci_enable_wake() involves an ACPI call and generally depends on the
-dev->power.can_wakeup and dev->power.should_wakeup flags being set.
+Thanks for posting the update.
 
-The patch I sent here http://marc.info/?l=linux-kernel&m=122096638020191&w=4
-has a better changelog.
+Unfortunately, I won't be able to review the patches until after I get back
+from the Kernel Summit.
 
 Thanks,
 Rafael
