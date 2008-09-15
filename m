@@ -1,43 +1,36 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Date: Mon, 15 Sep 2008 11:19:25 +0200
-Message-ID: <20080915091925.GB1787@elf.ucw.cz>
-References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de> <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
+Date: Mon, 15 Sep 2008 07:08:01 -0700 (PDT)
+Message-ID: <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de>
+References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
+ <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754298AbYIOJSR@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755144AbYIOOIo@vger.kernel.org>
+In-Reply-To: <20080915091925.GB1787@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
+To: Pavel Machek <pavel@suse.cz>
 Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2008-09-14 12:15:04, Thomas Gleixner wrote:
-> On Sun, 14 Sep 2008, Pavel Machek wrote:
-> > On Sun 2008-09-14 10:51:04, Thomas Gleixner wrote:
-> > > On Sun, 14 Sep 2008, Pavel Machek wrote:
-> > > > > It _does_ happen with mainline 2.6.27-rc6.
-> > > > 
-> > > > s2ram hs problem in mainline 2.6.26, too. (Different problem: no
-> > > > ammount pressing shift helps there.) nohz=off cures it, too.
-> > > 
-> > > Ok, so it's not a regression.
-> > > 
-> > > Is the problem in the suspend path or in the resume ?
+On Mon, 15 Sep 2008, Pavel Machek wrote:
 > > 
-> > During resume, on both 2.6.26 and 2.6.27-rc6. (27-rc6 actually resumes
-> > if I keep hitting shift, and I get "sleepy" system after that --
-> > cursor does not blink, but machine can be used -- as long as I keep
-> > hitting keys).
-> 
-> Hmm. Can you please provide the output of /proc/timer_list when the
-> system is in that "sleepy" state.
+> > Hmm. Can you please provide the output of /proc/timer_list when the
+> > system is in that "sleepy" state.
 
--rc5 seems to work ok... is there some patch I should try to revert
-first?
+Any chance to get that output ?
+ 
+> -rc5 seems to work ok... is there some patch I should try to revert
+> first?
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The relevant 9 changes are from:
+
+7c1e76897492d92b6a1c2d6892494d39ded9680c
+
+to
+
+72d43d9bc9210d24d09202eaf219eac09e17b339
+
+Thanks,
+
+	tglx
