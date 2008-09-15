@@ -1,44 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 0/5] device wakeup event support v2
-Date: Mon, 15 Sep 2008 01:50:00 +0200
-Message-ID: <200809150150.01687.rjw__19574.7745609426$1221436131$gmane$org@sisk.pl>
-References: <20080911063037.698427944@sli10-desk.sh.intel.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Date: Mon, 15 Sep 2008 11:19:25 +0200
+Message-ID: <20080915091925.GB1787@elf.ucw.cz>
+References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de> <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080911063037.698427944@sli10-desk.sh.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754298AbYIOJSR@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+In-Reply-To: <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 11 of September 2008, Shaohua Li wrote:
-> This series add device wakeup event detection support. This is the base to
-> implement runtime device suspend/resume, though we don't support it now.
-> But David said USB is approaching to this. See this bugzilla
-> http://bugzilla.kernel.org/show_bug.cgi?id=6892 for detail.
+On Sun 2008-09-14 12:15:04, Thomas Gleixner wrote:
+> On Sun, 14 Sep 2008, Pavel Machek wrote:
+> > On Sun 2008-09-14 10:51:04, Thomas Gleixner wrote:
+> > > On Sun, 14 Sep 2008, Pavel Machek wrote:
+> > > > > It _does_ happen with mainline 2.6.27-rc6.
+> > > > 
+> > > > s2ram hs problem in mainline 2.6.26, too. (Different problem: no
+> > > > ammount pressing shift helps there.) nohz=off cures it, too.
+> > > 
+> > > Ok, so it's not a regression.
+> > > 
+> > > Is the problem in the suspend path or in the resume ?
+> > 
+> > During resume, on both 2.6.26 and 2.6.27-rc6. (27-rc6 actually resumes
+> > if I keep hitting shift, and I get "sleepy" system after that --
+> > cursor does not blink, but machine can be used -- as long as I keep
+> > hitting keys).
 > 
-> changes v1 -> v2:
-> 1. scan pci bridge for PME. Current implementation is just doing scan if target device is a bridge
-> 2. move device_receive_wakeup_event() call to pci, and provide an API (pci_handle_wakeup_event()) for non-ACPI & non-PCIe platform
-> 3. fixed a lot of coding style issues
-> 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> Hmm. Can you please provide the output of /proc/timer_list when the
+> system is in that "sleepy" state.
 
-Thanks for posting the update.
+-rc5 seems to work ok... is there some patch I should try to revert
+first?
 
-Unfortunately, I won't be able to review the patches until after I get back
-from the Kernel Summit.
-
-Thanks,
-Rafael
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
