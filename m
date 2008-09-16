@@ -1,54 +1,73 @@
-From: "Scott Thompson" <postfail@hushmail.com>
-Subject: DSDT from your system / new DSDT archive
-Date: Tue, 16 Sep 2008 12:55:42 -0400
-Message-ID: <20080916165543.EA6A42003D@smtp.hushmail.com>
-Reply-To: postfail@hushmail.com
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Date: Tue, 16 Sep 2008 10:02:51 -0700 (PDT)
+Message-ID: <alpine.LFD.1.10.0809161000410.3875@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
+ <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz> <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de> <20080915192600.GA1627@elf.ucw.cz> <20080915195951.GA1651@elf.ucw.cz>
+ <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757129AbYIPRDU@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all -- I was attempting to find a DSDT archive with sample DSDT 
-from a variety of systems.
-The closest thing I have found was the archive that was at 
-http://acpi.sourceforge.net ; if anyone
-knows of another DSDT archive please let me know.
+On Tue, 16 Sep 2008, Thomas Gleixner wrote:
+> On Mon, 15 Sep 2008, Pavel Machek wrote:
+> > > cg-seek here, and problem is back. Good. I can get the
 
-Since a current one doesn't seem to exist, I am attempting to put 
-my own database together up on the 
-internets (URL coming soon) and am looking for folks to send me the 
-DSDT from their systems.  Gathering your system DSDT takes
-less than about 2 minutes by running the following:  
+Does the patch below fix it ?
 
-Windows:
-1. extract acpica tools from acpica.org; latest as of this writing 
-is http://acpica.org/download/iasl-win-20080829.zip
-2. run 'iasl -g' to extract all acpi tables.
-3. send all '.dsl' and '.dat' files extracted
+Thanks,
 
-Linux:
-1. file is at /proc/acpi/dsdt 
-2. may need to, as sudo or root, cp and then 'chown' the file to a 
-non-root id to email.
-
-If anyone is interested, please send the files (or url link), 
-hardware make/model, and your name/email (if you want credited), to 
-postfail@hushmail.com; please no bombardment of the linux-pm / 
-linux-acpi lists.
-
-Thanks in advance...
-
----------------------------------------
-Scott Thompson / postfail@hushmail.com
----------------------------------------
+	tglx
+----
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 1876b52..eb8736f 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -69,6 +69,9 @@ void clockevents_set_mode(struct clock_event_device *dev,
+ 		dev->set_mode(mode, dev);
+ 		dev->mode = mode;
+ 	}
++
++	if (mode == CLOCK_EVT_MODE_SHUTDOWN)
++		dev->next_event.tv64 = KTIME_MAX;
+ }
+ 
+ /**
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index 2f5a382..6b0b230 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -434,6 +434,19 @@ again:
+ }
+ 
+ /*
++ * We shutdown the device which will stop anyway, but we keep the
++ * next_event untouched as it carries the information when we
++ * broadcast.
++ */
++static void tick_broadcast_shutdown_device(struct clock_event_device *dev)
++{
++	if (dev->mode != CLOCK_EVT_MODE_SHUTDOWN) {
++		dev->set_mode(CLOCK_EVT_MODE_SHUTDOWN, dev);
++		dev->mode = CLOCK_EVT_MODE_SHUTDOWN;
++	}
++}
++
++/*
+  * Powerstate information: The system enters/leaves a state, where
+  * affected devices might stop
+  */
+@@ -464,7 +477,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
+ 		if (!cpu_isset(cpu, tick_broadcast_oneshot_mask)) {
+ 			cpu_set(cpu, tick_broadcast_oneshot_mask);
+-			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
++			tick_broadcast_shutdown_device(dev);
+ 			if (dev->next_event.tv64 < bc->next_event.tv64)
+ 				tick_broadcast_set_event(dev->next_event, 1);
+ 		}
