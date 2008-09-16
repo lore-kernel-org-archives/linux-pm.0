@@ -1,13 +1,12 @@
-From: Andi Kleen <andi@firstfloor.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
-Date: Tue, 16 Sep 2008 14:49:22 +0200
-Message-ID: <20080916124922.GB25711__29767.2836845324$1221569474$gmane$org@one.firstfloor.org>
+Date: Tue, 16 Sep 2008 06:53:45 -0700
+Message-ID: <20080916065345.76d052e1__3926.89780933342$1221573473$gmane$org@infradead.org>
 References: <20080916091219.GA1068@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20080916091219.GA1068@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,33 +17,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, a.p.zijlstra@chello.nl, andi@firstfloor.org
+To: arun@linux.vnet.ibm.com
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 02:42:31PM +0530, Arun R Bharadwaj wrote:
+On Tue, 16 Sep 2008 14:42:31 +0530
+Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
+
 > Hi,
 > 
-> An idle cpu on which device drivers have initialized timers, has to be frequently woken up to service the timers. So, consolidation of timers onto a fewer number of cpus is important. Migration of
-> timers from idle cpus onto lesser idle cpus is necessary. Currently, timers are migrated during the cpu offline operation. However cpu-hotplug for the sake of idle system power management is too
-> heavy. So, this patch implements a lightweight timer migration framework.
+> An idle cpu on which device drivers have initialized timers, has to
+> be frequently woken up to service the timers. So, consolidation of
+> timers onto a fewer number of cpus is important. Migration of timers
+> from idle cpus onto lesser idle cpus is necessary. Currently, timers
+> are migrated during the cpu offline operation. However cpu-hotplug
+> for the sake of idle system power management is too heavy. So, this
+> patch implements a lightweight timer migration framework.
 
+while I absolutely like reducing power consumption... I'm not sure this
+helps or is the right approach.
 
-Who would trigger such migrations?
+First of all, it's of course absolutely better to fix timers and apps
+that cause them (and with PowerTOP we fixed basically all the bad
+stuff).
 
-I'm not sure it's a good idea to make it fully manually triggered. It would be nicer 
-if it was bound to the scheduler's power saving heuristic. So if the scheduler consolidates
-threads on a single package for power saving the timers should follow too.
+Second, in terms of power; a wake up is a wake up, it doesn't really
+matter where it happens. 
 
-> 
-> Also, in a multi-core, multi-package system, it is always desirable to have all the timers firing on the cpus present in the same package. This would enable us to place the idle package in deep sleep
-> state. So, migration of timers is required for this.
-> 
-> A per_cpu sysfs hook is created at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to cpuX/timer_migration, all regular and hrtimers from cpuX are migrated to cpu0. The fact that all
-> timers are migrated from cpuX to cpu0 is demonstrated by making a note of /proc/interrupts.
+Now we could do some consolidation (which realistically needs the range
+timer feature that's aimed for 2.6.28), but I would much rather do that
+in a different way: rather than actively moving stuff, I would instead
+suggest sharing the timer queues between logical cpus that share the
+same cache. (Now its an admin choice if he wants this on a "shared L1",
+"shared L2" or "shared L3" basis). 
 
+Or if you want to forcefully migrate timers, don't move existing ones,
+just on queue/requeue put the on not-the-local-cpu. Sure they'll fire
+once on the "wrong" cpu, but that's a very short term problem!
 
-I suspect moving all to cpu 0 is too inflexible as Peter already mentioned.
-
-(haven't looked at the actual code yet sorry)
-
--Andi
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
