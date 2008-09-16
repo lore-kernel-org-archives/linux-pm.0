@@ -1,28 +1,51 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Date: Tue, 16 Sep 2008 07:16:24 -0700 (PDT)
-Message-ID: <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
- <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz> <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de> <20080915192600.GA1627@elf.ucw.cz>
- <20080915195951.GA1651@elf.ucw.cz>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [RFC PATCH 0/1]: timers: Timer Migration
+Date: Tue, 16 Sep 2008 14:42:31 +0530
+Message-ID: <20080916091219.GA1068__27774.7785592966$1221576922$gmane$org@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754566AbYIPORl@vger.kernel.org>
-In-Reply-To: <20080915195951.GA1651@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Sep 2008, Pavel Machek wrote:
-> > cg-seek here, and problem is back. Good. I can get the
-> > /proc/timer_list ;-)... attached.
-> 
-> (Actually, timer_list was from more recent kernel, sorry about that, I
-> was confused. But I verified, and 72d... is still broken).
+Hi,
 
-Is the timer_list output is from that "sleepy" state ? If not please
-provide one.
+An idle cpu on which device drivers have initialized timers, has to be frequently woken up to service the timers. So, consolidation of timers onto a fewer number of cpus is important. Migration of
+timers from idle cpus onto lesser idle cpus is necessary. Currently, timers are migrated during the cpu offline operation. However cpu-hotplug for the sake of idle system power management is too
+heavy. So, this patch implements a lightweight timer migration framework.
 
-Thanks,
-	tglx
+Also, in a multi-core, multi-package system, it is always desirable to have all the timers firing on the cpus present in the same package. This would enable us to place the idle package in deep sleep
+state. So, migration of timers is required for this.
+
+A per_cpu sysfs hook is created at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to cpuX/timer_migration, all regular and hrtimers from cpuX are migrated to cpu0. The fact that all
+timers are migrated from cpuX to cpu0 is demonstrated by making a note of /proc/interrupts.
+
+$:echo 1 > /sys/devices/system/cpu/cpu3/timer_migration
+$:cat /proc/interrupts > file1; sleep 30 ; cat /proc/interrupts > file2
+$:diff file1 file2 | grep LOC
+< LOC:       5276       2100       2676       1647       2415       1803       2275       2977   Local timer interrupts
+> LOC:       6991       2195       2774       1647       2562       1900       2497       3075   Local timer interrupts
+
+As we can observe, first we are enabling timer migration in cpu3. As a result, the number of local timer interrupts on cpu3 over the next 30 seconds are zero. cpu3  has been totally rid of all regular
+and hrtimers.
+
+Please refer to the following paper for details:
+
+http://ols.fedoraproject.org/OLS/Reprints-2008/srinivasan1-reprint.pdf
+
+
+thanks,
+Arun
