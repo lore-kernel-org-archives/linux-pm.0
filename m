@@ -1,14 +1,16 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
-Date: Wed, 17 Sep 2008 10:31:51 +0530
-Message-ID: <48D08F3F.2050501__19330.9754053645$1221628011$gmane$org@linux.vnet.ibm.com>
-References: <20080916091219.GA1068@linux.vnet.ibm.com>
-	<20080916065345.76d052e1@infradead.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: DSDT from your system / new DSDT archive
+Date: Wed, 17 Sep 2008 17:44:33 +0200
+Message-ID: <200809171744.34064.trenn__10913.3065947846$1221666642$gmane$org@suse.de>
+References: <20080916165543.EA6A42003D@smtp.hushmail.com>
+	<20080916222231.GB26035@khazad-dum.debian.net>
+	<20080917024127.GB1187@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20080916065345.76d052e1@infradead.org>
+In-Reply-To: <20080917024127.GB1187@khazad-dum.debian.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +20,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, linux-pm@lists.linux-foundation.org, mingo@elte.hu
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Scott Thompson <postfail@hushmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 16 Sep 2008 14:42:31 +0530
-> Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
+On Wednesday 17 September 2008 04:41:27 Henrique de Moraes Holschuh wrote:
+> Hi Scott!
 >
->   
->> Hi,
->>
->> An idle cpu on which device drivers have initialized timers, has to
->> be frequently woken up to service the timers. So, consolidation of
->> timers onto a fewer number of cpus is important. Migration of timers
->> from idle cpus onto lesser idle cpus is necessary. Currently, timers
->> are migrated during the cpu offline operation. However cpu-hotplug
->> for the sake of idle system power management is too heavy. So, this
->> patch implements a lightweight timer migration framework.
->>     
+> On Tue, 16 Sep 2008, Henrique de Moraes Holschuh wrote:
+> > On Tue, 16 Sep 2008, Scott Thompson wrote:
+> > > Since a current one doesn't seem to exist, I am attempting to put
+> > > my own database together up on the
+> > > internets (URL coming soon) and am looking for folks to send me the
+> > > DSDT from their systems.  Gathering your system DSDT takes
+> > > less than about 2 minutes by running the following:
+> >
+> > You also want the dmidecode output, which BTW you must sanitize to remove
+> > UUIDs and serial numbers.  Otherwise, the DSDTs are a lot less useful.
 >
-> while I absolutely like reducing power consumption... I'm not sure this
-> helps or is the right approach.
->
-> First of all, it's of course absolutely better to fix timers and apps
-> that cause them (and with PowerTOP we fixed basically all the bad
-> stuff).
->
-> Second, in terms of power; a wake up is a wake up, it doesn't really
-> matter where it happens. 
->   
+> Come to think of it, the DSDTs are useless without the other tables in most
+> systems, anyway, so you want to store the entire acpidump :-p
+Exactly.
+You should take dmidecode and acpidump in a specific format (provide a small
+script to (show how to) gather them?).
+You should also double check the info you get uploaded. On the sourceforge
+list all kind of broken info was flying around (all kind of compressions
+used, only aml, only asl and only hex tables, only the diffs, and more...).
 
+Therefore IMO best is not to only provide a small script how you should gather
+and upload the data, but also internally do a quick check the other way round 
+whether the data sent up is valid (unzip, acpixtract -a acpidump, [ -e 
+DSDT.dsl ] or similar).
 
-This is a very valid point. The algorithm which decides which cpu to
-migrate the timers to should be intelligent enough in the sense that it
-migrates *only* when there is some benefit out of it. That is, the cpu
-to which the timers are being migrated, is sufficiently busy and it is
-not unnecessarily brought out of its idle state. Else, as you pointed
-out, the penalty of wake up is same for either of the cpu.
+I'd also only accept acpidumps or whole zips containing the dumps.
+You should not provide extracted acpidumps, even worse disassmbled ones as
+the code in there is protected by copyrights.
+Also a disclaimer that people must only use the info for getting their
+machine running for which they bought the copyrights should be stated 
+somewhere.
 
+Expect that you get a lot dumps.
 
-> Now we could do some consolidation (which realistically needs the range
-> timer feature that's aimed for 2.6.28), but I would much rather do that
-> in a different way: rather than actively moving stuff, I would instead
-> suggest sharing the timer queues between logical cpus that share the
-> same cache. (Now its an admin choice if he wants this on a "shared L1",
-> "shared L2" or "shared L3" basis). 
->   
+You should state somewhere that people should (if they are doing a BIOS update 
+anyway):
+   - upload the dumps
+   - upgrade the BIOS
+   - again upload the dumps
+Like that you get a nice history of fixups which can reveal interesting 
+things...
 
+      Thomas
 
-While migrating range timers, I would migrate only if the time range of
-the source and destination cpus match. Else, there is no point in
-migrating. I would rather look at timer migration as an optimization
-strategy to increase the cpu idle time and not as a pro-active method to
-rid the cpu of timers, no matter what. I would like to migrate timers
-only if the wake up penalty of the system as a whole decreases.
-
-
-> Or if you want to forcefully migrate timers, don't move existing ones,
-> just on queue/requeue put the on not-the-local-cpu. Sure they'll fire
-> once on the "wrong" cpu, but that's a very short term problem!
->
->   
+PS: This work is very much appreciated. Tell me how I can help.
