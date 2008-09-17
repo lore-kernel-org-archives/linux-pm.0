@@ -1,14 +1,16 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
-Date: Wed, 17 Sep 2008 18:46:36 +0200
-Message-ID: <48D1346C.1020203__11204.5867521831$1221670286$gmane$org@gmail.com>
-References: <48CE6A90.1070309@gmail.com> <48CFC601.9050608@embeddedalley.com>
-	<48D0C69D.4090105@gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: DSDT from your system / new DSDT archive
+Date: Wed, 17 Sep 2008 19:29:37 +0200
+Message-ID: <200809171929.38238.trenn__3795.57947530902$1221673751$gmane$org@suse.de>
+References: <20080916165543.EA6A42003D@smtp.hushmail.com>
+	<20080917024127.GB1187@khazad-dum.debian.net>
+	<200809171744.34064.trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48D0C69D.4090105@gmail.com>
+In-Reply-To: <200809171744.34064.trenn@suse.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +20,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Scott Thompson <postfail@hushmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpJJ3ZlIGZvdW5kIHN1c3BlbmQgb24gbXkgZGVza3RvcCBkZWZ1bmN0IGluIG1tb3RtIDIw
-MDgtMDktMTMtMDMtMDkgKG9wcG9zaW5nIHRvCjIwMDgtMDktMTAtMTktMzkpLgoKRG1lc2cgc2F5
-czoKCnVoY2lfaGNkIDAwMDA6MDA6MWQuMTogUENJIElOVCBCIGRpc2FibGVkCnBjaV9sZWdhY3lf
-c3VzcGVuZCgpOiB1c2JfaGNkX3BjaV9zdXNwZW5kKzB4MC8weDNlMCByZXR1cm5zIC0xNgpwbV9v
-cCgpOiBwY2lfcG1fc3VzcGVuZCsweDAvMHhkMCByZXR1cm5zIC0xNgpQTTogRGV2aWNlIDAwMDA6
-MDA6MWQuMCBmYWlsZWQgdG8gc3VzcGVuZDogZXJyb3IgLTE2ClBNOiBTb21lIGRldmljZXMgZmFp
-bGVkIHRvIHN1c3BlbmQKCiQgbHMgLWwgL3N5cy9idXMvcGNpL2RldmljZXMvMDAwMDowMDoxZC4x
-L3VzYjcvCi1ydy1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZIDE4LjQzIGF1dGhv
-cml6ZWQKLXJ3LXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4gesOhxZkgMTguNDMgYXV0aG9y
-aXplZF9kZWZhdWx0Ci1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZIDEwLjUx
-IGJjZERldmljZQotcnctci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6w6HFmSAxMC41MSBi
-Q29uZmlndXJhdGlvblZhbHVlCi1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZ
-IDEwLjUxIGJEZXZpY2VDbGFzcwotci0tci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6w6HF
-mSAxMC41MSBiRGV2aWNlUHJvdG9jb2wKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4g
-esOhxZkgMTAuNTEgYkRldmljZVN1YkNsYXNzCi1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYg
-MTcuIHrDocWZIDEwLjUxIGJtQXR0cmlidXRlcwotci0tci0tci0tIDEgcm9vdCByb290ICA0MDk2
-IDE3LiB6w6HFmSAxOC40MyBiTWF4UGFja2V0U2l6ZTAKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAg
-NDA5NiAxNy4gesOhxZkgMTAuNTEgYk1heFBvd2VyCi1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQw
-OTYgMTcuIHrDocWZIDEwLjUxIGJOdW1Db25maWd1cmF0aW9ucwotci0tci0tci0tIDEgcm9vdCBy
-b290ICA0MDk2IDE3LiB6w6HFmSAxMC41MSBiTnVtSW50ZXJmYWNlcwotci0tci0tci0tIDEgcm9v
-dCByb290ICA0MDk2IDE3LiB6w6HFmSAxOC40MyBidXNudW0KLXItLXItLXItLSAxIHJvb3Qgcm9v
-dCAgNDA5NiAxNy4gesOhxZkgMTAuNTEgY29uZmlndXJhdGlvbgotci0tci0tci0tIDEgcm9vdCBy
-b290IDY1NTUzIDE3LiB6w6HFmSAxOC40MyBkZXNjcmlwdG9ycwotci0tci0tci0tIDEgcm9vdCBy
-b290ICA0MDk2IDE3LiB6w6HFmSAxOC40MyBkZXYKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5
-NiAxNy4gesOhxZkgMTAuNTEgZGV2bnVtCmxyd3hyd3hyd3ggMSByb290IHJvb3QgICAgIDAgMTcu
-IHrDocWZIDEwLjUxIGRyaXZlciAtPiAuLi8uLi8uLi8uLi9idXMvdXNiL2RyaXZlcnMvdXNiCmxy
-d3hyd3hyd3ggMSByb290IHJvb3QgICAgIDAgMTcuIHrDocWZIDE4LjQzIGVwXzAwIC0+IHVzYl9l
-bmRwb2ludC91c2JkZXY3LjFfZXAwMAotci0tci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6
-w6HFmSAxMC41MSBpZFByb2R1Y3QKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4gesOh
-xZkgMTAuNTEgaWRWZW5kb3IKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4gesOhxZkg
-MTguNDMgbWFudWZhY3R1cmVyCi1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZ
-IDEwLjUxIG1heGNoaWxkCmRyd3hyLXhyLXggMiByb290IHJvb3QgICAgIDAgMTcuIHrDocWZIDE4
-LjQzIHBvd2VyCi1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZIDE4LjQzIHBy
-b2R1Y3QKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4gesOhxZkgMTguNDMgcXVpcmtz
-Ci1yLS1yLS1yLS0gMSByb290IHJvb3QgIDQwOTYgMTcuIHrDocWZIDEwLjUxIHNlcmlhbAotci0t
-ci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6w6HFmSAxMC41MSBzcGVlZApscnd4cnd4cnd4
-IDEgcm9vdCByb290ICAgICAwIDE3LiB6w6HFmSAxMC41MSBzdWJzeXN0ZW0gLT4gLi4vLi4vLi4v
-Li4vYnVzL3VzYgotcnctci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6w6HFmSAxMC41MSB1
-ZXZlbnQKLXItLXItLXItLSAxIHJvb3Qgcm9vdCAgNDA5NiAxNy4gesOhxZkgMTguNDMgdXJibnVt
-CmRyd3hyLXhyLXggMyByb290IHJvb3QgICAgIDAgMTcuIHrDocWZIDEwLjUxIHVzYl9lbmRwb2lu
-dAotci0tci0tci0tIDEgcm9vdCByb290ICA0MDk2IDE3LiB6w6HFmSAxMC41MSB2ZXJzaW9uCmRy
-d3hyLXhyLXggNCByb290IHJvb3QgICAgIDAgMTcuIHrDocWZIDEwLjUxIDctMDoxLjAKCiQgbHN1
-c2IgLXMgNzoxCkJ1cyAwMDcgRGV2aWNlIDAwMTogSUQgMWQ2YjowMDAxIExpbnV4IEZvdW5kYXRp
-b24gMS4xIHJvb3QgaHViCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LXBt
+On Wednesday 17 September 2008 17:44:33 Thomas Renninger wrote:
+> On Wednesday 17 September 2008 04:41:27 Henrique de Moraes Holschuh wrote:
+> > Hi Scott!
+> >
+> > On Tue, 16 Sep 2008, Henrique de Moraes Holschuh wrote:
+> > > On Tue, 16 Sep 2008, Scott Thompson wrote:
+> > > > Since a current one doesn't seem to exist, I am attempting to put
+> > > > my own database together up on the
+> > > > internets (URL coming soon) and am looking for folks to send me the
+> > > > DSDT from their systems.  Gathering your system DSDT takes
+> > > > less than about 2 minutes by running the following:
+> > >
+> > > You also want the dmidecode output, which BTW you must sanitize to
+> > > remove UUIDs and serial numbers.  Otherwise, the DSDTs are a lot less
+> > > useful.
+> >
+> > Come to think of it, the DSDTs are useless without the other tables in
+> > most systems, anyway, so you want to store the entire acpidump :-p
+>
+> Exactly.
+> You should take dmidecode and acpidump in a specific format (provide a
+> small script to (show how to) gather them?).
+Plus the possibility to add a diff fixing the DSDT/SSDTs, then you have:
+  - acpidump
+  - dmidecode
+  - fixes.diff
+Still it should be checked that the full acpidump is there, the whole data
+is not worth much without full acpidump and dmidecode.
+Then these examples could greatly help others to get used to and how to
+fix general warnings/errors.
+Hope some will go one step further and suggest patches on http://acpica.org
+to adopt/fix the acpi sources to work well with the ("not totally broken") 
+tables.
+
+     Thomas
+
+> You should also double check the info you get uploaded. On the sourceforge
+> list all kind of broken info was flying around (all kind of compressions
+> used, only aml, only asl and only hex tables, only the diffs, and more...).
+>
+> Therefore IMO best is not to only provide a small script how you should
+> gather and upload the data, but also internally do a quick check the other
+> way round whether the data sent up is valid (unzip, acpixtract -a acpidump,
+> [ -e DSDT.dsl ] or similar).
+>
+> I'd also only accept acpidumps or whole zips containing the dumps.
+> You should not provide extracted acpidumps, even worse disassmbled ones as
+> the code in there is protected by copyrights.
+> Also a disclaimer that people must only use the info for getting their
+> machine running for which they bought the copyrights should be stated
+> somewhere.
+>
+> Expect that you get a lot dumps.
+>
+> You should state somewhere that people should (if they are doing a BIOS
+> update anyway):
+>    - upload the dumps
+>    - upgrade the BIOS
+>    - again upload the dumps
+> Like that you get a nice history of fixups which can reveal interesting
+> things...
+>
+>       Thomas
+>
+> PS: This work is very much appreciated. Tell me how I can help.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
