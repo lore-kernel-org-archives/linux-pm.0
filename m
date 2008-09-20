@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: I need some serious help to debug suspend to ram
 	problem
-Date: Sat, 20 Sep 2008 18:10:44 +0200
-Message-ID: <200809201810.45057.rjw__2097.1910017126$1221926894$gmane$org@sisk.pl>
-References: <48D4E685.8030801@gmail.com>
+Date: Sat, 20 Sep 2008 22:01:07 +0300
+Message-ID: <48D54873.8010108__9384.01885000548$1221937445$gmane$org@gmail.com>
+References: <48D4E685.8030801@gmail.com> <200809201810.45057.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48D4E685.8030801@gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200809201810.45057.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,135 +18,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 20 of September 2008, Maxim Levitsky wrote:
-> Hi,
+Rafael J. Wysocki wrote:
+> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+>> Hi,
+>>
+>> I hit a dead end when trying to understand 
+>> why my notebook can't resume from suspend to ram
+>> if this is done two times a row.
+>>
+>> Single suspend/resume cycle works almost perfectly 
+>> (beep that goes through the sound card is muted... 
+>> no morse code for me... :-(
+>>
+>> )
+>>
+>> I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
+>> turned off)
+>>
+>> But I had to turn SMP, since without it system won't resume first time I suspend it.
+>> (How could this affect suspend?)
 > 
-> I hit a dead end when trying to understand 
-> why my notebook can't resume from suspend to ram
-> if this is done two times a row.
+> It could if the system is 64-bit.  In which case please have a look at
+> http://bugzilla.kernel.org/show_bug.cgi?id=11237
 > 
-> Single suspend/resume cycle works almost perfectly 
-> (beep that goes through the sound card is muted... 
-> no morse code for me... :-(
+>> With SMP and minimal kernel (of course  no closed drivers), I get same behavior,
+>> first resume works second hangs.
+>>
+>> I then added some debug code to real mode wakeup code, I put there in first
+>> place instructions, that will save some magic value to rtc (to alarm
+>> registers that I know are preserved during boot cycle), and I discovered   
+>> sad thing that first time bios does pass control to linux, but second time
+>> (when it hangs), it doesn't. 
+>>
+>>
+>> I tried to update bios, and I got same results.
+>>
+>> Of course it does work with that @#$%^& OS
 > 
-> )
-> 
-> I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
-> turned off)
-> 
-> But I had to turn SMP, since without it system won't resume first time I suspend it.
-> (How could this affect suspend?)
+> So we're doing something wrong.  Please try the appended patch.
+Thanks a lot, but this didn't help.
 
-It could if the system is 64-bit.  In which case please have a look at
-http://bugzilla.kernel.org/show_bug.cgi?id=11237
+It still has same pattern, first suspend/resume works perfectly, 
+second suspend/resume hangs hard.
+It always happens like this, first resume always work 
+(unless I turn off smp in kernel (I test this again), or reserve all low memory)
 
-> With SMP and minimal kernel (of course  no closed drivers), I get same behavior,
-> first resume works second hangs.
-> 
-> I then added some debug code to real mode wakeup code, I put there in first
-> place instructions, that will save some magic value to rtc (to alarm
-> registers that I know are preserved during boot cycle), and I discovered   
-> sad thing that first time bios does pass control to linux, but second time
-> (when it hangs), it doesn't. 
-> 
-> 
-> I tried to update bios, and I got same results.
-> 
-> Of course it does work with that @#$%^& OS
+Also note that if I suspend the system to ram, resume, and then suspend to disk, 
+then I can suspend to ram and resume, it seems that
 
-So we're doing something wrong.  Please try the appended patch.
+on suspend to ram cycle somehow arms BIOS or something else, 
+so second resume in a row doesn't work.
 
-> I then proceeded to test recently posted low memory corruption patch, and
-> it did show that that @#$%^& BIOS does corrupt low memory 
-> I then reserved all low memory, but system began to hand after first suspend,
-> in exactly same way, but as expected I soon discovered, that that forces real
-> mode page to be above 1M, ok, then I reserved almost all low memory except
-> 100K window in the middle, so low allocations will work, but be placed in
-> region bios less likely to corrupt, and still that didn't help, still same hang.   
->  
-> You did face lot of such situations, so maybe you know about anything I can do.
-> 
+I run 32 bit kernel here, this is a long story 
+(this bios doesn't turn fan on when running 64-bit version, 
+I could update it, and I know that fan issue is fixed there, 
+but new bios introduces bigger bug, namely it makes fan to run almost always 
+regardless of 32/64 type of os.
+And it doesn't fix this suspend/resume issue, I tested this. 
+I could start/stop fan manually with a script, but this could fail, 
+and maybe I will do so someday.)
 
-Actually, I didn't, but some people did.  Again,
-http://bugzilla.kernel.org/show_bug.cgi?id=11237 is the place to look at.
+The bugzilla seems to be unrelated here, since bios does 
+pass control there, but corrupts memory.
+Here I also have seen that bios corrupts memory, 
+but everything resumes fine first time, and on second time,
+bios doesn't pass control (I put set of instructions in beginning 
+of wakeup real mode assembly file, no page tables, GDT/LDT are used there)
 
-Thanks,
-Rafael
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-ACPI suspend: Always use the 32-bit waking vector
-
-According to the ACPI specification 2.0c and later, the 64-bit waking vector
-should be cleared and the 32-bit waking vector should be used, unless we want
-the wake-up code to be called by the BIOS in Protected Mode.  Moreover, some
-systems (for example HP dv5-1004nr) are known to fail to resume if the 64-bit
-waking vector is used.  Therefore, modify the code to clear the 64-bit waking
-vector, for FACS version 1 or greater, and set the 32-bit one before suspend.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/hardware/hwsleep.c |   37 +++++++++++--------------------------
- 1 file changed, 11 insertions(+), 26 deletions(-)
-
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -78,19 +78,17 @@ acpi_set_firmware_waking_vector(acpi_phy
- 		return_ACPI_STATUS(status);
- 	}
- 
--	/* Set the vector */
-+	/*
-+	 * According to the ACPI specification 2.0c and later, the 64-bit
-+	 * waking vector should be cleared and the 32-bit waking vector should
-+	 * be used, unless we want the wake-up code to be called by the BIOS in
-+	 * Protected Mode.  Some systems (for example HP dv5-1004nr) are known
-+	 * to fail to resume if the 64-bit vector is used.
-+	 */
-+	if (facs->version >= 1)
-+		facs->xfirmware_waking_vector = 0;
- 
--	if ((facs->length < 32) || (!(facs->xfirmware_waking_vector))) {
--		/*
--		 * ACPI 1.0 FACS or short table or optional X_ field is zero
--		 */
--		facs->firmware_waking_vector = (u32) physical_address;
--	} else {
--		/*
--		 * ACPI 2.0 FACS with valid X_ field
--		 */
--		facs->xfirmware_waking_vector = physical_address;
--	}
-+	facs->firmware_waking_vector = (u32)physical_address;
- 
- 	return_ACPI_STATUS(AE_OK);
- }
-@@ -134,20 +132,7 @@ acpi_get_firmware_waking_vector(acpi_phy
- 	}
- 
- 	/* Get the vector */
--
--	if ((facs->length < 32) || (!(facs->xfirmware_waking_vector))) {
--		/*
--		 * ACPI 1.0 FACS or short table or optional X_ field is zero
--		 */
--		*physical_address =
--		    (acpi_physical_address) facs->firmware_waking_vector;
--	} else {
--		/*
--		 * ACPI 2.0 FACS with valid X_ field
--		 */
--		*physical_address =
--		    (acpi_physical_address) facs->xfirmware_waking_vector;
--	}
-+	*physical_address = (acpi_physical_address)facs->firmware_waking_vector;
- 
- 	return_ACPI_STATUS(AE_OK);
- }
+Best regards,
+	Maxim Levitsky
