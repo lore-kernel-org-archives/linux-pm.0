@@ -1,13 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
-Date: Thu, 18 Sep 2008 17:14:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0809181708500.17483-100000__15201.6044281938$1221772811$gmane$org@iolanthe.rowland.org>
-References: <48D1346C.1020203@gmail.com>
+From: "Scott Thompson" <postfail@hushmail.com>
+Subject: Re: DSDT from your system / new DSDT archive
+Date: Fri, 19 Sep 2008 23:09:54 -0400
+Message-ID: <20080920030955.6DFFCD032F__42452.5692280897$1221880464$gmane$org@smtp.hushmail.com>
+Reply-To: postfail@hushmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <48D1346C.1020203@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +16,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: hmh@hmh.eng.br, trenn@suse.de
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 17 Sep 2008, Jiri Slaby wrote:
+On Wed, 17 Sep 2008 13:29:37 -0400 Thomas Renninger <trenn@suse.de> 
+wrote:
+>On Wednesday 17 September 2008 17:44:33 Thomas Renninger wrote:
+>> On Wednesday 17 September 2008 04:41:27 Henrique de Moraes
+>Holschuh wrote:
+Lots about the proposed DSDT respository (and so did others).  
+Thank you for your comments and insights.
 
-> Hi,
-> 
-> I've found suspend on my desktop defunct in mmotm 2008-09-13-03-09 (opposing to
-> 2008-09-10-19-39).
-> 
-> Dmesg says:
-> 
-> uhci_hcd 0000:00:1d.1: PCI INT B disabled
-> pci_legacy_suspend(): usb_hcd_pci_suspend+0x0/0x3e0 returns -16
-> pm_op(): pci_pm_suspend+0x0/0xd0 returns -16
-> PM: Device 0000:00:1d.0 failed to suspend: error -16
-> PM: Some devices failed to suspend
+This effort can only address a partial DSDT solution, and initially 
+the primary concern is getting the
+correct information up about the tools and methods required to 
+extract needed files for a system (and to
+then make those files available).  If that information is correct, 
+novice users should be able to contribute.
 
-The reason for this error is that the root hub wasn't already 
-suspended.  Was there a USB device plugged into that controller?
+An initial draft with about 25 dsdt is up with request for comment 
+at :
 
-Two days ago I ran 2.6.27-rc6 plus gregkh-all-2.6.27-rc6.patch from
+http://www.fileandstream.com/proc/acpi/dsdt.htm
 
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+In terms of 'help':
+1. if there are any volunteers to review a 'sandbox' for any new 
+dsdt/acpidumps/etc that 
+come in please let me know; 
+2. review of extraction information and procedures for a variety of 
+systems, including better
+information about how to get some of the tools (dmidecode, 
+acpidump, etc) for a variety of linux
+distros. 
 
-on my laptop, and it suspended with no problem.  Can you try the same 
-kernel?
+There are several linked pages on usage and ways to gather 
+information for contribution
+as well on that site;  comments are welcome to me directly rather 
+than clogging these lists.
 
-If you still run into problems, post more of the dmesg log (with 
-CONFIG_USB_DEBUG enabled, of course!).
-
-Alan Stern
+---------------------------------------
+Scott Thompson / postfail@hushmail.com
+---------------------------------------
