@@ -1,8 +1,7 @@
-From: "Scott Thompson" <postfail@hushmail.com>
-Subject: Re: DSDT from your system / new DSDT archive
-Date: Fri, 19 Sep 2008 23:09:54 -0400
-Message-ID: <20080920030955.6DFFCD032F__42452.5692280897$1221880464$gmane$org@smtp.hushmail.com>
-Reply-To: postfail@hushmail.com
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: I need some serious help to debug suspend to ram problem
+Date: Sat, 20 Sep 2008 15:03:17 +0300
+Message-ID: <48D4E685.8030801__8751.80358202687$1221912454$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,45 +15,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: hmh@hmh.eng.br, trenn@suse.de
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 17 Sep 2008 13:29:37 -0400 Thomas Renninger <trenn@suse.de> 
-wrote:
->On Wednesday 17 September 2008 17:44:33 Thomas Renninger wrote:
->> On Wednesday 17 September 2008 04:41:27 Henrique de Moraes
->Holschuh wrote:
-Lots about the proposed DSDT respository (and so did others).  
-Thank you for your comments and insights.
+Hi,
 
-This effort can only address a partial DSDT solution, and initially 
-the primary concern is getting the
-correct information up about the tools and methods required to 
-extract needed files for a system (and to
-then make those files available).  If that information is correct, 
-novice users should be able to contribute.
+I hit a dead end when trying to understand 
+why my notebook can't resume from suspend to ram
+if this is done two times a row.
 
-An initial draft with about 25 dsdt is up with request for comment 
-at :
+Single suspend/resume cycle works almost perfectly 
+(beep that goes through the sound card is muted... 
+no morse code for me... :-(
 
-http://www.fileandstream.com/proc/acpi/dsdt.htm
+)
 
-In terms of 'help':
-1. if there are any volunteers to review a 'sandbox' for any new 
-dsdt/acpidumps/etc that 
-come in please let me know; 
-2. review of extraction information and procedures for a variety of 
-systems, including better
-information about how to get some of the tools (dmidecode, 
-acpidump, etc) for a variety of linux
-distros. 
+I compiled a minimal kernel (absolutely nothing but disk drivers, all experimental option like nohz
+turned off)
 
-There are several linked pages on usage and ways to gather 
-information for contribution
-as well on that site;  comments are welcome to me directly rather 
-than clogging these lists.
+But I had to turn SMP, since without it system won't resume first time I suspend it.
+(How could this affect suspend?)
 
----------------------------------------
-Scott Thompson / postfail@hushmail.com
----------------------------------------
+
+With SMP and minimal kernel (of course  no closed drivers), I get same behavior, first resume works
+second hangs.
+
+I then added some debug code to real mode wakeup code, I put there in first place instructions, that will save some magic value to rtc (to alarm registers that I know are preserved during boot cycle), and I discovered 
+sad thing that first time bios does pass control to linux, but second time (when it hangs), it doesn't.
+
+
+I tried to update bios, and I got same results.
+
+Of course it does work with that @#$%^& OS
+
+
+I then proceeded to test recently posted low memory corruption patch, and it did show that that @#$%^& BIOS does corrupt low memory
+I then reserved all low memory, but system began to hand after first suspend, in exactly same way, but as expected I soon discovered,
+that that forces real mode page to be above 1M, ok, then I reserved almost all low memory except 100K window in the middle, so low allocations will work, but be placed in region bios less likely to corrupt, and still that didn't help, still same hang.
+
+
+You did face lot of such situations, so maybe you know about anything I can do.
+
+System is ACER aspire 5720G.
+
+I now use 2.6.27-rc5, but same did happen on 2.6.26, and if I remember correctly 2.6.25.
+(I bought this system in April and installed linux during first day)
+I installed hardy there)
+
+
+
+Note: I do use nvidia drivers, and without them display stays dark after resume, BUT, this bug is unrelated,
+while screen is dark, system does work, I can see hdd led blinking when I issue commands, I can turn system off, suspend again (and get hard hang of resume...), I even stored dmesg after first suspend without nvidia driver, and there are no errors
+(except that EC storm , which is harmless here (I tried  patches that fix it, but they didn't affect this suspend bug)
+
+All tests were done without nvidia driver.
+
+I would be very glad if you tell me any suggestions how to fix/debug that thing.
+
+And lastly, suggestion to everybody:
+
+NEVER BUY ACER LAPTOPS, THEY ARE JUST BROKEN
+
+Best regards,
+	Maxim Levitsky
