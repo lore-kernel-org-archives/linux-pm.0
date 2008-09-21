@@ -1,8 +1,8 @@
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: I need some serious help to debug suspend to ram
 	problem
-Date: Sat, 20 Sep 2008 22:01:07 +0300
-Message-ID: <48D54873.8010108__9384.01885000548$1221937445$gmane$org@gmail.com>
+Date: Sun, 21 Sep 2008 19:00:28 +0300
+Message-ID: <48D66F9C.4000204__10995.5930653543$1222013015$gmane$org@gmail.com>
 References: <48D4E685.8030801@gmail.com> <200809201810.45057.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -60,35 +60,20 @@ Rafael J. Wysocki wrote:
 >> Of course it does work with that @#$%^& OS
 > 
 > So we're doing something wrong.  Please try the appended patch.
-Thanks a lot, but this didn't help.
+> 
+>> I then proceeded to test recently posted low memory corruption patch, and
+>> it did show that that @#$%^& BIOS does corrupt low memory 
+>> I then reserved all low memory, but system began to hand after first suspend,
+>> in exactly same way, but as expected I soon discovered, that that forces real
+>> mode page to be above 1M, ok, then I reserved almost all low memory except
+>> 100K window in the middle, so low allocations will work, but be placed in
+>> region bios less likely to corrupt, and still that didn't help, still same hang.   
+>>  
 
-It still has same pattern, first suspend/resume works perfectly, 
-second suspend/resume hangs hard.
-It always happens like this, first resume always work 
-(unless I turn off smp in kernel (I test this again), or reserve all low memory)
+More information, I compiled kernels back to 2.6.19, and they all have exactly the same issue.
 
-Also note that if I suspend the system to ram, resume, and then suspend to disk, 
-then I can suspend to ram and resume, it seems that
 
-on suspend to ram cycle somehow arms BIOS or something else, 
-so second resume in a row doesn't work.
-
-I run 32 bit kernel here, this is a long story 
-(this bios doesn't turn fan on when running 64-bit version, 
-I could update it, and I know that fan issue is fixed there, 
-but new bios introduces bigger bug, namely it makes fan to run almost always 
-regardless of 32/64 type of os.
-And it doesn't fix this suspend/resume issue, I tested this. 
-I could start/stop fan manually with a script, but this could fail, 
-and maybe I will do so someday.)
-
-The bugzilla seems to be unrelated here, since bios does 
-pass control there, but corrupts memory.
-Here I also have seen that bios corrupts memory, 
-but everything resumes fine first time, and on second time,
-bios doesn't pass control (I put set of instructions in beginning 
-of wakeup real mode assembly file, no page tables, GDT/LDT are used there)
-
+Any ideas?
 
 Best regards,
 	Maxim Levitsky
