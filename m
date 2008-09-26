@@ -1,15 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] PM: use pm_op methods for device types
-Date: Fri, 26 Sep 2008 10:59:22 -0700
-Message-ID: <20080926175922.GA767__19589.5282239237$1222458825$gmane$org@kroah.com>
-References: <20080925220635.GA12175@kroah.com>
-	<Pine.LNX.4.44L0.0809260948580.2395-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: ACPI: Make /proc/acpi/wakeup interface handle PCI
+	devices (again)
+Date: Fri, 26 Sep 2008 22:21:47 +0200
+Message-ID: <200809262221.48040.rjw__28958.3004582257$1222460323$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0809260948580.2395-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +17,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: USB list <linux-usb@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 26, 2008 at 09:56:55AM -0400, Alan Stern wrote:
-> On Thu, 25 Sep 2008, Greg KH wrote:
-> 
-> > On Thu, Sep 25, 2008 at 11:27:02PM +0200, Rafael J. Wysocki wrote:
-> > > On Thursday, 25 of September 2008, Alan Stern wrote:
-> > > > This patch (as1141) adds code to use the device type's pm_op methods,
-> > > > if they are defined.  It fixes a regression in the USB PM code; the
-> > > > various suspend and resume methods are defined in the device type
-> > > > rather than in the bus, because USB devices have to be handled
-> > > > differently from USB interfaces.  Without the patch, those methods
-> > > > never get called.
-> > > > 
-> > > > The patch also fixes a couple of spelling errors.
-> > > 
-> > > Hm, these changes are not needed in the current mainline, so there's a patch
-> > > in -next that removes the code added by this patch.
-> > > 
-> > > It might be better to find that patch and drop it instead, IMO.
-> > 
-> > I agree, I think we would have seen more bugs if mainline can't suspend
-> > with a USB device attached, right?
-> > 
-> > confused,
-> 
-> Okay, I was confused too.  Looking more closely, it's apparent that 
-> mainline is okay and the problem was introduced by Hannes Reinecke's 
-> 
-> driver-core-remove-suspend-resume-callbacks-for-device-type.patch
-> 
-> which states that the suspend/resume callbacks in struct device_type
-> are unused.  It may be true that the legacy suspend/resume methods are
-> unused, but the new pm_ops methods definitely are used.
-> 
-> Therefore part or all of Hannes patch should be reverted.  And the 
-> mainline is okay as it stands.
+Len,
 
-Ah, ick.
+I think we should do this in .27.
 
-Hannes, care to respin this patch based on this information?
+Thanks,
+Rafael
 
-thanks,
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-greg k-h
+ACPI: Make /proc/acpi/wakeup interface handle PCI devices (again)
+
+Make the ACPI /proc/acpi/wakeup interface set the appropriate
+wake-up bits of physical devices corresponding to the ACPI
+devices and make those bits be set initially for devices that are
+enabled to wake up by default.  This is needed to restore the
+previous behavior for the PCI devices that were previously handled
+correctly with the help of the /proc/acpi/wakeup interface.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/glue.c       |    5 ++++-
+ drivers/acpi/sleep/proc.c |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/sleep/proc.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/proc.c
++++ linux-2.6/drivers/acpi/sleep/proc.c
+@@ -377,6 +377,14 @@ acpi_system_wakeup_device_seq_show(struc
+ 	return 0;
+ }
+ 
++static void physical_device_enable_wakeup(struct acpi_device *adev)
++{
++	struct device *dev = acpi_get_physical_device(adev->handle);
++
++	if (dev && device_can_wakeup(dev))
++		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
++}
++
+ static ssize_t
+ acpi_system_write_wakeup_device(struct file *file,
+ 				const char __user * buffer,
+@@ -411,6 +419,7 @@ acpi_system_write_wakeup_device(struct f
+ 		}
+ 	}
+ 	if (found_dev) {
++		physical_device_enable_wakeup(found_dev);
+ 		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 			struct acpi_device *dev = container_of(node,
+ 							       struct
+@@ -428,6 +437,7 @@ acpi_system_write_wakeup_device(struct f
+ 				       dev->pnp.bus_id, found_dev->pnp.bus_id);
+ 				dev->wakeup.state.enabled =
+ 				    found_dev->wakeup.state.enabled;
++				physical_device_enable_wakeup(dev);
+ 			}
+ 		}
+ 	}
+Index: linux-2.6/drivers/acpi/glue.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/glue.c
++++ linux-2.6/drivers/acpi/glue.c
+@@ -165,8 +165,11 @@ static int acpi_bind_one(struct device *
+ 				"firmware_node");
+ 		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
+ 				"physical_node");
+-		if (acpi_dev->wakeup.flags.valid)
++		if (acpi_dev->wakeup.flags.valid) {
+ 			device_set_wakeup_capable(dev, true);
++			device_set_wakeup_enable(dev,
++						acpi_dev->wakeup.state.enabled);
++		}
+ 	}
+ 
+ 	return 0;
