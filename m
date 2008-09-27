@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.27-rc7-git5: Reported regressions from 2.6.26
-Date: Sat, 27 Sep 2008 19:47:35 +0200
-Message-ID: <200809271947.36455.rjw__1299.08409803665$1222537778$gmane$org@sisk.pl>
+Date: Sat, 27 Sep 2008 19:57:00 +0200
+Message-ID: <200809271957.01278.rjw__45961.304792627$1222538000$gmane$org@sisk.pl>
 References: <t_PcrlC6ypI.A.tGG.G7m3IB@albercik>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -34,28 +34,10 @@ On Saturday, 27 of September 2008, Rafael J. Wysocki wrote:
 > Each entry from the list will be sent additionally in an automatic reply to
 > this message with CCs to the people involved in reporting and handling the
 > issue.
-> 
-> 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2008-09-27      173       35          28
 
-Ah, I forgot about the previous statistics:
+Some of the follow-up messages are borked because of a bug in my script.
 
+Sorry for that, the script has been fixed already.
 
-Listed regressions statistics:
-
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2008-09-27      173       35          28
-  2008-09-21      169       45          36
-  2008-09-15      163       46          32
-  2008-09-12      163       51          38
-  2008-09-07      150       43          33
-  2008-08-30      135       48          36
-  2008-08-23      122       48          40
-  2008-08-16      103       47          37
-  2008-08-10       80       52          31
-  2008-08-02       47       31          20
+Thanks,
+Rafael
