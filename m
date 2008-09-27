@@ -1,12 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: ACPI: Make /proc/acpi/wakeup interface handle PCI
-	devices (again)
-Date: Fri, 26 Sep 2008 22:21:47 +0200
-Message-ID: <200809262221.48040.rjw__28958.3004582257$1222460323$gmane$org@sisk.pl>
+Subject: Re: I need some serious help to debug suspend to ram
+	problem
+Date: Sat, 27 Sep 2008 15:15:49 +0200
+Message-ID: <200809271515.50250.rjw__11907.4997994632$1222521569$gmane$org@sisk.pl>
+References: <48D4E685.8030801@gmail.com> <200809212056.27335.rjw@sisk.pl>
+	<48D7507F.8050109@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <48D7507F.8050109@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,84 +20,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Len,
+On Monday, 22 of September 2008, Maxim Levitsky wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday, 21 of September 2008, Maxim Levitsky wrote:
+> >> Maxim Levitsky wrote:
+> >>> Rafael J. Wysocki wrote:
+> >>>> On Saturday, 20 of September 2008, Maxim Levitsky wrote:
+> >>>>> Hi,
+> >>>>>
+> >>>>> I hit a dead end when trying to understand why my notebook can't 
+> >>>>> resume from suspend to ram
+> >>>>> if this is done two times a row.
+> >>>>>
+> >>>>> Single suspend/resume cycle works almost perfectly (beep that goes 
+> >>>>> through the sound card is muted... no morse code for me... :-(
+> >>>>>
+> >>>>> )
+> >>>>>
+> >>>>> I compiled a minimal kernel (absolutely nothing but disk drivers, all 
+> >>>>> experimental option like nohz
+> >>>>> turned off)
+> >>>>>
+> >>>>> But I had to turn SMP, since without it system won't resume first 
+> >>>>> time I suspend it.
+> >>>>> (How could this affect suspend?)
+> >>>> It could if the system is 64-bit.  In which case please have a look at
+> >>>> http://bugzilla.kernel.org/show_bug.cgi?id=11237
+> >>>>
+> >>>>> With SMP and minimal kernel (of course  no closed drivers), I get 
+> >>>>> same behavior,
+> >>>>> first resume works second hangs.
+> >>>>>
+> >>>>> I then added some debug code to real mode wakeup code, I put there in 
+> >>>>> first
+> >>>>> place instructions, that will save some magic value to rtc (to alarm
+> >>>>> registers that I know are preserved during boot cycle), and I 
+> >>>>> discovered   sad thing that first time bios does pass control to 
+> >>>>> linux, but second time
+> >>>>> (when it hangs), it doesn't.
+> >>>>>
+> >>>>> I tried to update bios, and I got same results.
+> >>>>>
+> >>>>> Of course it does work with that @#$%^& OS
+> >>>> So we're doing something wrong.  Please try the appended patch.
+> >>> Thanks a lot, but this didn't help.
+> >>>
+> >>> It still has same pattern, first suspend/resume works perfectly, second 
+> >>> suspend/resume hangs hard.
+> >>> It always happens like this, first resume always work (unless I turn off 
+> >>> smp in kernel (I test this again), or reserve all low memory)
+> >>>
+> >>> Also note that if I suspend the system to ram, resume, and then suspend 
+> >>> to disk, then I can suspend to ram and resume, it seems that
+> >>>
+> >>> on suspend to ram cycle somehow arms BIOS or something else, so second 
+> >>> resume in a row doesn't work.
+> >>>
+> >>> I run 32 bit kernel here, this is a long story (this bios doesn't turn 
+> >>> fan on when running 64-bit version, I could update it, and I know that 
+> >>> fan issue is fixed there, but new bios introduces bigger bug, namely it 
+> >>> makes fan to run almost always regardless of 32/64 type of os.
+> >>> And it doesn't fix this suspend/resume issue, I tested this. I could 
+> >>> start/stop fan manually with a script, but this could fail, and maybe I 
+> >>> will do so someday.)
+> >>>
+> >>> The bugzilla seems to be unrelated here, since bios does pass control 
+> >>> there, but corrupts memory.
+> >>> Here I also have seen that bios corrupts memory, but everything resumes 
+> >>> fine first time, and on second time,
+> >>> bios doesn't pass control (I put set of instructions in beginning of 
+> >>> wakeup real mode assembly file, no page tables, GDT/LDT are used there)
+> >> I did same test for kernel without SMP, yes it hangs on first resume, but bios
+> >> does pass control to linux, so while this is a minor bug, it is unrelated.
+> > 
+> > Still, I'd be interested in debugging this one too, if possible.  That may be
+> > easier too. ;-)
+> 
+> I take a look at that.
+> 
+> > 
+> >> I also tested noapic, pci=nommconf. No luck.
+> >>
+> >> Pattern is always the same, first resume works always, second doesn't.
+> >> It is sad since first resume is almost perfect (when I have free time I need to look at sound codec datasheet
+> >> and fix few issues there, anyways here alsa has few issues, all this is trivial, I already fixed all issues with desktop
+> >> which has a sigmatel codec)
+> > 
+> > If you have more than 2 GB of RAM, you can try iommu=soft .
+> > 
+> > I guess that all of the /sys/power/pm_test tests are passed?
+> 
+> Well, I didn't run /sys/power/pm_test. 
+> But this system has rock solid suspend to disk, I use it always.
 
-I think we should do this in .27.
+Please look at http://bugzilla.kernel.org/show_bug.cgi?id=11415 .
+
+Perhaps you can add some information into it.
 
 Thanks,
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-ACPI: Make /proc/acpi/wakeup interface handle PCI devices (again)
-
-Make the ACPI /proc/acpi/wakeup interface set the appropriate
-wake-up bits of physical devices corresponding to the ACPI
-devices and make those bits be set initially for devices that are
-enabled to wake up by default.  This is needed to restore the
-previous behavior for the PCI devices that were previously handled
-correctly with the help of the /proc/acpi/wakeup interface.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/glue.c       |    5 ++++-
- drivers/acpi/sleep/proc.c |   10 ++++++++++
- 2 files changed, 14 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/sleep/proc.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/proc.c
-+++ linux-2.6/drivers/acpi/sleep/proc.c
-@@ -377,6 +377,14 @@ acpi_system_wakeup_device_seq_show(struc
- 	return 0;
- }
- 
-+static void physical_device_enable_wakeup(struct acpi_device *adev)
-+{
-+	struct device *dev = acpi_get_physical_device(adev->handle);
-+
-+	if (dev && device_can_wakeup(dev))
-+		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
-+}
-+
- static ssize_t
- acpi_system_write_wakeup_device(struct file *file,
- 				const char __user * buffer,
-@@ -411,6 +419,7 @@ acpi_system_write_wakeup_device(struct f
- 		}
- 	}
- 	if (found_dev) {
-+		physical_device_enable_wakeup(found_dev);
- 		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
- 			struct acpi_device *dev = container_of(node,
- 							       struct
-@@ -428,6 +437,7 @@ acpi_system_write_wakeup_device(struct f
- 				       dev->pnp.bus_id, found_dev->pnp.bus_id);
- 				dev->wakeup.state.enabled =
- 				    found_dev->wakeup.state.enabled;
-+				physical_device_enable_wakeup(dev);
- 			}
- 		}
- 	}
-Index: linux-2.6/drivers/acpi/glue.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/glue.c
-+++ linux-2.6/drivers/acpi/glue.c
-@@ -165,8 +165,11 @@ static int acpi_bind_one(struct device *
- 				"firmware_node");
- 		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
- 				"physical_node");
--		if (acpi_dev->wakeup.flags.valid)
-+		if (acpi_dev->wakeup.flags.valid) {
- 			device_set_wakeup_capable(dev, true);
-+			device_set_wakeup_enable(dev,
-+						acpi_dev->wakeup.state.enabled);
-+		}
- 	}
- 
- 	return 0;
