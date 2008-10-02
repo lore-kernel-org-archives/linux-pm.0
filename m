@@ -1,15 +1,12 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: [PATCH] CPUidle: increment state counter for state
- actually entered
-Date: Wed, 1 Oct 2008 10:35:03 -0500
-Message-ID: <13B9B4C6EF24D648824FF11BE89671620365A10BE6__20108.917335938$1222875594$gmane$org@dlee02.ent.ti.com>
-References: <1222858024-20369-1-git-send-email-khilman@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] sky2: Fix recent WOL regression
+Date: Thu, 2 Oct 2008 23:39:33 +0200
+Message-ID: <200810022339.34025.rjw__38735.0988029086$1222983672$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="_002_13B9B4C6EF24D648824FF11BE89671620365A10BE6dlee02enttico_"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1222858024-20369-1-git-send-email-khilman@deeprootsystems.com>
-Content-Language: en-US
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,145 +16,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>, Tino Keitel <tino.keitel@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David Miller <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---_002_13B9B4C6EF24D648824FF11BE89671620365A10BE6dlee02enttico_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
+sky2: Fix recent WOL regression
 
-> owner@vger.kernel.org] On Behalf Of Kevin Hilman
-> Sent: Wednesday, October 01, 2008 5:47 AM
+Since dev->power.should_wakeup bit is used by the PCI core to
+decide whether the device should wake up the system from sleep
+states, set/unset this bit whenever WOL is enabled/disabled using
+sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
+machine).
 
-> This patch does the accounting use 'dev->last_state' state instead of
-> the governor-chosen state.  If the target's enter_idle hook enters a
-> different state than it was asked, it should update dev->last_state.
+Remove an open-coded reference to the standard PCI PM registers that
+is not used any more.
 
-Isn't this the same as the patch Venki pushed on the pm list?  I've been us=
-ing a version of it for a while from him and haven't seen any issue.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Tino Keitel <tino.keitel@gmx.de>
+---
 
-I had also done a version which was much more evasive.  In the version I wa=
-s hacking at I tried to push the aborted state information back into the go=
-vernor as it locally caches the last state tried.
+ drivers/net/sky2.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Doing this simpler way like in patch does make sure the accounting is corre=
-ct which is a plus, powertop doesn't 'lie' any more.  It however, does not =
-stop a following likely mis-prediction based on the local state kept in the=
- governor.
-
-Doing at least this much is necessary.  However, if you don't want to feed =
-the false state data into the predictor more linkage has to be done.
-
-Regards,
-Richard W.
-
-
-
-
---_002_13B9B4C6EF24D648824FF11BE89671620365A10BE6dlee02enttico_
-Content-Type: message/rfc822
-
-Received: from dflp53.itg.ti.com (128.247.5.6) by dlee73.ent.ti.com
- (157.170.170.88) with Microsoft SMTP Server (TLS) id 8.1.291.4; Mon, 29 Sep
- 2008 17:37:39 -0500
-Received: from sabine.ext.ti.com (localhost [127.0.0.1])	by dflp53.itg.ti.com
- (8.13.8/8.13.8) with ESMTP id m8TMbZrx024715;	Mon, 29 Sep 2008 17:37:35 -0500
- (CDT)
-Received: from mail13-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
-	by sabine.ext.ti.com (8.13.7/8.13.7) with ESMTP id m8TMbSn0017520
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL);	Mon, 29
- Sep 2008 17:37:35 -0500
-Received: from mail13-sin (localhost.localdomain [127.0.0.1])	by
- mail13-sin-R.bigfish.com (Postfix) with ESMTP id C1A6F14E8102;	Mon, 29 Sep
- 2008 22:37:27 +0000 (UTC)
-Received: by mail13-sin (MessageSwitch) id 1222727845391794_30839; Mon, 29 Sep
- 2008 22:37:25 +0000 (UCT)
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
- [140.211.169.13])	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)	by mail13-sin.bigfish.com (Postfix) with
- ESMTP id C6CA8520076;	Mon, 29 Sep 2008 22:37:24 +0000 (UTC)
-Received: from daredevil.linux-foundation.org (localhost [127.0.0.1])	by
- smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with ESMTP id
- m8TMWcfM023136;	Mon, 29 Sep 2008 15:32:39 -0700
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])	by
- smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with	ESMTP id
- m8TMUKdd022574 for <linux-pm@lists.linux-foundation.org>;	Mon, 29 Sep 2008
- 15:30:23 -0700
-Received: from orsmga001.jf.intel.com ([10.7.209.18])	by
- orsmga101.jf.intel.com with ESMTP; 29 Sep 2008 15:24:19 -0700
-Received: from linux-os.sc.intel.com ([172.25.110.8])	by
- orsmga001.jf.intel.com with ESMTP; 29 Sep 2008 15:29:16 -0700
-Received: by linux-os.sc.intel.com (Postfix, from userid 47009)	id 1590328006;
- Mon, 29 Sep 2008 15:30:11 -0700 (PDT)
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: "lenb@kernel.org" <lenb@kernel.org>
-CC: "linux-pm@lists.linux-foundation.org"
-	<linux-pm@lists.linux-foundation.org>
-Sender: "linux-pm-bounces@lists.linux-foundation.org"
-	<linux-pm-bounces@lists.linux-foundation.org>
-Date: Mon, 29 Sep 2008 17:24:26 -0500
-Subject: [linux-pm] [patch 0/2] cpuidle: Time accounting fix
-Thread-Topic: [linux-pm] [patch 0/2] cpuidle: Time accounting fix
-Thread-Index: Ackig/qdOwDdTw5RRFOBcTheX+9W9g==
-Message-ID: <20080929222426.914988000@intel.com>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: 
- <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
- 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-List-Unsubscribe: 
- <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
- 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-X-MS-Exchange-Organization-AuthAs: Anonymous
-X-MS-Exchange-Organization-AuthSource: dlee73.ent.ti.com
-X-MS-Has-Attach: 
-X-Auto-Response-Suppress: All
-X-MS-TNEF-Correlator: 
-list-post: <mailto:linux-pm@lists.linux-foundation.org>
-user-agent: quilt/0.46-1
-x-ironport-av: E=Sophos;i="4.33,334,1220252400"; d="scan'208";a="445066257"
-x-spam-status: No, hits=-104.19 required=5
- tests=AWL,BAYES_00,OSDL_HEADER_SUBJECT_BRACKETED,USER_IN_WHITELIST
-x-bigfish: vps-45(zzzz272Rzz2ba5Mz2fheILfR6bh66h)
-errors-to: linux-pm-bounces@lists.linux-foundation.org
-list-id: Linux power management <linux-pm.lists.linux-foundation.org>
-x-scanned-by: MIMEDefang 2.63 on 140.211.169.21
-received-spf: pass (localhost is always allowed.)
-x-spam-checker-version: SpamAssassin 3.2.4-osdl_revision__1.47__
-x-spam-tcs-scl: 5:0
-list-archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-x-extloop1: 1
-x-beenthere: linux-pm@lists.linux-foundation.org
-x-mailman-version: 2.1.9
-x-mimedefang-filter: lf$Revision: 1.188 $
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-
-As noted in PM minisummit notes here
-http://lwn.net/Articles/292447/
-
-Richard Woodruff <r-woodruff2@ti.com> reported a bug
-"the CPUIDLE bug that if target is avoided due to BM activity the original
-target state is still accounted the time."
-
-Following provides a mechanism to fix the problem for all drivers and fixes
-the problem for acpi cpuidle driver.
-
---
-
-_______________________________________________
-linux-pm mailing list
-linux-pm@lists.linux-foundation.org
-https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-
-
---_002_13B9B4C6EF24D648824FF11BE89671620365A10BE6dlee02enttico_
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---_002_13B9B4C6EF24D648824FF11BE89671620365A10BE6dlee02enttico_--
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -3034,7 +3034,8 @@ static int sky2_set_wol(struct net_devic
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
+ 
+-	if (wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw))
++	    || !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
+@@ -3045,6 +3046,8 @@ static int sky2_set_wol(struct net_devic
+ 		sky2_write32(hw, B0_CTST, sky2->wol
+ 			     ? Y2_HW_WOL_ON : Y2_HW_WOL_OFF);
+ 
++	device_set_wakeup_enable(&hw->pdev->dev, sky2->wol);
++
+ 	if (!netif_running(dev))
+ 		sky2_wol_init(sky2);
+ 	return 0;
+@@ -4166,18 +4169,6 @@ static int __devinit sky2_test_msi(struc
+ 	return err;
+ }
+ 
+-static int __devinit pci_wake_enabled(struct pci_dev *dev)
+-{
+-	int pm  = pci_find_capability(dev, PCI_CAP_ID_PM);
+-	u16 value;
+-
+-	if (!pm)
+-		return 0;
+-	if (pci_read_config_word(dev, pm + PCI_PM_CTRL, &value))
+-		return 0;
+-	return value & PCI_PM_CTRL_PME_ENABLE;
+-}
+-
+ /* This driver supports yukon2 chipset only */
+ static const char *sky2_name(u8 chipid, char *buf, int sz)
+ {
+@@ -4238,7 +4241,7 @@ static int __devinit sky2_probe(struct p
+ 		}
+ 	}
+ 
+-	wol_default = pci_wake_enabled(pdev) ? WAKE_MAGIC : 0;
++	wol_default = device_may_wakeup(&pdev->dev) ? WAKE_MAGIC : 0;
+ 
+ 	err = -ENOMEM;
+ 	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
