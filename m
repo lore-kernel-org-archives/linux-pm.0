@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: ACPI: Make /proc/acpi/wakeup interface handle PCI
-	devices (again)
-Date: Fri, 3 Oct 2008 17:10:12 +0200
-Message-ID: <200810031710.13446.rjw__10827.3160098635$1223046844$gmane$org@sisk.pl>
-References: <200809262221.48040.rjw@sisk.pl>
-	<20081003055123.bda469ce.akpm@linux-foundation.org>
+Subject: [PATCH] ACPI Suspend: Enable ACPI during resume if
+	SCI_EN is not set
+Date: Sat, 4 Oct 2008 00:05:05 +0200
+Message-ID: <200810040005.06220.rjw__28986.4886821762$1223071747$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081003055123.bda469ce.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,103 +17,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Tino Keitel <tino.keitel@gmx.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 3 of October 2008, Andrew Morton wrote:
-> On Fri, 26 Sep 2008 22:21:47 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Len,
-> > 
-> > I think we should do this in .27.
-> 
-> Is Len not there?  Can some other acpi person please review this for
-> 2.6.27 inclusion?
-> 
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > ACPI: Make /proc/acpi/wakeup interface handle PCI devices (again)
-> > 
-> > Make the ACPI /proc/acpi/wakeup interface set the appropriate
-> > wake-up bits of physical devices corresponding to the ACPI
-> > devices and make those bits be set initially for devices that are
-> > enabled to wake up by default.  This is needed to restore the
-> > previous behavior for the PCI devices that were previously handled
-> > correctly with the help of the /proc/acpi/wakeup interface.
-> 
-> hm, if you say so.  It's a bit hard to judge the impact of not fixing this?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There are people for whom /proc/acpi/wakeup worked, but since Tino Keitel
-was the only person reporting this problem, I think it's not widespread.
+ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
 
-> When is "previous"?  Was 2.6.26 similarly busted?
+On some machines, like for example MSI Wind U100, the BIOS doesn't
+enable ACPI before returning control to the OS, which sometimes
+causes resume to fail.  This is against the ACPI specification,
+which clearly states that "When the platform is waking from an S1, S2
+or S3 state, OSPM assumes the hardware is already in the ACPI mode
+and will not issue an ACPI_ENABLE", but it won't hurt to check the
+SCI_EN bit and enable ACPI during resume from S3 if this bit is not
+set.
 
-Well, "previous" means "as in 2.6.26 and earlier", so this is a recent
-regression.
+Fortunately, we already have acpi_enable() for that, so use it in the
+resume code path, before executing _BFS, in analogy with the
+resume-from-hibernation code path.
 
-/proc/acpi/ is going to go away at one point, but I think we shouldn't break 
-working setups given that the fix is not very intrusive.
+NOTE: We aren't supposed to set SCI_EN directly, because it's owned
+by the hardware.
 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/acpi/glue.c       |    5 ++++-
-> >  drivers/acpi/sleep/proc.c |   10 ++++++++++
-> >  2 files changed, 14 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/acpi/sleep/proc.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/sleep/proc.c
-> > +++ linux-2.6/drivers/acpi/sleep/proc.c
-> > @@ -377,6 +377,14 @@ acpi_system_wakeup_device_seq_show(struc
-> >  	return 0;
-> >  }
-> >  
-> > +static void physical_device_enable_wakeup(struct acpi_device *adev)
-> > +{
-> > +	struct device *dev = acpi_get_physical_device(adev->handle);
-> > +
-> > +	if (dev && device_can_wakeup(dev))
-> > +		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
-> > +}
-> > +
-> >  static ssize_t
-> >  acpi_system_write_wakeup_device(struct file *file,
-> >  				const char __user * buffer,
-> > @@ -411,6 +419,7 @@ acpi_system_write_wakeup_device(struct f
-> >  		}
-> >  	}
-> >  	if (found_dev) {
-> > +		physical_device_enable_wakeup(found_dev);
-> >  		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> >  			struct acpi_device *dev = container_of(node,
-> >  							       struct
-> > @@ -428,6 +437,7 @@ acpi_system_write_wakeup_device(struct f
-> >  				       dev->pnp.bus_id, found_dev->pnp.bus_id);
-> >  				dev->wakeup.state.enabled =
-> >  				    found_dev->wakeup.state.enabled;
-> > +				physical_device_enable_wakeup(dev);
-> >  			}
-> >  		}
-> >  	}
-> > Index: linux-2.6/drivers/acpi/glue.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/glue.c
-> > +++ linux-2.6/drivers/acpi/glue.c
-> > @@ -165,8 +165,11 @@ static int acpi_bind_one(struct device *
-> >  				"firmware_node");
-> >  		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
-> >  				"physical_node");
-> > -		if (acpi_dev->wakeup.flags.valid)
-> > +		if (acpi_dev->wakeup.flags.valid) {
-> >  			device_set_wakeup_capable(dev, true);
-> > +			device_set_wakeup_enable(dev,
-> > +						acpi_dev->wakeup.state.enabled);
-> > +		}
-> >  	}
-> >  
-> >  	return 0;
-> 
-> 
-> 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -200,6 +200,8 @@ static int acpi_suspend_enter(suspend_st
+ 		break;
+ 	}
+ 
++	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
++	acpi_enable();
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(acpi_state);
+ 
