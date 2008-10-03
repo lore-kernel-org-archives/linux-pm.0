@@ -1,13 +1,14 @@
-From: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH] sky2: Fix recent WOL regression
-Date: Fri, 3 Oct 2008 09:02:43 +0200
-Message-ID: <20081003090243.724cf79c__30085.7618953616$1223017618$gmane$org@speedy>
-References: <200810022339.34025.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: ACPI: Make /proc/acpi/wakeup interface handle PCI
+ devices (again)
+Date: Fri, 3 Oct 2008 05:51:23 -0700
+Message-ID: <20081003055123.bda469ce.akpm__7899.35426223582$1223038649$gmane$org@linux-foundation.org>
+References: <200809262221.48040.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810022339.34025.rjw@sisk.pl>
+In-Reply-To: <200809262221.48040.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +19,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, Tino Keitel <tino.keitel@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David Miller <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Oct 2008 23:39:33 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Fri, 26 Sep 2008 22:21:47 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> Len,
+> 
+> I think we should do this in .27.
+
+Is Len not there?  Can some other acpi person please review this for
+2.6.27 inclusion?
+
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> sky2: Fix recent WOL regression
+> ACPI: Make /proc/acpi/wakeup interface handle PCI devices (again)
 > 
-> Since dev->power.should_wakeup bit is used by the PCI core to
-> decide whether the device should wake up the system from sleep
-> states, set/unset this bit whenever WOL is enabled/disabled using
-> sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
-> machine).
-> 
-> Remove an open-coded reference to the standard PCI PM registers that
-> is not used any more.
-> 
+> Make the ACPI /proc/acpi/wakeup interface set the appropriate
+> wake-up bits of physical devices corresponding to the ACPI
+> devices and make those bits be set initially for devices that are
+> enabled to wake up by default.  This is needed to restore the
+> previous behavior for the PCI devices that were previously handled
+> correctly with the help of the /proc/acpi/wakeup interface.
+
+hm, if you say so.  It's a bit hard to judge the impact of not fixing this?
+
+When is "previous"?  Was 2.6.26 similarly busted?
+
+Thanks.
+
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Tino Keitel <tino.keitel@gmx.de>
 > ---
-
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-
-Thanks for fixing this.
+>  drivers/acpi/glue.c       |    5 ++++-
+>  drivers/acpi/sleep/proc.c |   10 ++++++++++
+>  2 files changed, 14 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/acpi/sleep/proc.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/sleep/proc.c
+> +++ linux-2.6/drivers/acpi/sleep/proc.c
+> @@ -377,6 +377,14 @@ acpi_system_wakeup_device_seq_show(struc
+>  	return 0;
+>  }
+>  
+> +static void physical_device_enable_wakeup(struct acpi_device *adev)
+> +{
+> +	struct device *dev = acpi_get_physical_device(adev->handle);
+> +
+> +	if (dev && device_can_wakeup(dev))
+> +		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
+> +}
+> +
+>  static ssize_t
+>  acpi_system_write_wakeup_device(struct file *file,
+>  				const char __user * buffer,
+> @@ -411,6 +419,7 @@ acpi_system_write_wakeup_device(struct f
+>  		}
+>  	}
+>  	if (found_dev) {
+> +		physical_device_enable_wakeup(found_dev);
+>  		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+>  			struct acpi_device *dev = container_of(node,
+>  							       struct
+> @@ -428,6 +437,7 @@ acpi_system_write_wakeup_device(struct f
+>  				       dev->pnp.bus_id, found_dev->pnp.bus_id);
+>  				dev->wakeup.state.enabled =
+>  				    found_dev->wakeup.state.enabled;
+> +				physical_device_enable_wakeup(dev);
+>  			}
+>  		}
+>  	}
+> Index: linux-2.6/drivers/acpi/glue.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/glue.c
+> +++ linux-2.6/drivers/acpi/glue.c
+> @@ -165,8 +165,11 @@ static int acpi_bind_one(struct device *
+>  				"firmware_node");
+>  		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
+>  				"physical_node");
+> -		if (acpi_dev->wakeup.flags.valid)
+> +		if (acpi_dev->wakeup.flags.valid) {
+>  			device_set_wakeup_capable(dev, true);
+> +			device_set_wakeup_enable(dev,
+> +						acpi_dev->wakeup.state.enabled);
+> +		}
+>  	}
+>  
+>  	return 0;
