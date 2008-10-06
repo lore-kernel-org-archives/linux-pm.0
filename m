@@ -1,14 +1,14 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [RFC 0/5] device wakeup event support v2
-Date: Mon, 06 Oct 2008 09:57:27 +0800
-Message-ID: <1223258247.7550.0.camel__20004.3684606955$1223258501$gmane$org@sli10-desk.sh.intel.com>
-References: <20080911063037.698427944@sli10-desk.sh.intel.com>
-	<200809150150.01687.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI Suspend: Enable ACPI during resume if
+ SCI_EN is not set
+Date: Mon, 06 Oct 2008 00:34:16 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0810060034050.2973@localhost.localdomain>
+References: <200810040005.06220.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200809150150.01687.rjw@sisk.pl>
+In-reply-to: <200810040005.06220.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +19,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2008-09-15 at 07:50 +0800, Rafael J. Wysocki wrote:
-> On Thursday, 11 of September 2008, Shaohua Li wrote:
-> > This series add device wakeup event detection support. This is the base to
-> > implement runtime device suspend/resume, though we don't support it now.
-> > But David said USB is approaching to this. See this bugzilla
-> > http://bugzilla.kernel.org/show_bug.cgi?id=6892 for detail.
-> >
-> > changes v1 -> v2:
-> > 1. scan pci bridge for PME. Current implementation is just doing scan if target device is a bridge
-> > 2. move device_receive_wakeup_event() call to pci, and provide an API (pci_handle_wakeup_event()) for non-ACPI & non-PCIe platform
-> > 3. fixed a lot of coding style issues
-> >
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> 
-> Thanks for posting the update.
-> 
-> Unfortunately, I won't be able to review the patches until after I get back
-> from the Kernel Summit.
-Any update on this?
+applied to acpi-test.
 
-Thanks,
-Shaohua
+thanks,
+-Len
+
+On Sat, 4 Oct 2008, Rafael J. Wysocki wrote:
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
+> 
+> On some machines, like for example MSI Wind U100, the BIOS doesn't
+> enable ACPI before returning control to the OS, which sometimes
+> causes resume to fail.  This is against the ACPI specification,
+> which clearly states that "When the platform is waking from an S1, S2
+> or S3 state, OSPM assumes the hardware is already in the ACPI mode
+> and will not issue an ACPI_ENABLE", but it won't hurt to check the
+> SCI_EN bit and enable ACPI during resume from S3 if this bit is not
+> set.
+> 
+> Fortunately, we already have acpi_enable() for that, so use it in the
+> resume code path, before executing _BFS, in analogy with the
+> resume-from-hibernation code path.
+> 
+> NOTE: We aren't supposed to set SCI_EN directly, because it's owned
+> by the hardware.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/acpi/sleep/main.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6/drivers/acpi/sleep/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/sleep/main.c
+> +++ linux-2.6/drivers/acpi/sleep/main.c
+> @@ -200,6 +200,8 @@ static int acpi_suspend_enter(suspend_st
+>  		break;
+>  	}
+>  
+> +	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
+> +	acpi_enable();
+>  	/* Reprogram control registers and execute _BFS */
+>  	acpi_leave_sleep_state_prep(acpi_state);
+>  
+> 
