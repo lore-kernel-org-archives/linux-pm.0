@@ -1,17 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [patch 1/2] cpuidle: use last_state which can
- reflect the actual state entered
-Date: Wed, 8 Oct 2008 10:54:59 -0700
-Message-ID: <7E82351C108FA840AB1866AC776AEC4637757D78@orsmsx505.amr.corp.intel.com>
-References: <20080929222426.914988000@intel.com>
-	<20080929222752.648696000@intel.com>
-	<87bpy4vag8.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] sky2: Fix recent WOL regression
+Date: Thu, 9 Oct 2008 00:55:55 +0200
+Message-ID: <200810090055.56598.rjw__34175.3797060393$1223506525$gmane$org@sisk.pl>
+References: <200810022339.34025.rjw@sisk.pl> <20081003090243.724cf79c@speedy>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87bpy4vag8.fsf@deeprootsystems.com>
-Content-Language: en-US
+In-Reply-To: <20081003090243.724cf79c@speedy>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,100 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, Tino Keitel <tino.keitel@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David Miller <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 3 of October 2008, Stephen Hemminger wrote:
+> On Thu, 2 Oct 2008 23:39:33 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > sky2: Fix recent WOL regression
+> > 
+> > Since dev->power.should_wakeup bit is used by the PCI core to
+> > decide whether the device should wake up the system from sleep
+> > states, set/unset this bit whenever WOL is enabled/disabled using
+> > sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
+> > machine).
+> > 
+> > Remove an open-coded reference to the standard PCI PM registers that
+> > is not used any more.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Reported-by: Tino Keitel <tino.keitel@gmx.de>
+> > ---
+> 
+> Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> Thanks for fixing this.
 
+Can you please include this patch into your next push for Jeff?
 
->-----Original Message-----
->From: Kevin Hilman [mailto:khilman@deeprootsystems.com]
->Sent: Wednesday, October 01, 2008 4:09 AM
->To: Pallipadi, Venkatesh
->Cc: lenb@kernel.org; linux-pm@lists.linux-foundation.org
->Subject: Re: [linux-pm] [patch 1/2] cpuidle: use last_state
->which can reflect the actual state entered
->
->Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> writes:
->
->> cpuidle accounts the idle time for the C-state it was trying
->to enter and
->> not to the actual state that the driver eventually entered.
->The driver may
->> select a different state than the one chosen by cpuidle due to
->> constraints like bus-mastering, etc.
->>
->> Change the time acounting code to look at the dev->last_state after
->> returning from target_state->enter(). Driver can modify
->dev->last_state
->> internally, inside the enter routine to reflect the actual C-state
->> entered.
->>
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>
->> ---
->>  drivers/cpuidle/cpuidle.c |    5 ++++-
->>  1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> Index: tip/drivers/cpuidle/cpuidle.c
->> ===================================================================
->> --- tip.orig/drivers/cpuidle/cpuidle.c        2008-09-23
->13:52:59.000000000 -0700
->> +++ tip/drivers/cpuidle/cpuidle.c     2008-09-23
->14:22:43.000000000 -0700
->> @@ -71,8 +71,11 @@ static void cpuidle_idle_call(void)
->>       target_state = &dev->states[next_state];
->>
->>       /* enter the state and update stats */
->> -     dev->last_residency = target_state->enter(dev, target_state);
->>       dev->last_state = target_state;
->> +     dev->last_residency = target_state->enter(dev, target_state);
->> +     if (dev->last_state)
->> +             target_state = dev->last_state;
->> +
->>       target_state->time += (unsigned long long)dev->last_residency;
->>       target_state->usage++;
->
->Under what conditions would the enter hook set dev->last_sate to NULL?
->Having the check seems to indicate it's possilble.
-
-Sorry about the delayed response.
-
-Yes. I added the check after finding out that last_state can be possibly NULL.
-That happens when the governor changes while one core is in idle and also during
-CPU offline/online.
-
->A minor nit-pick...  why not explicitly do the accounting using
->'last_state' like below.  While functionally the same as above, this
->makes it makes it more explicit when reading the code that the
->accounting is done using 'last_state' and not 'target_state.'
->
-
-Yes. It is cleaner. But, we still have to check for last_state being NULL.
-
->
->
->diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->index 5ce07b5..c1294f5 100644
->--- a/drivers/cpuidle/cpuidle.c
->+++ b/drivers/cpuidle/cpuidle.c
->@@ -67,10 +67,10 @@ static void cpuidle_idle_call(void)
->        target_state = &dev->states[next_state];
->
->        /* enter the state and update stats */
->-       dev->last_residency = target_state->enter(dev, target_state);
->        dev->last_state = target_state;
->-       target_state->time += (unsigned long long)dev->last_residency;
->-       target_state->usage++;
->+       dev->last_residency = target_state->enter(dev, target_state);
->+       dev->last_state->time += (unsigned long
->long)dev->last_residency;
->+       dev->last_state->usage++;
->
->        /* give the governor an opportunity to reflect on the
->outcome */
->        if (cpuidle_curr_governor->reflect)
->
+It seems to have been overlooked.
 
 Thanks,
-Venki
+Rafael
