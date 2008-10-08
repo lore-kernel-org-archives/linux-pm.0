@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] ACPI Suspend: Enable ACPI during resume if
-	SCI_EN is	not set
-Date: Wed, 8 Oct 2008 13:39:34 +0200
-Message-ID: <20081008113933.GC1651__29723.5082056888$1223484780$gmane$org@ucw.cz>
-References: <200810040005.06220.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Need help on Suspend on RAM
+Date: Wed, 8 Oct 2008 19:01:08 +0200
+Message-ID: <20081008170108.GA1471@ucw.cz>
+References: <48E1D492.5040606@st.com> <48E1EC46.9090103@st.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200810040005.06220.rjw@sisk.pl>
+In-Reply-To: <48E1EC46.9090103@st.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +18,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Francesco VIRLINZI <francesco.virlinzi@st.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2008-10-04 00:05:05, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> 
-> On some machines, like for example MSI Wind U100, the BIOS doesn't
-> enable ACPI before returning control to the OS, which sometimes
-> causes resume to fail.  This is against the ACPI specification,
-> which clearly states that "When the platform is waking from an S1, S2
-> or S3 state, OSPM assumes the hardware is already in the ACPI mode
-> and will not issue an ACPI_ENABLE", but it won't hurt to check the
-> SCI_EN bit and enable ACPI during resume from S3 if this bit is not
-> set.
-> 
-> Fortunately, we already have acpi_enable() for that, so use it in the
-> resume code path, before executing _BFS, in analogy with the
-> resume-from-hibernation code path.
-> 
-> NOTE: We aren't supposed to set SCI_EN directly, because it's owned
-> by the hardware.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue 2008-09-30 11:07:18, Francesco VIRLINZI wrote:
+> Hi all
+> I think I find a fix (?)
+> In the file:
+> kernel/time/timekeeping.c
+> I'm removing the functions:
+>  - timekeeping_suspend and
+>  - timekeeping_resume
+> I forgot to say that I have no real ClockSource (this means that in 
+> suspend also the clocksource is suspended...)
 
-ACK.
+Simply commenting this out is probably not the right solution.. could
+you find why it breaks your system and talk to tglx?
+
+								Pavel
+
+
+> Regards
+>  Francesco
+> 
+> Francesco VIRLINZI ha scritto:
+> > Hi all
+> > I'm working on Suspend on RAM on kernel 2.6.23.17 on a Sh4 based platform.
+> > The suspend on RAM seems really working.
+> > But it I suspend the board more then 3/4 times than the system doesn't 
+> > resume the user space
+> >  but via JTAG I see the kernel is running.
+> >
+> > I enabled CONFIG_DETECT_SOFTLOCKUP and the kernel prints:
+> >
+> > |BUG: soft lockup detected on CPU#0|
+> >
+> > Moreover I installed the patch suggested in http://lwn.net/Articles/287024/
+> > and it seems the kernel is running in:
+> > -   run_timer_softirq
+> >
+> >
+> > and doing some other test I can confirm the kernel is really there...
+> >
+> > In the board there is no real RTC... All the 'time' is based on the 
+> > system timer
+> >  and between suspend/resume the timer is really stopped.
+> >
+> > Do you have some suggestion?
+> >
+> > Regards
+> > Ciao
+> >  Francesco
+> > _______________________________________________
+> > linux-pm mailing list
+> > linux-pm@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> >
+> >   
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
