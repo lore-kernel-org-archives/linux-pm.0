@@ -1,14 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Need help on Suspend on RAM
-Date: Wed, 8 Oct 2008 19:01:08 +0200
-Message-ID: <20081008170108.GA1471@ucw.cz>
-References: <48E1D492.5040606@st.com> <48E1EC46.9090103@st.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [patch 1/2] cpuidle: use last_state which can
+ reflect the actual state entered
+Date: Wed, 8 Oct 2008 10:54:59 -0700
+Message-ID: <7E82351C108FA840AB1866AC776AEC4637757D78@orsmsx505.amr.corp.intel.com>
+References: <20080929222426.914988000@intel.com>
+	<20080929222752.648696000@intel.com>
+	<87bpy4vag8.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <48E1EC46.9090103@st.com>
+In-Reply-To: <87bpy4vag8.fsf@deeprootsystems.com>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,70 +21,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Francesco VIRLINZI <francesco.virlinzi@st.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2008-09-30 11:07:18, Francesco VIRLINZI wrote:
-> Hi all
-> I think I find a fix (?)
-> In the file:
-> kernel/time/timekeeping.c
-> I'm removing the functions:
->  - timekeeping_suspend and
->  - timekeeping_resume
-> I forgot to say that I have no real ClockSource (this means that in 
-> suspend also the clocksource is suspended...)
-
-Simply commenting this out is probably not the right solution.. could
-you find why it breaks your system and talk to tglx?
-
-								Pavel
 
 
-> Regards
->  Francesco
-> 
-> Francesco VIRLINZI ha scritto:
-> > Hi all
-> > I'm working on Suspend on RAM on kernel 2.6.23.17 on a Sh4 based platform.
-> > The suspend on RAM seems really working.
-> > But it I suspend the board more then 3/4 times than the system doesn't 
-> > resume the user space
-> >  but via JTAG I see the kernel is running.
-> >
-> > I enabled CONFIG_DETECT_SOFTLOCKUP and the kernel prints:
-> >
-> > |BUG: soft lockup detected on CPU#0|
-> >
-> > Moreover I installed the patch suggested in http://lwn.net/Articles/287024/
-> > and it seems the kernel is running in:
-> > -   run_timer_softirq
-> >
-> >
-> > and doing some other test I can confirm the kernel is really there...
-> >
-> > In the board there is no real RTC... All the 'time' is based on the 
-> > system timer
-> >  and between suspend/resume the timer is really stopped.
-> >
-> > Do you have some suggestion?
-> >
-> > Regards
-> > Ciao
-> >  Francesco
-> > _______________________________________________
-> > linux-pm mailing list
-> > linux-pm@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> >
-> >   
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>-----Original Message-----
+>From: Kevin Hilman [mailto:khilman@deeprootsystems.com]
+>Sent: Wednesday, October 01, 2008 4:09 AM
+>To: Pallipadi, Venkatesh
+>Cc: lenb@kernel.org; linux-pm@lists.linux-foundation.org
+>Subject: Re: [linux-pm] [patch 1/2] cpuidle: use last_state
+>which can reflect the actual state entered
+>
+>Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> writes:
+>
+>> cpuidle accounts the idle time for the C-state it was trying
+>to enter and
+>> not to the actual state that the driver eventually entered.
+>The driver may
+>> select a different state than the one chosen by cpuidle due to
+>> constraints like bus-mastering, etc.
+>>
+>> Change the time acounting code to look at the dev->last_state after
+>> returning from target_state->enter(). Driver can modify
+>dev->last_state
+>> internally, inside the enter routine to reflect the actual C-state
+>> entered.
+>>
+>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>
+>> ---
+>>  drivers/cpuidle/cpuidle.c |    5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> Index: tip/drivers/cpuidle/cpuidle.c
+>> ===================================================================
+>> --- tip.orig/drivers/cpuidle/cpuidle.c        2008-09-23
+>13:52:59.000000000 -0700
+>> +++ tip/drivers/cpuidle/cpuidle.c     2008-09-23
+>14:22:43.000000000 -0700
+>> @@ -71,8 +71,11 @@ static void cpuidle_idle_call(void)
+>>       target_state = &dev->states[next_state];
+>>
+>>       /* enter the state and update stats */
+>> -     dev->last_residency = target_state->enter(dev, target_state);
+>>       dev->last_state = target_state;
+>> +     dev->last_residency = target_state->enter(dev, target_state);
+>> +     if (dev->last_state)
+>> +             target_state = dev->last_state;
+>> +
+>>       target_state->time += (unsigned long long)dev->last_residency;
+>>       target_state->usage++;
+>
+>Under what conditions would the enter hook set dev->last_sate to NULL?
+>Having the check seems to indicate it's possilble.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sorry about the delayed response.
+
+Yes. I added the check after finding out that last_state can be possibly NULL.
+That happens when the governor changes while one core is in idle and also during
+CPU offline/online.
+
+>A minor nit-pick...  why not explicitly do the accounting using
+>'last_state' like below.  While functionally the same as above, this
+>makes it makes it more explicit when reading the code that the
+>accounting is done using 'last_state' and not 'target_state.'
+>
+
+Yes. It is cleaner. But, we still have to check for last_state being NULL.
+
+>
+>
+>diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>index 5ce07b5..c1294f5 100644
+>--- a/drivers/cpuidle/cpuidle.c
+>+++ b/drivers/cpuidle/cpuidle.c
+>@@ -67,10 +67,10 @@ static void cpuidle_idle_call(void)
+>        target_state = &dev->states[next_state];
+>
+>        /* enter the state and update stats */
+>-       dev->last_residency = target_state->enter(dev, target_state);
+>        dev->last_state = target_state;
+>-       target_state->time += (unsigned long long)dev->last_residency;
+>-       target_state->usage++;
+>+       dev->last_residency = target_state->enter(dev, target_state);
+>+       dev->last_state->time += (unsigned long
+>long)dev->last_residency;
+>+       dev->last_state->usage++;
+>
+>        /* give the governor an opportunity to reflect on the
+>outcome */
+>        if (cpuidle_curr_governor->reflect)
+>
+
+Thanks,
+Venki
