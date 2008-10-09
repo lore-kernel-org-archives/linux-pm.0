@@ -1,19 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [patch 1/2] cpuidle: use last_state which can
-	reflect the actual state entered
-Date: Thu, 09 Oct 2008 14:47:27 +0300
-Message-ID: <878wsyuh0w.fsf@deeprootsystems.com>
-References: <20080929222426.914988000@intel.com>
-	<20080929222752.648696000@intel.com>
-	<87bpy4vag8.fsf@deeprootsystems.com>
-	<7E82351C108FA840AB1866AC776AEC4637757D78@orsmsx505.amr.corp.intel.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH -next] PM: Simplify the new
+	suspend/hibernation	framework for devices
+Date: Thu, 9 Oct 2008 19:12:52 +0200
+Message-ID: <20081009171252.GC1370__28113.7581369423$1223572854$gmane$org@ucw.cz>
+References: <200810060055.07601.rjw@sisk.pl> <200810062246.06654.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4637757D78@orsmsx505.amr.corp.intel.com>
-	(Venkatesh Pallipadi's message of "Wed\,
-	8 Oct 2008 10\:54\:59 -0700")
+Content-Disposition: inline
+In-Reply-To: <200810062246.06654.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,102 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> writes:
+On Mon 2008-10-06 22:46:05, Rafael J. Wysocki wrote:
+> On Monday, 6 of October 2008, Rafael J. Wysocki wrote:
+> > Hi Greg,
+> > 
+> > I promised at the KS that I would simplify the new suspend/hibernation
+> > framework for devices to avoid the confusion with two types of PM
+> > operations and pointers to PM operations from too many places.
+> > 
+> > The appended patch is intended for this purpose.  Unfortunately, I can't
+> > split it into subsystem-related patches, because compilation would be broken
+> > between them.
+> > 
+> > The patch applies to linux-next, but it's trivial to make it apply to the
+> > mainline.  It's been compiled on x86 (both 32-bit and 64-bit) and tested
+> > on hp nx6325, doesn't appear to break anything.
+> 
+> This one had a checkpatch.pl problem, sorry for that.  Updated patch is
+> appended.
 
->>Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> writes:
->>
->>> cpuidle accounts the idle time for the C-state it was trying
->>to enter and
->>> not to the actual state that the driver eventually entered.
->>The driver may
->>> select a different state than the one chosen by cpuidle due to
->>> constraints like bus-mastering, etc.
->>>
->>> Change the time acounting code to look at the dev->last_state after
->>> returning from target_state->enter(). Driver can modify
->>dev->last_state
->>> internally, inside the enter routine to reflect the actual C-state
->>> entered.
->>>
->>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>>
->>> ---
->>>  drivers/cpuidle/cpuidle.c |    5 ++++-
->>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>
->>> Index: tip/drivers/cpuidle/cpuidle.c
->>> ===================================================================
->>> --- tip.orig/drivers/cpuidle/cpuidle.c        2008-09-23
->>13:52:59.000000000 -0700
->>> +++ tip/drivers/cpuidle/cpuidle.c     2008-09-23
->>14:22:43.000000000 -0700
->>> @@ -71,8 +71,11 @@ static void cpuidle_idle_call(void)
->>>       target_state = &dev->states[next_state];
->>>
->>>       /* enter the state and update stats */
->>> -     dev->last_residency = target_state->enter(dev, target_state);
->>>       dev->last_state = target_state;
->>> +     dev->last_residency = target_state->enter(dev, target_state);
->>> +     if (dev->last_state)
->>> +             target_state = dev->last_state;
->>> +
->>>       target_state->time += (unsigned long long)dev->last_residency;
->>>       target_state->usage++;
->>
->>Under what conditions would the enter hook set dev->last_sate to NULL?
->>Having the check seems to indicate it's possilble.
->
-> Sorry about the delayed response.
->
-> Yes. I added the check after finding out that last_state can be
-> possibly NULL.  That happens when the governor changes while one
-> core is in idle and also during CPU offline/online.
+Seems ok to me. ACK.
 
-OK, thanks for the clarification.
-
->>A minor nit-pick...  why not explicitly do the accounting using
->>'last_state' like below.  While functionally the same as above, this
->>makes it makes it more explicit when reading the code that the
->>accounting is done using 'last_state' and not 'target_state.'
->>
->
-> Yes. It is cleaner. But, we still have to check for last_state being NULL.
-
-Agreed.
-
-I've switched to your version and tested this on OMAP3 and it's
-working well.
-
-Tested-by: Kevin Hilman <khilman@deeprootsystems.com>
-
-
->>
->>
->>diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>index 5ce07b5..c1294f5 100644
->>--- a/drivers/cpuidle/cpuidle.c
->>+++ b/drivers/cpuidle/cpuidle.c
->>@@ -67,10 +67,10 @@ static void cpuidle_idle_call(void)
->>        target_state = &dev->states[next_state];
->>
->>        /* enter the state and update stats */
->>-       dev->last_residency = target_state->enter(dev, target_state);
->>        dev->last_state = target_state;
->>-       target_state->time += (unsigned long long)dev->last_residency;
->>-       target_state->usage++;
->>+       dev->last_residency = target_state->enter(dev, target_state);
->>+       dev->last_state->time += (unsigned long
->>long)dev->last_residency;
->>+       dev->last_state->usage++;
->>
->>        /* give the governor an opportunity to reflect on the
->>outcome */
->>        if (cpuidle_curr_governor->reflect)
->>
->
-> Thanks,
-> Venki
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
