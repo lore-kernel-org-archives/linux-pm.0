@@ -2,7 +2,7 @@ From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: WARNING: at kernel/power/main.c:176
  suspend_test_finish+0x70/0x80()
 Date: Fri, 10 Oct 2008 10:31:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0810101028260.2459-100000__26860.7463258833$1223649413$gmane$org@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0810101028260.2459-100000__9003.286160487$1223649425$gmane$org@iolanthe.rowland.org>
 References: <200810101452.27929.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
