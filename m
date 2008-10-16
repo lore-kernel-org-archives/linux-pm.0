@@ -1,13 +1,15 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC PATCH 0/4] timers: Timer migration
-Date: Thu, 16 Oct 2008 07:37:49 -0700
-Message-ID: <20081016073749.4f944a19__37083.1371205442$1224168358$gmane$org@infradead.org>
-References: <20081016114239.GA7641@linux.vnet.ibm.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [patch 1/2] cpuidle: use last_state which can
+ reflect the actual state entered
+Date: Thu, 16 Oct 2008 17:55:53 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0810161755390.3026@localhost.localdomain>
+References: <20080929222426.914988000@intel.com>
+	<20080929222752.648696000@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081016114239.GA7641@linux.vnet.ibm.com>
+In-reply-to: <20080929222752.648696000@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: arun@linux.vnet.ibm.com
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 16 Oct 2008 17:12:39 +0530
-> 
-> 
-> Here's a brief introduction as to why we need timer migration.
-> 
+1,2 applied.
 
-as I've said before, for reducing power consumption I don't buy into
-needing this concept....
+thanks,
+-len
 
-If you have high frequency timers, you've lost no matter what (and we
-fixed almost all of them in the ecosystem); if you don't have those
-then this patch doesn't really add anything.
-(and the range-hrtimers fixes the intermediate state)
+On Mon, 29 Sep 2008, Venkatesh Pallipadi wrote:
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> cpuidle accounts the idle time for the C-state it was trying to enter and
+> not to the actual state that the driver eventually entered. The driver may
+> select a different state than the one chosen by cpuidle due to
+> constraints like bus-mastering, etc.
+> 
+> Change the time acounting code to look at the dev->last_state after
+> returning from target_state->enter(). Driver can modify dev->last_state
+> internally, inside the enter routine to reflect the actual C-state
+> entered.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> ---
+>  drivers/cpuidle/cpuidle.c |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> Index: tip/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- tip.orig/drivers/cpuidle/cpuidle.c	2008-09-23 13:52:59.000000000 -0700
+> +++ tip/drivers/cpuidle/cpuidle.c	2008-09-23 14:22:43.000000000 -0700
+> @@ -71,8 +71,11 @@ static void cpuidle_idle_call(void)
+>  	target_state = &dev->states[next_state];
+>  
+>  	/* enter the state and update stats */
+> -	dev->last_residency = target_state->enter(dev, target_state);
+>  	dev->last_state = target_state;
+> +	dev->last_residency = target_state->enter(dev, target_state);
+> +	if (dev->last_state)
+> +		target_state = dev->last_state;
+> +
+>  	target_state->time += (unsigned long long)dev->last_residency;
+>  	target_state->usage++;
+>  
+> 
+> -- 
+> 
