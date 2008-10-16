@@ -1,8 +1,8 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [RFC PATCH 1/4] timers: Sysfs hook to enable timer
-	migration
-Date: Thu, 16 Oct 2008 17:15:58 +0530
-Message-ID: <20081016114558.GB7641__23856.7463042729$1224157827$gmane$org@linux.vnet.ibm.com>
+Subject: [RFC PATCH 2/4] timers: new framework for identifying
+	cpu-pinned	timers
+Date: Thu, 16 Oct 2008 17:18:30 +0530
+Message-ID: <20081016114830.GC7641__15426.7873535447$1224157901$gmane$org@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,95 +22,238 @@ To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch creates the necessary sysfs interface for timer migration.
+This patch creates the necessary framework for identifying cpu-pinned
+regular timers and hrtimers.
 
-The interface is located at /sys/devices/system/cpu/cpuX/timer_migration
+For regular timers a new flag called TBASE_PINNED_FLAG is created.
+Since the last 3 bits of the tvec_base is guaranteed to be 0, and
+since the last bit is being used to indicate deferrable timers, I'm
+using the second last bit to indicate cpu-pinned regular timers.
+The implementation of functions to manage the TBASE_PINNED_FLAG is
+similar to those which manage the TBASE_DEFERRABLE_FLAG.
 
-These sysfs entries are initialized to their respective cpu ids.
-This represents the no timer migration state.
-By echoing a target cpu number we can enable migration for that cpu.
+For hrtimers, there is no clear interface to queue a hrtimer as a
+per-cpu hrtimer. But there are instances where, if an hrtimer is queued
+on a particular cpu, it expects to run on the same cpu.
+The hrtimer hrtick_timer is one such example.
 
-Echo a target cpu number to the per-cpu sysfs entry and all timers
-are migrated to that cpu, instead of choosing cpu0 by default.
-
-e.g. echo 4 > /sys/devices/system/cpu/cpu1/timer_migration
-
-this would move all regular and hrtimers from cpu1 to cpu4.
+So, in this regard, I've created a new interface called
+hrtimer_start_pinned which can be used to queue cpu-pinned hrtimer.
+In the hrtimer structure, there is a variable called *state* which
+is used to indicate the state of a hrtimer - inactive, enqueued,
+callback function running and callback pending. Currently, since only
+5 bits are being used in the state variable, I've used the 6th bit
+to represent the cpu-pinned state of the hrtimer
 
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/base/cpu.c    |   42 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/timer.h |    2 ++
- 2 files changed, 44 insertions(+)
+ include/linux/hrtimer.h |   17 ++++++++++++++---
+ kernel/hrtimer.c        |   31 ++++++++++++++++++++++++++-----
+ kernel/timer.c          |   30 +++++++++++++++++++++++++++---
+ 3 files changed, 67 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.27/drivers/base/cpu.c
+Index: linux-2.6.27/kernel/timer.c
 ===================================================================
---- linux-2.6.27.orig/drivers/base/cpu.c
-+++ linux-2.6.27/drivers/base/cpu.c
-@@ -20,6 +20,43 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+--- linux-2.6.27.orig/kernel/timer.c
++++ linux-2.6.27/kernel/timer.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/timer.h>
  
- static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -87,8 +88,12 @@ static DEFINE_PER_CPU(struct tvec_base *
+  * the new flag to indicate whether the timer is deferrable
+  */
+ #define TBASE_DEFERRABLE_FLAG		(0x1)
++#define TBASE_PINNED_FLAG               (0x2)
  
-+DEFINE_PER_CPU(int, enable_timer_migration);
-+
-+/* This function initializes sysfs entries for enabling timer migration.
-+ * Each per_cpu enable_timer_migration is initialized to its cpu_id.
-+ * By echo-ing a value other than its cpu_id will set that as the target cpu
-+ * to which the timers are to be migrated to.
+-/* Functions below help us manage 'deferrable' flag */
++/*
++ * Functions below help us manage
++ * 'deferrable' flag and 'cpu-pinned-timer' flag
 + */
-+void initialize_timer_migration_sysfs(void)
-+{
-+	int cpu;
-+	for_each_possible_cpu(cpu)
-+		per_cpu(enable_timer_migration, cpu) = cpu;
-+}
-+
-+static ssize_t timer_migration_show(struct sys_device *dev, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration,
-+		cpu->sysdev.id));
-+}
-+static ssize_t
-+timer_migration_store(struct sys_device *dev, const char *buf, size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	ssize_t ret = -EINVAL;
-+	int target_cpu;
-+	sscanf(buf, "%d", &target_cpu);
-+	if (cpu_online(target_cpu)) {
-+		ret = count;
-+		per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
-+	}
-+
-+	return ret;
-+}
-+static SYSDEV_ATTR(timer_migration, 0644,
-+		timer_migration_show, timer_migration_store);
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
- 			   char *buf)
-@@ -177,6 +214,11 @@ int __cpuinit register_cpu(struct cpu *c
- 	if (!error)
- 		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
- #endif
-+
-+	if (!error) {
-+		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
-+		initialize_timer_migration_sysfs();
-+	}
- 	return error;
+ static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
+ {
+ 	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
+@@ -96,7 +101,8 @@ static inline unsigned int tbase_get_def
+ 
+ static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
+ {
+-	return ((struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG));
++	return (struct tvec_base *)((unsigned long)base &
++			~(TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG));
  }
  
-Index: linux-2.6.27/include/linux/timer.h
-===================================================================
---- linux-2.6.27.orig/include/linux/timer.h
-+++ linux-2.6.27/include/linux/timer.h
-@@ -187,3 +187,5 @@ unsigned long round_jiffies(unsigned lon
- unsigned long round_jiffies_relative(unsigned long j);
+ static inline void timer_set_deferrable(struct timer_list *timer)
+@@ -105,11 +111,28 @@ static inline void timer_set_deferrable(
+ 				       TBASE_DEFERRABLE_FLAG));
+ }
  
- #endif
++static inline unsigned long tbase_get_pinned(struct tvec_base *base)
++{
++	return (unsigned long)base & TBASE_PINNED_FLAG;
++}
 +
-+DECLARE_PER_CPU(int, enable_timer_migration);
++static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
++{
++	return tbase_get_deferrable(timer->base) |
++				tbase_get_pinned(timer->base);
++}
++
+ static inline void
+ timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
+ {
+ 	timer->base = (struct tvec_base *)((unsigned long)(new_base) |
+-				      tbase_get_deferrable(timer->base));
++					tbase_get_flag_bits(timer));
++}
++
++static inline void timer_set_pinned(struct timer_list *timer)
++{
++	timer->base = ((struct tvec_base *)((unsigned long)(timer->base) |
++				TBASE_PINNED_FLAG));
+ }
+ 
+ /**
+@@ -579,6 +602,7 @@ void add_timer_on(struct timer_list *tim
+ 	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+ 	unsigned long flags;
+ 
++	timer_set_pinned(timer);
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+Index: linux-2.6.27/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.27.orig/kernel/hrtimer.c
++++ linux-2.6.27/kernel/hrtimer.c
+@@ -191,6 +191,14 @@ struct hrtimer_clock_base *lock_hrtimer_
+ }
+ 
+ /*
++ * Function to check whether the timer is pinned to cpu or not.
++ */
++static inline int is_hrtimer_pinned(struct hrtimer *timer)
++{
++	return timer->state & HRTIMER_CPU_PINNED;
++}
++
++/*
+  * Switch the timer base to the current CPU when possible.
+  */
+ static inline struct hrtimer_clock_base *
+@@ -690,7 +698,12 @@ static inline int hrtimer_enqueue_reprog
+ 			 */
+ 			list_add_tail(&timer->cb_entry,
+ 				      &base->cpu_base->cb_pending);
+-			timer->state = HRTIMER_STATE_PENDING;
++			/*
++			 * The hrtimer can be in pending state as well as be
++			 * pinned to a cpu.
++			 */
++			timer->state = HRTIMER_STATE_PENDING |
++					is_hrtimer_pinned(timer);
+ 			return 1;
+ 		default:
+ 			BUG();
+@@ -999,7 +1012,7 @@ hrtimer_start(struct hrtimer *timer, kti
+ 	 * list. We can not raise the softirq with base lock held due
+ 	 * to a possible deadlock with runqueue lock.
+ 	 */
+-	raise = timer->state == HRTIMER_STATE_PENDING;
++	raise = (get_hrtimer_state(timer) == HRTIMER_STATE_PENDING);
+ 
+ 	/*
+ 	 * We use preempt_disable to prevent this task from migrating after
+@@ -1018,6 +1031,14 @@ hrtimer_start(struct hrtimer *timer, kti
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
++int hrtimer_start_pinned(struct hrtimer *timer,
++		ktime_t tim, const enum hrtimer_mode mode)
++{
++	timer->state = timer->state | HRTIMER_CPU_PINNED;
++	return hrtimer_start(timer, tim, mode);
++}
++EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
++
+ /**
+  * hrtimer_try_to_cancel - try to deactivate a timer
+  * @timer:	hrtimer to stop
+@@ -1267,7 +1288,7 @@ static void __run_hrtimer(struct hrtimer
+ 	 * function anyway.
+ 	 */
+ 	if (restart != HRTIMER_NORESTART) {
+-		BUG_ON(timer->state != HRTIMER_STATE_CALLBACK);
++		BUG_ON(get_hrtimer_state(timer)	!= HRTIMER_STATE_CALLBACK);
+ 		enqueue_hrtimer(timer, base, 0);
+ 	}
+ 	timer->state &= ~HRTIMER_STATE_CALLBACK;
+@@ -1639,8 +1660,8 @@ static int migrate_hrtimer_list(struct h
+ 		 * in the migration state, we need to do that
+ 		 * otherwise we end up with a stale timer.
+ 		 */
+-		if (timer->state == HRTIMER_STATE_MIGRATE) {
+-			timer->state = HRTIMER_STATE_PENDING;
++		if (get_hrtimer_state(timer) == HRTIMER_STATE_MIGRATE) {
++			timer->state |= HRTIMER_STATE_PENDING;
+ 			list_add_tail(&timer->cb_entry,
+ 				      &new_base->cpu_base->cb_pending);
+ 			raise = 1;
+Index: linux-2.6.27/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.27.orig/include/linux/hrtimer.h
++++ linux-2.6.27/include/linux/hrtimer.h
+@@ -74,7 +74,6 @@ enum hrtimer_cb_mode {
+  * 0x01		enqueued into rbtree
+  * 0x02		callback function running
+  * 0x04		callback pending (high resolution mode)
+- *
+  * Special cases:
+  * 0x03		callback function running and enqueued
+  *		(was requeued on another CPU)
+@@ -97,6 +96,7 @@ enum hrtimer_cb_mode {
+ #define HRTIMER_STATE_CALLBACK	0x02
+ #define HRTIMER_STATE_PENDING	0x04
+ #define HRTIMER_STATE_MIGRATE	0x08
++#define HRTIMER_CPU_PINNED	0X16
+ 
+ /**
+  * struct hrtimer - the basic hrtimer structure
+@@ -294,6 +294,8 @@ static inline void destroy_hrtimer_on_st
+ /* Basic timer operations: */
+ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
+ 			 const enum hrtimer_mode mode);
++extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
++			const enum hrtimer_mode mode);
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+ 
+@@ -309,12 +311,21 @@ extern int hrtimer_get_res(const clockid
+ extern ktime_t hrtimer_get_next_event(void);
+ 
+ /*
++ * Helper function which masks the HRTIMER_CPU_PINNED flag and returns
++ * the state value without the overload.
++ */
++static inline long get_hrtimer_state(struct hrtimer *hrtimer)
++{
++	return hrtimer->state & ~HRTIMER_CPU_PINNED;
++}
++
++/*
+  * A timer is active, when it is enqueued into the rbtree or the callback
+  * function is running.
+  */
+-static inline int hrtimer_active(const struct hrtimer *timer)
++static inline int hrtimer_active(struct hrtimer *timer)
+ {
+-	return timer->state != HRTIMER_STATE_INACTIVE;
++	return get_hrtimer_state(timer)	!= HRTIMER_STATE_INACTIVE;
+ }
+ 
+ /*
