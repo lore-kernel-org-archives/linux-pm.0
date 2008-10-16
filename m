@@ -1,7 +1,8 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [RFC PATCH 0/4] timers: Timer migration
-Date: Thu, 16 Oct 2008 17:12:39 +0530
-Message-ID: <20081016114239.GA7641__28150.5144936547$1224157690$gmane$org@linux.vnet.ibm.com>
+Subject: [RFC PATCH 1/4] timers: Sysfs hook to enable timer
+	migration
+Date: Thu, 16 Oct 2008 17:15:58 +0530
+Message-ID: <20081016114558.GB7641__23856.7463042729$1224157827$gmane$org@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,76 +22,95 @@ To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This patch creates the necessary sysfs interface for timer migration.
 
-(This is merely for discussion purposes and not for inclusion).
+The interface is located at /sys/devices/system/cpu/cpuX/timer_migration
 
-This is a re-work of the earlier patch which i had sent.
-Link to the earlier patch - http://lkml.org/lkml/2008/9/16/40
-I have made the following changes from my previous patch:
+These sysfs entries are initialized to their respective cpu ids.
+This represents the no timer migration state.
+By echoing a target cpu number we can enable migration for that cpu.
 
-1) Created a new framework for identifying cpu-pinned hrtimers,so
-that such hrtimers are ignored during migration of timers.
+Echo a target cpu number to the per-cpu sysfs entry and all timers
+are migrated to that cpu, instead of choosing cpu0 by default.
 
-2)A better sysfs interface which allows you to echo a target cpu
-number to the per-cpu sysfs entry and all timers are migrated
-to that cpu, instead of choosing cpu0 by default.
+e.g. echo 4 > /sys/devices/system/cpu/cpu1/timer_migration
 
-This patch set is based on the kernel version 2.6.27.
+this would move all regular and hrtimers from cpu1 to cpu4.
 
 
-Here's a brief introduction as to why we need timer migration.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ drivers/base/cpu.c    |   42 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/timer.h |    2 ++
+ 2 files changed, 44 insertions(+)
 
-An idle cpu on which device drivers have initialized timers, or any
-timer that is (re)queued from a softirq context has to be
-frequently woken up to service the timers. So, consolidation of timers
-onto a fewer number of cpus is important. Migration of timers from
-idle cpus onto lesser idle cpus is necessary. Currently, timers are
-migrated during the cpu offline operation. However cpu-hotplug for the
-sake of idle system power management is too heavy. So, this patch
-implements a lightweight timer migration framework.
-
-Also, in machines with large number of CPUs, when utilization is not
-high enough, but is not 0% either, we would want to consolidate all
-the system activity to as fewer number of packages as possible.
-
-a) Interrupts are usually re-routed using the power-aware irqbalance
-daemon.
-
-b) For tasks, we have hooks in the scheduler which can consolidate tasks to
-a fewer number of CPUs.
-
-c) The remaining part of the system activity is the timers, which can be
-queued from a task or a softirq context.
-
-c-1)If they're queued from the task context, then they migrate whenever the
-task is migrated.
-
-c-2) However, if they're requeued from a softirq context, then it's not
-possible to currently migrate them unless the CPU is offlined.
-
-Hence, the need for a minimalistic framework which allows to
-migrate the last remaining system activity from the last few
-idle-but-serving-timers CPUs of an otherwise idle package, to a package
-which is already having some amount of system activity on them.
-
-Also, this kind of a framework will be helpful for a certain class of
-applications like the High Performance (HPC) applications, where we
-would want to restrict the system housekeeping activities to as fewer
-number of CPUs as possible, in order to minimize the jitter caused by
-these housekeeping activities.
-
-
-Lastly, the algorithm which decides to which cpu the timer should be
-migrated to should be conservative in the sense that, it should
-migrate only if the target cpu is sufficiently busy so that it is not
-woken up from an idle state. In that case where even target cpu is
-idle, the penalty of wake up would be same on either of the cpus.
-
-Tests carried out:
-
-a) I have tested this patch by stressing the system using a script
-which continuously hotplug-add and removes the cpus.
-
-b) Also ran kernbench. The kernbench results with and without my patches
-on were fairly similar.
+Index: linux-2.6.27/drivers/base/cpu.c
+===================================================================
+--- linux-2.6.27.orig/drivers/base/cpu.c
++++ linux-2.6.27/drivers/base/cpu.c
+@@ -20,6 +20,43 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+ 
+ static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
+ 
++DEFINE_PER_CPU(int, enable_timer_migration);
++
++/* This function initializes sysfs entries for enabling timer migration.
++ * Each per_cpu enable_timer_migration is initialized to its cpu_id.
++ * By echo-ing a value other than its cpu_id will set that as the target cpu
++ * to which the timers are to be migrated to.
++ */
++void initialize_timer_migration_sysfs(void)
++{
++	int cpu;
++	for_each_possible_cpu(cpu)
++		per_cpu(enable_timer_migration, cpu) = cpu;
++}
++
++static ssize_t timer_migration_show(struct sys_device *dev, char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration,
++		cpu->sysdev.id));
++}
++static ssize_t
++timer_migration_store(struct sys_device *dev, const char *buf, size_t count)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	ssize_t ret = -EINVAL;
++	int target_cpu;
++	sscanf(buf, "%d", &target_cpu);
++	if (cpu_online(target_cpu)) {
++		ret = count;
++		per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
++	}
++
++	return ret;
++}
++static SYSDEV_ATTR(timer_migration, 0644,
++		timer_migration_show, timer_migration_store);
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
+ 			   char *buf)
+@@ -177,6 +214,11 @@ int __cpuinit register_cpu(struct cpu *c
+ 	if (!error)
+ 		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
+ #endif
++
++	if (!error) {
++		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
++		initialize_timer_migration_sysfs();
++	}
+ 	return error;
+ }
+ 
+Index: linux-2.6.27/include/linux/timer.h
+===================================================================
+--- linux-2.6.27.orig/include/linux/timer.h
++++ linux-2.6.27/include/linux/timer.h
+@@ -187,3 +187,5 @@ unsigned long round_jiffies(unsigned lon
+ unsigned long round_jiffies_relative(unsigned long j);
+ 
+ #endif
++
++DECLARE_PER_CPU(int, enable_timer_migration);
