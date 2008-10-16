@@ -1,14 +1,14 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [RFC PATCH 4/4] timers: Migrating non pinned regular and
-	hrtimers.
-Date: Thu, 16 Oct 2008 17:22:19 +0530
-Message-ID: <20081016115219.GE7641__17396.8207127929$1224158187$gmane$org@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH 2/4] timers: new framework for
+	identifying	cpu-pinned timers
+Date: Thu, 16 Oct 2008 13:53:02 +0200
+Message-ID: <1224157982.28131.49.camel__15276.5792947777$1224158413$gmane$org@twins>
+References: <20081016114830.GC7641@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <20081016114830.GC7641@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,72 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
+To: arun@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch migrates all the non cpu-pinned regular and hrtimers
-from a particular cpu to the target cpu specified.
+On Thu, 2008-10-16 at 17:18 +0530, Arun R Bharadwaj wrote:
+> This patch creates the necessary framework for identifying cpu-pinned
+> regular timers and hrtimers.
+> 
+> For regular timers a new flag called TBASE_PINNED_FLAG is created.
+> Since the last 3 bits of the tvec_base is guaranteed to be 0, and
+> since the last bit is being used to indicate deferrable timers, I'm
+> using the second last bit to indicate cpu-pinned regular timers.
+> The implementation of functions to manage the TBASE_PINNED_FLAG is
+> similar to those which manage the TBASE_DEFERRABLE_FLAG.
+> 
+> For hrtimers, there is no clear interface to queue a hrtimer as a
+> per-cpu hrtimer. But there are instances where, if an hrtimer is queued
+> on a particular cpu, it expects to run on the same cpu.
+> The hrtimer hrtick_timer is one such example.
+> 
+> So, in this regard, I've created a new interface called
+> hrtimer_start_pinned which can be used to queue cpu-pinned hrtimer.
+> In the hrtimer structure, there is a variable called *state* which
+> is used to indicate the state of a hrtimer - inactive, enqueued,
+> callback function running and callback pending. Currently, since only
+> 5 bits are being used in the state variable, I've used the 6th bit
+> to represent the cpu-pinned state of the hrtimer
+> 
+> 
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 
-The migration is triggered by setting the target cpu number at
-/sys/devices/system/cpu/cpuX/timer_migration.
+Thomas recently created HRTIMER_CB_IRQSAFE_PERCPU which serves this
+purpose to close some cpu-hotplug timer races.
 
-In the situation where the cpuX goes offline *after* the user sets
-X as the target_cpu, then timers are not migrated and stay on
-the source cpu. But this is just a short term fix and any discussion
-in this regard will help greatly.
+> @@ -97,6 +96,7 @@ enum hrtimer_cb_mode {
+>  #define HRTIMER_STATE_CALLBACK	0x02
+>  #define HRTIMER_STATE_PENDING	0x04
+>  #define HRTIMER_STATE_MIGRATE	0x08
+> +#define HRTIMER_CPU_PINNED	0X16
 
-I have tested this patch by stressing the system using a script
-which continuously hotplug-add and removes the cpus.
-
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- kernel/hrtimer.c |    6 ++++++
- kernel/timer.c   |    7 ++++++-
- 2 files changed, 12 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.27/kernel/timer.c
-===================================================================
---- linux-2.6.27.orig/kernel/timer.c
-+++ linux-2.6.27/kernel/timer.c
-@@ -547,7 +547,7 @@ int __mod_timer(struct timer_list *timer
- {
- 	struct tvec_base *base, *new_base;
- 	unsigned long flags;
--	int ret = 0;
-+	int ret = 0, target_cpu;
- 
- 	timer_stats_timer_set_start_info(timer);
- 	BUG_ON(!timer->function);
-@@ -562,6 +562,11 @@ int __mod_timer(struct timer_list *timer
- 	debug_timer_activate(timer);
- 
- 	new_base = __get_cpu_var(tvec_bases);
-+	target_cpu = __get_cpu_var(enable_timer_migration);
-+	if (target_cpu != smp_processor_id() && !tbase_get_pinned(timer->base)
-+			&& cpu_online(target_cpu))
-+		new_base = per_cpu(tvec_bases, target_cpu);
-+
- 
- 	if (base != new_base) {
- 		/*
-Index: linux-2.6.27/kernel/hrtimer.c
-===================================================================
---- linux-2.6.27.orig/kernel/hrtimer.c
-+++ linux-2.6.27/kernel/hrtimer.c
-@@ -206,8 +206,14 @@ switch_hrtimer_base(struct hrtimer *time
- {
- 	struct hrtimer_clock_base *new_base;
- 	struct hrtimer_cpu_base *new_cpu_base;
-+	int target_cpu;
- 
- 	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-+	target_cpu = __get_cpu_var(enable_timer_migration);
-+	if (target_cpu != smp_processor_id() && !is_hrtimer_pinned(timer)
-+			&& cpu_online(target_cpu))
-+		new_cpu_base = &per_cpu(hrtimer_bases, target_cpu);
-+
- 	new_base = &new_cpu_base->clock_base[base->index];
- 
- 	if (base != new_base) {
+Hehe, may I suggest 0x10 :-)
