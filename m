@@ -1,8 +1,8 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH] x86 ACPI: Fix breakage of resume on 64-bit
 	UP systems	with SMP kernel
-Date: Fri, 17 Oct 2008 10:37:00 +0200
-Message-ID: <20081017083646.GA25445__34914.2180908986$1224232843$gmane$org@elf.ucw.cz>
+Date: Fri, 17 Oct 2008 14:20:06 +0200
+Message-ID: <20081017122006.GA25285__5852.81193857572$1224246210$gmane$org@elte.hu>
 References: <200810170126.27890.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,36 +20,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2008-10-17 01:26:27, Rafael J. Wysocki wrote:
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
 > x86 ACPI: Fix breakage of resume on 64-bit UP systems with SMP kernel
-> 
-> We are now using per CPU GDT tables in head_64.S and the original
-> early_gdt_descr.address is invalidated after boot by 
-> setup_per_cpu_areas().  This breaks resume from suspend to RAM on
-> x86_64 UP systems using SMP kernels, because this part of head_64.S
-> is also executed during the resume and the invalid GDT address
-> causes the system to crash.  It doesn't break on 'true' SMP systems,
-> because early_gdt_descr.address is modified every time
-> native_cpu_up() runs.  However, during resume it should point to the
-> GDT of the boot CPU rather than to another CPU's GDT.
-> 
-> For this reason, during suspend to RAM always make
-> early_gdt_descr.address point to the boot CPU's GDT.
-> 
-> This fixes http://bugzilla.kernel.org/show_bug.cgi?id=11568, which
-> is a regression from 2.6.26.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-and-tested-by: Andy Wettstein <ajw1980@gmail.com>
 
-Acked-by: Pavel Machek <pavel@suse.cz>
-									Pavel
+applied to tip/x86/urgent, with a stable@kernel.org tag - thanks Rafael!
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
