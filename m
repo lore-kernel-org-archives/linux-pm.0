@@ -1,15 +1,15 @@
-From: "Tian, Kevin" <kevin.tian@intel.com>
-Subject: Re: [RFC PATCH 0/4] timers: Timer migration
-Date: Fri, 17 Oct 2008 10:43:24 +0800
-Message-ID: <D8078B8B3B09934AA9F8F2D5FB3F28CE08A3CEFD3A__7681.34601316905$1224214888$gmane$org@pdsmsx502.ccr.corp.intel.com>
-References: <20081016114239.GA7641@linux.vnet.ibm.com>
-	<20081016073749.4f944a19@infradead.org>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] x86 ACPI: Fix breakage of resume on 64-bit
+	UP systems	with SMP kernel
+Date: Fri, 17 Oct 2008 10:37:00 +0200
+Message-ID: <20081017083646.GA25445__34914.2180908986$1224232843$gmane$org@elf.ucw.cz>
+References: <200810170126.27890.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081016073749.4f944a19@infradead.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <200810170126.27890.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: 'Arjan van de Ven' <arjan@infradead.org>, "arun@linux.vnet.ibm.com" <arun@linux.vnet.ibm.com>
-Cc: "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>, "vatsa@linux.vnet.ibm.com" <vatsa@linux.vnet.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "andi@firstfloor.org" <andi@firstfloor.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@elte.hu" <mingo@elte.hu>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
->From: Arjan van de Ven
->Sent: Thursday, October 16, 2008 10:38 PM
->On Thu, 16 Oct 2008 17:12:39 +0530
->>
->>
->> Here's a brief introduction as to why we need timer migration.
->>
->
->as I've said before, for reducing power consumption I don't buy into
->needing this concept....
->
->If you have high frequency timers, you've lost no matter what (and we
->fixed almost all of them in the ecosystem); if you don't have those
->then this patch doesn't really add anything.
->(and the range-hrtimers fixes the intermediate state)
->
+On Fri 2008-10-17 01:26:27, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> x86 ACPI: Fix breakage of resume on 64-bit UP systems with SMP kernel
+> 
+> We are now using per CPU GDT tables in head_64.S and the original
+> early_gdt_descr.address is invalidated after boot by 
+> setup_per_cpu_areas().  This breaks resume from suspend to RAM on
+> x86_64 UP systems using SMP kernels, because this part of head_64.S
+> is also executed during the resume and the invalid GDT address
+> causes the system to crash.  It doesn't break on 'true' SMP systems,
+> because early_gdt_descr.address is modified every time
+> native_cpu_up() runs.  However, during resume it should point to the
+> GDT of the boot CPU rather than to another CPU's GDT.
+> 
+> For this reason, during suspend to RAM always make
+> early_gdt_descr.address point to the boot CPU's GDT.
+> 
+> This fixes http://bugzilla.kernel.org/show_bug.cgi?id=11568, which
+> is a regression from 2.6.26.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reported-and-tested-by: Andy Wettstein <ajw1980@gmail.com>
 
-Does range-hrtimers work in per-cpu style or globally? If the former
-I guess this timer migration may help range-hrtimers feature to
-further align rest timers. If globally, then small room remains.
+Acked-by: Pavel Machek <pavel@suse.cz>
+									Pavel
 
-Arun, did you have any actual power improvement data with it?
-
-Thanks,
-Kevin
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
