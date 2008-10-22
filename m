@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/4] Hibernate: Handle ACPI NVS memory as
-	required by the spec
-Date: Wed, 22 Oct 2008 22:49:20 +0200
-Message-ID: <200810222249.20629.rjw__7055.77234407446$1224709055$gmane$org@sisk.pl>
+Subject: [PATCH 1/4] Hibernate: Call platform_begin before
+	swsusp_shrink_memory
+Date: Wed, 22 Oct 2008 22:50:35 +0200
+Message-ID: <200810222250.36537.rjw__13365.863209083$1224709110$gmane$org@sisk.pl>
+References: <200810222249.20629.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200810222249.20629.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,16 +23,37 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Zhang Rui <rui.zhang@intel.com>
 
-I have recently tried to rebase the Zhang Rui's patches making the Linux
-hibernation code handle the ACPI NVS memory as required by the spec, but
-I found that they didn't work on x86_64 boxes where the NVS region was located
-behind the last usable PFN.  Also, I decided to put the memory management part
-into the hibernation core rather than into drivers/acpi/sleep/main.c .
+Hibernate: Call platform_begin before swsusp_shrink_memory
 
-As a result, I have obtained the following patch series.  Please review and if
-it looks good, please queue in the 'suspend' branch as .29 material.
+Call platform_begin() before swsusp_shrink_memory() so that we can
+always allocate enough memory to save the ACPI NVS region from
+platform_begin().
 
-Thanks,
-Rafael
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -267,12 +267,12 @@ int hibernation_snapshot(int platform_mo
+ {
+ 	int error, ftrace_save;
+ 
+-	/* Free memory before shutting down devices. */
+-	error = swsusp_shrink_memory();
++	error = platform_begin(platform_mode);
+ 	if (error)
+ 		return error;
+ 
+-	error = platform_begin(platform_mode);
++	/* Free memory before shutting down devices. */
++	error = swsusp_shrink_memory();
+ 	if (error)
+ 		goto Close;
+ 
