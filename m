@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI suspend: Fix CONFIG_ACPI_SLEEP dependence
-	and some compilation warnings (was: Re: [announce] new tree:
-	"fix all build warnings, on all configs")
-Date: Wed, 22 Oct 2008 14:23:42 +0200
-Message-ID: <200810221423.44216.rjw__28022.8162454025$1224678093$gmane$org@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI suspend: Fix CONFIG_ACPI_SLEEP
+ dependence and some compilation warnings (was: Re: [announce] new tree:
+ "fix all build warnings, on all configs")
+Date: Wed, 22 Oct 2008 14:58:56 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0810221458510.3010__27473.5848805451$1224702216$gmane$org@localhost.localdomain>
 References: <20081017171139.GA1792@elte.hu> <200810212137.58020.rjw@sisk.pl>
 	<alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
+	<200810221423.44216.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="Boundary_(ID_j9WwPo0eWegfJNOkoRV1pA)"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
-Content-Disposition: inline
+In-reply-to: <200810221423.44216.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,66 +20,147 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, David Howells <dhowells@redhat.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkbmVzZGF5LCAyMiBvZiBPY3RvYmVyIDIwMDgsIExlbiBCcm93biB3cm90ZToKPiAKPiA+
-ID4gICBkcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jOjY3OiB3YXJuaW5nOiDigJhhY3BpX3BtX2Rp
-c2FibGVfZ3Blc+KAmSBkZWZpbmVkIGJ1dCBub3QgdXNlZAo+IAo+ID4gPiAKPiA+ID4gU2hvd3Mg
-dGhhdCB0aGlzIGNvZGUgaGFzIGFuIGlkZW50aXR5IGNyaXNpcyBkdWUgdG8gYSBtYXplIG9mICNp
-ZmRlZnMsIGluCj4gPiA+IHRoZSBQTV9TTEVFUCAmJiAhU1VTUEVORCAmJiAhSElCRVJOQVRJT04g
-Y2FzZSBmb3IgZXhhbXBsZS4KPiA+IAo+ID4gVGhpcyBjYXNlIGlzIGludmFsaWQsIGJlY2F1c2Ug
-UE1fU0xFRVAgPT0gU1VTUEVORCB8fCBISUJFUk5BVElPTiAhCj4gCj4gSSB0aG91Z2ggc28gdG9v
-LCBidXQgMi42LjI3IGFwcGVhcnMgdG8gaGF2ZSBhZGRlZCBYRU4gdG8gdGhlIG1peDoKPiAKPiBj
-b25maWcgUE1fU0xFRVAKPiAgICAgICAgIGJvb2wKPiAgICAgICAgIGRlcGVuZHMgb24gU1VTUEVO
-RCB8fCBISUJFUk5BVElPTiB8fCBYRU5fU0FWRV9SRVNUT1JFCgpZZWFoLCB3aGljaCBicmVha3Mg
-dGhpbmdzLiA6LSgKClRoZSBwYXRjaCBiZWxvdyBzaG91bGQgZml4IGl0IGFuZCBCVFcgSSB0aGlu
-ayBBQ1BJX1NMRUVQIHNob3VsZCBub3QgZGVwZW5kCm9uIFhFTl9TQVZFX1JFU1RPUkUgYW55d2F5
-LCBzbyB0aGlzIGlzIGEgYnVnIGZpeCByZWFsbHkgKHBsZWFzZSBjb25zaWRlciBhcwouMjggbWF0
-ZXJpYWwsIHByb2JhYmx5IC1zdGFibGUgdG9vKS4KClRoYW5rcywKUmFmYWVsCgotLS0KRnJvbTog
-UmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKQUNQSSBzdXNwZW5kOiBGaXggQ09ORklH
-X0FDUElfU0xFRVAgZGVwZW5kZW5jZSBhbmQgc29tZSBjb21waWxhdGlvbiB3YXJuaW5ncwoKSW5p
-dGlhbGx5IENPTkZJR19QTV9TTEVFUCB3YXMgZGVmaW5lZCBhcwpDT05GSUdfU1VTUEVORCB8fCBD
-T05GSUdfSElCRVJOQVRJT04gYW5kIHNvbWUgQUNQSSBjb2RlLCBtb3N0CmltcG9ydGFudGx5IHRo
-ZSBjb2RlIGluIGRyaXZlcnMvYWNwaS9tYWluLmMsIHdhcyB3cml0dGVuIHdpdGggdGhpcwphc3N1
-bXB0aW9uLiAgQ3VycmVudGx5LCBob3dldmVyLCBDT05GSUdfUE1fU0xFRVAgaXMgYWxzbyBzZXQg
-d2hlbgpDT05GSUdfWEVOX1NBVkVfUkVTVE9SRSBpcyBzZXQuCgpUaGlzIGNhdXNlcyBzb21lIGNv
-bXBpbGF0aW9uIHdhcm5pbmdzIHRvIGFwcGVhciBpbgpkcml2ZXJzL2FjcGkvbWFpbi5jIGlmIGJv
-dGggQ09ORklHX1NVU1BFTkQgYW5kIENPTkZJR19ISUJFUk5BVElPTgphcmUgdW5zZXQgYW5kIENP
-TkZJR19QTV9TTEVFUCBpcyBzZXQgKHRoaXMgd2FzIGltcG9zc2libGUgYmVmb3JlKS4KVG8gZml4
-IHRoaXMgcHJvYmxlbSwgcmVkZWZpbmUgQ09ORklHX0FDUElfU0xFRVAgZG8gZGVwZW5kIGRpcmVj
-dGx5Cm9uIENPTkZJR19TVVNQRU5EIHx8IENPTkZJR19ISUJFUk5BVElPTiwgYXMgb3JpZ2luYWxs
-eSBpbnRlbmRlZCwgYW5kCnVzZSBpdCBpbnN0ZWFkIG9mIENPTkZJR19QTV9TTEVFUCBpbiBkcml2
-ZXJzL2FjcGkvbWFpbi5jLCB3aGVyZXZlcgphcHByb3ByaWF0ZS4KCkFkZGl0aW9uYWxseSwgbW92
-ZSB0aGUgYWNwaV90YXJnZXRfc2xlZXBfc3RhdGUgZGVmaW5pdGlvbiBmcm9tIHVuZGVyCnRoZSAj
-aWZkZWYgdG8gcHJldmVudCBjb21waWxhdGlvbiBmcm9tIGZhaWxpbmcgaW4gc29tZSBjYXNlcy4g
-CgpTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Ci0tLQogZHJp
-dmVycy9hY3BpL0tjb25maWcgICAgICB8ICAgIDIgKy0KIGRyaXZlcnMvYWNwaS9zbGVlcC9tYWlu
-LmMgfCAgICA3ICsrKy0tLS0KIDIgZmlsZXMgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCA1IGRl
-bGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2FjcGkvS2NvbmZpZwo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09Ci0tLSBsaW51eC0yLjYub3JpZy9kcml2ZXJzL2FjcGkvS2NvbmZpZworKysgbGludXgtMi42
-L2RyaXZlcnMvYWNwaS9LY29uZmlnCkBAIC00Miw3ICs0Miw3IEBAIGlmIEFDUEkKIAogY29uZmln
-IEFDUElfU0xFRVAKIAlib29sCi0JZGVwZW5kcyBvbiBQTV9TTEVFUAorCWRlcGVuZHMgb24gU1VT
-UEVORCB8fCBISUJFUk5BVElPTgogCWRlZmF1bHQgeQogCiBjb25maWcgQUNQSV9QUk9DRlMKSW5k
-ZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi5vcmlnL2RyaXZlcnMvYWNwaS9zbGVlcC9tYWluLmMKKysrIGxpbnV4LTIuNi9kcml2
-ZXJzL2FjcGkvc2xlZXAvbWFpbi5jCkBAIC0yMyw2ICsyMyw3IEBACiAjaW5jbHVkZSAic2xlZXAu
-aCIKIAogdTggc2xlZXBfc3RhdGVzW0FDUElfU19TVEFURV9DT1VOVF07CitzdGF0aWMgdTMyIGFj
-cGlfdGFyZ2V0X3NsZWVwX3N0YXRlID0gQUNQSV9TVEFURV9TMDsKIAogc3RhdGljIGludCBhY3Bp
-X3NsZWVwX3ByZXBhcmUodTMyIGFjcGlfc3RhdGUpCiB7CkBAIC00NSw5ICs0Niw3IEBAIHN0YXRp
-YyBpbnQgYWNwaV9zbGVlcF9wcmVwYXJlKHUzMiBhY3BpX3MKIAlyZXR1cm4gMDsKIH0KIAotI2lm
-ZGVmIENPTkZJR19QTV9TTEVFUAotc3RhdGljIHUzMiBhY3BpX3RhcmdldF9zbGVlcF9zdGF0ZSA9
-IEFDUElfU1RBVEVfUzA7Ci0KKyNpZmRlZiBDT05GSUdfQUNQSV9TTEVFUAogLyoKICAqIEFDUEkg
-MS4wIHdhbnRzIHVzIHRvIGV4ZWN1dGUgX1BUUyBiZWZvcmUgc3VzcGVuZGluZyBkZXZpY2VzLCBz
-byB3ZSBhbGxvdyB0aGUKICAqIHVzZXIgdG8gcmVxdWVzdCB0aGF0IGJlaGF2aW9yIGJ5IHVzaW5n
-IHRoZSAnYWNwaV9vbGRfc3VzcGVuZF9vcmRlcmluZycKQEAgLTEzMiw3ICsxMzEsNyBAQCBzdGF0
-aWMgdm9pZCBhY3BpX3BtX2VuZCh2b2lkKQogCSAqLwogCWFjcGlfdGFyZ2V0X3NsZWVwX3N0YXRl
-ID0gQUNQSV9TVEFURV9TMDsKIH0KLSNlbmRpZiAvKiBDT05GSUdfUE1fU0xFRVAgKi8KKyNlbmRp
-ZiAvKiBDT05GSUdfQUNQSV9TTEVFUCAqLwogCiAjaWZkZWYgQ09ORklHX1NVU1BFTkQKIGV4dGVy
-biB2b2lkIGRvX3N1c3BlbmRfbG93bGV2ZWwodm9pZCk7Cl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--Boundary_(ID_j9WwPo0eWegfJNOkoRV1pA)
+Content-type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id m9MIxvtD004465
+
+applied.
+
+thanks,
+-Len
+
+On Wed, 22 Oct 2008, Rafael J. Wysocki wrote:
+
+> On Wednesday, 22 of October 2008, Len Brown wrote:
+> >=20
+> > > >   drivers/acpi/sleep/main.c:67: warning: =E2=80=98acpi_pm_disable=
+_gpes=E2=80=99 defined but not used
+> >=20
+> > > >=20
+> > > > Shows that this code has an identity crisis due to a maze of #ifd=
+efs, in
+> > > > the PM_SLEEP && !SUSPEND && !HIBERNATION case for example.
+> > >=20
+> > > This case is invalid, because PM_SLEEP =3D=3D SUSPEND || HIBERNATIO=
+N !
+> >=20
+> > I though so too, but 2.6.27 appears to have added XEN to the mix:
+> >=20
+> > config PM_SLEEP
+> >         bool
+> >         depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+>=20
+> Yeah, which breaks things. :-(
+>=20
+> The patch below should fix it and BTW I think ACPI_SLEEP should not dep=
+end
+> on XEN_SAVE_RESTORE anyway, so this is a bug fix really (please conside=
+r as
+> .28 material, probably -stable too).
+>=20
+> Thanks,
+> Rafael
+>=20
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> ACPI suspend: Fix CONFIG_ACPI_SLEEP dependence and some compilation war=
+nings
+>=20
+> Initially CONFIG_PM_SLEEP was defined as
+> CONFIG_SUSPEND || CONFIG_HIBERNATION and some ACPI code, most
+> importantly the code in drivers/acpi/main.c, was written with this
+> assumption.  Currently, however, CONFIG_PM_SLEEP is also set when
+> CONFIG_XEN_SAVE_RESTORE is set.
+>=20
+> This causes some compilation warnings to appear in
+> drivers/acpi/main.c if both CONFIG_SUSPEND and CONFIG_HIBERNATION
+> are unset and CONFIG_PM_SLEEP is set (this was impossible before).
+> To fix this problem, redefine CONFIG_ACPI_SLEEP do depend directly
+> on CONFIG_SUSPEND || CONFIG_HIBERNATION, as originally intended, and
+> use it instead of CONFIG_PM_SLEEP in drivers/acpi/main.c, wherever
+> appropriate.
+>=20
+> Additionally, move the acpi_target_sleep_state definition from under
+> the #ifdef to prevent compilation from failing in some cases.=20
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/acpi/Kconfig      |    2 +-
+>  drivers/acpi/sleep/main.c |    7 +++----
+>  2 files changed, 4 insertions(+), 5 deletions(-)
+>=20
+> Index: linux-2.6/drivers/acpi/Kconfig
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/drivers/acpi/Kconfig
+> +++ linux-2.6/drivers/acpi/Kconfig
+> @@ -42,7 +42,7 @@ if ACPI
+> =20
+>  config ACPI_SLEEP
+>  	bool
+> -	depends on PM_SLEEP
+> +	depends on SUSPEND || HIBERNATION
+>  	default y
+> =20
+>  config ACPI_PROCFS
+> Index: linux-2.6/drivers/acpi/sleep/main.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/drivers/acpi/sleep/main.c
+> +++ linux-2.6/drivers/acpi/sleep/main.c
+> @@ -23,6 +23,7 @@
+>  #include "sleep.h"
+> =20
+>  u8 sleep_states[ACPI_S_STATE_COUNT];
+> +static u32 acpi_target_sleep_state =3D ACPI_STATE_S0;
+> =20
+>  static int acpi_sleep_prepare(u32 acpi_state)
+>  {
+> @@ -45,9 +46,7 @@ static int acpi_sleep_prepare(u32 acpi_s
+>  	return 0;
+>  }
+> =20
+> -#ifdef CONFIG_PM_SLEEP
+> -static u32 acpi_target_sleep_state =3D ACPI_STATE_S0;
+> -
+> +#ifdef CONFIG_ACPI_SLEEP
+>  /*
+>   * ACPI 1.0 wants us to execute _PTS before suspending devices, so we =
+allow the
+>   * user to request that behavior by using the 'acpi_old_suspend_orderi=
+ng'
+> @@ -132,7 +131,7 @@ static void acpi_pm_end(void)
+>  	 */
+>  	acpi_target_sleep_state =3D ACPI_STATE_S0;
+>  }
+> -#endif /* CONFIG_PM_SLEEP */
+> +#endif /* CONFIG_ACPI_SLEEP */
+> =20
+>  #ifdef CONFIG_SUSPEND
+>  extern void do_suspend_lowlevel(void);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
+
+--Boundary_(ID_j9WwPo0eWegfJNOkoRV1pA)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--Boundary_(ID_j9WwPo0eWegfJNOkoRV1pA)--
