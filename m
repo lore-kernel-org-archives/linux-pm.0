@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 5/5] ACPI GPE based wakeup event detection
-Date: Wed, 22 Oct 2008 14:12:18 +0200
-Message-ID: <200810221412.19156.rjw__41401.4456830502$1224677401$gmane$org@sisk.pl>
-References: <20080911063037.698427944@sli10-desk.sh.intel.com>
-	<200810192239.47710.rjw@sisk.pl>
-	<20081022065101.GE15271@sli10-desk.sh.intel.com>
+Subject: [PATCH] ACPI suspend: Fix CONFIG_ACPI_SLEEP dependence
+	and some compilation warnings (was: Re: [announce] new tree:
+	"fix all build warnings, on all configs")
+Date: Wed, 22 Oct 2008 14:23:42 +0200
+Message-ID: <200810221423.44216.rjw__28022.8162454025$1224678093$gmane$org@sisk.pl>
+References: <20081017171139.GA1792@elte.hu> <200810212137.58020.rjw@sisk.pl>
+	<alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081022065101.GE15271@sli10-desk.sh.intel.com>
+In-Reply-To: <alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,76 +21,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>
+To: Len Brown <lenb@kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, David Howells <dhowells@redhat.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 22 of October 2008, Shaohua Li wrote:
-> On Mon, Oct 20, 2008 at 04:39:47AM +0800, Rafael J. Wysocki wrote:
-> > On Thursday, 11 of September 2008, Shaohua Li wrote:
-> > > In ACPI platform, if native PME isn't enabled, GPE is used to report wakeup event.
-> > 
-> > Add more details here, please.
-> > 
-> > > ---
-> > >  drivers/acpi/Kconfig        |    9 ++++++
-> > >  drivers/acpi/bus.c          |   15 +++++++++++
-> > >  drivers/acpi/sleep/wakeup.c |   60 ++++++++++++++++++++++++++++++++++++++++++++
-> > >  include/acpi/acpi_bus.h     |    4 ++
-> > >  4 files changed, 88 insertions(+)
-> > >
-> > > Index: linux/drivers/acpi/Kconfig
-> > > ===================================================================
-> > > --- linux.orig/drivers/acpi/Kconfig   2008-09-11 10:56:25.000000000 +0800
-> > > +++ linux/drivers/acpi/Kconfig        2008-09-11 10:56:47.000000000 +0800
-> > > @@ -45,6 +45,15 @@ config ACPI_SLEEP
-> > >       depends on PM_SLEEP
-> > >       default y
-> > >
-> > > +config ACPI_GPE_WAKEUP
-> > 
-> > I'd call it ACPI_RUNTIME_WAKEUP
-> ok
-> 
-> > > +void unregister_acpi_bus_notifier(struct notifier_block *nb)
-> > > +{
-> > > +     blocking_notifier_chain_unregister(&acpi_bus_notify_list, nb);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(unregister_acpi_bus_notifier);
-> > > +
-> > 
-> > We were talking about removing the notifier last time.  Please do that.
-> Did you see my comments on the issue last time? ACPI test tree already introduces
-> the mechanism for other purpose, and we can just use it.
-> 
-> > > --- linux.orig/include/acpi/acpi_bus.h        2008-09-11 10:56:25.000000000 +0800
-> > > +++ linux/include/acpi/acpi_bus.h     2008-09-11 10:56:47.000000000 +0800
-> > > @@ -327,6 +327,10 @@ int acpi_bus_get_private_data(acpi_handl
-> > >  extern int acpi_notifier_call_chain(struct acpi_device *, u32, u32);
-> > >  extern int register_acpi_notifier(struct notifier_block *);
-> > >  extern int unregister_acpi_notifier(struct notifier_block *);
-> > > +
-> > > +extern int register_acpi_bus_notifier(struct notifier_block *nb);
-> > > +extern void unregister_acpi_bus_notifier(struct notifier_block *nb);
-> > > +
-> > >  /*
-> > >   * External Functions
-> > >   */
-> > >
-> > 
-> > I understand from the above that devices having their own wake-up GPEs will be
-> > handled.  However, it still is completely unclear to me what happens with
-> > devices that can generate PME# and for which there are no specific GPEs, like
-> > any devices on add-in cards.
-> As we discussed last time, pci bus for add-in cards will invoke a gpe, and
-> this new implementation will check all pci devices under a bridge to try to find
-> a device generating PME. This should work for add-in cards.
-
-Well, can you please describe this mechanism to me or point me to
-documents/code where I can read about it?
-
-The question is how we can learn which GPE will be used for signalling the PME#
-events.
-
-Thanks,
-Rafael
+T24gV2VkbmVzZGF5LCAyMiBvZiBPY3RvYmVyIDIwMDgsIExlbiBCcm93biB3cm90ZToKPiAKPiA+
+ID4gICBkcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jOjY3OiB3YXJuaW5nOiDigJhhY3BpX3BtX2Rp
+c2FibGVfZ3Blc+KAmSBkZWZpbmVkIGJ1dCBub3QgdXNlZAo+IAo+ID4gPiAKPiA+ID4gU2hvd3Mg
+dGhhdCB0aGlzIGNvZGUgaGFzIGFuIGlkZW50aXR5IGNyaXNpcyBkdWUgdG8gYSBtYXplIG9mICNp
+ZmRlZnMsIGluCj4gPiA+IHRoZSBQTV9TTEVFUCAmJiAhU1VTUEVORCAmJiAhSElCRVJOQVRJT04g
+Y2FzZSBmb3IgZXhhbXBsZS4KPiA+IAo+ID4gVGhpcyBjYXNlIGlzIGludmFsaWQsIGJlY2F1c2Ug
+UE1fU0xFRVAgPT0gU1VTUEVORCB8fCBISUJFUk5BVElPTiAhCj4gCj4gSSB0aG91Z2ggc28gdG9v
+LCBidXQgMi42LjI3IGFwcGVhcnMgdG8gaGF2ZSBhZGRlZCBYRU4gdG8gdGhlIG1peDoKPiAKPiBj
+b25maWcgUE1fU0xFRVAKPiAgICAgICAgIGJvb2wKPiAgICAgICAgIGRlcGVuZHMgb24gU1VTUEVO
+RCB8fCBISUJFUk5BVElPTiB8fCBYRU5fU0FWRV9SRVNUT1JFCgpZZWFoLCB3aGljaCBicmVha3Mg
+dGhpbmdzLiA6LSgKClRoZSBwYXRjaCBiZWxvdyBzaG91bGQgZml4IGl0IGFuZCBCVFcgSSB0aGlu
+ayBBQ1BJX1NMRUVQIHNob3VsZCBub3QgZGVwZW5kCm9uIFhFTl9TQVZFX1JFU1RPUkUgYW55d2F5
+LCBzbyB0aGlzIGlzIGEgYnVnIGZpeCByZWFsbHkgKHBsZWFzZSBjb25zaWRlciBhcwouMjggbWF0
+ZXJpYWwsIHByb2JhYmx5IC1zdGFibGUgdG9vKS4KClRoYW5rcywKUmFmYWVsCgotLS0KRnJvbTog
+UmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKQUNQSSBzdXNwZW5kOiBGaXggQ09ORklH
+X0FDUElfU0xFRVAgZGVwZW5kZW5jZSBhbmQgc29tZSBjb21waWxhdGlvbiB3YXJuaW5ncwoKSW5p
+dGlhbGx5IENPTkZJR19QTV9TTEVFUCB3YXMgZGVmaW5lZCBhcwpDT05GSUdfU1VTUEVORCB8fCBD
+T05GSUdfSElCRVJOQVRJT04gYW5kIHNvbWUgQUNQSSBjb2RlLCBtb3N0CmltcG9ydGFudGx5IHRo
+ZSBjb2RlIGluIGRyaXZlcnMvYWNwaS9tYWluLmMsIHdhcyB3cml0dGVuIHdpdGggdGhpcwphc3N1
+bXB0aW9uLiAgQ3VycmVudGx5LCBob3dldmVyLCBDT05GSUdfUE1fU0xFRVAgaXMgYWxzbyBzZXQg
+d2hlbgpDT05GSUdfWEVOX1NBVkVfUkVTVE9SRSBpcyBzZXQuCgpUaGlzIGNhdXNlcyBzb21lIGNv
+bXBpbGF0aW9uIHdhcm5pbmdzIHRvIGFwcGVhciBpbgpkcml2ZXJzL2FjcGkvbWFpbi5jIGlmIGJv
+dGggQ09ORklHX1NVU1BFTkQgYW5kIENPTkZJR19ISUJFUk5BVElPTgphcmUgdW5zZXQgYW5kIENP
+TkZJR19QTV9TTEVFUCBpcyBzZXQgKHRoaXMgd2FzIGltcG9zc2libGUgYmVmb3JlKS4KVG8gZml4
+IHRoaXMgcHJvYmxlbSwgcmVkZWZpbmUgQ09ORklHX0FDUElfU0xFRVAgZG8gZGVwZW5kIGRpcmVj
+dGx5Cm9uIENPTkZJR19TVVNQRU5EIHx8IENPTkZJR19ISUJFUk5BVElPTiwgYXMgb3JpZ2luYWxs
+eSBpbnRlbmRlZCwgYW5kCnVzZSBpdCBpbnN0ZWFkIG9mIENPTkZJR19QTV9TTEVFUCBpbiBkcml2
+ZXJzL2FjcGkvbWFpbi5jLCB3aGVyZXZlcgphcHByb3ByaWF0ZS4KCkFkZGl0aW9uYWxseSwgbW92
+ZSB0aGUgYWNwaV90YXJnZXRfc2xlZXBfc3RhdGUgZGVmaW5pdGlvbiBmcm9tIHVuZGVyCnRoZSAj
+aWZkZWYgdG8gcHJldmVudCBjb21waWxhdGlvbiBmcm9tIGZhaWxpbmcgaW4gc29tZSBjYXNlcy4g
+CgpTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Ci0tLQogZHJp
+dmVycy9hY3BpL0tjb25maWcgICAgICB8ICAgIDIgKy0KIGRyaXZlcnMvYWNwaS9zbGVlcC9tYWlu
+LmMgfCAgICA3ICsrKy0tLS0KIDIgZmlsZXMgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCA1IGRl
+bGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2FjcGkvS2NvbmZpZwo9PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09Ci0tLSBsaW51eC0yLjYub3JpZy9kcml2ZXJzL2FjcGkvS2NvbmZpZworKysgbGludXgtMi42
+L2RyaXZlcnMvYWNwaS9LY29uZmlnCkBAIC00Miw3ICs0Miw3IEBAIGlmIEFDUEkKIAogY29uZmln
+IEFDUElfU0xFRVAKIAlib29sCi0JZGVwZW5kcyBvbiBQTV9TTEVFUAorCWRlcGVuZHMgb24gU1VT
+UEVORCB8fCBISUJFUk5BVElPTgogCWRlZmF1bHQgeQogCiBjb25maWcgQUNQSV9QUk9DRlMKSW5k
+ZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jCj09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
+bnV4LTIuNi5vcmlnL2RyaXZlcnMvYWNwaS9zbGVlcC9tYWluLmMKKysrIGxpbnV4LTIuNi9kcml2
+ZXJzL2FjcGkvc2xlZXAvbWFpbi5jCkBAIC0yMyw2ICsyMyw3IEBACiAjaW5jbHVkZSAic2xlZXAu
+aCIKIAogdTggc2xlZXBfc3RhdGVzW0FDUElfU19TVEFURV9DT1VOVF07CitzdGF0aWMgdTMyIGFj
+cGlfdGFyZ2V0X3NsZWVwX3N0YXRlID0gQUNQSV9TVEFURV9TMDsKIAogc3RhdGljIGludCBhY3Bp
+X3NsZWVwX3ByZXBhcmUodTMyIGFjcGlfc3RhdGUpCiB7CkBAIC00NSw5ICs0Niw3IEBAIHN0YXRp
+YyBpbnQgYWNwaV9zbGVlcF9wcmVwYXJlKHUzMiBhY3BpX3MKIAlyZXR1cm4gMDsKIH0KIAotI2lm
+ZGVmIENPTkZJR19QTV9TTEVFUAotc3RhdGljIHUzMiBhY3BpX3RhcmdldF9zbGVlcF9zdGF0ZSA9
+IEFDUElfU1RBVEVfUzA7Ci0KKyNpZmRlZiBDT05GSUdfQUNQSV9TTEVFUAogLyoKICAqIEFDUEkg
+MS4wIHdhbnRzIHVzIHRvIGV4ZWN1dGUgX1BUUyBiZWZvcmUgc3VzcGVuZGluZyBkZXZpY2VzLCBz
+byB3ZSBhbGxvdyB0aGUKICAqIHVzZXIgdG8gcmVxdWVzdCB0aGF0IGJlaGF2aW9yIGJ5IHVzaW5n
+IHRoZSAnYWNwaV9vbGRfc3VzcGVuZF9vcmRlcmluZycKQEAgLTEzMiw3ICsxMzEsNyBAQCBzdGF0
+aWMgdm9pZCBhY3BpX3BtX2VuZCh2b2lkKQogCSAqLwogCWFjcGlfdGFyZ2V0X3NsZWVwX3N0YXRl
+ID0gQUNQSV9TVEFURV9TMDsKIH0KLSNlbmRpZiAvKiBDT05GSUdfUE1fU0xFRVAgKi8KKyNlbmRp
+ZiAvKiBDT05GSUdfQUNQSV9TTEVFUCAqLwogCiAjaWZkZWYgQ09ORklHX1NVU1BFTkQKIGV4dGVy
+biB2b2lkIGRvX3N1c3BlbmRfbG93bGV2ZWwodm9pZCk7Cl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
