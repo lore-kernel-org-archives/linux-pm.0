@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/4] ACPI hibernate: Introduce new kernel
-	parameter acpi_sleep=s4_nonvs (rev. 2)
-Date: Thu, 23 Oct 2008 01:19:54 +0200
-Message-ID: <200810230119.55519.rjw__25245.9352989264$1224717479$gmane$org@sisk.pl>
-References: <200810222249.20629.rjw@sisk.pl>
-	<1224715892.8156.16.camel@nigel-laptop>
-	<200810230110.04039.rjw@sisk.pl>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 2/4] ACPI hibernate: Add a mechanism
+	to	save/restore ACPI NVS memory
+Date: Thu, 23 Oct 2008 12:37:05 +1100
+Message-ID: <1224725825.15620.1.camel__39868.6121953235$1224726136$gmane$org@nigel-laptop>
+References: <200810222249.20629.rjw@sisk.pl> <200810222252.11625.rjw@sisk.pl>
+	<1224715703.8156.11.camel@nigel-laptop>
+	<200810230108.45101.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810230110.04039.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200810230108.45101.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,186 +20,201 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 23 of October 2008, Rafael J. Wysocki wrote:
-> On Thursday, 23 of October 2008, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Wed, 2008-10-22 at 22:54 +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > ACPI hibernate: Introduce new kernel parameter acpi_sleep=s4_nonvs
-> > > 
-> > > On some machines it may be necessary to disable the saving/restoring
-> > > of the ACPI NVS memory region during hibernation/resume.  For this
-> > > purpose, introduce new ACPI kernel command line option
-> > > acpi_sleep=s4_nonvs.
-> > > 
-> > > Based on a patch by Zhang Rui.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Cc: Zhang Rui <rui.zhang@intel.com>
-> > > ---
-> > >  Documentation/kernel-parameters.txt |    5 ++++-
-> > >  arch/x86/kernel/acpi/sleep.c        |    2 ++
-> > >  drivers/acpi/sleep/main.c           |   19 +++++++++++++++++--
-> > >  include/linux/acpi.h                |    1 +
-> > >  4 files changed, 24 insertions(+), 3 deletions(-)
-> > > 
-> > > Index: linux-2.6/Documentation/kernel-parameters.txt
-> > > ===================================================================
-> > > --- linux-2.6.orig/Documentation/kernel-parameters.txt
-> > > +++ linux-2.6/Documentation/kernel-parameters.txt
-> > > @@ -149,7 +149,8 @@ and is between 256 and 4096 characters. 
-> > >  			default: 0
-> > >  
-> > >  	acpi_sleep=	[HW,ACPI] Sleep options
-> > > -			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig, old_ordering }
-> > > +			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
-> > > +				  old_ordering, s4_nonvs }
-> > >  			See Documentation/power/video.txt for s3_bios and s3_mode.
-> > >  			s3_beep is for debugging; it makes the PC's speaker beep
-> > >  			as soon as the kernel's real-mode entry point is called.
-> > > @@ -159,6 +160,8 @@ and is between 256 and 4096 characters. 
-> > >  			control method, wrt putting devices into low power
-> > >  			states, to be enforced (the ACPI 2.0 ordering of _PTS is
-> > >  			used by default).
-> > > +			s4_nonvs prevents the kernel from saving/restoring the
-> > > +			ACPI NVS memory during hibernation.
-> > >  
-> > >  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
-> > >  			Format: { level | edge | high | low }
-> > > Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-> > > +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-> > > @@ -161,6 +161,8 @@ static int __init acpi_sleep_setup(char 
-> > >  #endif
-> > >  		if (strncmp(str, "old_ordering", 12) == 0)
-> > >  			acpi_old_suspend_ordering();
-> > > +		if (strncmp(str, "s4_nonvs", 13) == 0)
-> > 
-> > s/13/8/
-> 
-> Sure, thanks for catching that (it was a different string in the original
-> patch).
-
-Fixed version below, already with your ACK. ;-)
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-ACPI hibernate: Introduce new kernel parameter acpi_sleep=s4_nonvs  (rev. 2)
-
-On some machines it may be necessary to disable the saving/restoring
-of the ACPI NVS memory region during hibernation/resume.  For this
-purpose, introduce new ACPI kernel command line option
-acpi_sleep=s4_nonvs.
-
-Based on a patch by Zhang Rui.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Zhang Rui <rui.zhang@intel.com>
----
- Documentation/kernel-parameters.txt |    5 ++++-
- arch/x86/kernel/acpi/sleep.c        |    2 ++
- drivers/acpi/sleep/main.c           |   19 +++++++++++++++++--
- include/linux/acpi.h                |    1 +
- 4 files changed, 24 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -149,7 +149,8 @@ and is between 256 and 4096 characters. 
- 			default: 0
- 
- 	acpi_sleep=	[HW,ACPI] Sleep options
--			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig, old_ordering }
-+			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
-+				  old_ordering, s4_nonvs }
- 			See Documentation/power/video.txt for s3_bios and s3_mode.
- 			s3_beep is for debugging; it makes the PC's speaker beep
- 			as soon as the kernel's real-mode entry point is called.
-@@ -159,6 +160,8 @@ and is between 256 and 4096 characters. 
- 			control method, wrt putting devices into low power
- 			states, to be enforced (the ACPI 2.0 ordering of _PTS is
- 			used by default).
-+			s4_nonvs prevents the kernel from saving/restoring the
-+			ACPI NVS memory during hibernation.
- 
- 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
- 			Format: { level | edge | high | low }
-Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -161,6 +161,8 @@ static int __init acpi_sleep_setup(char 
- #endif
- 		if (strncmp(str, "old_ordering", 12) == 0)
- 			acpi_old_suspend_ordering();
-+		if (strncmp(str, "s4_nonvs", 8) == 0)
-+			acpi_s4_no_nvs();
- 		str = strchr(str, ',');
- 		if (str != NULL)
- 			str += strspn(str, ", \t");
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -59,6 +59,20 @@ void __init acpi_old_suspend_ordering(vo
- 	old_suspend_ordering = true;
- }
- 
-+/*
-+ * The ACPI specification wants us to save NVS memory regions during hibernation
-+ * and to restore them during the subsequent resume.  However, it is not certain
-+ * if this mechanism is going to work on all machines, so we allow the user to
-+ * disable this mechanism using the 'acpi_sleep=s4_nonvs' kernel command line
-+ * option.
-+ */
-+static bool s4_no_nvs;
-+
-+void __init acpi_s4_no_nvs(void)
-+{
-+	s4_no_nvs = true;
-+}
-+
- /**
-  *	acpi_pm_disable_gpes - Disable the GPEs.
-  */
-@@ -323,7 +337,7 @@ static int acpi_hibernation_begin(void)
- {
- 	int error;
- 
--	error = hibernate_nvs_alloc();
-+	error = s4_no_nvs ? 0 : hibernate_nvs_alloc();
- 	if (!error)
- 		acpi_target_sleep_state = ACPI_STATE_S4;
- 
-@@ -411,7 +425,8 @@ static int acpi_hibernation_begin_old(vo
- 	int error = acpi_sleep_prepare(ACPI_STATE_S4);
- 
- 	if (!error) {
--		error = hibernate_nvs_alloc();
-+		if (!s4_no_nvs)
-+			error = hibernate_nvs_alloc();
- 		if (!error)
- 			acpi_target_sleep_state = ACPI_STATE_S4;
- 	}
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -238,6 +238,7 @@ int acpi_check_mem_region(resource_size_
- #ifdef CONFIG_PM_SLEEP
- void __init acpi_no_s4_hw_signature(void);
- void __init acpi_old_suspend_ordering(void);
-+void __init acpi_s4_no_nvs(void);
- #endif /* CONFIG_PM_SLEEP */
- #else	/* CONFIG_ACPI */
- 
+SGkuCgpPbiBUaHUsIDIwMDgtMTAtMjMgYXQgMDE6MDggKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tp
+IHdyb3RlOgo+IE9uIFRodXJzZGF5LCAyMyBvZiBPY3RvYmVyIDIwMDgsIE5pZ2VsIEN1bm5pbmdo
+YW0gd3JvdGU6Cj4gPiBIaS4KPiAKPiBIaSwKPiAKPiA+IE9uIFdlZCwgMjAwOC0xMC0yMiBhdCAy
+Mjo1MiArMDIwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+IEZyb206IFJhZmFlbCBK
+LiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiA+ID4gCj4gPiA+IEFDUEkgaGliZXJuYXRlOiBBZGQg
+YSBtZWNoYW5pc20gdG8gc2F2ZS9yZXN0b3JlIEFDUEkgTlZTIG1lbW9yeQo+ID4gPiAKPiA+ID4g
+QWNjb3JkaW5nIHRvIHRoZSBBQ1BJIFNwZWNpZmljYXRpb24gMy4wYiwgU2VjdGlvbiAxNS4zLjIs
+Cj4gPiA+ICJPU1BNIHdpbGwgY2FsbCB0aGUgX1BUUyBjb250cm9sIG1ldGhvZCBzb21lIHRpbWUg
+YmVmb3JlIGVudGVyaW5nIGEKPiA+ID4gc2xlZXBpbmcgc3RhdGUsIHRvIGFsbG93IHRoZSBwbGF0
+Zm9ybeKAmXMgQU1MIGNvZGUgdG8gdXBkYXRlIHRoaXMKPiA+ID4gbWVtb3J5IGltYWdlIGJlZm9y
+ZSBlbnRlcmluZyB0aGUgc2xlZXBpbmcgc3RhdGUuIEFmdGVyIHRoZSBzeXN0ZW0KPiA+ID4gYXdh
+a2VzIGZyb20gYW4gUzQgc3RhdGUsIE9TUE0gd2lsbCByZXN0b3JlIHRoaXMgbWVtb3J5IGFyZWEg
+YW5kIGNhbGwKPiA+ID4gdGhlIF9XQUsgY29udHJvbCBtZXRob2QgdG8gZW5hYmxlIHRoZSBCSU9T
+IHRvIHJlY2xhaW0gaXRzIG1lbW9yeQo+ID4gPiBpbWFnZS4iICBGb3IgdGhpcyByZWFzb24sIGlt
+cGxlbWVudCBhIG1lY2hhbmlzbSBhbGxvd2luZyB1cyB0byBzYXZlCj4gPiA+IHRoZSBOVlMgbWVt
+b3J5IGR1cmluZyBoaWJlcm5hdGlvbiBhbmQgdG8gcmVzdG9yZSBpdCBkdXJpbmcgdGhlCj4gPiA+
+IHN1YnNlcXVlbnQgcmVzdW1lLgo+ID4gPiAKPiA+ID4gQmFzZWQgb24gYSBwYXRjaCBieSBaaGFu
+ZyBSdWkuCj4gPiA+IAo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3
+QHNpc2sucGw+Cj4gPiA+IENjOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+Cj4gPiA+
+IC0tLQo+ID4gPiAgZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYyB8ICAgNTAgKysrKysrKysrKysr
+KysrKy0tLQo+ID4gPiAgaW5jbHVkZS9saW51eC9zdXNwZW5kLmggICB8ICAgMTMgKysrKwo+ID4g
+PiAga2VybmVsL3Bvd2VyL3N3c3VzcC5jICAgICB8ICAxMjEgKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAxNzcgaW5z
+ZXJ0aW9ucygrKSwgNyBkZWxldGlvbnMoLSkKPiA+ID4gCj4gPiA+IEluZGV4OiBsaW51eC0yLjYv
+ZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51
+eC0yLjYub3JpZy9kcml2ZXJzL2FjcGkvc2xlZXAvbWFpbi5jCj4gPiA+ICsrKyBsaW51eC0yLjYv
+ZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYwo+ID4gPiBAQCAtMzIxLDggKzMyMSwyMyBAQCB2b2lk
+IF9faW5pdCBhY3BpX25vX3M0X2h3X3NpZ25hdHVyZSh2b2lkCj4gPiA+ICAKPiA+ID4gIHN0YXRp
+YyBpbnQgYWNwaV9oaWJlcm5hdGlvbl9iZWdpbih2b2lkKQo+ID4gPiAgewo+ID4gPiAtCWFjcGlf
+dGFyZ2V0X3NsZWVwX3N0YXRlID0gQUNQSV9TVEFURV9TNDsKPiA+ID4gLQlyZXR1cm4gMDsKPiA+
+ID4gKwlpbnQgZXJyb3I7Cj4gPiA+ICsKPiA+ID4gKwllcnJvciA9IGhpYmVybmF0ZV9udnNfYWxs
+b2MoKTsKPiA+ID4gKwlpZiAoIWVycm9yKQo+ID4gPiArCQlhY3BpX3RhcmdldF9zbGVlcF9zdGF0
+ZSA9IEFDUElfU1RBVEVfUzQ7Cj4gPiA+ICsKPiA+ID4gKwlyZXR1cm4gZXJyb3I7Cj4gPiA+ICt9
+Cj4gPiA+ICsKPiA+ID4gK3N0YXRpYyBpbnQgYWNwaV9oaWJlcm5hdGlvbl9wcmVfc25hcHNob3Qo
+dm9pZCkKPiA+ID4gK3sKPiA+ID4gKwlpbnQgZXJyb3IgPSBhY3BpX3BtX3ByZXBhcmUoKTsKPiA+
+ID4gKwo+ID4gPiArCWlmICghZXJyb3IpCj4gPiA+ICsJCWhpYmVybmF0ZV9udnNfc2F2ZSgpOwo+
+ID4gPiArCj4gPiA+ICsJcmV0dXJuIGVycm9yOwo+ID4gPiAgfQo+ID4gPiAgCj4gPiA+ICBzdGF0
+aWMgaW50IGFjcGlfaGliZXJuYXRpb25fZW50ZXIodm9pZCkKPiA+ID4gQEAgLTM0Myw2ICszNTgs
+MTIgQEAgc3RhdGljIGludCBhY3BpX2hpYmVybmF0aW9uX2VudGVyKHZvaWQpCj4gPiA+ICAJcmV0
+dXJuIEFDUElfU1VDQ0VTUyhzdGF0dXMpID8gMCA6IC1FRkFVTFQ7Cj4gPiA+ICB9Cj4gPiA+ICAK
+PiA+ID4gK3N0YXRpYyB2b2lkIGFjcGlfaGliZXJuYXRpb25fZmluaXNoKHZvaWQpCj4gPiA+ICt7
+Cj4gPiA+ICsJaGliZXJuYXRlX252c19mcmVlKCk7Cj4gPiA+ICsJYWNwaV9wbV9maW5pc2goKTsK
+PiA+ID4gK30KPiA+ID4gKwo+ID4gPiAgc3RhdGljIHZvaWQgYWNwaV9oaWJlcm5hdGlvbl9sZWF2
+ZSh2b2lkKQo+ID4gPiAgewo+ID4gPiAgCS8qCj4gPiA+IEBAIC0zNTgsNiArMzc5LDggQEAgc3Rh
+dGljIHZvaWQgYWNwaV9oaWJlcm5hdGlvbl9sZWF2ZSh2b2lkKQo+ID4gPiAgCQkJImNhbm5vdCBy
+ZXN1bWUhXG4iKTsKPiA+ID4gIAkJcGFuaWMoIkFDUEkgUzQgaGFyZHdhcmUgc2lnbmF0dXJlIG1p
+c21hdGNoIik7Cj4gPiA+ICAJfQo+ID4gPiArCS8qIFJlc3RvcmUgdGhlIE5WUyBtZW1vcnkgYXJl
+YSAqLwo+ID4gPiArCWhpYmVybmF0ZV9udnNfcmVzdG9yZSgpOwo+ID4gPiAgfQo+ID4gPiAgCj4g
+PiA+ICBzdGF0aWMgdm9pZCBhY3BpX3BtX2VuYWJsZV9ncGVzKHZvaWQpCj4gPiA+IEBAIC0zNjgs
+OCArMzkxLDggQEAgc3RhdGljIHZvaWQgYWNwaV9wbV9lbmFibGVfZ3Blcyh2b2lkKQo+ID4gPiAg
+c3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9oaWJlcm5hdGlvbl9vcHMgYWNwaV9oaWJlcm5hdGlvbl9v
+cHMgPSB7Cj4gPiA+ICAJLmJlZ2luID0gYWNwaV9oaWJlcm5hdGlvbl9iZWdpbiwKPiA+ID4gIAku
+ZW5kID0gYWNwaV9wbV9lbmQsCj4gPiA+IC0JLnByZV9zbmFwc2hvdCA9IGFjcGlfcG1fcHJlcGFy
+ZSwKPiA+ID4gLQkuZmluaXNoID0gYWNwaV9wbV9maW5pc2gsCj4gPiA+ICsJLnByZV9zbmFwc2hv
+dCA9IGFjcGlfaGliZXJuYXRpb25fcHJlX3NuYXBzaG90LAo+ID4gPiArCS5maW5pc2ggPSBhY3Bp
+X2hpYmVybmF0aW9uX2ZpbmlzaCwKPiA+ID4gIAkucHJlcGFyZSA9IGFjcGlfcG1fcHJlcGFyZSwK
+PiA+ID4gIAkuZW50ZXIgPSBhY3BpX2hpYmVybmF0aW9uX2VudGVyLAo+ID4gPiAgCS5sZWF2ZSA9
+IGFjcGlfaGliZXJuYXRpb25fbGVhdmUsCj4gPiA+IEBAIC0zODcsOCArNDEwLDIxIEBAIHN0YXRp
+YyBpbnQgYWNwaV9oaWJlcm5hdGlvbl9iZWdpbl9vbGQodm8KPiA+ID4gIHsKPiA+ID4gIAlpbnQg
+ZXJyb3IgPSBhY3BpX3NsZWVwX3ByZXBhcmUoQUNQSV9TVEFURV9TNCk7Cj4gPiA+ICAKPiA+ID4g
+KwlpZiAoIWVycm9yKSB7Cj4gPiA+ICsJCWVycm9yID0gaGliZXJuYXRlX252c19hbGxvYygpOwo+
+ID4gPiArCQlpZiAoIWVycm9yKQo+ID4gPiArCQkJYWNwaV90YXJnZXRfc2xlZXBfc3RhdGUgPSBB
+Q1BJX1NUQVRFX1M0Owo+ID4gPiArCX0KPiA+ID4gKwlyZXR1cm4gZXJyb3I7Cj4gPiA+ICt9Cj4g
+PiA+ICsKPiA+ID4gK3N0YXRpYyBpbnQgYWNwaV9oaWJlcm5hdGlvbl9wcmVfc25hcHNob3Rfb2xk
+KHZvaWQpCj4gPiA+ICt7Cj4gPiA+ICsJaW50IGVycm9yID0gYWNwaV9wbV9kaXNhYmxlX2dwZXMo
+KTsKPiA+ID4gKwo+ID4gPiAgCWlmICghZXJyb3IpCj4gPiA+IC0JCWFjcGlfdGFyZ2V0X3NsZWVw
+X3N0YXRlID0gQUNQSV9TVEFURV9TNDsKPiA+ID4gKwkJaGliZXJuYXRlX252c19zYXZlKCk7Cj4g
+PiA+ICsKPiA+ID4gIAlyZXR1cm4gZXJyb3I7Cj4gPiA+ICB9Cj4gPiA+ICAKPiA+ID4gQEAgLTM5
+OSw4ICs0MzUsOCBAQCBzdGF0aWMgaW50IGFjcGlfaGliZXJuYXRpb25fYmVnaW5fb2xkKHZvCj4g
+PiA+ICBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2hpYmVybmF0aW9uX29wcyBhY3BpX2hpYmVybmF0
+aW9uX29wc19vbGQgPSB7Cj4gPiA+ICAJLmJlZ2luID0gYWNwaV9oaWJlcm5hdGlvbl9iZWdpbl9v
+bGQsCj4gPiA+ICAJLmVuZCA9IGFjcGlfcG1fZW5kLAo+ID4gPiAtCS5wcmVfc25hcHNob3QgPSBh
+Y3BpX3BtX2Rpc2FibGVfZ3BlcywKPiA+ID4gLQkuZmluaXNoID0gYWNwaV9wbV9maW5pc2gsCj4g
+PiA+ICsJLnByZV9zbmFwc2hvdCA9IGFjcGlfaGliZXJuYXRpb25fcHJlX3NuYXBzaG90X29sZCwK
+PiA+ID4gKwkuZmluaXNoID0gYWNwaV9oaWJlcm5hdGlvbl9maW5pc2gsCj4gPiA+ICAJLnByZXBh
+cmUgPSBhY3BpX3BtX2Rpc2FibGVfZ3BlcywKPiA+ID4gIAkuZW50ZXIgPSBhY3BpX2hpYmVybmF0
+aW9uX2VudGVyLAo+ID4gPiAgCS5sZWF2ZSA9IGFjcGlfaGliZXJuYXRpb25fbGVhdmUsCj4gPiA+
+IEluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9saW51eC9zdXNwZW5kLmgKPiA+ID4gPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQo+ID4gPiAtLS0gbGludXgtMi42Lm9yaWcvaW5jbHVkZS9saW51eC9zdXNwZW5kLmgKPiA+ID4g
+KysrIGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L3N1c3BlbmQuaAo+ID4gPiBAQCAtMjMzLDYgKzIz
+MywxMSBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBnZXRfc2FmZV9wYWdlKGdmcF90Cj4gPiA+ICBl
+eHRlcm4gdm9pZCBoaWJlcm5hdGlvbl9zZXRfb3BzKHN0cnVjdCBwbGF0Zm9ybV9oaWJlcm5hdGlv
+bl9vcHMgKm9wcyk7Cj4gPiA+ICBleHRlcm4gaW50IGhpYmVybmF0ZSh2b2lkKTsKPiA+ID4gIGV4
+dGVybiBib29sIHN5c3RlbV9lbnRlcmluZ19oaWJlcm5hdGlvbih2b2lkKTsKPiA+ID4gK2V4dGVy
+biBpbnQgaGliZXJuYXRlX252c19yZWdpc3Rlcih1bnNpZ25lZCBsb25nIHN0YXJ0LCB1bnNpZ25l
+ZCBsb25nIHNpemUpOwo+ID4gPiArZXh0ZXJuIGludCBoaWJlcm5hdGVfbnZzX2FsbG9jKHZvaWQp
+Owo+ID4gPiArZXh0ZXJuIHZvaWQgaGliZXJuYXRlX252c19mcmVlKHZvaWQpOwo+ID4gPiArZXh0
+ZXJuIHZvaWQgaGliZXJuYXRlX252c19zYXZlKHZvaWQpOwo+ID4gPiArZXh0ZXJuIHZvaWQgaGli
+ZXJuYXRlX252c19yZXN0b3JlKHZvaWQpOwo+ID4gPiAgI2Vsc2UgLyogQ09ORklHX0hJQkVSTkFU
+SU9OICovCj4gPiA+ICBzdGF0aWMgaW5saW5lIGludCBzd3N1c3BfcGFnZV9pc19mb3JiaWRkZW4o
+c3RydWN0IHBhZ2UgKnApIHsgcmV0dXJuIDA7IH0KPiA+ID4gIHN0YXRpYyBpbmxpbmUgdm9pZCBz
+d3N1c3Bfc2V0X3BhZ2VfZnJlZShzdHJ1Y3QgcGFnZSAqcCkge30KPiA+ID4gQEAgLTI0MSw2ICsy
+NDYsMTQgQEAgc3RhdGljIGlubGluZSB2b2lkIHN3c3VzcF91bnNldF9wYWdlX2ZyZQo+ID4gPiAg
+c3RhdGljIGlubGluZSB2b2lkIGhpYmVybmF0aW9uX3NldF9vcHMoc3RydWN0IHBsYXRmb3JtX2hp
+YmVybmF0aW9uX29wcyAqb3BzKSB7fQo+ID4gPiAgc3RhdGljIGlubGluZSBpbnQgaGliZXJuYXRl
+KHZvaWQpIHsgcmV0dXJuIC1FTk9TWVM7IH0KPiA+ID4gIHN0YXRpYyBpbmxpbmUgYm9vbCBzeXN0
+ZW1fZW50ZXJpbmdfaGliZXJuYXRpb24odm9pZCkgeyByZXR1cm4gZmFsc2U7IH0KPiA+ID4gK3N0
+YXRpYyBpbmxpbmUgaW50IGhpYmVybmF0ZV9udnNfcmVnaXN0ZXIodW5zaWduZWQgbG9uZyBhLCB1
+bnNpZ25lZCBsb25nIGIpCj4gPiA+ICt7Cj4gPiA+ICsJcmV0dXJuIDA7Cj4gPiA+ICt9Cj4gPiA+
+ICtzdGF0aWMgaW5saW5lIGludCBoaWJlcm5hdGVfbnZzX2FsbG9jKHZvaWQpIHsgcmV0dXJuIDA7
+IH0KPiA+ID4gK3N0YXRpYyBpbmxpbmUgdm9pZCBoaWJlcm5hdGVfbnZzX2ZyZWUodm9pZCkge30K
+PiA+ID4gK3N0YXRpYyBpbmxpbmUgdm9pZCBoaWJlcm5hdGVfbnZzX3NhdmUodm9pZCkge30KPiA+
+ID4gK3N0YXRpYyBpbmxpbmUgdm9pZCBoaWJlcm5hdGVfbnZzX3Jlc3RvcmUodm9pZCkge30KPiA+
+ID4gICNlbmRpZiAvKiBDT05GSUdfSElCRVJOQVRJT04gKi8KPiA+ID4gIAo+ID4gPiAgI2lmZGVm
+IENPTkZJR19QTV9TTEVFUAo+ID4gPiBJbmRleDogbGludXgtMi42L2tlcm5lbC9wb3dlci9zd3N1
+c3AuYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51eC0yLjYub3JpZy9rZXJuZWwvcG93
+ZXIvc3dzdXNwLmMKPiA+ID4gKysrIGxpbnV4LTIuNi9rZXJuZWwvcG93ZXIvc3dzdXNwLmMKPiA+
+ID4gQEAgLTI2MiwzICsyNjIsMTI0IEBAIGludCBzd3N1c3Bfc2hyaW5rX21lbW9yeSh2b2lkKQo+
+ID4gPiAgCj4gPiA+ICAJcmV0dXJuIDA7Cj4gPiA+ICB9Cj4gPiA+ICsKPiA+ID4gKy8qCj4gPiA+
+ICsgKiBQbGF0Zm9ybXMsIGxpa2UgQUNQSSwgbWF5IHdhbnQgdXMgdG8gc2F2ZSBzb21lIG1lbW9y
+eSB1c2VkIGJ5IHRoZW0gZHVyaW5nCj4gPiA+ICsgKiBoaWJlcm5hdGlvbiBhbmQgdG8gcmVzdG9y
+ZSB0aGUgY29udGVudHMgb2YgdGhpcyBtZW1vcnkgZHVyaW5nIHRoZSBzdWJzZXF1ZW50Cj4gPiA+
+ICsgKiByZXN1bWUuICBUaGUgY29kZSBiZWxvdyBpbXBsZW1lbnRzIGEgbWVjaGFuaXNtIGFsbG93
+aW5nIHVzIHRvIGRvIHRoYXQuCj4gPiA+ICsgKi8KPiA+ID4gKwo+ID4gPiArc3RydWN0IG52c19w
+YWdlIHsKPiA+ID4gKwl1bnNpZ25lZCBsb25nIHBoeXNfc3RhcnQ7Cj4gPiA+ICsJdW5zaWduZWQg
+aW50IHNpemU7Cj4gPiA+ICsJdm9pZCAqa2FkZHI7Cj4gPiA+ICsJdm9pZCAqZGF0YTsKPiA+ID4g
+KwlzdHJ1Y3QgbGlzdF9oZWFkIG5vZGU7Cj4gPiA+ICt9Owo+ID4gPiArCj4gPiA+ICtzdGF0aWMg
+TElTVF9IRUFEKG52c19saXN0KTsKPiA+ID4gKwo+ID4gPiArLyoqCj4gPiA+ICsgKgloaWJlcm5h
+dGVfbnZzX3JlZ2lzdGVyIC0gcmVnaXN0ZXIgcGxhdGZvcm0gTlZTIG1lbW9yeSByZWdpb24gdG8g
+c2F2ZQo+ID4gPiArICoJQHN0YXJ0IC0gcGh5c2ljYWwgYWRkcmVzcyBvZiB0aGUgcmVnaW9uCj4g
+PiA+ICsgKglAc2l6ZSAtIHNpemUgb2YgdGhlIHJlZ2lvbgo+ID4gPiArICoKPiA+ID4gKyAqCVRo
+ZSBOVlMgcmVnaW9uIG5lZWQgbm90IGJlIHBhZ2UtYWxpZ25lZCAoYm90aCBlbmRzKSBhbmQgd2Ug
+YXJyYW5nZQo+ID4gPiArICoJdGhpbmdzIHNvIHRoYXQgdGhlIGRhdGEgZnJvbSBwYWdlLWFsaWdu
+ZWQgYWRkcmVzc2VzIGluIHRoaXMgcmVnaW9uIHdpbGwKPiA+ID4gKyAqCWJlIGNvcGllZCBpbnRv
+IHNlcGFyYXRlIFJBTSBwYWdlcy4KPiA+ID4gKyAqLwo+ID4gPiAraW50IGhpYmVybmF0ZV9udnNf
+cmVnaXN0ZXIodW5zaWduZWQgbG9uZyBzdGFydCwgdW5zaWduZWQgbG9uZyBzaXplKQo+ID4gPiAr
+ewo+ID4gPiArCXN0cnVjdCBudnNfcGFnZSAqZW50cnksICpuZXh0Owo+ID4gPiArCj4gPiA+ICsJ
+d2hpbGUgKHNpemUgPiAwKSB7Cj4gPiA+ICsJCXVuc2lnbmVkIGludCBucl9ieXRlczsKPiA+ID4g
+Kwo+ID4gPiArCQllbnRyeSA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBudnNfcGFnZSksIEdGUF9L
+RVJORUwpOwo+ID4gPiArCQlpZiAoIWVudHJ5KQo+ID4gPiArCQkJZ290byBFcnJvcjsKPiA+ID4g
+Kwo+ID4gPiArCQlsaXN0X2FkZF90YWlsKCZlbnRyeS0+bm9kZSwgJm52c19saXN0KTsKPiA+ID4g
+KwkJZW50cnktPnBoeXNfc3RhcnQgPSBzdGFydDsKPiA+ID4gKwkJbnJfYnl0ZXMgPSBQQUdFX1NJ
+WkUgLSAoc3RhcnQgJiB+UEFHRV9NQVNLKTsKPiA+ID4gKwkJZW50cnktPnNpemUgPSAoc2l6ZSA8
+IG5yX2J5dGVzKSA/IHNpemUgOiBucl9ieXRlczsKPiA+ID4gKwo+ID4gPiArCQlzdGFydCArPSBl
+bnRyeS0+c2l6ZTsKPiA+ID4gKwkJc2l6ZSAtPSBlbnRyeS0+c2l6ZTsKPiA+ID4gKwl9Cj4gPiA+
+ICsJcmV0dXJuIDA7Cj4gPiA+ICsKPiA+ID4gKyBFcnJvcjoKPiA+ID4gKwlsaXN0X2Zvcl9lYWNo
+X2VudHJ5X3NhZmUoZW50cnksIG5leHQsICZudnNfbGlzdCwgbm9kZSkgewo+ID4gPiArCQlsaXN0
+X2RlbCgmZW50cnktPm5vZGUpOwo+ID4gPiArCQlrZnJlZShlbnRyeSk7Cj4gPiA+ICsJfQo+ID4g
+PiArCXJldHVybiAtRU5PTUVNOwo+ID4gPiArfQo+ID4gPiArCj4gPiA+ICsvKioKPiA+ID4gKyAq
+CWhpYmVybmF0ZV9udnNfZnJlZSAtIGZyZWUgZGF0YSBwYWdlcyBhbGxvY2F0ZWQgZm9yIHNhdmlu
+ZyBOVlMgcmVnaW9ucwo+ID4gPiArICoKPiA+ID4gKyAqCUl0IGlzIGFsbG93ZWQgdG8gY2FsbCB0
+aGlzIGZ1bmN0aW9uIG1hbnkgdGltZXMgaW4gYSByb3cuCj4gPiA+ICsgKi8KPiA+IAo+ID4gSWYg
+dGhpcyBvbmUgaXMgc2FmZSBmb3IgbXVsdGlwbGUgY2FsbHMsIHNob3VsZCBudnNfYWxsb2MgYmUg
+c2FmZSBmb3IKPiA+IG11bHRpcGxlIGNhbGxzIHRvbz8gT3IsIGNvbnZlcnNlbHksIGlzIHNvbWV0
+aGluZyBmdW5ueSBnb2luZyBvbiBzdWNoCj4gPiB0aGF0IGhpYmVybmF0ZV9udnNfZnJlZSBuZWVk
+cyB0byBiZSBzYWZlIGZvciBtdWx0aXBsZSBjYWxscz8KPiAKPiBJIHRob3VnaHQgaXQgd291bGQg
+YmUgbmVjZXNzYXJ5IHRvIGNhbGwgdGhhdCBhZGRpdGlvbmFsbHkgZnJvbSBwbGF0Zm9ybV9lbmQo
+KQo+IGZvciB0aGUgZXJyb3IgcGF0aCBpbiB3aGljaCBwbGF0Zm9ybV9wcmVfc25hcHNob3QoKSBm
+YWlscywgYnV0IHRoYXQgZG9lc24ndAo+IHNlZW0gdG8gYmUgdGhlIGNhc2UuICBJdCBkb2Vzbid0
+IGh1cnQgdG8ga2VlcCBpdCBpbiB0aGlzIGZvcm0sIHRob3VnaCwgSU1PLgoKT2tlZSBkb2tlLgoK
+PiA+ID4gK3ZvaWQgaGliZXJuYXRlX252c19mcmVlKHZvaWQpCj4gPiA+ICt7Cj4gPiA+ICsJc3Ry
+dWN0IG52c19wYWdlICplbnRyeTsKPiA+ID4gKwo+ID4gPiArCWxpc3RfZm9yX2VhY2hfZW50cnko
+ZW50cnksICZudnNfbGlzdCwgbm9kZSkKPiA+ID4gKwkJaWYgKGVudHJ5LT5kYXRhKSB7Cj4gPiA+
+ICsJCQlmcmVlX3BhZ2UoKHVuc2lnbmVkIGxvbmcpZW50cnktPmRhdGEpOwo+ID4gPiArCQkJZW50
+cnktPmRhdGEgPSBOVUxMOwo+ID4gPiArCQkJaWYgKGVudHJ5LT5rYWRkcikgewo+ID4gPiArCQkJ
+CWlvdW5tYXAoZW50cnktPmthZGRyKTsKPiA+ID4gKwkJCQllbnRyeS0+a2FkZHIgPSBOVUxMOwo+
+ID4gPiArCQkJfQo+ID4gPiArCQl9Cj4gPiA+ICt9Cj4gPiA+ICsKPiA+ID4gKy8qKgo+ID4gPiAr
+ICoJaGliZXJuYXRlX252c19hbGxvYyAtIGFsbG9jYXRlIG1lbW9yeSBuZWNlc3NhcnkgZm9yIHNh
+dmluZyBOVlMgcmVnaW9ucwo+ID4gPiArICovCj4gPiA+ICtpbnQgaGliZXJuYXRlX252c19hbGxv
+Yyh2b2lkKQo+ID4gPiArewo+ID4gPiArCXN0cnVjdCBudnNfcGFnZSAqZW50cnk7Cj4gPiA+ICsK
+PiA+ID4gKwlsaXN0X2Zvcl9lYWNoX2VudHJ5KGVudHJ5LCAmbnZzX2xpc3QsIG5vZGUpIHsKPiA+
+ID4gKwkJZW50cnktPmRhdGEgPSAodm9pZCAqKV9fZ2V0X2ZyZWVfcGFnZShHRlBfS0VSTkVMKTsK
+PiA+ID4gKwkJaWYgKCFlbnRyeS0+ZGF0YSkgewo+ID4gPiArCQkJaGliZXJuYXRlX252c19mcmVl
+KCk7Cj4gPiA+ICsJCQlyZXR1cm4gLUVOT01FTTsKPiA+ID4gKwkJfQo+ID4gPiArCX0KPiA+ID4g
+KwlyZXR1cm4gMDsKPiA+ID4gK30KPiA+ID4gKwo+ID4gPiArLyoqCj4gPiA+ICsgKgloaWJlcm5h
+dGVfbnZzX3NhdmUgLSBzYXZlIE5WUyBtZW1vcnkgcmVnaW9ucwo+ID4gPiArICovCj4gPiA+ICt2
+b2lkIGhpYmVybmF0ZV9udnNfc2F2ZSh2b2lkKQo+ID4gPiArewo+ID4gPiArCXN0cnVjdCBudnNf
+cGFnZSAqZW50cnk7Cj4gPiA+ICsKPiA+ID4gKwlwcmludGsoS0VSTl9JTkZPICJQTTogU2F2aW5n
+IHBsYXRmb3JtIE5WUyBtZW1vcnlcbiIpOwo+ID4gPiArCj4gPiA+ICsJbGlzdF9mb3JfZWFjaF9l
+bnRyeShlbnRyeSwgJm52c19saXN0LCBub2RlKQo+ID4gPiArCQlpZiAoZW50cnktPmRhdGEpIHsK
+PiA+ID4gKwkJCWVudHJ5LT5rYWRkciA9IGlvcmVtYXAoZW50cnktPnBoeXNfc3RhcnQsIGVudHJ5
+LT5zaXplKTsKPiA+ID4gKwkJCW1lbWNweShlbnRyeS0+ZGF0YSwgZW50cnktPmthZGRyLCBlbnRy
+eS0+c2l6ZSk7Cj4gPiAKPiA+IFdoeSBub3QgdW5tYXAgaGVyZT8gKEkga25vdyB5b3UncmUgZGVs
+YXlpbmcgdGhlIHVubWFwIHVudGlsIHRoZSBmcmVlLAo+ID4gYnV0IGl0J3MgcHJvYmFibHkgY2xl
+YXJlciB0byBtYXAgYW5kIHVubWFwIGVhY2ggdGltZSB0aGUgbWVtb3J5IGlzCj4gPiBhY2Nlc3Nl
+ZCAoaWUgaW4gcmVzdG9yZSB0b28pLgo+IAo+IEFoLCB0aGlzIG9uZSBpcyB0cmlja3kuICBXZSBj
+YW5ub3QgdW5tYXAgZnJvbSBhdG9taWMgY29udGV4dC4gOi0pCgpNYXliZSBhIGNvbW1lbnQgdGhl
+biwgbGVzdCBzb21lb25lIGdldCB0aGUgc2FtZSBpZGVhIGluIGZ1dHVyZSBhbmQgYmUgYXMKaWdu
+b3JhbnQgYXMgbWU/IDopCgo+ID4gPiArCQl9Cj4gPiA+ICt9Cj4gPiA+ICsKPiA+ID4gKy8qKgo+
+ID4gPiArICoJaGliZXJuYXRlX252c19yZXN0b3JlIC0gcmVzdG9yZSBOVlMgbWVtb3J5IHJlZ2lv
+bnMKPiA+ID4gKyAqLwo+ID4gPiArdm9pZCBoaWJlcm5hdGVfbnZzX3Jlc3RvcmUodm9pZCkKPiA+
+ID4gK3sKPiA+ID4gKwlzdHJ1Y3QgbnZzX3BhZ2UgKmVudHJ5Owo+ID4gPiArCj4gPiA+ICsJcHJp
+bnRrKEtFUk5fSU5GTyAiUE06IFJlc3RvcmluZyBwbGF0Zm9ybSBOVlMgbWVtb3J5XG4iKTsKPiA+
+ID4gKwo+ID4gPiArCWxpc3RfZm9yX2VhY2hfZW50cnkoZW50cnksICZudnNfbGlzdCwgbm9kZSkK
+PiA+ID4gKwkJaWYgKGVudHJ5LT5kYXRhKQo+ID4gPiArCQkJbWVtY3B5KGVudHJ5LT5rYWRkciwg
+ZW50cnktPmRhdGEsIGVudHJ5LT5zaXplKTsKPiA+ID4gK30KPiAKPiBUaGFua3MsCj4gUmFmYWVs
+CgpBY2tlZC1ieTogTmlnZWwgQ3VubmluZ2hhbSA8bmlnZWxAdHV4b25pY2UubmV0PgoKUmVnYXJk
+cywKCk5pZ2VsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXBt
