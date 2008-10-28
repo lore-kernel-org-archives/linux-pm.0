@@ -1,17 +1,27 @@
 From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Freezer: Don't count threads waiting for frozen
-	filesystems.
-Date: Wed, 29 Oct 2008 00:21:46 +0100
-Message-ID: <E1Kuxsg-0006PR-Tr__40355.4404540502$1225236459$gmane$org@pomaz-ex.szeredi.hu>
+Subject: Re: Freezer: Don't count threads waiting
+	for	frozen	filesystems.
+Date: Wed, 29 Oct 2008 00:24:27 +0100
+Message-ID: <E1KuxvH-0006Q0-Dy__2370.62783348865$1225236464$gmane$org@pomaz-ex.szeredi.hu>
 References: <1224886068.6478.21.camel@nigel-laptop>
-	<200810282300.31164.rjw@sisk.pl>
-	<E1Kuwe3-0006Gc-LF@pomaz-ex.szeredi.hu>
-	<200810282321.59041.rjw@sisk.pl>
+	<E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	<1225106427.26724.5.camel@nigel-laptop>
+	<200810271237.40049.rjw@sisk.pl>
+	<1225107607.26724.9.camel@nigel-laptop>
+	<E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+	<1225141168.26724.23.camel@nigel-laptop>
+	<E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
+	<1225145607.26724.54.camel@nigel-laptop>
+	<E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
+	<1225235054.9661.37.camel@nigel-laptop>
+	<E1Kuxk4-0006NT-Ie@pomaz-ex.szeredi.hu>
+	<1225235860.9661.42.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200810282321.59041.rjw@sisk.pl>
+In-reply-to: <1225235860.9661.42.camel@nigel-laptop> (message from Nigel
+	Cunningham on Wed, 29 Oct 2008 10:17:40 +1100)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,35 +31,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org, miklos@szeredi.hu
+To: ncunningham@crca.org.au
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 28 Oct 2008, Rafael J. Wysocki wrote:
-> On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
-> > I would prefer a freezer-less solution.  Suspend to ram doesn't need
-> > the freezer,
-> 
-> Well, yes it does.  And it will in forseeable future, AFAICS.
+On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> Remember, though, that we're only freezing fuse at the moment, and
+> strictly one filesystem at a time. We can thus happily wait for the
+> i_mutex taken by some other process to be released.
 
-Umm, OK.  Last I remember everybody agreed that there's absolutely no
-reason why processes need to be frozen, and the only important thing
-is that drivers are not twiddling the hardware during suspend, and
-this can usually easily be solved on the subsystem level.
-
-> > I don't think adding hacks to the VFS to work around the issues with
-> > the freezer is the right way to solve this.  But this is just my
-> > personal opinion, the VFS maintainers may think otherwise.
-> 
-> Well, my personal opinion is that we need filesystems to support suspend,
-> this way or another and the sooner it happens, the better.  Still, I'm rather
-> not going to make that happen myself. :-)
-> 
-> Apparently, Nigel is willing to work in this direction and we can use this as
-> an opportunity to learn what exactly is necessary for this purpose and _then_
-> decide if this is reasonable or not instead of dismissing it upfront.
-
-I haven't dismissed it, just voiced my opinion that I think it's the
-wrong direction.
+Not going to work: you need to wait for all requests to be finished,
+but those might depend on some other fuse filesystem which has already
+been frozen.
 
 Miklos
