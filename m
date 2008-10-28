@@ -1,15 +1,23 @@
-From: "Yinghai Lu" <yinghai@kernel.org>
-Subject: Re: [PATCH 3/4] x86 hibernate: Mark ACPI NVS memory
-	region at startup
-Date: Tue, 28 Oct 2008 02:17:01 -0700
-Message-ID: <86802c440810280217x59357432n52880f75d96bc801__27898.5782679685$1225206204$gmane$org@mail.gmail.com>
-References: <200810262048.23468.rjw@sisk.pl> <200810262054.24929.rjw@sisk.pl>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Freezer: Don't count threads waiting for
+	frozen	filesystems.
+Date: Tue, 28 Oct 2008 21:25:31 +0100
+Message-ID: <E1Kuv87-00064p-Lk__26394.5364546545$1225225764$gmane$org@pomaz-ex.szeredi.hu>
+References: <1224886068.6478.21.camel@nigel-laptop>
+	<E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	<1225106427.26724.5.camel@nigel-laptop>
+	<200810271237.40049.rjw@sisk.pl>
+	<1225107607.26724.9.camel@nigel-laptop>
+	<E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+	<1225141168.26724.23.camel@nigel-laptop>
+	<E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
+	<1225145607.26724.54.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810262054.24929.rjw@sisk.pl>
-Content-Disposition: inline
+In-reply-to: <1225145607.26724.54.camel@nigel-laptop> (message from Nigel
+	Cunningham on Tue, 28 Oct 2008 09:13:27 +1100)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +27,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: ncunningham@crca.org.au
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 12:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86 hibernate: Mark ACPI NVS memory region at startup
->
-> Introduce new initcall for marking the ACPI NVS memory at startup, so
-> that it can be saved/restore during hibernation/resume.
->
-> Based on a patch by Zhang Rui.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> ---
->  arch/x86/kernel/e820.c |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index ce97bf3..e1e63a8 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -20,6 +20,7 @@
->  #include <linux/pfn.h>
->  #include <linux/suspend.h>
->  #include <linux/firmware-map.h>
-> +#include <linux/efi.h>
->
->  #include <asm/pgtable.h>
->  #include <asm/page.h>
-> @@ -665,6 +666,30 @@ void __init e820_mark_nosave_regions(unsigned long limit_pfn)
->  }
->  #endif
->
-> +#ifdef CONFIG_HIBERNATION
-> +/**
-> + * Mark ACPI NVS memory region, so that we can save/restore it during
-> + * hibernation and the subsequent resume.
-> + */
-> +static int __init e820_mark_nvs_memory(void)
-> +{
-> +       int i;
-> +
-> +       if (efi_enabled)
-> +               return 0;
-> +
-> +       for (i = 0; i < e820.nr_map; i++) {
-> +               struct e820entry *ei = &e820.map[i];
-> +
-> +               if (ei->type == E820_NVS)
-> +                       hibernate_nvs_register(ei->addr, ei->size);
+On Tue, 28 Oct 2008, Nigel Cunningham wrote:
+> The answer is to freeze the fuse filesystems first, stopping new
+> requests (freezing the processes making them) before they are passed on
+> to userspace and allowing existing requests to complete or freeze. Once
+> that is done, the userspace fuse processes will be idle, at least as far
+> as fuse activity is concerned. After fuse activity is stopped, userspace
+> can be frozen without worrying about what processes are fuse and what
+> aren't. This is what my patch implements so far.
 
-do you need to something to ACPI code too?
+OK.
 
-BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000100 - 0000000000095800 (usable)
->  BIOS-e820: 0000000000095800 - 00000000000a0000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000d7fa0000 (usable)
->  BIOS-e820: 00000000d7fae000 - 00000000d7fb0000 (reserved)
->  BIOS-e820: 00000000d7fb0000 - 00000000d7fbe000 (ACPI data) <================ acpi code
->  BIOS-e820: 00000000d7fbe000 - 00000000d7ff0000 (ACPI NVS)
->  BIOS-e820: 00000000d7ff0000 - 00000000d8000000 (reserved)
->  BIOS-e820: 00000000dc000000 - 00000000f0000000 (reserved)
->  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
->  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
->  BIOS-e820: 00000000ff700000 - 0000000100000000 (reserved)
->  BIOS-e820: 0000000100000000 - 0000004028000000 (usable)
+> To deal with requests that are already in progress, I'd suggest three
+> possibilities, in the order I think they should be preferred.
+> 
+> 1) Use wait_event_freezeable[_timeout] in fuse code. Probably preferable
+> to #2, but I thought of it later :)
+> 
+> 2) Use freezer_do_not_count as part of FUSE_MIGHT_FREEZE (resetting
+> before exiting the callers, of course). If the request doesn't complete
+> during the freezing period, it must be because the userspace thread was
+> already frozen. If the request does complete, we're counted again during
+> the normal freezing of userspace that follows the freezing of
+> filesystems.
+> 
+> 3) Adding a means to check whether processes being frozen are fuse
+> requests. The code could then wait for fc->num_waiting - (say)
+> fc->num_frozen == 0.
 
-YH
+Yup, these fix the freezing of tasks which have outstanding fuse
+requests.
+
+However it does not fix the freezing of tasks which are waiting for
+VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
+This is the tricky part...
+
+Miklos
