@@ -1,30 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Freezer: Don't count threads waiting
-	for	frozen	filesystems.
-Date: Wed, 29 Oct 2008 10:58:29 +1100
-Message-ID: <1225238309.9661.65.camel__44163.6618962095$1225238465$gmane$org@nigel-laptop>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	<E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-	<1225106427.26724.5.camel@nigel-laptop>
-	<200810271237.40049.rjw@sisk.pl>
-	<1225107607.26724.9.camel@nigel-laptop>
-	<E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
-	<1225141168.26724.23.camel@nigel-laptop>
-	<E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
-	<1225145607.26724.54.camel@nigel-laptop>
-	<E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-	<1225235054.9661.37.camel@nigel-laptop>
-	<E1Kuxk4-0006NT-Ie@pomaz-ex.szeredi.hu>
-	<1225235860.9661.42.camel@nigel-laptop>
-	<E1KuxvH-0006Q0-Dy@pomaz-ex.szeredi.hu>
-	<1225237298.9661.55.camel@nigel-laptop>
-	<E1KuyFq-0006Sc-PC@pomaz-ex.szeredi.hu>
-	<E1KuyKw-0006UP-EK@pomaz-ex.szeredi.hu>
+From: Shaddy Baddah <shaddy_baddah@hotmail.com>
+Subject: Suspend-Resume support in sparc64 kernel?
+Date: Wed, 29 Oct 2008 15:21:19 +1100
+Message-ID: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
+Reply-To: linux-pm@lists.linux-foundation.org,
+        Shaddy Baddah <shaddy_baddah@hotmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1KuyKw-0006UP-EK@pomaz-ex.szeredi.hu>
+Message-ID: <4907E4BF.9080506@hotmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,48 +18,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi,
 
-On Wed, 2008-10-29 at 00:50 +0100, Miklos Szeredi wrote:
-> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-> > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Wed, 2008-10-29 at 00:24 +0100, Miklos Szeredi wrote:
-> > > > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
-> > > > > Remember, though, that we're only freezing fuse at the moment, and
-> > > > > strictly one filesystem at a time. We can thus happily wait for the
-> > > > > i_mutex taken by some other process to be released.
-> > > > 
-> > > > Not going to work: you need to wait for all requests to be finished,
-> > > > but those might depend on some other fuse filesystem which has already
-> > > > been frozen.
-> > > 
-> > > Okay. In that case, am I right in thinking that the request waiting on
-> > > the frozen filesystem will be stuck in request_wait_answer,
-> > 
-> > Yes.
-> > 
-> > > and the
-> > > userspace process that was trying to satisfy the request will be stuck
-> > > in the FUSE_MIGHT_FREEZE call that was invoked for the frozen
-> > > filesystem?
-> 
-> Sorry, I misunderstood this.  Yes you're right, in the case of one
-> fuse filesystem relying on another to complete the request the already
-> frozen one will be stuck in FUSE_MIGHT_FREEZE().
-> 
-> How does that help?
+Is there any Suspend-Resume support in the sparc64 kernel?
 
-Well, my next question was going to be: can we find a way to know that
-the userspace process we're waiting on was frozen? If we can know that,
-then perhaps we can apply that knowledge in this thread to avoid a
-freezing failure.
-
-Regards,
-
-Nigel
+TIA,
+Shaddy
