@@ -1,17 +1,16 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Freezer: Don't count threads waiting for frozen
-	filesystems.
-Date: Wed, 29 Oct 2008 09:10:16 +0100
-Message-ID: <E1Kv688-0007Kp-SN__2114.86082193932$1225268082$gmane$org@pomaz-ex.szeredi.hu>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	<200810282321.59041.rjw@sisk.pl>
-	<E1Kuxsg-0006PR-Tr@pomaz-ex.szeredi.hu>
-	<200810290059.38411.rjw@sisk.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 3/4] x86 hibernate: Mark ACPI NVS
+	memory	region at startup
+Date: Wed, 29 Oct 2008 17:21:31 +0800
+Message-ID: <1225272091.2665.4.camel__33913.8211137199$1225272429$gmane$org@rzhang-dt>
+References: <200810222249.20629.rjw@sisk.pl>
+	<200810222253.16264.rjw@sisk.pl> <20081026121404.GC1607@ucw.cz>
+	<200810261329.16260.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200810290059.38411.rjw@sisk.pl>
+In-Reply-To: <200810261329.16260.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,61 +20,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org, miklos@szeredi.hu
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 29 Oct 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 29 of October 2008, Miklos Szeredi wrote:
-> > On Tue, 28 Oct 2008, Rafael J. Wysocki wrote:
-> > > On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
-> > > > I would prefer a freezer-less solution.  Suspend to ram doesn't need
-> > > > the freezer,
-> > > 
-> > > Well, yes it does.  And it will in forseeable future, AFAICS.
-> > 
-> > Umm, OK.  Last I remember everybody agreed that there's absolutely no
-> > reason why processes need to be frozen, and the only important thing
-> > is that drivers are not twiddling the hardware during suspend, and
-> > this can usually easily be solved on the subsystem level.
-> 
-> Well, this turned out not to be the case in the meantime.
-> 
-> In fact to handle that without the freezer we'd have to synchronize
-> every driver's suspend/resume callbacks with every possible way in
-> which applications can access the device for regular I/O (for
-> example for PCI devices this means any I/O other than configuration
-> space accesses).
-
-Not all callbacks.  I don't know what the current model is but AFAIR
-it should be something like this:
-
-  1) call drivers to prepare for suspend (allocate space, etc)
-  2) stop all driver activity (plug queues, disable interrupts, etc)
-  3) call drivers to actually save state and power down
-  4) suspend
-
-The part we are concerned is stopping driver activity.  It could be
-done with a mutex, or it could be done by freezing tasks.  Adding a
-mutex or other mechanism is the one I most like, but it's probably the
-biggest work, so lets look at how to fix the freezing:
-
-Currently the criteria for freezing is that userspace task has to exit
-kernelspace, and kernel task has to hit a specific "freeze point".
-This causes problems where we want to freeze tasks which are "stuck"
-inside filesystems or other non-driver parts of the kernel.  We can
-fix this two ways:
-
-  a) mark additional places to freeze for userspace tasks as
-  well. This is the direction Nigel seems to be taking.
-
-  b) or instead we could allow freezing anywhere in uninterruptible
-  sleep, _except_ where explicity marked.
-
-Which is easier?  I don't know.  But I very storgly feel that marking
-un-freezable places instead of marking freezable places is a much
-cleaner solution.  It only affects parts of the kernel which have
-something to do with suspend, instead of affecting parts of the kernel
-which have absolutely nothing to do with suspend.
-
-Miklos
+SGksIHNvcnJ5IGZvciB0aGUgZGVsYXksCgpPbiBTdW4sIDIwMDgtMTAtMjYgYXQgMjA6MjkgKzA4
+MDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+IE9uIFN1bmRheSwgMjYgb2YgT2N0b2JlciAy
+MDA4LCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4gPiBPbiBXZWQgMjAwOC0xMC0yMiAyMjo1MzoxNSwg
+UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxy
+andAc2lzay5wbD4KPiA+ID4gCj4gPiA+IHg4NiBoaWJlcm5hdGU6IE1hcmsgQUNQSSBOVlMgbWVt
+b3J5IHJlZ2lvbiBhdCBzdGFydHVwCj4gPiA+IAo+ID4gPiBJbnRyb2R1Y2UgbmV3IGluaXRjYWxs
+IGZvciBtYXJraW5nIHRoZSBBQ1BJIE5WUyBtZW1vcnkgYXQgc3RhcnR1cCwgc28KPiA+ID4gdGhh
+dCBpdCBjYW4gYmUgc2F2ZWQvcmVzdG9yZSBkdXJpbmcgaGliZXJuYXRpb24vcmVzdW1lLgo+ID4g
+PiAKPiA+ID4gQmFzZWQgb24gYSBwYXRjaCBieSBaaGFuZyBSdWkuCj4gPiA+IAo+ID4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4gPiA+IENjOiBaaGFu
+ZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+Cj4gPiA+IC0tLQo+ID4gPiAgYXJjaC94ODYva2Vy
+bmVsL2U4MjAuYyB8ICAgMjUgKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gPiAgMSBmaWxl
+IGNoYW5nZWQsIDI1IGluc2VydGlvbnMoKykKPiA+ID4gCj4gPiA+IEluZGV4OiBsaW51eC0yLjYv
+YXJjaC94ODYva2VybmVsL2U4MjAuYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51eC0y
+LjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCj4gPiA+ICsrKyBsaW51eC0yLjYvYXJjaC94
+ODYva2VybmVsL2U4MjAuYwo+ID4gPiBAQCAtMjAsNiArMjAsNyBAQAo+ID4gPiAgI2luY2x1ZGUg
+PGxpbnV4L3Bmbi5oPgo+ID4gPiAgI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4KPiA+ID4gICNp
+bmNsdWRlIDxsaW51eC9maXJtd2FyZS1tYXAuaD4KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9lZmku
+aD4KPiA+ID4gIAo+ID4gPiAgI2luY2x1ZGUgPGFzbS9wZ3RhYmxlLmg+Cj4gPiA+ICAjaW5jbHVk
+ZSA8YXNtL3BhZ2UuaD4KPiA+IAo+ID4gVW5yZWxhdGVkIGNodW5rPwo+ID4gCj4gPiA+IEBAIC02
+NjUsNiArNjY2LDMwIEBAIHZvaWQgX19pbml0IGU4MjBfbWFya19ub3NhdmVfcmVnaW9ucyh1bnMK
+PiA+ID4gIH0KPiA+ID4gICNlbmRpZgo+ID4gPiAgCj4gPiA+ICsjaWZkZWYgQ09ORklHX0hJQkVS
+TkFUSU9OCj4gPiA+ICsvKioKPiA+ID4gKyAqIE1hcmsgQUNQSSBOVlMgbWVtb3J5IHJlZ2lvbiwg
+c28gdGhhdCB3ZSBjYW4gc2F2ZS9yZXN0b3JlIGl0IGR1cmluZwo+ID4gPiArICogaGliZXJuYXRp
+b24gYW5kIHRoZSBzdWJzZXF1ZW50IHJlc3VtZS4KPiA+ID4gKyAqLwo+ID4gPiArc3RhdGljIGlu
+dCBfX2luaXQgZTgyMF9tYXJrX252c19tZW1vcnkodm9pZCkKPiA+ID4gK3sKPiA+ID4gKwlpbnQg
+aTsKPiA+ID4gKwo+ID4gPiArCWlmIChlZmlfZW5hYmxlZCkKPiA+ID4gKwkJcmV0dXJuIDA7Cj4g
+PiAKPiA+IEFoYSwgbm90IHVucmVsYXRlZC4uLiB3aHkgaXMgdGhhdD8gRUZJIGRvZXMgbm90IHVz
+ZSBhY3BpPyAKPiAKPiBXaXRoIEVGSSB3ZSBhcmUgbm90IHN1cHBvc2VkIHRvIGRvIHRoYXQuICBS
+dWkga25vd3MgdGhlIGRldGFpbHMuICBSdWk/Cj4gCndlbGwsIAphYm91dCBFRkkgbnZzIG1lbW9y
+eSwgSSBvbmx5IGdldAoiRWZpQUNQSU1lbW9yeU5WUzogVGhlIE9TIGFuZCBsb2FkZXIgbXVzdCBw
+cmVzZXJ2ZSB0aGlzIG1lbW9yeSByYW5nZSBpbgp0aGUgd29ya2luZyBhbmQgQUNQSSBTMeKAk1Mz
+IHN0YXRlcy4iIGluIHRoZSBBQ1BJIHNwZWMgMy4wYi4Kd2hldGhlciB3ZSBzaG91bGQgc2F2ZS9y
+ZXN0b3JlIHRoaXMgcGllY2Ugb2YgbWVtb3J5IGlzIG5vdCBjbGVhci4KSSdkIHByZWZlciBub3Qg
+dG8gdG91Y2ggaXQgY3VycmVudGx5LgoKdGhhbmtzLApydWkKCj4gPiA+ICsJZm9yIChpID0gMDsg
+aSA8IGU4MjAubnJfbWFwOyBpKyspIHsKPiA+ID4gKwkJc3RydWN0IGU4MjBlbnRyeSAqZWkgPSAm
+ZTgyMC5tYXBbaV07Cj4gPiA+ICsKPiA+ID4gKwkJaWYgKGVpLT50eXBlID09IEU4MjBfTlZTKQo+
+ID4gPiArCQkJaGliZXJuYXRlX252c19yZWdpc3RlcihlaS0+YWRkciwgZWktPnNpemUpOwo+ID4g
+Cj4gPiBjYW4gbnZzX3JlZ2lzdGVyIGZhaWw/IChPT00/KQo+IAo+IEl0IGNhbiwgaW4gd2hpY2gg
+Y2FzZSBpdCB3aWxsIGRvIHRoZSBjbGVhbnVwLgo+IAo+IFRoYW5rcywKPiBSYWZhZWwKCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
+bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
