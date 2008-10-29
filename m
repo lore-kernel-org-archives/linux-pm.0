@@ -1,51 +1,32 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Wed, 29 Oct 2008 13:25:00 +0100
-Message-ID: <200810291325.01481.rjw@sisk.pl>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+Subject: Re: Suspend-Resume support in sparc64 kernel?
+Date: Wed, 29 Oct 2008 13:25:43 +0100
+Message-ID: <200810291325.43694.rjw@sisk.pl>
+References: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753916AbYJ2MU0@vger.kernel.org>
-In-Reply-To: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Andrew Morton <akpm@osdl.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Shaddy Baddah <shaddy_baddah@hotmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 29 of October 2008, Pavel Machek wrote:
+On Wednesday, 29 of October 2008, Shaddy Baddah wrote:
+> Hi,
 > 
-> hibernation + memory hotplug was disabled in kconfig because we could
-> not handle hibernation + sparse mem at some point. It seems to work
-> now, so I guess we can enable it.
+> Is there any Suspend-Resume support in the sparc64 kernel?
 
-OK, if "it seems to work now" means that it has been tested and confirmed to
-work, no objection from me.
+Do you mean suspend to RAM or hibernation?
 
-Thanks,
 Rafael
-
-
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> 
-> diff -ur linux/mm/Kconfig linux.tmp/mm/Kconfig
-> --- linux/mm/Kconfig	2008-10-27 10:10:59.000000000 +0100
-> +++ linux.tmp/mm/Kconfig	2008-10-29 10:02:41.000000000 +0100
-> @@ -128,12 +128,9 @@
->  config MEMORY_HOTPLUG
->  	bool "Allow for memory hot-add"
->  	depends on SPARSEMEM || X86_64_ACPI_NUMA
-> -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
->  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
->  
-> -comment "Memory hotplug is currently incompatible with Software Suspend"
-> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
-> -
->  config MEMORY_HOTPLUG_SPARSE
->  	def_bool y
->  	depends on SPARSEMEM && MEMORY_HOTPLUG
-> 
