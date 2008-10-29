@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend-Resume support in sparc64 kernel?
-Date: Wed, 29 Oct 2008 21:49:34 +0100
-Message-ID: <200810292149.35326.rjw@sisk.pl>
-References: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
-	<200810291325.43694.rjw@sisk.pl>
-	<BAY104-DAV1E9782585E946FF1C693299260@phx.gbl>
+Subject: Re: Freezer: Don't count threads waiting for frozen
+	filesystems.
+Date: Wed, 29 Oct 2008 22:11:48 +0100
+Message-ID: <200810292211.49021.rjw__41425.6101627418$1225314702$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BAY104-DAV1E9782585E946FF1C693299260@phx.gbl>
+In-Reply-To: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,31 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaddy Baddah <shaddy_baddah@hotmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 29 of October 2008, Shaddy Baddah wrote:
-> Rafael J. Wysocki wrote:
-> > On Wednesday, 29 of October 2008, Shaddy Baddah wrote:
-> >> Hi,
-> >>
-> >> Is there any Suspend-Resume support in the sparc64 kernel?
+On Wednesday, 29 of October 2008, Alan Stern wrote:
+> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> 
+> > On Wed, 29 Oct 2008, Alan Stern wrote:
+> > > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> > > 
+> > > > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
+> > > > that still has scalability problems.  But it could be done with custom
+> > > > locking primitives, optimized for this case:
+> > > > 
+> > > >    suspend_disable();
+> > > >    /* driver stuff */
+> > > >    suspend_enable();
+> > > 
+> > > Yes, it could be done.  And the overhead could be minimized by using
+> > > per-CPU variables.  It would still be an awful lot of work, and easy to
+> > > get wrong.
 > > 
-> > Do you mean suspend to RAM or hibernation?
+> > OK, getting back to this, as it seems to be the only way that we agree
+> > is doable.
+> > 
+> > How about this,
+> > 
+> >  a) identify syscalls that may make drivers do I/O:
+> > 
+> >  - read
+> >  - write
+> >  - ioctl
+> >  ???
+> > 
+> >  b) add the suspend_disable/enable() primitives to these syscalls
+> > 
+> >  c) push primitives inside the implementation
 > 
-> I mean suspend to RAM, which is what I believe the Suspend-Resume 
-> referred to in the document 
-> http://docs.sun.com/app/docs/doc/805-4433/6j46udqi7?l=en&a=view&q=power+management 
-> also refers to.
+> I discussed this last summer with Rafael.  It's a lot harder than it 
+> looks, for all sorts of reasons.  For example, what about user tasks 
+> that have access to memory-mapped I/O regions?
 > 
-> My uninformed research into it gives me an indication that it is not. 
-> And I'm curious as to whether there was some history to its possible 
-> exclusion, or it is just something that no one has ever attempt to 
-> implement.
+> > c) is slightly tricky, but could be done for example by setting a flag
+> > on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
+> > implementation is responsible for getting the suspend disable magic
+> > right.
+> > 
+> > For starters this flag could be set for all non-device opens (maybe all
+> > non-char-dev opens?), solving the fuse vs. freezer issues without any
+> > complicated trickery.
+> 
+> I don't know.  There are other interfaces too, like sysfs attributes, 
+> that would have to be handled specially.  On the whole, the freezer 
+> seems much, much simpler.
+> 
+> Regarding fuse, something like Nigel's scheme for preventing new 
+> requests and then waiting for old requests to complete might work out.  
+> Especially if you combine it with a strategy for making the freezer 
+> back and retry after a delay when something goes wrong.
 
-I think no one has ever tried it, although you should ask SPARC architecture
-developers/maintainers about that.
+Yeah.
+
+The current design of the freezer is rather simplistic and I'm not really sure
+it's the best one possible.  Perhaps we can redesign the freezer to work
+differently and handle the cases like fuse.
+
+I didn't have the time to think about that yet, though.
 
 Thanks,
 Rafael
