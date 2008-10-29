@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Freezer: Don't count threads waiting for frozen
-	filesystems.
-Date: Wed, 29 Oct 2008 22:11:48 +0100
-Message-ID: <200810292211.49021.rjw__41425.6101627418$1225314702$gmane$org@sisk.pl>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: Freezer: Don't count threads waiting for
+	frozen	filesystems.
+Date: Thu, 30 Oct 2008 08:45:15 +1100
+Message-ID: <1225316715.18786.1.camel__41704.6434864917$1225316881$gmane$org@nigel-laptop>
 References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	<200810292211.49021.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200810292211.49021.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 29 of October 2008, Alan Stern wrote:
-> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-> 
-> > On Wed, 29 Oct 2008, Alan Stern wrote:
-> > > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-> > > 
-> > > > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
-> > > > that still has scalability problems.  But it could be done with custom
-> > > > locking primitives, optimized for this case:
-> > > > 
-> > > >    suspend_disable();
-> > > >    /* driver stuff */
-> > > >    suspend_enable();
-> > > 
-> > > Yes, it could be done.  And the overhead could be minimized by using
-> > > per-CPU variables.  It would still be an awful lot of work, and easy to
-> > > get wrong.
-> > 
-> > OK, getting back to this, as it seems to be the only way that we agree
-> > is doable.
-> > 
-> > How about this,
-> > 
-> >  a) identify syscalls that may make drivers do I/O:
-> > 
-> >  - read
-> >  - write
-> >  - ioctl
-> >  ???
-> > 
-> >  b) add the suspend_disable/enable() primitives to these syscalls
-> > 
-> >  c) push primitives inside the implementation
-> 
-> I discussed this last summer with Rafael.  It's a lot harder than it 
-> looks, for all sorts of reasons.  For example, what about user tasks 
-> that have access to memory-mapped I/O regions?
-> 
-> > c) is slightly tricky, but could be done for example by setting a flag
-> > on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
-> > implementation is responsible for getting the suspend disable magic
-> > right.
-> > 
-> > For starters this flag could be set for all non-device opens (maybe all
-> > non-char-dev opens?), solving the fuse vs. freezer issues without any
-> > complicated trickery.
-> 
-> I don't know.  There are other interfaces too, like sysfs attributes, 
-> that would have to be handled specially.  On the whole, the freezer 
-> seems much, much simpler.
-> 
-> Regarding fuse, something like Nigel's scheme for preventing new 
-> requests and then waiting for old requests to complete might work out.  
-> Especially if you combine it with a strategy for making the freezer 
-> back and retry after a delay when something goes wrong.
+Hi.
 
-Yeah.
+On Wed, 2008-10-29 at 22:11 +0100, Rafael J. Wysocki wrote:
+> The current design of the freezer is rather simplistic and I'm not really sure
+> it's the best one possible.  Perhaps we can redesign the freezer to work
+> differently and handle the cases like fuse.
 
-The current design of the freezer is rather simplistic and I'm not really sure
-it's the best one possible.  Perhaps we can redesign the freezer to work
-differently and handle the cases like fuse.
+Why redo what I've already done? In the full patch, you have the basis
+of what you're talking about. I haven't seen a failure to freeze fuse or
+anything else in a year of use.
 
-I didn't have the time to think about that yet, though.
-
-Thanks,
-Rafael
+Nigel
