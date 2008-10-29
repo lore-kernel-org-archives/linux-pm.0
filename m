@@ -1,59 +1,51 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH 3/4] x86 hibernate: Mark ACPI NVS memory
-	region at startup
-Date: Wed, 29 Oct 2008 12:18:37 +0100
-Message-ID: <20081029111837.GA20466__19506.0176928111$1225279353$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <200810222249.20629.rjw@sisk.pl> <200810222253.16264.rjw@sisk.pl>
-	<20081026121404.GC1607@ucw.cz> <200810261329.16260.rjw@sisk.pl>
-	<1225272091.2665.4.camel@rzhang-dt>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+Date: Wed, 29 Oct 2008 13:25:00 +0100
+Message-ID: <200810291325.01481.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753916AbYJ2MU0@vger.kernel.org>
+In-Reply-To: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
-In-Reply-To: <1225272091.2665.4.camel@rzhang-dt>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday, 29 of October 2008, Pavel Machek wrote:
+> 
+> hibernation + memory hotplug was disabled in kconfig because we could
+> not handle hibernation + sparse mem at some point. It seems to work
+> now, so I guess we can enable it.
 
-> > > > +static int __init e820_mark_nvs_memory(void)
-> > > > +{
-> > > > +	int i;
-> > > > +
-> > > > +	if (efi_enabled)
-> > > > +		return 0;
-> > > 
-> > > Aha, not unrelated... why is that? EFI does not use acpi? 
-> > 
-> > With EFI we are not supposed to do that.  Rui knows the details.  Rui?
-> > 
-> well, 
-> about EFI nvs memory, I only get
-> "EfiACPIMemoryNVS: The OS and loader must preserve this memory range in
-> the working and ACPI S1???S3 states." in the ACPI spec 3.0b.
-> whether we should save/restore this piece of memory is not clear.
-> I'd prefer not to touch it currently.
+OK, if "it seems to work now" means that it has been tested and confirmed to
+work, no objection from me.
 
-EFI is a bootloader. Why should we change our runtime behaviour
-depending on bootloader?
+Thanks,
+Rafael
 
-EFI should be still compatible with normal ACPI, right? ...like you
-should be able to boot the same kernel with the same ACPI BIOS using
-EFI or EFI w/ legacy emulation.
 
-So special-casing it here does not seem right.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> 
+> diff -ur linux/mm/Kconfig linux.tmp/mm/Kconfig
+> --- linux/mm/Kconfig	2008-10-27 10:10:59.000000000 +0100
+> +++ linux.tmp/mm/Kconfig	2008-10-29 10:02:41.000000000 +0100
+> @@ -128,12 +128,9 @@
+>  config MEMORY_HOTPLUG
+>  	bool "Allow for memory hot-add"
+>  	depends on SPARSEMEM || X86_64_ACPI_NUMA
+> -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
+> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
+>  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
+>  
+> -comment "Memory hotplug is currently incompatible with Software Suspend"
+> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
+> -
+>  config MEMORY_HOTPLUG_SPARSE
+>  	def_bool y
+>  	depends on SPARSEMEM && MEMORY_HOTPLUG
+> 
