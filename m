@@ -1,8 +1,8 @@
 From: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: Freezer: Don't count threads waiting for frozen
  filesystems.
-Date: Wed, 29 Oct 2008 16:50:49 +0100
-Message-ID: <E1KvDJp-00088f-2b__24251.2146746323$1225295789$gmane$org@pomaz-ex.szeredi.hu>
+Date: Wed, 29 Oct 2008 17:10:27 +0100
+Message-ID: <E1KvDcp-0008B7-SR__20173.6586205245$1225296951$gmane$org@pomaz-ex.szeredi.hu>
 References: <Pine.LNX.4.44L0.0810291122220.2189-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,43 +25,42 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, 29 Oct 2008, Alan Stern wrote:
 > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-> > I did a random sampling of ->suspend() callbacks, and they don't seem
-> > to be taking mutexes.  Does that happen at all?
 > 
-> It does, particularly among drivers that do runtime PM, which is 
-> becoming more and more important.
+> > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
+> > that still has scalability problems.  But it could be done with custom
+> > locking primitives, optimized for this case:
+> > 
+> >    suspend_disable();
+> >    /* driver stuff */
+> >    suspend_enable();
 > 
-> Besides, suspend has to synchronize with I/O somehow.  Right now that 
-> is handled by making suspend wait until no tasks are doing I/O (because 
-> they are all frozen).
+> Yes, it could be done.  And the overhead could be minimized by using
+> per-CPU variables.  It would still be an awful lot of work, and easy to
+> get wrong.
 
-What about async I/O?
+OK, getting back to this, as it seems to be the only way that we agree
+is doable.
 
->  If you allow tasks to be frozen at more or less 
-> arbitrary times, while holding arbitrary locks, then you may end up 
-> freezing a task that's in the middle of I/O.  That should certainly 
-> block the suspend (not to mention messing up the I/O operation).
+How about this,
 
-What is the middle of I/O?  Depending the type of I/O it could be
-messed up regardless of whether tasks happen to be in userspace or not
-(e.g. printing).
+ a) identify syscalls that may make drivers do I/O:
 
-And some types of I/O are already mostly decoupled from userspace
-(file I/O, networking), so the userspace freezing shoudln't make any
-difference.
+ - read
+ - write
+ - ioctl
+ ???
 
-> > Did anybody ever try modifying the freezer for suspend (not
-> > hibernate), so that it allows tasks not in running state to freeze?
-> > If not, I think that's an experiment worth doing.
-> 
-> What happens if the reason the task isn't running is because it's 
-> waiting for I/O to complete?  I just don't think this can be made to 
-> work.
+ b) add the suspend_disable/enable() primitives to these syscalls
 
-Don't know.  I've never written a driver, and I'm not familiar with
-runtime PM, etc.  So I can't come up with a detailed design for
-solving the freezer issues there.
+ c) push primitives inside the implementation
 
-But I do think that the solution does not lie in "fixing" the VFS.
+c) is slightly tricky, but could be done for example by setting a flag
+on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
+implementation is responsible for getting the suspend disable magic
+right.
+
+For starters this flag could be set for all non-device opens (maybe all
+non-char-dev opens?), solving the fuse vs. freezer issues without any
+complicated trickery.
 
 Miklos
