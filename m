@@ -1,70 +1,41 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 3/4] x86 hibernate: Mark ACPI NVS
-	memory	region at startup
-Date: Wed, 29 Oct 2008 17:21:31 +0800
-Message-ID: <1225272091.2665.4.camel__33913.8211137199$1225272429$gmane$org@rzhang-dt>
-References: <200810222249.20629.rjw@sisk.pl>
-	<200810222253.16264.rjw@sisk.pl> <20081026121404.GC1607@ucw.cz>
-	<200810261329.16260.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: [PATCH] hibernation should work ok with memory hotplug
+Date: Wed, 29 Oct 2008 11:59:56 +0100
+Message-ID: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810261329.16260.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753943AbYJ2LAO@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIHNvcnJ5IGZvciB0aGUgZGVsYXksCgpPbiBTdW4sIDIwMDgtMTAtMjYgYXQgMjA6MjkgKzA4
-MDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+IE9uIFN1bmRheSwgMjYgb2YgT2N0b2JlciAy
-MDA4LCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4gPiBPbiBXZWQgMjAwOC0xMC0yMiAyMjo1MzoxNSwg
-UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-andAc2lzay5wbD4KPiA+ID4gCj4gPiA+IHg4NiBoaWJlcm5hdGU6IE1hcmsgQUNQSSBOVlMgbWVt
-b3J5IHJlZ2lvbiBhdCBzdGFydHVwCj4gPiA+IAo+ID4gPiBJbnRyb2R1Y2UgbmV3IGluaXRjYWxs
-IGZvciBtYXJraW5nIHRoZSBBQ1BJIE5WUyBtZW1vcnkgYXQgc3RhcnR1cCwgc28KPiA+ID4gdGhh
-dCBpdCBjYW4gYmUgc2F2ZWQvcmVzdG9yZSBkdXJpbmcgaGliZXJuYXRpb24vcmVzdW1lLgo+ID4g
-PiAKPiA+ID4gQmFzZWQgb24gYSBwYXRjaCBieSBaaGFuZyBSdWkuCj4gPiA+IAo+ID4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4gPiA+IENjOiBaaGFu
-ZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+Cj4gPiA+IC0tLQo+ID4gPiAgYXJjaC94ODYva2Vy
-bmVsL2U4MjAuYyB8ICAgMjUgKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gPiAgMSBmaWxl
-IGNoYW5nZWQsIDI1IGluc2VydGlvbnMoKykKPiA+ID4gCj4gPiA+IEluZGV4OiBsaW51eC0yLjYv
-YXJjaC94ODYva2VybmVsL2U4MjAuYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51eC0y
-LjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCj4gPiA+ICsrKyBsaW51eC0yLjYvYXJjaC94
-ODYva2VybmVsL2U4MjAuYwo+ID4gPiBAQCAtMjAsNiArMjAsNyBAQAo+ID4gPiAgI2luY2x1ZGUg
-PGxpbnV4L3Bmbi5oPgo+ID4gPiAgI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4KPiA+ID4gICNp
-bmNsdWRlIDxsaW51eC9maXJtd2FyZS1tYXAuaD4KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9lZmku
-aD4KPiA+ID4gIAo+ID4gPiAgI2luY2x1ZGUgPGFzbS9wZ3RhYmxlLmg+Cj4gPiA+ICAjaW5jbHVk
-ZSA8YXNtL3BhZ2UuaD4KPiA+IAo+ID4gVW5yZWxhdGVkIGNodW5rPwo+ID4gCj4gPiA+IEBAIC02
-NjUsNiArNjY2LDMwIEBAIHZvaWQgX19pbml0IGU4MjBfbWFya19ub3NhdmVfcmVnaW9ucyh1bnMK
-PiA+ID4gIH0KPiA+ID4gICNlbmRpZgo+ID4gPiAgCj4gPiA+ICsjaWZkZWYgQ09ORklHX0hJQkVS
-TkFUSU9OCj4gPiA+ICsvKioKPiA+ID4gKyAqIE1hcmsgQUNQSSBOVlMgbWVtb3J5IHJlZ2lvbiwg
-c28gdGhhdCB3ZSBjYW4gc2F2ZS9yZXN0b3JlIGl0IGR1cmluZwo+ID4gPiArICogaGliZXJuYXRp
-b24gYW5kIHRoZSBzdWJzZXF1ZW50IHJlc3VtZS4KPiA+ID4gKyAqLwo+ID4gPiArc3RhdGljIGlu
-dCBfX2luaXQgZTgyMF9tYXJrX252c19tZW1vcnkodm9pZCkKPiA+ID4gK3sKPiA+ID4gKwlpbnQg
-aTsKPiA+ID4gKwo+ID4gPiArCWlmIChlZmlfZW5hYmxlZCkKPiA+ID4gKwkJcmV0dXJuIDA7Cj4g
-PiAKPiA+IEFoYSwgbm90IHVucmVsYXRlZC4uLiB3aHkgaXMgdGhhdD8gRUZJIGRvZXMgbm90IHVz
-ZSBhY3BpPyAKPiAKPiBXaXRoIEVGSSB3ZSBhcmUgbm90IHN1cHBvc2VkIHRvIGRvIHRoYXQuICBS
-dWkga25vd3MgdGhlIGRldGFpbHMuICBSdWk/Cj4gCndlbGwsIAphYm91dCBFRkkgbnZzIG1lbW9y
-eSwgSSBvbmx5IGdldAoiRWZpQUNQSU1lbW9yeU5WUzogVGhlIE9TIGFuZCBsb2FkZXIgbXVzdCBw
-cmVzZXJ2ZSB0aGlzIG1lbW9yeSByYW5nZSBpbgp0aGUgd29ya2luZyBhbmQgQUNQSSBTMeKAk1Mz
-IHN0YXRlcy4iIGluIHRoZSBBQ1BJIHNwZWMgMy4wYi4Kd2hldGhlciB3ZSBzaG91bGQgc2F2ZS9y
-ZXN0b3JlIHRoaXMgcGllY2Ugb2YgbWVtb3J5IGlzIG5vdCBjbGVhci4KSSdkIHByZWZlciBub3Qg
-dG8gdG91Y2ggaXQgY3VycmVudGx5LgoKdGhhbmtzLApydWkKCj4gPiA+ICsJZm9yIChpID0gMDsg
-aSA8IGU4MjAubnJfbWFwOyBpKyspIHsKPiA+ID4gKwkJc3RydWN0IGU4MjBlbnRyeSAqZWkgPSAm
-ZTgyMC5tYXBbaV07Cj4gPiA+ICsKPiA+ID4gKwkJaWYgKGVpLT50eXBlID09IEU4MjBfTlZTKQo+
-ID4gPiArCQkJaGliZXJuYXRlX252c19yZWdpc3RlcihlaS0+YWRkciwgZWktPnNpemUpOwo+ID4g
-Cj4gPiBjYW4gbnZzX3JlZ2lzdGVyIGZhaWw/IChPT00/KQo+IAo+IEl0IGNhbiwgaW4gd2hpY2gg
-Y2FzZSBpdCB3aWxsIGRvIHRoZSBjbGVhbnVwLgo+IAo+IFRoYW5rcywKPiBSYWZhZWwKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+hibernation + memory hotplug was disabled in kconfig because we could
+not handle hibernation + sparse mem at some point. It seems to work
+now, so I guess we can enable it.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+
+diff -ur linux/mm/Kconfig linux.tmp/mm/Kconfig
+--- linux/mm/Kconfig	2008-10-27 10:10:59.000000000 +0100
++++ linux.tmp/mm/Kconfig	2008-10-29 10:02:41.000000000 +0100
+@@ -128,12 +128,9 @@
+ config MEMORY_HOTPLUG
+ 	bool "Allow for memory hot-add"
+ 	depends on SPARSEMEM || X86_64_ACPI_NUMA
+-	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
++	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
+ 	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
+ 
+-comment "Memory hotplug is currently incompatible with Software Suspend"
+-	depends on SPARSEMEM && HOTPLUG && HIBERNATION
+-
+ config MEMORY_HOTPLUG_SPARSE
+ 	def_bool y
+ 	depends on SPARSEMEM && MEMORY_HOTPLUG
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
