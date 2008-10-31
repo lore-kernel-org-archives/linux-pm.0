@@ -1,20 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Freezer: Don't count threads waiting
-	for	frozen	filesystems.
-Date: Sat, 01 Nov 2008 08:11:38 +1100
-Message-ID: <1225487498.6574.40.camel__40762.6492473812$1225487855$gmane$org@nigel-laptop>
-References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
-	<1225403060.6574.10.camel@nigel-laptop>
-	<E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
-	<1225444253.6574.21.camel@nigel-laptop>
-	<E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
-	<1225452484.6574.35.camel@nigel-laptop>
-	<E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH 1/2] orinoco: Use PM notifier to cache
+	firmware for use during resume
+Date: Fri, 31 Oct 2008 22:27:38 +0100
+Message-ID: <200810312227.39057.rjw__47651.9252792515$1225488523$gmane$org@sisk.pl>
+References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+	<1225415743-28209-2-git-send-email-kilroyd@googlemail.com>
+	<200810312037.00936.arvidjaar@mail.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
+In-Reply-To: <200810312037.00936.arvidjaar@mail.ru>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,50 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: orinoco-devel@lists.sourceforge.net, David Kilroy <kilroyd@googlemail.com>, Andrey Borzenkov <arvidjaar@mail.ru>, linux-wireless@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On Fri, 2008-10-31 at 13:44 +0100, Miklos Szeredi wrote:
-> On Fri, 31 Oct 2008, Nigel Cunningham wrote:
-> > You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
-> > locks that might cause problems. So my suggestion is:
-> 
-> Before?  FUSE_MIGHT_FREEZE is called _after_ i_mutex is taken by the
-> VFS.
-
-Ok. So I'll shift it backwards in the calling chain a bit.
-
-> > 1) Stop new requests at FUSE_MIGHT_FREEZE
-> > 2) Handle existing requests by using freezer_do_not_count in
-> > request_send and request_send_nowait before the spin_lock and
-> > freezer_count after the spin_unlock.
+On Friday, 31 of October 2008, Andrey Borzenkov wrote:
+> On Friday 31 October 2008, David Kilroy wrote:
+> > When preparing for either suspend or hibernation, load the necessary
+> > firmware from userspace.
 > > 
-> > With #2, we don't need to care about whether the request is completed
-> > before freezing completes or post-resume.
+> > Upon error or resume, release the firmware.
 > > 
-> > If the userspace process tries to use an already frozen fuse filesystem
-> > and gets frozen, that's okay because we'll sit waiting for an answer,
-> > not be counted by the freezer and so not contribute to any failure to
-> > freeze processes.
+> > Works for both Agere and Symbol firmware.
 > > 
-> > If the userspace process completes its work, we'll either get caught at
-> > the freezer_count (if we've already been told to freeze) or be gotten
-> > later, after exiting the fuse code.
+> > Signed-off by: David Kilroy <kilroyd@gmail.com>
 > 
-> Yes, this is the variant of categorizing sleeps to freezing and
-> non-freezing.  The problem is, you need to do that with all
-> mutex_lock(&inode->i_mutex) instances as well.  Try grepping for that
-> in fs/*.c!
+> This is on top of my old patch; was it ever accepted anywhere? I guess
+> it should be rediffed against clean tree.
 > 
-> It _is_ possible, it's just not practical.
+> > @@ -621,7 +620,7 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
+> >  	ret = hermes_init(hw);
+> >  
+> >  	/* hermes_reset() should return 0 with the secondary firmware */
+> > -	if (secondary && ret != 0)
+> > +	if (secondary && (ret != 0))
+> 
+> Extra parenthesis are redundant, are not they?
+> 
+> >  /********************************************************************/
+> > +/* Power management                                                 */
+> > +/********************************************************************/
+> > +
+> > +static int orinoco_pm_notifier(struct notifier_block *notifier,
+> > +			       unsigned long pm_event,
+> > +			       void *unused)
+> 
+> It probably should be conditional on CONFIG_PM somehow? 
 
-Let's get practical. You know fuse a lot better than me. Can you give me
-the most complicated, ugly configuration you can think of, and I'll work
-on making it freeze first time, every time.
+CONFIG_PM_SLEEP, actually.
 
-Regards,
-
-Nigel
+Thanks,
+Rafael
