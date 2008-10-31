@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] x86 hibernate: Mark ACPI NVS memory region
-	at startup (rev. 2)
-Date: Fri, 31 Oct 2008 01:02:41 +0100
-Message-ID: <200810310102.42041.rjw__11562.6710038216$1225411421$gmane$org@sisk.pl>
-References: <200810262048.23468.rjw@sisk.pl> <200810262054.24929.rjw@sisk.pl>
+From: "MinChan Kim" <minchan.kim@gmail.com>
+Subject: Re: [Question] AMD opteron can support CPUfreq by per
+	core ?
+Date: Fri, 31 Oct 2008 13:08:58 +0900
+Message-ID: <28c262360810302108n586d011as5542c409537fad46@mail.gmail.com>
+References: <28c262360810292306x2f3fb6bag559943c59fa83006@mail.gmail.com>
+	<804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810262054.24929.rjw@sisk.pl>
+In-Reply-To: <804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,121 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, Ingo Molnar <mingo@elte.hu>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: Kernelnewbies <kernelnewbies@nl.linux.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On Fri, Oct 31, 2008 at 12:06 PM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> check this out:
+>
+> http://osdir.com/ml/kernel.cpufreq/2004-07/msg00012.html
+>
+> from the reply, since the power management flag is at the per-core
+> level (check /proc/cpuinfo), all control can be done at the per-core
+> level, hard-ware wise.   (not sure of Linux Kernel itself)
+>
+> But at least 4 flags must be present (read above email):   ts, ttp, fid, vid.
 
-Please replace this patch with the appended one.
+Thanks, but I don't have any AMD opteron machine. My question is for
+buying test machine of AMD opteron or somethings. :)
 
-I have verified that we are supposed to save/restore the NVS area in the EFI
-case too.
+>
+> --
+> Regards,
+> Peter Teoh
+>
 
-Thanks,
-Rafael
 
 
-On Sunday, 26 of October 2008, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86 hibernate: Mark ACPI NVS memory region at startup
-> 
-> Introduce new initcall for marking the ACPI NVS memory at startup, so
-> that it can be saved/restore during hibernation/resume.
-> 
-> Based on a patch by Zhang Rui.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> ---
->  arch/x86/kernel/e820.c |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index ce97bf3..e1e63a8 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -20,6 +20,7 @@
->  #include <linux/pfn.h>
->  #include <linux/suspend.h>
->  #include <linux/firmware-map.h>
-> +#include <linux/efi.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/page.h>
-> @@ -665,6 +666,30 @@ void __init e820_mark_nosave_regions(unsigned long limit_pfn)
->  }
->  #endif
->  
-> +#ifdef CONFIG_HIBERNATION
-> +/**
-> + * Mark ACPI NVS memory region, so that we can save/restore it during
-> + * hibernation and the subsequent resume.
-> + */
-> +static int __init e820_mark_nvs_memory(void)
-> +{
-> +	int i;
-> +
-> +	if (efi_enabled)
-> +		return 0;
-> +
-> +	for (i = 0; i < e820.nr_map; i++) {
-> +		struct e820entry *ei = &e820.map[i];
-> +
-> +		if (ei->type == E820_NVS)
-> +			hibernate_nvs_register(ei->addr, ei->size);
-> +	}
-> +
-> +	return 0;
-> +}
-> +core_initcall(e820_mark_nvs_memory);
-> +#endif
-> +
->  /*
->   * Early reserved memory areas.
->   */
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: x86 hibernate: Mark ACPI NVS memory region at startup
-
-Introduce new initcall for marking the ACPI NVS memory at startup, so
-that it can be saved/restored during hibernation/resume.
-
-Based on a patch by Zhang Rui.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Zhang Rui <rui.zhang@intel.com>
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index ce97bf3..261d19c 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -665,6 +665,27 @@ void __init e820_mark_nosave_regions(unsigned long limit_pfn)
- }
- #endif
- 
-+#ifdef CONFIG_HIBERNATION
-+/**
-+ * Mark ACPI NVS memory region, so that we can save/restore it during
-+ * hibernation and the subsequent resume.
-+ */
-+static int __init e820_mark_nvs_memory(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei = &e820.map[i];
-+
-+		if (ei->type == E820_NVS)
-+			hibernate_nvs_register(ei->addr, ei->size);
-+	}
-+
-+	return 0;
-+}
-+core_initcall(e820_mark_nvs_memory);
-+#endif
-+
- /*
-  * Early reserved memory areas.
-  */
+-- 
+Kinds regards,
+MinChan Kim
