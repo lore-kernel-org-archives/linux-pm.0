@@ -1,14 +1,20 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [RFC PATCH 1/2] orinoco: Use PM notifier to cache
-	firmware for use during resume
-Date: Fri, 31 Oct 2008 20:36:59 +0300
-Message-ID: <200810312037.00936.arvidjaar__47718.5351228856$1225474876$gmane$org@mail.ru>
-References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
-	<1225415743-28209-2-git-send-email-kilroyd@googlemail.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: Freezer: Don't count threads waiting
+	for	frozen	filesystems.
+Date: Sat, 01 Nov 2008 08:11:38 +1100
+Message-ID: <1225487498.6574.40.camel__40762.6492473812$1225487855$gmane$org@nigel-laptop>
+References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
+	<1225403060.6574.10.camel@nigel-laptop>
+	<E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
+	<1225444253.6574.21.camel@nigel-laptop>
+	<E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
+	<1225452484.6574.35.camel@nigel-laptop>
+	<E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1191863517029840654=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1225415743-28209-2-git-send-email-kilroyd@googlemail.com>
+In-Reply-To: <E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,108 +22,52 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Kilroy <kilroyd@googlemail.com>
-Cc: linux-pm@lists.linux-foundation.org, orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============1191863517029840654==
-Content-Type: multipart/signed;
-  boundary="nextPart2431754.5yS4ccXzLp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Hi.
 
---nextPart2431754.5yS4ccXzLp
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 2008-10-31 at 13:44 +0100, Miklos Szeredi wrote:
+> On Fri, 31 Oct 2008, Nigel Cunningham wrote:
+> > You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
+> > locks that might cause problems. So my suggestion is:
+> 
+> Before?  FUSE_MIGHT_FREEZE is called _after_ i_mutex is taken by the
+> VFS.
 
-On Friday 31 October 2008, David Kilroy wrote:
-> When preparing for either suspend or hibernation, load the necessary
-> firmware from userspace.
->=20
-> Upon error or resume, release the firmware.
->=20
-> Works for both Agere and Symbol firmware.
->=20
-> Signed-off by: David Kilroy <kilroyd@gmail.com>
+Ok. So I'll shift it backwards in the calling chain a bit.
 
-This is on top of my old patch; was it ever accepted anywhere? I guess
-it should be rediffed against clean tree.
+> > 1) Stop new requests at FUSE_MIGHT_FREEZE
+> > 2) Handle existing requests by using freezer_do_not_count in
+> > request_send and request_send_nowait before the spin_lock and
+> > freezer_count after the spin_unlock.
+> > 
+> > With #2, we don't need to care about whether the request is completed
+> > before freezing completes or post-resume.
+> > 
+> > If the userspace process tries to use an already frozen fuse filesystem
+> > and gets frozen, that's okay because we'll sit waiting for an answer,
+> > not be counted by the freezer and so not contribute to any failure to
+> > freeze processes.
+> > 
+> > If the userspace process completes its work, we'll either get caught at
+> > the freezer_count (if we've already been told to freeze) or be gotten
+> > later, after exiting the fuse code.
+> 
+> Yes, this is the variant of categorizing sleeps to freezing and
+> non-freezing.  The problem is, you need to do that with all
+> mutex_lock(&inode->i_mutex) instances as well.  Try grepping for that
+> in fs/*.c!
+> 
+> It _is_ possible, it's just not practical.
 
-> @@ -621,7 +620,7 @@ symbol_dl_image(struct orinoco_private *priv, const s=
-truct fw_info *fw,
->  	ret =3D hermes_init(hw);
-> =20
->  	/* hermes_reset() should return 0 with the secondary firmware */
-> -	if (secondary && ret !=3D 0)
-> +	if (secondary && (ret !=3D 0))
+Let's get practical. You know fuse a lot better than me. Can you give me
+the most complicated, ugly configuration you can think of, and I'll work
+on making it freeze first time, every time.
 
-Extra parenthesis are redundant, are not they?
+Regards,
 
->  /********************************************************************/
-> +/* Power management                                                 */
-> +/********************************************************************/
-> +
-> +static int orinoco_pm_notifier(struct notifier_block *notifier,
-> +			       unsigned long pm_event,
-> +			       void *unused)
-
-It probably should be conditional on CONFIG_PM somehow?=20
-
-> diff --git a/drivers/net/wireless/orinoco.h b/drivers/net/wireless/orinoc=
-o.h
-> index 8c29538..5a9685a 100644
-> --- a/drivers/net/wireless/orinoco.h
-> +++ b/drivers/net/wireless/orinoco.h
-> @@ -10,6 +10,7 @@
->  #define DRIVER_VERSION "0.15"
-> =20
->  #include <linux/interrupt.h>
-> +#include <linux/suspend.h>
->  #include <linux/netdevice.h>
->  #include <linux/wireless.h>
->  #include <net/iw_handler.h>
-> @@ -167,8 +168,11 @@ struct orinoco_private {
->  	unsigned int tkip_cm_active:1;
->  	unsigned int key_mgmt:3;
-> =20
-> -	/* Cached in memory firmware to use in ->resume */
-> -	const struct firmware *cached_fw;
-> +	/* Cached in memory firmware to use during ->resume. */
-> +	const struct firmware *cached_pri_fw;
-> +	const struct firmware *cached_sta_fw;
-
-I think name is badly chosen. It could be both STA and AP firmware;
-I know that AP is not implemented currently, but it does not mean
-it will never be and firmware is there if required.
-
-I will test it once I sort out issue with booting 2.6.28. Right now
-it stopped booting completely.
-
---nextPart2431754.5yS4ccXzLp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkLQjwACgkQR6LMutpd94yYugCfRBBflnopNMNf53ZppoAGIdYn
-FmAAn3nYMVAjWM4yEFVjiATg0jq92hh9
-=cR9f
------END PGP SIGNATURE-----
-
---nextPart2431754.5yS4ccXzLp--
-
---===============1191863517029840654==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1191863517029840654==--
+Nigel
