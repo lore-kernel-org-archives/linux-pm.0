@@ -1,14 +1,16 @@
-From: David Kilroy <kilroyd@googlemail.com>
-Subject: [RFC PATCH 1/2] orinoco: Use PM notifier to cache
-	firmware for use during resume
-Date: Fri, 31 Oct 2008 01:15:42 +0000
-Message-ID: <1225415743-28209-2-git-send-email-kilroyd__40164.1299519271$1225464306$gmane$org@googlemail.com>
-References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+Subject: Re: [Question] AMD opteron can support CPUfreq by per
+	core ?
+Date: Fri, 31 Oct 2008 12:10:30 +0800
+Message-ID: <804dabb00810302110u7e8ef285j5ebe54c0e09433f4__41129.8692496077$1225464339$gmane$org@mail.gmail.com>
+References: <28c262360810292306x2f3fb6bag559943c59fa83006@mail.gmail.com>
+	<804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+In-Reply-To: <804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,277 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-wireless@vger.kernel.org, orinoco-devel@lists.sourceforge.net
-Cc: David Kilroy <kilroyd@googlemail.com>, linux-pm@lists.linux-foundation.org, arvidjaar@mail.ru
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: Kernelnewbies <kernelnewbies@nl.linux.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-When preparing for either suspend or hibernation, load the necessary
-firmware from userspace.
+and check this out:
 
-Upon error or resume, release the firmware.
+http://ubuntuforums.org/archive/index.php/t-80494.html
 
-Works for both Agere and Symbol firmware.
+in-depth steps for setting up cpufreq for one processor, which i
+supposed can be extended for multicore?
 
-Signed-off by: David Kilroy <kilroyd@gmail.com>
----
- drivers/net/wireless/orinoco.c |  140 +++++++++++++++++++++++++++++++---------
- drivers/net/wireless/orinoco.h |    8 ++-
- 2 files changed, 115 insertions(+), 33 deletions(-)
+On Fri, Oct 31, 2008 at 11:06 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> check this out:
+>
+> http://osdir.com/ml/kernel.cpufreq/2004-07/msg00012.html
+>
+> from the reply, since the power management flag is at the per-core
+> level (check /proc/cpuinfo), all control can be done at the per-core
+> level, hard-ware wise.   (not sure of Linux Kernel itself)
+>
+> But at least 4 flags must be present (read above email):   ts, ttp, fid, vid.
+>
+> I must also say this is the first time I am aware of these flags too :-).
+>
+> On Thu, Oct 30, 2008 at 2:06 PM, MinChan Kim <minchan.kim@gmail.com> wrote:
+>> Hi,  all,
+>>
+>> I want to test CPUfreq function in  AMD opteron quad-core series.
+>> But I am not sure linux in now can support CPUfreq for ADM opteron by per core ?
+>> What I mean is not controling to put together 2 core by one package
+>> but control by per core.
+>> After all, I want to control all 4 cpu separetely.
+>>
+>> Is is possible? If it is possible, What kinds of model can support ?
+>>
+>>  --
+>> Kinds regards,
+>> MinChan Kim
+>>
+>> --
+>> To unsubscribe from this list: send an email with
+>> "unsubscribe kernelnewbies" to ecartis@nl.linux.org
+>> Please read the FAQ at http://kernelnewbies.org/FAQ
+>>
+>>
+>
+>
+>
+> --
+> Regards,
+> Peter Teoh
+>
 
-diff --git a/drivers/net/wireless/orinoco.c b/drivers/net/wireless/orinoco.c
-index 653306f..190fcec 100644
---- a/drivers/net/wireless/orinoco.c
-+++ b/drivers/net/wireless/orinoco.c
-@@ -84,6 +84,7 @@
- #include <linux/etherdevice.h>
- #include <linux/ethtool.h>
- #include <linux/firmware.h>
-+#include <linux/suspend.h>
- #include <linux/if_arp.h>
- #include <linux/wireless.h>
- #include <net/iw_handler.h>
-@@ -431,9 +432,9 @@ struct fw_info {
- };
- 
- const static struct fw_info orinoco_fw[] = {
--	{ "", "agere_sta_fw.bin", "agere_ap_fw.bin", 0x00390000, 1000 },
--	{ "", "prism_sta_fw.bin", "prism_ap_fw.bin", 0, 1024 },
--	{ "symbol_sp24t_prim_fw", "symbol_sp24t_sec_fw", "", 0x00003100, 512 }
-+	{ NULL, "agere_sta_fw.bin", "agere_ap_fw.bin", 0x00390000, 1000 },
-+	{ NULL, "prism_sta_fw.bin", "prism_ap_fw.bin", 0, 1024 },
-+	{ "symbol_sp24t_prim_fw", "symbol_sp24t_sec_fw", NULL, 0x00003100, 512 }
- };
- 
- /* Structure used to access fields in FW
-@@ -487,18 +488,17 @@ orinoco_dl_firmware(struct orinoco_private *priv,
- 	if (err)
- 		goto free;
- 
--	if (priv->cached_fw)
--		fw_entry = priv->cached_fw;
--	else {
-+	if (!priv->cached_sta_fw) {
- 		err = request_firmware(&fw_entry, firmware, priv->dev);
-+
- 		if (err) {
- 			printk(KERN_ERR "%s: Cannot find firmware %s\n",
- 			       dev->name, firmware);
- 			err = -ENOENT;
- 			goto free;
- 		}
--		priv->cached_fw = fw_entry;
--	}
-+	} else
-+		fw_entry = priv->cached_sta_fw;
- 
- 	hdr = (const struct orinoco_fw_header *) fw_entry->data;
- 
-@@ -540,11 +540,10 @@ orinoco_dl_firmware(struct orinoco_private *priv,
- 	       dev->name, hermes_present(hw));
- 
- abort:
--	/* In case of error, assume firmware was bogus and release it */
--	if (err) {
--		priv->cached_fw = NULL;
-+	/* If we requested the firmware, release it. Otherwise leave
-+	 * it to the PM notifier */
-+	if (!priv->cached_sta_fw)
- 		release_firmware(fw_entry);
--	}
- 
- free:
- 	kfree(pda);
-@@ -621,7 +620,7 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
- 	ret = hermes_init(hw);
- 
- 	/* hermes_reset() should return 0 with the secondary firmware */
--	if (secondary && ret != 0)
-+	if (secondary && (ret != 0))
- 		return -ENODEV;
- 
- 	/* And this should work with any firmware */
-@@ -648,34 +647,41 @@ symbol_dl_firmware(struct orinoco_private *priv,
- 	int ret;
- 	const struct firmware *fw_entry;
- 
--	if (request_firmware(&fw_entry, fw->pri_fw,
--			     priv->dev) != 0) {
--		printk(KERN_ERR "%s: Cannot find firmware: %s\n",
--		       dev->name, fw->pri_fw);
--		return -ENOENT;
--	}
-+	if (!priv->cached_pri_fw) {
-+		if (request_firmware(&fw_entry, fw->pri_fw, priv->dev) != 0) {
-+			printk(KERN_ERR "%s: Cannot find firmware: %s\n",
-+			       dev->name, fw->pri_fw);
-+			return -ENOENT;
-+		}
-+	} else
-+		fw_entry = priv->cached_pri_fw;
- 
- 	/* Load primary firmware */
- 	ret = symbol_dl_image(priv, fw, fw_entry->data,
- 			      fw_entry->data + fw_entry->size, 0);
--	release_firmware(fw_entry);
-+
-+	if (!priv->cached_pri_fw)
-+		release_firmware(fw_entry);
- 	if (ret) {
- 		printk(KERN_ERR "%s: Primary firmware download failed\n",
- 		       dev->name);
- 		return ret;
- 	}
- 
--	if (request_firmware(&fw_entry, fw->sta_fw,
--			     priv->dev) != 0) {
--		printk(KERN_ERR "%s: Cannot find firmware: %s\n",
--		       dev->name, fw->sta_fw);
--		return -ENOENT;
--	}
-+	if (!priv->cached_sta_fw) {
-+		if (request_firmware(&fw_entry, fw->sta_fw, priv->dev) != 0) {
-+			printk(KERN_ERR "%s: Cannot find firmware: %s\n",
-+			       dev->name, fw->sta_fw);
-+			return -ENOENT;
-+		}
-+	} else
-+		fw_entry = priv->cached_sta_fw;
- 
- 	/* Load secondary firmware */
- 	ret = symbol_dl_image(priv, fw, fw_entry->data,
- 			      fw_entry->data + fw_entry->size, 1);
--	release_firmware(fw_entry);
-+	if (!priv->cached_sta_fw)
-+		release_firmware(fw_entry);
- 	if (ret) {
- 		printk(KERN_ERR "%s: Secondary firmware download failed\n",
- 		       dev->name);
-@@ -3064,6 +3070,68 @@ irqreturn_t orinoco_interrupt(int irq, void *dev_id)
- }
- 
- /********************************************************************/
-+/* Power management                                                 */
-+/********************************************************************/
-+
-+static int orinoco_pm_notifier(struct notifier_block *notifier,
-+			       unsigned long pm_event,
-+			       void *unused)
-+{
-+	struct orinoco_private *priv = container_of(notifier,
-+						    struct orinoco_private,
-+						    pm_notifier);
-+
-+	/* All we need to do is cache the firmware before suspend, and
-+	 * release it when we come out */
-+
-+	switch (pm_event) {
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_SUSPEND_PREPARE:
-+	{
-+		const struct firmware *fw_entry = NULL;
-+		const char *pri_fw;
-+		const char *sta_fw;
-+
-+		pri_fw = orinoco_fw[priv->firmware_type].pri_fw;
-+		sta_fw = orinoco_fw[priv->firmware_type].sta_fw;
-+
-+		if (pri_fw) {
-+			if (request_firmware(&fw_entry, pri_fw, priv->dev) == 0)
-+				priv->cached_pri_fw = fw_entry;
-+		}
-+
-+		if (sta_fw) {
-+			if (request_firmware(&fw_entry, sta_fw, priv->dev) == 0)
-+				priv->cached_sta_fw = fw_entry;
-+		}
-+
-+		break;
-+	}
-+	case PM_POST_RESTORE:
-+		/* Restore from hibernation failed. We need to clean
-+		 * up in exactly the same way, so fall through. */
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_SUSPEND:
-+		if (priv->cached_pri_fw)
-+			release_firmware(priv->cached_pri_fw);
-+
-+		if (priv->cached_sta_fw)
-+			release_firmware(priv->cached_sta_fw);
-+
-+		priv->cached_pri_fw = NULL;
-+		priv->cached_sta_fw = NULL;
-+
-+		break;
-+
-+	case PM_RESTORE_PREPARE:
-+	default:
-+		break;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+/********************************************************************/
- /* Initialization                                                   */
- /********************************************************************/
- 
-@@ -3543,7 +3611,12 @@ struct net_device
- 	netif_carrier_off(dev);
- 	priv->last_linkstatus = 0xffff;
- 
--	priv->cached_fw = NULL;
-+	priv->cached_pri_fw = NULL;
-+	priv->cached_sta_fw = NULL;
-+
-+	/* Register PM notifiers */
-+	priv->pm_notifier.notifier_call = orinoco_pm_notifier;
-+	register_pm_notifier(&priv->pm_notifier);
- 
- 	return dev;
- }
-@@ -3556,9 +3629,14 @@ void free_orinocodev(struct net_device *dev)
- 	 * when we call tasklet_kill it will run one final time,
- 	 * emptying the list */
- 	tasklet_kill(&priv->rx_tasklet);
--	if (priv->cached_fw)
--		release_firmware(priv->cached_fw);
--	priv->cached_fw = NULL;
-+	unregister_pm_notifier(&priv->pm_notifier);
-+
-+	if (priv->cached_pri_fw)
-+		release_firmware(priv->cached_pri_fw);
-+	if (priv->cached_sta_fw)
-+		release_firmware(priv->cached_sta_fw);
-+	priv->cached_pri_fw = NULL;
-+	priv->cached_sta_fw = NULL;
- 	priv->wpa_ie_len = 0;
- 	kfree(priv->wpa_ie);
- 	orinoco_mic_free(priv);
-diff --git a/drivers/net/wireless/orinoco.h b/drivers/net/wireless/orinoco.h
-index 8c29538..5a9685a 100644
---- a/drivers/net/wireless/orinoco.h
-+++ b/drivers/net/wireless/orinoco.h
-@@ -10,6 +10,7 @@
- #define DRIVER_VERSION "0.15"
- 
- #include <linux/interrupt.h>
-+#include <linux/suspend.h>
- #include <linux/netdevice.h>
- #include <linux/wireless.h>
- #include <net/iw_handler.h>
-@@ -167,8 +168,11 @@ struct orinoco_private {
- 	unsigned int tkip_cm_active:1;
- 	unsigned int key_mgmt:3;
- 
--	/* Cached in memory firmware to use in ->resume */
--	const struct firmware *cached_fw;
-+	/* Cached in memory firmware to use during ->resume. */
-+	const struct firmware *cached_pri_fw;
-+	const struct firmware *cached_sta_fw;
-+
-+	struct notifier_block pm_notifier;
- };
- 
- #ifdef ORINOCO_DEBUG
+
+
 -- 
-1.5.6.4
+Regards,
+Peter Teoh
