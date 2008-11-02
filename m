@@ -1,13 +1,15 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [RFC PATCH 0/2] orinoco: Don't keep cached firmware
-	around permanently
-Date: Sun, 2 Nov 2008 13:35:19 +0300
-Message-ID: <200811021335.20241.arvidjaar__26548.6558703289$1225622303$gmane$org@mail.ru>
-References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Suspend-Resume support in sparc64 kernel?
+Date: Sun, 2 Nov 2008 13:14:28 +0100
+Message-ID: <20081102121428.GA1424@ucw.cz>
+References: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
+	<200810291325.43694.rjw@sisk.pl> <49085C3D.9050709@hotmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1336109848832830063=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+Content-Disposition: inline
+In-Reply-To: <49085C3D.9050709@hotmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,75 +17,33 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Kilroy <kilroyd@googlemail.com>
-Cc: linux-pm@lists.linux-foundation.org, orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, Shaddy Baddah <shaddy_baddah@hotmail.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============1336109848832830063==
-Content-Type: multipart/signed;
-  boundary="nextPart3282186.GzpBzu53If";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Wed 2008-10-29 23:51:09, Shaddy Baddah wrote:
+> Rafael J. Wysocki wrote:
+> > On Wednesday, 29 of October 2008, Shaddy Baddah wrote:
+> >> Hi,
+> >>
+> >> Is there any Suspend-Resume support in the sparc64 kernel?
+> > 
+> > Do you mean suspend to RAM or hibernation?
+> 
+> I mean suspend to RAM, which is what I believe the Suspend-Resume 
+> referred to in the document 
+> http://docs.sun.com/app/docs/doc/805-4433/6j46udqi7?l=en&a=view&q=power+management 
+> also refers to.
+> 
+> My uninformed research into it gives me an indication that it is not. 
+> And I'm curious as to whether there was some history to its possible 
+> exclusion, or it is just something that no one has ever attempt to 
+> implement.
 
---nextPart3282186.GzpBzu53If
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Noone every tried it, AFAICT. sparcs are big and power-hungry beasts,
+so there was not real pressing need to suspend them...
 
-On Friday 31 October 2008, David Kilroy wrote:
-> The recent patch to load orinoco firmware correctly on resume simply
-> kept the firmware in RAM for the entire time the module was loaded, and
-> only applied to Agere firmware.
->=20
-> The first patch uses the new power management notifiers to load and
-> release the firmware prior to suspend and after resume (for both Agere
-> and Symbol). I'm not an expert on where suspend/resume is headed, so I'd
-> appreciate any advice from linux-pm on whether this is the preferred way
-> to do things.
->=20
-
-I tested this and it works, and looking how callbacks are invoked I think
-it is techically correct. But I have some concerns about general idea of
-requesting firmware multiple times that are not related to PM.
-
-Many properties for the currently running device/driver instance depend on
-particular firmware type and version. Now we blindly replace firmware; how
-can we be sure it is actually the same one as was at the time feature set
-was detected?
-
-Even if some sort of checksumming were impemented we still have to be
-prepared to completely reinitialize card on FW mismatch.
-
-I checked what the rest of drivers/net does and either they do not cache at
-all (does not work in this case) or they cache FW im memory after initial
-request.
-
-Comments?
-
---nextPart3282186.GzpBzu53If
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkNgmgACgkQR6LMutpd94yAUACfXkLSfy1T+M2y7sBSK9UNFlu9
-Z64AoI7rzWoC46HSwZKgIUz/udJzkjHZ
-=rHoj
------END PGP SIGNATURE-----
-
---nextPart3282186.GzpBzu53If--
-
---===============1336109848832830063==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1336109848832830063==--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
