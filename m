@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Suspend-Resume support in sparc64 kernel?
-Date: Sun, 2 Nov 2008 13:14:28 +0100
-Message-ID: <20081102121428.GA1424@ucw.cz>
-References: <BAY104-DAV11383E6120F7C604E28C6699260@phx.gbl>
-	<200810291325.43694.rjw@sisk.pl> <49085C3D.9050709@hotmail.com>
+From: Dave <kilroyd@googlemail.com>
+Subject: Re: [RFC PATCH 0/2] orinoco: Don't keep cached firmware
+	around permanently
+Date: Sun, 02 Nov 2008 12:29:13 +0000
+Message-ID: <490D9D19.5070600__25094.2573919476$1225629184$gmane$org@gmail.com>
+References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
+	<200811021335.20241.arvidjaar@mail.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <49085C3D.9050709@hotmail.com>
+In-Reply-To: <200811021335.20241.arvidjaar@mail.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, Shaddy Baddah <shaddy_baddah@hotmail.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-pm@lists.linux-foundation.org, orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2008-10-29 23:51:09, Shaddy Baddah wrote:
-> Rafael J. Wysocki wrote:
-> > On Wednesday, 29 of October 2008, Shaddy Baddah wrote:
-> >> Hi,
-> >>
-> >> Is there any Suspend-Resume support in the sparc64 kernel?
-> > 
-> > Do you mean suspend to RAM or hibernation?
+Andrey Borzenkov wrote:
+> On Friday 31 October 2008, David Kilroy wrote:
+>> The first patch uses the new power management notifiers to load and
+>> release the firmware prior to suspend and after resume (for both Agere
+>> and Symbol). I'm not an expert on where suspend/resume is headed, so I'd
+>> appreciate any advice from linux-pm on whether this is the preferred way
+>> to do things.
 > 
-> I mean suspend to RAM, which is what I believe the Suspend-Resume 
-> referred to in the document 
-> http://docs.sun.com/app/docs/doc/805-4433/6j46udqi7?l=en&a=view&q=power+management 
-> also refers to.
+> I tested this and it works, and looking how callbacks are invoked I think
+> it is techically correct. But I have some concerns about general idea of
+> requesting firmware multiple times that are not related to PM.
 > 
-> My uninformed research into it gives me an indication that it is not. 
-> And I'm curious as to whether there was some history to its possible 
-> exclusion, or it is just something that no one has ever attempt to 
-> implement.
+> Many properties for the currently running device/driver instance depend on
+> particular firmware type and version. Now we blindly replace firmware; how
+> can we be sure it is actually the same one as was at the time feature set
+> was detected?
+> 
+> Even if some sort of checksumming were impemented we still have to be
+> prepared to completely reinitialize card on FW mismatch.
 
-Noone every tried it, AFAICT. sparcs are big and power-hungry beasts,
-so there was not real pressing need to suspend them...
+Right. We actually have the same problem on card reset (which can happen
+via private ioctl or firmware lockup). We certainly need to be able to
+reinitialise the driver flags. I think it would involve something like
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--> On init, resume, reset
+1. fw download.
+2. detect version (+checksum?).
+3a. if version unchanged continue.
+3b. if version different reset all driver settings.
+4. record fw version.
+
+3b requires some refactorring of initialisation. And I'm not sure how
+this would interact with userspace on resume - presumably the driver
+should call netif_device_detach or something.
+
+
+Dave.
+
+> I checked what the rest of drivers/net does and either they do not cache at
+> all (does not work in this case) or they cache FW im memory after initial
+> request.
