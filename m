@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH 1/2] orinoco: Use PM notifier to cache
-	firmware for use during resume
-Date: Fri, 31 Oct 2008 22:27:38 +0100
-Message-ID: <200810312227.39057.rjw__47651.9252792515$1225488523$gmane$org@sisk.pl>
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [RFC PATCH 0/2] orinoco: Don't keep cached firmware
+	around permanently
+Date: Sun, 2 Nov 2008 13:35:19 +0300
+Message-ID: <200811021335.20241.arvidjaar__26548.6558703289$1225622303$gmane$org@mail.ru>
 References: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
-	<1225415743-28209-2-git-send-email-kilroyd@googlemail.com>
-	<200810312037.00936.arvidjaar@mail.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1336109848832830063=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200810312037.00936.arvidjaar@mail.ru>
-Content-Disposition: inline
+In-Reply-To: <1225415743-28209-1-git-send-email-kilroyd@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +15,75 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: orinoco-devel@lists.sourceforge.net, David Kilroy <kilroyd@googlemail.com>, Andrey Borzenkov <arvidjaar@mail.ru>, linux-wireless@vger.kernel.org
+To: David Kilroy <kilroyd@googlemail.com>
+Cc: linux-pm@lists.linux-foundation.org, orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 31 of October 2008, Andrey Borzenkov wrote:
-> On Friday 31 October 2008, David Kilroy wrote:
-> > When preparing for either suspend or hibernation, load the necessary
-> > firmware from userspace.
-> > 
-> > Upon error or resume, release the firmware.
-> > 
-> > Works for both Agere and Symbol firmware.
-> > 
-> > Signed-off by: David Kilroy <kilroyd@gmail.com>
-> 
-> This is on top of my old patch; was it ever accepted anywhere? I guess
-> it should be rediffed against clean tree.
-> 
-> > @@ -621,7 +620,7 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
-> >  	ret = hermes_init(hw);
-> >  
-> >  	/* hermes_reset() should return 0 with the secondary firmware */
-> > -	if (secondary && ret != 0)
-> > +	if (secondary && (ret != 0))
-> 
-> Extra parenthesis are redundant, are not they?
-> 
-> >  /********************************************************************/
-> > +/* Power management                                                 */
-> > +/********************************************************************/
-> > +
-> > +static int orinoco_pm_notifier(struct notifier_block *notifier,
-> > +			       unsigned long pm_event,
-> > +			       void *unused)
-> 
-> It probably should be conditional on CONFIG_PM somehow? 
+--===============1336109848832830063==
+Content-Type: multipart/signed;
+  boundary="nextPart3282186.GzpBzu53If";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-CONFIG_PM_SLEEP, actually.
+--nextPart3282186.GzpBzu53If
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Thanks,
-Rafael
+On Friday 31 October 2008, David Kilroy wrote:
+> The recent patch to load orinoco firmware correctly on resume simply
+> kept the firmware in RAM for the entire time the module was loaded, and
+> only applied to Agere firmware.
+>=20
+> The first patch uses the new power management notifiers to load and
+> release the firmware prior to suspend and after resume (for both Agere
+> and Symbol). I'm not an expert on where suspend/resume is headed, so I'd
+> appreciate any advice from linux-pm on whether this is the preferred way
+> to do things.
+>=20
+
+I tested this and it works, and looking how callbacks are invoked I think
+it is techically correct. But I have some concerns about general idea of
+requesting firmware multiple times that are not related to PM.
+
+Many properties for the currently running device/driver instance depend on
+particular firmware type and version. Now we blindly replace firmware; how
+can we be sure it is actually the same one as was at the time feature set
+was detected?
+
+Even if some sort of checksumming were impemented we still have to be
+prepared to completely reinitialize card on FW mismatch.
+
+I checked what the rest of drivers/net does and either they do not cache at
+all (does not work in this case) or they cache FW im memory after initial
+request.
+
+Comments?
+
+--nextPart3282186.GzpBzu53If
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkNgmgACgkQR6LMutpd94yAUACfXkLSfy1T+M2y7sBSK9UNFlu9
+Z64AoI7rzWoC46HSwZKgIUz/udJzkjHZ
+=rHoj
+-----END PGP SIGNATURE-----
+
+--nextPart3282186.GzpBzu53If--
+
+--===============1336109848832830063==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1336109848832830063==--
