@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Regression] Suspend failure on NForce4-based boards due
-	to chanes in stop_machine
-Date: Mon, 3 Nov 2008 01:28:20 +0100
-Message-ID: <200811030128.21272.rjw__47656.2670468867$1225671977$gmane$org@sisk.pl>
+From: Henrik Austad <henrik@austad.us>
+Subject: Re: [Question] AMD opteron can support CPUfreq by per
+	core ?
+Date: Mon, 3 Nov 2008 15:10:10 +0100
+Message-ID: <200811031510.21697.henrik__16258.1834164031$1225727504$gmane$org@austad.us>
+References: <28c262360810292306x2f3fb6bag559943c59fa83006@mail.gmail.com>
+	<804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
+Reply-To: henrik@austad.us
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7789454761311923923=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <804dabb00810302006x7d59474bg27b716ffadf4515a@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,47 +17,106 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: kernelnewbies@nl.linux.org
+Cc: linux-pm@lists.linux-foundation.org, Peter Teoh <htmldeveloper@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============7789454761311923923==
+Content-Type: multipart/signed;
+  boundary="nextPart3385028.W8BKtd9boQ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-Current mainline (.28-rc3 at the moment) fails to suspend on at least some
-machines with dual-core AMD CPUs and NForce4-based mainboards.  The affected
-boxes just hang solid during suspend/hibernation, after suspending devices,
-probably while the non-boot CPUs are being stopped (I'm able to reproduce this
-on two different machines).
+--nextPart3385028.W8BKtd9boQ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Although this is not reproducible 100% of the time, it is reproducible enough
-to allow me to carry out bisection, which turned up the following commit as the
-source of the problem:
+On Friday 31 October 2008 04:06:44 Peter Teoh wrote:
+> check this out:
+>
+> http://osdir.com/ml/kernel.cpufreq/2004-07/msg00012.html
+>
+> from the reply, since the power management flag is at the per-core
+> level (check /proc/cpuinfo), all control can be done at the per-core
+> level, hard-ware wise.   (not sure of Linux Kernel itself)
 
-commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc
-Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date:   Mon Oct 13 23:50:10 2008 +0200
+This is for intel core2duo, not amd, but to address if the kernel will scal=
+e=20
+pr core or pr. chip.
 
-    stop_machine: use workqueues instead of kernel threads
+On my machine running 2.6.27.7 (standard ubuntu intrepid kernel), it will=20
+scale the to cores separatedly:
 
-    Convert stop_machine to a workqueue based approach. Instead of using kernel
-    threads for stop_machine we now use a an rt workqueue to synchronize all
-    cpus.
-    This has the advantage that all needed per cpu threads are already created
-    when stop_machine gets called. And therefore a call to stop_machine won't
-    fail anymore. This is needed for s390 which needs a mechanism to synchronize
-    all cpus without allocating any memory.
-    As Rusty pointed out free_module() needs a non-failing stop_machine interface
-    as well.
+*snip*
+model name      : Intel(R) Core(TM)2 CPU          4300  @ 1.80GHz
+*snip*
 
-    As a side effect the stop_machine code gets simplified.
+[ 15:01 ] henrikau@icarus:~  $ cat /proc/cpuinfo  | grep "cpu MHz"
+cpu MHz         : 1200.000
+cpu MHz         : 1800.000
 
-    Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-With this commit reverted, suspend/hibernation works on the affected machines
-without any problems.
+So, the kernel is capable of scaling each core individually.
 
-Thanks,
-Rafael
+> But at least 4 flags must be present (read above email):   ts, ttp, fid,
+> vid.
+
+Is this the powernow-technology?
+
+>
+> I must also say this is the first time I am aware of these flags too :-).
+>
+> On Thu, Oct 30, 2008 at 2:06 PM, MinChan Kim <minchan.kim@gmail.com> wrot=
+e:
+> > Hi,  all,
+> >
+> > I want to test CPUfreq function in  AMD opteron quad-core series.
+> > But I am not sure linux in now can support CPUfreq for ADM opteron by p=
+er
+> > core ? What I mean is not controling to put together 2 core by one
+> > package but control by per core.
+> > After all, I want to control all 4 cpu separetely.
+> >
+> > Is is possible? If it is possible, What kinds of model can support ?
+> >
+> >  --
+> > Kinds regards,
+> > MinChan Kim
+> >
+> > --
+> > To unsubscribe from this list: send an email with
+> > "unsubscribe kernelnewbies" to ecartis@nl.linux.org
+> > Please read the FAQ at http://kernelnewbies.org/FAQ
+
+=2D-=20
+med Vennlig Hilsen - Yours Sincerely
+Henrik Austad
+
+--nextPart3385028.W8BKtd9boQ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkPBkIACgkQ/8Nu36TQ45G3YQCfYDkMqbnwDSDurnmwjLneJPSA
+DP4AmwbkqBbF/8v5nupk+txqcnfTLszp
+=hX3f
+-----END PGP SIGNATURE-----
+
+--nextPart3385028.W8BKtd9boQ--
+
+--===============7789454761311923923==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7789454761311923923==--
