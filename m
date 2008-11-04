@@ -1,99 +1,169 @@
-From: Andy Whitcroft <apw@shadowen.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Mon, 3 Nov 2008 23:39:17 +0000
-Message-ID: <20081103233917.GF10325@brain>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <20081103125108.46d0639e.akpm@linux-foundation.org> <1225747308.12673.486.camel@nimitz> <200811032324.02163.rjw@sisk.pl> <1225751665.12673.511.camel@nimitz>
+Date: Tue, 4 Nov 2008 01:29:34 +0100
+Message-ID: <200811040129.35335.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811040005.12418.rjw@sisk.pl> <1225753819.12673.518.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756529AbYKCXjp@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756349AbYKDAZO@vger.kernel.org>
+In-Reply-To: <1225753819.12673.518.camel@nimitz>
 Content-Disposition: inline
-In-Reply-To: <1225751665.12673.511.camel@nimitz>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Matt Tolentino <matthew.e.tolentino@intel.com>, Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Matt Tolentino <matthew.e.tolentino@intel.com>, Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 02:34:25PM -0800, Dave Hansen wrote:
-> On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
+On Tuesday, 4 of November 2008, Dave Hansen wrote:
+> On Tue, 2008-11-04 at 00:05 +0100, Rafael J. Wysocki wrote:
 > > On Monday, 3 of November 2008, Dave Hansen wrote:
-> > > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
-> > > > On Wed, 29 Oct 2008 13:25:00 +0100
-> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > > > > 
-> > > > > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > > > > not handle hibernation + sparse mem at some point. It seems to work
-> > > > > > now, so I guess we can enable it.
-> > > > > 
-> > > > > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > > > > work, no objection from me.
-> > > > 
-> > > > yes, that was not a terribly confidence-inspiring commit message.
-> > > > 
-> > > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> > > > hotplug when swsusp is enabled.  There's a lot of churn there right
-> > > > now.  We'll fix it up properly once it calms down." which is also
-> > > > rather rubbery.  
-> > > > 
-> > > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
-> > > > is it indeed now fixed?
+> > > But, as I think about it, there is another issue that we need to
+> > > address, CONFIG_NODES_SPAN_OTHER_NODES.
 > > > 
-> > > I suck.  That commit message was horrid and I'm racking my brain now to
-> > > remember what I meant.  Don't end up like me, kids.
+> > > A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> > > have only one zone).  But, there may be another node with
+> > > node_start_pfn=10 and a node_end_pfn=20.  This loop:
 > > > 
-> > > I've attached the message that I sent to the swsusp folks.  I never got
-> > > a reply from that as far as I can tell.
+> > >         for_each_zone(zone) {
+> > > 		...
+> > >                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+> > >                         if (page_is_saveable(zone, pfn))
+> > >                                 memory_bm_set_bit(orig_bm, pfn);
+> > >         }
 > > > 
-> > > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
-> > > 
-> > > As I look at it now, it hasn't improved much since 2005.  Take a look at
-> > > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
-> > > list of zones that a system has is static.  Memory hotplug needs to be
-> > > excluded while that operation is going on.
+> > > will walk over the smaller node's pfn range multiple times.  Is this OK?
 > > 
-> > This operation is carried out on one CPU with interrupts disabled.  Is that
-> > not enough?
-> 
-> If that's true then you don't need any locking for anything at all,
-> right?
-> 
-> All of the changes I was talking about occur inside the kernel and code
-> has to run for it to happen.  So, if you are saying that absolutely no
-> other code on the system can possibly run, then it should be OK.
-> 
-> > > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
-> > > things can become invalid at any time since no references are held or
-> > > taken on the page.  Or, a page that *was* invalid may become valid and
-> > > get missed.
+> > Hm, well, I'm not really sure at the moment.
 > > 
-> > Can that really happen given the conditions above?
+> > Does it mean that, in your example, the pfns 10 to 20 from the first node
+> > refer to the same page frames that are referred to by the pfns from the
+> > second node?
 > 
-> Nope.
+> Maybe using pfns didn't make for a good example.  I could have used
+> physical addresses as well.
 > 
-> But, as I think about it, there is another issue that we need to
-> address, CONFIG_NODES_SPAN_OTHER_NODES.
+> All that I'm saying is that nodes (and zones) can span other nodes (and
+> zones).  This means that the address ranges making up that node can
+> overlap with the address ranges of another node.  This doesn't mean that
+> *each* node has those address ranges.  Each individual address can only
+> be in one node.
 > 
-> A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
-> have only one zone).  But, there may be another node with
-> node_start_pfn=10 and a node_end_pfn=20.  This loop:
-> 
->         for_each_zone(zone) {
-> 		...
->                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
->                         if (page_is_saveable(zone, pfn))
->                                 memory_bm_set_bit(orig_bm, pfn);
->         }
-> 
-> will walk over the smaller node's pfn range multiple times.  Is this OK?
-> 
-> I think all you have to do to fix it is check page_zone(page) == zone
-> and skip out if they don't match.
-> 
-> Andy, does anything else stick out to you?
+> Since zone *ranges* overlap, you can't tell to which zone a page belongs
+> simply from its address.  You need to ask the 'struct page'.
 
-I agree that there needs to be a check for being in the zone there to
-avoid the overlapping nodes issue.  Also need to make sure when
-constructing that check we check for pfn_valid before looking at the
-page to avoid holes in the memmap.
+Understood.
 
--apw
+This means that some zones may contain some ranges of pfns that correspond
+to struct pages in another zone, correct?
+
+> > > I think all you have to do to fix it is check page_zone(page) == zone
+> > > and skip out if they don't match.
+> > 
+> > Well, probably.  I need to know exactly what's the relationship between pfns,
+> > pages and physical page frames in that case.
+> 
+> 1 pfn == 1 'struct page' == 1 physical page
+> 
+> The only exception to that is that we may have more 'struct pages' than
+> we have actual physical memory due to rounding and so forth.
+
+OK, I think that the appended patch will do the trick (compiled, untested).
+
+Thanks,
+Rafael
+
+
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -817,8 +817,7 @@ static unsigned int count_free_highmem_p
+  *	We should save the page if it isn't Nosave or NosaveFree, or Reserved,
+  *	and it isn't a part of a free chunk of pages.
+  */
+-
+-static struct page *saveable_highmem_page(unsigned long pfn)
++static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
+ {
+ 	struct page *page;
+ 
+@@ -826,6 +825,8 @@ static struct page *saveable_highmem_pag
+ 		return NULL;
+ 
+ 	page = pfn_to_page(pfn);
++	if (page_zone(page) != zone)
++		return NULL;
+ 
+ 	BUG_ON(!PageHighMem(page));
+ 
+@@ -855,13 +856,16 @@ unsigned int count_highmem_pages(void)
+ 		mark_free_pages(zone);
+ 		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+ 		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if (saveable_highmem_page(pfn))
++			if (saveable_highmem_page(zone, pfn))
+ 				n++;
+ 	}
+ 	return n;
+ }
+ #else
+-static inline void *saveable_highmem_page(unsigned long pfn) { return NULL; }
++static inline void *saveable_highmem_page(struct zone *z, unsigned long p)
++{
++	return NULL;
++}
+ #endif /* CONFIG_HIGHMEM */
+ 
+ /**
+@@ -872,8 +876,7 @@ static inline void *saveable_highmem_pag
+  *	of pages statically defined as 'unsaveable', and it isn't a part of
+  *	a free chunk of pages.
+  */
+-
+-static struct page *saveable_page(unsigned long pfn)
++static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+ {
+ 	struct page *page;
+ 
+@@ -881,6 +884,8 @@ static struct page *saveable_page(unsign
+ 		return NULL;
+ 
+ 	page = pfn_to_page(pfn);
++	if (page_zone(page) != zone)
++		return NULL;
+ 
+ 	BUG_ON(PageHighMem(page));
+ 
+@@ -912,7 +917,7 @@ unsigned int count_data_pages(void)
+ 		mark_free_pages(zone);
+ 		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+ 		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if(saveable_page(pfn))
++			if(saveable_page(zone, pfn))
+ 				n++;
+ 	}
+ 	return n;
+@@ -953,7 +958,7 @@ static inline struct page *
+ page_is_saveable(struct zone *zone, unsigned long pfn)
+ {
+ 	return is_highmem(zone) ?
+-			saveable_highmem_page(pfn) : saveable_page(pfn);
++		saveable_highmem_page(zone, pfn) : saveable_page(zone, pfn);
+ }
+ 
+ static void copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+@@ -984,7 +989,7 @@ static void copy_data_page(unsigned long
+ 	}
+ }
+ #else
+-#define page_is_saveable(zone, pfn)	saveable_page(pfn)
++#define page_is_saveable(zone, pfn)	saveable_page(zone, pfn)
+ 
+ static inline void copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+ {
