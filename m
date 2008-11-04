@@ -1,31 +1,50 @@
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Mon, 03 Nov 2008 16:52:47 -0800
-Message-ID: <1225759967.12673.521.camel@nimitz>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+Date: Tue, 04 Nov 2008 15:02:33 +1100
+Message-ID: <1225771353.6755.16.camel@nigel-laptop>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <200811040005.12418.rjw@sisk.pl> <1225753819.12673.518.camel@nimitz>
-	 <200811040129.35335.rjw@sisk.pl>
+	 <20081103125108.46d0639e.akpm@linux-foundation.org>
+	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
+	 <1225751665.12673.511.camel@nimitz>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755812AbYKDAxS@vger.kernel.org>
-In-Reply-To: <200811040129.35335.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Matt Tolentino <matthew.e.tolentino@intel.com>, Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1225751665.12673.511.camel@nimitz>
+Sender: owner-linux-mm@kvack.org
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2008-11-04 at 01:29 +0100, Rafael J. Wysocki wrote:
-> > Since zone *ranges* overlap, you can't tell to which zone a page belongs
-> > simply from its address.  You need to ask the 'struct page'.
+Hi.
+
+On Mon, 2008-11-03 at 14:34 -0800, Dave Hansen wrote:
+> A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> have only one zone).  But, there may be another node with
+> node_start_pfn=10 and a node_end_pfn=20.  This loop:
 > 
-> Understood.
+>         for_each_zone(zone) {
+> 		...
+>                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+>                         if (page_is_saveable(zone, pfn))
+>                                 memory_bm_set_bit(orig_bm, pfn);
+>         }
 > 
-> This means that some zones may contain some ranges of pfns that correspond
-> to struct pages in another zone, correct?
+> will walk over the smaller node's pfn range multiple times.  Is this OK?
+> 
+> I think all you have to do to fix it is check page_zone(page) == zone
+> and skip out if they don't match.
 
-Yup, that's correct.
+So pfn 10 in the first node refers to the same memory as pfn 10 in the
+second node?
 
-The patch looks good to me.
+Regards,
 
--- Dave
+Nigel
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
