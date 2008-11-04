@@ -1,46 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
-Date: Tue, 4 Nov 2008 09:54:33 +0100
-Message-ID: <200811040954.34969.rjw@sisk.pl>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811040808.36464.rjw@sisk.pl> <1225784174.12673.547.camel@nimitz>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+Date: Tue, 04 Nov 2008 07:21:51 -0800
+Message-ID: <1225812111.12673.577.camel@nimitz>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <200811040808.36464.rjw@sisk.pl> <1225784174.12673.547.camel@nimitz>
+	 <200811040954.34969.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754370AbYKDIuW@vger.kernel.org>
-In-Reply-To: <1225784174.12673.547.camel@nimitz>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753520AbYKDPWU@vger.kernel.org>
+In-Reply-To: <200811040954.34969.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 4 of November 2008, Dave Hansen wrote:
-> On Tue, 2008-11-04 at 08:08 +0100, Rafael J. Wysocki wrote:
-> > A pfn always refers to specific page frame and/or struct page, so yes.
-> > However, in one of the nodes these pfns are sort of "invalid" (they point
-> > to struct pages belonging to other zones).  AFAICS.
-> 
-> Part of this problem is getting out of the old zone mindset.  It used to
-> be that there were one, two, or three zones, set up at boot, with static
-> ranges.  These never had holes, never changed, and were always stacked
-> up nice and tightly on top of one another.  It ain't that way no more.
+On Tue, 2008-11-04 at 09:54 +0100, Rafael J. Wysocki wrote:
+> To handle this, I need to know two things:
+> 1) what changes of the zones are possible due to memory hotplugging
+> (i.e.    can they grow, shring, change boundaries etc.)
 
-In fact there were two assumptions about zones in the hibernation code,
-that they are static and that they don't overlap.  The second one may be
-removed by the patch I sent before, but there still is a problem related to
-the first one, which is that the memory management structures (bitmaps) used
-by us depend on the zones being static.
+All of the above. 
 
-Of course, we create the image atomically, but the bitmaps are created earlier
-with the assumption that the zones won't change aferwards.  Also, if memory
-hotplugging is used _after_ the image has been created, the zones may change
-in a way that's not compatible with the structure of the bitmaps.
+> 2) what kind of locking is needed to prevent zones from changing.
 
-To handle this, I need to know two things:
-1) what changes of the zones are possible due to memory hotplugging (i.e.
-   can they grow, shring, change boundaries etc.)
-2) what kind of locking is needed to prevent zones from changing.
+The amount of locking is pretty minimal.  We depend on some locking in
+sysfs to keep two attempts to online from stepping on the other.
 
-Thanks,
-Rafael
+There is the zone_span_seq*() set of functions.  These are used pretty
+sparsely, but we do use them in page_outside_zone_boundaries() to notice
+when a zone is resized.
+
+There are also the pgdat_resize*() locks.  Those are more for internal
+use guarding the sparsemem structures and so forth.
+
+Could you describe a little more why you need to lock down zone
+resizing?  Do you *really* mean zones, or do you mean "the set of memory
+on the system"?  Why walk zones instead of pgdats?
+
+-- Dave
