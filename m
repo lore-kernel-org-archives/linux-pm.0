@@ -1,96 +1,77 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Date: Wed, 5 Nov 2008 09:38:37 +0900
-Message-ID: <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with
+	memory	hotplug
+Date: Wed, 05 Nov 2008 20:10:05 +1100
+Message-ID: <1225876205.6755.55.camel@nigel-laptop>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<200811041635.49932.rjw@sisk.pl>
-	<1225813182.12673.587.camel@nimitz>
-	<200811041734.04802.rjw@sisk.pl>
-	<1225817945.12673.602.camel@nimitz>
+	 <20081103125108.46d0639e.akpm@linux-foundation.org>
+	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
+	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
+	 <1225782572.12673.540.camel@nimitz> <1225783837.6755.33.camel@nigel-laptop>
+	 <1225785224.12673.564.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757023AbYKEAj1@vger.kernel.org>
-In-Reply-To: <1225817945.12673.602.camel@nimitz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754919AbYKEJKg@vger.kernel.org>
+In-Reply-To: <1225785224.12673.564.camel@nimitz>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yasunori Goto <y-goto@jp.fujitsu.com>, Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 04 Nov 2008 08:59:05 -0800
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+Hi.
 
-> On Tue, 2008-11-04 at 17:34 +0100, Rafael J. Wysocki wrote:
-> > Now, I need to do one more thing, which is to check how much memory has to be
-> > freed before creating the image.  For this purpose I need to lock memory
-> > hotplug temporarily, count pages to free and unlock it.  What interface should
-> > I use for this purpose? 
-> > 
-> > [I'll also need to lock memory hotplug temporarily during resume.]
+On Mon, 2008-11-03 at 23:53 -0800, Dave Hansen wrote:
+> On Tue, 2008-11-04 at 18:30 +1100, Nigel Cunningham wrote:
+> > One other question, if I may. Would you please explain (or point me to
+> > an explanation) of PHYS_PFN_OFFSET/ARCH_PFN_OFFSET? I've been dealing
+> > occasionally with people wanting to have hibernation on arm, and I don't
+> > really get the concept or the implementation (particularly when it comes
+> > to trying to do the sort of iterating over zones and pfns that was being
+> > discussed in previous messages in this thread.
 > 
-> We currently don't have any big switch to disable memory hotplug, like
-> lock_memory_hotplug() or something. :)
+> First of all, I think PHYS_PFN_OFFSET is truly an arch-dependent
+> construct.  It only appears in arm an avr32.  I'll tell you only how
+> ARCH_PFN_OFFSET looks to me.  My guess is that those two arches need to
+> reconcile themselves and start using ARCH_PFN_OFFSET instead.
 > 
-> If you are simply scanning and counting pages, I think the best thing to
-> use would be the zone_span_seq*() seqlock stuff.  Do your count inside
-> the seqlock's while loop.  That covers detecting a zone changing while
-> it is being scanned.
+> In the old days, we only had memory that started at physical address 0x0
+> and went up to some larger address.  We allocated a mem_map[] of 'struct
+> pages' in one big chunk, one for each address.  mem_map[0] was for
+> physical address 0x0 and mem_map[1] was for 0x1000, mem_map[2] was for
+> 0x2000 and so on...
 > 
-> The other case to detect is when a new zone gets added.  These are
-> really rare.  Rare enough that we actually use a stop_machine() call in
-> build_all_zonelists() to do it.  All you would have to do is detect when
-> one of these calls gets made.  I think that's a good application for a
-> new seq_lock.
+> If a machine didn't have a physical address 0x0, we allocated mem_map[]
+> for it anyway and just wasted that entry.  What ARCH_PFN_OFFSET does is
+> let us bias the mem_map[] structure so that mem_map[0] does not
+> represent 0x0.
 > 
-> I've attached an utterly untested patch that should do the trick.
-> Yasunori and KAME should probably take a look at it since the node
-> addition code is theirs.
+> If ARCH_PFN_OFFSET is 1, then mem_map[0] actually represents the
+> physical address 0x1000.  If it is 2, then mem_map[0] represents
+> physical addr 0x2000.  ARCH_PFN_OFFSET means that the first physical
+> address on the machine is at ARCH_PFN_OFFSET*PAGE_SIZE.  We bias all
+> lookups into the mem_map[] so that we don't waste space in it.  There
+> will never be a zone_start_pfn lower than ARCH_PFN_OFFSET, for instance.
 > 
-
-Hmm ? I think there is no real requirement for doing hibernation while
-memory is under hotplug.
-
-Assume following.
- - memory hotplug can be triggerred by
-    1. interrupt from system.
-    2. "probe" interface in sysfs.
- - ONLINE/OFFLINE is only trigerred by sysfs interface.
-
-I believe we can't block "1", but "1" cannot be raised while hibernation.
-(If it happens, it's mistake of the firmware.)
-
-"probe" interface can be triggered from userland. Then it may be worth to be
-blocked. How about to add device_pm_lock() to following place ?
-
-  - /sys/device/system/memory/probe
-  - ONLINE
-  - OFFLINE
-
-
-
-off-topic:
-BTW, I hear hibernation can be done by kexec + kexec-tools.
-If so, boot option for disabling memory hotplug is enough for us, isn't it ?
-Or there is long way to make use of it in real world ?
-
-Thanks,
--Kame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-> -- Dave
+> What does that mean for walking zones?  Nothing.  It only has meaning
+> for how we allocate and do lookups into the mem_map[].  But, since
+> everyone uses pfn_to_page() and friends, you don't ever see this.
 > 
+> I'm curious why you think you need to be concerned with it.
+
+Sorry for the delay in replying.
+
+It's because I'm looking at old patches for arm support for TuxOnIce and
+because of the way TuxOnIce records what pages need attention:
+
+My method of recording what needs doing is different to Rafael's. I use
+per zone bitmaps (constructed out of order 0 allocations) and therefore
+look at zone_start_pfn in calculating what bit within the zone needs to
+be set/cleared/tested.
+
+In your example above, zone_start_pfn will be 1, won't it? If that's the
+case, I shouldn't need to subtract ARCH_PFN_OFFSET to get the right
+index within the zone and avoid the same wastage that ARCH_PFN_OFFSET
+avoids with mem_map.
+
+Nigel
