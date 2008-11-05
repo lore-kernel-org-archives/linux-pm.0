@@ -1,77 +1,44 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with
-	memory	hotplug
-Date: Wed, 05 Nov 2008 20:10:05 +1100
-Message-ID: <1225876205.6755.55.camel@nigel-laptop>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <20081103125108.46d0639e.akpm@linux-foundation.org>
-	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
-	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
-	 <1225782572.12673.540.camel@nimitz> <1225783837.6755.33.camel@nigel-laptop>
-	 <1225785224.12673.564.camel@nimitz>
+From: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC][PATCH] freezer_cg: disable writing
+ freezer.state of root cgroup
+Date: Wed, 05 Nov 2008 11:18:54 +0100
+Message-ID: <4911730E.2050900__31353.740199893$1225880641$gmane$org@fr.ibm.com>
+References: <20080811235323.872291138@us.ibm.com>	
+	<20080811235325.121356317@us.ibm.com>	
+	<6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	
+	<490FE7B5.8020400@cn.fujitsu.com>	
+	<6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>	
+	<490FFB56.7030300@cn.fujitsu.com>
+	<6599ad830811032356g6827a97dq41dec492fed8de15@mail.gmail.com>
+	<4910014F.4000808@cn.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754919AbYKEJKg@vger.kernel.org>
-In-Reply-To: <1225785224.12673.564.camel@nimitz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4910014F.4000808@cn.fujitsu.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Containers <containers@lists.linux-foundation.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hello !
 
-On Mon, 2008-11-03 at 23:53 -0800, Dave Hansen wrote:
-> On Tue, 2008-11-04 at 18:30 +1100, Nigel Cunningham wrote:
-> > One other question, if I may. Would you please explain (or point me to
-> > an explanation) of PHYS_PFN_OFFSET/ARCH_PFN_OFFSET? I've been dealing
-> > occasionally with people wanting to have hibernation on arm, and I don't
-> > really get the concept or the implementation (particularly when it comes
-> > to trying to do the sort of iterating over zones and pfns that was being
-> > discussed in previous messages in this thread.
+>> Or maybe just skip populating the file entirely for the root cgroup?
+>> It's not useful if it can't be written and always returns the same
+>> value.
 > 
-> First of all, I think PHYS_PFN_OFFSET is truly an arch-dependent
-> construct.  It only appears in arm an avr32.  I'll tell you only how
-> ARCH_PFN_OFFSET looks to me.  My guess is that those two arches need to
-> reconcile themselves and start using ARCH_PFN_OFFSET instead.
-> 
-> In the old days, we only had memory that started at physical address 0x0
-> and went up to some larger address.  We allocated a mem_map[] of 'struct
-> pages' in one big chunk, one for each address.  mem_map[0] was for
-> physical address 0x0 and mem_map[1] was for 0x1000, mem_map[2] was for
-> 0x2000 and so on...
-> 
-> If a machine didn't have a physical address 0x0, we allocated mem_map[]
-> for it anyway and just wasted that entry.  What ARCH_PFN_OFFSET does is
-> let us bias the mem_map[] structure so that mem_map[0] does not
-> represent 0x0.
-> 
-> If ARCH_PFN_OFFSET is 1, then mem_map[0] actually represents the
-> physical address 0x1000.  If it is 2, then mem_map[0] represents
-> physical addr 0x2000.  ARCH_PFN_OFFSET means that the first physical
-> address on the machine is at ARCH_PFN_OFFSET*PAGE_SIZE.  We bias all
-> lookups into the mem_map[] so that we don't waste space in it.  There
-> will never be a zone_start_pfn lower than ARCH_PFN_OFFSET, for instance.
-> 
-> What does that mean for walking zones?  Nothing.  It only has meaning
-> for how we allocate and do lookups into the mem_map[].  But, since
-> everyone uses pfn_to_page() and friends, you don't ever see this.
-> 
-> I'm curious why you think you need to be concerned with it.
+> I thought about this. I'll see which way Matt and Cedric prefer.
 
-Sorry for the delay in replying.
+I think that Paul's suggestion of disabling the root freezer makes sense.
 
-It's because I'm looking at old patches for arm support for TuxOnIce and
-because of the way TuxOnIce records what pages need attention:
+Thanks,
 
-My method of recording what needs doing is different to Rafael's. I use
-per zone bitmaps (constructed out of order 0 allocations) and therefore
-look at zone_start_pfn in calculating what bit within the zone needs to
-be set/cleared/tested.
-
-In your example above, zone_start_pfn will be 1, won't it? If that's the
-case, I shouldn't need to subtract ARCH_PFN_OFFSET to get the right
-index within the zone and avoid the same wastage that ARCH_PFN_OFFSET
-avoids with mem_map.
-
-Nigel
+C.
