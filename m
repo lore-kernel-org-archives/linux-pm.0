@@ -1,87 +1,54 @@
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
  hotplug
-Date: Thu, 6 Nov 2008 09:53:14 +0900
-Message-ID: <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 6 Nov 2008 10:17:51 +0900
+Message-ID: <20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
 	<1225817945.12673.602.camel@nimitz>
 	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
 	<200811051208.26628.rjw@sisk.pl>
 	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-	<1225931281.11514.27.camel@nimitz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754382AbYKFAyI@vger.kernel.org>
-In-Reply-To: <1225931281.11514.27.camel@nimitz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755260AbYKFBSn@vger.kernel.org>
+In-Reply-To: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yasunori Goto <y-goto@jp.fujitsu.com>, Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>, Yasunori Goto <y-goto@jp.fujitsu.com>, Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 05 Nov 2008 16:28:01 -0800
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+On Thu, 6 Nov 2008 09:14:41 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Thu, 2008-11-06 at 09:14 +0900, KAMEZAWA Hiroyuki wrote:
-> > Ok, please consider "when memory hotplug happens." 
-> > 
-> > In general, it happens when
-> >   1. memory is inserted to slot.
-> >   2. the firmware notifes the system to enable already inserted memory.
-> > 
-> > To trigger "1", you have to open cover of server/pc. Do you open pc while the system
-> > starts hibernation ? for usual people, no.
+> Ok, please consider "when memory hotplug happens." 
 > 
-> You're right, this won't happen very often.  We're trying to close a
-> theoretical hole that hasn't ever been observed in practice.  But, we
-> don't exactly leave races in code just because we haven't observed them.
-> I think this is a classic race.
+> In general, it happens when
+>   1. memory is inserted to slot.
+>   2. the firmware notifes the system to enable already inserted memory.
 > 
-> If we don't close it now, then someone doing some really weirdo hotplug
-> is going to run into it at some point.  Who knows what tomorrow's
-> hardware/firmware will do?
+> To trigger "1", you have to open cover of server/pc. Do you open pc while the system
+> starts hibernation ? for usual people, no.
 > 
-Hmm, people tend to make crazy hardware, oh yes. the pc may fly in the sky with rocket engine.
+> To trigger "2", the user have special console to tell firmware "enable this memory".
+> Such firmware console or users have to know "the system works well." And, more important,
+> when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
+> So, such firmware console or operator have to know the system status.
+> 
+> Am I missing some ? Current linux can know PCI/USB hotplug while the system is suspended ?
+> 
+*OFFTOPIC*
 
-My answer to this was "add mutex used in hibernation to memory hotplug interface".
-When the mutex blocks ONLINE/OFFLINE memory, the memory range which hibernation should save
-will not change. 
+I hear following answer from my friend.
 
-Possible solution for this interrupt handling is to do __add_memory() operation
-in some kernel thread. Then, we can wait the mutex. 
+  - hibernate the system
+	=> plug USB memory
+		=> wake up the system
+			=> panic.
+  - hibernate the system
+	=> unplug USB memory
+		=> wake up the sytem
+			=> panic.
 
-> > To trigger "2", the user have special console to tell firmware "enable this memory".
-> > Such firmware console or users have to know "the system works well." And, more important,
-> > when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
-> > So, such firmware console or operator have to know the system status.
-> > 
-> > Am I missing some ? Current linux can know PCI/USB hotplug while the
-> > system is suspended ?
-> 
-> * echo 'disk' > /sys/power/state
-> * count number of pages to write to disk
-> * turn all interrupts off
-> * copy pages to disk
-> * power down
-> 
-> I think the race we're trying to close is the one between when we count
-> pages and when we turn interrupts off.  I assume that there is a reason
-> that we don't do the *entire* hibernation process with interrupts off,
-> probably because it would "lock" the system up for too long, and can
-> even possibly fail.
-> 
-Hmm, while interrupts off, lru_add_drain_all() or some smp_call_function() will be blocked.
-Can't we do 
-    while(..){
-            go to next mem_section
-            if (!section_is_available)
-		continue;
-            freeze this mem_section.
-	    count pages should be saved.
-    	    write it to disk
-    }
-per mem_section ? (maybe addling lock bit in mem_section->section_mem_map is enough.)
-
-Hmm? 
-
+Thanks,
 -Kame
