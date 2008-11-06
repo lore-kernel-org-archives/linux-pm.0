@@ -1,40 +1,25 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Thu, 6 Nov 2008 13:28:55 +0100
-Message-ID: <20081106122855.GA1549@ucw.cz>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200810291325.01481.rjw@sisk.pl> <20081103125108.46d0639e.akpm@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
+Date: Thu, 6 Nov 2008 09:43:40 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0811060941200.2456-100000@iolanthe.rowland.org>
+References: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754615AbYKFM3R@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20081103125108.46d0639e.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753346AbYKFOnx@vger.kernel.org>
+In-Reply-To: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Matt Tolentino <matthew.e.tolentino@intel.com>, Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nigel Cunningham <ncunningham@crca.org.au>, Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>, linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>, Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>, Yasunori Goto <y-goto@jp.fujitsu.com>, pavel@suse.cz, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-11-03 12:51:08, Andrew Morton wrote:
-> On Wed, 29 Oct 2008 13:25:00 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > 
-> > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > not handle hibernation + sparse mem at some point. It seems to work
-> > > now, so I guess we can enable it.
-> > 
-> > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > work, no objection from me.
-> 
-> yes, that was not a terribly confidence-inspiring commit message.
-> 
-> 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> hotplug when swsusp is enabled.  There's a lot of churn there right
-> now.  We'll fix it up properly once it calms down." which is also
-> rather rubbery.  
+On Thu, 6 Nov 2008, KAMEZAWA Hiroyuki wrote:
 
-I was not terribly confident. Sorry about that.
+> Am I missing some ? Current linux can know PCI/USB hotplug while the
+> system is suspended ?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+With some machines, yes, it can.  Some computers provide minimal 
+"suspend current" to devices while the system is hibernating.  This 
+allows the hardware to detect and remember hotplug events, which can 
+then be handled when the system wakes up.
+
+Alan Stern
