@@ -1,29 +1,29 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
 Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Date: Thu, 6 Nov 2008 10:59:18 +0900
-Message-ID: <20081106105918.e64b7afb.kamezawa.hiroyu@jp.fujitsu.com>
+	hotplug
+Date: Thu, 06 Nov 2008 13:00:18 +1100
+Message-ID: <1225936818.6216.20.camel@nigel-laptop>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<1225817945.12673.602.camel@nimitz>
-	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	<200811051208.26628.rjw@sisk.pl>
-	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
-	<1225935787.6216.12.camel@nigel-laptop>
-	<20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1225817945.12673.602.camel@nimitz>
+	 <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200811051208.26628.rjw@sisk.pl>
+	 <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1225935787.6216.12.camel@nigel-laptop>
+	 <20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753752AbYKFCAN@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755811AbYKFCAk@vger.kernel.org>
 In-Reply-To: <20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>, Yasunori Goto <y-goto@jp.fujitsu.com>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>, Yasunori Goto <y-goto@jp.fujitsu.com>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 Nov 2008 10:54:53 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi.
 
+On Thu, 2008-11-06 at 10:54 +0900, KAMEZAWA Hiroyuki wrote:
 > On Thu, 06 Nov 2008 12:43:07 +1100
 > Nigel Cunningham <ncunningham@crca.org.au> wrote:
 > 
@@ -68,16 +68,34 @@ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > > 
 > Hmm? this doesn't come from lost of hotplug interrupt ?
 > the memory plugged while the system is sleeping can be recognized when the system wakes up ?
-> 
+
+Remember that when we hibernate (assuming we don't then suspend to ram),
+the power is fully off. Resuming starts off like a fresh boot.
+
 > My point is the firmware/operator has to know "the system is sleeping or not" to do *any* hotplug.
 > (I'm not sure but removing a cpu while the system is under hibernation may cause panic, too.)
 > In my point of view, this is operator's problem, not hibernation's.
 
-IOW,  please just remove !HIBERNATION in Kconfig and add "WARNING" to Documentaion.
-for *now*.
+If a cpu is removed while we're hibernated, that's okay. We use
+hotplugging and can therefore cope quite happily with cpus going away
+while the system is powered down.
 
-I hope some notifier_call_chain from hibernation will be added.
+> If you want to fix the small race really, please add(or export) some mutex or notifier. like
+> 
+>   NOTIFY_HIBERNATION_START
+>   NOTIFY_HIBERNATION_END
+>   NOTIFY_HIBERNATION_RESUME
+> 
+> other pepole will make use of this.
+> I think __add_memory called by interrupt can be executed in some kernel thread.
+> 
+> Thanks,
+> -Kame
 
+There are notifier chains for hibernation already
+(PM_HIBERNATION_PREPARE, PM_RESTORE_PREPARE, PM_POST_RESTORE and
+PM_POST_HIBERNATION).
 
-Thanks,
--Kame
+Regards,
+
+Nigel
