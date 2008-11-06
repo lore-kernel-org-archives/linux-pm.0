@@ -1,99 +1,66 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
 Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Date: Thu, 6 Nov 2008 09:14:41 +0900
-Message-ID: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+	hotplug
+Date: Wed, 05 Nov 2008 16:28:01 -0800
+Message-ID: <1225931281.11514.27.camel@nimitz>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<1225817945.12673.602.camel@nimitz>
-	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	<200811051208.26628.rjw@sisk.pl>
+	 <1225817945.12673.602.camel@nimitz>
+	 <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200811051208.26628.rjw@sisk.pl>
+	 <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754914AbYKFAPa@vger.kernel.org>
-In-Reply-To: <200811051208.26628.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Yasunori Goto <y-goto@jp.fujitsu.com>, Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+Sender: owner-linux-mm@kvack.org
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yasunori Goto <y-goto@jp.fujitsu.com>, Nigel Cunningham <ncunningham@crca.org.au>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 Nov 2008 12:08:25 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Wednesday, 5 of November 2008, KAMEZAWA Hiroyuki wrote:
-> > On Tue, 04 Nov 2008 08:59:05 -0800
-> > Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, 2008-11-04 at 17:34 +0100, Rafael J. Wysocki wrote:
-> > > > Now, I need to do one more thing, which is to check how much memory has to be
-> > > > freed before creating the image.  For this purpose I need to lock memory
-> > > > hotplug temporarily, count pages to free and unlock it.  What interface should
-> > > > I use for this purpose? 
-> > > > 
-> > > > [I'll also need to lock memory hotplug temporarily during resume.]
-> > > 
-> > > We currently don't have any big switch to disable memory hotplug, like
-> > > lock_memory_hotplug() or something. :)
-> > > 
-> > > If you are simply scanning and counting pages, I think the best thing to
-> > > use would be the zone_span_seq*() seqlock stuff.  Do your count inside
-> > > the seqlock's while loop.  That covers detecting a zone changing while
-> > > it is being scanned.
-> > > 
-> > > The other case to detect is when a new zone gets added.  These are
-> > > really rare.  Rare enough that we actually use a stop_machine() call in
-> > > build_all_zonelists() to do it.  All you would have to do is detect when
-> > > one of these calls gets made.  I think that's a good application for a
-> > > new seq_lock.
-> > > 
-> > > I've attached an utterly untested patch that should do the trick.
-> > > Yasunori and KAME should probably take a look at it since the node
-> > > addition code is theirs.
-> > > 
-> > 
-> > Hmm ? I think there is no real requirement for doing hibernation while
-> > memory is under hotplug.
-> > 
-> > Assume following.
-> >  - memory hotplug can be triggerred by
-> >     1. interrupt from system.
-> >     2. "probe" interface in sysfs.
-> >  - ONLINE/OFFLINE is only trigerred by sysfs interface.
-> > 
-> > I believe we can't block "1", but "1" cannot be raised while hibernation.
-> > (If it happens, it's mistake of the firmware.)
-> > 
-> > "probe" interface can be triggered from userland. Then it may be worth to be
-> > blocked. How about to add device_pm_lock() to following place ?
+On Thu, 2008-11-06 at 09:14 +0900, KAMEZAWA Hiroyuki wrote:
+> Ok, please consider "when memory hotplug happens." 
 > 
-> This is not necessary as long as we freeze the userland before hibernation.
-> Still, this is one thing to remeber that the freezing is needed for. :-)
+> In general, it happens when
+>   1. memory is inserted to slot.
+>   2. the firmware notifes the system to enable already inserted memory.
 > 
-> 1. seems to be problematic, though, since we rely on zones remaining
-> unchanged while we're counting memory pages to free before hibernation
-> and this happens before the calling ->suspend() methods of device drivers.
-> Of course we can count free pages in a different way, but that will be a
-> substantial modification (I think).
+> To trigger "1", you have to open cover of server/pc. Do you open pc while the system
+> starts hibernation ? for usual people, no.
+
+You're right, this won't happen very often.  We're trying to close a
+theoretical hole that hasn't ever been observed in practice.  But, we
+don't exactly leave races in code just because we haven't observed them.
+I think this is a classic race.
+
+If we don't close it now, then someone doing some really weirdo hotplug
+is going to run into it at some point.  Who knows what tomorrow's
+hardware/firmware will do?
+
+> To trigger "2", the user have special console to tell firmware "enable this memory".
+> Such firmware console or users have to know "the system works well." And, more important,
+> when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
+> So, such firmware console or operator have to know the system status.
 > 
-> How's the firmware supposed to be notified that hibernation is going to happen?
-> 
+> Am I missing some ? Current linux can know PCI/USB hotplug while the
+> system is suspended ?
 
-Ok, please consider "when memory hotplug happens." 
+* echo 'disk' > /sys/power/state
+* count number of pages to write to disk
+* turn all interrupts off
+* copy pages to disk
+* power down
 
-In general, it happens when
-  1. memory is inserted to slot.
-  2. the firmware notifes the system to enable already inserted memory.
+I think the race we're trying to close is the one between when we count
+pages and when we turn interrupts off.  I assume that there is a reason
+that we don't do the *entire* hibernation process with interrupts off,
+probably because it would "lock" the system up for too long, and can
+even possibly fail.
 
-To trigger "1", you have to open cover of server/pc. Do you open pc while the system
-starts hibernation ? for usual people, no.
+-- Dave
 
-To trigger "2", the user have special console to tell firmware "enable this memory".
-Such firmware console or users have to know "the system works well." And, more important,
-when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
-So, such firmware console or operator have to know the system status.
-
-Am I missing some ? Current linux can know PCI/USB hotplug while the system is suspended ?
-
-
-Thanks,
--Kame
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
