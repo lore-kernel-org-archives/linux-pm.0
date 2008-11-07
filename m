@@ -1,10 +1,13 @@
-From: "Peter Reid" <ppeter.reid@gmail.com>
-Subject: Dynamic Idle?
-Date: Fri, 7 Nov 2008 18:31:24 +0530
-Message-ID: <345163910811070501x4cafe0afq28c89898b771ec76@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Dynamic Idle?
+Date: Fri, 7 Nov 2008 10:06:21 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0811071003100.2437-100000@iolanthe.rowland.org>
+References: <345163910811070501x4cafe0afq28c89898b771ec76@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8017926248801816406=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <345163910811070501x4cafe0afq28c89898b771ec76@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,52 +15,34 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Peter Reid <ppeter.reid@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============8017926248801816406==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_44566_1298168.1226062884650"
+On Fri, 7 Nov 2008, Peter Reid wrote:
 
-------=_Part_44566_1298168.1226062884650
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> What do the following terms mean in terms of linux power management for
+> embedded systems.
+> 
+>  1) Dynamic - Idle
+>  2) Suspend-Resume
 
-What do the following terms mean in terms of linux power management for
-embedded systems.
+Dynamic and Idle are two separate terms.  Dynamic means that something 
+is running.  Idle means that something either isn't running or else is 
+running but isn't doing anything.
 
- 1) Dynamic - Idle
- 2) Suspend-Resume
+Suspend means to put either a single device or else the entire system
+into a non-operational low-power state.  Resume means to put the device
+or the system back into an operational full-power state.
 
-Do they mean the same thing? or are they different, If so how?
+> Could you please explain with a scenario of how these states occur in
+> real world embedded systems.
 
-Could you please explain with a scenario of how these states occur in
-real world embedded systems.
+Suppose an embedded system has a USB device attached.  At times when 
+the device isn't being used, the system could put it into a low-power 
+state to conserve energy.  When the system needs to use the device, it 
+would first have to resume the device.
 
-
-Regards,
-Reid.
-
-------=_Part_44566_1298168.1226062884650
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-What do the following terms mean in terms of linux power management for embedded systems.<br><br>&nbsp;1) Dynamic - Idle<br>&nbsp;2) Suspend-Resume<br><br>Do they mean the same thing? or are they different, If so how?<br><br>Could you please explain with a scenario of how these states occur in <br>
-
-real world embedded systems.<br><br><br>Regards,<br>Reid.<br>
-
-------=_Part_44566_1298168.1226062884650--
-
---===============8017926248801816406==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8017926248801816406==--
+Alan Stern
