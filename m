@@ -1,35 +1,48 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
-	hotplug
-Date: Fri, 07 Nov 2008 07:46:46 +1100
-Message-ID: <1226004406.6876.5.camel@nigel-laptop>
-References: <Pine.LNX.4.44L0.0811060947250.2456-100000@iolanthe.rowland.org>
+ hotplug
+Date: Fri, 7 Nov 2008 10:09:15 +0900
+Message-ID: <20081107100915.6c525512.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.44L0.0811060943480.2456-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751239AbYKFUrF@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811060947250.2456-100000@iolanthe.rowland.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754692AbYKGBKI@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811060943480.2456-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org, Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>, Yasunori Goto <y-goto@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Nigel Cunningham <ncunningham@crca.org.au>, Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>, linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>, Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>, Yasunori Goto <y-goto@jp.fujitsu.com>, pavel@suse.cz, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Thu, 6 Nov 2008 09:47:12 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-On Thu, 2008-11-06 at 09:48 -0500, Alan Stern wrote:
-> On Thu, 6 Nov 2008, Nigel Cunningham wrote:
+> On Thu, 6 Nov 2008, KAMEZAWA Hiroyuki wrote:
 > 
-> > Remember that when we hibernate (assuming we don't then suspend to ram),
-> > the power is fully off. Resuming starts off like a fresh boot.
+> > Hmm, people tend to make crazy hardware, oh yes. the pc may fly in
+> > the sky with rocket engine.
 > 
-> That simply is not true.  On ACPI systems, hibernation goes into the S4 
-> state.  Power fully off is S5.
+> This isn't crazy at all.  I am currently working on an experiment 
+> called RAISE (Rapid Acquisition Imaging Spectrograph Experiment) that 
+> involves flying a rocket above the Earth's atmosphere to make 
+> measurements of the Sun.  The experiments in this rocket will be 
+> controlled by a computer running Linux.  See
+> 
+> 	http://www.swri.org/3pubs/ttoday/Spring06/Solar.htm
+> 
+> for a slightly out-of-date description.
+> 
 
-For the purposes of our discussion, it was a good enough description.
-Nevertheless, you're right - if we do everything in a fully ACPI spec
-compliant way, there will still be some power around. Of course we don't
-always do that (can use S4 or S5).
+interesitng :)
 
-Regards,
+-Kame
 
-Nigel
+> Alan Stern
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
