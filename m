@@ -1,19 +1,18 @@
-From: "Justin P. Mattock" <justinmattock@gmail.com>
+From: "Justin Mattock" <justinmattock@gmail.com>
 Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
 	suspends, but does not wakes up
-Date: Sat, 8 Nov 2008 20:38:26 -0800
-Message-ID: <3DCE2017-408C-45E2-8E0D-3A474E8645F6__24370.5435343601$1226332782$gmane$org@gmail.com>
+Date: Sat, 8 Nov 2008 00:20:01 -0800
+Message-ID: <dd18b0c30811080020i23418742xc6388a5942456566__33407.5807048523$1226332793$gmane$org@mail.gmail.com>
 References: <20081106194724.GB15366@ime.usp.br>
 	<20081107014535.GA19201@ime.usp.br>
 	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
 	<20081108075008.GA8177@ime.usp.br>
-	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
-	<20081109024514.GA11744@ime.usp.br>
-Mime-Version: 1.0 (iPhone Mail 5F136)
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081109024514.GA11744@ime.usp.br>
+In-Reply-To: <20081108075008.GA8177@ime.usp.br>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,89 +22,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: "rbrito@ime.usp.br" <rbrito@ime.usp.br>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "yakui.zhao@intel.com" <yakui.zhao@intel.com>, Pavel Machek <pavel@suse.cz>, Bugreport <bugme-daemon@bugzilla.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Cc: linux-kernel@vger.kernel.org, yakui.zhao@intel.com, pavel@suse.cz, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-QXBwb2xvZ2l6ZSBpZiB0aGlzIGlzIHF1aXRlIGJyaWVmCihzZW5kaW5nIGZyb20gcGhvbmUpOwpG
-b3IgdGhlIGxvbmcgZGVsYXkgdHJ5IGNvbW1lbnQgIzIKT2Y6Cmh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTIyMApLZWVwIGluIG1pbmQgbXNpLmMgbWlnaHQgaGF2
-ZSBiZWVuIGNoYW5nZWQgc2luY2UgdGhlbiwgc28gaXQgbWlnaHQgbm90ICAKd29yawoKanVzdGlu
-IFAuIE1hdHRvY2sKCgoKT24gTm92IDgsIDIwMDgsIGF0IDY6NDUgUE0sIFJvZ8OpcmlvIEJyaXRv
-IDxyYnJpdG9AaW1lLnVzcC5icj4gd3JvdGU6Cgo+IEhpLCBKdXN0aW4gYW5kIG90aGVycy4KPgo+
-IE9uIE5vdiAwOCAyMDA4LCBKdXN0aW4gTWF0dG9jayB3cm90ZToKPj4gT24gRnJpLCBOb3YgNywg
-MjAwOCBhdCAxMTo1MCBQTSwgUm9nw6lyaW8gQnJpdG8gPHJicml0b0BpbWUudXNwLmJyPiAKPj4g
-IHdyb3RlOgo+Pj4gSSB0aGluayB0aGF0IEkgaGF2ZSBzb21lIG1vcmUgaW5mb3JtYXRpb24gcmVn
-YXJkaW5nIHRoZSBzdXNwZW5kLyAKPj4+IGhpYmVybmF0ZQo+Pj4gaXNzdWU6IHdpdGggVWJ1bnR1
-J3MgMi42LjI3IGtlcm5lbCwgSSBjYW4ndCBoaWJlcm5hdGUgbXkgbGFwdG9wLCAgCj4+PiBidXQg
-d2l0aAo+Pj4gdmFuaWxsYSAyLjYuMjgtcmMzLCBJIGNhbiBoaWJlcm5hdGUgKEkgaGF2ZSBub3Qg
-dGVzdGVkIGl0IG11Y2gsICAKPj4+IGJ1dCBpdAo+Pj4gc2VlbXMgdG8gd29yaykuCj4KPiBKdXN0
-IHNvbWUgZXh0cmEgaW5mb3JtYXRpb24gaGVyZTogd2hpbGUgSSBjYW4gaGliZXJuYXRlIHdpdGgg
-dmFuaWxsYQo+IDIuNi4yOC1yYzMsIHVwb24gcmVzdW1pbmcsIGl0IHRha2VzICptaW51dGVzKiAo
-SSBkb24ndCBrbm93IGhvdyBtYW55Cj4gbWludXRlcywgYnV0IHByb2JhYmx5IHNvbWV0aGluZyBs
-aWtlIDUgbWludXRlcyBvciBzbyEpIGZvciB0aGUgIAo+IGRlc2t0b3AgdG8KPiBoYXZlIGFueSBl
-ZmZlY3QgKGRlc3BpdGUgdGhlIGZhY3QgdGhhdCBJIGNhbiBtb3ZlIHRoZSBtb3VzZSB3aXRob3V0
-ICAKPiBhbnkKPiBwcm9ibGVtcykuCj4KPiBBIG5ldyByZWJvb3QgaXMgKm11Y2gqIGZhc3RlciB0
-aGFuIHdoYXQgSSBnZXQgd2l0aCBoaWJlcm5hdGUuCj4KPiBJIGNhbiBmaWxtIHRoYXQgaWYgZGVz
-aXJlZC4KPgo+Pj4gQnV0IHNlZWluZyB0aGUgYmVoYXZpb3VyIG9mIHRoaXMgaW4gY29tcGFyaXNv
-biB3aXRoIFdpbmRvd3MgVmlzdGEsICAKPj4+IHR3bwo+Pj4gdGhpbmdzIHN0aWxsIHN0YW5kIG91
-dDoKPj4+Cj4+PiAxIC0gcHJlc3NpbmcgdGhlIHN1c3BlbmQgYnV0dG9uIHN1c3BlbmRzIHRoZSBt
-YWNoaW5lLCBidXQgdXBvbiBhICAKPj4+IHNlY29uZAo+Pj4gICBwcmVzcywgdGhlIG1hY2hpbmUg
-c3RpbGwgdHVybnMgaXRzZWxmIG9mZiBhbmQgYWxsIHdvcmsgaXMgIAo+Pj4gbG9zdC4gOi0oCj4K
-PiBUaGlzIHByb2JsZW0gc3RpbGwgcGVyc2lzdHMuCj4KPj4+IDIgLSBjbG9zaW5nIHRoZSBsaWQs
-IG5vIG1hdHRlciB3aGF0IEkgcHJvZ3JhbSBpbiBHTk9NRSdzIFBvd2VyICAKPj4+IFByZWZlcmVu
-Y2VzLAo+Pj4gICBkb2Vzbid0IGV2ZW4gYmxhY2tlbnMgdGhlIHNjcmVlbiwgbGV0IGFsb25lIHN1
-c3BlbmQgb3IgaGliZXJuYXRlICAKPj4+IHRoZQo+Pj4gICBub3RlYm9vay4KPgo+IEEgY29ycmVj
-dGlvbiBoZXJlOiB3aGVuIEkgY2xvc2UgdGhlIGxpZCwgdGhlIGxhcHRvcCBzdXNwZW5kcy4gSSBj
-YW4gIAo+IHRyeSB0bwo+IHNlZSBpZiBpdCBoaWJlcm5hdGVzLgo+Cj4+PiBBZ2FpbiwgZm9yIHRo
-b3NlIHRoYXQgSSBqdXN0IGluY2x1ZGVkIGluIHRoZSBjYXJib24gY29waWVzIG5vdywgSSAgCj4+
-PiBoYXZlCj4+PiBnaXZlbiBleHRlbnNpdmUgaW5mb3JtYXRpb24gb24gdGhlIGJ1Z3ppbGxhIHJl
-cG9ydCwgYnV0IEkgY2FuICAKPj4+IHJlY29tcGlsZQo+Pj4ga2VybmVscywgZ2V0IGR1bXBzIG9m
-IGRlYnVnZ2luZyBpbmZvcm1hdGlvbiwgZ2V0IGR1bXBzIHVuZGVyICAKPj4+IFdpbmRvd3MgKGlm
-Cj4+PiB0aGF0IGhlbHBzIGFuZCBpZiBJIGFtIGluc3RydWN0ZWQgaG93IHRvIGRvIHRoYXQpLiBZ
-b3UgbmFtZSBpdC4gSSAgCj4+PiBhbSByZWFsbHkKPj4+IHdpbGxpbmcgdG8gaGVscCBhcyBtdWNo
-IGFzIHBvc3NpYmxlIHdpdGggYWxsIGVmZm9ydHMgdGhhdCBhcmUgIAo+Pj4gcG9zc2libGUgdG8K
-Pj4+IG1lLgo+Cj4gQWdhaW4sIEkgYW0gd2lsbGluZyB0byBnZXQgYW55IGRlYnVnZ2luZyBpbmZv
-cm1hdGlvbiBvciBhbnl0aGluZyAgCj4gdGhhdCBpcwo+IGFza2VkIG1lLiBJIGFtIHRlc3Rpbmcg
-dGhpbmdzIGFuZCBJIHN0aWxsIGRvbid0IGhhdmUgYW55IHByb2R1Y3Rpb24gIAo+IGRhdGEgb24K
-PiB0aGF0IG5vdGVib29rLgo+Cj4gQlRXLCBJIGluc3RhbGxlZCBXaW5kb3dzIFZpc3RhIHdpdGgg
-YSBkdWFsIGJvb3QuIEknbSBmZWVsaW5nIHRhaW50ZWQKPiBub3cuIDotKAo+Cj4+IEkgdGhpbmsg
-eW91IG1pZ2h0IGJlIGV4cGVyaWVuY2luZyB0aGUgZHJlYWRlZCBibGFjayBzY3JlZW4gdXBvbgo+
-PiB3YWtldXAuKGFmdGVyIHNlZWluZyB5b3UncmUgcXVpY2sgdmlkZW8pOwo+Cj4gTmljZSB0aGF0
-IHRoZSB2aWRlbyBwcm92ZWQgdXNlZnVsIHRvIGRlbW9uc3RyYXRlIHRoZSBpc3N1ZS4gSSBjYW4g
-dGFrZQo+IGFub3RoZXIgdmlkZW8gdG8gc2hvdyB0aGUgY3VycmVudCBiZWhhdmlvdXIgd2l0aCAy
-LjYuMjgtcmMzLgo+Cj4+IEkgd2FzIGhhdmluZyB0aGUgc2FtZSB3aXRoIG15IG1hY2Jvb2sgcHJv
-LCB3aGVuIHJ1bm5pbmcKPj4gcmFkZW9uaGQoaGF2ZW4ndCB0cmllZCBzMnJhbSB5ZXQgdG8gc2Vl
-IGlmIHRoaXMgcmVzb2x2ZXMgdGhlIGlzc3VlKS4KPj4gQWx0aG91Z2ggd2FzIHRvbGQgaXQgc2hv
-dWxkIGZpeCB0aGUgaXNzdWUuCj4KPiBSaWdodC4gSnVzdCBmb3IgZnVydGhlciBpbmZvcm1hdGlv
-biwgdGhpcyBub3RlYm9vayBoZXJlIGhhcyBhIHBsYWluICAKPiBJQ0g4Cj4gY2hpcHNldC4gVGhl
-IG9ubHkgdGhpbmcgdGhhdCBJIHRoaW5rIHRoYXQgaXMgbm90IGZyb20gaW50ZWwgaXMgdGhlICAK
-PiBnaWdhYml0Cj4gZXRoZXJuZXQsIHdoaWNoIGlzIGEgUmVhbHRlayBvbmUgKGl0IHNlZW1zIHRo
-YXQgdGhlIHI4MTY5IGRyaXZlciBpcyAgCj4gbG9hZGVkLAo+IGJ1dCBJIHN0aWxsIGhhdmUgbm90
-IHRlc3RlZCB3aXJlZCBjb25uZWN0aW9ucykuCj4KPj4gRGlkIGhhdmUgdGhlIHNhbWUoYmxhY2sg
-c2NyZWVuIG9mIGRlYXRoIHdha2V1cCk7IHdpdGggYSBkZWxsCj4+IGluc3Bpcm9uLCBidXQgdGhl
-biByZWFsaXplZCBteSBncmFwaGljcyBtb2R1bGVzIHdlcmVuJ3QgY29uZmlndXJlZAo+PiBwcm9w
-ZXJseS4KPgo+IFdlaXJkLiBJIGhhdmUgYSBEZWxsIExhdGl0dWRlIEQ1MjAgaGVyZSAod2hpY2gg
-SSdtIHVzaW5nIGZvciB0aGlzIGUtIAo+IG1haWwpCj4gYW5kIGV2ZXJ5dGhpbmcgdGhhdCBJIHRy
-aWVkIHdvcmtzIGZpbmUgKHN1c3BlbmQsIHdpZmksIGhpYmVybmF0aW9uICAKPiBhbmQgZXZlbgo+
-IHRoZSBjb21waXogc3R1ZmYtLS13aGljaCBJIHByb21wdGx5IGRpc2FibGUpLiBJdCBoYXMgYSBi
-cm9hZGNvbSAgCj4gZXRoZXJuZXQKPiB0aGF0IHNlZW1zIHRvIHVzZSB0aGUgYjQ0IGRyaXZlciwg
-YnV0IEkgaGF2ZSBhbHNvIG5vdCB1c2VkIHRoZSB3aXJlZAo+IGNvbm5lY3Rpb24gaGVyZS4KPgo+
-IEknbSBzdHJlYW1pbmcgYXVkaW8gdmlhIGRhYXAgdG8gdGhpcyBub3RlYm9vayBmcm9tIGEgS3Vy
-b2JveCAgCj4gKHBvd2VycGMgYm94KQo+IHdpdGgga2VybmVsIDIuNi4yNyBrZXJuZWwgKGFuZCBt
-eSBwYXRjaGVzIHRoYXQgd2VyZSBpbmNsdWRlZCBpbgo+IDIuNi4yOC1yYzMpLgo+Cj4+IEFzIGZv
-ciB0aGUgcHJlc3Npbmcgb2YgYnV0dG9ucywgdGhlIGluaXRpYWwgcHJlc3Npbmcgb2YgdGhlIHBv
-d2VyICAKPj4gYnV0dG9uIHNlbmQncwo+PiBzaHV0ZG93biB0byB0aGUgbWFjaGluZSBmb3IgbWUs
-IGJ1dCB3aGVuIHN1c3BlbmRpbmcgdGhlIHN5c3RlbSwgdGhlICAKPj4gcG93ZXIgYnV0dG9uCj4+
-IHdha2VzIHRoZSBtYWNoaW5lIHVwLCBvciBjbG9zaW5nIGFuZCBvcGVuaW5nIHRoZSBsaWQuCj4K
-PiBGb3IgbWUsIG5vdGhpbmcgbGlrZSB0aGlzIHdvcmtzLiA6LSggSSBjYW4gb3BlbiB0aGUgbGlk
-IGFuZCBpdCBzdGlsbCAgCj4gc3RheXMKPiBzbGVlcGluZy4gUHJlc3NpbmcgdGhlIHN1c3BlbmQg
-KHBvd2Vyb24vcG93ZXJvZmY/KSBidXR0b24gd2hpbGUgIAo+IHN1c3BlbmRlZAo+IG9ubHkgdHVy
-bnMgb2ZmIHRoZSBtYWNoaW5lLiA6LSgKPgo+Cj4gVGhhbmtzIGFnYWluIGZvciBhbnkgZmVlZGJh
-Y2ssIFJvZ8OpcmlvIEJyaXRvLgo+Cj4gLS0gCj4gUm9nw6lyaW8gQnJpdG8gOiByYnJpdG9Ae21h
-Y2tlbnppZSxpbWUudXNwfS5iciA6IEdQRyBrZXkgMTAyNEQvN0MyQ0FFIAo+IEI4Cj4gaHR0cDov
-L3d3dy5pbWUudXNwLmJyL35yYnJpdG8gOiBodHRwOi8vbWV1c2l0ZS5tYWNrZW56aWUuY29tLmJy
-L3Jicml0bwo+IFByb2plY3RzOiBhbGdvcml0aG1zLmJlcmxpb3MuZGUgOiBsYW1lLnNmLm5ldCA6
-IHZybXMuYWxpb3RoLmRlYmlhbi5vcmcKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1h
-bi9saXN0aW5mby9saW51eC1wbQ==
+On Fri, Nov 7, 2008 at 11:50 PM, Rog=E9rio Brito <rbrito@ime.usp.br> wrote:
+> Hi once again.
+>
+> On Nov 07 2008, Rogerio Theodoro de Brito wrote:
+>> Quoting Rog=E9rio Brito <rbrito@ime.usp.br>:
+>> > If any further information is needed, please let me know.
+>>
+>> I just discovered that the "suspend button" is overloaded: it is actually
+>> a poweroff button, which would explain the behaviour when the kernel is =
+in
+>> suspend to RAM.
+>
+> I think that I have some more information regarding the suspend/hibernate
+> issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but with
+> vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
+> seems to work).
+>
+> Ubuntu's 2.6.27 kernel was hanging when the hibernation phase was
+> occurring.  It just blinked the HD once and nothing else happened. With
+> vanilla 2.6.28-rc3, it saves the memory contents to disk and I am able to
+> resume.
+>
+> But seeing the behaviour of this in comparison with Windows Vista, two
+> things still stand out:
+>
+> 1 - pressing the suspend button suspends the machine, but upon a second
+>    press, the machine still turns itself off and all work is lost. :-(
+>
+> 2 - closing the lid, no matter what I program in GNOME's Power Preference=
+s,
+>    doesn't even blackens the screen, let alone suspend or hibernate the
+>    notebook.
+>
+> Both of the points above work fine under Windows Vista, but I don't even
+> know how to use Windows correctly and I want to use Free Software.
+>
+> Again, for those that I just included in the carbon copies now, I have
+> given extensive information on the bugzilla report, but I can recompile
+> kernels, get dumps of debugging information, get dumps under Windows (if
+> that helps and if I am instructed how to do that). You name it. I am real=
+ly
+> willing to help as much as possible with all efforts that are possible to
+> me.
+>
+>
+> Thanks in advance for any help, Rog=E9rio Brito.
+>
+> --
+> Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+> http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+> Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+I think you might be experiencing the dreaded black screen upon
+wakeup.(after seeing you're quick video);
+I was having the same with my macbook pro, when running
+radeonhd(haven't tried s2ram yet to see if this resolves the issue).
+Although was told it should fix the issue.
+Did have the same(black screen of death wakeup); with a dell
+inspiron, but then realized my graphics modules weren't configured
+properly.
+As for radeonhd when I come around to it, I will try s2ram to see, until th=
+en
+(sorry for the dreaded word) fglrx...
+As for the pressing of buttons, the initial pressing of the power button se=
+nd's
+shutdown to the machine for me, but when suspending the system, the power b=
+utton
+wakes the machine up, or closing and opening the lid.
+
+
+-- =
+
+Justin P. Mattock
