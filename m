@@ -1,13 +1,12 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: Bugs on aspire one A150
-Date: Sat, 08 Nov 2008 11:57:11 +0000
-Message-ID: <49157E97.60503__16963.7161227458$1226145595$gmane$org@tuffmail.co.uk>
-References: <491506DB.1070000@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
+Date: Sat, 8 Nov 2008 13:53:33 +0100
+Message-ID: <200811081353.34442.rjw__2237.80059391192$1226148681$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <491506DB.1070000@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,104 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, ath5k-devel@venema.h4ckr.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Maxim Levitsky wrote:
-> I have just bought an Aspire one A150, XP version,
-> as it was the only available here, and installed ubuntu on it.
-> 
-> Bugs I discovered so far:
-> 
-> 
-> ** 1 - embedded controler works in polling mode, due to this:
-> 
-> [    0.708571] ACPI: EC: non-query interrupt received, switching to interrupt mode
-> [    1.224043] ACPI: EC: missing confirmations, switch off interrupt mode.
-> 
-> 
-> Maybe this is the reason for the fact that gnome power manager freezes when I unplug
-> the AC, and freezes often when I try to see battery status.
-> 
-> 
-> (Note: same is seen on my acer aspire 5720)
+Hi Andrew,
 
-That sounds like a known issue.  It has been resolved by "ACPI: EC: revert msleep patch".  Happily Len submitted it for mainline this week.  You will also find it if you try the acpi-test git tree.  We're all hoping 2.6.28 will be much improved in terms of reliable operation of different ECs :).
+This would be good to have in .28 IMO.
 
-> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by default in ubuntu...
-> wireless more or less works, but kernel log is full of backtraces.
+Thanks,
+Rafael
 
-Well, that doesn't tell us much.  Did they still happen after upgrading to 2.6.28-rc3?  Can we see them?
 
-> Was able to connect to my WPA2 access point.
-> Sometimes wireless fails completely, especially after suspend to ram.
-> Advanced features like monitor/injection work, but when I changed the card's
-> mac address it stopped working.
-> I also noticed that if I then start airodump, then wireless works with new mac.
-> 
-> 
-> 
-> ** 3 - internal mic doesn't work.
-> tried model=acer, model=auto.
-> Overall it seems that alsa misprograms O/B realteck
-> codec.
-> I talk about this later.
-> Have same issue on my acer 5720
-> 
-> 
-> 
-> ** 4 - wireless led doesn't work.
-> ath5k devs, can you fix this?
-> 
-> 
-> ** 5 - coretemp doesn't show cpu temperature,
-> I have seen somewhere that atom support same thermal diode as core2
-> and only patch to detect it is needed.
-> Please include such path in 2.6.28 if exists.
-> 
-> 
-> ** 6 - both card readers are missing from lspci, is this normal?
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
 
-A similar bug has been reported as a regression:
+Fix macro __pfn_to_page(pfn) so that it doesn't evaluate its
+argument twice in the CONFIG_DISCONTIGMEM=y case, because 'pfn' may
+be a result of a funtion call having side effects.
 
-<http://bugzilla.kernel.org/show_bug.cgi?id=11828>
+For example, the hibernation code applies pfn_to_page(pfn) to the
+result of a function returning the pfn corresponding to the next set
+bit in a bitmap and the current bit position is modified on each
+call.  This leads to "interesting" failures for CONFIG_DISCONTIGMEM=y
+due to the current behavior of __pfn_to_page(pfn).
 
-so one assumes that it worked on the machines with linux pre-installed.  Hopefully without requiring any hacks.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>
+---
+ include/asm-generic/memory_model.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It seems that for now a workaround may be to pass the option debug_quirks=1 to the sdhci module...
-
-<http://marc.info/?l=linux-kernel&m=122509648027303&w=2>
-
-...or that it may help if you insert an SD card before booting.
-
-Apparently the reporter also investigated pcie hotplug.  Probably the BIOS doesn't provide the normal support.  You can try "modprobe pciehp pciehp_force=1", maybe it helps the kernel discover the devices.  It worked for something else on my EeePC.  But then it will reportedly disappear the ethernet controller.
-
-However, at the moment pciehp can cause delays of 10s of seconds during resume.
+Index: linux-2.6/include/asm-generic/memory_model.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/memory_model.h
++++ linux-2.6/include/asm-generic/memory_model.h
+@@ -34,7 +34,7 @@
  
-> ** 7 - opengl is broken, I tried running neverball in fullscreen, but it shows wrong/corrupted
-> textures (compiz is running, and working well thought)
->  
-> Now I installed 2.6.28-rc3 (actually latest -git)
-> 
-> 
-> Sadly nothing improved.
-> I only found few regressions:
-> 
-> 
-> 
-> * Wireless now drops connection from my WPA2 access point after few minutes.
-> I changed temporarily its wireless protection to WEP and open mode, and both work
-> fine, maybe this is related to periodic key exchange WPA does?
-> 
-> * System doesn't reboot/shutdown, just hangs.
-
-Could be this:
-
-<http://bugzilla.kernel.org/show_bug.cgi?id=11942>
-
-As a fix, 8fd145917fb62368a9b80db59562c20576238f5a was reverted from the acpi tree.  This has also been submitted to mainline.
-
-Thanks for your work!  If you continue with this, I suggest CC'ing <kernel-testers@vger.kernel.org>.  That will help Rafael the regression hunter pick it up.
-
-Alan
+ #define __pfn_to_page(pfn)			\
+ ({	unsigned long __pfn = (pfn);		\
+-	unsigned long __nid = arch_pfn_to_nid(pfn);  \
++	unsigned long __nid = arch_pfn_to_nid(__pfn);  \
+ 	NODE_DATA(__nid)->node_mem_map + arch_local_page_offset(__pfn, __nid);\
+ })
+ 
