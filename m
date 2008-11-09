@@ -1,13 +1,19 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Bugs on aspire one A150
-Date: Sun, 09 Nov 2008 02:52:05 +0200
-Message-ID: <49163435.20301__16804.2366895408$1226192179$gmane$org@gmail.com>
-References: <491506DB.1070000@gmail.com> <49157E97.60503@tuffmail.co.uk>
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
+	suspends, but does not wakes up
+Date: Sun, 9 Nov 2008 00:45:14 -0200
+Message-ID: <20081109024514.GA11744__12836.9869235486$1226198895$gmane$org@ime.usp.br>
+References: <20081106194724.GB15366@ime.usp.br>
+	<20081107014535.GA19201@ime.usp.br>
+	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+	<20081108075008.GA8177@ime.usp.br>
+	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49157E97.60503@tuffmail.co.uk>
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,163 +23,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, ath5k-devel@venema.h4ckr.net
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: rbrito@ime.usp.br, linux-kernel@vger.kernel.org, yakui.zhao@intel.com, pavel@suse.cz, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Jenkins wrote:
-> Maxim Levitsky wrote:
->> I have just bought an Aspire one A150, XP version,
->> as it was the only available here, and installed ubuntu on it.
->>
->> Bugs I discovered so far:
->>
->>
->> ** 1 - embedded controler works in polling mode, due to this:
->>
->> [    0.708571] ACPI: EC: non-query interrupt received, switching to interrupt mode
->> [    1.224043] ACPI: EC: missing confirmations, switch off interrupt mode.
->>
->>
->> Maybe this is the reason for the fact that gnome power manager freezes when I unplug
->> the AC, and freezes often when I try to see battery status.
->>
->>
->> (Note: same is seen on my acer aspire 5720)
-> 
-> That sounds like a known issue.  It has been resolved by "ACPI: EC: revert msleep patch".  Happily Len submitted it for mainline this week.  You will also find it if you try the acpi-test git tree.  We're all hoping 2.6.28 will be much improved in terms of reliable operation of different ECs :).
-> 
-Yes, this almost fixes all issues with that.
-Almost because, it looks like the EC changes screen brightness on his own when battery is plugged/unplugged,
-but so does the gnome-power-manager, and thus it still hangs as before on battery removal (but doesn't hang otherwise)
-I disabled that behaver in gnome-power-manager and now no more hangs.
+Hi, Justin and others.
 
-I see that this fix fixes the polled mode. Any chance to make irq mode work?
+On Nov 08 2008, Justin Mattock wrote:
+> On Fri, Nov 7, 2008 at 11:50 PM, Rog=E9rio Brito <rbrito@ime.usp.br> wrot=
+e:
+> > I think that I have some more information regarding the suspend/hiberna=
+te
+> > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but wi=
+th
+> > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
+> > seems to work).
 
+Just some extra information here: while I can hibernate with vanilla
+2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
+minutes, but probably something like 5 minutes or so!) for the desktop to
+have any effect (despite the fact that I can move the mouse without any
+problems).
 
+A new reboot is *much* faster than what I get with hibernate.
 
->> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by default in ubuntu...
->> wireless more or less works, but kernel log is full of backtraces.
-> 
-> Well, that doesn't tell us much.  Did they still happen after upgrading to 2.6.28-rc3?  Can we see them?
-Fixed completely, looking through the git log I have seen a commit that fixes exactly same backtrace I had.
-No more errors in kernel log.
+I can film that if desired.
 
+> > But seeing the behaviour of this in comparison with Windows Vista, two
+> > things still stand out:
+> >
+> > 1 - pressing the suspend button suspends the machine, but upon a second
+> >    press, the machine still turns itself off and all work is lost. :-(
 
-> 
->> Was able to connect to my WPA2 access point.
->> Sometimes wireless fails completely, especially after suspend to ram.
->> Advanced features like monitor/injection work, but when I changed the card's
->> mac address it stopped working.
->> I also noticed that if I then start airodump, then wireless works with new mac.
-This still not fixed, I ask about this again in separate mail.
->>
->>
->>
->> ** 3 - internal mic doesn't work.
->> tried model=acer, model=auto.
->> Overall it seems that alsa misprograms O/B realteck
->> codec.
->> I talk about this later.
-Surprisingly, this is almost fixed.
-I can record from both internal mic and external mic
-(Quality is not so good, but is the same as in windows)
+This problem still persists.
 
-Almost, is that to increase capture level, I have to set "one" channel of it.
-Eg: if I set 100% left and 100% right then capture level is very low.
-But when I set 100% left and 0% right or vice versa it works fine.
+> > 2 - closing the lid, no matter what I program in GNOME's Power Preferen=
+ces,
+> >    doesn't even blackens the screen, let alone suspend or hibernate the
+> >    notebook.
 
-Also the "mic boost" doesn't change capture volume for internal mic.
-also the "mic boost" if set to high value works like analog loopback
-(I hear what I say in mic in headphones, same happens on my main notebook acer 5720)
+A correction here: when I close the lid, the laptop suspends. I can try to
+see if it hibernates.
 
+> > Again, for those that I just included in the carbon copies now, I have
+> > given extensive information on the bugzilla report, but I can recompile
+> > kernels, get dumps of debugging information, get dumps under Windows (if
+> > that helps and if I am instructed how to do that). You name it. I am re=
+ally
+> > willing to help as much as possible with all efforts that are possible =
+to
+> > me.
 
->> Have same issue on my acer 5720
->>
->>
->>
->> ** 4 - wireless led doesn't work.
->> ath5k devs, can you fix this?
->>
->>
->> ** 5 - coretemp doesn't show cpu temperature,
->> I have seen somewhere that atom support same thermal diode as core2
->> and only patch to detect it is needed.
->> Please include such path in 2.6.28 if exists.
->>
->>
->> ** 6 - both card readers are missing from lspci, is this normal?
-> 
-> A similar bug has been reported as a regression:
-> 
-> <http://bugzilla.kernel.org/show_bug.cgi?id=11828>
-> 
-> so one assumes that it worked on the machines with linux pre-installed.  Hopefully without requiring any hacks.
-> 
-> It seems that for now a workaround may be to pass the option debug_quirks=1 to the sdhci module...
-> 
-> <http://marc.info/?l=linux-kernel&m=122509648027303&w=2>
-> 
-> ...or that it may help if you insert an SD card before booting.
-> 
-> Apparently the reporter also investigated pcie hotplug.  Probably the BIOS doesn't provide the normal support.  You can try "modprobe pciehp pciehp_force=1", maybe it helps the kernel discover the devices.  It worked for something else on my EeePC.  But then it will reportedly disappear the ethernet controller.
-> 
-> However, at the moment pciehp can cause delays of 10s of seconds during resume.
-I am aware of this, but don't yet have a SD card to test.
+Again, I am willing to get any debugging information or anything that is
+asked me. I am testing things and I still don't have any production data on
+that notebook.
+
+BTW, I installed Windows Vista with a dual boot. I'm feeling tainted
+now. :-(
+
+> I think you might be experiencing the dreaded black screen upon
+> wakeup.(after seeing you're quick video);
+
+Nice that the video proved useful to demonstrate the issue. I can take
+another video to show the current behaviour with 2.6.28-rc3.
+
+> I was having the same with my macbook pro, when running
+> radeonhd(haven't tried s2ram yet to see if this resolves the issue).
+> Although was told it should fix the issue.
+
+Right. Just for further information, this notebook here has a plain ICH8
+chipset. The only thing that I think that is not from intel is the gigabit
+ethernet, which is a Realtek one (it seems that the r8169 driver is loaded,
+but I still have not tested wired connections).
+
+> Did have the same(black screen of death wakeup); with a dell
+> inspiron, but then realized my graphics modules weren't configured
+> properly.
+
+Weird. I have a Dell Latitude D520 here (which I'm using for this e-mail)
+and everything that I tried works fine (suspend, wifi, hibernation and even
+the compiz stuff---which I promptly disable). It has a broadcom ethernet
+that seems to use the b44 driver, but I have also not used the wired
+connection here.
+
+I'm streaming audio via daap to this notebook from a Kurobox (powerpc box)
+with kernel 2.6.27 kernel (and my patches that were included in
+2.6.28-rc3).
+
+> As for the pressing of buttons, the initial pressing of the power button =
+send's
+> shutdown to the machine for me, but when suspending the system, the power=
+ button
+> wakes the machine up, or closing and opening the lid.
+
+For me, nothing like this works. :-( I can open the lid and it still stays
+sleeping. Pressing the suspend (poweron/poweroff?) button while suspended
+only turns off the machine. :-(
 
 
->  
->> ** 7 - opengl is broken, I tried running neverball in fullscreen, but it shows wrong/corrupted
->> textures (compiz is running, and working well thought)
-Without compiz neveball works fine (slow, but this is very slow hardware)
+Thanks again for any feedback, Rog=E9rio Brito.
 
->>  
->> Now I installed 2.6.28-rc3 (actually latest -git)
->>
->>
->> Sadly nothing improved.
->> I only found few regressions:
->>
->>
->>
->> * Wireless now drops connection from my WPA2 access point after few minutes.
->> I changed temporarily its wireless protection to WEP and open mode, and both work
->> fine, maybe this is related to periodic key exchange WPA does?
-Now fixed, big thanks.
+-- =
 
->>
->> * System doesn't reboot/shutdown, just hangs.
-> 
-> Could be this:
-> 
-> <http://bugzilla.kernel.org/show_bug.cgi?id=11942>
-> 
-> As a fix, 8fd145917fb62368a9b80db59562c20576238f5a was reverted from the acpi tree.  This has also been submitted to mainline.
-Also fixed big thanks.
-
-
-
-
-Also noticed another bug:
-
-
-If I suspend/resume with compiz running, on resume I see wallpaper and mouse cursor, everything hangs for 
-minute or two, and sometimes forever.
-
-2.6.27 worked fine.
-
-
-
-
-Also hibernate doesn't work on my main notebook, but it is probably fixed, I update kernel to really latest -git
-and tell you.
-
-
-Big thanks for bugfixes, you saved me a lot of work and bisecting.
-
-Biggest solvable problem now is sound support now I think, datasheets are there, and
-I take a look at them.
-
-
-Best regards,
-	Maxim Levitsky
+Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
