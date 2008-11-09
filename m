@@ -1,20 +1,18 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
-	suspends, but does not wakes up
-Date: Sun, 9 Nov 2008 12:33:32 +0100
-Message-ID: <20081109113332.GD6094__7149.54188229075$1226230547$gmane$org@elf.ucw.cz>
-References: <20081106194724.GB15366@ime.usp.br>
-	<20081107014535.GA19201@ime.usp.br>
-	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
-	<20081108075008.GA8177@ime.usp.br>
-	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
-	<20081109024514.GA11744@ime.usp.br>
+Subject: Re: [PATCH] Fix __pfn_to_page(pfn) for
+	CONFIG_DISCONTIGMEM=y
+Date: Sun, 9 Nov 2008 12:37:36 +0100
+Message-ID: <20081109113736.GE6094__20191.5137855851$1226230777$gmane$org@elf.ucw.cz>
+References: <200811081353.34442.rjw@sisk.pl>
+	<20081108125952.GB21405@elf.ucw.cz>
+	<200811081412.21736.rjw@sisk.pl>
+	<20081108215458.1799896b.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20081109024514.GA11744@ime.usp.br>
+In-Reply-To: <20081108215458.1799896b.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,37 +22,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Cc: Justin Mattock <justinmattock@gmail.com>, linux-kernel@vger.kernel.org, yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2008-11-09 00:45:14, Rog=E9rio Brito wrote:
-> Hi, Justin and others.
-> =
+On Sat 2008-11-08 21:54:58, Andrew Morton wrote:
+> On Sat, 8 Nov 2008 14:12:21 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Saturday, 8 of November 2008, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > This would be good to have in .28 IMO.
+> > > 
+> > > Actually, this makes sense even for .27-stable, AFAICT.
+> > 
+> > Yes, it does, but it has to be merged first. :-)
+> 
+> It applies to 2.6.26 (at least).  Is there no need for it in kernels
+> earlier than 2.6.27.x?
 
-> On Nov 08 2008, Justin Mattock wrote:
-> > On Fri, Nov 7, 2008 at 11:50 PM, Rog=E9rio Brito <rbrito@ime.usp.br> wr=
-ote:
-> > > I think that I have some more information regarding the suspend/hiber=
-nate
-> > > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but =
-with
-> > > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
-> > > seems to work).
-> =
-
-> Just some extra information here: while I can hibernate with vanilla
-> 2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
-> minutes, but probably something like 5 minutes or so!) for the desktop to
-> have any effect (despite the fact that I can move the mouse without any
-> problems).
-
-Try it from the text console, and see what exactly stops
-responding. "killall klogd" is your friend.
-								Pavel
-
--- =
-
+It would be nice to fix it there, too. (OTOH that config never worked
+and we did not see huge pile of complains, so I guess the world would
+not fall down if it was not in 2.6.26...)
+									Pavel
+-- 
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
