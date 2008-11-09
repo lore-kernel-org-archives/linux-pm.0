@@ -1,17 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Fix __pfn_to_page(pfn) for
-	CONFIG_DISCONTIGMEM=y
-Date: Sun, 9 Nov 2008 14:17:53 +0100
-Message-ID: <200811091417.53663.rjw__27398.2984050692$1226236628$gmane$org@sisk.pl>
-References: <200811081353.34442.rjw@sisk.pl>
-	<20081108215458.1799896b.akpm@linux-foundation.org>
-	<20081109113736.GE6094@elf.ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: Freezer: Don't count threads waiting for
+	frozen	filesystems.
+Date: Sun, 9 Nov 2008 14:44:22 +0100
+Message-ID: <20081109134422.GA1730__22138.7383448475$1226239010$gmane$org@ucw.cz>
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	<200810292211.49021.rjw@sisk.pl>
+	<1225316715.18786.1.camel@nigel-laptop>
+	<200810292307.26945.rjw@sisk.pl>
+	<E1KvKql-0000dC-3M@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081109113736.GE6094@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <E1KvKql-0000dC-3M@pomaz-ex.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +23,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 9 of November 2008, Pavel Machek wrote:
-> On Sat 2008-11-08 21:54:58, Andrew Morton wrote:
-> > On Sat, 8 Nov 2008 14:12:21 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Saturday, 8 of November 2008, Pavel Machek wrote:
-> > > > Hi!
-> > > > 
-> > > > > This would be good to have in .28 IMO.
-> > > > 
-> > > > Actually, this makes sense even for .27-stable, AFAICT.
-> > > 
-> > > Yes, it does, but it has to be merged first. :-)
-> > 
-> > It applies to 2.6.26 (at least).  Is there no need for it in kernels
-> > earlier than 2.6.27.x?
+On Thu 2008-10-30 00:53:19, Miklos Szeredi wrote:
+> On Wed, 29 Oct 2008, Rafael J. Wysocki wrote:
+> > In any case, the freezing of user space seems to be much simpler
+> > than modifying all drivers to add suspend synchronization.
 > 
-> It would be nice to fix it there, too. (OTOH that config never worked
-> and we did not see huge pile of complains, so I guess the world would
-> not fall down if it was not in 2.6.26...)
+> As I mentioned, we don't _have_ to modify all drivers.  It could start
+> out by just modifying syscalls that result in calls to drivers.  That
+> would be a 10-liner patch.
 
-Yes, it's a bug, so it would be nice to fix it.  Still, the practical meaning
-of the fix would be minimal in 2.6.26 and earlier kernels IMO.
+If you can solve current freezer vs. fuse in 10 lines, that would be
+useful...
 
-Thanks,
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
