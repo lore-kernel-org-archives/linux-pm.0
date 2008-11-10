@@ -1,14 +1,21 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
-Date: Mon, 10 Nov 2008 10:42:39 +0100
-Message-ID: <20081110094239.GA14204__13830.2683401436$1226310309$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <20081109195033.GA1335@mobydick>
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
+	suspends, but does not wakes up
+Date: Mon, 10 Nov 2008 12:06:11 -0200
+Message-ID: <20081110140611.GA4450__42896.4788829491$1226326239$gmane$org@ime.usp.br>
+References: <20081106194724.GB15366@ime.usp.br>
+	<20081107014535.GA19201@ime.usp.br>
+	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+	<20081108075008.GA8177@ime.usp.br>
+	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
+	<20081109024514.GA11744@ime.usp.br>
+	<3DCE2017-408C-45E2-8E0D-3A474E8645F6@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20081109195033.GA1335@mobydick>
+In-Reply-To: <3DCE2017-408C-45E2-8E0D-3A474E8645F6@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +25,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mathieu Chouquet-Stringer <mchouque@free.fr>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: acpi-bugzilla@lists.sourceforge.net, rbrito@ime.usp.br, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "yakui.zhao@intel.com" <yakui.zhao@intel.com>, Pavel Machek <pavel@suse.cz>, Bugreport <bugme-daemon@bugzilla.kernel.org>, rui.zhang@inte.com, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi, Justin.
 
-> I've just finished compiling a recent snapshot of rc3 (namely gfed4d59
-> [1]) on a F9 distro (gcc 4.3.0 20080428) and suspend to disk doesn't
-> work anymore.  My config is attached below [2].
-> 
-> It just freezes my laptop (an old Thinkpad T30) while it works with
-> kernel version 2.6.26 (I've never tried 2.6.27).
-> 
-> I've tried playing with the pm_test facility, and while the "freezer"
-> test works, the "devices" test fails like the real suspend...
-> 
-> When that happens, the console still works (ie I can switch VTs and
-> type) but the whole system doesn't respond: I can't login for example...
-> Guess the disk driver is already off at that point.
-> 
-> I don't have another computer to capture a serial trace so I guess I'm
-> going to try to bisect it (which is going to take while on this slow
-> computer).  If I reconfigure my syslog could I get the output of the
-> suspend process on the screen (for some reason I used to get it during
-> suspend but now I only get it during resume)?
-> 
-> Any ideas or pointers to fix this appreciated...
+On Nov 08 2008, Justin P. Mattock wrote:
+> Appologize if this is quite brief
+> (sending from phone);
+> For the long delay try comment #2
+> Of:
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D11220
+> Keep in mind msi.c might have been changed since then, so it might not  =
 
-Trying with minimum drivers is likely to help here, and should be
-easier than bisect. Boot with init=/bin/bash, then try "devices" >
-pm_dest and disk > state...
+> work
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I checked this patch and it seems to be already incorporated into
+2.6.28-rc3 (with a dry-run, it told me that it was already applied).
+
+Thanks for the feedback anyway. I appreciate any help that I can take.
+
+
+Thanks, Rog=E9rio Brito.
+
+-- =
+
+Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
