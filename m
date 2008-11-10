@@ -1,14 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
-Date: Sun, 9 Nov 2008 20:59:30 +0100
-Message-ID: <200811092059.31178.rjw__38680.9156080291$1226260730$gmane$org@sisk.pl>
-References: <20081109195033.GA1335@mobydick>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
+	suspends, but does not wakes up
+Date: Mon, 10 Nov 2008 08:45:16 +0100
+Message-ID: <20081110074516.GB707__24593.083599075$1226303362$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <20081106194724.GB15366@ime.usp.br>
+	<20081107014535.GA19201@ime.usp.br>
+	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+	<20081108075008.GA8177@ime.usp.br>
+	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
+	<20081109024514.GA11744@ime.usp.br>
+	<20081109113332.GD6094@elf.ucw.cz>
+	<dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081109195033.GA1335@mobydick>
 Content-Disposition: inline
+In-Reply-To: <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +26,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mathieu Chouquet-Stringer <mchouque@free.fr>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: yakui.zhao@intel.com, linux-kernel@vger.kernel.org, Rog?rio Brito <rbrito@ime.usp.br>, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 9 of November 2008, Mathieu Chouquet-Stringer wrote:
-> 	Hello Pavel and Rafael,
-> 
-> I've just finished compiling a recent snapshot of rc3 (namely gfed4d59
-> [1]) on a F9 distro (gcc 4.3.0 20080428) and suspend to disk doesn't
-> work anymore.  My config is attached below [2].
-> 
-> It just freezes my laptop (an old Thinkpad T30) while it works with
-> kernel version 2.6.26 (I've never tried 2.6.27).
-> 
-> I've tried playing with the pm_test facility, and while the "freezer"
-> test works, the "devices" test fails like the real suspend...
-> 
-> When that happens, the console still works (ie I can switch VTs and
-> type) but the whole system doesn't respond: I can't login for example...
-> Guess the disk driver is already off at that point.
-> 
-> I don't have another computer to capture a serial trace so I guess I'm
-> going to try to bisect it (which is going to take while on this slow
-> computer).  If I reconfigure my syslog could I get the output of the
-> suspend process on the screen (for some reason I used to get it during
-> suspend but now I only get it during resume)?
-> 
-> Any ideas or pointers to fix this appreciated...
+> On Sun, Nov 9, 2008 at 3:33 AM, Pavel Machek <pavel@suse.cz> wrote:
+> > On Sun 2008-11-09 00:45:14, Rog=E9rio Brito wrote:
+> >> Hi, Justin and others.
+> >>
+> >> On Nov 08 2008, Justin Mattock wrote:
+> >> > On Fri, Nov 7, 2008 at 11:50 PM, Rog=E9rio Brito <rbrito@ime.usp.br>=
+ wrote:
+> >> > > I think that I have some more information regarding the suspend/hi=
+bernate
+> >> > > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, b=
+ut with
+> >> > > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, bu=
+t it
+> >> > > seems to work).
+> >>
+> >> Just some extra information here: while I can hibernate with vanilla
+> >> 2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
+> >> minutes, but probably something like 5 minutes or so!) for the desktop=
+ to
+> >> have any effect (despite the fact that I can move the mouse without any
+> >> problems).
+> >
+> > Try it from the text console, and see what exactly stops
+> > responding. "killall klogd" is your friend.
+> =
 
-Please check if that's http://bugzilla.kernel.org/show_bug.cgi?id=11989 and
-if that's the case, please add a "me too" to the bug entry.
+> FWIW, running radeon and s2ram
+> gives me a successful wakeup,
+> no delays only bluetooth-applet fails
+> to show back up as eye candy.
 
-Thanks,
-Rafael
+So 2.6.28-rc3 actually works for you? Good ;-).
+									Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
