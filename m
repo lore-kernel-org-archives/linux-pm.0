@@ -1,22 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
-	suspends, but does not wakes up
-Date: Tue, 11 Nov 2008 10:53:33 +0100
-Message-ID: <20081111095333.GC5464__35898.3564693064$1226408039$gmane$org@elf.ucw.cz>
-References: <20081106194724.GB15366@ime.usp.br>
-	<20081107014535.GA19201@ime.usp.br>
-	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
-	<20081108075008.GA8177@ime.usp.br>
-	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
-	<20081109024514.GA11744@ime.usp.br>
-	<20081109113332.GD6094@elf.ucw.cz>
-	<20081110141550.GB4450@ime.usp.br>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: Dynamic Idle?
+Date: Tue, 11 Nov 2008 15:51:16 +0200
+Message-ID: <20081111135116.GA18652@everest.verdurent.com>
+References: <345163910811070737y7de8a4bfoa401b632d1db3162@mail.gmail.com>
+	<Pine.LNX.4.44L0.0811071052050.2437-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20081110141550.GB4450@ime.usp.br>
+In-Reply-To: <Pine.LNX.4.44L0.0811071052050.2437-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,68 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Cc: Justin Mattock <justinmattock@gmail.com>, linux-kernel@vger.kernel.org, yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, acpi-bugzilla@lists.sourceforge.net
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-11-10 12:15:50, Rog=E9rio Brito wrote:
-> Hi, Pavel.
-> =
+On Fri, Nov 07, 2008 at 10:54:58AM -0500, Alan Stern wrote:
+> On Fri, 7 Nov 2008, Peter Reid wrote:
+>
+> >   Are both the same and what are OFF State/Retention State as well?
+> 
+> Presumably "OFF state" means no power at all.  I don't know what 
+> "Retention State" means.
 
-> On Nov 09 2008, Pavel Machek wrote:
-> > On Sun 2008-11-09 00:45:14, Rog=E9rio Brito wrote:
-> > > On Nov 08 2008, Justin Mattock wrote:
-> > > > On Fri, Nov 7, 2008 at 11:50 PM, Rog=E9rio Brito <rbrito@ime.usp.br=
-> wrote:
-> > > > > I think that I have some more information regarding the
-> > > > > suspend/hibernate issue: with Ubuntu's 2.6.27 kernel, I can't
-> > > > > hibernate my laptop, but with vanilla 2.6.28-rc3, I can hibernate
-> > > > > (I have not tested it much, but it seems to work).
-> =
+"Retention state" is used in some embedded architectures to mean a low-power state of the processor where context is maintained. e.g. Putting RAM in self refresh mode, so that devices do not have to initialise themselves when coming out of the low-power state.
 
-> I spoke too soon. Depending on what I do in userland (I tried using the
-> GNOME application "Cheese" just to put some load on the machine) and I
-> tried:
-> =
+/Amit
 
-> # echo shutdown > /sys/power/disk
-> # echo disk > /sys/power/state
-> =
-
-> But the machine stuck: it blanked the monitor, seemed to go to a console,
-> the cursor was blinking on the upper left corner of the screen, the HD
-> light blinked once and then the fan went faster, the CPU hotter and the
-> leds corresponding to caps lock and scroll lock were blinking.
-> =
-
-> I'm waiting with the machine in this situation since I started composing
-> this e-mail and nothing has changed.
-> =
-
-> The blinking leds (caps and scroll lock) would indicate a kernel panic, is
-> that correct?
-
-Yes, that's a panic. And we need text of that panic to do anything
-inteligent... Serial console? Try with different modules unloaded to
-see which one is that?
-
-
-> > Try it from the text console, and see what exactly stops
-> > responding. "killall klogd" is your friend.
-> =
-
-> The funny thing is that once that I could resume, it resumed
-> instantly. :-( Weird.
-> =
-
-> =
-
-> Thanks, Rog=E9rio Brito.
-> =
-
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+-- 
+-------------------------------------------------------------------------
+Amit Kucheria			amit.kucheria@verdurent.com
+Kernel Developer, Verdurent
+--------------------------------------------------------------------------
