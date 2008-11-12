@@ -1,17 +1,16 @@
 From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Hibernate: Fix breakage on x86_32
-	with	CONFIG_NUMA set (was: Re: CONFIG_NUMA breaks hibernation
-	on x86-32	with PAE)
-Date: Wed, 12 Nov 2008 23:29:27 +0100
-Message-ID: <20081112222927.GA13844__4190.78937634385$1226529195$gmane$org@elte.hu>
-References: <20081109140726.GB1786@ucw.cz> <20081112104951.GB11945@ucw.cz>
-	<200811122257.50998.rjw@sisk.pl> <200811122322.36781.rjw@sisk.pl>
+Subject: Re: [PATCH] x86: Make NUMA on 32-bit depend on
+	EXPERIMENTAL again
+Date: Wed, 12 Nov 2008 23:29:45 +0100
+Message-ID: <20081112222945.GB13844__46757.3622162037$1226529276$gmane$org@elte.hu>
+References: <20081109140726.GB1786@ucw.cz> <200811122257.50998.rjw@sisk.pl>
+	<200811122322.36781.rjw@sisk.pl> <200811122326.16107.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200811122322.36781.rjw@sisk.pl>
+In-Reply-To: <200811122326.16107.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,32 +28,22 @@ List-Id: linux-pm@vger.kernel.org
 * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86: Hibernate: Fix breakage on x86_32 with CONFIG_NUMA set
+> Subject: x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
 > 
-> The NUMA code on x86_32 creates special memory mapping that allows
-> each node's pgdat to be located in this node's memory.  For this
-> purpose it allocates a memory area at the end of each node's memory
-> and maps this area so that it is accessible with virtual addresses
-> belonging to low memory.  As a result, if there is high memory,
-> these NUMA-allocated areas are physically located in high memory,
-> although they are mapped to low memory addresses.
-> 
-> Our hibernation code does not take that into account and for this
-> reason hibernation fails on all x86_32 systems with CONFIG_NUMA=y and
-> with high memory present.  Fix this by adding a special mapping for
-> the NUMA-allocated memory areas to the temporary page tables created
-> during the last phase of resume.
+> My previous patch to make CONFIG_NUMA on x86_32 depend on BROKEN
+> turned out to be unnecessary, after all, since the source of the
+> hibernation vs CONFIG_NUMA problem turned out to be the fact that
+> we didn't take the NUMA KVA remapping into account in the
+> hibernation code.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > Cc: Pavel Machek <pavel@suse.cz>
 > Cc: Andi Kleen <andi@firstfloor.org>
 > Cc: "H. Peter Anvin" <hpa@zytor.com>
 > ---
->  arch/x86/include/asm/mmzone_32.h |    4 ++++
->  arch/x86/mm/numa_32.c            |   35 +++++++++++++++++++++++++++++++++++
->  arch/x86/power/hibernate_32.c    |    4 ++++
->  3 files changed, 43 insertions(+)
+>  arch/x86/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied to tip/x86/numa, thanks Rafael for the detective work!
+applied to tip/x86/numa, thanks Rafael!
 
 	Ingo
