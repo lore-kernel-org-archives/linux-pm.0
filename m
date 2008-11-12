@@ -1,16 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Make NUMA on 32-bit depend on
-	EXPERIMENTAL again
-Date: Wed, 12 Nov 2008 23:29:45 +0100
-Message-ID: <20081112222945.GB13844__46757.3622162037$1226529276$gmane$org@elte.hu>
-References: <20081109140726.GB1786@ucw.cz> <200811122257.50998.rjw@sisk.pl>
-	<200811122322.36781.rjw@sisk.pl> <200811122326.16107.rjw@sisk.pl>
+From: "Bob Copeland" <me@bobcopeland.com>
+Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
+Date: Wed, 12 Nov 2008 17:37:00 -0500
+Message-ID: <b6c5339f0811121437v624737abka49b5aefd8f1def4__5145.40115041218$1226529656$gmane$org@mail.gmail.com>
+References: <20081109195033.GA1335@mobydick> <20081112184236.GR26778@kernel.dk>
+	<200811122237.03882.rjw@sisk.pl>
+	<200811121357.02233.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200811121357.02233.jbarnes@virtuousgeek.org>
 Content-Disposition: inline
-In-Reply-To: <200811122326.16107.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Mathieu Chouquet-Stringer <mchouque@free.fr>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>, Jens Axboe <jens.axboe@oracle.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Nov 12, 2008 at 4:57 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Wednesday, November 12, 2008 1:37 pm Rafael J. Wysocki wrote:
+>> On Wednesday, 12 of November 2008, Jens Axboe wrote:
+>> > A drm enabled kernel also hangs hard on resume (just see the mouse
+>> > pointer) here on the x60. Removing drm makes it work just fine. 2.6.27
+>> > works fine as well.
+>>
+>> Is there Intel graphics in there?
+>
+> Yeah I think so... I wonder if this is another case where a POST conflicted
+> with the kernel's restore and caused X to hang...
+>
+> Jens, does suspend/resume work if you just do it from the console (echo mem >
+> /sys/power/state) with i915 loaded?
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Here's a "me too" for resume troubles in 2.6.28, MacBook Core Duo with i915
+graphics.  I'm about a week behind in my git tree though.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
-> 
-> My previous patch to make CONFIG_NUMA on x86_32 depend on BROKEN
-> turned out to be unnecessary, after all, since the source of the
-> hibernation vs CONFIG_NUMA problem turned out to be the fact that
-> we didn't take the NUMA KVA remapping into account in the
-> hibernation code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@suse.cz>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Probably unrelated, but in testing other stuff I noticed that 2.6.27.3 worked
+whereas 2.6.27.4 does not.  Reverting "ACPI Suspend: Enable ACPI during resume
+if SCI_EN is not set" makes it work there.  In 2.6.28-rc3, reverting the same
+commit met with mixed success:
 
-applied to tip/x86/numa, thanks Rafael!
+  * resuming from X got me one successful resume after a long timeout,
+    and one resume with mouse-pointer-only
+  * resuming from console always worked
 
-	Ingo
+With the above mentioned commit, resume never worked.
+
+-- 
+Bob Copeland %% www.bobcopeland.com
