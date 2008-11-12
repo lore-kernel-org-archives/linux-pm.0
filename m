@@ -1,10 +1,14 @@
-From: "Peter Reid" <ppeter.reid@gmail.com>
-Subject: pm support
-Date: Wed, 12 Nov 2008 17:00:43 +0530
-Message-ID: <345163910811120330h69f69fcak60237d16960fbb3b@mail.gmail.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Bugs on aspire one A150
+Date: Wed, 12 Nov 2008 19:48:41 +0200
+Message-ID: <491B16F9.8030608__1446.16729016906$1226512309$gmane$org@gmail.com>
+References: <491506DB.1070000@gmail.com> <49157E97.60503@tuffmail.co.uk>
+	<49163435.20301@gmail.com> <4916BED0.4090700@tuffmail.co.uk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1574225789135568235=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4916BED0.4090700@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,75 +16,153 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============1574225789135568235==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8203_10121716.1226489443443"
+Alan Jenkins wrote:
+> Maxim Levitsky wrote:
+>> Alan Jenkins wrote:
+>>> Maxim Levitsky wrote:
+>>>> I have just bought an Aspire one A150, XP version,
+>>>> as it was the only available here, and installed ubuntu on it.
+>>>>
+>>>> Bugs I discovered so far:
+>>>>
+>>>>
+>>>> ** 1 - embedded controler works in polling mode, due to this:
+>>>>
+>>>> [    0.708571] ACPI: EC: non-query interrupt received, switching to
+>>>> interrupt mode
+>>>> [    1.224043] ACPI: EC: missing confirmations, switch off interrupt
+>>>> mode.
+>>>>
+>>>>
+>>>> Maybe this is the reason for the fact that gnome power manager
+>>>> freezes when I unplug
+>>>> the AC, and freezes often when I try to see battery status.
+>>>>
+>>>>
+>>>> (Note: same is seen on my acer aspire 5720)
+>>> That sounds like a known issue.  It has been resolved by "ACPI: EC:
+>>> revert msleep patch".  Happily Len submitted it for mainline this
+>>> week.  You will also find it if you try the acpi-test git tree. 
+>>> We're all hoping 2.6.28 will be much improved in terms of reliable
+>>> operation of different ECs :).
+>>>
+>> Yes, this almost fixes all issues with that.
+>> Almost because, it looks like the EC changes screen brightness on his
+>> own when battery is plugged/unplugged,
+>> but so does the gnome-power-manager, and thus it still hangs as before
+>> on battery removal (but doesn't hang otherwise)
+>> I disabled that behaver in gnome-power-manager and now no more hangs.
+>>
+> 
+> Please do report it as an ACPI EC bug.  It's popular hardware, and if
+> nothing else it is important that upstream be aware of the workarounds
+> people are having to use.
+> 
+>> I see that this fix fixes the polled mode. Any chance to make irq mode
+>> work?
+>>
+> 
+> Probably not.  It doesn't seem important, it may not be possible, and
+> even if you could fix the EC driver for your hardware, there's the risk
+> of breaking other peoples hardware.
+> 
+> The presumption is that you have weird hardware and it genuinely needs a
+> polling workaround.  It's not too bad, now it uses udelay() it should
+> not impose any wakeups or significant latency, just some extra cpu time
+> in a busy loop.  EC events such as acpi hotkeys are still received as
+> interrupts (although we then have to query the type of event using a
+> polled transaction).
+> 
+> 
+> I assume you get something like (text not exact):
+> 
+> "EC: started in polling mode"
+> ...
+> "EC: non-query interrupt received, switching to interrupt mode"
+> ...
+> "EC: missing confirmations, switching to polling mode"
+> 
+> all during boot.
+Yes, this is what I see.
 
-------=_Part_8203_10121716.1226489443443
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> 
+> 
+> There's one outstanding issue on a different machine, where the
+> occasional EC read fails and triggers polling mode sometime _after_
+> boot.  It can be fixed by retrying the transaction
+> 
+>     http://bugzilla.kernel.org/show_bug.cgi?id=11896
+> 
+> but I don't really expect your machine has the same problem.
+> 
+> <snip non-acpi problems>
+> 
+>> Also noticed another bug:
+>>
+>>
+>> If I suspend/resume with compiz running, on resume I see wallpaper and
+>> mouse cursor, everything hangs for minute or two, and sometimes forever.
+>>
+>> 2.6.27 worked fine.
+> 
+> Weird.
+> 
+> Did you try sysrq-W during the hang?  That's supposed to dump a list of
+> blocked tasks to dmesg.
+Well, I see the wallpaper and can move the mouse, I will try to suspend from console
+I think this is graphics bug.
+nether ctrl+alt+bks nor SAK kill X.
 
-Hi,
-    Am new to OMAP3 development and interested in power management support.
-   What is the current status of the linux power management support for
-omap3?
+After 2 minute wait, kernel log doesn't show anything unusual.
+printk times, jump that 2 minutes around wireless association, but I tested it without ath5k loaded
+and still the same happens.
 
-   I started using pm-20081006 and migrated to pm-20081106.
+Also if I disable compiz, everything resumes correctly, and instantly.
 
-   Do these trees have complete pm support. If not, would like to know  the
-   extent of  support that exist in these trees.
+> 
+>> Also hibernate doesn't work on my main notebook, but it is probably
+>> fixed, I update kernel to really latest -git
+>> and tell you.
+>>
+> 
+> But suspend to ram works?  Usually it is the other way round :).  If you
+> haven't already, you might read
+> 
+>     Documentation/power/basic-pm-debugging.txt
+> 
+Well, this is long story
+details at http://lkml.org/lkml/2008/9/20/75
+speaking shortly, bios doesn't pass control to kernel on second resume.
+Thus I don't test it, but I see how it works now.
 
-   What features have been supported in these trees.
+Suspend to disk still doesn't work.
+First of all system hangs in the end of image writeout.
+If I power it down manually, and boot, system resumes from disk, and then hangs.
+2.6.27 works fine.
 
-   tried to test suspend-resume with pm-20081006 and pm-20081106.
-   looks like it is broken somewhere.
-
-   are there any performance figures that exist regarding how much power
-saving
-   occurs with pm turned on.
-
-   i have access to beagle and evm boards.
-
-Regards,
-Reid.
-
-------=_Part_8203_10121716.1226489443443
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,&nbsp;<div><br>&nbsp;&nbsp;&nbsp; Am new to OMAP3 development and interested in power management support.<div><br><div>&nbsp;&nbsp; What is the current status of the linux power management support for omap3?</div><div><br>&nbsp;&nbsp; I started using pm-20081006 and migrated to&nbsp;<span>pm</span>-20081106.</div>
-
-<div><br></div><div>&nbsp;&nbsp; Do these trees have complete pm support. If not, would like to know&nbsp;&nbsp;the&nbsp;</div><div>&nbsp;&nbsp; extent of &nbsp;support that exist in these trees.&nbsp;&nbsp;</div><div><br></div><div>&nbsp;&nbsp; What features have been supported in these trees.</div>
-
-<div><br></div><div>&nbsp;&nbsp; tried to test suspend-resume with pm-20081006 and&nbsp;<span>pm</span>-20081106.&nbsp;</div><div>&nbsp;&nbsp; looks like it is broken somewhere.</div><div>&nbsp;</div><div>&nbsp;&nbsp; are there any performance figures that exist regarding how much power saving<br>
-
-</div><div>&nbsp;&nbsp; occurs with pm turned on.</div><div><br></div><div>&nbsp;&nbsp; i have access to beagle and evm boards.</div><div><br></div><div>Regards,</div><div>Reid.</div><div><br></div><div><br></div><div><br></div><div><br></div>
-
-<div><br></div><div>&nbsp;&nbsp;&nbsp;</div><div>&nbsp;&nbsp;</div><div><br></div><div><br></div><div><br></div><div><br></div><div>&nbsp;&nbsp;&nbsp;<br><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span></div>
-<div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span></div><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span><div>
-
-<span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span></div><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br>
-
-
-</span></div><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span></div><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br>
-</span></div><div><span style="color:rgb(0, 0, 238);text-decoration:underline"><br></span><div><br></div><div><br></div><div><br></div></div></div>
-</div></div></div></div>
-
-------=_Part_8203_10121716.1226489443443--
-
---===============1574225789135568235==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+(This is about my main notebook)
 
 
---===============1574225789135568235==--
+> it suggests some tests to narrow down the problem.
+> 
+>> Big thanks for bugfixes, you saved me a lot of work and bisecting.
+>>
+> 
+> I can't take credit for actual fixes.  But I'm very happy to help people
+> avoid bisecting for known problems.  I hope you have time to crack the
+> unknown ones :).
+> 
+> Alan
+
+
+Best regards,
+	Maxim Levitsky
+
+
+PS: sorry for late reply
