@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-Date: Sun, 16 Nov 2008 20:28:33 +0100
-Message-ID: <200811162028.34099.rjw__47140.3626878329$1226863872$gmane$org@sisk.pl>
+Date: Sun, 16 Nov 2008 23:40:54 +0200
+Message-ID: <49209366.3060500__32964.8175546483$1226871812$gmane$org@gmail.com>
 References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-	<alpine.LFD.2.00.0811161030070.3468@nehalem.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811161030070.3468@nehalem.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +17,14 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5LCAxNiBvZiBOb3ZlbWJlciAyMDA4LCBMaW51cyBUb3J2YWxkcyB3cm90ZToKPiAK
-PiBPbiBTdW4sIDE2IE5vdiAyMDA4LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+Cj4gPiBC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIw
-NDkKPiA+IFN1YmplY3QJCTogT29wcyBpbiBhY3BpX3N5c3RlbV93YWtldXBfZGV2aWNlX3NlcV9z
-aG93Cj4gPiBTdWJtaXR0ZXIJOiBCcnVubyBQcsOpbW9udCA8Ym9uYm9uc0BsaW51eC12c2VydmVy
-Lm9yZz4KPiA+IERhdGUJCTogMjAwOC0xMS0xNiAxMzowNCAoMSBkYXlzIG9sZCkKPiA+IEZpcnN0
-LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3Rv
-cnZhbGRzL2xpbnV4LTIuNi5naXQ7YT1jb21taXQ7aD0wNzk0NDY5ZGEzZjdiMjA5MzU3NWNiZGZj
-MTEwODMwOGRkMzY0MWNlCj4gPiBSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51
-eC1rZXJuZWwmbT0xMjI2ODQwNzAyMTU1MjAmdz00Cj4gCj4gVGhpcyBhbHJlYWR5IGdvdCBmaXhl
-ZDogY29tbWl0IDc3ZmI2MWEwNGEwNDgzYWQyNzRjZTVjNTFiMDJjNDZjMTJkYjM2OTMuCj4gCj4g
-PiBSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKPiA+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+
-ID4gCj4gPiBCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTIwNDIKPiA+IFN1YmplY3QJCTogVVNCIGhpZCBibG9ja3MgVVNCIHBvcnQgaW4gMi42
-LjI4cmMzCj4gPiBTdWJtaXR0ZXIJOiBBbmRpIEtsZWVuIDxhbmRpQGZpcnN0Zmxvb3Iub3JnPgo+
-ID4gRGF0ZQkJOiAyMDA4LTExLTExIDA6MzEgKDYgZGF5cyBvbGQpCj4gPiBSZWZlcmVuY2VzCTog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC11c2ImbT0xMjI2MzYyNDY1MjI4NDgmdz00Cj4gPiBI
-YW5kbGVkLUJ5CTogQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT4KPiA+IAkJ
-ICBKaXJpIFNsYWJ5IDxqaXJpc2xhYnlAZ21haWwuY29tPgo+ID4gUGF0Y2gJCTogaHR0cDovL21h
-cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI2NjE0MjU2MjAyNTEmdz0yCj4gCj4gY29tbWl0
-IDEzMWQzYTdhMDA5ZDU2YTk2Y2M3MTE3YjRlOWQwYzkwYzJlMmExZGMKPiAKPiA+IEJ1Zy1FbnRy
-eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTk1NAo+ID4g
-U3ViamVjdAkJOiBzeXNwcm9mIHRyYWNlciBBQkkgcmVncmVzc2lvbiBpbiAyLjYuMjhyYzEKPiA+
-IFN1Ym1pdHRlcgk6IEVyaWMgQW5ob2x0IDxlcmljQGFuaG9sdC5uZXQ+Cj4gPiBEYXRlCQk6IDIw
-MDgtMTEtMDQgMjI6MTQgKDEzIGRheXMgb2xkKQo+ID4gSGFuZGxlZC1CeQk6IEVyaWMgQW5ob2x0
-IDxlcmljQGFuaG9sdC5uZXQ+Cj4gPiBQYXRjaAkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9y
-Zy9hdHRhY2htZW50LmNnaT9pZD0xODY4MyZhY3Rpb249dmlldwo+IAo+IGNvbW1pdCAwNzJiYTQ5
-ODM4YjQyYzg3M2M0OTZkNzJjOTFiYjIzNzkxNGNmM2I2Cj4gCj4gPiBCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE5MTEKPiA+IFN1YmplY3QJ
-CTogbmV3IFBDTUNJQSBkZXZpY2UgaW5zdGFuY2UgYWZ0ZXIgcmVzdW1lIC0gb3Jpbm9jbyBjYW4n
-dCBkb3dubG9hZCBmaXJtd2FyZQo+ID4gU3VibWl0dGVyCTogQW5kcmV5IEJvcnplbmtvdiA8YXJ2
-aWRqYWFyQG1haWwucnU+Cj4gPiBEYXRlCQk6IDIwMDgtMTAtMjggMTk6MTkgKDIwIGRheXMgb2xk
-KQo+ID4gUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtd2lyZWxlc3MmbT0x
-MjI1MjIxNjU3MTk3NjAmdz00Cj4gPiBIYW5kbGVkLUJ5CTogRGF2ZSA8a2lscm95ZEBnb29nbGVt
-YWlsLmNvbT4KPiA+IFBhdGNoCQk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtd2lyZWxlc3Mm
-bT0xMjI1MzkwNTg2MDE1ODgmdz00Cj4gCj4gY29tbWl0IGU2ODk1OTdmZTg5MGNmMjJlMjMxOTUw
-MzdhYTY2OGMzOWIyNWFlNGIKClRoYW5rcyBhIGxvdCwgY2xvc2VkIGFsbCBvZiB0aGVtLgoKQmVz
-dCwKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+Just to note, here on acer aspire one suspend to disk is broken too.
+System suspends, and then hangs.
+
+If I shutdown the system, and then attempt resume, it resumes, and then hangs.
+
+Best regards,
+	Maxim Levitsky
