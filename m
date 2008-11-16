@@ -1,11 +1,11 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-Date: Sun, 16 Nov 2008 18:29:53 +0000
-Message-ID: <20081116182953.6231ae8c__39082.0815846839$1226860345$gmane$org@lxorguk.ukuu.org.uk>
+Date: Sun, 16 Nov 2008 10:43:29 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0811161030070.3468__18233.4286197603$1226861159$gmane$org@nehalem.linux-foundation.org>
 References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -18,19 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Linus@smtp1.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
->      the majority of these patches have not been merged for over two weeks
->      (for almost three weeks in many cases and for over a _month_ in one case).
->      IMO, this is insane.]
-
-Some of them are quite serious too - some stuff is basically unusable in
-2.6.28rc due to the vmalloc bug.
-
-Is there any reason why someone (Rafael ?) shouldn't simply submit all of
-those patches that look sensible, are reported to fix regressions and
-whose maintainer has not provided a reason to NOT apply them into the
-tree ?
-
-Alan
+CgpPbiBTdW4sIDE2IE5vdiAyMDA4LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPgo+IEJ1Zy1F
+bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjA0OQo+
+IFN1YmplY3QJCTogT29wcyBpbiBhY3BpX3N5c3RlbV93YWtldXBfZGV2aWNlX3NlcV9zaG93Cj4g
+U3VibWl0dGVyCTogQnJ1bm8gUHLDqW1vbnQgPGJvbmJvbnNAbGludXgtdnNlcnZlci5vcmc+Cj4g
+RGF0ZQkJOiAyMDA4LTExLTE2IDEzOjA0ICgxIGRheXMgb2xkKQo+IEZpcnN0LUJhZC1Db21taXQ6
+IGh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4
+LTIuNi5naXQ7YT1jb21taXQ7aD0wNzk0NDY5ZGEzZjdiMjA5MzU3NWNiZGZjMTEwODMwOGRkMzY0
+MWNlCj4gUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIy
+Njg0MDcwMjE1NTIwJnc9NAoKVGhpcyBhbHJlYWR5IGdvdCBmaXhlZDogY29tbWl0IDc3ZmI2MWEw
+NGEwNDgzYWQyNzRjZTVjNTFiMDJjNDZjMTJkYjM2OTMuCgo+IFJlZ3Jlc3Npb25zIHdpdGggcGF0
+Y2hlcwo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+IAo+IEJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
+dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjA0Mgo+IFN1YmplY3QJCTogVVNC
+IGhpZCBibG9ja3MgVVNCIHBvcnQgaW4gMi42LjI4cmMzCj4gU3VibWl0dGVyCTogQW5kaSBLbGVl
+biA8YW5kaUBmaXJzdGZsb29yLm9yZz4KPiBEYXRlCQk6IDIwMDgtMTEtMTEgMDozMSAoNiBkYXlz
+IG9sZCkKPiBSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC11c2ImbT0xMjI2
+MzYyNDY1MjI4NDgmdz00Cj4gSGFuZGxlZC1CeQk6IEFsYW4gU3Rlcm4gPHN0ZXJuQHJvd2xhbmQu
+aGFydmFyZC5lZHU+Cj4gCQkgIEppcmkgU2xhYnkgPGppcmlzbGFieUBnbWFpbC5jb20+Cj4gUGF0
+Y2gJCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI2NjE0MjU2MjAyNTEm
+dz0yCgpjb21taXQgMTMxZDNhN2EwMDlkNTZhOTZjYzcxMTdiNGU5ZDBjOTBjMmUyYTFkYwoKPiBC
+dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE5
+NTQKPiBTdWJqZWN0CQk6IHN5c3Byb2YgdHJhY2VyIEFCSSByZWdyZXNzaW9uIGluIDIuNi4yOHJj
+MQo+IFN1Ym1pdHRlcgk6IEVyaWMgQW5ob2x0IDxlcmljQGFuaG9sdC5uZXQ+Cj4gRGF0ZQkJOiAy
+MDA4LTExLTA0IDIyOjE0ICgxMyBkYXlzIG9sZCkKPiBIYW5kbGVkLUJ5CTogRXJpYyBBbmhvbHQg
+PGVyaWNAYW5ob2x0Lm5ldD4KPiBQYXRjaAkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9h
+dHRhY2htZW50LmNnaT9pZD0xODY4MyZhY3Rpb249dmlldwoKY29tbWl0IDA3MmJhNDk4MzhiNDJj
+ODczYzQ5NmQ3MmM5MWJiMjM3OTE0Y2YzYjYKCj4gQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
+Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExOTExCj4gU3ViamVjdAkJOiBuZXcgUENNQ0lB
+IGRldmljZSBpbnN0YW5jZSBhZnRlciByZXN1bWUgLSBvcmlub2NvIGNhbid0IGRvd25sb2FkIGZp
+cm13YXJlCj4gU3VibWl0dGVyCTogQW5kcmV5IEJvcnplbmtvdiA8YXJ2aWRqYWFyQG1haWwucnU+
+Cj4gRGF0ZQkJOiAyMDA4LTEwLTI4IDE5OjE5ICgyMCBkYXlzIG9sZCkKPiBSZWZlcmVuY2VzCTog
+aHR0cDovL21hcmMuaW5mby8/bD1saW51eC13aXJlbGVzcyZtPTEyMjUyMjE2NTcxOTc2MCZ3PTQK
+PiBIYW5kbGVkLUJ5CTogRGF2ZSA8a2lscm95ZEBnb29nbGVtYWlsLmNvbT4KPiBQYXRjaAkJOiBo
+dHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LXdpcmVsZXNzJm09MTIyNTM5MDU4NjAxNTg4Jnc9NAoK
+Y29tbWl0IGU2ODk1OTdmZTg5MGNmMjJlMjMxOTUwMzdhYTY2OGMzOWIyNWFlNGIKCgkJCUxpbnVz
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
+IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
+L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
