@@ -1,14 +1,11 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-Date: Mon, 17 Nov 2008 20:36:46 +0900
-Message-ID: <1226921806.8582.6.camel__37331.1296957128$1226922084$gmane$org@localhost.localdomain>
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-	<20081116182953.6231ae8c@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] Fix misspellings in pm.h macros
+Date: Mon, 17 Nov 2008 11:14:19 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081116182953.6231ae8c@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,26 +15,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2008-11-16 at 18:29 +0000, Alan Cox wrote:
-> >      the majority of these patches have not been merged for over two weeks
-> >      (for almost three weeks in many cases and for over a _month_ in one case).
-> >      IMO, this is insane.]
-> 
-> Some of them are quite serious too - some stuff is basically unusable in
-> 2.6.28rc due to the vmalloc bug.
-> 
-> Is there any reason why someone (Rafael ?) shouldn't simply submit all of
-> those patches that look sensible, are reported to fix regressions and
-> whose maintainer has not provided a reason to NOT apply them into the
-> tree ?
+This patch (as1167) fixes some misspellings in various recently-added
+macros in pm.h.  Fortunately these macros are not yet used anywhere.
 
-There is for SCSI.  Our two bugzilla entries each have several patches
-(one has two, the other has four).  The patches listed in the
-regressions aren't necessarily going to be the ones applied (depending
-on how the arguing and testing goes).
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: Rafael J. Wysocki <rjw@sisk.pl>
 
-James
+---
+
+Index: usb-2.6/include/linux/pm.h
+===================================================================
+--- usb-2.6.orig/include/linux/pm.h
++++ usb-2.6/include/linux/pm.h
+@@ -252,7 +252,7 @@ struct dev_pm_ops {
+ #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
+ #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
+ #define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
+-#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
++#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
+ #define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
+ #define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
+ 
+@@ -265,15 +265,15 @@ struct dev_pm_ops {
+ #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
+ #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
+ #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
+-#define PMSG_USER_SUSPEND	((struct pm_messge) \
++#define PMSG_USER_SUSPEND	((struct pm_message) \
+ 					{ .event = PM_EVENT_USER_SUSPEND, })
+-#define PMSG_USER_RESUME	((struct pm_messge) \
++#define PMSG_USER_RESUME	((struct pm_message) \
+ 					{ .event = PM_EVENT_USER_RESUME, })
+-#define PMSG_REMOTE_RESUME	((struct pm_messge) \
++#define PMSG_REMOTE_RESUME	((struct pm_message) \
+ 					{ .event = PM_EVENT_REMOTE_RESUME, })
+-#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
++#define PMSG_AUTO_SUSPEND	((struct pm_message) \
+ 					{ .event = PM_EVENT_AUTO_SUSPEND, })
+-#define PMSG_AUTO_RESUME		((struct pm_messge) \
++#define PMSG_AUTO_RESUME	((struct pm_message) \
+ 					{ .event = PM_EVENT_AUTO_RESUME, })
+ 
+ /**
