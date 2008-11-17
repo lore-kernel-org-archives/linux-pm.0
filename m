@@ -1,11 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] Fix misspellings in pm.h macros
-Date: Mon, 17 Nov 2008 11:14:19 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Fix misspellings in pm.h macros
+Date: Mon, 17 Nov 2008 22:02:06 +0100
+Message-ID: <200811172202.06736.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,49 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1167) fixes some misspellings in various recently-added
-macros in pm.h.  Fortunately these macros are not yet used anywhere.
+On Monday, 17 of November 2008, Alan Stern wrote:
+> This patch (as1167) fixes some misspellings in various recently-added
+> macros in pm.h.  Fortunately these macros are not yet used anywhere.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> CC: Rafael J. Wysocki <rjw@sisk.pl>
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-CC: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
----
+> ---
+> 
+> Index: usb-2.6/include/linux/pm.h
+> ===================================================================
+> --- usb-2.6.orig/include/linux/pm.h
+> +++ usb-2.6/include/linux/pm.h
+> @@ -252,7 +252,7 @@ struct dev_pm_ops {
+>  #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
+>  #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
+>  #define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
+> -#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
+> +#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
+>  #define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
+>  #define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
+>  
+> @@ -265,15 +265,15 @@ struct dev_pm_ops {
+>  #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
+>  #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
+>  #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
+> -#define PMSG_USER_SUSPEND	((struct pm_messge) \
+> +#define PMSG_USER_SUSPEND	((struct pm_message) \
+>  					{ .event = PM_EVENT_USER_SUSPEND, })
+> -#define PMSG_USER_RESUME	((struct pm_messge) \
+> +#define PMSG_USER_RESUME	((struct pm_message) \
+>  					{ .event = PM_EVENT_USER_RESUME, })
+> -#define PMSG_REMOTE_RESUME	((struct pm_messge) \
+> +#define PMSG_REMOTE_RESUME	((struct pm_message) \
+>  					{ .event = PM_EVENT_REMOTE_RESUME, })
+> -#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
+> +#define PMSG_AUTO_SUSPEND	((struct pm_message) \
+>  					{ .event = PM_EVENT_AUTO_SUSPEND, })
+> -#define PMSG_AUTO_RESUME		((struct pm_messge) \
+> +#define PMSG_AUTO_RESUME	((struct pm_message) \
+>  					{ .event = PM_EVENT_AUTO_RESUME, })
+>  
+>  /**
+> 
+> 
+> 
 
-Index: usb-2.6/include/linux/pm.h
-===================================================================
---- usb-2.6.orig/include/linux/pm.h
-+++ usb-2.6/include/linux/pm.h
-@@ -252,7 +252,7 @@ struct dev_pm_ops {
- #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
- #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
- #define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
--#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
-+#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
- #define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
- #define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
- 
-@@ -265,15 +265,15 @@ struct dev_pm_ops {
- #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
- #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
- #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
--#define PMSG_USER_SUSPEND	((struct pm_messge) \
-+#define PMSG_USER_SUSPEND	((struct pm_message) \
- 					{ .event = PM_EVENT_USER_SUSPEND, })
--#define PMSG_USER_RESUME	((struct pm_messge) \
-+#define PMSG_USER_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_USER_RESUME, })
--#define PMSG_REMOTE_RESUME	((struct pm_messge) \
-+#define PMSG_REMOTE_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_REMOTE_RESUME, })
--#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
-+#define PMSG_AUTO_SUSPEND	((struct pm_message) \
- 					{ .event = PM_EVENT_AUTO_SUSPEND, })
--#define PMSG_AUTO_RESUME		((struct pm_messge) \
-+#define PMSG_AUTO_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_AUTO_RESUME, })
- 
- /**
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
