@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Fix misspellings in pm.h macros
-Date: Mon, 17 Nov 2008 22:02:06 +0100
-Message-ID: <200811172202.06736.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
+Date: Mon, 17 Nov 2008 22:39:45 +0100
+Message-ID: <200811172239.45987.rjw__11419.4564325318$1226957848$gmane$org@sisk.pl>
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera> <49209366.3060500@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+In-Reply-To: <49209366.3060500@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,62 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 17 of November 2008, Alan Stern wrote:
-> This patch (as1167) fixes some misspellings in various recently-added
-> macros in pm.h.  Fortunately these macros are not yet used anywhere.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> CC: Rafael J. Wysocki <rjw@sisk.pl>
+On Sunday, 16 of November 2008, Maxim Levitsky wrote:
+> Just to note, here on acer aspire one suspend to disk is broken too.
+> System suspends, and then hangs.
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+At which point exactly does it hang?
 
-> ---
-> 
-> Index: usb-2.6/include/linux/pm.h
-> ===================================================================
-> --- usb-2.6.orig/include/linux/pm.h
-> +++ usb-2.6/include/linux/pm.h
-> @@ -252,7 +252,7 @@ struct dev_pm_ops {
->  #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
->  #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
->  #define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
-> -#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
-> +#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
->  #define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
->  #define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
->  
-> @@ -265,15 +265,15 @@ struct dev_pm_ops {
->  #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
->  #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
->  #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
-> -#define PMSG_USER_SUSPEND	((struct pm_messge) \
-> +#define PMSG_USER_SUSPEND	((struct pm_message) \
->  					{ .event = PM_EVENT_USER_SUSPEND, })
-> -#define PMSG_USER_RESUME	((struct pm_messge) \
-> +#define PMSG_USER_RESUME	((struct pm_message) \
->  					{ .event = PM_EVENT_USER_RESUME, })
-> -#define PMSG_REMOTE_RESUME	((struct pm_messge) \
-> +#define PMSG_REMOTE_RESUME	((struct pm_message) \
->  					{ .event = PM_EVENT_REMOTE_RESUME, })
-> -#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
-> +#define PMSG_AUTO_SUSPEND	((struct pm_message) \
->  					{ .event = PM_EVENT_AUTO_SUSPEND, })
-> -#define PMSG_AUTO_RESUME		((struct pm_messge) \
-> +#define PMSG_AUTO_RESUME	((struct pm_message) \
->  					{ .event = PM_EVENT_AUTO_RESUME, })
->  
->  /**
-> 
-> 
-> 
+What's the most recent kernel you tried?
 
+> If I shutdown the system, and then attempt resume, it resumes, and then hangs.
 
+Again, at which point does it hang exactly?
 
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+I assume this doesn't happen with 2.6.27.  Is this correct?
+
+Rafael
