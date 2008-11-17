@@ -1,13 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-Date: Mon, 17 Nov 2008 22:39:45 +0100
-Message-ID: <200811172239.45987.rjw__11419.4564325318$1226957848$gmane$org@sisk.pl>
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera> <49209366.3060500@gmail.com>
+Subject: [PATCH] ACPI suspend: Blacklist boxes that require us to
+	set SCI_EN directly on resume
+Date: Mon, 17 Nov 2008 23:33:12 +0100
+Message-ID: <200811172333.13466.rjw__2660.80743535913$1226961151$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49209366.3060500@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,22 +17,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Tino Keitel <tino.keitel@gmx.de>, Bob Copeland <me@bobcopeland.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 16 of November 2008, Maxim Levitsky wrote:
-> Just to note, here on acer aspire one suspend to disk is broken too.
-> System suspends, and then hangs.
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
 
-At which point exactly does it hang?
+Some Apple boxes evidently require us to set SCI_EN on resume
+directly, because if we don't do that, they hung somewhere in the
+resume code path.  Moreover, on these boxes it is not sufficient to
+use acpi_enable() to turn ACPI on during resume.  All of this is
+against the ACPI specification which states that (1) the BIOS is
+supposed to return from the S3 sleep state with ACPI enabled
+(SCI_EN set) and (2) the SCI_EN bit is owned by the hardware and we
+are not supposed to change it.
 
-What's the most recent kernel you tried?
+For this reason, blacklist the affected systems so that the SCI_EN
+bit is set during resume on them.
 
-> If I shutdown the system, and then attempt resume, it resumes, and then hangs.
+[NOTE: Unconditional setting SCI_EN for all system on resume doesn't
+ work, because it makes some other systems crash (that's to be
+ expected).  Also, it is not entirely clear right now if all of the
+ Apple boxes require this workaround.]
 
-Again, at which point does it hang exactly?
+This patch fixes the recent regression tracked as
+http://bugzilla.kernel.org/show_bug.cgi?id=12038
 
-I assume this doesn't happen with 2.6.27.  Is this correct?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Tested-by: Tino Keitel <tino.keitel@gmx.de>
+Tested-by: Bob Copeland <me@bobcopeland.com>
+---
+ drivers/acpi/sleep/main.c |   40 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
 
-Rafael
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -104,6 +104,18 @@ void __init acpi_s4_no_nvs(void)
+ 	s4_no_nvs = true;
+ }
+ 
++/*
++ * According to the ACPI specification the BIOS should make sure that ACPI is
++ * enabled and SCI_EN bit is set on wake-up from S1 - S3 sleep states.  Still,
++ * some BIOSes don't do that and therefore we use acpi_enable() to enable ACPI
++ * on such systems during resume.  Unfortunately that doesn't help in
++ * particularly pathological cases in which SCI_EN has to be set directly on
++ * resume, although the specification states very clearly that this flag is
++ * owned by the hardware.  The set_sci_en_on_resume variable will be set in such
++ * cases.
++ */
++static bool set_sci_en_on_resume;
++
+ /**
+  *	acpi_pm_disable_gpes - Disable the GPEs.
+  */
+@@ -249,7 +261,11 @@ static int acpi_suspend_enter(suspend_st
+ 	}
+ 
+ 	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
+-	acpi_enable();
++	if (set_sci_en_on_resume)
++		acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
++	else
++		acpi_enable();
++
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(acpi_state);
+ 
+@@ -337,6 +353,12 @@ static int __init init_old_suspend_order
+ 	return 0;
+ }
+ 
++static int __init init_set_sci_en_on_resume(const struct dmi_system_id *d)
++{
++	set_sci_en_on_resume = true;
++	return 0;
++}
++
+ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 	{
+ 	.callback = init_old_suspend_ordering,
+@@ -354,6 +376,22 @@ static struct dmi_system_id __initdata a
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "HP xw4600 Workstation"),
+ 		},
+ 	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Apple MacBook 1,1",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
++		DMI_MATCH(DMI_PRODUCT_NAME, "MacBook1,1"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Apple MacMini 1,1",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
++		DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
++		},
++	},
+ 	{},
+ };
+ #endif /* CONFIG_SUSPEND */
