@@ -1,13 +1,15 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Info on hibernation swap space requirement
-Date: Wed, 19 Nov 2008 07:47:22 +1100
-Message-ID: <1227041242.2723.6.camel@nigel-laptop>
-References: <492283F2.1080000@st.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ACPI suspend: Blacklist boxes that require
+	us to set SCI_EN directly on resume
+Date: Tue, 18 Nov 2008 23:59:57 +0100
+Message-ID: <200811182359.58205.rjw@sisk.pl>
+References: <200811172333.13466.rjw@sisk.pl> <49225697.90804@shaw.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <492283F2.1080000@st.com>
+In-Reply-To: <49225697.90804@shaw.ca>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Francesco VIRLINZI <francesco.virlinzi@st.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Tino Keitel <tino.keitel@gmx.de>, Bob Copeland <me@bobcopeland.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Francesco.
-
-On Tue, 2008-11-18 at 09:59 +0100, Francesco VIRLINZI wrote:
-> Hi all.
+On Tuesday, 18 of November 2008, Robert Hancock wrote:
+> Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
+> > 
+> > Some Apple boxes evidently require us to set SCI_EN on resume
+> > directly, because if we don't do that, they hung somewhere in the
+> > resume code path.  Moreover, on these boxes it is not sufficient to
+> > use acpi_enable() to turn ACPI on during resume.  All of this is
+> > against the ACPI specification which states that (1) the BIOS is
+> > supposed to return from the S3 sleep state with ACPI enabled
+> > (SCI_EN set) and (2) the SCI_EN bit is owned by the hardware and we
+> > are not supposed to change it.
+> > 
+> > For this reason, blacklist the affected systems so that the SCI_EN
+> > bit is set during resume on them.
+> > 
+> > [NOTE: Unconditional setting SCI_EN for all system on resume doesn't
+> >  work, because it makes some other systems crash (that's to be
+> >  expected).  Also, it is not entirely clear right now if all of the
+> >  Apple boxes require this workaround.]
 > 
-> I added the hibernation support on a sh4 based platform and it works fine,
->  but I don't understand how big the swap space has to be.
-> 
-> My system has 64Mb and I was assuming, I can freeze ~32 Mb therefore
->  I was creating a swap space of 40/50 Mb.
-> 
-> But it seems it isn't enough, the system is requiring more space.
-> 
-> Could you say me how evaluate the right (minimal) swap space required
->  when I know the DRam memory size.
+> This is rather gross. The usual question arises, why does Windows work 
+> without such a hack? Maybe there is no better solution for now, but 
+> somebody should really look into why the behavior is different in Linux..
 
-If there's too much memory in use when hibernation is attempted, an
-attempt will be made to free memory, which could involve pushing some
-pages out to swap. You therefore probably want swap space to be at least
-as big as the amount of memory you have, unless you're using the image
-compression support that I think uswsusp has.
+I discussed this with Len and we agreed that the best thing we can do is to
+blacklist those boxes.
 
-Please don't forget to post your code - we can then incorporate it in
-vanilla and you won't have to worry about keeping it updated.
+In fact, the SCI_EN flag is already forcibly set in irqrouter_resume() due to
+the very same Apple BIOS borkage and what this patch actually does is to
+move that as early in the resume code path as possible.  Also it generally
+is inappropriate to set SCI_EN for all systems unconditionally (I'm planning
+to remove this from irqrouter_resume() in .29, because it's a noop after the
+$subject patch).
 
-Nigel
+Apparently, acpi_enable() in acpi_suspend_enter() doesn't work on the Apple
+boxes and that's why the $subject patch is necessary.  It would be nice to know
+_why_ it doesn't work on them, but I'm not sure if we can find that out.
+
+Thanks,
+Rafael
