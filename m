@@ -1,14 +1,14 @@
-From: <gregkh@suse.de>
-Subject: patch fix-misspellings-in-pm.h-macros.patch added to
-	gregkh-2.6 tree
-Date: Mon, 17 Nov 2008 15:41:56 -0800
-Message-ID: <12269653162246@kroah.org>
-References: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] ACPI suspend: Blacklist boxes that require
+ us to set SCI_EN directly on resume
+Date: Mon, 17 Nov 2008 23:45:59 -0600
+Message-ID: <49225697.90804__43764.3143967309$1226987322$gmane$org@shaw.ca>
+References: <200811172333.13466.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
+In-Reply-To: <200811172333.13466.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,87 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu, greg@kroah.com, linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Tino Keitel <tino.keitel@gmx.de>, Bob Copeland <me@bobcopeland.com>
 List-Id: linux-pm@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: ACPI suspend: Blacklist boxes that require us to set SCI_EN directly on resume
+> 
+> Some Apple boxes evidently require us to set SCI_EN on resume
+> directly, because if we don't do that, they hung somewhere in the
+> resume code path.  Moreover, on these boxes it is not sufficient to
+> use acpi_enable() to turn ACPI on during resume.  All of this is
+> against the ACPI specification which states that (1) the BIOS is
+> supposed to return from the S3 sleep state with ACPI enabled
+> (SCI_EN set) and (2) the SCI_EN bit is owned by the hardware and we
+> are not supposed to change it.
+> 
+> For this reason, blacklist the affected systems so that the SCI_EN
+> bit is set during resume on them.
+> 
+> [NOTE: Unconditional setting SCI_EN for all system on resume doesn't
+>  work, because it makes some other systems crash (that's to be
+>  expected).  Also, it is not entirely clear right now if all of the
+>  Apple boxes require this workaround.]
 
-This is a note to let you know that I've just added the patch titled
-
-    Subject: Fix misspellings in pm.h macros
-
-to my gregkh-2.6 tree.  Its filename is
-
-    fix-misspellings-in-pm.h-macros.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From stern@rowland.harvard.edu  Mon Nov 17 15:02:22 2008
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Mon, 17 Nov 2008 11:14:19 -0500 (EST)
-Subject: Fix misspellings in pm.h macros
-To: Greg KH <greg@kroah.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,  Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0811171111050.5170-100000@iolanthe.rowland.org>
-
-
-This patch (as1167) fixes some misspellings in various recently-added
-macros in pm.h.  Fortunately these macros are not yet used anywhere.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
----
- include/linux/pm.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -252,7 +252,7 @@ struct dev_pm_ops {
- #define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
- #define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
- #define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
--#define PM_EVENT_REMOTE_WAKEUP	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
-+#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
- #define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
- #define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
- 
-@@ -265,15 +265,15 @@ struct dev_pm_ops {
- #define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
- #define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
- #define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
--#define PMSG_USER_SUSPEND	((struct pm_messge) \
-+#define PMSG_USER_SUSPEND	((struct pm_message) \
- 					{ .event = PM_EVENT_USER_SUSPEND, })
--#define PMSG_USER_RESUME	((struct pm_messge) \
-+#define PMSG_USER_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_USER_RESUME, })
--#define PMSG_REMOTE_RESUME	((struct pm_messge) \
-+#define PMSG_REMOTE_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_REMOTE_RESUME, })
--#define PMSG_AUTO_SUSPEND	((struct pm_messge) \
-+#define PMSG_AUTO_SUSPEND	((struct pm_message) \
- 					{ .event = PM_EVENT_AUTO_SUSPEND, })
--#define PMSG_AUTO_RESUME		((struct pm_messge) \
-+#define PMSG_AUTO_RESUME	((struct pm_message) \
- 					{ .event = PM_EVENT_AUTO_RESUME, })
- 
- /**
-
-
-Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
-
-usb/usb-change-interface-to-usb_lock_device_for_reset.patch
-usb/usb-avoid-20ms-delay-in-ehci-resume.patch
-usb/usb-straighten-out-inline-code-in-sysfs.c.patch
-usb/usb-ehci-pci-quirks.c-don-t-wait-so-long-for-bios-handoff.patch
-usb/usb-remove-restrictions-on-signal-numbers-in-devio.c.patch
-usb/usb-powerpc-workaround-for-the-ppc440epx-usbh_23-errata.patch
-usb/usb-add-asynchronous-autosuspend-autoresume-support.patch
-usb/usb-usb-storage-add-quirks-module-parameter.patch
-usb/usb-introduce-usb_queue_reset-to-do-resets-from-atomic-contexts-v7.patch
-usb.current/usb-storage-updates-unusual_devs-entry-for-the-nokia-6300.patch
-usb.current/usb-storage-update-unusual_devs-entries-for-nokia-5300-and-5310.patch
-driver-core/pm-simplify-the-new-suspend-hibernation-framework-for-devices.patch
-driver-core/fix-misspellings-in-pm.h-macros.patch
+This is rather gross. The usual question arises, why does Windows work 
+without such a hack? Maybe there is no better solution for now, but 
+somebody should really look into why the behavior is different in Linux..
