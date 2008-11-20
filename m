@@ -1,13 +1,14 @@
-From: Liam Girdwood <lrg@kernel.org>
-Subject: Re: New comer in the linux-pm list
-Date: Thu, 20 Nov 2008 15:54:59 +0000
-Message-ID: <1227196499.585.39.camel@vega.slimlogic.co.uk>
-References: <OF87B4B960.116849D3-ONC1257507.00457478-C1257507.0045AAE5@sagem.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: Crash during suspend to disk
+Date: Thu, 20 Nov 2008 17:50:39 +0100
+Message-ID: <20081120165039.GC23522__28401.6715632335$1227199975$gmane$org@elf.ucw.cz>
+References: <1227184916.4855.31.camel@odie.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <OF87B4B960.116849D3-ONC1257507.00457478-C1257507.0045AAE5@sagem.com>
+Content-Disposition: inline
+In-Reply-To: <1227184916.4855.31.camel@odie.local>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,38 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David GIGUET <david.giguet@sagem.com>
-Cc: Olivier LE ROY <olivier.leroy@sagem.com>, Kanider GUENDOUZI <kanider.guendouzi@sagem.com>, linux-pm@lists.linux-foundation.org
+To: Simon Holm Th?gersen <account@cs.aau.dk>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2008-11-20 at 13:40 +0100, David GIGUET wrote:
-> 
-> I am forwarding an e-mail from N. PAJANI, one of our collaborator.
-> 
-> 
-> Hi all
-> 
-> I have made some googling and read some code from the kernel, but I
-> did not managed to find a "power management scheme" outside of APM or
-> ACPI to fit my needs.
-> My goal is to have something relevent for embeded devices (or at least
-> battery powered), not only servers, desktop or laptops, though it may
-> apply to these.
-> 
-> For example on a cellphone, when you switch to "silent mode" what need
-> do you have to power the audio amplifier, and maybe the audio module
-> inside the SOC may be stopped, saving more power.
+Hi!
 
-ALSA Soc (ASoC) does this sort of thing already. It can power down
-unused audio components when not in use. Have a look at DAPM in
-sound/soc and Documentation/sound/alsa/soc for details.
+> I hope this information is sufficient to debug my problem, though it
+> unfortunately is somewhat incomplete. I took two pictures of the OOPS
+> with my mobile phone, but unfortunately the picture of the upper part is
+> so blurred that it is unreadable. Apparently I have to be in a hurry
+> getting out of the door for this to happen. Here is what I got from the
+> lower part
 
-> Or fully powering Wifi or Ethernet when they are not in use on a
-> "netbook" is also an unuseful loss of power.
 > 
+> Call Trace:
+>   __blkdev_put
+>   swsusp_write
+>   hibernate
+>   state_store
+>   state_store
+>   state_store
+>   kobj_attr_store
+>   sysfs_write_file
+>   sysfs_write_file
+>   vfs_write
+>   sys_write
+>   sysenter_do_call
+> Code: ......
+> EIP: [<...>] iput
+> ---[ end trace ........................... ]---
 
-The voltage regulator framework will allow powerdown of Ethernet/Wifi
-when not in use (provided they are supplied power by a by a software
-controlled regulator). 
+Hmm, I'm afraid this is not enough, not even if the blanks are filled.
 
-Liam
+> I believe I've seen the same crash before with a 2.6.27 or earlier
+> kernel, but I was in a hurry getting out of the door back then as I was
+> here. Circumstances was the same though, with already successful suspend
+> to disk and the crash appearing during second or third attempt to
+> suspend to disk in quick succession.
+> 
+> I guess I should be able to reproduce the crash with some efforts, but
+> I'd like to hear your thoughts on this before I do that.
+
+If you can reproduce that, we can probably debug it...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
