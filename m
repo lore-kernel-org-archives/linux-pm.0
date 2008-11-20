@@ -1,11 +1,13 @@
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <account@cs.aau.dk>
-Subject: Crash during suspend to disk
-Date: Thu, 20 Nov 2008 13:41:56 +0100
-Message-ID: <1227184916.4855.31.camel__21900.0251302079$1227197268$gmane$org@odie.local>
+From: Liam Girdwood <lrg@kernel.org>
+Subject: Re: New comer in the linux-pm list
+Date: Thu, 20 Nov 2008 15:54:59 +0000
+Message-ID: <1227196499.585.39.camel@vega.slimlogic.co.uk>
+References: <OF87B4B960.116849D3-ONC1257507.00457478-C1257507.0045AAE5@sagem.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <OF87B4B960.116849D3-ONC1257507.00457478-C1257507.0045AAE5@sagem.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,40 +17,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: David GIGUET <david.giguet@sagem.com>
+Cc: Olivier LE ROY <olivier.leroy@sagem.com>, Kanider GUENDOUZI <kanider.guendouzi@sagem.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkKCkkgaG9wZSB0aGlzIGluZm9ybWF0aW9uIGlzIHN1ZmZpY2llbnQgdG8gZGVidWcgbXkgcHJv
-YmxlbSwgdGhvdWdoIGl0CnVuZm9ydHVuYXRlbHkgaXMgc29tZXdoYXQgaW5jb21wbGV0ZS4gSSB0
-b29rIHR3byBwaWN0dXJlcyBvZiB0aGUgT09QUwp3aXRoIG15IG1vYmlsZSBwaG9uZSwgYnV0IHVu
-Zm9ydHVuYXRlbHkgdGhlIHBpY3R1cmUgb2YgdGhlIHVwcGVyIHBhcnQgaXMKc28gYmx1cnJlZCB0
-aGF0IGl0IGlzIHVucmVhZGFibGUuIEFwcGFyZW50bHkgSSBoYXZlIHRvIGJlIGluIGEgaHVycnkK
-Z2V0dGluZyBvdXQgb2YgdGhlIGRvb3IgZm9yIHRoaXMgdG8gaGFwcGVuLiBIZXJlIGlzIHdoYXQg
-SSBnb3QgZnJvbSB0aGUKbG93ZXIgcGFydAoKQ2FsbCBUcmFjZToKICBfX2Jsa2Rldl9wdXQKICBz
-d3N1c3Bfd3JpdGUKICBoaWJlcm5hdGUKICBzdGF0ZV9zdG9yZQogIHN0YXRlX3N0b3JlCiAgc3Rh
-dGVfc3RvcmUKICBrb2JqX2F0dHJfc3RvcmUKICBzeXNmc193cml0ZV9maWxlCiAgc3lzZnNfd3Jp
-dGVfZmlsZQogIHZmc193cml0ZQogIHN5c193cml0ZQogIHN5c2VudGVyX2RvX2NhbGwKQ29kZTog
-Li4uLi4uCkVJUDogWzwuLi4+XSBpcHV0Ci0tLVsgZW5kIHRyYWNlIC4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLiBdLS0tCgpUaGVyZSBpcyBhIGxvdCBvZiBibGFua3MgaGVyZSB0aGF0IEkgc2hv
-dWxkIGJlIGFibGUgcHJvdmlkZSBvbiByZXF1ZXN0CmFzIHdlbGwuCgpUaGUgcHJvYmxlbSBvY2N1
-cmVkIGluIG15IHRoaXJkIGF0dGVtcHQgaW4gcXVpY2sgc3VjY2Vzc2lvbiB0byBzdXNwZW5kCnRv
-IGRpc2suIFRoZSBmaXJzdCB0d28gZGlkIG5vdCBzdWNjZWVkIGR1ZSB0byBpbnN1ZmZpY2llbnQg
-ZnJlZSBzd2FwLiBJCmdvdCA3NjggTUIgcmFtIGFuZCBhIH4xIEdCIHN3YXAgcGFydGl0aW9uLiBJ
-IGJlbGlldmUgdG9wIHNhaWQgc29tZXRoaW5nCmxpa2UgTWVtOiAzeHh4eHhrIHVzZWQgYW5kIFN3
-YXA6IDZ4eHh4eGsgdXNlZCBiZWZvcmUgdGhlIHRoaXJkIGF0dGVtcHQKdG8gc3VzcGVuZCB0byBk
-aXNrLgoKVGhlIHN5c3RlbSB0aGF0IHdhcyBydW5uaW5nIGhhZCBhdCBsZWFzdCBvbmUgc3VjY2Vz
-c2Z1bCBzdXNwZW5kIHRvIGRpc2sKYW5kIHJlc3RvcmUgdGhlIGRheSBiZWZvcmUgYW5kIEkgYWxz
-byB1c2UgaXQgc3VjZXNzZnVsbHkgb24gYSBkYWlseQpiYXNpcy4KCkkgYmVsaWV2ZSBJJ3ZlIHNl
-ZW4gdGhlIHNhbWUgY3Jhc2ggYmVmb3JlIHdpdGggYSAyLjYuMjcgb3IgZWFybGllcgprZXJuZWws
-IGJ1dCBJIHdhcyBpbiBhIGh1cnJ5IGdldHRpbmcgb3V0IG9mIHRoZSBkb29yIGJhY2sgdGhlbiBh
-cyBJIHdhcwpoZXJlLiBDaXJjdW1zdGFuY2VzIHdhcyB0aGUgc2FtZSB0aG91Z2gsIHdpdGggYWxy
-ZWFkeSBzdWNjZXNzZnVsIHN1c3BlbmQKdG8gZGlzayBhbmQgdGhlIGNyYXNoIGFwcGVhcmluZyBk
-dXJpbmcgc2Vjb25kIG9yIHRoaXJkIGF0dGVtcHQgdG8Kc3VzcGVuZCB0byBkaXNrIGluIHF1aWNr
-IHN1Y2Nlc3Npb24uCgpJIGd1ZXNzIEkgc2hvdWxkIGJlIGFibGUgdG8gcmVwcm9kdWNlIHRoZSBj
-cmFzaCB3aXRoIHNvbWUgZWZmb3J0cywgYnV0CkknZCBsaWtlIHRvIGhlYXIgeW91ciB0aG91Z2h0
-cyBvbiB0aGlzIGJlZm9yZSBJIGRvIHRoYXQuCgpGaWxlc3lzdGVtcyBhcmUgcmVpc2VyZnMuCgoK
-U2ltb24gSG9sbSBUaMO4Z2Vyc2VuCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+On Thu, 2008-11-20 at 13:40 +0100, David GIGUET wrote:
+> 
+> I am forwarding an e-mail from N. PAJANI, one of our collaborator.
+> 
+> 
+> Hi all
+> 
+> I have made some googling and read some code from the kernel, but I
+> did not managed to find a "power management scheme" outside of APM or
+> ACPI to fit my needs.
+> My goal is to have something relevent for embeded devices (or at least
+> battery powered), not only servers, desktop or laptops, though it may
+> apply to these.
+> 
+> For example on a cellphone, when you switch to "silent mode" what need
+> do you have to power the audio amplifier, and maybe the audio module
+> inside the SOC may be stopped, saving more power.
+
+ALSA Soc (ASoC) does this sort of thing already. It can power down
+unused audio components when not in use. Have a look at DAPM in
+sound/soc and Documentation/sound/alsa/soc for details.
+
+> Or fully powering Wifi or Ethernet when they are not in use on a
+> "netbook" is also an unuseful loss of power.
+> 
+
+The voltage regulator framework will allow powerdown of Ethernet/Wifi
+when not in use (provided they are supplied power by a by a software
+controlled regulator). 
+
+Liam
