@@ -1,17 +1,14 @@
-From: Deepak Saxena <dsaxena@plexity.net>
-Subject: Re: [RFC] Tying sysfs "wakeup" file to
-	platform-level	handler
-Date: Mon, 24 Nov 2008 13:09:49 -0800
-Message-ID: <20081124210949.GA28085@trantor.hsd1.or.comcast.net>
-References: <20081124200122.GA32341@trantor.hsd1.or.comcast.net>
-	<Pine.LNX.4.44L0.0811241554520.2851-100000@iolanthe.rowland.org>
-Reply-To: dsaxena@plexity.net
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Tying sysfs "wakeup" file to platform-level
+ handler
+Date: Mon, 24 Nov 2008 16:34:01 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0811241627560.6702-100000@iolanthe.rowland.org>
+References: <20081124210949.GA28085@trantor.hsd1.or.comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811241554520.2851-100000@iolanthe.rowland.org>
+In-Reply-To: <20081124210949.GA28085@trantor.hsd1.or.comcast.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,35 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Deepak Saxena <dsaxena@plexity.net>
 Cc: linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, Andres Salomon <dilinger@queued.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Nov 24 2008, at 15:57, Alan Stern was caught saying:
-> Shouldn't these things be decided by the user and not by the kernel's 
-> platform code?
+On Mon, 24 Nov 2008, Deepak Saxena wrote:
+
+> Ack. This is what we are already doing.  The decision on whether or 
+> not a device should wake us up from suspend is handle via OHM on the 
+> XO and we set the OLPC-specific flags in /sys/power/wakeup_events as 
+> there is no standard way to specify wakeup events from userland.
 > 
-> So what you want is a way for userspace to know and react at the start 
-> of a suspend, and a way for it to know the cause of the suspend.  Then 
-> a daemon could be set to notice whenever a suspend is started, and it 
-> could set all the various wakeup flags however the user wants.
-> 
+> My proposal uses the existing sysfs interface to connect into a platform 
+> level handler that can set the appropriate low-level HW bits. The
+> decision of whether or not to enable the device's wakeup capability
+> would still be left to user space. 
 
-Ack. This is what we are already doing.  The decision on whether or 
-not a device should wake us up from suspend is handle via OHM on the 
-XO and we set the OLPC-specific flags in /sys/power/wakeup_events as 
-there is no standard way to specify wakeup events from userland.
+Then I must have misunderstood the point of your earlier message.  Are
+you saying that the real problem is to tie the existing
+/sys/devices/.../power/wakeup flags into your platform handler?
 
-My proposal uses the existing sysfs interface to connect into a platform 
-level handler that can set the appropriate low-level HW bits. The
-decision of whether or not to enable the device's wakeup capability
-would still be left to user space. 
+The sources you listed (ac_power, battery_state, and so on) are all 
+pretty much platform-level entities to begin with.  Their drivers must 
+already contain or communicate with a fair amount of platform-level 
+code.  So why should there be any trouble about adding a new 
+communication channel for wakeup settings?
 
-~Deepak
-
--- 
- Deepak Saxena  http://www.greenbasement.info
-   _____   __o  Kernel Hacker, One Laptop Per Child  (o>
-------    -\<,  Give One Laptop, Get One Laptop      //\
- ----- ( )/ ( ) http://www.amazon.com/xo             V_/_
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alan Stern
