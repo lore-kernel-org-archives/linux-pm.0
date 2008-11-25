@@ -1,8 +1,8 @@
 From: Deepak Saxena <dsaxena@plexity.net>
 Subject: Re: [RFC] Tying sysfs "wakeup" file
 	to	platform-level?handler
-Date: Mon, 24 Nov 2008 19:26:06 -0800
-Message-ID: <20081125032606.GA30655@trantor.hsd1.or.comcast.net>
+Date: Mon, 24 Nov 2008 20:23:11 -0800
+Message-ID: <20081125042311.GA30965@trantor.hsd1.or.comcast.net>
 References: <20081124223258.GB28801@trantor.hsd1.or.comcast.net>
 	<Pine.LNX.4.44L0.0811241802350.6702-100000@iolanthe.rowland.org>
 Reply-To: dsaxena@plexity.net
@@ -34,10 +34,7 @@ On Nov 24 2008, at 18:08, Alan Stern was caught saying:
 > with its own little interpreter (or not so little!), whereas most 
 > platforms have a pretty good idea beforehand of what devices can exist, 
 > and they are described as static data.  Right?
-
-Correct. Most embedded platforms are fairly static and don't need
-the complexity of ACPI.
-
+> 
 > So the platform code could initialize the "can_wakeup" setting when it
 > first detects and registers the device.  And you could add a
 > "set_wakeup" function pointer to struct platform_device, which the
@@ -45,11 +42,11 @@ the complexity of ACPI.
 > remote wakeup, as appropriate.  In the static structures these function 
 > pointers would point to routines that set or clear the appropriate bits 
 > in your Embedded Controller.
-> 
-> I think this is the right way to go...
 
-This sounds good. I think I can get away with doing this w/o having to
-touch shared drivers such as i8042.
+Just thought of something. Not all the devices we can wakeup on are
+platform devices. The WLAN specifically is an on-board USB device with
+a sideband wakeup signal connected to the EC. So instead I'll make the
+set_wakeup() ptr a member of struct device and call it in device_suspend().
 
 ~Deepak
 
