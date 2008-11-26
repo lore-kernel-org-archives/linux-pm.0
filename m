@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Tying sysfs "wakeup" file to
-	platform-level?handler
-Date: Tue, 25 Nov 2008 16:07:47 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0811251558360.3526-100000@iolanthe.rowland.org>
-References: <20081125203837.GA5449@trantor.hsd1.or.comcast.net>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] Hibernate: Take overlapping zones into
+	account (rev. 2)
+Date: Wed, 26 Nov 2008 18:04:26 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.0811261800360.3895__41817.6316693009$1227740996$gmane$org@localhost.localdomain>
+References: <200811081356.13060.rjw@sisk.pl>
+	<alpine.LFD.2.00.0811111300580.4480@localhost.localdomain>
+	<200811150201.34629.rjw@sisk.pl> <200811150202.26042.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081125203837.GA5449@trantor.hsd1.or.comcast.net>
+In-reply-to: <200811150202.26042.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +20,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Deepak Saxena <dsaxena@plexity.net>
-Cc: linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, Andres Salomon <dilinger@queued.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, LKML <linux-kernel@vger.kernel.org>, Dave Hansen <dave@linux.vnet.ibm.com>, Pavel Machek <pavel@suse.cz>, Andy Whitcroft <apw@shadowen.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 Nov 2008, Deepak Saxena wrote:
 
-> > Suppose the same sort of WLAN interface was packaged as an independent,
-> > external USB device and one of them was plugged into an OLPC.  Then how
-> > would you know which device was the one attached to the embedded
-> > controller and which was external?
-> 
-> I think in that case we couldn't really do WOL. I imagine this is the
-> case on a standard laptop too.
+done.
 
-On a standard laptop the WLAN interface would be a PCI device, so it
-could use the standard PCI wakeup method (PME#).  Or the motherboard
-manufacturer could use vendor-specific signalling.  But you're not
-likely to find an onboard WLAN interface communicating with the CPU via
-USB.
+previous version has been replaced with this version.
+also, suspend branch is now rebased to latest linus top of tree.
 
-In this particular case, can't you set it up so that the EC always pays
-attention to the WLAN's GPIO line, but the WLAN interface enables the
-GPIO for wakeup signalling only if power/wakeup is set?
-
-> On future XO versions, we may move to
-> an SDIO based card and we will have to deal with the same situation
-> where the SDIO stack has a concept of wake up on card insert/remove
-> but we will need to route the WOL signal from the card to the EC.
-
-It sounds like the same sort of problem: a device on a different bus 
-that has to talk to the platform's EC.
-
-Alan Stern
+thanks,
+-Len
