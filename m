@@ -1,16 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [ath5k-devel] Bugs on aspire one A150
-Date: Mon, 01 Dec 2008 17:33:15 +0200
-Message-ID: <1228145595.16647.6.camel__25551.6152632937$1228145781$gmane$org@maxim-laptop>
-References: <491506DB.1070000@gmail.com>
-	<b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com>
-	<4918A8C5.3050607@gmail.com>
-	<40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+From: James Le Cuirot <chewi@aura-online.co.uk>
+Subject: Re: [Suspend-devel] TAP (and TUN?) devices not working
+	after resume
+Date: Sat, 29 Nov 2008 10:18:49 +0000
+Message-ID: <20081129101849.277ba756__42913.866081699$1228146423$gmane$org@symphony>
+References: <20080714154720.791f6640@symphony> <200807141812.45264.rjw@sisk.pl>
+	<48894D88.9010104@qualcomm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+In-Reply-To: <48894D88.9010104@qualcomm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, ath5k-devel@venema.h4ckr.net
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2008-11-11 at 00:12 +0200, Nick Kossifidis wrote:
-> 2008/11/10 Maxim Levitsky <maximlevitsky@gmail.com>:
-> > Bob Copeland wrote:
-> >> On Fri, Nov 7, 2008 at 10:26 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> >>> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by
-> >>> default in ubuntu...
-> >>> wireless more or less works, but kernel log is full of backtraces.
-> >>
-> >> As you've seen, these should at least be gone now...
-> >>
-> >>> Was able to connect to my WPA2 access point.
-> >>> Sometimes wireless fails completely, especially after suspend to ram.
-> >>
-> >> Did you get noise calibration failures in dmesg at this point?  Felix posted
-> >> a patch recently that handles them better.
-> > Yep, but they seems to be gone in latest -git too.
-> > Wireless work fine now, it seems like my iwl3945.
-> >
-> >>
-> >>> Advanced features like monitor/injection work, but when I changed the card's
-> >>> mac address it stopped working.
-> >>> I also noticed that if I then start airodump, then wireless works with new
-> >>> mac.
-> > Why it doesn't accept new mac?, can this be fixed?
-> >
-> >
-> >>
-> >>> ** 4 - wireless led doesn't work.
-> >>> ath5k devs, can you fix this?
-> >>
-> >> Currently all the LED code we have in there is for setting a particular gpio
-> >> for particular laptops (and they differ between models).  We only have quirks
-> >> for IBM and HP, none for Acer.  Also, the legacy-hal seems to have a different
-> >> strategy for 2425 chips.  I can try to hack up some code for you to test.
-> >>
-> >
-> > I have seen on the web that madwifi did support the led with some gpio settings
-> >
-> > sysctl -w dev.wifi0.ledpin=3
-> > sysctl -w dev.wifi0.softled=1
-> >
-> > from https://help.ubuntu.com/community/AspireOne
-> >
-> > Best regards,
-> >        Maxim Levitsky
-> 
-> i think that some led settings are stored on EEPROM, let me check it out...
-Hi,
-Any update on that?
+On Thu, 24 Jul 2008 20:50:32 -0700
+Max Krasnyansky <maxk@qualcomm.com> wrote:
 
-Best regards,
-	Maxim Levitsky
-
-
+> > On Monday, 14 of July 2008, James Le Cuirot wrote:  
+> >>
+> >> Hi,
+> >>
+> >> uswsusp works great on my machine except for one thing. I use a TAP
+> >> device for QEMU and after resuming from suspend, it doesn't work
+> >> anymore until I delete it and recreate it. This is rather annoying
+> >> because if I have QEMU open, it means I have to close it before
+> >> recreating the interface and then boot Windows up again. I use
+> >> OpenVPN to create/delete the interface but I think that's all it
+> >> does. The rest is done by the kernel. So I'm guessing something's
+> >> up with the TUN/TAP driver or uswsusp itself. I'm using version
+> >> 0.8. Sorry if this has already been fixed.  
 > 
+> I bet it's flow control related. I've fixed a bug in flow control
+> handling for persistent devices recently.
+> btw Does it still happen with >= 2.6.26 ?
 > 
+> I'll play with some test code on my laptop and see if I can reproduce
+> this issue.
+> 
+> Max
+
+Sorry about the crazy delay here, I didn't need to use QEMU for ages
+and I don't like firing up Windows unless I have too. :D I'm not sure
+about 2.6.26 but this appears to be fixed in 2.6.27.
+
+Thanks,
+James
