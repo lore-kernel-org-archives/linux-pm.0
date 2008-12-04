@@ -1,13 +1,14 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: 2.6.28-rc7-git2: Reported regressions from 2.6.27
-Date: Wed, 03 Dec 2008 18:17:21 -0600
-Message-ID: <1228349841.5551.100.camel__14553.8888442845$1228350133$gmane$org@localhost.localdomain>
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: Oops during hibernation under 2.6.28-rc6
+Date: Thu, 04 Dec 2008 12:12:05 +0100
+Message-ID: <877i6gyz22.fsf@tac.ki.iif.hu>
+References: <87hc5mijcc.fsf@tac.ki.iif.hu> <200812032305.25766.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
+In-Reply-To: <200812032305.25766.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 3 Dec 2008 23:05:25 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2008-12-03 at 22:49 +0100, Rafael J. Wysocki wrote:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12120
-> Subject         : [Block layer or SCSI] requests aborted too early
-> during check_partition()
-> Submitter       : Stefan Richter <stefan-r-bz@s5r6.in-berlin.de>
-> Date            : 2008-11-29 05:19 (5 days old)
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Fixed by this patch:
+> On Tuesday, 2 of December 2008, Ferenc Wagner wrote:
+>
+>> swsusp usually works on my ThinkPad R50e.  However sometimes it oopses
+>> instead of hibernating the machine.  I can't provide real statistics
+>> as I haven't been using it for long (just about a month), but it also
+>> happened under 2.6.27.  Last time in happened under 2.6.28-rc6.  After
+>> two unsuccessful attempts (not enough free swap), I closed Emacs and
+>> Firefox, retried, and got the oops.  I could scroll the console back,
+>> and did two screenshots, find them under http://apt.niif.hu/susp/.
+>> I'm not sure what other data may be useful for debugging, please ask.
+>
+> Does it happen with 2.6.26(.y)?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9728c0814ecb505546696a659858fdb761375544
-
-James
+It never happened under 2.6.26, but that doesn't say much, as I barely
+used hibernation with that kernel.  I used suspend-to-RAM much, which
+always worked and still does.  If I found a way to reproduce the issue,
+I could test it under 2.6.26.  I haven't put much thought into that,
+though.
+-- 
+Regards,
+Feri.
