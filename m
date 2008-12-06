@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration
-	space with interrupts off
-Date: Sat, 6 Dec 2008 15:09:08 +0100
-Message-ID: <200812061509.08994.rjw__39690.9550684088$1228572825$gmane$org@sisk.pl>
+Subject: [PATCH 2/3] PCI: Suspend and resume PCI Express ports
+	with interrupts disabled
+Date: Sat, 6 Dec 2008 15:07:59 +0100
+Message-ID: <200812061508.00277.rjw__24225.0258954757$1228572828$gmane$org@sisk.pl>
 References: <200812020320.31876.rjw@sisk.pl> <200812061505.33815.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,49 +24,61 @@ Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@v
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts off
+Subject: PCI: Suspend and resume PCI Express ports with interrupts disabled
 
-Move the restoration of the standard PCI configuration registers
-in the snd_hda_intel driver to a ->resume_early() callback executed
-with interrupts disabled, since doing that with interrupts enabled
-may lead to problems in some cases.
+I don't see why the suspend and resume of PCI Express ports should be
+handled with interrupts enabled and it may even lead to problems in
+some situations.  For this reason, move the suspending and resuming
+of PCI Express ports into ->suspend_late() and ->resume_early()
+callbacks executed with interrupts disabled.
 
 This patch addresses the regression from 2.6.26 tracked as
 http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- sound/pci/hda/hda_intel.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/pci/pcie/portdrv_pci.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/sound/pci/hda/hda_intel.c
+Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
 ===================================================================
---- linux-2.6.orig/sound/pci/hda/hda_intel.c
-+++ linux-2.6/sound/pci/hda/hda_intel.c
-@@ -1951,13 +1951,16 @@ static int azx_suspend(struct pci_dev *p
- 	return 0;
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+@@ -50,7 +50,7 @@ static int pcie_portdrv_restore_config(s
  }
  
-+static int azx_resume_early(struct pci_dev *pci)
-+{
-+	return pci_restore_state(pci);
-+}
-+
- static int azx_resume(struct pci_dev *pci)
- {
- 	struct snd_card *card = pci_get_drvdata(pci);
- 	struct azx *chip = card->private_data;
- 
--	pci_set_power_state(pci, PCI_D0);
--	pci_restore_state(pci);
- 	if (pci_enable_device(pci) < 0) {
- 		printk(KERN_ERR "hda-intel: pci_enable_device failed, "
- 		       "disabling device\n");
-@@ -2465,6 +2468,7 @@ static struct pci_driver driver = {
- 	.remove = __devexit_p(azx_remove),
  #ifdef CONFIG_PM
- 	.suspend = azx_suspend,
-+	.resume_early = azx_resume_early,
- 	.resume = azx_resume,
+-static int pcie_portdrv_suspend(struct pci_dev *dev, pm_message_t state)
++static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
+ {
+ 	int ret = pcie_port_device_suspend(dev, state);
+ 
+@@ -59,14 +59,14 @@ static int pcie_portdrv_suspend(struct p
+ 	return ret;
+ }
+ 
+-static int pcie_portdrv_resume(struct pci_dev *dev)
++static int pcie_portdrv_resume_early(struct pci_dev *dev)
+ {
+ 	pcie_portdrv_restore_config(dev);
+ 	return pcie_port_device_resume(dev);
+ }
+ #else
+-#define pcie_portdrv_suspend NULL
+-#define pcie_portdrv_resume NULL
++#define pcie_portdrv_suspend_late NULL
++#define pcie_portdrv_resume_early NULL
  #endif
+ 
+ /*
+@@ -282,8 +282,8 @@ static struct pci_driver pcie_portdriver
+ 	.probe		= pcie_portdrv_probe,
+ 	.remove		= pcie_portdrv_remove,
+ 
+-	.suspend	= pcie_portdrv_suspend,
+-	.resume		= pcie_portdrv_resume,
++	.suspend_late	= pcie_portdrv_suspend_late,
++	.resume_early	= pcie_portdrv_resume_early,
+ 
+ 	.err_handler 	= &pcie_portdrv_err_handler,
  };
