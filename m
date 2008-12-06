@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express
-	ports with interrupts disabled
-Date: Sat, 6 Dec 2008 18:25:59 +0100
-Message-ID: <200812061825.59914.rjw__42754.6737519608$1228584531$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812061508.00277.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812060914100.3425@nehalem.linux-foundation.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
+	and resume
+Date: Sat, 6 Dec 2008 09:33:37 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0812060930490.3425__37736.184828873$1228584959$gmane$org@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812061507.06474.rjw@sisk.pl>
+	<alpine.LFD.2.00.0812060855580.3425@nehalem.linux-foundation.org>
+	<200812061822.35763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812060914100.3425@nehalem.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200812061822.35763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 6 of December 2008, Linus Torvalds wrote:
-> 
-> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > I don't see why the suspend and resume of PCI Express ports should be
-> > handled with interrupts enabled and it may even lead to problems in
-> > some situations.
-> 
-> Absolutely. A PCI Express port is really just a PCI bridge, with some odd 
-> rules. We need to enable them early, exacly like regular PCI bridges, or 
-> we cannot walk the PCI bus hierarchy correctly.
-> 
-> Anyway, ack, ack, ack for the whole series.
 
-Thanks! :-)
 
-I think it should go through Jesse?
+On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> 
+> USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
+> USB devices behind the controller.
 
-Rafael
+Oh, in that case there are no PCI users of this at all, and what the PCI 
+driver does is immaterial ;)
+
+> But then we will save the device's registers in the "sleeping" state. 
+
+No no. The rule would be that a PCI driver - if it uses the new 
+infrastructure, which apparently nobody does _as_ a PCI driver - simply 
+would never do the whole "pci_set_power_state(PCI_D3hot)" etc crud AT ALL.
+
+So a PCI driver would only do higher-level stuff in its suspend/resume 
+code. For example, a USB host controller would initiate the USB bus level 
+stuff, and likely just stop the controller (not suspend it - just stop 
+it).
+
+			Linus
