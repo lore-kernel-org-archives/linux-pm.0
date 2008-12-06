@@ -1,16 +1,16 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
 	and resume
-Date: Sat, 6 Dec 2008 21:09:27 +0000
-Message-ID: <20081206210927.445f0bc6@lxorguk.ukuu.org.uk>
-References: <200812020320.31876.rjw@sisk.pl> <200812061822.35763.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812060930490.3425@nehalem.linux-foundation.org>
-	<200812061843.59495.rjw@sisk.pl>
+Date: Sat, 6 Dec 2008 22:24:15 +0100
+Message-ID: <200812062224.16266.rjw__49054.9276386902$1228598847$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812061843.59495.rjw@sisk.pl>
+	<alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812061843.59495.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,18 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> suspend-resume things (save state and go to a low power state on suspend,
-> restore state on resume) to the new framework in a separete patch.
+On Saturday, 6 of December 2008, Linus Torvalds wrote:
 > 
-> Is this plan acceptable?
+> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > 
+> > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
+> > there is a major update of the new framework waiting for .29 in the Greg's
+> > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
+> > prefer it to go next.  After it's been merged, I'm going to add the mandatory
+> > suspend-resume things (save state and go to a low power state on suspend,
+> > restore state on resume) to the new framework in a separete patch.
+> > 
+> > Is this plan acceptable?
+> 
+> Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
+> for the pull requests from Jesse and Greg.
+> 
+> The only thing I'll do right now is to send off my "print out ICH6+ 
+> LPC resources" patch again to Jesse, with a changelog etc. It can probably 
+> go in as-is (it really just adds printk's), but since it didn't matter 
+> anyway we migth as well just do it as a PCI thing for 2.6.29 too.
+> 
+> On a similar note, I wonder what we should do about the whole "transparent 
+> bridge resource allocation" thing. It also didn't end up really mattering, 
+> even if it apparently made a difference for Frans. The question is just 
+> whether we would be better off with IO windows for transparent buses (the 
+> way we try to set things up now), or with a simpler PCI resource tree that 
+> just takes advantage of the transparency.
+> 
+> The bridge windows _may_ result in better PCI throughput behind such a 
+> bridge, so there is some argument for keeping them. On the other hand, 
+> transparent bridges aren't generally for high-performance stuff anyway, 
+> and one advantage of the transparency is the flexibility it allows (ie we 
+> don't _need_ to set up the static bridging windows).
 
-I have at least two drivers I look after where if you put the device into
-D3 you lost. We survive because on a successful suspend/resume sequence
-the BIOS puts it back coming out of suspend but that means we must not
-put those devices into D3 ourselves ever - including during a suspend
-before we are 100% comitted to the suspend completing or reboot.
+The static bridging windows help understand the system topology a bit IMO,
+because you can just look at /proc/iomem and see what resources are
+behind the bridge.
+
+> I dunno. I wonder what Windows does. Following Windows in areas like this 
+> tends to have the advantage that it's what the firmware and the hardware 
+> has generally been tested with most. At the same time, I'm not sure this 
+> is necessarily a very bug-prone area for either firmware or hardware. If 
+> there's actual bridge bugs wrt the windows, I suspect such a bridge would 
+> be broken enough to be unusable regardless.
+
+I think Intel people should be able to find out what Windows does in this
+area.
+
+Thanks,
+Rafael
