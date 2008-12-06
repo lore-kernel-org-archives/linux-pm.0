@@ -1,14 +1,15 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: Oops during hibernation under 2.6.28-rc6
-Date: Thu, 04 Dec 2008 12:12:05 +0100
-Message-ID: <877i6gyz22.fsf@tac.ki.iif.hu>
-References: <87hc5mijcc.fsf@tac.ki.iif.hu> <200812032305.25766.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/3] Fix hibernation regression on Toshiba
+	Portege R500
+Date: Sat, 6 Dec 2008 15:05:33 +0100
+Message-ID: <200812061505.33815.rjw__46676.731730304$1228572800$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812032305.25766.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 3 Dec 2008 23:05:25 +0100")
+In-Reply-To: <200812020320.31876.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi,
 
-> On Tuesday, 2 of December 2008, Ferenc Wagner wrote:
->
->> swsusp usually works on my ThinkPad R50e.  However sometimes it oopses
->> instead of hibernating the machine.  I can't provide real statistics
->> as I haven't been using it for long (just about a month), but it also
->> happened under 2.6.27.  Last time in happened under 2.6.28-rc6.  After
->> two unsuccessful attempts (not enough free swap), I closed Emacs and
->> Firefox, retried, and got the oops.  I could scroll the console back,
->> and did two screenshots, find them under http://apt.niif.hu/susp/.
->> I'm not sure what other data may be useful for debugging, please ask.
->
-> Does it happen with 2.6.26(.y)?
+The following three patches address the hibernation/suspend issue described in
+http://bugzilla.kernel.org/show_bug.cgi?id=12121 and in the very long thread at
+http://lkml.org/lkml/2008/12/1/382.
 
-It never happened under 2.6.26, but that doesn't say much, as I barely
-used hibernation with that kernel.  I used suspend-to-RAM much, which
-always worked and still does.  If I found a way to reproduce the issue,
-I could test it under 2.6.26.  I haven't put much thought into that,
-though.
--- 
-Regards,
-Feri.
+In short, the problem is that resume (from hibernation and/or suspend-to-RAM)
+occasionally fails (approximately 20-25% of attempts) in the middle of resuming
+PCI devices.  We were able to find a specific layout of devices within the
+memory address space in which the failure appeared to be extremely unlikely,
+but this layout was no really valid for other reasons.  We also found out that
+using the NMI watchdog decreased the probablitily of failure which indicated
+that the problem could be timing-related.
+
+Next, we started to look at the PCI resume code and we generally agreed that
+it would be a good idea to restore the standard PCI configuration registers
+with interrupts disabled.  Also, we thought we could move the saving of those
+registers for some devices into functions executed with interrupts disabled.
+
+I have followed these observations and created the three following patches.
+With all of these patches applied, I'm not able to reproduce the problem.
+
+Thanks,
+Rafael
