@@ -1,11 +1,9 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
-	and resume
-Date: Sat, 6 Dec 2008 10:00:35 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812061822.35763.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812060930490.3425@nehalem.linux-foundation.org>
-	<200812061843.59495.rjw@sisk.pl>
+ and resume
+Date: Sat, 6 Dec 2008 13:30:37 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0812061324260.13426-100000__32488.3368485191$1228588448$gmane$org@netrider.rowland.org>
+References: <200812061843.59495.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,48 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-
-
 On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+
+> On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> > 
+> > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
+> > > USB devices behind the controller.
+> > 
+> > Oh, in that case there are no PCI users of this at all, and what the PCI 
+> > driver does is immaterial ;)
+> > 
+> > > But then we will save the device's registers in the "sleeping" state. 
+> > 
+> > No no. The rule would be that a PCI driver - if it uses the new 
+> > infrastructure, which apparently nobody does _as_ a PCI driver - simply 
+> > would never do the whole "pci_set_power_state(PCI_D3hot)" etc crud AT ALL.
 > 
-> So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> there is a major update of the new framework waiting for .29 in the Greg's
-> tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> suspend-resume things (save state and go to a low power state on suspend,
-> restore state on resume) to the new framework in a separete patch.
+> Now _that_ sounds good. :-)
 > 
-> Is this plan acceptable?
+> > So a PCI driver would only do higher-level stuff in its suspend/resume 
+> > code. For example, a USB host controller would initiate the USB bus level 
+> > stuff, and likely just stop the controller (not suspend it - just stop 
+> > it).
+> 
+> I like this idea very much.
 
-Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-for the pull requests from Jesse and Greg.
+Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
+this point I'm not sure exactly what's needed, though.  For instance,
+is there any compelling reason to switch over to the new dev_pm_ops
+approach?  And what should the correct sequence of calls be?
 
-The only thing I'll do right now is to send off my "print out ICH6+ 
-LPC resources" patch again to Jesse, with a changelog etc. It can probably 
-go in as-is (it really just adds printk's), but since it didn't matter 
-anyway we migth as well just do it as a PCI thing for 2.6.29 too.
-
-On a similar note, I wonder what we should do about the whole "transparent 
-bridge resource allocation" thing. It also didn't end up really mattering, 
-even if it apparently made a difference for Frans. The question is just 
-whether we would be better off with IO windows for transparent buses (the 
-way we try to set things up now), or with a simpler PCI resource tree that 
-just takes advantage of the transparency.
-
-The bridge windows _may_ result in better PCI throughput behind such a 
-bridge, so there is some argument for keeping them. On the other hand, 
-transparent bridges aren't generally for high-performance stuff anyway, 
-and one advantage of the transparency is the flexibility it allows (ie we 
-don't _need_ to set up the static bridging windows).
-
-I dunno. I wonder what Windows does. Following Windows in areas like this 
-tends to have the advantage that it's what the firmware and the hardware 
-has generally been tested with most. At the same time, I'm not sure this 
-is necessarily a very bug-prone area for either firmware or hardware. If 
-there's actual bridge bugs wrt the windows, I suspect such a bridge would 
-be broken enough to be unusable regardless.
-
-			Linus
+Alan Stern
