@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/3] Fix hibernation regression on Toshiba
-	Portege R500
-Date: Sat, 6 Dec 2008 15:05:33 +0100
-Message-ID: <200812061505.33815.rjw__46676.731730304$1228572800$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl>
+Subject: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration
+	space with interrupts off
+Date: Sat, 6 Dec 2008 15:09:08 +0100
+Message-ID: <200812061509.08994.rjw__39690.9550684088$1228572825$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812061505.33815.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812020320.31876.rjw@sisk.pl>
+In-Reply-To: <200812061505.33815.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,27 +23,50 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts off
 
-The following three patches address the hibernation/suspend issue described in
-http://bugzilla.kernel.org/show_bug.cgi?id=12121 and in the very long thread at
-http://lkml.org/lkml/2008/12/1/382.
+Move the restoration of the standard PCI configuration registers
+in the snd_hda_intel driver to a ->resume_early() callback executed
+with interrupts disabled, since doing that with interrupts enabled
+may lead to problems in some cases.
 
-In short, the problem is that resume (from hibernation and/or suspend-to-RAM)
-occasionally fails (approximately 20-25% of attempts) in the middle of resuming
-PCI devices.  We were able to find a specific layout of devices within the
-memory address space in which the failure appeared to be extremely unlikely,
-but this layout was no really valid for other reasons.  We also found out that
-using the NMI watchdog decreased the probablitily of failure which indicated
-that the problem could be timing-related.
+This patch addresses the regression from 2.6.26 tracked as
+http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
 
-Next, we started to look at the PCI resume code and we generally agreed that
-it would be a good idea to restore the standard PCI configuration registers
-with interrupts disabled.  Also, we thought we could move the saving of those
-registers for some devices into functions executed with interrupts disabled.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ sound/pci/hda/hda_intel.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-I have followed these observations and created the three following patches.
-With all of these patches applied, I'm not able to reproduce the problem.
-
-Thanks,
-Rafael
+Index: linux-2.6/sound/pci/hda/hda_intel.c
+===================================================================
+--- linux-2.6.orig/sound/pci/hda/hda_intel.c
++++ linux-2.6/sound/pci/hda/hda_intel.c
+@@ -1951,13 +1951,16 @@ static int azx_suspend(struct pci_dev *p
+ 	return 0;
+ }
+ 
++static int azx_resume_early(struct pci_dev *pci)
++{
++	return pci_restore_state(pci);
++}
++
+ static int azx_resume(struct pci_dev *pci)
+ {
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct azx *chip = card->private_data;
+ 
+-	pci_set_power_state(pci, PCI_D0);
+-	pci_restore_state(pci);
+ 	if (pci_enable_device(pci) < 0) {
+ 		printk(KERN_ERR "hda-intel: pci_enable_device failed, "
+ 		       "disabling device\n");
+@@ -2465,6 +2468,7 @@ static struct pci_driver driver = {
+ 	.remove = __devexit_p(azx_remove),
+ #ifdef CONFIG_PM
+ 	.suspend = azx_suspend,
++	.resume_early = azx_resume_early,
+ 	.resume = azx_resume,
+ #endif
+ };
