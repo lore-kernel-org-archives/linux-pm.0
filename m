@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
-	and resume
-Date: Sat, 6 Dec 2008 18:43:58 +0100
-Message-ID: <200812061843.59495.rjw__25167.5027692274$1228585629$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812061822.35763.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812060930490.3425@nehalem.linux-foundation.org>
+Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express
+	ports with interrupts disabled
+Date: Sat, 6 Dec 2008 18:46:11 +0100
+Message-ID: <200812061846.12167.rjw__22013.0894835622$1228585823$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812061825.59914.rjw@sisk.pl>
+	<alpine.LFD.2.00.0812060933430.3425@nehalem.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812060930490.3425@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812060933430.3425@nehalem.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -28,34 +28,27 @@ On Saturday, 6 of December 2008, Linus Torvalds wrote:
 > 
 > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
 > > 
-> > USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
-> > USB devices behind the controller.
+> > I think it should go through Jesse?
 > 
-> Oh, in that case there are no PCI users of this at all, and what the PCI 
-> driver does is immaterial ;)
+> Probably correct. And we want it in -next, so that it can get some testing 
+> even before I open the merge window. Because I hope everybody realizes 
+> that there's no way we're doing this in 2.6.28, and we'll leave the broken 
+> and unreliable suspend.
 > 
-> > But then we will save the device's registers in the "sleeping" state. 
+> Because afaik this is not a new bug (I tried to push a patch to do 
+> suspend_late/resume_early for the PCI code a _loong_ time ago, but it 
+> never got merged), and the only reason it showed up as a regression was 
+> almost certainly simply that we've always had this.
 > 
-> No no. The rule would be that a PCI driver - if it uses the new 
-> infrastructure, which apparently nobody does _as_ a PCI driver - simply 
-> would never do the whole "pci_set_power_state(PCI_D3hot)" etc crud AT ALL.
+> IOW, suspend/resume has always been dodgy wrt interrupts, and there's some 
+> luck involved. And your machine just happened to get unlucky.
+> 
+> I'd love to fix this in 2.6.28, but it's just not reasonable - it needs 
+> widespread testing with an early -rc merge. And if it turns out to fix a 
+> lot of machines, and there are no regressions, we can always back-port it 
+> later.
 
-Now _that_ sounds good. :-)
+I agree.
 
-> So a PCI driver would only do higher-level stuff in its suspend/resume 
-> code. For example, a USB host controller would initiate the USB bus level 
-> stuff, and likely just stop the controller (not suspend it - just stop 
-> it).
-
-I like this idea very much.
-
-So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-there is a major update of the new framework waiting for .29 in the Greg's
-tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-prefer it to go next.  After it's been merged, I'm going to add the mandatory
-suspend-resume things (save state and go to a low power state on suspend,
-restore state on resume) to the new framework in a separete patch.
-
-Is this plan acceptable?
-
+Thanks,
 Rafael
