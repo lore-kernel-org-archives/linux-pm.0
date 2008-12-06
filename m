@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
-	and resume
-Date: Sat, 6 Dec 2008 18:22:35 +0100
-Message-ID: <200812061822.35763.rjw__8709.50826579264$1228584342$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812061507.06474.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812060855580.3425@nehalem.linux-foundation.org>
+Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express
+	ports with interrupts disabled
+Date: Sat, 6 Dec 2008 18:25:59 +0100
+Message-ID: <200812061825.59914.rjw__42754.6737519608$1228584531$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812061508.00277.rjw@sisk.pl>
+	<alpine.LFD.2.00.0812060914100.3425@nehalem.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812060855580.3425@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812060914100.3425@nehalem.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -28,43 +28,18 @@ On Saturday, 6 of December 2008, Linus Torvalds wrote:
 > 
 > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
 > > 
-> > Rework the handling of suspend and resume of PCI devices which have
-> > no drivers or the drivers of which do not provide any suspend-resume
-> > callbacks in such a way that their standard PCI configuration
-> > registers will be saved and restored with interrupts disabled.
+> > I don't see why the suspend and resume of PCI Express ports should be
+> > handled with interrupts enabled and it may even lead to problems in
+> > some situations.
 > 
-> Ok, I think this is good, but I _also_ think that we should do one more 
-> fix:
+> Absolutely. A PCI Express port is really just a PCI bridge, with some odd 
+> rules. We need to enable them early, exacly like regular PCI bridges, or 
+> we cannot walk the PCI bus hierarchy correctly.
 > 
->  - if a device uses the new-format suspend/resume structure, we should do 
->    the low-level save-restore _unconditionally_ in the PCI layer.
-> 
-> Because apparently there is only a single user of the new format, and that 
-> single user got it wrong. So wouldn't it be much nicer to just _remove_ 
-> the code from the USB host controllers that does the save/restore thing.
+> Anyway, ack, ack, ack for the whole series.
 
-USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
-USB devices behind the controller.
+Thanks! :-)
 
-> Quite frankly, the USB code really does look wrong. Not just in that it 
-> enables the BAR's before restoring them, but on the suspend side it 
-> actually puts the device into D3_hot _before_ it then does the whole 
-> "pci_enable_wake()", which I'm not at all sure will necessarily work. I'm 
-> pretty sure that you should enable wakeup events _before_ going to sleep.
-
-Yeah.  Or simply use pci_prepare_to_sleep() and be done with it.
-
-> If the generic PCI layer unconditionally did the suspend as the last thing 
-> it does (and the resume as the first thing), then drivers couldn't do 
-> insane things like that, even by mistake.
-> 
-> Hmm?
-
-OK
-
-But then we will save the device's registers in the "sleeping" state.  Is this
-going to be entirely correct in all possible cases?  [pci_save_state() doesn't
-save the PM registers, so that _should_ be correct, but I don't have _that_
-much experience with these things.]
+I think it should go through Jesse?
 
 Rafael
