@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express
-	ports with interrupts disabled
-Date: Sun, 7 Dec 2008 13:53:48 +0100
-Message-ID: <200812071353.49258.rjw__20963.8069886298$1228654666$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812061846.12167.rjw@sisk.pl>
-	<200812061818.55115.jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
+	and resume
+Date: Sun, 7 Dec 2008 14:14:12 +0100
+Message-ID: <200812071414.13143.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812061818.55115.jbarnes@virtuousgeek.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,44 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 7 of December 2008, Jesse Barnes wrote:
-> On Saturday, December 6, 2008 9:46 am Rafael J. Wysocki wrote:
-> > On Saturday, 6 of December 2008, Linus Torvalds wrote:
-> > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > > > I think it should go through Jesse?
-> > >
-> > > Probably correct. And we want it in -next, so that it can get some
-> > > testing even before I open the merge window. Because I hope everybody
-> > > realizes that there's no way we're doing this in 2.6.28, and we'll leave
-> > > the broken and unreliable suspend.
-> > >
-> > > Because afaik this is not a new bug (I tried to push a patch to do
-> > > suspend_late/resume_early for the PCI code a _loong_ time ago, but it
-> > > never got merged), and the only reason it showed up as a regression was
-> > > almost certainly simply that we've always had this.
-> > >
-> > > IOW, suspend/resume has always been dodgy wrt interrupts, and there's
-> > > some luck involved. And your machine just happened to get unlucky.
-> > >
-> > > I'd love to fix this in 2.6.28, but it's just not reasonable - it needs
-> > > widespread testing with an early -rc merge. And if it turns out to fix a
-> > > lot of machines, and there are no regressions, we can always back-port it
-> > > later.
-> >
-> > I agree.
+On Sunday, 7 of December 2008, Alan Stern wrote:
+> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
 > 
-> I'll stuff it into my -next branch tonight.
+> > > Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
+> > > this point I'm not sure exactly what's needed, though.  For instance,
+> > > is there any compelling reason to switch over to the new dev_pm_ops
+> > > approach?
+> > 
+> > Certainly not at the moment.  There will be a reason some time after .29.
+> > 
+> > That said, it apparently is possible to clean up the resume callbacks of PCI
+> > USB controllers, as mentioned here: http://lkml.org/lkml/2008/12/6/38
+> > 
+> > > And what should the correct sequence of calls be?
+> > 
+> > Well, that's something I'm not exactly sure about myself.  Surely it seems
+> > reasonable to call pci_restore_state() with interrupts disabled and do the rest
+> > of resume after that.  Also, I think that the core could execute things like
+> > pci_enable_device() during resume and pci_set_power_state()/pci_enable_wake()
+> > on suspend so that the drivers didn't have to.  This way we could reduce code
+> > duplication quite a bit.
+> 
+> Do you plan to change the PCI core to do these things any time soon?  
 
-Well, if the [1/3] patch goes into your tree as is, there will be a bad merge
-conflict between your tree and the Greg's one.  I think it's better if I rebase
-that patch on top of the Greg's tree and push it to him (please see my last
-message to Greg, http://lkml.org/lkml/2008/12/7/58).
+I'm going to do that after the patches from this series are merged.
 
-The $subject patch is safe to pick up, though.
+> Wouldn't that require changing a whole bunch of PCI drivers too?
+
+Only those that start to use the new framework before this happens
+(which probably is only MMC at this point).
+
+> I tend to agree that having the core take care of these choreographed
+> activities would be good -- it would leave less room for drivers to
+> make mistakes.
+> 
+> So for now maybe it would be best just to rearrange the existing calls
+> in USB, and wait for the core changes before doing anything more
+> ambitious.
+
+Sounds good.
 
 Thanks,
 Rafael
