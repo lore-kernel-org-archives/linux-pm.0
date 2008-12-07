@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/3] PCI: Rework default handling of suspend and
-	resume (rebased)
-Date: Mon, 8 Dec 2008 00:34:57 +0100
-Message-ID: <200812080034.58106.rjw__7776.61654069579$1228693097$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812071347.18608.rjw@sisk.pl>
-	<20081207172642.GC23744@kroah.com>
+Subject: x86: Change static allocation of trampoline area
+Date: Mon, 8 Dec 2008 00:50:22 +0100
+Message-ID: <200812080050.23275.rjw__16246.0120198832$1228693996$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081207172642.GC23744@kroah.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,339 +16,159 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 7 of December 2008, Greg KH wrote:
-> On Sun, Dec 07, 2008 at 01:47:18PM +0100, Rafael J. Wysocki wrote:
-> > On Sunday, 7 of December 2008, Greg KH wrote:
-> > > On Sat, Dec 06, 2008 at 10:00:35AM -0800, Linus Torvalds wrote:
-> > > > 
-> > > > 
-> > > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> > > > > there is a major update of the new framework waiting for .29 in the Greg's
-> > > > > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> > > > > prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> > > > > suspend-resume things (save state and go to a low power state on suspend,
-> > > > > restore state on resume) to the new framework in a separete patch.
-> > > > > 
-> > > > > Is this plan acceptable?
-> > > > 
-> > > > Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-> > > > for the pull requests from Jesse and Greg.
-> > > 
-> > > No objection from me, I'll wait for Jesse to "go first" in the .29 merge
-> > > window.
-> > 
-> > Unfortunately, the merge of the $subject patch with the one in your tree
-> > results in code that doesn't compile.  Namely, some lines of code that the
-> > $subject patch relies on are removed by the patch in your tree.
-> > 
-> > If there is no objection from Jesse and if you don't mind, I'll prepare a
-> > version of the $subject patch on top of the patch in your tree and send it to
-> > you.
-> 
-> I sure don't mind.
-
-OK, thanks.
-
-So, please add the patch below to your tree (Jesse doesn't object).
-
-The GFP_KERNEL issue noticed by Linus will be fixed by a separate patch going
-through Jesse.
-
-Thanks,
-Rafael
-
----
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI: Rework default handling of suspend and resume
+Subject: x86: Change static allocation of trampoline area
+Impact: Improvement
 
-Rework the handling of suspend and resume of PCI devices which have
-no drivers or the drivers of which do not provide any suspend-resume
-callbacks in such a way that their standard PCI configuration
-registers will be saved and restored with interrupts disabled.  This
-should prevent such devices, including PCI bridges, from being
-resumed too late to be able to function correctly during the resume
-of the other PCI devices that may depend on them.
-
-Also, to remove one possible source of future confusion, drop the
-default handling of suspend and resume for PCI devices with drivers
-providing the 'pm' object introduced by the new suspend-resume
-framework (there are no such PCI drivers at the moment).
-
-This patch addresses the regression from 2.6.26 tracked as
-http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
+While debugging a suspend-to-RAM related issue it occured to me that
+if the trampoline code had grown past 4 KB, we would have been
+allocating too little memory for it, since the 4 KB size of the
+trampoline is hardcoded into arch/x86/kernel/e820.c .  Change that
+by making the kernel compute the trampoline size and allocate as much
+memory as necessary.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   94 +++++++++++++++++++++++++++++++----------------
- 1 file changed, 63 insertions(+), 31 deletions(-)
+ arch/x86/include/asm/trampoline.h |    7 +++++++
+ arch/x86/kernel/e820.c            |   16 ----------------
+ arch/x86/kernel/head32.c          |    3 +++
+ arch/x86/kernel/head64.c          |    3 +++
+ arch/x86/kernel/trampoline.c      |   19 +++++++++++++++++--
+ 5 files changed, 30 insertions(+), 18 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/arch/x86/include/asm/trampoline.h
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -300,6 +300,14 @@ static void pci_device_shutdown(struct d
+--- linux-2.6.orig/arch/x86/include/asm/trampoline.h
++++ linux-2.6/arch/x86/include/asm/trampoline.h
+@@ -3,6 +3,7 @@
  
- #ifdef CONFIG_PM_SLEEP
+ #ifndef __ASSEMBLY__
  
-+static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
-+{
-+	struct pci_driver *drv = pci_dev->driver;
-+
-+	return drv && (drv->suspend || drv->suspend_late || drv->resume
-+		|| drv->resume_early);
-+}
-+
++#ifdef CONFIG_X86_TRAMPOLINE
  /*
-  * Default "suspend" method for devices that have no driver provided suspend,
-  * or not even a driver at all.
-@@ -317,14 +325,22 @@ static void pci_default_pm_suspend(struc
- 
- /*
-  * Default "resume" method for devices that have no driver provided resume,
-- * or not even a driver at all.
-+ * or not even a driver at all (first part).
+  * Trampoline 80x86 program as an array.
   */
--static int pci_default_pm_resume(struct pci_dev *pci_dev)
-+static void pci_default_pm_resume_early(struct pci_dev *pci_dev)
- {
--	int retval = 0;
--
- 	/* restore the PCI config space */
- 	pci_restore_state(pci_dev);
+@@ -13,8 +14,14 @@ extern unsigned char *trampoline_base;
+ extern unsigned long init_rsp;
+ extern unsigned long initial_code;
+ 
++#define TRAMPOLINE_SIZE roundup(trampoline_end - trampoline_data, PAGE_SIZE)
+ #define TRAMPOLINE_BASE 0x6000
++
+ extern unsigned long setup_trampoline(void);
++extern void __init reserve_trampoline_memory(void);
++#else
++static inline void reserve_trampoline_memory(void) {};
++#endif /* CONFIG_X86_TRAMPOLINE */
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -698,22 +698,6 @@ struct early_res {
+ };
+ static struct early_res early_res[MAX_EARLY_RES] __initdata = {
+ 	{ 0, PAGE_SIZE, "BIOS data page" },	/* BIOS data page */
+-#if defined(CONFIG_X86_64) && defined(CONFIG_X86_TRAMPOLINE)
+-	{ TRAMPOLINE_BASE, TRAMPOLINE_BASE + 2 * PAGE_SIZE, "TRAMPOLINE" },
+-#endif
+-#if defined(CONFIG_X86_32) && defined(CONFIG_SMP)
+-	/*
+-	 * But first pinch a few for the stack/trampoline stuff
+-	 * FIXME: Don't need the extra page at 4K, but need to fix
+-	 * trampoline before removing it. (see the GDT stuff)
+-	 */
+-	{ PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE" },
+-	/*
+-	 * Has to be in very low memory so we can execute
+-	 * real-mode AP code.
+-	 */
+-	{ TRAMPOLINE_BASE, TRAMPOLINE_BASE + PAGE_SIZE, "TRAMPOLINE" },
+-#endif
+ 	{}
+ };
+ 
+Index: linux-2.6/arch/x86/kernel/trampoline.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/trampoline.c
++++ linux-2.6/arch/x86/kernel/trampoline.c
+@@ -1,10 +1,26 @@
+ #include <linux/io.h>
+ 
+ #include <asm/trampoline.h>
++#include <asm/e820.h>
+ 
+ /* ready for x86_64 and x86 */
+ unsigned char *trampoline_base = __va(TRAMPOLINE_BASE);
+ 
++void __init reserve_trampoline_memory(void)
++{
++#ifdef CONFIG_X86_32
++	/*
++	 * But first pinch a few for the stack/trampoline stuff
++	 * FIXME: Don't need the extra page at 4K, but need to fix
++	 * trampoline before removing it. (see the GDT stuff)
++	 */
++	reserve_early(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE");
++#endif
++	/* Has to be in very low memory so we can execute real-mode AP code. */
++	reserve_early(TRAMPOLINE_BASE, TRAMPOLINE_BASE + TRAMPOLINE_SIZE,
++			"TRAMPOLINE");
 +}
 +
-+/*
-+ * Default "resume" method for devices that have no driver provided resume,
-+ * or not even a driver at all (second part).
-+ */
-+static int pci_default_pm_resume_late(struct pci_dev *pci_dev)
-+{
-+	int retval;
-+
- 	/* if the device was enabled before suspend, reenable */
- 	retval = pci_reenable_device(pci_dev);
- 	/*
-@@ -371,10 +387,12 @@ static int pci_legacy_resume(struct devi
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
- 
--	if (drv && drv->resume)
-+	if (drv && drv->resume) {
- 		error = drv->resume(pci_dev);
--	else
--		error = pci_default_pm_resume(pci_dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
-+		error = pci_default_pm_resume_late(pci_dev);
-+	}
- 	return error;
+ /*
+  * Currently trivial. Write the real->protected mode
+  * bootstrap into the page concerned. The caller
+@@ -12,7 +28,6 @@ unsigned char *trampoline_base = __va(TR
+  */
+ unsigned long setup_trampoline(void)
+ {
+-	memcpy(trampoline_base, trampoline_data,
+-	       trampoline_end - trampoline_data);
++	memcpy(trampoline_base, trampoline_data, TRAMPOLINE_SIZE);
+ 	return virt_to_phys(trampoline_base);
  }
+Index: linux-2.6/arch/x86/kernel/head32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head32.c
++++ linux-2.6/arch/x86/kernel/head32.c
+@@ -12,9 +12,12 @@
+ #include <asm/sections.h>
+ #include <asm/e820.h>
+ #include <asm/bios_ebda.h>
++#include <asm/trampoline.h>
  
-@@ -420,10 +438,8 @@ static int pci_pm_suspend(struct device 
- 		if (drv->pm->suspend) {
- 			error = drv->pm->suspend(dev);
- 			suspend_report_result(drv->pm->suspend, error);
--		} else {
--			pci_default_pm_suspend(pci_dev);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
- 	}
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
-@@ -433,6 +449,7 @@ static int pci_pm_suspend(struct device 
- 
- static int pci_pm_suspend_noirq(struct device *dev)
+ void __init i386_start_kernel(void)
  {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
++	reserve_trampoline_memory();
++
+ 	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
  
-@@ -441,8 +458,10 @@ static int pci_pm_suspend_noirq(struct d
- 			error = drv->pm->suspend_noirq(dev);
- 			suspend_report_result(drv->pm->suspend_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend_late(dev, PMSG_SUSPEND);
-+	} else {
-+		pci_default_pm_suspend(pci_dev);
- 	}
+ #ifdef CONFIG_BLK_DEV_INITRD
+Index: linux-2.6/arch/x86/kernel/head64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head64.c
++++ linux-2.6/arch/x86/kernel/head64.c
+@@ -24,6 +24,7 @@
+ #include <asm/kdebug.h>
+ #include <asm/e820.h>
+ #include <asm/bios_ebda.h>
++#include <asm/trampoline.h>
  
- 	return error;
-@@ -452,15 +471,17 @@ static int pci_pm_resume(struct device *
+ /* boot cpu pda */
+ static struct x8664_pda _boot_cpu_pda __read_mostly;
+@@ -120,6 +121,8 @@ void __init x86_64_start_reservations(ch
  {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error;
-+	int error = 0;
+ 	copy_bootdata(__va(real_mode_data));
  
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
++	reserve_trampoline_memory();
++
+ 	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
  
- 	if (drv && drv->pm) {
--		error = drv->pm->resume ? drv->pm->resume(dev) :
--			pci_default_pm_resume(pci_dev);
--	} else {
-+		if (drv->pm->resume)
-+			error = drv->pm->resume(dev);
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume(dev);
-+	} else {
-+		error = pci_default_pm_resume_late(pci_dev);
- 	}
- 
- 	return error;
-@@ -468,6 +489,7 @@ static int pci_pm_resume(struct device *
- 
- static int pci_pm_resume_noirq(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-@@ -476,8 +498,10 @@ static int pci_pm_resume_noirq(struct de
- 	if (drv && drv->pm) {
- 		if (drv->pm->resume_noirq)
- 			error = drv->pm->resume_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume_early(dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
- 	}
- 
- 	return error;
-@@ -504,10 +528,8 @@ static int pci_pm_freeze(struct device *
- 		if (drv->pm->freeze) {
- 			error = drv->pm->freeze(dev);
- 			suspend_report_result(drv->pm->freeze, error);
--		} else {
--			pci_default_pm_suspend(pci_dev);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_FREEZE);
- 		pci_fixup_device(pci_fixup_suspend, pci_dev);
- 	}
-@@ -517,6 +539,7 @@ static int pci_pm_freeze(struct device *
- 
- static int pci_pm_freeze_noirq(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-@@ -525,8 +548,10 @@ static int pci_pm_freeze_noirq(struct de
- 			error = drv->pm->freeze_noirq(dev);
- 			suspend_report_result(drv->pm->freeze_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend_late(dev, PMSG_FREEZE);
-+	} else {
-+		pci_default_pm_suspend(pci_dev);
- 	}
- 
- 	return error;
-@@ -534,14 +559,15 @@ static int pci_pm_freeze_noirq(struct de
- 
- static int pci_pm_thaw(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
- 	if (drv && drv->pm) {
- 		if (drv->pm->thaw)
- 			error =  drv->pm->thaw(dev);
--	} else {
--		pci_fixup_device(pci_fixup_resume, to_pci_dev(dev));
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
-+		pci_fixup_device(pci_fixup_resume, pci_dev);
- 		error = pci_legacy_resume(dev);
- 	}
- 
-@@ -550,13 +576,14 @@ static int pci_pm_thaw(struct device *de
- 
- static int pci_pm_thaw_noirq(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
- 	if (drv && drv->pm) {
- 		if (drv->pm->thaw_noirq)
- 			error = drv->pm->thaw_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		pci_fixup_device(pci_fixup_resume_early, to_pci_dev(dev));
- 		error = pci_legacy_resume_early(dev);
- 	}
-@@ -566,17 +593,18 @@ static int pci_pm_thaw_noirq(struct devi
- 
- static int pci_pm_poweroff(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
--	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
- 	if (drv && drv->pm) {
- 		if (drv->pm->poweroff) {
- 			error = drv->pm->poweroff(dev);
- 			suspend_report_result(drv->pm->poweroff, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 	}
- 
-@@ -593,7 +621,7 @@ static int pci_pm_poweroff_noirq(struct 
- 			error = drv->pm->poweroff_noirq(dev);
- 			suspend_report_result(drv->pm->poweroff_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(to_pci_dev(dev))) {
- 		error = pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
- 	}
- 
-@@ -604,13 +632,15 @@ static int pci_pm_restore(struct device 
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error;
-+	int error = 0;
- 
- 	if (drv && drv->pm) {
--		error = drv->pm->restore ? drv->pm->restore(dev) :
--			pci_default_pm_resume(pci_dev);
--	} else {
-+		if (drv->pm->restore)
-+			error = drv->pm->restore(dev);
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume(dev);
-+	} else {
-+		error = pci_default_pm_resume_late(pci_dev);
- 	}
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
-@@ -628,8 +658,10 @@ static int pci_pm_restore_noirq(struct d
- 	if (drv && drv->pm) {
- 		if (drv->pm->restore_noirq)
- 			error = drv->pm->restore_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume_early(dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
- 	}
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- 
+ #ifdef CONFIG_BLK_DEV_INITRD
