@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
-	and resume
-Date: Sun, 7 Dec 2008 22:02:58 +0100
-Message-ID: <200812072202.58618.rjw__2890.29820492051$1228684007$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <200812071347.18608.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812070835040.3425@nehalem.linux-foundation.org>
+Subject: 2.6.28-rc8-git5: Reported regressions from 2.6.27
+Date: Sun,  7 Dec 2008 21:27:19 +0100 (CET)
+Message-ID: <6VnlupFpCsN.A.2rE.MsEPJB__9007.34790270708$1228689402$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812070835040.3425@nehalem.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,189 +16,150 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 7 of December 2008, Linus Torvalds wrote:
-> 
-> On Sun, 7 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > If there is no objection from Jesse and if you don't mind, I'll prepare a
-> > version of the $subject patch on top of the patch in your tree and send it to
-> > you.
-> 
-> Rafael: there's a bug in your 1/3 patch. 
-> 
-> It looks like "pci_save_state()" is currently unhappy with being called 
-> with interrupts disabled. Or at least "pci_save_pci[ex]_state()" state 
-> are. They both do a kzalloc(GFP_KERNEL).
-> 
-> So you should change that GFP_KERNEL into a GFP_ATOMIC. Or do something 
-> more complicated like pre-allocate them during early suspend, but just 
-> changing it to GFP_ATOMIC seems to be the trivial fix.
-> 
-> I'm not seeing any other issues with saving/restoring things with irq's 
-> disabled, but people should be on the lookout for details like this.
-
-I overlooked that, sorry.
-
-What about doing the following in addition to patch [1/3]?
-
-Rafael
-
----
- drivers/pci/pci.c   |   73 ++++++++++++++++++++++++++++++++++++----------------
- drivers/pci/pci.h   |    1 
- drivers/pci/probe.c |    3 ++
- 3 files changed, 55 insertions(+), 22 deletions(-)
-
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c
-+++ linux-2.6/drivers/pci/probe.c
-@@ -958,6 +958,9 @@ static void pci_init_capabilities(struct
- 	/* MSI/MSI-X list */
- 	pci_msi_init_pci_dev(dev);
- 
-+	/* Buffers for saving PCIe and PCI-X capabilities */
-+	pci_allocate_cap_save_buffers(dev);
-+
- 	/* Power Management */
- 	pci_pm_init(dev);
- 
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -41,6 +41,7 @@ struct pci_platform_pm_ops {
- 
- extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
- extern void pci_pm_init(struct pci_dev *dev);
-+extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
- 
- extern int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
- extern int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -640,19 +640,14 @@ static int pci_save_pcie_state(struct pc
- 	int pos, i = 0;
- 	struct pci_cap_saved_state *save_state;
- 	u16 *cap;
--	int found = 0;
- 
- 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
- 	if (pos <= 0)
- 		return 0;
- 
- 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
--	if (!save_state)
--		save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNEL);
--	else
--		found = 1;
- 	if (!save_state) {
--		dev_err(&dev->dev, "out of memory in pci_save_pcie_state\n");
-+		dev_err(&dev->dev, "buffer not found in %s\n", __FUNCTION__);
- 		return -ENOMEM;
- 	}
- 	cap = (u16 *)&save_state->data[0];
-@@ -661,9 +656,7 @@ static int pci_save_pcie_state(struct pc
- 	pci_read_config_word(dev, pos + PCI_EXP_LNKCTL, &cap[i++]);
- 	pci_read_config_word(dev, pos + PCI_EXP_SLTCTL, &cap[i++]);
- 	pci_read_config_word(dev, pos + PCI_EXP_RTCTL, &cap[i++]);
--	save_state->cap_nr = PCI_CAP_ID_EXP;
--	if (!found)
--		pci_add_saved_cap(dev, save_state);
-+
- 	return 0;
- }
- 
-@@ -688,30 +681,21 @@ static void pci_restore_pcie_state(struc
- 
- static int pci_save_pcix_state(struct pci_dev *dev)
- {
--	int pos, i = 0;
-+	int pos;
- 	struct pci_cap_saved_state *save_state;
--	u16 *cap;
--	int found = 0;
- 
- 	pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
- 	if (pos <= 0)
- 		return 0;
- 
- 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_PCIX);
--	if (!save_state)
--		save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
--	else
--		found = 1;
- 	if (!save_state) {
--		dev_err(&dev->dev, "out of memory in pci_save_pcie_state\n");
-+		dev_err(&dev->dev, "buffer not found in %s\n", __FUNCTION__);
- 		return -ENOMEM;
- 	}
--	cap = (u16 *)&save_state->data[0];
- 
--	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
--	save_state->cap_nr = PCI_CAP_ID_PCIX;
--	if (!found)
--		pci_add_saved_cap(dev, save_state);
-+	pci_read_config_word(dev, pos + PCI_X_CMD, (u16 *)save_state->data);
-+
- 	return 0;
- }
- 
-@@ -1301,6 +1285,51 @@ void pci_pm_init(struct pci_dev *dev)
- }
- 
- /**
-+ * pci_add_save_buffer - allocate buffer for saving given capability registers
-+ * @dev: the PCI device
-+ * @cap: the capability to allocate the buffer for
-+ * @size: requested size of the buffer
-+ */
-+static int pci_add_cap_save_buffer(
-+	struct pci_dev *dev, char cap, unsigned int size)
-+{
-+	int pos;
-+	struct pci_cap_saved_state *save_state;
-+
-+	pos = pci_find_capability(dev, cap);
-+	if (pos <= 0)
-+		return 0;
-+
-+	save_state = kzalloc(sizeof(*save_state) + size, GFP_KERNEL);
-+	if (!save_state)
-+		return -ENOMEM;
-+
-+	save_state->cap_nr = cap;
-+	pci_add_saved_cap(dev, save_state);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pci_allocate_cap_save_buffers - allocate buffers for saving capabilities
-+ * @dev: the PCI device
-+ */
-+void pci_allocate_cap_save_buffers(struct pci_dev *dev)
-+{
-+	int error;
-+
-+	error = pci_add_cap_save_buffer(dev, PCI_CAP_ID_EXP, 4 * sizeof(u16));
-+	if (error)
-+		dev_err(&dev->dev,
-+			"unable to preallocate PCI Express save buffer\n");
-+
-+	error = pci_add_cap_save_buffer(dev, PCI_CAP_ID_PCIX, sizeof(u16));
-+	if (error)
-+		dev_err(&dev->dev,
-+			"unable to preallocate PCI-X save buffer\n");
-+}
-+
-+/**
-  * pci_enable_ari - enable ARI forwarding if hardware support it
-  * @dev: the PCI device
-  */
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjI3LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
+b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
+ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
+ZnJvbSAyLjYuMjcsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
+dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
+aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
+c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
+aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
+dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
+ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQogIDIwMDgtMTItMDcgICAgICAxMDYgICAgICAgMjAgICAgICAgICAg
+MTcKICAyMDA4LTEyLTA0ICAgICAgMTA2ICAgICAgIDI5ICAgICAgICAgIDIxCiAgMjAwOC0xMS0y
+MiAgICAgICA5MyAgICAgICAyNSAgICAgICAgICAxNQogIDIwMDgtMTEtMTYgICAgICAgODkgICAg
+ICAgMzIgICAgICAgICAgMTgKICAyMDA4LTExLTA5ICAgICAgIDczICAgICAgIDQwICAgICAgICAg
+IDI3CiAgMjAwOC0xMS0wMiAgICAgICA1NSAgICAgICA0MSAgICAgICAgICAyOQogIDIwMDgtMTAt
+MjUgICAgICAgMjYgICAgICAgMjUgICAgICAgICAgMjAKCgpVbnJlc29sdmVkIHJlZ3Jlc3Npb25z
+Ci0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE3OApTdWJqZWN0CQk6IFhvcmcgY3Jhc2ggYXQgZmly
+c3Qgc3RhcnQKU3VibWl0dGVyCTogQ8OpZHJpYyBHb2RpbiA8Y2VkcmljQGJlbGJvbmUuYmU+CkRh
+dGUJCTogMjAwOC0xMi0wNCAxNDoyNiAoNCBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0
+cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42
+LmdpdDthPWNvbW1pdDtoPTUyNDQwMjExZGNkYzUyYzBiNzU3ZjhiMzRkMTIyZTExYjEyY2RkNTAK
+UmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODQwMDgy
+ODI4MDk4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xMjE2MQpTdWJqZWN0CQk6IFtpOTE1IGRybV0gaXJxIDE2OiBub2JvZHkgY2Fy
+ZWQgd2l0aCBsYXRlc3QgZ2l0IGtlcm5lbHMKU3VibWl0dGVyCTogZnJlZGkgbWwgPG1haWxpbmds
+aXN0cy5mcmVkaUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMi0wMiAxMzoyNiAoNiBkYXlzIG9s
+ZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODIy
+NDQ0NjE1NzI0Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xMjE2MApTdWJqZWN0CQk6IG5ldHdvcmtpbmcgb29wcyBhZnRlciByZXN1
+bWUgZnJvbSBzMnJhbSAoMi42LjI4LXJjNikKU3VibWl0dGVyCTogTWFyY2luIFNsdXNhcnogPG1h
+cmNpbi5zbHVzYXJ6QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTExLTI4IDIxOjE1ICgxMCBkYXlz
+IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIy
+NzkwNzAxNjE1NzIzJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD0xMjE1OQpTdWJqZWN0CQk6IDIuNi4yOC1yYzYtZ2l0MSAtLSBObyBz
+b3VuZCBwcm9kdWNlZCBmcm9tIEludGVsIEhEQSBBTFNBIGRyaXZlcgpTdWJtaXR0ZXIJOiBNaWxl
+cyBMYW5lIDxtaWxlcy5sYW5lQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTExLTI3IDIwOjMzICgx
+MSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVs
+Jm09MTIyNzgxODA1NjIwMjEyJnc9NApIYW5kbGVkLUJ5CTogVGFrYXNoaSBJd2FpIDx0aXdhaUBz
+dXNlLmRlPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
+LmNnaT9pZD0xMjE1OApTdWJqZWN0CQk6IGNvbW1pdCBiMWVlMjZiIGZyZWV6ZXMgc3lzdGVtIG9u
+IHN3aXRjaGluZyBmcm9tIFggdG8gdGV4dCBjb25zb2xlClN1Ym1pdHRlcgk6IEdhdWRlbnogU3Rl
+aW5saW4gPGdhdWRlbnpAZGViaWFuLm9yZz4KRGF0ZQkJOiAyMDA4LTExLTI1IDE5OjQ0ICgxMyBk
+YXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4
+L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPWIxZWUyNmJhYjE0
+ODg2MzUwYmExMmE1YzEwY2JjMDY5NmFjNjc5YmYKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
+Zm8vP2w9bGludXgta2VybmVsJm09MTIyNzY0MzQ0MjMxMTQwJnc9NApIYW5kbGVkLUJ5CTogQmVu
+amFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgoKCkJ1Zy1FbnRy
+eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE1NgpTdWJq
+ZWN0CQk6IHYyLjYuMjgtcmMyOiB4ODZfMzIgcmVsb2NhdGlvbiByZWdyZXNzaW9uPwpTdWJtaXR0
+ZXIJOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmQubm9zc3VtQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4
+LTExLTI0IDIxOjE5ICgxNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
+P2w9bGludXgta2VybmVsJm09MTIyNzU2MTU4MjIwOTY2Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE1NQpTdWJqZWN0CQk6IFJl
+Z3Jlc3Npb24gaW4gMi42LjI4LXJjIGFuZCAyLjYuMjctc3RhYmxlIC0gaGliZXJuYXRlIHJlbGF0
+ZWQKU3VibWl0dGVyCTogRmFiaW8gQ29tb2xsaSA8ZmFiaW8uY29tb2xsaUBnbWFpbC5jb20+CkRh
+dGUJCTogMjAwOC0xMS0yMyAxNjoxNyAoMTUgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8v
+bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc0NTcwOTkyNjM2MSZ3PTQKCgpCdWctRW50
+cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIxNTIKU3Vi
+amVjdAkJOiBIdWdlIHdha2V1cHMgbnVtYmVyIGZyb20gaTE5MTUKU3VibWl0dGVyCTogWXZlcy1B
+bGV4aXMgUGVyZXogPGNvcnNhY0BkZWJpYW4ub3JnPgpEYXRlCQk6IDIwMDgtMTItMDIgMTY6NDgg
+KDYgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWFjcGkm
+bT0xMjI4MjM2NTY3MDI5OTQmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
+bC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMTAwClN1YmplY3QJCTogcmVzdW1lIChTMlIpIGJyb2tl
+biBieSBJbnRlbCBtaWNyb2NvZGUgbW9kdWxlLCBvbiBBMTEwTApTdWJtaXR0ZXIJOiBBbmRyZWFz
+IE1vaHIgPGFuZGlAbGlzYXMuZGU+CkRhdGUJCTogMjAwOC0xMS0yNSAwODo0OCAoMTMgZGF5cyBv
+bGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
+P2lkPTEyMDYxClN1YmplY3QJCTogc25kX2hkYV9pbnRlbDogcG93ZXJfc2F2ZTogc291bmQgY3Jh
+Y2tzIG9uIHBvd2VyZG93bgpTdWJtaXR0ZXIJOiBKZW5zIFdlaWJsZXIgPGJ1Z3ppbGxhLWtlcm5l
+bEBqZW5zdGhlYnJhaW4uZGU+CkRhdGUJCTogMjAwOC0xMS0xOCAxMjowNyAoMjAgZGF5cyBvbGQp
+CkhhbmRsZWQtQnkJOiBUYWthc2hpIEl3YWkgPHRpd2FpQHN1c2UuZGU+CgoKQnVnLUVudHJ5CTog
+aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMDM0ClN1YmplY3QJ
+CTogc25kLWhkYS1pbnRlbCBvbiBSZWFsdGVrIEFMQzI2OCBjaGlwIHNob3dzIG9ubHkgTWFzdGVy
+IHZvbHVtZSAoZm9yIHBsYXliYWNrKQpTdWJtaXR0ZXIJOiBTZXJnZXkgPGF6dXJlQGZhc3QubmV0
+LnVhPgpEYXRlCQk6IDIwMDgtMTEtMTUgMDQ6MjAgKDIzIGRheXMgb2xkKQpIYW5kbGVkLUJ5CTog
+VGFrYXNoaSBJd2FpIDx0aXdhaUBzdXNlLmRlPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
+YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjAyOApTdWJqZWN0CQk6IGk5MTUgRFJNIGlz
+IGJyb2tlbiBpbiAyLjYuMjgtcmM0ClN1Ym1pdHRlcgk6IEFkYW0gVGthYyA8dm9uc2NoQGdtYWls
+LmNvbT4KRGF0ZQkJOiAyMDA4LTExLTE0IDAxOjUwICgyNCBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
+OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE5NTgKU3ViamVj
+dAkJOiBbMi42LjI3LnggPSZndDsgMi42LjI4LXJjM10gWG9yZyBjcmFzaCB3aXRoIHhmODZNYXBW
+aWRNZW0gZXJyb3IKU3VibWl0dGVyCTogVG9tYXN6IENobWllbGV3c2tpIDx0Y2hAd3BrZy5vcmc+
+CkRhdGUJCTogMjAwOC0xMS0wNSAwNTozNyAoMzMgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0
+cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExOTQ3ClN1YmplY3QJCTog
+Mi42LjI4LXJjIFZDIHN3aXRjaGluZyB3aXRoIEludGVsIGdyYXBoaWNzIGJyb2tlbgpTdWJtaXR0
+ZXIJOiBSb21hbm8gR2lhbm5ldHRpIDxyb21hbm8uZ2lhbm5ldHRpQGdtYWlsLmNvbT4KRGF0ZQkJ
+OiAyMDA4LTExLTAzIDEyOjEwICgzNSBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6IEplc3NlIEJhcm5l
+cyA8amJhcm5lc0B2aXJ0dW91c2dlZWsub3JnPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
+YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTkwNgpTdWJqZWN0CQk6IDIuNi4yOC1yYzIg
+c2VlbXMgdG8gZmFpbCBhdCBwb3dlcmluZyBkb3duIHRoZSBtb25pdG9yIHdoZW4gaXQgc2hvdWxk
+ClN1Ym1pdHRlcgk6IEdlbmUgSGVza2V0dCA8Z2VuZS5oZXNrZXR0QGdtYWlsLmNvbT4KRGF0ZQkJ
+OiAyMDA4LTEwLTMwIDY6MzkgKDM5IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMu
+aW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MzQ4Nzk3MjE0MjQmdz00CgoKQnVnLUVudHJ5CTog
+aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExODU4ClN1YmplY3QJ
+CTogVGltZW91dCByZWdyZXNzaW9uIGludHJvZHVjZWQgYnkgMjQyZjlkY2I4YmE2ZjY4ZmNkMjE3
+YTExOWE3NjQ4YTRmNjkyOTBlOQpTdWJtaXR0ZXIJOiBUZWp1biBIZW8gPHRqQGtlcm5lbC5vcmc+
+CkRhdGUJCTogMjAwOC0xMC0yNiA5OjQ2ICg0MyBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDog
+aHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgt
+Mi42LmdpdDthPWNvbW1pdDtoPTI0MmY5ZGNiOGJhNmY2OGZjZDIxN2ExMTlhNzY0OGE0ZjY5Mjkw
+ZTkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyNTAx
+NDQ3MzI2Njk4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xMTg0OQpTdWJqZWN0CQk6IGRlZmF1bHQgSVJRIGFmZmluaXR5IGNoYW5n
+ZSBpbiB2Mi42LjI3IChicmVha2luZyBzZXZlcmFsIFNNUCBQUEMgYmFzZWQgc3lzdGVtcykKU3Vi
+bWl0dGVyCTogS3VtYXIgR2FsYSA8Z2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZz4KRGF0ZQkJOiAy
+MDA4LTEwLTI0IDEyOjQ1ICg0NSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
+Zm8vP2w9bGludXgta2VybmVsJm09MTIyNDg1MjQ1OTI0MTI1Jnc9NAoKClJlZ3Jlc3Npb25zIHdp
+dGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
+dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE3NwpTdWJqZWN0CQk6IFttZW1j
+ZyBCVUcgP10gZmFpbGVkIHRvIGJvb3Qgb24gSUE2NCB3aXRoIENPTkZJR19ESVNDT05USUdNRU09
+eQpTdWJtaXR0ZXIJOiBMaSBaZWZhbiA8bGl6ZkBjbi5mdWppdHN1LmNvbT4KRGF0ZQkJOiAyMDA4
+LTEyLTA1IDM6MDkgKDMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9s
+PWxpbnV4LWtlcm5lbCZtPTEyMjg0NDY2ODUzMjc1MiZ3PTQKSGFuZGxlZC1CeQk6IEtBTUVaQVdB
+IEhpcm95dWtpIDxrYW1lemF3YS5oaXJveXVAanAuZnVqaXRzdS5jb20+ClBhdGNoCQk6IGh0dHA6
+Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODQ0NzU3NzAxNTA1Jnc9NAoKCkJ1Zy1F
+bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjA0NwpT
+dWJqZWN0CQk6IEFDUEkgdG9zaGliYTogb25seSByZWdpc3RlciByZmtpbGwgaWYgYnQgaXMgZW5h
+YmxlZApTdWJtaXR0ZXIJOiBBbmRyZXkgQm9yemVua292IDxhcnZpZGphYXJAbWFpbC5ydT4KRGF0
+ZQkJOiAyMDA4LTEwLTI4IDE5OjEwICg0MSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9t
+YXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyNTIyMTEzNjE5MDI1Jnc9MgpIYW5kbGVkLUJ5
+CTogRnJlZGVyaWsgRGV3ZWVyZHQgPGZyZWRlcmlrLmRld2VlcmR0QGdtYWlsLmNvbT4KUGF0Y2gJ
+CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MjY4NDMxMTc0Nzgmdz0y
+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTExODk4ClN1YmplY3QJCTogbWtlMmZzIGhhbmcgb24gQUlDNzkgZGV2aWNlLgpTdWJtaXR0ZXIJ
+OiBhbGV4cyA8YWxleC5zaGlAaW50ZWwuY29tPgpEYXRlCQk6IDIwMDgtMTAtMzAgMDE6MTcgKDM5
+IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGlu
+dXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9ZjBjMGEzNzZk
+MGZjZDRjNTU3OWVjZjVlOTVmODgzODdjYmE4NTIxMQpIYW5kbGVkLUJ5CTogSmFtZXMgQm90dG9t
+bGV5IDxKYW1lcy5Cb3R0b21sZXlASGFuc2VuUGFydG5lcnNoaXAuY29tPgoJCSAgTWlrZSBDaHJp
+c3RpZSA8bWljaGFlbGNAY3Mud2lzYy5lZHU+ClBhdGNoCQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTg5OCNjMjgKCQkgIGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTg5OCNjMzYKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZp
+c2l0IHRoZSBidWcgZW50cmllcyBhbmQgZm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVu
+Y2VzLgoKQXMgeW91IGNhbiBzZWUsIHRoZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2gg
+b2YgdGhlIGxpc3RlZCByZWdyZXNzaW9ucy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5
+IHVzZWQgZm9yIHRyYWNraW5nIHRoZSByZWdyZXNzaW9ucyBmcm9tIDIuNi4yNywKdW5yZXNvbHZl
+ZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xMTgwOAoKUGxlYXNlIGxldCBtZSBrbm93IGlmIHRoZXJlIGFyZSBhbnkg
+QnVnemlsbGEgZW50cmllcyB0aGF0IHNob3VsZCBiZSBhZGRlZCB0bwp0aGUgbGlzdCBpbiB0aGVy
+ZS4KClRoYW5rcywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LXBt
