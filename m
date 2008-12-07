@@ -1,11 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.28-rc8-git5: Reported regressions from 2.6.27
-Date: Sun,  7 Dec 2008 21:27:19 +0100 (CET)
-Message-ID: <6VnlupFpCsN.A.2rE.MsEPJB__9007.34790270708$1228689402$gmane$org@chimera>
+Subject: [PATCH 1/3] PCI: Rework default handling of suspend and
+	resume (rebased)
+Date: Mon, 8 Dec 2008 00:34:57 +0100
+Message-ID: <200812080034.58106.rjw__7776.61654069579$1228693097$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812071347.18608.rjw@sisk.pl>
+	<20081207172642.GC23744@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20081207172642.GC23744@kroah.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,150 +20,339 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
-LjI3LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
-b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
-ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
-ZnJvbSAyLjYuMjcsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
-dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
-aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
-c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
-aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
-dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
-ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQogIDIwMDgtMTItMDcgICAgICAxMDYgICAgICAgMjAgICAgICAgICAg
-MTcKICAyMDA4LTEyLTA0ICAgICAgMTA2ICAgICAgIDI5ICAgICAgICAgIDIxCiAgMjAwOC0xMS0y
-MiAgICAgICA5MyAgICAgICAyNSAgICAgICAgICAxNQogIDIwMDgtMTEtMTYgICAgICAgODkgICAg
-ICAgMzIgICAgICAgICAgMTgKICAyMDA4LTExLTA5ICAgICAgIDczICAgICAgIDQwICAgICAgICAg
-IDI3CiAgMjAwOC0xMS0wMiAgICAgICA1NSAgICAgICA0MSAgICAgICAgICAyOQogIDIwMDgtMTAt
-MjUgICAgICAgMjYgICAgICAgMjUgICAgICAgICAgMjAKCgpVbnJlc29sdmVkIHJlZ3Jlc3Npb25z
-Ci0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE3OApTdWJqZWN0CQk6IFhvcmcgY3Jhc2ggYXQgZmly
-c3Qgc3RhcnQKU3VibWl0dGVyCTogQ8OpZHJpYyBHb2RpbiA8Y2VkcmljQGJlbGJvbmUuYmU+CkRh
-dGUJCTogMjAwOC0xMi0wNCAxNDoyNiAoNCBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0
-cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42
-LmdpdDthPWNvbW1pdDtoPTUyNDQwMjExZGNkYzUyYzBiNzU3ZjhiMzRkMTIyZTExYjEyY2RkNTAK
-UmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODQwMDgy
-ODI4MDk4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMjE2MQpTdWJqZWN0CQk6IFtpOTE1IGRybV0gaXJxIDE2OiBub2JvZHkgY2Fy
-ZWQgd2l0aCBsYXRlc3QgZ2l0IGtlcm5lbHMKU3VibWl0dGVyCTogZnJlZGkgbWwgPG1haWxpbmds
-aXN0cy5mcmVkaUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMi0wMiAxMzoyNiAoNiBkYXlzIG9s
-ZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODIy
-NDQ0NjE1NzI0Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xMjE2MApTdWJqZWN0CQk6IG5ldHdvcmtpbmcgb29wcyBhZnRlciByZXN1
-bWUgZnJvbSBzMnJhbSAoMi42LjI4LXJjNikKU3VibWl0dGVyCTogTWFyY2luIFNsdXNhcnogPG1h
-cmNpbi5zbHVzYXJ6QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTExLTI4IDIxOjE1ICgxMCBkYXlz
-IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIy
-NzkwNzAxNjE1NzIzJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L3Nob3dfYnVnLmNnaT9pZD0xMjE1OQpTdWJqZWN0CQk6IDIuNi4yOC1yYzYtZ2l0MSAtLSBObyBz
-b3VuZCBwcm9kdWNlZCBmcm9tIEludGVsIEhEQSBBTFNBIGRyaXZlcgpTdWJtaXR0ZXIJOiBNaWxl
-cyBMYW5lIDxtaWxlcy5sYW5lQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTExLTI3IDIwOjMzICgx
-MSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVs
-Jm09MTIyNzgxODA1NjIwMjEyJnc9NApIYW5kbGVkLUJ5CTogVGFrYXNoaSBJd2FpIDx0aXdhaUBz
-dXNlLmRlPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
-LmNnaT9pZD0xMjE1OApTdWJqZWN0CQk6IGNvbW1pdCBiMWVlMjZiIGZyZWV6ZXMgc3lzdGVtIG9u
-IHN3aXRjaGluZyBmcm9tIFggdG8gdGV4dCBjb25zb2xlClN1Ym1pdHRlcgk6IEdhdWRlbnogU3Rl
-aW5saW4gPGdhdWRlbnpAZGViaWFuLm9yZz4KRGF0ZQkJOiAyMDA4LTExLTI1IDE5OjQ0ICgxMyBk
-YXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4
-L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPWIxZWUyNmJhYjE0
-ODg2MzUwYmExMmE1YzEwY2JjMDY5NmFjNjc5YmYKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
-Zm8vP2w9bGludXgta2VybmVsJm09MTIyNzY0MzQ0MjMxMTQwJnc9NApIYW5kbGVkLUJ5CTogQmVu
-amFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgoKCkJ1Zy1FbnRy
-eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE1NgpTdWJq
-ZWN0CQk6IHYyLjYuMjgtcmMyOiB4ODZfMzIgcmVsb2NhdGlvbiByZWdyZXNzaW9uPwpTdWJtaXR0
-ZXIJOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmQubm9zc3VtQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4
-LTExLTI0IDIxOjE5ICgxNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgta2VybmVsJm09MTIyNzU2MTU4MjIwOTY2Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE1NQpTdWJqZWN0CQk6IFJl
-Z3Jlc3Npb24gaW4gMi42LjI4LXJjIGFuZCAyLjYuMjctc3RhYmxlIC0gaGliZXJuYXRlIHJlbGF0
-ZWQKU3VibWl0dGVyCTogRmFiaW8gQ29tb2xsaSA8ZmFiaW8uY29tb2xsaUBnbWFpbC5jb20+CkRh
-dGUJCTogMjAwOC0xMS0yMyAxNjoxNyAoMTUgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8v
-bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc0NTcwOTkyNjM2MSZ3PTQKCgpCdWctRW50
-cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIxNTIKU3Vi
-amVjdAkJOiBIdWdlIHdha2V1cHMgbnVtYmVyIGZyb20gaTE5MTUKU3VibWl0dGVyCTogWXZlcy1B
-bGV4aXMgUGVyZXogPGNvcnNhY0BkZWJpYW4ub3JnPgpEYXRlCQk6IDIwMDgtMTItMDIgMTY6NDgg
-KDYgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWFjcGkm
-bT0xMjI4MjM2NTY3MDI5OTQmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
-bC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMTAwClN1YmplY3QJCTogcmVzdW1lIChTMlIpIGJyb2tl
-biBieSBJbnRlbCBtaWNyb2NvZGUgbW9kdWxlLCBvbiBBMTEwTApTdWJtaXR0ZXIJOiBBbmRyZWFz
-IE1vaHIgPGFuZGlAbGlzYXMuZGU+CkRhdGUJCTogMjAwOC0xMS0yNSAwODo0OCAoMTMgZGF5cyBv
-bGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
-P2lkPTEyMDYxClN1YmplY3QJCTogc25kX2hkYV9pbnRlbDogcG93ZXJfc2F2ZTogc291bmQgY3Jh
-Y2tzIG9uIHBvd2VyZG93bgpTdWJtaXR0ZXIJOiBKZW5zIFdlaWJsZXIgPGJ1Z3ppbGxhLWtlcm5l
-bEBqZW5zdGhlYnJhaW4uZGU+CkRhdGUJCTogMjAwOC0xMS0xOCAxMjowNyAoMjAgZGF5cyBvbGQp
-CkhhbmRsZWQtQnkJOiBUYWthc2hpIEl3YWkgPHRpd2FpQHN1c2UuZGU+CgoKQnVnLUVudHJ5CTog
-aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMDM0ClN1YmplY3QJ
-CTogc25kLWhkYS1pbnRlbCBvbiBSZWFsdGVrIEFMQzI2OCBjaGlwIHNob3dzIG9ubHkgTWFzdGVy
-IHZvbHVtZSAoZm9yIHBsYXliYWNrKQpTdWJtaXR0ZXIJOiBTZXJnZXkgPGF6dXJlQGZhc3QubmV0
-LnVhPgpEYXRlCQk6IDIwMDgtMTEtMTUgMDQ6MjAgKDIzIGRheXMgb2xkKQpIYW5kbGVkLUJ5CTog
-VGFrYXNoaSBJd2FpIDx0aXdhaUBzdXNlLmRlPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjAyOApTdWJqZWN0CQk6IGk5MTUgRFJNIGlz
-IGJyb2tlbiBpbiAyLjYuMjgtcmM0ClN1Ym1pdHRlcgk6IEFkYW0gVGthYyA8dm9uc2NoQGdtYWls
-LmNvbT4KRGF0ZQkJOiAyMDA4LTExLTE0IDAxOjUwICgyNCBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
-OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE5NTgKU3ViamVj
-dAkJOiBbMi42LjI3LnggPSZndDsgMi42LjI4LXJjM10gWG9yZyBjcmFzaCB3aXRoIHhmODZNYXBW
-aWRNZW0gZXJyb3IKU3VibWl0dGVyCTogVG9tYXN6IENobWllbGV3c2tpIDx0Y2hAd3BrZy5vcmc+
-CkRhdGUJCTogMjAwOC0xMS0wNSAwNTozNyAoMzMgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExOTQ3ClN1YmplY3QJCTog
-Mi42LjI4LXJjIFZDIHN3aXRjaGluZyB3aXRoIEludGVsIGdyYXBoaWNzIGJyb2tlbgpTdWJtaXR0
-ZXIJOiBSb21hbm8gR2lhbm5ldHRpIDxyb21hbm8uZ2lhbm5ldHRpQGdtYWlsLmNvbT4KRGF0ZQkJ
-OiAyMDA4LTExLTAzIDEyOjEwICgzNSBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6IEplc3NlIEJhcm5l
-cyA8amJhcm5lc0B2aXJ0dW91c2dlZWsub3JnPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTkwNgpTdWJqZWN0CQk6IDIuNi4yOC1yYzIg
-c2VlbXMgdG8gZmFpbCBhdCBwb3dlcmluZyBkb3duIHRoZSBtb25pdG9yIHdoZW4gaXQgc2hvdWxk
-ClN1Ym1pdHRlcgk6IEdlbmUgSGVza2V0dCA8Z2VuZS5oZXNrZXR0QGdtYWlsLmNvbT4KRGF0ZQkJ
-OiAyMDA4LTEwLTMwIDY6MzkgKDM5IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMu
-aW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MzQ4Nzk3MjE0MjQmdz00CgoKQnVnLUVudHJ5CTog
-aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExODU4ClN1YmplY3QJ
-CTogVGltZW91dCByZWdyZXNzaW9uIGludHJvZHVjZWQgYnkgMjQyZjlkY2I4YmE2ZjY4ZmNkMjE3
-YTExOWE3NjQ4YTRmNjkyOTBlOQpTdWJtaXR0ZXIJOiBUZWp1biBIZW8gPHRqQGtlcm5lbC5vcmc+
-CkRhdGUJCTogMjAwOC0xMC0yNiA5OjQ2ICg0MyBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDog
-aHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgt
-Mi42LmdpdDthPWNvbW1pdDtoPTI0MmY5ZGNiOGJhNmY2OGZjZDIxN2ExMTlhNzY0OGE0ZjY5Mjkw
-ZTkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyNTAx
-NDQ3MzI2Njk4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xMTg0OQpTdWJqZWN0CQk6IGRlZmF1bHQgSVJRIGFmZmluaXR5IGNoYW5n
-ZSBpbiB2Mi42LjI3IChicmVha2luZyBzZXZlcmFsIFNNUCBQUEMgYmFzZWQgc3lzdGVtcykKU3Vi
-bWl0dGVyCTogS3VtYXIgR2FsYSA8Z2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZz4KRGF0ZQkJOiAy
-MDA4LTEwLTI0IDEyOjQ1ICg0NSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
-Zm8vP2w9bGludXgta2VybmVsJm09MTIyNDg1MjQ1OTI0MTI1Jnc9NAoKClJlZ3Jlc3Npb25zIHdp
-dGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjE3NwpTdWJqZWN0CQk6IFttZW1j
-ZyBCVUcgP10gZmFpbGVkIHRvIGJvb3Qgb24gSUE2NCB3aXRoIENPTkZJR19ESVNDT05USUdNRU09
-eQpTdWJtaXR0ZXIJOiBMaSBaZWZhbiA8bGl6ZkBjbi5mdWppdHN1LmNvbT4KRGF0ZQkJOiAyMDA4
-LTEyLTA1IDM6MDkgKDMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9s
-PWxpbnV4LWtlcm5lbCZtPTEyMjg0NDY2ODUzMjc1MiZ3PTQKSGFuZGxlZC1CeQk6IEtBTUVaQVdB
-IEhpcm95dWtpIDxrYW1lemF3YS5oaXJveXVAanAuZnVqaXRzdS5jb20+ClBhdGNoCQk6IGh0dHA6
-Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyODQ0NzU3NzAxNTA1Jnc9NAoKCkJ1Zy1F
-bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjA0NwpT
-dWJqZWN0CQk6IEFDUEkgdG9zaGliYTogb25seSByZWdpc3RlciByZmtpbGwgaWYgYnQgaXMgZW5h
-YmxlZApTdWJtaXR0ZXIJOiBBbmRyZXkgQm9yemVua292IDxhcnZpZGphYXJAbWFpbC5ydT4KRGF0
-ZQkJOiAyMDA4LTEwLTI4IDE5OjEwICg0MSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9t
-YXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyNTIyMTEzNjE5MDI1Jnc9MgpIYW5kbGVkLUJ5
-CTogRnJlZGVyaWsgRGV3ZWVyZHQgPGZyZWRlcmlrLmRld2VlcmR0QGdtYWlsLmNvbT4KUGF0Y2gJ
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MjY4NDMxMTc0Nzgmdz0y
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTExODk4ClN1YmplY3QJCTogbWtlMmZzIGhhbmcgb24gQUlDNzkgZGV2aWNlLgpTdWJtaXR0ZXIJ
-OiBhbGV4cyA8YWxleC5zaGlAaW50ZWwuY29tPgpEYXRlCQk6IDIwMDgtMTAtMzAgMDE6MTcgKDM5
-IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGlu
-dXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9ZjBjMGEzNzZk
-MGZjZDRjNTU3OWVjZjVlOTVmODgzODdjYmE4NTIxMQpIYW5kbGVkLUJ5CTogSmFtZXMgQm90dG9t
-bGV5IDxKYW1lcy5Cb3R0b21sZXlASGFuc2VuUGFydG5lcnNoaXAuY29tPgoJCSAgTWlrZSBDaHJp
-c3RpZSA8bWljaGFlbGNAY3Mud2lzYy5lZHU+ClBhdGNoCQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTg5OCNjMjgKCQkgIGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTg5OCNjMzYKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZp
-c2l0IHRoZSBidWcgZW50cmllcyBhbmQgZm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVu
-Y2VzLgoKQXMgeW91IGNhbiBzZWUsIHRoZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2gg
-b2YgdGhlIGxpc3RlZCByZWdyZXNzaW9ucy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5
-IHVzZWQgZm9yIHRyYWNraW5nIHRoZSByZWdyZXNzaW9ucyBmcm9tIDIuNi4yNywKdW5yZXNvbHZl
-ZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xMTgwOAoKUGxlYXNlIGxldCBtZSBrbm93IGlmIHRoZXJlIGFyZSBhbnkg
-QnVnemlsbGEgZW50cmllcyB0aGF0IHNob3VsZCBiZSBhZGRlZCB0bwp0aGUgbGlzdCBpbiB0aGVy
-ZS4KClRoYW5rcywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2xpbnV4LXBt
+On Sunday, 7 of December 2008, Greg KH wrote:
+> On Sun, Dec 07, 2008 at 01:47:18PM +0100, Rafael J. Wysocki wrote:
+> > On Sunday, 7 of December 2008, Greg KH wrote:
+> > > On Sat, Dec 06, 2008 at 10:00:35AM -0800, Linus Torvalds wrote:
+> > > > 
+> > > > 
+> > > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
+> > > > > there is a major update of the new framework waiting for .29 in the Greg's
+> > > > > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
+> > > > > prefer it to go next.  After it's been merged, I'm going to add the mandatory
+> > > > > suspend-resume things (save state and go to a low power state on suspend,
+> > > > > restore state on resume) to the new framework in a separete patch.
+> > > > > 
+> > > > > Is this plan acceptable?
+> > > > 
+> > > > Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
+> > > > for the pull requests from Jesse and Greg.
+> > > 
+> > > No objection from me, I'll wait for Jesse to "go first" in the .29 merge
+> > > window.
+> > 
+> > Unfortunately, the merge of the $subject patch with the one in your tree
+> > results in code that doesn't compile.  Namely, some lines of code that the
+> > $subject patch relies on are removed by the patch in your tree.
+> > 
+> > If there is no objection from Jesse and if you don't mind, I'll prepare a
+> > version of the $subject patch on top of the patch in your tree and send it to
+> > you.
+> 
+> I sure don't mind.
+
+OK, thanks.
+
+So, please add the patch below to your tree (Jesse doesn't object).
+
+The GFP_KERNEL issue noticed by Linus will be fixed by a separate patch going
+through Jesse.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI: Rework default handling of suspend and resume
+
+Rework the handling of suspend and resume of PCI devices which have
+no drivers or the drivers of which do not provide any suspend-resume
+callbacks in such a way that their standard PCI configuration
+registers will be saved and restored with interrupts disabled.  This
+should prevent such devices, including PCI bridges, from being
+resumed too late to be able to function correctly during the resume
+of the other PCI devices that may depend on them.
+
+Also, to remove one possible source of future confusion, drop the
+default handling of suspend and resume for PCI devices with drivers
+providing the 'pm' object introduced by the new suspend-resume
+framework (there are no such PCI drivers at the moment).
+
+This patch addresses the regression from 2.6.26 tracked as
+http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci-driver.c |   94 +++++++++++++++++++++++++++++++----------------
+ 1 file changed, 63 insertions(+), 31 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -300,6 +300,14 @@ static void pci_device_shutdown(struct d
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
++static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
++{
++	struct pci_driver *drv = pci_dev->driver;
++
++	return drv && (drv->suspend || drv->suspend_late || drv->resume
++		|| drv->resume_early);
++}
++
+ /*
+  * Default "suspend" method for devices that have no driver provided suspend,
+  * or not even a driver at all.
+@@ -317,14 +325,22 @@ static void pci_default_pm_suspend(struc
+ 
+ /*
+  * Default "resume" method for devices that have no driver provided resume,
+- * or not even a driver at all.
++ * or not even a driver at all (first part).
+  */
+-static int pci_default_pm_resume(struct pci_dev *pci_dev)
++static void pci_default_pm_resume_early(struct pci_dev *pci_dev)
+ {
+-	int retval = 0;
+-
+ 	/* restore the PCI config space */
+ 	pci_restore_state(pci_dev);
++}
++
++/*
++ * Default "resume" method for devices that have no driver provided resume,
++ * or not even a driver at all (second part).
++ */
++static int pci_default_pm_resume_late(struct pci_dev *pci_dev)
++{
++	int retval;
++
+ 	/* if the device was enabled before suspend, reenable */
+ 	retval = pci_reenable_device(pci_dev);
+ 	/*
+@@ -371,10 +387,12 @@ static int pci_legacy_resume(struct devi
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+ 
+-	if (drv && drv->resume)
++	if (drv && drv->resume) {
+ 		error = drv->resume(pci_dev);
+-	else
+-		error = pci_default_pm_resume(pci_dev);
++	} else {
++		pci_default_pm_resume_early(pci_dev);
++		error = pci_default_pm_resume_late(pci_dev);
++	}
+ 	return error;
+ }
+ 
+@@ -420,10 +438,8 @@ static int pci_pm_suspend(struct device 
+ 		if (drv->pm->suspend) {
+ 			error = drv->pm->suspend(dev);
+ 			suspend_report_result(drv->pm->suspend, error);
+-		} else {
+-			pci_default_pm_suspend(pci_dev);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
+ 	}
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+@@ -433,6 +449,7 @@ static int pci_pm_suspend(struct device 
+ 
+ static int pci_pm_suspend_noirq(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+@@ -441,8 +458,10 @@ static int pci_pm_suspend_noirq(struct d
+ 			error = drv->pm->suspend_noirq(dev);
+ 			suspend_report_result(drv->pm->suspend_noirq, error);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend_late(dev, PMSG_SUSPEND);
++	} else {
++		pci_default_pm_suspend(pci_dev);
+ 	}
+ 
+ 	return error;
+@@ -452,15 +471,17 @@ static int pci_pm_resume(struct device *
+ {
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+-	int error;
++	int error = 0;
+ 
+ 	pci_fixup_device(pci_fixup_resume, pci_dev);
+ 
+ 	if (drv && drv->pm) {
+-		error = drv->pm->resume ? drv->pm->resume(dev) :
+-			pci_default_pm_resume(pci_dev);
+-	} else {
++		if (drv->pm->resume)
++			error = drv->pm->resume(dev);
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume(dev);
++	} else {
++		error = pci_default_pm_resume_late(pci_dev);
+ 	}
+ 
+ 	return error;
+@@ -468,6 +489,7 @@ static int pci_pm_resume(struct device *
+ 
+ static int pci_pm_resume_noirq(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+@@ -476,8 +498,10 @@ static int pci_pm_resume_noirq(struct de
+ 	if (drv && drv->pm) {
+ 		if (drv->pm->resume_noirq)
+ 			error = drv->pm->resume_noirq(dev);
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume_early(dev);
++	} else {
++		pci_default_pm_resume_early(pci_dev);
+ 	}
+ 
+ 	return error;
+@@ -504,10 +528,8 @@ static int pci_pm_freeze(struct device *
+ 		if (drv->pm->freeze) {
+ 			error = drv->pm->freeze(dev);
+ 			suspend_report_result(drv->pm->freeze, error);
+-		} else {
+-			pci_default_pm_suspend(pci_dev);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend(dev, PMSG_FREEZE);
+ 		pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 	}
+@@ -517,6 +539,7 @@ static int pci_pm_freeze(struct device *
+ 
+ static int pci_pm_freeze_noirq(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+@@ -525,8 +548,10 @@ static int pci_pm_freeze_noirq(struct de
+ 			error = drv->pm->freeze_noirq(dev);
+ 			suspend_report_result(drv->pm->freeze_noirq, error);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend_late(dev, PMSG_FREEZE);
++	} else {
++		pci_default_pm_suspend(pci_dev);
+ 	}
+ 
+ 	return error;
+@@ -534,14 +559,15 @@ static int pci_pm_freeze_noirq(struct de
+ 
+ static int pci_pm_thaw(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+ 	if (drv && drv->pm) {
+ 		if (drv->pm->thaw)
+ 			error =  drv->pm->thaw(dev);
+-	} else {
+-		pci_fixup_device(pci_fixup_resume, to_pci_dev(dev));
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
++		pci_fixup_device(pci_fixup_resume, pci_dev);
+ 		error = pci_legacy_resume(dev);
+ 	}
+ 
+@@ -550,13 +576,14 @@ static int pci_pm_thaw(struct device *de
+ 
+ static int pci_pm_thaw_noirq(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+ 	if (drv && drv->pm) {
+ 		if (drv->pm->thaw_noirq)
+ 			error = drv->pm->thaw_noirq(dev);
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		pci_fixup_device(pci_fixup_resume_early, to_pci_dev(dev));
+ 		error = pci_legacy_resume_early(dev);
+ 	}
+@@ -566,17 +593,18 @@ static int pci_pm_thaw_noirq(struct devi
+ 
+ static int pci_pm_poweroff(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
++	pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 
+ 	if (drv && drv->pm) {
+ 		if (drv->pm->poweroff) {
+ 			error = drv->pm->poweroff(dev);
+ 			suspend_report_result(drv->pm->poweroff, error);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend(dev, PMSG_HIBERNATE);
+ 	}
+ 
+@@ -593,7 +621,7 @@ static int pci_pm_poweroff_noirq(struct 
+ 			error = drv->pm->poweroff_noirq(dev);
+ 			suspend_report_result(drv->pm->poweroff_noirq, error);
+ 		}
+-	} else {
++	} else if (pci_has_legacy_pm_support(to_pci_dev(dev))) {
+ 		error = pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
+ 	}
+ 
+@@ -604,13 +632,15 @@ static int pci_pm_restore(struct device 
+ {
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct device_driver *drv = dev->driver;
+-	int error;
++	int error = 0;
+ 
+ 	if (drv && drv->pm) {
+-		error = drv->pm->restore ? drv->pm->restore(dev) :
+-			pci_default_pm_resume(pci_dev);
+-	} else {
++		if (drv->pm->restore)
++			error = drv->pm->restore(dev);
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume(dev);
++	} else {
++		error = pci_default_pm_resume_late(pci_dev);
+ 	}
+ 	pci_fixup_device(pci_fixup_resume, pci_dev);
+ 
+@@ -628,8 +658,10 @@ static int pci_pm_restore_noirq(struct d
+ 	if (drv && drv->pm) {
+ 		if (drv->pm->restore_noirq)
+ 			error = drv->pm->restore_noirq(dev);
+-	} else {
++	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume_early(dev);
++	} else {
++		pci_default_pm_resume_early(pci_dev);
+ 	}
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ 
