@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
 	and resume
-Date: Sun, 7 Dec 2008 14:14:12 +0100
-Message-ID: <200812071414.13143.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
+Date: Sun, 7 Dec 2008 14:39:27 +0100
+Message-ID: <200812071439.27712.rjw__35889.9658117027$1228657397$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
+	<alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org>
+	<alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,50 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 7 of December 2008, Alan Stern wrote:
-> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+On Sunday, 7 of December 2008, Linus Torvalds wrote:
 > 
-> > > Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
-> > > this point I'm not sure exactly what's needed, though.  For instance,
-> > > is there any compelling reason to switch over to the new dev_pm_ops
-> > > approach?
+> On Sat, 6 Dec 2008, Linus Torvalds wrote:
 > > 
-> > Certainly not at the moment.  There will be a reason some time after .29.
-> > 
-> > That said, it apparently is possible to clean up the resume callbacks of PCI
-> > USB controllers, as mentioned here: http://lkml.org/lkml/2008/12/6/38
-> > 
-> > > And what should the correct sequence of calls be?
-> > 
-> > Well, that's something I'm not exactly sure about myself.  Surely it seems
-> > reasonable to call pci_restore_state() with interrupts disabled and do the rest
-> > of resume after that.  Also, I think that the core could execute things like
-> > pci_enable_device() during resume and pci_set_power_state()/pci_enable_wake()
-> > on suspend so that the drivers didn't have to.  This way we could reduce code
-> > duplication quite a bit.
+> > And btw, I'm talking suspend, not hibernate. 
+
+Even as far as hibernation is concerned, I wouldn't _expect_ any BIOS to do
+anything like this as long as we use the ACPI facility to enter S4.
+
+> And, btw, even if anybody actually does this, it should be up to the 
+> interrupt controller logic to re-initialize the interrupts so that they 
+> are back where they belong. IOW, we should never show such _idiotic_ 
+> brokenness to any actual driver, it should all be remapped and handled 
+> below them.
 > 
-> Do you plan to change the PCI core to do these things any time soon?  
+> And I still have never heard any valid reason to do it in the first place, 
+> so until somebody actually gives a real example and an explanation, I 
+> would suggest ignoring the whole issue as some insane rumblings from crazy 
+> hw/firmare people doing idiotic things.
 
-I'm going to do that after the patches from this series are merged.
+While I'd really like to do that, I also think that we should make all drivers
+behave in the same way in this area.
 
-> Wouldn't that require changing a whole bunch of PCI drivers too?
+Also, we need to state clearly what the _recommended_way of doing that is,
+at least as a guidance for driver writers if not for anything else.
 
-Only those that start to use the new framework before this happens
-(which probably is only MMC at this point).
+So, can we just say that PCI drivers shouldn't free IRQs during suspend and
+request them during resume, and if there's any problem that leads to, then it
+should be solved differently?
 
-> I tend to agree that having the core take care of these choreographed
-> activities would be good -- it would leave less room for drivers to
-> make mistakes.
-> 
-> So for now maybe it would be best just to rearrange the existing calls
-> in USB, and wait for the core changes before doing anything more
-> ambitious.
-
-Sounds good.
-
-Thanks,
 Rafael
