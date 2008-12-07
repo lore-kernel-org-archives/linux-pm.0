@@ -1,17 +1,16 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend
- and resume
-Date: Sun, 7 Dec 2008 09:18:41 -0800
-Message-ID: <20081207091841.1d460c1a__14583.4336792634$1228670387$gmane$org@infradead.org>
-References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
-	<alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org>
-	<alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org>
-	<200812071439.27712.rjw@sisk.pl>
+	and resume
+Date: Sun, 7 Dec 2008 22:02:58 +0100
+Message-ID: <200812072202.58618.rjw__2890.29820492051$1228684007$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <200812071347.18608.rjw@sisk.pl>
+	<alpine.LFD.2.00.0812070835040.3425@nehalem.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812071439.27712.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0812070835040.3425@nehalem.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +20,189 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 7 Dec 2008 14:39:27 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Sunday, 7 of December 2008, Linus Torvalds wrote:
-> > 
-> > On Sat, 6 Dec 2008, Linus Torvalds wrote:
-> > > 
-> > > And btw, I'm talking suspend, not hibernate. 
+On Sunday, 7 of December 2008, Linus Torvalds wrote:
 > 
-> Even as far as hibernation is concerned, I wouldn't _expect_ any BIOS
-> to do anything like this as long as we use the ACPI facility to enter
-> S4.
+> On Sun, 7 Dec 2008, Rafael J. Wysocki wrote:
+> > 
+> > If there is no objection from Jesse and if you don't mind, I'll prepare a
+> > version of the $subject patch on top of the patch in your tree and send it to
+> > you.
+> 
+> Rafael: there's a bug in your 1/3 patch. 
+> 
+> It looks like "pci_save_state()" is currently unhappy with being called 
+> with interrupts disabled. Or at least "pci_save_pci[ex]_state()" state 
+> are. They both do a kzalloc(GFP_KERNEL).
+> 
+> So you should change that GFP_KERNEL into a GFP_ATOMIC. Or do something 
+> more complicated like pre-allocate them during early suspend, but just 
+> changing it to GFP_ATOMIC seems to be the trivial fix.
+> 
+> I'm not seeing any other issues with saving/restoring things with irq's 
+> disabled, but people should be on the lookout for details like this.
 
-there are funky scenarios where the BIOS ends up .. not knowing.
-Like
+I overlooked that, sorry.
 
-you boot your laptop
-you then hot-dock your laptop
-then you suspend (say S4)
+What about doing the following in addition to patch [1/3]?
 
-..
-during resume, the bios sees a very different system than it saw before.
-I can totally imagine not all of them getting it right, esp if other
-OSes would just re-register interrupts
+Rafael
+
+---
+ drivers/pci/pci.c   |   73 ++++++++++++++++++++++++++++++++++++----------------
+ drivers/pci/pci.h   |    1 
+ drivers/pci/probe.c |    3 ++
+ 3 files changed, 55 insertions(+), 22 deletions(-)
+
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c
++++ linux-2.6/drivers/pci/probe.c
+@@ -958,6 +958,9 @@ static void pci_init_capabilities(struct
+ 	/* MSI/MSI-X list */
+ 	pci_msi_init_pci_dev(dev);
+ 
++	/* Buffers for saving PCIe and PCI-X capabilities */
++	pci_allocate_cap_save_buffers(dev);
++
+ 	/* Power Management */
+ 	pci_pm_init(dev);
+ 
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -41,6 +41,7 @@ struct pci_platform_pm_ops {
+ 
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ extern void pci_pm_init(struct pci_dev *dev);
++extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ 
+ extern int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
+ extern int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -640,19 +640,14 @@ static int pci_save_pcie_state(struct pc
+ 	int pos, i = 0;
+ 	struct pci_cap_saved_state *save_state;
+ 	u16 *cap;
+-	int found = 0;
+ 
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (pos <= 0)
+ 		return 0;
+ 
+ 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
+-	if (!save_state)
+-		save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNEL);
+-	else
+-		found = 1;
+ 	if (!save_state) {
+-		dev_err(&dev->dev, "out of memory in pci_save_pcie_state\n");
++		dev_err(&dev->dev, "buffer not found in %s\n", __FUNCTION__);
+ 		return -ENOMEM;
+ 	}
+ 	cap = (u16 *)&save_state->data[0];
+@@ -661,9 +656,7 @@ static int pci_save_pcie_state(struct pc
+ 	pci_read_config_word(dev, pos + PCI_EXP_LNKCTL, &cap[i++]);
+ 	pci_read_config_word(dev, pos + PCI_EXP_SLTCTL, &cap[i++]);
+ 	pci_read_config_word(dev, pos + PCI_EXP_RTCTL, &cap[i++]);
+-	save_state->cap_nr = PCI_CAP_ID_EXP;
+-	if (!found)
+-		pci_add_saved_cap(dev, save_state);
++
+ 	return 0;
+ }
+ 
+@@ -688,30 +681,21 @@ static void pci_restore_pcie_state(struc
+ 
+ static int pci_save_pcix_state(struct pci_dev *dev)
+ {
+-	int pos, i = 0;
++	int pos;
+ 	struct pci_cap_saved_state *save_state;
+-	u16 *cap;
+-	int found = 0;
+ 
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+ 	if (pos <= 0)
+ 		return 0;
+ 
+ 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_PCIX);
+-	if (!save_state)
+-		save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
+-	else
+-		found = 1;
+ 	if (!save_state) {
+-		dev_err(&dev->dev, "out of memory in pci_save_pcie_state\n");
++		dev_err(&dev->dev, "buffer not found in %s\n", __FUNCTION__);
+ 		return -ENOMEM;
+ 	}
+-	cap = (u16 *)&save_state->data[0];
+ 
+-	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+-	save_state->cap_nr = PCI_CAP_ID_PCIX;
+-	if (!found)
+-		pci_add_saved_cap(dev, save_state);
++	pci_read_config_word(dev, pos + PCI_X_CMD, (u16 *)save_state->data);
++
+ 	return 0;
+ }
+ 
+@@ -1301,6 +1285,51 @@ void pci_pm_init(struct pci_dev *dev)
+ }
+ 
+ /**
++ * pci_add_save_buffer - allocate buffer for saving given capability registers
++ * @dev: the PCI device
++ * @cap: the capability to allocate the buffer for
++ * @size: requested size of the buffer
++ */
++static int pci_add_cap_save_buffer(
++	struct pci_dev *dev, char cap, unsigned int size)
++{
++	int pos;
++	struct pci_cap_saved_state *save_state;
++
++	pos = pci_find_capability(dev, cap);
++	if (pos <= 0)
++		return 0;
++
++	save_state = kzalloc(sizeof(*save_state) + size, GFP_KERNEL);
++	if (!save_state)
++		return -ENOMEM;
++
++	save_state->cap_nr = cap;
++	pci_add_saved_cap(dev, save_state);
++
++	return 0;
++}
++
++/**
++ * pci_allocate_cap_save_buffers - allocate buffers for saving capabilities
++ * @dev: the PCI device
++ */
++void pci_allocate_cap_save_buffers(struct pci_dev *dev)
++{
++	int error;
++
++	error = pci_add_cap_save_buffer(dev, PCI_CAP_ID_EXP, 4 * sizeof(u16));
++	if (error)
++		dev_err(&dev->dev,
++			"unable to preallocate PCI Express save buffer\n");
++
++	error = pci_add_cap_save_buffer(dev, PCI_CAP_ID_PCIX, sizeof(u16));
++	if (error)
++		dev_err(&dev->dev,
++			"unable to preallocate PCI-X save buffer\n");
++}
++
++/**
+  * pci_enable_ari - enable ARI forwarding if hardware support it
+  * @dev: the PCI device
+  */
