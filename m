@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH -suspend] Hibernate: Replace unnecessary
-	evaluation of	pfn_to_page()
-Date: Mon, 8 Dec 2008 08:26:58 +0100
-Message-ID: <20081208072657.GA2418__31592.7944532179$1228721508$gmane$org@ucw.cz>
-References: <200812080052.49604.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: x86: Change static allocation of trampoline area
+Date: Mon, 8 Dec 2008 13:50:58 +0100
+Message-ID: <20081208125057.GC16560__30716.1449957222$1228740826$gmane$org@elte.hu>
+References: <200812080050.23275.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200812080052.49604.rjw@sisk.pl>
+In-Reply-To: <200812080050.23275.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2008-12-08 00:52:49, Rafael J. Wysocki wrote:
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
 > From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: Hibernate: Replace unnecessary evaluation of pfn_to_page()
+> Subject: x86: Change static allocation of trampoline area
+> Impact: Improvement
 > 
-> Replace one evaluation of pfn_to_page() in copy_data_pages() with
-> the value of a local variable containing the right number already.
+> While debugging a suspend-to-RAM related issue it occured to me that
+> if the trampoline code had grown past 4 KB, we would have been
+> allocating too little memory for it, since the 4 KB size of the
+> trampoline is hardcoded into arch/x86/kernel/e820.c .  Change that
+> by making the kernel compute the trampoline size and allocate as much
+> memory as necessary.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-Acked-by: Pavel Machek <pavel@suse.cz>
-
 > ---
->  kernel/power/snapshot.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/snapshot.c
-> +++ linux-2.6/kernel/power/snapshot.c
-> @@ -981,7 +981,7 @@ static void copy_data_page(unsigned long
->  			 * data modified by kmap_atomic()
->  			 */
->  			safe_copy_page(buffer, s_page);
-> -			dst = kmap_atomic(pfn_to_page(dst_pfn), KM_USER0);
-> +			dst = kmap_atomic(d_page, KM_USER0);
->  			memcpy(dst, buffer, PAGE_SIZE);
->  			kunmap_atomic(dst, KM_USER0);
->  		} else {
+>  arch/x86/include/asm/trampoline.h |    7 +++++++
+>  arch/x86/kernel/e820.c            |   16 ----------------
+>  arch/x86/kernel/head32.c          |    3 +++
+>  arch/x86/kernel/head64.c          |    3 +++
+>  arch/x86/kernel/trampoline.c      |   19 +++++++++++++++++--
+>  5 files changed, 30 insertions(+), 18 deletions(-)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+applied to tip/x86/setup-memory, thanks Rafael!
+
+	Ingo
