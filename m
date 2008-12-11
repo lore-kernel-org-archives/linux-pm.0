@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI
-	configuration space with interrupts off
-Date: Thu, 11 Dec 2008 21:03:16 +0100
-Message-ID: <200812112103.17018.rjw__42878.3024232418$1229026060$gmane$org@sisk.pl>
-References: <200812020320.31876.rjw@sisk.pl> <s5hbpvoxqnn.wl%tiwai@suse.de>
-	<s5htz9bgpgl.wl%tiwai@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PCI: fix incorrect error return in
+	pci_enable_wake
+Date: Thu, 11 Dec 2008 15:11:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0812111510160.15474-100000__37000.8415928625$1229026453$gmane$org@iolanthe.rowland.org>
+References: <200812112058.08927.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <s5htz9bgpgl.wl%tiwai@suse.de>
-Content-Disposition: inline
+In-Reply-To: <200812112058.08927.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 11 of December 2008, Takashi Iwai wrote:
-> At Sun, 07 Dec 2008 10:47:56 +0100,
-> I wrote:
-> > 
-> > At Sat, 6 Dec 2008 20:45:35 -0800,
-> > Jesse Barnes wrote:
-> > > 
-> > > On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
-> > > > off
-> > > >
-> > > > Move the restoration of the standard PCI configuration registers
-> > > > in the snd_hda_intel driver to a ->resume_early() callback executed
-> > > > with interrupts disabled, since doing that with interrupts enabled
-> > > > may lead to problems in some cases.
-> > > >
-> > > > This patch addresses the regression from 2.6.26 tracked as
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
-> > > 
-> > > Since I only applied 1 and 2 you'll need to send this one through Takashi.
-> > 
-> > OK, I merged it to for-next branch now.
-> > It should appear in the linux-next tree of tomorrow.
-> 
-> There is no build errors at least on linux-next, but I guess the
-> testing about PM has been rarely done on linux-next kernel...
-> 
-> BTW, Rafael, is this particular patch (against hda_intel.c) works in
-> general or dependent on other two patches?
+This patch (as1186) fixes a minor mistake in pci_enable_wake().  When
+the routine is asked to disable remote wakeup, it should not return an
+error merely because the device is not allowed to do wakeups!
 
-It should be safe without the other patches too.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-Thanks,
-Rafael
+---
+
+Index: usb-2.6/drivers/pci/pci.c
+===================================================================
+--- usb-2.6.orig/drivers/pci/pci.c
++++ usb-2.6/drivers/pci/pci.c
+@@ -1107,7 +1107,7 @@ int pci_enable_wake(struct pci_dev *dev,
+ 	int error = 0;
+ 	bool pme_done = false;
+ 
+-	if (!device_may_wakeup(&dev->dev))
++	if (enable && !device_may_wakeup(&dev->dev))
+ 		return -EINVAL;
+ 
+ 	/*
