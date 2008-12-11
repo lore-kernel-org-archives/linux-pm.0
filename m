@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB suspend and resume for PCI host controllers
-Date: Thu, 11 Dec 2008 20:58:08 +0100
-Message-ID: <200812112058.08927.rjw__4281.99632228843$1229025767$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0812110947540.2526-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI
+	configuration space with interrupts off
+Date: Thu, 11 Dec 2008 21:03:16 +0100
+Message-ID: <200812112103.17018.rjw__42878.3024232418$1229026060$gmane$org@sisk.pl>
+References: <200812020320.31876.rjw@sisk.pl> <s5hbpvoxqnn.wl%tiwai@suse.de>
+	<s5htz9bgpgl.wl%tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0812110947540.2526-100000@iolanthe.rowland.org>
+In-Reply-To: <s5htz9bgpgl.wl%tiwai@suse.de>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,42 +20,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 11 of December 2008, Alan Stern wrote:
-> On Wed, 10 Dec 2008, Alan Stern wrote:
-> 
-> > On Wed, 10 Dec 2008, Rafael J. Wysocki wrote:
+On Thursday, 11 of December 2008, Takashi Iwai wrote:
+> At Sun, 07 Dec 2008 10:47:56 +0100,
+> I wrote:
 > > 
-> > > > > Well, it looks like you forgot to actually call pci_save_power_state(). :-)
-> > > > 
-> > > > I didn't forget it -- in my tree there is no such function!  :-)
+> > At Sat, 6 Dec 2008 20:45:35 -0800,
+> > Jesse Barnes wrote:
 > > > 
-> > > That should have been pci_save_state(). [Note to self: don't send email when
-> > > you're too tired.]
+> > > On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
+> > > > off
+> > > >
+> > > > Move the restoration of the standard PCI configuration registers
+> > > > in the snd_hda_intel driver to a ->resume_early() callback executed
+> > > > with interrupts disabled, since doing that with interrupts enabled
+> > > > may lead to problems in some cases.
+> > > >
+> > > > This patch addresses the regression from 2.6.26 tracked as
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
+> > > 
+> > > Since I only applied 1 and 2 you'll need to send this one through Takashi.
 > > 
-> > Yes, adding pci_save_state() fixed the problem.  Here is the new patch;  
-> > it seems to work.  Anything else need to be changed?
+> > OK, I merged it to for-next branch now.
+> > It should appear in the linux-next tree of tomorrow.
 > 
-> I spoke a little too soon.  It appears that there is a small bug in 
-> pci_enable_wake():
+> There is no build errors at least on linux-next, but I guess the
+> testing about PM has been rarely done on linux-next kernel...
 > 
-> int pci_enable_wake(struct pci_dev *dev, pci_power_t state, int enable)
-> {
-> 	int error = 0;
-> 	bool pme_done = false;
-> 
-> 	if (!device_may_wakeup(&dev->dev))
-> 		return -EINVAL;
-> 
-> This is wrong; the test should be:
-> 
-> 	if (enable && !device_may_wakeup(&dev->dev))
+> BTW, Rafael, is this particular patch (against hda_intel.c) works in
+> general or dependent on other two patches?
 
-Hm, that makes sense.
+It should be safe without the other patches too.
 
-Will you prepare a patch?
-
+Thanks,
 Rafael
