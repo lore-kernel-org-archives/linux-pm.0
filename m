@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Bugs on aspire one A150
-Date: Sat, 13 Dec 2008 14:35:33 +0100
-Message-ID: <200812131435.34072.rjw__21327.2431203679$1229175504$gmane$org@sisk.pl>
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+Subject: Re: [ath5k-devel] Bugs on aspire one A150
+Date: Sat, 13 Dec 2008 16:08:36 +0200
+Message-ID: <40f31dec0812130608x73266375n7b3367938ad687b8__45398.3818217695$1229177449$gmane$org@mail.gmail.com>
 References: <491506DB.1070000@gmail.com>
-	<1229174138.24940.9.camel@maxim-laptop>
+	<b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com>
+	<4918A8C5.3050607@gmail.com>
+	<40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+	<1229174904.4964.5.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1229174138.24940.9.camel@maxim-laptop>
+In-Reply-To: <1229174904.4964.5.camel@maxim-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,32 +23,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, ath5k-devel@venema.h4ckr.net
+Cc: linux-pm@lists.linux-foundation.org, Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, ath5k-devel@venema.h4ckr.net
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 13 of December 2008, Maxim Levitsky wrote:
-> 
-> So, big thanks for everything.
-> 
-> Now aspire one linux support is very close to perfect,
-> (only problem left is that wireless is limited to 18Mbits/s raw rate,
-> but at some point I or developers of ath5k will get to the bottom of
-> this)
-> 
-> I also noticed, that now the SD only card reader is always enabled
-> regardless of card been there while booting, and same happens in
-> windows, I suspect that this is permanent hardware change, which worries
-> me, but this reader works fine otherwise.
-> (This is another reason why binary bioses are evil, go and find out why
-> it enables it)
-> 
-> 
-> Also forgot to mention that both readers ignore write protect tab on SD
-> card, and I will report this to correct mailing list soon.
-> Everything else works fine
-> 
-> please include acpiphp fix in 2.6.28.
+2008/12/13 Maxim Levitsky <maximlevitsky@gmail.com>:
+>
+> Hi,
+>
+> Indeed gpio #3 controls the led.
+> I patched ath5k to use it, and led works now fine.
+>
+>
 
-Which one is this?
+Please share your patch with the rest and also post an lspci -vnn for
+your card so we can handle this in a generic way
 
-Rafael
+
+
+
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
