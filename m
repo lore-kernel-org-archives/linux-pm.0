@@ -1,14 +1,12 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Bugs on aspire one A150
-Date: Sat, 13 Dec 2008 20:04:39 +0200
-Message-ID: <1229191479.13970.6.camel__47208.6891568781$1229191709$gmane$org@maxim-laptop>
-References: <491506DB.1070000@gmail.com> <200812131435.34072.rjw@sisk.pl>
-	<1229178097.4936.1.camel@maxim-laptop> <200812131842.28420.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.28-rc8-git1: Reported regressions from 2.6.27
+Date: Sat, 13 Dec 2008 17:29:48 +0100 (CET)
+Message-ID: <u7kfEgp36eE.A.qpG.Y4_QJB__41953.4077439041$1229193559$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812131842.28420.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,86 +16,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, linux-pm@lists.linux-foundation.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2008-12-13 at 18:42 +0100, Rafael J. Wysocki wrote:
-> On Saturday, 13 of December 2008, Maxim Levitsky wrote:
-> > On Sat, 2008-12-13 at 14:35 +0100, Rafael J. Wysocki wrote:
-> > > On Saturday, 13 of December 2008, Maxim Levitsky wrote:
-> > > > 
-> > > > So, big thanks for everything.
-> > > > 
-> > > > Now aspire one linux support is very close to perfect,
-> > > > (only problem left is that wireless is limited to 18Mbits/s raw rate,
-> > > > but at some point I or developers of ath5k will get to the bottom of
-> > > > this)
-> > > > 
-> > > > I also noticed, that now the SD only card reader is always enabled
-> > > > regardless of card been there while booting, and same happens in
-> > > > windows, I suspect that this is permanent hardware change, which worries
-> > > > me, but this reader works fine otherwise.
-> > > > (This is another reason why binary bioses are evil, go and find out why
-> > > > it enables it)
-> > > > 
-> > > > 
-> > > > Also forgot to mention that both readers ignore write protect tab on SD
-> > > > card, and I will report this to correct mailing list soon.
-> > > > Everything else works fine
-> > > > 
-> > > > please include acpiphp fix in 2.6.28.
-> > > 
-> > > Which one is this?
-> > 
-> > 
-> > 
-> > acpiphp: Identify more removable slots
-> >     
-> >     According to section 6.3.6 of the ACPI spec, the presence of an _RMV
-> >     method that evaluates to 1 is sufficient to indicate that a slot is
-> >     removable without needing an eject method. This patch refactors the
-> >     ejectable slot detection code a little in order to flag these slots as
-> >     ejectable and register them. Acpihp therefore binds to the expresscard
-> >     slot on my HP test machine.
-> >     
-> >     Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> > 
-> > 
-> > this makes acpiphp handle hotplug of (now one, sd reader is somehow
-> > always present) card reader.
-> 
-> This is
-> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commit;h=db9fe9a7230d65916c9938c4f91c75f9c5e00cb7
-> in the PCI tree.
-> 
-> It's scheduled for 2.6.29 and may be included into 2.6.28 -stable, but please
-> remember to notify the stable team as soon as this patch gets merged into the
-> mainline.
-
-I will, sure.
-
-
-Just to note, that I might not need that patch as I told that now one of
-readers is permanently enabled, I don't know why but this seems to be
-hardware failure.
-
-I disconnected power/battery, no cards are in slots, and yet on boot
-there is a sd reader in lspci.
-Same happens in windows.
-It could happen due to suspend/resume, If I remember correctly I put
-card once in slot, and then for whole week system wasn't rebooted, but
-instead went through suspend/resume cycles.
-
-One thing for sure, nobody will fix this (I mean no point to call acer
-support, this is too minor problem)
-
-
-What I worry about is that second one could show same behavier.
-I like this hotplug, as it allows me to test pci hotplug code for real.
-Besides, this isn't done without purpose, device might draw less power
-this way.
-
-
-Best regards,
-	Maxim Levitsky
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjI3LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
+b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
+ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
+ZnJvbSAyLjYuMjcsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
+dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
+aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
+c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
+aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
+dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
+ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQogIDIwMDgtMTItMTMgICAgICAxMTEgICAgICAgMTQgICAgICAgICAg
+MTMKICAyMDA4LTEyLTA3ICAgICAgMTA2ICAgICAgIDIwICAgICAgICAgIDE3CiAgMjAwOC0xMi0w
+NCAgICAgIDEwNiAgICAgICAyOSAgICAgICAgICAyMQogIDIwMDgtMTEtMjIgICAgICAgOTMgICAg
+ICAgMjUgICAgICAgICAgMTUKICAyMDA4LTExLTE2ICAgICAgIDg5ICAgICAgIDMyICAgICAgICAg
+IDE4CiAgMjAwOC0xMS0wOSAgICAgICA3MyAgICAgICA0MCAgICAgICAgICAyNwogIDIwMDgtMTEt
+MDIgICAgICAgNTUgICAgICAgNDEgICAgICAgICAgMjkKICAyMDA4LTEwLTI1ICAgICAgIDI2ICAg
+ICAgIDI1ICAgICAgICAgIDIwCgoKVW5yZXNvbHZlZCByZWdyZXNzaW9ucwotLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
+Zy5jZ2k/aWQ9MTIyMTAKU3ViamVjdAkJOiAyLjYuMjgtcmM4IGJpZyByZWdyZXNzaW9uIGluIFZN
+ClN1Ym1pdHRlcgk6IEx1a2FzIEhlanRtYW5layA8eGhlanRtYW5AaWNzLm11bmkuY3o+CkRhdGUJ
+CTogMjAwOC0xMi0xMiAxODozOCAoMiBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJj
+LmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTEwNzExMDA1MTM1Jnc9NApIYW5kbGVkLUJ5CTog
+V3UgRmVuZ2d1YW5nIDxmZW5nZ3Vhbmcud3VAaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjIwOQpTdWJqZWN0CQk6IG9s
+ZGlzaCB0b3AgY29yZSBkdW1wcyAoaW4gaXRzIG1lbWluZm8oKSBmdW5jdGlvbikKU3VibWl0dGVy
+CTogQW5kcmVhcyBNb2hyIDxhbmRpQGxpc2FzLmRlPgpEYXRlCQk6IDIwMDgtMTItMTIgMTg6NDkg
+KDIgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
+bCZtPTEyMjkxMDc4NDAwNjQ3MiZ3PTQKCQkgIGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
+bmVsJm09MTIyOTA3NTExMzE5Mjg4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjIwOApTdWJqZWN0CQk6IHVtbCBpcyB2ZXJ5IHNs
+b3cgb24gMi42LjI4IGhvc3QKU3VibWl0dGVyCTogTWlrbG9zIFN6ZXJlZGkgPG1pa2xvc0BzemVy
+ZWRpLmh1PgpEYXRlCQk6IDIwMDgtMTItMTIgOTozNSAoMiBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6
+IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTA3NDYzNTE4NTkzJnc9NAoK
+CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
+MjE5NQpTdWJqZWN0CQk6ICJkZCIgbWFrZSBrZXJuZWwgcGFuaWMKU3VibWl0dGVyCTogYWxleHMg
+PGFsZXguc2hpQGludGVsLmNvbT4KRGF0ZQkJOiAyMDA4LTEyLTEwIDE4OjA3ICg0IGRheXMgb2xk
+KQpIYW5kbGVkLUJ5CTogSmFtZXMgQm90dG9tbGV5IDxKYW1lcy5Cb3R0b21sZXlASGFuc2VuUGFy
+dG5lcnNoaXAuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xMjE3OApTdWJqZWN0CQk6IFhvcmcgY3Jhc2ggYXQgZmlyc3Qgc3RhcnQK
+U3VibWl0dGVyCTogQ8OpZHJpYyBHb2RpbiA8Y2VkcmljQGJlbGJvbmUuYmU+CkRhdGUJCTogMjAw
+OC0xMi0wNCAxNDoyNiAoMTAgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQu
+a2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQ7YT1j
+b21taXQ7aD01MjQ0MDIxMWRjZGM1MmMwYjc1N2Y4YjM0ZDEyMmUxMWIxMmNkZDUwClJlZmVyZW5j
+ZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjg0MDA4MjgyODA5OCZ3
+PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTIxNjAKU3ViamVjdAkJOiBuZXR3b3JraW5nIG9vcHMgYWZ0ZXIgcmVzdW1lIGZyb20gczJy
+YW0gKDIuNi4yOC1yYzYpClN1Ym1pdHRlcgk6IE1hcmNpbiBTbHVzYXJ6IDxtYXJjaW4uc2x1c2Fy
+ekBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yOCAyMToxNSAoMTYgZGF5cyBvbGQpClJlZmVy
+ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc5MDcwMTYxNTcy
+MyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
+Z2k/aWQ9MTIxNTkKU3ViamVjdAkJOiAyLjYuMjgtcmM2LWdpdDEgLS0gTm8gc291bmQgcHJvZHVj
+ZWQgZnJvbSBJbnRlbCBIREEgQUxTQSBkcml2ZXIKU3VibWl0dGVyCTogTWlsZXMgTGFuZSA8bWls
+ZXMubGFuZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yNyAyMDozMyAoMTcgZGF5cyBvbGQp
+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc4MTgw
+NTYyMDIxMiZ3PTQKSGFuZGxlZC1CeQk6IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpC
+dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIx
+NTYKU3ViamVjdAkJOiB2Mi42LjI4LXJjMjogeDg2XzMyIHJlbG9jYXRpb24gcmVncmVzc2lvbj8K
+U3VibWl0dGVyCTogVmVnYXJkIE5vc3N1bSA8dmVnYXJkLm5vc3N1bUBnbWFpbC5jb20+CkRhdGUJ
+CTogMjAwOC0xMS0yNCAyMToxOSAoMjAgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFy
+Yy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc1NjE1ODIyMDk2NiZ3PTQKCgpCdWctRW50cnkJ
+OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIxNTUKU3ViamVj
+dAkJOiBSZWdyZXNzaW9uIGluIDIuNi4yOC1yYyBhbmQgMi42LjI3LXN0YWJsZSAtIGhpYmVybmF0
+ZSByZWxhdGVkClN1Ym1pdHRlcgk6IEZhYmlvIENvbW9sbGkgPGZhYmlvLmNvbW9sbGlAZ21haWwu
+Y29tPgpEYXRlCQk6IDIwMDgtMTEtMjMgMTY6MTcgKDIxIGRheXMgb2xkKQpSZWZlcmVuY2VzCTog
+aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI3NDU3MDk5MjYzNjEmdz00CgoK
+QnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEy
+MTAwClN1YmplY3QJCTogcmVzdW1lIChTMlIpIGJyb2tlbiBieSBJbnRlbCBtaWNyb2NvZGUgbW9k
+dWxlLCBvbiBBMTEwTApTdWJtaXR0ZXIJOiBBbmRyZWFzIE1vaHIgPGFuZGlAbGlzYXMuZGU+CkRh
+dGUJCTogMjAwOC0xMS0yNSAwODo0OCAoMTkgZGF5cyBvbGQpCkhhbmRsZWQtQnkJOiBEbWl0cnkg
+QWRhbXVzaGtvIDxkbWl0cnkuYWRhbXVzaGtvQGdtYWlsLmNvbT4KCgpCdWctRW50cnkJOiBodHRw
+Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIwNjEKU3ViamVjdAkJOiBz
+bmRfaGRhX2ludGVsOiBwb3dlcl9zYXZlOiBzb3VuZCBjcmFja3Mgb24gcG93ZXJkb3duClN1Ym1p
+dHRlcgk6IEplbnMgV2VpYmxlciA8YnVnemlsbGEta2VybmVsQGplbnN0aGVicmFpbi5kZT4KRGF0
+ZQkJOiAyMDA4LTExLTE4IDEyOjA3ICgyNiBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6IFRha2FzaGkg
+SXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVs
+Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIwMjgKU3ViamVjdAkJOiBpOTE1IERSTSBpcyBicm9rZW4g
+aW4gMi42LjI4LXJjNApTdWJtaXR0ZXIJOiBBZGFtIFRrYWMgPHZvbnNjaEBnbWFpbC5jb20+CkRh
+dGUJCTogMjAwOC0xMS0xNCAwMTo1MCAoMzAgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDov
+L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExODQ5ClN1YmplY3QJCTogZGVm
+YXVsdCBJUlEgYWZmaW5pdHkgY2hhbmdlIGluIHYyLjYuMjcgKGJyZWFraW5nIHNldmVyYWwgU01Q
+IFBQQyBiYXNlZCBzeXN0ZW1zKQpTdWJtaXR0ZXIJOiBLdW1hciBHYWxhIDxnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnPgpEYXRlCQk6IDIwMDgtMTAtMjQgMTI6NDUgKDUxIGRheXMgb2xkKQpSZWZl
+cmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI0ODUyNDU5MjQx
+MjUmdz00CgoKUmVncmVzc2lvbnMgd2l0aCBwYXRjaGVzCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTEyMDQ3ClN1YmplY3QJCTogQUNQSSB0b3NoaWJhOiBvbmx5IHJlZ2lzdGVyIHJma2lsbCBpZiBi
+dCBpcyBlbmFibGVkClN1Ym1pdHRlcgk6IEFuZHJleSBCb3J6ZW5rb3YgPGFydmlkamFhckBtYWls
+LnJ1PgpEYXRlCQk6IDIwMDgtMTAtMjggMTk6MTAgKDQ3IGRheXMgb2xkKQpSZWZlcmVuY2VzCTog
+aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI1MjIxMTM2MTkwMjUmdz0yCkhh
+bmRsZWQtQnkJOiBGcmVkZXJpayBEZXdlZXJkdCA8ZnJlZGVyaWsuZGV3ZWVyZHRAZ21haWwuY29t
+PgpQYXRjaAkJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjUyNjg0MzEx
+NzQ3OCZ3PTIKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcgZW50cmllcyBhbmQg
+Zm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91IGNhbiBzZWUsIHRo
+ZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3RlZCByZWdyZXNzaW9u
+cy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRyYWNraW5nIHRoZSBy
+ZWdyZXNzaW9ucyBmcm9tIDIuNi4yNywKdW5yZXNvbHZlZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBh
+dDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTgwOAoKUGxl
+YXNlIGxldCBtZSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVnemlsbGEgZW50cmllcyB0aGF0IHNo
+b3VsZCBiZSBhZGRlZCB0bwp0aGUgbGlzdCBpbiB0aGVyZS4KClRoYW5rcywKUmFmYWVsCgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
+aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
+cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
