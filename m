@@ -1,11 +1,16 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: hibernation bug - swap goes AWOL
-Date: Tue, 16 Dec 2008 18:03:56 +0000
-Message-ID: <4947ED8C.1010709__12501.3124583804$1229450955$gmane$org@tuffmail.co.uk>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI: fix incorrect error return in
+	pci_enable_wake
+Date: Tue, 16 Dec 2008 10:43:53 -0800
+Message-ID: <200812161043.53756.jbarnes@virtuousgeek.org>
+References: <Pine.LNX.4.44L0.0812111510160.15474-100000@iolanthe.rowland.org>
+	<200812112119.51610.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200812112119.51610.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,92 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is on 2.6.27-rc9.  I can easily test patches, or a more recent
-kernel version.
+On Thursday, December 11, 2008 12:19 pm Rafael J. Wysocki wrote:
+> On Thursday, 11 of December 2008, Alan Stern wrote:
+> > This patch (as1186) fixes a minor mistake in pci_enable_wake().  When
+> > the routine is asked to disable remote wakeup, it should not return an
+> > error merely because the device is not allowed to do wakeups!
+> >
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I think I've run across a bug in hibernation.  Steps to reproduce:
+I lost the original of this one.  Alan can you resend to me with Rafael's ack?
 
-1) Conspire to ensure insufficient swap space for hibernation
-2) Attempt to hibernate, and fail
-3) Attempt to hibernate *again*, and fail
-4) try swapoff
-
-Outcome:
-
-# swapoff /dev/sda6
-swapoff: /dev/sda6: Invalid argument
-# cat /proc/swaps
-Filename                                Type            Size    Used   
-Priority
-/dev/sda6                               partition       1494004 1350564 -1
-
-Incidentally "swapoff -a" fails silently, which I think is a bug in
-swapoff (i.e. it should report the error).
-
-I don't see any backtraces in dmesg; the only errors it shows is the
-failure to hibernate
-
-If I free up some memory and try to hibernate again, I get a different
-error - "Cannot find swap device, try swapon -a.".  Now swapon -a
-doesn't work, but if I target the specific device...
-
-# swapon /dev/sda6
-# cat /proc/swaps
-Filename                                Type            Size    Used   
-Priority
-/dev/sda6                               partition       1494004 331060  -1
-/dev/sda6                               partition       1494004 0       -2
-
-Wheee!  Interestingly I can now hibernate and resume.  But it's not
-safe; my desktop session dies horribly.
-
-Thanks
-Alan
-
-[ 1541.499324] kdeinit[10614]: segfault at 0 ip 00007fbd8515139a sp
-00007fff8e04cf80 error 4 in libc-2.7.so[7fbd850dc000+158000]
-[ 1541.520988] kdeinit[7322]: segfault at 0 ip 00007fbd8515139a sp
-00007fff8e04cf50 error 4 in libc-2.7.so[7fbd850dc000+158000]
-[ 1541.545512] kio_file[7343]: segfault at ffffffff00000000 ip
-ffffffff00000000 sp 00007fff8e04c8a8 error 14
-[ 1541.680883] Xorg[6928]: segfault at 692 ip 00007fb391c5bb92 sp
-00007fff99e6a6c0 error 4 in ld-2.7.so[7fb391c4e000+1d000]
-
-(ignore this bit, I think it happens every time X starts)
-[ 1541.686628] Xorg:6928 freeing invalid memtype d0020000-d002a000
-[ 1541.686748] Xorg:6928 freeing invalid memtype d002a000-d0032000
-[ 1541.686848] Xorg:6928 freeing invalid memtype d0032000-d0042000
-[ 1541.686948] Xorg:6928 freeing invalid memtype d0042000-d0043000
-[ 1541.687221] Xorg:6928 freeing invalid memtype d0100000-d0740000
-[ 1541.687421] Xorg:6928 freeing invalid memtype d077f000-d1a00000
-[ 1541.687549] Xorg:6928 freeing invalid memtype d1a00000-d2040000
-[ 1541.687649] Xorg:6928 freeing invalid memtype d2040000-d2680000
-[ 1541.687750] Xorg:6928 freeing invalid memtype d2680000-d4680000
-[ 1542.116794] Xorg:6928 freeing invalid memtype d0000000-d0020000
-
-[ 1542.343673] pidgin[7505] general protection ip:7fcfdab92c92
-sp:7fffe4e46ca0 error:0 in libX11.so.6.2.0[7fcfdab52000+ff000]
-[ 1542.366374] update-notifier[7372] general protection ip:7f543a2acb92
-sp:7fff424bc4a0 error:0 in ld-2.7.so[7f543a29f000+1d000]
-[ 1545.569879] skge eth2: disabling interface
-[ 1545.575729] skge eth2: enabling interface
-[ 1545.579087] ADDRCONF(NETDEV_UP): eth2: link is not ready
-[ 1546.966466] gedit[7423]: segfault at ffff88003740d448 ip
-00007fb76a5d9053 sp 00007fff7ecf11d0 error 5 in
-libqt-mt.so.3.3.8[7fb76a1f8000+9df000]
-[ 1547.262323] skge eth2: Link is up at 100 Mbps, full duplex, flow
-control both
-[ 1547.262656] ADDRCONF(NETDEV_CHANGE): eth2: link becomes ready
-[ 1547.831519] evince[7916] general protection ip:7f92c525b794
-sp:7fffcd46a680 error:0 in ld-2.7.so[7f92c524d000+1d000]
-[ 1547.964072] python[7526]: segfault at 200515 ip 00007f98515237e3 sp
-00007fff59737530 error 4 in ld-2.7.so[7f985151a000+1d000]
-[ 1549.013419] console-kit-dae[6506]: segfault at 28 ip 00007f310cf8b7c5
-sp 00007fff1519ef40 error 4 in ld-2.7.so[7f310cf82000+1d000]
-[ 1557.926527] eth2: no IPv6 routers present
-[ 1568.747175] dcopserver[7325]: segfault at 4617998 ip 00007fbd85111409
-sp 00007fff8e04c7e0 error 4 in libc-2.7.so[7fbd850dc000+158000]
-[ 1569.959891] eth2: no IPv6 routers present
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
