@@ -1,12 +1,15 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH 2/3] PCI: parallel resume for pci devices on
-	bus 0
-Date: Fri, 19 Dec 2008 14:34:13 +0800
-Message-ID: <1229668453.562.92.camel__46332.9145256013$1229669223$gmane$org@rzhang-dt>
+From: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [RFC PATCH 2/3] PCI: parallel resume for pci devices
+	on bus 0
+Date: Thu, 18 Dec 2008 23:49:04 -0700
+Message-ID: <20081219064903.GP19967__21351.6632481062$1229669516$gmane$org@parisc-linux.org>
+References: <1229668453.562.92.camel@rzhang-dt>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1229668453.562.92.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,43 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pci@vger.kernel.org
-Cc: "Barnes, Jesse" <jesse.barnes@intel.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pci@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>, "Barnes,
+	Jesse" <jesse.barnes@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-device parallel resume support for PCI devices
+On Fri, Dec 19, 2008 at 02:34:13PM +0800, Zhang Rui wrote:
+> +	/* parallel resume for pci devices on bus 0 */
+> +	if (dev->bus->number == 0)
+> +		device_parallel_resume_register(&dev->dev, 1);
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/pci/bus.c    |    4 ++++
- drivers/pci/remove.c |    2 ++
- 2 files changed, 6 insertions(+)
+"bus 0" is presumably supposed to mean "devices on a root bus".  I think
+you should be checking for dev->bus->parent == NULL instead.
 
-Index: linux-2.6/drivers/pci/bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/bus.c
-+++ linux-2.6/drivers/pci/bus.c
-@@ -85,6 +85,10 @@ int pci_bus_add_device(struct pci_dev *d
- 		return retval;
- 
- 	dev->is_added = 1;
-+
-+	/* parallel resume for pci devices on bus 0 */
-+	if (dev->bus->number == 0)
-+		device_parallel_resume_register(&dev->dev, 1);
- 	pci_proc_attach_device(dev);
- 	pci_create_sysfs_dev_files(dev);
- 	return 0;
-Index: linux-2.6/drivers/pci/remove.c
-===================================================================
---- linux-2.6.orig/drivers/pci/remove.c
-+++ linux-2.6/drivers/pci/remove.c
-@@ -92,6 +92,8 @@ EXPORT_SYMBOL(pci_remove_bus);
-  */
- void pci_remove_bus_device(struct pci_dev *dev)
- {
-+	if (dev->bus->number == 0 && dev->dev.resumed)
-+		device_parallel_resume_unregister(&dev->dev);
- 	if (dev->subordinate) {
- 		struct pci_bus *b = dev->subordinate;
- 
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
