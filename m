@@ -1,17 +1,12 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: SMP poweroff hangs: it's baaaack! But on x86_64 this
-	time.
-Date: Fri, 19 Dec 2008 21:19:05 -0500
-Message-ID: <494C5619.7020209__15917.2268155546$1229739787$gmane$org@rtr.ca>
-References: <20071213053020.E28AB1454450@imap.suse.de>
-	<4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de>
-	<47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca>
-	<49491F32.1040400@rtr.ca> <20081219115917.GA1599@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.28-rc9-git1: Reported regressions from 2.6.27
+Date: Sat, 20 Dec 2008 22:56:40 +0100 (CET)
+Message-ID: <vYigq6XkyUN.A.E1H.7ZYTJB__48164.1087834307$1229818228$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20081219115917.GA1599@ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,109 +16,139 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, davej@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> On Wed 2008-12-17 10:48:02, Mark Lord wrote:
->>> Subject: Fix SMP poweroff hangs
->>> From: Mark Lord <lkml@rtr.ca>
->>>
->>> We need to disable all CPUs other than the boot CPU (usually 0) before
->>> attempting to power-off modern SMP machines.  This fixes the
->>> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
->>> new toybox.
->>>
->>> Signed-off-by: Mark Lord <mlord@pobox.com>
->>> Acked-by: Thomas Gleixner <tglx@linutronix.de>
->>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->>> ---
->>>
->>>  kernel/sys.c |    2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
->>> --- a/kernel/sys.c~fix-smp-poweroff-hangs
->>> +++ a/kernel/sys.c
->>> @@ -32,6 +32,7 @@
->>>  #include <linux/getcpu.h>
->>>  #include <linux/task_io_accounting_ops.h>
->>>  #include <linux/seccomp.h>
->>> +#include <linux/cpu.h>
->>>   #include <linux/compat.h>
->>>  #include <linux/syscalls.h>
->>> @@ -878,6 +879,7 @@ void kernel_power_off(void)
->>>  	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
->>>  	if (pm_power_off_prepare)
->>>  		pm_power_off_prepare();
->>> +	disable_nonboot_cpus();
->>>  	sysdev_shutdown();
->>>  	printk(KERN_EMERG "Power down.\n");
->>>  	machine_power_off();
->> ..
->>
->> This bug has returned here now, but on x86_86 this time around.
->> Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
->> from the original 32-bit kernel/user that was originally fixed (above).
->>
->> One hang at poweroff over the past 10 days.  Not much, but enough
->> to destroy confidence in "unattended" operation.
->>
->> I lack opportunity to dig further into the code for now,
->> but just wanted to flag the problem, in case similar reports
->> from others might already be out there.
->>
->> In the meanwhile, I'm experimenting with this simple patch,
->> garnered from the 32-bit investigations last time around.
->> We should know in a few weeks whether it has any effect or not.
->>
->> --- old/kernel/sys.c	2008-10-18 13:57:22.000000000 -0400
->> +++ linux-2.6.27.9/kernel/sys.c	2008-12-17 09:42:17.000000000 -0500
->> @@ -303,6 +303,8 @@
->>
->> static void kernel_shutdown_prepare(enum system_states state)
->> {
->> +	set_cpus_allowed(current, cpumask_of_cpu(first_cpu(cpu_online_map)));
-> 
-> Is this line neccessary?
-..
-
-One or the other is probably redundant, but it's not 100% clear *which*.  :)
-The line above was suggested by others back when the original problem
-was being worked on for 32-bit.
-
->> +	disable_nonboot_cpus();
->> 	blocking_notifier_call_chain(&reboot_notifier_list,
->> 		(state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
->> 	system_state = state;
->> @@ -333,7 +335,6 @@
->> 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
->> 	if (pm_power_off_prepare)
->> 		pm_power_off_prepare();
->> -	disable_nonboot_cpus();
->> 	sysdev_shutdown();
->> 	printk(KERN_EMERG "Power down.\n");
->> 	machine_power_off();
-> 
-> Do you have any idea why it helps? BIOS will see us shutting down on
-> cpu0 anyway, so if this helps there's a linux bug somewhere...
-..
-
-I don't know if it helps, yet.  Needs a lot more soak first.
-The theory here is, that all BIOS interactions from the kernel
-probably should happen only on the "boot CPU" or on "cpu 0",
-not just the "halt" sequence.
-
-By setting the CPU restriction earlier in the shutdown sequence,
-we should be on the correct CPU for all of the various device-driver
-BIOS ineractions that might happen before actually halting.
-
-Could be a bad theory, but I'm open to other possible suggestions.
-
-Back on 32-bit it did seem rather unlikely that "disable_nonboot_cpus()"
-would help, but it in fact cured the problem completely there.
-On two different brands of motherboards with two different BIOSs.
-
-Cheers
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjI3LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
+b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
+ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
+ZnJvbSAyLjYuMjcsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
+dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
+aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
+c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
+aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
+dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
+ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQogIDIwMDgtMTItMjEgICAgICAxMjAgICAgICAgMTkgICAgICAgICAg
+MTcKICAyMDA4LTEyLTEzICAgICAgMTExICAgICAgIDE0ICAgICAgICAgIDEzCiAgMjAwOC0xMi0w
+NyAgICAgIDEwNiAgICAgICAyMCAgICAgICAgICAxNwogIDIwMDgtMTItMDQgICAgICAxMDYgICAg
+ICAgMjkgICAgICAgICAgMjEKICAyMDA4LTExLTIyICAgICAgIDkzICAgICAgIDI1ICAgICAgICAg
+IDE1CiAgMjAwOC0xMS0xNiAgICAgICA4OSAgICAgICAzMiAgICAgICAgICAxOAogIDIwMDgtMTEt
+MDkgICAgICAgNzMgICAgICAgNDAgICAgICAgICAgMjcKICAyMDA4LTExLTAyICAgICAgIDU1ICAg
+ICAgIDQxICAgICAgICAgIDI5CiAgMjAwOC0xMC0yNSAgICAgICAyNiAgICAgICAyNSAgICAgICAg
+ICAyMAoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVn
+LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMjY1
+ClN1YmplY3QJCTogRlBVIGVtdWxhdGlvbiBicm9rZW4gaW4gMi42LjI4LXJjOCA/ClN1Ym1pdHRl
+cgk6IFJvZ2llciBXb2xmZiA8Ui5FLldvbGZmQGJpdHdpemFyZC5ubD4KRGF0ZQkJOiAyMDA4LTEy
+LTE3IDg6NTYgKDQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
+bnV4LWtlcm5lbCZtPTEyMjk1MDQ2MzAzMDc0NyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
+emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNjQKU3ViamVjdAkJOiBpOTE1OiBz
+d2l0Y2hpbmcgZnJvbSBrd2luIGluIG9wZW5nbCBtb2RlIHRvIGEgVlQgdGhlbiBiYWNrIHRvIHgx
+MSwgeDExIGZyZWV6ZXMKU3VibWl0dGVyCTogQ2FsZWIgQ3VzaGluZyA8eGVub3RlcnJhY2lkZUBn
+bWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMi0xNiAxMTo0MCAoNSBkYXlzIG9sZCkKUmVmZXJlbmNl
+cwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTQyNzc3MDMwNjY2Jnc9
+NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0xMjI2MwpTdWJqZWN0CQk6IFNhdGEgc29mdCByZXNldCBmaWxsaW5nIGxvZwpTdWJtaXR0ZXIJ
+OiBKdXN0aW4gTWFkcnUgPGJldmljbUBkc2xleHRyZW1lLmNvbT4KRGF0ZQkJOiAyMDA4LTEyLTEz
+IDI6MDcgKDggZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4
+LWtlcm5lbCZtPTEyMjkxMzQxMjYwODUzMyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
+bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNTYKU3ViamVjdAkJOiBbcmVncmVzc2lv
+bjogMi42LjI4XSBORlMgY2xpZW50IHdpdGggbG9ja2luZyBmYWlscwpTdWJtaXR0ZXIJOiBLZWVz
+IENvb2sgPGtlZXNAb3V0Zmx1eC5uZXQ+CkRhdGUJCTogMjAwOC0xMi0xOSAxMzozOCAoMiBkYXlz
+IG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
+Z2k/aWQ9MTIyMjQKU3ViamVjdAkJOiBqb3VybmFsIGFjdGl2aXR5IG9uIGluYWN0aXZlIHBhcnRp
+dGlvbiBjYXVzZXMgaW5hY3RpdmUgaGFyZGRyaXZlIHNwaW51cApTdWJtaXR0ZXIJOiBDIFNpZ2h0
+cyA8Y3NpZ2h0c0BmYXN0bWFpbC5mbT4KRGF0ZQkJOiAyMDA4LTEyLTE0IDExOjM5ICg3IGRheXMg
+b2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2Vy
+bmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9Yzg3NTkxYjcxOTczN2I0
+ZTkxZWIxYTlmYThmZDU1YTRmZjE4ODZkNgpIYW5kbGVkLUJ5CTogRXJpYyBTYW5kZWVuIDxzYW5k
+ZWVuQHJlZGhhdC5jb20+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTEyMjE2ClN1YmplY3QJCTogRXJyb3Igd2hlbiBkcm0gaXMgbG9hZGVk
+ClN1Ym1pdHRlcgk6IEZyYW7Dp29pcyBWYWxlbmR1YyA8ZnJhbmNvaXMudmFsZW5kdWNAdHZjYWJs
+ZW5ldC5iZT4KRGF0ZQkJOiAyMDA4LTEyLTEzIDA5OjU5ICg4IGRheXMgb2xkKQpGaXJzdC1CYWQt
+Q29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2YWxk
+cy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9NTI0NDAyMTFkY2RjNTJjMGI3NTdmOGIzNGQxMjJl
+MTFiMTJjZGQ1MAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xMjIxMApTdWJqZWN0CQk6IDIuNi4yOC1yYzggYmlnIHJlZ3Jlc3Npb24gaW4g
+Vk0KU3VibWl0dGVyCTogTHVrYXMgSGVqdG1hbmVrIDx4aGVqdG1hbkBpY3MubXVuaS5jej4KRGF0
+ZQkJOiAyMDA4LTEyLTEyIDE4OjM4ICg5IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21h
+cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI5MTA3MTEwMDUxMzUmdz00CkhhbmRsZWQtQnkJ
+OiBXdSBGZW5nZ3VhbmcgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+CgoKQnVnLUVudHJ5CTogaHR0
+cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMjA5ClN1YmplY3QJCTog
+b2xkaXNoIHRvcCBjb3JlIGR1bXBzIChpbiBpdHMgbWVtaW5mbygpIGZ1bmN0aW9uKQpTdWJtaXR0
+ZXIJOiBBbmRyZWFzIE1vaHIgPGFuZGlAbGlzYXMuZGU+CkRhdGUJCTogMjAwOC0xMi0xMiAxODo0
+OSAoOSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
+bmVsJm09MTIyOTEwNzg0MDA2NDcyJnc9NAoJCSAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1r
+ZXJuZWwmbT0xMjI5MDc1MTEzMTkyODgmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
+Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMjA4ClN1YmplY3QJCTogdW1sIGlzIHZlcnkg
+c2xvdyBvbiAyLjYuMjggaG9zdApTdWJtaXR0ZXIJOiBNaWtsb3MgU3plcmVkaSA8bWlrbG9zQHN6
+ZXJlZGkuaHU+CkRhdGUJCTogMjAwOC0xMi0xMiA5OjM1ICg5IGRheXMgb2xkKQpSZWZlcmVuY2Vz
+CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI5MDc0NjM1MTg1OTMmdz00
+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTEyMTk1ClN1YmplY3QJCTogImRkIiBtYWtlIGtlcm5lbCBwYW5pYwpTdWJtaXR0ZXIJOiBhbGV4
+cyA8YWxleC5zaGlAaW50ZWwuY29tPgpEYXRlCQk6IDIwMDgtMTItMTAgMTg6MDcgKDExIGRheXMg
+b2xkKQpIYW5kbGVkLUJ5CTogSmFtZXMgQm90dG9tbGV5IDxKYW1lcy5Cb3R0b21sZXlASGFuc2Vu
+UGFydG5lcnNoaXAuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD0xMjE3OApTdWJqZWN0CQk6IFhvcmcgY3Jhc2ggYXQgZmlyc3Qgc3Rh
+cnQKU3VibWl0dGVyCTogQ8OpZHJpYyBHb2RpbiA8Y2VkcmljQGJlbGJvbmUuYmU+CkRhdGUJCTog
+MjAwOC0xMi0wNCAxNDoyNiAoMTcgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9n
+aXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQ7
+YT1jb21taXQ7aD01MjQ0MDIxMWRjZGM1MmMwYjc1N2Y4YjM0ZDEyMmUxMWIxMmNkZDUwClJlZmVy
+ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjg0MDA4MjgyODA5
+OCZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
+Z2k/aWQ9MTIxNjAKU3ViamVjdAkJOiBuZXR3b3JraW5nIG9vcHMgYWZ0ZXIgcmVzdW1lIGZyb20g
+czJyYW0gKDIuNi4yOC1yYzYpClN1Ym1pdHRlcgk6IE1hcmNpbiBTbHVzYXJ6IDxtYXJjaW4uc2x1
+c2FyekBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yOCAyMToxNSAoMjMgZGF5cyBvbGQpClJl
+ZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc5MDcwMTYx
+NTcyMyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
+Zy5jZ2k/aWQ9MTIxNTkKU3ViamVjdAkJOiAyLjYuMjgtcmM2LWdpdDEgLS0gTm8gc291bmQgcHJv
+ZHVjZWQgZnJvbSBJbnRlbCBIREEgQUxTQSBkcml2ZXIKU3VibWl0dGVyCTogTWlsZXMgTGFuZSA8
+bWlsZXMubGFuZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yNyAyMDozMyAoMjQgZGF5cyBv
+bGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc4
+MTgwNTYyMDIxMiZ3PTQKSGFuZGxlZC1CeQk6IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4K
+CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
+MTIxNTYKU3ViamVjdAkJOiB2Mi42LjI4LXJjMjogeDg2XzMyIHJlbG9jYXRpb24gcmVncmVzc2lv
+bj8KU3VibWl0dGVyCTogVmVnYXJkIE5vc3N1bSA8dmVnYXJkLm5vc3N1bUBnbWFpbC5jb20+CkRh
+dGUJCTogMjAwOC0xMS0yNCAyMToxOSAoMjcgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8v
+bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc1NjE1ODIyMDk2NiZ3PTQKCgpCdWctRW50
+cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIwNjEKU3Vi
+amVjdAkJOiBzbmRfaGRhX2ludGVsOiBwb3dlcl9zYXZlOiBzb3VuZCBjcmFja3Mgb24gcG93ZXJk
+b3duClN1Ym1pdHRlcgk6IEplbnMgV2VpYmxlciA8YnVnemlsbGEta2VybmVsQGplbnN0aGVicmFp
+bi5kZT4KRGF0ZQkJOiAyMDA4LTExLTE4IDEyOjA3ICgzMyBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6
+IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
+bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIwMjgKU3ViamVjdAkJOiBpOTE1IERSTSBp
+cyBicm9rZW4gaW4gMi42LjI4LXJjNApTdWJtaXR0ZXIJOiBBZGFtIFRrYWMgPHZvbnNjaEBnbWFp
+bC5jb20+CkRhdGUJCTogMjAwOC0xMS0xNCAwMTo1MCAoMzcgZGF5cyBvbGQpCgoKQnVnLUVudHJ5
+CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExODQ5ClN1Ympl
+Y3QJCTogZGVmYXVsdCBJUlEgYWZmaW5pdHkgY2hhbmdlIGluIHYyLjYuMjcgKGJyZWFraW5nIHNl
+dmVyYWwgU01QIFBQQyBiYXNlZCBzeXN0ZW1zKQpTdWJtaXR0ZXIJOiBLdW1hciBHYWxhIDxnYWxh
+a0BrZXJuZWwuY3Jhc2hpbmcub3JnPgpEYXRlCQk6IDIwMDgtMTAtMjQgMTI6NDUgKDU4IGRheXMg
+b2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI0
+ODUyNDU5MjQxMjUmdz00CgoKUmVncmVzc2lvbnMgd2l0aCBwYXRjaGVzCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
+dWcuY2dpP2lkPTEyMjYwClN1YmplY3QJCTogUmVncmVzc2lvbiBkdWUgdG8gY29tbWl0IDJiODA4
+NDhlMzgxOGZiMWMgKHA1NHVzYjogc3VwcG9ydCBMTTg3IGZpcm13YXJlcykKU3VibWl0dGVyCTog
+TGFycnkgRmluZ2VyIDxMYXJyeS5GaW5nZXJAbHdmaW5nZXIubmV0PgpEYXRlCQk6IDIwMDgtMTIt
+MjAgMTA6NDUgKDEgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVs
+Lm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQ7YT1jb21taXQ7
+aD0yYjgwODQ4ZTM4MThmYjFjOGNjZGRjMTA1YjA2NWE4NmM2OGFmYTlkClBhdGNoCQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjI2MAoKCkJ1Zy1FbnRyeQk6
+IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjI1MgpTdWJqZWN0
+CQk6IG5ldyBvb3BzIG9uIHJlc3VtZSBkdWUgdG8gQUNQSV9QUkVFTVBUSU9OX1BPSU5UKCkKU3Vi
+bWl0dGVyCTogTGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPgpEYXRlCQk6IDIwMDgtMTIt
+MTggMTg6MTcgKDMgZGF5cyBvbGQpCkhhbmRsZWQtQnkJOiBMZW4gQnJvd24gPGxlbmJAa2VybmVs
+Lm9yZz4KUGF0Y2gJCTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvYXR0YWNobWVudC5jZ2k/
+aWQ9MTkzNzAmYWN0aW9uPXZpZXcKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcg
+ZW50cmllcyBhbmQgZm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91
+IGNhbiBzZWUsIHRoZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3Rl
+ZCByZWdyZXNzaW9ucy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRy
+YWNraW5nIHRoZSByZWdyZXNzaW9ucyBmcm9tIDIuNi4yNywKdW5yZXNvbHZlZCBhcyB3ZWxsIGFz
+IHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0xMTgwOAoKUGxlYXNlIGxldCBtZSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVnemlsbGEgZW50
+cmllcyB0aGF0IHNob3VsZCBiZSBhZGRlZCB0bwp0aGUgbGlzdCBpbiB0aGVyZS4KClRoYW5rcywK
+UmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
+aW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
+aHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
+LXBt
