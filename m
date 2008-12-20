@@ -1,14 +1,17 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [RFC PATCH 2/3] PCI: parallel resume for pci devices
- on bus 0
-Date: Fri, 19 Dec 2008 14:21:59 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.0812191417370.3745__4894.19199661842$1229714789$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0812191005310.2453-100000@iolanthe.rowland.org>
+From: Mark Lord <lkml@rtr.ca>
+Subject: Re: SMP poweroff hangs: it's baaaack! But on x86_64 this
+	time.
+Date: Fri, 19 Dec 2008 21:19:05 -0500
+Message-ID: <494C5619.7020209__15917.2268155546$1229739787$gmane$org@rtr.ca>
+References: <20071213053020.E28AB1454450@imap.suse.de>
+	<4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de>
+	<47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca>
+	<49491F32.1040400@rtr.ca> <20081219115917.GA1599@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <Pine.LNX.4.44L0.0812191005310.2453-100000@iolanthe.rowland.org>
+In-Reply-To: <20081219115917.GA1599@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +21,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, "Barnes,
-	Jesse" <jesse.barnes@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, davej@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-
-On Fri, 19 Dec 2008, Alan Stern wrote:
-
-> On Fri, 19 Dec 2008, Zhang Rui wrote:
+Pavel Machek wrote:
+> On Wed 2008-12-17 10:48:02, Mark Lord wrote:
+>>> Subject: Fix SMP poweroff hangs
+>>> From: Mark Lord <lkml@rtr.ca>
+>>>
+>>> We need to disable all CPUs other than the boot CPU (usually 0) before
+>>> attempting to power-off modern SMP machines.  This fixes the
+>>> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
+>>> new toybox.
+>>>
+>>> Signed-off-by: Mark Lord <mlord@pobox.com>
+>>> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>
+>>>  kernel/sys.c |    2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
+>>> --- a/kernel/sys.c~fix-smp-poweroff-hangs
+>>> +++ a/kernel/sys.c
+>>> @@ -32,6 +32,7 @@
+>>>  #include <linux/getcpu.h>
+>>>  #include <linux/task_io_accounting_ops.h>
+>>>  #include <linux/seccomp.h>
+>>> +#include <linux/cpu.h>
+>>>   #include <linux/compat.h>
+>>>  #include <linux/syscalls.h>
+>>> @@ -878,6 +879,7 @@ void kernel_power_off(void)
+>>>  	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>>>  	if (pm_power_off_prepare)
+>>>  		pm_power_off_prepare();
+>>> +	disable_nonboot_cpus();
+>>>  	sysdev_shutdown();
+>>>  	printk(KERN_EMERG "Power down.\n");
+>>>  	machine_power_off();
+>> ..
+>>
+>> This bug has returned here now, but on x86_86 this time around.
+>> Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
+>> from the original 32-bit kernel/user that was originally fixed (above).
+>>
+>> One hang at poweroff over the past 10 days.  Not much, but enough
+>> to destroy confidence in "unattended" operation.
+>>
+>> I lack opportunity to dig further into the code for now,
+>> but just wanted to flag the problem, in case similar reports
+>> from others might already be out there.
+>>
+>> In the meanwhile, I'm experimenting with this simple patch,
+>> garnered from the 32-bit investigations last time around.
+>> We should know in a few weeks whether it has any effect or not.
+>>
+>> --- old/kernel/sys.c	2008-10-18 13:57:22.000000000 -0400
+>> +++ linux-2.6.27.9/kernel/sys.c	2008-12-17 09:42:17.000000000 -0500
+>> @@ -303,6 +303,8 @@
+>>
+>> static void kernel_shutdown_prepare(enum system_states state)
+>> {
+>> +	set_cpus_allowed(current, cpumask_of_cpu(first_cpu(cpu_online_map)));
 > 
-> > device parallel resume support for PCI devices
-> 
-> There are some PCI devices which won't work right if they are resumed
-> in parallel.  The example I have in mind is a USB host controller
-> device with both a high-speed EHCI controller function and some
-> companion low/full-speed UHCI or OHCI controller functions.  The EHCI
-> driver relies on the fact that the EHCI controller has a higher
-> function number and therefore is resumed _after_ the companion
-> controllers.
-> 
-> We need a way to express dependencies like this between devices.  Or at 
-> least, there has to be a way to prevent certain devices from resuming 
-> in parallel.
+> Is this line neccessary?
+..
 
-Perhaps the most pragmatic approach would be to identify which devices
-benefit the most from parallel resume, and use some hooks so that
-those device drivers can be optimized to resume in parallel
-while everything else takes the existing serialized path?
+One or the other is probably redundant, but it's not 100% clear *which*.  :)
+The line above was suggested by others back when the original problem
+was being worked on for 32-bit.
 
--- Len Brown, Intel Open Source Technology Center
+>> +	disable_nonboot_cpus();
+>> 	blocking_notifier_call_chain(&reboot_notifier_list,
+>> 		(state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+>> 	system_state = state;
+>> @@ -333,7 +335,6 @@
+>> 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>> 	if (pm_power_off_prepare)
+>> 		pm_power_off_prepare();
+>> -	disable_nonboot_cpus();
+>> 	sysdev_shutdown();
+>> 	printk(KERN_EMERG "Power down.\n");
+>> 	machine_power_off();
+> 
+> Do you have any idea why it helps? BIOS will see us shutting down on
+> cpu0 anyway, so if this helps there's a linux bug somewhere...
+..
+
+I don't know if it helps, yet.  Needs a lot more soak first.
+The theory here is, that all BIOS interactions from the kernel
+probably should happen only on the "boot CPU" or on "cpu 0",
+not just the "halt" sequence.
+
+By setting the CPU restriction earlier in the shutdown sequence,
+we should be on the correct CPU for all of the various device-driver
+BIOS ineractions that might happen before actually halting.
+
+Could be a bad theory, but I'm open to other possible suggestions.
+
+Back on 32-bit it did seem rather unlikely that "disable_nonboot_cpus()"
+would help, but it in fact cured the problem completely there.
+On two different brands of motherboards with two different BIOSs.
+
+Cheers
