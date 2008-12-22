@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH 2/3] PCI: parallel resume for pci devices
- on bus 0
-Date: Mon, 22 Dec 2008 10:52:53 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0812221038010.17981-100000__25833.091690629$1229961401$gmane$org@netrider.rowland.org>
-References: <1229914579.562.150.camel@rzhang-dt>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH 0/3] pm: device parallel resume mechanism
+Date: Mon, 22 Dec 2008 21:19:32 +0100
+Message-ID: <200812222119.32833.rjw__22514.8269012154$1229977335$gmane$org@sisk.pl>
+References: <1229668448.562.88.camel@rzhang-dt>
+	<200812191815.11153.rjw@sisk.pl>
+	<1229915522.562.164.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1229914579.562.150.camel@rzhang-dt>
+In-Reply-To: <1229915522.562.164.camel@rzhang-dt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,54 +25,41 @@ Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foun
 	Jesse" <jesse.barnes@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 22 Dec 2008, Zhang Rui wrote:
-
-> On Fri, 2008-12-19 at 23:09 +0800, Alan Stern wrote:
-> > On Fri, 19 Dec 2008, Zhang Rui wrote:
-> > 
-> > > device parallel resume support for PCI devices
-> > 
-> > There are some PCI devices which won't work right if they are resumed
-> > in parallel.  The example I have in mind is a USB host controller
-> > device with both a high-speed EHCI controller function and some
-> > companion low/full-speed UHCI or OHCI controller functions.  The EHCI
-> > driver relies on the fact that the EHCI controller has a higher
-> > function number and therefore is resumed _after_ the companion
-> > controllers.
-> > 
-> well, I never got this problem before.
-> is this normal? does this exist on the Intel hardware?
-> I'd like to do some test if I have chance.
-
-Yes, it is normal, and it does exist on Intel hardware.  It isn't a 
-_problem_ (or at least, it hasn't been a problem up until now) because 
-the order of resuming devices is always the same as the order of 
-registration, which in turn is the same as the order of discovery.
-
-You can see this on any Intel ICHx chipset.  I don't have an example 
-right here, but take a look at the machines you have lying around.  
-There are PCI UHCI controllers at 1d.0, 1d.1, ... and a PCI EHCI 
-controller at 1d.7.
-
-The issue arises when you have a low-speed or full-speed device plugged 
-in.  The device is handed over from the EHCI controller to one of the 
-companion UHCI controllers, because EHCI manages only high-speed 
-devices.
-
-Now consider what happens when the system wakes up from hibernation.  
-The controllers are re-initialized, and when ehci-hcd sees the
-low/full-speed device, it tries to hand the device over to the
-companion controller again.  But if the EHCI controller's resume method
-runs first then the handover will fail, because the companion
-controller has not yet been initialized.  As a result, the device will
-be lost and will have to go through rediscovery and re-enumeration.  
-This could be very annoying if, for example, the device contains a
-mounted filesystem.
-
-> Just like the case above, can you give me a lspci output and show me
-> what exactly the dependency is?
-
-The dependency is simple: The 1d.7 device must be resumed _after_ 1d.0, 
-1d.1, ..., 1d.6.
-
-Alan Stern
+T24gTW9uZGF5LCAyMiBvZiBEZWNlbWJlciAyMDA4LCBaaGFuZyBSdWkgd3JvdGU6Cj4gSGksIHJh
+ZmFlbCAKCkhpLAoKPiBPbiBTYXQsIDIwMDgtMTItMjAgYXQgMDE6MTUgKzA4MDAsIFJhZmFlbCBK
+LiBXeXNvY2tpIHdyb3RlOgo+ID4gT24gRnJpZGF5LCAxOSBvZiBEZWNlbWJlciAyMDA4LCBaaGFu
+ZyBSdWkgd3JvdGU6Cj4gPiA+IEhpLCBhbGwsCj4gPiA+IAo+ID4gPiDvu79UaGUgcmVzdW1lIHBy
+b2Nlc3MgY2FuIGJlIHNwbGl0IGludG8gMyBwYXJ0cywgQklPUyByZXN1bWUgdGltZSwga2VybmVs
+Cj4gPiA+IHJlc3VtZSB0aW1lIGFuZCBYL2FwcGxpY2F0aW9uIHJlc3VtZSB0aW1lLgo+ID4gPiBB
+bmQgZGV2aWNlIHJlc3VtZSB0YWtlcyBtb3N0IG9mIHRoZSBrZXJuZWwgcmVzdW1lIHRpbWUuCj4g
+PiA+IHRoaXMgcGF0Y2ggc2V0IGludHJvZHVjZXMgYSBuZXcgbWVjaGFuaXNtIHRvIHJlc3VtZSBk
+ZXZpY2UgaW4gcGFyYWxsZWwKPiA+ID4gd2hpY2ggY2FuIHJlZHVjZSB0aGUgZGV2aWNlIHJlc3Vt
+ZSB0aW1lIGEgbG90Lgo+ID4gPiAKPiA+ID4gSW4gdGhpcyBwcm9wb3NhbCwgc29tZSBkZXZpY2Vz
+IGNhbiBjcmVhdGUgaXRzIG93biB3b3JrcXVldWUgZm9yCj4gPiA+IHBhcmFsbGVsIHJlc3VtZS4g
+QW5kIGZvciBhbGwgdGhlIG90aGVyIGRldmljZXMgdGhhdCBkZXBlbmRzIG9uIHRoaXMKPiA+ID4g
+ZGV2aWNlLCB0aGVpciByZXN1bWUgbWV0aG9kcyBhcmUgcXVldWVkIGluIHRoZSBzYW1lIHdvcmtx
+dWV1ZS4KPiA+ID4gQW5kIHdlIGZsdXNoIGFsbCB0aGUgd29ya3F1ZXVlcyBiZWZvcmUgcmVzdW1p
+bmcgWC9hcHBsaWNhdGlvbnMuCj4gPiA+IAo+ID4gPiBBcyB0aGUgZGV2aWNlcyB2YXJ5IGZyb20g
+ZGlmZmVyZW50IHBsYXRmb3Jtcy4gaXQncyBoYXJkIHRvIGdpdmUgYW4gZXhhY3QKPiA+ID4gbnVt
+YmVyIG9mIGhvdyBtdWNoIHRpbWUgaXQgY2FuIHJlZHVjZS4KPiA+ID4gSGVyZSBhcmUgc29tZSBv
+ZiBteSB0ZXN0IHJlc3VsdHM6Cj4gPiA+IDEuIGVlZXBjOTAxLCBrZXJuZWwgcmVzdW1lIHRpbWUg
+Y2FuIGJlIHJlZHVjZWQgZnJvbSBhYm91dCAyLjEgc2Vjb25kcyB0bwo+ID4gPiAxLjYgc2Vjb25k
+cy4KPiA+ID4gMi4gYSBTYW50YVJvc2EgdGVzdGJveCwga2VybmVsIHJlc3VtZSB0aW1lIGNhbiBi
+ZSByZWR1Y2VkIGZyb20gYWJvdXQKPiA+ID4gMy41cyB0byAycy4KPiA+ID4gCj4gPiA+IHBsZWFz
+ZSByZXZpZXcgdGhpcyBwYXRjaC4gQW55IGNvbW1lbnRzIGFyZSB3ZWxjb21lLiA6KQo+ID4gCj4g
+PiBXZWxsLCBnaXZlbiB0aGF0IG91ciBzaW5nbGUtdGhyZWFkIHJlc3VtZSBpcyBub3QgZXhhY3Rs
+eSBjb3JyZWN0LAo+IHlvdSBtZWFuIHRoYXQgdGhlIGN1cnJlbnQgc2VyaWFsIHJlc3VtZSBtZWNo
+YW5pc20gc3RpbGwgZG9lc24ndCB3b3JrCj4gc3RhYmxlLCByaWdodD8KCk5vdCBleGFjdGx5LiAg
+SSBtZWFuIGl0IGlzbid0IF9kb25lXyByaWdodCBhbmQgbm90IHdvcmtpbmcgY29ycmVjdGx5IGlz
+IGp1c3QgYQpjb25zZXF1ZW5jZSBvZiB0aGlzLgoKRm9yIHRoaXMgcmVhc29uLCB3ZSBzaG91bGQg
+Zmlyc3QgZml4IHRoZSBjdXJyZW50IGNvZGUgYW5kIF90aGVuXyBidWlsZCBhZGQgbmV3CmZlYXR1
+cmVzIGxpa2UgdGhpcywgbm90IHRoZSBvdGhlciB3YXkgYXJvdW5kLgoKPiAKPiA+ICBJIHRoaW5r
+IGl0J3MgX3dheV8gdG8gZWFybHkgdG8gaW5kcm9kdWNlIHRoaW5ncyBsaWtlIHRoaXMuCj4gUmln
+aHQsIGl0J3Mgbm90IGZvciB1cHN0cmVhbS4KPiBCdXQgaXQgbG9va3MgZ29vZCBpbiB0aGVvcnks
+IGFuZCBpdCBkb2VzIHdvcmtzIHdpdGhvdXQgYW55IHNpZGUgZWZmZWN0Cj4gaW4gbXkgY2FzZS4K
+PiBTbyB0aGUgcGF0Y2ggd2FzIHNlbnQgb3V0IGhlcmUgdG8gc2VlIGlmIHRoZXJlIGFyZSBzb21l
+IHByb2JsZW1zIHRoYXQKPiBhcmUgbm90IGNvdmVyZWQgYnkgdGhpcyBwYXRjaCwgbGlrZSB0aGUg
+b25lIEFsYW4gcG9pbnRlZCBvdXQuIDopCgpPSwoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0
+CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
