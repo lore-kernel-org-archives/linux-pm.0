@@ -1,14 +1,14 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH 2/3] PCI: parallel resume for pci	devices
-	on bus 0
-Date: Mon, 22 Dec 2008 10:56:19 +0800
-Message-ID: <1229914579.562.150.camel__8894.02744728631$1229914846$gmane$org@rzhang-dt>
-References: <Pine.LNX.4.44L0.0812191005310.2453-100000@iolanthe.rowland.org>
+Subject: Re: [RFC PATCH 0/3] pm: device parallel resume mechanism
+Date: Mon, 22 Dec 2008 11:12:02 +0800
+Message-ID: <1229915522.562.164.camel__3680.26557048342$1229915762$gmane$org@rzhang-dt>
+References: <1229668448.562.88.camel@rzhang-dt>
+	<200812191815.11153.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0812191005310.2453-100000@iolanthe.rowland.org>
+In-Reply-To: <200812191815.11153.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, "Barnes,
 	Jesse" <jesse.barnes@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2008-12-19 at 23:09 +0800, Alan Stern wrote:
-> On Fri, 19 Dec 2008, Zhang Rui wrote:
-> 
-> > device parallel resume support for PCI devices
-> 
-> There are some PCI devices which won't work right if they are resumed
-> in parallel.  The example I have in mind is a USB host controller
-> device with both a high-speed EHCI controller function and some
-> companion low/full-speed UHCI or OHCI controller functions.  The EHCI
-> driver relies on the fact that the EHCI controller has a higher
-> function number and therefore is resumed _after_ the companion
-> controllers.
-> 
-well, I never got this problem before.
-is this normal? does this exist on the Intel hardware?
-I'd like to do some test if I have chance.
-
-> We need a way to express dependencies like this between devices.  Or at 
-> least, there has to be a way to prevent certain devices from resuming 
-> in parallel.
-> 
-agree.
-Just like the case above, can you give me a lspci output and show me
-what exactly the dependency is?
-
-thanks,
-rui
+SGksIHJhZmFlbCAKCk9uIFNhdCwgMjAwOC0xMi0yMCBhdCAwMToxNSArMDgwMCwgUmFmYWVsIEou
+IFd5c29ja2kgd3JvdGU6Cj4gT24gRnJpZGF5LCAxOSBvZiBEZWNlbWJlciAyMDA4LCBaaGFuZyBS
+dWkgd3JvdGU6Cj4gPiBIaSwgYWxsLAo+ID4gCj4gPiDvu79UaGUgcmVzdW1lIHByb2Nlc3MgY2Fu
+IGJlIHNwbGl0IGludG8gMyBwYXJ0cywgQklPUyByZXN1bWUgdGltZSwga2VybmVsCj4gPiByZXN1
+bWUgdGltZSBhbmQgWC9hcHBsaWNhdGlvbiByZXN1bWUgdGltZS4KPiA+IEFuZCBkZXZpY2UgcmVz
+dW1lIHRha2VzIG1vc3Qgb2YgdGhlIGtlcm5lbCByZXN1bWUgdGltZS4KPiA+IHRoaXMgcGF0Y2gg
+c2V0IGludHJvZHVjZXMgYSBuZXcgbWVjaGFuaXNtIHRvIHJlc3VtZSBkZXZpY2UgaW4gcGFyYWxs
+ZWwKPiA+IHdoaWNoIGNhbiByZWR1Y2UgdGhlIGRldmljZSByZXN1bWUgdGltZSBhIGxvdC4KPiA+
+IAo+ID4gSW4gdGhpcyBwcm9wb3NhbCwgc29tZSBkZXZpY2VzIGNhbiBjcmVhdGUgaXRzIG93biB3
+b3JrcXVldWUgZm9yCj4gPiBwYXJhbGxlbCByZXN1bWUuIEFuZCBmb3IgYWxsIHRoZSBvdGhlciBk
+ZXZpY2VzIHRoYXQgZGVwZW5kcyBvbiB0aGlzCj4gPiBkZXZpY2UsIHRoZWlyIHJlc3VtZSBtZXRo
+b2RzIGFyZSBxdWV1ZWQgaW4gdGhlIHNhbWUgd29ya3F1ZXVlLgo+ID4gQW5kIHdlIGZsdXNoIGFs
+bCB0aGUgd29ya3F1ZXVlcyBiZWZvcmUgcmVzdW1pbmcgWC9hcHBsaWNhdGlvbnMuCj4gPiAKPiA+
+IEFzIHRoZSBkZXZpY2VzIHZhcnkgZnJvbSBkaWZmZXJlbnQgcGxhdGZvcm1zLiBpdCdzIGhhcmQg
+dG8gZ2l2ZSBhbiBleGFjdAo+ID4gbnVtYmVyIG9mIGhvdyBtdWNoIHRpbWUgaXQgY2FuIHJlZHVj
+ZS4KPiA+IEhlcmUgYXJlIHNvbWUgb2YgbXkgdGVzdCByZXN1bHRzOgo+ID4gMS4gZWVlcGM5MDEs
+IGtlcm5lbCByZXN1bWUgdGltZSBjYW4gYmUgcmVkdWNlZCBmcm9tIGFib3V0IDIuMSBzZWNvbmRz
+IHRvCj4gPiAxLjYgc2Vjb25kcy4KPiA+IDIuIGEgU2FudGFSb3NhIHRlc3Rib3gsIGtlcm5lbCBy
+ZXN1bWUgdGltZSBjYW4gYmUgcmVkdWNlZCBmcm9tIGFib3V0Cj4gPiAzLjVzIHRvIDJzLgo+ID4g
+Cj4gPiBwbGVhc2UgcmV2aWV3IHRoaXMgcGF0Y2guIEFueSBjb21tZW50cyBhcmUgd2VsY29tZS4g
+OikKPiAKPiBXZWxsLCBnaXZlbiB0aGF0IG91ciBzaW5nbGUtdGhyZWFkIHJlc3VtZSBpcyBub3Qg
+ZXhhY3RseSBjb3JyZWN0LAp5b3UgbWVhbiB0aGF0IHRoZSBjdXJyZW50IHNlcmlhbCByZXN1bWUg
+bWVjaGFuaXNtIHN0aWxsIGRvZXNuJ3Qgd29yawpzdGFibGUsIHJpZ2h0PwoKPiAgSSB0aGluawo+
+IGl0J3MgX3dheV8gdG8gZWFybHkgdG8gaW5kcm9kdWNlIHRoaW5ncyBsaWtlIHRoaXMuClJpZ2h0
+LCBpdCdzIG5vdCBmb3IgdXBzdHJlYW0uCkJ1dCBpdCBsb29rcyBnb29kIGluIHRoZW9yeSwgYW5k
+IGl0IGRvZXMgd29ya3Mgd2l0aG91dCBhbnkgc2lkZSBlZmZlY3QKaW4gbXkgY2FzZS4KU28gdGhl
+IHBhdGNoIHdhcyBzZW50IG91dCBoZXJlIHRvIHNlZSBpZiB0aGVyZSBhcmUgc29tZSBwcm9ibGVt
+cyB0aGF0CmFyZSBub3QgY292ZXJlZCBieSB0aGlzIHBhdGNoLCBsaWtlIHRoZSBvbmUgQWxhbiBw
+b2ludGVkIG91dC4gOikKCnRoYW5rcywKcnVpCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
