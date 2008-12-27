@@ -1,11 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/2] PCI PM fixes for 2.6.29
-Date: Sat, 27 Dec 2008 16:27:32 +0100
-Message-ID: <200812271627.32781.rjw__13094.8872691535$1230391999$gmane$org@sisk.pl>
+Subject: [PATCH 2/2] PCI PM: Fix pci_update_current_state
+Date: Sat, 27 Dec 2008 16:30:52 +0100
+Message-ID: <200812271630.52948.rjw@sisk.pl>
+References: <200812271627.32781.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200812271627.32781.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,19 +22,58 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[Sorry, the previous attempt was HTML-formatted.]
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Hi Jesse,
+Currently, PCI devices without the PM capability that are power
+manageable by the platform (eg. ACPI) are not handled correctly
+by pci_set_power_state(), because their current_state field is not
+updated to reflect the new power state of the device.  Fix this by
+making pci_update_current_state() accept additional argument
+representing the power state of the device as set by the platform.
 
-The following two patches contain fixes of PCI suspend-resume routines.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-The first one corrects the suspend-resume handling for PCI Express ports after
-commit 2bdc985ac3fcdb4ae9672feeb14de2c525967899 (in your tree).
-
-The second one is a fix for devices without PM capability.
-
-Sorry for being late with them, but I had to make sure that the first patch
-doesn't break the test box affected by bug #12121 again.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -524,14 +524,17 @@ pci_raw_set_power_state(struct pci_dev *
+  * pci_update_current_state - Read PCI power state of given device from its
+  *                            PCI PM registers and cache it
+  * @dev: PCI device to handle.
++ * @state: State to cache in case the device doesn't have the PM capability
+  */
+-static void pci_update_current_state(struct pci_dev *dev)
++static void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+ {
+ 	if (dev->pm_cap) {
+ 		u16 pmcsr;
+ 
+ 		pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+ 		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
++	} else {
++		dev->current_state = state;
+ 	}
+ }
+ 
+@@ -574,7 +577,7 @@ int pci_set_power_state(struct pci_dev *
+ 		 */
+ 		int ret = platform_pci_set_power_state(dev, PCI_D0);
+ 		if (!ret)
+-			pci_update_current_state(dev);
++			pci_update_current_state(dev, PCI_D0);
+ 	}
+ 	/* This device is quirked not to be put into D3, so
+ 	   don't put it in D3 */
+@@ -587,7 +590,7 @@ int pci_set_power_state(struct pci_dev *
+ 		/* Allow the platform to finalize the transition */
+ 		int ret = platform_pci_set_power_state(dev, state);
+ 		if (!ret) {
+-			pci_update_current_state(dev);
++			pci_update_current_state(dev, state);
+ 			error = 0;
+ 		}
+ 	}
