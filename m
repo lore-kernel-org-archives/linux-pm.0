@@ -1,12 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI: Do not modify SCI_EN directly
-Date: Mon, 29 Dec 2008 19:19:07 +0100
-Message-ID: <200812291919.07663.rjw__48627.7929078371$1230574905$gmane$org@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] ACPI: Do not modify SCI_EN directly
+Date: Mon, 29 Dec 2008 23:16:06 +0200
+Message-ID: <1230585366.4667.26.camel__16559.7369814806$1230585517$gmane$org@maxim-laptop>
+References: <200812291919.07663.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200812291919.07663.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,37 +17,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-According to the ACPI specification the SCI_EN flag is controlled by
-the hardware, which sets this flag to inform the kernel that ACPI is
-enabled.  For this reason, we shouldn't try to modify SCI_EN
-directly.  Also, we don't need to do it in irqrouter_resume(), since
-lower-level resume code takes care of enabling ACPI in case it hasn't
-been enabled by the BIOS before passing control to the kernel (which
-by the way is against the ACPI specification).
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/pci_link.c |    4 ----
- 1 file changed, 4 deletions(-)
-
-Index: linux-2.6/drivers/acpi/pci_link.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_link.c
-+++ linux-2.6/drivers/acpi/pci_link.c
-@@ -793,10 +793,6 @@ static int irqrouter_resume(struct sys_d
- 	struct list_head *node = NULL;
- 	struct acpi_pci_link *link = NULL;
- 
--
--	/* Make sure SCI is enabled again (Apple firmware bug?) */
--	acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
--
- 	list_for_each(node, &acpi_link.entries) {
- 		link = list_entry(node, struct acpi_pci_link, node);
- 		if (!link) {
+T24gTW9uLCAyMDA4LTEyLTI5IGF0IDE5OjE5ICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToKPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4gCj4gQWNjb3JkaW5n
+IHRvIHRoZSBBQ1BJIHNwZWNpZmljYXRpb24gdGhlIFNDSV9FTiBmbGFnIGlzIGNvbnRyb2xsZWQg
+YnkKPiB0aGUgaGFyZHdhcmUsIHdoaWNoIHNldHMgdGhpcyBmbGFnIHRvIGluZm9ybSB0aGUga2Vy
+bmVsIHRoYXQgQUNQSSBpcwo+IGVuYWJsZWQuICBGb3IgdGhpcyByZWFzb24sIHdlIHNob3VsZG4n
+dCB0cnkgdG8gbW9kaWZ5IFNDSV9FTgo+IGRpcmVjdGx5LiAgQWxzbywgd2UgZG9uJ3QgbmVlZCB0
+byBkbyBpdCBpbiBpcnFyb3V0ZXJfcmVzdW1lKCksIHNpbmNlCj4gbG93ZXItbGV2ZWwgcmVzdW1l
+IGNvZGUgdGFrZXMgY2FyZSBvZiBlbmFibGluZyBBQ1BJIGluIGNhc2UgaXQgaGFzbid0Cj4gYmVl
+biBlbmFibGVkIGJ5IHRoZSBCSU9TIGJlZm9yZSBwYXNzaW5nIGNvbnRyb2wgdG8gdGhlIGtlcm5l
+bCAod2hpY2gKPiBieSB0aGUgd2F5IGlzIGFnYWluc3QgdGhlIEFDUEkgc3BlY2lmaWNhdGlvbiku
+CgoKSGksIAoKSSBhbSBhbiB1bmZvcnR1bmF0ZSBvd25lciBvZiBhbiBhY2VyIG5vdGVib29rICgg
+YXNwaXJlIDU3MjAgaWYgdGhpcwptYXR0ZXJzKSBhbmQgaXQgZG9lc24ndCBjb21lIGJhY2sgYWZ0
+ZXIgc2Vjb25kIHN1c3BlbmQsIHN1YnNlcXVlbnRseSAgSQpmaWd1cmVkIG91dCB0aGF0IGJpb3Mg
+ZG9lc24ndCBwYXNzIGNvbnRyb2wgdG8gbGludXggYXQgYWxsLCBhZnRlciBzZWNvbmQKcmVzdW1l
+LCBhbmQgbW9yZW92ZXIsIGEgc3VzcGVuZCB0byBkaXNrICwgJ2ZpeGVzJyB0aGlzIGFuZCBlbmFi
+bGVzIG1lIHRvCmRvIGFub3RoZXIgc3VzcGVuZC9yZXN1bWUgY3ljbGUuIFRoaXMgaXMgYSBwb29y
+IG1hbiB3b3JrYXJvdW5kIEkgdXNlCm5vdy4KCkkgYWxyZWFkeSB0b2xkIGFib3V0IHRoaXMgaGVy
+ZSwgYW5kIG1hbnkgcGVvcGxlcyBmcm9tIGhlcmUgKGluY2x1ZGluZwp5b3UpIHRyaWVkIHRvIGhl
+bHAgbWUsIGJ1dCB1bmZvcnR1bmF0ZWx5IHRoaXMgaXMgdmVyeSB3ZWlyZCBpc3N1ZSwgYW5kCm5l
+dGhlciBtZSBub3IgeW91IGNhbiBkbyBtdWNoIGFib3V0LCBpdCBpcyBhbGwgYWJvdXQgZ3Vlc3N3
+b3JrLApzb21ldGhpbmcsIGF0IGxlYXN0IHNvbWV0aGluZyBpcyAnYXJtZWQnIG9uIHJlc3VtZSwg
+c28gaXQgY29uZnVzZXMgYmlvcwp0aGVuIChpdCBjb3VsZCBiZSB0aGF0IHlldCwgdGhlIGNyaXRp
+Y2FsIHBhcnQgdGhhdCBjb25mdXNlcyBiaW9zIGhhcHBlbnMKaW4gc2Vjb25kIHN1c3BlbmQgdGlt
+ZSkKCk5lZWRsZXNzIHRvIHNheSB0aGF0IG5vdGhpbmcgdXNlZnVsIGFwcGVhcnMgaW4gdGhlIGxv
+Z3MsIGFuZCBldmVyeXRoaW5nCnNlZW1zIHRvIHdvcmsgZmluZSBmb2xsb3dpbmcgZWFjaCBzdWNj
+ZXNzZnVsIHJlc3VtZSAoYm90aCBkaXNrIGFuZCByYW0pLgoKc28gSSBoYXZlIGEgcXVlc3Rpb24s
+IGRvIHlvdSBoYXZlIGEgZ2l0IGJyYW5jaCB0byBwdWxsIHRoYXQgaW5jbHVkZXMgYWxsCnBhdGNo
+ZXMgbGlrZSB0aGlzIHRvIHRlc3QsIHNvIEkgYnVpbGQgaXQgd2Vla2x5LCBhbmQgd2hvIGtub3dz
+LCBtYXliZQpzb21ldGhpbmcgbGlrZSBhYm92ZSB3aWxsIGZpeCBpdC4KCkFueXdheSBJIHdvdWxk
+IGdsYWRseSB0ZXN0IGFueSBwYXRjaCB0aGF0IHlvdSBzdXNwZWN0IG1pZ2h0IGJlIGludm9sdmVk
+CmhlcmUuCgoKQWxzbywgSSB0cmllZCB0byBkbyBhIEkvTyBwb3J0IGFuZCBQQ0kgY29uZmlnIGR1
+bXAgYmVmb3JlIGFuZCBhZnRlciBhCnJlc3VtZSwgYWthIGluICdhcm1lZCcgYW5kICd1bmFybWVk
+JyBzdGF0ZS4KCldoaWxlIHRoZXJlIHdlcmUgbWFueSBJL08gcG9ydCByZWdpc3RlcnMgY2hhbmdl
+cywgYW5kIEkgeWV0IHRvIHByb2Nlc3MKaXQgYml0IGFmdGVyIGJpdCAoYW5kIHVuZm9ydHVuYXRl
+bHkgdGhlcmUgYXJlIHBsZW50eSBvZiB1bmRvY3VtZW50ZWQKc3R1ZmYpLCBJIG5vdGljZWQgYSBt
+ZWFuaW5nZnVsIGNoYW5nZSBiZXR3ZWVuIGJhZCBhbmQgZ29vZCBzdGF0ZToKCgo+RnJvbSBJQ0g4
+IG1hbnVhbDoKCiJQSVJRW25dX1JPVVTigJRQSVJRW0EsQixDLERdIFJvdXRpbmcgQ29udHJvbCBS
+ZWdpc3RlcgoKYW5kCgpQSVJRW25dX1JPVVTigJRQSVJRW0UsRixHLEhdCgpJbnRlcnJ1cHQgUm91
+dGluZyBFbmFibGUgKElSUUVOKSDigJQgUi9XLgowID0gVGhlIGNvcnJlc3BvbmRpbmcgUElSUSBp
+cyByb3V0ZWQgdG8gb25lIG9mIHRoZSBJU0EtY29tcGF0aWJsZQppbnRlcnJ1cHRzCiAgICAgIHNw
+ZWNpZmllZCBpbiBiaXRzWzM6MF0uCjEgPSBUaGUgUElSUSBpcyBub3Qgcm91dGVkIHRvIHRoZSA4
+MjU5LgoKTk9URTogQklPUyBtdXN0IHByb2dyYW0gdGhpcyBiaXQgdG8gMCBkdXJpbmcgUE9TVCBm
+b3IgYW55IG9mIHRoZSBQSVJRcwp0aGF0IGFyZSBiZWluZyB1c2VkLiBUaGUgdmFsdWUgb2YgdGhp
+cyBiaXQgbWF5IHN1YnNlcXVlbnRseSBiZSBjaGFuZ2VkCmJ5IHRoZSBPUyB3aGVuIHNldHRpbmcg
+dXAgZm9yIEkvTyBBUElDIGludGVycnVwdCBkZWxpdmVyeSBtb2RlLiIKCgpiaXQgIzcgb2YgYWxs
+IHRob3NlIHJlZ3MgaXMgJzEnIGluIGdvb2Qgc3RhdGUsIGFuZCAnMCcgaW4gYmFkIHN0YXRlLgoK
+SSB0cmllZCB0byBjaGFuZ2UgaXQgYmFjaywgYnV0IHRoaXMgZGlkbid0IGhlbHAsIHNvIEkgcG9z
+dCB0aGlzIGp1c3QgaW4KY2FzZSwgSSBkb24ndCB0aGluayBpdCBpcyB1c2VmdWwuCgoKQmVzdCBy
+ZWdhcmRzLAoJTWF4aW0gTGV2aXRza3kKCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1wbQ==
