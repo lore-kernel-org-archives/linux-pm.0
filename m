@@ -1,13 +1,13 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
-Date: Tue, 30 Dec 2008 13:10:32 +0000
-Message-ID: <495A1DC8.1050609__576.444835360412$1230642790$gmane$org@tuffmail.co.uk>
-References: <4959FD3F.1060306@tuffmail.co.uk>
+Date: Tue, 30 Dec 2008 10:45:30 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0812301043290.2292-100000__30846.3102359839$1230652119$gmane$org@iolanthe.rowland.org>
+References: <495A1DC8.1050609@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4959FD3F.1060306@tuffmail.co.uk>
+In-Reply-To: <495A1DC8.1050609@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,43 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-wireless@vger.kernel.org, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Jenkins wrote:
-> [lsusb: ID 0bda:8187 Realtek Semiconductor Corp]
->
->
-> I'd like to use this wireless adaptor I have, but the driver doesn't
-> play nice with suspend.  It hangs after switching to the console,
-> without printing anything.  This happens even if I haven't used the
-> adaptor (i.e. ifconfig shows 0 bytes rx/tx).  Interestingly the numlock
-> key on my USB keyboard still works.
->
-> I tried "no_console_suspend nmi_watchdog=1", but it didn't show any more
-> output.  (I waited 3 minutes for the watchdog to trigger).
->
-> However, I can insert panic() calls, and see whether I hit the hang
-> first, or go into a panic with flashing keyboard LEDs.  I used this to
-> confirm that the hang happens inside the rtl8187_disconnect() function.
->
-> There's a good chance I can track this down myself, using panic()
-> again.  Before I start, does anyone have an idea what might be happening?
->   
-Ok, I think I got it.
+On Tue, 30 Dec 2008, Alan Jenkins wrote:
 
-The hang is in ieee80211_unregister_hw(), on this line:
+> Ok, I think I got it.
+> 
+> The hang is in ieee80211_unregister_hw(), on this line:
+> 
+> destroy_workqueue(local->hw.workqueue);
+> 
+> 
+> local->hw.workqueue is created using create_freezeable_workqueue().  So
+> presumably destroy_workqueue() deadlocks because the workqueue has
+> already been frozen.
+> 
+> Is it possible to fix this without suspend support in mac80211?  If not,
+> I vote we change rtl8187 (and zd_usb) to prevent suspend.  I.e. set USB
+> suspend callbacks which return an error.
 
-destroy_workqueue(local->hw.workqueue);
+It certainly should be possible to fix this.  For instance, why 
+unregister anything during suspend?  If ieee80211_unregister_hw() 
+weren't called then this problem would go away, right?
 
-
-local->hw.workqueue is created using create_freezeable_workqueue().  So
-presumably destroy_workqueue() deadlocks because the workqueue has
-already been frozen.
-
-Is it possible to fix this without suspend support in mac80211?  If not,
-I vote we change rtl8187 (and zd_usb) to prevent suspend.  I.e. set USB
-suspend callbacks which return an error.
-
-Thanks
-Alan
+Alan Stern
