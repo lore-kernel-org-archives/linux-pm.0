@@ -1,15 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] ACPI: Do not modify SCI_EN directly
-Date: Wed, 31 Dec 2008 00:33:02 +0200
-Message-ID: <1230676382.4958.2.camel__8134.24928715012$1230676543$gmane$org@maxim-laptop>
-References: <200812291919.07663.rjw@sisk.pl>
-	<1230585366.4667.26.camel@maxim-laptop>
-	<200812302259.14866.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/10] PCI PM: Make new suspend-resume
+	callbacks carry out core operations
+Date: Tue, 30 Dec 2008 23:33:44 +0100
+Message-ID: <200812302333.45560.rjw__29668.0601816208$1230677547$gmane$org@sisk.pl>
+References: <200812190049.34343.rjw@sisk.pl> <200812281607.28007.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812302259.14866.rjw@sisk.pl>
+In-Reply-To: <200812281607.28007.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,120 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2008-12-30 at 22:59 +0100, Rafael J. Wysocki wrote:
-> On Monday 29 December 2008, Maxim Levitsky wrote:
-> > On Mon, 2008-12-29 at 19:19 +0100, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > According to the ACPI specification the SCI_EN flag is controlled by
-> > > the hardware, which sets this flag to inform the kernel that ACPI is
-> > > enabled.  For this reason, we shouldn't try to modify SCI_EN
-> > > directly.  Also, we don't need to do it in irqrouter_resume(), since
-> > > lower-level resume code takes care of enabling ACPI in case it hasn't
-> > > been enabled by the BIOS before passing control to the kernel (which
-> > > by the way is against the ACPI specification).
+On Sunday 28 December 2008, Rafael J. Wysocki wrote:
+> On Friday 19 December 2008, Rafael J. Wysocki wrote:
+> > Hi Len,
 > > 
+> > The patch below adds the callbacks that save/restore the standard PCI config
+> > registers, change the power state of the device etc. to the new suspend-resume
+> > callbacks (which are not yet used by device drivers), so that the drivers don't
+> > have to worry about these operations.
 > > 
-> > Hi, 
-> 
-> Hi,
-> 
-> > I am an unfortunate owner of an acer notebook ( aspire 5720 if this
-> > matters) and it doesn't come back after second suspend, subsequently  I
-> > figured out that bios doesn't pass control to linux at all, after second
-> > resume, and moreover, a suspend to disk , 'fixes' this and enables me to
-> > do another suspend/resume cycle. This is a poor man workaround I use
-> > now.
-> 
-> I suspect there may be a problem with interrupts handling on your system.
-> 
-> There is http://bugzilla.kernel.org/show_bug.cgi?id=11698 describing a very
-> similar (if not the same) issue.  Please attach a boot log and the contents
-> of /proc/interrupts to that bug.
-> 
-> > I already told about this here, and many peoples from here (including
-> > you) tried to help me, but unfortunately this is very weird issue, and
-> > nether me nor you can do much about, it is all about guesswork,
-> > something, at least something is 'armed' on resume, so it confuses bios
-> > then (it could be that yet, the critical part that confuses bios happens
-> > in second suspend time)
+> > The saving and restoring of the standard PCI config registers is done with
+> > interrupts off, the other things are done with interrupts enabled.
 > > 
-> > Needless to say that nothing useful appears in the logs, and everything
-> > seems to work fine following each successful resume (both disk and ram).
-> > 
-> > so I have a question, do you have a git branch to pull that includes all
-> > patches like this to test, so I build it weekly, and who knows, maybe
-> > something like above will fix it.
+> > The patch should apply to the current linux-next tree.
 > 
-> Unfortunately, I don't.  If I have any patches that can possibly fix the
-> problem, I'll let you know.
->  
-> > Anyway I would gladly test any patch that you suspect might be involved
-> > here.
-> > 
-> > Also, I tried to do a I/O port and PCI config dump before and after a
-> > resume, aka in 'armed' and 'unarmed' state.
-> > 
-> > While there were many I/O port registers changes, and I yet to process
-> > it bit after bit (and unfortunately there are plenty of undocumented
-> > stuff), I noticed a meaningful change between bad and good state:
+> Below is a new version of the patch.
 > 
-> Please check if the appended patch from Len changes anything.
+> Now, the standard config spaces of devices are restored with interrupts
+> disabled, but only if the bridges the devices are behind are in D0.  Otherwise,
+> the operation is attempted again with interrupts enabled (presumably the
+> bridge would be put into D0 before that happens).
 > 
-> Thanks,
-> Rafael
+> Also, pci_disable_device() is not called during resume and
+> pci_reenable_device() is used to enable the devices that were enabled during
+> suspend.  This allows us to automatically call pci_set_master() for devices
+> that were bus masters before suspend.  Additionally, the pci_reenable_device()
+> may be overriden by the driver, by disabling the device during suspend.
 > 
-> ---
-> Author: Len Brown <len.brown@intel.com>
-> Date:   Sat Dec 20 12:50:23 2008 +0100
+> Finally, bridges are handled a bit differently from the regular devices (they
+> are not put into low power states during suspend and pci_enable_wake() is
+> not called for them.
 > 
->     ACPI: PCI Interrupt Links -- disable when unused
->     
->     We start the system off with disabled links.
->     Here we enable the reference counting
->     on the links so that when drivers free IRQs
->     the links can return to the disabled state.
->     
->     Drivers free their IRQ and reference on a link
->     when they unload.  They may also do so upon
->     suspend.  However, if they don't, irqrouter_resume()
->     will still resume any links that were
->     not disabled before suspend.
->     
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-> index 595b131..0f7722d 100644
-> --- a/drivers/acpi/pci_link.c
-> +++ b/drivers/acpi/pci_link.c
-> @@ -693,18 +693,7 @@ int acpi_pci_link_free_irq(acpi_handle handle)
->  		printk(KERN_ERR PREFIX "Link isn't initialized\n");
->  		return -1;
->  	}
-> -#ifdef	FUTURE_USE
-> -	/*
-> -	 * The Link reference count allows us to _DISable an unused link
-> -	 * and suspend time, and set it again  on resume.
-> -	 * However, 2.6.12 still has irq_router.resume
-> -	 * which blindly restores the link state.
-> -	 * So we disable the reference count method
-> -	 * to prevent duplicate acpi_pci_link_set()
-> -	 * which would harm some systems
-> -	 */
->  	link->refcnt--;
-> -#endif
->  	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
->  			  "Link %s is dereferenced %d\n",
->  			  acpi_device_bid(link->device), link->refcnt));
-> 
+> The patch should apply on top of linux-next with the patch fixing
+> pci_update_current_state() I sent yesterday
+> (http://marc.info/?l=linux-kernel&m=123039199607159&w=4).
 
-As usual, same hang after resume.
-Just to note, this isn't a regression, it even appears in 2.6.19.
+In the meantime I realized that the pcibios_enable_device() called from
+pci_reenable_device() in the resume code path should be balanced by a "suspend"
+call of the same kind.
 
+Also, I decided to split the patch into a series of smaller patches with their
+own changelogs to make it easier to follow the changes.  Perhaps this way
+it will be more clear what I'm after.
 
-Best regards,
-	Maxim Levitsky
+The patches should apply to linux-next with the patch from
+http://marc.info/?l=linux-kernel&m=123039199607159&w=4 on top.
+
+Comments welcome.
+
+Happy New Year to everyone,
+Rafael
