@@ -1,14 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
-Date: Wed, 31 Dec 2008 18:16:34 +0100
-Message-ID: <200812311816.36670.oliver__34207.9911999919$1230743805$gmane$org@neukum.org>
-References: <348894.23448.qm@web23108.mail.ird.yahoo.com>
-	<495B82CB.6050205@tuffmail.co.uk>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/2] PCI PM: Split PCI Express port
+	suspend-resume
+Date: Wed, 31 Dec 2008 12:08:40 -0800
+Message-ID: <200812311208.41424.jbarnes@virtuousgeek.org>
+References: <200812271627.32781.rjw@sisk.pl> <200812271628.58748.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <495B82CB.6050205@tuffmail.co.uk>
+In-Reply-To: <200812271628.58748.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,16 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Bob Copeland <me@bobcopeland.com>, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, htl10@users.sourceforge.net, linux-pm@lists.linux-foundation.org, Larry Finger <Larry.Finger@lwfinger.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-QW0gTWl0dHdvY2gsIDMxLiBEZXplbWJlciAyMDA4IDE1OjMzOjQ3IHNjaHJpZWIgQWxhbiBKZW5r
-aW5zOgo+IFRoYW5rcyBmb3IgdGhlIHBhdGNoLiDCoEkgdGVzdGVkIFNURCB0b28sIGFuZCBpdCBk
-b2Vzbid0IHNlZW0gdG8gaGFuZwo+IGFueW1vcmUuIMKgSSBldmVuIHRlc3RlZCByZW1vdmluZyB0
-aGUgYWRhcHRvciB3aGlsZSB0aGUgc3lzdGVtIHdhcwo+IGhpYmVybmF0ZWQuIMKgSG93ZXZlciwg
-YWZ0ZXIgcmVzdW1lIHRoZSBpbnRlcmZhY2UgaXMgdXNlbGVzcy4KCkZvciBTVEQgeW91IG5lZWQg
-dG8gaW1wbGVtZW50IHJlc2V0X3Jlc3VtZSgpCgoJUmVnYXJkcwoJCU9saXZlcgoKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
-aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Saturday, December 27, 2008 7:28 am Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Suspend-resume of PCI Express ports has recently been moved into
+> _suspend_late() and _resume_early() callbacks, but some functions
+> executed from there should not be called with interrupts disabled,
+> eg. pci_enable_device().  For this reason, split the suspend-resume
+> of PCI Express ports into parts to be executed with interrupts
+> disabled and with interrupts enabled.
+
+Applied both of these, thanks.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
