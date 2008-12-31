@@ -1,15 +1,16 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/2] PCI PM: Split PCI Express port
-	suspend-resume
-Date: Wed, 31 Dec 2008 12:08:40 -0800
-Message-ID: <200812311208.41424.jbarnes@virtuousgeek.org>
-References: <200812271627.32781.rjw@sisk.pl> <200812271628.58748.rjw@sisk.pl>
+From: Bob Copeland <me@bobcopeland.com>
+Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
+Date: Wed, 31 Dec 2008 18:26:09 -0500
+Message-ID: <20081231232609.GA27391__967.919376171444$1230766256$gmane$org@hash.localnet>
+References: <348894.23448.qm@web23108.mail.ird.yahoo.com>
+	<495B82CB.6050205@tuffmail.co.uk>
+	<495BC8F9.4040203@lwfinger.net> <495BF975.7030603@lwfinger.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200812271628.58748.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <495BF975.7030603@lwfinger.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, htl10@users.sourceforge.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, December 27, 2008 7:28 am Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Suspend-resume of PCI Express ports has recently been moved into
-> _suspend_late() and _resume_early() callbacks, but some functions
-> executed from there should not be called with interrupts disabled,
-> eg. pci_enable_device().  For this reason, split the suspend-resume
-> of PCI Express ports into parts to be executed with interrupts
-> disabled and with interrupts enabled.
+On Wed, Dec 31, 2008 at 05:00:05PM -0600, Larry Finger wrote:
+> +#ifdef CONFIG_PM
+> +
+> +static int rtl8187_suspend(struct usb_interface *intf, pm_message_t
+> state)
+> +{
+> +	struct ieee80211_hw *dev = usb_get_intfdata(intf);
+> +
+> +	rtl8187_stop(dev);
+> +
+> +	return 0;
+> +}
 
-Applied both of these, thanks.
+Won't this do the wrong thing if the interface is never brought up
+before you do suspend?  (And then you can add a flag etc. to handle
+that case, but that's exactly what my mac80211 patches aim to do.)
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Bob Copeland %% www.bobcopeland.com
