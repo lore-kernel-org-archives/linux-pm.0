@@ -1,8 +1,8 @@
 From: Dmitry Nezhevenko <dion@inhex.net>
 Subject: Re: [TuxOnIce-users] Shutdown troubles (probably about
 	nvidia)
-Date: Wed, 31 Dec 2008 18:28:19 +0200
-Message-ID: <20081231162819.GA8802__39764.6913458177$1230741206$gmane$org@laptop.local>
+Date: Wed, 31 Dec 2008 16:17:04 +0200
+Message-ID: <20081231141704.GA7094__17648.5206270174$1230741863$gmane$org@laptop.local>
 References: <20081231084723.GA13285@laptop.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
