@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] PCI PCIe portdrv: Rearrange code so that
-	related things are together
-Date: Thu, 1 Jan 2009 19:52:12 +0100
-Message-ID: <200901011952.12363.rjw__38137.6362442554$1230836325$gmane$org@sisk.pl>
-References: <200901011947.19872.rjw@sisk.pl>
+Subject: [RFC][PATCH 5/10] PCI PM: Avoid touching devices behind
+	bridges in unknown state (rev. 2)
+Date: Thu, 1 Jan 2009 22:09:46 +0100
+Message-ID: <200901012209.47598.rjw__36807.1068115116$1230844372$gmane$org@sisk.pl>
+References: <200812190049.34343.rjw@sisk.pl> <200812302333.45560.rjw@sisk.pl>
+	<200812302341.12959.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901011947.19872.rjw@sisk.pl>
+In-Reply-To: <200812302341.12959.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,158 +20,328 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday 30 December 2008, Rafael J. Wysocki wrote:
+> 
+> It generally is better to avoid accessing devices behind bridges that
+> may not be in the D0 power state, because in that case the bridges'
+> secondary buses may not be accessible.  For this reason, during the
+> early phase of resume (ie. with interrupts disabled), before
+> restoring the standard config registers of a device, check the power
+> state of the bridge the device is behind and postpone the restoration
+> of the device's config space, as well as any other operations that
+> would involve accessing the device, if that state is not D0.
+> 
+> In such cases the restoration of the device's config space will be
+> retried during the "normal" phase of resume (ie. with interrupts
+> enabled), so that the bridge can be put into D0 before that happens.
+> 
+> Also, save standard configuration registers of PCI devices during the
+> "normal" phase of suspend (ie. with interrupts enabled), so that the
+> bridges the devices are behind can be put into low power states (we
+> don't put bridges into low power states at the moment, but we may
+> want to do it in the future and it seems reasonable to design for
+> that).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rearrange code in drivers/pci/pcie/portdrv_bus.c and
-drivers/pci/pcie/portdrv_core.c so that related functions and data
-structures are closer together.
+I found a small mistake in this patch.  Namely, the code in
+pci_pm_default_resume doesn't follow the comment and the config spaces of
+devices without drivers are restored twice in a row during resume (once with
+interrupts enabled and once with interrupts disabled.  That shouldn't hurt, but
+is not correct nevertheless.
+
+Corrected patch follows.
+
+Thanks,
+Rafael
+
+---
+Subject: PCI PM: Avoid touching devices behind bridges in unknown state (rev. 2)
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+It generally is better to avoid accessing devices behind bridges that
+may not be in the D0 power state, because in that case the bridges'
+secondary buses may not be accessible.  For this reason, during the
+early phase of resume (ie. with interrupts disabled), before
+restoring the standard config registers of a device, check the power
+state of the bridge the device is behind and postpone the restoration
+of the device's config space, as well as any other operations that
+would involve accessing the device, if that state is not D0.
+
+In such cases the restoration of the device's config space will be
+retried during the "normal" phase of resume (ie. with interrupts
+enabled), so that the bridge can be put into D0 before that happens.
+
+Also, save standard configuration registers of PCI devices during the
+"normal" phase of suspend (ie. with interrupts enabled), so that the
+bridges the devices are behind can be put into low power states (we
+don't put bridges into low power states at the moment, but we may
+want to do it in the future and it seems reasonable to design for
+that).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pcie/portdrv_bus.c  |   10 ++++
- drivers/pci/pcie/portdrv_core.c |   90 +++++++++++++++++-----------------------
- 2 files changed, 50 insertions(+), 50 deletions(-)
+ drivers/pci/pci-driver.c |  109 +++++++++++++++++++++++++++++++----------------
+ drivers/pci/pci.c        |    2 
+ drivers/pci/pci.h        |    1 
+ 3 files changed, 74 insertions(+), 38 deletions(-)
 
-Index: linux-2.6/drivers/pci/pcie/portdrv_bus.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_bus.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_bus.c
-@@ -44,3 +44,13 @@ static int pcie_port_bus_match(struct de
- 
- 	return 1;
- }
-+
-+int pcie_port_bus_register(void)
-+{
-+	return bus_register(&pcie_port_bus_type);
-+}
-+
-+void pcie_port_bus_unregister(void)
-+{
-+	bus_unregister(&pcie_port_bus_type);
-+}
-Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -526,7 +526,7 @@ pci_raw_set_power_state(struct pci_dev *
+  * @dev: PCI device to handle.
+  * @state: State to cache in case the device doesn't have the PM capability
+  */
+-static void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
++void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+ {
+ 	if (dev->pm_cap) {
+ 		u16 pmcsr;
+Index: linux-2.6/drivers/pci/pci.h
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -19,50 +19,6 @@
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -40,6 +40,7 @@ struct pci_platform_pm_ops {
+ };
  
- extern int pcie_mch_quirk;	/* MSI-quirk Indicator */
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
++extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -302,21 +302,10 @@ static void pci_device_shutdown(struct d
  
--static int pcie_port_probe_service(struct device *dev)
+ /*
+  * Default "suspend" method for devices that have no driver provided suspend,
+- * or not even a driver at all (first part).
+- */
+-static void pci_default_pm_suspend_early(struct pci_dev *pci_dev)
 -{
--	struct pcie_device *pciedev;
--	struct pcie_port_service_driver *driver;
--	int status;
--
--	if (!dev || !dev->driver)
--		return -ENODEV;
--
-- 	driver = to_service_driver(dev->driver);
--	if (!driver || !driver->probe)
--		return -ENODEV;
--
--	pciedev = to_pcie_device(dev);
--	status = driver->probe(pciedev, driver->id_table);
--	if (!status) {
--		dev_printk(KERN_DEBUG, dev, "service driver %s loaded\n",
--			driver->name);
--		get_device(dev);
--	}
--	return status;
+-	/* If device is enabled at this point, disable it */
+-	pci_disable_enabled_device(pci_dev);
 -}
 -
--static int pcie_port_remove_service(struct device *dev)
+-/*
+- * Default "suspend" method for devices that have no driver provided suspend,
+  * or not even a driver at all (second part).
+  */
+ static void pci_default_pm_suspend_late(struct pci_dev *pci_dev)
+ {
+-	pci_save_state(pci_dev);
+ 	/*
+ 	 * mark its power state as "unknown", since we don't know if
+ 	 * e.g. the BIOS will change its device state when we suspend.
+@@ -327,16 +316,6 @@ static void pci_default_pm_suspend_late(
+ 
+ /*
+  * Default "resume" method for devices that have no driver provided resume,
+- * or not even a driver at all (first part).
+- */
+-static void pci_default_pm_resume_early(struct pci_dev *pci_dev)
 -{
--	struct pcie_device *pciedev;
--	struct pcie_port_service_driver *driver;
--
--	if (!dev || !dev->driver)
--		return 0;
--
--	pciedev = to_pcie_device(dev);
-- 	driver = to_service_driver(dev->driver);
--	if (driver && driver->remove) { 
--		dev_printk(KERN_DEBUG, dev, "unloading service driver %s\n",
--			driver->name);
--		driver->remove(pciedev);
--		put_device(dev);
--	}
--	return 0;
+-	/* restore the PCI config space */
+-	pci_restore_state(pci_dev);
 -}
 -
--static void pcie_port_shutdown_service(struct device *dev) {}
+-/*
+- * Default "resume" method for devices that have no driver provided resume,
+  * or not even a driver at all (second part).
+  */
+ static int pci_default_pm_resume_late(struct pci_dev *pci_dev)
+@@ -365,9 +344,10 @@ static int pci_legacy_suspend(struct dev
+ 		i = drv->suspend(pci_dev, state);
+ 		suspend_report_result(drv->suspend, i);
+ 	} else {
++		pci_save_state(pci_dev);
+ 		/*
+-		 * For compatibility with existing code with legacy PM support
+-		 * don't call pci_default_pm_suspend_early() here.
++		 * This is for compatibility with existing code with legacy PM
++		 * support.
+ 		 */
+ 		pci_default_pm_suspend_late(pci_dev);
+ 	}
+@@ -396,7 +376,8 @@ static int pci_legacy_resume(struct devi
+ 	if (drv && drv->resume) {
+ 		error = drv->resume(pci_dev);
+ 	} else {
+-		pci_default_pm_resume_early(pci_dev);
++		/* restore the PCI config space */
++		pci_restore_state(pci_dev);
+ 		error = pci_default_pm_resume_late(pci_dev);
+ 	}
+ 	return error;
+@@ -415,22 +396,72 @@ static int pci_legacy_resume_early(struc
+ 
+ /* Auxiliary functions used by the new power management framework */
+ 
++static int pci_restore_standard_config(struct pci_dev *pci_dev)
++{
++	struct pci_dev *parent = pci_dev->bus->self;
++	int error = 0;
++
++	/* Check if the device's bus is operational */
++	if (!parent || parent->current_state == PCI_D0) {
++		pci_restore_state(pci_dev);
++		pci_update_current_state(pci_dev, PCI_D0);
++	} else {
++		dev_warn(&pci_dev->dev, "unable to restore config, "
++			"bridge %s in low power state D%d\n", pci_name(parent),
++			parent->current_state);
++		pci_dev->current_state = PCI_UNKNOWN;
++		error = -EAGAIN;
++	}
++
++	return error;
++}
++
+ static bool pci_is_bridge(struct pci_dev *pci_dev)
+ {
+ 	return !!(pci_dev->subordinate);
+ }
+ 
++static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
++{
++	if (pci_restore_standard_config(pci_dev))
++		pci_fixup_device(pci_fixup_resume_early, pci_dev);
++}
++
+ static int pci_pm_default_resume(struct pci_dev *pci_dev)
+ {
++	/*
++	 * pci_restore_standard_config() should have been called once already,
++	 * but it would have failed if the device's parent bridge had not been
++	 * in power state D0 at that time.  Check it and try again if necessary.
++	 */
++	if (pci_dev->current_state == PCI_UNKNOWN) {
++		int error = pci_restore_standard_config(pci_dev);
++		if (error)
++			return error;
++	}
++
++	pci_fixup_device(pci_fixup_resume, pci_dev);
++
+ 	if (!pci_is_bridge(pci_dev))
+ 		pci_enable_wake(pci_dev, PCI_D0, false);
+ 
+ 	return pci_default_pm_resume_late(pci_dev);
+ }
+ 
++static void pci_pm_default_suspend_generic(struct pci_dev *pci_dev)
++{
++	/* If device is enabled at this point, disable it */
++	pci_disable_enabled_device(pci_dev);
++	/*
++	 * Save state with interrupts enabled, because in principle the bus the
++	 * device is on may be put into a low power state after this code runs.
++	 */
++	pci_save_state(pci_dev);
++}
++
+ static void pci_pm_default_suspend(struct pci_dev *pci_dev)
+ {
+-	pci_default_pm_suspend_early(pci_dev);
++	pci_pm_default_suspend_generic(pci_dev);
+ 
+ 	if (!pci_is_bridge(pci_dev))
+ 		pci_prepare_to_sleep(pci_dev);
+@@ -515,12 +546,13 @@ static int pci_pm_resume(struct device *
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_fixup_device(pci_fixup_resume, pci_dev);
 -
- /**
-  * release_pcie_device - free PCI Express port service device structure
-  * @dev: Port service device to release
-@@ -418,16 +374,50 @@ void pcie_port_device_remove(struct pci_
- 		pci_disable_msi(dev);
- }
+ 	if (drv && drv->pm) {
++		pci_fixup_device(pci_fixup_resume, pci_dev);
++
+ 		if (drv->pm->resume)
+ 			error = drv->pm->resume(dev);
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
++		pci_fixup_device(pci_fixup_resume, pci_dev);
+ 		error = pci_legacy_resume(dev);
+ 	} else {
+ 		error = pci_pm_default_resume(pci_dev);
+@@ -535,15 +567,16 @@ static int pci_pm_resume_noirq(struct de
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
  
--int pcie_port_bus_register(void)
-+static int pcie_port_probe_service(struct device *dev)
- {
--	return bus_register(&pcie_port_bus_type);
-+	struct pcie_device *pciedev;
-+	struct pcie_port_service_driver *driver;
-+	int status;
+-	pci_fixup_device(pci_fixup_resume_early, to_pci_dev(dev));
+-
+ 	if (drv && drv->pm) {
++		pci_fixup_device(pci_fixup_resume_early, pci_dev);
 +
-+	if (!dev || !dev->driver)
-+		return -ENODEV;
-+
-+	driver = to_service_driver(dev->driver);
-+	if (!driver || !driver->probe)
-+		return -ENODEV;
-+
-+	pciedev = to_pcie_device(dev);
-+	status = driver->probe(pciedev, driver->id_table);
-+	if (!status) {
-+		dev_printk(KERN_DEBUG, dev, "service driver %s loaded\n",
-+			driver->name);
-+		get_device(dev);
-+	}
-+	return status;
- }
+ 		if (drv->pm->resume_noirq)
+ 			error = drv->pm->resume_noirq(dev);
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
++		pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ 		error = pci_legacy_resume_early(dev);
+ 	} else {
+-		pci_default_pm_resume_early(pci_dev);
++		pci_pm_default_resume_noirq(pci_dev);
+ 	}
  
--void pcie_port_bus_unregister(void)
-+static int pcie_port_remove_service(struct device *dev)
- {
--	bus_unregister(&pcie_port_bus_type);
-+	struct pcie_device *pciedev;
-+	struct pcie_port_service_driver *driver;
-+
-+	if (!dev || !dev->driver)
-+		return 0;
-+
-+	pciedev = to_pcie_device(dev);
-+	driver = to_service_driver(dev->driver);
-+	if (driver && driver->remove) {
-+		dev_printk(KERN_DEBUG, dev, "unloading service driver %s\n",
-+			driver->name);
-+		driver->remove(pciedev);
-+		put_device(dev);
-+	}
-+	return 0;
- }
+ 	return error;
+@@ -575,7 +608,7 @@ static int pci_pm_freeze(struct device *
+ 		error = pci_legacy_suspend(dev, PMSG_FREEZE);
+ 		pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 	} else {
+-		pci_default_pm_suspend_early(pci_dev);
++		pci_pm_default_suspend_generic(pci_dev);
+ 	}
  
-+static void pcie_port_shutdown_service(struct device *dev) {}
+ 	return error;
+@@ -633,7 +666,7 @@ static int pci_pm_thaw_noirq(struct devi
+ 		pci_fixup_device(pci_fixup_resume_early, to_pci_dev(dev));
+ 		error = pci_legacy_resume_early(dev);
+ 	} else {
+-		pci_default_pm_resume_early(pci_dev);
++		pci_update_current_state(pci_dev, PCI_D0);
+ 	}
+ 
+ 	return error;
+@@ -684,12 +717,13 @@ static int pci_pm_restore(struct device 
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_fixup_device(pci_fixup_resume, pci_dev);
+-
+ 	if (drv && drv->pm) {
++		pci_fixup_device(pci_fixup_resume, pci_dev);
 +
- int pcie_port_service_register(struct pcie_port_service_driver *new)
- {
- 	new->driver.name = (char *)new->name;
-@@ -439,9 +429,9 @@ int pcie_port_service_register(struct pc
- 	return driver_register(&new->driver);
- }
+ 		if (drv->pm->restore)
+ 			error = drv->pm->restore(dev);
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
++		pci_fixup_device(pci_fixup_resume, pci_dev);
+ 		error = pci_legacy_resume(dev);
+ 	} else {
+ 		error = pci_pm_default_resume(pci_dev);
+@@ -704,15 +738,16 @@ static int pci_pm_restore_noirq(struct d
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
  
--void pcie_port_service_unregister(struct pcie_port_service_driver *new)
-+void pcie_port_service_unregister(struct pcie_port_service_driver *drv)
- {
--	driver_unregister(&new->driver);
-+	driver_unregister(&drv->driver);
- }
+-	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+-
+ 	if (drv && drv->pm) {
++		pci_fixup_device(pci_fixup_resume_early, pci_dev);
++
+ 		if (drv->pm->restore_noirq)
+ 			error = drv->pm->restore_noirq(dev);
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
++		pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ 		error = pci_legacy_resume_early(dev);
+ 	} else {
+-		pci_default_pm_resume_early(pci_dev);
++		pci_pm_default_resume_noirq(pci_dev);
+ 	}
  
- EXPORT_SYMBOL(pcie_port_service_register);
+ 	return error;
