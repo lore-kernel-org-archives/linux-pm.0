@@ -1,14 +1,15 @@
-From: Hin-Tak Leung <htl10@users.sourceforge.net>
+From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
 Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
-Date: Thu, 1 Jan 2009 06:18:52 +0000 (GMT)
-Message-ID: <471208.74701.qm__34972.2775551074$1230910695$gmane$org@web23104.mail.ird.yahoo.com>
-References: <495B82CB.6050205@tuffmail.co.uk>
-Reply-To: htl10@users.sourceforge.net
+Date: Thu, 1 Jan 2009 14:40:31 +0100
+Message-ID: <69e28c910901010540r5e79431cjf6ad1a76f06ff0fd__29231.279428541$1230910704$gmane$org@mail.gmail.com>
+References: <471208.74701.qm@web23104.mail.ird.yahoo.com>
+	<495CC024.9020009@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <495B82CB.6050205@tuffmail.co.uk>
+In-Reply-To: <495CC024.9020009@tuffmail.co.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Bob Copeland <me@bobcopeland.com>, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, linux-pm@lists.linux-foundation.org, Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Bob Copeland <me@bobcopeland.com>, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, htl10@users.sourceforge.net, linux-pm@lists.linux-foundation.org, Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: linux-pm@vger.kernel.org
 
---- On Wed, 31/12/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+On Thu, Jan 1, 2009 at 2:07 PM, Alan Jenkins
+<alan-jenkins@tuffmail.co.uk> wrote:
+> Hin-Tak Leung wrote:
+>> --- On Wed, 31/12/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+>>
+>>
+>>> Thanks for the patch.  I tested STD too, and it doesn't
+>>> seem to hang
+>>> anymore.  I even tested removing the adaptor while the
+>>> system was
+>>> hibernated.  However, after resume the interface is
+>>> useless.
+>>>
+>>
+>> Wierd - do you have NetworkManager running?
+>>
+>
+> Yes, but it's not managing the wireless interface - I'm still using the
+> wired network.  When I tested, I didn't use the wireless interface at
+> all before I hibernated.
+>
+>> These days I leave NM running - besides the occasional /etc/rc.d/init.d/{wpa_supplicant/NetworkManager} stop/start to re-establish connectivity (seems to be some timing issue with dhcp taking too long and nm ifconfig up/down the device wrongly) - and *when STD/STR works*, NM usually just re-connect within a minute on resume/defrost.
+>>
+>> I don't have the choice of unhooking the device - integrated to laptop. BTW, is it a B device or a non-B device that didn't work?
+>>
+>
+> I think it's a B device.
+>
+> phy0: hwaddr 00:1b:2f:76:02:bc, RTL8187vB (default) V1 + rtl8225z2
+>
+>
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-> Thanks for the patch.  I tested STD too, and it doesn't
-> seem to hang
-> anymore.  I even tested removing the adaptor while the
-> system was
-> hibernated.  However, after resume the interface is
-> useless.
+That is an RTL8187L, rev. B. It is not an RTL8187B.
 
-Wierd - do you have NetworkManager running?
-
-These days I leave NM running - besides the occasional /etc/rc.d/init.d/{wpa_supplicant/NetworkManager} stop/start to re-establish connectivity (seems to be some timing issue with dhcp taking too long and nm ifconfig up/down the device wrongly) - and *when STD/STR works*, NM usually just re-connect within a minute on resume/defrost.
-
-I don't have the choice of unhooking the device - integrated to laptop. BTW, is it a B device or a non-B device that didn't work?
-
-Hin-Tak 
-
-
-      
+-- 
+Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
