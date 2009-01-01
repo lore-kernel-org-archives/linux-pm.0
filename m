@@ -1,13 +1,13 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
-Date: Thu, 01 Jan 2009 13:07:48 +0000
-Message-ID: <495CC024.9020009__40742.5952530049$1230815501$gmane$org@tuffmail.co.uk>
-References: <471208.74701.qm@web23104.mail.ird.yahoo.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/4] PCI PCIe portdrv: Add kerneldoc comments and
+	fix suspend-resume bug
+Date: Thu, 1 Jan 2009 19:47:19 +0100
+Message-ID: <200901011947.19872.rjw__19938.9571942904$1230836248$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <471208.74701.qm@web23104.mail.ird.yahoo.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +17,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: htl10@users.sourceforge.net
-Cc: Bob Copeland <me@bobcopeland.com>, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, linux-pm@lists.linux-foundation.org, Larry Finger <Larry.Finger@lwfinger.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hin-Tak Leung wrote:
-> --- On Wed, 31/12/08, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
->
->   
->> Thanks for the patch.  I tested STD too, and it doesn't
->> seem to hang
->> anymore.  I even tested removing the adaptor while the
->> system was
->> hibernated.  However, after resume the interface is
->> useless.
->>     
->
-> Wierd - do you have NetworkManager running?
->   
+Hi,
 
-Yes, but it's not managing the wireless interface - I'm still using the
-wired network.  When I tested, I didn't use the wireless interface at
-all before I hibernated.
+The patches in this series add kerneldoc comments to some functions in
+drivers/pci/pcie/portdrv_* and fix a suspend-resume problem with port services.
 
-> These days I leave NM running - besides the occasional /etc/rc.d/init.d/{wpa_supplicant/NetworkManager} stop/start to re-establish connectivity (seems to be some timing issue with dhcp taking too long and nm ifconfig up/down the device wrongly) - and *when STD/STR works*, NM usually just re-connect within a minute on resume/defrost.
->
-> I don't have the choice of unhooking the device - integrated to laptop. BTW, is it a B device or a non-B device that didn't work?
->   
+Also, the code is rearranged a bit so that related functions are closer
+together.
 
-I think it's a B device.
-
-phy0: hwaddr 00:1b:2f:76:02:bc, RTL8187vB (default) V1 + rtl8225z2
-
-
-Alan
+Thanks,
+Rafael
