@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/4] PCI PCIe portdrv: Add kerneldoc comments to
-	remining core funtions
-Date: Thu, 1 Jan 2009 19:53:32 +0100
-Message-ID: <200901011953.32583.rjw__9754.87232576615$1230836273$gmane$org@sisk.pl>
+Subject: [PATCH 2/4] PCI PCIe portdrv: Fix suspend and resume of
+	PCI Express port services
+Date: Thu, 1 Jan 2009 19:51:15 +0100
+Message-ID: <200901011951.15391.rjw__46512.0675544769$1230836294$gmane$org@sisk.pl>
 References: <200901011947.19872.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,79 +24,128 @@ Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundat
 List-Id: linux-pm@vger.kernel.org
 
 
-Add kerneldoc comments to the reamining functions in
-drivers/pci/pcie/portdrv_core.c .
+There is a problem with the suspend and resume of PCI Express port
+service devices that the ->suspend() and ->resume() routines of each
+service device are called twice in each suspend-resume cycle, which
+is obviously wrong.
+
+The scenario is that first, the PCI Express port driver calls
+suspend and resume routines of each port service driver from its
+pcie_portdrv_suspend() and pcie_portdrv_resume() callbacks,
+respectively (which is correct), and second, the pcie_port_bus_type
+driver calls them from its ->suspend() and ->resume() callbacks
+(which is not correct, because it doesn't happen at the right time).
+
+The solution is to remove the ->suspend() and ->resume() callbacks
+from pcie_port_bus_type and the associated functions.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pcie/portdrv_core.c |   34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/pci/pcie/portdrv_bus.c  |   34 ----------------------------------
+ drivers/pci/pcie/portdrv_core.c |   33 ---------------------------------
+ 2 files changed, 67 deletions(-)
 
+Index: linux-2.6/drivers/pci/pcie/portdrv_bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_bus.c
++++ linux-2.6/drivers/pci/pcie/portdrv_bus.c
+@@ -16,14 +16,10 @@
+ #include "portdrv.h"
+ 
+ static int pcie_port_bus_match(struct device *dev, struct device_driver *drv);
+-static int pcie_port_bus_suspend(struct device *dev, pm_message_t state);
+-static int pcie_port_bus_resume(struct device *dev);
+ 
+ struct bus_type pcie_port_bus_type = {
+ 	.name 		= "pci_express",
+ 	.match 		= pcie_port_bus_match,
+-	.suspend	= pcie_port_bus_suspend,
+-	.resume		= pcie_port_bus_resume, 
+ };
+ EXPORT_SYMBOL_GPL(pcie_port_bus_type);
+ 
+@@ -48,33 +44,3 @@ static int pcie_port_bus_match(struct de
+ 
+ 	return 1;
+ }
+-
+-static int pcie_port_bus_suspend(struct device *dev, pm_message_t state)
+-{
+-	struct pcie_device *pciedev;
+-	struct pcie_port_service_driver *driver;
+-
+-	if (!dev || !dev->driver)
+-		return 0;
+-
+-	pciedev = to_pcie_device(dev);
+- 	driver = to_service_driver(dev->driver);
+-	if (driver && driver->suspend)
+-		driver->suspend(pciedev, state);
+-	return 0;
+-}
+-
+-static int pcie_port_bus_resume(struct device *dev)
+-{
+-	struct pcie_device *pciedev;
+-	struct pcie_port_service_driver *driver;
+-
+-	if (!dev || !dev->driver)
+-		return 0;
+-
+-	pciedev = to_pcie_device(dev);
+- 	driver = to_service_driver(dev->driver);
+-	if (driver && driver->resume)
+-		driver->resume(pciedev);
+-	return 0;
+-}
 Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
 +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -374,6 +374,14 @@ void pcie_port_device_remove(struct pci_
- 		pci_disable_msi(dev);
- }
+@@ -63,37 +63,6 @@ static int pcie_port_remove_service(stru
  
-+/**
-+ * pcie_port_probe_service - probe driver for given PCI Express port service
-+ * @dev: PCI Express port service device to probe against
-+ *
-+ * If PCI Express port service driver is registered with
-+ * pcie_port_service_register(), this function will be called by the driver core
-+ * whenever match is found between the driver and a port service device.
-+ */
- static int pcie_port_probe_service(struct device *dev)
- {
- 	struct pcie_device *pciedev;
-@@ -397,6 +405,15 @@ static int pcie_port_probe_service(struc
- 	return status;
- }
- 
-+/**
-+ * pcie_port_remove_service - detach driver from given PCI Express port service
-+ * @dev: PCI Express port service device to handle
-+ *
-+ * If PCI Express port service driver is registered with
-+ * pcie_port_service_register(), this function will be called by the driver core
-+ * when device_unregister() is called for the port service device associated
-+ * with the driver.
-+ */
- static int pcie_port_remove_service(struct device *dev)
- {
- 	struct pcie_device *pciedev;
-@@ -416,8 +433,21 @@ static int pcie_port_remove_service(stru
- 	return 0;
- }
- 
-+/**
-+ * pcie_port_shutdown_service - shut down given PCI Express port service
-+ * @dev: PCI Express port service device to handle
-+ *
-+ * If PCI Express port service driver is registered with
-+ * pcie_port_service_register(), this function will be called by the driver core
-+ * when device_shutdown() is called for the port service device associated
-+ * with the driver.
-+ */
  static void pcie_port_shutdown_service(struct device *dev) {}
  
-+/**
-+ * pcie_port_service_register - register PCI Express port service driver
-+ * @new: PCI Express port service driver to register
-+ */
- int pcie_port_service_register(struct pcie_port_service_driver *new)
- {
- 	new->driver.name = (char *)new->name;
-@@ -429,6 +459,10 @@ int pcie_port_service_register(struct pc
+-static int pcie_port_suspend_service(struct device *dev, pm_message_t state)
+-{
+-	struct pcie_device *pciedev;
+-	struct pcie_port_service_driver *driver;
+-
+-	if (!dev || !dev->driver)
+-		return 0;
+-
+-	pciedev = to_pcie_device(dev);
+- 	driver = to_service_driver(dev->driver);
+-	if (driver && driver->suspend)
+-		driver->suspend(pciedev, state);
+-	return 0;
+-}
+-
+-static int pcie_port_resume_service(struct device *dev)
+-{
+-	struct pcie_device *pciedev;
+-	struct pcie_port_service_driver *driver;
+-
+-	if (!dev || !dev->driver)
+-		return 0;
+-
+-	pciedev = to_pcie_device(dev);
+- 	driver = to_service_driver(dev->driver);
+-
+-	if (driver && driver->resume)
+-		driver->resume(pciedev);
+-	return 0;
+-}
+-
+ /**
+  * release_pcie_device - free PCI Express port service device structure
+  * @dev: Port service device to release
+@@ -466,8 +435,6 @@ int pcie_port_service_register(struct pc
+ 	new->driver.probe = pcie_port_probe_service;
+ 	new->driver.remove = pcie_port_remove_service;
+ 	new->driver.shutdown = pcie_port_shutdown_service;
+-	new->driver.suspend = pcie_port_suspend_service;
+-	new->driver.resume = pcie_port_resume_service;
+ 
  	return driver_register(&new->driver);
  }
- 
-+/**
-+ * pcie_port_service_unregister - unregister PCI Express port service driver
-+ * @drv: PCI Express port service driver to unregister
-+ */
- void pcie_port_service_unregister(struct pcie_port_service_driver *drv)
- {
- 	driver_unregister(&drv->driver);
