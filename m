@@ -1,14 +1,16 @@
-From: Hin-Tak Leung <htl10@users.sourceforge.net>
-Subject: Re: rtl8187 usb wifi adaptor causes suspend hang
-Date: Thu, 1 Jan 2009 23:42:18 +0000 (GMT)
-Message-ID: <26416.81498.qm__45060.5835918852$1230910753$gmane$org@web23106.mail.ird.yahoo.com>
-References: <Pine.LNX.4.44L0.0901011724590.5737-100000@netrider.rowland.org>
-Reply-To: htl10@users.sourceforge.net
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: PM with rootfs on mmc?
+Date: Fri, 2 Jan 2009 17:14:06 +0100
+Message-ID: <20090102161406.GA1555@ucw.cz>
+References: <8bf247760812302147i53ece31dx24a402cdeb6e28bd@mail.gmail.com>
+	<alpine.LFD.2.00.0812310121520.17126@localhost.localdomain>
+	<8bf247760812310732x6772b32fjf0ce5fdc25dea9bc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901011724590.5737-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <8bf247760812310732x6772b32fjf0ce5fdc25dea9bc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Bob Copeland <me@bobcopeland.com>, USB list <linux-usb@vger.kernel.org>, linux-wireless@vger.kernel.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, linux-pm@lists.linux-foundation.org, Larry Finger <Larry.Finger@lwfinger.net>
+To: Sriram V <vshrirama@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---- On Thu, 1/1/09, Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Thu, 1 Jan 2009, Hin-Tak Leung wrote:
+On Wed 2008-12-31 21:02:06, Sriram V wrote:
+> Hi,
+>    Now, i am able to bring linux out of suspend. The problem was to do
+> with the mmc card detection. With out card detection, The kernel used
+> to hang when i tried to
+> bring linux out of suspend.
 > 
-> > Also since Alan Stern is now CC'ed, can I ask the
-> in-tree skeleton
-> > usb driver code updated to reflect the recent
-> PM-related changes?
-> > There seems to be quite some changes between 2.6.26
-> and 2.6.27 .
+> The below works, if i boot out of NFS and mount sdmmc and do a
 > 
-> It _has_ been updated.  But the USB PM interfaces allow
-> several
-> different modes of operation, and usb-skeleton can
-> illustrate only one
-> of them.
+> $ echo -n mem > /sys/power/state
+> 
+> However, If i boot out of SDMMC (rootfs on sdmmc). I am not able to
+> bring it out of suspend.
+> The kernel hangs.
+> 
+> I get the message:
+> # echo -n mem > /sys/power/state
+> PM: Syncing filesystems ... done.
+> Freezing user space processes ... (elapsed 0.00 seconds) done.
+> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> mmc0: card e624 removed
 
-So it has... I found Documentation/usb/power-management.txt a bit brief...
-and I am planning to read
-http://ols.fedoraproject.org/OLS/Reprints-2008/brown-reprint.pdf
-which seems to be quite relevant... do you have any recommended readings? I have tried "use the source", but the majority of wireless device drivers don't have any suspend/resume hooks :-). The behavior of 2.6.26pre - somewhere in usbcore forces unloading of all usb device drivers on suspend - was useable.
+seems like mmc driver problem...  
 
-Hin-Tak
+(You may still have some fun if you fix that one with mmc
+maintainers... because 'is it still same card' is difficult question,
+but...)
 
-
-      
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
