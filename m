@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 6/10] PCI PM: Rearrange code in
-	pci-driver.c
-Date: Mon, 5 Jan 2009 14:32:27 +0100
-Message-ID: <200901051432.27718.rjw__5138.1200588823$1231162462$gmane$org@sisk.pl>
-References: <200812190049.34343.rjw@sisk.pl> <200812302343.07164.rjw@sisk.pl>
-	<20090105112501.GK27199@atrey.karlin.mff.cuni.cz>
+From: Daniel Qarras <dqarras@yahoo.com>
+Subject: Hibernation breaks between 2.6.23 and 2.6.24 on Acer
+	Aspire 1690
+Date: Mon, 5 Jan 2009 08:35:28 -0800 (PST)
+Message-ID: <524512.7403.qm@web36807.mail.mud.yahoo.com>
+Reply-To: dqarras@yahoo.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090105112501.GK27199@atrey.karlin.mff.cuni.cz>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +17,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "H. Peter Anvin" <hpa@zytor.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 05 January 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > Rename two functions and rearrange code in drivers/pci/pci-driver.c
-> > so that it's easier to follow.  In particular, separate invocations
-> > of the legacy callbacks from the rest of the new callbacks' code.
-> > 
-> > No functional changes should result from this.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/pci/pci-driver.c |  104 +++++++++++++++++++++++++++++------------------
-> >  1 file changed, 65 insertions(+), 39 deletions(-)
-> >
-> 
-> > @@ -504,17 +504,21 @@ static int pci_pm_suspend(struct device 
-> >  	struct device_driver *drv = dev->driver;
-> >  	int error = 0;
-> >  
-> > +	if (pci_has_legacy_pm_support(pci_dev)) {
-> > +		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
-> > +		goto Exit;
-> > +	}
-> > +
-> >  	if (drv && drv->pm) {
-> >  		if (drv->pm->suspend) {
-> >  			error = drv->pm->suspend(dev);
-> >  			suspend_report_result(drv->pm->suspend, error);
-> >  		}
-> > -	} else if (pci_has_legacy_pm_support(pci_dev)) {
-> > -		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
-> >  	} else {
-> >  		pci_pm_default_suspend(pci_dev);
-> >  	}
-> >
-> 
-> Does this mean that pci_has_legacy_pm_support() => !(drv && drv->pm) ?
+Hi all,
 
-Yes, it does.
+I've got Fedora 10 on Acer Aspire 1690 (1692 WLMi to be exact) and some time ago I noticed that pm-hibernate has the following problem:
 
-> Should pci_has_legacy_pm_support() check for that and WARN() in case
-> both sets of callbacks are set?
+pm-hibernate runs ok and cleanly shuts down the machine that at the very moment it is supposed to be hibernated it wakes up and resumes as if I had pressed the power button.
 
-Yes, I think I can add a WARN_ON() in there.
+I compiled few kernel.org kernels and noticed this starts to occur between 2.6.23 and 2.6.24. 2.6.23 and all older versions work, 2.6.24 and new versions fail, including 2.6.28.
 
-Thanks,
-Rafael
+Does anyone have any suggestions what might be causing this? I mean, could I try some boot parameter or some simple patch before starting to bisect this?
+
+FWIW, dmesg/lspci output can be found from my Fedora bug report at
+
+https://bugzilla.redhat.com/show_bug.cgi?id=476430
+
+Thanks!
+
+
+
+
+      
