@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH 8/10] PCI PM: Register power state of
-	devices during initialization
-Date: Mon, 5 Jan 2009 12:19:31 +0100
-Message-ID: <20090105111931.GI27199__35045.6335851506$1231154654$gmane$org@atrey.karlin.mff.cuni.cz>
+Subject: Re: [RFC][PATCH 10/10] PCI PM: Put PM callbacks in the
+	order of execution
+Date: Mon, 5 Jan 2009 12:21:35 +0100
+Message-ID: <20090105112135.GJ27199__31728.8659433418$1231154775$gmane$org@atrey.karlin.mff.cuni.cz>
 References: <200812190049.34343.rjw@sisk.pl> <200812281607.28007.rjw@sisk.pl>
-	<200812302333.45560.rjw@sisk.pl> <200812302345.55072.rjw@sisk.pl>
+	<200812302333.45560.rjw@sisk.pl> <200812302349.55694.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200812302345.55072.rjw@sisk.pl>
+In-Reply-To: <200812302349.55694.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,13 +25,14 @@ Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>, Linux PCI <linux-
 List-Id: linux-pm@vger.kernel.org
 
 > 
-> Use the observation that the power state of a PCI device can be
-> loaded into its pci_dev structure as soon as pci_pm_init() is run for
-> it and make that happen.
+> Put PM callbacks in drivers/pci/pci-driver.c in the order in which
+> they are executed which makes it much easier to follow the code.
+> 
+> No functional changes should result from this.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Acked-by: Pavel Machek <Pavel@suse.cz>
+Acked-by: Pavel Machek <Pavel@suse.cz
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
