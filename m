@@ -1,16 +1,18 @@
-From: Dmitry Nezhevenko <dion@inhex.net>
-Subject: Re: [TuxOnIce-users] Shutdown troubles (probably
-	about	nvidia)
-Date: Sat, 3 Jan 2009 23:23:17 +0200
-Message-ID: <20090103212317.GA10285__41375.8448827595$1231017975$gmane$org@laptop.local>
-References: <20081231084723.GA13285@laptop.local>
-	<20081231162819.GA8802@laptop.local> <20090103132604.GB1531@ucw.cz>
+From: Mark Lord <lkml@rtr.ca>
+Subject: Re: SMP poweroff hangs: it's baaaack! But on x86_64 this
+	time.
+Date: Sun, 04 Jan 2009 23:37:02 -0500
+Message-ID: <49618E6E.80209__31989.6127483391$1231130498$gmane$org@rtr.ca>
+References: <20071213053020.E28AB1454450@imap.suse.de>
+	<4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de>
+	<47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca>
+	<49491F32.1040400@rtr.ca> <20081219115917.GA1599@ucw.cz>
+	<494C5619.7020209@rtr.ca> <494FB6E3.1040409@rtr.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090103132604.GB1531@ucw.cz>
+In-Reply-To: <494FB6E3.1040409@rtr.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,23 +22,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-users@lists.tuxonice.net
+To: Pavel Machek <pavel@suse.cz>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, davej@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 03, 2009 at 02:26:05PM +0100, Pavel Machek wrote:
- 
-> If it is hard to reproduce w/o nvidia, maybe it is present in 2.6.25
-> but hard to reproduce...?
+Mark Lord wrote:
+> Mark Lord wrote:
+>> Pavel Machek wrote:
+>>> On Wed 2008-12-17 10:48:02, Mark Lord wrote:
+>>>>> Subject: Fix SMP poweroff hangs
+>>>>> From: Mark Lord <lkml@rtr.ca>
+>>>>>
+>>>>> We need to disable all CPUs other than the boot CPU (usually 0) before
+>>>>> attempting to power-off modern SMP machines.  This fixes the
+>>>>> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas 
+>>>>> Gleixner's
+>>>>> new toybox.
+>>>>>
+>>>>> Signed-off-by: Mark Lord <mlord@pobox.com>
+>>>>> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+>>>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>>>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>>>> ---
+>>>>>
+>>>>>  kernel/sys.c |    2 ++
+>>>>>  1 file changed, 2 insertions(+)
+>>>>>
+>>>>> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
+>>>>> --- a/kernel/sys.c~fix-smp-poweroff-hangs
+>>>>> +++ a/kernel/sys.c
+>>>>> @@ -32,6 +32,7 @@
+>>>>>  #include <linux/getcpu.h>
+>>>>>  #include <linux/task_io_accounting_ops.h>
+>>>>>  #include <linux/seccomp.h>
+>>>>> +#include <linux/cpu.h>
+>>>>>   #include <linux/compat.h>
+>>>>>  #include <linux/syscalls.h>
+>>>>> @@ -878,6 +879,7 @@ void kernel_power_off(void)
+>>>>>      kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>>>>>      if (pm_power_off_prepare)
+>>>>>          pm_power_off_prepare();
+>>>>> +    disable_nonboot_cpus();
+>>>>>      sysdev_shutdown();
+>>>>>      printk(KERN_EMERG "Power down.\n");
+>>>>>      machine_power_off();
+>>>> ..
+>>>>
+>>>> This bug has returned here now, but on x86_86 this time around.
+>>>> Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
+>>>> from the original 32-bit kernel/user that was originally fixed (above).
+>>>>
+>>>> One hang at poweroff over the past 10 days.  Not much, but enough
+>>>> to destroy confidence in "unattended" operation.
+>>>>
+>>>> I lack opportunity to dig further into the code for now,
+>>>> but just wanted to flag the problem, in case similar reports
+>>>> from others might already be out there.
+>>>>
+>>>> In the meanwhile, I'm experimenting with this simple patch,
+>>>> garnered from the 32-bit investigations last time around.
+>>>> We should know in a few weeks whether it has any effect or not.
+>>>>
+>>>> --- old/kernel/sys.c    2008-10-18 13:57:22.000000000 -0400
+>>>> +++ linux-2.6.27.9/kernel/sys.c    2008-12-17 09:42:17.000000000 -0500
+>>>> @@ -303,6 +303,8 @@
+>>>>
+>>>> static void kernel_shutdown_prepare(enum system_states state)
+>>>> {
+>>>> +    set_cpus_allowed(current, 
+>>>> cpumask_of_cpu(first_cpu(cpu_online_map)));
+>>>
+>>> Is this line neccessary?
+>> ..
+>>
+>> One or the other is probably redundant, but it's not 100% clear 
+>> *which*.  :)
+>> The line above was suggested by others back when the original problem
+>> was being worked on for 32-bit.
+>>
+>>>> +    disable_nonboot_cpus();
+>>>>     blocking_notifier_call_chain(&reboot_notifier_list,
+>>>>         (state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+>>>>     system_state = state;
+>>>> @@ -333,7 +335,6 @@
+>>>>     kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>>>>     if (pm_power_off_prepare)
+>>>>         pm_power_off_prepare();
+>>>> -    disable_nonboot_cpus();
+>>>>     sysdev_shutdown();
+>>>>     printk(KERN_EMERG "Power down.\n");
+>>>>     machine_power_off();
+>>>
+>>> Do you have any idea why it helps? BIOS will see us shutting down on
+>>> cpu0 anyway, so if this helps there's a linux bug somewhere...
+>> ..
+>>
+>> I don't know if it helps, yet.  Needs a lot more soak first.
+>> The theory here is, that all BIOS interactions from the kernel
+>> probably should happen only on the "boot CPU" or on "cpu 0",
+>> not just the "halt" sequence.
+>>
+>> By setting the CPU restriction earlier in the shutdown sequence,
+>> we should be on the correct CPU for all of the various device-driver
+>> BIOS ineractions that might happen before actually halting.
+>>
+>> Could be a bad theory, but I'm open to other possible suggestions.
+> ..
 > 
-> Look for updated bios, and maybe ask nvidia for help...
+> Well, it has hung on poweroff again now, so that patch apparently doesn't
+> cure the problem.  Darn.  The machine is at remote site, and I won't have
+> access to it for another week or so to do any further diagnostics.
+> Perhaps we'll just leave it running for the whole week.
+..
 
-This was a bit incorrect. I've successfully reproduced it without NVIDIA
-blob. Probably bug was caused by updated BIOS. I can't currently revert
-it. 
+Heh.. ten days ago, I instrumented the halt/poweroff functions in the kernel,
+with addtional step-by-step printk's to help figure out where it hangs.
 
-I've just filled bugreport against mainline kernel:
-http://bugzilla.kernel.org/show_bug.cgi?id=12348
- 
--- 
-WBR, Dmitry
+But of course, just having the printk's there changes the timing enough
+that the race which would hang it, now never happens.
+
+Heh.. I wonder if a patch full of printk's would ever make it past Linus here.  :)
+
+Cheers
