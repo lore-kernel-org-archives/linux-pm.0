@@ -1,14 +1,11 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/4] PCI PCIe portdrv: Add kerneldoc comments
-	to some core functions
-Date: Mon, 5 Jan 2009 12:52:11 -0800
-Message-ID: <200901051252.11926.jbarnes__20466.6656362408$1231188923$gmane$org@virtuousgeek.org>
-References: <200901011947.19872.rjw@sisk.pl> <200901011948.55555.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/2] PM: Compilation fixes related to the freezer
+Date: Tue, 6 Jan 2009 21:12:28 +0100
+Message-ID: <200901062112.29227.rjw__49460.5863852941$1231273180$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901011948.55555.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,18 +16,14 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 1, 2009 10:48 am Rafael J. Wysocki wrote:
-> Add kerneldoc comments to some functions in
-> drivers/pci/pcie/portdrv_core.c, since the code in there is not
-> easy to follow without any additional description.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Len,
 
-Ok, applied these ones, thanks.
+Could you please add the following two compilation fixes to the suspend branch
+for 2.6.29?
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Thanks,
+Rafael
