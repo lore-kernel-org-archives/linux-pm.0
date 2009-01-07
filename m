@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/10] PCI PM: Fix poweroff and restore callbacks
-Date: Wed, 7 Jan 2009 13:02:36 +0100
-Message-ID: <200901071302.36825.rjw__23668.6919154183$1231330685$gmane$org@sisk.pl>
+Subject: [PATCH 3/10] PCI PM: Power-manage devices without
+	drivers during suspend-resume
+Date: Wed, 7 Jan 2009 13:05:05 +0100
+Message-ID: <200901071305.06095.rjw__25151.7294710085$1231330687$gmane$org@sisk.pl>
 References: <200901071301.00139.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,69 +25,88 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-pci_fixup_device() is called too early in pci_pm_poweroff() and too
-late in pci_pm_restore().  Moreover, pci_pm_restore_noirq() calls
-pci_fixup_device() twice and in a wrong way.  Fix that.
+PCI devices without drivers can be put into low power states during
+suspend with the help of pci_prepare_to_sleep() and prevented from
+generating wake-up events during resume with the help of
+pci_enable_wake().  However, it's better not to put bridges into
+low power states during suspend, because that might result in entire
+bus segments being powered off.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@suse.cz>
 ---
- drivers/pci/pci-driver.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/pci/pci-driver.c |   33 +++++++++++++++++++++++++++++----
+ 1 file changed, 29 insertions(+), 4 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-driver.c
 +++ linux-2.6/drivers/pci/pci-driver.c
-@@ -611,8 +611,6 @@ static int pci_pm_poweroff(struct device
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
+@@ -435,6 +435,31 @@ static int pci_legacy_resume_early(struc
+ 	return error;
+ }
  
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--
- 	if (drv && drv->pm) {
- 		if (drv->pm->poweroff) {
- 			error = drv->pm->poweroff(dev);
-@@ -622,6 +620,8 @@ static int pci_pm_poweroff(struct device
++/* Auxiliary functions used by the new power management framework */
++
++static bool pci_is_bridge(struct pci_dev *pci_dev)
++{
++	return !!(pci_dev->subordinate);
++}
++
++static int pci_pm_default_resume(struct pci_dev *pci_dev)
++{
++	if (!pci_is_bridge(pci_dev))
++		pci_enable_wake(pci_dev, PCI_D0, false);
++
++	return pci_default_pm_resume_late(pci_dev);
++}
++
++static void pci_pm_default_suspend(struct pci_dev *pci_dev)
++{
++	pci_default_pm_suspend_early(pci_dev);
++
++	if (!pci_is_bridge(pci_dev))
++		pci_prepare_to_sleep(pci_dev);
++}
++
++/* New power management framework */
++
+ static int pci_pm_prepare(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+@@ -470,7 +495,7 @@ static int pci_pm_suspend(struct device 
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
+ 	} else {
+-		pci_default_pm_suspend_early(pci_dev);
++		pci_pm_default_suspend(pci_dev);
+ 	}
+ 
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+@@ -512,7 +537,7 @@ static int pci_pm_resume(struct device *
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume(dev);
+ 	} else {
+-		error = pci_default_pm_resume_late(pci_dev);
++		error = pci_pm_default_resume(pci_dev);
+ 	}
+ 
+ 	return error;
+@@ -642,7 +667,7 @@ static int pci_pm_poweroff(struct device
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
  		error = pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 	}
- 
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
-+
- 	return error;
- }
- 
-@@ -648,6 +648,8 @@ static int pci_pm_restore(struct device 
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	pci_fixup_device(pci_fixup_resume, pci_dev);
-+
- 	if (drv && drv->pm) {
- 		if (drv->pm->restore)
- 			error = drv->pm->restore(dev);
-@@ -656,7 +658,6 @@ static int pci_pm_restore(struct device 
  	} else {
- 		error = pci_default_pm_resume_late(pci_dev);
+-		pci_default_pm_suspend_early(pci_dev);
++		pci_pm_default_suspend(pci_dev);
  	}
--	pci_fixup_device(pci_fixup_resume, pci_dev);
  
- 	return error;
- }
-@@ -667,7 +668,7 @@ static int pci_pm_restore_noirq(struct d
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
--	pci_fixup_device(pci_fixup_resume, pci_dev);
-+	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- 
- 	if (drv && drv->pm) {
- 		if (drv->pm->restore_noirq)
-@@ -677,7 +678,6 @@ static int pci_pm_restore_noirq(struct d
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+@@ -681,7 +706,7 @@ static int pci_pm_restore(struct device 
+ 	} else if (pci_has_legacy_pm_support(pci_dev)) {
+ 		error = pci_legacy_resume(dev);
  	} else {
- 		pci_default_pm_resume_early(pci_dev);
+-		error = pci_default_pm_resume_late(pci_dev);
++		error = pci_pm_default_resume(pci_dev);
  	}
--	pci_fixup_device(pci_fixup_resume_early, pci_dev);
  
  	return error;
- }
