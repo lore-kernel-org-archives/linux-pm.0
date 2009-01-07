@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation breaks between 2.6.23 and 2.6.24 on Acer
-	Aspire 1690
-Date: Wed, 7 Jan 2009 11:44:53 +0100
-Message-ID: <200901071144.53582.rjw@sisk.pl>
-References: <999617.71355.qm@web36808.mail.mud.yahoo.com>
+Subject: [PATCH 0/10] PCI PM: Make new suspend-resume callbacks
+	carry out core operations
+Date: Wed, 7 Jan 2009 13:00:59 +0100
+Message-ID: <200901071301.00139.rjw__23427.2479582161$1231330616$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <999617.71355.qm@web36808.mail.mud.yahoo.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,29 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: dqarras@yahoo.com
-Cc: linux-pm@lists.linux-foundation.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>, Linux PCI <linux-pci@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 06 January 2009, Daniel Qarras wrote:
-> Hi!
->  
-> > > I've now bisected this to this commit:
-> > >
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9cd9a0058dd35268b24fa16795a92c800f4086d4
-> > 
-> > Have you tried with acpi_sleep=old_ordering in the
-> > kernel's command line?
-> 
-> I hadn't done that yet, never heard about such parameter. Well, tested with Fedora 10 kernel and 2.6.28, it does not fix the issue.
+Hi,
 
-Thanks for verification.
+The following series of patches adds the callbacks that save/restore the
+standard PCI config registers, change the power state of the device etc. to
+the new suspend-resume callbacks (which are not yet used by device drivers),
+so that the drivers don't have to worry about these operations.
 
-Apparently, one of devices is set up to wake up the system and it does that
-right after it's been put to sleep.  I don't think it's a PCI device, because
-2.6.28 prevents PCI devices from doing this, unless they are intentionally
-set up for system wake-up.
+The default suspend-resume handling of PCI devices (ie. for devices without
+drivers or without PM support in the drivers) is also modified so that the same
+callbacks that are used for devices with PM support can be used for them too.
 
-Can you send me the output of /proc/acpi/wakeup, please?
+The patches are on top of the current Linus' tree with the linux-next branch of
+your pci-2.6 tree merged.
 
+Please apply.
+
+Thanks,
 Rafael
