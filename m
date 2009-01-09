@@ -1,16 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [Regression] USB wakeup problem on Toshiba Portege
 	R500
-Date: Thu, 8 Jan 2009 20:54:44 +0100
-Message-ID: <200901082054.45051.rjw__30774.7790626765$1231446596$gmane$org@sisk.pl>
-References: <200901080835.39639.rjw@sisk.pl> <200901081803.49632.rjw@sisk.pl>
-	<200901081955.12021.elendil@planet.nl>
+Date: Fri, 9 Jan 2009 11:18:41 +0100
+Message-ID: <20090109101840.GD3396__10914.7913557992$1231496405$gmane$org@elf.ucw.cz>
+References: <200901080835.39639.rjw@sisk.pl>
+	<200901080949.34339.oliver@neukum.org>
+	<200901081736.12926.rjw@sisk.pl>
+	<200901081748.58962.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901081955.12021.elendil@planet.nl>
 Content-Disposition: inline
+In-Reply-To: <200901081748.58962.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +22,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, pavel@suse.cz, akpm@linux-foundation.org, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 08 January 2009, Frans Pop wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday 08 January 2009, Oliver Neukum wrote:
-> >> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
-> >> You are making a very persuasive argument for reverting it.
-> >> But what about laptops that only have a USB keyboard?
-> > 
-> > Well, up to and including 2.6.28 they needed to echo 'enable' to the USB
-> > controllers' /sys/devices/.../power/wakeup files, so if the patch is
-> > reverted, they won't be worse off than they were day before
-> > yesterday. :-) 
-> > 
-> > Perhaps we can choose the default depending on whether or not any HID
-> > devices are attached to given controller?
-> 
-> Is "resume on keyboard activity" really all that needed? Both my laptops 
-> and my desktop resume fine after pressing the power button.
-> 
-> Also consider the following cases:
-> - laptop has been suspended with external USB mouse connected
->   - mouse is moved (accidentally or because it is in the way of a coffee
->     cup)
->   - mouse cable is removed before putting the laptop in a bag for
->     transport
-> - laptop is in docking station with USB mouse/kbd connected to that
->   - again, mouse gets moved for some reason
->   - laptop is undocked while suspended
->   - or the reverse: laptop gets docked
+On Thu 2009-01-08 17:48:57, Oliver Neukum wrote:
+> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
+> > > We do support remote wakeup from PS2 keyboards. So you might argue we
+> > > should do the same for USB HID devices.
+> > =
 
-One more case (a real-life example actually):
-- There is a USB wireless mouse attached to the box while suspending and the
-  mouse is powered off by pressing a button on it.  The mouse's radio receiver
-  remains in a USB port on the box.  Now, if the mouse is powered off again,
-  the box will resume.  What if that happens accidentally while the box is
-  being carried in a backpack?
+> > Well, _I_ can live with a few 'echo disabled > /sys/devices/.../power/w=
+akeup'
+> > lines in my init scripts, but I'm afraid we're going to get many problem
+> > reports related to this. =A0This means people will likely lose time on =
+trying to
+> > debug this problem and someone will have to handle the reports. =A0Are =
+you
+> > volunteering to do that?
+> =
 
-> IMO it is not desirable that the system gets resumed as a result of any of 
-> those actions. I'm not complete sure that it would in all those cases, 
-> but have they been considered?
-> 
-> And in general I've always been in favor of things only happening 
-> automagically if I've explicitly asked for that, and not by default.
+> You are making a very persuasive argument for reverting it.
+> But what about laptops that only have a USB keyboard?
 
-I have to say I agree.
+laptops normally wake up lid open... (and you still have a
+powerbutton; plus I'm not aware of any laptops with usb keyboard --
+are apples crazy enough to do that?)
+									Pavel
+-- =
 
-Thanks,
-Rafael
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
