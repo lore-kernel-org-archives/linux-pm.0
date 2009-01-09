@@ -1,52 +1,59 @@
-From: Len Brown <lenb@kernel.org>
-Subject: git mv (was Re: [git pull] ACPI & Suspend patches for 2.6.29-rc0)
-Date: Fri, 09 Jan 2009 15:56:57 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain>
-References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
- <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: git mv (was Re: [git pull] ACPI & Suspend patches for
+ 2.6.29-rc0)
+Date: Fri, 9 Jan 2009 13:16:12 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0901091305160.6528@localhost.localdomain>
+References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain> <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain> <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901091537530.16697@localhost.localdomain>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-> As usual, git is actually smarter and get things more correct than people 
-> realize. What you found "surprising" is actually a "profound truth". 
+
+On Fri, 9 Jan 2009, Len Brown wrote:
 > 
-> Git is like a great indian mystic. It sees past the veil of the trivial, 
-> to find the true connections in life.
-> 
-> Or at least in source code.
+> I guess using 'git mv' gave me the false expectation
+> that git actually tracks moves like other SCMs
+> and it would show up that way in the diff -- though
+> now that I think about it, I like the comparison
+> of the two endpoints that git did even better.
 
-Thanks for confirming that the unexpected diff
-is a fature of git rather than a bug.
+The main reason "git mv" exists at all is just people migrating from other 
+places expecting it. It's largely just purely synthetic sugar - it has 
+almost no meaning to git long-term.
 
-Since I had used "git mv", I had expected everything
-to show up as a move.  However, I understand that
-comparing file contents over that move and other code moves
-told a different 'big picture' story.
+[ Technically, it _is_ meaningful, in that it obviously not just moves the 
+  file in the checked-out copy, but it also moves the index information 
+  around. So "git mv" clearly does something, but it's not important in 
+  the big picture.
 
-I guess using 'git mv' gave me the false expectation
-that git actually tracks moves like other SCMs
-and it would show up that way in the diff -- though
-now that I think about it, I like the comparison
-of the two endpoints that git did even better.
+  So using "git mv" is really nothing fundamental - it doesn't really 
+  matter to the end result, and if you had done the 'mv' by just applying 
+  a patch to delete the old file and create a new one, the actual commit 
+  would have been 100% identical. Think of it as a convenience function, 
+  and you won't be wrong. ]
 
-I guess you can make an argument either way about
-how to handle moves.  One problem that both have to
-deal with is that a history on the old (now missing)
-file location doesn't work, and that by default
-the history on the new location stops unless 
-log --follow is used.  gitk doesn't use --follow
-by default, and when it is added, the history
-looks pretty strange.
+> gitk doesn't use --follow by default, and when it is added, the history 
+> looks pretty strange.
 
-thanks,
--Len Brown
-Intel Open Source Technology Center
+Heh. That's because "--follow" is a total hack, and doesn't do the nice 
+(and pretty complicated) parent rewriting that the real "git log" family 
+of operations normally do.
 
+So yeah, "--follow" is broken. It's really a quick hack there for people 
+who come from some other SCM to feel more comfy with git. If you come from 
+SVN or CVS, you never had proper history, and you never had "gitk" anyway, 
+and so "gitk --follow" doesn't really work. But it makes the pure 
+_textual_ logs look a bit like CVS/SVN.
 
+I'd love to make --follow work better and integrate more, but I've been so 
+successful at never using it myself that I don't much care. And it really 
+is not a very natural thing for git to do, so the hackiness is somewhat 
+inherent.
+
+			Linus
