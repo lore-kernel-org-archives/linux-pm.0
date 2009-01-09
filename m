@@ -1,80 +1,49 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git pull] ACPI & Suspend patches for 2.6.29-rc0
-Date: Fri, 9 Jan 2009 12:12:02 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
+	CONFIG_PM
+Date: Fri, 09 Jan 2009 15:30:56 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.0901091530090.16697__36702.9475317851$1231533293$gmane$org@localhost.localdomain>
+References: <200901062112.29227.rjw@sisk.pl> <200901062115.33286.rjw@sisk.pl>
+	<20090107121659.GA16268@elte.hu>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux Power Management List <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-reply-to: <20090107121659.GA16268@elte.hu>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Fri, 9 Jan 2009, Len Brown wrote:
+> > Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+> > depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+> > 
+> > This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+> > and CONFIG_FREEZER=n.
+> > 
+> > Reported-by: Cheng Renquan <crquan@gmail.com>
+> > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  arch/ia64/kernel/kprobes.c |    2 +-
+> >  arch/x86/kernel/kprobes.c  |    2 +-
+> >  kernel/kprobes.c           |    2 +-
+> >  3 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> ps. git diff is confused about hwregs.c vs hwxface.c below
->         both got moved.  I'm running git version 1.6.1.76.gc123b,
-> 	and I use "git diff -M --stat --summary linus..$RELEASE"
+> looks good, the x86 bits:
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-No, "both" didn't get moved. "hwxface.c" is a totally new file when you 
-look at the big picture. Yes, it got moved in one commit, but if you look 
-at the whole history, the _history_ is actually:
+man, we have too many config options:-)
 
- - Move public interfaces from hwregs.c to new file, hwxface.c
-
- - rename hwxface.c to another directory
-
-and so git - for the merge statistics - ends up showing this as
-
->  .../acpi/{hardware/hwregs.c => acpica/hwxface.c}   |  744 +++++++-------------
-
-which is actually correct.
-
-Of course, it would _also_ have been correct to show it as the 
-"{hardware/hwregs.c => acpica/hwregs.c}" move that you apparently 
-expected, but what git did was just a more interesting thing.
-
-So my point is that the "movement history" is actually different in a 
-small view than it is in a big one. If you do "git log -C --stat", you'll 
-see the output you expect at each point:
-
-	commit ecfbbc7b46f74ca48b9f42132739114c9e70f8e4
-	Author: Bob Moore <robert.moore@intel.com>
-	Date:   Tue Dec 30 11:04:48 2008 +0800
-	
-	    ACPICA: Move all public H/W interfaces to new hwxface
-	    
-	 drivers/acpi/hardware/hwregs.c  |  498 +----------------------------------
-	 drivers/acpi/hardware/hwxface.c |  555 +++++++++++++++++++++++++++++++++++++++
-
-and
-
-	commit 95b482a8d31116f3f5c2a5089569393234d06385
-	Author: Len Brown <len.brown@intel.com>
-	Date:   Fri Jan 9 00:13:17 2009 -0500
-	
-	    ACPICA: create acpica/ directory
-	
-	 drivers/acpi/{hardware => acpica}/hwregs.c     |    0
-
-but when taken all-together, git decided that the bulk of the data (even 
-if not the _lines_) actally moved from
-
-	drivers/acpi/{hardware/hwregs.c => acpica/hwxface.c}
-
-which is thus what git shows for the merge diff (which is taken over the 
-whole history).
-
-As usual, git is actually smarter and get things more correct than people 
-realize. What you found "surprising" is actually a "profound truth". 
-
-Git is like a great indian mystic. It sees past the veil of the trivial, 
-to find the true connections in life.
-
-Or at least in source code.
-
-			Linus
+applied.
+thanks,
+Len Brown, Intel Open Source Technology Center
