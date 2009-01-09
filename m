@@ -1,97 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression] USB wakeup problem on Toshiba Portege
-	R500
-Date: Fri, 9 Jan 2009 18:53:41 +0100
-Message-ID: <200901091853.42700.rjw__10053.4706762575$1231523912$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0901091055050.10951-100000@netrider.rowland.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] ACPI & Suspend patches for 2.6.29-rc0
+Date: Fri, 9 Jan 2009 12:12:02 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0901091200150.6528@localhost.localdomain>
+References: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901091055050.10951-100000@netrider.rowland.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, akpm@linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0901090550590.4091@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-[CCing ACPI and Len)
 
-On Friday 09 January 2009, Alan Stern wrote:
-> On Thu, 8 Jan 2009, Frans Pop wrote:
+
+On Fri, 9 Jan 2009, Len Brown wrote:
 > 
-> > Rafael J. Wysocki wrote:
-> > > On Thursday 08 January 2009, Oliver Neukum wrote:
-> > >> Am Thursday 08 January 2009 17:36:12 schrieb Rafael J. Wysocki:
-> > >> You are making a very persuasive argument for reverting it.
-> > >> But what about laptops that only have a USB keyboard?
-> > > 
-> > > Well, up to and including 2.6.28 they needed to echo 'enable' to the USB
-> > > controllers' /sys/devices/.../power/wakeup files, so if the patch is
-> > > reverted, they won't be worse off than they were day before
-> > > yesterday. :-) 
-> > > 
-> > > Perhaps we can choose the default depending on whether or not any HID
-> > > devices are attached to given controller?
-> > 
-> > Is "resume on keyboard activity" really all that needed? Both my laptops 
-> > and my desktop resume fine after pressing the power button.
-> > 
-> > Also consider the following cases:
-> > - laptop has been suspended with external USB mouse connected
-> >   - mouse is moved (accidentally or because it is in the way of a coffee
-> >     cup)
-> >   - mouse cable is removed before putting the laptop in a bag for
-> >     transport
-> > - laptop is in docking station with USB mouse/kbd connected to that
-> >   - again, mouse gets moved for some reason
-> >   - laptop is undocked while suspended
-> >   - or the reverse: laptop gets docked
-> > 
-> > IMO it is not desirable that the system gets resumed as a result of any of 
-> > those actions. I'm not complete sure that it would in all those cases, 
-> > but have they been considered?
-> > 
-> > And in general I've always been in favor of things only happening 
-> > automagically if I've explicitly asked for that, and not by default.
-> 
-> I don't mind reverting the "automatically enable PCI wakeup" commit.  But 
-> we should first come to a definite policy for kernel default wakeup 
-> settings, rather than deciding things piecemeal for different subsystems.
-> 
-> My proposal:
-> 
-> 	Devices and events that are clearly associated with system
-> 	wakeup should be enabled by default.  For example: Power
-> 	button and laptop lid.
+> ps. git diff is confused about hwregs.c vs hwxface.c below
+>         both got moved.  I'm running git version 1.6.1.76.gc123b,
+> 	and I use "git diff -M --stat --summary linus..$RELEASE"
 
-Agreed.
+No, "both" didn't get moved. "hwxface.c" is a totally new file when you 
+look at the big picture. Yes, it got moved in one commit, but if you look 
+at the whole history, the _history_ is actually:
 
-> 	All other devices capable of waking up the system should be
-> 	disabled by default.  This presumably includes every PCI
-> 	device.  If users want keyboard or mouse events to cause
-> 	a system resume then they will have to configure their
-> 	desktop management program to enable it.
+ - Move public interfaces from hwregs.c to new file, hwxface.c
 
-I generally agree, with one exception.  There are network adapters which
-can be enabled to wake up by the BIOS and their drivers set them up for WoL
-currently on this basis.  These should remain enabled IMO.
+ - rename hwxface.c to another directory
 
-> 	Devices not capable of directly waking the system can be
-> 	enabled.  This includes things like USB devices, which
-> 	have to pass a wakeup request through their parent and
-> 	therefore can't wake up the system unless the parent is
-> 	also enabled for wakeup.
+and so git - for the merge statistics - ends up showing this as
 
-Agreed.
+>  .../acpi/{hardware/hwregs.c => acpica/hwxface.c}   |  744 +++++++-------------
 
-Thanks,
-Rafael
+which is actually correct.
+
+Of course, it would _also_ have been correct to show it as the 
+"{hardware/hwregs.c => acpica/hwregs.c}" move that you apparently 
+expected, but what git did was just a more interesting thing.
+
+So my point is that the "movement history" is actually different in a 
+small view than it is in a big one. If you do "git log -C --stat", you'll 
+see the output you expect at each point:
+
+	commit ecfbbc7b46f74ca48b9f42132739114c9e70f8e4
+	Author: Bob Moore <robert.moore@intel.com>
+	Date:   Tue Dec 30 11:04:48 2008 +0800
+	
+	    ACPICA: Move all public H/W interfaces to new hwxface
+	    
+	 drivers/acpi/hardware/hwregs.c  |  498 +----------------------------------
+	 drivers/acpi/hardware/hwxface.c |  555 +++++++++++++++++++++++++++++++++++++++
+
+and
+
+	commit 95b482a8d31116f3f5c2a5089569393234d06385
+	Author: Len Brown <len.brown@intel.com>
+	Date:   Fri Jan 9 00:13:17 2009 -0500
+	
+	    ACPICA: create acpica/ directory
+	
+	 drivers/acpi/{hardware => acpica}/hwregs.c     |    0
+
+but when taken all-together, git decided that the bulk of the data (even 
+if not the _lines_) actally moved from
+
+	drivers/acpi/{hardware/hwregs.c => acpica/hwxface.c}
+
+which is thus what git shows for the merge diff (which is taken over the 
+whole history).
+
+As usual, git is actually smarter and get things more correct than people 
+realize. What you found "surprising" is actually a "profound truth". 
+
+Git is like a great indian mystic. It sees past the veil of the trivial, 
+to find the true connections in life.
+
+Or at least in source code.
+
+			Linus
