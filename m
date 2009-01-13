@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression] USB wakeup problem on Toshiba Portege
-	R500
-Date: Tue, 13 Jan 2009 12:13:25 +0100
-Message-ID: <200901131213.26836.rjw__11988.1372586407$1231845425$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0901122207400.18052-100000@netrider.rowland.org>
+Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
+Date: Tue, 13 Jan 2009 12:23:01 +0100
+Message-ID: <200901131223.02813.rjw__8049.20127052373$1231846167$gmane$org@sisk.pl>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <200901112001.00394.rjw@sisk.pl>
+	<3f9a31f40901121924v86b528er652b27e670c5fe0@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901122207400.18052-100000@netrider.rowland.org>
+In-Reply-To: <3f9a31f40901121924v86b528er652b27e670c5fe0@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,51 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: gregkh@suse.de, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, akpm@linux-foundation.org
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 13 January 2009, Alan Stern wrote:
-> On Mon, 12 Jan 2009, Rafael J. Wysocki wrote:
+On Tuesday 13 January 2009, Jaswinder Singh Rajput wrote:
+> Hello Rafael,
 > 
-> > On Monday 12 January 2009, Alan Stern wrote:
-> > > On Fri, 9 Jan 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > > My proposal:
-> > > > > 
-> > > > > 	Devices and events that are clearly associated with system
-> > > > > 	wakeup should be enabled by default.  For example: Power
-> > > > > 	button and laptop lid.
-> > > > 
-> > > > Agreed.
-> > > > 
-> > > > > 	All other devices capable of waking up the system should be
-> > > > > 	disabled by default.  This presumably includes every PCI
-> > > > > 	device.  If users want keyboard or mouse events to cause
-> > > > > 	a system resume then they will have to configure their
-> > > > > 	desktop management program to enable it.
-> > > > 
-> > > > I generally agree, with one exception.  There are network adapters which
-> > > > can be enabled to wake up by the BIOS and their drivers set them up for WoL
-> > > > currently on this basis.  These should remain enabled IMO.
-> > > 
-> > > How do we know which adapters these are?  IMO the PCI core should
-> > > disable wakeup by default for all devices when they are detected.
-> > 
-> > This is what we do.
-> > 
-> > > Is it sufficient to have the adapter drivers enable wakeup during
-> > > their probe routines?
-> > 
-> > Yes, it is.
+> On Mon, Jan 12, 2009 at 12:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday 11 January 2009, Ingo Molnar wrote:
+> >>
+> >> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+> >>
+> >> > On Sun, Jan 11, 2009 at 4:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > >
+> >> > > Regressions with patches
+> >> > > ------------------------
+> >> > >
+> >> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12428
+> >> > > Subject         : Build error on latest git
+> >> > > Submitter       : Petr Titera <P.Titera@century.cz>
+> >> > > Date            : 2009-01-11 9:49 (1 days old)
+> >> > > References      : http://marc.info/?l=linux-kernel&m=123166856318712&w=4
+> >> > > Handled-By      : Petr Titera <P.Titera@century.cz>
+> >> > > Patch           : http://marc.info/?l=linux-kernel&m=123167509024996&w=4
+> >> >
+> >> > This is a wrong fix, asm/smp.h should only be included when CONFIG_SMP
+> >> > is defined.
+> >> >
+> >> > I am still in the process of cleaning non-smp data from asm/smp.h for
+> >> > x86
+> >> >
+> >> > Attach patch is the solution for the time being
+> >> >
+> >> > Ingo, can you please put this in urgent queue.
+> >>
+> >> yes, it already is - see below.
+> >
+> > Link to this patch was added to the bug entry.  Pleaes let me know or close the
+> > bug when it's merged.
+> >
 > 
-> Therefore all we need is a patch to change the USB host controller
-> drivers.  They should call device_set_wakeup_capable() instead of
-> device_init_wakeup().
-> 
-> I just got back from vacation so things will be busy for a few days, 
-> but I'll send out such a patch soon.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4884d8e6a05026ec906355436cea9dc1acb1d09e
 
-Great, thanks a lot!
+Thanks, the bug has been closed.
 
 Rafael
