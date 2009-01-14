@@ -1,13 +1,11 @@
 From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 1/2] PM: Wait for console in resume.
-Date: Tue, 13 Jan 2009 17:07:50 -0800
-Message-ID: <1231895271-21861-2-git-send-email-arve@android.com>
-References: <1231895271-21861-1-git-send-email-arve@android.com>
+Subject: [RFC][PATCH 00/11] Android PM extensions
+Date: Tue, 13 Jan 2009 17:27:45 -0800
+Message-ID: <1231896476-22445-1-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1231895271-21861-1-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,19 +19,13 @@ To: linux-pm@lists.linux-foundation.org
 Cc: swetland@google.com
 List-Id: linux-pm@vger.kernel.org
 
-QXZvaWRzIGxhdGVyIHdha2luZyB1cCB0byBhIGJsaW5raW5nIGN1cnNvciBpZiB0aGUgZGV2aWNl
-Cndva2UgdXAgYW5kIHJldHVybmVkIHRvIHNsZWVwIGJlZm9yZSB0aGUgY29uc29sZSBzd2l0Y2gg
-aGFwcGVuZWQuCgpTaWduZWQtb2ZmLWJ5OiBCcmlhbiBTd2V0bGFuZCA8c3dldGxhbmRAZ29vZ2xl
-LmNvbT4KU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4K
-LS0tCiBrZXJuZWwvcG93ZXIvY29uc29sZS5jIHwgICAgNiArKysrKysKIDEgZmlsZXMgY2hhbmdl
-ZCwgNiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2tlcm5lbC9w
-b3dlci9jb25zb2xlLmMgYi9rZXJuZWwvcG93ZXIvY29uc29sZS5jCmluZGV4IGI4NjI4YmUuLmEz
-OTYxYjIgMTAwNjQ0Ci0tLSBhL2tlcm5lbC9wb3dlci9jb25zb2xlLmMKKysrIGIva2VybmVsL3Bv
-d2VyL2NvbnNvbGUuYwpAQCAtNzgsNiArNzgsMTIgQEAgdm9pZCBwbV9yZXN0b3JlX2NvbnNvbGUo
-dm9pZCkKIAl9CiAJc2V0X2NvbnNvbGUob3JpZ19mZ2NvbnNvbGUpOwogCXJlbGVhc2VfY29uc29s
-ZV9zZW0oKTsKKworCWlmICh2dF93YWl0YWN0aXZlKG9yaWdfZmdjb25zb2xlKSkgeworCQlwcl9k
-ZWJ1ZygiUmVzdW1lOiBDYW4ndCBzd2l0Y2ggVkNzLiIpOworCQlyZXR1cm47CisJfQorCiAJa21z
-Z19yZWRpcmVjdCA9IG9yaWdfa21zZzsKIH0KICNlbmRpZgotLSAKMS42LjEKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+VGhlIGZvbGxvd2luZyBwYXRjaCBzZXJpZXMgYWRkcyB0d28gYXBpcywgd2FrZWxvY2sgYW5kIGVh
+cmx5c3VzcGVuZC4KVGhlIEFuZHJvaWQgcGxhdGZvcm0gdXNlcyB0aGUgZWFybHlzdXNwZW5kIGFw
+aSB0byB0dXJuIHRoZSBzY3JlZW4KYW5kIHNvbWUgaW5wdXQgZGV2aWNlcyBvbiBhbmQgb2ZmLiBU
+aGUgd2FrZWxvY2sgY29kZSBkZXRlcm1pbmVzIHdoZW4KdG8gZW50ZXIgdGhlIGZ1bGwgc3VzcGVu
+ZCBzdGF0ZS4KClRoZXNlIGFwaXMgY291bGQgYWxzbyBiZSB1c2VmdWwgdG8gb3RoZXIgcGxhdGZv
+cm1zIHdoZXJlIHRoZSBnb2FsIGlzCnRvIGVudGVyIGZ1bGwgc3VzcGVuZCB3aGVuZXZlciBwb3Nz
+aWJsZS4KCi0tCkFydmUgSGrDuG5uZXbDpWcKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
+aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
