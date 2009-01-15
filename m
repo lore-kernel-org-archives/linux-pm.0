@@ -1,15 +1,15 @@
-From: "=?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?=" <arve@android.com>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Wed, 14 Jan 2009 16:10:16 -0800
-Message-ID: <d6200be20901141610g51f22c5fq8c5332ab55208302@mail.gmail.com>
-References: <1231896476-22445-1-git-send-email-arve@android.com>
-	<1231923681.7229.244.camel@nigel-laptop>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH] resume: wait for device probing to finish
+Date: Thu, 15 Jan 2009 12:34:36 +1100
+Message-ID: <1231983276.7229.575.camel@nigel-laptop>
+References: <200901142303.46166.rjw@sisk.pl>
+	<20090114152444.64e1ddfb.akpm@linux-foundation.org>
+	<200901150039.58972.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1231923681.7229.244.camel@nigel-laptop>
-Content-Disposition: inline
+In-Reply-To: <200901150039.58972.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, pavel@suse.cz, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 1:01 AM, Nigel Cunningham
-<ncunningham@crca.org.au> wrote:
-> Would you be able to provide some more documentation? In particular, I'm
-> wondering what's 'early' about earlysuspend. It might also be good to
-> something to Documentation/power explaining what the apis are, when/how
-> they're supposed to be used and such like.
+Hi Rafael etc.
 
-I called it earlysuspend since it a prerequisite for entering the
-normal suspend state. It is really the user visible suspend state.
+On Thu, 2009-01-15 at 00:39 +0100, Rafael J. Wysocki wrote:
 
-> In the Kconfig files, I'm also missing the point to HAS_EARLYSUSPEND and
-> HAS_WAKELOCK - they're bools that depends only on  and WAKELOCK
-> respectively, so shouldn't you be able to just use the later symbols in
-> ifdefs?
+[...]
+ 
+>  /**
+> + * wait_for_device_probe
+> + * Wait for device probing to be completed.
+> + *
+> + * Note: this function polls at 100 msec intervals.
+> + */
+> +int wait_for_device_probe(void)
+> +{
+> +	/* wait for the known devices to complete their probing */
+> +	while (driver_probe_done() != 0)
+> +		msleep(100);
+> +	async_synchronize_full();
+> +	return 0;
+> +}
+> +
 
-I initially had provided the wakelock and earlysuspend apis on top of
-the android_power driver then added the current implementation. If
-there is no interest in allowing multiple implementations of the api,
-can can remove these.
+Am I missing something? I can't see why you're polling instead of using
+probe_waitqueue.
 
-> There are a few inlined #ifdefs (#ifdef CONFIG_WAKELOCK_STAT, eg) - the
-> convention as I understand it is to keep #ifdefs out of .c files as much
-> as possible, #ifdef'ing functions in header files instead.
+Regards,
 
-I would not want to move these to the (existing) header file as they
-are private to the wakelock implementation, but I could add some some
-helper functions in a single #ifdef block.
-
--- =
-
-Arve Hj=F8nnev=E5g
+Nigel
