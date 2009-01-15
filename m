@@ -1,18 +1,14 @@
 From: "=?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?=" <arve@android.com>
-Subject: Re: [PATCH 04/11] PM: Implement early suspend api
-Date: Wed, 14 Jan 2009 15:57:10 -0800
-Message-ID: <d6200be20901141557g55e63459wb7d38d07b223c53a@mail.gmail.com>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Wed, 14 Jan 2009 16:10:16 -0800
+Message-ID: <d6200be20901141610g51f22c5fq8c5332ab55208302@mail.gmail.com>
 References: <1231896476-22445-1-git-send-email-arve@android.com>
-	<1231896476-22445-2-git-send-email-arve@android.com>
-	<1231896476-22445-3-git-send-email-arve@android.com>
-	<1231896476-22445-4-git-send-email-arve@android.com>
-	<1231896476-22445-5-git-send-email-arve@android.com>
-	<1231926517.7229.332.camel@nigel-laptop>
+	<1231923681.7229.244.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1231926517.7229.332.camel@nigel-laptop>
+In-Reply-To: <1231923681.7229.244.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,37 +23,33 @@ To: Nigel Cunningham <ncunningham@crca.org.au>
 Cc: swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 1:48 AM, Nigel Cunningham
+On Wed, Jan 14, 2009 at 1:01 AM, Nigel Cunningham
 <ncunningham@crca.org.au> wrote:
->> +enum {
->> +     DEBUG_USER_STATE =3D 1U << 0,
->> +     DEBUG_SUSPEND =3D 1U << 2,
->> +};
->
-> Is there a reason DEBUG_SUSPEND isn't 1U << 1? If so, it might be good
-> to document that here.
->
+> Would you be able to provide some more documentation? In particular, I'm
+> wondering what's 'early' about earlysuspend. It might also be good to
+> something to Documentation/power explaining what the apis are, when/how
+> they're supposed to be used and such like.
 
-No. I missed it when separating the wake lock and early suspend code.
+I called it earlysuspend since it a prerequisite for entering the
+normal suspend state. It is really the user visible suspend state.
 
->> +     if (debug_mask & DEBUG_SUSPEND)
->> +             pr_info("early_suspend: sync\n");
->> +
->> +     sys_sync();
->
-> Why the sync here?
+> In the Kconfig files, I'm also missing the point to HAS_EARLYSUSPEND and
+> HAS_WAKELOCK - they're bools that depends only on  and WAKELOCK
+> respectively, so shouldn't you be able to just use the later symbols in
+> ifdefs?
 
-At this point the device appears to asleep to the user but wakelocks
-can prevent full suspend (which also calls sys_sync).
+I initially had provided the wakelock and earlysuspend apis on top of
+the android_power driver then added the current implementation. If
+there is no interest in allowing multiple implementations of the api,
+can can remove these.
 
->> +     if (state =3D=3D SUSPENDED)
->> +             state &=3D ~SUSPENDED;
->
-> Why not just say state =3D 0?
->
-Only the SUSPENDED bit may be modified here, but in this case state =3D 0 i=
-s safe.
+> There are a few inlined #ifdefs (#ifdef CONFIG_WAKELOCK_STAT, eg) - the
+> convention as I understand it is to keep #ifdefs out of .c files as much
+> as possible, #ifdef'ing functions in header files instead.
 
+I would not want to move these to the (existing) header file as they
+are private to the wakelock implementation, but I could add some some
+helper functions in a single #ifdef block.
 
 -- =
 
