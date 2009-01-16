@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 084/123] USB: fix up suspend and resume for
- PCI host controllers
-Date: Fri, 16 Jan 2009 11:04:39 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0901161039530.2417-100000__2585.68713111362$1232122034$gmane$org@iolanthe.rowland.org>
-References: <200901132150.33201.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI PM: Restore standard config registers of
+	all devices early (was: Re: EeePC resume failure - timers)
+Date: Fri, 16 Jan 2009 17:27:04 +0100
+Message-ID: <200901161727.05026.rjw__44094.258620362$1232123411$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.0901160733260.29252@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901132150.33201.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0901160733260.29252@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,118 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 13 Jan 2009, Rafael J. Wysocki wrote:
-
-> On Tuesday 13 January 2009, Alan Stern wrote:
-> > On Wed, 7 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Sorry for being late, but ->
-> > > 
-> > > On Wednesday 07 January 2009, Greg Kroah-Hartman wrote:
-> > > > From: Alan Stern <stern@rowland.harvard.edu>
-> > > > 
-> > > > This patch (as1192) rearranges the USB PCI host controller suspend and
-> > > > resume and resume routines:
-> > > > 
-> > > > 	Use pci_wake_from_d3() for enabling and disabling wakeup,
-> > > > 	instead of pci_enable_wake().
-> > > > 
-> > > > 	Carry out the actual state change while interrupts are
-> > > > 	disabled.
-> > > > 
-> > > > 	Change the order of the preparations to agree with the
-> > > > 	general recommendation for PCI devices, instead of
-> > > > 	messing around with the wakeup settings while the device
-> > > > 	is in D3.
-> > > > 
-> > > > 		In .suspend:
-> > > > 			Call the underlying driver to disable IRQ
-> > > > 				generation;
-> > > > 			pci_wake_from_d3(device_may_wakeup());
-> > > > 			pci_disable_device();
-> > > > 
-> > > > 		In .suspend_late:
-> > > > 			pci_save_state();
-> > > > 			pci_set_power_state(D3hot);
-> > > 
-> > > ->
-> > > pci_set_power_state() does things that shouldn't be done with interrupts off,
-> > > so I'd move the above two into .suspend.
-> > > 
-> > > > 			(for PPC_PMAC) Disable ASIC clocks
-> > > 
-> > > > 		In .resume_early:
-> > > > 			(for PPC_PMAC) Enable ASIC clocks
-> > > > 			pci_set_power_state(D0);
-> > > 
-> > > the pci_set_power_state(D0) is not necessary here IMO.  If the device is
-> > > accessible at all, its config space is accessible too, even in D3.
-> > > 
-> > > pci_enable_device() does pci_set_power_state(D0) anyway.
-> > > 
-> > > > 			pci_restore_state();
-> > > > 
-> > > > 		In .resume:
-> > > > 			pci_enable_device();
-> > > > 			pci_set_master();
-> > > > 			pci_wake_from_d3(0);
-> > > > 			Call the underlying driver to reenable IRQ
-> > > > 				generation
-> > 
-> > You are basically suggesting that everything except the PPC_PMAC stuff
-> > be moved out of the interrupts-off region.  Is there in fact any
-> > remaining reason for us to use suspend_late or resume_early?  It
-> > doesn't seem like it.
+On Friday 16 January 2009, Linus Torvalds wrote:
 > 
-> Yes, it is.  Please have a look at the new PCI PM callbacks in
-> drivers/pci/pci-driver.c .  Basically, IMO the standard config spaces should be
-> restored with interrupts off if possible.
+> On Fri, 16 Jan 2009, Alan Stern wrote:
+> > 
+> > USB does this.  However I admit that fixing every PCI driver would be a 
+> > big chore...
 > 
-> BTW, I think USB might benefit from implementing the new framework. ;-)
+> I suspect USB is one of the very few drivers that may get suspend/resume 
+> very close to right, partly because _everybody_ has a USB controller these 
+> days, partly because USB interrupts are very commonly shared, and partly 
+> because there are several core people who work on USB.
+> 
+> That's actually very rare (especially the last point - most drivers hardly 
+> have _any_ maintainer, much less anybody who can see the big picture and 
+> knows about the rest of the system).
+> 
+> So if everybody did what USB does, we'd indeed be fine, and suspend and 
+> resume would probably work on practically every machine out there. But as 
+> you note, it's not really an option. The common case for 99% of all 
+> drivers is probably that none of the core kernel people can even test 
+> them, and they likely do not exist even in some distro test area.
+> 
+> So I'm the one who pushed Rafael towards his patch, because we've worked 
+> on suspend/resume for years, but while we're _much_ better than we used to 
+> be (especially on machines that are really bog-standard and only have the 
+> common chips), I don't think we'll ever really "get there" if we rely on 
+> the drivers always getting things right.
+> 
+> And getting things right does mean changing every single PCI interrupt 
+> handler to know about suspend/resume - not to mention do the 
+> suspend/resume sequence right in the first place. Neither of the two is 
+> very likely to really happen.
+> 
+> I did suggest that we could also add some test-infrastructure like the 
+> DEBUG_SHIRQ thing we already have, which sends an interrupt immediately on 
+> resume after interrupts have been enabled. That will likely uncover a 
+> _lot_ of problems, and it's almost certainly worth doing regardless.
 
-Agreed, but for now we'll stick with what we've got.
+For the record, I put that onto my todo list, which unfortunately is quite long
+at the moment (and getting longer).
 
-Anyway, going over your suggested change in
+> But even then, it would just be so much _simpler_ if the generic layer 
+> just took care of this issue, so that drivers could just ignore it, and a 
+> driver would only have to worry about its _own_ resume issues. 
+> 
+> So yes, doing it in the generic PCI layer clearly has some problems, and 
+> no, it's not "perfect". In a perfect world, doing it in the driver has 
+> real advantages - it's the most flexible approach, and it allows the 
+> driver to do what it wants. But from all I've ever seen, I'm personally 
+> pretty convinced that when it comes to drivers, the less the driver writer 
+> has to worry about, the better off we are.
 
-	http://marc.info/?l=linux-kernel&m=123184641714487&w=2
+I agree.
 
-there are still several things I don't understand:
+IMO suspend-resume is quite difficult to implement in a PCI driver unless
+the driver writer knows very well how PCI PM is supposed to work and interact
+with things like interrupts control, ACPI etc.
 
-	Why the asymmetry between running pci_save_state() with
-	interrupts on and pci_restore_state() with interrupts
-	off?
+> I'm franklly hoping that most PCI drivers would not need to have a 
+> suspend/resume method at all - the PCI layer should get the normal PCI 
+> suspend parts right, and the upper layers should do the rest. For example, 
+> a network driver shouldn't have to close itself down - the network layer 
+> should just do it for it (all the netif_stop_queue() etc crud to make 
+> sure that the network layer doesn't try to touch it). 
+> 
+> So we're clearly not there yet. But after having yet another random 
+> machine that just didn't resume because of yet another new random driver, 
+> I'm just not seeing anything else that is viable long-term.
+> 
+> IOW, we can ask driver writers to write perfect code, or we can spend some 
+> effort on trying to make things work even when they don't. I know which 
+> approach I consider to be realistic.
 
-	Why call pci_set_master() during resume without calling
-	pci_clear_master() during suspend?
+So, does it mean the patch looks reasonable? ;-)
 
-	Why did you move pci_wake_from_d3() after
-	pci_disable_device() and pci_save_state()?
-
-	Does pci_restore_state() restore the PME#-enable setting
-	along with the power setting?  If so, why call
-	pci_enable_wake() during resume at all?  If not, why change
-	the wakeup settings after pci_save_state() in the suspend 
-	routine but not before pci_restore_state() in the resume 
-	routine?
-
-	Why call pci_enable_wake() during resume instead of 
-	pci_enable_wake_from_d3()?
-
-	Is it really smart for pci_save_state() to save the
-	power setting and pci_restore_state() to restore it?
-	Would it make things simpler if these routines didn't
-	alter the power setting?
-
-Ben, we need to check with you on this also.  These patches we have
-been throwing around move the code to disable and enable the PPC_PMAC
-ASIC clocks for USB.  Can that code execute safely at any time while
-the host controller isn't running?  Is it okay to execute the code
-with interrupts disabled?
-
-Alan Stern
+Rafael
