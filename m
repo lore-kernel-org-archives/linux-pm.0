@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] USB: don't enable wakeup by default for PCI
-	host controllers
-Date: Fri, 16 Jan 2009 14:49:39 +0100
-Message-ID: <200901161449.39901.rjw__24610.4188300253$1232114029$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PCI PM: Restore standard config registers of
+ all devices early (was: Re: EeePC resume failure - timers)
+Date: Fri, 16 Jan 2009 10:15:16 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0901161010400.2417-100000__416.280565741722$1232119164$gmane$org@iolanthe.rowland.org>
+References: <200901161040.19222.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200901161040.19222.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,83 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: john stultz <johnstul@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 13 January 2009, Alan Stern wrote:
-> This patch (as1199) changes the initial wakeup settings for PCI USB
-> host controllers.  The controllers are marked as capable of waking the
-> system, but wakeup is not enabled by default.
-> 
-> It turns out that enabling wakeup for USB host controllers has a lot
-> of bad consequences.  As the simplest example, if a USB mouse or
-> keyboard is unplugged immediately after the computer is put to sleep,
-> the unplug will cause the system to wake back up again!  We are better
-> off marking them as wakeup-capable and leaving wakeup disabled.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
-> CC: David Brownell <david-b@pacbell.net>
+On Fri, 16 Jan 2009, Rafael J. Wysocki wrote:
 
-I have now tested the patch and it helps here as expected, so Greg please
-push it to Linus ASAP, because many people have reported the problem it fixes
-already.
-
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-Thanks,
-Rafael
-
-
-> ---
+> There is a problem in our handling of suspend-resume of PCI devices
+> that many of them have their standard config registers restored with
+> interrupts enabled and they are put into the full power state with
+> interrupts enabled as well.  This may lead to the following scenario:
+> * an interrupt vector is shared between two or more devices
+> * one device is resumed earlier and generates an interrupt
+> * the interrupt handler of another device tries to handle it and
+>   attempts to access the device the config space of which hasn't
+>   been restored yet and/or which still is in a low power state
+> * the system crashes as a result
 > 
-> This patch should also be queued for 2.6.28.stable.
-> 
-> 
-> Index: usb-2.6/drivers/usb/core/hcd-pci.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/core/hcd-pci.c
-> +++ usb-2.6/drivers/usb/core/hcd-pci.c
-> @@ -128,7 +128,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
->  	}
->  
->  	pci_set_master(dev);
-> -	device_set_wakeup_enable(&dev->dev, 1);
->  
->  	retval = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
->  	if (retval != 0)
-> Index: usb-2.6/drivers/usb/host/ehci-pci.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-pci.c
-> +++ usb-2.6/drivers/usb/host/ehci-pci.c
-> @@ -230,7 +230,7 @@ static int ehci_pci_setup(struct usb_hcd
->  		pci_read_config_word(pdev, 0x62, &port_wake);
->  		if (port_wake & 0x0001) {
->  			dev_warn(&pdev->dev, "Enabling legacy PCI PM\n");
-> -			device_init_wakeup(&pdev->dev, 1);
-> +			device_set_wakeup_capable(&pdev->dev, 1);
->  		}
->  	}
->  
-> Index: usb-2.6/drivers/usb/host/ohci-hcd.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ohci-hcd.c
-> +++ usb-2.6/drivers/usb/host/ohci-hcd.c
-> @@ -593,12 +593,10 @@ static int ohci_run (struct ohci_hcd *oh
->  	 * to be checked in case boot firmware (BIOS/SMM/...) has set up
->  	 * wakeup in a way the bus isn't aware of (e.g., legacy PCI PM).
->  	 * If the bus glue detected wakeup capability then it should
-> -	 * already be enabled.  Either way, if wakeup should be enabled
-> -	 * but isn't, we'll enable it now.
-> +	 * already be enabled; if so we'll just enable it again.
->  	 */
-> -	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
-> -			&& !device_can_wakeup(hcd->self.controller))
-> -		device_init_wakeup(hcd->self.controller, 1);
-> +	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0)
-> +		device_set_wakeup_capable(hcd->self.controller, 1);
->  
->  	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
->  	case OHCI_USB_OPER:
-> 
+> To prevent this from happening we should restore the standard
+> configuration registers of all devices with interrupts disabled and
+> we should put them into the D0 power state right after that.
+> Unfortunately, this cannot be done using the existing
+> pci_set_power_state(), because it can sleep.  Also, to do it we have
+> to make sure that the config spaces of all devices were actually
+> saved during suspend.
+
+Alternatively, PCI drivers should be smart enough to realize that a
+shared interrupt arriving while their device is suspended could not
+possibly be generated by that device.  In such a case the driver can
+return IRQ_NONE directly, without ever touching the device.
+
+USB does this.  However I admit that fixing every PCI driver would be a 
+big chore...
+
+Alan Stern
