@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI PM: Restore standard config registers of all
-	devices early (was: Re: EeePC resume failure - timers)
-Date: Fri, 16 Jan 2009 10:40:18 +0100
-Message-ID: <200901161040.19222.rjw__48669.449837371$1232099089$gmane$org@sisk.pl>
-References: <alpine.LFD.2.00.0901141236260.6528@localhost.localdomain>
-	<alpine.LFD.2.00.0901150954390.6528@localhost.localdomain>
-	<200901152008.50643.rjw@sisk.pl>
+Subject: Re: [PATCH] USB: don't enable wakeup by default for PCI
+	host controllers
+Date: Fri, 16 Jan 2009 14:49:39 +0100
+Message-ID: <200901161449.39901.rjw__24610.4188300253$1232114029$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901152008.50643.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,435 +19,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: john stultz <johnstul@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[following off-list discussion]
-
-On Thursday 15 January 2009, Rafael J. Wysocki wrote:
-> On Thursday 15 January 2009, Linus Torvalds wrote:
-> > 
-> > On Thu, 15 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > > On Thursday 15 January 2009, Linus Torvalds wrote:
-> > > > > 
-> > > > > Yes, it does, via pci_prepare_to_sleep().
-> > > > 
-> > > > Umm. On the _early_wakeup_ path.
-> > > 
-> > > Nope.  pci_prepare_to_sleep() is called during suspend, from
-> > > pci_pm_default_suspend(), with interrupts on.
-> > > 
-> > > On resume pci_set_power_state(dev, PCI_D0) is called from
-> > > pci_reenable_device(), with interrupts on.
-> > 
-> > Rafael - that was my POINT.
-> > 
-> > I claimed that the new PM infrastructure did NOT wake up the device at the 
-> > relevant time. That was all.
-> > 
-> > I made that comment as a reply to you saying that the new PM model fixes 
-> > the problems with the old. It does NOT fix anything at all in this area. 
-> > That was my whole point. It does not wake up the low-level PCI code during 
-> > early wakeup, so it cannot.
-> > 
-> > > The only solution I can see would be to use a special version of
-> > > pci_set_power_state() to power up devices during resume with interrupts off
-> > > that will use mdelay() to wait for the ones in D3 to reach D0.  In fact it
-> > > could even wait once for multiple devices.
-> > 
-> > Yes.
-> > 
-> > > Bridges would be problematic, but still possible to handle.
-> > > 
-> > > There might be a problem with the devices that are power-managed via ACPI only,
-> > > but they _should_ be in D0 during resume anyway (otherwise we won't be able to
-> > > access their config spaces at all).
-> > > 
-> > > How does that sound?
-> > 
-> > I do suspect that resume time is special enough that yes, it's worth doing 
-> > something different than what a driver would normally do at device detect 
-> > (or open) time.
+On Tuesday 13 January 2009, Alan Stern wrote:
+> This patch (as1199) changes the initial wakeup settings for PCI USB
+> host controllers.  The controllers are marked as capable of waking the
+> system, but wakeup is not enabled by default.
 > 
-> OK, so I'll do that and let's see how it works.
+> It turns out that enabling wakeup for USB host controllers has a lot
+> of bad consequences.  As the simplest example, if a USB mouse or
+> keyboard is unplugged immediately after the computer is put to sleep,
+> the unplug will cause the system to wake back up again!  We are better
+> off marking them as wakeup-capable and leaving wakeup disabled.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
+> CC: David Brownell <david-b@pacbell.net>
 
-The patch is appended.  Well, I'm not particularly proud of it, but it seems to
-do the trick.
+I have now tested the patch and it helps here as expected, so Greg please
+push it to Linus ASAP, because many people have reported the problem it fixes
+already.
 
-It survived some initial testing, but I tested it on top of the patch from
-http://lkml.org/lkml/2009/1/13/144 (this shouldn't matter, but still).
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
 Thanks,
 Rafael
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI PM: Restore standard config registers of all devices early
 
-There is a problem in our handling of suspend-resume of PCI devices
-that many of them have their standard config registers restored with
-interrupts enabled and they are put into the full power state with
-interrupts enabled as well.  This may lead to the following scenario:
-* an interrupt vector is shared between two or more devices
-* one device is resumed earlier and generates an interrupt
-* the interrupt handler of another device tries to handle it and
-  attempts to access the device the config space of which hasn't
-  been restored yet and/or which still is in a low power state
-* the system crashes as a result
-
-To prevent this from happening we should restore the standard
-configuration registers of all devices with interrupts disabled and
-we should put them into the D0 power state right after that.
-Unfortunately, this cannot be done using the existing
-pci_set_power_state(), because it can sleep.  Also, to do it we have
-to make sure that the config spaces of all devices were actually
-saved during suspend.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci-driver.c |   98 ++++++++++++++++-------------------------------
- drivers/pci/pci.c        |   63 +++++++++++++++++++++++++++---
- drivers/pci/pci.h        |    6 ++
- include/linux/pci.h      |    5 ++
- 4 files changed, 102 insertions(+), 70 deletions(-)
-
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -355,17 +355,34 @@ static int pci_legacy_suspend(struct dev
- 	int i = 0;
- 
- 	if (drv && drv->suspend) {
-+		pci_dev->state_saved = false;
-+
- 		i = drv->suspend(pci_dev, state);
- 		suspend_report_result(drv->suspend, i);
--	} else {
--		pci_save_state(pci_dev);
--		/*
--		 * This is for compatibility with existing code with legacy PM
--		 * support.
--		 */
--		pci_pm_set_unknown_state(pci_dev);
-+		if (i)
-+			return i;
-+
-+		if (pci_dev->state_saved)
-+			goto Fixup;
-+
-+		if (pci_dev->current_state != PCI_D0) {
-+			/*
-+			 * Warn users if the driver puts the device into a low
-+			 * power state, but doesn't bother to save its config
-+			 * registers.
-+			 */
-+			WARN_ON(true);
-+			goto Fixup;
-+		}
- 	}
- 
-+	pci_save_state(pci_dev);
-+	/*
-+	 * This is for compatibility with existing code with legacy PM support.
-+	 */
-+	pci_pm_set_unknown_state(pci_dev);
-+
-+ Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
- 	return i;
-@@ -386,81 +403,34 @@ static int pci_legacy_suspend_late(struc
- 
- static int pci_legacy_resume_early(struct device *dev)
- {
--	int error = 0;
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
- 
--	pci_fixup_device(pci_fixup_resume_early, pci_dev);
--
--	if (drv && drv->resume_early)
--		error = drv->resume_early(pci_dev);
--	return error;
-+	return drv && drv->resume_early ?
-+			drv->resume_early(pci_dev) : 0;
- }
- 
- static int pci_legacy_resume(struct device *dev)
- {
--	int error;
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
- 
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
--	if (drv && drv->resume) {
--		error = drv->resume(pci_dev);
--	} else {
--		/* restore the PCI config space */
--		pci_restore_state(pci_dev);
--		error = pci_pm_reenable_device(pci_dev);
--	}
--	return error;
-+	return drv && drv->resume ?
-+			drv->resume(pci_dev) : pci_pm_reenable_device(pci_dev);
- }
- 
- /* Auxiliary functions used by the new power management framework */
- 
--static int pci_restore_standard_config(struct pci_dev *pci_dev)
--{
--	struct pci_dev *parent = pci_dev->bus->self;
--	int error = 0;
--
--	/* Check if the device's bus is operational */
--	if (!parent || parent->current_state == PCI_D0) {
--		pci_restore_state(pci_dev);
--		pci_update_current_state(pci_dev, PCI_D0);
--	} else {
--		dev_warn(&pci_dev->dev, "unable to restore config, "
--			"bridge %s in low power state D%d\n", pci_name(parent),
--			parent->current_state);
--		pci_dev->current_state = PCI_UNKNOWN;
--		error = -EAGAIN;
--	}
--
--	return error;
--}
--
--static bool pci_is_bridge(struct pci_dev *pci_dev)
--{
--	return !!(pci_dev->subordinate);
--}
--
- static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
- {
--	if (pci_restore_standard_config(pci_dev))
--		pci_fixup_device(pci_fixup_resume_early, pci_dev);
-+	pci_restore_standard_config(pci_dev);
-+	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- }
- 
- static int pci_pm_default_resume(struct pci_dev *pci_dev)
- {
--	/*
--	 * pci_restore_standard_config() should have been called once already,
--	 * but it would have failed if the device's parent bridge had not been
--	 * in power state D0 at that time.  Check it and try again if necessary.
--	 */
--	if (pci_dev->current_state == PCI_UNKNOWN) {
--		int error = pci_restore_standard_config(pci_dev);
--		if (error)
--			return error;
--	}
--
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
- 	if (!pci_is_bridge(pci_dev))
-@@ -575,11 +545,11 @@ static int pci_pm_resume_noirq(struct de
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	pci_pm_default_resume_noirq(pci_dev);
-+
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume_early(dev);
- 
--	pci_pm_default_resume_noirq(pci_dev);
--
- 	if (drv && drv->pm && drv->pm->resume_noirq)
- 		error = drv->pm->resume_noirq(dev);
- 
-@@ -730,11 +700,11 @@ static int pci_pm_restore_noirq(struct d
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	pci_pm_default_resume_noirq(pci_dev);
-+
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume_early(dev);
- 
--	pci_pm_default_resume_noirq(pci_dev);
--
- 	if (drv && drv->pm && drv->pm->restore_noirq)
- 		error = drv->pm->restore_noirq(dev);
- 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -22,7 +22,7 @@
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
- 
--unsigned int pci_pm_d3_delay = 10;
-+unsigned int pci_pm_d3_delay = PCI_PM_D3_WAIT;
- 
- #ifdef CONFIG_PCI_DOMAINS
- int pci_domains_supported = 1;
-@@ -426,6 +426,7 @@ static inline int platform_pci_sleep_wak
-  *                           given PCI device
-  * @dev: PCI device to handle.
-  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
-+ * @wait: If 'true', wait for the device to change its power state
-  *
-  * RETURN VALUE:
-  * -EINVAL if the requested state is invalid.
-@@ -435,7 +436,7 @@ static inline int platform_pci_sleep_wak
-  * 0 if device's power state has been successfully changed.
-  */
- static int
--pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
-+pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state, bool wait)
- {
- 	u16 pmcsr;
- 	bool need_restore = false;
-@@ -480,8 +481,10 @@ pci_raw_set_power_state(struct pci_dev *
- 		break;
- 	case PCI_UNKNOWN: /* Boot-up */
- 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
--		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET))
-+		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET)) {
- 			need_restore = true;
-+			wait = true;
-+		}
- 		/* Fall-through: force to D0 */
- 	default:
- 		pmcsr = 0;
-@@ -491,12 +494,15 @@ pci_raw_set_power_state(struct pci_dev *
- 	/* enter specified state */
- 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
- 
-+	if (!wait)
-+		return 0;
-+
- 	/* Mandatory power management transition delays */
- 	/* see PCI PM 1.1 5.6.1 table 18 */
- 	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
- 		msleep(pci_pm_d3_delay);
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
--		udelay(200);
-+		udelay(PCI_PM_D2_DELAY);
- 
- 	dev->current_state = state;
- 
-@@ -515,7 +521,7 @@ pci_raw_set_power_state(struct pci_dev *
- 	if (need_restore)
- 		pci_restore_bars(dev);
- 
--	if (dev->bus->self)
-+	if (wait && dev->bus->self)
- 		pcie_aspm_pm_state_change(dev->bus->self);
- 
- 	return 0;
-@@ -585,7 +591,7 @@ int pci_set_power_state(struct pci_dev *
- 	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
- 		return 0;
- 
--	error = pci_raw_set_power_state(dev, state);
-+	error = pci_raw_set_power_state(dev, state, true);
- 
- 	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
- 		/* Allow the platform to finalize the transition */
-@@ -730,6 +736,7 @@ pci_save_state(struct pci_dev *dev)
- 	/* XXX: 100% dword access ok here? */
- 	for (i = 0; i < 16; i++)
- 		pci_read_config_dword(dev, i * 4,&dev->saved_config_space[i]);
-+	dev->state_saved = true;
- 	if ((i = pci_save_pcie_state(dev)) != 0)
- 		return i;
- 	if ((i = pci_save_pcix_state(dev)) != 0)
-@@ -1378,6 +1385,50 @@ void pci_allocate_cap_save_buffers(struc
- }
- 
- /**
-+ * pci_restore_standard_config - restore standard config registers of PCI device
-+ * @dev: PCI device to handle
-+ *
-+ * This function assumes that the device's configuration space is accessible.
-+ * If the device needs to be powered up, the function will wait for it to
-+ * change the state.
-+ */
-+int pci_restore_standard_config(struct pci_dev *dev)
-+{
-+	pci_power_t prev_state;
-+	int error;
-+
-+	pci_restore_state(dev);
-+	pci_update_current_state(dev, PCI_D0);
-+
-+	prev_state = dev->current_state;
-+	if (prev_state == PCI_D0)
-+		return 0;
-+
-+	error = pci_raw_set_power_state(dev, PCI_D0, false);
-+	if (error)
-+		return error;
-+
-+	if (pci_is_bridge(dev)) {
-+		if (prev_state > PCI_D1)
-+			mdelay(PCI_PM_BUS_WAIT);
-+	} else {
-+		switch(prev_state) {
-+		case PCI_D3cold:
-+		case PCI_D3hot:
-+			mdelay(pci_pm_d3_delay);
-+			break;
-+		case PCI_D2:
-+			udelay(PCI_PM_D2_DELAY);
-+			break;
-+		}
-+	}
-+
-+	dev->current_state = PCI_D0;
-+
-+	return 0;
-+}
-+
-+/**
-  * pci_enable_ari - enable ARI forwarding if hardware support it
-  * @dev: the PCI device
-  */
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -117,6 +117,10 @@ typedef int __bitwise pci_power_t;
- #define PCI_UNKNOWN	((pci_power_t __force) 5)
- #define PCI_POWER_ERROR	((pci_power_t __force) -1)
- 
-+#define PCI_PM_D2_DELAY	200
-+#define PCI_PM_D3_WAIT	10
-+#define PCI_PM_BUS_WAIT	50
-+
- /** The pci_channel state describes connectivity between the CPU and
-  *  the pci device.  If some PCI bus between here and the pci device
-  *  has crashed or locked up, this info is reflected here.
-@@ -252,6 +256,7 @@ struct pci_dev {
- 	unsigned int	ari_enabled:1;	/* ARI forwarding */
- 	unsigned int	is_managed:1;
- 	unsigned int	is_pcie:1;
-+	unsigned int	state_saved:1;
- 	pci_dev_flags_t dev_flags;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
- 
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -49,6 +49,12 @@ extern void pci_disable_enabled_device(s
- extern void pci_pm_init(struct pci_dev *dev);
- extern void platform_pci_wakeup_init(struct pci_dev *dev);
- extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
-+extern int pci_restore_standard_config(struct pci_dev *dev);
-+
-+static inline bool pci_is_bridge(struct pci_dev *pci_dev)
-+{
-+	return !!(pci_dev->subordinate);
-+}
- 
- extern int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
- extern int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
+> ---
+> 
+> This patch should also be queued for 2.6.28.stable.
+> 
+> 
+> Index: usb-2.6/drivers/usb/core/hcd-pci.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/core/hcd-pci.c
+> +++ usb-2.6/drivers/usb/core/hcd-pci.c
+> @@ -128,7 +128,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
+>  	}
+>  
+>  	pci_set_master(dev);
+> -	device_set_wakeup_enable(&dev->dev, 1);
+>  
+>  	retval = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
+>  	if (retval != 0)
+> Index: usb-2.6/drivers/usb/host/ehci-pci.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-pci.c
+> +++ usb-2.6/drivers/usb/host/ehci-pci.c
+> @@ -230,7 +230,7 @@ static int ehci_pci_setup(struct usb_hcd
+>  		pci_read_config_word(pdev, 0x62, &port_wake);
+>  		if (port_wake & 0x0001) {
+>  			dev_warn(&pdev->dev, "Enabling legacy PCI PM\n");
+> -			device_init_wakeup(&pdev->dev, 1);
+> +			device_set_wakeup_capable(&pdev->dev, 1);
+>  		}
+>  	}
+>  
+> Index: usb-2.6/drivers/usb/host/ohci-hcd.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ohci-hcd.c
+> +++ usb-2.6/drivers/usb/host/ohci-hcd.c
+> @@ -593,12 +593,10 @@ static int ohci_run (struct ohci_hcd *oh
+>  	 * to be checked in case boot firmware (BIOS/SMM/...) has set up
+>  	 * wakeup in a way the bus isn't aware of (e.g., legacy PCI PM).
+>  	 * If the bus glue detected wakeup capability then it should
+> -	 * already be enabled.  Either way, if wakeup should be enabled
+> -	 * but isn't, we'll enable it now.
+> +	 * already be enabled; if so we'll just enable it again.
+>  	 */
+> -	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
+> -			&& !device_can_wakeup(hcd->self.controller))
+> -		device_init_wakeup(hcd->self.controller, 1);
+> +	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0)
+> +		device_set_wakeup_capable(hcd->self.controller, 1);
+>  
+>  	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
+>  	case OHCI_USB_OPER:
+> 
