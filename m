@@ -1,8 +1,8 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 084/123] USB: fix up suspend and resume for
  PCI host controllers
-Date: Sat, 17 Jan 2009 15:45:52 +1100
-Message-ID: <1232167552.23611.20.camel__12823.3443400406$1232167849$gmane$org@pasglop>
+Date: Sat, 17 Jan 2009 16:05:29 +1100
+Message-ID: <1232168729.23611.30.camel__32027.6392311373$1232168873$gmane$org@pasglop>
 References: <Pine.LNX.4.44L0.0901161805450.4593-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -29,6 +29,9 @@ List-Id: linux-pm@vger.kernel.org
 > 
 > with vanilla 2.6.29-rc1 or rc2.
 
-Out of curiosity, while pci_disable_device() before save_state() ?
+I did a quick test on an old powerbook, and it seems to suspend/resume
+fine, either with nothing plugged, with a usb storage device plugged or
+a mouse plugged and things look ok (and the mouse suspends fine).
 
+Cheers,
 Ben.
