@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 084/123] USB: fix up suspend and resume for
-	PCI host controllers
-Date: Sun, 18 Jan 2009 15:36:46 +0100
-Message-ID: <200901181536.47336.rjw__24775.9898579263$1232289684$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0901161805450.4593-100000@iolanthe.rowland.org>
-	<200901180130.02933.rjw@sisk.pl>
-	<1232243254.23611.40.camel@pasglop>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: 2.6.29-rc2 regression: hibernation hang on eeepc-701
+	(method "platform" only)
+Date: Sun, 18 Jan 2009 19:19:48 +0000
+Message-ID: <9b2b86520901181119kfdc15bev7f6d859172355055__26782.078392762$1232306598$gmane$org@mail.gmail.com>
+References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1232243254.23611.40.camel@pasglop>
-Content-Disposition: inline
+In-Reply-To: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,54 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 18 January 2009, Benjamin Herrenschmidt wrote:
-> On Sun, 2009-01-18 at 01:30 +0100, Rafael J. Wysocki wrote:
-> 
-> > On PCs we have to restore the config spaces before calling pci_enable_device(),
-> > because otherwise we have a problem with unconfigured devices being enabled
-> > during resume.
-> > 
-> > Recently it's turned out that in fact we need to call pci_restore_state() with
-> > interrupts off and power up the device using the PCI PM native mechanism or we
-> > have a problem with shared interrupts.  A patch for that was sent yesterday.
-> > 
-> > At the same time we can't call pci_enable_device() with interrupts off.
-> > 
-> > If there are systems on which the standard config spaces of PCI devices are not
-> > accessible during resume, they are broken at the moment and quite frankly I
-> > don't know what to do to fix them.  I haven't seen any reports of this type of
-> > breakage yet, though.
-> 
-> Well, it's all a bit fishy...
-> 
-> Part of the problem is that pci_enable_device() is the only chance the
-> platform gets to do things like turn power or clocks on for devices that
-> aren't strictly following PCI D states.
+On 1/18/09, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+> Hibernation hangs just after writing the image.  With s2disk I can see
+> this from the console messages.  The same hang happens with kernel
+> swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
+> the image has been written from the HDD led.
+>
+> In either case, I can still hard-power-off and resume from hibernation.
+>
+> It doesn't hang if I use the shutdown method (either 'echo shutdown |
+> sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
 
-That's true and not particularly fortunate. :-)
- 
-> For PowerMac, we get away with it I think mostly because all devices
-> that are in this case also have explicit calls to the platform code to
-> turn things on.
-> 
-> But I can very well see embedded systems having trouble in that area.
-> 
-> I suppose when it happens, it would be a matter of having the right arch
-> hook inside pci_restore_state() itself.
+As a wild guess I tried "acpi_sleep=s4_nonvs", but it didn't help.
 
-Yes, I thought about the same thing.
+In fact it didn't seem to work.  The kernel log says that NVS was
+still saved and restored.
 
-That said, the only platform implementing the PCI PM hooks we have at the
-moment is ACPI ...
+$ dmesg | grep -i nvs
+[    0.000000]  BIOS-e820: 000000001f790000 - 000000001f7d0000 (ACPI NVS)
+[    0.000000] Kernel command line: root=/dev/sda2 ro resume=/dev/sda2
+resume_offset=144480 quiet acpi_sleep=s4_nonvs
+[   91.105449] PM: Saving platform NVS memory
+[   91.106707] PM: Restoring platform NVS memory
 
-> As for the problem with interrupts, maybe the right option here is to
-> have the PCI core always restore the state early ? 
-
-Yes, that's what we're going to implement shortly.
-
-Thanks,
-Rafael
+Thanks
+Alan
