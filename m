@@ -1,12 +1,13 @@
-From: Ritesh Raj Sarraf <rrs@researchut.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [dm-devel] dm-crypt low performance
-Date: Mon, 19 Jan 2009 16:04:20 +0530
-Message-ID: <200901191604.21584.rrs__33592.7289365374$1232361433$gmane$org@researchut.com>
-References: <Pine.LNX.4.44L0.0901131456570.27985-100000@iolanthe.rowland.org>
+Date: Mon, 19 Jan 2009 11:23:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0901191120370.25401-100000@netrider.rowland.org>
+References: <200901191604.21584.rrs@researchut.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8842214336841202163=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901131456570.27985-100000@iolanthe.rowland.org>
+In-Reply-To: <200901191604.21584.rrs@researchut.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,109 +15,38 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Ritesh Raj Sarraf <rrs@researchut.com>
 Cc: device-mapper development <dm-devel@redhat.com>, linux-pm@lists.linux-foundation.org, Milan Broz <mbroz@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============8842214336841202163==
-Content-Type: multipart/signed;
-  boundary="nextPart26799725.yS5aa6UCHA";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Mon, 19 Jan 2009, Ritesh Raj Sarraf wrote:
 
---nextPart26799725.yS5aa6UCHA
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> I've been testing the same hardware but unfortunately wasn't able to see the 
+> issue back again. One thing to notice is that the laptop has 4 USB ports out 
+> of which 3 are 1.1 and only 1 is 2.0.
+> The suspected faulty USB HDD Enclosure has 2 cables that I was connecting to, 
+> thus ending up connecting them to a 2.0 and 1.1 USB port.
 
-Hi Alan,
+You should have mentioned this before!
 
+One of those cables is for data and power, and the other cable is for 
+power only (probably the thinner of the two).  For your drive to work 
+correctly you should first plug in the power-only cable to a 1.1 port 
+and then plug in the data/power cable to the 2.0 port.
 
-On Wednesday 14 Jan 2009 01:30:59 Alan Stern wrote:
-> >
-> > rrs@learner:~$ cat /tmp/lsusb.suspend
-> > Bus 005 Device 005: ID 046d:08c6 Logitech, Inc. QuickCam for DELL
-> > Notebooks Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> > Bus 004 Device 007: ID 05e3:0702 Genesys Logic, Inc. USB 2.0 IDE Adapter
-> > Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 001 Device 005: ID 046d:c00c Logitech, Inc. Optical Wheel Mouse
-> > Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
->
-> Notice that the IDE Adapter is now attached to a 1.1 bus rather than a
-> 2.0 bus.  That's why it's running so much slower.
->
-> > And here's the usb device listing after a fresh boot.
-> >
-> > rrs@learner:~$ lsusb
-> > Bus 005 Device 004: ID 05e3:0702 Genesys Logic, Inc. USB 2.0 IDE Adapter
-> > Bus 005 Device 003: ID 046d:08c6 Logitech, Inc. QuickCam for DELL
-> > Notebooks Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> > Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 001 Device 004: ID 046d:c00c Logitech, Inc. Optical Wheel Mouse
-> > Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
->
-> Try building a kernel with CONFIG_USB_DEBUG enabled, and post the dmesg
-> log showing what happens during the disconnect, hibernate, resume, and
-> reconnect.
->
-> You could also try the same thing with no disconnect/reconnect.  Just
-> leave the IDE adapter plugged in the whole time.
->
+If you mix things up and plug the data cable to a 1.1 port then of 
+course the drive will operate only at 1.1 speed.
 
-I've been testing the same hardware but unfortunately wasn't able to see th=
-e=20
-issue back again. One thing to notice is that the laptop has 4 USB ports ou=
-t=20
-of which 3 are 1.1 and only 1 is 2.0.
-The suspected faulty USB HDD Enclosure has 2 cables that I was connecting t=
-o,=20
-thus ending up connecting them to a 2.0 and 1.1 USB port.
+> I tried with just 1 port connected to USB 2.0 port and haven't been able to 
+> reproduce the issue back again yet. :-(
+> I also wasn't able to reproduce back the old issue with the pattern I 
+> mentioned in the previous post (1 cable connected to 1.1 and the other 
+> connected to 2.0 port)
+> 
+> I'll keep testing and post to this thread if I find something useful.
 
-I tried with just 1 port connected to USB 2.0 port and haven't been able to=
-=20
-reproduce the issue back again yet. :-(
-I also wasn't able to reproduce back the old issue with the pattern I=20
-mentioned in the previous post (1 cable connected to 1.1 and the other=20
-connected to 2.0 port)
+See if this doesn't clarify the matter.
 
-I'll keep testing and post to this thread if I find something useful.
-
-Thanks,
-Ritesh
-=2D-=20
-Ritesh Raj Sarraf
-RESEARCHUT - http://www.researchut.com
-"Necessity is the mother of invention."
-
-
---nextPart26799725.yS5aa6UCHA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkl0Vy0ACgkQ4Rhi6gTxMLxqVACfezT3dy0r9BKfkFZSX1RvUOdQ
-hrYAmwWNHr3h/gRSr8fu/hiUSjUj0MoM
-=LBEW
------END PGP SIGNATURE-----
-
---nextPart26799725.yS5aa6UCHA--
-
---===============8842214336841202163==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8842214336841202163==--
+Alan Stern
