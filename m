@@ -1,10 +1,10 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.29-rc2-git1: Reported regressions 2.6.27 -> 2.6.28
-Date: Mon, 19 Jan 2009 22:41:39 +0100 (CET)
-Message-ID: <KTnguC9mFUC.A.VNB.TJRdJB__1071.66380989856$1232409861$gmane$org@chimera>
+Subject: [PATCH] USB: Fix suspend-resume of PCI USB controllers
+Date: Tue, 20 Jan 2009 01:26:56 +0100
+Message-ID: <200901200126.57839.rjw__39756.8860360936$1232411553$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -16,200 +16,256 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGludHJvZHVj
-ZWQgYmV0d2VlbiAyLjYuMjcgYW5kCjIuNi4yOCwgZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhl
-cyBpbiB0aGUgbWFpbmxpbmUgSSBrbm93IG9mLiAgSWYgYW55IG9mIHRoZW0KaGF2ZSBiZWVuIGZp
-eGVkIGFscmVhZHksIHBsZWFzZSBsZXQgbWUga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhl
-ciB1bnJlc29sdmVkIHJlZ3Jlc3Npb25zIGludHJvZHVjZWQgYmV0d2VlbiAyLjYuMjcKYW5kIDIu
-Ni4yOCwgcGxlYXNlIGxldCBtZSBrbm93IGVpdGhlciBhbmQgSSdsbCBhZGQgdGhlbSB0byB0aGUg
-bGlzdC4KQWxzbywgcGxlYXNlIGxldCBtZSBrbm93IGlmIGFueSBvZiB0aGUgZW50cmllcyBiZWxv
-dyBhcmUgaW52YWxpZC4KCkVhY2ggZW50cnkgZnJvbSB0aGUgbGlzdCB3aWxsIGJlIHNlbnQgYWRk
-aXRpb25hbGx5IGluIGFuIGF1dG9tYXRpYyByZXBseSB0bwp0aGlzIG1lc3NhZ2Ugd2l0aCBDQ3Mg
-dG8gdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiByZXBvcnRpbmcgYW5kIGhhbmRsaW5nIHRoZQppc3N1
-ZS4KCgpMaXN0ZWQgcmVncmVzc2lvbnMgc3RhdGlzdGljczoKCiAgRGF0ZSAgICAgICAgICBUb3Rh
-bCAgUGVuZGluZyAgVW5yZXNvbHZlZAogIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0KICAyMDA5LTAxLTIwICAgICAgMTQ0ICAgICAgIDMwICAgICAgICAgIDI3CiAgMjAw
-OS0wMS0xMSAgICAgIDEzOSAgICAgICAzMyAgICAgICAgICAzMAogIDIwMDgtMTItMjEgICAgICAx
-MjAgICAgICAgMTkgICAgICAgICAgMTcKICAyMDA4LTEyLTEzICAgICAgMTExICAgICAgIDE0ICAg
-ICAgICAgIDEzCiAgMjAwOC0xMi0wNyAgICAgIDEwNiAgICAgICAyMCAgICAgICAgICAxNwogIDIw
-MDgtMTItMDQgICAgICAxMDYgICAgICAgMjkgICAgICAgICAgMjEKICAyMDA4LTExLTIyICAgICAg
-IDkzICAgICAgIDI1ICAgICAgICAgIDE1CiAgMjAwOC0xMS0xNiAgICAgICA4OSAgICAgICAzMiAg
-ICAgICAgICAxOAogIDIwMDgtMTEtMDkgICAgICAgNzMgICAgICAgNDAgICAgICAgICAgMjcKICAy
-MDA4LTExLTAyICAgICAgIDU1ICAgICAgIDQxICAgICAgICAgIDI5CiAgMjAwOC0xMC0yNSAgICAg
-ICAyNiAgICAgICAyNSAgICAgICAgICAyMAoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMKLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEyNTAwClN1YmplY3QJCTogcjgxNjk6IE5FVERFViBXQVRDSERPRzog
-ZXRoMCAocjgxNjkpOiB0cmFuc21pdCB0aW1lZCBvdXQKU3VibWl0dGVyCTogSnVzdGluIFBpc3pj
-eiA8anBpc3pjekBsdWNpZHBpeGVscy5jb20+CkRhdGUJCTogMjAwOS0wMS0xMyAyMToxOSAoNyBk
-YXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09
-MTIzMTg4MTYwODExMzIyJnc9NApIYW5kbGVkLUJ5CTogRnJhbmNvaXMgUm9taWV1IDxyb21pZXVA
-ZnIuem9yZWlsLmNvbT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTI0ODMKU3ViamVjdAkJOiBSZWZlcmVuY2UgdG8gaW5leGlzdGVudCBz
-dHJ1Y3QgZG1pX2RldmljZV9pZCBicmVha3MgdGhlIGJ1aWxkClN1Ym1pdHRlcgk6IEplYW4gRGVs
-dmFyZSA8a2hhbGlAbGludXgtZnIub3JnPgpEYXRlCQk6IDIwMDktMDEtMTkgMDE6MjkgKDEgZGF5
-cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTEyNDY1ClN1YmplY3QJCTogS1ZNIGd1ZXN0cyBzdGFsbGluZyBvbiAyLjYuMjggKGJp
-c2VjdGVkKQpTdWJtaXR0ZXIJOiBLZXZpbiBTaGFuYWhhbiA8a21zaGFuYWhAdWN3Yi5vcmcuYXU+
-CkRhdGUJCTogMjAwOS0wMS0xNyAwMzozNyAoMyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI0MjYKU3ViamVjdAkJOiBU
-TURDIEpveXN0aWNrIG5vIGxvbmdlciB3b3JrcyBpbiBrZXJuZWwgMi42LjI4ClN1Ym1pdHRlcgk6
-IEFuZHJldyBTLiBKb2huc29uIDxhbmR5QGFzam9obnNvbi5jb20+CkRhdGUJCTogMjAwOS0wMS0x
-MCAyMTo1MyAoMTAgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
-bnV4LWtlcm5lbCZtPTEyMzE2MjQ4NjQxNTM2NiZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
-emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI0MjEKU3ViamVjdAkJOiBHUEYgb24g
-Mi42LjI4ICZhbXA7IDIuNi4yOC1yYzktZ2l0MyDCoCDCoGUxMDAwZSAvIGUxMDAwIGlzc3VlcwpT
-dWJtaXR0ZXIJOiBEb3VnIEJhemFybmljIDxkb3VnQGJhemFybmljLm5ldD4KRGF0ZQkJOiAyMDA5
-LTAxLTA5IDIxOjI2ICgxMSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgta2VybmVsJm09MTIzMTUzNjUzMTIwMjA0Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQxMQpTdWJqZWN0CQk6IDIu
-Ni4yODogQlVHIGluIHI4MTY5ClN1Ym1pdHRlcgk6IEFuZHJleSBWdWwgPGFuZHJleS52dWxAZ21h
-aWwuY29tPgpEYXRlCQk6IDIwMDgtMTItMzEgMTg6MzcgKDIwIGRheXMgb2xkKQpSZWZlcmVuY2Vz
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjMwNzQ4Njk2MTE0MDkmdz00
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTEyNDA5ClN1YmplY3QJCTogTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlIGF0IGdldF9zdGF0cygp
-ClN1Ym1pdHRlcgk6IFRldHN1byBIYW5kYSA8cGVuZ3Vpbi1rZXJuZWxAaS1sb3ZlLnNha3VyYS5u
-ZS5qcD4KRGF0ZQkJOiAyMDA4LTEyLTMwIDEyOjUzICgyMSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6
-IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMDY0MTY3MDA4Njk1Jnc9NApI
-YW5kbGVkLUJ5CTogRnJlZGVyaWsgRGV3ZWVyZHQgPGZyZWRlcmlrLmRld2VlcmR0QHhwcm9nLmV1
-PgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
-ZD0xMjQwOApTdWJqZWN0CQk6IEZ1bm55IHByb2JsZW0gd2l0aCAyLjYuMjg6IEtlcm5lbCBzdGFs
-bHMKU3VibWl0dGVyCTogTWljaGFlbCBSb3RoIDxtcm90aEBuZXNzaWUuZGU+CkRhdGUJCTogMjAw
-OC0xMi0yNSAxNToxNCAoMjYgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZv
-Lz9sPWxpbnV4LWtlcm5lbCZtPTEyMzAyMTkzMTcxNDI4MiZ3PTQKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI0MDcKU3ViamVjdAkJOiBL
-ZXJuZWwgMi42LjI4IHJlZ3Jlc3Npb246IEhhbmcgYWZ0ZXIgaGliZXJuYXRlClN1Ym1pdHRlcgk6
-IEZyYW5rIEdyb2VuZXZlbGQgPGZyYW5rZ3JvZW5ldmVsZEBnbWFpbC5jb20+CkRhdGUJCTogMjAw
-OC0xMi0yOCAyMDozNCAoMjMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZv
-Lz9sPWxpbnV4LWtlcm5lbCZtPTEyMzA0OTY1MTkwNjA4MSZ3PTQKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI0MDUKU3ViamVjdAkJOiBv
-b3BzIGluIF9fYm91bmNlX2VuZF9pb19yZWFkIHVuZGVyIGt2bQpTdWJtaXR0ZXIJOiBDaHJpc3Rv
-cGggSGVsbHdpZyA8aGNoQGxzdC5kZT4KRGF0ZQkJOiAyMDA4LTEyLTI2IDE3OjM2ICgyNSBkYXlz
-IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIz
-MDMxMzAzNDAwNjc2Jnc9NApIYW5kbGVkLUJ5CTogSmVucyBBeGJvZSA8amVucy5heGJvZUBvcmFj
-bGUuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
-LmNnaT9pZD0xMjQwNApTdWJqZWN0CQk6IE9vcHMgaW4gMi42LjI4LXJjOSBhbmQgLXJjOCAtLSBt
-dHJyIGlzc3VlcyAvIGUxMDAwZQpTdWJtaXR0ZXIJOiBLZXJuZWwgPGtlcm5lbEBiYXphcm5pYy5u
-ZXQ+CkRhdGUJCTogMjAwOC0xMi0yMiA5OjM3ICgyOSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0
-dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTkzODczMzIwMTUwJnc9NAoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQw
-MwpTdWJqZWN0CQk6IFRUWSBwcm9ibGVtIG9uIGxpbnV4LTIuNi4yOC1yYzcKU3VibWl0dGVyCTog
-c2FzYSBzYXNhIDxzYXNhay4xOTgzQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTEyLTIyIDQ6MjMg
-KDI5IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
-ZWwmbT0xMjI5OTE5MTQ2MDAzOTAmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyNDAxClN1YmplY3QJCTogMi42LjI4IHJlZ3Jlc3Np
-b246IHhiYWNrbGlnaHQgYnJva2VuIG9uIFRoaW5rUGFkIFg2MXMKU3VibWl0dGVyCTogVGlubyBL
-ZWl0ZWwgPHRpbm8ua2VpdGVsQGdteC5kZT4KRGF0ZQkJOiAyMDA5LTAxLTA1IDg6MzkgKDE1IGRh
-eXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgv
-a2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9MjJjMTNmOWQ4MTc5
-ZjRjOWNhZWNmY2I2MGE5NTIxNDU2MmI5YWRkYwpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5m
-by8/bD1saW51eC1rZXJuZWwmbT0xMjMxMTQ0NzkxMTAzMTQmdz00CgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMzk1ClN1YmplY3QJCTog
-Mi42LjI4LXJjOTogb3Byb2ZpbGUgcmVncmVzc2lvbgpTdWJtaXR0ZXIJOiBUaW0gQmxlY2htYW5u
-IDx0aW1Aa2xpbmd0Lm9yZz4KRGF0ZQkJOiAyMDA4LTEyLTIxIDE0OjIzICgzMCBkYXlzIG9sZCkK
-Rmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9n
-aXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPWI5OTE3MDI4ODQyMWM3OWYwYzJl
-ZmE4YjMzZTI2ZTY1ZjRiYjdmYjgKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGlu
-dXgta2VybmVsJm09MTIyOTg2OTQ2NjE0NzkxJnc9NApIYW5kbGVkLUJ5CTogQW5kaSBLbGVlbiA8
-YWtAbGludXguaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwu
-b3JnL3Nob3dfYnVnLmNnaT9pZD0xMjM5MwpTdWJqZWN0CQk6IGRlYnVnZ2luZyBpbiBkb3NlbXUg
-Y2F1c2VzIGxvdHMgb2YgJ3NjaGVkdWxpbmcgd2hpbGUgYXRvbWljJwpTdWJtaXR0ZXIJOiBNaWNo
-YWwgU3VjaGFuZWsgPGhyYW1yYWNoQGNlbnRydW0uY3o+CkRhdGUJCTogMjAwOS0wMS0wOSAwNzoy
-OCAoMTEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEyMzkxClN1YmplY3QJCTogUHJvY2Vzc29yIGRvZXMgbm90IGdvIGJl
-bG93IEMyIHN0YXRlIHVudGlsIHVzYi5hdXRvc3VzcGVuZCBpcyBlbmFibGVkClN1Ym1pdHRlcgk6
-IEdlcmdlbHkgSW1yZWggPGltcmVoZ0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wMS0wOSAwMjoz
-NSAoMTEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEyMzM3ClN1YmplY3QJCTogfjEwMCBleHRyYSB3YWtldXBzIHJlcG9y
-dGVkIGJ5IHBvd2VydG9wClN1Ym1pdHRlcgk6IEFsYmVydG8gR29uemFsZXogPGx1aXM2Njc0QHlh
-aG9vLmNvbT4KRGF0ZQkJOiAyMDA4LTEyLTMxIDEyOjI1ICgyMCBkYXlzIG9sZCkKCgpCdWctRW50
-cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNjUKU3Vi
-amVjdAkJOiBGUFUgZW11bGF0aW9uIGJyb2tlbiBpbiAyLjYuMjgtcmM4ID8KU3VibWl0dGVyCTog
-Um9naWVyIFdvbGZmIDxSLkUuV29sZmZAYml0d2l6YXJkLm5sPgpEYXRlCQk6IDIwMDgtMTItMTcg
-ODo1NiAoMzQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4
-LWtlcm5lbCZtPTEyMjk1MDQ2MzAzMDc0NyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
-bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNjQKU3ViamVjdAkJOiBpOTE1OiBzd2l0
-Y2hpbmcgZnJvbSBrd2luIGluIG9wZW5nbCBtb2RlIHRvIGEgVlQgdGhlbiBiYWNrIHRvIHgxMSwg
-eDExIGZyZWV6ZXMKU3VibWl0dGVyCTogQ2FsZWIgQ3VzaGluZyA8eGVub3RlcnJhY2lkZUBnbWFp
-bC5jb20+CkRhdGUJCTogMjAwOC0xMi0xNiAxMTo0MCAoMzUgZGF5cyBvbGQpClJlZmVyZW5jZXMJ
-OiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjk0Mjc3NzAzMDY2NiZ3PTQK
-CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-MTIyNjMKU3ViamVjdAkJOiBTYXRhIHNvZnQgcmVzZXQgZmlsbGluZyBsb2cKU3VibWl0dGVyCTog
-SnVzdGluIE1hZHJ1IDxiZXZpY21AZHNsZXh0cmVtZS5jb20+CkRhdGUJCTogMjAwOC0xMi0xMyAy
-OjA3ICgzOCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTIyOTEzNDEyNjA4NTMzJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjIyNApTdWJqZWN0CQk6IGpvdXJuYWwgYWN0
-aXZpdHkgb24gaW5hY3RpdmUgcGFydGl0aW9uIGNhdXNlcyBpbmFjdGl2ZSBoYXJkZHJpdmUgc3Bp
-bnVwClN1Ym1pdHRlcgk6IEMgU2lnaHRzIDxjc2lnaHRzQGZhc3RtYWlsLmZtPgpEYXRlCQk6IDIw
-MDgtMTItMTQgMTE6MzkgKDM3IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0
-Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9
-Y29tbWl0O2g9Yzg3NTkxYjcxOTczN2I0ZTkxZWIxYTlmYThmZDU1YTRmZjE4ODZkNgpIYW5kbGVk
-LUJ5CTogRXJpYyBTYW5kZWVuIDxzYW5kZWVuQHJlZGhhdC5jb20+CgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMjA5ClN1YmplY3QJCTog
-b2xkaXNoIHRvcCBjb3JlIGR1bXBzIChpbiBpdHMgbWVtaW5mbygpIGZ1bmN0aW9uKQpTdWJtaXR0
-ZXIJOiBBbmRyZWFzIE1vaHIgPGFuZGlAbGlzYXMuZGU+CkRhdGUJCTogMjAwOC0xMi0xMiAxODo0
-OSAoMzkgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
-cm5lbCZtPTEyMjkxMDc4NDAwNjQ3MiZ3PTQKCQkgIGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTIyOTA3NTExMzE5Mjg4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjIwOApTdWJqZWN0CQk6IHVtbCBpcyB2ZXJ5
-IHNsb3cgb24gMi42LjI4IGhvc3QKU3VibWl0dGVyCTogTWlrbG9zIFN6ZXJlZGkgPG1pa2xvc0Bz
-emVyZWRpLmh1PgpEYXRlCQk6IDIwMDgtMTItMTIgOTozNSAoMzkgZGF5cyBvbGQpClJlZmVyZW5j
-ZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjkwNzQ2MzUxODU5MyZ3
-PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
-aWQ9MTIxNjAKU3ViamVjdAkJOiBuZXR3b3JraW5nIG9vcHMgYWZ0ZXIgcmVzdW1lIGZyb20gczJy
-YW0gKDIuNi4yOC1yYzYpClN1Ym1pdHRlcgk6IE1hcmNpbiBTbHVzYXJ6IDxtYXJjaW4uc2x1c2Fy
-ekBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yOCAyMToxNSAoNTMgZGF5cyBvbGQpClJlZmVy
-ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc5MDcwMTYxNTcy
-MyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTIxNTkKU3ViamVjdAkJOiAyLjYuMjgtcmM2LWdpdDEgLS0gTm8gc291bmQgcHJvZHVj
-ZWQgZnJvbSBJbnRlbCBIREEgQUxTQSBkcml2ZXIKU3VibWl0dGVyCTogTWlsZXMgTGFuZSA8bWls
-ZXMubGFuZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMS0yNyAyMDozMyAoNTQgZGF5cyBvbGQp
-ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc4MTgw
-NTYyMDIxMiZ3PTQKSGFuZGxlZC1CeQk6IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIw
-NjEKU3ViamVjdAkJOiBzbmRfaGRhX2ludGVsOiBwb3dlcl9zYXZlOiBzb3VuZCBjcmFja3Mgb24g
-cG93ZXJkb3duClN1Ym1pdHRlcgk6IEplbnMgV2VpYmxlciA8YnVnemlsbGEta2VybmVsQGplbnN0
-aGVicmFpbi5kZT4KRGF0ZQkJOiAyMDA4LTExLTE4IDEyOjA3ICg2MyBkYXlzIG9sZCkKSGFuZGxl
-ZC1CeQk6IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpCdWctRW50cnkJOiBodHRwOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE4NDkKU3ViamVjdAkJOiBkZWZh
-dWx0IElSUSBhZmZpbml0eSBjaGFuZ2UgaW4gdjIuNi4yNyAoYnJlYWtpbmcgc2V2ZXJhbCBTTVAg
-UFBDIGJhc2VkIHN5c3RlbXMpClN1Ym1pdHRlcgk6IEt1bWFyIEdhbGEgPGdhbGFrQGtlcm5lbC5j
-cmFzaGluZy5vcmc+CkRhdGUJCTogMjAwOC0xMC0yNCAxMjo0NSAoODggZGF5cyBvbGQpClJlZmVy
-ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjQ4NTI0NTkyNDEy
-NSZ3PTQKCgpSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-MTI0MDYKU3ViamVjdAkJOiAyLjYuMjggdGhpbmtzIHRoYXQgbXkgUFMvMiBtb3VzZSBpcyBhIHRv
-dWNocGFkClN1Ym1pdHRlcgk6IEFsZXhhbmRlciBFLiBQYXRyYWtvdiA8cGF0cmFrb3ZAZ21haWwu
-Y29tPgpEYXRlCQk6IDIwMDgtMTItMjcgOTowNiAoMjQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBo
-dHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMzAzNjg5MzgxNzI4MCZ3PTQKSGFu
-ZGxlZC1CeQk6IEFyamFuIE9wbWVlciA8YXJqYW5Ab3BtZWVyLm5ldD4KUGF0Y2gJCTogaHR0cDov
-L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjMwOTIxNDc3MDMyMzYmdz00CgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMzk2ClN1
-YmplY3QJCTogaHdpbmZvIHByb2JsZW0gc2luY2UgMi42LjI4ClN1Ym1pdHRlcgk6IEJlc2Nob3Ju
-ZXIgRGFuaWVsIDxEYW5pZWwuQmVzY2hvcm5lckBmYWN0b24uY29tPgpEYXRlCQk6IDIwMDktMDEt
-MDYgODo1MyAoMTQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
-bnV4LWtlcm5lbCZtPTEyMzEyMzI3NzgwMDgzNSZ3PTQKSGFuZGxlZC1CeQk6IFN1cmVzaCBTaWRk
-aGEgPHN1cmVzaC5iLnNpZGRoYUBpbnRlbC5jb20+ClBhdGNoCQk6IGh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgta2VybmVsJm09MTIzMTU0MDA1MTI3NDk3Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjI2MApTdWJqZWN0CQk6IFJl
-Z3Jlc3Npb24gZHVlIHRvIGNvbW1pdCAyYjgwODQ4ZTM4MThmYjFjIChwNTR1c2I6IHN1cHBvcnQg
-TE04NyBmaXJtd2FyZXMpClN1Ym1pdHRlcgk6IExhcnJ5IEZpbmdlciA8TGFycnkuRmluZ2VyQGx3
-ZmluZ2VyLm5ldD4KRGF0ZQkJOiAyMDA4LTEyLTIwIDEwOjQ1ICgzMSBkYXlzIG9sZCkKRmlyc3Qt
-QmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9y
-dmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPTJiODA4NDhlMzgxOGZiMWM4Y2NkZGMxMDVi
-MDY1YTg2YzY4YWZhOWQKUGF0Y2gJCTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTEyMjYwCgoKRm9yIGRldGFpbHMsIHBsZWFzZSB2aXNpdCB0aGUgYnVnIGVudHJp
-ZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4gaW4KcmVmZXJlbmNlcy4KCkFzIHlvdSBjYW4g
-c2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5IGZvciBlYWNoIG9mIHRoZSBsaXN0ZWQgcmVn
-cmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6aWxsYSBlbnRyeSB1c2VkIGZvciB0cmFja2lu
-ZyB0aGUgcmVncmVzc2lvbnMgaW50cm9kdWNlZApiZXR3ZWVuIDIuNi4yNyBhbmQgMi42LjI4LCB1
-bnJlc29sdmVkIGFzIHdlbGwgYXMgcmVzb2x2ZWQsIGF0OgoKaHR0cDovL2J1Z3ppbGxhLmtlcm5l
-bC5vcmcvc2hvd19idWcuY2dpP2lkPTExODA4CgpQbGVhc2UgbGV0IG1lIGtub3cgaWYgdGhlcmUg
-YXJlIGFueSBCdWd6aWxsYSBlbnRyaWVzIHRoYXQgc2hvdWxkIGJlIGFkZGVkIHRvCnRoZSBsaXN0
-IGluIHRoZXJlLgoKVGhhbmtzLApSYWZhZWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+(USB: fix up suspend and resume for PCI host controllers) attempted
+to fix the suspend-resume of PCI USB controllers, but unfortunately
+it did that incorrectly and interrupts are left enabled by the USB
+controllers' ->suspend_late() callback as a result.  This leads to
+serious problems during suspend which are very difficult to debug.
+
+Fix the issue by removing the ->suspend_late() callback of PCI
+USB controllers and moving the code from there to the ->suspend()
+callback executed with interrupts enabled.  Additionally, make
+the ->resume() callback of PCI USB controllers execute
+pci_enable_wake(dev, PCI_D0, false) to disable wake-up from the
+full power state (PCI_D0).
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Tested-by: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/usb/core/hcd-pci.c  |  116 ++++++++++----------------------------------
+ drivers/usb/core/hcd.h      |    1 
+ drivers/usb/host/ehci-pci.c |    1 
+ drivers/usb/host/ohci-pci.c |    1 
+ drivers/usb/host/uhci-hcd.c |    1 
+ 5 files changed, 27 insertions(+), 93 deletions(-)
+
+Index: linux-2.6/drivers/usb/core/hcd-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/hcd-pci.c
++++ linux-2.6/drivers/usb/core/hcd-pci.c
+@@ -200,6 +200,7 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 	struct usb_hcd		*hcd = pci_get_drvdata(dev);
+ 	int			retval = 0;
+ 	int			wake, w;
++	int			has_pci_pm;
+ 
+ 	/* Root hub suspend should have stopped all downstream traffic,
+ 	 * and all bus master traffic.  And done so for both the interface
+@@ -229,6 +230,15 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 
+ 	synchronize_irq(dev->irq);
+ 
++	/* Downstream ports from this root hub should already be quiesced, so
++	 * there will be no DMA activity.  Now we can shut down the upstream
++	 * link (except maybe for PME# resume signaling) and enter some PCI
++	 * low power state, if the hardware allows.
++	 */
++	pci_disable_device(dev);
++
++	pci_save_state(dev);
++
+ 	/* Don't fail on error to enable wakeup.  We rely on pci code
+ 	 * to reject requests the hardware can't implement, rather
+ 	 * than coding the same thing.
+@@ -240,35 +250,6 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 		wake = w;
+ 	dev_dbg(&dev->dev, "wakeup: %d\n", wake);
+ 
+-	/* Downstream ports from this root hub should already be quiesced, so
+-	 * there will be no DMA activity.  Now we can shut down the upstream
+-	 * link (except maybe for PME# resume signaling) and enter some PCI
+-	 * low power state, if the hardware allows.
+-	 */
+-	pci_disable_device(dev);
+- done:
+-	return retval;
+-}
+-EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
+-
+-/**
+- * usb_hcd_pci_suspend_late - suspend a PCI-based HCD after IRQs are disabled
+- * @dev: USB Host Controller being suspended
+- * @message: Power Management message describing this state transition
+- *
+- * Store this function in the HCD's struct pci_driver as .suspend_late.
+- */
+-int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t message)
+-{
+-	int			retval = 0;
+-	int			has_pci_pm;
+-
+-	/* We might already be suspended (runtime PM -- not yet written) */
+-	if (dev->current_state != PCI_D0)
+-		goto done;
+-
+-	pci_save_state(dev);
+-
+ 	/* Don't change state if we don't need to */
+ 	if (message.event == PM_EVENT_FREEZE ||
+ 			message.event == PM_EVENT_PRETHAW) {
+@@ -314,7 +295,7 @@ int usb_hcd_pci_suspend_late(struct pci_
+  done:
+ 	return retval;
+ }
+-EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_late);
++EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
+ 
+ /**
+  * usb_hcd_pci_resume_early - resume a PCI-based HCD before IRQs are enabled
+@@ -324,65 +305,8 @@ EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_la
+  */
+ int usb_hcd_pci_resume_early(struct pci_dev *dev)
+ {
+-	int		retval = 0;
+-	pci_power_t	state = dev->current_state;
+-
+-#ifdef CONFIG_PPC_PMAC
+-	/* Reenable ASIC clocks for USB */
+-	if (machine_is(powermac)) {
+-		struct device_node *of_node;
+-
+-		of_node = pci_device_to_OF_node(dev);
+-		if (of_node)
+-			pmac_call_feature(PMAC_FTR_USB_ENABLE,
+-						of_node, 0, 1);
+-	}
+-#endif
+-
+-	/* NOTE:  chip docs cover clean "real suspend" cases (what Linux
+-	 * calls "standby", "suspend to RAM", and so on).  There are also
+-	 * dirty cases when swsusp fakes a suspend in "shutdown" mode.
+-	 */
+-	if (state != PCI_D0) {
+-#ifdef	DEBUG
+-		int	pci_pm;
+-		u16	pmcr;
+-
+-		pci_pm = pci_find_capability(dev, PCI_CAP_ID_PM);
+-		pci_read_config_word(dev, pci_pm + PCI_PM_CTRL, &pmcr);
+-		pmcr &= PCI_PM_CTRL_STATE_MASK;
+-		if (pmcr) {
+-			/* Clean case:  power to USB and to HC registers was
+-			 * maintained; remote wakeup is easy.
+-			 */
+-			dev_dbg(&dev->dev, "resume from PCI D%d\n", pmcr);
+-		} else {
+-			/* Clean:  HC lost Vcc power, D0 uninitialized
+-			 *   + Vaux may have preserved port and transceiver
+-			 *     state ... for remote wakeup from D3cold
+-			 *   + or not; HCD must reinit + re-enumerate
+-			 *
+-			 * Dirty: D0 semi-initialized cases with swsusp
+-			 *   + after BIOS init
+-			 *   + after Linux init (HCD statically linked)
+-			 */
+-			dev_dbg(&dev->dev, "resume from previous PCI D%d\n",
+-					state);
+-		}
+-#endif
+-
+-		retval = pci_set_power_state(dev, PCI_D0);
+-	} else {
+-		/* Same basic cases: clean (powered/not), dirty */
+-		dev_dbg(&dev->dev, "PCI legacy resume\n");
+-	}
+-
+-	if (retval < 0)
+-		dev_err(&dev->dev, "can't resume: %d\n", retval);
+-	else
+-		pci_restore_state(dev);
+-
+-	return retval;
++	pci_restore_state(dev);
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(usb_hcd_pci_resume_early);
+ 
+@@ -397,6 +321,18 @@ int usb_hcd_pci_resume(struct pci_dev *d
+ 	struct usb_hcd		*hcd;
+ 	int			retval;
+ 
++#ifdef CONFIG_PPC_PMAC
++	/* Reenable ASIC clocks for USB */
++	if (machine_is(powermac)) {
++		struct device_node *of_node;
++
++		of_node = pci_device_to_OF_node(dev);
++		if (of_node)
++			pmac_call_feature(PMAC_FTR_USB_ENABLE,
++						of_node, 0, 1);
++	}
++#endif
++
+ 	hcd = pci_get_drvdata(dev);
+ 	if (hcd->state != HC_STATE_SUSPENDED) {
+ 		dev_dbg(hcd->self.controller,
+@@ -404,6 +340,8 @@ int usb_hcd_pci_resume(struct pci_dev *d
+ 		return 0;
+ 	}
+ 
++	pci_enable_wake(dev, PCI_D0, false);
++
+ 	retval = pci_enable_device(dev);
+ 	if (retval < 0) {
+ 		dev_err(&dev->dev, "can't re-enable after resume, %d!\n",
+Index: linux-2.6/drivers/usb/core/hcd.h
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/hcd.h
++++ linux-2.6/drivers/usb/core/hcd.h
+@@ -257,7 +257,6 @@ extern void usb_hcd_pci_remove(struct pc
+ 
+ #ifdef CONFIG_PM
+ extern int usb_hcd_pci_suspend(struct pci_dev *dev, pm_message_t msg);
+-extern int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t msg);
+ extern int usb_hcd_pci_resume_early(struct pci_dev *dev);
+ extern int usb_hcd_pci_resume(struct pci_dev *dev);
+ #endif /* CONFIG_PM */
+Index: linux-2.6/drivers/usb/host/ehci-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/ehci-pci.c
++++ linux-2.6/drivers/usb/host/ehci-pci.c
+@@ -432,7 +432,6 @@ static struct pci_driver ehci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif
+Index: linux-2.6/drivers/usb/host/ohci-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/ohci-pci.c
++++ linux-2.6/drivers/usb/host/ohci-pci.c
+@@ -487,7 +487,6 @@ static struct pci_driver ohci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif
+Index: linux-2.6/drivers/usb/host/uhci-hcd.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/uhci-hcd.c
++++ linux-2.6/drivers/usb/host/uhci-hcd.c
+@@ -942,7 +942,6 @@ static struct pci_driver uhci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif	/* PM */
