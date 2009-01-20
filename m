@@ -1,17 +1,14 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI PM: Restore standard config registers of
-	all devices early (was: Re: EeePC resume failure - timers)
-Date: Tue, 20 Jan 2009 12:32:00 -0800
-Message-ID: <200901201232.00966.jbarnes@virtuousgeek.org>
-References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
-	<200901201209.37836.jbarnes@virtuousgeek.org>
-	<200901201215.11559.jbarnes@virtuousgeek.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] USB: Fix suspend-resume of PCI USB
+	controllers
+Date: Tue, 20 Jan 2009 15:33:06 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.0901201526510.5575__3749.84585582769$1232483773$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0901201031490.2612-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901201215.11559.jbarnes@virtuousgeek.org>
-Content-Disposition: inline
+In-reply-to: <Pine.LNX.4.44L0.0901201031490.2612-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: USB list <linux-usb@vger.kernel.org>, Jeff Chua <jeff.chua.linux@gmail.com>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 20, 2009 12:15 pm Jesse Barnes wrote:
-> On Tuesday, January 20, 2009 12:09 pm Jesse Barnes wrote:
-> > On Tuesday, January 20, 2009 11:45 am Linus Torvalds wrote:
-> > > On Tue, 20 Jan 2009, Jesse Barnes wrote:
-> > > > Hm it's probably not display programming related then... Sounds like
-> > > > the i830_update_dri_buffers() call is failing for some reason.  The
-> > > > kernel driver does do some I/O mapping stuff at enter/leavevt time
-> > > > (and therefore suspend/resume time), can you reproduce the issue just
-> > > > by VT switching?  If so you might be able to see something useful in
-> > > > the kernel log...
-> > >
-> > > I was going to say that I've been VT switching and it has worked, but I
-> > > decided to double-check. And yes, I can reproduce it that way. And no,
-> > > no kernel messages that are visible that way either.
-> >
-> > So the machine is alive enough for you to see the logs?  Can you get a
-> > backtrace (both kernel & userspace)?
->
-> Oops, just realized by "no messages visible" you probably meant that it
-> really was hung rather than you saw no useful messages.  That'll make
-> things more difficult.  Which 2D driver are you running?
 
-And I assume you've tried keeping an ssh session open on the machine while VT 
-switching (that's *usually* sufficient for me, in all but the worst of 
-crashes)...
+> > Alan, does this look ok for you?
+> 
+> There are a few things I don't like about it:
+> 
+> 	In usb_hcd_pci_suspend, the failure path for 
+> 	pci_set_power_state doesn't undo all the changes
+> 	that have already been made.  In fact, the easiest
+> 	way to do the rest of the recovery probably is to
+> 	call usb_hcd_pci_resume directly.
+> 
+> 	In the !has_pci_pm path we don't call pci_set_power_state.
+> 	This means controllers with legacy power management won't
+> 	get suspended.  Maybe pci_set_power_state should be
+> 	called always, and has_pci_pm be used only for
+> 	interpreting the return code and printing debug messages.
+> 
+> 	In usb_hcd_pci_resume, the pci_wake_from_d3 call
+> 	should be moved up right next to the pci_enable_wake
+> 	call.  It makes no sense for them to be separated by
+> 	pci_enable_device and pci_set_master.  After all,
+> 	even if you can't re-enable the device you probably
+> 	don't want it to continue being a wakeup source.
+> 
+> 	It's a little annoying that several debug messages
+> 	in usb_hcd_pci_resume have been removed.  Can't we
+> 	display the power state upon entry, before trying to
+> 	change it?
+> 
+> 	It stands out that the resume method contains no call
+> 	to match pci_set_power_state() in the suspend method.
+> 	There should at least be a comment about it.
+> 
+> Some of these problems predate Rafael's patch.  Given that it has 
+> already helped a number of people, we might want to merge the patch 
+> and then make additional changes to address these issues.
+
+Rafael's patch is required for upstream to resume on my T61.
+
+Tested-by: Len Brown <len.brown@intel.com>
+
+Perhaps Greg can apply Rafael's patch now to fix upstream ASAP,
+while Alan prepares a 2nd patch to address his observations above?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
