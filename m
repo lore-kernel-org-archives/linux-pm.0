@@ -1,16 +1,16 @@
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: [PATCH] PCI PM: Restore standard config registers of
 	all devices early (was: Re: EeePC resume failure - timers)
-Date: Tue, 20 Jan 2009 12:09:37 -0800
-Message-ID: <200901201209.37836.jbarnes__11425.7190529772$1232482353$gmane$org@virtuousgeek.org>
+Date: Tue, 20 Jan 2009 12:15:11 -0800
+Message-ID: <200901201215.11559.jbarnes__23075.8033031181$1232482941$gmane$org@virtuousgeek.org>
 References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
-	<200901201130.17987.jbarnes@virtuousgeek.org>
 	<alpine.LFD.2.00.0901210642570.2885@localhost.localdomain>
+	<200901201209.37836.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0901210642570.2885@localhost.localdomain>
+In-Reply-To: <200901201209.37836.jbarnes@virtuousgeek.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,21 +25,26 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 20, 2009 11:45 am Linus Torvalds wrote:
-> On Tue, 20 Jan 2009, Jesse Barnes wrote:
-> > Hm it's probably not display programming related then... Sounds like the
-> > i830_update_dri_buffers() call is failing for some reason.  The kernel
-> > driver does do some I/O mapping stuff at enter/leavevt time (and
-> > therefore suspend/resume time), can you reproduce the issue just by VT
-> > switching?  If so you might be able to see something useful in the kernel
-> > log...
+On Tuesday, January 20, 2009 12:09 pm Jesse Barnes wrote:
+> On Tuesday, January 20, 2009 11:45 am Linus Torvalds wrote:
+> > On Tue, 20 Jan 2009, Jesse Barnes wrote:
+> > > Hm it's probably not display programming related then... Sounds like
+> > > the i830_update_dri_buffers() call is failing for some reason.  The
+> > > kernel driver does do some I/O mapping stuff at enter/leavevt time (and
+> > > therefore suspend/resume time), can you reproduce the issue just by VT
+> > > switching?  If so you might be able to see something useful in the
+> > > kernel log...
+> >
+> > I was going to say that I've been VT switching and it has worked, but I
+> > decided to double-check. And yes, I can reproduce it that way. And no, no
+> > kernel messages that are visible that way either.
 >
-> I was going to say that I've been VT switching and it has worked, but I
-> decided to double-check. And yes, I can reproduce it that way. And no, no
-> kernel messages that are visible that way either.
+> So the machine is alive enough for you to see the logs?  Can you get a
+> backtrace (both kernel & userspace)?
 
-So the machine is alive enough for you to see the logs?  Can you get a 
-backtrace (both kernel & userspace)?
+Oops, just realized by "no messages visible" you probably meant that it really 
+was hung rather than you saw no useful messages.  That'll make things more 
+difficult.  Which 2D driver are you running?
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
