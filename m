@@ -2,7 +2,7 @@ From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: [PATCH] PCI PM: Restore standard config registers of
 	all devices early (was: Re: EeePC resume failure - timers)
 Date: Tue, 20 Jan 2009 12:15:11 -0800
-Message-ID: <200901201215.11559.jbarnes__23075.8033031181$1232482941$gmane$org@virtuousgeek.org>
+Message-ID: <200901201215.11559.jbarnes__14231.6678342924$1232483427$gmane$org@virtuousgeek.org>
 References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
 	<alpine.LFD.2.00.0901210642570.2885@localhost.localdomain>
 	<200901201209.37836.jbarnes@virtuousgeek.org>
