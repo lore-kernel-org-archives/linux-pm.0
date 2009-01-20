@@ -1,16 +1,15 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI PM: Restore standard config registers of
-	all devices early (was: Re: EeePC resume failure - timers)
-Date: Tue, 20 Jan 2009 12:40:53 -0800
-Message-ID: <200901201240.53719.jbarnes__31294.9259336621$1232484214$gmane$org@virtuousgeek.org>
-References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0901210642570.2885@localhost.localdomain>
-	<alpine.LFD.2.00.0901210703530.2892@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] USB: Fix suspend-resume of PCI USB
+	controllers
+Date: Tue, 20 Jan 2009 22:03:42 +0100
+Message-ID: <200901202203.44103.rjw__105.041839606379$1232485687$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0901201031490.2612-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.0901201526510.5575@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0901210703530.2892@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901201526510.5575@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,72 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Keith Packard <keithp@keithp.com>, Thomas Gleixner <tglx@linutronix.de>, Dave Airlie <airlied@linux.ie>, john stultz <johnstul@us.ibm.com>, Eric Anholt <eric@anholt.net>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Jeff Chua <jeff.chua.linux@gmail.com>, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 20, 2009 12:19 pm Linus Torvalds wrote:
-> On Wed, 21 Jan 2009, Linus Torvalds wrote:
-> > I was going to say that I've been VT switching and it has worked, but I
-> > decided to double-check. And yes, I can reproduce it that way. And no, no
-> > kernel messages that are visible that way either.
->
-> Ahhah!
->
-> No kernel messages, because the kernel isn't actually dead. Just X is.
->
-> I verified that by doing a
->
-> 	while : ; do echo t > /proc/sys/sysrq-trigger; sleep 5; done
->
-> while doing these things. I'm travelling, it's 7AM in Hobart now, and I
-> don't have another machine, so when X dies in graphics mode, there's not a
-> whole lot else I can do to debug it. No other machine to use to ssh into
-> the machine from etc..
+On Tuesday 20 January 2009, Len Brown wrote:
+> 
+> > > Alan, does this look ok for you?
+> > 
+> > There are a few things I don't like about it:
+> > 
+> > 	In usb_hcd_pci_suspend, the failure path for 
+> > 	pci_set_power_state doesn't undo all the changes
+> > 	that have already been made.  In fact, the easiest
+> > 	way to do the rest of the recovery probably is to
+> > 	call usb_hcd_pci_resume directly.
+> > 
+> > 	In the !has_pci_pm path we don't call pci_set_power_state.
+> > 	This means controllers with legacy power management won't
+> > 	get suspended.  Maybe pci_set_power_state should be
+> > 	called always, and has_pci_pm be used only for
+> > 	interpreting the return code and printing debug messages.
+> > 
+> > 	In usb_hcd_pci_resume, the pci_wake_from_d3 call
+> > 	should be moved up right next to the pci_enable_wake
+> > 	call.  It makes no sense for them to be separated by
+> > 	pci_enable_device and pci_set_master.  After all,
+> > 	even if you can't re-enable the device you probably
+> > 	don't want it to continue being a wakeup source.
+> > 
+> > 	It's a little annoying that several debug messages
+> > 	in usb_hcd_pci_resume have been removed.  Can't we
+> > 	display the power state upon entry, before trying to
+> > 	change it?
+> > 
+> > 	It stands out that the resume method contains no call
+> > 	to match pci_set_power_state() in the suspend method.
+> > 	There should at least be a comment about it.
+> > 
+> > Some of these problems predate Rafael's patch.  Given that it has 
+> > already helped a number of people, we might want to merge the patch 
+> > and then make additional changes to address these issues.
+> 
+> Rafael's patch is required for upstream to resume on my T61.
+> 
+> Tested-by: Len Brown <len.brown@intel.com>
+> 
+> Perhaps Greg can apply Rafael's patch now to fix upstream ASAP,
+> while Alan prepares a 2nd patch to address his observations above?
 
-Ah ok, yeah having one machine to debug with makes things harder, but at the 
-last LCA it was all I had too. :)
+I'd very much appreciate doing that.  My intention was only to fix the urgent
+issue at hand.
 
-> 	Xorg          S f52a3b98  6088  2252   2251
-> 	 f68db340 00003082 c06ea2f8 f52a3b98 c07bb73c c07bec40 c07bec40 c07bec4
-> 	 c07bec40 f4a58980 f4a58be8 c2010c40 00000000 00000000 bfc1f838 0000020
-> 	 bfc1f838 f4a58be8 fffe9b5a 000a037f 00003282 c022d7ff f514fe98 f4a58c5
-> 	Call Trace:
-> 	 [<c022d7ff>] lock_timer_base+0x19/0x35
-> 	 [<c022d983>] __mod_timer+0xba/0xc3
-> 	 [<c05a65ef>] schedule_timeout+0x9f/0xbb
-> 	 [<c022d522>] process_timeout+0x0/0x5
-> 	 [<c05a65ea>] schedule_timeout+0x9a/0xbb
-> 	 [<c038c494>] drm_wait_vblank+0x2d8/0x396
-> 	 [<c0221c4c>] default_wake_function+0x0/0x8
-> 	 [<c038a5ab>] drm_ioctl+0x1a6/0x21e
-> 	 [<c038c1bc>] drm_wait_vblank+0x0/0x396
-> 	 [<c0288d5e>] vfs_ioctl+0x49/0x5f
-> 	 [<c0289527>] do_vfs_ioctl+0x464/0x49f
-> 	 [<c02895a3>] sys_ioctl+0x41/0x58
-> 	 [<c0202d01>] sysenter_do_call+0x12/0x21
->
-> ie it seems to be some vblank race.
->
-> Looks like your commit dc1336ff4fe08ae7cfe8301bfd7f0b2cfd31d20a wasn't a
-> complete solution? Because it's definitely something I have, and I have
-> compiz, and I see the compiz hangs at VT switch that it claims to have
-> fixed.
->
-> Added the other people that the git logs say worked on the vblank code
-> to the Cc.
-
-Part of the fix for the vblank hang was in libdrm.  X handles cursor movement 
-using SIGALM, so it's pretty easy to get stuck restarting ioctl.  And in the 
-case of the vblank ioctl, restart will prevent the kernel timeout code from 
-ever triggering, so you'll just see a hang.
-
-> What an odd way to debug X lockups. What do you guys usually do? Just
-> always make sure to have another machine handy?
-
-Pretty much; until people start using KMS, having a separate machine is really 
-the only way to get info on a machine where X is misbehaving (well that and 
-doing what you did with scripts running & sleeping in the background).
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Thanks,
+Rafael
