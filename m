@@ -1,17 +1,11 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI PM: Restore standard config registers of
-	all devices early (was: Re: EeePC resume failure - timers)
-Date: Tue, 20 Jan 2009 13:43:16 -0800
-Message-ID: <200901201343.17628.jbarnes@virtuousgeek.org>
-References: <Pine.LNX.4.44L0.0901161010400.2417-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0901210703530.2892@localhost.localdomain>
-	<200901201240.53719.jbarnes@virtuousgeek.org>
+From: mohd.adil@tcs.com
+Subject: ACPI problems
+Date: Wed, 21 Jan 2009 15:22:20 +0530
+Message-ID: <OFB501AC29.DA72593B-ON65257545.00363AF4-65257545.00363B0B@LocalDomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3632423115817110752=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901201240.53719.jbarnes@virtuousgeek.org>
-Content-Disposition: inline
+MIME-Version: 1.0
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +13,107 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Keith Packard <keithp@keithp.com>, Thomas Gleixner <tglx@linutronix.de>, Dave Airlie <airlied@linux.ie>, john stultz <johnstul@us.ibm.com>, Eric Anholt <eric@anholt.net>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: majordomo@vger.kernel.org, acpi-bugzilla-request@lists.sourceforge.net, linux-pm-devel-request@lists.sourceforge.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 20, 2009 12:40 pm Jesse Barnes wrote:
-> On Tuesday, January 20, 2009 12:19 pm Linus Torvalds wrote:
-> > Added the other people that the git logs say worked on the vblank code
-> > to the Cc.
->
-> Part of the fix for the vblank hang was in libdrm.  X handles cursor
-> movement using SIGALM, so it's pretty easy to get stuck restarting ioctl. 
-> And in the case of the vblank ioctl, restart will prevent the kernel
-> timeout code from ever triggering, so you'll just see a hang.
+--===============3632423115817110752==
+Content-Transfer-Encoding: base64
+Content-Type: text/html; charset="utf-8"
 
-Sorry, misspoke here, X's core client scheduler uses SIGALRM (with a 20ms 
-default timeslice), not the cursor movement code.
+PFA+SGkgPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgVGhpcyBpcyBteSBmaXJzdCBwb3N0IHRvIHRoZSBsaXN0
+LiBIb3BlJm5ic3A7SSB3aWxsIGZpbmQgYSBzb2x1dGlvbi4gPC9QPgo8UD4mbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgSSBh
+bSB0cnlpbmcgdG8gZGV2ZWxvcCBhIG5ldyBmdW5jdGlvbmFsaXR5IHVzaW5nIGEgU3VuIGFsb25z
+byBRdWFkIENvcmUgYmxhZGUgKHg4Nl82NCkgYXJjaGl0ZWN0dXJlLiA8L1A+CjxQPiZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyBUaGUgbGludXggZGlzdHJpYnV0aW9uIHdoaWNoIEkgYW0gdXNpbmcgY29udGFpbnMg
+YSB2ZXJ5IG9sZCBhY3BpIGRyaXZlciAoMDIvMDkvMjAwNSBwcm9iYWJseSBhY3BpIHZlcnNpb24g
+MSBjb21wbGlhbnQpPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgRnVydGhlciwgdGhlIEJJT1MgSSBhbSB1c2lu
+ZyBpcyBhbiBBTUkgQklPUy4mbmJzcDsgSSBhbSBmYWlybHkgY2VydGFpbiB0aGF0IGl0IGlzIGFj
+cGkgdmVyc2lvbiAzIGNvbXBsaWFudC4gPC9QPgo8UD4gPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDtOb3csIEkgYW0gZmFjaW5nIHR3byBwcm9ibGVtcyBoZXJlLiA8L1A+CjxQPiZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOzEpJm5ic3A7IEkgYW0gdHJ5aW5nIHRvJm5ic3A7ZXZhbHVhdGUgc29tZSBuYW1lc3Bh
+Y2UgY29udHJvbCBtZXRob2RzIHdoaWNoIGFyZSBzZXR1cCBpbiBzeXRlbSZuYnNwO0RTRFQuIDwv
+UD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IEZ1bmN0aW9ucyBh
+cmUgOiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyA8QSBocmVmPSJmaWxlOi8vXFxfU0IuUEVSQiI+XFxfU0IuUEVSQjwvQT4mbmJzcDsoc2hvdWxk
+IGNvbnRhaW4gbWVtb3J5IGxvY2F0aW9uIGFkZHJlc3MpIGFuZDwvUD4KPFA+Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOzxBIGhyZWY9ImZpbGU6Ly9cXF9TQi5Q
+RVJMIj5cXF9TQi5QRVJMPC9BPiZuYnNwOyZuYnNwOyZuYnNwOyhzaG91bGQgY29udGFpbiBsZW5n
+dGgpPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgVGhpcyBz
+b21lIGluZm9ybWF0aW9uIHBhc3NlZCB0byB1cyBmcm9tIEJJT1Mgd2hpY2ggaXMgcmVxdWlyZWQg
+Zm9yIG15IGRldmVsb3BtZW50LiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyBJIGFtIHVzaW5nJm5ic3A7YWNwaV9ldmFsdWF0ZV9vYmplY3QgdG8gZXZhbHVh
+dGUgdGhlc2UgZnVuY3Rpb25zLiZuYnNwO0kgZG9udCBzZWUgYW55IGVycm9yIGluIGV4ZWN1dGlu
+ZyB0aGUgZXZhbHVhdGUgPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsg
+ZnVuY3Rpb24gY2FsbC4gQnV0IHRoZXkgZXZhbHVhdGUgdG8gemVyby4gPC9QPgo8UD4mbmJzcDs8
+L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOzIpJm5ic3A7Jm5ic3A7IFRoZSBzZWNvbmQgdGFz
+ayBJIGhhdmUgaXMgdG8gcHV0IHRoZSBzeXN0ZW0gaW50byBTMyAoc3VzcGVuZCB0byByYW0pIHN0
+YXRlLiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyBXaGlsZSBkb2luZyB0aGF0IEkgYW0gZXhwZXJpZW5jaW5nIGEgcHJvYmxlbS4gRXZl
+cnkgdGltZSBJIHdyaXRlIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7ZWNobyBtZW0gJmd0OyAvc3lzL3Bvd2VyL3N0
+YXRlIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7IFN5c3RlbSBoYW5ncyBhdCBNRVRIT0RfTkFNRV9fUFRTIG1ldGhvZC4gVGhlcmUgaXMg
+YSByZWxhdGVkIGJ1ZyBpbiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyBuZXcgYWNwaSBkcml2ZXIgcmVsYXRlZCB0byB0aGlzIGZ1bmN0aW9uLiBC
+dXQgc2luY2UgSSBhbSB1c2luZyBhIHZlcnkgb2xkIGRyaXZlciB0aGlzIHNob3VsZCBub3QgaGF2
+ZSA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwO2hhcHBlbmVkLiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyBKdXN0IGZvciBhZGRlZCBpbmZvcm1hdGlvbiA6IEkgZG9udCByZWFsbHkgY2Fy
+ZSBhYm91dCByZXN1bWUgZnJvbSB0aGUgUzMgc3RhdGUuIEkgZG9udCBoYXZlIHZpZGVvIGNhcmQu
+IDwvUD4KPFA+Jm5ic3A7PC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDs8L1A+CjxQPkFueSBo
+ZWxwIGluIHRoaXMgcmVnYXJkIGlzIGhpZ2hseSBhcHByZWNpYXRlZC4gPC9QPgo8UD4mbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgPC9QPgo8UD5UaGFua3MsPEJSPjxCUj5Nb2hk
+LiBBZGlsPEJSPlRhdGEgQ29uc3VsdGFuY3kgU2VydmljZXM8QlI+TWFpbHRvOiBtb2hkLmFkaWxA
+dGNzLmNvbTxCUj5XZWJzaXRlOiA8QSBocmVmPSJodHRwOi8vd3d3LnRjcy5jb20iPmh0dHA6Ly93
+d3cudGNzLmNvbTwvQT48QlI+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX188QlI+RXhwZXJpZW5jZSBjZXJ0YWludHkuIElUIFNlcnZpY2VzPEJSPkJ1c2luZXNzIFNv
+bHV0aW9uczxCUj5PdXRzb3VyY2luZzxCUj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXzwvUD48QlI+PEJSPk1vaGQuIEFkaWw8QlI+VGF0YSBDb25zdWx0YW5jeSBT
+ZXJ2aWNlczxCUj5NYWlsdG86IG1vaGQuYWRpbEB0Y3MuY29tPEJSPldlYnNpdGU6IDxBIGhyZWY9
+Imh0dHA6Ly93d3cudGNzLmNvbSI+aHR0cDovL3d3dy50Y3MuY29tPC9BPjxCUj5fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzxCUj5FeHBlcmllbmNlIGNlcnRhaW50
+eS4gSVQgU2VydmljZXM8QlI+QnVzaW5lc3MgU29sdXRpb25zPEJSPk91dHNvdXJjaW5nPEJSPl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fPHByZT49PT09PS0tLS0t
+PT09PT0tLS0tLT09PT09Ck5vdGljZTogVGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBpbiB0aGlz
+IGUtbWFpbAptZXNzYWdlIGFuZC9vciBhdHRhY2htZW50cyB0byBpdCBtYXkgY29udGFpbiAKY29u
+ZmlkZW50aWFsIG9yIHByaXZpbGVnZWQgaW5mb3JtYXRpb24uIElmIHlvdSBhcmUgCm5vdCB0aGUg
+aW50ZW5kZWQgcmVjaXBpZW50LCBhbnkgZGlzc2VtaW5hdGlvbiwgdXNlLCAKcmV2aWV3LCBkaXN0
+cmlidXRpb24sIHByaW50aW5nIG9yIGNvcHlpbmcgb2YgdGhlIAppbmZvcm1hdGlvbiBjb250YWlu
+ZWQgaW4gdGhpcyBlLW1haWwgbWVzc2FnZSAKYW5kL29yIGF0dGFjaG1lbnRzIHRvIGl0IGFyZSBz
+dHJpY3RseSBwcm9oaWJpdGVkLiBJZiAKeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBjb21tdW5pY2F0
+aW9uIGluIGVycm9yLCAKcGxlYXNlIG5vdGlmeSB1cyBieSByZXBseSBlLW1haWwgb3IgdGVsZXBo
+b25lIGFuZCAKaW1tZWRpYXRlbHkgYW5kIHBlcm1hbmVudGx5IGRlbGV0ZSB0aGUgbWVzc2FnZSAK
+YW5kIGFueSBhdHRhY2htZW50cy4gVGhhbmsgeW91CgoKPC9wcmU+
+
+
+--===============3632423115817110752==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3632423115817110752==--
