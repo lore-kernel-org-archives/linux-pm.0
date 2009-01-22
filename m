@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/3] PCI PM: Fix hibernation breakage on EeePC 701
-Date: Thu, 22 Jan 2009 23:36:56 +0100
-Message-ID: <200901222336.56573.rjw__48522.0654089519$1232664213$gmane$org@sisk.pl>
+Subject: [PATCH 3/3] PCI PM: Do not wait for buses in B2 or B3
+	during resume
+Date: Thu, 22 Jan 2009 23:39:57 +0100
+Message-ID: <200901222339.58432.rjw__26867.9209323183$1232664224$gmane$org@sisk.pl>
 References: <200901222335.07341.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,29 +25,56 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Hibernation breaks on EeePC 701 as a result of attempting to put one
-of its (driverless) devices into a low power state.  Avoid that by
-not attepmting to power manage driverless devices during hibernation.
+pci_restore_standard_config() adds extra delay for PCI buses in
+low power states (B2 or B3), but this is only correct for buses in
+B2, because the buses in B3 are reset when they are put back into
+B0.  Thus we should wait for such buses to settle after the reset,
+but it's not a good idea to wait that long (1.1 s) with interrupts
+off.
+
+On the other hand, we have never waited for buses in B2 and B3
+during resume and it seems reasonable to go back to this well
+tested behaviour.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-and-tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 ---
- drivers/pci/pci-driver.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/pci/pci.c |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -660,7 +660,10 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1403,19 +1403,19 @@ int pci_restore_standard_config(struct p
+ 	if (error)
+ 		return error;
  
--	if (drv && drv->pm && drv->pm->poweroff) {
-+	if (!drv || !drv->pm)
-+		return 0;
-+
-+	if (drv->pm->poweroff) {
- 		error = drv->pm->poweroff(dev);
- 		suspend_report_result(drv->pm->poweroff, error);
+-	if (pci_is_bridge(dev)) {
+-		if (prev_state > PCI_D1)
+-			mdelay(PCI_PM_BUS_WAIT);
+-	} else {
+-		switch(prev_state) {
+-		case PCI_D3cold:
+-		case PCI_D3hot:
+-			mdelay(pci_pm_d3_delay);
+-			break;
+-		case PCI_D2:
+-			udelay(PCI_PM_D2_DELAY);
+-			break;
+-		}
++	/*
++	 * This assumes that we won't get a bus in B2 or B3 from the BIOS, but
++	 * we've made this assumption forever and it appears to be universally
++	 * satisfied.
++	 */
++	switch(prev_state) {
++	case PCI_D3cold:
++	case PCI_D3hot:
++		mdelay(pci_pm_d3_delay);
++		break;
++	case PCI_D2:
++		udelay(PCI_PM_D2_DELAY);
++		break;
  	}
+ 
+ 	dev->current_state = PCI_D0;
