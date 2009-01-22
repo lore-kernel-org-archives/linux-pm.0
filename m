@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] PCI PM: Do not wait for buses in B2 or B3
-	during resume
-Date: Thu, 22 Jan 2009 23:39:57 +0100
-Message-ID: <200901222339.58432.rjw__26867.9209323183$1232664224$gmane$org@sisk.pl>
+Subject: [PATCH 2/3] PCI PM: Power up devices before restoring
+	their state
+Date: Thu, 22 Jan 2009 23:38:31 +0100
+Message-ID: <200901222338.32195.rjw__3591.63751495561$1232664231$gmane$org@sisk.pl>
 References: <200901222335.07341.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,56 +25,51 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-pci_restore_standard_config() adds extra delay for PCI buses in
-low power states (B2 or B3), but this is only correct for buses in
-B2, because the buses in B3 are reset when they are put back into
-B0.  Thus we should wait for such buses to settle after the reset,
-but it's not a good idea to wait that long (1.1 s) with interrupts
-off.
+Devices that have MSI-X enabled before suspend to RAM or hibernation
+and that are in a low power state during resume will not be handled
+correctly by pci_restore_standard_config().  Namely, it first calls
+pci_restore_state() which calls pci_restore_msi_state(), which in turn
+executes __pci_restore_msix_state() that accesses the device's memory
+space to restore the contents of the MSI-X table.  However, if the
+device is in a low power state at this point, it's memory space is
+not accessible.
 
-On the other hand, we have never waited for buses in B2 and B3
-during resume and it seems reasonable to go back to this well
-tested behaviour.
+The easiest way to fix this potential problem is to make
+pci_restore_standard_config() call pci_restore_state() after
+it has put the device into the full power state, D0.  Fortunately,
+all of this is done with interrupts off, so the change of ordering
+should not cause any trouble.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/pci/pci.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci.c
 +++ linux-2.6/drivers/pci/pci.c
-@@ -1403,19 +1403,19 @@ int pci_restore_standard_config(struct p
- 	if (error)
- 		return error;
+@@ -1393,12 +1393,11 @@ int pci_restore_standard_config(struct p
+ 	pci_power_t prev_state;
+ 	int error;
  
--	if (pci_is_bridge(dev)) {
--		if (prev_state > PCI_D1)
--			mdelay(PCI_PM_BUS_WAIT);
--	} else {
--		switch(prev_state) {
--		case PCI_D3cold:
--		case PCI_D3hot:
--			mdelay(pci_pm_d3_delay);
--			break;
--		case PCI_D2:
--			udelay(PCI_PM_D2_DELAY);
--			break;
--		}
-+	/*
-+	 * This assumes that we won't get a bus in B2 or B3 from the BIOS, but
-+	 * we've made this assumption forever and it appears to be universally
-+	 * satisfied.
-+	 */
-+	switch(prev_state) {
-+	case PCI_D3cold:
-+	case PCI_D3hot:
-+		mdelay(pci_pm_d3_delay);
-+		break;
-+	case PCI_D2:
-+		udelay(PCI_PM_D2_DELAY);
-+		break;
- 	}
+-	pci_restore_state(dev);
+ 	pci_update_current_state(dev, PCI_D0);
+ 
+ 	prev_state = dev->current_state;
+ 	if (prev_state == PCI_D0)
+-		return 0;
++		goto Restore;
+ 
+ 	error = pci_raw_set_power_state(dev, PCI_D0, false);
+ 	if (error)
+@@ -1421,7 +1420,8 @@ int pci_restore_standard_config(struct p
  
  	dev->current_state = PCI_D0;
+ 
+-	return 0;
++ Restore:
++	return pci_restore_state(dev);
+ }
+ 
+ /**
