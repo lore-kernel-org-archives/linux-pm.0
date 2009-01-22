@@ -1,11 +1,14 @@
-From: mohd.adil@tcs.com
-Subject: ACPI problems
-Date: Wed, 21 Jan 2009 15:24:01 +0530
-Message-ID: <OF8B68FBD6.6D2A22FF-ON65257545.00366294-65257545.0036629B@LocalDomain>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: BISECTED: 2.6.29-rc2 regression: hibernation hang on
+	eeepc-701
+Date: Thu, 22 Jan 2009 11:30:41 +0000
+Message-ID: <497858E1.5070303__26094.0305576243$1232624171$gmane$org@tuffmail.co.uk>
+References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0585552374397208265=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-MIME-Version: 1.0
+In-Reply-To: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,101 +16,48 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org, linux-pm-devel-request@lists.sourceforge.net, acpi-bugzilla-request@lists.sourceforge.net, majordomo@vger.kernel.org
+To: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>, Jesse
 List-Id: linux-pm@vger.kernel.org
 
---===============0585552374397208265==
-Content-Transfer-Encoding: base64
-Content-Type: text/html; charset="utf-8"
+Alan Jenkins wrote:
+> Hibernation hangs just after writing the image.  With s2disk I can see
+> this from the console messages.  The same hang happens with kernel
+> swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
+> the image has been written from the HDD led.
+>
+> In either case, I can still hard-power-off and resume from hibernation.
+>
+> It doesn't hang if I use the shutdown method (either 'echo shutdown |
+> sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
+>   
 
-PFA+PEJSPkhpIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IFRoaXMgaXMgbXkgZmlyc3QgcG9zdCB0byB0aGUg
-bGlzdC4gSG9wZSBJIHdpbGwgZmluZCBhIHNvbHV0aW9uLiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBJIGFt
-IHRyeWluZyB0byBkZXZlbG9wIGEgbmV3IGZ1bmN0aW9uYWxpdHkgdXNpbmcgYSBTdW4gYWxvbnNv
-IFF1YWQgQ29yZSBibGFkZSAoeDg2XzY0KSBhcmNoaXRlY3R1cmUuIDwvUD4KPFA+Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7IFRoZSBsaW51eCBkaXN0cmlidXRpb24gd2hpY2ggSSBhbSB1c2luZyBjb250YWlucyBh
-IHZlcnkgb2xkIGFjcGkgZHJpdmVyICgwMi8wOS8yMDA1IHByb2JhYmx5IGFjcGkgdmVyc2lvbiAx
-IGNvbXBsaWFudCk8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBGdXJ0aGVyLCB0aGUgQklPUyBJIGFtIHVzaW5n
-IGlzIGFuIEFNSSBCSU9TLiZuYnNwOyBJIGFtIGZhaXJseSBjZXJ0YWluIHRoYXQgaXQgaXMgYWNw
-aSB2ZXJzaW9uIDMgY29tcGxpYW50LiA8L1A+CjxQPiZuYnNwOyA8L1A+CjxQPiZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyBOb3csIEkgYW0gZmFjaW5nIHR3byBwcm9ibGVtcyBoZXJlLiA8L1A+CjxQPiZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyAxKSZuYnNwOyBJIGFtIHRyeWluZyB0byBldmFsdWF0ZSBzb21lIG5hbWVzcGFjZSBjb250cm9s
-IG1ldGhvZHMgd2hpY2ggYXJlIHNldHVwIGluIHN5dGVtIERTRFQuIDwvUD4KPFA+Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IEZ1bmN0aW9ucyBhcmUgOiA8L1A+CjxQPiZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyA8QSBocmVmPSJmaWxl
-Oi8vXFxfU0IuUEVSQiI+XFxfU0IuUEVSQjwvQT4gKHNob3VsZCBjb250YWluIG1lbW9yeSBsb2Nh
-dGlvbiBhZGRyZXNzKSBhbmQ8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyA8QSBocmVmPSJmaWxlOi8vXFxfU0IuUEVSTCI+XFxfU0IuUEVSTDwvQT4m
-bmJzcDsmbmJzcDsgKHNob3VsZCBjb250YWluIGxlbmd0aCk8L1A+CjxQPiZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBUaGlzIHNvbWUgaW5mb3JtYXRpb24gcGFzc2VkIHRv
-IHVzIGZyb20gQklPUyB3aGljaCBpcyByZXF1aXJlZCBmb3IgbXkgZGV2ZWxvcG1lbnQuIDwvUD4K
-PFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IEkgYW0gdXNpbmcgYWNw
-aV9ldmFsdWF0ZV9vYmplY3QgdG8gZXZhbHVhdGUgdGhlc2UgZnVuY3Rpb25zLiBJIGRvbnQgc2Vl
-IGFueSBlcnJvciBpbiBleGVjdXRpbmcgdGhlIGV2YWx1YXRlIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGZ1bmN0aW9uIGNhbGwuIEJ1dCB0aGV5IGV2YWx1YXRlIHRv
-IHplcm8uIDwvUD4KPFA+Jm5ic3A7PC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgMikmbmJzcDsmbmJz
-cDsgVGhlIHNlY29uZCB0YXNrIEkgaGF2ZSBpcyB0byBwdXQgdGhlIHN5c3RlbSBpbnRvIFMzIChz
-dXNwZW5kIHRvIHJhbSkgc3RhdGUuIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IFdoaWxlIGRvaW5nIHRoYXQgSSBhbSBleHBlcmllbmNp
-bmcgYSBwcm9ibGVtLiBFdmVyeSB0aW1lIEkgd3JpdGUgPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgZWNobyBtZW0gJmd0OyAv
-c3lzL3Bvd2VyL3N0YXRlIDwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7IFN5c3RlbSBoYW5ncyBhdCBNRVRIT0RfTkFNRV9fUFRTIG1ldGhv
-ZC4gVGhlcmUgaXMgYSByZWxhdGVkIGJ1ZyBpbiA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBuZXcgYWNwaSBkcml2ZXIgcmVsYXRlZCB0byB0aGlz
-IGZ1bmN0aW9uLiBCdXQgc2luY2UgSSBhbSB1c2luZyBhIHZlcnkgb2xkIGRyaXZlciB0aGlzIHNo
-b3VsZCBub3QgaGF2ZSA8L1A+CjxQPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyBoYXBwZW5lZC4gPC9QPgo8UD4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsgSnVzdCBmb3IgYWRkZWQgaW5mb3JtYXRpb24gOiBJIGRvbnQgcmVh
-bGx5IGNhcmUgYWJvdXQgcmVzdW1lIGZyb20gdGhlIFMzIHN0YXRlLiBJIGRvbnQgaGF2ZSB2aWRl
-byBjYXJkLiA8L1A+CjxQPiZuYnNwOzwvUD4KPFA+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IDwvUD4KPFA+QW55
-IGhlbHAgaW4gdGhpcyByZWdhcmQgaXMgaGlnaGx5IGFwcHJlY2lhdGVkLiA8L1A+CjxQPiZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyA8L1A+CjxQPlRoYW5rcyw8QlI+PEJSPk1v
-aGQuIEFkaWw8QlI+VGF0YSBDb25zdWx0YW5jeSBTZXJ2aWNlczxCUj5NYWlsdG86IG1vaGQuYWRp
-bEB0Y3MuY29tPEJSPldlYnNpdGU6IDxBIGhyZWY9Imh0dHA6Ly93d3cudGNzLmNvbSI+aHR0cDov
-L3d3dy50Y3MuY29tPC9BPjxCUj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXzxCUj5FeHBlcmllbmNlIGNlcnRhaW50eS4gSVQgU2VydmljZXM8QlI+QnVzaW5lc3Mg
-U29sdXRpb25zPEJSPk91dHNvdXJjaW5nPEJSPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fPC9QPjxwcmU+PT09PT0tLS0tLT09PT09LS0tLS09PT09PQpOb3RpY2U6
-IFRoZSBpbmZvcm1hdGlvbiBjb250YWluZWQgaW4gdGhpcyBlLW1haWwKbWVzc2FnZSBhbmQvb3Ig
-YXR0YWNobWVudHMgdG8gaXQgbWF5IGNvbnRhaW4gCmNvbmZpZGVudGlhbCBvciBwcml2aWxlZ2Vk
-IGluZm9ybWF0aW9uLiBJZiB5b3UgYXJlIApub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwgYW55
-IGRpc3NlbWluYXRpb24sIHVzZSwgCnJldmlldywgZGlzdHJpYnV0aW9uLCBwcmludGluZyBvciBj
-b3B5aW5nIG9mIHRoZSAKaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgZS1tYWlsIG1lc3Nh
-Z2UgCmFuZC9vciBhdHRhY2htZW50cyB0byBpdCBhcmUgc3RyaWN0bHkgcHJvaGliaXRlZC4gSWYg
-CnlvdSBoYXZlIHJlY2VpdmVkIHRoaXMgY29tbXVuaWNhdGlvbiBpbiBlcnJvciwgCnBsZWFzZSBu
-b3RpZnkgdXMgYnkgcmVwbHkgZS1tYWlsIG9yIHRlbGVwaG9uZSBhbmQgCmltbWVkaWF0ZWx5IGFu
-ZCBwZXJtYW5lbnRseSBkZWxldGUgdGhlIG1lc3NhZ2UgCmFuZCBhbnkgYXR0YWNobWVudHMuIFRo
-YW5rIHlvdQoKCjwvcHJlPg==
+I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
+It doesn't revert cleanly from RC2.
+
+I think it's distinct from the other two reported suspend regressions. 
+I'm not using acpi-cpufreq, and the issue doesn't affect resume.
+
+Alan
 
 
---===============0585552374397208265==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Wed Jan 7 13:05:05 2009 +0100
 
+    PCI PM: Power-manage devices without drivers during suspend-resume
 
---===============0585552374397208265==--
+    PCI devices without drivers can be put into low power states during
+    suspend with the help of pci_prepare_to_sleep() and prevented from
+    generating wake-up events during resume with the help of
+    pci_enable_wake().  However, it's better not to put bridges into
+    low power states during suspend, because that might result in entire
+    bus segments being powered off.
+
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Acked-by: Pavel Machek <pavel@suse.cz>
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+:040000 040000 6b6fb7bfa561583f14bdf55b084473dcf9cd1765
+d72fbda87eff26db8f2574e868a793b79deb9f92 M      drivers
