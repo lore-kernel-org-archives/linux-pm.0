@@ -1,19 +1,16 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: cpuidle and NO_HZ <boot speedup>
-Date: Fri, 23 Jan 2009 12:14:37 -0600
-Message-ID: <13B9B4C6EF24D648824FF11BE896716203767D8B64__27374.1356366829$1232734749$gmane$org@dlee02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301C6DD0347@dbde02.ent.ti.com>
-	<8bf247760901220906n1ab095a0h695e9c1f5e8db916@mail.gmail.com>
-	<B85A65D85D7EB246BE421B3FB0FBB59301C6DD03F9@dbde02.ent.ti.com>
-	<B85A65D85D7EB246BE421B3FB0FBB59301C6EC7222@dbde02.ent.ti.com>
-	<8bf247760901230752h4835083foaa486311425c6c68@mail.gmail.com>
-	<87ab9i6i9j.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on
+	eeepc-701
+Date: Fri, 23 Jan 2009 23:06:32 +0100
+Message-ID: <200901232306.33309.rjw__47562.4658437029$1232748607$gmane$org@sisk.pl>
+References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
+	<200901222305.25824.rjw@sisk.pl> <497991CC.9030200@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87ab9i6i9j.fsf@deeprootsystems.com>
-Content-Language: en-US
+In-Reply-To: <497991CC.9030200@tuffmail.co.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,87 +20,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>, Sriram V <vshrirama@gmail.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Premi,
-	Sanjeev" <premi@ti.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 23 January 2009, Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday 22 January 2009, Alan Jenkins wrote:
+> >   
+> >> Rafael J. Wysocki wrote:
+> >>     
+> >>> On Thursday 22 January 2009, Alan Jenkins wrote:
+> >>>   
+> >>>       
+> >>>> Alan Jenkins wrote:
+> >>>>     
+> >>>>         
+> >>>>> Hibernation hangs just after writing the image.  With s2disk I can see
+> >>>>> this from the console messages.  The same hang happens with kernel
+> >>>>> swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
+> >>>>> the image has been written from the HDD led.
+> >>>>>
+> >>>>> In either case, I can still hard-power-off and resume from hibernation.
+> >>>>>
+> >>>>> It doesn't hang if I use the shutdown method (either 'echo shutdown |
+> >>>>> sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
+> >>>>>   
+> >>>>>       
+> >>>>>           
+> >>>> I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
+> >>>> It doesn't revert cleanly from RC2.
+> >>>>
+> >>>> I think it's distinct from the other two reported suspend regressions. 
+> >>>> I'm not using acpi-cpufreq, and the issue doesn't affect resume.
+> >>>>     
+> >>>>         
+> >>> It looks distinct.
+> >>>
+> >>> Do you suspend this box to RAM and does it work?
+> >>>   
+> >>>       
+> >> Yes, I do use STR on it occasionally, and it still works in RC2.
+> >>
+> >>     
+> >>> Please retest with the appended patch applied.
+> >>>   
+> >>>       
+> >> That fixes it.
+> >>     
+> >
+> > OK, it won't hurt to apply it.
+> >
+> > Still, the hardware or the BIOS in your box seems to be broken, or both, so I'd
+> > like to debug it a bit more if you don't mind.
+> >
+> > Can you please test the patch below instead of the previous one?
+> >   
+> 
+> It hangs at the same point as the unpatched RC2.  As before, it doesn't
+> hang if I use "shutdown" instead of "platform".
+> 
+> Going by sysfs, I have 4 PCI devices without a kernel driver.
+> 
+> 8086:2592   Mobile 915 Express Graphics Controller
+> 8086:2792   Mobile 915 Express Graphics Controller (driven by X)
+> 8086:2448   82801 Mobile PCI Bridge
+> 8086:2641   82801FBM (ICH6M) LPC Interface Bridge
 
-> Alternatively, you you do some experiments to see exactly which
-> C-states are causing the problems.  You could modify cpuidle34xx.c and
-> set the 'valid' flag in the higher C-states to zero so that they
-> cannot be entered and see which C-states (if any) are working.
+The bridges shouldn't be affected, so I bet on the graphics.
 
-I recently added the following hack which cut boot time in half and removed many early network issues.
+It seems that the BIOS doesn't expect it to be in D3 while entering S4,
+although it apparently doesn't mind it to be in D3 while entering S3.
 
-I've not converted it to the latest kernel but how to do it is simple.
+I blame the Asus BIOS writers. ;-)
 
-Basically it delays as long as possible CPUIdle init to remove its cost during a lot of boot.  Then it sets a constraint which is command line override-able to allow the application to boot.
-
-We recommend doing this along with setting an OPP constraint so you're in overdrive during boot time.  Today we start off with performance governor to achieve this, then switch to on-demand for tracking later on.
-
-During boot and initial applications startup you want these things.
-
-Probably I'll update it to pmqos in a few weeks if I have time.  It has shown to be worth while in speeding up boot up.
-
-diff -purN img/2.6_kernel/arch/arm/mach-omap2/pm_idle_34xx.c 2.6_kernel/arch/arm/mach-omap2/pm_idle_34xx.c
---- img/2.6_kernel/arch/arm/mach-omap2/pm_idle_34xx.c   2008-12-09 20:24:31.000000000 -0600
-+++ 2.6_kernel/arch/arm/mach-omap2/pm_idle_34xx.c       2008-12-19 20:13:30.000000000 -0600
-@@ -917,6 +918,24 @@ struct cpuidle_driver omap3_idle_driver
-        .owner =        THIS_MODULE,
- };
-
-+/* Gate long latency C states for 20 seconds to reduce boot time */
-+static unsigned int __initdata boot_noidle_time = 20;
-+
-+/* Command line override to allow matching with application start time */
-+static int __init boot_noidle_time_setup(char *str)
-+{
-+       get_option(&str, &boot_noidle_time);
-+       return 1;
-+}
-+__setup("boot_noidle_time=", boot_noidle_time_setup);
-+
-+
-+struct timer_list boot_timer;
-+static void omap_boot_timer(unsigned long arg)
-+{
-+       remove_acceptable_latency("idle_delay");
-+}
-+
- int omap3_idle_init(void)
- {
-        int i, count = 0;
-@@ -963,6 +982,15 @@ int omap3_idle_init(void)
-        /* Initialize UART inactivity time */
-        awake_time_end = jiffies + msecs_to_jiffies(UART_TIME_OUT);
-
-+       /* For boot speed restrict C-State to C0 until boot done */
-+       init_timer(&boot_timer);
-+       boot_timer.function = omap_boot_timer;
-+       boot_timer.data = (unsigned long)NULL;
-+       boot_timer.expires = boot_noidle_time * HZ + jiffies;
-+       add_timer(&boot_timer);
-+       set_acceptable_latency("idle_delay", 10);
-+
-        return 0;
- }
--__initcall(omap3_idle_init);
-+/* Install omap3_idle idle last to speed up boot */
-+late_initcall_sync(omap3_idle_init);
-diff -purN img/2.6_kernel/kernel/latency.c 2.6_kernel/kernel/latency.c
---- img/2.6_kernel/kernel/latency.c     2008-10-17 14:10:28.000000000 -0500
-+++ 2.6_kernel/kernel/latency.c 2008-12-18 19:44:22.000000000 -0600
-@@ -269,11 +269,13 @@ EXPORT_SYMBOL_GPL(unregister_latency_not
- static __init int latency_init(void)
- {
-        atomic_set(&current_max_latency, INFINITE_LATENCY);
-+#ifndef CONFIG_OMAP3_PM
-        /*
-         * we don't want by default to have longer latencies than 2 ticks,
-         * since that would cause lost ticks
-         */
-        set_acceptable_latency("kernel", 2*1000000/HZ);
-+#endif
-        return 0;
- }
+Thanks,
+Rafael
