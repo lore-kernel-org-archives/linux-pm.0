@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/3] PCI PM: Power up devices before restoring
-	their state
-Date: Thu, 22 Jan 2009 23:38:31 +0100
-Message-ID: <200901222338.32195.rjw__3591.63751495561$1232664231$gmane$org@sisk.pl>
-References: <200901222335.07341.rjw@sisk.pl>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on
+	eeepc-701
+Date: Fri, 23 Jan 2009 09:45:48 +0000
+Message-ID: <497991CC.9030200__23883.5986856886$1232704149$gmane$org@tuffmail.co.uk>
+References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
+	<200901221344.16178.rjw@sisk.pl> <49787339.7080900@tuffmail.co.uk>
+	<200901222305.25824.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901222335.07341.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200901222305.25824.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,57 +20,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Matthew Wilcox <matthew@wil.cx>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Rafael J. Wysocki wrote:
+> On Thursday 22 January 2009, Alan Jenkins wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>> On Thursday 22 January 2009, Alan Jenkins wrote:
+>>>   
+>>>       
+>>>> Alan Jenkins wrote:
+>>>>     
+>>>>         
+>>>>> Hibernation hangs just after writing the image.  With s2disk I can see
+>>>>> this from the console messages.  The same hang happens with kernel
+>>>>> swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
+>>>>> the image has been written from the HDD led.
+>>>>>
+>>>>> In either case, I can still hard-power-off and resume from hibernation.
+>>>>>
+>>>>> It doesn't hang if I use the shutdown method (either 'echo shutdown |
+>>>>> sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
+>>>>>   
+>>>>>       
+>>>>>           
+>>>> I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
+>>>> It doesn't revert cleanly from RC2.
+>>>>
+>>>> I think it's distinct from the other two reported suspend regressions. 
+>>>> I'm not using acpi-cpufreq, and the issue doesn't affect resume.
+>>>>     
+>>>>         
+>>> It looks distinct.
+>>>
+>>> Do you suspend this box to RAM and does it work?
+>>>   
+>>>       
+>> Yes, I do use STR on it occasionally, and it still works in RC2.
+>>
+>>     
+>>> Please retest with the appended patch applied.
+>>>   
+>>>       
+>> That fixes it.
+>>     
+>
+> OK, it won't hurt to apply it.
+>
+> Still, the hardware or the BIOS in your box seems to be broken, or both, so I'd
+> like to debug it a bit more if you don't mind.
+>
+> Can you please test the patch below instead of the previous one?
+>   
 
-Devices that have MSI-X enabled before suspend to RAM or hibernation
-and that are in a low power state during resume will not be handled
-correctly by pci_restore_standard_config().  Namely, it first calls
-pci_restore_state() which calls pci_restore_msi_state(), which in turn
-executes __pci_restore_msix_state() that accesses the device's memory
-space to restore the contents of the MSI-X table.  However, if the
-device is in a low power state at this point, it's memory space is
-not accessible.
+It hangs at the same point as the unpatched RC2.  As before, it doesn't
+hang if I use "shutdown" instead of "platform".
 
-The easiest way to fix this potential problem is to make
-pci_restore_standard_config() call pci_restore_state() after
-it has put the device into the full power state, D0.  Fortunately,
-all of this is done with interrupts off, so the change of ordering
-should not cause any trouble.
+Going by sysfs, I have 4 PCI devices without a kernel driver.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+8086:2592   Mobile 915 Express Graphics Controller
+8086:2792   Mobile 915 Express Graphics Controller (driven by X)
+8086:2448   82801 Mobile PCI Bridge
+8086:2641   82801FBM (ICH6M) LPC Interface Bridge
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1393,12 +1393,11 @@ int pci_restore_standard_config(struct p
- 	pci_power_t prev_state;
- 	int error;
- 
--	pci_restore_state(dev);
- 	pci_update_current_state(dev, PCI_D0);
- 
- 	prev_state = dev->current_state;
- 	if (prev_state == PCI_D0)
--		return 0;
-+		goto Restore;
- 
- 	error = pci_raw_set_power_state(dev, PCI_D0, false);
- 	if (error)
-@@ -1421,7 +1420,8 @@ int pci_restore_standard_config(struct p
- 
- 	dev->current_state = PCI_D0;
- 
--	return 0;
-+ Restore:
-+	return pci_restore_state(dev);
- }
- 
- /**
+Thanks
+Alan
