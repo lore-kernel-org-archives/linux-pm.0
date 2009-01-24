@@ -1,15 +1,10 @@
-From: <gregkh@suse.de>
-Subject: patch
-	usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
-	added to gregkh-2.6 tree
-Date: Sat, 24 Jan 2009 16:29:23 -0800
-Message-ID: <12328433631861__38131.8057458431$1232843659$gmane$org@kroah.org>
-References: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
+From: =?UTF-8?Q?Papp_=C3=81ron?= <aphex888@gmail.com>
+Subject: acpi lcd support
+Date: Sat, 24 Jan 2009 15:18:39 +0100
+Message-ID: <e324c01d0901240618l65d721b4t21633d387676efa9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0725955222929486420=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,100 +12,63 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu, david-b@pacbell.net, gregkh@suse.de, greg@kroah.com, linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, rjw@sisk.pl, stable@kernel.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============0725955222929486420==
+Content-Type: multipart/alternative; boundary=0015174be84c9eb7f304613b2eed
 
-This is a note to let you know that I've just added the patch titled
+--0015174be84c9eb7f304613b2eed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-    Subject: USB: don't enable wakeup by default for PCI host controllers
-
-to my gregkh-2.6 tree.  Its filename is
-
-    usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+Dear Sir/Madam,
 
 
->From stern@rowland.harvard.edu  Sat Jan 24 16:19:17 2009
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Tue, 13 Jan 2009 11:35:54 -0500 (EST)
-Subject: USB: don't enable wakeup by default for PCI host controllers
-To: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Brownell <david-b@pacbell.net>, USB list <linux-usb@vger.kernel.org>,  Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
+
+I want to get some information about, if I could help You to develope
+notebook LCD support for non-Thinkpad/Toshiba notebooks.
+I'm using a Fujitsu-Siemens notebook (pa-1538) and if I try to change the
+lcd backlight get the following:
+
+$ sudo acpitool -l 1
+Changing LCD brightness level is only supported on Toshiba or Thinkpad
+laptops.
+
+I'm using Debian os, and the ACPI version is 1.1.
+Please let me know, what knowledges I need to have/learn to develope an
+extension/patch for other manufacturers like FSC or HP.
 
 
-This patch (as1199) changes the initial wakeup settings for PCI USB
-host controllers.  The controllers are marked as capable of waking the
-system, but wakeup is not enabled by default.
 
-It turns out that enabling wakeup for USB host controllers has a lot
-of bad consequences.  As the simplest example, if a USB mouse or
-keyboard is unplugged immediately after the computer is put to sleep,
-the unplug will cause the system to wake back up again!  We are better
-off marking them as wakeup-capable and leaving wakeup disabled.
+Thanks, and best regards
+Aron Papp
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
-CC: David Brownell <david-b@pacbell.net>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+--0015174be84c9eb7f304613b2eed
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
----
- drivers/usb/core/hcd-pci.c  |    1 -
- drivers/usb/host/ehci-pci.c |    2 +-
- drivers/usb/host/ohci-hcd.c |    8 +++-----
- 3 files changed, 4 insertions(+), 7 deletions(-)
+Dear Sir/Madam,<br><br><br><br>I want to get some information about, if I c=
+ould help You to develope notebook LCD support for non-Thinkpad/Toshiba not=
+ebooks.<br>I&#39;m using a Fujitsu-Siemens notebook (pa-1538) and if I try =
+to change the lcd backlight get the following:<br>
+<br>$ sudo acpitool -l 1<br>Changing LCD brightness level is only supported=
+ on Toshiba or Thinkpad laptops.<br><br>I&#39;m using Debian os, and the AC=
+PI version is 1.1.<br>Please let me know, what knowledges I need to have/le=
+arn to develope an extension/patch for other manufacturers like FSC or HP.<=
+br>
+<br><br><br>Thanks, and best regards<br>Aron Papp<br><br>
 
---- a/drivers/usb/core/hcd-pci.c
-+++ b/drivers/usb/core/hcd-pci.c
-@@ -128,7 +128,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
- 	}
- 
- 	pci_set_master(dev);
--	device_set_wakeup_enable(&dev->dev, 1);
- 
- 	retval = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
- 	if (retval != 0)
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -230,7 +230,7 @@ static int ehci_pci_setup(struct usb_hcd
- 		pci_read_config_word(pdev, 0x62, &port_wake);
- 		if (port_wake & 0x0001) {
- 			dev_warn(&pdev->dev, "Enabling legacy PCI PM\n");
--			device_init_wakeup(&pdev->dev, 1);
-+			device_set_wakeup_capable(&pdev->dev, 1);
- 		}
- 	}
- 
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -593,12 +593,10 @@ static int ohci_run (struct ohci_hcd *oh
- 	 * to be checked in case boot firmware (BIOS/SMM/...) has set up
- 	 * wakeup in a way the bus isn't aware of (e.g., legacy PCI PM).
- 	 * If the bus glue detected wakeup capability then it should
--	 * already be enabled.  Either way, if wakeup should be enabled
--	 * but isn't, we'll enable it now.
-+	 * already be enabled; if so we'll just enable it again.
- 	 */
--	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
--			&& !device_can_wakeup(hcd->self.controller))
--		device_init_wakeup(hcd->self.controller, 1);
-+	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0)
-+		device_set_wakeup_capable(hcd->self.controller, 1);
- 
- 	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
- 	case OHCI_USB_OPER:
+--0015174be84c9eb7f304613b2eed--
+
+--===============0725955222929486420==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
-
-usb.current/usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
-usb.current/usb-fix-char-device-disconnect-handling.patch
-usb.current/usb-fix-suspend-resume-of-pci-usb-controllers.patch
-usb.current/usb-fix-toggle-mismatch-in-disable_endpoint-paths.patch
-driver-core.current/klist.c-bit-0-in-pointer-can-t-be-used-as-flag.patch
+--===============0725955222929486420==--
