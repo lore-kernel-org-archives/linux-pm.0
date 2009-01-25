@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on
-	eeepc-701
-Date: Sat, 24 Jan 2009 21:53:47 +0100
-Message-ID: <200901242153.48095.rjw__34904.2201684371$1232830648$gmane$org@sisk.pl>
-References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com>
-	<497AF845.2000002@tuffmail.co.uk>
-	<200901240827.05557.jbarnes@virtuousgeek.org>
+From: <gregkh@suse.de>
+Subject: patch
+	usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
+	added to gregkh-2.6 tree
+Date: Sat, 24 Jan 2009 16:29:23 -0800
+Message-ID: <12328433631861__38131.8057458431$1232843659$gmane$org@kroah.org>
+References: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901240827.05557.jbarnes@virtuousgeek.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,91 +19,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>
+To: stern@rowland.harvard.edu, david-b@pacbell.net, gregkh@suse.de, greg@kroah.com, linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, rjw@sisk.pl, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 24 January 2009, Jesse Barnes wrote:
-> On Saturday, January 24, 2009 3:15 am Alan Jenkins wrote:
-> > Rafael J. Wysocki wrote:
-> > > On Friday 23 January 2009, Alan Jenkins wrote:
-> > >> Rafael J. Wysocki wrote:
-> > >>> On Thursday 22 January 2009, Alan Jenkins wrote:
-> > >>>> Rafael J. Wysocki wrote:
-> > >>>>> On Thursday 22 January 2009, Alan Jenkins wrote:
-> > >>>>>> Alan Jenkins wrote:
-> > >>>>>>> Hibernation hangs just after writing the image.  With s2disk I can
-> > >>>>>>> see this from the console messages.  The same hang happens with
-> > >>>>>>> kernel swsusp ('echo disk | sudo tee /sys/power/state'), and I can
-> > >>>>>>> see that the image has been written from the HDD led.
-> > >>>>>>>
-> > >>>>>>> In either case, I can still hard-power-off and resume from
-> > >>>>>>> hibernation.
-> > >>>>>>>
-> > >>>>>>> It doesn't hang if I use the shutdown method (either 'echo shutdown
-> > >>>>>>> | sudo tee /sys/power/disk' or  's2disk -P "shutdown
-> > >>>>>>> method=shutdown"').
-> > >>>>>>
-> > >>>>>> I've bisected this to commit
-> > >>>>>> 571ff7584bb9e05fca0eb79752ae55a46faf3a98. It doesn't revert cleanly
-> > >>>>>> from RC2.
-> > >>>>>>
-> > >>>>>> I think it's distinct from the other two reported suspend
-> > >>>>>> regressions. I'm not using acpi-cpufreq, and the issue doesn't
-> > >>>>>> affect resume.
-> > >>>>>
-> > >>>>> It looks distinct.
-> > >>>>>
-> > >>>>> Do you suspend this box to RAM and does it work?
-> > >>>>
-> > >>>> Yes, I do use STR on it occasionally, and it still works in RC2.
-> > >>>>
-> > >>>>> Please retest with the appended patch applied.
-> > >>>>
-> > >>>> That fixes it.
-> > >>>
-> > >>> OK, it won't hurt to apply it.
-> > >>>
-> > >>> Still, the hardware or the BIOS in your box seems to be broken, or
-> > >>> both, so I'd like to debug it a bit more if you don't mind.
-> > >>>
-> > >>> Can you please test the patch below instead of the previous one?
-> > >>
-> > >> It hangs at the same point as the unpatched RC2.  As before, it doesn't
-> > >> hang if I use "shutdown" instead of "platform".
-> > >>
-> > >> Going by sysfs, I have 4 PCI devices without a kernel driver.
-> > >>
-> > >> 8086:2592   Mobile 915 Express Graphics Controller
-> > >> 8086:2792   Mobile 915 Express Graphics Controller (driven by X)
-> > >> 8086:2448   82801 Mobile PCI Bridge
-> > >> 8086:2641   82801FBM (ICH6M) LPC Interface Bridge
-> > >
-> > > The bridges shouldn't be affected, so I bet on the graphics.
-> > >
-> > > It seems that the BIOS doesn't expect it to be in D3 while entering S4,
-> > > although it apparently doesn't mind it to be in D3 while entering S3.
-> > >
-> > > I blame the Asus BIOS writers. ;-)
-> >
-> > Wouldn't Windows normally put it into D3?  There are many reports of
-> > successful hibernation under Windows on this hardware.  The motivation
-> > being that S3 drains the battery in <24 hours.  (Fewer people hibernate
-> > on linux because you only have a 4G SSD, so a swap partition wastes a
-> > lot of space, and most installers can't set up swap files).
-> 
-> Sounds like the BIOS pokes at gfx during S3 (then hopefully puts it into D3) 
-> but doesn't bother when going into S4, that's kind of strange, but maybe it's 
-> spec'd somewhere.
 
-Well, I think the BIOS doesn't touch the graphics during suspend to RAM and
-resume, because it wants to save time.  ISTR, there is a limit on the amount
-of time the BIOS can spend initializing devices and it doesn't get Windows
-certification if that limit is not satisfied.
+This is a note to let you know that I've just added the patch titled
 
-There's no such limit for hibernation, though, and the BIOS probably tries to
-do something with the graphics before entering S4, but it should first check if
-it's already in D3.
+    Subject: USB: don't enable wakeup by default for PCI host controllers
 
-Thanks,
-Rafael
+to my gregkh-2.6 tree.  Its filename is
+
+    usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From stern@rowland.harvard.edu  Sat Jan 24 16:19:17 2009
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Tue, 13 Jan 2009 11:35:54 -0500 (EST)
+Subject: USB: don't enable wakeup by default for PCI host controllers
+To: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, USB list <linux-usb@vger.kernel.org>,  Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0901131133430.2667-100000@iolanthe.rowland.org>
+
+
+This patch (as1199) changes the initial wakeup settings for PCI USB
+host controllers.  The controllers are marked as capable of waking the
+system, but wakeup is not enabled by default.
+
+It turns out that enabling wakeup for USB host controllers has a lot
+of bad consequences.  As the simplest example, if a USB mouse or
+keyboard is unplugged immediately after the computer is put to sleep,
+the unplug will cause the system to wake back up again!  We are better
+off marking them as wakeup-capable and leaving wakeup disabled.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
+CC: David Brownell <david-b@pacbell.net>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/core/hcd-pci.c  |    1 -
+ drivers/usb/host/ehci-pci.c |    2 +-
+ drivers/usb/host/ohci-hcd.c |    8 +++-----
+ 3 files changed, 4 insertions(+), 7 deletions(-)
+
+--- a/drivers/usb/core/hcd-pci.c
++++ b/drivers/usb/core/hcd-pci.c
+@@ -128,7 +128,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
+ 	}
+ 
+ 	pci_set_master(dev);
+-	device_set_wakeup_enable(&dev->dev, 1);
+ 
+ 	retval = usb_add_hcd(hcd, dev->irq, IRQF_DISABLED | IRQF_SHARED);
+ 	if (retval != 0)
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -230,7 +230,7 @@ static int ehci_pci_setup(struct usb_hcd
+ 		pci_read_config_word(pdev, 0x62, &port_wake);
+ 		if (port_wake & 0x0001) {
+ 			dev_warn(&pdev->dev, "Enabling legacy PCI PM\n");
+-			device_init_wakeup(&pdev->dev, 1);
++			device_set_wakeup_capable(&pdev->dev, 1);
+ 		}
+ 	}
+ 
+--- a/drivers/usb/host/ohci-hcd.c
++++ b/drivers/usb/host/ohci-hcd.c
+@@ -593,12 +593,10 @@ static int ohci_run (struct ohci_hcd *oh
+ 	 * to be checked in case boot firmware (BIOS/SMM/...) has set up
+ 	 * wakeup in a way the bus isn't aware of (e.g., legacy PCI PM).
+ 	 * If the bus glue detected wakeup capability then it should
+-	 * already be enabled.  Either way, if wakeup should be enabled
+-	 * but isn't, we'll enable it now.
++	 * already be enabled; if so we'll just enable it again.
+ 	 */
+-	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
+-			&& !device_can_wakeup(hcd->self.controller))
+-		device_init_wakeup(hcd->self.controller, 1);
++	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0)
++		device_set_wakeup_capable(hcd->self.controller, 1);
+ 
+ 	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
+ 	case OHCI_USB_OPER:
+
+
+Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
+
+usb.current/usb-don-t-enable-wakeup-by-default-for-pci-host-controllers.patch
+usb.current/usb-fix-char-device-disconnect-handling.patch
+usb.current/usb-fix-suspend-resume-of-pci-usb-controllers.patch
+usb.current/usb-fix-toggle-mismatch-in-disable_endpoint-paths.patch
+driver-core.current/klist.c-bit-0-in-pointer-can-t-be-used-as-flag.patch
