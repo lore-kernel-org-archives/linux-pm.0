@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/1] PM/Hibernate: fix "swap breaks after
-	hibernation failures"
-Date: Tue, 27 Jan 2009 23:18:59 +0100
-Message-ID: <200901272319.00102.rjw__36378.2544890002$1233095098$gmane$org@sisk.pl>
-References: <200901272317.43512.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: ACPI problems
+Date: Tue, 27 Jan 2009 23:53:58 +0100
+Message-ID: <20090127225358.GA19343@elf.ucw.cz>
+References: <OFB501AC29.DA72593B-ON65257545.00363AF4-65257545.00363B0B@LocalDomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901272317.43512.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <OFB501AC29.DA72593B-ON65257545.00363AF4-65257545.00363B0B@LocalDomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +18,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+To: mohd.adil@tcs.com
+Cc: majordomo@vger.kernel.org, linux-pm@lists.osdl.org, acpi-bugzilla-request@lists.sourceforge.net, linux-pm-devel-request@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+On Wed 2009-01-21 15:22:20, mohd.adil@tcs.com wrote:
+>    Hi
+> 
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12239
+>                This is my first post to the list. Hope I will find a
+>    solution.
 
-The image writing code dropped a reference to the current swap device.
-This doesn't show up if the hibernation succeeds - because it doesn't
-affect the image which gets resumed.  But it means multiple _failed_
-hibernations end up freeing the swap device while it is still use!
+Please avoid using html on the lists.
 
-swsusp_write() finds the block device for the swap file using swap_type_of().
-It then uses blkdev_get() / blkdev_put() to open and close the block device.
+>                I am trying to develop a new functionality using a Sun
+>    alonso Quad Core blade (x86_64) architecture.
+> 
+>                 The linux distribution which I am using contains a very
+>    old acpi driver (02/09/2005 probably acpi version 1 compliant)
+> 
+>                Further, the BIOS I am using is an AMI BIOS.  I am fairly
+>    certain that it is acpi version 3 compliant.
 
-Unfortunately, blkdev_get() assumes ownership of the inode of the block_device
-passed to it.  So blkdev_put() calls iput() on the inode.  This is by design
-and other callers expect this behaviour.  The fix is for swap_type_of() to take
-a reference on the inode using bdget().
+Famous last words.
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>                 Now, I am facing two problems here.
+> 
+>                1)  I am trying to evaluate some namespace control methods
+>    which are setup in sytem DSDT.
+> 
+>                     Functions are :
+> 
+>                      [1]\\_SB.PERB (should contain memory location
+>    address) and
+> 
+>                      [2]\\_SB.PERL   (should contain length)
+> 
+>                     This some information passed to us from BIOS which is
+>    required for my development.
+> 
+>                     I am using acpi_evaluate_object to evaluate these
+>    functions. I dont see any error in executing the evaluate
+> 
+>                    function call. But they evaluate to zero.
 
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index f48b831..7740478 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -635,7 +635,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
- 
- 		if (!bdev) {
- 			if (bdev_p)
--				*bdev_p = sis->bdev;
-+				*bdev_p = bdget(sis->bdev->bd_dev);
- 
- 			spin_unlock(&swap_lock);
- 			return i;
-@@ -647,7 +647,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
- 					struct swap_extent, list);
- 			if (se->start_block == offset) {
- 				if (bdev_p)
--					*bdev_p = sis->bdev;
-+					*bdev_p = bdget(sis->bdev->bd_dev);
- 
- 				spin_unlock(&swap_lock);
- 				bdput(bdev);
+Hmm, this is hard to debug without seeing the source.
+
+>                 2)   The second task I have is to put the system into S3
+>    (suspend to ram) state.
+> 
+>                       While doing that I am experiencing a problem. Every
+>    time I write
+> 
+>                        echo mem > /sys/power/state
+> 
+>                       System hangs at METHOD_NAME__PTS method. There is a
+>    related bug in
+> 
+>                      new acpi driver related to this function. But since I
+>    am using a very old driver this should not have
+>                      happened.
+
+
+Which kernel version?
+
+>                      Just for added information : I dont really care about
+>    resume from the S3 state. I dont have video card.
+
+You want to suspend but don't care about resume...?!
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
