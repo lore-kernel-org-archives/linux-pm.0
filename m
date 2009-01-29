@@ -1,14 +1,12 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular
- locking dependency on hibernation
-Date: Thu, 29 Jan 2009 10:10:11 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901291009220.13600__13010.0685092204$1233245290$gmane$org@anakin>
-References: <200901272137.57757.arvidjaar@mail.ru>
+From: Eric Sesterhenn <snakebyte@gmx.de>
+Subject: Suspend regression, hang after matroxfb
+Date: Thu, 29 Jan 2009 13:58:55 +0100
+Message-ID: <20090129125855.GA4597@alice>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200901272137.57757.arvidjaar@mail.ru>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,90 +16,150 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-pm@lists.linux-foundation.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Andrea Righi <righi.andrea@gmail.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: vandrove@vc.cvut.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
-> I do not know if this is new; I usually do not hibernate at all and was 
-> testing another driver actually. I do not remember such issues in 2.6.28 
-> though. Dmesg follows; config attached.
+hi,
 
-> [11715.652498] =======================================================
-> [11715.652520] [ INFO: possible circular locking dependency detected ]
-> [11715.652534] 2.6.29-rc2-1avb #11
-> [11715.652541] -------------------------------------------------------
-> [11715.652550] s2disk/25519 is trying to acquire lock:
-> [11715.652562]  (&fb_info->lock){--..}, at: [<c0223017>] fb_mmap+0x97/0x170
-> [11715.652623] 
-> [11715.652625] but task is already holding lock:
-> [11715.652632]  (&mm->mmap_sem){----}, at: [<c010639e>] sys_mmap2+0x8e/0xc0
-> [11715.652669] 
-> [11715.652671] which lock already depends on the new lock.
-> [11715.652675] 
-> [11715.652681] 
-> [11715.652683] the existing dependency chain (in reverse order) is:
-> [11715.652691] 
-> [11715.652693] -> #1 (&mm->mmap_sem){----}:
-> [11715.652707]        [<c0144ecf>] __lock_acquire+0x129f/0x1930
-> [11715.652730]        [<c01455bc>] lock_acquire+0x5c/0x80
-> [11715.652742]        [<c0181e57>] might_fault+0x77/0xa0
-> [11715.652764]        [<c0209325>] copy_from_user+0x35/0x130
-> [11715.652782]        [<c0223ef5>] fb_ioctl+0x1d5/0x3f0
-> [11715.652797]        [<c01a51d0>] vfs_ioctl+0x20/0x80
-> [11715.652832]        [<c01a53e2>] do_vfs_ioctl+0x72/0x570
-> [11715.652845]        [<c01a5919>] sys_ioctl+0x39/0x70
-> [11715.652857]        [<c0103371>] sysenter_do_call+0x12/0x31
-> [11715.652870]        [<ffffffff>] 0xffffffff
-> [11715.652973] 
-> [11715.652975] -> #0 (&fb_info->lock){--..}:
-> [11715.652988]        [<c014503c>] __lock_acquire+0x140c/0x1930
-> [11715.653000]        [<c01455bc>] lock_acquire+0x5c/0x80
-> [11715.653011]        [<c030761a>] mutex_lock_nested+0xba/0x2f0
-> [11715.653032]        [<c0223017>] fb_mmap+0x97/0x170
-> [11715.653044]        [<c0188996>] mmap_region+0x1d6/0x530
-> [11715.653067]        [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
-> [11715.653079]        [<c01063bd>] sys_mmap2+0xad/0xc0
-> [11715.653091]        [<c0103371>] sysenter_do_call+0x12/0x31
-> [11715.653102]        [<ffffffff>] 0xffffffff
-> [11715.653116] 
-> [11715.653119] other info that might help us debug this:
-> [11715.653122] 
-> [11715.653130] 1 lock held by s2disk/25519:
-> [11715.653137]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>] 
-> sys_mmap2+0x8e/0xc0
-> [11715.653156] 
-> [11715.653158] stack backtrace:
-> [11715.653170] Pid: 25519, comm: s2disk Not tainted 2.6.29-rc2-1avb #11
-> [11715.653179] Call Trace:
-> [11715.653190]  [<c0306248>] ? printk+0x18/0x20
-> [11715.653202]  [<c01437df>] print_circular_bug_tail+0xcf/0xe0
-> [11715.653213]  [<c014503c>] __lock_acquire+0x140c/0x1930
-> [11715.653224]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
-> [11715.653242]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
-> [11715.653254]  [<c0140dc5>] ? lock_release_holdtime+0x35/0x210
-> [11715.653265]  [<c01455bc>] lock_acquire+0x5c/0x80
-> [11715.653277]  [<c0223017>] ? fb_mmap+0x97/0x170
-> [11715.653287]  [<c030761a>] mutex_lock_nested+0xba/0x2f0
-> [11715.653298]  [<c0223017>] ? fb_mmap+0x97/0x170
-> [11715.653309]  [<c0223017>] ? fb_mmap+0x97/0x170
-> [11715.653335]  [<c019514d>] ? kmem_cache_alloc+0xad/0x100
-> [11715.653347]  [<c0223017>] fb_mmap+0x97/0x170
-> [11715.653358]  [<c0188996>] mmap_region+0x1d6/0x530
-> [11715.653371]  [<c0186a9d>] ? arch_get_unmapped_area_topdown+0x10d/0x170
-> [11715.653383]  [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
-> [11715.653395]  [<c01063bd>] sys_mmap2+0xad/0xc0
-> [11715.653406]  [<c0103371>] sysenter_do_call+0x12/0x31
+on this box standby worked with 2.6.28, but is broken with 2.6.29-rc3.
 
-Is this fixed by http://patchwork.kernel.org/patch/3259/?
+Dmesg of startup
+http://www.cccmz.de/~snakebyte/200.log
+.config
+http://www.cccmz.de/~snakebyte/config_200
 
-Gr{oetje,eeting}s,
+When testing the devices 
 
-						Geert
+root@computer-desktop:/sys/power# echo devices > pm_test 
+root@computer-desktop:/sys/power# echo standby > state
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I get this message: 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+[  174.177445] PM: Preparing system for standby sleep
+[  174.182706] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[  174.186096] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+[  174.186903] PM: Entering standby sleep
+[  174.620476] sd 2:0:0:0: [sda] Synchronizing SCSI cache
+[  174.621453] sd 2:0:0:0: [sda] Stopping disk
+[  174.743784] serial 00:08: disabled
+[  174.744389] matroxfb 0000:01:00.0: PCI INT A disabled
+
+and the system does not seem to properly suspend / neither wakeup
+
+root@computer-desktop:~# lspci
+00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX Host bridge (rev 03)
+00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 03)
+00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
+00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
+00:07.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
+00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 02)
+00:0a.0 Ethernet controller: Intel Corporation 82556 EtherExpress PRO/100 Smart (rev 03)
+00:0c.0 SCSI storage controller: Adaptec AIC-7861 (rev 03)
+00:0e.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
+00:12.0 Multimedia audio controller: Rockwell International Device 4310
+00:12.1 Communication controller: Rockwell International Riptide HSF 56k PCI Modem
+00:12.2 Input device controller: Rockwell International Device 4312
+01:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G200 AGP (rev 03)
+
+root@computer-desktop:~# lsmod
+Module                  Size  Used by
+nfsd                  217580  13 
+exportfs                4608  1 nfsd
+nfs                   253896  1 
+lockd                  66984  2 nfsd,nfs
+nfs_acl                 3328  2 nfsd,nfs
+auth_rpcgss            36160  2 nfsd,nfs
+sunrpc                185716  16 nfsd,nfs,lockd,nfs_acl,auth_rpcgss
+ipv6                  252276  10 
+fuse                   54188  1 
+unix                   25404  96
+
+root@computer-desktop:/usr/src/linux# cat /proc/cpuinfo 
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 8
+model name	: Pentium III (Coppermine)
+stepping	: 3
+cpu MHz		: 697.840
+cache size	: 256 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 mmx fxsr sse
+bogomips	: 1395.68
+clflush size	: 32
+power management:
+
+
+After PM_VERBOSE enabled the log changes to this:
+
+[ 1968.407273] PM: Syncing filesystems ... done.
+[ 1968.424490] PM: Preparing system for standby sleep
+[ 1968.431142] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[ 1968.434866] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+[ 1968.435887] PM: Entering standby sleep
+[ 1968.436580] agpgart-intel 0000:00:00.0: preparing suspend
+[ 1968.436683] pci 0000:00:01.0: preparing suspend
+[ 1968.436788] pci 0000:00:07.0: preparing suspend
+[ 1968.436877] ata_piix 0000:00:07.1: preparing suspend
+[ 1968.436998] uhci_hcd 0000:00:07.2: preparing suspend
+[ 1968.437091] piix4_smbus 0000:00:07.3: preparing suspend
+[ 1968.437213] pci 0000:00:0a.0: preparing suspend
+[ 1968.437301] aic7xxx 0000:00:0c.0: preparing suspend
+[ 1968.437420] 8139too 0000:00:0e.0: preparing suspend
+[ 1968.437511] RIPTIDE 0000:00:12.0: preparing suspend
+[ 1968.437617] pci 0000:00:12.1: preparing suspend
+[ 1968.437705] pci 0000:00:12.2: preparing suspend
+[ 1968.437807] matroxfb 0000:01:00.0: preparing suspend
+[ 1968.438056] platform pcspkr: preparing suspend
+[ 1968.438166] platform microcode: preparing suspend
+[ 1968.438321] vga16fb vga16fb.0: preparing suspend
+[ 1968.442065] serial8250 serial8250: preparing suspend
+[ 1968.442857] usb usb1: preparing type suspend, may wakeup
+[ 1968.442995] i8042 i8042: preparing suspend
+[ 1968.443144] rtc-test rtc-test.0: preparing suspend
+[ 1968.443256] rtc-test rtc-test.1: preparing suspend
+[ 1968.443785] ac97 0-0:unknown codec: legacy suspend
+[ 1968.443960] fschmd 3-0073: legacy suspend
+[ 1968.444151] rtc rtc2: legacy class suspend
+[ 1968.444252] rtc-test rtc-test.1: suspend
+[ 1968.444351] rtc rtc1: legacy class suspend
+[ 1968.444501] rtc-test rtc-test.0: suspend
+[ 1968.444638] rtc rtc0: legacy class suspend
+[ 1968.444883] atkbd serio0: legacy suspend
+[ 1968.872096] i8042 i8042: suspend
+[ 1968.872384] usb usb1: type suspend, may wakeup
+[ 1968.872581] sd 2:0:0:0: legacy suspend
+[ 1968.872881] sd 2:0:0:0: [sda] Synchronizing SCSI cache
+[ 1968.873883] sd 2:0:0:0: [sda] Stopping disk
+[ 1968.992131] scsi 1:0:0:0: legacy suspend
+[ 1968.992852] serial8250 serial8250: suspend
+[ 1968.992997] drm card0: legacy class suspend
+[ 1968.996728] vga16fb vga16fb.0: suspend
+[ 1968.996920] platform microcode: suspend
+[ 1968.997059] platform pcspkr: suspend
+[ 1968.997256] serial 00:08: legacy suspend
+[ 1968.998043] serial 00:08: disabled
+[ 1968.998213] pnp 00:07: legacy suspend
+[ 1968.998343] i8042 kbd 00:06: legacy suspend
+[ 1968.998498] pnp 00:05: legacy suspend
+[ 1968.998626] pnp 00:04: legacy suspend
+[ 1968.998754] rtc_cmos 00:03: legacy suspend, may wakeup
+[ 1968.998980] pnp 00:02: legacy suspend
+[ 1968.999109] system 00:01: legacy suspend
+[ 1968.999262] pnp 00:00: legacy suspend
+[ 1968.999410] matroxfb 0000:01:00.0: suspend
+[ 1968.999737] matroxfb 0000:01:00.0: PCI INT A disabled
+
+I am not sure if a bisection makes sense
+with all those suspend bugs.
+
+
+Greetings Eric
