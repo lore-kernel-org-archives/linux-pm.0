@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report with
-	2.6.29-rc3
-Date: Thu, 29 Jan 2009 18:24:36 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0901291816130.6298-100000@iolanthe.rowland.org>
-References: <465476.87234.qm@web36803.mail.mud.yahoo.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Thu, 29 Jan 2009 17:16:47 -0800
+Message-ID: <d6200be20901291716g5b6f4542r54c2ba8672961c91@mail.gmail.com>
+References: <d6200be20901142042n5aa6384al936e49f5bce8256e@mail.gmail.com>
+	<Pine.LNX.4.44L0.0901151005240.2490-100000@iolanthe.rowland.org>
+	<20090129130424.GA1425@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <465476.87234.qm@web36803.mail.mud.yahoo.com>
+In-Reply-To: <20090129130424.GA1425@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +19,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Qarras <dqarras@yahoo.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, Nigel Cunningham <ncunningham@crca.org.au>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Jan 2009, Daniel Qarras wrote:
+On Thu, Jan 29, 2009 at 5:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> AFAICT, this is something very different. It is attempt to do
+> autosuspend right. Imagine burning cd... right now you can suspend,
+> and it will just stop the burn.
+>
+> Wakelocks code allows you to tell the machine 'feel free to suspend
+> when you have nothing to do'... so the machine will burn the cd and
+> then suspend.
+>
 
-> > Besides, the real problem isn't autosuspend at all, as
-> > far as I can tell.  The first problem is that the computer wakes up
-> > immediately after going into hibernation.  The second problem is that
-> > the computer wakes up from suspend immediately when a USB mouse is
-> > plugged in.
-> 
-> Yes, this is a correct description.
-> 
-> > I don't know what's causing the first problem (which has been around 
-> > since 2.6.24).  Maybe a firmware bug.  Perhaps doing
-> > "rmmod ehci-hcd" before hibernating will help.
-> 
-> Correct:
-> 
-> https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019251.html
-> 
-> (Of course for a layman like me it is a bit saddening that this worked earlier but not anymore.)
+Yes, wakelocks solves this problem, but our auto-suspend code is all
+in user-space so the kernel would not have to be involved in that
+particular example.
 
-Perhaps Rafael has some idea on what has changed in the meantime to 
-cause this problem.  It could have something to do with the way ACPI is 
-now integrated with the PCI drivers, for example.
+I added an example to the document that may help illustrate why we
+added wakelock support in the kernel:
 
-> > To attack the second problem, it would help to see a dmesg
-> > log showing the immediate wakeup from a kernel with CONFIG_USB_DEBUG
-> > enabled.
-> 
-> Please find such a dmesg attached.
+---
+Documentation/power/wakelocks.txt
+Wakelocks
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-The log doesn't indicate a real cause.  It does show that wakeup was 
-disabled on the EHCI controller, but nevertheless that controller must 
-have been responsible for waking up your system when the mouse was 
-plugged back in.  You can test this by unloading ehci-hcd before 
-suspending.
+A wakelock prevents the system from entering suspend or other low-power
+states when active. If the type is set to WAKE_LOCK_SUSPEND, the wakelock
+prevents a full system suspend. If the type is WAKE_LOCK_IDLE, low-power
+states that cause large interrupt latencies or that disable a set of
+interrupts will not be entered from idle until the wakelocks are released.
 
-The fact that _un_plugging the mouse didn't cause a wakeup has an 
-interesting explanation.  The mouse is a low-speed USB device, and as 
-such is managed by the UHCI controller.  Evidently that controller 
-really was disabled for wakeup, since unplugging the mouse didn't have 
-any effect.  But when a new USB device is plugged in, the system 
-doesn't know what speed it runs at.  So the device is attached first to 
-EHCI, and then if it proves not to be high-speed it gets switched 
-electronically over to UHCI.  Thus the plug-in event stimulated the 
-EHCI controller to cause a wakeup.
+Wakelocks can be used to allow user-space to decide which keys should wake
+the system. The sequence of events can look like this:
+- The Keypad driver gets an interrupt. It then locks the keypad-scan wakelo=
+ck
+  and starts scanning the keypad.
+- The keypad-scan code detects a key change and reports it to the input-eve=
+nt
+  driver.
+- The input-event driver sees the key change, enqueues an event, and locks
+  the input-event-queue wakelock.
+- The keypad-scan code detects that no keys are held and unlocks the
+  keypad-scan wakelock.
+- The user-space input-event thread returns from select/poll, locks the
+  process-input-events wakelock and then calls read in the input-event devi=
+ce.
+- The input-event driver dequeues the key-event and, since the queue is now
+  empty, it unlocks the input-event-queue wakelock.
+- The user-space input-event thread returns from read. It determines that t=
+he
+  key should not wake up the system, releases the process-input-events
+  wakelock and calls select or poll.
 
-This does seem like a firmware problem, but maybe Rafael can suggest a 
-way to work around it.
+                 Key pressed   Key released
+                     |             |
+keypad-scan          ++++++++++++++++++
+input-event-queue        +++          +++
+process-input-events       +++          +++
 
-Alan Stern
+
+Driver API
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+A driver can use the wakelock api by adding a wakelock variable to its state
+and calling wake_lock_init. For instance:
+struct state {
+        struct wakelock wakelock;
+}
+
+init() {
+        wake_lock_init(&state->wakelock, WAKE_LOCK_SUSPEND, "wakelockname");
+}
+
+Before freeing the memory, wake_lock_destroy must be called:
+
+uninit() {
+        wake_lock_destroy(&state->wakelock);
+}
+
+When the driver determines that it needs to run (usually in an interrupt
+handler) it calls wake_lock:
+        wake_lock(&state->wakelock);
+
+When it no longer needs to run it calls wake_unlock:
+        wake_unlock(&state->wakelock);
+
+It can also call wake_lock_timeout to release the wakelock after a delay:
+        wake_lock_timeout(&state->wakelock, HZ);
+
+This works whether the wakelock is already held or not. It is useful if the
+driver woke up other parts of the system that do not use wakelocks but
+still need to run. Avoid this when possible, since it will waste power
+if the timeout is long or may fail to finish needed work if the timeout is
+short.
+
+
+User-space API
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Write "lockname" or "lockname timeout" to /sys/power/wake_lock lock and if
+needed create a wakelock. The timeout here is specified nanoseconds.
+Write "lockname" to /sys/power/wake_unlock to unlock a user wakelock.
+
+Do not use randomly generated wakelock names as there is no api to free
+a user-space wakelock.
+
+
+-- =
+
+Arve Hj=F8nnev=E5g
