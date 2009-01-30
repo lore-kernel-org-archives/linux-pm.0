@@ -1,13 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Fri, 30 Jan 2009 10:13:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0901300955270.2466-100000@iolanthe.rowland.org>
-References: <d6200be20901292040l5f540cf5ybbda03db9627c477@mail.gmail.com>
+Date: Fri, 30 Jan 2009 01:25:03 -0800
+Message-ID: <20090130092503.GA8753@bulgaria.corp.google.com>
+References: <d6200be20901142042n5aa6384al936e49f5bce8256e@mail.gmail.com>
+	<Pine.LNX.4.44L0.0901151005240.2490-100000@iolanthe.rowland.org>
+	<20090129130424.GA1425@ucw.cz>
+	<d6200be20901291716g5b6f4542r54c2ba8672961c91@mail.gmail.com>
+	<20090130090859.GA7967@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20901292040l5f540cf5ybbda03db9627c477@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20090130090859.GA7967@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,99 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: swetland@google.com, Nigel Cunningham <ncunningham@crca.org.au>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Jan 2009, Arve Hj=F8nnev=E5g wrote:
+[Pavel Machek <pavel@ucw.cz>]
+> > On Thu, Jan 29, 2009 at 5:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > AFAICT, this is something very different. It is attempt to do
+> > > autosuspend right. Imagine burning cd... right now you can suspend,
+> > > and it will just stop the burn.
+> > >
+> > > Wakelocks code allows you to tell the machine 'feel free to suspend
+> > > when you have nothing to do'... so the machine will burn the cd and
+> > > then suspend.
+...
+> 
+> I don't get it. So you are running userspace while system is
+> suspended? 
 
-> > Does the input-event-queue wakelock always prevent the system from
-> > suspending whenever the input queue is nonempty?
-> =
+The general idea is that we aggressively try to be suspended as much as
+possible.  Typically this means that when the display is turned off
+(after the user inactivity timeout, managed from a userspace process),
+suspend is requested.
 
-> Yes.
-> =
+If work is being done that requires the system to keep running, a
+wakelock is held, preventing suspend from happening.
 
-> > Does that mean if I
-> > type ahead while a program is running, I can't suspend the computer
-> > until the program processes the keystrokes?
-> =
+If suspend happens, but we resume due to a wakeup interrupt (for
+example, user pressing a key), a wakelock is typically acquired during
+the interrupt handler (which is called while we're resuming) and
+arranged to be held until the event is delivered to userspace.  The
+userspace code which receives events acquires a wakelock before draining
+the queue (after select returns, before reading, etc) so that it keeps
+the system awake until the event is processed.
 
-> The actual suspend will not happen until all the keys are processed,
-> but user-space can turn the screen off at any time.
+In many cases the system pretty rapidly drops wakelocks and returns to
+suspend state.
 
-Okay, this is slowly getting clearer.
-
-Personally, I think we need to be able to suspend computers even when =
-
-there are some unconsumed type-ahead characters in the input buffer.  =
-
-But that's merely an implementation detail.
-
-> > Does the wakelock mechanism distinguish between suspend or power-state
-> > transitions that happen automatically and transitions requested
-> > directly by userspace?
-> =
-
-> No.
-
-And I think this is a big mistake.  It makes sense to have locks for
-blocking auto suspend, but it does not make sense to prevent the user
-from putting his own computer to sleep.
-
-For example: Suppose some program happens to hold a wakelock, perhaps =
-
-because of a simple bug, when the user closes the laptop lid and throws =
-
-the laptop into a backpack.  We don't want the computer to remain awake =
-
-under those circumstances!
-
-In fact, it would be a good idea to inform drivers (by passing a =
-
-particular pm_message_t argument to the suspend method) whether a =
-
-particular suspend was initiated by the user or as an auto suspend.  In =
-
-some cases a driver might very well want to allow one while preventing =
-
-the other.
-
-> When the user decides to suspend, we use the early-suspend api to tell
-> the kernel to turn of the screen and possibly some other devices.
-> Wakelocks are useful without early-suspend, but it must always enter
-> suspend when the last wakelock is unlocked.
-
-Wakelocks and early-suspend are separate issues.  Let's consider only
-wakelocks.
-
-> >> - The user-space input-event thread returns from read. It determines t=
-hat the
-> >>   key should not wake up the system, releases the process-input-events
-> >>   wakelock and calls select or poll.
-> >
-> > This makes no sense.  If the system wasn't asleep to begin with, how
-> > could the key wake it up?  And if the system _was_ asleep to begin
-> > with, how could all of this happen without waking the system up?
-> =
-
-> What I mean here is that the screen turns on and the system does not
-> immediately go back to sleep. The user-space framework has its own
-> idea of whether the system is awake or not. I can change this to
-> "fully wake up" or "turn on the screen".
-
-So what this example really shows is how wakelocks can be used to
-prevent auto suspend from kicking back in the moment a keystroke is
-received, before userspace has even had a chance to decide whether or
-not to turn auto suspend off.  That's how you should describe it -- not
-as a way of preventing keystrokes from waking the system up.
-
-In fact, you have made the discussion very confusing by using the same
-terms ("suspend", "wake up", and so) for at least three different
-concepts: full system suspend, early-suspend, and this new userspace
-framework's idea of suspend.  Not to mention this other notion of
-turning off the screen (and perhaps a few other devices) while leaving
-the system as a whole running.  In the future, please use different
-words when talking about different concepts.
-
-Alan Stern
+Brian
