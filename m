@@ -1,15 +1,13 @@
-From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 2/2] PM: Fix suspend_console/resume_console to
-	use only one semaphore.
-Date: Fri, 30 Jan 2009 19:27:39 -0800
-Message-ID: <1233372459-6434-2-git-send-email-arve__22549.6064326309$1233372790$gmane$org@android.com>
-References: <20090128193047.GA1222@ucw.cz>
-	<1233372459-6434-1-git-send-email-arve@android.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: SMC911X driver Suspend-Resume Failures
+Date: Fri, 30 Jan 2009 21:09:45 -0800
+Message-ID: <20090130210945.46915259.akpm__5913.66717494584$1233378830$gmane$org@linux-foundation.org>
+References: <8bf247760901300435s56024125o9aae1a112196c9a1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233372459-6434-1-git-send-email-arve@android.com>
+In-Reply-To: <8bf247760901300435s56024125o9aae1a112196c9a1@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +17,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: swetland@google.com
+To: Sriram V <vshrirama@gmail.com>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBmaXhlcyBhIHJhY2UgaWYgYW5vdGhlciB0aHJlYWQgYWNxdWlyZWQgdGhlIGNvbnNvbGUK
-d2hpbGUgaXQgd2FzIHN1c3BlbmRlZCBhbmQgcmVsZWFzZWQgaXQgYWZ0ZXIgaXQgd2FzIHJlc3Vt
-ZWQKdGhlIHNlY29uZGFyeSBjb25zb2xlIHNlbWFwaHJlIHdvdWxkIGJlIGxlZnQgbG9ja2VkLCBh
-bmQgdGhlCnByaW1hcnkgc2VtYXBob3JlIHdvdWxkIGJlIHJlbGVhc2VkIHR3aWNlLiBUaGlzIGlu
-IHR1cm4gY2F1c2VkCnRoZSBjb25zb2xlIHN3aXRjaCBvbiBzdXNwZW5kIG9yIHJlc3VtZSB0byBo
-YW5nIGZvcmV2ZXIuCgpOb3RlIHRoYXQgc3VzcGVuZF9jb25zb2xlIGRvZXMgbm90IGFjdHVhbGx5
-IGxvY2sgdGhlIGNvbnNvbGUKZm9yIGNsaWVudHMgdGhhdCB1c2UgYWNxdWlyZV9jb25zb2xlX3Nl
-bSwgaXQgb25seSBsb2NrcyBpdCBmb3IKY2xpZW50cyB0aGF0IHVzZSB0cnlfYWNxdWlyZV9jb25z
-b2xlX3NlbS4gSWYgd2UgY2hhbmdlCnN1c3BlbmRfY29uc29sZSB0byBmdWxseSBsb2NrIHRoZSBj
-b25zb2xlLCB0aGVuIHRoZSBrZXJuZWwKbWF5IGRlYWRsb2NrIG9uIHN1c3BlbmQuCgpTaWduZWQt
-b2ZmLWJ5OiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPgotLS0KIGtlcm5lbC9w
-cmludGsuYyB8ICAgMTUgKysrKysrKysrLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDkgaW5zZXJ0
-aW9ucygrKSwgNiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9rZXJuZWwvcHJpbnRrLmMgYi9r
-ZXJuZWwvcHJpbnRrLmMKaW5kZXggNzAxNTczMy4uMTE4ZWU3NyAxMDA2NDQKLS0tIGEva2VybmVs
-L3ByaW50ay5jCisrKyBiL2tlcm5lbC9wcmludGsuYwpAQCAtNzMsNyArNzMsNiBAQCBFWFBPUlRf
-U1lNQk9MKG9vcHNfaW5fcHJvZ3Jlc3MpOwogICogZHJpdmVyIHN5c3RlbS4KICAqLwogc3RhdGlj
-IERFQ0xBUkVfTVVURVgoY29uc29sZV9zZW0pOwotc3RhdGljIERFQ0xBUkVfTVVURVgoc2Vjb25k
-YXJ5X2NvbnNvbGVfc2VtKTsKIHN0cnVjdCBjb25zb2xlICpjb25zb2xlX2RyaXZlcnM7CiBFWFBP
-UlRfU1lNQk9MX0dQTChjb25zb2xlX2RyaXZlcnMpOwogCkBAIC04OTYsMTIgKzg5NSwxNCBAQCB2
-b2lkIHN1c3BlbmRfY29uc29sZSh2b2lkKQogCXByaW50aygiU3VzcGVuZGluZyBjb25zb2xlKHMp
-ICh1c2Ugbm9fY29uc29sZV9zdXNwZW5kIHRvIGRlYnVnKVxuIik7CiAJYWNxdWlyZV9jb25zb2xl
-X3NlbSgpOwogCWNvbnNvbGVfc3VzcGVuZGVkID0gMTsKKwl1cCgmY29uc29sZV9zZW0pOwogfQog
-CiB2b2lkIHJlc3VtZV9jb25zb2xlKHZvaWQpCiB7CiAJaWYgKCFjb25zb2xlX3N1c3BlbmRfZW5h
-YmxlZCkKIAkJcmV0dXJuOworCWRvd24oJmNvbnNvbGVfc2VtKTsKIAljb25zb2xlX3N1c3BlbmRl
-ZCA9IDA7CiAJcmVsZWFzZV9jb25zb2xlX3NlbSgpOwogfQpAQCAtOTE3LDExICs5MTgsOSBAQCB2
-b2lkIHJlc3VtZV9jb25zb2xlKHZvaWQpCiB2b2lkIGFjcXVpcmVfY29uc29sZV9zZW0odm9pZCkK
-IHsKIAlCVUdfT04oaW5faW50ZXJydXB0KCkpOwotCWlmIChjb25zb2xlX3N1c3BlbmRlZCkgewot
-CQlkb3duKCZzZWNvbmRhcnlfY29uc29sZV9zZW0pOwotCQlyZXR1cm47Ci0JfQogCWRvd24oJmNv
-bnNvbGVfc2VtKTsKKwlpZiAoY29uc29sZV9zdXNwZW5kZWQpCisJCXJldHVybjsKIAljb25zb2xl
-X2xvY2tlZCA9IDE7CiAJY29uc29sZV9tYXlfc2NoZWR1bGUgPSAxOwogfQpAQCAtOTMxLDYgKzkz
-MCwxMCBAQCBpbnQgdHJ5X2FjcXVpcmVfY29uc29sZV9zZW0odm9pZCkKIHsKIAlpZiAoZG93bl90
-cnlsb2NrKCZjb25zb2xlX3NlbSkpCiAJCXJldHVybiAtMTsKKwlpZiAoY29uc29sZV9zdXNwZW5k
-ZWQpIHsKKwkJdXAoJmNvbnNvbGVfc2VtKTsKKwkJcmV0dXJuIC0xOworCX0KIAljb25zb2xlX2xv
-Y2tlZCA9IDE7CiAJY29uc29sZV9tYXlfc2NoZWR1bGUgPSAwOwogCXJldHVybiAwOwpAQCAtOTg0
-LDcgKzk4Nyw3IEBAIHZvaWQgcmVsZWFzZV9jb25zb2xlX3NlbSh2b2lkKQogCXVuc2lnbmVkIHdh
-a2Vfa2xvZ2QgPSAwOwogCiAJaWYgKGNvbnNvbGVfc3VzcGVuZGVkKSB7Ci0JCXVwKCZzZWNvbmRh
-cnlfY29uc29sZV9zZW0pOworCQl1cCgmY29uc29sZV9zZW0pOwogCQlyZXR1cm47CiAJfQogCi0t
-IAoxLjYuMQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQ==
+On Fri, 30 Jan 2009 18:05:27 +0530 Sriram V <vshrirama@gmail.com> wrote:
+
+> Hi,
+>    I am using 2.6.28 and am testing PM on my arm target. I am using
+> smc911x.c driver.
+>    I get the error when i try to resume from suspend:
+> 
+>    has anyone seen this error before.
+> 
+
+Is this the entire output?  Was there any additional information
+preceding the first line which you quoted?
+
+> 
+> 
+> CPU: 0    Not tainted  (2.6.28-omap1-00248-g3fd6c57-dirty #22)
+> PC is at rt_cache_flush+0x80/0xb8
+> LR is at rt_cache_flush+0x7c/0xb8
+> pc : [<c01dd728>]    lr : [<c01dd724>]    psr: a0000013
+> sp : cf829ea0  ip : cf829ea0  fp : cf829ebc
+> r10: 00000000  r9 : 00000000  r8 : 00000004
+> r7 : 00000000  r6 : 0000027f  r5 : cf828000  r4 : 80000000
+> r3 : 00000000  r2 : cf828000  r1 : c01dcf24  r0 : 80000000
+> Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+> Control: 10c5387d  Table: 8f990018  DAC: 00000017
+> Process events/0 (pid: 5, stack limit = 0xcf8282e8)
+> Stack: (0xcf829ea0 to 0xcf82a000)
+> 9ea0: c031f5fc fffffffa 00000000 cf888800 cf829ed4 cf829ec0 c020a5d4 c01dd6b4
+> 9ec0: c031f5fc fffffffa cf829efc cf829ed8 c0069720 c020a550 cf888800 00000002
+> 9ee0: 00000000 00000000 00000000 00000000 cf829f14 cf829f00 c0069824 c00696f8
+> 9f00: 00000000 00000000 cf829f2c cf829f18 c006984c c0069814 00000000 cf888800
+> 9f20: cf829f3c cf829f30 c01c9d38 c0069838 cf829f54 cf829f40 c01ca200 c01c9d28
+> 9f40: cf888800 00000002 cf829f74 cf829f58 c01d5534 c01ca1e4 cf801940 cf828000
+> 9f60: c01d557c cf801940 cf829f84 cf829f78 c01d55a8 c01d53f4 cf829fa4 cf829f88
+> 9f80: c006183c c01d5588 cf829fb8 cf81e880 cf828000 cf801940 cf829fdc cf829fa8
+> 9fa0: c00623d8 c00617a4 00000000 00000000 cf81e880 c006563c cf829fb8 cf829fb8
+> 9fc0: cf801940 c00622e8 00000000 00000000 cf829ff4 cf829fe0 c006516c c00622f4
+> 9fe0: 00000000 00000000 00000000 cf829ff8 c00549f0 c0065124 00000000 00000000
+> Backtrace:
+> [<c01dd6a8>] (rt_cache_flush+0x0/0xb8) from [<c020a5d4>]
+> (fib_netdev_event+0x90/0x9c)
+>  r7:cf888800 r6:00000000 r5:fffffffa r4:c031f5fc
+> [<c020a544>] (fib_netdev_event+0x0/0x9c) from [<c0069720>]
+> (notifier_call_chain+0x34/0x78)
+>  r5:fffffffa r4:c031f5fc
+> [<c00696ec>] (notifier_call_chain+0x0/0x78) from [<c0069824>]
+> (__raw_notifier_call_chain+0x1c/0x24)
+>  r9:00000000 r8:00000000 r7:00000000 r6:00000000 r5:00000002
+> r4:cf888800
+> [<c0069808>] (__raw_notifier_call_chain+0x0/0x24) from [<c006984c>]
+> (raw_notifier_call_chain+0x20/0x28)
+> [<c006982c>] (raw_notifier_call_chain+0x0/0x28) from [<c01c9d38>]
+> (call_netdevice_notifiers+0x1c/0x24)
+> [<c01c9d1c>] (call_netdevice_notifiers+0x0/0x24) from [<c01ca200>]
+> (netdev_state_change+0x28/0x3c)
+> [<c01ca1d8>] (netdev_state_change+0x0/0x3c) from [<c01d5534>]
+> (__linkwatch_run_queue+0x14c/0x194)
+>  r5:00000002 r4:cf888800
+> [<c01d53e8>] (__linkwatch_run_queue+0x0/0x194) from [<c01d55a8>]
+> (linkwatch_event+0x2c/0x3c)
+>  r7:cf801940 r6:c01d557c r5:cf828000 r4:cf801940
+> [<c01d557c>] (linkwatch_event+0x0/0x3c) from [<c006183c>]
+> (run_workqueue+0xa4/0x120)
+> [<c0061798>] (run_workqueue+0x0/0x120) from [<c00623d8>]
+> (worker_thread+0xf0/0x104)
+>  r7:cf801940 r6:cf828000 r5:cf81e880 r4:cf829fb8
+> [<c00622e8>] (worker_thread+0x0/0x104) from [<c006516c>] (kthread+0x54/0x80)
+>  r7:00000000 r6:00000000 r5:c00622e8 r4:cf801940
+> [<c0065118>] (kthread+0x0/0x80) from [<c00549f0>] (do_exit+0x0/0x6ac)
+>  r5:00000000 r4:00000000
+> Code: e7924106 e7823106 ebf9e679 ea000001 (e5944084)
+> ---[ end trace 5d3b9d1bfba9fc73 ]---
+> eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
+> nfs: server 192.168.13.144 not responding, still trying
