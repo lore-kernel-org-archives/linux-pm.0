@@ -1,17 +1,15 @@
 From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 06/11] PM: Add user-space wake lock api.
-Date: Fri, 30 Jan 2009 23:24:13 -0800
-Message-ID: <20090131072413.GA13520@bulgaria.corp.google.com>
-References: <1231896476-22445-1-git-send-email-arve@android.com>
-	<1231896476-22445-6-git-send-email-arve@android.com>
-	<1231896476-22445-7-git-send-email-arve@android.com>
-	<200901301343.08604.u.luckas@road.de>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Fri, 30 Jan 2009 23:47:43 -0800
+Message-ID: <20090131074743.GA13633@bulgaria.corp.google.com>
+References: <d6200be20901292040l5f540cf5ybbda03db9627c477@mail.gmail.com>
+	<Pine.LNX.4.44L0.0901300955270.2466-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200901301343.08604.u.luckas@road.de>
+In-Reply-To: <Pine.LNX.4.44L0.0901300955270.2466-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Uli Luckas <u.luckas@road.de>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-[Uli Luckas <u.luckas@road.de>]
-> On Wednesday, 14. January 2009, Arve Hj=F8nnev=E5g wrote:
-> > This adds /sys/power/wake_lock and /sys/power/wake_unlock.
-> > Writing a string to wake_lock creates a wake lock the
-> > first time is sees a string and locks it. Optionally, the
-> > string can be followed by a timeout.
-> > To unlock the wake lock, write the same string to wake_unlock.
->
-> What happens if a process takes a lock and then dies?
-> Instead of using sysfs, how about using a device for this purpose which t=
-he =
+[Alan Stern <stern@rowland.harvard.edu>]
+> > > Does the wakelock mechanism distinguish between suspend or power-state
+> > > transitions that happen automatically and transitions requested
+> > > directly by userspace?
+> > 
+> > No.
+> 
+> And I think this is a big mistake.  It makes sense to have locks for
+> blocking auto suspend, but it does not make sense to prevent the user
+> from putting his own computer to sleep.
+> 
+> For example: Suppose some program happens to hold a wakelock, perhaps 
+> because of a simple bug, when the user closes the laptop lid and throws 
+> the laptop into a backpack.  We don't want the computer to remain awake 
+> under those circumstances!
 
-> caller has to keep open as long as they want to hold the lock.
+It depends on the particular "computer" and the problem you're solving.
 
-On the android platform this is not a concern since only the system
-server manages wakelocks directly and processes use a higher level
-wakelock api in userspace that is remoted and handles this situation
-(the system server knows when a process dies and can clean up).
+Imagine the computer in question is a cellphone which is going to need
+to wake up when a call comes in to do traditional cellphone things, like
+ring, bring up the incall UI (so the user can answer/cancel), etc.
 
-For more general usage, the fd model does sound nicer, allowing
-cleanup-on-exit, etc.  Arve -- is there a reason we went with sysfs?
+Or perhaps it's an always-connected data device that might get remote
+messages (IM notifications, contacts/email sync, etc) over the network
+while it's "asleep" that need some processing.
+
+Bad usage of wakelocks can certainly lead to poor battery life, but
+there are definitely situations where you might want to operate in a
+mode where the user considers the device "asleep" but it may still wake
+up to handle certain tasks.
 
 Brian
