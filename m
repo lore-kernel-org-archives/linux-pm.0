@@ -1,18 +1,14 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular
- locking dependency on hibernation
-Date: Sat, 31 Jan 2009 19:11:55 +0100
-Message-ID: <4984946B.5000205__18146.8924893581$1233425730$gmane$org@gmail.com>
-References: <200901272137.57757.arvidjaar@mail.ru>
-	<Pine.LNX.4.64.0901291009220.13600@anakin>
-	<200901300716.06137.arvidjaar@mail.ru> <498485E0.4080501@gmail.com>
-	<Pine.LNX.4.64.0901311843450.21273@anakin>
-Reply-To: righi.andrea@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Sat, 31 Jan 2009 19:39:30 +0100
+Message-ID: <200901311939.30837.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0901311843450.21273@anakin>
+In-Reply-To: <Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +18,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-pm@lists.linux-foundation.org, Andrey Borzenkov <arvidjaar@mail.ru>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: Brian Swetland <swetland@google.com>, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On 2009-01-31 18:44, Geert Uytterhoeven wrote:
-> On Sat, 31 Jan 2009, Andrea Righi wrote:
->> On 2009-01-30 05:15, Andrey Borzenkov wrote:
->>> On 29 of January 2009 12:10:11 Geert Uytterhoeven wrote:
->>>> On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
->> fbcon: avoid circular locking dependency between fb_info->lock and mm->mmap_sem
->>
->> In fbcon notifier the handler for FB_EVENT_SET_CONSOLE_MAP doesn't need
->> to hold fb_info->lock.
->>
->> Simply unlock it before calling set_con2fb_map(), that could try to
->> acquire mm->mmap_sem to avoid a circular locking dependency with
->> fb_mmap() (that acquires mm->mmap_sem -> fb_info-lock).
+Sorry for being late to the party, I had more urgent things to take care of.
+
+On Saturday 31 January 2009, Alan Stern wrote:
+> On Fri, 30 Jan 2009, Brian Swetland wrote:
 > 
-> However, set_con2fb_map() accesses the array of fb_info pointers
-> registered_fb[], which seems to be a bit unsafe now the BKL is no longer held.
+> > [Alan Stern <stern@rowland.harvard.edu>]
+> > > > > Does the wakelock mechanism distinguish between suspend or power-state
+> > > > > transitions that happen automatically and transitions requested
+> > > > > directly by userspace?
+> > > > 
+> > > > No.
+> > > 
+> > > And I think this is a big mistake.  It makes sense to have locks for
+> > > blocking auto suspend, but it does not make sense to prevent the user
+> > > from putting his own computer to sleep.
+> > > 
+> > > For example: Suppose some program happens to hold a wakelock, perhaps 
+> > > because of a simple bug, when the user closes the laptop lid and throws 
+> > > the laptop into a backpack.  We don't want the computer to remain awake 
+> > > under those circumstances!
+> > 
+> > It depends on the particular "computer" and the problem you're solving.
+> 
+> I disagree.
 
-mmmh.. not sure about that, registered_fb[] was never accessed with
-fb_info->lock held, see register/unregister_framebuffer().
+Yeah.
 
-But maybe this is another issue, and anyway, the array and also
-num_registered_fb don't seem to be protected at all...
+However, I think that what we are used to call a sleep (or suspend) state is
+really a power off state for cell phone people.  So lets define what we're
+talking about.
 
--Andrea
+Sleep states (suspend to RAM, hibernation) are the states of the whole system
+in which no instructions are executed by the processor(s).  The difference
+between a sleep state and the power off state is that in a sleep state we have
+some application context saved (in memory or in a storage device) and
+(in principle) after the system goes back to the working state, the
+applications can continue doing do whatever they had been doing before the
+system was put into the sleep state.
+
+If instructions are executed by the processor(s), the system is in the working
+state.
+
+> > Imagine the computer in question is a cellphone which is going to need
+> > to wake up when a call comes in to do traditional cellphone things, like
+> > ring, bring up the incall UI (so the user can answer/cancel), etc.
+> 
+> Yes.  So what?  Nothing I said prevents the computer from waking up 
+> when a call comes in.  What I said was that when the user tells the 
+> computer to suspend (e.g., by writing "mem" to /sys/power/state), the 
+> computer should suspend even if some wakelocks are still locked.
+
+Agreed.
+
+There should be well defined set of signals that can wake up the system
+from the sleep state and the user should be able to control them.
+ 
+> > Or perhaps it's an always-connected data device that might get remote
+> > messages (IM notifications, contacts/email sync, etc) over the network
+> > while it's "asleep" that need some processing.
+> 
+> By "asleep", do you mean something other than suspended?  If you do 
+> then you have misunderstood me.  I'm talking about a true suspend -- 
+> that is, the suspend routines in drivers/base/power/main.c have run, 
+> everything is in a low-power state or turned off, and the CPU isn't 
+> running.
+> 
+> Obviously the computer can't do any processing when it is suspended.  
+> The only thing it can do is resume.  And a resume can be initiated by a
+> wide variety of signals, including such things as receipt of a network 
+> packet or a phone call.
+> 
+> > Bad usage of wakelocks can certainly lead to poor battery life, but
+> > there are definitely situations where you might want to operate in a
+> > mode where the user considers the device "asleep" but it may still wake
+> > up to handle certain tasks.
+> 
+> I don't care what the user thinks; I care about what the kernel 
+> actually does.  If the user wants to delude himself into thinking the 
+> computer is "asleep" while the kernel is still running, that's his 
+> problem.
+
+Well, I think that sleep states are not really useful in cell phones.  Useful
+is the ability to put all devices into low power states separately and as
+needed (eg. after a period of inactivity).  IOW, the system as a whole is
+in the working state, but some parts of the hardware may be in low power states
+(even all of the I/O devices may be in low power states).  That may very well
+look "asleep" from the user point of view, but it is not a sleep state.
+
+Thanks,
+Rafael
