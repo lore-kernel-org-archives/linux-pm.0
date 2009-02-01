@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/3] PCI PM: Do not disable and enable bridges
-	during suspend-resume
-Date: Sun, 1 Feb 2009 22:31:17 +0100
-Message-ID: <200902012231.17933.rjw__15994.7744141848$1233524721$gmane$org@sisk.pl>
+Subject: [PATCH 3/3] PCI PM: Make warning in pci_legacy_suspend
+	more useful
+Date: Sun, 1 Feb 2009 22:34:24 +0100
+Message-ID: <200902012234.25165.rjw__11345.2909085483$1233524728$gmane$org@sisk.pl>
 References: <200902012229.27517.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,42 +25,27 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It is a mistake to disable and enable PCI bridges and PCI Express
-ports during suspend-resume (at least at the time when it is
-currently done).  Disabling them may lead to problems with accessing
-devices behind them and they should be automatically enabled when
-their standard config spaces are restored.  Fix this by not attempting
-to disable bridges during suspend and enable them during resume.
+The warning in pci_legacy_suspend() would be much more useful if it
+printed the name of the function that did the wrong thing.  Make it
+do so.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/pci/pci-driver.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-driver.c
 +++ linux-2.6/drivers/pci/pci-driver.c
-@@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
- {
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
+@@ -365,7 +365,9 @@ static int pci_legacy_suspend(struct dev
+ 		if (pci_dev->state_saved)
+ 			goto Fixup;
  
--	if (!pci_is_bridge(pci_dev))
--		pci_enable_wake(pci_dev, PCI_D0, false);
-+	if (pci_is_bridge(pci_dev))
-+		return 0;
+-		if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
++		if (WARN_ONCE(pci_dev->current_state != PCI_D0,
++				"PCI PM: Device state not saved by %pF\n",
++				drv->suspend))
+ 			goto Fixup;
+ 	}
  
-+	pci_enable_wake(pci_dev, PCI_D0, false);
- 	return pci_pm_reenable_device(pci_dev);
- }
- 
- static void pci_pm_default_suspend_generic(struct pci_dev *pci_dev)
- {
--	/* If device is enabled at this point, disable it */
--	pci_disable_enabled_device(pci_dev);
-+	/* If a non-bridge device is enabled at this point, disable it */
-+	if (!pci_is_bridge(pci_dev))
-+		pci_disable_enabled_device(pci_dev);
- 	/*
- 	 * Save state with interrupts enabled, because in principle the bus the
- 	 * device is on may be put into a low power state after this code runs.
