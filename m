@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Sun, 1 Feb 2009 01:18:25 +0100
-Message-ID: <200902010118.25810.rjw@sisk.pl>
-References: <20090131074743.GA13633@bulgaria.corp.google.com>
-	<200902010020.04696.rjw@sisk.pl>
-	<d6200be20901311532j53af2f44p5b07eb0e76da7b25@mail.gmail.com>
+Date: Sat, 31 Jan 2009 17:04:37 -0800
+Message-ID: <d6200be20901311704i6542bcd6r1ac2f5dbb50c506@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
+	<200901311939.30837.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20901311532j53af2f44p5b07eb0e76da7b25@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200901311939.30837.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,40 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 01 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sat, Jan 31, 2009 at 3:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 31 January 2009, Arve Hj=F8nnev=E5g wrote:
-> >> But this could prevent the phone from ringing. What if the user-space
-> >> code that is responsible for playing the ringtone has been notified
-> >> that a call is coming in and starts reading the audio file with the
-> >> ringtone. At the same, the user, unaware that someone is calling,
-> >> presses the power button. If we ignore the wakelock in this situation,
-> >> the phone will not ring.
-> >
-> > What if the user decides to power off the phone and a call comes in at =
-the
-> > same time?
-> =
+On Sat, Jan 31, 2009 at 10:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> However, I think that what we are used to call a sleep (or suspend) state=
+ is
+> really a power off state for cell phone people.
 
-> If you are talking about a shutdown, not sleep, then the phone just
-> turns off. The phone is not expected to ring when it is turned off so
-> there is no point in delaying shutdown.
+No, our power off state is the same as on the desktop. We do use the
+power key to enter and exit sleep, but you can configure a desktop
+system to do this as well.
 
-If the user forcibly puts the device into suspend, it's very much like powe=
-ring
-off.  The kernel shouldn't prevent that from happening unless in error
-conditions.
+> Sleep states (suspend to RAM, hibernation) are the states of the whole sy=
+stem
+> in which no instructions are executed by the processor(s).  The difference
+> between a sleep state and the power off state is that in a sleep state we=
+ have
+> some application context saved (in memory or in a storage device) and
+> (in principle) after the system goes back to the working state, the
+> applications can continue doing do whatever they had been doing before the
+> system was put into the sleep state.
 
-If incoming calls are supposed to wake up the system, then there are two
-possibilities:
-- the already started suspend sequence may be aborted and the system may be=
- put
-  into the low power state,
-- the system may be suspended and then immediately woken up.
+On many arm processors there is also a big difference in what events
+can take you out of the power-off state versus the sleep-state. On
+some systems only the power button or the charger can turn the system
+back on after power-off while a number of external and internal
+interrupts can take the cpu out of the deep-sleep-state.
 
-Thanks,
-Rafael
+
+> Well, I think that sleep states are not really useful in cell phones.  Us=
+eful
+> is the ability to put all devices into low power states separately and as
+> needed (eg. after a period of inactivity).  IOW, the system as a whole is
+> in the working state, but some parts of the hardware may be in low power =
+states
+> (even all of the I/O devices may be in low power states).  That may very =
+well
+> look "asleep" from the user point of view, but it is not a sleep state.
+
+That may be true for single-core phones, but for dual core phones we
+get significant power savings by doing a full suspend on the core that
+runs Linux. On the system we currently have, we can enter the same
+hardware state from idle as we can from suspend. But, on an idle
+system with the radio is off, there are enough periodic timers to
+double the average power draw. On a previous system the power draw
+from idle was not even close to the power draw from suspend.
+
+-- =
+
+Arve Hj=F8nnev=E5g
