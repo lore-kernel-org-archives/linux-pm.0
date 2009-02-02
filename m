@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/3] PCI PM: Let the core be more careful
-	with respect to drivers using new framework
-Date: Mon, 2 Feb 2009 13:04:11 +0100
-Message-ID: <200902021304.12072.rjw__8025.88534211299$1233576642$gmane$org@sisk.pl>
-References: <200902012229.27517.rjw@sisk.pl> <200902012233.17790.rjw@sisk.pl>
-	<1233540400.21871.7.camel@nigel-laptop>
+From: Uli Luckas <u.luckas@road.de>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Mon, 2 Feb 2009 13:38:06 +0100
+Message-ID: <200902021338.07142.u.luckas@road.de>
+References: <20090131074743.GA13633@bulgaria.corp.google.com>
+	<200902010020.04696.rjw@sisk.pl> <20090202115633.GB4609@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233540400.21871.7.camel@nigel-laptop>
+In-Reply-To: <20090202115633.GB4609@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,74 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Brian Swetland <swetland@google.com>, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 02 February 2009, Nigel Cunningham wrote:
-> Hi Rafael.
-> 
-> Just a couple of typos in the comment:
-> 
-> On Sun, 2009-02-01 at 22:33 +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Currently, the PM core always attempts to manage devices with drivers
-> > that use the new PM framework.  In particular, it attempts to disable
-> > the devices (which is unnecessary), to save their state (which may be
-> > undesirable if the driver has done that already) and to put them into
-> > low power states (again, this may be undesirable if the driver has
-> > already put the device into a low power state).  That need not be
-> > the right thing to do, so make the core be more careful in this
-> > respect.
-> > 
-> > Generally, there are the following categories of devices to consider:
-> > * bridge devices without drivers
-> > * non-bridge devices without drivers
-> > * bridge devices with drivers
-> > * non-bridge devices with drivers
-> > and each of them should be handled differently.
-> > 
-> > For bridge devices without drivers the PCI PM core will save their
-> > state on suspend and restore it (early) during resume, after putting
-> > them into D0 if necessary.  It will not attepmt to do anything else
-> 
-> s/attepmt/attempt/
+On Monday, 2. February 2009, Pavel Machek wrote:
+> On Sun 2009-02-01 00:20:04, Rafael J. Wysocki wrote:
+> > On Saturday 31 January 2009, Arve Hj?nnev?g wrote:
+> > > On Sat, Jan 31, 2009 at 7:41 AM, Alan Stern <stern@rowland.harvard.edu> 
+wrote:
+> > > > On Fri, 30 Jan 2009, Brian Swetland wrote:
+> > > >> Imagine the computer in question is a cellphone which is going to
+> > > >> need to wake up when a call comes in to do traditional cellphone
+> > > >> things, like ring, bring up the incall UI (so the user can
+> > > >> answer/cancel), etc.
+> > > >
+> > > > Yes.  So what?  Nothing I said prevents the computer from waking up
+> > > > when a call comes in.  What I said was that when the user tells the
+> > > > computer to suspend (e.g., by writing "mem" to /sys/power/state), the
+> > > > computer should suspend even if some wakelocks are still locked.
+> > >
+> > > But this could prevent the phone from ringing. What if the user-space
+> > > code that is responsible for playing the ringtone has been notified
+> > > that a call is coming in and starts reading the audio file with the
+> > > ringtone. At the same, the user, unaware that someone is calling,
+> > > presses the power button. If we ignore the wakelock in this situation,
+> > > the phone will not ring.
+>
+> Yes, you don't want to write "mem" to /sys/power/state on android. You
+> want to write something like "auto-mem" there.
+>
+ACK.
+Don't change the way "mem" works. Just don't use it if it does the wrong thing 
+on android.
 
-OK
+Uli
 
-> > to these devices.
-> > 
-> > For non-bridge devices without drivers the PCI PM core will disable
-> > them and save their state on suspend.  During resume, it will put
-> > them into D0, if necessary, restore their state (early) and reenable
-> > them.
-> > 
-> > For bridge devices without drivers the PCI PM core will only save
-> 
-> s/without/with/
 
-Ouch, thanks.
+-- 
 
-> > their state on suspend if the driver hasn't done that already.
-> > Still, the core will restore their state (early) during resume,
-> > after putting them into D0, if necessary.
-> > 
-> > For non-bridge devices with drivers the PCI PM core will only save
-> > their state on suspend if the driver hasn't done that already.  Also,
-> > if the state of the device hasn't been saved by the driver, the core
-> > will attempt to put the device into a low power state.  During
-> > resume the core will restore the state of the device (early), after
-> > putting it into D0, if necessary.
-> > 
-> > For all devices the core will disable wake-up during resume.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> I'm not pretending to understand the gory details of the code itself,
-> and so don't want you to add a Reviewed-by or such like for me, thanks.
+------- ROAD ...the handyPC Company - - -  ) ) )
 
-Thanks for the fixes, I'll resend the patch with updated changelog.
+Uli Luckas
+Head of Software Development
 
-Best,
-Rafael
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing director: Hans-Peter Constien
