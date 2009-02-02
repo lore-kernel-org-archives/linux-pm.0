@@ -1,22 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 05/11] PM: Enable early suspend
-	through	/sys/power/state
-Date: Mon, 2 Feb 2009 12:45:14 +0100
-Message-ID: <20090202114514.GB4631@elf.ucw.cz>
-References: <1231896476-22445-1-git-send-email-arve@android.com>
-	<1231896476-22445-2-git-send-email-arve@android.com>
-	<1231896476-22445-3-git-send-email-arve@android.com>
-	<1231896476-22445-4-git-send-email-arve@android.com>
-	<1231896476-22445-5-git-send-email-arve@android.com>
-	<1231896476-22445-6-git-send-email-arve@android.com>
-	<20090128193409.GC1222@ucw.cz>
-	<d6200be20901301913wbb5d496wa599edddcf93674f@mail.gmail.com>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Mon, 2 Feb 2009 12:46:44 +0100
+Message-ID: <20090202114644.GC4631@elf.ucw.cz>
+References: <d6200be20901291716g5b6f4542r54c2ba8672961c91@mail.gmail.com>
+	<d6200be20901292040l5f540cf5ybbda03db9627c477@mail.gmail.com>
+	<20090130091139.GB7967@atrey.karlin.mff.cuni.cz>
+	<200901301334.03007.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20901301913wbb5d496wa599edddcf93674f@mail.gmail.com>
+In-Reply-To: <200901301334.03007.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,39 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Uli Luckas <u.luckas@road.de>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2009-01-30 19:13:32, Arve Hj?nnev?g wrote:
-> On Wed, Jan 28, 2009 at 11:34 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
+On Fri 2009-01-30 13:34:02, Uli Luckas wrote:
+> On Friday, 30. January 2009, Pavel Machek wrote:
+> > > >> - The user-space input-event thread returns from read. It determines
+> > > >> that the key should not wake up the system, releases the
+> > > >> process-input-events wakelock and calls select or poll.
+> > > >
+> > > > This makes no sense.  If the system wasn't asleep to begin with, how
+> > > > could the key wake it up?  And if the system _was_ asleep to begin
+> > > > with, how could all of this happen without waking the system up?
+> > >
+> > > What I mean here is that the screen turns on and the system does not
+> > > immediately go back to sleep. The user-space framework has its own
+> > > idea of whether the system is awake or not. I can change this to
+> > > "fully wake up" or "turn on the screen".
 > >
-> >> If EARLYSUSPEND is enabled then writes to /sys/power/state no longer
-> >> blocks, and the kernel will try to enter the requested state every
-> >> time no wakelocks are held. Write "on" to resume normal operation.
+> > "turn on the screen", please. (But I still don't quite get it; screen
+> > should be at full control of userspace, so why is kernel interaction
+> > needed?) Pavel
 > >
-> > No, please don't break compatibility like this. You changed semantics
-> > of 'mem'...
-> >
-> > Just add another two states, for example "auto-mem" and
-> > "auto-standby", and make them enter mem/standby when required.
-> >
-> 
-> What would you want to happen if someone writes "mem"? If we just call
-> enter_state, it will fail and return an error if a wakelock is
-> locked.
+> Turning on the screen is only on thing userspace can do. What exactly happens 
+> is beyon the scope of the kernel interface.
+> The right term is probably something like "break out of auto-suspend" or "wake 
+> from auto suspend".
 
-That would be fine. And ignoring wakelocks in this case would be even better.
-
-> We can call request_suspend_state and then wait for another thread to
-> write "on", but this still requires user-space changes to work
-> correctly. If the goal is to allow the kernel to be compiled with
-> wakelock and early suspend support while preserving the old behaviour
-> if wakelocks are not used, then the first option is better.
-
-Yes, goal is that compiling in  wakelock / early suspend support has
-no effect on existing functionality.
+I guess I'm missing big parts of the picture here. It would be nice to
+document how it all works together... somewhere.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
