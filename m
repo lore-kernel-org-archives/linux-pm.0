@@ -1,14 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 15:21:06 -0800
-Message-ID: <d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
+Date: Tue, 03 Feb 2009 10:51:06 +1100
+Message-ID: <1233618666.21871.231.camel@nigel-laptop>
 References: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
 	<1233611258.21871.101.camel@nigel-laptop>
+	<d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233611258.21871.101.camel@nigel-laptop>
+In-Reply-To: <d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
 Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 2, 2009 at 1:47 PM, Nigel Cunningham
-<ncunningham@crca.org.au> wrote:
-> It sounds to me like all of this stuff is just power management of
-> individual devices, which should be done through the sysfs interface and
-> completely unrelated to /sys/power/state.
-
-It is easier for us to add a hook to the individual drivers than to
-maintain a list of devices in user-space. Also, last time I checked,
-the only way to disable individual devices was through a deprecated
-interface. Is there a new way to do this?
-
-> I'm putting the talk about
-> suspending the CPU in this box too because it sounds like the desire is
-> to stop the CPU without necessarily suspending other devices such as
-> transmitters - sort of a CPU freq state where the frequency is 0.
-
-Is this different from idle?
-
-> That said, if suspend to ram is what they really want for 'auto-mem',
-> what you're suggesting sounds good to me.
-
-Suspend gives us two advantages over idle. All threads are frozen
-which means that an app that is using too much cpu time no longer
-drains the battery. And, the monotonic clock stops.
-
--- =
-
-Arve Hj=F8nnev=E5g
+SGkuCgpPbiBNb24sIDIwMDktMDItMDIgYXQgMTU6MjEgLTA4MDAsIEFydmUgSGrDuG5uZXbDpWcg
+d3JvdGU6Cj4gT24gTW9uLCBGZWIgMiwgMjAwOSBhdCAxOjQ3IFBNLCBOaWdlbCBDdW5uaW5naGFt
+Cj4gPG5jdW5uaW5naGFtQGNyY2Eub3JnLmF1PiB3cm90ZToKPiA+IEl0IHNvdW5kcyB0byBtZSBs
+aWtlIGFsbCBvZiB0aGlzIHN0dWZmIGlzIGp1c3QgcG93ZXIgbWFuYWdlbWVudCBvZgo+ID4gaW5k
+aXZpZHVhbCBkZXZpY2VzLCB3aGljaCBzaG91bGQgYmUgZG9uZSB0aHJvdWdoIHRoZSBzeXNmcyBp
+bnRlcmZhY2UgYW5kCj4gPiBjb21wbGV0ZWx5IHVucmVsYXRlZCB0byAvc3lzL3Bvd2VyL3N0YXRl
+Lgo+IAo+IEl0IGlzIGVhc2llciBmb3IgdXMgdG8gYWRkIGEgaG9vayB0byB0aGUgaW5kaXZpZHVh
+bCBkcml2ZXJzIHRoYW4gdG8KPiBtYWludGFpbiBhIGxpc3Qgb2YgZGV2aWNlcyBpbiB1c2VyLXNw
+YWNlLiBBbHNvLCBsYXN0IHRpbWUgSSBjaGVja2VkLAo+IHRoZSBvbmx5IHdheSB0byBkaXNhYmxl
+IGluZGl2aWR1YWwgZGV2aWNlcyB3YXMgdGhyb3VnaCBhIGRlcHJlY2F0ZWQKPiBpbnRlcmZhY2Uu
+IElzIHRoZXJlIGEgbmV3IHdheSB0byBkbyB0aGlzPwoKTm90IGFzIGZhciBhcyBJIGtub3csIGJ1
+dCBJIHVuZGVyc3Rvb2QgdGhhdCB3ZSB3ZXJlbid0IGZvY3VzaW5nIG9uIHdoYXQKY3VycmVudGx5
+IGV4aXN0cywgYnV0IG9uIHdoYXQgb3VnaHQgdG8gZXhpc3QgdG8gcHJvcGVybHkgc3VwcG9ydCB3
+aGF0CnlvdSdyZSBhZnRlciwgaW4gYSBnZW5lcmljIGVub3VnaCB3YXkgdG8gYmUgdXNlZnVsIHRv
+IG90aGVycyBhcyB3ZWxsLgoKPiA+IEknbSBwdXR0aW5nIHRoZSB0YWxrIGFib3V0Cj4gPiBzdXNw
+ZW5kaW5nIHRoZSBDUFUgaW4gdGhpcyBib3ggdG9vIGJlY2F1c2UgaXQgc291bmRzIGxpa2UgdGhl
+IGRlc2lyZSBpcwo+ID4gdG8gc3RvcCB0aGUgQ1BVIHdpdGhvdXQgbmVjZXNzYXJpbHkgc3VzcGVu
+ZGluZyBvdGhlciBkZXZpY2VzIHN1Y2ggYXMKPiA+IHRyYW5zbWl0dGVycyAtIHNvcnQgb2YgYSBD
+UFUgZnJlcSBzdGF0ZSB3aGVyZSB0aGUgZnJlcXVlbmN5IGlzIDAuCj4gCj4gSXMgdGhpcyBkaWZm
+ZXJlbnQgZnJvbSBpZGxlPwoKV2VsbCwgSSdtIGltYWdpbmluZyBhIHN0YXRlIHRoYXQgaXMgbW9y
+ZSB0aGFuIGp1c3QgaWRsZSAtIHdoZXJlLCBhcyB5b3UKc2F5LCBwcm9jZXNzZXMgZG9uJ3QgcnVu
+IHVudGlsIHNvbWUgc29ydCBvZiB3YWtldXAgZXZlbnQgb2NjdXJzLgoKPiA+IFRoYXQgc2FpZCwg
+aWYgc3VzcGVuZCB0byByYW0gaXMgd2hhdCB0aGV5IHJlYWxseSB3YW50IGZvciAnYXV0by1tZW0n
+LAo+ID4gd2hhdCB5b3UncmUgc3VnZ2VzdGluZyBzb3VuZHMgZ29vZCB0byBtZS4KPiAKPiBTdXNw
+ZW5kIGdpdmVzIHVzIHR3byBhZHZhbnRhZ2VzIG92ZXIgaWRsZS4gQWxsIHRocmVhZHMgYXJlIGZy
+b3plbgo+IHdoaWNoIG1lYW5zIHRoYXQgYW4gYXBwIHRoYXQgaXMgdXNpbmcgdG9vIG11Y2ggY3B1
+IHRpbWUgbm8gbG9uZ2VyCj4gZHJhaW5zIHRoZSBiYXR0ZXJ5LiBBbmQsIHRoZSBtb25vdG9uaWMg
+Y2xvY2sgc3RvcHMuCgpEbyB5b3Ugd2FudCB0byBsZWF2ZSBhbnkgZGV2aWNlcyBvbiB3aGlsZSBp
+biB0aGlzIHN0YXRlPyBJZiBub3QsIG9rYXkgLQpzdXNwZW5kIHRvIHJhbSBzb3VuZHMgcmlnaHQu
+IElmIHllcywgSSB0aGluayB5b3Ugd2FudCB0byB0YWtlCmxlYXZlIC9zeXMvcG93ZXIvZGlzayBh
+bG9uZSBhbmQgZ28gYWxvbmcgdGhlIGxpbmVzIG9mIHJ1bi10aW1lIHBvd2VyCm1hbmFnZW1lbnQg
+aW5zdGVhZC4KClJlZ2FyZHMsCgpOaWdlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1wbQ==
