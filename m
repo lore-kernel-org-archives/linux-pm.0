@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] PCI PM: Make warning in
-	pci_legacy_suspend more useful
-Date: Mon, 2 Feb 2009 13:02:30 +0100
-Message-ID: <200902021302.31158.rjw__18774.1885347807$1233576474$gmane$org@sisk.pl>
-References: <200902012229.27517.rjw@sisk.pl> <200902012234.25165.rjw@sisk.pl>
-	<1233540601.21871.10.camel@nigel-laptop>
+Subject: Re: [PATCH 2/3] PCI PM: Let the core be more careful
+	with respect to drivers using new framework
+Date: Mon, 2 Feb 2009 13:04:11 +0100
+Message-ID: <200902021304.12072.rjw__8025.88534211299$1233576642$gmane$org@sisk.pl>
+References: <200902012229.27517.rjw@sisk.pl> <200902012233.17790.rjw@sisk.pl>
+	<1233540400.21871.7.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233540601.21871.10.camel@nigel-laptop>
+In-Reply-To: <1233540400.21871.7.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,41 +25,69 @@ Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundat
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 02 February 2009, Nigel Cunningham wrote:
-> Hi again.
+> Hi Rafael.
 > 
-> On Sun, 2009-02-01 at 22:34 +0100, Rafael J. Wysocki wrote:
+> Just a couple of typos in the comment:
+> 
+> On Sun, 2009-02-01 at 22:33 +0100, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > The warning in pci_legacy_suspend() would be much more useful if it
-> > printed the name of the function that did the wrong thing.  Make it
-> > do so.
+> > Currently, the PM core always attempts to manage devices with drivers
+> > that use the new PM framework.  In particular, it attempts to disable
+> > the devices (which is unnecessary), to save their state (which may be
+> > undesirable if the driver has done that already) and to put them into
+> > low power states (again, this may be undesirable if the driver has
+> > already put the device into a low power state).  That need not be
+> > the right thing to do, so make the core be more careful in this
+> > respect.
+> > 
+> > Generally, there are the following categories of devices to consider:
+> > * bridge devices without drivers
+> > * non-bridge devices without drivers
+> > * bridge devices with drivers
+> > * non-bridge devices with drivers
+> > and each of them should be handled differently.
+> > 
+> > For bridge devices without drivers the PCI PM core will save their
+> > state on suspend and restore it (early) during resume, after putting
+> > them into D0 if necessary.  It will not attepmt to do anything else
+> 
+> s/attepmt/attempt/
+
+OK
+
+> > to these devices.
+> > 
+> > For non-bridge devices without drivers the PCI PM core will disable
+> > them and save their state on suspend.  During resume, it will put
+> > them into D0, if necessary, restore their state (early) and reenable
+> > them.
+> > 
+> > For bridge devices without drivers the PCI PM core will only save
+> 
+> s/without/with/
+
+Ouch, thanks.
+
+> > their state on suspend if the driver hasn't done that already.
+> > Still, the core will restore their state (early) during resume,
+> > after putting them into D0, if necessary.
+> > 
+> > For non-bridge devices with drivers the PCI PM core will only save
+> > their state on suspend if the driver hasn't done that already.  Also,
+> > if the state of the device hasn't been saved by the driver, the core
+> > will attempt to put the device into a low power state.  During
+> > resume the core will restore the state of the device (early), after
+> > putting it into D0, if necessary.
+> > 
+> > For all devices the core will disable wake-up during resume.
 > > 
 > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/pci/pci-driver.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/pci/pci-driver.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci-driver.c
-> > +++ linux-2.6/drivers/pci/pci-driver.c
-> > @@ -365,7 +365,9 @@ static int pci_legacy_suspend(struct dev
-> >  		if (pci_dev->state_saved)
-> >  			goto Fixup;
-> >  
-> > -		if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
-> > +		if (WARN_ONCE(pci_dev->current_state != PCI_D0,
-> > +				"PCI PM: Device state not saved by %pF\n",
-> > +				drv->suspend))
-> >  			goto Fixup;
-> >  	}
 > 
-> Am I right in thinking that WARN_ONCE will only warn about the first
-> driver that has the problem? If so, wouldn't it be better to make it
-> warn about all drivers that have the problem, but only once per device?
+> I'm not pretending to understand the gory details of the code itself,
+> and so don't want you to add a Reviewed-by or such like for me, thanks.
 
-That would be better, but I don't think we are going to see many of these
-anyway. :-)
+Thanks for the fixes, I'll resend the patch with updated changelog.
 
-Thanks,
+Best,
 Rafael
