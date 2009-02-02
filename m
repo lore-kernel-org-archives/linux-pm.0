@@ -1,15 +1,13 @@
-From: Uli Luckas <u.luckas@road.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 13:38:06 +0100
-Message-ID: <200902021338.07142.u.luckas@road.de>
-References: <20090131074743.GA13633@bulgaria.corp.google.com>
-	<200902010020.04696.rjw@sisk.pl> <20090202115633.GB4609@elf.ucw.cz>
+Date: Mon, 2 Feb 2009 10:05:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0902021000420.2550-100000@iolanthe.rowland.org>
+References: <200902021142.15092.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090202115633.GB4609@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200902021142.15092.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Brian Swetland <swetland@google.com>, Nigel Cunningham <ncunningham@crca.org.au>
+To: Uli Luckas <u.luckas@road.de>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 2. February 2009, Pavel Machek wrote:
-> On Sun 2009-02-01 00:20:04, Rafael J. Wysocki wrote:
-> > On Saturday 31 January 2009, Arve Hj?nnev?g wrote:
-> > > On Sat, Jan 31, 2009 at 7:41 AM, Alan Stern <stern@rowland.harvard.edu> 
-wrote:
-> > > > On Fri, 30 Jan 2009, Brian Swetland wrote:
-> > > >> Imagine the computer in question is a cellphone which is going to
-> > > >> need to wake up when a call comes in to do traditional cellphone
-> > > >> things, like ring, bring up the incall UI (so the user can
-> > > >> answer/cancel), etc.
-> > > >
-> > > > Yes.  So what?  Nothing I said prevents the computer from waking up
-> > > > when a call comes in.  What I said was that when the user tells the
-> > > > computer to suspend (e.g., by writing "mem" to /sys/power/state), the
-> > > > computer should suspend even if some wakelocks are still locked.
-> > >
-> > > But this could prevent the phone from ringing. What if the user-space
-> > > code that is responsible for playing the ringtone has been notified
-> > > that a call is coming in and starts reading the audio file with the
-> > > ringtone. At the same, the user, unaware that someone is calling,
-> > > presses the power button. If we ignore the wakelock in this situation,
-> > > the phone will not ring.
->
-> Yes, you don't want to write "mem" to /sys/power/state on android. You
-> want to write something like "auto-mem" there.
->
-ACK.
-Don't change the way "mem" works. Just don't use it if it does the wrong thing 
-on android.
+On Mon, 2 Feb 2009, Uli Luckas wrote:
 
-Uli
+> Hi Alan,
+> we have had a (userspace) wake-lock implementation on our handyPC devices for 
+> a couple of years now. So maybe I can shed some light.
+> 
+> The above quote underlines pretty well, where Arve's and your ideas of 
+> eraly-suspend and wake-locks diverge. And why you are missunderstanding each 
+> other.
+> Arve is always talking about "blanking the screen" because that's what the 
+> users sees. From the user's perspective the device is "suspended" as soon as 
+> his user interfaces vanishes. That's probably also why his notions 
+> of "suspend" and "wake" are not alway following a strict definition. 
 
+And that's partly why I have been complaining about the things he 
+writes.  To a kernel programmer, "suspend" has a very specific meaning, 
+quite different from what it might mean to a user.  When Arve posts on 
+a kernel-oriented mailing list, he should use such words in a way his 
+readers will understand.
 
--- 
+> If the device stays blanked while the user has his 10 min phone conversation, 
+> then he won't even notice wether the device suspends or not after the call. 
+> This is the idea. The user does not care for anything they can't see.
+> 
+> Arve is not talking about a laptop that needs to sleep befor it's ventilation 
+> slot are covered. He is talking about a phone that could well do with only 
+> blanking it's screen. Except it want's to save battery when ever possible.
 
-------- ROAD ...the handyPC Company - - -  ) ) )
+The problem is that he's talking about making changes to a kernel that 
+will be installed in all sorts of machines, from phones all the way up 
+to supercomputers.  When you do this, you have to broaden your point of 
+view -- your code has to run correctly in all of these settings.
 
-Uli Luckas
-Head of Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+Alan Stern
