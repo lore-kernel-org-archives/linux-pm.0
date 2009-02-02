@@ -1,13 +1,22 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Tue, 03 Feb 2009 08:47:38 +1100
-Message-ID: <1233611258.21871.101.camel@nigel-laptop>
-References: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 05/11] PM: Enable early suspend through
+	/sys/power/state
+Date: Mon, 2 Feb 2009 14:36:04 -0800
+Message-ID: <d6200be20902021436y6b0f92fcv4228246a191a63aa@mail.gmail.com>
+References: <1231896476-22445-1-git-send-email-arve@android.com>
+	<1231896476-22445-2-git-send-email-arve@android.com>
+	<1231896476-22445-3-git-send-email-arve@android.com>
+	<1231896476-22445-4-git-send-email-arve@android.com>
+	<1231896476-22445-5-git-send-email-arve@android.com>
+	<1231896476-22445-6-git-send-email-arve@android.com>
+	<20090128193409.GC1222@ucw.cz>
+	<d6200be20901301913wbb5d496wa599edddcf93674f@mail.gmail.com>
+	<20090202114514.GB4631@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+In-Reply-To: <20090202114514.GB4631@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +26,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Mon, Feb 2, 2009 at 3:45 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Yes, goal is that compiling in  wakelock / early suspend support has
+> no effect on existing functionality.
 
-On Mon, 2009-02-02 at 10:09 -0500, Alan Stern wrote:
-> On Mon, 2 Feb 2009, Uli Luckas wrote:
-> 
-> > On Sunday, 1. February 2009, Alan Stern wrote:
-> > > Early-suspend seems to be a completely different matter.  In fact it
-> > > isn't a suspend state at all, as far as I understand it.  It's more
-> > > like what you get simply by doing a runtime suspend on some collection
-> > > of devices.  I don't see that the kernel needs to treat it as a special
-> > > state, and in might be possible to have a user program manage the whole
-> > > thing -- provided the drivers in question implement runtime power
-> > > management (as USB has done).
-> > >
-> > > Alan Stern
-> > 
-> > Except you always want early-suspend and auto-suspend at the same time. The 
-> > idea is, if all display of system states is off (early-suspend), we can 
-> > enable or disable the cpu at will (auto-suspend) because nobody will notice. 
-> 
-> Why should the kernel have to get involved?  Why can't userspace manage 
-> both early-suspend and auto-suspend?
-> 
-> That is, consider the following: Userspace initiates an early-suspend
-> by using a runtime PM interface to turn off the screen and some other
-> devices.  After a short time, if they are still off, then userspace can
-> initiate an auto-suspend by writing "auto-mem" to /sys/power/state.
-> 
-> All the kernel would need to know is the difference between
-> auto-suspend and normal suspend: one respects wakelocks and the other
-> doesn't.
+OK. I think I'll just print a warning and disable wakelock support if
+user-space writes to /sys/power/state when wakelock support is
+compiled in. A wakelock aware power manager in user-space can use an
+always non-blocking interface (e.g. /sys/power/request_state) instead.
 
-It sounds to me like all of this stuff is just power management of
-individual devices, which should be done through the sysfs interface and
-completely unrelated to /sys/power/state. I'm putting the talk about
-suspending the CPU in this box too because it sounds like the desire is
-to stop the CPU without necessarily suspending other devices such as
-transmitters - sort of a CPU freq state where the frequency is 0.
+-- =
 
-That said, if suspend to ram is what they really want for 'auto-mem',
-what you're suggesting sounds good to me.
-
-Regards,
-
-Nigel
+Arve Hj=F8nnev=E5g
