@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 12:56:34 +0100
-Message-ID: <20090202115633.GB4609@elf.ucw.cz>
-References: <20090131074743.GA13633@bulgaria.corp.google.com>
-	<Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
-	<d6200be20901311441r8742b8em7201ce3713b8a54a@mail.gmail.com>
-	<200902010020.04696.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/3] PCI PM: Make warning in
+	pci_legacy_suspend more useful
+Date: Mon, 2 Feb 2009 13:02:30 +0100
+Message-ID: <200902021302.31158.rjw__18774.1885347807$1233576474$gmane$org@sisk.pl>
+References: <200902012229.27517.rjw@sisk.pl> <200902012234.25165.rjw@sisk.pl>
+	<1233540601.21871.10.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1233540601.21871.10.camel@nigel-laptop>
 Content-Disposition: inline
-In-Reply-To: <200902010020.04696.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2009-02-01 00:20:04, Rafael J. Wysocki wrote:
-> On Saturday 31 January 2009, Arve Hj?nnev?g wrote:
-> > On Sat, Jan 31, 2009 at 7:41 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > On Fri, 30 Jan 2009, Brian Swetland wrote:
-> > >> Imagine the computer in question is a cellphone which is going to need
-> > >> to wake up when a call comes in to do traditional cellphone things, like
-> > >> ring, bring up the incall UI (so the user can answer/cancel), etc.
-> > >
-> > > Yes.  So what?  Nothing I said prevents the computer from waking up
-> > > when a call comes in.  What I said was that when the user tells the
-> > > computer to suspend (e.g., by writing "mem" to /sys/power/state), the
-> > > computer should suspend even if some wakelocks are still locked.
+On Monday 02 February 2009, Nigel Cunningham wrote:
+> Hi again.
+> 
+> On Sun, 2009-02-01 at 22:34 +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > But this could prevent the phone from ringing. What if the user-space
-> > code that is responsible for playing the ringtone has been notified
-> > that a call is coming in and starts reading the audio file with the
-> > ringtone. At the same, the user, unaware that someone is calling,
-> > presses the power button. If we ignore the wakelock in this situation,
-> > the phone will not ring.
+> > The warning in pci_legacy_suspend() would be much more useful if it
+> > printed the name of the function that did the wrong thing.  Make it
+> > do so.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci-driver.c |    4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/pci/pci-driver.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pci-driver.c
+> > +++ linux-2.6/drivers/pci/pci-driver.c
+> > @@ -365,7 +365,9 @@ static int pci_legacy_suspend(struct dev
+> >  		if (pci_dev->state_saved)
+> >  			goto Fixup;
+> >  
+> > -		if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
+> > +		if (WARN_ONCE(pci_dev->current_state != PCI_D0,
+> > +				"PCI PM: Device state not saved by %pF\n",
+> > +				drv->suspend))
+> >  			goto Fixup;
+> >  	}
+> 
+> Am I right in thinking that WARN_ONCE will only warn about the first
+> driver that has the problem? If so, wouldn't it be better to make it
+> warn about all drivers that have the problem, but only once per device?
 
-Yes, you don't want to write "mem" to /sys/power/state on android. You
-want to write something like "auto-mem" there.
+That would be better, but I don't think we are going to see many of these
+anyway. :-)
 
-> What if the user decides to power off the phone and a call comes in at the
-> same time?
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
