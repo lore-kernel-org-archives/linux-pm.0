@@ -1,14 +1,14 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 15:10:10 -0800
-Message-ID: <d6200be20902021510k104f2da9ha89fa00baff3910a@mail.gmail.com>
-References: <200902021200.59992.u.luckas@road.de>
-	<Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+Date: Mon, 2 Feb 2009 15:21:06 -0800
+Message-ID: <d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+	<1233611258.21871.101.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+In-Reply-To: <1233611258.21871.101.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>, Nigel Cunningham <ncunningham@crca.org.au>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 2, 2009 at 7:09 AM, Alan Stern <stern@rowland.harvard.edu> wrot=
-e:
-> On Mon, 2 Feb 2009, Uli Luckas wrote:
->> Except you always want early-suspend and auto-suspend at the same time. =
-The
->> idea is, if all display of system states is off (early-suspend), we can
->> enable or disable the cpu at will (auto-suspend) because nobody will not=
-ice.
->
-> Why should the kernel have to get involved?  Why can't userspace manage
-> both early-suspend and auto-suspend?
+On Mon, Feb 2, 2009 at 1:47 PM, Nigel Cunningham
+<ncunningham@crca.org.au> wrote:
+> It sounds to me like all of this stuff is just power management of
+> individual devices, which should be done through the sysfs interface and
+> completely unrelated to /sys/power/state.
 
-The kernel does not need to be involved in early-suspend. We use
-early-suspend as a simple way to shut down the framebuffer and some
-input devices.
-If by auto-suspend you mean suspend after user inactivity (usually
-after a number of seconds or minutes), then the kernel does not need
-to be involved, but if you mean suspending when all wakelocks are
-unlocked, the kernel needs to be involved to avoid delays. If the last
-wakelock to be unlocked is a kernel wakelock, then user-space would
-not know that it needs to re-attempt suspend.
+It is easier for us to add a hook to the individual drivers than to
+maintain a list of devices in user-space. Also, last time I checked,
+the only way to disable individual devices was through a deprecated
+interface. Is there a new way to do this?
 
-> That is, consider the following: Userspace initiates an early-suspend
-> by using a runtime PM interface to turn off the screen and some other
-> devices.  After a short time, if they are still off, then userspace can
-> initiate an auto-suspend by writing "auto-mem" to /sys/power/state.
+> I'm putting the talk about
+> suspending the CPU in this box too because it sounds like the desire is
+> to stop the CPU without necessarily suspending other devices such as
+> transmitters - sort of a CPU freq state where the frequency is 0.
 
-Why do you want a delay?
-Also, what do you mean by a runtime PM interface?
+Is this different from idle?
 
-> All the kernel would need to know is the difference between
-> auto-suspend and normal suspend: one respects wakelocks and the other
-> doesn't.
+> That said, if suspend to ram is what they really want for 'auto-mem',
+> what you're suggesting sounds good to me.
 
-If by normal suspend you mean what is supported in the kernel now,
-then OK. We can support existing userspace code by ignoring wakelocks.
-My intention was that you only enable the WAKELOCK config option when
-using it, but I agree that it is better to allow the kernel to be
-built with support for both modes.
-
-What do you think should happen if user-space tries to use both interfaces?
+Suspend gives us two advantages over idle. All threads are frozen
+which means that an app that is using too much cpu time no longer
+drains the battery. And, the monotonic clock stops.
 
 -- =
 
