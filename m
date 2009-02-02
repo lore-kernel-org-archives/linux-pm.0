@@ -1,15 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 12:55:18 +0100
-Message-ID: <20090202115518.GA4609@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
-	<200901311939.30837.rjw@sisk.pl>
+Date: Mon, 2 Feb 2009 12:56:34 +0100
+Message-ID: <20090202115633.GB4609@elf.ucw.cz>
+References: <20090131074743.GA13633@bulgaria.corp.google.com>
+	<Pine.LNX.4.44L0.0901311033590.6305-100000@netrider.rowland.org>
+	<d6200be20901311441r8742b8em7201ce3713b8a54a@mail.gmail.com>
+	<200902010020.04696.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200901311939.30837.rjw@sisk.pl>
+In-Reply-To: <200902010020.04696.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +25,32 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sun 2009-02-01 00:20:04, Rafael J. Wysocki wrote:
+> On Saturday 31 January 2009, Arve Hj?nnev?g wrote:
+> > On Sat, Jan 31, 2009 at 7:41 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > On Fri, 30 Jan 2009, Brian Swetland wrote:
+> > >> Imagine the computer in question is a cellphone which is going to need
+> > >> to wake up when a call comes in to do traditional cellphone things, like
+> > >> ring, bring up the incall UI (so the user can answer/cancel), etc.
+> > >
+> > > Yes.  So what?  Nothing I said prevents the computer from waking up
+> > > when a call comes in.  What I said was that when the user tells the
+> > > computer to suspend (e.g., by writing "mem" to /sys/power/state), the
+> > > computer should suspend even if some wakelocks are still locked.
+> > 
+> > But this could prevent the phone from ringing. What if the user-space
+> > code that is responsible for playing the ringtone has been notified
+> > that a call is coming in and starts reading the audio file with the
+> > ringtone. At the same, the user, unaware that someone is calling,
+> > presses the power button. If we ignore the wakelock in this situation,
+> > the phone will not ring.
 
-> However, I think that what we are used to call a sleep (or suspend) state is
-> really a power off state for cell phone people.  So lets define what we're
-> talking about.
-> 
-> Sleep states (suspend to RAM, hibernation) are the states of the whole system
-> in which no instructions are executed by the processor(s).  The
-> difference
+Yes, you don't want to write "mem" to /sys/power/state on android. You
+want to write something like "auto-mem" there.
 
-s/processor(s)/CPU/.
+> What if the user decides to power off the phone and a call comes in at the
+> same time?
 
-Even in PC, you have keyboard controller running while sleeping. On
-cellphone, you have some kind of pmu chip + GSM chip running. So
-cellphone actually _is_ useful even when CPU is sleeping.
-
-> between a sleep state and the power off state is that in a sleep state we have
-> some application context saved (in memory or in a storage device) and
-> (in principle) after the system goes back to the working state, the
-> applications can continue doing do whatever they had been doing before the
-> system was put into the sleep state.
-> 
-> If instructions are executed by the processor(s), the system is in the working
-> state.
-
-ACK.
-
-> Well, I think that sleep states are not really useful in cell phones.  Useful
-> is the ability to put all devices into low power states separately and as
-> needed (eg. after a period of inactivity).  IOW, the system as a
-> whole is
-
-No, it does not work like that. Cellphone with sleeping CPU
-(suspended-to-RAM) is still very useful.
-									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
