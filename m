@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Tue, 3 Feb 2009 15:30:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0902031526040.2272-100000@iolanthe.rowland.org>
-References: <d6200be20902022018k7fda9120yb7321f5341050ce8@mail.gmail.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Acer 6592 TM, suspend to ram and resume freeze
+Date: Tue, 03 Feb 2009 21:36:19 +0100
+Message-ID: <873aevl0l8.fsf@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902022018k7fda9120yb7321f5341050ce8@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,57 +15,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>, Nigel Cunningham <ncunningham@crca.org.au>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2 Feb 2009, Arve Hj=F8nnev=E5g wrote:
+First of all, sorry for the duplicate on linux-pm, but as Pavel suggested, this
+topic gains wider audience as acpi and pm are involved.
 
-> >> Also, what do you mean by a runtime PM interface?
-> >
-> > I'm making a distinction between system PM and runtime (also known as
-> > dynamic) PM.  With system PM the entire system goes into a low-power
-> > state -- that's what we mean when we talk about suspend or hibernation.
-> > With runtime PM the system as a whole remains running while selected
-> > devices are individually put into a low-power state.
-> >
-> > For example, right now Linux will put a USB host controller into a
-> > low-power state if no USB devices are plugged into it.  This runtime PM
-> > interface is described in Documentation/usb/power-management.txt.  You
-> > might want to use some of those mechanisms for controlling your
-> > devices.
-> =
+I have an issue with my laptop with suspend to ram.
+My laptop is an Acer Travelmate 6592g :
 
-> OK, but I don't think this affects our use of wakelocks.
+> [rj@velvet wireshark-1.0.5 (master)]$ sudo s2ram -i
+> This machine can be identified by:
+>     sys_vendor   = "Acer"
+>     sys_product  = "TravelMate 6592"
+>     sys_version  = "PSMBOU-1234567"
+>     bios_version = "V1.53   "
 
-No, but it might very well affect your implementation of early-suspend.
+The kernel running is the last I have : 2.6.29-rc1, but the problem is the same
+whatever the kernel version I take (between 2.6.16 and 2.6.29-rc1).
 
-> I'll make a change to make any write to /sys/power/state disable
-> wakelocks. I'll probably also add a config option to remove
-> /sys/power/state.
-> =
+The issue is that even if the laptop enters suspend correctly, it hangs on
+comming out of it. After some research, I cornered down the module which changes
+the behaviour : acpi_cpufreq.ko.
 
-> Before I post another patch series I have a few questions:
-> - Should I merge the wakelock and early-suspend api patches with their
-> implementations? (I initially implemented the api on top of the old
-> android_power driver, but we not longer use this)
+When I forbid the laptop to load this module, the suspend to ram works like a
+charm, in "init" single mode or multi-user mode. When I load the module, the
+resume always hangs (fan goes high speed like crazy, no LCD back, hard drive led
+stays on, caps_lock key not responsive, ...)
 
-It depends how big the patches are.  If they're not too large, go ahead =
+Now, I notice that loading acpi-cpufreq triggers the following message :
+> log: Jan 19 18:23:42 velvet kernel: ACPI: EC: non-query interrupt received, switching to interrupt mode
 
-and merge the API patch with the implementation.  But if they're =
+As this is not the part of the kernel I'm most at ease with, I'd like some help
+to investigate. I'll gladly make any test or apply patches to my own git tree.
 
-difficult to read because they are rather big, keep them separate.
+I join to this mail a URL [1] to see the little information I have :
+ - kernel messages (/var/log/messages), for single user startup
+ - ACPI table
+ - my kernel configuration
+ - kernel message for a working suspend to ram (ie. without acpi_cpufreq).
+ - I suspend using s2ram -f -v -p -s
 
-> - Once wakelocks are disabled by writing to /sys/power/state, is there
-> any demand for re-enabling wakelock support?
+Best regards.
 
-I don't know.  You might as well re-enable it as soon as the system =
+--
+Robert
 
-resumes.
-
-> - Are there any objections to using /sys/power/request_state to
-> specify the state to enter when all wakelocks unlocked.
-
-Okay with me.
-
-Alan Stern
+[1] http://belgarath.hd.free.fr/download/acer6592tm/
