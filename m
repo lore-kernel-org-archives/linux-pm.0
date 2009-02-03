@@ -1,14 +1,17 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Mon, 2 Feb 2009 20:18:01 -0800
-Message-ID: <d6200be20902022018k7fda9120yb7321f5341050ce8@mail.gmail.com>
-References: <d6200be20902021510k104f2da9ha89fa00baff3910a@mail.gmail.com>
-	<Pine.LNX.4.44L0.0902022207440.27307-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] PCI PM: More refinements of
+	suspend-resume framework
+Date: Tue, 3 Feb 2009 09:26:02 +0100
+Message-ID: <200902030926.03361.rjw__31283.6807840087$1233649835$gmane$org@sisk.pl>
+References: <200902012229.27517.rjw@sisk.pl>
+	<200902021032.26819.jbarnes@virtuousgeek.org>
+	<alpine.LFD.2.00.0902021924270.3247@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902022207440.27307-100000@netrider.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0902021924270.3247@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>, Nigel Cunningham <ncunningham@crca.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 2, 2009 at 7:27 PM, Alan Stern <stern@rowland.harvard.edu> wrot=
-e:
-> If you'd like a way for the kernel to communicate to userspace that the
-> last wakelock has been unlocked, you could use a signal or a select.
-> But the simplest way would be to make a process block on reading a
-> sysfs file until the last wakelock is released.
+On Tuesday 03 February 2009, Linus Torvalds wrote:
+> 
+> On Mon, 2 Feb 2009, Jesse Barnes wrote:
+> > >
+> > > The last patch makes the warning in pci_legacy_suspend() more useful.
+> > 
+> > Linus, do you want these as part of the next pull request?  If so, I'll check 
+> > them out, pull them in, and let them run the linux-next build gauntlet for a 
+> > day before sending them.  Otherwise I'll just send a pull request today with 
+> > the 8 or so fixes I have queued now.
+> 
+> I want them eventually, but I don't know if we got confirmation that this 
+> particular series actually fixed the PCI-E bridge issue? The one that 
+> Parag reported.. It would be good to have confirmation. Maybe we do 
+> already and I missed that email?
 
-I do not want the kernel to communicate to userspace that the last
-wakelock has been unlocked, I want it to suspend right away. I was
-answering your question about why the kernel needs to be involved. Yes
-I could add a notification that tells user-space to suspend again, but
-it would not offer any additional functionality over my current
-solution.
+An additional patch against the PCIe port driver will be necessary to fix this
+issue, but I'm waiting for feedback from Parag about the patches already
+posted to find out what's the minimal fix.
 
->> Also, what do you mean by a runtime PM interface?
->
-> I'm making a distinction between system PM and runtime (also known as
-> dynamic) PM.  With system PM the entire system goes into a low-power
-> state -- that's what we mean when we talk about suspend or hibernation.
-> With runtime PM the system as a whole remains running while selected
-> devices are individually put into a low-power state.
->
-> For example, right now Linux will put a USB host controller into a
-> low-power state if no USB devices are plugged into it.  This runtime PM
-> interface is described in Documentation/usb/power-management.txt.  You
-> might want to use some of those mechanisms for controlling your
-> devices.
-
-OK, but I don't think this affects our use of wakelocks.
-
-> For example, if one process tries to start an auto-suspend, and at the
-> same time another process writes "mem" to /sys/power/state?  Then the
-> second process should take precedence and the system should go into
-> suspend.  When it wakes up again, the first process would still be
-> waiting for an auto-suspend to occur.  I suppose the details don't
-> matter much because it's not likely to crop up often.
-
-I'll make a change to make any write to /sys/power/state disable
-wakelocks. I'll probably also add a config option to remove
-/sys/power/state.
-
-Before I post another patch series I have a few questions:
-- Should I merge the wakelock and early-suspend api patches with their
-implementations? (I initially implemented the api on top of the old
-android_power driver, but we not longer use this)
-- Once wakelocks are disabled by writing to /sys/power/state, is there
-any demand for re-enabling wakelock support?
-- Are there any objections to using /sys/power/request_state to
-specify the state to enter when all wakelocks unlocked.
-
--- =
-
-Arve Hj=F8nnev=E5g
+Thanks,
+Rafael
