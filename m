@@ -1,15 +1,16 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Tue, 03 Feb 2009 10:51:06 +1100
-Message-ID: <1233618666.21871.231.camel@nigel-laptop>
+Date: Mon, 2 Feb 2009 16:08:19 -0800
+Message-ID: <d6200be20902021608i7c99123l5bd236c212193d40@mail.gmail.com>
 References: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
 	<1233611258.21871.101.camel@nigel-laptop>
 	<d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
+	<1233618666.21871.231.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
+In-Reply-To: <1233618666.21871.231.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
 Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>
 List-Id: linux-pm@vger.kernel.org
 
-SGkuCgpPbiBNb24sIDIwMDktMDItMDIgYXQgMTU6MjEgLTA4MDAsIEFydmUgSGrDuG5uZXbDpWcg
-d3JvdGU6Cj4gT24gTW9uLCBGZWIgMiwgMjAwOSBhdCAxOjQ3IFBNLCBOaWdlbCBDdW5uaW5naGFt
-Cj4gPG5jdW5uaW5naGFtQGNyY2Eub3JnLmF1PiB3cm90ZToKPiA+IEl0IHNvdW5kcyB0byBtZSBs
-aWtlIGFsbCBvZiB0aGlzIHN0dWZmIGlzIGp1c3QgcG93ZXIgbWFuYWdlbWVudCBvZgo+ID4gaW5k
-aXZpZHVhbCBkZXZpY2VzLCB3aGljaCBzaG91bGQgYmUgZG9uZSB0aHJvdWdoIHRoZSBzeXNmcyBp
-bnRlcmZhY2UgYW5kCj4gPiBjb21wbGV0ZWx5IHVucmVsYXRlZCB0byAvc3lzL3Bvd2VyL3N0YXRl
-Lgo+IAo+IEl0IGlzIGVhc2llciBmb3IgdXMgdG8gYWRkIGEgaG9vayB0byB0aGUgaW5kaXZpZHVh
-bCBkcml2ZXJzIHRoYW4gdG8KPiBtYWludGFpbiBhIGxpc3Qgb2YgZGV2aWNlcyBpbiB1c2VyLXNw
-YWNlLiBBbHNvLCBsYXN0IHRpbWUgSSBjaGVja2VkLAo+IHRoZSBvbmx5IHdheSB0byBkaXNhYmxl
-IGluZGl2aWR1YWwgZGV2aWNlcyB3YXMgdGhyb3VnaCBhIGRlcHJlY2F0ZWQKPiBpbnRlcmZhY2Uu
-IElzIHRoZXJlIGEgbmV3IHdheSB0byBkbyB0aGlzPwoKTm90IGFzIGZhciBhcyBJIGtub3csIGJ1
-dCBJIHVuZGVyc3Rvb2QgdGhhdCB3ZSB3ZXJlbid0IGZvY3VzaW5nIG9uIHdoYXQKY3VycmVudGx5
-IGV4aXN0cywgYnV0IG9uIHdoYXQgb3VnaHQgdG8gZXhpc3QgdG8gcHJvcGVybHkgc3VwcG9ydCB3
-aGF0CnlvdSdyZSBhZnRlciwgaW4gYSBnZW5lcmljIGVub3VnaCB3YXkgdG8gYmUgdXNlZnVsIHRv
-IG90aGVycyBhcyB3ZWxsLgoKPiA+IEknbSBwdXR0aW5nIHRoZSB0YWxrIGFib3V0Cj4gPiBzdXNw
-ZW5kaW5nIHRoZSBDUFUgaW4gdGhpcyBib3ggdG9vIGJlY2F1c2UgaXQgc291bmRzIGxpa2UgdGhl
-IGRlc2lyZSBpcwo+ID4gdG8gc3RvcCB0aGUgQ1BVIHdpdGhvdXQgbmVjZXNzYXJpbHkgc3VzcGVu
-ZGluZyBvdGhlciBkZXZpY2VzIHN1Y2ggYXMKPiA+IHRyYW5zbWl0dGVycyAtIHNvcnQgb2YgYSBD
-UFUgZnJlcSBzdGF0ZSB3aGVyZSB0aGUgZnJlcXVlbmN5IGlzIDAuCj4gCj4gSXMgdGhpcyBkaWZm
-ZXJlbnQgZnJvbSBpZGxlPwoKV2VsbCwgSSdtIGltYWdpbmluZyBhIHN0YXRlIHRoYXQgaXMgbW9y
-ZSB0aGFuIGp1c3QgaWRsZSAtIHdoZXJlLCBhcyB5b3UKc2F5LCBwcm9jZXNzZXMgZG9uJ3QgcnVu
-IHVudGlsIHNvbWUgc29ydCBvZiB3YWtldXAgZXZlbnQgb2NjdXJzLgoKPiA+IFRoYXQgc2FpZCwg
-aWYgc3VzcGVuZCB0byByYW0gaXMgd2hhdCB0aGV5IHJlYWxseSB3YW50IGZvciAnYXV0by1tZW0n
-LAo+ID4gd2hhdCB5b3UncmUgc3VnZ2VzdGluZyBzb3VuZHMgZ29vZCB0byBtZS4KPiAKPiBTdXNw
-ZW5kIGdpdmVzIHVzIHR3byBhZHZhbnRhZ2VzIG92ZXIgaWRsZS4gQWxsIHRocmVhZHMgYXJlIGZy
-b3plbgo+IHdoaWNoIG1lYW5zIHRoYXQgYW4gYXBwIHRoYXQgaXMgdXNpbmcgdG9vIG11Y2ggY3B1
-IHRpbWUgbm8gbG9uZ2VyCj4gZHJhaW5zIHRoZSBiYXR0ZXJ5LiBBbmQsIHRoZSBtb25vdG9uaWMg
-Y2xvY2sgc3RvcHMuCgpEbyB5b3Ugd2FudCB0byBsZWF2ZSBhbnkgZGV2aWNlcyBvbiB3aGlsZSBp
-biB0aGlzIHN0YXRlPyBJZiBub3QsIG9rYXkgLQpzdXNwZW5kIHRvIHJhbSBzb3VuZHMgcmlnaHQu
-IElmIHllcywgSSB0aGluayB5b3Ugd2FudCB0byB0YWtlCmxlYXZlIC9zeXMvcG93ZXIvZGlzayBh
-bG9uZSBhbmQgZ28gYWxvbmcgdGhlIGxpbmVzIG9mIHJ1bi10aW1lIHBvd2VyCm1hbmFnZW1lbnQg
-aW5zdGVhZC4KClJlZ2FyZHMsCgpOaWdlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Mon, Feb 2, 2009 at 3:51 PM, Nigel Cunningham
+<ncunningham@crca.org.au> wrote:
+>> It is easier for us to add a hook to the individual drivers than to
+>> maintain a list of devices in user-space. Also, last time I checked,
+>> the only way to disable individual devices was through a deprecated
+>> interface. Is there a new way to do this?
+>
+> Not as far as I know, but I understood that we weren't focusing on what
+> currently exists, but on what ought to exist to properly support what
+> you're after, in a generic enough way to be useful to others as well.
+
+Early-suspend was easier to add to the kernel, and easier for us to
+use from user-space.
+
+> Well, I'm imagining a state that is more than just idle - where, as you
+> say, processes don't run until some sort of wakeup event occurs.
+
+You are describing suspend.
+
+>> Suspend gives us two advantages over idle. All threads are frozen
+>> which means that an app that is using too much cpu time no longer
+>> drains the battery. And, the monotonic clock stops.
+>
+> Do you want to leave any devices on while in this state? If not, okay -
+> suspend to ram sounds right. If yes, I think you want to take
+> leave /sys/power/disk alone and go along the lines of run-time power
+> management instead.
+
+I don't think leaving a device on should prevent us from using
+suspend. Wakeup from suspend is already supported. If wakeup is
+enabled for a device, it needs to be in a power state that can support
+wakeup (whether this is its lowest power state or not).
+
+-- =
+
+Arve Hj=F8nnev=E5g
