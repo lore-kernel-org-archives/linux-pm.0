@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI PM: Read power state from device after
-	trying to change it on resume
-Date: Tue, 3 Feb 2009 01:41:27 +0100
-Message-ID: <200902030141.28410.rjw__1445.3430231244$1233621872$gmane$org@sisk.pl>
+From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Subject: [PATCH] PM: Fix suspend_console/resume_console to use
+	only one semaphore.
+Date: Mon,  2 Feb 2009 18:03:44 -0800
+Message-ID: <1233626624-28569-1-git-send-email-arve__38551.1973211125$1233626927$gmane$org@android.com>
+References: <1233372459-6434-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <1233372459-6434-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: swetland@google.com, mm-commits@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-pci_restore_standard_config() unconditionally changes current_state
-to PCI_D0 after attempting to change the device's power state, but
-it should rather read the actual current power state from the
-device.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1418,7 +1418,7 @@ int pci_restore_standard_config(struct p
- 		break;
- 	}
- 
--	dev->current_state = PCI_D0;
-+	pci_update_current_state(dev, PCI_D0);
- 
-  Restore:
- 	return pci_restore_state(dev);
+VGhpcyBmaXhlcyBhIHJhY2Ugd2hlcmUgYSB0aHJlYWQgYWNxdWlyZXMgdGhlIGNvbnNvbGUgd2hp
+bGUgdGhlCmNvbnNvbGUgaXMgc3VzcGVuZGVkLCBhbmQgdGhlIGNvbnNvbGUgaXMgcmVzdW1lZCBi
+ZWZvcmUgdGhpcwp0aHJlYWQgcmVsZWFzZXMgaXQuIEluIHRoaXMgY2FzZSwgdGhlIHNlY29uZGFy
+eSBjb25zb2xlCnNlbWFwaG9yZSB3b3VsZCBiZSBsZWZ0IGxvY2tlZCwgYW5kIHRoZSBwcmltYXJ5
+IHNlbWFwaG9yZSB3b3VsZApiZSByZWxlYXNlZCB0d2ljZS4gVGhpcyBpbiB0dXJuIHdvdWxkIGNh
+dXNlIHRoZSBjb25zb2xlIHN3aXRjaApvbiBzdXNwZW5kIG9yIHJlc3VtZSB0byBoYW5nIGZvcmV2
+ZXIuCgpOb3RlIHRoYXQgc3VzcGVuZF9jb25zb2xlIGRvZXMgbm90IGFjdHVhbGx5IGxvY2sgdGhl
+IGNvbnNvbGUKZm9yIGNsaWVudHMgdGhhdCB1c2UgYWNxdWlyZV9jb25zb2xlX3NlbSwgaXQgb25s
+eSBsb2NrcyBpdCBmb3IKY2xpZW50cyB0aGF0IHVzZSB0cnlfYWNxdWlyZV9jb25zb2xlX3NlbS4g
+SWYgd2UgY2hhbmdlCnN1c3BlbmRfY29uc29sZSB0byBmdWxseSBsb2NrIHRoZSBjb25zb2xlLCB0
+aGVuIHRoZSBrZXJuZWwKbWF5IGRlYWRsb2NrIG9uIHN1c3BlbmQuIE9uZSBjbGllbnQgb2YgdHJ5
+X2FjcXVpcmVfY29uc29sZV9zZW0KaXMgYWNxdWlyZV9jb25zb2xlX3NlbWFwaG9yZV9mb3JfcHJp
+bnRrLCB3aGljaCB1c2VzIGl0IHRvCnByZXZlbnQgcHJpbnRrIGZyb20gdXNpbmcgdGhlIGNvbnNv
+bGUgd2hpbGUgaXQgaXMgc3VzcGVuZGVkLgoKU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOl
+ZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KLS0tCiBrZXJuZWwvcHJpbnRrLmMgfCAgIDE1ICsrKysrKysr
+Ky0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0p
+CgpkaWZmIC0tZ2l0IGEva2VybmVsL3ByaW50ay5jIGIva2VybmVsL3ByaW50ay5jCmluZGV4IDY5
+MTg4ZjIuLmUzNjAyZDAgMTAwNjQ0Ci0tLSBhL2tlcm5lbC9wcmludGsuYworKysgYi9rZXJuZWwv
+cHJpbnRrLmMKQEAgLTczLDcgKzczLDYgQEAgRVhQT1JUX1NZTUJPTChvb3BzX2luX3Byb2dyZXNz
+KTsKICAqIGRyaXZlciBzeXN0ZW0uCiAgKi8KIHN0YXRpYyBERUNMQVJFX01VVEVYKGNvbnNvbGVf
+c2VtKTsKLXN0YXRpYyBERUNMQVJFX01VVEVYKHNlY29uZGFyeV9jb25zb2xlX3NlbSk7CiBzdHJ1
+Y3QgY29uc29sZSAqY29uc29sZV9kcml2ZXJzOwogRVhQT1JUX1NZTUJPTF9HUEwoY29uc29sZV9k
+cml2ZXJzKTsKIApAQCAtODkxLDEyICs4OTAsMTQgQEAgdm9pZCBzdXNwZW5kX2NvbnNvbGUodm9p
+ZCkKIAlwcmludGsoIlN1c3BlbmRpbmcgY29uc29sZShzKSAodXNlIG5vX2NvbnNvbGVfc3VzcGVu
+ZCB0byBkZWJ1ZylcbiIpOwogCWFjcXVpcmVfY29uc29sZV9zZW0oKTsKIAljb25zb2xlX3N1c3Bl
+bmRlZCA9IDE7CisJdXAoJmNvbnNvbGVfc2VtKTsKIH0KIAogdm9pZCByZXN1bWVfY29uc29sZSh2
+b2lkKQogewogCWlmICghY29uc29sZV9zdXNwZW5kX2VuYWJsZWQpCiAJCXJldHVybjsKKwlkb3du
+KCZjb25zb2xlX3NlbSk7CiAJY29uc29sZV9zdXNwZW5kZWQgPSAwOwogCXJlbGVhc2VfY29uc29s
+ZV9zZW0oKTsKIH0KQEAgLTkxMiwxMSArOTEzLDkgQEAgdm9pZCByZXN1bWVfY29uc29sZSh2b2lk
+KQogdm9pZCBhY3F1aXJlX2NvbnNvbGVfc2VtKHZvaWQpCiB7CiAJQlVHX09OKGluX2ludGVycnVw
+dCgpKTsKLQlpZiAoY29uc29sZV9zdXNwZW5kZWQpIHsKLQkJZG93bigmc2Vjb25kYXJ5X2NvbnNv
+bGVfc2VtKTsKLQkJcmV0dXJuOwotCX0KIAlkb3duKCZjb25zb2xlX3NlbSk7CisJaWYgKGNvbnNv
+bGVfc3VzcGVuZGVkKQorCQlyZXR1cm47CiAJY29uc29sZV9sb2NrZWQgPSAxOwogCWNvbnNvbGVf
+bWF5X3NjaGVkdWxlID0gMTsKIH0KQEAgLTkyNiw2ICs5MjUsMTAgQEAgaW50IHRyeV9hY3F1aXJl
+X2NvbnNvbGVfc2VtKHZvaWQpCiB7CiAJaWYgKGRvd25fdHJ5bG9jaygmY29uc29sZV9zZW0pKQog
+CQlyZXR1cm4gLTE7CisJaWYgKGNvbnNvbGVfc3VzcGVuZGVkKSB7CisJCXVwKCZjb25zb2xlX3Nl
+bSk7CisJCXJldHVybiAtMTsKKwl9CiAJY29uc29sZV9sb2NrZWQgPSAxOwogCWNvbnNvbGVfbWF5
+X3NjaGVkdWxlID0gMDsKIAlyZXR1cm4gMDsKQEAgLTk3OSw3ICs5ODIsNyBAQCB2b2lkIHJlbGVh
+c2VfY29uc29sZV9zZW0odm9pZCkKIAl1bnNpZ25lZCB3YWtlX2tsb2dkID0gMDsKIAogCWlmIChj
+b25zb2xlX3N1c3BlbmRlZCkgewotCQl1cCgmc2Vjb25kYXJ5X2NvbnNvbGVfc2VtKTsKKwkJdXAo
+JmNvbnNvbGVfc2VtKTsKIAkJcmV0dXJuOwogCX0KIAotLSAKMS42LjEKCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
+aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
