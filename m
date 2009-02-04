@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/7] PCI PM: Check if the state has been saved
-	before trying to restore it
-Date: Wed, 4 Feb 2009 01:57:22 +0100
-Message-ID: <200902040157.23385.rjw__29982.8035211705$1233710621$gmane$org@sisk.pl>
-References: <200902040154.36018.rjw@sisk.pl>
+Subject: [PATCH 0/7] PCI PM: Fixes and refinements
+Date: Wed, 4 Feb 2009 01:54:35 +0100
+Message-ID: <200902040154.36018.rjw__28802.1558117636$1233710770$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902040154.36018.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,28 +20,29 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Check if the standard configuration registers of a PCI device have
-been saved during suspend before trying to restore them during
-resume.
+The following series of patches contains some fixes and refinements of the
+PCI PM framework.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-By: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/pci/pci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[1/7] fixes the problem that some driverless devices don't like to be power
+managed and break things if we attempt to do it.
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1421,7 +1421,7 @@ int pci_restore_standard_config(struct p
- 	dev->current_state = PCI_D0;
- 
-  Restore:
--	return pci_restore_state(dev);
-+	return dev->state_saved ? pci_restore_state(dev) : 0;
- }
- 
- /**
+[2/7] and [3/7] fix the problem with devices in PCI_UNKNOWN that are
+mishandled by the new code.
+
+[4/7] fixes regression related to PCIe port suspend-resume.
+
+[5/7] fixes the bug that bridges (and PCIe ports) are disabled during suspend,
+althouth they shouldn't be.
+
+[6/7] makes pci_restore_standard_config() read the current power state of the
+device from the device itself after attempting to change it.
+
+[7/7] makes the PCI PM core handle devices more carefully (details in the
+changelog).
+
+Please disregard any previous versions of these patches I sent to you.
+
+Thanks,
+Rafael
