@@ -1,12 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.29-rc3-git6: Reported regressions 2.6.27 -> 2.6.28
-Date: Wed,  4 Feb 2009 11:55:52 +0100 (CET)
-Message-ID: <a47yn9c9JrF.A.hz.L5YiJB__18179.041989106$1233753797$gmane$org@chimera>
+From: Frank Seidel <fseidel@suse.de>
+Subject: [PATCH] ACPI: add missing KERN_* constants to printks
+Date: Wed, 04 Feb 2009 15:34:44 +0100
+Message-ID: <4989A784.3030604__23710.5960645296$1233758360$gmane$org@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,214 +15,238 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: linux kernel <linux-kernel@vger.kernel.org>
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org, frank@f-seidel.de, shaohuhua.li@intel.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org, kristen.c.accardi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGludHJvZHVj
-ZWQgYmV0d2VlbiAyLjYuMjcgYW5kCjIuNi4yOCwgZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhl
-cyBpbiB0aGUgbWFpbmxpbmUgSSBrbm93IG9mLiAgSWYgYW55IG9mIHRoZW0KaGF2ZSBiZWVuIGZp
-eGVkIGFscmVhZHksIHBsZWFzZSBsZXQgbWUga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhl
-ciB1bnJlc29sdmVkIHJlZ3Jlc3Npb25zIGludHJvZHVjZWQgYmV0d2VlbiAyLjYuMjcKYW5kIDIu
-Ni4yOCwgcGxlYXNlIGxldCBtZSBrbm93IGVpdGhlciBhbmQgSSdsbCBhZGQgdGhlbSB0byB0aGUg
-bGlzdC4KQWxzbywgcGxlYXNlIGxldCBtZSBrbm93IGlmIGFueSBvZiB0aGUgZW50cmllcyBiZWxv
-dyBhcmUgaW52YWxpZC4KCkVhY2ggZW50cnkgZnJvbSB0aGUgbGlzdCB3aWxsIGJlIHNlbnQgYWRk
-aXRpb25hbGx5IGluIGFuIGF1dG9tYXRpYyByZXBseSB0bwp0aGlzIG1lc3NhZ2Ugd2l0aCBDQ3Mg
-dG8gdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiByZXBvcnRpbmcgYW5kIGhhbmRsaW5nIHRoZQppc3N1
-ZS4KCgpMaXN0ZWQgcmVncmVzc2lvbnMgc3RhdGlzdGljczoKCiAgRGF0ZSAgICAgICAgICBUb3Rh
-bCAgUGVuZGluZyAgVW5yZXNvbHZlZAogIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0KICAyMDA5LTAyLTA0ICAgICAgMTQ5ICAgICAgIDMzICAgICAgICAgIDMwCiAgMjAw
-OS0wMS0yMCAgICAgIDE0NCAgICAgICAzMCAgICAgICAgICAyNwogIDIwMDktMDEtMTEgICAgICAx
-MzkgICAgICAgMzMgICAgICAgICAgMzAKICAyMDA4LTEyLTIxICAgICAgMTIwICAgICAgIDE5ICAg
-ICAgICAgIDE3CiAgMjAwOC0xMi0xMyAgICAgIDExMSAgICAgICAxNCAgICAgICAgICAxMwogIDIw
-MDgtMTItMDcgICAgICAxMDYgICAgICAgMjAgICAgICAgICAgMTcKICAyMDA4LTEyLTA0ICAgICAg
-MTA2ICAgICAgIDI5ICAgICAgICAgIDIxCiAgMjAwOC0xMS0yMiAgICAgICA5MyAgICAgICAyNSAg
-ICAgICAgICAxNQogIDIwMDgtMTEtMTYgICAgICAgODkgICAgICAgMzIgICAgICAgICAgMTgKICAy
-MDA4LTExLTA5ICAgICAgIDczICAgICAgIDQwICAgICAgICAgIDI3CiAgMjAwOC0xMS0wMiAgICAg
-ICA1NSAgICAgICA0MSAgICAgICAgICAyOQogIDIwMDgtMTAtMjUgICAgICAgMjYgICAgICAgMjUg
-ICAgICAgICAgMjAKCgoKVW5yZXNvbHZlZCByZWdyZXNzaW9ucwotLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
-aWQ9MTI2MTkKU3ViamVjdAkJOiBSZWdyZXNzaW9uIDIuNi4yOCBhbmQgbGFzdCAtIGJvb3QgZmFp
-bGVkClN1Ym1pdHRlcgk6IGphbiBzb25uZWsgPGhhMm5ueUBnbWFpbC5jb20+CkRhdGUJCTogMjAw
-OS0wMi0wMSAxOTo1OSAoNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgta2VybmVsJm09MTIzMzUxODM2MjEzOTY5Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjYxMgpTdWJqZWN0CQk6IGhh
-cmQgbG9ja3VwIHdoZW4gaW50ZXJydXB0aW5nIGNkZGEyd2F2ClN1Ym1pdHRlcgk6IE1hdHRoaWFz
-IFJlaWNobCA8aGlhc0Bob3J1cy5jb20+CkRhdGUJCTogMjAwOS0wMS0yOCAxNjo0MSAoOCBkYXlz
-IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIz
-MzE2MTExNDE1Njc3Jnc9NApIYW5kbGVkLUJ5CTogRlVKSVRBIFRvbW9ub3JpIDxmdWppdGEudG9t
-b25vcmlAbGFiLm50dC5jby5qcD4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVs
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI1NTkKU3ViamVjdAkJOiBIdWF3ZWkgRTE2OSBkb2Vzbid0
-IHdvcmsgYXMgbWFzcyBzdG9yYWdlIGFueW1vcmUKU3VibWl0dGVyCToga3BhbGJlcmcgPGtwYWxi
-ZXJnQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTAxLTI4IDAyOjM0ICg4IGRheXMgb2xkKQoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjUy
-MApTdWJqZWN0CQk6IENhbm5vdCBib290IDIuNi4yOCB1bmRlciBEZWxsIE9wdGlQbGV4IDk2MApT
-dWJtaXR0ZXIJOiBEZW5pcyBTY2hlcmJha292IDxkZW5pc19zY2hlcmJha292QHlhaG9vLmNvbT4K
-RGF0ZQkJOiAyMDA5LTAxLTIyIDA0OjM3ICgxNCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI1MDAKU3ViamVjdAkJOiBy
-ODE2OTogTkVUREVWIFdBVENIRE9HOiBldGgwIChyODE2OSk6IHRyYW5zbWl0IHRpbWVkIG91dApT
-dWJtaXR0ZXIJOiBKdXN0aW4gUGlzemN6IDxqcGlzemN6QGx1Y2lkcGl4ZWxzLmNvbT4KRGF0ZQkJ
-OiAyMDA5LTAxLTEzIDIxOjE5ICgyMyBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJj
-LmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMTg4MTYwODExMzIyJnc9NApIYW5kbGVkLUJ5CTog
-RnJhbmNvaXMgUm9taWV1IDxyb21pZXVAZnIuem9yZWlsLmNvbT4KCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI0NjUKU3ViamVjdAkJOiBL
-Vk0gZ3Vlc3RzIHN0YWxsaW5nIG9uIDIuNi4yOCAoYmlzZWN0ZWQpClN1Ym1pdHRlcgk6IEtldmlu
-IFNoYW5haGFuIDxrbXNoYW5haEB1Y3diLm9yZy5hdT4KRGF0ZQkJOiAyMDA5LTAxLTE3IDAzOjM3
-ICgxOSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTI0MjYKU3ViamVjdAkJOiBUTURDIEpveXN0aWNrIG5vIGxvbmdlciB3
-b3JrcyBpbiBrZXJuZWwgMi42LjI4ClN1Ym1pdHRlcgk6IEFuZHJldyBTLiBKb2huc29uIDxhbmR5
-QGFzam9obnNvbi5jb20+CkRhdGUJCTogMjAwOS0wMS0xMCAyMTo1MyAoMjYgZGF5cyBvbGQpClJl
-ZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMzE2MjQ4NjQx
-NTM2NiZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9MTI0MjEKU3ViamVjdAkJOiBHUEYgb24gMi42LjI4ICZhbXA7IDIuNi4yOC1yYzkt
-Z2l0MyDCoCDCoGUxMDAwZSAvIGUxMDAwIGlzc3VlcwpTdWJtaXR0ZXIJOiBEb3VnIEJhemFybmlj
-IDxkb3VnQGJhemFybmljLm5ldD4KRGF0ZQkJOiAyMDA5LTAxLTA5IDIxOjI2ICgyNyBkYXlzIG9s
-ZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMTUz
-NjUzMTIwMjA0Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xMjQxMQpTdWJqZWN0CQk6IDIuNi4yODogQlVHIGluIHI4MTY5ClN1Ym1p
-dHRlcgk6IEFuZHJleSBWdWwgPGFuZHJleS52dWxAZ21haWwuY29tPgpEYXRlCQk6IDIwMDgtMTIt
-MzEgMTg6MzcgKDM2IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1s
-aW51eC1rZXJuZWwmbT0xMjMwNzQ4Njk2MTE0MDkmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyNDA5ClN1YmplY3QJCTogTlVMTCBw
-b2ludGVyIGRlcmVmZXJlbmNlIGF0IGdldF9zdGF0cygpClN1Ym1pdHRlcgk6IFRldHN1byBIYW5k
-YSA8cGVuZ3Vpbi1rZXJuZWxAaS1sb3ZlLnNha3VyYS5uZS5qcD4KRGF0ZQkJOiAyMDA4LTEyLTMw
-IDEyOjUzICgzNyBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGlu
-dXgta2VybmVsJm09MTIzMDY0MTY3MDA4Njk1Jnc9NApIYW5kbGVkLUJ5CTogRnJlZGVyaWsgRGV3
-ZWVyZHQgPGZyZWRlcmlrLmRld2VlcmR0QHhwcm9nLmV1PgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQwOApTdWJqZWN0CQk6IEZ1bm55
-IHByb2JsZW0gd2l0aCAyLjYuMjg6IEtlcm5lbCBzdGFsbHMKU3VibWl0dGVyCTogTWljaGFlbCBS
-b3RoIDxtcm90aEBuZXNzaWUuZGU+CkRhdGUJCTogMjAwOC0xMi0yNSAxNToxNCAoNDIgZGF5cyBv
-bGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMzAy
-MTkzMTcxNDI4MiZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTI0MDcKU3ViamVjdAkJOiBLZXJuZWwgMi42LjI4IHJlZ3Jlc3Npb246
-IEhhbmcgYWZ0ZXIgaGliZXJuYXRlClN1Ym1pdHRlcgk6IEZyYW5rIEdyb2VuZXZlbGQgPGZyYW5r
-Z3JvZW5ldmVsZEBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMi0yOCAyMDozNCAoMzkgZGF5cyBv
-bGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMzA0
-OTY1MTkwNjA4MSZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTI0MDUKU3ViamVjdAkJOiBvb3BzIGluIF9fYm91bmNlX2VuZF9pb19y
-ZWFkIHVuZGVyIGt2bQpTdWJtaXR0ZXIJOiBDaHJpc3RvcGggSGVsbHdpZyA8aGNoQGxzdC5kZT4K
-RGF0ZQkJOiAyMDA4LTEyLTI2IDE3OjM2ICg0MSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6
-Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMDMxMzAzNDAwNjc2Jnc9NApIYW5kbGVk
-LUJ5CTogSmVucyBBeGJvZSA8amVucy5heGJvZUBvcmFjbGUuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0
-dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQwNApTdWJqZWN0CQk6
-IE9vcHMgaW4gMi42LjI4LXJjOSBhbmQgLXJjOCAtLSBtdHJyIGlzc3VlcyAvIGUxMDAwZQpTdWJt
-aXR0ZXIJOiBLZXJuZWwgPGtlcm5lbEBiYXphcm5pYy5uZXQ+CkRhdGUJCTogMjAwOC0xMi0yMiA5
-OjM3ICg0NSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTIyOTkzODczMzIwMTUwJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQwMwpTdWJqZWN0CQk6IFRUWSBwcm9ibGVt
-IG9uIGxpbnV4LTIuNi4yOC1yYzcKU3VibWl0dGVyCTogc2FzYSBzYXNhIDxzYXNhay4xOTgzQGdt
-YWlsLmNvbT4KRGF0ZQkJOiAyMDA4LTEyLTIyIDQ6MjMgKDQ1IGRheXMgb2xkKQpSZWZlcmVuY2Vz
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjI5OTE5MTQ2MDAzOTAmdz00
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTEyNDAxClN1YmplY3QJCTogMi42LjI4IHJlZ3Jlc3Npb246IHhiYWNrbGlnaHQgYnJva2VuIG9u
-IFRoaW5rUGFkIFg2MXMKU3VibWl0dGVyCTogVGlubyBLZWl0ZWwgPHRpbm8ua2VpdGVsQGdteC5k
-ZT4KRGF0ZQkJOiAyMDA5LTAxLTA1IDg6MzkgKDMxIGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0
-OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51
-eC0yLjYuZ2l0O2E9Y29tbWl0O2g9MjJjMTNmOWQ4MTc5ZjRjOWNhZWNmY2I2MGE5NTIxNDU2MmI5
-YWRkYwpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjMx
-MTQ0NzkxMTAzMTQmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEyMzk1ClN1YmplY3QJCTogMi42LjI4LXJjOTogb3Byb2ZpbGUgcmVn
-cmVzc2lvbgpTdWJtaXR0ZXIJOiBUaW0gQmxlY2htYW5uIDx0aW1Aa2xpbmd0Lm9yZz4KRGF0ZQkJ
-OiAyMDA4LTEyLTIxIDE0OjIzICg0NiBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDov
-L2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42Lmdp
-dDthPWNvbW1pdDtoPWI5OTE3MDI4ODQyMWM3OWYwYzJlZmE4YjMzZTI2ZTY1ZjRiYjdmYjgKUmVm
-ZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTg2OTQ2NjE0
-NzkxJnc9NApIYW5kbGVkLUJ5CTogQW5kaSBLbGVlbiA8YWtAbGludXguaW50ZWwuY29tPgoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjM5
-MwpTdWJqZWN0CQk6IGRlYnVnZ2luZyBpbiBkb3NlbXUgY2F1c2VzIGxvdHMgb2YgJ3NjaGVkdWxp
-bmcgd2hpbGUgYXRvbWljJwpTdWJtaXR0ZXIJOiBNaWNoYWwgU3VjaGFuZWsgPGhyYW1yYWNoQGNl
-bnRydW0uY3o+CkRhdGUJCTogMjAwOS0wMS0wOSAwNzoyOCAoMjcgZGF5cyBvbGQpCgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMzkxClN1
-YmplY3QJCTogUHJvY2Vzc29yIGRvZXMgbm90IGdvIGJlbG93IEMyIHN0YXRlIHVudGlsIHVzYi5h
-dXRvc3VzcGVuZCBpcyBlbmFibGVkClN1Ym1pdHRlcgk6IEdlcmdlbHkgSW1yZWggPGltcmVoZ0Bn
-bWFpbC5jb20+CkRhdGUJCTogMjAwOS0wMS0wOSAwMjozNSAoMjcgZGF5cyBvbGQpCgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyMzM3ClN1
-YmplY3QJCTogfjEwMCBleHRyYSB3YWtldXBzIHJlcG9ydGVkIGJ5IHBvd2VydG9wClN1Ym1pdHRl
-cgk6IEFsYmVydG8gR29uemFsZXogPGx1aXM2Njc0QHlhaG9vLmNvbT4KRGF0ZQkJOiAyMDA4LTEy
-LTMxIDEyOjI1ICgzNiBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNjUKU3ViamVjdAkJOiBGUFUgZW11bGF0aW9uIGJy
-b2tlbiBpbiAyLjYuMjgtcmM4ID8KU3VibWl0dGVyCTogUm9naWVyIFdvbGZmIDxSLkUuV29sZmZA
-Yml0d2l6YXJkLm5sPgpEYXRlCQk6IDIwMDgtMTItMTcgODo1NiAoNTAgZGF5cyBvbGQpClJlZmVy
-ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjk1MDQ2MzAzMDc0
-NyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTIyNjQKU3ViamVjdAkJOiBpOTE1OiBzd2l0Y2hpbmcgZnJvbSBrd2luIGluIG9wZW5n
-bCBtb2RlIHRvIGEgVlQgdGhlbiBiYWNrIHRvIHgxMSwgeDExIGZyZWV6ZXMKU3VibWl0dGVyCTog
-Q2FsZWIgQ3VzaGluZyA8eGVub3RlcnJhY2lkZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOC0xMi0x
-NiAxMTo0MCAoNTEgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
-bnV4LWtlcm5lbCZtPTEyMjk0Mjc3NzAzMDY2NiZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
-emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIyNjMKU3ViamVjdAkJOiBTYXRhIHNv
-ZnQgcmVzZXQgZmlsbGluZyBsb2cKU3VibWl0dGVyCTogSnVzdGluIE1hZHJ1IDxiZXZpY21AZHNs
-ZXh0cmVtZS5jb20+CkRhdGUJCTogMjAwOC0xMi0xMyAyOjA3ICg1NCBkYXlzIG9sZCkKUmVmZXJl
-bmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTEzNDEyNjA4NTMz
-Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0xMjIyNApTdWJqZWN0CQk6IGpvdXJuYWwgYWN0aXZpdHkgb24gaW5hY3RpdmUgcGFydGl0
-aW9uIGNhdXNlcyBpbmFjdGl2ZSBoYXJkZHJpdmUgc3BpbnVwClN1Ym1pdHRlcgk6IEMgU2lnaHRz
-IDxjc2lnaHRzQGZhc3RtYWlsLmZtPgpEYXRlCQk6IDIwMDgtMTItMTQgMTE6MzkgKDUzIGRheXMg
-b2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2Vy
-bmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9Yzg3NTkxYjcxOTczN2I0
-ZTkxZWIxYTlmYThmZDU1YTRmZjE4ODZkNgpIYW5kbGVkLUJ5CTogRXJpYyBTYW5kZWVuIDxzYW5k
-ZWVuQHJlZGhhdC5jb20+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEyMjA5ClN1YmplY3QJCTogb2xkaXNoIHRvcCBjb3JlIGR1bXBzIChp
-biBpdHMgbWVtaW5mbygpIGZ1bmN0aW9uKQpTdWJtaXR0ZXIJOiBBbmRyZWFzIE1vaHIgPGFuZGlA
-bGlzYXMuZGU+CkRhdGUJCTogMjAwOC0xMi0xMiAxODo0OSAoNTUgZGF5cyBvbGQpClJlZmVyZW5j
-ZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjkxMDc4NDAwNjQ3MiZ3
-PTQKCQkgIGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIyOTA3NTExMzE5Mjg4
-Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0xMjIwOApTdWJqZWN0CQk6IHVtbCBpcyB2ZXJ5IHNsb3cgb24gMi42LjI4IGhvc3QKU3Vi
-bWl0dGVyCTogTWlrbG9zIFN6ZXJlZGkgPG1pa2xvc0BzemVyZWRpLmh1PgpEYXRlCQk6IDIwMDgt
-MTItMTIgOTozNSAoNTUgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9s
-PWxpbnV4LWtlcm5lbCZtPTEyMjkwNzQ2MzUxODU5MyZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIxNjAKU3ViamVjdAkJOiBuZXR3
-b3JraW5nIG9vcHMgYWZ0ZXIgcmVzdW1lIGZyb20gczJyYW0gKDIuNi4yOC1yYzYpClN1Ym1pdHRl
-cgk6IE1hcmNpbiBTbHVzYXJ6IDxtYXJjaW4uc2x1c2FyekBnbWFpbC5jb20+CkRhdGUJCTogMjAw
-OC0xMS0yOCAyMToxNSAoNjkgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZv
-Lz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc5MDcwMTYxNTcyMyZ3PTQKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIxNTkKU3ViamVjdAkJOiAy
-LjYuMjgtcmM2LWdpdDEgLS0gTm8gc291bmQgcHJvZHVjZWQgZnJvbSBJbnRlbCBIREEgQUxTQSBk
-cml2ZXIKU3VibWl0dGVyCTogTWlsZXMgTGFuZSA8bWlsZXMubGFuZUBnbWFpbC5jb20+CkRhdGUJ
-CTogMjAwOC0xMS0yNyAyMDozMyAoNzAgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFy
-Yy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMjc4MTgwNTYyMDIxMiZ3PTQKSGFuZGxlZC1CeQk6
-IFRha2FzaGkgSXdhaSA8dGl3YWlAc3VzZS5kZT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
-bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIwNjEKU3ViamVjdAkJOiBzbmRfaGRhX2lu
-dGVsOiBwb3dlcl9zYXZlOiBzb3VuZCBjcmFja3Mgb24gcG93ZXJkb3duClN1Ym1pdHRlcgk6IEpl
-bnMgV2VpYmxlciA8YnVnemlsbGEta2VybmVsQGplbnN0aGVicmFpbi5kZT4KRGF0ZQkJOiAyMDA4
-LTExLTE4IDEyOjA3ICg3OSBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6IFRha2FzaGkgSXdhaSA8dGl3
-YWlAc3VzZS5kZT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
-X2J1Zy5jZ2k/aWQ9MTE4NDkKU3ViamVjdAkJOiBkZWZhdWx0IElSUSBhZmZpbml0eSBjaGFuZ2Ug
-aW4gdjIuNi4yNyAoYnJlYWtpbmcgc2V2ZXJhbCBTTVAgUFBDIGJhc2VkIHN5c3RlbXMpClN1Ym1p
-dHRlcgk6IEt1bWFyIEdhbGEgPGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc+CkRhdGUJCTogMjAw
-OC0xMC0yNCAxMjo0NSAoMTA0IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5m
-by8/bD1saW51eC1rZXJuZWwmbT0xMjI0ODUyNDU5MjQxMjUmdz00CgoKUmVncmVzc2lvbnMgd2l0
-aCBwYXRjaGVzCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEyNjE0ClN1YmplY3QJCTogV09MIHdp
-dGggZm9yY2VkZXRoIGJyb2tlbiBzaW5jZSBmNTVjMjFmZDlhOTJhNDQ0ZTU1YWQxY2E0ZTQ3MzJk
-NTY2NjFiZjJlClN1Ym1pdHRlcgk6IFBoaWxpcHAgTWF0dGhpYXMgSGFobiA8cG1oYWhuQHRpdGFu
-LmxhaG4uZGU+CkRhdGUJCTogMjAwOS0wMS0yOSA2OjMxICg3IGRheXMgb2xkKQpSZWZlcmVuY2Vz
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjMzMjEyMzI4MjUzMTYmdz00
-CkhhbmRsZWQtQnkJOiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+ClBhdGNoCQk6IGh0
-dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMzMwNDU5MjI5MjQ4Jnc9NAoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQw
-NgpTdWJqZWN0CQk6IDIuNi4yOCB0aGlua3MgdGhhdCBteSBQUy8yIG1vdXNlIGlzIGEgdG91Y2hw
-YWQKU3VibWl0dGVyCTogQWxleGFuZGVyIEUuIFBhdHJha292IDxwYXRyYWtvdkBnbWFpbC5jb20+
-CkRhdGUJCTogMjAwOC0xMi0yNyA5OjA2ICg0MCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6
-Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIzMDM2ODkzODE3MjgwJnc9NApIYW5kbGVk
-LUJ5CTogQXJqYW4gT3BtZWVyIDxhcmphbkBvcG1lZXIubmV0PgpQYXRjaAkJOiBodHRwOi8vbWFy
-Yy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyMzA5MjE0NzcwMzIzNiZ3PTQKCgpCdWctRW50cnkJ
-OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTIzOTYKU3ViamVj
-dAkJOiBod2luZm8gcHJvYmxlbSBzaW5jZSAyLjYuMjgKU3VibWl0dGVyCTogQmVzY2hvcm5lciBE
-YW5pZWwgPERhbmllbC5CZXNjaG9ybmVyQGZhY3Rvbi5jb20+CkRhdGUJCTogMjAwOS0wMS0wNiA4
-OjUzICgzMCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTIzMTIzMjc3ODAwODM1Jnc9NApIYW5kbGVkLUJ5CTogU3VyZXNoIFNpZGRoYSA8
-c3VyZXNoLmIuc2lkZGhhQGludGVsLmNvbT4KUGF0Y2gJCTogaHR0cDovL21hcmMuaW5mby8/bD1s
-aW51eC1rZXJuZWwmbT0xMjMxNTQwMDUxMjc0OTcmdz00CgoKRm9yIGRldGFpbHMsIHBsZWFzZSB2
-aXNpdCB0aGUgYnVnIGVudHJpZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4gaW4KcmVmZXJl
-bmNlcy4KCkFzIHlvdSBjYW4gc2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5IGZvciBlYWNo
-IG9mIHRoZSBsaXN0ZWQgcmVncmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6aWxsYSBlbnRy
-eSB1c2VkIGZvciB0cmFja2luZyB0aGUgcmVncmVzc2lvbnMgaW50cm9kdWNlZApiZXR3ZWVuIDIu
-Ni4yNyBhbmQgMi42LjI4LCB1bnJlc29sdmVkIGFzIHdlbGwgYXMgcmVzb2x2ZWQsIGF0OgoKaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExODA4CgpQbGVhc2UgbGV0
-IG1lIGtub3cgaWYgdGhlcmUgYXJlIGFueSBCdWd6aWxsYSBlbnRyaWVzIHRoYXQgc2hvdWxkIGJl
-IGFkZGVkIHRvCnRoZSBsaXN0IGluIHRoZXJlLgoKVGhhbmtzLApSYWZhZWwKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+From: Frank Seidel <frank@f-seidel.de>
+
+According to kerneljanitors todo list all printk calls should
+have an according KERN_* constant.
+Those are the missing peaces here for the acpi subsystem.
+
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
+---
+ drivers/acpi/container.c      |    5 +++--
+ drivers/acpi/dock.c           |    8 ++++----
+ drivers/acpi/osl.c            |    4 ++--
+ drivers/acpi/pci_irq.c        |    4 ++--
+ drivers/acpi/pci_link.c       |   14 +++++++-------
+ drivers/acpi/processor_core.c |    5 +++--
+ drivers/acpi/processor_idle.c |    4 ++--
+ drivers/acpi/sleep.c          |   10 +++++-----
+ drivers/acpi/video.c          |    2 +-
+ 9 files changed, 29 insertions(+), 27 deletions(-)
+
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1260,7 +1260,7 @@ static int acpi_video_bus_POST_info_seq_
+ 			printk(KERN_WARNING PREFIX
+ 			       "This indicates a BIOS bug. Please contact the manufacturer.\n");
+ 		}
+-		printk("%llx\n", options);
++		printk(KERN_WARNING "%llx\n", options);
+ 		seq_printf(seq, "can POST: <integrated video>");
+ 		if (options & 2)
+ 			seq_printf(seq, " <PCI video>");
+--- a/drivers/acpi/container.c
++++ b/drivers/acpi/container.c
+@@ -163,7 +163,7 @@ static void container_notify_cb(acpi_han
+ 	case ACPI_NOTIFY_BUS_CHECK:
+ 		/* Fall through */
+ 	case ACPI_NOTIFY_DEVICE_CHECK:
+-		printk("Container driver received %s event\n",
++		printk(KERN_WARNING "Container driver received %s event\n",
+ 		       (type == ACPI_NOTIFY_BUS_CHECK) ?
+ 		       "ACPI_NOTIFY_BUS_CHECK" : "ACPI_NOTIFY_DEVICE_CHECK");
+ 		status = acpi_bus_get_device(handle, &device);
+@@ -174,7 +174,8 @@ static void container_notify_cb(acpi_han
+ 					kobject_uevent(&device->dev.kobj,
+ 						       KOBJ_ONLINE);
+ 				else
+-					printk("Failed to add container\n");
++					printk(KERN_WARNING
++					       "Failed to add container\n");
+ 			}
+ 		} else {
+ 			if (ACPI_SUCCESS(status)) {
+--- a/drivers/acpi/pci_irq.c
++++ b/drivers/acpi/pci_irq.c
+@@ -400,12 +400,12 @@ int acpi_pci_irq_enable(struct pci_dev *
+ 		dev_warn(&dev->dev, "PCI INT %c: no GSI", pin_name(pin));
+ 		/* Interrupt Line values above 0xF are forbidden */
+ 		if (dev->irq > 0 && (dev->irq <= 0xF)) {
+-			printk(" - using IRQ %d\n", dev->irq);
++			printk(KERN_WARNING " - using IRQ %d\n", dev->irq);
+ 			acpi_register_gsi(dev->irq, ACPI_LEVEL_SENSITIVE,
+ 					  ACPI_ACTIVE_LOW);
+ 			return 0;
+ 		} else {
+-			printk("\n");
++			printk(KERN_WARNING "\n");
+ 			return 0;
+ 		}
+ 	}
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -593,7 +593,7 @@ static int acpi_pci_link_allocate(struct
+ 		return -ENODEV;
+ 	} else {
+ 		acpi_irq_penalty[link->irq.active] += PIRQ_PENALTY_PCI_USING;
+-		printk(PREFIX "%s [%s] enabled at IRQ %d\n",
++		printk(KERN_WARNING PREFIX "%s [%s] enabled at IRQ %d\n",
+ 		       acpi_device_name(link->device),
+ 		       acpi_device_bid(link->device), link->irq.active);
+ 	}
+@@ -751,21 +751,21 @@ static int acpi_pci_link_add(struct acpi
+ 	       acpi_device_bid(device));
+ 	for (i = 0; i < link->irq.possible_count; i++) {
+ 		if (link->irq.active == link->irq.possible[i]) {
+-			printk(" *%d", link->irq.possible[i]);
++			printk(KERN_INFO " *%d", link->irq.possible[i]);
+ 			found = 1;
+ 		} else
+-			printk(" %d", link->irq.possible[i]);
++			printk(KERN_INFO " %d", link->irq.possible[i]);
+ 	}
+ 
+-	printk(")");
++	printk(KERN_INFO ")");
+ 
+ 	if (!found)
+-		printk(" *%d", link->irq.active);
++		printk(KERN_INFO " *%d", link->irq.active);
+ 
+ 	if (!link->device->status.enabled)
+-		printk(", disabled.");
++		printk(KERN_INFO ", disabled.");
+ 
+-	printk("\n");
++	printk(KERN_INFO "\n");
+ 
+ 	/* TBD: Acquire/release lock */
+ 	list_add_tail(&link->node, &acpi_link.entries);
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -984,7 +984,7 @@ static int dock_add(acpi_handle handle)
+ 
+ 	ret = device_create_file(&dock_device->dev, &dev_attr_docked);
+ 	if (ret) {
+-		printk("Error %d adding sysfs file\n", ret);
++		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
+ 		platform_device_unregister(dock_device);
+ 		kfree(dock_station);
+ 		dock_station = NULL;
+@@ -992,7 +992,7 @@ static int dock_add(acpi_handle handle)
+ 	}
+ 	ret = device_create_file(&dock_device->dev, &dev_attr_undock);
+ 	if (ret) {
+-		printk("Error %d adding sysfs file\n", ret);
++		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
+ 		device_remove_file(&dock_device->dev, &dev_attr_docked);
+ 		platform_device_unregister(dock_device);
+ 		kfree(dock_station);
+@@ -1001,7 +1001,7 @@ static int dock_add(acpi_handle handle)
+ 	}
+ 	ret = device_create_file(&dock_device->dev, &dev_attr_uid);
+ 	if (ret) {
+-		printk("Error %d adding sysfs file\n", ret);
++		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
+ 		device_remove_file(&dock_device->dev, &dev_attr_docked);
+ 		device_remove_file(&dock_device->dev, &dev_attr_undock);
+ 		platform_device_unregister(dock_device);
+@@ -1011,7 +1011,7 @@ static int dock_add(acpi_handle handle)
+ 	}
+ 	ret = device_create_file(&dock_device->dev, &dev_attr_flags);
+ 	if (ret) {
+-		printk("Error %d adding sysfs file\n", ret);
++		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
+ 		device_remove_file(&dock_device->dev, &dev_attr_docked);
+ 		device_remove_file(&dock_device->dev, &dev_attr_undock);
+ 		device_remove_file(&dock_device->dev, &dev_attr_uid);
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1861,9 +1861,9 @@ int __cpuinit acpi_processor_power_init(
+ 		printk(KERN_INFO PREFIX "CPU%d (power states:", pr->id);
+ 		for (i = 1; i <= pr->power.count; i++)
+ 			if (pr->power.states[i].valid)
+-				printk(" C%d[C%d]", i,
++				printk(KERN_INFO " C%d[C%d]", i,
+ 				       pr->power.states[i].type);
+-		printk(")\n");
++		printk(KERN_INFO ")\n");
+ 
+ #ifndef CONFIG_CPU_IDLE
+ 		if (pr->id == 0) {
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -228,10 +228,10 @@ void acpi_os_vprintf(const char *fmt, va
+ 	if (acpi_in_debugger) {
+ 		kdb_printf("%s", buffer);
+ 	} else {
+-		printk("%s", buffer);
++		printk(KERN_WARNING "%s", buffer);
+ 	}
+ #else
+-	printk("%s", buffer);
++	printk(KERN_WARNING "%s", buffer);
+ #endif
+ }
+ 
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -742,8 +742,9 @@ static int __cpuinit acpi_processor_star
+ 	if (pr->flags.throttling) {
+ 		printk(KERN_INFO PREFIX "%s [%s] (supports",
+ 		       acpi_device_name(device), acpi_device_bid(device));
+-		printk(" %d throttling states", pr->throttling.state_count);
+-		printk(")\n");
++		printk(KERN_INFO
++		       " %d throttling states", pr->throttling.state_count);
++		printk(KERN_INFO ")\n");
+ 	}
+ 
+       end:
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -679,7 +679,7 @@ static void acpi_power_off_prepare(void)
+ static void acpi_power_off(void)
+ {
+ 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
+-	printk("%s called\n", __func__);
++	printk(KERN_DEBUG "%s called\n", __func__);
+ 	local_irq_disable();
+ 	acpi_enable_wakeup_device(ACPI_STATE_S5);
+ 	acpi_enter_sleep_state(ACPI_STATE_S5);
+@@ -706,7 +706,7 @@ int __init acpi_sleep_init(void)
+ 		status = acpi_get_sleep_type_data(i, &type_a, &type_b);
+ 		if (ACPI_SUCCESS(status)) {
+ 			sleep_states[i] = 1;
+-			printk(" S%d", i);
++			printk(KERN_INFO " S%d", i);
+ 		}
+ 	}
+ 
+@@ -720,7 +720,7 @@ int __init acpi_sleep_init(void)
+ 		hibernation_set_ops(old_suspend_ordering ?
+ 			&acpi_hibernation_ops_old : &acpi_hibernation_ops);
+ 		sleep_states[ACPI_STATE_S4] = 1;
+-		printk(" S4");
++		printk(KERN_INFO " S4");
+ 		if (!nosigcheck) {
+ 			acpi_get_table(ACPI_SIG_FACS, 1,
+ 				(struct acpi_table_header **)&facs);
+@@ -733,11 +733,11 @@ int __init acpi_sleep_init(void)
+ 	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+ 	if (ACPI_SUCCESS(status)) {
+ 		sleep_states[ACPI_STATE_S5] = 1;
+-		printk(" S5");
++		printk(KERN_INFO " S5");
+ 		pm_power_off_prepare = acpi_power_off_prepare;
+ 		pm_power_off = acpi_power_off;
+ 	}
+-	printk(")\n");
++	printk(KERN_INFO ")\n");
+ 	/*
+ 	 * Register the tts_notifier to reboot notifier list so that the _TTS
+ 	 * object can also be evaluated when the system enters S5.
