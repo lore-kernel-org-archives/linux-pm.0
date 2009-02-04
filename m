@@ -1,17 +1,16 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Re: [PATCH 10/13] PM: earlysuspend: Add console switch
-	when user requested sleep state changes.
-Date: Thu, 5 Feb 2009 11:54:36 +0100
-Message-ID: <200902051154.37318.u.luckas@road.de>
-References: <1233802226-23386-2-git-send-email-arve@android.com>
-	<20090205090316.GD2077@elf.ucw.cz>
-	<d6200be20902050137q19cf544fx40f2f3167289ab42@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions
+Date: Wed, 4 Feb 2009 14:25:13 +0100
+Message-ID: <20090204132513.GA1218@ucw.cz>
+References: <Pine.LNX.4.44L0.0902021005050.2550-100000@iolanthe.rowland.org>
+	<1233611258.21871.101.camel@nigel-laptop>
+	<d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902050137q19cf544fx40f2f3167289ab42@mail.gmail.com>
 Content-Disposition: inline
+In-Reply-To: <d6200be20902021521q6a855f78m88413869eb7e2da6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +20,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: swetland@google.com, ncunningham@crca.org.au
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>, Nigel Cunningham <ncunningham@crca.org.au>, Uli Luckas <u.luckas@road.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5. February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Thu, Feb 5, 2009 at 1:03 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > ...and how is it different from current console switching we do on PC?
->
-> It is not, but we turn off the framebuffer before the normal suspend
-> path so we need the switch here.
-Couldn't you just keep drawing to the disabled frame buffer?
+Hi!
 
-Uli
--- =
+> <ncunningham@crca.org.au> wrote:
+> > It sounds to me like all of this stuff is just power management of
+> > individual devices, which should be done through the sysfs interface and
+> > completely unrelated to /sys/power/state.
+> 
+> It is easier for us to add a hook to the individual drivers than to
+> maintain a list of devices in user-space. Also, last time I checked,
+> the only way to disable individual devices was through a deprecated
+> interface. Is there a new way to do this?
+
+No, but we need one, sooner or later. I'd say that implementing nice
+device power management would be better than early-suspend hack.
+
+> > That said, if suspend to ram is what they really want for 'auto-mem',
+> > what you're suggesting sounds good to me.
+> 
+> Suspend gives us two advantages over idle. All threads are frozen
+> which means that an app that is using too much cpu time no longer
+> drains the battery. And, the monotonic clock stops.
+
+SIGSTOP should be the right tool if some application uses too much
+cycles...
 
 
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Head of Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
