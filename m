@@ -1,13 +1,14 @@
-From: yakui_zhao <yakui.zhao@intel.com>
-Subject: Re: Acer 6592 TM, suspend to ram and resume freeze
-Date: Wed, 04 Feb 2009 10:21:59 +0800
-Message-ID: <1233714119.3684.53.camel__43062.1654064909$1233713657$gmane$org@localhost.localdomain>
-References: <873aevl0l8.fsf@free.fr>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] PCI PM: Fix handling of devices without
+	drivers
+Date: Tue, 3 Feb 2009 18:23:28 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902031815550.3247__44796.2059210569$1233714439$gmane$org@localhost.localdomain>
+References: <200902040154.36018.rjw@sisk.pl> <200902040156.15200.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <873aevl0l8.fsf@free.fr>
+In-Reply-To: <200902040156.15200.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,61 +18,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2009-02-04 at 04:36 +0800, Robert Jarzmik wrote:
-> First of all, sorry for the duplicate on linux-pm, but as Pavel suggested, this
-> topic gains wider audience as acpi and pm are involved.
-> 
-> I have an issue with my laptop with suspend to ram.
-> My laptop is an Acer Travelmate 6592g :
-> 
-> > [rj@velvet wireshark-1.0.5 (master)]$ sudo s2ram -i
-> > This machine can be identified by:
-> >     sys_vendor   = "Acer"
-> >     sys_product  = "TravelMate 6592"
-> >     sys_version  = "PSMBOU-1234567"
-> >     bios_version = "V1.53   "
-> 
-> The kernel running is the last I have : 2.6.29-rc1, but the problem is the same
-> whatever the kernel version I take (between 2.6.16 and 2.6.29-rc1).
-Will you please try the latest kernel(2.6.29-rc3)?
-     If the problem still exists, please attach the output of dmesg,
-acpidump.
 
-Thanks.
+
+On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> The issue is that even if the laptop enters suspend correctly, it hangs on
-> comming out of it. After some research, I cornered down the module which changes
-> the behaviour : acpi_cpufreq.ko.
+> Suspend to RAM is reported to break on some machines as a result of
+> attempting to put one of driverless PCI devices into a low power
+> state.  Avoid that by not attepmting to power manage driverless
+> devices during suspend.
 > 
-> When I forbid the laptop to load this module, the suspend to ram works like a
-> charm, in "init" single mode or multi-user mode. When I load the module, the
-> resume always hangs (fan goes high speed like crazy, no LCD back, hard drive led
-> stays on, caps_lock key not responsive, ...)
-> 
-> Now, I notice that loading acpi-cpufreq triggers the following message :
-> > log: Jan 19 18:23:42 velvet kernel: ACPI: EC: non-query interrupt received, switching to interrupt mode
-> 
-> As this is not the part of the kernel I'm most at ease with, I'd like some help
-> to investigate. I'll gladly make any test or apply patches to my own git tree.
-> 
-> I join to this mail a URL [1] to see the little information I have :
->  - kernel messages (/var/log/messages), for single user startup
->  - ACPI table
->  - my kernel configuration
->  - kernel message for a working suspend to ram (ie. without acpi_cpufreq).
->  - I suspend using s2ram -f -v -p -s
-> 
-> Best regards.
-> 
-> --
-> Robert
-> 
-> [1] http://belgarath.hd.free.fr/download/acer6592tm/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Fix up pci_pm_poweroff() after a previous incomplete fix for the same
+> thing during hibernation.
+
+Ok, I really don't like this patch, because:
+
+> -static void pci_pm_default_suspend(struct pci_dev *pci_dev)
+> +static void pci_pm_default_suspend(struct pci_dev *pci_dev, bool prepare)
+>  {
+>  	pci_pm_default_suspend_generic(pci_dev);
+>  
+> -	if (!pci_is_bridge(pci_dev))
+> +	if (prepare && !pci_is_bridge(pci_dev))
+>  		pci_prepare_to_sleep(pci_dev);
+>  
+>  	pci_fixup_device(pci_fixup_suspend, pci_dev);
+
+This "helper" function really isn't helping anything at all any more. It's 
+really just confusing things.
+
+Now that was true even before this all; mostly because your naming in this 
+area _really_ sucks. I mean, what the heck is the difference between 
+"pci_pm_default_suspend_generic()" and "pci_pm_default_suspend()", and 
+what do they do?
+
+But you just made it worse. This trivial function that doesn't do anything 
+interesting, and isn't well-named enough to actually explain what it is 
+doing now became EVEN WORSE.  Now it's a trivial function that does two 
+things, except it does one of those things only if the magic flag (that is 
+also not helpfully named) is set.
+
+Argh.
+
+To make it worse, it's not at all obvious what the logic is:
+
+> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +		pci_pm_default_suspend(pci_dev, !!pm);
+
+Whaa? This is basically totally obfuscated code both in the caller _and_ 
+in the callee.
+
+Now, it looks like this all then goes away in PATCH 7/7, so I guess I 
+shouldn't complain too much, but I just don't see much point in carrying 
+this broken patch around in the series, since it's then going away and 
+rewritten almost immediately again.
+
+Apart from that complaints, Acked-by: for the series. 
+
+			Linus
