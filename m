@@ -1,16 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions
-Date: Wed, 4 Feb 2009 14:29:35 +0100
-Message-ID: <20090204132934.GB1218@ucw.cz>
-References: <d6200be20902021510k104f2da9ha89fa00baff3910a@mail.gmail.com>
-	<Pine.LNX.4.44L0.0902022207440.27307-100000@netrider.rowland.org>
-	<d6200be20902022018k7fda9120yb7321f5341050ce8@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 03/13] PM: Implement wakelock api.
+Date: Thu, 5 Feb 2009 10:24:18 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0902051019330.2746-100000@iolanthe.rowland.org>
+References: <1233802226-23386-4-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20902022018k7fda9120yb7321f5341050ce8@mail.gmail.com>
+In-Reply-To: <1233802226-23386-4-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +17,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>, Nigel Cunningham <ncunningham@crca.org.au>
+To: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 4 Feb 2009, [utf-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
 
-> > For example, if one process tries to start an auto-suspend, and at the
-> > same time another process writes "mem" to /sys/power/state?  Then the
-> > second process should take precedence and the system should go into
-> > suspend.  When it wakes up again, the first process would still be
-> > waiting for an auto-suspend to occur.  I suppose the details don't
-> > matter much because it's not likely to crop up often.
-> 
-> I'll make a change to make any write to /sys/power/state disable
-> wakelocks. I'll probably also add a config option to remove
-> /sys/power/state.
-> 
-> Before I post another patch series I have a few questions:
-> - Should I merge the wakelock and early-suspend api patches with their
-> implementations? (I initially implemented the api on top of the old
-> android_power driver, but we not longer use this)
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -116,6 +116,25 @@ config SUSPEND_FREEZER
+>  =
 
-I think so.
+>  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+>  =
 
-> - Once wakelocks are disabled by writing to /sys/power/state, is there
-> any demand for re-enabling wakelock support?
+> +config HAS_WAKELOCK
+> +	bool
+> +
+> +config WAKELOCK
+> +	bool "Wake lock"
+> +	depends on PM && RTC_CLASS
+> +	default n
+> +	select HAS_WAKELOCK
+> +	---help---
+> +	  Enable wakelocks. When user space request a sleep state the
+> +	  sleep request will be delayed until no wake locks are held.
 
-I do not think wakelocks should be disabled. They should probably be
-ignored for echo mem > state, but disabling them sounds wrong.
+You know, when submitting multiple patches it is customary to break the =
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+code up in such a way that intermediate forms (where some of the =
+
+patches have been applied but not all of them) will compile and run =
+
+correctly.  This is so that people will be able to carry out bisection =
+
+searches while looking for other bugs.
+
+Right here we see that you introduce CONFIG_WAKELOCK in patch 03/13, =
+
+but it gets used already in patch 01/13.  That's not good.
+
+One other thing -- this may be a standard Kconfig idiom, but what =
+
+reason is there for CONFIG_HAS_WAKELOCK?  Does it get used anywhere?  =
+
+It if does, couldn't CONFIG_WAKELOCK be used instead?
+
+Alan Stern
