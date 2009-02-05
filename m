@@ -1,10 +1,9 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 09/13] PM: wakelock: Abort task freezing if a
-	wake lock	is held.
-Date: Thu, 5 Feb 2009 11:02:18 +0100
-Message-ID: <20090205100217.GO2077@elf.ucw.cz>
+	wake lock is held.
+Date: Thu, 5 Feb 2009 02:08:39 -0800
+Message-ID: <d6200be20902050208n398be36cre67791f5bc7b5be5@mail.gmail.com>
 References: <1233802226-23386-5-git-send-email-arve@android.com>
-	<1233802226-23386-6-git-send-email-arve@android.com>
 	<1233802226-23386-7-git-send-email-arve@android.com>
 	<1233802226-23386-8-git-send-email-arve@android.com>
 	<1233802226-23386-9-git-send-email-arve@android.com>
@@ -13,12 +12,12 @@ References: <1233802226-23386-5-git-send-email-arve@android.com>
 	<d6200be20902050130q73d710foabb5d1a331f1528b@mail.gmail.com>
 	<20090205094932.GL2077@elf.ucw.cz>
 	<d6200be20902050158m7310bc60w8be16a3975535ee@mail.gmail.com>
+	<20090205100217.GO2077@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20902050158m7310bc60w8be16a3975535ee@mail.gmail.com>
+In-Reply-To: <20090205100217.GO2077@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,42 +27,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-02-05 01:58:40, Arve Hj?nnev?g wrote:
-> On Thu, Feb 5, 2009 at 1:49 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Thu 2009-02-05 01:30:35, Arve Hj?nnev?g wrote:
-> >> On Thu, Feb 5, 2009 at 12:55 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> >> > Hi!
-> >> >
-> >> >> Avoids a problem where the device sometimes hangs for 20 seconds
-> >> >> before the screen is turned on.
-> >> >
-> >> > Fix the problem rather than working around it.
-> >>
-> >> We used to have problems where if a process was connected to a
-> >> debugger, and the debugger was frozen first, the this code would be
-> >> stuck until it times out. I have not seen this problem recently, but
-> >> aborting as soon as you know that you should wake up is still good.
-> >
-> > Can you explain why you need the change in the changelog then? It is
-> > not at all clear to me.
-> 
-> We should also check if we should abort after suspending any driver.
-> This was just the only place where the delay was noticeable since it
-> tries for 20 seconds.
+On Thu, Feb 5, 2009 at 2:02 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>> We should also check if we should abort after suspending any driver.
+>> This was just the only place where the delay was noticeable since it
+>> tries for 20 seconds.
+>
+> I still don't get it. Refrigerator freezes userspace processes, not
+> devices.
 
-I still don't get it. Refrigerator freezes userspace processes, not
-devices.
+Individual devices could also be slow to suspend, so aborting as soon
+as you know that suspend will fail would be better. Right now I only
+have two abort points, during freeze and a single late suspend
+handler.
 
-Are you trying to improve hadling of suspend abort during freeze?
+> Are you trying to improve hadling of suspend abort during freeze?
 
-> I'll extend the change description.
+Yes.
 
-...so I guess I'll wait for extended description.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- =
+
+Arve Hj=F8nnev=E5g
