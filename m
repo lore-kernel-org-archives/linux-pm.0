@@ -1,25 +1,23 @@
-From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 12/13] Input: Hold wake lock while event queue is
-	not empty.
-Date: Wed,  4 Feb 2009 18:50:25 -0800
-Message-ID: <1233802226-23386-13-git-send-email-arve@android.com>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-2-git-send-email-arve@android.com>
-	<1233802226-23386-3-git-send-email-arve@android.com>
-	<1233802226-23386-4-git-send-email-arve@android.com>
-	<1233802226-23386-5-git-send-email-arve@android.com>
-	<1233802226-23386-6-git-send-email-arve@android.com>
-	<1233802226-23386-7-git-send-email-arve@android.com>
-	<1233802226-23386-8-git-send-email-arve@android.com>
-	<1233802226-23386-9-git-send-email-arve@android.com>
-	<1233802226-23386-10-git-send-email-arve@android.com>
-	<1233802226-23386-11-git-send-email-arve@android.com>
-	<1233802226-23386-12-git-send-email-arve@android.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
+ pci_legacy_suspend
+Date: Thu, 05 Feb 2009 15:06:10 +1100
+Message-ID: <1233806770.4612.68.camel__24616.2266623744$1233807537$gmane$org@pasglop>
+References: <200902040154.36018.rjw@sisk.pl>
+	<200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
+	<1233712613.16867.136.camel@pasglop>
+	<200902041115.00842.elendil@planet.nl>
+	<1233783502.4612.7.camel@pasglop>
+	<alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
+	<1233794410.4612.34.camel@pasglop>
+	<1233795431.15714.13.camel@localhost>
+	<1233797363.4612.49.camel@pasglop>
+	<1233802690.15714.25.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233802226-23386-12-git-send-email-arve@android.com>
+In-Reply-To: <1233802690.15714.25.camel@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,44 +27,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com
+To: michael@ellerman.id.au
+Cc: linux-pci@vger.kernel.org, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-QWxsb3dzIHVzZXJzcGFjZSBjb2RlIHRvIHByb2Nlc3MgaW5wdXQgZXZlbnRzIHdoaWxlCnRoZSBk
-ZXZpY2UgYXBwZWFycyB0byBiZSBhc2xlZXAuCgpTaWduZWQtb2ZmLWJ5OiBBcnZlIEhqw7hubmV2
-w6VnIDxhcnZlQGFuZHJvaWQuY29tPgotLS0KIGRyaXZlcnMvaW5wdXQvZXZkZXYuYyB8ICAgIDcg
-KysrKysrKwogMSBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0p
-CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9pbnB1dC9ldmRldi5jIGIvZHJpdmVycy9pbnB1dC9ldmRl
-di5jCmluZGV4IGVkOGJhYTAuLmUyNDA1MGIgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvaW5wdXQvZXZk
-ZXYuYworKysgYi9kcml2ZXJzL2lucHV0L2V2ZGV2LmMKQEAgLTE5LDYgKzE5LDcgQEAKICNpbmNs
-dWRlIDxsaW51eC9pbnB1dC5oPgogI2luY2x1ZGUgPGxpbnV4L21ham9yLmg+CiAjaW5jbHVkZSA8
-bGludXgvZGV2aWNlLmg+CisjaW5jbHVkZSA8bGludXgvd2FrZWxvY2suaD4KICNpbmNsdWRlICJp
-bnB1dC1jb21wYXQuaCIKIAogc3RydWN0IGV2ZGV2IHsKQEAgLTQzLDYgKzQ0LDcgQEAgc3RydWN0
-IGV2ZGV2X2NsaWVudCB7CiAJc3RydWN0IGZhc3luY19zdHJ1Y3QgKmZhc3luYzsKIAlzdHJ1Y3Qg
-ZXZkZXYgKmV2ZGV2OwogCXN0cnVjdCBsaXN0X2hlYWQgbm9kZTsKKwlzdHJ1Y3Qgd2FrZV9sb2Nr
-IHdha2VfbG9jazsKIH07CiAKIHN0YXRpYyBzdHJ1Y3QgZXZkZXYgKmV2ZGV2X3RhYmxlW0VWREVW
-X01JTk9SU107CkBAIC01NSw2ICs1Nyw3IEBAIHN0YXRpYyB2b2lkIGV2ZGV2X3Bhc3NfZXZlbnQo
-c3RydWN0IGV2ZGV2X2NsaWVudCAqY2xpZW50LAogCSAqIEludGVycnVwdHMgYXJlIGRpc2FibGVk
-LCBqdXN0IGFjcXVpcmUgdGhlIGxvY2sKIAkgKi8KIAlzcGluX2xvY2soJmNsaWVudC0+YnVmZmVy
-X2xvY2spOworCXdha2VfbG9ja190aW1lb3V0KCZjbGllbnQtPndha2VfbG9jaywgNSAqIEhaKTsK
-IAljbGllbnQtPmJ1ZmZlcltjbGllbnQtPmhlYWQrK10gPSAqZXZlbnQ7CiAJY2xpZW50LT5oZWFk
-ICY9IEVWREVWX0JVRkZFUl9TSVpFIC0gMTsKIAlzcGluX3VubG9jaygmY2xpZW50LT5idWZmZXJf
-bG9jayk7CkBAIC0yMzYsNiArMjM5LDcgQEAgc3RhdGljIGludCBldmRldl9yZWxlYXNlKHN0cnVj
-dCBpbm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlICpmaWxlKQogCW11dGV4X3VubG9jaygmZXZkZXYt
-Pm11dGV4KTsKIAogCWV2ZGV2X2RldGFjaF9jbGllbnQoZXZkZXYsIGNsaWVudCk7CisJd2FrZV9s
-b2NrX2Rlc3Ryb3koJmNsaWVudC0+d2FrZV9sb2NrKTsKIAlrZnJlZShjbGllbnQpOwogCiAJZXZk
-ZXZfY2xvc2VfZGV2aWNlKGV2ZGV2KTsKQEAgLTI3Miw2ICsyNzYsNyBAQCBzdGF0aWMgaW50IGV2
-ZGV2X29wZW4oc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUpCiAJfQogCiAJ
-c3Bpbl9sb2NrX2luaXQoJmNsaWVudC0+YnVmZmVyX2xvY2spOworCXdha2VfbG9ja19pbml0KCZj
-bGllbnQtPndha2VfbG9jaywgV0FLRV9MT0NLX1NVU1BFTkQsICJldmRldiIpOwogCWNsaWVudC0+
-ZXZkZXYgPSBldmRldjsKIAlldmRldl9hdHRhY2hfY2xpZW50KGV2ZGV2LCBjbGllbnQpOwogCkBA
-IC0zMzUsNiArMzQwLDggQEAgc3RhdGljIGludCBldmRldl9mZXRjaF9uZXh0X2V2ZW50KHN0cnVj
-dCBldmRldl9jbGllbnQgKmNsaWVudCwKIAlpZiAoaGF2ZV9ldmVudCkgewogCQkqZXZlbnQgPSBj
-bGllbnQtPmJ1ZmZlcltjbGllbnQtPnRhaWwrK107CiAJCWNsaWVudC0+dGFpbCAmPSBFVkRFVl9C
-VUZGRVJfU0laRSAtIDE7CisJCWlmIChjbGllbnQtPmhlYWQgPT0gY2xpZW50LT50YWlsKQorCQkJ
-d2FrZV91bmxvY2soJmNsaWVudC0+d2FrZV9sb2NrKTsKIAl9CiAKIAlzcGluX3VubG9ja19pcnEo
-JmNsaWVudC0+YnVmZmVyX2xvY2spOwotLSAKMS42LjEKCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+> Well I'm glad you listened to me when I told you not to fire off a rant
+> email before I had another look at it ;)
+> 
+> Because Arjan has patched the generic bug.h so that we at least get the
+> printk on powerpc, and then use our version of __WARN().
+
+Right. A deep breath later or two ... the current upstream code in
+pci-driver.c doesn't have a message, which is why I didn't see it. The
+-new- code from Rafael does, and it would work thanks to Arjan fix. Now
+I should indeed stop listening to you telling me it's broken before I
+get a chance to verify it :-)
+
+> As far as the code gen, with gcc 4.3.1 (debian).
+
+ .../...
+
+> So it's jumping over the if body, rather than moving it out of the
+> straight line. It is hinting it right, so we should check if that helps
+> us at all.
+
+Right, gcc is full of sh*t as usual. Now try replacing the magic trap
+which we still use in there, with a normal C function call (ie branch
+out of line), see if it makes a difference. The trap statement uses an
+inline asm statement and I know for a fact that the mere existence of
+such a thing will make gcc already dubious idea of whether to go out of
+line or not completely bonkers.
+
+Cheers,
+Ben.
