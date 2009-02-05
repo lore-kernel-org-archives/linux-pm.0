@@ -1,16 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 7/7] PCI PM: Let the core be more careful
-	with respect to drivers using new framework
-Date: Thu, 5 Feb 2009 01:47:01 +0100
-Message-ID: <200902050147.02632.rjw__24856.4814719886$1233795094$gmane$org@sisk.pl>
-References: <200902040154.36018.rjw@sisk.pl> <200902040209.08633.rjw@sisk.pl>
-	<1233713153.16867.143.camel@pasglop>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
+ pci_legacy_suspend
+Date: Thu, 05 Feb 2009 11:57:11 +1100
+Message-ID: <1233795431.15714.13.camel__45777.7043841363$1233796035$gmane$org@localhost>
+References: <200902040154.36018.rjw@sisk.pl>
+	<200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
+	<1233712613.16867.136.camel@pasglop>
+	<200902041115.00842.elendil@planet.nl>
+	<1233783502.4612.7.camel@pasglop>
+	<alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
+	<1233794410.4612.34.camel@pasglop>
+Reply-To: michael@ellerman.id.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0536033227362466313=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233713153.16867.143.camel@pasglop>
-Content-Disposition: inline
+In-Reply-To: <1233794410.4612.34.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +22,81 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 04 February 2009, Benjamin Herrenschmidt wrote:
-> 
-> > For non-bridge devices without drivers the PCI PM core will disable
-> > them and save their state on suspend.  During resume, it will put
-> > them into D0, if necessary, restore their state (early) and reenable
-> > them.
-> 
-> This is "without drivers" only or does it include devices that have a
-> driver and no PM ops ?
 
-It includes devices with drivers and without PM ops (either "legacy" or "new"),
-the idea being that in the simplest cases the driver should not be required to
-implement PM ops and the device should be handled nevertheless.
+--===============0536033227362466313==
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DeYx9UdJZLhLbSjmSSO5"
 
-> In the later case, the worry is that the driver will potentially still
-> take shared interrupts after you have disabled the device. I know the
-> normal disable path only disables bus mastering, which is a GOOD
-> thing :-) but the pcibios hook might do more here ...
 
-I don't know about ppc, but on x86 the pcibios hook is only supposed to
-disable the device's interrupt link.
+--=-DeYx9UdJZLhLbSjmSSO5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I would recommend only doing that disabling in the "noirq" phase of
-> suspend to avoid problems here. Do you see any reason that wouldn't
-> work ?
+On Thu, 2009-02-05 at 11:40 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-02-04 at 13:56 -0800, Linus Torvalds wrote:
+> >=20
+> > On Thu, 5 Feb 2009, Benjamin Herrenschmidt wrote:
+> > >=20
+> > > How so ? I've had such backtraces with no other info in my log...
+> >=20
+> > _with_ that patch?
+> >=20
+> > It very much replaces a warning with no further info with
+> >=20
+> > +                       WARN_ONCE(pci_dev->current_state !=3D prev,
+> > +                               "PCI PM: Device state not saved by %pF\=
+n",
+> > +                               drv->suspend);
+> >=20
+> > And notice the "%pF" and the 'drv->suspend': it should tell you exactly=
+=20
+> > which suspend routine it was that messed up.
+>=20
+> Yup, missed that change in the patch. In fact, I even missed the
+> existence of a WARN_ONCE that takes those text arguments... baaaah. I
+> suppose I should try to read more of lkml :-)
 
-Potentially, calling into the AML interpreter.
+But don't expect to see them on powerpc, they never make it to the
+console.
 
-When we implement the changes discussed in the "PCI PM: Restore standard
-config registers of all devices early" thread, that part will end up in
-suspend_noirq.
+cheers
 
-Thanks,
-Rafael
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-DeYx9UdJZLhLbSjmSSO5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmKOWcACgkQdSjSd0sB4dIFgQCfYInwPROG3x1tbaYMnagL8uu9
+okgAnRJgy7ujTkYPvYjhbnB0hLOVjhiX
+=j8Z9
+-----END PGP SIGNATURE-----
+
+--=-DeYx9UdJZLhLbSjmSSO5--
+
+
+--===============0536033227362466313==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0536033227362466313==--
