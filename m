@@ -1,10 +1,9 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 10/13] PM: earlysuspend: Add console switch
-	when user requested sleep state changes.
-Date: Thu, 5 Feb 2009 01:37:53 -0800
-Message-ID: <d6200be20902050137q19cf544fx40f2f3167289ab42@mail.gmail.com>
-References: <1233802226-23386-2-git-send-email-arve@android.com>
-	<1233802226-23386-4-git-send-email-arve@android.com>
+Subject: Re: [PATCH 11/13] PM: earlysuspend: Removing dependence
+	on console.
+Date: Thu, 5 Feb 2009 01:42:45 -0800
+Message-ID: <d6200be20902050142p8924340mdc00100293b4dda@mail.gmail.com>
+References: <1233802226-23386-3-git-send-email-arve@android.com>
 	<1233802226-23386-5-git-send-email-arve@android.com>
 	<1233802226-23386-6-git-send-email-arve@android.com>
 	<1233802226-23386-7-git-send-email-arve@android.com>
@@ -12,12 +11,13 @@ References: <1233802226-23386-2-git-send-email-arve@android.com>
 	<1233802226-23386-9-git-send-email-arve@android.com>
 	<1233802226-23386-10-git-send-email-arve@android.com>
 	<1233802226-23386-11-git-send-email-arve@android.com>
-	<20090205090316.GD2077@elf.ucw.cz>
+	<1233802226-23386-12-git-send-email-arve@android.com>
+	<20090205090621.GE2077@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090205090316.GD2077@elf.ucw.cz>
+In-Reply-To: <20090205090621.GE2077@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,31 +28,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, Rebecca Schultz <rschultz@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 1:03 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> +               Register early suspend handler to perform a console swit=
-ch to
->> +               when user-space should stop drawing to the screen and a =
-switch
->> +               back when it should resume.
+On Thu, Feb 5, 2009 at 1:06 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> You have just introduced another method of console switching in
+> previous patch. Please drop pieces of duplicate functionality you are
+> not using any more.
+
+If console support is enabled use a console switch, if not use this.
+
+>> +               Register early suspend handler that notifies and waits f=
+or
+>> +               user-space through sysfs when user-space should stop dra=
+wing
+>> +               to the screen and notifies user-space when it should res=
+ume.
+>>  endchoice
 >
-> I could not parse english here.
+> Hmm, as far as I can tell, turning this option on will immediately
+> break suspend on all existing setups. Bad.
 
-The "to"on the first line should be removed.
-
-> Actually, I'd hope that system where you control everything (such as
-> android) would not need to switch consoles. Console switch was
-> invented as a workaround for X owning the hardware....
-
-We don't anymore, but if you enable console support (for debugging) we
-support it.
-
-> ...and how is it different from current console switching we do on PC?
-
-It is not, but we turn off the framebuffer before the normal suspend
-path so we need the switch here.
+I'm not aware of any existing interface that works if console support
+is not enabled.
 
 -- =
 
