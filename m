@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/7] PCI PM: Fixes and refinements
-Date: Thu, 5 Feb 2009 02:48:40 +0100
-Message-ID: <200902050248.41209.rjw__27796.2278495126$1233798855$gmane$org@sisk.pl>
-References: <200902040154.36018.rjw@sisk.pl>
-	<200902041723.39209.jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH -mmotm] fbmem: fix fb_info->lock and
+	mm->mmap_sem circular locking dependency
+Date: Thu, 5 Feb 2009 02:49:25 +0100
+Message-ID: <200902050249.27244.rjw__25763.3792971776$1233798978$gmane$org@sisk.pl>
+References: <498817E2.3020008@gmail.com>
+	<1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
+	<200902050058.31680.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902041723.39209.jbarnes@virtuousgeek.org>
+In-Reply-To: <200902050058.31680.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,40 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Geert Uytterhoeven <geert@linux-m68k.org>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 05 February 2009, Jesse Barnes wrote:
-> On Tuesday, February 3, 2009 4:54 pm Rafael J. Wysocki wrote:
-> > Hi,
-> >
-> > The following series of patches contains some fixes and refinements of the
-> > PCI PM framework.
-> >
-> > [1/7] fixes the problem that some driverless devices don't like to be power
-> > managed and break things if we attempt to do it.
-> >
-> > [2/7] and [3/7] fix the problem with devices in PCI_UNKNOWN that are
-> > mishandled by the new code.
-> >
-> > [4/7] fixes regression related to PCIe port suspend-resume.
-> >
-> > [5/7] fixes the bug that bridges (and PCIe ports) are disabled during
-> > suspend, althouth they shouldn't be.
-> >
-> > [6/7] makes pci_restore_standard_config() read the current power state of
-> > the device from the device itself after attempting to change it.
-> >
-> > [7/7] makes the PCI PM core handle devices more carefully (details in the
-> > changelog).
-> >
-> > Please disregard any previous versions of these patches I sent to you.
+On Thursday 05 February 2009, Rafael J. Wysocki wrote:
+> On Wednesday 04 February 2009, Andrea Righi wrote:
+> > Fix this circular locking dependencies in the frame buffer console
+> > driver pushing down the mutex fb_info->lock.
+> > 
+> > Circular locking dependecies occur calling the blocking
+> > fb_notifier_call_chain() with fb_info->lock held. Notifier callbacks can
+> > try to acquire mm->mmap_sem, while fb_mmap() acquires the locks in the
+> > reverse order mm->mmap_sem => fb_info->lock.
 > 
-> Ok, I pushed this series into my for-linus branch.  Aside from the minor 
-> issues in 7/7 that I already mentioned on irc things looked fine, and those 
-> were really just cleanups anyway.
+> Does this fix a Bugzilla bug?  If so, then which one?
 
-Thanks a lot!
+Never mind, found it.
 
+Thanks,
 Rafael
