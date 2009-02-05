@@ -1,20 +1,16 @@
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
- pci_legacy_suspend
-Date: Thu, 05 Feb 2009 11:57:11 +1100
-Message-ID: <1233795431.15714.13.camel__45777.7043841363$1233796035$gmane$org@localhost>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 7/7] PCI PM: Let the core be more careful
+ with respect to drivers using new framework
+Date: Thu, 05 Feb 2009 12:18:03 +1100
+Message-ID: <1233796683.4612.37.camel__1448.93924375555$1233797076$gmane$org@pasglop>
 References: <200902040154.36018.rjw@sisk.pl>
-	<200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
-	<1233712613.16867.136.camel@pasglop>
-	<200902041115.00842.elendil@planet.nl>
-	<1233783502.4612.7.camel@pasglop>
-	<alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
-	<1233794410.4612.34.camel@pasglop>
-Reply-To: michael@ellerman.id.au
+	<200902040209.08633.rjw@sisk.pl> <1233713153.16867.143.camel@pasglop>
+	<200902050147.02632.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0536033227362466313=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233794410.4612.34.camel@pasglop>
+In-Reply-To: <200902050147.02632.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,81 +18,34 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@vger.kernel.org, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0536033227362466313==
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DeYx9UdJZLhLbSjmSSO5"
+> I don't know about ppc, but on x86 the pcibios hook is only supposed to
+> disable the device's interrupt link.
 
+Right now on ppc, I may disable the clocks too, but then:
 
---=-DeYx9UdJZLhLbSjmSSO5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+ - As soon as you have implemented the new scheme, I'll replace all that
+with using the same hooks as ACPI so that won't be an issue anymore
 
-On Thu, 2009-02-05 at 11:40 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-02-04 at 13:56 -0800, Linus Torvalds wrote:
-> >=20
-> > On Thu, 5 Feb 2009, Benjamin Herrenschmidt wrote:
-> > >=20
-> > > How so ? I've had such backtraces with no other info in my log...
-> >=20
-> > _with_ that patch?
-> >=20
-> > It very much replaces a warning with no further info with
-> >=20
-> > +                       WARN_ONCE(pci_dev->current_state !=3D prev,
-> > +                               "PCI PM: Device state not saved by %pF\=
-n",
-> > +                               drv->suspend);
-> >=20
-> > And notice the "%pF" and the 'drv->suspend': it should tell you exactly=
-=20
-> > which suspend routine it was that messed up.
->=20
-> Yup, missed that change in the patch. In fact, I even missed the
-> existence of a WARN_ONCE that takes those text arguments... baaaah. I
-> suppose I should try to read more of lkml :-)
+ - Today, it's probably a non issue too because none of the devices for
+which I have that sort of manual clock control also shares interrupts.
 
-But don't expect to see them on powerpc, they never make it to the
-console.
+> Potentially, calling into the AML interpreter.
 
-cheers
+Right, but we are fixing that anyway with the noirq phase being AML safe
+by no ? :-)
+ 
+> When we implement the changes discussed in the "PCI PM: Restore standard
+> config registers of all devices early" thread, that part will end up in
+> suspend_noirq.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Yup.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-DeYx9UdJZLhLbSjmSSO5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmKOWcACgkQdSjSd0sB4dIFgQCfYInwPROG3x1tbaYMnagL8uu9
-okgAnRJgy7ujTkYPvYjhbnB0hLOVjhiX
-=j8Z9
------END PGP SIGNATURE-----
-
---=-DeYx9UdJZLhLbSjmSSO5--
-
-
---===============0536033227362466313==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0536033227362466313==--
+Cheers,
+Ben.
