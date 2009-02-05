@@ -1,23 +1,22 @@
-From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 10/13] PM: earlysuspend: Add console switch when
-	user requested sleep state changes.
-Date: Wed,  4 Feb 2009 18:50:23 -0800
-Message-ID: <1233802226-23386-11-git-send-email-arve@android.com>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-2-git-send-email-arve@android.com>
-	<1233802226-23386-3-git-send-email-arve@android.com>
-	<1233802226-23386-4-git-send-email-arve@android.com>
-	<1233802226-23386-5-git-send-email-arve@android.com>
-	<1233802226-23386-6-git-send-email-arve@android.com>
-	<1233802226-23386-7-git-send-email-arve@android.com>
-	<1233802226-23386-8-git-send-email-arve@android.com>
-	<1233802226-23386-9-git-send-email-arve@android.com>
-	<1233802226-23386-10-git-send-email-arve@android.com>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
+ pci_legacy_suspend
+Date: Thu, 05 Feb 2009 13:58:10 +1100
+Message-ID: <1233802690.15714.25.camel__46543.9688916833$1233803770$gmane$org@localhost>
+References: <200902040154.36018.rjw@sisk.pl>
+	<200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
+	<1233712613.16867.136.camel@pasglop>
+	<200902041115.00842.elendil@planet.nl>
+	<1233783502.4612.7.camel@pasglop>
+	<alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
+	<1233794410.4612.34.camel@pasglop>
+	<1233795431.15714.13.camel@localhost>
+	<1233797363.4612.49.camel@pasglop>
+Reply-To: michael@ellerman.id.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============4912452563171576241=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233802226-23386-10-git-send-email-arve@android.com>
+In-Reply-To: <1233797363.4612.49.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,84 +24,151 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pci@vger.kernel.org, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-U2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KLS0tCiBr
-ZXJuZWwvcG93ZXIvS2NvbmZpZyAgICAgICAgICAgICAgIHwgICAxNyArKysrKysrKwoga2VybmVs
-L3Bvd2VyL01ha2VmaWxlICAgICAgICAgICAgICB8ICAgIDEgKwoga2VybmVsL3Bvd2VyL2NvbnNv
-bGVlYXJseXN1c3BlbmQuYyB8ICAgNzggKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrCiAzIGZpbGVzIGNoYW5nZWQsIDk2IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCiBj
-cmVhdGUgbW9kZSAxMDA2NDQga2VybmVsL3Bvd2VyL2NvbnNvbGVlYXJseXN1c3BlbmQuYwoKZGlm
-ZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9LY29uZmlnIGIva2VybmVsL3Bvd2VyL0tjb25maWcKaW5k
-ZXggYWVkZWE3ZS4uZjFhM2Q1YyAxMDA2NDQKLS0tIGEva2VybmVsL3Bvd2VyL0tjb25maWcKKysr
-IGIva2VybmVsL3Bvd2VyL0tjb25maWcKQEAgLTE2Niw2ICsxNjYsMjMgQEAgY29uZmlnIEVBUkxZ
-U1VTUEVORAogCSAgQ2FsbCBlYXJseSBzdXNwZW5kIGhhbmRsZXJzIHdoZW4gdGhlIHVzZXIgcmVx
-dWVzdGVkIHNsZWVwIHN0YXRlCiAJICBjaGFuZ2VzLgogCitjaG9pY2UKKwlwcm9tcHQgIlVzZXIt
-c3BhY2Ugc2NyZWVuIGFjY2VzcyIKKwlkZWZhdWx0IENPTlNPTEVfRUFSTFlTVVNQRU5ECisJZGVw
-ZW5kcyBvbiBIQVNfRUFSTFlTVVNQRU5ECisKKwljb25maWcgTk9fVVNFUl9TUEFDRV9TQ1JFRU5f
-QUNDRVNTX0NPTlRST0wKKwkJYm9vbCAiTm9uZSIKKworCWNvbmZpZyBDT05TT0xFX0VBUkxZU1VT
-UEVORAorCQlib29sICJDb25zb2xlIHN3aXRjaCBvbiBlYXJseS1zdXNwZW5kIgorCQlkZXBlbmRz
-IG9uIEhBU19FQVJMWVNVU1BFTkQgJiYgVlQKKwkJLS0taGVscC0tLQorCQkgIFJlZ2lzdGVyIGVh
-cmx5IHN1c3BlbmQgaGFuZGxlciB0byBwZXJmb3JtIGEgY29uc29sZSBzd2l0Y2ggdG8KKwkJICB3
-aGVuIHVzZXItc3BhY2Ugc2hvdWxkIHN0b3AgZHJhd2luZyB0byB0aGUgc2NyZWVuIGFuZCBhIHN3
-aXRjaAorCQkgIGJhY2sgd2hlbiBpdCBzaG91bGQgcmVzdW1lLgorZW5kY2hvaWNlCisKIGNvbmZp
-ZyBISUJFUk5BVElPTgogCWJvb2wgIkhpYmVybmF0aW9uIChha2EgJ3N1c3BlbmQgdG8gZGlzaycp
-IgogCWRlcGVuZHMgb24gUE0gJiYgU1dBUCAmJiBBUkNIX0hJQkVSTkFUSU9OX1BPU1NJQkxFCmRp
-ZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvTWFrZWZpbGUgYi9rZXJuZWwvcG93ZXIvTWFrZWZpbGUK
-aW5kZXggZDM0NjdiMy4uOGJmMjkzZCAxMDA2NDQKLS0tIGEva2VybmVsL3Bvd2VyL01ha2VmaWxl
-CisrKyBiL2tlcm5lbC9wb3dlci9NYWtlZmlsZQpAQCAtOSw2ICs5LDcgQEAgb2JqLSQoQ09ORklH
-X0ZSRUVaRVIpCQkrPSBwcm9jZXNzLm8KIG9iai0kKENPTkZJR19XQUtFTE9DSykJCSs9IHdha2Vs
-b2NrLm8KIG9iai0kKENPTkZJR19VU0VSX1dBS0VMT0NLKQkrPSB1c2Vyd2FrZWxvY2subwogb2Jq
-LSQoQ09ORklHX0VBUkxZU1VTUEVORCkJKz0gZWFybHlzdXNwZW5kLm8KK29iai0kKENPTkZJR19D
-T05TT0xFX0VBUkxZU1VTUEVORCkJKz0gY29uc29sZWVhcmx5c3VzcGVuZC5vCiBvYmotJChDT05G
-SUdfSElCRVJOQVRJT04pCSs9IHN3c3VzcC5vIGRpc2subyBzbmFwc2hvdC5vIHN3YXAubyB1c2Vy
-Lm8KIAogb2JqLSQoQ09ORklHX01BR0lDX1NZU1JRKQkrPSBwb3dlcm9mZi5vCmRpZmYgLS1naXQg
-YS9rZXJuZWwvcG93ZXIvY29uc29sZWVhcmx5c3VzcGVuZC5jIGIva2VybmVsL3Bvd2VyL2NvbnNv
-bGVlYXJseXN1c3BlbmQuYwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi5hOGJl
-ZmI0Ci0tLSAvZGV2L251bGwKKysrIGIva2VybmVsL3Bvd2VyL2NvbnNvbGVlYXJseXN1c3BlbmQu
-YwpAQCAtMCwwICsxLDc4IEBACisvKiBrZXJuZWwvcG93ZXIvY29uc29sZWVhcmx5c3VzcGVuZC5j
-CisgKgorICogQ29weXJpZ2h0IChDKSAyMDA1LTIwMDggR29vZ2xlLCBJbmMuCisgKgorICogVGhp
-cyBzb2Z0d2FyZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFs
-IFB1YmxpYworICogTGljZW5zZSB2ZXJzaW9uIDIsIGFzIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBT
-b2Z0d2FyZSBGb3VuZGF0aW9uLCBhbmQKKyAqIG1heSBiZSBjb3BpZWQsIGRpc3RyaWJ1dGVkLCBh
-bmQgbW9kaWZpZWQgdW5kZXIgdGhvc2UgdGVybXMuCisgKgorICogVGhpcyBwcm9ncmFtIGlzIGRp
-c3RyaWJ1dGVkIGluIHRoZSBob3BlIHRoYXQgaXQgd2lsbCBiZSB1c2VmdWwsCisgKiBidXQgV0lU
-SE9VVCBBTlkgV0FSUkFOVFk7IHdpdGhvdXQgZXZlbiB0aGUgaW1wbGllZCB3YXJyYW50eSBvZgor
-ICogTUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAg
-U2VlIHRoZQorICogR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy4K
-KyAqCisgKi8KKworI2luY2x1ZGUgPGxpbnV4L2NvbnNvbGUuaD4KKyNpbmNsdWRlIDxsaW51eC9l
-YXJseXN1c3BlbmQuaD4KKyNpbmNsdWRlIDxsaW51eC9rYmRfa2Vybi5oPgorI2luY2x1ZGUgPGxp
-bnV4L21vZHVsZS5oPgorI2luY2x1ZGUgPGxpbnV4L3Z0X2tlcm4uaD4KKyNpbmNsdWRlIDxsaW51
-eC93YWl0Lmg+CisKKyNkZWZpbmUgRUFSTFlfU1VTUEVORF9DT05TT0xFCShNQVhfTlJfQ09OU09M
-RVMtMSkKKworc3RhdGljIGludCBvcmlnX2ZnY29uc29sZTsKK3N0YXRpYyB2b2lkIGNvbnNvbGVf
-ZWFybHlfc3VzcGVuZChzdHJ1Y3QgZWFybHlfc3VzcGVuZCAqaCkKK3sKKwlhY3F1aXJlX2NvbnNv
-bGVfc2VtKCk7CisJb3JpZ19mZ2NvbnNvbGUgPSBmZ19jb25zb2xlOworCWlmICh2Y19hbGxvY2F0
-ZShFQVJMWV9TVVNQRU5EX0NPTlNPTEUpKQorCQlnb3RvIGVycjsKKwlpZiAoc2V0X2NvbnNvbGUo
-RUFSTFlfU1VTUEVORF9DT05TT0xFKSkKKwkJZ290byBlcnI7CisJcmVsZWFzZV9jb25zb2xlX3Nl
-bSgpOworCisJaWYgKHZ0X3dhaXRhY3RpdmUoRUFSTFlfU1VTUEVORF9DT05TT0xFKSkKKwkJcHJf
-d2FybmluZygiY29uc29sZV9lYXJseV9zdXNwZW5kOiBDYW4ndCBzd2l0Y2ggVkNzLlxuIik7CisJ
-cmV0dXJuOworZXJyOgorCXByX3dhcm5pbmcoImNvbnNvbGVfZWFybHlfc3VzcGVuZDogQ2FuJ3Qg
-c2V0IGNvbnNvbGVcbiIpOworCXJlbGVhc2VfY29uc29sZV9zZW0oKTsKK30KKworc3RhdGljIHZv
-aWQgY29uc29sZV9sYXRlX3Jlc3VtZShzdHJ1Y3QgZWFybHlfc3VzcGVuZCAqaCkKK3sKKwlpbnQg
-cmV0OworCWFjcXVpcmVfY29uc29sZV9zZW0oKTsKKwlyZXQgPSBzZXRfY29uc29sZShvcmlnX2Zn
-Y29uc29sZSk7CisJcmVsZWFzZV9jb25zb2xlX3NlbSgpOworCWlmIChyZXQpIHsKKwkJcHJfd2Fy
-bmluZygiY29uc29sZV9sYXRlX3Jlc3VtZTogQ2FuJ3Qgc2V0IGNvbnNvbGUuXG4iKTsKKwkJcmV0
-dXJuOworCX0KKworCWlmICh2dF93YWl0YWN0aXZlKG9yaWdfZmdjb25zb2xlKSkKKwkJcHJfd2Fy
-bmluZygiY29uc29sZV9sYXRlX3Jlc3VtZTogQ2FuJ3Qgc3dpdGNoIFZDcy5cbiIpOworfQorCitz
-dGF0aWMgc3RydWN0IGVhcmx5X3N1c3BlbmQgY29uc29sZV9lYXJseV9zdXNwZW5kX2Rlc2MgPSB7
-CisJLmxldmVsID0gRUFSTFlfU1VTUEVORF9MRVZFTF9TVE9QX0RSQVdJTkcsCisJLnN1c3BlbmQg
-PSBjb25zb2xlX2Vhcmx5X3N1c3BlbmQsCisJLnJlc3VtZSA9IGNvbnNvbGVfbGF0ZV9yZXN1bWUs
-Cit9OworCitzdGF0aWMgaW50IF9faW5pdCBjb25zb2xlX2Vhcmx5X3N1c3BlbmRfaW5pdCh2b2lk
-KQoreworCXJlZ2lzdGVyX2Vhcmx5X3N1c3BlbmQoJmNvbnNvbGVfZWFybHlfc3VzcGVuZF9kZXNj
-KTsKKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHZvaWQgIF9fZXhpdCBjb25zb2xlX2Vhcmx5X3N1
-c3BlbmRfZXhpdCh2b2lkKQoreworCXVucmVnaXN0ZXJfZWFybHlfc3VzcGVuZCgmY29uc29sZV9l
-YXJseV9zdXNwZW5kX2Rlc2MpOworfQorCittb2R1bGVfaW5pdChjb25zb2xlX2Vhcmx5X3N1c3Bl
-bmRfaW5pdCk7Cittb2R1bGVfZXhpdChjb25zb2xlX2Vhcmx5X3N1c3BlbmRfZXhpdCk7CisKLS0g
-CjEuNi4xCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
-aHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LXBt
+
+--===============4912452563171576241==
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DX5Sep2HMHMOI7EFtnpy"
+
+
+--=-DX5Sep2HMHMOI7EFtnpy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2009-02-05 at 12:29 +1100, Benjamin Herrenschmidt wrote:
+> > > Yup, missed that change in the patch. In fact, I even missed the
+> > > existence of a WARN_ONCE that takes those text arguments... baaaah. I
+> > > suppose I should try to read more of lkml :-)
+> >=20
+> > But don't expect to see them on powerpc, they never make it to the
+> > console.
+>=20
+> Allright, that's the problem with our implementation of WARN using a
+> conditional trap, we don't carry all the variable arguments for the
+> printf over.
+>=20
+> I'm tempted to turn our implementation back to normal C code with an if
+> and a branch out of line, but Michael seems to say that even with
+> appropriate use of unlikely() etc... gcc decides to generate the worst
+> possible code every single time ...
+>=20
+> <rant>
+> such as always inlining the whole printf mumbo jumbo and having the
+> not-warning case branch over it, not -all- CPUs have good branch
+> prediction dude, so the icache is going to scream but gcc folks know
+> better of course....
+> </rant>
+>=20
+> Anyway, I'll see Michael what exactly the situation is here and if we
+> can fix it a way or another.
+
+Well I'm glad you listened to me when I told you not to fire off a rant
+email before I had another look at it ;)
+
+Because Arjan has patched the generic bug.h so that we at least get the
+printk on powerpc, and then use our version of __WARN().
+
+So you should see the message at least.
+
+
+As far as the code gen, with gcc 4.3.1 (debian).
+
+WARN looks like:
+
+#define WARN(condition, format...) ({                                      =
+     \
+        int __ret_warn_on =3D !!(condition);                              \
+        if (unlikely(__ret_warn_on))                                    \
+                __WARN_printf(format);                                  \
+        unlikely(__ret_warn_on);                                        \
+})
+
+
+Called from:
+
+int smp_request_message_ipi(int virq, int msg)
+{
+        int err;
+...
+        err =3D request_irq(virq, smp_ipi_action[msg], IRQF_DISABLED|IRQF_P=
+ERCPU,
+                          smp_ipi_name[msg], 0);
+        WARN(err < 0, "unable to request_irq %d for %s (rc %d)\n",
+                virq, smp_ipi_name[msg], err);
+
+        return err;
+}
+
+
+Comes out as:
+
+c00000000002c9e8:       48 0a 88 c9     bl      c0000000000d52b0 <.request_=
+irq>
+c00000000002c9ec:       60 00 00 00     nop
+c00000000002c9f0:       2f 83 00 00     cmpwi   cr7,r3,0
+c00000000002c9f4:       7c 7f 1b 78     mr      r31,r3
+c00000000002c9f8:       40 bc 00 20     bge+    cr7,c00000000002ca18 <.smp_=
+request_message_ipi+0x84>
+c00000000002c9fc:       7c bc e8 2a     ldx     r5,r28,r29
+c00000000002ca00:       e8 7e 80 d0     ld      r3,-32560(r30)
+c00000000002ca04:       7f 64 db 78     mr      r4,r27
+c00000000002ca08:       7f e6 fb 78     mr      r6,r31
+c00000000002ca0c:       48 5f 53 7d     bl      c000000000621d88 <.printk>
+c00000000002ca10:       60 00 00 00     nop    =20
+c00000000002ca14:       0f e0 00 00     twi     31,r0,0
+c00000000002ca18:       38 21 00 a0     addi    r1,r1,160
+c00000000002ca1c:       7f e3 fb 78     mr      r3,r31
+c00000000002ca20:       e8 01 00 10     ld      r0,16(r1)
+c00000000002ca24:       eb 61 ff d8     ld      r27,-40(r1)
+c00000000002ca28:       eb 81 ff e0     ld      r28,-32(r1)
+c00000000002ca2c:       eb a1 ff e8     ld      r29,-24(r1)
+c00000000002ca30:       eb c1 ff f0     ld      r30,-16(r1)
+c00000000002ca34:       eb e1 ff f8     ld      r31,-8(r1)
+c00000000002ca38:       7c 08 03 a6     mtlr    r0
+c00000000002ca3c:       4e 80 00 20     blr   =20
+
+
+So it's jumping over the if body, rather than moving it out of the
+straight line. It is hinting it right, so we should check if that helps
+us at all.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-DX5Sep2HMHMOI7EFtnpy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmKVcEACgkQdSjSd0sB4dJxyACfZkk1TXi512vBlt7tVfbn6AO/
+JdsAn1f/1JDg5Re3cBTJrHU+yRv5e1A+
+=vNwJ
+-----END PGP SIGNATURE-----
+
+--=-DX5Sep2HMHMOI7EFtnpy--
+
+
+--===============4912452563171576241==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4912452563171576241==--
