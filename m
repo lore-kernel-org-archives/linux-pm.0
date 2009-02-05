@@ -1,16 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 7/7] PCI PM: Let the core be more careful
- with respect to drivers using new framework
-Date: Thu, 05 Feb 2009 12:18:03 +1100
-Message-ID: <1233796683.4612.37.camel__1448.93924375555$1233797076$gmane$org@pasglop>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 0/7] PCI PM: Fixes and refinements
+Date: Wed, 4 Feb 2009 17:23:38 -0800
+Message-ID: <200902041723.39209.jbarnes__836.606024722819$1233797265$gmane$org@virtuousgeek.org>
 References: <200902040154.36018.rjw@sisk.pl>
-	<200902040209.08633.rjw@sisk.pl> <1233713153.16867.143.camel@pasglop>
-	<200902050147.02632.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902050147.02632.rjw@sisk.pl>
+In-Reply-To: <200902040154.36018.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, February 3, 2009 4:54 pm Rafael J. Wysocki wrote:
+> Hi,
+>
+> The following series of patches contains some fixes and refinements of the
+> PCI PM framework.
+>
+> [1/7] fixes the problem that some driverless devices don't like to be power
+> managed and break things if we attempt to do it.
+>
+> [2/7] and [3/7] fix the problem with devices in PCI_UNKNOWN that are
+> mishandled by the new code.
+>
+> [4/7] fixes regression related to PCIe port suspend-resume.
+>
+> [5/7] fixes the bug that bridges (and PCIe ports) are disabled during
+> suspend, althouth they shouldn't be.
+>
+> [6/7] makes pci_restore_standard_config() read the current power state of
+> the device from the device itself after attempting to change it.
+>
+> [7/7] makes the PCI PM core handle devices more carefully (details in the
+> changelog).
+>
+> Please disregard any previous versions of these patches I sent to you.
 
-> I don't know about ppc, but on x86 the pcibios hook is only supposed to
-> disable the device's interrupt link.
+Ok, I pushed this series into my for-linus branch.  Aside from the minor 
+issues in 7/7 that I already mentioned on irc things looked fine, and those 
+were really just cleanups anyway.
 
-Right now on ppc, I may disable the clocks too, but then:
-
- - As soon as you have implemented the new scheme, I'll replace all that
-with using the same hooks as ACPI so that won't be an issue anymore
-
- - Today, it's probably a non issue too because none of the devices for
-which I have that sort of manual clock control also shares interrupts.
-
-> Potentially, calling into the AML interpreter.
-
-Right, but we are fixing that anyway with the noirq phase being AML safe
-by no ? :-)
- 
-> When we implement the changes discussed in the "PCI PM: Restore standard
-> config registers of all devices early" thread, that part will end up in
-> suspend_noirq.
-
-Yup.
-
-Cheers,
-Ben.
+-- 
+Jesse Barnes, Intel Open Source Technology Center
