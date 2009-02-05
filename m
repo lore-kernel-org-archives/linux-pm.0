@@ -1,22 +1,26 @@
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
- pci_legacy_suspend
-Date: Thu, 05 Feb 2009 13:58:10 +1100
-Message-ID: <1233802690.15714.25.camel__46543.9688916833$1233803770$gmane$org@localhost>
-References: <200902040154.36018.rjw@sisk.pl>
-	<200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
-	<1233712613.16867.136.camel@pasglop>
-	<200902041115.00842.elendil@planet.nl>
-	<1233783502.4612.7.camel@pasglop>
-	<alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
-	<1233794410.4612.34.camel@pasglop>
-	<1233795431.15714.13.camel@localhost>
-	<1233797363.4612.49.camel@pasglop>
-Reply-To: michael@ellerman.id.au
+From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Subject: [PATCH 13/13] ledtrig-sleep: Add led trigger for sleep
+	debugging.
+Date: Wed,  4 Feb 2009 18:50:26 -0800
+Message-ID: <1233802226-23386-14-git-send-email-arve@android.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<1233802226-23386-3-git-send-email-arve@android.com>
+	<1233802226-23386-4-git-send-email-arve@android.com>
+	<1233802226-23386-5-git-send-email-arve@android.com>
+	<1233802226-23386-6-git-send-email-arve@android.com>
+	<1233802226-23386-7-git-send-email-arve@android.com>
+	<1233802226-23386-8-git-send-email-arve@android.com>
+	<1233802226-23386-9-git-send-email-arve@android.com>
+	<1233802226-23386-10-git-send-email-arve@android.com>
+	<1233802226-23386-11-git-send-email-arve@android.com>
+	<1233802226-23386-12-git-send-email-arve@android.com>
+	<1233802226-23386-13-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4912452563171576241=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233797363.4612.49.camel@pasglop>
+In-Reply-To: <1233802226-23386-13-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,151 +28,78 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@vger.kernel.org, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com
 List-Id: linux-pm@vger.kernel.org
 
-
---===============4912452563171576241==
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DX5Sep2HMHMOI7EFtnpy"
-
-
---=-DX5Sep2HMHMOI7EFtnpy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2009-02-05 at 12:29 +1100, Benjamin Herrenschmidt wrote:
-> > > Yup, missed that change in the patch. In fact, I even missed the
-> > > existence of a WARN_ONCE that takes those text arguments... baaaah. I
-> > > suppose I should try to read more of lkml :-)
-> >=20
-> > But don't expect to see them on powerpc, they never make it to the
-> > console.
->=20
-> Allright, that's the problem with our implementation of WARN using a
-> conditional trap, we don't carry all the variable arguments for the
-> printf over.
->=20
-> I'm tempted to turn our implementation back to normal C code with an if
-> and a branch out of line, but Michael seems to say that even with
-> appropriate use of unlikely() etc... gcc decides to generate the worst
-> possible code every single time ...
->=20
-> <rant>
-> such as always inlining the whole printf mumbo jumbo and having the
-> not-warning case branch over it, not -all- CPUs have good branch
-> prediction dude, so the icache is going to scream but gcc folks know
-> better of course....
-> </rant>
->=20
-> Anyway, I'll see Michael what exactly the situation is here and if we
-> can fix it a way or another.
-
-Well I'm glad you listened to me when I told you not to fire off a rant
-email before I had another look at it ;)
-
-Because Arjan has patched the generic bug.h so that we at least get the
-printk on powerpc, and then use our version of __WARN().
-
-So you should see the message at least.
-
-
-As far as the code gen, with gcc 4.3.1 (debian).
-
-WARN looks like:
-
-#define WARN(condition, format...) ({                                      =
-     \
-        int __ret_warn_on =3D !!(condition);                              \
-        if (unlikely(__ret_warn_on))                                    \
-                __WARN_printf(format);                                  \
-        unlikely(__ret_warn_on);                                        \
-})
-
-
-Called from:
-
-int smp_request_message_ipi(int virq, int msg)
-{
-        int err;
-...
-        err =3D request_irq(virq, smp_ipi_action[msg], IRQF_DISABLED|IRQF_P=
-ERCPU,
-                          smp_ipi_name[msg], 0);
-        WARN(err < 0, "unable to request_irq %d for %s (rc %d)\n",
-                virq, smp_ipi_name[msg], err);
-
-        return err;
-}
-
-
-Comes out as:
-
-c00000000002c9e8:       48 0a 88 c9     bl      c0000000000d52b0 <.request_=
-irq>
-c00000000002c9ec:       60 00 00 00     nop
-c00000000002c9f0:       2f 83 00 00     cmpwi   cr7,r3,0
-c00000000002c9f4:       7c 7f 1b 78     mr      r31,r3
-c00000000002c9f8:       40 bc 00 20     bge+    cr7,c00000000002ca18 <.smp_=
-request_message_ipi+0x84>
-c00000000002c9fc:       7c bc e8 2a     ldx     r5,r28,r29
-c00000000002ca00:       e8 7e 80 d0     ld      r3,-32560(r30)
-c00000000002ca04:       7f 64 db 78     mr      r4,r27
-c00000000002ca08:       7f e6 fb 78     mr      r6,r31
-c00000000002ca0c:       48 5f 53 7d     bl      c000000000621d88 <.printk>
-c00000000002ca10:       60 00 00 00     nop    =20
-c00000000002ca14:       0f e0 00 00     twi     31,r0,0
-c00000000002ca18:       38 21 00 a0     addi    r1,r1,160
-c00000000002ca1c:       7f e3 fb 78     mr      r3,r31
-c00000000002ca20:       e8 01 00 10     ld      r0,16(r1)
-c00000000002ca24:       eb 61 ff d8     ld      r27,-40(r1)
-c00000000002ca28:       eb 81 ff e0     ld      r28,-32(r1)
-c00000000002ca2c:       eb a1 ff e8     ld      r29,-24(r1)
-c00000000002ca30:       eb c1 ff f0     ld      r30,-16(r1)
-c00000000002ca34:       eb e1 ff f8     ld      r31,-8(r1)
-c00000000002ca38:       7c 08 03 a6     mtlr    r0
-c00000000002ca3c:       4e 80 00 20     blr   =20
-
-
-So it's jumping over the if body, rather than moving it out of the
-straight line. It is hinting it right, so we should check if that helps
-us at all.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-DX5Sep2HMHMOI7EFtnpy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmKVcEACgkQdSjSd0sB4dJxyACfZkk1TXi512vBlt7tVfbn6AO/
-JdsAn1f/1JDg5Re3cBTJrHU+yRv5e1A+
-=vNwJ
------END PGP SIGNATURE-----
-
---=-DX5Sep2HMHMOI7EFtnpy--
-
-
---===============4912452563171576241==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4912452563171576241==--
+U2lnbmVkLW9mZi1ieTogQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+ClNpZ25l
+ZC1vZmYtYnk6IEFydmUgSGrDuG5uZXbDpWcgPGFydmVAYW5kcm9pZC5jb20+Ci0tLQogZHJpdmVy
+cy9sZWRzL0tjb25maWcgICAgICAgICB8ICAgIDYgKysrCiBkcml2ZXJzL2xlZHMvTWFrZWZpbGUg
+ICAgICAgIHwgICAgMSArCiBkcml2ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jIHwgICA4MCArKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIDMgZmlsZXMgY2hhbmdlZCwg
+ODcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2
+ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9sZWRzL0tjb25m
+aWcgYi9kcml2ZXJzL2xlZHMvS2NvbmZpZwppbmRleCA3NDI3MTM2Li4wYWYxNzg2IDEwMDY0NAot
+LS0gYS9kcml2ZXJzL2xlZHMvS2NvbmZpZworKysgYi9kcml2ZXJzL2xlZHMvS2NvbmZpZwpAQCAt
+MjIzLDQgKzIyMywxMCBAQCBjb25maWcgTEVEU19UUklHR0VSX0RFRkFVTFRfT04KIAkgIFRoaXMg
+YWxsb3dzIExFRHMgdG8gYmUgaW5pdGlhbGlzZWQgaW4gdGhlIE9OIHN0YXRlLgogCSAgSWYgdW5z
+dXJlLCBzYXkgWS4KIAorY29uZmlnIExFRFNfVFJJR0dFUl9TTEVFUAorCXRyaXN0YXRlICJMRUQg
+U2xlZXAgTW9kZSBUcmlnZ2VyIgorCWRlcGVuZHMgb24gTEVEU19UUklHR0VSUyAmJiBIQVNfRUFS
+TFlTVVNQRU5ECisJaGVscAorCSAgVGhpcyB0dXJucyBMRURzIG9uIHdoZW4gdGhlIHNjcmVlbiBp
+cyBvZmYgYnV0IHRoZSBjcHUgc3RpbGwgcnVubmluZy4KKwogZW5kaWYgIyBORVdfTEVEUwpkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9sZWRzL01ha2VmaWxlIGIvZHJpdmVycy9sZWRzL01ha2VmaWxlCmlu
+ZGV4IDlkNzZmMGYuLjljZmMxNDggMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbGVkcy9NYWtlZmlsZQor
+KysgYi9kcml2ZXJzL2xlZHMvTWFrZWZpbGUKQEAgLTMxLDMgKzMxLDQgQEAgb2JqLSQoQ09ORklH
+X0xFRFNfVFJJR0dFUl9JREVfRElTSykJKz0gbGVkdHJpZy1pZGUtZGlzay5vCiBvYmotJChDT05G
+SUdfTEVEU19UUklHR0VSX0hFQVJUQkVBVCkJKz0gbGVkdHJpZy1oZWFydGJlYXQubwogb2JqLSQo
+Q09ORklHX0xFRFNfVFJJR0dFUl9CQUNLTElHSFQpCSs9IGxlZHRyaWctYmFja2xpZ2h0Lm8KIG9i
+ai0kKENPTkZJR19MRURTX1RSSUdHRVJfREVGQVVMVF9PTikJKz0gbGVkdHJpZy1kZWZhdWx0LW9u
+Lm8KK29iai0kKENPTkZJR19MRURTX1RSSUdHRVJfU0xFRVApCSs9IGxlZHRyaWctc2xlZXAubwpk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9sZWRzL2xlZHRyaWctc2xlZXAuYyBiL2RyaXZlcnMvbGVkcy9s
+ZWR0cmlnLXNsZWVwLmMKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXggMDAwMDAwMC4uZjE2NDA0
+MgotLS0gL2Rldi9udWxsCisrKyBiL2RyaXZlcnMvbGVkcy9sZWR0cmlnLXNsZWVwLmMKQEAgLTAs
+MCArMSw4MCBAQAorLyogZHJpdmVycy9sZWRzL2xlZHRyaWctc2xlZXAuYworICoKKyAqIENvcHly
+aWdodCAoQykgMjAwNyBHb29nbGUsIEluYy4KKyAqCisgKiBUaGlzIHNvZnR3YXJlIGlzIGxpY2Vu
+c2VkIHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljCisgKiBMaWNlbnNl
+IHZlcnNpb24gMiwgYXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24s
+IGFuZAorICogbWF5IGJlIGNvcGllZCwgZGlzdHJpYnV0ZWQsIGFuZCBtb2RpZmllZCB1bmRlciB0
+aG9zZSB0ZXJtcy4KKyAqCisgKiBUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhv
+cGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKKyAqIGJ1dCBXSVRIT1VUIEFOWSBXQVJSQU5UWTsg
+d2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mCisgKiBNRVJDSEFOVEFCSUxJVFkg
+b3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuICBTZWUgdGhlCisgKiBHTlUgR2Vu
+ZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgorICoKKyAqLworCisjaW5jbHVk
+ZSA8bGludXgvZWFybHlzdXNwZW5kLmg+CisjaW5jbHVkZSA8bGludXgvbGVkcy5oPgorI2luY2x1
+ZGUgPGxpbnV4L3N1c3BlbmQuaD4KKworc3RhdGljIGludCBsZWR0cmlnX3NsZWVwX3BtX2NhbGxi
+YWNrKHN0cnVjdCBub3RpZmllcl9ibG9jayAqbmZiLAorCQkJCQl1bnNpZ25lZCBsb25nIGFjdGlv
+biwKKwkJCQkJdm9pZCAqaWdub3JlZCk7CisKK0RFRklORV9MRURfVFJJR0dFUihsZWR0cmlnX3Ns
+ZWVwKQorc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jayBsZWR0cmlnX3NsZWVwX3BtX25vdGlm
+aWVyID0geworCS5ub3RpZmllcl9jYWxsID0gbGVkdHJpZ19zbGVlcF9wbV9jYWxsYmFjaywKKwku
+cHJpb3JpdHkgPSAwLAorfTsKKworc3RhdGljIHZvaWQgbGVkdHJpZ19zbGVlcF9lYXJseV9zdXNw
+ZW5kKHN0cnVjdCBlYXJseV9zdXNwZW5kICpoKQoreworCWxlZF90cmlnZ2VyX2V2ZW50KGxlZHRy
+aWdfc2xlZXAsIExFRF9GVUxMKTsKK30KKworc3RhdGljIHZvaWQgbGVkdHJpZ19zbGVlcF9lYXJs
+eV9yZXN1bWUoc3RydWN0IGVhcmx5X3N1c3BlbmQgKmgpCit7CisJbGVkX3RyaWdnZXJfZXZlbnQo
+bGVkdHJpZ19zbGVlcCwgTEVEX09GRik7Cit9CisKK3N0YXRpYyBzdHJ1Y3QgZWFybHlfc3VzcGVu
+ZCBsZWR0cmlnX3NsZWVwX2Vhcmx5X3N1c3BlbmRfaGFuZGxlciA9IHsKKwkuc3VzcGVuZCA9IGxl
+ZHRyaWdfc2xlZXBfZWFybHlfc3VzcGVuZCwKKwkucmVzdW1lID0gbGVkdHJpZ19zbGVlcF9lYXJs
+eV9yZXN1bWUsCit9OworCitzdGF0aWMgaW50IGxlZHRyaWdfc2xlZXBfcG1fY2FsbGJhY2soc3Ry
+dWN0IG5vdGlmaWVyX2Jsb2NrICpuZmIsCisJCQkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uLAorCQkJ
+CQl2b2lkICppZ25vcmVkKQoreworCXN3aXRjaCAoYWN0aW9uKSB7CisJY2FzZSBQTV9ISUJFUk5B
+VElPTl9QUkVQQVJFOgorCWNhc2UgUE1fU1VTUEVORF9QUkVQQVJFOgorCQlsZWRfdHJpZ2dlcl9l
+dmVudChsZWR0cmlnX3NsZWVwLCBMRURfT0ZGKTsKKwkJcmV0dXJuIE5PVElGWV9PSzsKKwljYXNl
+IFBNX1BPU1RfSElCRVJOQVRJT046CisJY2FzZSBQTV9QT1NUX1NVU1BFTkQ6CisJCWxlZF90cmln
+Z2VyX2V2ZW50KGxlZHRyaWdfc2xlZXAsIExFRF9GVUxMKTsKKwkJcmV0dXJuIE5PVElGWV9PSzsK
+Kwl9CisKKwlyZXR1cm4gTk9USUZZX0RPTkU7Cit9CisKK3N0YXRpYyBpbnQgX19pbml0IGxlZHRy
+aWdfc2xlZXBfaW5pdCh2b2lkKQoreworCWxlZF90cmlnZ2VyX3JlZ2lzdGVyX3NpbXBsZSgic2xl
+ZXAiLCAmbGVkdHJpZ19zbGVlcCk7CisJcmVnaXN0ZXJfcG1fbm90aWZpZXIoJmxlZHRyaWdfc2xl
+ZXBfcG1fbm90aWZpZXIpOworCXJlZ2lzdGVyX2Vhcmx5X3N1c3BlbmQoJmxlZHRyaWdfc2xlZXBf
+ZWFybHlfc3VzcGVuZF9oYW5kbGVyKTsKKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHZvaWQgX19l
+eGl0IGxlZHRyaWdfc2xlZXBfZXhpdCh2b2lkKQoreworCXVucmVnaXN0ZXJfZWFybHlfc3VzcGVu
+ZCgmbGVkdHJpZ19zbGVlcF9lYXJseV9zdXNwZW5kX2hhbmRsZXIpOworCXVucmVnaXN0ZXJfcG1f
+bm90aWZpZXIoJmxlZHRyaWdfc2xlZXBfcG1fbm90aWZpZXIpOworCWxlZF90cmlnZ2VyX3VucmVn
+aXN0ZXJfc2ltcGxlKGxlZHRyaWdfc2xlZXApOworfQorCittb2R1bGVfaW5pdChsZWR0cmlnX3Ns
+ZWVwX2luaXQpOworbW9kdWxlX2V4aXQobGVkdHJpZ19zbGVlcF9leGl0KTsKKwotLSAKMS42LjEK
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
+IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
+L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
