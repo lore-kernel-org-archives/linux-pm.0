@@ -1,16 +1,17 @@
 From: mark gross <mgross@linux.intel.com>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Thu, 5 Feb 2009 14:51:58 -0800
-Message-ID: <20090205225158.GA19577@linux.intel.com>
+Subject: Re: [PATCH 02/13] PM: Add early suspend api.
+Date: Thu, 5 Feb 2009 15:26:24 -0800
+Message-ID: <20090205232624.GB19577@linux.intel.com>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
 	<1233802226-23386-2-git-send-email-arve@android.com>
+	<1233802226-23386-3-git-send-email-arve@android.com>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1233802226-23386-2-git-send-email-arve@android.com>
+In-Reply-To: <1233802226-23386-3-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,163 +25,79 @@ To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
 Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 06:50:14PM -0800, Arve Hj=F8nnev=E5g wrote:
+On Wed, Feb 04, 2009 at 06:50:15PM -0800, Arve Hj=F8nnev=E5g wrote:
 > Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
 > ---
->  Documentation/power/wakelocks.txt |   91 +++++++++++++++++++++++++++++++=
-+++++
->  include/linux/wakelock.h          |   92 +++++++++++++++++++++++++++++++=
+>  Documentation/power/early-suspend.txt |   26 +++++++++++++++
+>  include/linux/earlysuspend.h          |   55 +++++++++++++++++++++++++++=
 ++++++
->  2 files changed, 183 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/power/wakelocks.txt
->  create mode 100755 include/linux/wakelock.h
+>  2 files changed, 81 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/power/early-suspend.txt
+>  create mode 100755 include/linux/earlysuspend.h
 > =
 
-> diff --git a/Documentation/power/wakelocks.txt b/Documentation/power/wake=
-locks.txt
+> diff --git a/Documentation/power/early-suspend.txt b/Documentation/power/=
+early-suspend.txt
 > new file mode 100644
-> index 0000000..219bb11
+> index 0000000..8286d3a
 > --- /dev/null
-> +++ b/Documentation/power/wakelocks.txt
-> @@ -0,0 +1,91 @@
-> +Wakelocks
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +++ b/Documentation/power/early-suspend.txt
+> @@ -0,0 +1,26 @@
+> +Early-suspend
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 > +
-> +A locked wakelock, depending on its type, prevents the system from enter=
-ing
-> +suspend or other low-power states. When creating a wakelock, you can sel=
-ect
-> +if it prevents suspend or low-power idle states.  If the type is set to
-> +WAKE_LOCK_SUSPEND, the wakelock prevents a full system suspend. If the t=
-ype
-> +is WAKE_LOCK_IDLE, low-power states that cause large interrupt latencies=
-, or
-> +that disable a set of interrupts, will not be entered from idle until the
-> +wakelocks are released. Unless the type is specified, this document refe=
-rs
-> +to wakelocks with the type set to WAKE_LOCK_SUSPEND.
+> +The early-suspend api allows drivers to get notified when user-space wri=
+tes to =
 
-How much of this can be implemented using a pm-qos approach?
+> +/sys/power/request_state to indicate that the user visible sleep state s=
+hould =
+
+> +change. A level controls what order the handlers are called in. Suspend =
+
+> +handlers are called in low to high level order, resume handlers are call=
+ed in =
+
+> +the opposite order. =
 
 > +
-> +If the suspend operation has already started when locking a wakelock, it=
- will
-> +abort the suspend operation as long it has not already reached the suspe=
-nd_late
-> +stage. This means that locking a wakelock from an interrupt handler or a
-> +freezeable thread always works, but if you lock a wakelock from a suspen=
-d_late
-> +handler you must also return an error from that handler to abort suspend.
+> +Four levels are defined:
+> +EARLY_SUSPEND_LEVEL_BLANK_SCREEN:
+> +  On suspend the screen should be turned off but the framebuffer must st=
+ill be
+> +  accessible. On resume the screen can be turned back on.
 > +
-> +Wakelocks can be used to allow user-space to decide which keys should wa=
-ke the
-> +full system up and turn the screen on. Use set_irq_wake or a platform sp=
-ecific
-> +api to make sure the keypad interrupt wakes up the cpu. Once the keypad =
-driver
-> +has resumed, the sequence of events can look like this:
-> +- The Keypad driver gets an interrupt. It then locks the keypad-scan wak=
-elock
-> +  and starts scanning the keypad matrix.
-> +- The keypad-scan code detects a key change and reports it to the input-=
-event
-> +  driver.
-> +- The input-event driver sees the key change, enqueues an event, and loc=
-ks
-> +  the input-event-queue wakelock.
-> +- The keypad-scan code detects that no keys are held and unlocks the
-> +  keypad-scan wakelock.
-> +- The user-space input-event thread returns from select/poll, locks the
-> +  process-input-events wakelock and then calls read in the input-event d=
-evice.
-> +- The input-event driver dequeues the key-event and, since the queue is =
-now
-> +  empty, it unlocks the input-event-queue wakelock.
-> +- The user-space input-event thread returns from read. It determines tha=
-t the
-> +  key should not wake up the full system, releases the process-input-eve=
-nts
-> +  wakelock and calls select or poll.
-> +
-> +                 Key pressed   Key released
-> +                     |             |
-> +keypad-scan          ++++++++++++++++++
-> +input-event-queue        +++          +++
-> +process-input-events       +++          +++
-> +
+> +EARLY_SUSPEND_LEVEL_STOP_DRAWING:
+> +  On suspend this level notifies user-space that it should stop accessin=
+g the =
 
-This feels a lot like operating points implemented as a collection of
-product specific binary locks.  How could this be generalized to be less
-application specific?
+> +  framebuffer and it waits for it to complete. On resume it notifies use=
+r-space =
 
+> +  that it should resume screen access.
+> +  Two methods are provided, console switch or a sysfs interface.
 > +
-> +Driver API
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +EARLY_SUSPEND_LEVEL_DISABLE_FB:
+> +  Turn off the framebuffer on suspend and back on on resume.
 > +
-> +A driver can use the wakelock api by adding a wakelock variable to its s=
-tate
-> +and calling wake_lock_init. For instance:
-> +struct state {
-> +	struct wakelock wakelock;
-> +}
-> +
-> +init() {
-> +	wake_lock_init(&state->wakelock, WAKE_LOCK_SUSPEND, "wakelockname");
-> +}
-> +
-> +Before freeing the memory, wake_lock_destroy must be called:
-> +
-> +uninit() {
-> +	wake_lock_destroy(&state->wakelock);
-> +}
-> +
-> +When the driver determines that it needs to run (usually in an interrupt
-> +handler) it calls wake_lock:
-> +	wake_lock(&state->wakelock);
+> +EARLY_SUSPEND_LEVEL_STOP_INPUT:
+> +  On suspend turn off input devices that are not capable of wakeup or wh=
+ere
+> +  wakeup is disabled. On resume turn the same devices back on.
 
-um, if a driver grabs the wakelock for another device that is sleeping
-how will it know when that sleeping device is ready to be used?  Is
-wake_lock going to block until the dives its locking is in a good power
-state?  (I'm guessing yes) Is doing this in the context of and IRQ a
-good idea?
+these levels names are domain and device profile centric.  How can we
+make these be applicable to more than the HTC dream? =
 
-> +
-> +When it no longer needs to run it calls wake_unlock:
-> +	wake_unlock(&state->wakelock);
-> +
-> +It can also call wake_lock_timeout to release the wakelock after a delay:
-> +	wake_lock_timeout(&state->wakelock, HZ);
 
-Timer?
+Why 4 levels?  4 seems like too many, but why stop at 4 why not 8?
 
-> +
-> +This works whether the wakelock is already held or not. It is useful if =
-the
-> +driver woke up other parts of the system that do not use wakelocks but
-> +still need to run. Avoid this when possible, since it will waste power
-> +if the timeout is long or may fail to finish needed work if the timeout =
-is
-> +short.
-> +
-> +
-> +User-space API
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +Write "lockname" or "lockname timeout" to /sys/power/wake_lock lock and =
-if
-> +needed create a wakelock. The timeout here is specified nanoseconds.
-> +Write "lockname" to /sys/power/wake_unlock to unlock a user wakelock.
-> +
-> +Do not use randomly generated wakelock names as there is no api to free
-> +a user-space wakelock.
-> +
-> diff --git a/include/linux/wakelock.h b/include/linux/wakelock.h
+
+> diff --git a/include/linux/earlysuspend.h b/include/linux/earlysuspend.h
 > new file mode 100755
-> index 0000000..b17e993
+> index 0000000..1587a3f
 > --- /dev/null
-> +++ b/include/linux/wakelock.h
-> @@ -0,0 +1,92 @@
-> +/* include/linux/wakelock.h
+> +++ b/include/linux/earlysuspend.h
+> @@ -0,0 +1,55 @@
+> +/* include/linux/earlysuspend.h
 > + *
 > + * Copyright (C) 2007-2008 Google, Inc.
 > + *
@@ -195,104 +112,60 @@ if
 > + *
 > + */
 > +
-> +#ifndef _LINUX_WAKELOCK_H
-> +#define _LINUX_WAKELOCK_H
+> +#ifndef _LINUX_EARLYSUSPEND_H
+> +#define _LINUX_EARLYSUSPEND_H
 > +
 > +#include <linux/list.h>
-> +#include <linux/ktime.h>
 > +
-> +/* A wake_lock prevents the system from entering suspend or other low po=
-wer
-> + * states when active. If the type is set to WAKE_LOCK_SUSPEND, the wake=
-_lock
-> + * prevents a full system suspend. If the type is WAKE_LOCK_IDLE, low po=
-wer
-> + * states that cause large interrupt latencies or that disable a set of
-> + * interrupts will not entered from idle until the wake_locks are releas=
-ed.
+> +/* The early_suspend structure defines suspend and resume hooks to be ca=
+lled
+> + * when the user visible sleep state of the system changes, and a level =
+to
+> + * control the order. They can be used to turn off the screen and input
+> + * devices that are not used for wakeup.
+> + * Suspend handlers are called in low to high level order, resume handle=
+rs are
+> + * called in the opposite order. If, when calling register_early_suspend,
+> + * the suspend handlers have already been called without a matching call=
+ to the
+> + * resume handlers, the suspend handler will be called directly from
+> + * register_early_suspend. This direct call can violate the normal level=
+ order.
 > + */
-> +
 > +enum {
-> +	WAKE_LOCK_SUSPEND, /* Prevent suspend */
-> +	WAKE_LOCK_IDLE,    /* Prevent low power idle */
-> +	WAKE_LOCK_TYPE_COUNT
+> +	EARLY_SUSPEND_LEVEL_BLANK_SCREEN =3D 50,
+> +	EARLY_SUSPEND_LEVEL_STOP_INPUT =3D 75,
+> +	EARLY_SUSPEND_LEVEL_STOP_DRAWING =3D 100,
+> +	EARLY_SUSPEND_LEVEL_DISABLE_FB =3D 150,
 > +};
-> +
-> +struct wake_lock {
-> +#ifdef CONFIG_HAS_WAKELOCK
 
-Shouldn't this #ifdef be in the files using wake_lock.h?  If
-!CONFIG_HAS_WAKELOCK then should all the definitions here not be parsed
-at compile time?
+Application domain independent levels may be more useful to the larger
+community.
 
-> +	struct list_head    link;
-> +	int                 flags;
-> +	const char         *name;
-> +	unsigned long       expires;
-> +#ifdef CONFIG_WAKELOCK_STAT
-> +	struct {
-> +		int             count;
-> +		int             expire_count;
-> +		int             wakeup_count;
-> +		ktime_t         total_time;
-> +		ktime_t         prevent_suspend_time;
-> +		ktime_t         max_time;
-> +		ktime_t         last_time;
-> +	} stat;
-> +#endif
+
+> +struct early_suspend {
+> +#ifdef CONFIG_HAS_EARLYSUSPEND
+> +	struct list_head link;
+> +	int level;
+> +	void (*suspend)(struct early_suspend *h);
+> +	void (*resume)(struct early_suspend *h);
 > +#endif
 > +};
 > +
-> +#ifdef CONFIG_HAS_WAKELOCK
-> +
-> +void wake_lock_init(struct wake_lock *lock, int type, const char *name);
-> +void wake_lock_destroy(struct wake_lock *lock);
-> +void wake_lock(struct wake_lock *lock);
-> +void wake_lock_timeout(struct wake_lock *lock, long timeout);
-> +void wake_unlock(struct wake_lock *lock);
-> +
-> +/* wake_lock_active returns a non-zero value if the wake_lock is current=
-ly
-> + * locked. If the wake_lock has a timeout, it does not check the timeout,
-> + * but if the timeout had already expired when it was checked elsewhere
-> + * this function will return 0.
-> + */
-> +int wake_lock_active(struct wake_lock *lock);
-> +
-> +/* has_wake_lock returns 0 if no wake locks of the specified type are ac=
-tive,
-> + * and non-zero if one or more wake locks are held. Specifically it retu=
-rns
-> + * -1 if one or more wake locks with no timeout are active or the
-> + * number of jiffies until all active wake locks time out.
-> + */
-> +long has_wake_lock(int type);
-
-Type? or class?  What is this type concept?  Should we have some strong
-typing to the enum list above or at least a comment on what are the
-types that are valid to call this API with?
-
-> +
+> +#ifdef CONFIG_HAS_EARLYSUSPEND
+> +void register_early_suspend(struct early_suspend *handler);
+> +void unregister_early_suspend(struct early_suspend *handler);
 > +#else
-> +
-> +static inline void wake_lock_init(struct wake_lock *lock, int type,
-> +					const char *name) {}
-> +static inline void wake_lock_destroy(struct wake_lock *lock) {}
-> +static inline void wake_lock(struct wake_lock *lock) {}
-> +static inline void wake_lock_timeout(struct wake_lock *lock, long timeou=
-t) {}
-> +static inline void wake_unlock(struct wake_lock *lock) {}
-> +
-> +static inline int wake_lock_active(struct wake_lock *lock) { return 0; }
-> +static inline long has_wake_lock(int type) { return 0; }
-> +
+> +#define register_early_suspend(handler) do { } while (0)
+> +#define unregister_early_suspend(handler) do { } while (0)
 > +#endif
-
-I don't like these type of use of ifdef to no-op out API's do we really
-need to do it this way?  =
-
-
 > +
+
+do we really need to no-op this code this way?
+
+
+--mgross
+
 > +#endif
 > +
 > -- =
