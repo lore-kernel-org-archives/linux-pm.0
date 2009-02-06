@@ -1,15 +1,15 @@
 From: Uli Luckas <u.luckas@road.de>
-Subject: Re: [PATCH 02/13] PM: Add early suspend api.
-Date: Fri, 6 Feb 2009 10:33:00 +0100
-Message-ID: <200902061033.01252.u.luckas@road.de>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 6 Feb 2009 10:45:21 +0100
+Message-ID: <200902061045.21872.u.luckas@road.de>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-3-git-send-email-arve@android.com>
-	<20090205232624.GB19577@linux.intel.com>
+	<20090205091132.GG2077@elf.ucw.cz>
+	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090205232624.GB19577@linux.intel.com>
+In-Reply-To: <d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,74 +20,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: swetland@google.com, ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: ncunningham@crca.org.au, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 6. February 2009, mark gross wrote:
-> On Wed, Feb 04, 2009 at 06:50:15PM -0800, Arve Hj=F8nnev=E5g wrote:
-> > Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
-> > ---
-> >  Documentation/power/early-suspend.txt |   26 +++++++++++++++
-> >  include/linux/earlysuspend.h          |   55
-> > +++++++++++++++++++++++++++++++++ 2 files changed, 81 insertions(+), 0
-> > deletions(-)
-> >  create mode 100644 Documentation/power/early-suspend.txt
-> >  create mode 100755 include/linux/earlysuspend.h
+On Friday, 6. February 2009, Arve Hj=F8nnev=E5g wrote:
+> On Thu, Feb 5, 2009 at 1:11 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Wed 2009-02-04 18:50:14, Arve Hj??nnev??g wrote:
+> >> +A locked wakelock, depending on its type, prevents the system from
+> >> entering +suspend or other low-power states. When creating a wakelock,
+> >> you can select +if it prevents suspend or low-power idle states.  If t=
+he
+> >> type is set to
 > >
-> > diff --git a/Documentation/power/early-suspend.txt
-> > b/Documentation/power/early-suspend.txt new file mode 100644
-> > index 0000000..8286d3a
-> > --- /dev/null
-> > +++ b/Documentation/power/early-suspend.txt
-> > @@ -0,0 +1,26 @@
-> > +Early-suspend
-> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > +
-> > +The early-suspend api allows drivers to get notified when user-space
-> > writes to +/sys/power/request_state to indicate that the user visible
-> > sleep state should +change. A level controls what order the handlers are
-> > called in. Suspend +handlers are called in low to high level order,
-> > resume handlers are called in +the opposite order.
-> > +
-> > +Four levels are defined:
-> > +EARLY_SUSPEND_LEVEL_BLANK_SCREEN:
-> > +  On suspend the screen should be turned off but the framebuffer must
-> > still be +  accessible. On resume the screen can be turned back on.
-> > +
-> > +EARLY_SUSPEND_LEVEL_STOP_DRAWING:
-> > +  On suspend this level notifies user-space that it should stop
-> > accessing the +  framebuffer and it waits for it to complete. On resume
-> > it notifies user-space +  that it should resume screen access.
-> > +  Two methods are provided, console switch or a sysfs interface.
-> > +
-> > +EARLY_SUSPEND_LEVEL_DISABLE_FB:
-> > +  Turn off the framebuffer on suspend and back on on resume.
-> > +
-> > +EARLY_SUSPEND_LEVEL_STOP_INPUT:
-> > +  On suspend turn off input devices that are not capable of wakeup or
-> > where +  wakeup is disabled. On resume turn the same devices back on.
+> > idle states are very different from suspend. Mixing them does not look
+> > like good idea... and IIRC we already have API somewhere to prevent
+> > deep idle states. Intel did it for their wireless cards IIRC.
 >
-> these levels names are domain and device profile centric.  How can we
-> make these be applicable to more than the HTC dream?
+> If you are talking about the pm_qos interface, then yes there is some
+> overlap. We did not use the pm_qos interface since it does a linear
+> scan for a string every time you change a requirement, and it only let
+> you specify the latency you need not the power level. We have
+> interrupts that stop working at the lowest power level and this does
+> not easily translate into a latency value.
 >
-> Why 4 levels?  4 seems like too many, but why stop at 4 why not 8?
+> >> +                 Key pressed   Key released
+> >> +                     |             |
+> >> +keypad-scan          ++++++++++++++++++
+> >> +input-event-queue        +++          +++
+> >> +process-input-events       +++          +++
+> >> +
+> >
+> > I'm not sure if keyboard scanning example is good here. It is very
+> > t-mobile G1 specific.
 >
-The random number 4 comes from randomly pushing things from userspace to =
+> There is no G1 specific code in the keypad driver. I also don't
+> remember seeing any development boards without a similar keypad. I
+> like this example since it show how an event can be passed from the
+> kernel to user-space.
+>
+I absolutely agree. The example shows how you can keep wake locks right fro=
+m =
 
-kernelspace.
-The only thing that I can see the kernel really needs to do is inform user =
+the time the interrupt comes in through all levels until a user space actio=
+n =
 
-space when it comes back from suspend.
-I never got a reply to why userspace should ever have to stop drawing to th=
-e =
-
-frame buffer. If there is a valid reason for that, we might also need a =
-
-blocking pre-suspend notifier, telling userspace that the device will suspe=
-nd =
-
-imediately.
+gets triggered.
 
 Uli
 
