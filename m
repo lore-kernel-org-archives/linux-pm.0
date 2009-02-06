@@ -1,15 +1,21 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Thu, 5 Feb 2009 16:13:27 -0800
-Message-ID: <d6200be20902051613k77ef5878v7734653749ead8a@mail.gmail.com>
+From: mark gross <mgross@linux.intel.com>
+Subject: Re: [PATCH 06/13] PM: Implement early suspend api
+Date: Thu, 5 Feb 2009 16:18:38 -0800
+Message-ID: <20090206001838.GD19577@linux.intel.com>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
 	<1233802226-23386-2-git-send-email-arve@android.com>
-	<20090205225158.GA19577@linux.intel.com>
+	<1233802226-23386-3-git-send-email-arve@android.com>
+	<1233802226-23386-4-git-send-email-arve@android.com>
+	<1233802226-23386-5-git-send-email-arve@android.com>
+	<1233802226-23386-6-git-send-email-arve@android.com>
+	<1233802226-23386-7-git-send-email-arve@android.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090205225158.GA19577@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <1233802226-23386-7-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,173 +25,279 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
 Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 2:51 PM, mark gross <mgross@linux.intel.com> wrote:
->> +A locked wakelock, depending on its type, prevents the system from ente=
-ring
->> +suspend or other low-power states. When creating a wakelock, you can se=
-lect
->> +if it prevents suspend or low-power idle states.  If the type is set to
->> +WAKE_LOCK_SUSPEND, the wakelock prevents a full system suspend. If the =
-type
->> +is WAKE_LOCK_IDLE, low-power states that cause large interrupt latencie=
-s, or
->> +that disable a set of interrupts, will not be entered from idle until t=
-he
->> +wakelocks are released. Unless the type is specified, this document ref=
-ers
->> +to wakelocks with the type set to WAKE_LOCK_SUSPEND.
->
-> How much of this can be implemented using a pm-qos approach?
+On Wed, Feb 04, 2009 at 06:50:19PM -0800, Arve Hj=F8nnev=E5g wrote:
+> Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
+> ---
+>  kernel/power/Kconfig        |   12 +++
+>  kernel/power/Makefile       |    1 +
+>  kernel/power/earlysuspend.c |  178 +++++++++++++++++++++++++++++++++++++=
+++++++
+>  kernel/power/power.h        |    6 ++
+>  4 files changed, 197 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/power/earlysuspend.c
+> =
 
-WAKE_LOCK_IDLE overlaps with pm-qos, if you use it to prevent latency.
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index dd76467..689abfe 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -119,6 +119,9 @@ config SUSPEND_FREEZER
+>  config HAS_WAKELOCK
+>  	bool
+>  =
 
->
->> +
->> +If the suspend operation has already started when locking a wakelock, i=
-t will
->> +abort the suspend operation as long it has not already reached the susp=
-end_late
->> +stage. This means that locking a wakelock from an interrupt handler or a
->> +freezeable thread always works, but if you lock a wakelock from a suspe=
-nd_late
->> +handler you must also return an error from that handler to abort suspen=
-d.
->> +
->> +Wakelocks can be used to allow user-space to decide which keys should w=
-ake the
->> +full system up and turn the screen on. Use set_irq_wake or a platform s=
-pecific
->> +api to make sure the keypad interrupt wakes up the cpu. Once the keypad=
- driver
->> +has resumed, the sequence of events can look like this:
->> +- The Keypad driver gets an interrupt. It then locks the keypad-scan wa=
-kelock
->> +  and starts scanning the keypad matrix.
->> +- The keypad-scan code detects a key change and reports it to the input=
--event
->> +  driver.
->> +- The input-event driver sees the key change, enqueues an event, and lo=
-cks
->> +  the input-event-queue wakelock.
->> +- The keypad-scan code detects that no keys are held and unlocks the
->> +  keypad-scan wakelock.
->> +- The user-space input-event thread returns from select/poll, locks the
->> +  process-input-events wakelock and then calls read in the input-event =
-device.
->> +- The input-event driver dequeues the key-event and, since the queue is=
- now
->> +  empty, it unlocks the input-event-queue wakelock.
->> +- The user-space input-event thread returns from read. It determines th=
-at the
->> +  key should not wake up the full system, releases the process-input-ev=
-ents
->> +  wakelock and calls select or poll.
->> +
->> +                 Key pressed   Key released
->> +                     |             |
->> +keypad-scan          ++++++++++++++++++
->> +input-event-queue        +++          +++
->> +process-input-events       +++          +++
->> +
->
-> This feels a lot like operating points implemented as a collection of
-> product specific binary locks.  How could this be generalized to be less
-> application specific?
+> +config HAS_EARLYSUSPEND
+> +	bool
+> +
+>  config WAKELOCK
+>  	bool "Wake lock"
+>  	depends on PM && RTC_CLASS
+> @@ -144,6 +147,15 @@ config DISABLE_SYS_POWER_STATE
+>  	  want to run user-space code that does not support wakelocks, do not
+>  	  enable this option since it removes the interface.
+>  =
 
-Are you complaining about the example being product specific, or the
-api? I don't think the api is product specific.
+> +config EARLYSUSPEND
+> +	bool "Early suspend"
+> +	depends on WAKELOCK
+> +	default y
+> +	select HAS_EARLYSUSPEND
+> +	---help---
+> +	  Call early suspend handlers when the user requested sleep state
+> +	  changes.
+> +
+>  config HIBERNATION
+>  	bool "Hibernation (aka 'suspend to disk')"
+>  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+> index 8d8672b..2f17e1d 100644
+> --- a/kernel/power/Makefile
+> +++ b/kernel/power/Makefile
+> @@ -7,6 +7,7 @@ obj-y				:=3D main.o
+>  obj-$(CONFIG_PM_SLEEP)		+=3D console.o
+>  obj-$(CONFIG_FREEZER)		+=3D process.o
+>  obj-$(CONFIG_WAKELOCK)		+=3D wakelock.o
+> +obj-$(CONFIG_EARLYSUSPEND)	+=3D earlysuspend.o
+>  obj-$(CONFIG_HIBERNATION)	+=3D swsusp.o disk.o snapshot.o swap.o user.o
+>  =
 
->> +When the driver determines that it needs to run (usually in an interrupt
->> +handler) it calls wake_lock:
->> +     wake_lock(&state->wakelock);
->
-> um, if a driver grabs the wakelock for another device that is sleeping
-> how will it know when that sleeping device is ready to be used?  Is
+>  obj-$(CONFIG_MAGIC_SYSRQ)	+=3D poweroff.o
+> diff --git a/kernel/power/earlysuspend.c b/kernel/power/earlysuspend.c
+> new file mode 100644
+> index 0000000..4d70a7e
+> --- /dev/null
+> +++ b/kernel/power/earlysuspend.c
+> @@ -0,0 +1,178 @@
+> +/* kernel/power/earlysuspend.c
+> + *
+> + * Copyright (C) 2005-2008 Google, Inc.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/earlysuspend.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/rtc.h>
+> +#include <linux/syscalls.h> /* sys_sync */
+> +#include <linux/wakelock.h>
+> +#include <linux/workqueue.h>
+> +
+> +#include "power.h"
+> +
+> +enum {
+> +	DEBUG_USER_STATE =3D 1U << 0,
+> +	DEBUG_SUSPEND =3D 1U << 1,
+> +};
+> +static int debug_mask =3D DEBUG_USER_STATE;
+> +module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IW=
+GRP);
+> +
+> +static DEFINE_MUTEX(early_suspend_lock);
+> +static LIST_HEAD(early_suspend_handlers);
+> +static void early_suspend(struct work_struct *work);
+> +static void late_resume(struct work_struct *work);
+> +static DECLARE_WORK(early_suspend_work, early_suspend);
+> +static DECLARE_WORK(late_resume_work, late_resume);
+> +static DEFINE_SPINLOCK(state_lock);
+> +enum {
+> +	SUSPEND_REQUESTED =3D 0x1,
+> +	SUSPENDED =3D 0x2,
+> +	SUSPEND_REQUESTED_AND_SUSPENDED =3D SUSPEND_REQUESTED | SUSPENDED,
+> +};
+> +static int state;
+> +
+> +void register_early_suspend(struct early_suspend *handler)
+> +{
+> +	struct list_head *pos;
+> +
+> +	mutex_lock(&early_suspend_lock);
+> +	list_for_each(pos, &early_suspend_handlers) {
+> +		struct early_suspend *e;
+> +		e =3D list_entry(pos, struct early_suspend, link);
+> +		if (e->level > handler->level)
+> +			break;
+> +	}
+> +	list_add_tail(&handler->link, pos);
+> +	if ((state & SUSPENDED) && handler->suspend)
+> +		handler->suspend(handler);
+> +	mutex_unlock(&early_suspend_lock);
+> +}
+> +EXPORT_SYMBOL(register_early_suspend);
+> +
+> +void unregister_early_suspend(struct early_suspend *handler)
+> +{
+> +	mutex_lock(&early_suspend_lock);
+> +	list_del(&handler->link);
+> +	mutex_unlock(&early_suspend_lock);
+> +}
+> +EXPORT_SYMBOL(unregister_early_suspend);
+> +
+> +static void early_suspend(struct work_struct *work)
+> +{
+> +	struct early_suspend *pos;
+> +	unsigned long irqflags;
+> +	int abort =3D 0;
+> +
+> +	mutex_lock(&early_suspend_lock);
+> +	spin_lock_irqsave(&state_lock, irqflags);
+> +	if (state =3D=3D SUSPEND_REQUESTED)
+> +		state |=3D SUSPENDED;
+> +	else
+> +		abort =3D 1;
+> +	spin_unlock_irqrestore(&state_lock, irqflags);
+> +
+> +	if (abort) {
+> +		if (debug_mask & DEBUG_SUSPEND)
+> +			pr_info("early_suspend: abort, state %d\n", state);
+> +		mutex_unlock(&early_suspend_lock);
+> +		goto abort;
+> +	}
+> +
+> +	if (debug_mask & DEBUG_SUSPEND)
+> +		pr_info("early_suspend: call handlers\n");
+> +	list_for_each_entry(pos, &early_suspend_handlers, link) {
+> +		if (pos->suspend)
+> +			pos->suspend(pos);
+> +	}
+> +	mutex_unlock(&early_suspend_lock);
+> +
+> +	if (debug_mask & DEBUG_SUSPEND)
+> +		pr_info("early_suspend: sync\n");
+> +
+> +	sys_sync();
 
-A driver does not grab another driver's wakelock. If your driver
-depends on another device it should wait for resume to be called
-before accessing it.
-
-> wake_lock going to block until the dives its locking is in a good power
-> state?  (I'm guessing yes) Is doing this in the context of and IRQ a
-> good idea?
-
-wake_lock never blocks.
-
->> +It can also call wake_lock_timeout to release the wakelock after a dela=
-y:
->> +     wake_lock_timeout(&state->wakelock, HZ);
->
-> Timer?
-
-What is your question?
+couldn't this trigger GC if you are running something like JFFS2 and
+have an indeterminant execution time?  =
 
 
->> +struct wake_lock {
->> +#ifdef CONFIG_HAS_WAKELOCK
->
-> Shouldn't this #ifdef be in the files using wake_lock.h?  If
-> !CONFIG_HAS_WAKELOCK then should all the definitions here not be parsed
-> at compile time?
+tough call.  predictable suspend times or gard against FS corruption.
 
-I think the general policy is to avoid #ifdefs in the .c files.
+> +abort:
+> +	spin_lock_irqsave(&state_lock, irqflags);
+> +	if (state =3D=3D SUSPEND_REQUESTED_AND_SUSPENDED)
+> +		wake_unlock(&main_wake_lock);
+> +	spin_unlock_irqrestore(&state_lock, irqflags);
+> +}
+> +
+> +static void late_resume(struct work_struct *work)
+> +{
+> +	struct early_suspend *pos;
+> +	unsigned long irqflags;
+> +	int abort =3D 0;
+> +
+> +	mutex_lock(&early_suspend_lock);
+> +	spin_lock_irqsave(&state_lock, irqflags);
+> +	if (state =3D=3D SUSPENDED)
+> +		state =3D 0; /* clear SUSPENDED */
+> +	else
+> +		abort =3D 1;
+> +	spin_unlock_irqrestore(&state_lock, irqflags);
+> +
+> +	if (abort) {
+> +		if (debug_mask & DEBUG_SUSPEND)
+> +			pr_info("late_resume: abort, state %d\n", state);
+> +		goto abort;
+> +	}
+> +	if (debug_mask & DEBUG_SUSPEND)
+> +		pr_info("late_resume: call handlers\n");
+> +	list_for_each_entry_reverse(pos, &early_suspend_handlers, link)
+> +		if (pos->resume)
+> +			pos->resume(pos);
+> +	if (debug_mask & DEBUG_SUSPEND)
+> +		pr_info("late_resume: done\n");
+> +abort:
+> +	mutex_unlock(&early_suspend_lock);
+> +}
+> +
+> +void request_suspend_state(suspend_state_t new_state)
+> +{
+> +	unsigned long irqflags;
+> +	int old_sleep;
+> +
+> +	spin_lock_irqsave(&state_lock, irqflags);
+> +	old_sleep =3D state & SUSPEND_REQUESTED;
+> +	if (debug_mask & DEBUG_USER_STATE) {
+> +		struct timespec ts;
+> +		struct rtc_time tm;
+> +		getnstimeofday(&ts);
+> +		rtc_time_to_tm(ts.tv_sec, &tm);
+> +		pr_info("request_suspend_state: %s (%d->%d) at %lld "
+> +			"(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n",
+> +			new_state !=3D PM_SUSPEND_ON ? "sleep" : "wakeup",
+> +			requested_suspend_state, new_state,
+> +			ktime_to_ns(ktime_get()),
+> +			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+> +			tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+> +	}
+> +	if (!old_sleep && new_state !=3D PM_SUSPEND_ON) {
+> +		state |=3D SUSPEND_REQUESTED;
+> +		queue_work(suspend_work_queue, &early_suspend_work);
+> +	} else if (old_sleep && new_state =3D=3D PM_SUSPEND_ON) {
+> +		state &=3D ~SUSPEND_REQUESTED;
+> +		wake_lock(&main_wake_lock);
+> +		queue_work(suspend_work_queue, &late_resume_work);
+> +	}
+> +	requested_suspend_state =3D new_state;
+> +	spin_unlock_irqrestore(&state_lock, irqflags);
+> +}
+> +
+> +suspend_state_t get_suspend_state(void)
+> +{
+> +	return requested_suspend_state;
+> +}
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index ed1b7f4..acbb13a 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -231,3 +231,9 @@ extern struct wake_lock main_wake_lock;
+>  extern suspend_state_t requested_suspend_state;
+>  extern bool ignore_suspend_wakelocks;
+>  #endif
+> +
+> +#ifdef CONFIG_EARLYSUSPEND
+> +/* kernel/power/earlysuspend.c */
+> +void request_suspend_state(suspend_state_t state);
+> +suspend_state_t get_suspend_state(void);
+> +#endif
+> -- =
 
->
->> +     struct list_head    link;
->> +     int                 flags;
->> +     const char         *name;
->> +     unsigned long       expires;
->> +#ifdef CONFIG_WAKELOCK_STAT
->> +     struct {
->> +             int             count;
->> +             int             expire_count;
->> +             int             wakeup_count;
->> +             ktime_t         total_time;
->> +             ktime_t         prevent_suspend_time;
->> +             ktime_t         max_time;
->> +             ktime_t         last_time;
->> +     } stat;
->> +#endif
->> +#endif
->> +};
->> +
->> +#ifdef CONFIG_HAS_WAKELOCK
->> +
->> +void wake_lock_init(struct wake_lock *lock, int type, const char *name);
->> +void wake_lock_destroy(struct wake_lock *lock);
->> +void wake_lock(struct wake_lock *lock);
->> +void wake_lock_timeout(struct wake_lock *lock, long timeout);
->> +void wake_unlock(struct wake_lock *lock);
->> +
->> +/* wake_lock_active returns a non-zero value if the wake_lock is curren=
-tly
->> + * locked. If the wake_lock has a timeout, it does not check the timeou=
-t,
->> + * but if the timeout had already expired when it was checked elsewhere
->> + * this function will return 0.
->> + */
->> +int wake_lock_active(struct wake_lock *lock);
->> +
->> +/* has_wake_lock returns 0 if no wake locks of the specified type are a=
-ctive,
->> + * and non-zero if one or more wake locks are held. Specifically it ret=
-urns
->> + * -1 if one or more wake locks with no timeout are active or the
->> + * number of jiffies until all active wake locks time out.
->> + */
->> +long has_wake_lock(int type);
->
-> Type? or class?  What is this type concept?  Should we have some strong
-> typing to the enum list above or at least a comment on what are the
-> types that are valid to call this API with?
+> 1.6.1
+> =
 
-+       WAKE_LOCK_SUSPEND, /* Prevent suspend */
-+       WAKE_LOCK_IDLE,    /* Prevent low power idle */
-
--- =
-
-Arve Hj=F8nnev=E5g
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
