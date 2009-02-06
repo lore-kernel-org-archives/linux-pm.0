@@ -1,16 +1,16 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Fri, 6 Feb 2009 10:45:21 +0100
-Message-ID: <200902061045.21872.u.luckas@road.de>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 02/13] PM: Add early suspend api.
+Date: Fri, 6 Feb 2009 15:26:42 -0800
+Message-ID: <d6200be20902061526p14fd542by52e33692738155d1@mail.gmail.com>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<20090205091132.GG2077@elf.ucw.cz>
-	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
+	<1233802226-23386-3-git-send-email-arve@android.com>
+	<20090205232624.GB19577@linux.intel.com>
+	<200902061033.01252.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200902061033.01252.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,67 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: ncunningham@crca.org.au, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Uli Luckas <u.luckas@road.de>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 6. February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Thu, Feb 5, 2009 at 1:11 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Wed 2009-02-04 18:50:14, Arve Hj??nnev??g wrote:
-> >> +A locked wakelock, depending on its type, prevents the system from
-> >> entering +suspend or other low-power states. When creating a wakelock,
-> >> you can select +if it prevents suspend or low-power idle states.  If t=
-he
-> >> type is set to
-> >
-> > idle states are very different from suspend. Mixing them does not look
-> > like good idea... and IIRC we already have API somewhere to prevent
-> > deep idle states. Intel did it for their wireless cards IIRC.
->
-> If you are talking about the pm_qos interface, then yes there is some
-> overlap. We did not use the pm_qos interface since it does a linear
-> scan for a string every time you change a requirement, and it only let
-> you specify the latency you need not the power level. We have
-> interrupts that stop working at the lowest power level and this does
-> not easily translate into a latency value.
->
-> >> +                 Key pressed   Key released
-> >> +                     |             |
-> >> +keypad-scan          ++++++++++++++++++
-> >> +input-event-queue        +++          +++
-> >> +process-input-events       +++          +++
-> >> +
-> >
-> > I'm not sure if keyboard scanning example is good here. It is very
-> > t-mobile G1 specific.
->
-> There is no G1 specific code in the keypad driver. I also don't
-> remember seeing any development boards without a similar keypad. I
-> like this example since it show how an event can be passed from the
-> kernel to user-space.
->
-I absolutely agree. The example shows how you can keep wake locks right fro=
-m =
+On Fri, Feb 6, 2009 at 1:33 AM, Uli Luckas <u.luckas@road.de> wrote:
+>> > +Four levels are defined:
+>> > +EARLY_SUSPEND_LEVEL_BLANK_SCREEN:
+>> > +  On suspend the screen should be turned off but the framebuffer must
+>> > still be +  accessible. On resume the screen can be turned back on.
+>> > +
+>> > +EARLY_SUSPEND_LEVEL_STOP_DRAWING:
+>> > +  On suspend this level notifies user-space that it should stop
+>> > accessing the +  framebuffer and it waits for it to complete. On resume
+>> > it notifies user-space +  that it should resume screen access.
+>> > +  Two methods are provided, console switch or a sysfs interface.
+>> > +
+>> > +EARLY_SUSPEND_LEVEL_DISABLE_FB:
+>> > +  Turn off the framebuffer on suspend and back on on resume.
+>> > +
+>> > +EARLY_SUSPEND_LEVEL_STOP_INPUT:
+>> > +  On suspend turn off input devices that are not capable of wakeup or
+>> > where +  wakeup is disabled. On resume turn the same devices back on.
+>>
+>> these levels names are domain and device profile centric.  How can we
+>> make these be applicable to more than the HTC dream?
+>>
+>> Why 4 levels?  4 seems like too many, but why stop at 4 why not 8?
+>>
+> The random number 4 comes from randomly pushing things from userspace to
+> kernelspace.
 
-the time the interrupt comes in through all levels until a user space actio=
-n =
+You can use as many levels as you want. We defined these four levels
+because they should be called in a specific order.
 
-gets triggered.
+> The only thing that I can see the kernel really needs to do is inform user
+> space when it comes back from suspend.
+> I never got a reply to why userspace should ever have to stop drawing to =
+the
+> frame buffer. If there is a valid reason for that, we might also need a
+> blocking pre-suspend notifier, telling userspace that the device will sus=
+pend
+> imediately.
 
-Uli
+User-space should stop drawing into the framebuffer before it is
+powered down. If the framebuffer that is accessible to user-space is
+in main memory not stopping may be harmless since the screen is
+blanked anyway.
+
+The sequence for turning the screen off and on here was mostly
+dictated by initially using the existing method of changing
+framebuffer ownership, the console switch.
 
 -- =
 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Head of Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+Arve Hj=F8nnev=E5g
