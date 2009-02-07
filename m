@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] PCI PM: Read power state from device
-	after	trying to change it on resume
-Date: Sat, 7 Feb 2009 10:19:56 +0100
-Message-ID: <20090207091956.GC1411__19585.8471132398$1233998702$gmane$org@ucw.cz>
-References: <200902030141.28410.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report
+	with	2.6.29-rc3
+Date: Sat, 7 Feb 2009 10:21:11 +0100
+Message-ID: <20090207092111.GF1411@ucw.cz>
+References: <826361.85762.qm@web36805.mail.mud.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902030141.28410.rjw@sisk.pl>
+In-Reply-To: <826361.85762.qm@web36805.mail.mud.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Daniel Qarras <dqarras@yahoo.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-02-03 01:41:27, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu 2009-01-29 09:49:51, Daniel Qarras wrote:
+> Hi!
 > 
-> pci_restore_standard_config() unconditionally changes current_state
-> to PCI_D0 after attempting to change the device's power state, but
-> it should rather read the actual current power state from the
-> device.
+> Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3 suspend/hibernate behave in this manner:
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Hibernation completes ok but resumes immediately as if I would have
+pressed the power button.
+>
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+Maybe shutdown (not platform) mode works for you?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
