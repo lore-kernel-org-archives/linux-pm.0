@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 06/13] PM: Implement early suspend api
-Date: Sat, 7 Feb 2009 23:47:52 +0100
-Message-ID: <200902072347.53674.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Sat, 7 Feb 2009 14:51:03 -0800
+Message-ID: <d6200be20902071451k48dc7a13ybb8251b014a091b0@mail.gmail.com>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-6-git-send-email-arve@android.com>
-	<1233802226-23386-7-git-send-email-arve@android.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<200902071956.32964.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233802226-23386-7-git-send-email-arve@android.com>
-Content-Disposition: inline
+In-Reply-To: <200902071956.32964.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,158 +19,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMDUgRmVicnVhcnkgMjAwOSwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiBT
-aWduZWQtb2ZmLWJ5OiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPgoKSSBkb24n
-dCByZWFsbHkgYWdyZWUgd2l0aCB0aGlzIGRlc2lnbiwgYmVjYXVzZSBJIGRvbid0IHRoaW5rIGl0
-J3Mgc3VpdGFibGUgZm9yCmFsbCBidXMgdHlwZXMuICBOYW1lbHksIGlmIGFueSBidXMgdHlwZSBw
-YXJ0aWFsbHkgaGFuZGxlcyBzdXNwZW5kLXJlc3VtZSBvZgppdHMgZGV2aWNlcyB0byBvZmZsb2Fk
-IGRldmljZSBkcml2ZXJzLCBJIGRvbid0IHNlZSBob3cgdGhhdCBpcyBnb2luZyB0byB3b3JrCmFs
-b25nIHdpdGggeW91ciBkZXNpZ24uCgpZb3Ugc2VlbSB0byByZXF1aXJlIHRoZSBkcml2ZXJzIHRo
-YXQgd2lsbCByZWdpc3RlciB0aGUgZWFybHkgcmVzdW1lIGhhbmRsZXJzCnRvIHRha2UgY2FyZSBv
-ZiBldmVyeXRoaW5nLCBhbG9uZyB3aXRoIHRoZSBvcGVyYXRpb25zIHRoYXQgc2hvdWxkIHJlYWxs
-eSBiZWxvbmcKdG8gYnVzIHR5cGVzLiAgSSBkb24ndCB0aGluayBpdCdzIGEgZ29vZCBhcHByb2Fj
-aC4gCgpUaGFua3MsClJhZmFlbAoKPiAtLS0KPiAga2VybmVsL3Bvd2VyL0tjb25maWcgICAgICAg
-IHwgICAxMiArKysKPiAga2VybmVsL3Bvd2VyL01ha2VmaWxlICAgICAgIHwgICAgMSArCj4gIGtl
-cm5lbC9wb3dlci9lYXJseXN1c3BlbmQuYyB8ICAxNzggKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKwo+ICBrZXJuZWwvcG93ZXIvcG93ZXIuaCAgICAgICAgfCAgICA2
-ICsrCj4gIDQgZmlsZXMgY2hhbmdlZCwgMTk3IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0p
-Cj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBrZXJuZWwvcG93ZXIvZWFybHlzdXNwZW5kLmMKPiAKPiBk
-aWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL0tjb25maWcgYi9rZXJuZWwvcG93ZXIvS2NvbmZpZwo+
-IGluZGV4IGRkNzY0NjcuLjY4OWFiZmUgMTAwNjQ0Cj4gLS0tIGEva2VybmVsL3Bvd2VyL0tjb25m
-aWcKPiArKysgYi9rZXJuZWwvcG93ZXIvS2NvbmZpZwo+IEBAIC0xMTksNiArMTE5LDkgQEAgY29u
-ZmlnIFNVU1BFTkRfRlJFRVpFUgo+ICBjb25maWcgSEFTX1dBS0VMT0NLCj4gIAlib29sCj4gIAo+
-ICtjb25maWcgSEFTX0VBUkxZU1VTUEVORAo+ICsJYm9vbAo+ICsKPiAgY29uZmlnIFdBS0VMT0NL
-Cj4gIAlib29sICJXYWtlIGxvY2siCj4gIAlkZXBlbmRzIG9uIFBNICYmIFJUQ19DTEFTUwo+IEBA
-IC0xNDQsNiArMTQ3LDE1IEBAIGNvbmZpZyBESVNBQkxFX1NZU19QT1dFUl9TVEFURQo+ICAJICB3
-YW50IHRvIHJ1biB1c2VyLXNwYWNlIGNvZGUgdGhhdCBkb2VzIG5vdCBzdXBwb3J0IHdha2Vsb2Nr
-cywgZG8gbm90Cj4gIAkgIGVuYWJsZSB0aGlzIG9wdGlvbiBzaW5jZSBpdCByZW1vdmVzIHRoZSBp
-bnRlcmZhY2UuCj4gIAo+ICtjb25maWcgRUFSTFlTVVNQRU5ECj4gKwlib29sICJFYXJseSBzdXNw
-ZW5kIgo+ICsJZGVwZW5kcyBvbiBXQUtFTE9DSwo+ICsJZGVmYXVsdCB5Cj4gKwlzZWxlY3QgSEFT
-X0VBUkxZU1VTUEVORAo+ICsJLS0taGVscC0tLQo+ICsJICBDYWxsIGVhcmx5IHN1c3BlbmQgaGFu
-ZGxlcnMgd2hlbiB0aGUgdXNlciByZXF1ZXN0ZWQgc2xlZXAgc3RhdGUKPiArCSAgY2hhbmdlcy4K
-PiArCj4gIGNvbmZpZyBISUJFUk5BVElPTgo+ICAJYm9vbCAiSGliZXJuYXRpb24gKGFrYSAnc3Vz
-cGVuZCB0byBkaXNrJykiCj4gIAlkZXBlbmRzIG9uIFBNICYmIFNXQVAgJiYgQVJDSF9ISUJFUk5B
-VElPTl9QT1NTSUJMRQo+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvTWFrZWZpbGUgYi9rZXJu
-ZWwvcG93ZXIvTWFrZWZpbGUKPiBpbmRleCA4ZDg2NzJiLi4yZjE3ZTFkIDEwMDY0NAo+IC0tLSBh
-L2tlcm5lbC9wb3dlci9NYWtlZmlsZQo+ICsrKyBiL2tlcm5lbC9wb3dlci9NYWtlZmlsZQo+IEBA
-IC03LDYgKzcsNyBAQCBvYmoteQkJCQk6PSBtYWluLm8KPiAgb2JqLSQoQ09ORklHX1BNX1NMRUVQ
-KQkJKz0gY29uc29sZS5vCj4gIG9iai0kKENPTkZJR19GUkVFWkVSKQkJKz0gcHJvY2Vzcy5vCj4g
-IG9iai0kKENPTkZJR19XQUtFTE9DSykJCSs9IHdha2Vsb2NrLm8KPiArb2JqLSQoQ09ORklHX0VB
-UkxZU1VTUEVORCkJKz0gZWFybHlzdXNwZW5kLm8KPiAgb2JqLSQoQ09ORklHX0hJQkVSTkFUSU9O
-KQkrPSBzd3N1c3AubyBkaXNrLm8gc25hcHNob3QubyBzd2FwLm8gdXNlci5vCj4gIAo+ICBvYmot
-JChDT05GSUdfTUFHSUNfU1lTUlEpCSs9IHBvd2Vyb2ZmLm8KPiBkaWZmIC0tZ2l0IGEva2VybmVs
-L3Bvd2VyL2Vhcmx5c3VzcGVuZC5jIGIva2VybmVsL3Bvd2VyL2Vhcmx5c3VzcGVuZC5jCj4gbmV3
-IGZpbGUgbW9kZSAxMDA2NDQKPiBpbmRleCAwMDAwMDAwLi40ZDcwYTdlCj4gLS0tIC9kZXYvbnVs
-bAo+ICsrKyBiL2tlcm5lbC9wb3dlci9lYXJseXN1c3BlbmQuYwo+IEBAIC0wLDAgKzEsMTc4IEBA
-Cj4gKy8qIGtlcm5lbC9wb3dlci9lYXJseXN1c3BlbmQuYwo+ICsgKgo+ICsgKiBDb3B5cmlnaHQg
-KEMpIDIwMDUtMjAwOCBHb29nbGUsIEluYy4KPiArICoKPiArICogVGhpcyBzb2Z0d2FyZSBpcyBs
-aWNlbnNlZCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYwo+ICsgKiBM
-aWNlbnNlIHZlcnNpb24gMiwgYXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5k
-YXRpb24sIGFuZAo+ICsgKiBtYXkgYmUgY29waWVkLCBkaXN0cmlidXRlZCwgYW5kIG1vZGlmaWVk
-IHVuZGVyIHRob3NlIHRlcm1zLgo+ICsgKgo+ICsgKiBUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0
-ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKPiArICogYnV0IFdJVEhPVVQg
-QU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKPiArICog
-TUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2Vl
-IHRoZQo+ICsgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgo+
-ICsgKgo+ICsgKi8KPiArCj4gKyNpbmNsdWRlIDxsaW51eC9lYXJseXN1c3BlbmQuaD4KPiArI2lu
-Y2x1ZGUgPGxpbnV4L21vZHVsZS5oPgo+ICsjaW5jbHVkZSA8bGludXgvbXV0ZXguaD4KPiArI2lu
-Y2x1ZGUgPGxpbnV4L3J0Yy5oPgo+ICsjaW5jbHVkZSA8bGludXgvc3lzY2FsbHMuaD4gLyogc3lz
-X3N5bmMgKi8KPiArI2luY2x1ZGUgPGxpbnV4L3dha2Vsb2NrLmg+Cj4gKyNpbmNsdWRlIDxsaW51
-eC93b3JrcXVldWUuaD4KPiArCj4gKyNpbmNsdWRlICJwb3dlci5oIgo+ICsKPiArZW51bSB7Cj4g
-KwlERUJVR19VU0VSX1NUQVRFID0gMVUgPDwgMCwKPiArCURFQlVHX1NVU1BFTkQgPSAxVSA8PCAx
-LAo+ICt9Owo+ICtzdGF0aWMgaW50IGRlYnVnX21hc2sgPSBERUJVR19VU0VSX1NUQVRFOwo+ICtt
-b2R1bGVfcGFyYW1fbmFtZWQoZGVidWdfbWFzaywgZGVidWdfbWFzaywgaW50LCBTX0lSVUdPIHwg
-U19JV1VTUiB8IFNfSVdHUlApOwo+ICsKPiArc3RhdGljIERFRklORV9NVVRFWChlYXJseV9zdXNw
-ZW5kX2xvY2spOwo+ICtzdGF0aWMgTElTVF9IRUFEKGVhcmx5X3N1c3BlbmRfaGFuZGxlcnMpOwo+
-ICtzdGF0aWMgdm9pZCBlYXJseV9zdXNwZW5kKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yayk7Cj4g
-K3N0YXRpYyB2b2lkIGxhdGVfcmVzdW1lKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yayk7Cj4gK3N0
-YXRpYyBERUNMQVJFX1dPUksoZWFybHlfc3VzcGVuZF93b3JrLCBlYXJseV9zdXNwZW5kKTsKPiAr
-c3RhdGljIERFQ0xBUkVfV09SSyhsYXRlX3Jlc3VtZV93b3JrLCBsYXRlX3Jlc3VtZSk7Cj4gK3N0
-YXRpYyBERUZJTkVfU1BJTkxPQ0soc3RhdGVfbG9jayk7Cj4gK2VudW0gewo+ICsJU1VTUEVORF9S
-RVFVRVNURUQgPSAweDEsCj4gKwlTVVNQRU5ERUQgPSAweDIsCj4gKwlTVVNQRU5EX1JFUVVFU1RF
-RF9BTkRfU1VTUEVOREVEID0gU1VTUEVORF9SRVFVRVNURUQgfCBTVVNQRU5ERUQsCj4gK307Cj4g
-K3N0YXRpYyBpbnQgc3RhdGU7Cj4gKwo+ICt2b2lkIHJlZ2lzdGVyX2Vhcmx5X3N1c3BlbmQoc3Ry
-dWN0IGVhcmx5X3N1c3BlbmQgKmhhbmRsZXIpCj4gK3sKPiArCXN0cnVjdCBsaXN0X2hlYWQgKnBv
-czsKPiArCj4gKwltdXRleF9sb2NrKCZlYXJseV9zdXNwZW5kX2xvY2spOwo+ICsJbGlzdF9mb3Jf
-ZWFjaChwb3MsICZlYXJseV9zdXNwZW5kX2hhbmRsZXJzKSB7Cj4gKwkJc3RydWN0IGVhcmx5X3N1
-c3BlbmQgKmU7Cj4gKwkJZSA9IGxpc3RfZW50cnkocG9zLCBzdHJ1Y3QgZWFybHlfc3VzcGVuZCwg
-bGluayk7Cj4gKwkJaWYgKGUtPmxldmVsID4gaGFuZGxlci0+bGV2ZWwpCj4gKwkJCWJyZWFrOwo+
-ICsJfQo+ICsJbGlzdF9hZGRfdGFpbCgmaGFuZGxlci0+bGluaywgcG9zKTsKPiArCWlmICgoc3Rh
-dGUgJiBTVVNQRU5ERUQpICYmIGhhbmRsZXItPnN1c3BlbmQpCj4gKwkJaGFuZGxlci0+c3VzcGVu
-ZChoYW5kbGVyKTsKPiArCW11dGV4X3VubG9jaygmZWFybHlfc3VzcGVuZF9sb2NrKTsKPiArfQo+
-ICtFWFBPUlRfU1lNQk9MKHJlZ2lzdGVyX2Vhcmx5X3N1c3BlbmQpOwo+ICsKPiArdm9pZCB1bnJl
-Z2lzdGVyX2Vhcmx5X3N1c3BlbmQoc3RydWN0IGVhcmx5X3N1c3BlbmQgKmhhbmRsZXIpCj4gK3sK
-PiArCW11dGV4X2xvY2soJmVhcmx5X3N1c3BlbmRfbG9jayk7Cj4gKwlsaXN0X2RlbCgmaGFuZGxl
-ci0+bGluayk7Cj4gKwltdXRleF91bmxvY2soJmVhcmx5X3N1c3BlbmRfbG9jayk7Cj4gK30KPiAr
-RVhQT1JUX1NZTUJPTCh1bnJlZ2lzdGVyX2Vhcmx5X3N1c3BlbmQpOwo+ICsKPiArc3RhdGljIHZv
-aWQgZWFybHlfc3VzcGVuZChzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmspCj4gK3sKPiArCXN0cnVj
-dCBlYXJseV9zdXNwZW5kICpwb3M7Cj4gKwl1bnNpZ25lZCBsb25nIGlycWZsYWdzOwo+ICsJaW50
-IGFib3J0ID0gMDsKPiArCj4gKwltdXRleF9sb2NrKCZlYXJseV9zdXNwZW5kX2xvY2spOwo+ICsJ
-c3Bpbl9sb2NrX2lycXNhdmUoJnN0YXRlX2xvY2ssIGlycWZsYWdzKTsKPiArCWlmIChzdGF0ZSA9
-PSBTVVNQRU5EX1JFUVVFU1RFRCkKPiArCQlzdGF0ZSB8PSBTVVNQRU5ERUQ7Cj4gKwllbHNlCj4g
-KwkJYWJvcnQgPSAxOwo+ICsJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmc3RhdGVfbG9jaywgaXJx
-ZmxhZ3MpOwo+ICsKPiArCWlmIChhYm9ydCkgewo+ICsJCWlmIChkZWJ1Z19tYXNrICYgREVCVUdf
-U1VTUEVORCkKPiArCQkJcHJfaW5mbygiZWFybHlfc3VzcGVuZDogYWJvcnQsIHN0YXRlICVkXG4i
-LCBzdGF0ZSk7Cj4gKwkJbXV0ZXhfdW5sb2NrKCZlYXJseV9zdXNwZW5kX2xvY2spOwo+ICsJCWdv
-dG8gYWJvcnQ7Cj4gKwl9Cj4gKwo+ICsJaWYgKGRlYnVnX21hc2sgJiBERUJVR19TVVNQRU5EKQo+
-ICsJCXByX2luZm8oImVhcmx5X3N1c3BlbmQ6IGNhbGwgaGFuZGxlcnNcbiIpOwo+ICsJbGlzdF9m
-b3JfZWFjaF9lbnRyeShwb3MsICZlYXJseV9zdXNwZW5kX2hhbmRsZXJzLCBsaW5rKSB7Cj4gKwkJ
-aWYgKHBvcy0+c3VzcGVuZCkKPiArCQkJcG9zLT5zdXNwZW5kKHBvcyk7Cj4gKwl9Cj4gKwltdXRl
-eF91bmxvY2soJmVhcmx5X3N1c3BlbmRfbG9jayk7Cj4gKwo+ICsJaWYgKGRlYnVnX21hc2sgJiBE
-RUJVR19TVVNQRU5EKQo+ICsJCXByX2luZm8oImVhcmx5X3N1c3BlbmQ6IHN5bmNcbiIpOwo+ICsK
-PiArCXN5c19zeW5jKCk7Cj4gK2Fib3J0Ogo+ICsJc3Bpbl9sb2NrX2lycXNhdmUoJnN0YXRlX2xv
-Y2ssIGlycWZsYWdzKTsKPiArCWlmIChzdGF0ZSA9PSBTVVNQRU5EX1JFUVVFU1RFRF9BTkRfU1VT
-UEVOREVEKQo+ICsJCXdha2VfdW5sb2NrKCZtYWluX3dha2VfbG9jayk7Cj4gKwlzcGluX3VubG9j
-a19pcnFyZXN0b3JlKCZzdGF0ZV9sb2NrLCBpcnFmbGFncyk7Cj4gK30KPiArCj4gK3N0YXRpYyB2
-b2lkIGxhdGVfcmVzdW1lKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKPiArewo+ICsJc3RydWN0
-IGVhcmx5X3N1c3BlbmQgKnBvczsKPiArCXVuc2lnbmVkIGxvbmcgaXJxZmxhZ3M7Cj4gKwlpbnQg
-YWJvcnQgPSAwOwo+ICsKPiArCW11dGV4X2xvY2soJmVhcmx5X3N1c3BlbmRfbG9jayk7Cj4gKwlz
-cGluX2xvY2tfaXJxc2F2ZSgmc3RhdGVfbG9jaywgaXJxZmxhZ3MpOwo+ICsJaWYgKHN0YXRlID09
-IFNVU1BFTkRFRCkKPiArCQlzdGF0ZSA9IDA7IC8qIGNsZWFyIFNVU1BFTkRFRCAqLwo+ICsJZWxz
-ZQo+ICsJCWFib3J0ID0gMTsKPiArCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJnN0YXRlX2xvY2ss
-IGlycWZsYWdzKTsKPiArCj4gKwlpZiAoYWJvcnQpIHsKPiArCQlpZiAoZGVidWdfbWFzayAmIERF
-QlVHX1NVU1BFTkQpCj4gKwkJCXByX2luZm8oImxhdGVfcmVzdW1lOiBhYm9ydCwgc3RhdGUgJWRc
-biIsIHN0YXRlKTsKPiArCQlnb3RvIGFib3J0Owo+ICsJfQo+ICsJaWYgKGRlYnVnX21hc2sgJiBE
-RUJVR19TVVNQRU5EKQo+ICsJCXByX2luZm8oImxhdGVfcmVzdW1lOiBjYWxsIGhhbmRsZXJzXG4i
-KTsKPiArCWxpc3RfZm9yX2VhY2hfZW50cnlfcmV2ZXJzZShwb3MsICZlYXJseV9zdXNwZW5kX2hh
-bmRsZXJzLCBsaW5rKQo+ICsJCWlmIChwb3MtPnJlc3VtZSkKPiArCQkJcG9zLT5yZXN1bWUocG9z
-KTsKPiArCWlmIChkZWJ1Z19tYXNrICYgREVCVUdfU1VTUEVORCkKPiArCQlwcl9pbmZvKCJsYXRl
-X3Jlc3VtZTogZG9uZVxuIik7Cj4gK2Fib3J0Ogo+ICsJbXV0ZXhfdW5sb2NrKCZlYXJseV9zdXNw
-ZW5kX2xvY2spOwo+ICt9Cj4gKwo+ICt2b2lkIHJlcXVlc3Rfc3VzcGVuZF9zdGF0ZShzdXNwZW5k
-X3N0YXRlX3QgbmV3X3N0YXRlKQo+ICt7Cj4gKwl1bnNpZ25lZCBsb25nIGlycWZsYWdzOwo+ICsJ
-aW50IG9sZF9zbGVlcDsKPiArCj4gKwlzcGluX2xvY2tfaXJxc2F2ZSgmc3RhdGVfbG9jaywgaXJx
-ZmxhZ3MpOwo+ICsJb2xkX3NsZWVwID0gc3RhdGUgJiBTVVNQRU5EX1JFUVVFU1RFRDsKPiArCWlm
-IChkZWJ1Z19tYXNrICYgREVCVUdfVVNFUl9TVEFURSkgewo+ICsJCXN0cnVjdCB0aW1lc3BlYyB0
-czsKPiArCQlzdHJ1Y3QgcnRjX3RpbWUgdG07Cj4gKwkJZ2V0bnN0aW1lb2ZkYXkoJnRzKTsKPiAr
-CQlydGNfdGltZV90b190bSh0cy50dl9zZWMsICZ0bSk7Cj4gKwkJcHJfaW5mbygicmVxdWVzdF9z
-dXNwZW5kX3N0YXRlOiAlcyAoJWQtPiVkKSBhdCAlbGxkICIKPiArCQkJIiglZC0lMDJkLSUwMmQg
-JTAyZDolMDJkOiUwMmQuJTA5bHUgVVRDKVxuIiwKPiArCQkJbmV3X3N0YXRlICE9IFBNX1NVU1BF
-TkRfT04gPyAic2xlZXAiIDogIndha2V1cCIsCj4gKwkJCXJlcXVlc3RlZF9zdXNwZW5kX3N0YXRl
-LCBuZXdfc3RhdGUsCj4gKwkJCWt0aW1lX3RvX25zKGt0aW1lX2dldCgpKSwKPiArCQkJdG0udG1f
-eWVhciArIDE5MDAsIHRtLnRtX21vbiArIDEsIHRtLnRtX21kYXksCj4gKwkJCXRtLnRtX2hvdXIs
-IHRtLnRtX21pbiwgdG0udG1fc2VjLCB0cy50dl9uc2VjKTsKPiArCX0KPiArCWlmICghb2xkX3Ns
-ZWVwICYmIG5ld19zdGF0ZSAhPSBQTV9TVVNQRU5EX09OKSB7Cj4gKwkJc3RhdGUgfD0gU1VTUEVO
-RF9SRVFVRVNURUQ7Cj4gKwkJcXVldWVfd29yayhzdXNwZW5kX3dvcmtfcXVldWUsICZlYXJseV9z
-dXNwZW5kX3dvcmspOwo+ICsJfSBlbHNlIGlmIChvbGRfc2xlZXAgJiYgbmV3X3N0YXRlID09IFBN
-X1NVU1BFTkRfT04pIHsKPiArCQlzdGF0ZSAmPSB+U1VTUEVORF9SRVFVRVNURUQ7Cj4gKwkJd2Fr
-ZV9sb2NrKCZtYWluX3dha2VfbG9jayk7Cj4gKwkJcXVldWVfd29yayhzdXNwZW5kX3dvcmtfcXVl
-dWUsICZsYXRlX3Jlc3VtZV93b3JrKTsKPiArCX0KPiArCXJlcXVlc3RlZF9zdXNwZW5kX3N0YXRl
-ID0gbmV3X3N0YXRlOwo+ICsJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmc3RhdGVfbG9jaywgaXJx
-ZmxhZ3MpOwo+ICt9Cj4gKwo+ICtzdXNwZW5kX3N0YXRlX3QgZ2V0X3N1c3BlbmRfc3RhdGUodm9p
-ZCkKPiArewo+ICsJcmV0dXJuIHJlcXVlc3RlZF9zdXNwZW5kX3N0YXRlOwo+ICt9Cj4gZGlmZiAt
-LWdpdCBhL2tlcm5lbC9wb3dlci9wb3dlci5oIGIva2VybmVsL3Bvd2VyL3Bvd2VyLmgKPiBpbmRl
-eCBlZDFiN2Y0Li5hY2JiMTNhIDEwMDY0NAo+IC0tLSBhL2tlcm5lbC9wb3dlci9wb3dlci5oCj4g
-KysrIGIva2VybmVsL3Bvd2VyL3Bvd2VyLmgKPiBAQCAtMjMxLDMgKzIzMSw5IEBAIGV4dGVybiBz
-dHJ1Y3Qgd2FrZV9sb2NrIG1haW5fd2FrZV9sb2NrOwo+ICBleHRlcm4gc3VzcGVuZF9zdGF0ZV90
-IHJlcXVlc3RlZF9zdXNwZW5kX3N0YXRlOwo+ICBleHRlcm4gYm9vbCBpZ25vcmVfc3VzcGVuZF93
-YWtlbG9ja3M7Cj4gICNlbmRpZgo+ICsKPiArI2lmZGVmIENPTkZJR19FQVJMWVNVU1BFTkQKPiAr
-Lyoga2VybmVsL3Bvd2VyL2Vhcmx5c3VzcGVuZC5jICovCj4gK3ZvaWQgcmVxdWVzdF9zdXNwZW5k
-X3N0YXRlKHN1c3BlbmRfc3RhdGVfdCBzdGF0ZSk7Cj4gK3N1c3BlbmRfc3RhdGVfdCBnZXRfc3Vz
-cGVuZF9zdGF0ZSh2b2lkKTsKPiArI2VuZGlmCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Sat, Feb 7, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> If my understanding is correct, a wakelock is a mechanism that, if held, =
+will
+> prevent the system from (automatically) entering a sleep state, but why d=
+o we
+> need a number of such wakelocks instead of just one reference counter wit=
+h the
+> rule that (automatic) suspend can only happen if the counter is zero?
+
+Using wakelocks instead of a global reference count ensures that your
+request cannot be cleared by someone else. It means that you can,
+without knowing the current state of the lock, safely call wake_lock
+when you know that you need the wakelock, and wake_unlock when you are
+done. It allows wakelocks with timeouts and detailed stats.
+
+> Then, code paths wanting to prevent the suspend from happening would only=
+ need
+> to increase the counter and it shouldn't be difficult to provide a user s=
+pace
+> interface for that.
+
+No, but you would also need to provide way to decrement it, which
+would allow user-space to override a request to stay awake in the
+kernel or from another client.
+
+>> +This works whether the wakelock is already held or not. It is useful if=
+ the
+>> +driver woke up other parts of the system that do not use wakelocks but
+>> +still need to run. Avoid this when possible, since it will waste power
+>> +if the timeout is long or may fail to finish needed work if the timeout=
+ is
+>> +short.
+>
+> And what's this call needed for?
+
+It is needed to give code that do not use wakelocks a chance to run.
+For instance we have not added wakelocks to the network stack. We also
+use it in some places when passing data to untrusted userspace code.
+
+> Is there a mechanism allowing us to see what wakelocks have been created =
+by
+> the user land?  Something like this would be useful for debugging.
+
+/proc/wakelocks shows all wakelocks. It does not currently indicate if
+a wakelock is from userspace, but if you are looking for a specific
+lock it is easy to find. I can add a prefix to the name of all user
+space wakelocks of you want.
+
+>> +Do not use randomly generated wakelock names as there is no api to free
+>> +a user-space wakelock.
+>
+> This appears to be very fragile.  Please rethink it.
+
+I'm adding a /dev interface which removes this limitation.
+
+>> +/* wake_lock_active returns a non-zero value if the wake_lock is curren=
+tly
+>> + * locked. If the wake_lock has a timeout, it does not check the timeou=
+t,
+>> + * but if the timeout had already expired when it was checked elsewhere
+>> + * this function will return 0.
+>> + */
+>> +int wake_lock_active(struct wake_lock *lock);
+>
+> What's the purpose of this function?
+
+It is used by our alarm driver to abort suspend.
+
+>> +/* has_wake_lock returns 0 if no wake locks of the specified type are a=
+ctive,
+>> + * and non-zero if one or more wake locks are held. Specifically it ret=
+urns
+>> + * -1 if one or more wake locks with no timeout are active or the
+>> + * number of jiffies until all active wake locks time out.
+>> + */
+>> +long has_wake_lock(int type);
+>
+> And this?
+
+It is used to abort suspend. Currently when freezing processes, but it
+could also be called between each driver suspend call to improve
+wakeup latency when a wakelock is locked while suspending.
+
+We also use it (with WAKE_LOCK_IDLE) to select the idle sleep mode.
+
+-- =
+
+Arve Hj=F8nnev=E5g
