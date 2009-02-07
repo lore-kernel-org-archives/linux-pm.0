@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Sun, 8 Feb 2009 00:25:40 +0100
-Message-ID: <200902080025.40789.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 02/13] PM: Add early suspend api.
+Date: Sat, 7 Feb 2009 15:34:55 -0800
+Message-ID: <d6200be20902071534j711d7c36x49180b6af9739c0b@mail.gmail.com>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902071956.32964.rjw@sisk.pl>
-	<d6200be20902071451k48dc7a13ybb8251b014a091b0@mail.gmail.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<1233802226-23386-3-git-send-email-arve@android.com>
+	<200902072153.30076.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902071451k48dc7a13ybb8251b014a091b0@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200902072153.30076.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,151 +20,124 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 07 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sat, Feb 7, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > If my understanding is correct, a wakelock is a mechanism that, if held=
-, will
-> > prevent the system from (automatically) entering a sleep state, but why=
- do we
-> > need a number of such wakelocks instead of just one reference counter w=
-ith the
-> > rule that (automatic) suspend can only happen if the counter is zero?
-> =
+On Sat, Feb 7, 2009 at 12:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> +The early-suspend api allows drivers to get notified when user-space wr=
+ites to
+>> +/sys/power/request_state to indicate that the user visible sleep state =
+should
+>> +change. A level controls what order the handlers are called in. Suspend
+>> +handlers are called in low to high level order, resume handlers are cal=
+led in
+>> +the opposite order.
+>
+> I don't really understand this description, sorry.
+>
+> In particular, what values can be written to /sys/power/request_state, wh=
+at
+> their meaning is and what's supposed to happen if someone writes one of t=
+hese
+> values to this file?
 
-> Using wakelocks instead of a global reference count ensures that your
-> request cannot be cleared by someone else.
+Is it clearer if I change it to:
 
-Decreasing the refcount without increasing it would have been a bug, IMO.
+The early-suspend api allows drivers to get notified when user-space writes=
+ a
+sleep state, e.g. "mem", or "on" to /sys/power/request_state to indicate th=
+at
+the user visible sleep state should change. ...
 
-> It means that you can, without knowing the current state of the lock, saf=
-ely
-> call wake_lock when you know that you need the wakelock, and
-> wake_unlock when you are done.
+>
+>> +
+>> +Four levels are defined:
+>> +EARLY_SUSPEND_LEVEL_BLANK_SCREEN:
+>> +  On suspend the screen should be turned off but the framebuffer must s=
+till be
+>> +  accessible. On resume the screen can be turned back on.
+>
+> What exactly is the meaning of "suspend" here?
 
-You can do the same with a reference counter IMO.
+early-suspend.
 
-> It allows wakelocks with timeouts
+>> +EARLY_SUSPEND_LEVEL_STOP_DRAWING:
+>> +  On suspend this level notifies user-space that it should stop accessi=
+ng the
+>> +  framebuffer and it waits for it to complete. On resume it notifies us=
+er-space
+>> +  that it should resume screen access.
+>> +  Two methods are provided, console switch or a sysfs interface.
+>
+> How exactly is the notification supposed to happen?
 
-OK
+Console switch or a blocking sysfs read.
 
-What for?
+>> +EARLY_SUSPEND_LEVEL_DISABLE_FB:
+>> +  Turn off the framebuffer on suspend and back on on resume.
+>> +
+>> +EARLY_SUSPEND_LEVEL_STOP_INPUT:
+>> +  On suspend turn off input devices that are not capable of wakeup or w=
+here
+>> +  wakeup is disabled. On resume turn the same devices back on.
+>
+> This always happens during suspend-resume.  How is this different from the
+> usual suspend-resume behaviour?
 
-> and detailed stats.
+It happens when user-space changes the state, before wakelocks are released.
 
-Well, I'm not sure how this is useful in the long run.
+>> +struct early_suspend {
+>> +#ifdef CONFIG_HAS_EARLYSUSPEND
+>> +     struct list_head link;
+>> +     int level;
+>> +     void (*suspend)(struct early_suspend *h);
+>> +     void (*resume)(struct early_suspend *h);
+>> +#endif
+>> +};
+>
+> Does this mean addional suspend-resume callbacks for device drivers?
 
-> > Then, code paths wanting to prevent the suspend from happening would on=
-ly need
-> > to increase the counter and it shouldn't be difficult to provide a user=
- space
-> > interface for that.
-> =
+Yes.
 
-> No, but you would also need to provide way to decrement it, which
-> would allow user-space to override a request to stay awake in the
-> kernel or from another client.
+> If so, how are they different from the "standard" suspend-resume callback=
+s?
 
-OK, that's a good reason.
+They are called at a different time.
 
-However, it might be better to use a refcount along with some mechanism
-allowing user space processes to increase it only once before decreasing.
-That would require a per-task flag, but I think you can reuse one of the
-freezer flags for that (the freezer is not going to run as long as a wakelo=
-ck
-is held, right?).
+> Also, what about bus types that carry out some suspend-resume operations
+> for their devices, like PCI?  Your early callbacks don't seem to take the
+> bus type part into account.
 
-> >> +This works whether the wakelock is already held or not. It is useful =
-if the
-> >> +driver woke up other parts of the system that do not use wakelocks but
-> >> +still need to run. Avoid this when possible, since it will waste power
-> >> +if the timeout is long or may fail to finish needed work if the timeo=
-ut is
-> >> +short.
-> >
-> > And what's this call needed for?
+No, the driver will have to take care of this. It has to do the same
+work as it would do if it got and ioctl command to enter a low power
+state.
 
-Please don't remove the context.  This makes reading your reply difficult.
+> My understanding of the 'early suspend' idea is that it is a mechanism al=
+lowing
+> us to place some devices selectively into low power states before the act=
+ual
+> suspend happens.  However, this is exactly the same as runtime power
+> management on demand, with an interface allowing user space to put device=
+s into
+> low power states.
 
-> It is needed to give code that do not use wakelocks a chance to run.
-> For instance we have not added wakelocks to the network stack. We also
-> use it in some places when passing data to untrusted userspace code.
+The main point is to have a single entrypoint from user-space. We do
+not have a list of devices to suspend in user-space.
 
-Do you mean to take a wakelock with a timeout in one code path so that some
-other code path can run knowing that suspend will not happen?
+> Now, in my opinion, runtime power management should be implemented on the
+> bus type level, since bus types differ from each other by power management
+> requirements, mechanisms that can be used and hardware interfaces.
+>
+> I have some prototype patches for PCI runtime PM in the works.  I didn't
+> intend to post them just yet, since I'm considering them as work in progr=
+ess.
+> Still, I can do that if you think it would be useful.
 
-If this is correct, I don't like it, because it's inherently unreliable (you
-really never know how long it will take the other code path to run, so you
-can't choose the timeout 100% accurately).
+We don't have a PCI bus, but a generic mechanism to put individual
+devices to sleep, from within the kernel or from user-space, would be
+useful.
 
-I really would use a refcount and make sure it's increased (and obviously
-decreased) by _every_ code path that needs to prevent suspend from happenin=
-g,
-including networking and so on.
+-- =
 
-> > Is there a mechanism allowing us to see what wakelocks have been create=
-d by
-> > the user land?  Something like this would be useful for debugging.
-> =
-
-> /proc/wakelocks shows all wakelocks. It does not currently indicate if
-> a wakelock is from userspace, but if you are looking for a specific
-> lock it is easy to find. I can add a prefix to the name of all user
-> space wakelocks of you want.
-
-Well, actually, do the wakelocks have to have the names?
-
-> >> +Do not use randomly generated wakelock names as there is no api to fr=
-ee
-> >> +a user-space wakelock.
-> >
-> > This appears to be very fragile.  Please rethink it.
-> =
-
-> I'm adding a /dev interface which removes this limitation.
-> =
-
-> >> +/* wake_lock_active returns a non-zero value if the wake_lock is curr=
-ently
-> >> + * locked. If the wake_lock has a timeout, it does not check the time=
-out,
-> >> + * but if the timeout had already expired when it was checked elsewhe=
-re
-> >> + * this function will return 0.
-> >> + */
-> >> +int wake_lock_active(struct wake_lock *lock);
-> >
-> > What's the purpose of this function?
-> =
-
-> It is used by our alarm driver to abort suspend.
-
-In what way, exactly?
-
-> >> +/* has_wake_lock returns 0 if no wake locks of the specified type are=
- active,
-> >> + * and non-zero if one or more wake locks are held. Specifically it r=
-eturns
-> >> + * -1 if one or more wake locks with no timeout are active or the
-> >> + * number of jiffies until all active wake locks time out.
-> >> + */
-> >> +long has_wake_lock(int type);
-
-Well, it should be called max_wake_lock_timeout() or something like this.
-
-> > And this?
-> =
-
-> It is used to abort suspend. Currently when freezing processes, but it
-> could also be called between each driver suspend call to improve
-> wakeup latency when a wakelock is locked while suspending.
-> =
-
-> We also use it (with WAKE_LOCK_IDLE) to select the idle sleep mode.
-
-OK, but it is not supposed to be used by device drivers, right?
-
-Rafael
+Arve Hj=F8nnev=E5g
