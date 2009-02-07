@@ -1,14 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCHv2] ACPI: add missing KERN_* constants to
-	printks
-Date: Sat, 07 Feb 2009 00:38:32 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.0902070022160.26256__44792.010045103$1233985286$gmane$org@localhost.localdomain>
-References: <4989A784.3030604@suse.de> <4989BC3B.2070508@suse.de>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] PCI PM: Read power state from device
+	after	trying to change it on resume
+Date: Sat, 7 Feb 2009 10:19:56 +0100
+Message-ID: <20090207091956.GC1411__19585.8471132398$1233998702$gmane$org@ucw.cz>
+References: <200902030141.28410.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <4989BC3B.2070508@suse.de>
+Content-Disposition: inline
+In-Reply-To: <200902030141.28410.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,146 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frank Seidel <fseidel@suse.de>
-Cc: Frans Pop <elendil@planet.nl>, linux kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, frank@f-seidel.de, shaohuhua.li@intel.com, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, kristen.c.accardi@intel.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue 2009-02-03 01:41:27, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> pci_restore_standard_config() unconditionally changes current_state
+> to PCI_D0 after attempting to change the device's power state, but
+> it should rather read the actual current power state from the
+> device.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-applied -- though I changed the two in acpi_os_vprintf()
-to be KERN_CONT, or we'd get a bunch of <4>'s in
-constructed messages.  Yes, we take our chances with SMP on those.
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-On Wed, 4 Feb 2009, Frank Seidel wrote:
-
-> From: Frank Seidel <frank@f-seidel.de>
-> 
-> According to kerneljanitors todo list all printk calls (beginning
-> a new line) should have an according KERN_* constant.
-> Those are the missing peaces here for the acpi subsystem.
-> 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  drivers/acpi/container.c |    5 +++--
->  drivers/acpi/dock.c      |    8 ++++----
->  drivers/acpi/osl.c       |    4 ++--
->  drivers/acpi/pci_link.c  |    2 +-
->  drivers/acpi/sleep.c     |    2 +-
->  drivers/acpi/video.c     |    2 +-
->  6 files changed, 12 insertions(+), 11 deletions(-)
-> 
-> --- a/drivers/acpi/video.c
-> +++ b/drivers/acpi/video.c
-> @@ -1260,7 +1260,7 @@ static int acpi_video_bus_POST_info_seq_
->  			printk(KERN_WARNING PREFIX
->  			       "This indicates a BIOS bug. Please contact the manufacturer.\n");
->  		}
-> -		printk("%llx\n", options);
-> +		printk(KERN_WARNING "%llx\n", options);
->  		seq_printf(seq, "can POST: <integrated video>");
->  		if (options & 2)
->  			seq_printf(seq, " <PCI video>");
-> --- a/drivers/acpi/container.c
-> +++ b/drivers/acpi/container.c
-> @@ -163,7 +163,7 @@ static void container_notify_cb(acpi_han
->  	case ACPI_NOTIFY_BUS_CHECK:
->  		/* Fall through */
->  	case ACPI_NOTIFY_DEVICE_CHECK:
-> -		printk("Container driver received %s event\n",
-> +		printk(KERN_WARNING "Container driver received %s event\n",
->  		       (type == ACPI_NOTIFY_BUS_CHECK) ?
->  		       "ACPI_NOTIFY_BUS_CHECK" : "ACPI_NOTIFY_DEVICE_CHECK");
->  		status = acpi_bus_get_device(handle, &device);
-> @@ -174,7 +174,8 @@ static void container_notify_cb(acpi_han
->  					kobject_uevent(&device->dev.kobj,
->  						       KOBJ_ONLINE);
->  				else
-> -					printk("Failed to add container\n");
-> +					printk(KERN_WARNING
-> +					       "Failed to add container\n");
->  			}
->  		} else {
->  			if (ACPI_SUCCESS(status)) {
-> --- a/drivers/acpi/pci_link.c
-> +++ b/drivers/acpi/pci_link.c
-> @@ -593,7 +593,7 @@ static int acpi_pci_link_allocate(struct
->  		return -ENODEV;
->  	} else {
->  		acpi_irq_penalty[link->irq.active] += PIRQ_PENALTY_PCI_USING;
-> -		printk(PREFIX "%s [%s] enabled at IRQ %d\n",
-> +		printk(KERN_WARNING PREFIX "%s [%s] enabled at IRQ %d\n",
->  		       acpi_device_name(link->device),
->  		       acpi_device_bid(link->device), link->irq.active);
->  	}
-> --- a/drivers/acpi/dock.c
-> +++ b/drivers/acpi/dock.c
-> @@ -984,7 +984,7 @@ static int dock_add(acpi_handle handle)
->  
->  	ret = device_create_file(&dock_device->dev, &dev_attr_docked);
->  	if (ret) {
-> -		printk("Error %d adding sysfs file\n", ret);
-> +		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
->  		platform_device_unregister(dock_device);
->  		kfree(dock_station);
->  		dock_station = NULL;
-> @@ -992,7 +992,7 @@ static int dock_add(acpi_handle handle)
->  	}
->  	ret = device_create_file(&dock_device->dev, &dev_attr_undock);
->  	if (ret) {
-> -		printk("Error %d adding sysfs file\n", ret);
-> +		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
->  		device_remove_file(&dock_device->dev, &dev_attr_docked);
->  		platform_device_unregister(dock_device);
->  		kfree(dock_station);
-> @@ -1001,7 +1001,7 @@ static int dock_add(acpi_handle handle)
->  	}
->  	ret = device_create_file(&dock_device->dev, &dev_attr_uid);
->  	if (ret) {
-> -		printk("Error %d adding sysfs file\n", ret);
-> +		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
->  		device_remove_file(&dock_device->dev, &dev_attr_docked);
->  		device_remove_file(&dock_device->dev, &dev_attr_undock);
->  		platform_device_unregister(dock_device);
-> @@ -1011,7 +1011,7 @@ static int dock_add(acpi_handle handle)
->  	}
->  	ret = device_create_file(&dock_device->dev, &dev_attr_flags);
->  	if (ret) {
-> -		printk("Error %d adding sysfs file\n", ret);
-> +		printk(KERN_ERR "Error %d adding sysfs file\n", ret);
->  		device_remove_file(&dock_device->dev, &dev_attr_docked);
->  		device_remove_file(&dock_device->dev, &dev_attr_undock);
->  		device_remove_file(&dock_device->dev, &dev_attr_uid);
-> --- a/drivers/acpi/osl.c
-> +++ b/drivers/acpi/osl.c
-> @@ -228,10 +228,10 @@ void acpi_os_vprintf(const char *fmt, va
->  	if (acpi_in_debugger) {
->  		kdb_printf("%s", buffer);
->  	} else {
-> -		printk("%s", buffer);
-> +		printk(KERN_WARNING "%s", buffer);
->  	}
->  #else
-> -	printk("%s", buffer);
-> +	printk(KERN_WARNING "%s", buffer);
->  #endif
->  }
->  
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -679,7 +679,7 @@ static void acpi_power_off_prepare(void)
->  static void acpi_power_off(void)
->  {
->  	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
-> -	printk("%s called\n", __func__);
-> +	printk(KERN_DEBUG "%s called\n", __func__);
->  	local_irq_disable();
->  	acpi_enable_wakeup_device(ACPI_STATE_S5);
->  	acpi_enter_sleep_state(ACPI_STATE_S5);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
