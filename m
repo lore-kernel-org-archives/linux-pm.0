@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 05/13] PM: Add option to disable
 	/sys/power/state interface
-Date: Mon, 9 Feb 2009 00:41:35 +0100
-Message-ID: <200902090041.36163.rjw@sisk.pl>
+Date: Mon, 9 Feb 2009 00:44:04 +0100
+Message-ID: <200902090044.04962.rjw@sisk.pl>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<20090208140404.GA22084@bulgaria.corp.google.com>
-	<20090208210658.GF6369@elf.ucw.cz>
+	<200902081450.46584.rjw@sisk.pl> <20090208210401.GE6369@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090208210658.GF6369@elf.ucw.cz>
+In-Reply-To: <20090208210401.GE6369@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,26 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday 08 February 2009, Pavel Machek wrote:
 > Hi!
 > 
+> > > > This is completely wrong, IMO.
+> > > > 
+> > > > Removing an interface that has existed forever just because it happens to
+> > > > be incompatible with your new shiny feature is not acceptable to me.
+> > > 
+> > > Agreed. AFAICS this patch can be just dropped, or maybe kept specially
+> > > for android if those few bytes matter to them.
+> > 
+> > Just to make things crystal clear, in fact I don't like any patches in this
+> > series.
+> > 
+> > The wakelocks seem to be overdesigned to me and the "early suspend" thing
 > 
-> > Being in suspend, where periodic user and kernel timers aren't running,
-> > and random userspace threads aren't possibly spinning, rather than just 
-> > being in idle in the lowest power possible state, represent a pretty 
-> > significant power savings.
+> Well, it is true that wakelocks could be single atomic_t ... but they
+> would make them undebuggable. Ok, wakelock interface sucks. But I
+> believe something like that is neccessary.
 > 
-> If kernel timers fire too often, fix them. If user land spins, fix it,
-> or SIGSTOP.
-> 
-> And yes, autosleep is useful. That's why I done those "sleepy linux"
-> patches.
+> (In fact, I invented something similar for sleepy linux patches).
 
-I agree, it is.  Still, I don't think the wakelocks in the proposed form are
-the right way to implement it.
+Something like this, yes.
+
+Perhaps it's a good occasion to discuss that and reach an agreement on how to
+implement it.
 
 Thanks,
 Rafael
