@@ -1,18 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Sun, 8 Feb 2009 22:21:22 +0100
-Message-ID: <20090208212122.GG6369@elf.ucw.cz>
+Date: Sun, 8 Feb 2009 22:30:05 +0100
+Message-ID: <20090208213005.GH6369@elf.ucw.cz>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902071956.32964.rjw@sisk.pl>
-	<d6200be20902071451k48dc7a13ybb8251b014a091b0@mail.gmail.com>
-	<200902080025.40789.rjw@sisk.pl>
-	<d6200be20902071620o2012e80es272745f98345b656@mail.gmail.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<20090205091132.GG2077@elf.ucw.cz>
+	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902071620o2012e80es272745f98345b656@mail.gmail.com>
+In-Reply-To: <d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,30 +25,34 @@ To: Arve Hj?nnev?g <arve@android.com>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> >> > If my understanding is correct, a wakelock is a mechanism that, if held, will
-> >> > prevent the system from (automatically) entering a sleep state, but why do we
-> >> > need a number of such wakelocks instead of just one reference counter with the
-> >> > rule that (automatic) suspend can only happen if the counter is zero?
-> >>
-> >> Using wakelocks instead of a global reference count ensures that your
-> >> request cannot be cleared by someone else.
+On Thu 2009-02-05 16:28:28, Arve Hj?nnev?g wrote:
+> On Thu, Feb 5, 2009 at 1:11 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Wed 2009-02-04 18:50:14, Arve Hj??nnev??g wrote:
+> >> +A locked wakelock, depending on its type, prevents the system from entering
+> >> +suspend or other low-power states. When creating a wakelock, you can select
+> >> +if it prevents suspend or low-power idle states.  If the type is
+> >> set to
 > >
-> > Decreasing the refcount without increasing it would have been a bug, IMO.
+> > idle states are very different from suspend. Mixing them does not look
+> > like good idea... and IIRC we already have API somewhere to prevent
+> > deep idle states. Intel did it for their wireless cards IIRC.
 > 
-> Yes, but if all you have is a global reference count, you can't tell
-> where the bug is.
-...
-> >> and detailed stats.
-> >
-> > Well, I'm not sure how this is useful in the long run.
-> 
-> You may want to know which app drained your battery.
+> If you are talking about the pm_qos interface, then yes there is some
+> overlap. We did not use the pm_qos interface since it does a linear
+> scan for a string every time you change a requirement, and it only
+> let
 
-_If_ we want to allow userspace to hold wakelocks (better name could
-be awakelock or nosleeplock?) then some way of displaying them is
-required.
+If pm_qos code is too slow for you, just fix it! 
+
+> you specify the latency you need not the power level. We have
+> interrupts that stop working at the lowest power level and this does
+> not easily translate into a latency value.
+
+Could clock framwork be used for this? 
+
+Or maybe you just want to prevent low idle states as long as those
+interrupts are claimed, no new api needed?
+
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
