@@ -1,24 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 09/13] PM: wakelock: Abort task freezing if a
-	wake lock	is held.
-Date: Mon, 9 Feb 2009 00:00:12 +0100
-Message-ID: <20090208230012.GT6369@elf.ucw.cz>
-References: <1233802226-23386-7-git-send-email-arve@android.com>
-	<1233802226-23386-8-git-send-email-arve@android.com>
-	<1233802226-23386-9-git-send-email-arve@android.com>
-	<1233802226-23386-10-git-send-email-arve@android.com>
-	<20090205085531.GC2077@elf.ucw.cz>
-	<d6200be20902050130q73d710foabb5d1a331f1528b@mail.gmail.com>
-	<20090205094932.GL2077@elf.ucw.cz>
-	<d6200be20902050158m7310bc60w8be16a3975535ee@mail.gmail.com>
-	<20090205100217.GO2077@elf.ucw.cz>
-	<d6200be20902051942h4500abffkdb0751488a4b6c3b@mail.gmail.com>
+Subject: Re: [PATCH 05/13] PM: Add option to disable
+	/sys/power/state	interface
+Date: Mon, 9 Feb 2009 00:03:35 +0100
+Message-ID: <20090208230335.GU6369@elf.ucw.cz>
+References: <20090208210401.GE6369@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0902081628340.22400-100000@netrider.rowland.org>
+	<d6200be20902081500u29f349e4o797aad8cfddc60f9@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902051942h4500abffkdb0751488a4b6c3b@mail.gmail.com>
+In-Reply-To: <d6200be20902081500u29f349e4o797aad8cfddc60f9@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,19 +25,32 @@ To: Arve Hj?nnev?g <arve@android.com>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-02-05 19:42:13, Arve Hj?nnev?g wrote:
-> On Thu, Feb 5, 2009 at 2:02 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > ...so I guess I'll wait for extended description.
->     PM: wakelock: Abort task freezing if a wakelock is locked.
+On Sun 2009-02-08 15:00:38, Arve Hj?nnev?g wrote:
+> On Sun, Feb 8, 2009 at 1:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Sun, 8 Feb 2009, Pavel Machek wrote:
+> >
+> >> Well, it is true that wakelocks could be single atomic_t ... but they
+> >> would make them undebuggable. Ok, wakelock interface sucks. But I
+> >> believe something like that is neccessary.
+> >
+> > krefs don't have name strings for keeping track of who has been
+> > incrementing or decrementing their counters.  And it's true that krefs
+> > are nearly undebuggable.  But somehow we've managed to struggle along
+> > without adding names to krefs.  Why should wakelocks be any different?
 > 
->     If a wakelock is locked, suspend will fail anyway. Since try_to_freeze_tasks
->     can take up to 20 seconds to complete or fail, aborting as soon as someone
->     locks a wakelock (e.g. from an interrupt handler) improves the worst case
->     wakeup latency.
+> It sounds like you suggesting that we add another nearly undebuggable interface.
+> 
+> Using only a single atomic_t would not allow us to use a wakelock a
+> switch, or to specify a timeout. You could replace the list in the
+> implementation with a single atomic_t by adding more state to each
+> wakelock, but I like my current solution better.
 
-Well, I'd rather fix the cases when freeze() takes too long. If that
-is infeasible, yes, I guess we can do this.
-									Pavel
+For the record, I agree here. And... if struct wakelock contains char
+* or not is a very small detail.
+
+If wakelocks can be locked from userspace is _not_ a detail; and if
+they can we do need the names.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
