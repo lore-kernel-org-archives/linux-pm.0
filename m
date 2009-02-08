@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable
-	bridges during suspend-resume
-Date: Sun, 8 Feb 2009 14:23:08 +0100
-Message-ID: <200902081423.08991.rjw__15373.035221319$1234099647$gmane$org@sisk.pl>
-References: <200902012229.27517.rjw@sisk.pl> <200902071448.13877.rjw@sisk.pl>
-	<20090208091157.GD8040@elf.ucw.cz>
+Subject: Re:
+ =?iso-8859-1?q?Acer_Aspire_1690_Suspend/Hibernate_Repo?=
+ =?iso-8859-1?q?rt_with=092=2E6=2E29-rc3?=
+Date: Sun, 8 Feb 2009 14:25:23 +0100
+Message-ID: <200902081425.23579.rjw@sisk.pl>
+References: <20090207092111.GF1411@ucw.cz>
+	<449895.60011.qm@web36806.mail.mud.yahoo.com>
+	<20090208103230.GB14143@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090208091157.GD8040@elf.ucw.cz>
+In-Reply-To: <20090208103230.GB14143@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,52 +22,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday 08 February 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > > > their standard config spaces are restored.  Fix this by not attempting
-> > > > to disable bridges during suspend and enable them during resume.
-> > > ...
-> > > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
-> > > >  {
-> > > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
-> > > >  
-> > > > -	if (!pci_is_bridge(pci_dev))
-> > > > -		pci_enable_wake(pci_dev, PCI_D0, false);
-> > > > +	if (pci_is_bridge(pci_dev))
-> > > > +		return 0;
-> > > >  
-> > > > +	pci_enable_wake(pci_dev, PCI_D0, false);
-> > > >  	return pci_pm_reenable_device(pci_dev);
-> > > >  }
-> > > 
-> > > Are you sure? This goes from doing reenable_device to not doing it for
-> > > bridges, seemingly contradicting changelog?
+> On Sat 2009-02-07 14:24:17, Daniel Qarras wrote:
+> > Hi!
 > > 
-> > Can you explain what you mean, please?
+> > > > Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3
+> > > > suspend/hibernate behave in this manner:
+> > > > 
+> > > > Hibernation completes ok but resumes immediately as if
+> > > > I would have pressed the power button.
+> > 
+> > Thanks a lot for the tip, indeed it makes hibernation working again:
+> > 
+> > root@localhost:~# echo shutdown > /sys/power/disk
+> > root@localhost:~# pm-hibernate
+> > 
+> > Great! Is there a way to make this default on my system, e.g., with a quirk?
 > 
-> It looks to me like the patch does not match the changelog.
-> 
-> Changelog says "enable bridge during resume", but code does return 0
-> if it seems bridge.
+> Well, it would be better to fix it properly, than just work around it
+> with quirk. I think it worked before and you already identified commit
+> that breaks it?
 
-Ah, I see.  The changelog was supposed to mean that the bridges would not
-be disabled during suspend and also would not be enabled during resume
-(which shouldn't be necessary, since they would be automatically enabled
-as a result of restoring their configuration registers).
+That was the patch that made hibernation use ACPI to enter S4.  IOW, the thing
+has never worked on this machine.
 
 Thanks,
 Rafael
-
-
-> 									Pavel
-
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
