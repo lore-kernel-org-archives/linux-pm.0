@@ -1,13 +1,24 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29-rc4: Reported regressions from 2.6.28
-Date: Sun, 8 Feb 2009 13:55:44 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0902081354150.3048__12738.1188715392$1234130291$gmane$org@localhost.localdomain>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 10/13] PM: earlysuspend: Add console switch
+	when user	requested sleep state changes.
+Date: Sun, 8 Feb 2009 23:02:08 +0100
+Message-ID: <20090208220208.GJ6369@elf.ucw.cz>
+References: <1233802226-23386-4-git-send-email-arve@android.com>
+	<1233802226-23386-5-git-send-email-arve@android.com>
+	<1233802226-23386-6-git-send-email-arve@android.com>
+	<1233802226-23386-7-git-send-email-arve@android.com>
+	<1233802226-23386-8-git-send-email-arve@android.com>
+	<1233802226-23386-9-git-send-email-arve@android.com>
+	<1233802226-23386-10-git-send-email-arve@android.com>
+	<1233802226-23386-11-git-send-email-arve@android.com>
+	<20090205090316.GD2077@elf.ucw.cz>
+	<d6200be20902051829m547664e7j5cba989aaea535a5@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+Content-Disposition: inline
+In-Reply-To: <d6200be20902051829m547664e7j5cba989aaea535a5@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,22 +28,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
+On Thu 2009-02-05 18:29:30, Arve Hj?nnev?g wrote:
+> On Thu, Feb 5, 2009 at 1:03 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > changelog would be welcome.
+>     PM: earlysuspend: Add console switch when user requested sleep
+> state changes.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12669
-> Subject		: 2.6.28.4 regression: mmap fails if mlockall used
-> Submitter	: Sami Farin <safari-kernel@safari.iki.fi>
-> Date		: 2009-02-08 10:52 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123409037423068&w=4
+>     When early-suspend is enabled, the framebuffer is turned off at
+>     early-suspend. If CONSOLE_EARLYSUSPEND is enabled, a console switch
+>     is used to notify user space that it should stop drawing before
+>     the framebuffer is disabled, and that it should repaint and resume
+>     drawing after the framebuffer is turned back on.
 
-Oh, Hugh just sent a patch, and it's now commit 
-d5b562330ec766292a3ac54ae5e0673610bd5b3d. Sadly this just missed -rc4 by 
-something like 20 minutes..
-
-		Linus
+I'd say that userspace can just do the switch itself? I mean, blanking
+is slow&uncommon operation... and behaviour of kernel should not
+depend on CONFIG_ options.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
