@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state	interface
-Date: Mon, 9 Feb 2009 00:41:42 +0100
-Message-ID: <20090208234142.GA1382@ucw.cz>
-References: <20090208210401.GE6369@elf.ucw.cz> <200902100117.37019.rjw@sisk.pl>
-	<20090210091314.GA18835@atrey.karlin.mff.cuni.cz>
-	<200902101518.29690.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] PM: Fix build for CONFIG_PM unset
+Date: Mon, 9 Feb 2009 00:47:08 +0100
+Message-ID: <20090208234708.GA1415__47531.7123848528$1234445055$gmane$org@ucw.cz>
+References: <200901062112.29227.rjw@sisk.pl> <49922896.6090605@redhat.com>
+	<200902111038.46368.rjw@sisk.pl> <200902112233.21529.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902101518.29690.rjw@sisk.pl>
+In-Reply-To: <200902112233.21529.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Cheng Renquan <crquan@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed 2009-02-11 22:33:20, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Compilation of kprobes.c with CONFIG_PM unset is broken due to some
+> broken config dependncies.  Fix that.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-> > > No, we are talking of allocating kernel memory on behalf of user space
-> > > processes with no apparent limitations.
-> > 
-> > Ok, I see now. Yes, letting each process allocated unlimited number of
-> > wakelocks is indeed bad.
-> > 
-> > (But the names for in-kernel users should be ok, right?)
-> 
-> Yes, in principle, but what exactly the benefit would be?
-> 
-> In the kernel we can use rwlock for blocking suspend, for example,
-> that will be taken for reading by the code paths wanting to prevent suspend
-> from happening and for writing by the suspend code.
-> 
-> > "Wakelock is a filedescriptor" would solve that...
-> 
-> Sort of.
-> 
-> Still, I don't think there's much point in having more than one "wakelock"
-> per process.
-> 
-> Moreover, I _guess_ it would be sufficient to have only one such thing for
-> the entire user space and single daemon and a (user land) library to manage it.
 
-...which is what android userland actually does...
-
-OTOH they also veto suspend if any events are unprocessed on input
-device queues... so tying it to filedescriptor would make some sense.
+Acked by: Pavel Machek <pavel@suse.cz>
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
