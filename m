@@ -1,15 +1,24 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state interface
-Date: Sun, 8 Feb 2009 15:00:38 -0800
-Message-ID: <d6200be20902081500u29f349e4o797aad8cfddc60f9@mail.gmail.com>
-References: <20090208210401.GE6369@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0902081628340.22400-100000@netrider.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 09/13] PM: wakelock: Abort task freezing if a
+	wake lock	is held.
+Date: Mon, 9 Feb 2009 00:00:12 +0100
+Message-ID: <20090208230012.GT6369@elf.ucw.cz>
+References: <1233802226-23386-7-git-send-email-arve@android.com>
+	<1233802226-23386-8-git-send-email-arve@android.com>
+	<1233802226-23386-9-git-send-email-arve@android.com>
+	<1233802226-23386-10-git-send-email-arve@android.com>
+	<20090205085531.GC2077@elf.ucw.cz>
+	<d6200be20902050130q73d710foabb5d1a331f1528b@mail.gmail.com>
+	<20090205094932.GL2077@elf.ucw.cz>
+	<d6200be20902050158m7310bc60w8be16a3975535ee@mail.gmail.com>
+	<20090205100217.GO2077@elf.ucw.cz>
+	<d6200be20902051942h4500abffkdb0751488a4b6c3b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902081628340.22400-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <d6200be20902051942h4500abffkdb0751488a4b6c3b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +28,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Arve Hj?nnev?g <arve@android.com>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 8, 2009 at 1:40 PM, Alan Stern <stern@rowland.harvard.edu> wrot=
-e:
-> On Sun, 8 Feb 2009, Pavel Machek wrote:
->
->> Well, it is true that wakelocks could be single atomic_t ... but they
->> would make them undebuggable. Ok, wakelock interface sucks. But I
->> believe something like that is neccessary.
->
-> krefs don't have name strings for keeping track of who has been
-> incrementing or decrementing their counters.  And it's true that krefs
-> are nearly undebuggable.  But somehow we've managed to struggle along
-> without adding names to krefs.  Why should wakelocks be any different?
+On Thu 2009-02-05 19:42:13, Arve Hj?nnev?g wrote:
+> On Thu, Feb 5, 2009 at 2:02 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > ...so I guess I'll wait for extended description.
+>     PM: wakelock: Abort task freezing if a wakelock is locked.
+> 
+>     If a wakelock is locked, suspend will fail anyway. Since try_to_freeze_tasks
+>     can take up to 20 seconds to complete or fail, aborting as soon as someone
+>     locks a wakelock (e.g. from an interrupt handler) improves the worst case
+>     wakeup latency.
 
-It sounds like you suggesting that we add another nearly undebuggable inter=
-face.
-
-Using only a single atomic_t would not allow us to use a wakelock a
-switch, or to specify a timeout. You could replace the list in the
-implementation with a single atomic_t by adding more state to each
-wakelock, but I like my current solution better.
-
--- =
-
-Arve Hj=F8nnev=E5g
+Well, I'd rather fix the cases when freeze() takes too long. If that
+is infeasible, yes, I guess we can do this.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
