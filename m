@@ -1,15 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] PM: Fix suspend_console/resume_console to
- use only one semaphore.
-Date: Sun, 08 Feb 2009 13:36:10 +1100
-Message-ID: <1234060570.31963.74.camel__18915.2116924108$1234060810$gmane$org@pasglop>
-References: <1233372459-6434-2-git-send-email-arve@android.com>
-	<1233626624-28569-1-git-send-email-arve@android.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable
+	bridges during	suspend-resume
+Date: Sun, 8 Feb 2009 10:11:57 +0100
+Message-ID: <20090208091157.GD8040__27741.3942073055$1234084590$gmane$org@elf.ucw.cz>
+References: <200902012229.27517.rjw@sisk.pl> <200902012231.17933.rjw@sisk.pl>
+	<20090207094720.GA1507@ucw.cz> <200902071448.13877.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1233626624-28569-1-git-send-email-arve@android.com>
+Content-Disposition: inline
+In-Reply-To: <200902071448.13877.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,71 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAyMDA5LTAyLTAyIGF0IDE4OjAzIC0wODAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IFRoaXMgZml4ZXMgYSByYWNlIHdoZXJlIGEgdGhyZWFkIGFjcXVpcmVzIHRoZSBjb25zb2xl
-IHdoaWxlIHRoZQo+IGNvbnNvbGUgaXMgc3VzcGVuZGVkLCBhbmQgdGhlIGNvbnNvbGUgaXMgcmVz
-dW1lZCBiZWZvcmUgdGhpcwo+IHRocmVhZCByZWxlYXNlcyBpdC4gSW4gdGhpcyBjYXNlLCB0aGUg
-c2Vjb25kYXJ5IGNvbnNvbGUKPiBzZW1hcGhvcmUgd291bGQgYmUgbGVmdCBsb2NrZWQsIGFuZCB0
-aGUgcHJpbWFyeSBzZW1hcGhvcmUgd291bGQKPiBiZSByZWxlYXNlZCB0d2ljZS4gVGhpcyBpbiB0
-dXJuIHdvdWxkIGNhdXNlIHRoZSBjb25zb2xlIHN3aXRjaAo+IG9uIHN1c3BlbmQgb3IgcmVzdW1l
-IHRvIGhhbmcgZm9yZXZlci4KPiAKPiBOb3RlIHRoYXQgc3VzcGVuZF9jb25zb2xlIGRvZXMgbm90
-IGFjdHVhbGx5IGxvY2sgdGhlIGNvbnNvbGUKPiBmb3IgY2xpZW50cyB0aGF0IHVzZSBhY3F1aXJl
-X2NvbnNvbGVfc2VtLCBpdCBvbmx5IGxvY2tzIGl0IGZvcgo+IGNsaWVudHMgdGhhdCB1c2UgdHJ5
-X2FjcXVpcmVfY29uc29sZV9zZW0uIElmIHdlIGNoYW5nZQo+IHN1c3BlbmRfY29uc29sZSB0byBm
-dWxseSBsb2NrIHRoZSBjb25zb2xlLCB0aGVuIHRoZSBrZXJuZWwKPiBtYXkgZGVhZGxvY2sgb24g
-c3VzcGVuZC4gT25lIGNsaWVudCBvZiB0cnlfYWNxdWlyZV9jb25zb2xlX3NlbQo+IGlzIGFjcXVp
-cmVfY29uc29sZV9zZW1hcGhvcmVfZm9yX3ByaW50aywgd2hpY2ggdXNlcyBpdCB0bwo+IHByZXZl
-bnQgcHJpbnRrIGZyb20gdXNpbmcgdGhlIGNvbnNvbGUgd2hpbGUgaXQgaXMgc3VzcGVuZGVkLgoK
-UmlnaHQsIHdlIHNob3VsZG4ndCBob2xkIHRoZSBzZW1hcGhvcmUgb3ZlciB0aGUgd2hvbGUgdGlt
-ZS4gSW4gZmFjdCwgSQpldmVuIGhhdmUgc29tZSBkb3VidHMgYWJvdXQgdGhlIG5lZWQgZm9yIHN1
-c3BlbmRpbmcgdGhlIGNvbnNvbGUgYXQKYWxsLi4uCgpUaGUgd2F5IEkgZGlkIGl0IGJhY2sgdGhl
-biBmb3IgcG93ZXJib29rcyB3YXMgdG8gaW1wbGVtZW50IGEgInN1c3BlbmRlZCIKc3RhdGUgaW4g
-dGhlIGZiZGV2L2ZiY29uIGNvcmUgd2hpY2ggdGhlIGRyaXZlcnMgY2FsbCBlZmZlY3RpdmVseSBj
-YXVzaW5nCnRoZSBjb3JlIHRvIHN0b3AgdG91Y2hpbmcgdGhlIGZyYW1lYnVmZmVyLiBXb3JrcyBm
-aW5lIGZvciBrZXJuZWwKY29uc29sZXMgdGhvdWdoIG9mIGNvdXJzZSB1c2Vyc3BhY2Ugb3IgWCBu
-ZWVkcyBzb21ldGhpbmcgZGlmZmVyZW50LApidXQgdGhhdCdzIG9ydGhvZ29uYWwuCgpPZiBjb3Vy
-c2UgdGhhdCBkb2Vzbid0IGhlbHAgd2l0aCBzZXJpYWwsIHZnYWNvbiBldGMuLi4gc28gZWFjaCBk
-cml2ZXJzCm5lZWRzIHRvIHN1c3BlbmQgaXRzZWxmIGFuZCBiZSBtYWRlIHRvIGlnbm9yZSBpbmNv
-bWluZyByZXF1ZXN0cyBidXQKdGhhdCdzIHNvbWV0aGluZyB0aGF0IGhhcyB0byBiZSBkb25lIGFu
-eXdheSBhdCBzb21lIHN0YWdlLi4uCgpJIHN1c3BlY3QgdGhlIHN1c3BlbmQgY29uc29sZSB0cmlj
-ayBpcyBtb3N0bHkgaGVscGZ1bCB3aXRoIHZnYWNvbi4uCgpCZW4uCgoKPiBTaWduZWQtb2ZmLWJ5
-OiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPgo+IC0tLQo+ICBrZXJuZWwvcHJp
-bnRrLmMgfCAgIDE1ICsrKysrKysrKy0tLS0tLQo+ICAxIGZpbGVzIGNoYW5nZWQsIDkgaW5zZXJ0
-aW9ucygrKSwgNiBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEva2VybmVsL3ByaW50ay5j
-IGIva2VybmVsL3ByaW50ay5jCj4gaW5kZXggNjkxODhmMi4uZTM2MDJkMCAxMDA2NDQKPiAtLS0g
-YS9rZXJuZWwvcHJpbnRrLmMKPiArKysgYi9rZXJuZWwvcHJpbnRrLmMKPiBAQCAtNzMsNyArNzMs
-NiBAQCBFWFBPUlRfU1lNQk9MKG9vcHNfaW5fcHJvZ3Jlc3MpOwo+ICAgKiBkcml2ZXIgc3lzdGVt
-Lgo+ICAgKi8KPiAgc3RhdGljIERFQ0xBUkVfTVVURVgoY29uc29sZV9zZW0pOwo+IC1zdGF0aWMg
-REVDTEFSRV9NVVRFWChzZWNvbmRhcnlfY29uc29sZV9zZW0pOwo+ICBzdHJ1Y3QgY29uc29sZSAq
-Y29uc29sZV9kcml2ZXJzOwo+ICBFWFBPUlRfU1lNQk9MX0dQTChjb25zb2xlX2RyaXZlcnMpOwo+
-ICAKPiBAQCAtODkxLDEyICs4OTAsMTQgQEAgdm9pZCBzdXNwZW5kX2NvbnNvbGUodm9pZCkKPiAg
-CXByaW50aygiU3VzcGVuZGluZyBjb25zb2xlKHMpICh1c2Ugbm9fY29uc29sZV9zdXNwZW5kIHRv
-IGRlYnVnKVxuIik7Cj4gIAlhY3F1aXJlX2NvbnNvbGVfc2VtKCk7Cj4gIAljb25zb2xlX3N1c3Bl
-bmRlZCA9IDE7Cj4gKwl1cCgmY29uc29sZV9zZW0pOwo+ICB9Cj4gIAo+ICB2b2lkIHJlc3VtZV9j
-b25zb2xlKHZvaWQpCj4gIHsKPiAgCWlmICghY29uc29sZV9zdXNwZW5kX2VuYWJsZWQpCj4gIAkJ
-cmV0dXJuOwo+ICsJZG93bigmY29uc29sZV9zZW0pOwo+ICAJY29uc29sZV9zdXNwZW5kZWQgPSAw
-Owo+ICAJcmVsZWFzZV9jb25zb2xlX3NlbSgpOwo+ICB9Cj4gQEAgLTkxMiwxMSArOTEzLDkgQEAg
-dm9pZCByZXN1bWVfY29uc29sZSh2b2lkKQo+ICB2b2lkIGFjcXVpcmVfY29uc29sZV9zZW0odm9p
-ZCkKPiAgewo+ICAJQlVHX09OKGluX2ludGVycnVwdCgpKTsKPiAtCWlmIChjb25zb2xlX3N1c3Bl
-bmRlZCkgewo+IC0JCWRvd24oJnNlY29uZGFyeV9jb25zb2xlX3NlbSk7Cj4gLQkJcmV0dXJuOwo+
-IC0JfQo+ICAJZG93bigmY29uc29sZV9zZW0pOwo+ICsJaWYgKGNvbnNvbGVfc3VzcGVuZGVkKQo+
-ICsJCXJldHVybjsKPiAgCWNvbnNvbGVfbG9ja2VkID0gMTsKPiAgCWNvbnNvbGVfbWF5X3NjaGVk
-dWxlID0gMTsKPiAgfQo+IEBAIC05MjYsNiArOTI1LDEwIEBAIGludCB0cnlfYWNxdWlyZV9jb25z
-b2xlX3NlbSh2b2lkKQo+ICB7Cj4gIAlpZiAoZG93bl90cnlsb2NrKCZjb25zb2xlX3NlbSkpCj4g
-IAkJcmV0dXJuIC0xOwo+ICsJaWYgKGNvbnNvbGVfc3VzcGVuZGVkKSB7Cj4gKwkJdXAoJmNvbnNv
-bGVfc2VtKTsKPiArCQlyZXR1cm4gLTE7Cj4gKwl9Cj4gIAljb25zb2xlX2xvY2tlZCA9IDE7Cj4g
-IAljb25zb2xlX21heV9zY2hlZHVsZSA9IDA7Cj4gIAlyZXR1cm4gMDsKPiBAQCAtOTc5LDcgKzk4
-Miw3IEBAIHZvaWQgcmVsZWFzZV9jb25zb2xlX3NlbSh2b2lkKQo+ICAJdW5zaWduZWQgd2FrZV9r
-bG9nZCA9IDA7Cj4gIAo+ICAJaWYgKGNvbnNvbGVfc3VzcGVuZGVkKSB7Cj4gLQkJdXAoJnNlY29u
-ZGFyeV9jb25zb2xlX3NlbSk7Cj4gKwkJdXAoJmNvbnNvbGVfc2VtKTsKPiAgCQlyZXR1cm47Cj4g
-IAl9Cj4gIAo+IC0tIAo+IDEuNi4xCj4gCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KPiBsaW51eC1wbSBtYWlsaW5nIGxpc3QKPiBsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwo+IGh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Hi!
+
+> > > their standard config spaces are restored.  Fix this by not attempting
+> > > to disable bridges during suspend and enable them during resume.
+> > ...
+> > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
+> > >  {
+> > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> > >  
+> > > -	if (!pci_is_bridge(pci_dev))
+> > > -		pci_enable_wake(pci_dev, PCI_D0, false);
+> > > +	if (pci_is_bridge(pci_dev))
+> > > +		return 0;
+> > >  
+> > > +	pci_enable_wake(pci_dev, PCI_D0, false);
+> > >  	return pci_pm_reenable_device(pci_dev);
+> > >  }
+> > 
+> > Are you sure? This goes from doing reenable_device to not doing it for
+> > bridges, seemingly contradicting changelog?
+> 
+> Can you explain what you mean, please?
+
+It looks to me like the patch does not match the changelog.
+
+Changelog says "enable bridge during resume", but code does return 0
+if it seems bridge.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
