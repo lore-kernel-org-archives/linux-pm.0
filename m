@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 05/13] PM: Add option to disable
 	/sys/power/state interface
-Date: Mon, 9 Feb 2009 00:44:48 +0100
-Message-ID: <200902090044.49034.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0902081628340.22400-100000@netrider.rowland.org>
+Date: Sun, 8 Feb 2009 15:58:12 -0800
+Message-ID: <d6200be20902081558r272e13b1q28692eaba758878b@mail.gmail.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902081450.46584.rjw@sisk.pl>
+	<20090208140404.GA22084@bulgaria.corp.google.com>
+	<200902090040.22364.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902081628340.22400-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200902090040.22364.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +21,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 08 February 2009, Alan Stern wrote:
-> On Sun, 8 Feb 2009, Pavel Machek wrote:
-> 
-> > Well, it is true that wakelocks could be single atomic_t ... but they
-> > would make them undebuggable. Ok, wakelock interface sucks. But I
-> > believe something like that is neccessary.
-> 
-> krefs don't have name strings for keeping track of who has been 
-> incrementing or decrementing their counters.  And it's true that krefs 
-> are nearly undebuggable.  But somehow we've managed to struggle along 
-> without adding names to krefs.  Why should wakelocks be any different?
+On Sun, Feb 8, 2009 at 3:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday 08 February 2009, Brian Swetland wrote:
+>> Out of curiosity, do these changes provide a model where the system can
+>> be in suspend 99+% of the time, waking up for specific events
+>> (voice/data telephony, user interaction, etc), and rapidly returning to
+>> suspend when the processing required is complete?
+>
+> The changes I was referring to above were rather related to the "normal"
+> suspend (ie. the one happening as a result of writing "mem" into
+> /sys/power/state).  Namely, we believe that for some devices it is not
+> necessary or even desirable to allow the driver to perform all of the pow=
+er
+> management operations by itself.  For example, we are going to make the P=
+CI
+> PM core (which in fact is the PCI bus type driver) handle the saving and
+> restoration of PCI devices' configuration registers as well as putting the
+> devices into low power states and back into the full power state.  We can=
+ do
+> that, because in the "normal" suspend code path the suspend routines of a
+> driver are executed by the appropriate bus type's suspend routines and not
+> directly by the PM core.  The "early suspend" mechanism seems to go round=
+ this
+> by calling directly into device drivers.
 
-Yeah, I don't really see why.
+How do you handle devices that should be in a low power mode when
+closed, and a high(er) power mode when open. While adding
+early-suspend hooks to a driver may be ugly, it does not need any more
+support than open and close does.
 
-Thanks,
-Rafael
+> Also, please observe that if there is a mechanism allowing us to put indi=
+vidual
+> devices, or entire subsystems (such as a bus with devices attached to it)=
+, into
+> low power states at run time, without placing the entire system in a sleep
+> state, and put them back into the full power state as needed, we won't ne=
+ed
+> anything like the "early suspend" introduced by this series of patches.
+
+While early-suspend is not needed, it is still convenient on an
+embedded device where some drivers are clearly only used when the
+screen is on.
+
+> As far as the wakelocks are concerned, the goal they are designed to achi=
+eve is
+> quite simple: you want to prevent suspend from happening in certain situa=
+tions.
+> In principle, one flag is sufficient for that.  Still, there are many code
+> paths that might set and unset this flag and it would have been bad if th=
+e flag
+> had been set by one code path and then immediately unset by another one.
+> To prevent this from happening one can use a reference count with the rul=
+e that
+> suspend can only happen if it is equal to zero.
+
+We also want accountability.
+
+-- =
+
+Arve Hj=F8nnev=E5g
