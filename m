@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 06/13] PM: Implement early suspend api
-Date: Sun, 8 Feb 2009 14:33:03 +0100
-Message-ID: <200902081433.04460.rjw@sisk.pl>
+Subject: Re: [PATCH 05/13] PM: Add option to disable
+	/sys/power/state interface
+Date: Sun, 8 Feb 2009 14:50:45 +0100
+Message-ID: <200902081450.46584.rjw@sisk.pl>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902072347.53674.rjw@sisk.pl>
-	<1234060344.31963.71.camel@pasglop>
+	<200902072337.40046.rjw@sisk.pl>
+	<20090208103355.GC14143@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1234060344.31963.71.camel@pasglop>
+In-Reply-To: <20090208103355.GC14143@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,46 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: swetland@google.com, u.luckas@road.de, ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5IDA4IEZlYnJ1YXJ5IDIwMDksIEJlbmphbWluIEhlcnJlbnNjaG1pZHQgd3JvdGU6
-Cj4gT24gU2F0LCAyMDA5LTAyLTA3IGF0IDIzOjQ3ICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3
-cm90ZToKPiA+IE9uIFRodXJzZGF5IDA1IEZlYnJ1YXJ5IDIwMDksIEFydmUgSGrDuG5uZXbDpWcg
-d3JvdGU6Cj4gPiA+IFNpZ25lZC1vZmYtYnk6IEFydmUgSGrDuG5uZXbDpWcgPGFydmVAYW5kcm9p
-ZC5jb20+Cj4gPiAKPiA+IEkgZG9uJ3QgcmVhbGx5IGFncmVlIHdpdGggdGhpcyBkZXNpZ24sIGJl
-Y2F1c2UgSSBkb24ndCB0aGluayBpdCdzIHN1aXRhYmxlIGZvcgo+ID4gYWxsIGJ1cyB0eXBlcy4g
-IE5hbWVseSwgaWYgYW55IGJ1cyB0eXBlIHBhcnRpYWxseSBoYW5kbGVzIHN1c3BlbmQtcmVzdW1l
-IG9mCj4gPiBpdHMgZGV2aWNlcyB0byBvZmZsb2FkIGRldmljZSBkcml2ZXJzLCBJIGRvbid0IHNl
-ZSBob3cgdGhhdCBpcyBnb2luZyB0byB3b3JrCj4gPiBhbG9uZyB3aXRoIHlvdXIgZGVzaWduLgo+
-ID4gCj4gPiBZb3Ugc2VlbSB0byByZXF1aXJlIHRoZSBkcml2ZXJzIHRoYXQgd2lsbCByZWdpc3Rl
-ciB0aGUgZWFybHkgcmVzdW1lIGhhbmRsZXJzCj4gPiB0byB0YWtlIGNhcmUgb2YgZXZlcnl0aGlu
-ZywgYWxvbmcgd2l0aCB0aGUgb3BlcmF0aW9ucyB0aGF0IHNob3VsZCByZWFsbHkgYmVsb25nCj4g
-PiB0byBidXMgdHlwZXMuICBJIGRvbid0IHRoaW5rIGl0J3MgYSBnb29kIGFwcHJvYWNoLiAKPiAK
-PiBNb3JlIHNwZWNpZmljYWxseSwgd2l0aCB0aGUgd29yayB5b3UgKFJhZmFlbCkgYXJlIGRvaW5n
-IGF0IHRoZSBtb21lbnQsCj4gdGhpbmdzIGxpa2UgUENJIG9yIG90aGVyIGxvdyBsZXZlbCBidXNz
-ZXMgd291bGQgYmUgZnVsbHkgcmVzdG9yZWQgaW4KPiB0aGUgZWFybHkgcmVzdW1lIHBoYXNlIGJl
-Zm9yZSBkcml2ZXJzIGdldHMgdGhlaXIgcmVzdW1lX2Vhcmx5Lgo+IEhlbmNlZm9ydGgsIGl0IHdv
-dWxkIGJlIHBvc3NpYmxlIGZvciB0aGluZ3MgbGlrZSBmYmRldidzIGV0Yy4uLiB0bwo+IHJlc3Vt
-ZSBmcm9tIHJlc3VtZV9lYXJseSgpIHdoaWNoIGlzIHByb2JhYmx5IHNvb24gZW5vdWdoLgoKVGhh
-dCdzIGNvcnJlY3QgSU1PLgoKPiBJZS4gSSBjdXJyZW50bHkgaGF2ZSB0aGlzIGhhY2sgaW4gcmFk
-ZW9uZmIgdG8gcmVzdW1lIGl0IGV2ZW4gYmVmb3JlIHRoYXQKPiB3aGlsZSBJUlFzIGFyZSBzdGls
-bCBvZmYgZXRjLi4uIGJ1dCBpdCdzIGEgY2FuIG9mIHdvcm1zIGR1ZSB0byB2YXJpb3VzCj4gbWln
-aHRfc2xlZXAoKSBoaXRzIGluIHN1YnN5c3RlbXMgbGVmdCBhbmQgcmlnaHQgKFBDSSwgQUdQLCBl
-dGMuLi4pLgo+IAo+IEknbSBhY3R1YWxseSB0aGlua2luZyB0aGF0IHdoZW4gSSBtaWdyYXRlIGFs
-bCBvZiB0aGF0IHRvIHJhZGVvbiBEUk0vS01TLAo+IEknbGwgcHJvYmFibHkgc3RpY2sgaXQgYWxs
-IGp1c3QgaW4gbGF0ZV9zdXNwZW5kL2Vhcmx5X3Jlc3VtZSBwcm92aWRlZAo+IG91ciBwbGFucyB0
-byBjaGFuZ2UgdGhlIGludGVycnVwdCBkaXNhYmxpbmcgZ28gaW4gYW5kIG1pZ2h0X3NsZWVwKCkK
-PiBiZWNvbWVzIHNhZmUgaW4gdGhhdCBwaGFzZS4KCkknbSBnb2luZyB0byBzdGFydCB3b3JraW5n
-IG9uIHRoZSBkaXNhYmxpbmcgb2YgaW50ZXJydXB0cyBzaG9ydGx5LgoKPiBJIGRvbid0IHNlZSB0
-aGlzIEFuZHJvaWQgZWFybHlfc3VzcGVuZCBzdHVmZiBmaXR0aW5nIGFueXdoZXJlIGluIHRoYXQK
-PiBzY2hlbWUuLi4gbG9va3MgdG8gbWUgbGlrZSBzb21lIHBlb3BsZSBoYWNrZWQgdXAgc29tZSBh
-ZC1ob2MgdHJpY2sgZm9yCj4gdGhlaXIgb3duIGxvY2FsIG5lZWQgd2l0aG91dCBpbnN0ZWFkIHRy
-eWluZyB0byBmaWd1cmUgb3V0IGhvdyB0byBmaXQKPiB0aGluZ3Mgd2l0aCB0aGUgZXhpc3Rpbmcg
-aW5mcmFzdHJ1Y3R1cmUgKG9yIHBvc3NpYmx5IHByb3Bvc2UgY2hhbmdlcyB0bwo+IHRoZSBleGlz
-dGluZyBpbmZyYXN0cnVjdHVyZSB0byBmaXQgdGhlaXIgbmVlZHMpLgoKVGhpcyBhbHNvIGlzIG15
-IGltcHJlc3Npb24uCgpUaGFua3MsClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Sunday 08 February 2009, Pavel Machek wrote:
+> On Sat 2009-02-07 23:37:39, Rafael J. Wysocki wrote:
+> > On Thursday 05 February 2009, Arve Hj??nnev??g wrote:
+> > > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
+> > 
+> > This is completely wrong, IMO.
+> > 
+> > Removing an interface that has existed forever just because it happens to
+> > be incompatible with your new shiny feature is not acceptable to me.
+> 
+> Agreed. AFAICS this patch can be just dropped, or maybe kept specially
+> for android if those few bytes matter to them.
+
+Just to make things crystal clear, in fact I don't like any patches in this
+series.
+
+The wakelocks seem to be overdesigned to me and the "early suspend" thing
+doesn't really fit our suspend-resume framework, especially after the changes
+made recently to the PCI PM code (and the changes that are going to be made
+to it shortly).
+
+Thanks,
+Rafael
