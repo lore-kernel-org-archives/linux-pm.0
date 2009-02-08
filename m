@@ -1,18 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 02/13] PM: Add early suspend api.
-Date: Sun, 8 Feb 2009 21:59:52 +0100
-Message-ID: <20090208205952.GD6369@elf.ucw.cz>
+Subject: Re: [PATCH 05/13] PM: Add option to disable
+	/sys/power/state	interface
+Date: Sun, 8 Feb 2009 22:04:02 +0100
+Message-ID: <20090208210401.GE6369@elf.ucw.cz>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-2-git-send-email-arve@android.com>
-	<1233802226-23386-3-git-send-email-arve@android.com>
-	<200902072153.30076.rjw@sisk.pl>
-	<d6200be20902071534j711d7c36x49180b6af9739c0b@mail.gmail.com>
+	<200902072337.40046.rjw@sisk.pl>
+	<20090208103355.GC14143@elf.ucw.cz>
+	<200902081450.46584.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902071534j711d7c36x49180b6af9739c0b@mail.gmail.com>
+In-Reply-To: <200902081450.46584.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +22,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > My understanding of the 'early suspend' idea is that it is a mechanism allowing
-> > us to place some devices selectively into low power states before the actual
-> > suspend happens.  However, this is exactly the same as runtime power
-> > management on demand, with an interface allowing user space to put devices into
-> > low power states.
+> > > This is completely wrong, IMO.
+> > > 
+> > > Removing an interface that has existed forever just because it happens to
+> > > be incompatible with your new shiny feature is not acceptable to me.
+> > 
+> > Agreed. AFAICS this patch can be just dropped, or maybe kept specially
+> > for android if those few bytes matter to them.
 > 
-> The main point is to have a single entrypoint from user-space. We do
-> not have a list of devices to suspend in user-space.
+> Just to make things crystal clear, in fact I don't like any patches in this
+> series.
+> 
+> The wakelocks seem to be overdesigned to me and the "early suspend" thing
 
-I guess "single entrypoint" is not worth all the effort. ... plus,
-different machines will likely need different "single entrypoints".
+Well, it is true that wakelocks could be single atomic_t ... but they
+would make them undebuggable. Ok, wakelock interface sucks. But I
+believe something like that is neccessary.
 
-Can we get working "runtime suspend", instead?
+(In fact, I invented something similar for sleepy linux patches).
+
+Early suspend would be better done by runtime suspend, agreed.
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
