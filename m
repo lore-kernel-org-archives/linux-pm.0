@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc4: Reported regressions from 2.6.28
-Date: Sun, 8 Feb 2009 23:04:52 +0100
-Message-ID: <200902082304.53585.rjw__20780.5202379406$1234131184$gmane$org@sisk.pl>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	<alpine.LFD.2.00.0902081354150.3048@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: non-racy examples,
+	please (was Re: [PATCH 01/13] PM: Add wake lock	api.)
+Date: Sun, 8 Feb 2009 23:17:47 +0100
+Message-ID: <20090208221747.GM6369@elf.ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<20090205091132.GG2077@elf.ucw.cz>
+	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0902081354150.3048@localhost.localdomain>
 Content-Disposition: inline
+In-Reply-To: <d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +22,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 08 February 2009, Linus Torvalds wrote:
-> 
-> On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12669
-> > Subject		: 2.6.28.4 regression: mmap fails if mlockall used
-> > Submitter	: Sami Farin <safari-kernel@safari.iki.fi>
-> > Date		: 2009-02-08 10:52 (1 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123409037423068&w=4
-> 
-> Oh, Hugh just sent a patch, and it's now commit 
-> d5b562330ec766292a3ac54ae5e0673610bd5b3d. Sadly this just missed -rc4 by 
-> something like 20 minutes..
+Hi!
 
-Yes, I saw the Hugh's message right after sending the report.
+Ok, I think that this wakelock stuff is in "can't be used properly"
+area on Rusty's scale of nasty interfaces.
 
-Bug closed.
+So... do I understand this correctly that if I want to run "make zImage"
+on Android, I'll need to modify make, gcc, .... to keep system awake?
 
-Thanks,
-Rafael
+	(How to do that? Give all the userland processes access to
+	/sys/wakelocks ?)
+
+BTW what does android do when battery goes critically low? I believe
+you want to suspend, ignoring wakelocks, at that point.
+
+And now, you have some X-like system.
+
+	/* We were idle for too long */
+	blank_screen();
+
+	unlock_all_wakelocks();		/* We want machine to sleep */
+
+	wait_for_key();
+	/* (here) */
+	lock_wakelocks("processing_key_wakelock");
+
+...is that approximately correct? There's race there, right? If (here)
+processing takes too long, or whatever, kernel will sleep the machine
+before it even displays "do you want to unlock the screen" dialog,
+right?
+
+Can you solve that in a way that works, always?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
