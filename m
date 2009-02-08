@@ -1,20 +1,15 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 06/10] PM: Add early suspend api.
-Date: Thu, 12 Feb 2009 11:34:56 +0000
-Message-ID: <20090212113456.GD28176@srcf.ucam.org>
-References: <1234316955-31304-1-git-send-email-arve@android.com>
-	<1234316955-31304-2-git-send-email-arve@android.com>
-	<1234316955-31304-3-git-send-email-arve@android.com>
-	<1234316955-31304-4-git-send-email-arve@android.com>
-	<1234316955-31304-5-git-send-email-arve@android.com>
-	<1234316955-31304-6-git-send-email-arve@android.com>
-	<1234316955-31304-7-git-send-email-arve@android.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Sun, 8 Feb 2009 23:57:00 +0100
+Message-ID: <20090208225700.GA1390@ucw.cz>
+References: <Pine.LNX.4.44L0.0902110955490.3056-100000@iolanthe.rowland.org>
+	<200902111645.46843.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1234316955-31304-7-git-send-email-arve@android.com>
+In-Reply-To: <200902111645.46843.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,47 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 05:49:11PM -0800, Arve Hj=F8nnev=E5g wrote:
+On Wed 2009-02-11 16:45:46, Rafael J. Wysocki wrote:
+> On Wednesday 11 February 2009, Alan Stern wrote:
+> > On Tue, 10 Feb 2009, Brian Swetland wrote:
+> > 
+> > > [Pavel Machek <pavel@ucw.cz>]
+> > > > > 
+> > > > > wake_lock never blocks.
+> > > > 
+> > > > Wakelock is really bad name: it is not a lock and it does not protect
+> > > > wake. I'd say we need better name here.
+> > > 
+> > > I agree with you here -- I've had this discussion with Arve previously,
+> > > but have been unable to offer a compelling alternative name.  Anybody
+> > > have a good idea?
+> 
+> Well, even "sleep lock" would have been better.
+> 
+> > delay_sleep or delaysleep?  block_sleep or blocksleep?  Any of the 
+> > above with "sleep" replaced by "suspend"?
+> 
+> I also thought about "sleep stopper".  It reflects what the feature does. :-)
 
-> +EARLY_SUSPEND_LEVEL_BLANK_SCREEN:
-> +  On suspend the screen should be turned off but the framebuffer must st=
-ill be
-> +  accessible. On resume the screen can be turned back on.
-> +
-> +EARLY_SUSPEND_LEVEL_STOP_DRAWING:
-> +  On suspend this level notifies user-space that it should stop accessin=
-g the =
-
-> +  framebuffer and it waits for it to complete. On resume it notifies use=
-r-space =
-
-> +  that it should resume screen access.
-> +  Two methods are provided, console switch or a sysfs interface.
-> +
-> +EARLY_SUSPEND_LEVEL_DISABLE_FB:
-> +  Turn off the framebuffer on suspend and back on on resume.
-> +
-
-This set seems like a pretty poor example. There's already a userspace =
-
-interface for controlling the LCD via sysfs, and extending this to power =
-
-down the associated framebuffer hardware would be trivial.
-
-> +EARLY_SUSPEND_LEVEL_STOP_INPUT:
-> +  On suspend turn off input devices that are not capable of wakeup or wh=
-ere
-> +  wakeup is disabled. On resume turn the same devices back on.
-
-Why not just ask your userspace input consumer to release the device and =
-
-then have the driver automatically power itself down when its use count =
-
-hits zero?
-
--- =
-
-Matthew Garrett | mjg59@srcf.ucam.org
+'caffeine' ? :-).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
