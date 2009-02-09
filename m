@@ -1,17 +1,14 @@
-From: Uli Luckas <u.luckas@road.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state interface
-Date: Mon, 9 Feb 2009 03:56:39 +0100
-Message-ID: <200902090356.39885.u.luckas@road.de>
-References: <20090208210401.GE6369@elf.ucw.cz>
-	<200902090311.58728.u.luckas@road.de>
-	<d6200be20902081824r5f723694sd9f02e24c3ed3f0d@mail.gmail.com>
+ /sys/power/state interface
+Date: Sun, 8 Feb 2009 22:07:36 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0902082148420.24968-100000@netrider.rowland.org>
+References: <d6200be20902081558r272e13b1q28692eaba758878b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902081824r5f723694sd9f02e24c3ed3f0d@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <d6200be20902081558r272e13b1q28692eaba758878b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,54 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: swetland@google.com, ncunningham@crca.org.au
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sun, Feb 8, 2009 at 6:11 PM, Uli Luckas <u.luckas@road.de> wrote:
-> > On Monday 09 February 2009, Rafael J. Wysocki wrote:
-> >> On Monday 09 February 2009, Pavel Machek wrote:
-> >> > If wakelocks can be locked from userspace is _not_ a detail; and if
-> >> > they can we do need the names.
-> >>
-> >> Do we?  What about one lock per process and using process names?
-> >> Or better process IDs or even thread IDs?
-> >
-> > I like that idea. A process should be able to hold _one_ wake lock (whi=
-ch
-> > would be released if the process dies). If it turns out, that more then
-> > on lock is convenient for a process, a library can easily agregate these
-> > locks. If the last userspace wake lock is released, the library code can
-> > relase the processes kernel wake lock.
-> >
-> >> Is there a limit on the number of wakelocks a user space process can
-> >> create and if not, then why?
-> >
-> > Agreed as stated above. We should agree right now to switch to one lock
-> > per process. Arve?
->
-> This would work, but how would you implement it? I'm implementing an
-> ioctl interface that will allow automatic cleanup without modifying
-> the task struct.
-I thought about a global ref count + a per thread flag. Now if your lock io=
-ctl =
+On Sun, 8 Feb 2009, Arve Hj=F8nnev=E5g wrote:
 
-is first called for a specific thread it increases the global ref count and =
+> How do you handle devices that should be in a low power mode when
+> closed, and a high(er) power mode when open. While adding
+> early-suspend hooks to a driver may be ugly, it does not need any more
+> support than open and close does.
 
-sets the thread's 'locked' flag. If the lock ioctl is called again for this =
+This illustrates some of the problems of differing outlooks.  In an =
 
-thread it's a noop (with warning?). Now the first unlock ioctl decreases th=
-e =
+embedded system, the set of devices is limited and the set of available =
 
-ref count and clears the locked flag. Further unlock ioctls are noops until =
+power states is known beforehand.  In other settings neither of these =
 
-the lock is taken again. =
+is true.
 
-In another thread Rafael mentioned something about reusing freezer flags. I=
-f =
+Early-suspend is an example of a partially-functional system state.  =
 
-needed, he can probably give a detailed hint.
-Does that sound feasible?
+In your Android-centric approach, early-suspend is centered around the =
 
-Uli
+screen.  But other sorts of systems way well have other requirements =
+
+and may want their partially-functional system state to be centered =
+
+around something else.  Or they may want to have more than one =
+
+partially-functional system state.
+
+What we need is a mechanism capable of accomodating all these different
+requirements.  Presumably the core kernel would provide the hooks but
+the implementation details would be left up to platform-specific code.  =
+
+There should be a generic scheme for representing partially-functional
+system states, together with a list of devices to be put in low-power
+mode for each state and an indication of which low-power mode to use
+(since a device can have more than one low-power mode).  Device drivers
+should have an interface for going into a particular low-power state.
+
+The extent to which all of this needs to be split between the kernel
+and userspace isn't immediately clear.  Latency issues might force a
+large part of it to live in the kernel.  On the other hand, if the list
+of devices & modes can be pushed out to userspace, then the in-kernel
+portion could end up being nothing more than a runtime-PM mechanism of
+the sort we have been discussing for years.
+
+Alan Stern
