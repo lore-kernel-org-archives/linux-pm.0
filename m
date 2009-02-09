@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report with
-	2.6.29-rc3
-Date: Tue, 10 Feb 2009 15:24:48 +0100
-Message-ID: <200902101524.48536.rjw@sisk.pl>
-References: <20090208103230.GB14143@elf.ucw.cz>
-	<664304.90059.qm@web36806.mail.mud.yahoo.com>
-	<20090210105820.GA4636@atrey.karlin.mff.cuni.cz>
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
+	CONFIG_PM
+Date: Mon, 09 Feb 2009 15:51:48 -0500
+Message-ID: <49909764.3020303__35808.2115454183$1234282761$gmane$org@redhat.com>
+References: <200901062112.29227.rjw@sisk.pl> <200901062115.33286.rjw@sisk.pl>
+	<20090107121659.GA16268@elte.hu>
+	<alpine.LFD.2.00.0901091530090.16697@localhost.localdomain>
+	<20090210010546.GA28129@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090210105820.GA4636@atrey.karlin.mff.cuni.cz>
-Content-Disposition: inline
+In-Reply-To: <20090210010546.GA28129@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,51 +21,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 February 2009, Pavel Machek wrote:
-> > Hi!
-> >  
-> > > > > > Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3
-> > > > > > suspend/hibernate behave in this manner:
-> > > > > > 
-> > > > > > Hibernation completes ok but resumes immediately as if
-> > > > > > I would have pressed the power button.
-> > > > 
-> > > > Thanks a lot for the tip, indeed it makes hibernation
-> > > > working again:
-> > > > 
-> > > > root@localhost:~# echo shutdown > /sys/power/disk
-> > > > root@localhost:~# pm-hibernate
-> > > > 
-> > > > Great! Is there a way to make this default on my
-> > > > system, e.g., with a quirk?
-> > > 
-> > > Well, it would be better to fix it properly, than just work
-> > > around it with quirk. I think it worked before and you already
-> > > identified commit that breaks it?
-> > 
-> > Yes, we found out it with Rafael last month:
-> > 
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019225.html
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019244.html
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019251.html
+Ingo Molnar wrote:
+> * Len Brown <lenb@kernel.org> wrote:
 > 
-> Hmm, hibernation rework broke that, and looks USB related. Maybe it is
-> fixed in latest kernel (-rc4), as there were USB-keeps-systems-awake
-> fixes.
+>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+>>>>
+>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+>>>> and CONFIG_FREEZER=n.
+>>>>
+>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>> ---
+>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+>>>>  kernel/kprobes.c           |    2 +-
+>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+>>> looks good, the x86 bits:
+>>>
+>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+>> man, we have too many config options:-)
+> 
+> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+> allnoconfig:
+> 
+> kernel/built-in.o: In function `collect_garbage_slots':
+> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
 
-AFAICS, it is a chipset/BIOS problem.
+Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
 
-As long as we were using shutdown to turn off the box during hibernation,
-things worked on these boxes.  As soon as we started using the ACPI "enter S4"
-feature, it stopped and ehci-hcd always happens to be the culprit (I had access
-to one box with this issue, but unfortunately I don't have it any more).
+   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+arch/x86/pci/built-in.o  net/built-in.o --end-group
+kernel/built-in.o: In function `collect_garbage_slots':
+kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
 
-The only thing we can really do here is to blacklist all of the boxes with this
-problem and handle them in a special way.
+At kernel/Makefile:53, I can see
 
-Thanks,
-Rafael
+obj-$(CONFIG_PM) += power/
+
+but CONFIG_PM was not set in config
+
+> 
+> Could someone please fix all of this without #ifdefs?
+> 
+> 	Ingo
+> 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
