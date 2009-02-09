@@ -1,19 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state interface
-Date: Mon, 9 Feb 2009 10:15:06 +0100
-Message-ID: <20090209091506.GE28794@atrey.karlin.mff.cuni.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902090040.22364.rjw@sisk.pl>
-	<d6200be20902081558r272e13b1q28692eaba758878b@mail.gmail.com>
-	<200902090126.17899.rjw@sisk.pl>
-	<d6200be20902081735l734ac6c9h811b8ad6f40e2562@mail.gmail.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable
+	bridges during suspend-resume
+Date: Mon, 9 Feb 2009 10:39:26 +0100
+Message-ID: <20090209093926.GA4358__675.255285068665$1234172592$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <200902012229.27517.rjw@sisk.pl> <200902071448.13877.rjw@sisk.pl>
+	<20090208091157.GD8040@elf.ucw.cz> <200902081423.08991.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902081735l734ac6c9h811b8ad6f40e2562@mail.gmail.com>
+In-Reply-To: <200902081423.08991.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,53 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> >> > Also, please observe that if there is a mechanism allowing us to put individual
-> >> > devices, or entire subsystems (such as a bus with devices attached to it), into
-> >> > low power states at run time, without placing the entire system in a sleep
-> >> > state, and put them back into the full power state as needed, we won't need
-> >> > anything like the "early suspend" introduced by this series of patches.
-> >>
-> >> While early-suspend is not needed, it is still convenient on an
-> >> embedded device where some drivers are clearly only used when the
-> >> screen is on.
-> >
-> > Ah, that's interesting.  So in fact you want some devices to go into low power
-> > states as soon as the screen is off and that's why you fint the early-suspend
-> > useful.  Is this correct?
+> On Sunday 08 February 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > their standard config spaces are restored.  Fix this by not attempting
+> > > > > to disable bridges during suspend and enable them during resume.
+> > > > ...
+> > > > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
+> > > > >  {
+> > > > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> > > > >  
+> > > > > -	if (!pci_is_bridge(pci_dev))
+> > > > > -		pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > > +	if (pci_is_bridge(pci_dev))
+> > > > > +		return 0;
+> > > > >  
+> > > > > +	pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > >  	return pci_pm_reenable_device(pci_dev);
+> > > > >  }
+> > > > 
+> > > > Are you sure? This goes from doing reenable_device to not doing it for
+> > > > bridges, seemingly contradicting changelog?
+> > > 
+> > > Can you explain what you mean, please?
+> > 
+> > It looks to me like the patch does not match the changelog.
+> > 
+> > Changelog says "enable bridge during resume", but code does return 0
+> > if it seems bridge.
 > 
-> Yes. We turn off the touchscreen and trackball when the screen turns
-> off since both these devices use additional power when enabled.
-> Neither of these devices can be turned off (after a timeout) while the
-> screen is on.
+> Ah, I see.  The changelog was supposed to mean that the bridges would not
+> be disabled during suspend and also would not be enabled during resume
+> (which shouldn't be necessary, since they would be automatically enabled
+> as a result of restoring their configuration registers).
 
-Ok, first: It is not at all clear to me that trackball / touchscreen
-is unusable with screen off. For weird cases (using android to
-remotely control PC?) screen-off trackball-on makes
-sense. Actually... if you are charging than maybe waking up the device
-by touching the screen is a good idea? So maybe you are putting a bit
-too much policy into kernel.
-
-OTOH, as long as you do it in android-specific code, that's probably
-okay.
-
-So lets assume that trackball is unusable with screen off. Stuff is
-easy, then either
-
-1) make your useland close trackball/touchscreen devices when they
-turn the screen off.
-
-(This is actually preffered, as it keeps policy out of the kernel)
-
-or
-
-2) Just use notifier chain to notify trackball/touchscreen when the
-screen is going off.
+You can add my acked-by: when you resubmit with fixed
+changelog... :-).
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
