@@ -1,22 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: non-racy examples,
-	please (was Re: [PATCH 01/13] PM: Add wake lock api.)
-Date: Tue, 10 Feb 2009 12:15:30 +0100
-Message-ID: <20090210111530.GB4636@atrey.karlin.mff.cuni.cz>
+	please (was Re: [PATCH 01/13] PM: Add wake lock?api.)
+Date: Tue, 10 Feb 2009 12:17:49 +0100
+Message-ID: <20090210111749.GC4636@atrey.karlin.mff.cuni.cz>
 References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-2-git-send-email-arve@android.com>
-	<20090205091132.GG2077@elf.ucw.cz>
 	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
 	<20090208221747.GM6369@elf.ucw.cz>
-	<d6200be20902081440y6c25a01cw1aae1c47b04bfd03@mail.gmail.com>
-	<20090208231413.GV6369@elf.ucw.cz>
-	<d6200be20902081535u689bfd58xe5aef77c5a4e6bd8@mail.gmail.com>
+	<200902090249.59119.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902081535u689bfd58xe5aef77c5a4e6bd8@mail.gmail.com>
+In-Reply-To: <200902090249.59119.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,61 +22,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Uli Luckas <u.luckas@road.de>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-> On Sun, Feb 8, 2009 at 3:14 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >> What prevents the system from suspending while you run make in your
-> >> existing system?
+> On Sunday 08 February 2009, Pavel Machek wrote:
+> > Hi!
 > >
-> > My existing system does not autosleep.
-> 
-> Does it not support any kind of autosleep, or did you not enable it.
-> If you enable autosleep after some number of minutes of inactivity,
-> does the the running make job keep the system on? The systems I have
-> seen (not Linux) will go to sleep while make is still running.
-
-My system does not support autosleep. The systems that do it from
-timer, unconditionally do it like after 30 minutes by default; while
-android wants to suspend after some seconds.
-
-> > My experimental sleepy linux will autosleep if it knows there are no
-> > runnable userspace jobs, and if nearest timer to fire is far enough in
-> > future.
-> 
-> We do this from idle. The nearest timer is never more than one second
-> in the future.
-
-Well, so you fix the timers... that is good for everyone. I got to 5
-second with some effort, and could extend it some more.
-
-> >> > BTW what does android do when battery goes critically low? I believe
-> >> > you want to suspend, ignoring wakelocks, at that point.
-> >>
-> >> I don't know for sure, but I believe it does a full shutdown.
+> > Ok, I think that this wakelock stuff is in "can't be used properly"
+> > area on Rusty's scale of nasty interfaces.
 > >
-> > Ok, but suspend would be more elgant (faster, does not loose user
-> > context). Take it as an example where mixing auto-sleep and forced
-> > sleep makes sense.
+> > So... do I understand this correctly that if I want to run "make zImage"
+> > on Android, I'll need to modify make, gcc, .... to keep system awake?
+> >
+> > 	(How to do that? Give all the userland processes access to
+> > 	/sys/wakelocks ?)
+> >
+> > BTW what does android do when battery goes critically low? I believe
+> > you want to suspend, ignoring wakelocks, at that point.
+> >
+> > And now, you have some X-like system.
+> >
+> > 	/* We were idle for too long */
+> > 	blank_screen();
+> >
+> > 	unlock_all_wakelocks();		/* We want machine to sleep */
+> >
+> > 	wait_for_key();
+> > 	/* (here) */
+> > 	lock_wakelocks("processing_key_wakelock");
+> >
+> > ...is that approximately correct? There's race there, right? If (here)
+> > processing takes too long, or whatever, kernel will sleep the machine
+> > before it even displays "do you want to unlock the screen" dialog,
+> > right?
+> >
+> > Can you solve that in a way that works, always?
+> > 									Pavel
 > 
-> I think a high priority sleep (like someone suggested) make more sense
-> than a forced sleep for this situation. The wakelock code could deal
-> with this as another wakelock type, and ignore normal wakelocks when a
-> high priority sleep is requested. We cannot necessarily ignore all
-> wakelocks since some may be used to manage the battery and charger.
-
-Now.. that's a differnce from PC. But...if you shutdown -h now, what
-happens to battery and charger?
-
-> > Ugh; okay, interesting. So if rogue userspace program wants to keep
-> > system awake forever, all it needs to do is take filedescriptor from
-> > some input device, select() on it and not read events?
+> Pavel, actually Arve's whole wakelock concept is about avoiding races. Please 
+> go back to where he explains the keyboard example.
+> The idea is that the keyboard driver grabs a wake lock in it's interrupt and 
+> releases the lock only, after the resulting key events are read from the 
+> device's queue. 
+> This way, userspace can safely select on the key events, then grab it's own 
+> lock. At that time, the two locks overlap! After that, userspace reads the 
+> key events. This causes the keyboard driver to relaease it's wake lock. 
+> Userspace still holds it's wake lock thogh.
+> You see? The locks together with the key events have been passed to userspace 
+> safey. Absolutely race free. 
 > 
-> Yes, but input devices should not be accessible to any process.
+> So your example becomes:
+> 	/* We were idle for too long */
+>  	blank_screen();
+> 	unlock_my_wakelocks();   /* We want machine to sleep if no one
+>                                                        else holds a wakelock*/
+> 	wait_for_key();                 /* Select on key events */
+> 	/* (here) */
+> 	lock_wakelocks("processing_key_wakelock");
+>  	read_key_events();
+> 
+> We should take a look at those cases, though, where a timed wacke locks are 
+> needed. That is definitely unsafe.
 
-Normally, untrusted processes are welcome to use ttyX directly... I
-know about X today...
+Well, I failed to see the "as long as there's event waiting on
+select(), it can not sleep". I still wonder how it works down the
+chain...
+
+you expect all applications to use select?
+
+[like... vi?]
+
+Plus I don't like that any application select-ing on input device can
+prevent system from sleeping. That's quite a unexpected sideeffect.
+
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
