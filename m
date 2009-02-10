@@ -1,22 +1,16 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: non-racy examples,
-	please (was Re: [PATCH 01/13]	PM: Add wake lock?api.)
-Date: Tue, 10 Feb 2009 05:42:14 -0800
-Message-ID: <20090210134214.GA6871@bulgaria.corp.google.com>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<d6200be20902051628x50827a27i52c4b69cc64585f7@mail.gmail.com>
-	<20090208221747.GM6369@elf.ucw.cz>
-	<200902090249.59119.u.luckas@road.de>
-	<20090210111749.GC4636@atrey.karlin.mff.cuni.cz>
-	<13B9B4C6EF24D648824FF11BE8967162037705B6E9@dlee02.ent.ti.com>
-	<20090210131457.GA15539@elf.ucw.cz>
-	<13B9B4C6EF24D648824FF11BE8967162037705B707@dlee02.ent.ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
+	CONFIG_PM
+Date: Tue, 10 Feb 2009 14:56:19 +0100
+Message-ID: <200902101456.20147.rjw__28117.1202114367$1234274718$gmane$org@sisk.pl>
+References: <200901062112.29227.rjw@sisk.pl> <49909764.3020303@redhat.com>
+	<20090210123734.GB21531@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090210123734.GB21531@elte.hu>
 Content-Disposition: inline
-In-Reply-To: <13B9B4C6EF24D648824FF11BE8967162037705B707@dlee02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,39 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Uli Luckas <u.luckas@road.de>, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-["Woodruff, Richard" <r-woodruff2@ti.com>]
-> > From: Pavel Machek [mailto:pavel@ucw.cz]
-> >
-> > Apparently, on android, if there's event ready on one of the input
-> > devices, system will not go to sleep. That's quite an "interesting"
-> > behaviour.
-> >
-> > Heh, they could rely on it and get rid of the wakelock. Just create
-> > strange device that disallows system sleep when you select() on it,
-> > and allows it when you read() from it :-).
+On Tuesday 10 February 2009, Ingo Molnar wrote:
 > 
-> Ok, thanks. When I looked quickly a couple months back I thought they 
-> raised a user space side wake locks on input consumers.  These 
-> translated back to the kernel lock and keep the system up.
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> Gist was something like you don't want to sleep until user activity 
-> data was processed.  Any high latency sleep/suspend would be perceived 
-> by user.
+> > Ingo Molnar wrote:
+> >> * Len Brown <lenb@kernel.org> wrote:
+> >>
+> >>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+> >>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+> >>>>>
+> >>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+> >>>>> and CONFIG_FREEZER=n.
+> >>>>>
+> >>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+> >>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> >>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>>>> ---
+> >>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+> >>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+> >>>>>  kernel/kprobes.c           |    2 +-
+> >>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+> >>>> looks good, the x86 bits:
+> >>>>
+> >>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+> >>> man, we have too many config options:-)
+> >>
+> >> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+> >> allnoconfig:
+> >>
+> >> kernel/built-in.o: In function `collect_garbage_slots':
+> >> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> >> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> >> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >
+> > Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
+> >
+> >   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+> > arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+> > arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+> > arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+> > arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+> > mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+> > block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+> > arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+> > arch/x86/pci/built-in.o  net/built-in.o --end-group
+> > kernel/built-in.o: In function `collect_garbage_slots':
+> > kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> > kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> > kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >
+> > At kernel/Makefile:53, I can see
+> >
+> > obj-$(CONFIG_PM) += power/
+> >
+> > but CONFIG_PM was not set in config
+> 
+> Sounds plausible. We need a fix for this - it's broken upstream.
 
-The intention is to make sure we hand-off "awakeness" from kernel to
-userspace when the system is waking up to process an event.  Which is
-why the event dispatcher in the framework select()s, grabs a wakelock if
-readable (overlapping with the wakelock held when data is in the input
-queue in the kernel), read()s the events (causing the kernel side to
-drop its lock when the queue is empty) and dispatches them while holding 
-the wakelock until things are sorted out.
+Hmm.  Can || be used under obj-$() ?
 
-Generally, arbitrary processes cannot open input devices in Android, so
-this being a mechanism for abuse of keeping the system awake has not
-been an issue thus far. 
-
-Brian
+Rafael
