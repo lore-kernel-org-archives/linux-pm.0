@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
-	CONFIG_PM
-Date: Tue, 10 Feb 2009 14:56:19 +0100
-Message-ID: <200902101456.20147.rjw__28117.1202114367$1234274718$gmane$org@sisk.pl>
-References: <200901062112.29227.rjw@sisk.pl> <49909764.3020303@redhat.com>
-	<20090210123734.GB21531@elte.hu>
+Subject: Re: [PATCH 05/13] PM: Add option to disable
+	/sys/power/state interface
+Date: Tue, 10 Feb 2009 15:18:28 +0100
+Message-ID: <200902101518.29690.rjw@sisk.pl>
+References: <20090208210401.GE6369@elf.ucw.cz> <200902100117.37019.rjw@sisk.pl>
+	<20090210091314.GA18835@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090210123734.GB21531@elte.hu>
+In-Reply-To: <20090210091314.GA18835@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,68 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 February 2009, Ingo Molnar wrote:
+On Tuesday 10 February 2009, Pavel Machek wrote:
+> > On Monday 09 February 2009, Pavel Machek wrote:
+> > > > On Monday 09 February 2009, Pavel Machek wrote:
+> > > > > On Sun 2009-02-08 15:00:38, Arve Hj?nnev?g wrote:
+> > > > > > On Sun, Feb 8, 2009 at 1:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > > > > > On Sun, 8 Feb 2009, Pavel Machek wrote:
+> > > > > > >
+> > > > > > >> Well, it is true that wakelocks could be single atomic_t ... but they
+> > > > > > >> would make them undebuggable. Ok, wakelock interface sucks. But I
+> > > > > > >> believe something like that is neccessary.
+> > > > > > >
+> > > > > > > krefs don't have name strings for keeping track of who has been
+> > > > > > > incrementing or decrementing their counters.  And it's true that krefs
+> > > > > > > are nearly undebuggable.  But somehow we've managed to struggle along
+> > > > > > > without adding names to krefs.  Why should wakelocks be any different?
+> > > > > > 
+> > > > > > It sounds like you suggesting that we add another nearly undebuggable interface.
+> > > > > > 
+> > > > > > Using only a single atomic_t would not allow us to use a wakelock a
+> > > > > > switch, or to specify a timeout. You could replace the list in the
+> > > > > > implementation with a single atomic_t by adding more state to each
+> > > > > > wakelock, but I like my current solution better.
+> > > > > 
+> > > > > For the record, I agree here. And... if struct wakelock contains char
+> > > > > * or not is a very small detail.
+> > > > 
+> > > > It really isn't, because it means allocating (kernel) memory for each wakelock,
+> > > > to store the name.
+> > > 
+> > > If it can be #ifdef DEBUG or something, I don't see a problem. And it
+> > > does not need to allocate anything, most wakelocks will be just
+> > > static. So we are talking about 10bytes per wakelock of overhead --
+> > > not too bad.
+> > 
+> > No, we are talking of allocating kernel memory on behalf of user space
+> > processes with no apparent limitations.
 > 
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> Ok, I see now. Yes, letting each process allocated unlimited number of
+> wakelocks is indeed bad.
 > 
-> > Ingo Molnar wrote:
-> >> * Len Brown <lenb@kernel.org> wrote:
-> >>
-> >>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
-> >>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
-> >>>>>
-> >>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
-> >>>>> and CONFIG_FREEZER=n.
-> >>>>>
-> >>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
-> >>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> >>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >>>>> ---
-> >>>>>  arch/ia64/kernel/kprobes.c |    2 +-
-> >>>>>  arch/x86/kernel/kprobes.c  |    2 +-
-> >>>>>  kernel/kprobes.c           |    2 +-
-> >>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
-> >>>> looks good, the x86 bits:
-> >>>>
-> >>>> Acked-by: Ingo Molnar <mingo@elte.hu>
-> >>> man, we have too many config options:-)
-> >>
-> >> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
-> >> allnoconfig:
-> >>
-> >> kernel/built-in.o: In function `collect_garbage_slots':
-> >> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
-> >> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
-> >> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
-> >
-> > Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
-> >
-> >   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
-> > arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
-> > arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
-> > arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
-> > arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
-> > mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
-> > block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
-> > arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
-> > arch/x86/pci/built-in.o  net/built-in.o --end-group
-> > kernel/built-in.o: In function `collect_garbage_slots':
-> > kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
-> > kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
-> > kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
-> >
-> > At kernel/Makefile:53, I can see
-> >
-> > obj-$(CONFIG_PM) += power/
-> >
-> > but CONFIG_PM was not set in config
-> 
-> Sounds plausible. We need a fix for this - it's broken upstream.
+> (But the names for in-kernel users should be ok, right?)
 
-Hmm.  Can || be used under obj-$() ?
+Yes, in principle, but what exactly the benefit would be?
 
+In the kernel we can use rwlock for blocking suspend, for example,
+that will be taken for reading by the code paths wanting to prevent suspend
+from happening and for writing by the suspend code.
+
+> "Wakelock is a filedescriptor" would solve that...
+
+Sort of.
+
+Still, I don't think there's much point in having more than one "wakelock"
+per process.
+
+Moreover, I _guess_ it would be sufficient to have only one such thing for
+the entire user space and single daemon and a (user land) library to manage it.
+
+Assume there is a deamon that owns the "wakelock" (I'd prefer to call it
+"suspend stop valve" or something like this) and each process wanting the
+"lock" to be active has to ask the deamon to hold the lock on its behalf (it
+also will have to authenticate itself before the deamon etc.).
+
+That would move the whole thing out of the kernel, I think.
+
+Thanks,
 Rafael
