@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Tue, 10 Feb 2009 21:25:07 +0100
-Message-ID: <20090210202507.GE1382@ucw.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<1233802226-23386-2-git-send-email-arve@android.com>
-	<20090205225158.GA19577@linux.intel.com>
-	<d6200be20902051613k77ef5878v7734653749ead8a@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
+	CONFIG_PM
+Date: Tue, 10 Feb 2009 22:40:33 +0100
+Message-ID: <200902102240.34313.rjw__38838.8031431988$1234302307$gmane$org@sisk.pl>
+References: <200901062112.29227.rjw@sisk.pl> <200902101456.20147.rjw@sisk.pl>
+	<4991A349.8090005@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4991A349.8090005@redhat.com>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902051613k77ef5878v7734653749ead8a@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,37 +20,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-02-05 16:13:27, Arve Hj?nnev?g wrote:
-> On Thu, Feb 5, 2009 at 2:51 PM, mark gross <mgross@linux.intel.com> wrote:
-> >> +A locked wakelock, depending on its type, prevents the system from entering
-> >> +suspend or other low-power states. When creating a wakelock, you can select
-> >> +if it prevents suspend or low-power idle states.  If the type is set to
-> >> +WAKE_LOCK_SUSPEND, the wakelock prevents a full system suspend. If the type
-> >> +is WAKE_LOCK_IDLE, low-power states that cause large interrupt latencies, or
-> >> +that disable a set of interrupts, will not be entered from idle until the
-> >> +wakelocks are released. Unless the type is specified, this document refers
-> >> +to wakelocks with the type set to WAKE_LOCK_SUSPEND.
-> >
-> > How much of this can be implemented using a pm-qos approach?
+On Tuesday 10 February 2009, Masami Hiramatsu wrote:
+> Rafael J. Wysocki wrote:
+> > On Tuesday 10 February 2009, Ingo Molnar wrote:
+> >> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> >>
+> >>> Ingo Molnar wrote:
+> >>>> * Len Brown <lenb@kernel.org> wrote:
+> >>>>
+> >>>>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+> >>>>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+> >>>>>>>
+> >>>>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+> >>>>>>> and CONFIG_FREEZER=n.
+> >>>>>>>
+> >>>>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+> >>>>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> >>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>>>>>> ---
+> >>>>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+> >>>>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+> >>>>>>>  kernel/kprobes.c           |    2 +-
+> >>>>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+> >>>>>> looks good, the x86 bits:
+> >>>>>>
+> >>>>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+> >>>>> man, we have too many config options:-)
+> >>>> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+> >>>> allnoconfig:
+> >>>>
+> >>>> kernel/built-in.o: In function `collect_garbage_slots':
+> >>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> >>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> >>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >>> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
+> >>>
+> >>>   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+> >>> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+> >>> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+> >>> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+> >>> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+> >>> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+> >>> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+> >>> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+> >>> arch/x86/pci/built-in.o  net/built-in.o --end-group
+> >>> kernel/built-in.o: In function `collect_garbage_slots':
+> >>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> >>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> >>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >>>
+> >>> At kernel/Makefile:53, I can see
+> >>>
+> >>> obj-$(CONFIG_PM) += power/
+> >>>
+> >>> but CONFIG_PM was not set in config
+> >> Sounds plausible. We need a fix for this - it's broken upstream.
+> > 
+> > Hmm.  Can || be used under obj-$() ?
 > 
-> WAKE_LOCK_IDLE overlaps with pm-qos, if you use it to prevent latency.
+> I think just adding a line "obj-$(CONFIG_FREEZER) += power/" is enough.
+> (you can see similar lines of "trace/" at the bottom of obj- lines
+>  in kernel/Makefile )
 
-Yes. So pleaase remove wake_lock_idle and use pm-qos. Feel free to
-improve pm-qos if you need to.
+Indeed, thanks.
 
-> > wake_lock going to block until the dives its locking is in a good power
-> > state?  (I'm guessing yes) Is doing this in the context of and IRQ a
-> > good idea?
-> 
-> wake_lock never blocks.
+So, something like the appended patch should help, I think.
 
-Wakelock is really bad name: it is not a lock and it does not protect
-wake. I'd say we need better name here.
--- 
+Rafael
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+ kernel/Makefile       |    1 +
+ kernel/power/Makefile |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/Makefile
+===================================================================
+--- linux-2.6.orig/kernel/Makefile
++++ linux-2.6/kernel/Makefile
+@@ -51,6 +51,7 @@ obj-$(CONFIG_UID16) += uid16.o
+ obj-$(CONFIG_MODULES) += module.o
+ obj-$(CONFIG_KALLSYMS) += kallsyms.o
+ obj-$(CONFIG_PM) += power/
++obj-$(CONFIG_FREEZER) += power/
+ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
+ obj-$(CONFIG_KEXEC) += kexec.o
+ obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
+Index: linux-2.6/kernel/power/Makefile
+===================================================================
+--- linux-2.6.orig/kernel/power/Makefile
++++ linux-2.6/kernel/power/Makefile
+@@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
+ EXTRA_CFLAGS	+=	-DDEBUG
+ endif
+ 
+-obj-y				:= main.o
++obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_PM_SLEEP)		+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
