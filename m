@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 05/13] PM: Add option to disable
 	/sys/power/state interface
-Date: Tue, 10 Feb 2009 01:09:07 +0100
-Message-ID: <200902100109.08706.rjw@sisk.pl>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902090041.36163.rjw@sisk.pl>
-	<200902090258.10713.u.luckas@road.de>
+Date: Tue, 10 Feb 2009 01:17:35 +0100
+Message-ID: <200902100117.37019.rjw@sisk.pl>
+References: <20090208210401.GE6369@elf.ucw.cz> <200902090131.54248.rjw@sisk.pl>
+	<20090209090155.GB28794@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902090258.10713.u.luckas@road.de>
+In-Reply-To: <20090209090155.GB28794@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,36 +20,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Uli Luckas <u.luckas@road.de>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, ncunningham@crca.org.au
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 February 2009, Uli Luckas wrote:
-> On Monday 09 February 2009, Rafael J. Wysocki wrote:
-> > On Sunday 08 February 2009, Pavel Machek wrote:
-> > > Hi!
-> > >
-> > > > Being in suspend, where periodic user and kernel timers aren't running,
-> > > > and random userspace threads aren't possibly spinning, rather than just
-> > > > being in idle in the lowest power possible state, represent a pretty
-> > > > significant power savings.
-> > >
-> > > If kernel timers fire too often, fix them. If user land spins, fix it,
-> > > or SIGSTOP.
-> > >
-> > > And yes, autosleep is useful. That's why I done those "sleepy linux"
-> > > patches.
-> >
-> > I agree, it is.  Still, I don't think the wakelocks in the proposed form
-> > are the right way to implement it.
-> >
-> What do you think is the right approach then?
+On Monday 09 February 2009, Pavel Machek wrote:
+> > On Monday 09 February 2009, Pavel Machek wrote:
+> > > On Sun 2009-02-08 15:00:38, Arve Hj?nnev?g wrote:
+> > > > On Sun, Feb 8, 2009 at 1:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > > > On Sun, 8 Feb 2009, Pavel Machek wrote:
+> > > > >
+> > > > >> Well, it is true that wakelocks could be single atomic_t ... but they
+> > > > >> would make them undebuggable. Ok, wakelock interface sucks. But I
+> > > > >> believe something like that is neccessary.
+> > > > >
+> > > > > krefs don't have name strings for keeping track of who has been
+> > > > > incrementing or decrementing their counters.  And it's true that krefs
+> > > > > are nearly undebuggable.  But somehow we've managed to struggle along
+> > > > > without adding names to krefs.  Why should wakelocks be any different?
+> > > > 
+> > > > It sounds like you suggesting that we add another nearly undebuggable interface.
+> > > > 
+> > > > Using only a single atomic_t would not allow us to use a wakelock a
+> > > > switch, or to specify a timeout. You could replace the list in the
+> > > > implementation with a single atomic_t by adding more state to each
+> > > > wakelock, but I like my current solution better.
+> > > 
+> > > For the record, I agree here. And... if struct wakelock contains char
+> > > * or not is a very small detail.
+> > 
+> > It really isn't, because it means allocating (kernel) memory for each wakelock,
+> > to store the name.
+> 
+> If it can be #ifdef DEBUG or something, I don't see a problem. And it
+> does not need to allocate anything, most wakelocks will be just
+> static. So we are talking about 10bytes per wakelock of overhead --
+> not too bad.
 
-That depend on whether or not you want user space processes to be able to
-prevent suspend from happening.
-
-If I didn't, I'd use a reference counter.  If I did, I'd probably use a
-special per-task flag or something similar.
+No, we are talking of allocating kernel memory on behalf of user space
+processes with no apparent limitations.
 
 Thanks,
 Rafael
