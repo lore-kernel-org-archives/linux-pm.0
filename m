@@ -1,17 +1,18 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Re: non-racy examples,
-	please (was Re: [PATCH 01/13] PM: Add wake lock?api.)
-Date: Tue, 10 Feb 2009 13:35:11 +0100
-Message-ID: <200902101335.12278.u.luckas@road.de>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902090249.59119.u.luckas@road.de>
-	<20090210111749.GC4636@atrey.karlin.mff.cuni.cz>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of
+	CONFIG_PM
+Date: Tue, 10 Feb 2009 13:37:34 +0100
+Message-ID: <20090210123734.GB21531__30495.5451553271$1234269609$gmane$org@elte.hu>
+References: <200901062112.29227.rjw@sisk.pl> <200901062115.33286.rjw@sisk.pl>
+	<20090107121659.GA16268@elte.hu>
+	<alpine.LFD.2.00.0901091530090.16697@localhost.localdomain>
+	<20090210010546.GA28129@elte.hu> <49909764.3020303@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090210111749.GC4636@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
+In-Reply-To: <49909764.3020303@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,105 +22,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, ncunningham@crca.org.au
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 10. February 2009, Pavel Machek wrote:
-> > On Sunday 08 February 2009, Pavel Machek wrote:
-> > > Hi!
-> > >
-> > > Ok, I think that this wakelock stuff is in "can't be used properly"
-> > > area on Rusty's scale of nasty interfaces.
-> > >
-> > > So... do I understand this correctly that if I want to run "make
-> > > zImage" on Android, I'll need to modify make, gcc, .... to keep system
-> > > awake?
-> > >
-> > > 	(How to do that? Give all the userland processes access to
-> > > 	/sys/wakelocks ?)
-> > >
-> > > BTW what does android do when battery goes critically low? I believe
-> > > you want to suspend, ignoring wakelocks, at that point.
-> > >
-> > > And now, you have some X-like system.
-> > >
-> > > 	/* We were idle for too long */
-> > > 	blank_screen();
-> > >
-> > > 	unlock_all_wakelocks();		/* We want machine to sleep */
-> > >
-> > > 	wait_for_key();
-> > > 	/* (here) */
-> > > 	lock_wakelocks("processing_key_wakelock");
-> > >
-> > > ...is that approximately correct? There's race there, right? If (here)
-> > > processing takes too long, or whatever, kernel will sleep the machine
-> > > before it even displays "do you want to unlock the screen" dialog,
-> > > right?
-> > >
-> > > Can you solve that in a way that works, always?
-> > > 									Pavel
-> >
-> > Pavel, actually Arve's whole wakelock concept is about avoiding races.
-> > Please go back to where he explains the keyboard example.
-> > The idea is that the keyboard driver grabs a wake lock in it's interrupt
-> > and releases the lock only, after the resulting key events are read from
-> > the device's queue.
-> > This way, userspace can safely select on the key events, then grab it's
-> > own lock. At that time, the two locks overlap! After that, userspace
-> > reads the key events. This causes the keyboard driver to relaease it's
-> > wake lock. Userspace still holds it's wake lock thogh.
-> > You see? The locks together with the key events have been passed to
-> > userspace safey. Absolutely race free.
-> >
-> > So your example becomes:
-> > 	/* We were idle for too long */
-> >  	blank_screen();
-> > 	unlock_my_wakelocks();   /* We want machine to sleep if no one
-> >                                                        else holds a
-> > wakelock*/ wait_for_key();                 /* Select on key events */
-> > 	/* (here) */
-> > 	lock_wakelocks("processing_key_wakelock");
-> >  	read_key_events();
-> >
-> > We should take a look at those cases, though, where a timed wacke locks
-> > are needed. That is definitely unsafe.
+
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Ingo Molnar wrote:
+>> * Len Brown <lenb@kernel.org> wrote:
+>>
+>>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+>>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+>>>>>
+>>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+>>>>> and CONFIG_FREEZER=n.
+>>>>>
+>>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+>>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> ---
+>>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+>>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+>>>>>  kernel/kprobes.c           |    2 +-
+>>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+>>>> looks good, the x86 bits:
+>>>>
+>>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+>>> man, we have too many config options:-)
+>>
+>> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+>> allnoconfig:
+>>
+>> kernel/built-in.o: In function `collect_garbage_slots':
+>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
 >
-> Well, I failed to see the "as long as there's event waiting on
-> select(), it can not sleep". I still wonder how it works down the
-> chain...
+> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
 >
-> you expect all applications to use select?
+>   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+> arch/x86/pci/built-in.o  net/built-in.o --end-group
+> kernel/built-in.o: In function `collect_garbage_slots':
+> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
 >
-> [like... vi?]
+> At kernel/Makefile:53, I can see
 >
-> Plus I don't like that any application select-ing on input device can
-> prevent system from sleeping. That's quite a unexpected sideeffect.
+> obj-$(CONFIG_PM) += power/
 >
-It's not about selecting on the input device. The select semantics are not 
-changed. It's about not processing input events.
-Right, if you open /dev/input/event0 and then don't read it, you can prevent 
-the system from suspend. Your application said it wants to process input 
-events and so the input driver keeps the system awake until all events are 
-passed on.
-On my system all event devices belong to root. So this behavior should be 
-safe.
+> but CONFIG_PM was not set in config
 
-regards,
-Uli
+Sounds plausible. We need a fix for this - it's broken upstream.
 
--- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Head of Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+	Ingo
