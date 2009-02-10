@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state interface
-Date: Tue, 10 Feb 2009 01:17:35 +0100
-Message-ID: <200902100117.37019.rjw@sisk.pl>
-References: <20090208210401.GE6369@elf.ucw.cz> <200902090131.54248.rjw@sisk.pl>
-	<20090209090155.GB28794@atrey.karlin.mff.cuni.cz>
+Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable
+	bridges during suspend-resume
+Date: Tue, 10 Feb 2009 01:21:22 +0100
+Message-ID: <200902100121.23552.rjw__27252.5987741121$1234225445$gmane$org@sisk.pl>
+References: <200902012229.27517.rjw@sisk.pl> <200902081423.08991.rjw@sisk.pl>
+	<20090209093926.GA4358@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090209090155.GB28794@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090209093926.GA4358@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,45 +20,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 09 February 2009, Pavel Machek wrote:
-> > On Monday 09 February 2009, Pavel Machek wrote:
-> > > On Sun 2009-02-08 15:00:38, Arve Hj?nnev?g wrote:
-> > > > On Sun, Feb 8, 2009 at 1:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > > > On Sun, 8 Feb 2009, Pavel Machek wrote:
-> > > > >
-> > > > >> Well, it is true that wakelocks could be single atomic_t ... but they
-> > > > >> would make them undebuggable. Ok, wakelock interface sucks. But I
-> > > > >> believe something like that is neccessary.
-> > > > >
-> > > > > krefs don't have name strings for keeping track of who has been
-> > > > > incrementing or decrementing their counters.  And it's true that krefs
-> > > > > are nearly undebuggable.  But somehow we've managed to struggle along
-> > > > > without adding names to krefs.  Why should wakelocks be any different?
-> > > > 
-> > > > It sounds like you suggesting that we add another nearly undebuggable interface.
-> > > > 
-> > > > Using only a single atomic_t would not allow us to use a wakelock a
-> > > > switch, or to specify a timeout. You could replace the list in the
-> > > > implementation with a single atomic_t by adding more state to each
-> > > > wakelock, but I like my current solution better.
+> > On Sunday 08 February 2009, Pavel Machek wrote:
+> > > Hi!
 > > > 
-> > > For the record, I agree here. And... if struct wakelock contains char
-> > > * or not is a very small detail.
+> > > > > > their standard config spaces are restored.  Fix this by not attempting
+> > > > > > to disable bridges during suspend and enable them during resume.
+> > > > > ...
+> > > > > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
+> > > > > >  {
+> > > > > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> > > > > >  
+> > > > > > -	if (!pci_is_bridge(pci_dev))
+> > > > > > -		pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > > > +	if (pci_is_bridge(pci_dev))
+> > > > > > +		return 0;
+> > > > > >  
+> > > > > > +	pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > > >  	return pci_pm_reenable_device(pci_dev);
+> > > > > >  }
+> > > > > 
+> > > > > Are you sure? This goes from doing reenable_device to not doing it for
+> > > > > bridges, seemingly contradicting changelog?
+> > > > 
+> > > > Can you explain what you mean, please?
+> > > 
+> > > It looks to me like the patch does not match the changelog.
+> > > 
+> > > Changelog says "enable bridge during resume", but code does return 0
+> > > if it seems bridge.
 > > 
-> > It really isn't, because it means allocating (kernel) memory for each wakelock,
-> > to store the name.
+> > Ah, I see.  The changelog was supposed to mean that the bridges would not
+> > be disabled during suspend and also would not be enabled during resume
+> > (which shouldn't be necessary, since they would be automatically enabled
+> > as a result of restoring their configuration registers).
 > 
-> If it can be #ifdef DEBUG or something, I don't see a problem. And it
-> does not need to allocate anything, most wakelocks will be just
-> static. So we are talking about 10bytes per wakelock of overhead --
-> not too bad.
+> You can add my acked-by: when you resubmit with fixed
+> changelog... :-).
 
-No, we are talking of allocating kernel memory on behalf of user space
-processes with no apparent limitations.
+It's merged, so that wouldn't be of any use.
 
 Thanks,
 Rafael
