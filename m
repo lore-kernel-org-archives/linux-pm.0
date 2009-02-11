@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM: Fix build for CONFIG_PM unset
-Date: Wed, 11 Feb 2009 22:33:20 +0100
-Message-ID: <200902112233.21529.rjw__19398.7520564862$1234388322$gmane$org@sisk.pl>
-References: <200901062112.29227.rjw@sisk.pl> <49922896.6090605@redhat.com>
-	<200902111038.46368.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Wed, 11 Feb 2009 22:37:51 +0100
+Message-ID: <20090211213751.GB605@elf.ucw.cz>
+References: <20090211044736.GB9980@bulgaria.corp.google.com>
+	<Pine.LNX.4.44L0.0902110955490.3056-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902111038.46368.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0902110955490.3056-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Cheng Renquan <crquan@gmail.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Brian Swetland <swetland@google.com>, ncunningham@crca.org.au, u.luckas@road.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed 2009-02-11 09:58:23, Alan Stern wrote:
+> On Tue, 10 Feb 2009, Brian Swetland wrote:
+> 
+> > [Pavel Machek <pavel@ucw.cz>]
+> > > > 
+> > > > wake_lock never blocks.
+> > > 
+> > > Wakelock is really bad name: it is not a lock and it does not protect
+> > > wake. I'd say we need better name here.
+> > 
+> > I agree with you here -- I've had this discussion with Arve previously,
+> > but have been unable to offer a compelling alternative name.  Anybody
+> > have a good idea?
+> 
+> delay_sleep or delaysleep?  block_sleep or blocksleep?  Any of the 
+> above with "sleep" replaced by "suspend"?
 
-Compilation of kprobes.c with CONFIG_PM unset is broken due to some
-broken config dependncies.  Fix that.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
----
- kernel/Makefile       |    1 +
- kernel/power/Makefile |    2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/Makefile
-===================================================================
---- linux-2.6.orig/kernel/Makefile
-+++ linux-2.6/kernel/Makefile
-@@ -51,6 +51,7 @@ obj-$(CONFIG_UID16) += uid16.o
- obj-$(CONFIG_MODULES) += module.o
- obj-$(CONFIG_KALLSYMS) += kallsyms.o
- obj-$(CONFIG_PM) += power/
-+obj-$(CONFIG_FREEZER) += power/
- obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
- obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
-Index: linux-2.6/kernel/power/Makefile
-===================================================================
---- linux-2.6.orig/kernel/power/Makefile
-+++ linux-2.6/kernel/power/Makefile
-@@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
- EXTRA_CFLAGS	+=	-DDEBUG
- endif
- 
--obj-y				:= main.o
-+obj-$(CONFIG_PM)		+= main.o
- obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+Actually "sleep_veto" sounded best.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
