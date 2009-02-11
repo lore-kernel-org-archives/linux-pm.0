@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Wed, 11 Feb 2009 23:23:52 +0100
-Message-ID: <200902112323.53421.rjw@sisk.pl>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902090115.10896.rjw@sisk.pl>
-	<d6200be20902081803m4976c14eic88aba06548f7838@mail.gmail.com>
+Subject: Re: [PATCH 05/13] PM: Add option to disable
+	/sys/power/state interface
+Date: Wed, 11 Feb 2009 23:26:22 +0100
+Message-ID: <200902112326.23637.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0902082148420.24968-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902081803m4976c14eic88aba06548f7838@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0902082148420.24968-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,169 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sun, Feb 8, 2009 at 4:15 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> >> It means that you can, without knowing the current state of the loc=
-k, safely
-> >> >> call wake_lock when you know that you need the wakelock, and
-> >> >> wake_unlock when you are done.
-> >> >
-> >> > You can do the same with a reference counter IMO.
-> >>
-> >> Not without some per lock state.
-> >
-> > What prevents me from increasing the reference counter when necessary a=
-nd
-> > decreasing it when I'm done, actually?
+On Monday 09 February 2009, Alan Stern wrote:
+> On Sun, 8 Feb 2009, Arve Hj=F8nnev=E5g wrote:
 > =
 
-> Nothing prevents a driver from incrementing and decrementing a
-> reference count correctly, but it has to know if it already has a
-> reference. If you want to implement my current wake_lock api with a
-> global reference count, you need some per lock state to indicate if
-> the lock is locked or not.
-
-Well, I don't.  In fact I think it's too complicated.
-
-> >> >> It allows wakelocks with timeouts
-> >> >
-> >> > OK
-> >> >
-> >> > What for?
-> >>
-> >> So we do not have to change everything at once, and so we can allow
-> >> code that we do not really trust a chance to run.
-> >
-> > Well, are you sure this is the best way of achieving this goal?
+> > How do you handle devices that should be in a low power mode when
+> > closed, and a high(er) power mode when open. While adding
+> > early-suspend hooks to a driver may be ugly, it does not need any more
+> > support than open and close does.
 > =
 
-> No, but I have not seen any better suggestions, that solve the problem.
+> This illustrates some of the problems of differing outlooks.  In an =
 
-Wakelocks with timeout are not a solution IMO.
+> embedded system, the set of devices is limited and the set of available =
 
-> >> > However, it might be better to use a refcount along with some mechan=
-ism
-> >> > allowing user space processes to increase it only once before decrea=
-sing.
-> >> > That would require a per-task flag, but I think you can reuse one of=
- the
-> >> > freezer flags for that (the freezer is not going to run as long as a=
- wakelock
-> >> > is held, right?).
-> >>
-> >> How would this be better?
-> >
-> > Simpler code, less overhead.  But I'm not insisting, just showing you a=
-nother
-> > possible approach.
+> power states is known beforehand.  In other settings neither of these =
+
+> is true.
 > =
 
-> I agree that a global reference count is less overhead, but we need
-> timeout support the make the system work for now.
+> Early-suspend is an example of a partially-functional system state.  =
 
-I don't really think we need it in the mainline kernel.
+> In your Android-centric approach, early-suspend is centered around the =
 
-> I don't see what a per-task flag would be helpful with. Not all wakelocks=
- are
-> associated with tasks.
+> screen.  But other sorts of systems way well have other requirements =
 
-What are they associated with, then?
+> and may want their partially-functional system state to be centered =
 
-> >
-> >> >> >> +This works whether the wakelock is already held or not. It is u=
-seful if the
-> >> >> >> +driver woke up other parts of the system that do not use wakelo=
-cks but
-> >> >> >> +still need to run. Avoid this when possible, since it will wast=
-e power
-> >> >> >> +if the timeout is long or may fail to finish needed work if the=
- timeout is
-> >> >> >> +short.
-> >> >> >
-> >> >> > And what's this call needed for?
-> >> >
-> >> > Please don't remove the context.  This makes reading your reply diff=
-icult.
-> >>
-> >>  +It can also call wake_lock_timeout to release the wakelock after a d=
-elay:
-> >>  +     wake_lock_timeout(&state->wakelock, HZ);
-> >>  +
-> >>
-> >> >
-> >> >> It is needed to give code that do not use wakelocks a chance to run.
-> >> >> For instance we have not added wakelocks to the network stack. We a=
-lso
-> >> >> use it in some places when passing data to untrusted userspace code.
-> >> >
-> >> > Do you mean to take a wakelock with a timeout in one code path so th=
-at some
-> >> > other code path can run knowing that suspend will not happen?
-> >> >
-> >> > If this is correct, I don't like it, because it's inherently unrelia=
-ble (you
-> >> > really never know how long it will take the other code path to run, =
-so you
-> >> > can't choose the timeout 100% accurately).
-> >>
-> >> I agree, but without wakelock support you have two options. Do not
-> >> user suspend at all, or use a global timeout that you reset everywhere
-> >> we lock a wakelock. By using wakelocks with timeouts we can at least
-> >> make some events 100% reliable.
-> >
-> > I'm not convinced.
-> >
-> > Sorry to say that, but IMO the "wakelock with timeout" mechanism looks =
-more
-> > like a (poor) workaround than a solution of the problem.  Surely, I wou=
-lnd't
-> > have tried to introduce anything similar into the kernel.
+> around something else.  Or they may want to have more than one =
+
+> partially-functional system state.
 > =
 
-> I do not want to add wakelocks to every kernel subsystem while there
-> is no wakelock support in the mainline kernel. Using wakelocks with
-> timeouts allow us to make progress.
+> What we need is a mechanism capable of accomodating all these different
+> requirements.  Presumably the core kernel would provide the hooks but
+> the implementation details would be left up to platform-specific code.  =
 
-It would hide the real invasiveness of the changes you'd like to make, which
-need not be a good thing.
-
-> >> > I really would use a refcount and make sure it's increased (and obvi=
-ously
-> >> > decreased) by _every_ code path that needs to prevent suspend from h=
-appening,
-> >> > including networking and so on.
-> >> >
-> >> >> > Is there a mechanism allowing us to see what wakelocks have been =
-created by
-> >> >> > the user land?  Something like this would be useful for debugging.
-> >> >>
-> >> >> /proc/wakelocks shows all wakelocks. It does not currently indicate=
- if
-> >> >> a wakelock is from userspace, but if you are looking for a specific
-> >> >> lock it is easy to find. I can add a prefix to the name of all user
-> >> >> space wakelocks of you want.
-> >> >
-> >> > Well, actually, do the wakelocks have to have the names?
-> >>
-> >> If you want to debug the system or provide stats, yes.
-> >
-> > Care to elaborate?
+> There should be a generic scheme for representing partially-functional
+> system states, together with a list of devices to be put in low-power
+> mode for each state and an indication of which low-power mode to use
+> (since a device can have more than one low-power mode).  Device drivers
+> should have an interface for going into a particular low-power state.
 > =
 
-> We report the name and how long each wakelock is active in
-> /proc/wakelocks. Without a name, those stats are not very useful. You
-> can also enable debug options to print a message the kernel log every
-> time a wakelock is locked, unlocked or used to trigger a wakeup.
+> The extent to which all of this needs to be split between the kernel
+> and userspace isn't immediately clear.  Latency issues might force a
+> large part of it to live in the kernel.  On the other hand, if the list
+> of devices & modes can be pushed out to userspace, then the in-kernel
+> portion could end up being nothing more than a runtime-PM mechanism of
+> the sort we have been discussing for years.
 
-Well, you put quite a lot of effort into making this nicely debuggable and =
-so
-on, but I think you should have submitted the minimal core functionality fi=
-rst
-to see if people were comfortable with it.
+Agreed.
 
 Thanks,
 Rafael
