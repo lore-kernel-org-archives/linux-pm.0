@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 05/13] PM: Add option to disable
-	/sys/power/state interface
-Date: Wed, 11 Feb 2009 23:26:22 +0100
-Message-ID: <200902112326.23637.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0902082148420.24968-100000@netrider.rowland.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Wed, 11 Feb 2009 15:42:17 -0800
+Message-ID: <d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902090115.10896.rjw@sisk.pl>
+	<d6200be20902081803m4976c14eic88aba06548f7838@mail.gmail.com>
+	<200902112323.53421.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902082148420.24968-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200902112323.53421.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +20,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 February 2009, Alan Stern wrote:
-> On Sun, 8 Feb 2009, Arve Hj=F8nnev=E5g wrote:
-> =
+On Wed, Feb 11, 2009 at 2:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >> It allows wakelocks with timeouts
+>> >> >
+>> >> > OK
+>> >> >
+>> >> > What for?
+>> >>
+>> >> So we do not have to change everything at once, and so we can allow
+>> >> code that we do not really trust a chance to run.
+>> >
+>> > Well, are you sure this is the best way of achieving this goal?
+>>
+>> No, but I have not seen any better suggestions, that solve the problem.
+>
+> Wakelocks with timeout are not a solution IMO.
 
-> > How do you handle devices that should be in a low power mode when
-> > closed, and a high(er) power mode when open. While adding
-> > early-suspend hooks to a driver may be ugly, it does not need any more
-> > support than open and close does.
-> =
+It is an improvement over the current situation where you have to use
+timeouts for everything.
 
-> This illustrates some of the problems of differing outlooks.  In an =
+>> >> > However, it might be better to use a refcount along with some mecha=
+nism
+>> >> > allowing user space processes to increase it only once before decre=
+asing.
+>> >> > That would require a per-task flag, but I think you can reuse one o=
+f the
+>> >> > freezer flags for that (the freezer is not going to run as long as =
+a wakelock
+>> >> > is held, right?).
+>> >>
+>> >> How would this be better?
+>> >
+>> > Simpler code, less overhead.  But I'm not insisting, just showing you =
+another
+>> > possible approach.
+>>
+>> I agree that a global reference count is less overhead, but we need
+>> timeout support the make the system work for now.
+>
+> I don't really think we need it in the mainline kernel.
 
-> embedded system, the set of devices is limited and the set of available =
+We do if we want anyone to be able to ship an android device capable
+of suspending with the mainline kernel.
 
-> power states is known beforehand.  In other settings neither of these =
+>
+>> I don't see what a per-task flag would be helpful with. Not all wakelock=
+s are
+>> associated with tasks.
+>
+> What are they associated with, then?
 
-> is true.
-> =
+Data (usually queues). If by per task you mean per process and not per
+thread, you could use use your flag to clean up when a process dies
+though.
 
-> Early-suspend is an example of a partially-functional system state.  =
+>> We report the name and how long each wakelock is active in
+>> /proc/wakelocks. Without a name, those stats are not very useful. You
+>> can also enable debug options to print a message the kernel log every
+>> time a wakelock is locked, unlocked or used to trigger a wakeup.
+>
+> Well, you put quite a lot of effort into making this nicely debuggable an=
+d so
+> on, but I think you should have submitted the minimal core functionality =
+first
+> to see if people were comfortable with it.
 
-> In your Android-centric approach, early-suspend is centered around the =
+The code I submitted is usable and tested. Without wakelocks we cannot
+use suspend, and without wakelock timeouts we cannot pass events to
+components that do not use wakelocks.
 
-> screen.  But other sorts of systems way well have other requirements =
+-- =
 
-> and may want their partially-functional system state to be centered =
-
-> around something else.  Or they may want to have more than one =
-
-> partially-functional system state.
-> =
-
-> What we need is a mechanism capable of accomodating all these different
-> requirements.  Presumably the core kernel would provide the hooks but
-> the implementation details would be left up to platform-specific code.  =
-
-> There should be a generic scheme for representing partially-functional
-> system states, together with a list of devices to be put in low-power
-> mode for each state and an indication of which low-power mode to use
-> (since a device can have more than one low-power mode).  Device drivers
-> should have an interface for going into a particular low-power state.
-> =
-
-> The extent to which all of this needs to be split between the kernel
-> and userspace isn't immediately clear.  Latency issues might force a
-> large part of it to live in the kernel.  On the other hand, if the list
-> of devices & modes can be pushed out to userspace, then the in-kernel
-> portion could end up being nothing more than a runtime-PM mechanism of
-> the sort we have been discussing for years.
-
-Agreed.
-
-Thanks,
-Rafael
+Arve Hj=F8nnev=E5g
