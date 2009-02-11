@@ -1,23 +1,17 @@
-From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 10/10] ledtrig-sleep: Add led trigger for sleep
-	debugging.
-Date: Tue, 10 Feb 2009 17:49:15 -0800
-Message-ID: <1234316955-31304-11-git-send-email-arve@android.com>
-References: <1234316955-31304-1-git-send-email-arve@android.com>
-	<1234316955-31304-2-git-send-email-arve@android.com>
-	<1234316955-31304-3-git-send-email-arve@android.com>
-	<1234316955-31304-4-git-send-email-arve@android.com>
-	<1234316955-31304-5-git-send-email-arve@android.com>
-	<1234316955-31304-6-git-send-email-arve@android.com>
-	<1234316955-31304-7-git-send-email-arve@android.com>
-	<1234316955-31304-8-git-send-email-arve@android.com>
-	<1234316955-31304-9-git-send-email-arve@android.com>
-	<1234316955-31304-10-git-send-email-arve@android.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Tue, 10 Feb 2009 18:11:59 -0800
+Message-ID: <d6200be20902101811n69c89489u1984d6554152661@mail.gmail.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<1233802226-23386-2-git-send-email-arve@android.com>
+	<20090205225158.GA19577@linux.intel.com>
+	<d6200be20902051613k77ef5878v7734653749ead8a@mail.gmail.com>
+	<20090210202507.GE1382@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1234316955-31304-10-git-send-email-arve@android.com>
+In-Reply-To: <20090210202507.GE1382@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,76 +21,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-U2lnbmVkLW9mZi1ieTogQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+ClNpZ25l
-ZC1vZmYtYnk6IEFydmUgSGrDuG5uZXbDpWcgPGFydmVAYW5kcm9pZC5jb20+Ci0tLQogZHJpdmVy
-cy9sZWRzL0tjb25maWcgICAgICAgICB8ICAgIDYgKysrCiBkcml2ZXJzL2xlZHMvTWFrZWZpbGUg
-ICAgICAgIHwgICAgMSArCiBkcml2ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jIHwgICA4MCArKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIDMgZmlsZXMgY2hhbmdlZCwg
-ODcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2
-ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9sZWRzL0tjb25m
-aWcgYi9kcml2ZXJzL2xlZHMvS2NvbmZpZwppbmRleCA3NDI3MTM2Li5mNGM1NDM5IDEwMDY0NAot
-LS0gYS9kcml2ZXJzL2xlZHMvS2NvbmZpZworKysgYi9kcml2ZXJzL2xlZHMvS2NvbmZpZwpAQCAt
-MjIzLDQgKzIyMywxMCBAQCBjb25maWcgTEVEU19UUklHR0VSX0RFRkFVTFRfT04KIAkgIFRoaXMg
-YWxsb3dzIExFRHMgdG8gYmUgaW5pdGlhbGlzZWQgaW4gdGhlIE9OIHN0YXRlLgogCSAgSWYgdW5z
-dXJlLCBzYXkgWS4KIAorY29uZmlnIExFRFNfVFJJR0dFUl9TTEVFUAorCXRyaXN0YXRlICJMRUQg
-U2xlZXAgTW9kZSBUcmlnZ2VyIgorCWRlcGVuZHMgb24gTEVEU19UUklHR0VSUyAmJiBFQVJMWVNV
-U1BFTkQKKwloZWxwCisJICBUaGlzIHR1cm5zIExFRHMgb24gd2hlbiB0aGUgc2NyZWVuIGlzIG9m
-ZiBidXQgdGhlIGNwdSBzdGlsbCBydW5uaW5nLgorCiBlbmRpZiAjIE5FV19MRURTCmRpZmYgLS1n
-aXQgYS9kcml2ZXJzL2xlZHMvTWFrZWZpbGUgYi9kcml2ZXJzL2xlZHMvTWFrZWZpbGUKaW5kZXgg
-OWQ3NmYwZi4uOWNmYzE0OCAxMDA2NDQKLS0tIGEvZHJpdmVycy9sZWRzL01ha2VmaWxlCisrKyBi
-L2RyaXZlcnMvbGVkcy9NYWtlZmlsZQpAQCAtMzEsMyArMzEsNCBAQCBvYmotJChDT05GSUdfTEVE
-U19UUklHR0VSX0lERV9ESVNLKQkrPSBsZWR0cmlnLWlkZS1kaXNrLm8KIG9iai0kKENPTkZJR19M
-RURTX1RSSUdHRVJfSEVBUlRCRUFUKQkrPSBsZWR0cmlnLWhlYXJ0YmVhdC5vCiBvYmotJChDT05G
-SUdfTEVEU19UUklHR0VSX0JBQ0tMSUdIVCkJKz0gbGVkdHJpZy1iYWNrbGlnaHQubwogb2JqLSQo
-Q09ORklHX0xFRFNfVFJJR0dFUl9ERUZBVUxUX09OKQkrPSBsZWR0cmlnLWRlZmF1bHQtb24ubwor
-b2JqLSQoQ09ORklHX0xFRFNfVFJJR0dFUl9TTEVFUCkJKz0gbGVkdHJpZy1zbGVlcC5vCmRpZmYg
-LS1naXQgYS9kcml2ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jIGIvZHJpdmVycy9sZWRzL2xlZHRy
-aWctc2xlZXAuYwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi5mMTY0MDQyCi0t
-LSAvZGV2L251bGwKKysrIGIvZHJpdmVycy9sZWRzL2xlZHRyaWctc2xlZXAuYwpAQCAtMCwwICsx
-LDgwIEBACisvKiBkcml2ZXJzL2xlZHMvbGVkdHJpZy1zbGVlcC5jCisgKgorICogQ29weXJpZ2h0
-IChDKSAyMDA3IEdvb2dsZSwgSW5jLgorICoKKyAqIFRoaXMgc29mdHdhcmUgaXMgbGljZW5zZWQg
-dW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMKKyAqIExpY2Vuc2UgdmVy
-c2lvbiAyLCBhcyBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgYW5k
-CisgKiBtYXkgYmUgY29waWVkLCBkaXN0cmlidXRlZCwgYW5kIG1vZGlmaWVkIHVuZGVyIHRob3Nl
-IHRlcm1zLgorICoKKyAqIFRoaXMgcHJvZ3JhbSBpcyBkaXN0cmlidXRlZCBpbiB0aGUgaG9wZSB0
-aGF0IGl0IHdpbGwgYmUgdXNlZnVsLAorICogYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyB3aXRo
-b3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKKyAqIE1FUkNIQU5UQUJJTElUWSBvciBG
-SVRORVNTIEZPUiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4gIFNlZSB0aGUKKyAqIEdOVSBHZW5lcmFs
-IFB1YmxpYyBMaWNlbnNlIGZvciBtb3JlIGRldGFpbHMuCisgKgorICovCisKKyNpbmNsdWRlIDxs
-aW51eC9lYXJseXN1c3BlbmQuaD4KKyNpbmNsdWRlIDxsaW51eC9sZWRzLmg+CisjaW5jbHVkZSA8
-bGludXgvc3VzcGVuZC5oPgorCitzdGF0aWMgaW50IGxlZHRyaWdfc2xlZXBfcG1fY2FsbGJhY2so
-c3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuZmIsCisJCQkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uLAor
-CQkJCQl2b2lkICppZ25vcmVkKTsKKworREVGSU5FX0xFRF9UUklHR0VSKGxlZHRyaWdfc2xlZXAp
-CitzdGF0aWMgc3RydWN0IG5vdGlmaWVyX2Jsb2NrIGxlZHRyaWdfc2xlZXBfcG1fbm90aWZpZXIg
-PSB7CisJLm5vdGlmaWVyX2NhbGwgPSBsZWR0cmlnX3NsZWVwX3BtX2NhbGxiYWNrLAorCS5wcmlv
-cml0eSA9IDAsCit9OworCitzdGF0aWMgdm9pZCBsZWR0cmlnX3NsZWVwX2Vhcmx5X3N1c3BlbmQo
-c3RydWN0IGVhcmx5X3N1c3BlbmQgKmgpCit7CisJbGVkX3RyaWdnZXJfZXZlbnQobGVkdHJpZ19z
-bGVlcCwgTEVEX0ZVTEwpOworfQorCitzdGF0aWMgdm9pZCBsZWR0cmlnX3NsZWVwX2Vhcmx5X3Jl
-c3VtZShzdHJ1Y3QgZWFybHlfc3VzcGVuZCAqaCkKK3sKKwlsZWRfdHJpZ2dlcl9ldmVudChsZWR0
-cmlnX3NsZWVwLCBMRURfT0ZGKTsKK30KKworc3RhdGljIHN0cnVjdCBlYXJseV9zdXNwZW5kIGxl
-ZHRyaWdfc2xlZXBfZWFybHlfc3VzcGVuZF9oYW5kbGVyID0geworCS5zdXNwZW5kID0gbGVkdHJp
-Z19zbGVlcF9lYXJseV9zdXNwZW5kLAorCS5yZXN1bWUgPSBsZWR0cmlnX3NsZWVwX2Vhcmx5X3Jl
-c3VtZSwKK307CisKK3N0YXRpYyBpbnQgbGVkdHJpZ19zbGVlcF9wbV9jYWxsYmFjayhzdHJ1Y3Qg
-bm90aWZpZXJfYmxvY2sgKm5mYiwKKwkJCQkJdW5zaWduZWQgbG9uZyBhY3Rpb24sCisJCQkJCXZv
-aWQgKmlnbm9yZWQpCit7CisJc3dpdGNoIChhY3Rpb24pIHsKKwljYXNlIFBNX0hJQkVSTkFUSU9O
-X1BSRVBBUkU6CisJY2FzZSBQTV9TVVNQRU5EX1BSRVBBUkU6CisJCWxlZF90cmlnZ2VyX2V2ZW50
-KGxlZHRyaWdfc2xlZXAsIExFRF9PRkYpOworCQlyZXR1cm4gTk9USUZZX09LOworCWNhc2UgUE1f
-UE9TVF9ISUJFUk5BVElPTjoKKwljYXNlIFBNX1BPU1RfU1VTUEVORDoKKwkJbGVkX3RyaWdnZXJf
-ZXZlbnQobGVkdHJpZ19zbGVlcCwgTEVEX0ZVTEwpOworCQlyZXR1cm4gTk9USUZZX09LOworCX0K
-KworCXJldHVybiBOT1RJRllfRE9ORTsKK30KKworc3RhdGljIGludCBfX2luaXQgbGVkdHJpZ19z
-bGVlcF9pbml0KHZvaWQpCit7CisJbGVkX3RyaWdnZXJfcmVnaXN0ZXJfc2ltcGxlKCJzbGVlcCIs
-ICZsZWR0cmlnX3NsZWVwKTsKKwlyZWdpc3Rlcl9wbV9ub3RpZmllcigmbGVkdHJpZ19zbGVlcF9w
-bV9ub3RpZmllcik7CisJcmVnaXN0ZXJfZWFybHlfc3VzcGVuZCgmbGVkdHJpZ19zbGVlcF9lYXJs
-eV9zdXNwZW5kX2hhbmRsZXIpOworCXJldHVybiAwOworfQorCitzdGF0aWMgdm9pZCBfX2V4aXQg
-bGVkdHJpZ19zbGVlcF9leGl0KHZvaWQpCit7CisJdW5yZWdpc3Rlcl9lYXJseV9zdXNwZW5kKCZs
-ZWR0cmlnX3NsZWVwX2Vhcmx5X3N1c3BlbmRfaGFuZGxlcik7CisJdW5yZWdpc3Rlcl9wbV9ub3Rp
-ZmllcigmbGVkdHJpZ19zbGVlcF9wbV9ub3RpZmllcik7CisJbGVkX3RyaWdnZXJfdW5yZWdpc3Rl
-cl9zaW1wbGUobGVkdHJpZ19zbGVlcCk7Cit9CisKK21vZHVsZV9pbml0KGxlZHRyaWdfc2xlZXBf
-aW5pdCk7Cittb2R1bGVfZXhpdChsZWR0cmlnX3NsZWVwX2V4aXQpOworCi0tIAoxLjYuMQoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
-bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Tue, Feb 10, 2009 at 12:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Wakelock is really bad name: it is not a lock and it does not protect
+> wake. I'd say we need better name here.
+
+It is similar to a reader/writer lock, and it does protect the wake
+state. The writer, the suspend code, blocks until all the readers
+release their lock. If there are no readers after suspending all the
+drivers, the wake state changes. Since the readers can only run when
+in the awake state, they never block.
+
+-- =
+
+Arve Hj=F8nnev=E5g
