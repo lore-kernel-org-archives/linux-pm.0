@@ -1,16 +1,15 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Wed, 11 Feb 2009 15:42:17 -0800
-Message-ID: <d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902090115.10896.rjw@sisk.pl>
-	<d6200be20902081803m4976c14eic88aba06548f7838@mail.gmail.com>
-	<200902112323.53421.rjw@sisk.pl>
+Date: Wed, 11 Feb 2009 15:55:16 -0800
+Message-ID: <d6200be20902111555r3f5f3ccdoc5ea336c058775a0@mail.gmail.com>
+References: <20090211044736.GB9980@bulgaria.corp.google.com>
+	<Pine.LNX.4.44L0.0902110955490.3056-100000@iolanthe.rowland.org>
+	<20090211213751.GB605@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902112323.53421.rjw@sisk.pl>
+In-Reply-To: <20090211213751.GB605@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,78 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>, ncunningham@crca.org.au, u.luckas@road.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 2:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> It allows wakelocks with timeouts
->> >> >
->> >> > OK
->> >> >
->> >> > What for?
->> >>
->> >> So we do not have to change everything at once, and so we can allow
->> >> code that we do not really trust a chance to run.
->> >
->> > Well, are you sure this is the best way of achieving this goal?
+On Wed, Feb 11, 2009 at 1:37 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2009-02-11 09:58:23, Alan Stern wrote:
+>> On Tue, 10 Feb 2009, Brian Swetland wrote:
 >>
->> No, but I have not seen any better suggestions, that solve the problem.
->
-> Wakelocks with timeout are not a solution IMO.
-
-It is an improvement over the current situation where you have to use
-timeouts for everything.
-
->> >> > However, it might be better to use a refcount along with some mecha=
-nism
->> >> > allowing user space processes to increase it only once before decre=
-asing.
->> >> > That would require a per-task flag, but I think you can reuse one o=
-f the
->> >> > freezer flags for that (the freezer is not going to run as long as =
-a wakelock
->> >> > is held, right?).
->> >>
->> >> How would this be better?
+>> > [Pavel Machek <pavel@ucw.cz>]
+>> > > >
+>> > > > wake_lock never blocks.
+>> > >
+>> > > Wakelock is really bad name: it is not a lock and it does not protect
+>> > > wake. I'd say we need better name here.
 >> >
->> > Simpler code, less overhead.  But I'm not insisting, just showing you =
-another
->> > possible approach.
+>> > I agree with you here -- I've had this discussion with Arve previously,
+>> > but have been unable to offer a compelling alternative name.  Anybody
+>> > have a good idea?
 >>
->> I agree that a global reference count is less overhead, but we need
->> timeout support the make the system work for now.
+>> delay_sleep or delaysleep?  block_sleep or blocksleep?  Any of the
+>> above with "sleep" replaced by "suspend"?
 >
-> I don't really think we need it in the mainline kernel.
+> Actually "sleep_veto" sounded best.
 
-We do if we want anyone to be able to ship an android device capable
-of suspending with the mainline kernel.
+What is the api for a sleep_veto? Lock and unlock makes sense for a
+wakelock, but not for a veto.
 
->
->> I don't see what a per-task flag would be helpful with. Not all wakelock=
-s are
->> associated with tasks.
->
-> What are they associated with, then?
-
-Data (usually queues). If by per task you mean per process and not per
-thread, you could use use your flag to clean up when a process dies
-though.
-
->> We report the name and how long each wakelock is active in
->> /proc/wakelocks. Without a name, those stats are not very useful. You
->> can also enable debug options to print a message the kernel log every
->> time a wakelock is locked, unlocked or used to trigger a wakeup.
->
-> Well, you put quite a lot of effort into making this nicely debuggable an=
-d so
-> on, but I think you should have submitted the minimal core functionality =
-first
-> to see if people were comfortable with it.
-
-The code I submitted is usable and tested. Without wakelocks we cannot
-use suspend, and without wakelock timeouts we cannot pass events to
-components that do not use wakelocks.
+The original driver used suspendlock for the kernel api, but we used
+wakelock for the userspace apis. I changed the name to wakelock so
+that it would match the user space api (which we cannot change), and
+also because people here usually referred to them as wakelocks despite
+the name of the kernel apis.
 
 -- =
 
