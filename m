@@ -1,16 +1,18 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Fri, 13 Feb 2009 20:35:27 +0100
-Message-ID: <200902132035.28416.u.luckas@road.de>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902131913.54154.u.luckas@road.de>
-	<20090213191426.GA1379@srcf.ucam.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report
+	with	2.6.29-rc3
+Date: Fri, 13 Feb 2009 22:46:03 +0100
+Message-ID: <20090213214603.GE21791@elf.ucw.cz>
+References: <20090208103230.GB14143@elf.ucw.cz>
+	<664304.90059.qm@web36806.mail.mud.yahoo.com>
+	<20090210105820.GA4636@atrey.karlin.mff.cuni.cz>
+	<200902101524.48536.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090213191426.GA1379@srcf.ucam.org>
 Content-Disposition: inline
+In-Reply-To: <200902101524.48536.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,37 +22,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Daniel Qarras <dqarras@yahoo.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 13. February 2009, Matthew Garrett wrote:
-> On Fri, Feb 13, 2009 at 07:13:52PM +0100, Uli Luckas wrote:
-> > On Friday, 13. February 2009, Matthew Garrett wrote:
-> > > The daemon holds the lock in the first place.
-> >
-> > When did the daemon take the lock? When it anticipated the process would
-> > crash?
->
-> When it was first asked to. In this model invidual applications wouldn't
-> take locks themselves - it would be up to the daemon to handle the
-> kernel interaction.
+On Tue 2009-02-10 15:24:48, Rafael J. Wysocki wrote:
+> On Tuesday 10 February 2009, Pavel Machek wrote:
+> > > Hi!
+> > >  
+> > > > > > > Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3
+> > > > > > > suspend/hibernate behave in this manner:
+> > > > > > > 
+> > > > > > > Hibernation completes ok but resumes immediately as if
+> > > > > > > I would have pressed the power button.
+> > > > > 
+> > > > > Thanks a lot for the tip, indeed it makes hibernation
+> > > > > working again:
+> > > > > 
+> > > > > root@localhost:~# echo shutdown > /sys/power/disk
+> > > > > root@localhost:~# pm-hibernate
+> > > > > 
+> > > > > Great! Is there a way to make this default on my
+> > > > > system, e.g., with a quirk?
+> > > > 
+> > > > Well, it would be better to fix it properly, than just work
+> > > > around it with quirk. I think it worked before and you already
+> > > > identified commit that breaks it?
+> > > 
+> > > Yes, we found out it with Rafael last month:
+> > > 
+> > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019225.html
+> > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019244.html
+> > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019251.html
+> > 
+> > Hmm, hibernation rework broke that, and looks USB related. Maybe it is
+> > fixed in latest kernel (-rc4), as there were USB-keeps-systems-awake
+> > fixes.
+> 
+> AFAICS, it is a chipset/BIOS problem.
+> 
+> As long as we were using shutdown to turn off the box during hibernation,
+> things worked on these boxes.  As soon as we started using the ACPI "enter S4"
+> feature, it stopped and ehci-hcd always happens to be the culprit (I had access
+> to one box with this issue, but unfortunately I don't have it any more).
+> 
+> The only thing we can really do here is to blacklist all of the boxes with this
+> problem and handle them in a special way.
 
-Thanks for explaining
-
-Uli
-
+Well, if unloading uhci/ohci/ehci helps, there should be a better
+solution than a blacklist. But...
+									Pavel
 -- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Head of Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
