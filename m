@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report with
-	2.6.29-rc3
-Date: Sat, 14 Feb 2009 00:01:25 +0100
-Message-ID: <200902140001.26208.rjw@sisk.pl>
-References: <20090208103230.GB14143@elf.ucw.cz>
-	<200902101524.48536.rjw@sisk.pl>
-	<20090213214603.GE21791@elf.ucw.cz>
+Subject: Re: [PATCH 09/10] Input: Hold wake lock while event
+	queue is not empty.
+Date: Sat, 14 Feb 2009 00:06:17 +0100
+Message-ID: <200902140006.18420.rjw@sisk.pl>
+References: <1234316955-31304-7-git-send-email-arve@android.com>
+	<d6200be20902121652u400c450emf5e7ded1b2ea23c@mail.gmail.com>
+	<20090213005704.GA8721@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090213214603.GE21791@elf.ucw.cz>
+In-Reply-To: <20090213005704.GA8721@srcf.ucam.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,61 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Daniel Qarras <dqarras@yahoo.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, Arve@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 13 February 2009, Pavel Machek wrote:
-> On Tue 2009-02-10 15:24:48, Rafael J. Wysocki wrote:
-> > On Tuesday 10 February 2009, Pavel Machek wrote:
-> > > > Hi!
-> > > >  
-> > > > > > > > Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3
-> > > > > > > > suspend/hibernate behave in this manner:
-> > > > > > > > 
-> > > > > > > > Hibernation completes ok but resumes immediately as if
-> > > > > > > > I would have pressed the power button.
-> > > > > > 
-> > > > > > Thanks a lot for the tip, indeed it makes hibernation
-> > > > > > working again:
-> > > > > > 
-> > > > > > root@localhost:~# echo shutdown > /sys/power/disk
-> > > > > > root@localhost:~# pm-hibernate
-> > > > > > 
-> > > > > > Great! Is there a way to make this default on my
-> > > > > > system, e.g., with a quirk?
-> > > > > 
-> > > > > Well, it would be better to fix it properly, than just work
-> > > > > around it with quirk. I think it worked before and you already
-> > > > > identified commit that breaks it?
-> > > > 
-> > > > Yes, we found out it with Rafael last month:
-> > > > 
-> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019225.html
-> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019244.html
-> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019251.html
-> > > 
-> > > Hmm, hibernation rework broke that, and looks USB related. Maybe it is
-> > > fixed in latest kernel (-rc4), as there were USB-keeps-systems-awake
-> > > fixes.
-> > 
-> > AFAICS, it is a chipset/BIOS problem.
-> > 
-> > As long as we were using shutdown to turn off the box during hibernation,
-> > things worked on these boxes.  As soon as we started using the ACPI "enter S4"
-> > feature, it stopped and ehci-hcd always happens to be the culprit (I had access
-> > to one box with this issue, but unfortunately I don't have it any more).
-> > 
-> > The only thing we can really do here is to blacklist all of the boxes with this
-> > problem and handle them in a special way.
-> 
-> Well, if unloading uhci/ohci/ehci helps, there should be a better
-> solution than a blacklist.
+On Friday 13 February 2009, Matthew Garrett wrote:
+> On Thu, Feb 12, 2009 at 04:52:22PM -0800, Arve Hj=F8nnev=E5g wrote:
+> =
 
-Well, whatever ehci-hcd does to prepare the device for hibernation, it works
-for the vast majority of systems.  I'm not sure if we can modify the driver so
-that it does the same for all of the systems out there without breaking any
-working systems.
+> > That was not the bug. Another component opened one of the input
+> > devices, but did not read events from it.
+> =
+
+> It's not the job of the kernel to guard against userspace doing foolish =
+
+> things.
+
+Amen.
+
+> Either you want to wait for input events to be consumed before =
+
+> suspend or you don't - arbitrary timeouts provide no guarantees about =
+
+> the correctness of your platform's behaviour. The default permissions on =
+
+> the event devices mean that the only components that could interfere =
+
+> with this are ones under your control, so fixing them seems like the =
+
+> sensible approach.
+
+This is exactly my point, but I couldn't find words to say it so clearly.
 
 Thanks,
 Rafael
