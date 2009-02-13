@@ -1,12 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/1] Fix resume breakage of USB PCI controllers
-	behind cardbus bridges
-Date: Fri, 13 Feb 2009 23:40:14 +0100
-Message-ID: <200902132340.15427.rjw__35083.4511955783$1234565289$gmane$org@sisk.pl>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 13 Feb 2009 23:52:40 +0100
+Message-ID: <200902132352.41623.rjw@sisk.pl>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<20090213144658.GA29631@bulgaria.corp.google.com>
+	<20090213150723.GA28042@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090213150723.GA28042@srcf.ucam.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,25 +20,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: Miles Lane <miles.lane@gmail.com>, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, Uli Luckas <u.luckas@road.de>, Brian Swetland <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-[Sorry for resending, I forgot to send CCs to the mailing lists.]
+On Friday 13 February 2009, Matthew Garrett wrote:
+> On Fri, Feb 13, 2009 at 06:46:58AM -0800, Brian Swetland wrote:
+> > [Matthew Garrett <mjg59@srcf.ucam.org>]
+> > > The easiest way to handle this would seem to be a multiplexing daemon 
+> > > that implements whatever policy a specific use case has. In your case 
+> > > this would do its own reference counting and then implement timeouts for 
+> > > specific applications, perhaps with some kind of acl so arbitrary apps 
+> > > can't take a lock and then fall down a well. If you've got a 
+> > > sufficiently advanced init then you'd be able to flag an application as 
+> > > being in restart state and then have the daemon hold the lock until the 
+> > > application chooses to reacquire it or not, which seems more flexible 
+> > > than any purely kernel-based implementation.
+> > 
+> > It'd be nice to not have to indirect all userspace suspend inhibits.
+> > If we had the device interface to userspace actually have INHIBIT
+> > and STOP_INHIBIT ops, we could notice if the fd is closed without
+> > actually returning the state to STOP_INHIBIT cleanly.  Add a mechanism
+> > for waiting until somebody exits unexpectedly that init or your monitor
+> > process could use, you avoid the indirection and have a mechanism for
+> > handing over to whatever is responsible for restarting something that's
+> > in an unhappy state.  Too convoluted?
+> 
+> Mm. How do you guarantee a timely handover? Doing it in userland means 
+> that you can adapt it to work with whatever process restart setup you 
+> have, whereas doing it in kernel means adapting whatever process restart 
+> setup you have to the kernel. I'd still lean towards thinking that the 
+> userland approach means you can have tighter integration with the rest 
+> of your stack.
 
-Hi,
-
-Unfortunately, we broke the resume of USB PCI controllers behind cardbus
-bridges by moving the restoration of their standard config registers to
-usb_hcd_pci_resume_early().  Namely, if USB PCI controller is behind a cardbus
-bridge, we're restoring its config registers too early, before the bridge
-becomes operational.
-
-IMO in the future it's better to move the resume of cardbus bridges to the
-early resume phase (ie. before device interrupts will be enabled), but for
-2.6.29 I think we should just go back to the 2.6.28 behavior, which is to
-call pci_restore_state() from usb_hcd_pci_resume().  The following patch
-does this.
+FWIW, I agree.
 
 Thanks,
 Rafael
