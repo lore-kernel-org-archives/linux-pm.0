@@ -1,24 +1,18 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 09/10] Input: Hold wake lock while event
-	queue is not empty.
-Date: Fri, 13 Feb 2009 00:57:04 +0000
-Message-ID: <20090213005704.GA8721@srcf.ucam.org>
-References: <1234316955-31304-7-git-send-email-arve@android.com>
-	<1234316955-31304-8-git-send-email-arve@android.com>
-	<1234316955-31304-9-git-send-email-arve@android.com>
-	<1234316955-31304-10-git-send-email-arve@android.com>
-	<20090212113126.GC28176@srcf.ucam.org>
-	<d6200be20902121627k7ea21f21hba24a2616e27aa42@mail.gmail.com>
-	<20090213003402.GA8393@srcf.ucam.org>
-	<d6200be20902121638t62687ec6k6fc39055a41a78fa@mail.gmail.com>
-	<20090213004054.GB8454@srcf.ucam.org>
-	<d6200be20902121652u400c450emf5e7ded1b2ea23c@mail.gmail.com>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 13 Feb 2009 01:10:35 +0000
+Message-ID: <20090213011035.GA8664@srcf.ucam.org>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902112323.53421.rjw@sisk.pl>
+	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
+	<200902122322.30864.rjw@sisk.pl>
+	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902121652u400c450emf5e7ded1b2ea23c@mail.gmail.com>
+In-Reply-To: <13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,29 +22,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "swetland@google.com" <swetland@google.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 04:52:22PM -0800, Arve Hj=F8nnev=E5g wrote:
+On Thu, Feb 12, 2009 at 05:42:01PM -0600, Woodruff, Richard wrote:
 
-> That was not the bug. Another component opened one of the input
-> devices, but did not read events from it.
+> It is discouraging to hear comments like "we have been talking about for years something else" yet nothing exists or is in open development. Things can evolve in place.
 
-It's not the job of the kernel to guard against userspace doing foolish =
+This is userlad-visible ABI. We can't evolve it in place - we need to 
+get it right before merging it, otherwise we need to carry on 
+maintaining code for an extended period of time in order to ensure that 
+there's no userland code that depends on it.
 
-things. Either you want to wait for input events to be consumed before =
+I dislike the kernel-side use of wakelocks. They're basically equivalent 
+to a device returning -EBUSY during the suspend phase, which is 
+something that can be done without any kernel modifications. I'm more 
+interested in the userspace side, but I'd like to know more about what 
+sort of constraints userspace is likely to impose. In general kernel 
+people respond better to a "Here is a problem statement, here is our 
+proposed solution" type statement than "Here is our code".
 
-suspend or you don't - arbitrary timeouts provide no guarantees about =
-
-the correctness of your platform's behaviour. The default permissions on =
-
-the event devices mean that the only components that could interfere =
-
-with this are ones under your control, so fixing them seems like the =
-
-sensible approach.
-
--- =
-
+-- 
 Matthew Garrett | mjg59@srcf.ucam.org
