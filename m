@@ -1,10 +1,9 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 09/10] Input: Hold wake lock while event
 	queue is not empty.
-Date: Fri, 13 Feb 2009 00:40:54 +0000
-Message-ID: <20090213004054.GB8454@srcf.ucam.org>
+Date: Thu, 12 Feb 2009 16:52:22 -0800
+Message-ID: <d6200be20902121652u400c450emf5e7ded1b2ea23c@mail.gmail.com>
 References: <1234316955-31304-5-git-send-email-arve@android.com>
-	<1234316955-31304-6-git-send-email-arve@android.com>
 	<1234316955-31304-7-git-send-email-arve@android.com>
 	<1234316955-31304-8-git-send-email-arve@android.com>
 	<1234316955-31304-9-git-send-email-arve@android.com>
@@ -13,12 +12,12 @@ References: <1234316955-31304-5-git-send-email-arve@android.com>
 	<d6200be20902121627k7ea21f21hba24a2616e27aa42@mail.gmail.com>
 	<20090213003402.GA8393@srcf.ucam.org>
 	<d6200be20902121638t62687ec6k6fc39055a41a78fa@mail.gmail.com>
+	<20090213004054.GB8454@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20902121638t62687ec6k6fc39055a41a78fa@mail.gmail.com>
+In-Reply-To: <20090213004054.GB8454@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,21 +27,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
 Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 04:38:27PM -0800, Arve Hj=F8nnev=E5g wrote:
+On Thu, Feb 12, 2009 at 4:40 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrot=
+e:
+> On Thu, Feb 12, 2009 at 04:38:27PM -0800, Arve Hj=F8nnev=E5g wrote:
+>
+>> I can make it a module param. I still need a default. I considering 0
+>> (no wakelock), 5 seconds or infinite.
+>
+> I'm not clear on this. Why do you need a default? Just fix your
+> userspace to reboot the system if the input consumer stops responding
+> and won't restart. Your system is entirely fucked at that point anyway.
 
-> I can make it a module param. I still need a default. I considering 0
-> (no wakelock), 5 seconds or infinite.
-
-I'm not clear on this. Why do you need a default? Just fix your =
-
-userspace to reboot the system if the input consumer stops responding =
-
-and won't restart. Your system is entirely fucked at that point anyway.
+That was not the bug. Another component opened one of the input
+devices, but did not read events from it.
 
 -- =
 
-Matthew Garrett | mjg59@srcf.ucam.org
+Arve Hj=F8nnev=E5g
