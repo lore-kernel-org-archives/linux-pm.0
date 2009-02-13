@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Fri, 13 Feb 2009 23:52:40 +0100
-Message-ID: <200902132352.41623.rjw@sisk.pl>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<20090213144658.GA29631@bulgaria.corp.google.com>
-	<20090213150723.GA28042@srcf.ucam.org>
+Subject: Re: Acer Aspire 1690 Suspend/Hibernate Report with
+	2.6.29-rc3
+Date: Sat, 14 Feb 2009 00:01:25 +0100
+Message-ID: <200902140001.26208.rjw@sisk.pl>
+References: <20090208103230.GB14143@elf.ucw.cz>
+	<200902101524.48536.rjw@sisk.pl>
+	<20090213214603.GE21791@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090213150723.GA28042@srcf.ucam.org>
+In-Reply-To: <20090213214603.GE21791@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,40 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, Uli Luckas <u.luckas@road.de>, Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Daniel Qarras <dqarras@yahoo.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 13 February 2009, Matthew Garrett wrote:
-> On Fri, Feb 13, 2009 at 06:46:58AM -0800, Brian Swetland wrote:
-> > [Matthew Garrett <mjg59@srcf.ucam.org>]
-> > > The easiest way to handle this would seem to be a multiplexing daemon 
-> > > that implements whatever policy a specific use case has. In your case 
-> > > this would do its own reference counting and then implement timeouts for 
-> > > specific applications, perhaps with some kind of acl so arbitrary apps 
-> > > can't take a lock and then fall down a well. If you've got a 
-> > > sufficiently advanced init then you'd be able to flag an application as 
-> > > being in restart state and then have the daemon hold the lock until the 
-> > > application chooses to reacquire it or not, which seems more flexible 
-> > > than any purely kernel-based implementation.
+On Friday 13 February 2009, Pavel Machek wrote:
+> On Tue 2009-02-10 15:24:48, Rafael J. Wysocki wrote:
+> > On Tuesday 10 February 2009, Pavel Machek wrote:
+> > > > Hi!
+> > > >  
+> > > > > > > > Just a FYI, with my Acer Aspire 1690 using 2.6.29-rc3
+> > > > > > > > suspend/hibernate behave in this manner:
+> > > > > > > > 
+> > > > > > > > Hibernation completes ok but resumes immediately as if
+> > > > > > > > I would have pressed the power button.
+> > > > > > 
+> > > > > > Thanks a lot for the tip, indeed it makes hibernation
+> > > > > > working again:
+> > > > > > 
+> > > > > > root@localhost:~# echo shutdown > /sys/power/disk
+> > > > > > root@localhost:~# pm-hibernate
+> > > > > > 
+> > > > > > Great! Is there a way to make this default on my
+> > > > > > system, e.g., with a quirk?
+> > > > > 
+> > > > > Well, it would be better to fix it properly, than just work
+> > > > > around it with quirk. I think it worked before and you already
+> > > > > identified commit that breaks it?
+> > > > 
+> > > > Yes, we found out it with Rafael last month:
+> > > > 
+> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019225.html
+> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019244.html
+> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019251.html
+> > > 
+> > > Hmm, hibernation rework broke that, and looks USB related. Maybe it is
+> > > fixed in latest kernel (-rc4), as there were USB-keeps-systems-awake
+> > > fixes.
 > > 
-> > It'd be nice to not have to indirect all userspace suspend inhibits.
-> > If we had the device interface to userspace actually have INHIBIT
-> > and STOP_INHIBIT ops, we could notice if the fd is closed without
-> > actually returning the state to STOP_INHIBIT cleanly.  Add a mechanism
-> > for waiting until somebody exits unexpectedly that init or your monitor
-> > process could use, you avoid the indirection and have a mechanism for
-> > handing over to whatever is responsible for restarting something that's
-> > in an unhappy state.  Too convoluted?
+> > AFAICS, it is a chipset/BIOS problem.
+> > 
+> > As long as we were using shutdown to turn off the box during hibernation,
+> > things worked on these boxes.  As soon as we started using the ACPI "enter S4"
+> > feature, it stopped and ehci-hcd always happens to be the culprit (I had access
+> > to one box with this issue, but unfortunately I don't have it any more).
+> > 
+> > The only thing we can really do here is to blacklist all of the boxes with this
+> > problem and handle them in a special way.
 > 
-> Mm. How do you guarantee a timely handover? Doing it in userland means 
-> that you can adapt it to work with whatever process restart setup you 
-> have, whereas doing it in kernel means adapting whatever process restart 
-> setup you have to the kernel. I'd still lean towards thinking that the 
-> userland approach means you can have tighter integration with the rest 
-> of your stack.
+> Well, if unloading uhci/ohci/ehci helps, there should be a better
+> solution than a blacklist.
 
-FWIW, I agree.
+Well, whatever ehci-hcd does to prepare the device for hibernation, it works
+for the vast majority of systems.  I'm not sure if we can modify the driver so
+that it does the same for all of the systems out there without breaking any
+working systems.
 
 Thanks,
 Rafael
