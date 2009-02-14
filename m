@@ -1,12 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/9] PM: Fix pm_notifiers during user mode
-	hibernation
-Date: Sat, 14 Feb 2009 02:05:14 +0100
-Message-ID: <200902140205.16278.rjw__47321.9367828735$1234575968$gmane$org@sisk.pl>
+Subject: [PATCH 8/9] PM: Wait for console in resume
+Date: Sat, 14 Feb 2009 02:06:17 +0100
+Message-ID: <200902140206.18505.rjw__1462.97203978083$1234576049$gmane$org@sisk.pl>
 References: <200902140157.40869.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <200902140157.40869.rjw@sisk.pl>
 Content-Disposition: inline
@@ -23,41 +22,35 @@ To: Len Brown <lenb@kernel.org>
 Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Andrey Borzenkov <arvidjaar@mail.ru>
+From: Arve Hj=F8nnev=E5g <arve@android.com>
 
-Snapshot device is opened with O_RDONLY during suspend and O_WRONLY durig
-resume.  Make sure we also call notifiers with correct parameter telling
-them what we are really doing.
+Avoids later waking up to a blinking cursor if the device woke up and
+returned to sleep before the console switch happened.
 
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: Brian Swetland <swetland@google.com>
+Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
 
- kernel/power/user.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/power/console.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: linux-2.6/kernel/power/user.c
-===================================================================
---- linux-2.6.orig/kernel/power/user.c
-+++ linux-2.6/kernel/power/user.c
-@@ -95,15 +95,15 @@ static int snapshot_open(struct inode *i
- 		data->swap = swsusp_resume_device ?
- 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
- 		data->mode = O_RDONLY;
--		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-+		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
- 		if (error)
--			pm_notifier_call_chain(PM_POST_RESTORE);
-+			pm_notifier_call_chain(PM_POST_HIBERNATION);
- 	} else {
- 		data->swap = -1;
- 		data->mode = O_WRONLY;
--		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-+		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
- 		if (error)
--			pm_notifier_call_chain(PM_POST_HIBERNATION);
-+			pm_notifier_call_chain(PM_POST_RESTORE);
+Index: linux-2.6/kernel/power/console.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/kernel/power/console.c
++++ linux-2.6/kernel/power/console.c
+@@ -78,6 +78,12 @@ void pm_restore_console(void)
  	}
- 	if (error)
- 		atomic_inc(&snapshot_device_available);
+ 	set_console(orig_fgconsole);
+ 	release_console_sem();
++
++	if (vt_waitactive(orig_fgconsole)) {
++		pr_debug("Resume: Can't switch VCs.");
++		return;
++	}
++
+ 	kmsg_redirect =3D orig_kmsg;
+ }
+ #endif
