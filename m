@@ -1,11 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 8/9] PM: Wait for console in resume
-Date: Sat, 14 Feb 2009 02:06:17 +0100
-Message-ID: <200902140206.18505.rjw__1462.97203978083$1234576049$gmane$org@sisk.pl>
+Subject: [PATCH 6/9] swsusp: clean up shrink_all_zones()
+Date: Sat, 14 Feb 2009 02:04:10 +0100
+Message-ID: <200902140204.12040.rjw__2671.69804214991$1234576118$gmane$org@sisk.pl>
 References: <200902140157.40869.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <200902140157.40869.rjw@sisk.pl>
 Content-Disposition: inline
@@ -22,35 +22,74 @@ To: Len Brown <lenb@kernel.org>
 Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Arve Hj=F8nnev=E5g <arve@android.com>
+From: Johannes Weiner <hannes@cmpxchg.org>
 
-Avoids later waking up to a blinking cursor if the device woke up and
-returned to sleep before the console switch happened.
+Move local variables to innermost possible scopes and use local
+variables to cache calculations/reads done more than once.
 
-Signed-off-by: Brian Swetland <swetland@google.com>
-Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
+No change in functionality (intended).
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
 
- kernel/power/console.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ mm/vmscan.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/kernel/power/console.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/kernel/power/console.c
-+++ linux-2.6/kernel/power/console.c
-@@ -78,6 +78,12 @@ void pm_restore_console(void)
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c
++++ linux-2.6/mm/vmscan.c
+@@ -2057,31 +2057,31 @@ static unsigned long shrink_all_zones(un
+ 				      int pass, struct scan_control *sc)
+ {
+ 	struct zone *zone;
+-	unsigned long nr_to_scan, ret = 0;
+-	enum lru_list l;
++	unsigned long ret = 0;
+ 
+ 	for_each_zone(zone) {
++		enum lru_list l;
+ 
+ 		if (!populated_zone(zone))
+ 			continue;
+-
+ 		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
+ 			continue;
+ 
+ 		for_each_evictable_lru(l) {
++			enum zone_stat_item ls = NR_LRU_BASE + l;
++			unsigned long lru_pages = zone_page_state(zone, ls);
++
+ 			/* For pass = 0, we don't shrink the active list */
+-			if (pass == 0 &&
+-				(l == LRU_ACTIVE || l == LRU_ACTIVE_FILE))
++			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
++						l == LRU_ACTIVE_FILE))
+ 				continue;
+ 
+-			zone->lru[l].nr_scan +=
+-				(zone_page_state(zone, NR_LRU_BASE + l)
+-								>> prio) + 1;
++			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
+ 			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
++				unsigned long nr_to_scan;
++
+ 				zone->lru[l].nr_scan = 0;
+-				nr_to_scan = min(nr_pages,
+-					zone_page_state(zone,
+-							NR_LRU_BASE + l));
++				nr_to_scan = min(nr_pages, lru_pages);
+ 				ret += shrink_list(l, nr_to_scan, zone,
+ 								sc, prio);
+ 				if (ret >= nr_pages)
+@@ -2089,7 +2089,6 @@ static unsigned long shrink_all_zones(un
+ 			}
+ 		}
  	}
- 	set_console(orig_fgconsole);
- 	release_console_sem();
-+
-+	if (vt_waitactive(orig_fgconsole)) {
-+		pr_debug("Resume: Can't switch VCs.");
-+		return;
-+	}
-+
- 	kmsg_redirect =3D orig_kmsg;
+-
+ 	return ret;
  }
- #endif
+ 
