@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/9] swsusp: dont fiddle with swappiness
-Date: Sat, 14 Feb 2009 02:03:08 +0100
-Message-ID: <200902140203.10125.rjw__46857.6221181594$1234575809$gmane$org@sisk.pl>
+Subject: [PATCH 2/9] PM/resume: wait for device probing to finish
+Date: Sat, 14 Feb 2009 02:00:19 +0100
+Message-ID: <200902140200.21022.rjw__10255.9018218473$1234575885$gmane$org@sisk.pl>
 References: <200902140157.40869.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,40 +22,47 @@ To: Len Brown <lenb@kernel.org>
 Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Johannes Weiner <hannes@cmpxchg.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-sc.swappiness is not used in the swsusp memory shrinking path, do not
-set it.
+the resume code does not currently wait for device probing to finish.
+Even without async function calls this is dicey and not correct,
+but with async function calls during the boot sequence this is going
+to get hit more...
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+This patch adds the synchronization using the newly introduced helper.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
+ kernel/power/disk.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
- mm/vmscan.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-Index: linux-2.6/mm/vmscan.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- linux-2.6.orig/mm/vmscan.c
-+++ linux-2.6/mm/vmscan.c
-@@ -2112,7 +2112,6 @@ unsigned long shrink_all_memory(unsigned
- 		.may_swap = 0,
- 		.swap_cluster_max = nr_pages,
- 		.may_writepage = 1,
--		.swappiness = vm_swappiness,
- 		.isolate_pages = isolate_pages_global,
- 	};
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -595,6 +595,12 @@ static int software_resume(void)
+ 	unsigned int flags;
  
-@@ -2146,10 +2145,8 @@ unsigned long shrink_all_memory(unsigned
- 		int prio;
- 
- 		/* Force reclaiming mapped pages in the passes #3 and #4 */
--		if (pass > 2) {
-+		if (pass > 2)
- 			sc.may_swap = 1;
--			sc.swappiness = 100;
--		}
- 
- 		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
- 			unsigned long nr_to_scan = nr_pages - ret;
+ 	/*
++	 * If the user said "noresume".. bail out early.
++	 */
++	if (noresume)
++		return 0;
++
++	/*
+ 	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
+ 	 * is configured into the kernel. Since the regular hibernate
+ 	 * trigger path is via sysfs which takes a buffer mutex before
+@@ -610,6 +616,11 @@ static int software_resume(void)
+ 			mutex_unlock(&pm_mutex);
+ 			return -ENOENT;
+ 		}
++		/*
++		 * Some device discovery might still be in progress; we need
++		 * to wait for this to finish.
++		 */
++		wait_for_device_probe();
+ 		swsusp_resume_device = name_to_dev_t(resume_file);
+ 		pr_debug("PM: Resume from partition %s\n", resume_file);
+ 	} else {
