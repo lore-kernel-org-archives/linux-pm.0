@@ -1,14 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/9] swsusp: clean up shrink_all_zones()
-Date: Sat, 14 Feb 2009 02:04:10 +0100
-Message-ID: <200902140204.12040.rjw__2671.69804214991$1234576118$gmane$org@sisk.pl>
-References: <200902140157.40869.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Sat, 14 Feb 2009 01:49:20 +0000
+Message-ID: <20090214014920.GA7504@srcf.ucam.org>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
+	<20090213011035.GA8664@srcf.ucam.org>
+	<200902131155.07530.u.luckas@road.de>
+	<20090213140654.GC26549@srcf.ucam.org>
+	<d6200be20902131536x5c0ec741hdbfb63c0b2ae79c0@mail.gmail.com>
+	<20090214000520.GA5764@srcf.ucam.org>
+	<d6200be20902131650n33f46958j4d8630694c49a400@mail.gmail.com>
+	<20090214010632.GA6618@srcf.ucam.org>
+	<d6200be20902131733u577e918bu7ac0ee7a90a5b471@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902140157.40869.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <d6200be20902131733u577e918bu7ac0ee7a90a5b471@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,78 +27,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, Uli Luckas <u.luckas@road.de>, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-From: Johannes Weiner <hannes@cmpxchg.org>
+On Fri, Feb 13, 2009 at 05:33:35PM -0800, Arve Hj=F8nnev=E5g wrote:
+> On Fri, Feb 13, 2009 at 5:06 PM, Matthew Garrett <mjg59@srcf.ucam.org> wr=
+ote:
+> > On Fri, Feb 13, 2009 at 04:50:11PM -0800, Arve Hj=F8nnev=E5g wrote:
+> >> Or when not trusting userspace. In the last user space api, I also use
+> >> a timeout when a process dies with a wakelock locked.
+> >
+> > That's policy that's easily to implement in userspace.
+> =
 
-Move local variables to innermost possible scopes and use local
-variables to cache calculations/reads done more than once.
+> How? When the process dies its wakelock is destroyed. With the old
+> sysfs interface, this was not a problem since the wakelocks were not
+> cleaned up. If we allow userspace wakelocks to be persistent, then
+> there is no limit on how many wakelocks userspace can create (which
+> was one of the objections against the sysfs interface).
 
-No change in functionality (intended).
+Like I suggested before, just multiplex them through a single daemon in =
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
+userspace. That lets you tie your policy into your platform specifics. =
 
- mm/vmscan.c |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+You get to do things like keep the lock until whatever process restarts =
 
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c
-+++ linux-2.6/mm/vmscan.c
-@@ -2057,31 +2057,31 @@ static unsigned long shrink_all_zones(un
- 				      int pass, struct scan_control *sc)
- {
- 	struct zone *zone;
--	unsigned long nr_to_scan, ret = 0;
--	enum lru_list l;
-+	unsigned long ret = 0;
- 
- 	for_each_zone(zone) {
-+		enum lru_list l;
- 
- 		if (!populated_zone(zone))
- 			continue;
--
- 		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
- 			continue;
- 
- 		for_each_evictable_lru(l) {
-+			enum zone_stat_item ls = NR_LRU_BASE + l;
-+			unsigned long lru_pages = zone_page_state(zone, ls);
-+
- 			/* For pass = 0, we don't shrink the active list */
--			if (pass == 0 &&
--				(l == LRU_ACTIVE || l == LRU_ACTIVE_FILE))
-+			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
-+						l == LRU_ACTIVE_FILE))
- 				continue;
- 
--			zone->lru[l].nr_scan +=
--				(zone_page_state(zone, NR_LRU_BASE + l)
--								>> prio) + 1;
-+			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
- 			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
-+				unsigned long nr_to_scan;
-+
- 				zone->lru[l].nr_scan = 0;
--				nr_to_scan = min(nr_pages,
--					zone_page_state(zone,
--							NR_LRU_BASE + l));
-+				nr_to_scan = min(nr_pages, lru_pages);
- 				ret += shrink_list(l, nr_to_scan, zone,
- 								sc, prio);
- 				if (ret >= nr_pages)
-@@ -2089,7 +2089,6 @@ static unsigned long shrink_all_zones(un
- 			}
- 		}
- 	}
--
- 	return ret;
- }
- 
+dead system components indicates that your input process is running =
+
+again, for instance.
+
+> >> That is a pretty big leap. There is no wakelock api in the current
+> >> kernel. I think the absence of an api is a more plausible explanation
+> >> for it not being used than that people do not like the api.
+> >
+> > If an acceptable API gets merged then there's no reason not to quickly
+> > spread it to the sections of the kernel which would benefit.
+> =
+
+> It is not trivial to add wakelocks to every section of the kernel that
+> may need to run.
+
+Doing things right is often harder, yes :)
+
+> > I think it would be pretty acceptable to schedule a retry for the
+> > suspend if the count is still zero at that point.
+> =
+
+> I don't. If a driver returns -EBUSY the system will use 100% cpu until
+> either the driver stops returning -EBUSY, or someone else locks a
+> wakelock.
+
+The retry doesn't have to be immediate. Yes, this is something of a =
+
+hypocritical argument given everything else I've had to say about =
+
+timeouts, but working out why a driver's preventing a suspend is =
+
+probably a Hard Problem. I don't think this single case is enough to add =
+
+it to the entire API.
+
+> >> We always use the debug case. I don't think a list of device struct is
+> >> better than a list of wakelocks.
+> >
+> > You may. Others will not. There's benefit in simplifying the non-debug
+> > case.
+> =
+
+> A counter is not significantly simpler than a list if you remove all
+> the debug and timeout support:
+> lock:
+>   list_add
+> unlock:
+>   list_del
+>   if list_empty
+>     schedule suspend
+
+Remember that for things like IDE we probably need to have locks in the =
+
+fast path. An atomic_inc is a lot cheaper than a spinlock protected =
+
+list_add.
+
+> > I think the name doesn't do a good job
+> > of indicating what's going on, and I think the timeout aspect is a
+> > misfeature.
+> =
+
+> I understand your objection to using timeouts, but removing the use of
+> timeouts is not currently an option. If you accept that timeouts will
+> be used, supporting them in the wakelock code simplifies the drivers
+> and reduces overhead.
+
+Why is it not an option?
+
+-- =
+
+Matthew Garrett | mjg59@srcf.ucam.org
