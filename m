@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/9] PM: Fixes related to suspend and hibernation
-	for 2.6.29
-Date: Sat, 14 Feb 2009 01:57:39 +0100
-Message-ID: <200902140157.40869.rjw@sisk.pl>
+Subject: [PATCH 3/9] PM/hibernate: fix "swap breaks after
+	hibernation failures"
+Date: Sat, 14 Feb 2009 02:01:14 +0100
+Message-ID: <200902140201.16221.rjw@sisk.pl>
+References: <200902140157.40869.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200902140157.40869.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,34 +23,49 @@ To: Len Brown <lenb@kernel.org>
 Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
-The following are fixes related to suspend and hibernation I have collected
-over the last couple of weeks.  Some of them are in -mm.  I think they all are
-2.6.29 material.
+http://bugzilla.kernel.org/show_bug.cgi?id=12239
 
-1/9 and 2/9 fix hibernation regression caused by the async boot changes,
-I hope Greg will not object if they go through your tree.
+The image writing code dropped a reference to the current swap device.
+This doesn't show up if the hibernation succeeds - because it doesn't
+affect the image which gets resumed.  But it means multiple _failed_
+hibernations end up freeing the swap device while it is still use!
 
-3/9 fixes a long-standing hibernation issue that cause the resume partition
-to become unuseable after two consecutive failing attempts to hibernate.
+swsusp_write() finds the block device for the swap file using swap_type_of().
+It then uses blkdev_get() / blkdev_put() to open and close the block device.
 
-4/9 fixes build of kprobes.c with CONFIG_PM unset.
+Unfortunately, blkdev_get() assumes ownership of the inode of the block_device
+passed to it.  So blkdev_put() calls iput() on the inode.  This is by design
+and other callers expect this behaviour.  The fix is for swap_type_of() to take
+a reference on the inode using bdget().
 
-5/9 and 6/9 clean up memory freeing code used during hibernation.
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-7/9 fixes a bug related to the use of PM notifiers during hibernation with
-the help of the user land interface.
+---
+ mm/swapfile.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
-
-Please add these patches to the suspend branch and push to Linus for 2.6.29.
-
-Thanks,
-Rafael
-
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+Index: linux-2.6/mm/swapfile.c
+===================================================================
+--- linux-2.6.orig/mm/swapfile.c
++++ linux-2.6/mm/swapfile.c
+@@ -635,7 +635,7 @@ int swap_type_of(dev_t device, sector_t 
+ 
+ 		if (!bdev) {
+ 			if (bdev_p)
+-				*bdev_p = sis->bdev;
++				*bdev_p = bdget(sis->bdev->bd_dev);
+ 
+ 			spin_unlock(&swap_lock);
+ 			return i;
+@@ -647,7 +647,7 @@ int swap_type_of(dev_t device, sector_t 
+ 					struct swap_extent, list);
+ 			if (se->start_block == offset) {
+ 				if (bdev_p)
+-					*bdev_p = sis->bdev;
++					*bdev_p = bdget(sis->bdev->bd_dev);
+ 
+ 				spin_unlock(&swap_lock);
+ 				bdput(bdev);
