@@ -1,11 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/2] PM: x86-64 suspend-resume fix
-Date: Sun, 15 Feb 2009 22:44:46 +0100
-Message-ID: <200902152244.47326.rjw__2108.29157517782$1234734644$gmane$org@sisk.pl>
+Subject: [PATCH 2/2] x86_64: Fix S3 fail path
+Date: Sun, 15 Feb 2009 22:46:45 +0100
+Message-ID: <200902152246.46583.rjw__7667.28258827261$1234734770$gmane$org@sisk.pl>
+References: <200902152244.47326.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200902152244.47326.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,16 +22,35 @@ To: Len Brown <lenb@kernel.org>
 Cc: Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Cyrill Gorcunov <gorcunov@openvz.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Jiri Slaby <jirislaby@gmail.com>
 
-The following two patches clean-up and fix the x86-64 resume code.
+As acpi_enter_sleep_state can fail, take this into account in
+do_suspend_lowlevel and don't return to the do_suspend_lowlevel's
+caller. This would break (currently) fpu status and preempt count.
 
-1/2 is a cleanup, but it is simple enough to be applied now IMO.
+Technically, this means use `call' instead of `jmp' and `jmp' to
+the `resume_point' after the `call' (i.e. if
+acpi_enter_sleep_state returns=fails). `resume_point' will handle
+the restore of fpu and preempt count gracefully.
 
-2/2 is a bug fix based on 1/2, which is 2.6.29 material.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/acpi/wakeup_64.S |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Please apply them to the suspend branch and push to Linus for 2.6.29 (Ingo
-says he doesn't mind if they go through your tree).
-
-Thanks,
-Rafael
+Index: linux-2.6/arch/x86/kernel/acpi/wakeup_64.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/wakeup_64.S
++++ linux-2.6/arch/x86/kernel/acpi/wakeup_64.S
+@@ -73,7 +73,9 @@ ENTRY(do_suspend_lowlevel)
+ 	addq	$8, %rsp
+ 	movl	$3, %edi
+ 	xorl	%eax, %eax
+-	jmp	acpi_enter_sleep_state
++	call	acpi_enter_sleep_state
++	/* in case something went wrong, restore the machine status and go on */
++	jmp	resume_point
+ 
+ 	.align 4
+ resume_point:
