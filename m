@@ -1,13 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] x86_64: Fix S3 fail path
-Date: Sun, 15 Feb 2009 22:46:45 +0100
-Message-ID: <200902152246.46583.rjw__7667.28258827261$1234734770$gmane$org@sisk.pl>
-References: <200902152244.47326.rjw@sisk.pl>
+Subject: [RFD] Automatic suspend
+Date: Mon, 16 Feb 2009 00:10:15 +0100
+Message-ID: <200902160010.16955.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902152244.47326.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,39 +16,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Cyrill Gorcunov <gorcunov@openvz.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+Hi,
 
-As acpi_enter_sleep_state can fail, take this into account in
-do_suspend_lowlevel and don't return to the do_suspend_lowlevel's
-caller. This would break (currently) fpu status and preempt count.
+The recent descussion about the Android PM patches sent by Arve shows that
+there is a need to introduce a mechanism allowing us to:
+(1) automatically put the system as a whole into a sleep state (eg. suspend to
+    RAM) when it is found to be "idle", where the meaning of "idle" has to be
+    defined too,
+(2) put given subset of devices into low power states whenever they are not
+    used, without putting the entire system into a sleep state.
+To allow these two things to happen, the Andriod patches introduced the
+wakelocks with the associated infrastructure and the "early suspend" mechanism.
+However, quite a number of reviewers did not like these patches, for various
+reasons, so they cannot be regarded as generally acceptable.  For this reason,
+I think, we should discuss the problem in detail from the beginning and try to
+find a solution that everyone interested will be comfortable with.
 
-Technically, this means use `call' instead of `jmp' and `jmp' to
-the `resume_point' after the `call' (i.e. if
-acpi_enter_sleep_state returns=fails). `resume_point' will handle
-the restore of fpu and preempt count gracefully.
+For this purpose, IMO, we should at least reach an agreement on what the
+kernel's and the userland's roles in (1) and (2) are going to be.  There also
+are quite a few questions that need to be answered.  For instance, what
+conditions are going to be used to decide whether or not the system is idle
+enough so that we can put it into a sleep state?  How are we going to check
+these conditions?  What is going to happen if one (or more) of them changes
+while a system-wide power transition (eg. suspend) is in progress?  Are we
+going to allow the user space to take part in this and if so, to what extent?
+What mechanisms are going be used to put devices into low power states at run
+time (ie. before starting any system-wide power transition) and how are they
+going to be related to the suspend-resume infrastructure used during
+system-wide power transitions?  The answers to these (and other related)
+questions will likely affect all of the future Linux PM developlent, so IMO
+this is a very important matter.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/acpi/wakeup_64.S |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Opinions and comments welcome.
 
-Index: linux-2.6/arch/x86/kernel/acpi/wakeup_64.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/wakeup_64.S
-+++ linux-2.6/arch/x86/kernel/acpi/wakeup_64.S
-@@ -73,7 +73,9 @@ ENTRY(do_suspend_lowlevel)
- 	addq	$8, %rsp
- 	movl	$3, %edi
- 	xorl	%eax, %eax
--	jmp	acpi_enter_sleep_state
-+	call	acpi_enter_sleep_state
-+	/* in case something went wrong, restore the machine status and go on */
-+	jmp	resume_point
- 
- 	.align 4
- resume_point:
+Thanks,
+Rafael
