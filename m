@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 00:22:59 +0100
-Message-ID: <20090216232259.GK1370__28123.9163982265$1234826851$gmane$org@ucw.cz>
+Date: Tue, 17 Feb 2009 00:26:05 +0100
+Message-ID: <200902170026.06966.rjw__3172.41188972748$1234826919$gmane$org@sisk.pl>
 References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz>
-	<20090216231324.GA15435@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090216225831.GH1370@ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <20090216231324.GA15435@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@suse.cz>
 Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2009-02-16 23:13:24, Matthew Garrett wrote:
-> On Mon, Feb 16, 2009 at 11:58:31PM +0100, Pavel Machek wrote:
+On Monday 16 February 2009, Pavel Machek wrote:
+> Hi!
 > 
-> > If no devices are being used, and next wakeup is far enough in the
-> > future, just put system to sleep. Long enough == so far away that
-> > suspend/wakeup is short compared to that... like 20 seconds on PC.
+> > The recent descussion about the Android PM patches sent by Arve shows that
+> > there is a need to introduce a mechanism allowing us to:
+> > (1) automatically put the system as a whole into a sleep state (eg. suspend to
+> >     RAM) when it is found to be "idle", where the meaning of "idle" has to be
+> >     defined too,
 > 
-> This is intrinsically difficult with PCs, since we have such a poorly 
-> defined set of wakeup events. We can't wakeup on generic network 
-> traffic, just WoL. 
+> Well; I'd prefer to keep the interface very minimal.
+> 
+> If no devices are being used,
 
-At least e1000 in thinkpad can wakeup on generic network traffic. If
-particular network card can't, you just can't sleep when network is up.
+We'll need some kind of infrastructure to detect such situations.
 
-> Many machines won't wake up on keyboard events. 
+> and next wakeup is far enough in the future,
 
-Too bad. You'll have to close the lid for autosuspend to work on such
-hw. (Or maybe you can do some hack telling the kernel to suspend
-anyway if just keyboard prevents it.)
+What exactly do you mean by "next wakeup"?
 
-> Meanwhile, on embedded it's becoming a less interesting problem because 
-> idle and suspended are often now equivalent states. 
+> just put system to sleep.  Long enough == so far away that suspend/wakeup
+> is short compared to that... like 20 seconds on PC.
 
-Android people tell us otherwise.
-								Pavel
+Well 10s will be fine on the majority of my test boxes, but that's a detail.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Ok, it probably needs to be opt-in: echo auto-mem > /sys/power/state
+> should do the trick.
+
+Agreed.
+
+> This will need either fixing all the applications not to poll, or
+> maybe someone SIGSTOP-ing apps that are in background and poll too
+> often.
+
+Polling in general is not PM-friendly, so we'll need to deal with it somehow
+at one point anyway.
+
+Thanks,
+Rafael
