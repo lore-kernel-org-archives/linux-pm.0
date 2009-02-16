@@ -1,14 +1,14 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 12:45:20 -0800
-Message-ID: <20090216124520.315320dc__37525.860759388$1234817389$gmane$org@infradead.org>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.29-rc5: Reported regressions from 2.6.28
+Date: Mon, 16 Feb 2009 22:11:29 +0100
+Message-ID: <200902162211.30830.rjw__25637.2870797806$1234818875$gmane$org@sisk.pl>
+References: <20090216072910.GA4763@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+In-Reply-To: <20090216072910.GA4763@ff.dom.local>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, mark@smtp1.linux-foundation.org, Brian@smtp1.linux-foundation.org, Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Feb 2009 15:39:15 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Mon, 16 Feb 2009, Kyle Moffett wrote:
+On Monday 16 February 2009, Jarek Poplawski wrote:
+> On 14-02-2009 21:35, Rafael J. Wysocki wrote:
+> > This message contains a list of some regressions from 2.6.28, for which there
+> > are no fixes in the mainline I know of.  If any of them have been fixed already,
+> > please let me know.
+> ...
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12615
+> > Subject		: boot hangs while bringing up gianfar ethernet
+> > Submitter	: Ira Snyder <iws@ovro.caltech.edu>
+> > Date		: 2009-01-29 19:41 (17 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123325817201665&w=4
 > 
-> > Userspace may not have a useful decision-making capability regarding
-> > functionality versus power-saving, but the user it's talking to
-> > might!
-> > 
-> > I think it would be very useful to have a mechanism for userspace to
-> > find out "Link detection on this NIC costs ~50mW" and "No link has
-> > been detected for the last 15 minutes", so that it can compile all
-> > that sort of information and prompt the user what devices they would
-> > like to disable.  Perhaps an "airline mode" sort of thing?
-> 
-> Even if drivers don't know how much power their devices consume (and
-> generally I wouldn't expect them to), it still makes sense to offer
-> userspace the discretionary power to force devices into a low-power
-> mode.  USB does this.
+> Fixed by:
+> commit	8707bdd48ab705a459ac1b12014075a139d1d4f9
+> gianfar: Fix boot hangs while bringing up gianfar ethernet
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8707bdd48ab705a459ac1b12014075a139d1d4f9
 
-"stop using it" isn't this discretionary power ?
-(for NICs this is "ifconfig .. down")
+Thanks, closed.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Rafael
