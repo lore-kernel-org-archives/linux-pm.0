@@ -1,17 +1,15 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Sun, 15 Feb 2009 19:30:37 -0800
-Message-ID: <20090215193037.3e3ebeab__47582.6392801993$1234755180$gmane$org@infradead.org>
+Date: Mon, 16 Feb 2009 08:02:32 +0100
+Message-ID: <200902160802.37321.oliver__21740.5904586942$1234767913$gmane$org@neukum.org>
 References: <200902160010.16955.rjw@sisk.pl>
 	<20090215164456.34aef7e8@infradead.org>
-	<1234750360.26036.115.camel@pasglop>
-	<20090215182012.3bc6b292@infradead.org>
-	<1234754621.26036.120.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1234754621.26036.120.camel@pasglop>
+In-Reply-To: <20090215164456.34aef7e8@infradead.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Swetland <swetland@google.com>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, mark@smtp1.linux-foundation.org, Brian@smtp1.linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Feb 2009 14:23:41 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Sun, 2009-02-15 at 18:20 -0800, Arjan van de Ven wrote:
-> > what this needs is a separation between "interface down, all off"
-> > and "interface down enough so that link detection works".
-> > Some NICs can go all the way down and still do link detection,
-> > others cannot. This is obviously something the driver will know,
-> > nothing else in the system should know.
+Am Monday 16 February 2009 01:44:56 schrieb Arjan van de Ven:
+> On Mon, 16 Feb 2009 00:10:15 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Sure, my point was just that the driver cannot make the decision to go
-> all-off (and thus not detect link) without some kind of user setting
-> allowing it to do so.
+> > Hi,
+> > 
+> > The recent descussion about the Android PM patches sent by Arve shows
+> > that there is a need to introduce a mechanism allowing us to:
+> > (1) automatically put the system as a whole into a sleep state (eg.
+> > suspend to RAM) when it is found to be "idle", where the meaning of
+> > "idle" has to be defined too,
+> > (2) put given subset of devices into low power states whenever they
+> > are not used, without putting the entire system into a sleep state.
+> 
+> 
+> For (2), for me the answer is very obvious:
+> 
+> The Device Driver needs to make the decision to put the device to sleep.
+> There are no ifs and buts about this.
+> 
+> It's the driver who 
+> a) knows if there's any activity, such as open users
+> and 
+> b) is in the right position to know how to put things to sleep.
 
-to a very large degree, "want linkdetection" is a form of keeping the
-device open.. even if the current code doesn't quite work that way
-(maybe it should)
+I think you need  third option between decides to put to sleep
+and refuses to put to sleep. It is probably necessary to let drivers
+state that they would want to go along if the whole system goes
+to sleep.
 
+> Of course, the subsystem the driver belongs to can provide helpers
+> (such as generic activity timeout handlers etc).
+> 
+> For many cases, the drivers do this today already.
+> There are cases where doing this has side effects, mostly in terms of
+> latency. It is reasonable to have a general mechanism that provides a
 
+Exactly.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Regards
+		Oliver
