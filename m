@@ -1,14 +1,16 @@
-From: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: 2.6.29-rc5: Reported regressions from 2.6.28
-Date: Mon, 16 Feb 2009 07:29:10 +0000
-Message-ID: <20090216072910.GA4763__29788.0621198148$1234769503$gmane$org@ff.dom.local>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [Bug 12713] Hang on resume from hibernation,
+	apparently as result of 213d9417fec
+Date: Mon, 16 Feb 2009 08:27:11 +0100
+Message-ID: <20090216072711.GJ30821__19521.6808621355$1234769608$gmane$org@kernel.dk>
+References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com>
+	<8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
+In-Reply-To: <8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org, bugme-daemon@bugzilla.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 14-02-2009 21:35, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.28, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
-...
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12615
-> Subject		: boot hangs while bringing up gianfar ethernet
-> Submitter	: Ira Snyder <iws@ovro.caltech.edu>
-> Date		: 2009-01-29 19:41 (17 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123325817201665&w=4
+On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
+> <m.s.tsirkin@gmail.com> wrote:
+> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
+> > to fix resume from hibernation. Bugzilla entry created:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
+> 
+> Looking over this, I see something strange in the commit in question:
+> 
+> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> index 5175aa3..f53568c 100644
+> --- a/include/linux/bio.h
+> +++ b/include/linux/bio.h
+> @@ -163,12 +163,15 @@ struct bio {
+>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
+>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
+>  #define BIO_RW_BARRIER 2
+> -#define BIO_RW_SYNC    3
+> -#define BIO_RW_META    4
+> -#define BIO_RW_DISCARD 5
+> -#define BIO_RW_FAILFAST_DEV            6
+> -#define BIO_RW_FAILFAST_TRANSPORT      7
+> -#define BIO_RW_FAILFAST_DRIVER         8
+> +#define BIO_RW_SYNCIO  3
+> +#define BIO_RW_UNPLUG  4
+> +#define BIO_RW_META    5
+> +#define BIO_RW_DISCARD 6
+> +#define BIO_RW_FAILFAST_DEV            7
+> +#define BIO_RW_FAILFAST_TRANSPORT      8
+> +#define BIO_RW_FAILFAST_DRIVER         9
+> +
+> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+> 
+>  /*
+>   * upper 16 bits of bi_rw define the io priority of this bio
+> 
+> I haven't read the code in depth, but taking running numbers and doing
+> bitwise "or"
+> on them looks a bit strange to me.
+> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
+> So for example bio_failfast_dev and bio_sync are the same.
+> 
+> Jens, could you comment on this please? Is this intentional?
 
-Fixed by:
-commit	8707bdd48ab705a459ac1b12014075a139d1d4f9
-gianfar: Fix boot hangs while bringing up gianfar ethernet
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8707bdd48ab705a459ac1b12014075a139d1d4f9
+That's clearly a braino, you can't OR the shift values of course. I'll
+get it fixed up asap!
 
-Cheers,
-Jarek P.
+-- 
+Jens Axboe
