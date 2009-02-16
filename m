@@ -1,16 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 08:06:13 +0100
-Message-ID: <200902160806.17901.oliver__39971.9091285535$1234768024$gmane$org@neukum.org>
-References: <200902160010.16955.rjw@sisk.pl>
-	<1234750360.26036.115.camel@pasglop>
-	<20090215182012.3bc6b292@infradead.org>
+From: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: 2.6.29-rc5: Reported regressions from 2.6.28
+Date: Mon, 16 Feb 2009 07:29:10 +0000
+Message-ID: <20090216072910.GA4763__29788.0621198148$1234769503$gmane$org@ff.dom.local>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090215182012.3bc6b292@infradead.org>
 Content-Disposition: inline
+In-Reply-To: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,24 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Monday 16 February 2009 03:20:12 schrieb Arjan van de Ven:
-> >or
-> > network or similar where the driver cannot shut the device down
-> > without losing the ability to detect activity (ie, switch your PHY
-> > off is nice but you lose the ability to monitor the link for example).
-> 
-> what this needs is a separation between "interface down, all off" and
-> "interface down enough so that link detection works".
-> Some NICs can go all the way down and still do link detection, others
-> cannot. This is obviously something the driver will know, nothing else
-> in the system should know.
+On 14-02-2009 21:35, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.28, for which there
+> are no fixes in the mainline I know of.  If any of them have been fixed already,
+> please let me know.
+...
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12615
+> Subject		: boot hangs while bringing up gianfar ethernet
+> Submitter	: Ira Snyder <iws@ovro.caltech.edu>
+> Date		: 2009-01-29 19:41 (17 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123325817201665&w=4
 
-Why shouldn't user space know the consequences of still requesting
-a service and be able to decide on that basis which services to request?
+Fixed by:
+commit	8707bdd48ab705a459ac1b12014075a139d1d4f9
+gianfar: Fix boot hangs while bringing up gianfar ethernet
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8707bdd48ab705a459ac1b12014075a139d1d4f9
 
-	Regards
-		Oliver
+Cheers,
+Jarek P.
