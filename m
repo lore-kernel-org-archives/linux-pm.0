@@ -1,16 +1,16 @@
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Subject: Re: [Bug 12713] Hang on resume from hibernation,
-	apparently as result 	of 213d9417fec
-Date: Mon, 16 Feb 2009 10:12:21 +0200
-Message-ID: <8f53421d0902160012y219b4737u37f3cfb0913b228f__18099.6568910361$1234800405$gmane$org@mail.gmail.com>
-References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com>
-	<8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
-	<20090216072711.GJ30821@kernel.dk>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Mon, 16 Feb 2009 17:48:06 +0100
+Message-ID: <200902161748.09208.oliver__45264.5328281962$1234803022$gmane$org@neukum.org>
+References: <200902160010.16955.rjw@sisk.pl>
+	<200902160806.17901.oliver@neukum.org>
+	<20090216074048.6d70f17c@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216072711.GJ30821@kernel.dk>
+In-Reply-To: <20090216074048.6d70f17c@infradead.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,61 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org, bugme-daemon@bugzilla.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 9:27 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
->> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
->> <m.s.tsirkin@gmail.com> wrote:
->> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
->> > to fix resume from hibernation. Bugzilla entry created:
->> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
->>
->> Looking over this, I see something strange in the commit in question:
->>
->> diff --git a/include/linux/bio.h b/include/linux/bio.h
->> index 5175aa3..f53568c 100644
->> --- a/include/linux/bio.h
->> +++ b/include/linux/bio.h
->> @@ -163,12 +163,15 @@ struct bio {
->>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
->>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
->>  #define BIO_RW_BARRIER 2
->> -#define BIO_RW_SYNC    3
->> -#define BIO_RW_META    4
->> -#define BIO_RW_DISCARD 5
->> -#define BIO_RW_FAILFAST_DEV            6
->> -#define BIO_RW_FAILFAST_TRANSPORT      7
->> -#define BIO_RW_FAILFAST_DRIVER         8
->> +#define BIO_RW_SYNCIO  3
->> +#define BIO_RW_UNPLUG  4
->> +#define BIO_RW_META    5
->> +#define BIO_RW_DISCARD 6
->> +#define BIO_RW_FAILFAST_DEV            7
->> +#define BIO_RW_FAILFAST_TRANSPORT      8
->> +#define BIO_RW_FAILFAST_DRIVER         9
->> +
->> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
->>
->>  /*
->>   * upper 16 bits of bi_rw define the io priority of this bio
->>
->> I haven't read the code in depth, but taking running numbers and doing
->> bitwise "or"
->> on them looks a bit strange to me.
->> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
->> So for example bio_failfast_dev and bio_sync are the same.
->>
->> Jens, could you comment on this please? Is this intentional?
->
-> That's clearly a braino, you can't OR the shift values of course. I'll
-> get it fixed up asap!
+Am Monday 16 February 2009 16:40:48 schrieb Arjan van de Ven:
+> > Why shouldn't user space know the consequences of still requesting
+> > a service and be able to decide on that basis which services to
+> > request?
+> 
+> That's not what I said. Userspace should not be the part that goes "oh
+> this is a realtek not an intel nic, so ..."
+> That is the drivers job.
 
-Cool, send me a patch, I'll test.
+True.
 
-> --
-> Jens Axboe
->
->
+> Userspace should just be the part that says "I'm interested in link
+> notifications". The driver then just goes to the lowest power state for
+> its device that still gives those notifications.
+
+Should there be a channel through which drivers can tell user space
+what the consequences in terms of reaching a sleep state are if a service
+is requested?
+
+	Regards
+		Oliver
