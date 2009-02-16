@@ -1,16 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 17:48:06 +0100
-Message-ID: <200902161748.09208.oliver__45264.5328281962$1234803022$gmane$org@neukum.org>
+Date: Mon, 16 Feb 2009 09:31:08 -0800
+Message-ID: <20090216093108.078aac35__688.069666694169$1234805707$gmane$org@infradead.org>
 References: <200902160010.16955.rjw@sisk.pl>
 	<200902160806.17901.oliver@neukum.org>
 	<20090216074048.6d70f17c@infradead.org>
+	<200902161748.09208.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216074048.6d70f17c@infradead.org>
-Content-Disposition: inline
+In-Reply-To: <200902161748.09208.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Matthew@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Monday 16 February 2009 16:40:48 schrieb Arjan van de Ven:
-> > Why shouldn't user space know the consequences of still requesting
-> > a service and be able to decide on that basis which services to
-> > request?
+On Mon, 16 Feb 2009 17:48:06 +0100
+Oliver Neukum <oliver@neukum.org> wrote:
+
+> > Userspace should just be the part that says "I'm interested in link
+> > notifications". The driver then just goes to the lowest power state
+> > for its device that still gives those notifications.
 > 
-> That's not what I said. Userspace should not be the part that goes "oh
-> this is a realtek not an intel nic, so ..."
-> That is the drivers job.
+> Should there be a channel through which drivers can tell user space
+> what the consequences in terms of reaching a sleep state are if a
+> service is requested?
 
-True.
+Personally, I don't think so.
+Think about it: what would userspace do?
+Not ask for the functionality if it means no sleep state?
+Maybe it should just never ask for it then as a required functionality!
 
-> Userspace should just be the part that says "I'm interested in link
-> notifications". The driver then just goes to the lowest power state for
-> its device that still gives those notifications.
 
-Should there be a channel through which drivers can tell user space
-what the consequences in terms of reaching a sleep state are if a service
-is requested?
 
-	Regards
-		Oliver
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
