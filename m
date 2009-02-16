@@ -1,17 +1,15 @@
-From: Kyle Moffett <kyle@moffetthome.net>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 15:08:09 -0500
-Message-ID: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71__18828.4369455234$1234823429$gmane$org@mail.gmail.com>
+Date: Mon, 16 Feb 2009 22:52:57 +0100
+Message-ID: <1234821177.30178.399.camel__1830.60375643453$1234823607$gmane$org@laptop>
 References: <200902160010.16955.rjw@sisk.pl>
-	<200902160806.17901.oliver@neukum.org>
-	<20090216074048.6d70f17c@infradead.org>
-	<200902161748.09208.oliver@neukum.org>
-	<20090216093108.078aac35@infradead.org>
+	<20090215164456.34aef7e8@infradead.org>
+	<200902162248.34287.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216093108.078aac35@infradead.org>
+In-Reply-To: <200902162248.34287.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,29 +19,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 12:31 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 16 Feb 2009 17:48:06 +0100 Oliver Neukum <oliver@neukum.org> wrote:
->> Should there be a channel through which drivers can tell user space
->> what the consequences in terms of reaching a sleep state are if a
->> service is requested?
->
-> Personally, I don't think so.
-> Think about it: what would userspace do?
-> Not ask for the functionality if it means no sleep state?
-> Maybe it should just never ask for it then as a required functionality!
+On Mon, 2009-02-16 at 22:48 +0100, Rafael J. Wysocki wrote:
+> > Userland should never ever control the state of a device like this
+> > directly. It should do so by a) closing the device and b) setting
+> > latency / functional requirements.
+> 
+> The user, however, may want to forcibly put a device into a low power state
+> without stopping all of the applications that depend on it (eg. have it open).
+> Do you think that we shouldn't allow users to do such things?
 
-Userspace may not have a useful decision-making capability regarding
-functionality versus power-saving, but the user it's talking to might!
-
-I think it would be very useful to have a mechanism for userspace to
-find out "Link detection on this NIC costs ~50mW" and "No link has
-been detected for the last 15 minutes", so that it can compile all
-that sort of information and prompt the user what devices they would
-like to disable.  Perhaps an "airline mode" sort of thing?
-
-Cheers,
-Kyle Moffett
+Sounds like a recipe for disaster. 
