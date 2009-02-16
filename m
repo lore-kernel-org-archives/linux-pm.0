@@ -1,15 +1,16 @@
-From: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Sun, 15 Feb 2009 22:23:04 -0800
-Message-ID: <adad4di7vef.fsf__46220.3901763589$1234800400$gmane$org@cisco.com>
-References: <200902160010.16955.rjw@sisk.pl>
-	<20090215164456.34aef7e8@infradead.org>
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Subject: Re: [Bug 12713] Hang on resume from hibernation,
+	apparently as result 	of 213d9417fec
+Date: Mon, 16 Feb 2009 10:12:21 +0200
+Message-ID: <8f53421d0902160012y219b4737u37f3cfb0913b228f__18099.6568910361$1234800405$gmane$org@mail.gmail.com>
+References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com>
+	<8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
+	<20090216072711.GJ30821@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090215164456.34aef7e8@infradead.org> (Arjan van de Ven's
-	message of "Sun, 15 Feb 2009 16:44:56 -0800")
+In-Reply-To: <20090216072711.GJ30821@kernel.dk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Benjamin@smtp1.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, Igor@smtp1.linux-foundation.org, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org, bugme-daemon@bugzilla.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
- > > (2) put given subset of devices into low power states whenever they
- > > are not used, without putting the entire system into a sleep state.
+On Mon, Feb 16, 2009 at 9:27 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+>> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
+>> <m.s.tsirkin@gmail.com> wrote:
+>> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
+>> > to fix resume from hibernation. Bugzilla entry created:
+>> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
+>>
+>> Looking over this, I see something strange in the commit in question:
+>>
+>> diff --git a/include/linux/bio.h b/include/linux/bio.h
+>> index 5175aa3..f53568c 100644
+>> --- a/include/linux/bio.h
+>> +++ b/include/linux/bio.h
+>> @@ -163,12 +163,15 @@ struct bio {
+>>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
+>>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
+>>  #define BIO_RW_BARRIER 2
+>> -#define BIO_RW_SYNC    3
+>> -#define BIO_RW_META    4
+>> -#define BIO_RW_DISCARD 5
+>> -#define BIO_RW_FAILFAST_DEV            6
+>> -#define BIO_RW_FAILFAST_TRANSPORT      7
+>> -#define BIO_RW_FAILFAST_DRIVER         8
+>> +#define BIO_RW_SYNCIO  3
+>> +#define BIO_RW_UNPLUG  4
+>> +#define BIO_RW_META    5
+>> +#define BIO_RW_DISCARD 6
+>> +#define BIO_RW_FAILFAST_DEV            7
+>> +#define BIO_RW_FAILFAST_TRANSPORT      8
+>> +#define BIO_RW_FAILFAST_DRIVER         9
+>> +
+>> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+>>
+>>  /*
+>>   * upper 16 bits of bi_rw define the io priority of this bio
+>>
+>> I haven't read the code in depth, but taking running numbers and doing
+>> bitwise "or"
+>> on them looks a bit strange to me.
+>> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
+>> So for example bio_failfast_dev and bio_sync are the same.
+>>
+>> Jens, could you comment on this please? Is this intentional?
+>
+> That's clearly a braino, you can't OR the shift values of course. I'll
+> get it fixed up asap!
 
- > For (2), for me the answer is very obvious:
+Cool, send me a patch, I'll test.
 
- > The Device Driver needs to make the decision to put the device to sleep.
- > There are no ifs and buts about this.
-
-For PC-like systems this is probably all that needs to be said.  However
-for highly integrated SoC systems (as Android is obviously targeting)
-there is another level of complexity due to the interdependency among
-various devices... eg things like if I know the SD controller and the
-wifi chip are both asleep then I can put my SDIO controller to sleep;
-and if the SDIO controller and the NAND controller are both asleep then
-I can stop clock X and save more power; etc etc.
-
-This is what the PowerOp/DPM work was all about.  Unfortunately that
-doesn't seem to have made much progress upstream.  But there's no doubt
-in my mind that we need some framework beyond individual drivers that
-manages the system's power as a whole.  And the current device tree is
-probably not sufficient -- eg the bus hierarchy of a device may not
-match up with the clock tree at all.
-
- - R.
+> --
+> Jens Axboe
+>
+>
