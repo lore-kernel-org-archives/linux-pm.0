@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 00:00:41 +0100
-Message-ID: <200902170000.43387.rjw__10163.2629325197$1234825521$gmane$org@sisk.pl>
-References: <200902160010.16955.rjw@sisk.pl> <200902162248.34287.rjw@sisk.pl>
-	<20090216225116.GG1370@ucw.cz>
+Date: Tue, 17 Feb 2009 00:02:36 +0100
+Message-ID: <200902170002.37973.rjw__28857.5051738464$1234825587$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216225116.GG1370@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,29 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 16 February 2009, Pavel Machek wrote:
-> Hi!
+On Monday 16 February 2009, Alan Stern wrote:
+> On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> > > Userland should never ever control the state of a device like this
-> > > directly. It should do so by a) closing the device and b) setting
-> > > latency / functional requirements.
-> > 
-> > The user, however, may want to forcibly put a device into a low power state
-> > without stopping all of the applications that depend on it (eg. have it open).
-> > Do you think that we shouldn't allow users to do such things?
+> > OK, so I think there are two things that user space may be allowed to do as
+> > far as putting devices into low power states is concerned:
+> > * disable/enable the automatic power management of the device (provided that
+> >   the driver supports the automatic PM)
 > 
-> I don't think we should do this... of you want device to be powered
-> down, just don't keep it open. revoke should be enough :-).
-> 
-> ...one execption here is the disk driver; unmounting filesystems to
-> let the disk spin down is probably too heavy.
+> Set the automatic PM parameters (idle timeout, state to go to, etc.).  
 
-Well, I don't think it's viable to make any exceptions here.  Either we do it
-or we don't.  And the agreement appears to be that we don't.
+Yes.  I'm not sure about the state part, though.
 
-Thanks,
+> And disabling automatic PM altogether (effectively the same as setting
+> the idle timeout to infinity).
+
+Yes.
+
+> > * check what power states devices are in.
+> 
+> What about situations where we want to distinguish between the power 
+> state of the device itself and the power state of the link?  For a disk 
+> drive we may want to power the link on and off quite a lot, as that 
+> has low latency, but spinning the disk up and down takes a long time 
+> and so should have a longer idle-time value.
+
+Well, I'm not sure at the moment.
+
+Do you have any suggestions?
+
 Rafael
