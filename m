@@ -1,14 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 00:02:36 +0100
-Message-ID: <200902170002.37973.rjw__28857.5051738464$1234825587$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
+Date: Tue, 17 Feb 2009 00:05:32 +0100
+Message-ID: <20090216230532.GI1370__45928.9144062952$1234825731$gmane$org@ucw.cz>
+References: <200902160010.16955.rjw@sisk.pl>
+	<20090215164456.34aef7e8@infradead.org>
+	<1234750360.26036.115.camel@pasglop>
+	<20090215182012.3bc6b292@infradead.org>
+	<1234754621.26036.120.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <1234754621.26036.120.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 16 February 2009, Alan Stern wrote:
-> On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
+On Mon 2009-02-16 14:23:41, Benjamin Herrenschmidt wrote:
+> On Sun, 2009-02-15 at 18:20 -0800, Arjan van de Ven wrote:
+> > what this needs is a separation between "interface down, all off" and
+> > "interface down enough so that link detection works".
+> > Some NICs can go all the way down and still do link detection, others
+> > cannot. This is obviously something the driver will know, nothing else
+> > in the system should know.
 > 
-> > OK, so I think there are two things that user space may be allowed to do as
-> > far as putting devices into low power states is concerned:
-> > * disable/enable the automatic power management of the device (provided that
-> >   the driver supports the automatic PM)
-> 
-> Set the automatic PM parameters (idle timeout, state to go to, etc.).  
+> Sure, my point was just that the driver cannot make the decision to go
+> all-off (and thus not detect link) without some kind of user setting
+> allowing it to do so.
 
-Yes.  I'm not sure about the state part, though.
+Maybe we need ifconfig eth0 reallyreallydown ?
+								Pavel
 
-> And disabling automatic PM altogether (effectively the same as setting
-> the idle timeout to infinity).
-
-Yes.
-
-> > * check what power states devices are in.
-> 
-> What about situations where we want to distinguish between the power 
-> state of the device itself and the power state of the link?  For a disk 
-> drive we may want to power the link on and off quite a lot, as that 
-> has low latency, but spinning the disk up and down takes a long time 
-> and so should have a longer idle-time value.
-
-Well, I'm not sure at the moment.
-
-Do you have any suggestions?
-
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
