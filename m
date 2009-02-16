@@ -1,16 +1,16 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 23:26:19 +0000
-Message-ID: <20090216232619.GB15678@srcf.ucam.org>
-References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz>
-	<20090216231324.GA15435@srcf.ucam.org>
-	<20090216232259.GK1370@ucw.cz>
+Date: Tue, 17 Feb 2009 00:28:55 +0100
+Message-ID: <200902170028.57501.rjw__2517.90555562383$1234827088$gmane$org@sisk.pl>
+References: <200902162312.50556.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
+	<20090216145655.727cd39c@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090216145655.727cd39c@infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20090216232259.GK1370@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:22:59AM +0100, Pavel Machek wrote:
-> On Mon 2009-02-16 23:13:24, Matthew Garrett wrote:
-> > Meanwhile, on embedded it's becoming a less interesting problem because 
-> > idle and suspended are often now equivalent states. 
+On Monday 16 February 2009, Arjan van de Ven wrote:
+> On Mon, 16 Feb 2009 17:40:10 -0500 (EST)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> Android people tell us otherwise.
+> > On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > > OK, so I think there are two things that user space may be allowed
+> > > to do as far as putting devices into low power states is concerned:
+> > > * disable/enable the automatic power management of the device
+> > > (provided that the driver supports the automatic PM)
+> > 
+> > Set the automatic PM parameters (idle timeout, state to go to,
+> > etc.). And disabling automatic PM altogether (effectively the same as
+> > setting the idle timeout to infinity).
+> > 
+> 
+> shouldn't idle timeout etc be internal to the driver?
+> Yes policy preferences / constraints makes sense to communicate,
+> actual settings do not. For one they keep changing fast all the time
+> anyway.
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019493.html 
-says that they're the same on their current platform.
+Usually different devices are handled by the same driver.  I don't really
+think the same value will be suitable for all of them, so the users should
+at least be able to override the driver default, IMO.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+Rafael
