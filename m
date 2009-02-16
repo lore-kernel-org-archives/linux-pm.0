@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 00:28:55 +0100
-Message-ID: <200902170028.57501.rjw__2517.90555562383$1234827088$gmane$org@sisk.pl>
-References: <200902162312.50556.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
-	<20090216145655.727cd39c@infradead.org>
+Date: Mon, 16 Feb 2009 15:41:30 -0800
+Message-ID: <20090216154130.3ecf4050__46108.4859482527$1234827865$gmane$org@infradead.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216145655.727cd39c@infradead.org>
-Content-Disposition: inline
+In-Reply-To: <200902170019.40599.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Oliver@smtp1.linux-foundation.org, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, mark@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 16 February 2009, Arjan van de Ven wrote:
-> On Mon, 16 Feb 2009 17:40:10 -0500 (EST)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > > OK, so I think there are two things that user space may be allowed
-> > > to do as far as putting devices into low power states is concerned:
-> > > * disable/enable the automatic power management of the device
-> > > (provided that the driver supports the automatic PM)
-> > 
-> > Set the automatic PM parameters (idle timeout, state to go to,
-> > etc.). And disabling automatic PM altogether (effectively the same as
-> > setting the idle timeout to infinity).
-> > 
-> 
-> shouldn't idle timeout etc be internal to the driver?
-> Yes policy preferences / constraints makes sense to communicate,
-> actual settings do not. For one they keep changing fast all the time
-> anyway.
+On Tue, 17 Feb 2009 00:19:38 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Usually different devices are handled by the same driver.  I don't really
-think the same value will be suitable for all of them, so the users should
-at least be able to override the driver default, IMO.
+> > In addition, in hardware there does seem to be the trend where idle
+> > and suspend are converging (just look at the OLPC)...   with
+> > chipsets powering down all unused pieces, and cpus in idle taking
+> > basically no power, there no longer is much of a difference in
+> > reality between suspend and good-idle...
+> 
+> This, again, seems to be a bit x86-centric. :-)  
 
-Thanks,
-Rafael
+actually absolutely not. To the contrary. It is, as you said, the
+embedded systems that have, and increasingly get, finer grained per
+device controls. (x86 embedded and otherwise). The more fine grained
+control you have, the less a system wide state will give you in
+additional power savings. This is pretty much the industry trend for
+all power sensitive systems.
+
+Android might be using last years hardware. I'm not saying we shouldn't
+support that, but we need to be careful to not design the system only
+looking backwards.
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
