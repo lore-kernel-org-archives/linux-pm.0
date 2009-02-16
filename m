@@ -1,16 +1,15 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 15:32:06 -0600
-Message-ID: <13B9B4C6EF24D648824FF11BE896716203771DCF1E__16674.6330367916$1234820142$gmane$org@dlee02.ent.ti.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
-	<20090216124520.315320dc@infradead.org>
+Date: Mon, 16 Feb 2009 22:48:32 +0100
+Message-ID: <200902162248.34287.rjw__44010.6703703806$1234821187$gmane$org@sisk.pl>
+References: <200902160010.16955.rjw@sisk.pl>
+	<20090215164456.34aef7e8@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216124520.315320dc@infradead.org>
-Content-Language: en-US
+In-Reply-To: <20090215164456.34aef7e8@infradead.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>, Uli Luckas <u.luckas@road.de>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday 16 February 2009, Arjan van de Ven wrote:
+> On Mon, 16 Feb 2009 00:10:15 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Hi,
+> > 
+> > The recent descussion about the Android PM patches sent by Arve shows
+> > that there is a need to introduce a mechanism allowing us to:
+> > (1) automatically put the system as a whole into a sleep state (eg.
+> > suspend to RAM) when it is found to be "idle", where the meaning of
+> > "idle" has to be defined too,
+> > (2) put given subset of devices into low power states whenever they
+> > are not used, without putting the entire system into a sleep state.
+> 
+> 
+> For (2), for me the answer is very obvious:
+> 
+> The Device Driver needs to make the decision to put the device to sleep.
+> There are no ifs and buts about this.
+> 
+> It's the driver who 
+> a) knows if there's any activity, such as open users
+> and 
+> b) is in the right position to know how to put things to sleep.
+> 
+> Of course, the subsystem the driver belongs to can provide helpers
+> (such as generic activity timeout handlers etc).
 
-> From: Arjan van de Ven [mailto:arjan@infradead.org]
-> Sent: Monday, February 16, 2009 2:45 PM
+While I generally agree, there is a difficulty that the driver itself need not
+have control over all of the bits needed to power manage the device.  For
+example, we're going to make the PCI bus type handle the changing of PCI
+devices' power states, so the registers used for this purpose will be
+controlled by the PCI subsystem rather than by individual drivers.
 
-> On Mon, 16 Feb 2009 15:39:15 -0500 (EST)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
->
-> > On Mon, 16 Feb 2009, Kyle Moffett wrote:
-> >
-> > > Userspace may not have a useful decision-making capability regarding
-> > > functionality versus power-saving, but the user it's talking to
-> > > might!
-> > >
-> > > I think it would be very useful to have a mechanism for userspace to
-> > > find out "Link detection on this NIC costs ~50mW" and "No link has
-> > > been detected for the last 15 minutes", so that it can compile all
-> > > that sort of information and prompt the user what devices they would
-> > > like to disable.  Perhaps an "airline mode" sort of thing?
-> >
-> > Even if drivers don't know how much power their devices consume (and
-> > generally I wouldn't expect them to), it still makes sense to offer
-> > userspace the discretionary power to force devices into a low-power
-> > mode.  USB does this.
->
-> "stop using it" isn't this discretionary power ?
-> (for NICs this is "ifconfig .. down")
+In such cases we may need a mechanism by which the drivers can notify the
+higher layer that the device is inactive, so that the higher layer can put it
+into a low power state.
 
-Allowing a trusted user space process some hook in kernel PM has turned out useful for us.
+> For many cases, the drivers do this today already.
+> There are cases where doing this has side effects, mostly in terms of
+> latency. It is reasonable to have a general mechanism that provides a
+> central mechanism to track tolerable latencies; in fact PMQOS provides
+> this on a high level, and I can imagine that PMQOS needs to be extended
+> to provide a wider range of type of latencies.
 
-- It gives a way for frame works which load codecs into DSPs a way to specify needs before loading. The DSP has its own internal dynamic predictor but it is not always good enough. Feeding this info in from user space is easy as it knows everything about the DSP algorithm it is loading. There isn't a reason to re-export all of that back into the kernel and might hurt DSP performance if it ran on it natively.
+That indeed would be useful.
 
-- It provides a way to handle overdrive/turbo operating points out of band from the generically tuned cpufreq governors like ondemand.  The way we characterize overdrive is stricter then what Intel has talked about for x86.
+> Userland should never ever control the state of a device like this
+> directly. It should do so by a) closing the device and b) setting
+> latency / functional requirements.
 
-In TI-reference code we effectively export sysfs knobs which influence system p-state and c-state choices (we borrowed Intel terms here as they are useful). This was done before pmqos was available. We would have considered extending pmqos but a couple things stopped this. One being it wasn't in kernel at the time and two being any change picks up a year of disagreements. As such we put some front end wrappers on the calls which use it to some degree.
+The user, however, may want to forcibly put a device into a low power state
+without stopping all of the applications that depend on it (eg. have it open).
+Do you think that we shouldn't allow users to do such things?
 
-There is a community-reference targeting kernel merging but I think it is only now reaching the point of the user space interface. People working there have expressed interest in a direct pmqos interface and removing our wrapping calls.
-
-What we have done more follows what happens when you have a complex driver/subsystem which has pieces in both users and kernel space.  It works ok for this.
-
-This is ok for making sure the complex driver works well. It doesn't address all the other user space things going on which also need some kind of management so they don't sink system power. This is where wakelocks start to do something more generically useful.
-
-Right now it seems no one is willing to own the whole system. It is easier to just say user space sucks and someone else should fix it...or my driver is fine it is someone else's problem. However, by not giving some kind of useful constraints interface to help control bad (or uncontrollable) elements the end result are non-competitive Linux systems or ugly out of tree vendor hacks. This is where wakelocks actually stand out.  They actually try and do something useful generically.
-
-It seems the perfect is often the enemy of the good when it comes to Linux PM discussions.
-
-Regards,
-Richard W.
+Rafael
