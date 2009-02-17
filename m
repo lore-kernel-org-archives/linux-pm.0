@@ -1,21 +1,20 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 09:32:46 -0600
-Message-ID: <13B9B4C6EF24D648824FF11BE896716203771DD342__33751.7986227342$1234886087$gmane$org@dlee02.ent.ti.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
-	<20090216145948.6fea81c3@infradead.org>	<200902170019.40599.rjw@sisk.pl>
-	<20090216232329.GA15678@srcf.ucam.org>
-	<20090217142001.GB12378@bulgaria.corp.google.com>
-	<20090217064630.688bf639@infradead.org>
-	<20090217145141.GA26158@srcf.ucam.org>
-	<20090217065622.3e0a9956@infradead.org>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [Bug 12713] Hang on resume from hibernation,
+	apparently as result of 213d9417fec
+Date: Tue, 17 Feb 2009 19:47:01 +0100
+Message-ID: <20090217184701.GJ30821__37936.5462846637$1234896811$gmane$org@kernel.dk>
+References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com>
+	<8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
+	<20090216072711.GJ30821@kernel.dk>
+	<8f53421d0902160012y219b4737u37f3cfb0913b228f@mail.gmail.com>
+	<20090216084732.GK30821@kernel.dk>
+	<20090216190949.GA6868@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090217065622.3e0a9956@infradead.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20090216190949.GA6868@google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,70 +24,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Uli Luckas <u.luckas@road.de>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org, bugme-daemon@bugzilla.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> On Mon, Feb 16, 2009 at 09:47:32AM +0100, Jens Axboe wrote:
+> > On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> > > On Mon, Feb 16, 2009 at 9:27 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> > > >> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
+> > > >> <m.s.tsirkin@gmail.com> wrote:
+> > > >> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
+> > > >> > to fix resume from hibernation. Bugzilla entry created:
+> > > >> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
+> > > >>
+> > > >> Looking over this, I see something strange in the commit in question:
+> > > >>
+> > > >> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> > > >> index 5175aa3..f53568c 100644
+> > > >> --- a/include/linux/bio.h
+> > > >> +++ b/include/linux/bio.h
+> > > >> @@ -163,12 +163,15 @@ struct bio {
+> > > >>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
+> > > >>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
+> > > >>  #define BIO_RW_BARRIER 2
+> > > >> -#define BIO_RW_SYNC    3
+> > > >> -#define BIO_RW_META    4
+> > > >> -#define BIO_RW_DISCARD 5
+> > > >> -#define BIO_RW_FAILFAST_DEV            6
+> > > >> -#define BIO_RW_FAILFAST_TRANSPORT      7
+> > > >> -#define BIO_RW_FAILFAST_DRIVER         8
+> > > >> +#define BIO_RW_SYNCIO  3
+> > > >> +#define BIO_RW_UNPLUG  4
+> > > >> +#define BIO_RW_META    5
+> > > >> +#define BIO_RW_DISCARD 6
+> > > >> +#define BIO_RW_FAILFAST_DEV            7
+> > > >> +#define BIO_RW_FAILFAST_TRANSPORT      8
+> > > >> +#define BIO_RW_FAILFAST_DRIVER         9
+> > > >> +
+> > > >> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+> > > >>
+> > > >>  /*
+> > > >>   * upper 16 bits of bi_rw define the io priority of this bio
+> > > >>
+> > > >> I haven't read the code in depth, but taking running numbers and doing
+> > > >> bitwise "or"
+> > > >> on them looks a bit strange to me.
+> > > >> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
+> > > >> So for example bio_failfast_dev and bio_sync are the same.
+> > > >>
+> > > >> Jens, could you comment on this please? Is this intentional?
+> > > >
+> > > > That's clearly a braino, you can't OR the shift values of course. I'll
+> > > > get it fixed up asap!
+> > > 
+> > > Cool, send me a patch, I'll test.
+> > 
+> > Try this. Not a huge fan of this approach, but it should bring behaviour
+> > back to what it used to be.
+> 
+> I verified that applying this patch on top of 2.6.29-rc5 fixes
+> hibernation for me.
 
-> From: Arjan van de Ven [mailto:arjan@infradead.org]
-> Sent: Tuesday, February 17, 2009 8:56 AM
+Thanks for testing and confirming, it's queued up for inclusion asap.
 
-> On Tue, 17 Feb 2009 14:51:41 +0000
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->
-> > On Tue, Feb 17, 2009 at 06:46:30AM -0800, Arjan van de Ven wrote:
-> >
-> > > actually with powertop... on the open source side things are
-> > > actually won. It took all of 6 months...
-> > > I don't see that as a valid excuse. In fact, if this kind of
-> > > solution makes real userspace scheduled timers to be missed then I
-> > > consider it a serious functionality misfeature.
-
-Maybe for the optimization time scales x86 is targeting.  User space across OS still throws off our MHz a good distance from ideal estimates.
-
-I still hear complaints about frequent wakes even when using a bare minimum user space which can get 95+% lowest C-state residency with average 700mS.  If you frequency scale in lowest C-State YMMV if your external power chip is slow.  Waiting on voltage ramp times is lost power.
-
-One of our Application people (application is low level here) went though and tweaked kernel in a few spots with minimum user space and could get (this is with out a meaningful UI on NFS root mounted system):
-
-1st set of hacks got:
-Cn Avg residency
-C0 (cpu running) ( 0.0%)
-C1 0.0ms ( 0.0%)
-C2 0.0ms ( 0.0%)
-C3 217.2ms ( 1.8%)
-C4 0.0ms ( 0.0%)
-C5 0.0ms ( 0.0%)
-C6 354.9ms ( 0.3%)
-C7 1953.4ms (97.8%)
-
-Second set got:
-# powertop -d -t 300
-PowerTOP 1.10 (C) 2007 Intel Corporation
-Collecting data for 300 seconds
-Cn Avg residency
-C0 (cpu running) ( 0.0%)
-C1 0.0ms ( 0.0%)
-C2 0.2ms ( 0.0%)
-C3 3.8ms ( 0.0%)
-C4 0.0ms ( 0.0%)
-C5 0.0ms ( 0.0%)
-C6 0.0ms ( 0.0%)
-C7 73165.9ms (100.0%)
-
-I'll see about posting his change write up.  Not all probably can be done but several could.
-
-> > Remember that Android has an open marketplace designed to appeal to
-> > Java programmers - users are going to end up downloading code from
-> > there and then blaming the platform if their battery life heads
-> > towards zero. I think "We can't trust our userland not to be dumb" is
-> > a valid concern.
->
-> so use range timers / timer slack for those apps that you do not trust.
-> That is not a big deal, and solves the issue of timer wakeups...
-
-I not so sure it is that straight forward in practice.  End systems integrate a lot of 3rd party software who view performance 1st and have no thought of power.
-
-It might be android has a better chance to control more of those api's being exported but its coverage isn't complete and others gluing pieces together won't.
-
-Regards,
-Richard W.
+-- 
+Jens Axboe
