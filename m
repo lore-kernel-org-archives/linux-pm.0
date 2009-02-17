@@ -1,16 +1,18 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Mark Brown <broonie@sirena.org.uk>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 11:12:59 +0100
-Message-ID: <200902171113.02114.oliver__2376.4420919635$1234865880$gmane$org@neukum.org>
+Date: Tue, 17 Feb 2009 13:58:34 +0000
+Message-ID: <20090217135833.GB25029__44472.5699177527$1234879350$gmane$org@sirena.org.uk>
 References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
 	<200902170019.40599.rjw@sisk.pl>
 	<20090216232329.GA15678@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
 Content-Disposition: inline
+In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,22 +26,15 @@ To: Matthew Garrett <mjg59@srcf.ucam.org>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Tuesday 17 February 2009 00:23:30 schrieb Matthew Garrett:
-> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
-> 
-> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
-> > us that on the hardware they deal with it does make sense to put the entire
-> > system to sleep even for relatively short periods of time, since the latencies
-> > involved are not too bad.
-> 
+On Mon, Feb 16, 2009 at 11:23:30PM +0000, Matthew Garrett wrote:
+
 > Arve said that the power state was equivalent in idle and suspend, but 
 > that they preferred suspend because it stopped any periodic timers. I'd 
 > be more interested in making sure that unnecessary timers aren't running 
 > than focusing on automatically entering system-wide suspend - Nokia have 
 > been managing this since 2005 with good results.
 
-I agree. For a general purpose system it would be very hard to call
-some timers unnecessary and others necessary.
-
-	Regards
-		Oliver
+Definitely.  Even in the embedded case there is hardware which takes a
+relatively long time to fully power down and resume without winning an
+enormous amount on the power front (analogue stuff is a common culprit
+here, it can take a noticable amount of time to bring it up cleanly).
