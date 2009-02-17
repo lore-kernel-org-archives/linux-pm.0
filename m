@@ -1,15 +1,13 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 14:19:13 -0800
-Message-ID: <200902171419.14823.jbarnes__12635.1086343222$1234909714$gmane$org@virtuousgeek.org>
-References: <200902160010.16955.rjw@sisk.pl>
-	<20090217215717.GA25605@linux.intel.com>
-	<20090217220439.GA1573@srcf.ucam.org>
+Date: Wed, 18 Feb 2009 00:21:58 +0100
+Message-ID: <200902180022.00239.rjw__8389.08810769699$1234913190$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090217220439.GA1573@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,30 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 17, 2009 2:04 pm Matthew Garrett wrote:
-> On Tue, Feb 17, 2009 at 01:57:17PM -0800, mark gross wrote:
-> > Putting the wake on key event issue aside, is it possible to have wake
-> > up's on the ms time scale?  I ask because I thought the XO did exactly
-> > this (but left the screen live).  Why does it take 20 sec to get into
-> > or out of S3 on my laptop?
->
-> Graphics reinit, dumping graphics contents back into RAM, us resuming
-> devices in series, that kind of thing. On some hardware you'll spend a
-> noticable amount of time in the BIOS before any of the Linux resume code
-> gets touched. I thought the XO had got sub second, but I wasn't sure
-> that they were in the low ms range.
+On Tuesday 17 February 2009, Alan Stern wrote:
+> On Tue, 17 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> > Phase 1: I agree that system-auto-suspend-on, system-auto-suspend-off would be
+> > useful, but I don't like the wakelocks interface.  Do you think there is an
+> > alternative way/mechanism of doing this?
+> 
+> I rather like the suggestions Matthew Garrett has been making.  They 
+> show how to improve the wakelock interface without losing any function.
+> 
+> Really, the idea behind wakelocks comes down to the question of how to
+> determine when the system is sufficiently idle to go into auto-suspend.  
+> There may be occasions when no task is runnable but userspace knows
+> that the system should not go to sleep because some work will be done
+> in the near future.  (Arve's example of a non-empty input buffer is
+> such a case.)  How should userspace let the kernel know whether it's
+> okay to suspend at these times?  That is the problem userspace
+> wakelocks are meant to solve.
 
-IME a good chunk of it is BIOS time.  On my x200s resume is very fast (on the 
-order of a second or two though I haven't measured), while on my Eee and T61 
-machines it's much slower, even though they're all using Intel gfx.
+Still, do we really need multiple user space wakelocks (I'd prefer to call them
+sleeplocks)?  It seems that one such lock and a user space manager controlling
+it should be sufficient.
 
-Of course we should really be shooting for sub-second times or about the time 
-it takes you to open your lid (or even much faster in the case of demand 
-suspend/resume for servers/desktops).
+> Kernel wakelocks are a separate matter.  They are more like a form of 
+> optimization, preventing the kernel from starting an auto-suspend when 
+> some driver knows beforehand that it will return -EBUSY.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I think kernel-side autosuspend (or rather autosleep) should only happen
+after certain subset of devices have been suspended using a per-device
+run-time autosuspend mechanism.
+
+> > Phase 3: Probably explicit control left to open/close.
+> 
+> While that's generally a good idea, it's important to recognize that 
+> some devices should be runtime-suspended even while they are open.
+
+>From the kernel side, yes (and that should be transparent to the user space
+having them open).  By the user space, no.
+ 
+> Basically, any device that is "always open" falls in this category.  
+> Some examples are the screen, the keyboard, the mouse, and disk drives.  
+> And of course, some of these things already have runtime power 
+> management.
+
+Thanks,
+Rafael
