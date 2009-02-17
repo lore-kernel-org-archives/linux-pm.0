@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 00:26:53 +0100
-Message-ID: <200902180026.55533.rjw__22750.1196707182$1234913406$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0902162144010.24097-100000@netrider.rowland.org>
+Date: Tue, 17 Feb 2009 17:28:32 -0600
+Message-ID: <13B9B4C6EF24D648824FF11BE8967162037726145B__35313.4649027654$1234913545$gmane$org@dlee02.ent.ti.com>
+References: <200902160010.16955.rjw@sisk.pl>
+	<20090217215717.GA25605@linux.intel.com>
+	<20090217220439.GA1573@srcf.ucam.org>
+	<200902171419.14823.jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902162144010.24097-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200902171419.14823.jbarnes@virtuousgeek.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "arjan@infradead.org" <arjan@infradead.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Uli Luckas <u.luckas@road.de>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 17 February 2009, Alan Stern wrote:
-> On Tue, 17 Feb 2009, Rafael J. Wysocki wrote:
-> 
-> > On Monday 16 February 2009, Alan Stern wrote:
-> > > On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > OK, so I think there are two things that user space may be allowed to do as
-> > > > far as putting devices into low power states is concerned:
-> > > > * disable/enable the automatic power management of the device (provided that
-> > > >   the driver supports the automatic PM)
-> > > 
-> > > Set the automatic PM parameters (idle timeout, state to go to, etc.).  
-> > 
-> > Yes.  I'm not sure about the state part, though.
-> 
-> Maybe, maybe not.  IMO it's too early to tell whether anyone will need 
-> this ability, so we shouldn't rule it out.
-> 
-> > > What about situations where we want to distinguish between the power 
-> > > state of the device itself and the power state of the link?  For a disk 
-> > > drive we may want to power the link on and off quite a lot, as that 
-> > > has low latency, but spinning the disk up and down takes a long time 
-> > > and so should have a longer idle-time value.
-> > 
-> > Well, I'm not sure at the moment.
-> > 
-> > Do you have any suggestions?
-> 
-> Not very well fleshed-out ones.  I've got a vague idea for allowing a
-> disk to have a 3-level power arrangement: full power, link disabled but
-> drive still spinning, and device suspended.
 
-I was thinking about that too.
+> From: Jesse Barnes [mailto:jbarnes@virtuousgeek.org]
+> Sent: Tuesday, February 17, 2009 4:19 PM
 
-> Arranging for automatic transitions among those states will be a little
-> clumsy but it can be done.  As an example of the clumsiness, this scheme
-> requires that the drive has _two_ idle-timeout values, one for the link and
-> one for the drive itself.
+> On Tuesday, February 17, 2009 2:04 pm Matthew Garrett wrote:
+> > On Tue, Feb 17, 2009 at 01:57:17PM -0800, mark gross wrote:
+> > > Putting the wake on key event issue aside, is it possible to have wake
+> > > up's on the ms time scale?  I ask because I thought the XO did exactly
+> > > this (but left the screen live).  Why does it take 20 sec to get into
+> > > or out of S3 on my laptop?
+> >
+> > Graphics reinit, dumping graphics contents back into RAM, us resuming
+> > devices in series, that kind of thing. On some hardware you'll spend a
+> > noticable amount of time in the BIOS before any of the Linux resume code
+> > gets touched. I thought the XO had got sub second, but I wasn't sure
+> > that they were in the low ms range.
+>
+> IME a good chunk of it is BIOS time.  On my x200s resume is very fast (on the
+> order of a second or two though I haven't measured), while on my Eee and T61
+> machines it's much slower, even though they're all using Intel gfx.
+>
+> Of course we should really be shooting for sub-second times or about the time
+> it takes you to open your lid (or even much faster in the case of demand
+> suspend/resume for servers/desktops).
 
-Well, this generally is the case for PCI devices supporting more than two
-power states.
+This is good example of embedded ARM time scales not matching up with x86 ones.  For OMAP3 our resumption from OFF mode (full SOC context lost) software budget was in the 10s of milliSeconds.  There is no BIOS and we must generate most of the code.
 
-> Another possibility is to set up independent runtime PM for the
-> transport and the device.  This means allowing the possibility that the
-> transport is suspended while its child (the device) is not.  This is a
-> little simpler (there's only one idle-timeout per device, since the
-> link is treated as an independent device), but it violates the
-> principle of never suspending a parent while there is an active child.
+As such very frequent fast OFF mode transitions are useful and possible.  As I said in another part of the thread, the slow part is Voltage ramp time. Also clock setup time of external oscillator can be 5-10mS by itself.
 
-Well, I think the first approach would be better.
+This tight timing was the requirement of some modems which required a response ASAP when data was coming.  Not every modem is so tight but some are.
 
-Thanks,
-Rafael
+Regards,
+Richard W.
