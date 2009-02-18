@@ -1,14 +1,22 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 20:46:39 -0800
-Message-ID: <d6200be20902172046sf00599ckc6710c6132d6b92f__24710.4622809731$1234932611$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
-	<200902180022.00239.rjw@sisk.pl>
+Date: Tue, 17 Feb 2009 21:11:31 -0800
+Message-ID: <d6200be20902172111y16debabaq85b8f58520f4079a__19783.7880616591$1234934072$gmane$org@mail.gmail.com>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
+	<20090217142001.GB12378@bulgaria.corp.google.com>
+	<20090217064630.688bf639@infradead.org>
+	<20090217145141.GA26158@srcf.ucam.org>
+	<20090217065622.3e0a9956@infradead.org>
+	<13B9B4C6EF24D648824FF11BE896716203771DD342@dlee02.ent.ti.com>
+	<20090217160421.12bc851f@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902180022.00239.rjw@sisk.pl>
+In-Reply-To: <20090217160421.12bc851f@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,71 +26,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Brian Swetland <swetland@google.com>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 3:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 17 February 2009, Alan Stern wrote:
->> On Tue, 17 Feb 2009, Rafael J. Wysocki wrote:
->>
->> > Phase 1: I agree that system-auto-suspend-on, system-auto-suspend-off =
-would be
->> > useful, but I don't like the wakelocks interface.  Do you think there =
-is an
->> > alternative way/mechanism of doing this?
->>
->> I rather like the suggestions Matthew Garrett has been making.  They
->> show how to improve the wakelock interface without losing any function.
->>
->> Really, the idea behind wakelocks comes down to the question of how to
->> determine when the system is sufficiently idle to go into auto-suspend.
->> There may be occasions when no task is runnable but userspace knows
->> that the system should not go to sleep because some work will be done
->> in the near future.  (Arve's example of a non-empty input buffer is
->> such a case.)  How should userspace let the kernel know whether it's
->> okay to suspend at these times?  That is the problem userspace
->> wakelocks are meant to solve.
+On Tue, Feb 17, 2009 at 4:04 PM, Arjan van de Ven <arjan@infradead.org> wro=
+te:
+> On Tue, 17 Feb 2009 09:32:46 -0600
+> "Woodruff, Richard" <r-woodruff2@ti.com> wrote:
 >
-> Still, do we really need multiple user space wakelocks (I'd prefer to cal=
-l them
-> sleeplocks)?  It seems that one such lock and a user space manager contro=
-lling
-> it should be sufficient.
-
-Yes, we could have a user space manager that all userspace wakelocks
-go through, but it would have to start before any other processes that
-need wakelocks and it would need a blocking ipc mechanism. The
-wakelock api that is provided to android applications does all this,
-but it is only available to java code. Supporting multiple userspace
-wakelocks in the kernel is simpler than adding another userspace
-wakelock layer.
-
->> Kernel wakelocks are a separate matter.  They are more like a form of
->> optimization, preventing the kernel from starting an auto-suspend when
->> some driver knows beforehand that it will return -EBUSY.
->
-> I think kernel-side autosuspend (or rather autosleep) should only happen
-> after certain subset of devices have been suspended using a per-device
-> run-time autosuspend mechanism.
-
-When the last wakelock is released the task that we woke up to perform
-has finished. Why wait to re-enter suspend.
-
->
->> > Phase 3: Probably explicit control left to open/close.
+>> > so use range timers / timer slack for those apps that you do not
+>> > trust. That is not a big deal, and solves the issue of timer
+>> > wakeups...
 >>
->> While that's generally a good idea, it's important to recognize that
->> some devices should be runtime-suspended even while they are open.
+>> I not so sure it is that straight forward in practice.  End systems
+>> integrate a lot of 3rd party software who view performance 1st and
+>> have no thought of power.
 >
-> From the kernel side, yes (and that should be transparent to the user spa=
-ce
-> having them open).  By the user space, no.
+> you know that with the range timers/slack, you can control the
+> "rounding" of the timer of the application, right?
+> You can *directly* throttle the number of wakeups an application causes
+> that way to a value you set.
 
-Allowing user space to suspend input devices while they are still open
-is useful. The user-space code that reads from the input devices does
-not need to know if the device is suspended or not, and the kernel
-cannot auto suspend input devices based on inactivity.
+I thought the point of range timers was to align multiple timers so
+they wakeup at the same time, not to throttle individual timers.
 
 -- =
 
