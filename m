@@ -1,7 +1,7 @@
-From: mark gross <mgross@linux.intel.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 16:55:52 -0800
-Message-ID: <20090218005552.GD26292__38552.0519492731$1234918498$gmane$org@linux.intel.com>
+Date: Wed, 18 Feb 2009 13:40:40 +1100
+Message-ID: <1234924840.14060.342.camel@pasglop>
 References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
 	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
 	<20090216145948.6fea81c3@infradead.org>
@@ -10,12 +10,10 @@ References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
 	<20090217142001.GB12378@bulgaria.corp.google.com>
 	<20090217064630.688bf639@infradead.org>
 	<20090217152811.GA12686@bulgaria.corp.google.com>
-Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20090217152811.GA12686@bulgaria.corp.google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -30,45 +28,7 @@ To: Brian Swetland <swetland@google.com>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 07:28:11AM -0800, Brian Swetland wrote:
-> [Arjan van de Ven <arjan@infradead.org>]
-> > On Tue, 17 Feb 2009 06:20:01 -0800
-> > Brian Swetland <swetland@google.com> wrote:
-> > 
-> > > Of course that still doesn't address userspace.  Aggressively going to
-> > > suspend lets us compensate for userspace programs that do somewhat
-> > > silly things (I agree that it would be best if they didn't but they
-> > > do and getting *everyone* to write their userspace code to avoid
-> > > spinning or avoid waking up on short-duration timers to poll is a
-> > > losing battle).
-> > 
-> > actually with powertop... on the open source side things are actually
-> > won. It took all of 6 months...
-> > I don't see that as a valid excuse. In fact, if this kind of solution
-> > makes real userspace scheduled timers to be missed then I consider it a
-> > serious functionality misfeature.
-> 
-> While you can't expect the kernel to solve all the problems of
-> userspace, here's the broad situation one could end up in
-> (note this specific sequence is generic and not based on any one
-> specific product experience):
-> 
-> - carrier deploys a device 
-> - carrier agrees to allow installation of arbitrary third party apps
->   without some horrible certification program requiring app authors
->   to jump through hoops, wait ages for approval, etc
-> - users rejoice and install all kinds of apps
-> - some apps are poorly written and impact battery life
-> - users complain to carrier about battery life
 
-Carrier pushes ISV for fix app, and updates that don't suck are
-deployed.
-
-Where is the problem?
-
---mgross
-
-> 
 > You will end up with some crappy apps that do really dumb things.
 > However, even if they're badly written users may still install and use
 > these apps because hey, they do something the user likes.
@@ -79,5 +39,12 @@ Where is the problem?
 > 
 > While I'd love for every app developer to actively tune their apps for a
 > good mobile experience, I am skeptical that this is going to happen.
-> 
-> Brian
+
+One idea I've been toying around was to have powertune as some kind of
+background thingy, and have it pop an icon in the notification area when
+some app seems to behave badly (of course, defining "badly" is hard but
+heh...). IE. actively inform the user "this application is sucking the
+life out of your battery".
+
+Cheers,
+Ben.
