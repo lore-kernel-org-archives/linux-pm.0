@@ -1,15 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 09:53:48 +0100
-Message-ID: <200902180953.51171.oliver__38389.2812104479$1234947393$gmane$org@neukum.org>
+Date: Wed, 18 Feb 2009 06:51:58 -0800
+Message-ID: <20090218065158.5efa8536__48608.3148316995$1234969057$gmane$org@infradead.org>
 References: <Pine.LNX.4.44L0.0902162144010.24097-100000@netrider.rowland.org>
 	<200902180026.55533.rjw@sisk.pl>
+	<200902180953.51171.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902180026.55533.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200902180953.51171.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Wednesday 18 February 2009 00:26:53 schrieb Rafael J. Wysocki:
-> > Another possibility is to set up independent runtime PM for the
-> > transport and the device. =A0This means allowing the possibility that t=
-he
-> > transport is suspended while its child (the device) is not. =A0This is a
-> > little simpler (there's only one idle-timeout per device, since the
-> > link is treated as an independent device), but it violates the
-> > principle of never suspending a parent while there is an active child.
-> =
-
-> Well, I think the first approach would be better.
-
-I am afraid it wouldn't be. How do you deal with shared transports?
-
-	Regards
-		Oliver
+T24gV2VkLCAxOCBGZWIgMjAwOSAwOTo1Mzo0OCArMDEwMApPbGl2ZXIgTmV1a3VtIDxvbGl2ZXJA
+bmV1a3VtLm9yZz4gd3JvdGU6Cgo+IEFtIFdlZG5lc2RheSAxOCBGZWJydWFyeSAyMDA5IDAwOjI2
+OjUzIHNjaHJpZWIgUmFmYWVsIEouIFd5c29ja2k6Cj4gPiA+IEFub3RoZXIgcG9zc2liaWxpdHkg
+aXMgdG8gc2V0IHVwIGluZGVwZW5kZW50IHJ1bnRpbWUgUE0gZm9yIHRoZQo+ID4gPiB0cmFuc3Bv
+cnQgYW5kIHRoZSBkZXZpY2UuIMKgVGhpcyBtZWFucyBhbGxvd2luZyB0aGUgcG9zc2liaWxpdHkK
+PiA+ID4gdGhhdCB0aGUgdHJhbnNwb3J0IGlzIHN1c3BlbmRlZCB3aGlsZSBpdHMgY2hpbGQgKHRo
+ZSBkZXZpY2UpIGlzCj4gPiA+IG5vdC4gwqBUaGlzIGlzIGEgbGl0dGxlIHNpbXBsZXIgKHRoZXJl
+J3Mgb25seSBvbmUgaWRsZS10aW1lb3V0IHBlcgo+ID4gPiBkZXZpY2UsIHNpbmNlIHRoZSBsaW5r
+IGlzIHRyZWF0ZWQgYXMgYW4gaW5kZXBlbmRlbnQgZGV2aWNlKSwgYnV0Cj4gPiA+IGl0IHZpb2xh
+dGVzIHRoZSBwcmluY2lwbGUgb2YgbmV2ZXIgc3VzcGVuZGluZyBhIHBhcmVudCB3aGlsZQo+ID4g
+PiB0aGVyZSBpcyBhbiBhY3RpdmUgY2hpbGQuCj4gPiAKPiA+IFdlbGwsIEkgdGhpbmsgdGhlIGZp
+cnN0IGFwcHJvYWNoIHdvdWxkIGJlIGJldHRlci4KPiAKPiBJIGFtIGFmcmFpZCBpdCB3b3VsZG4n
+dCBiZS4gSG93IGRvIHlvdSBkZWFsIHdpdGggc2hhcmVkIHRyYW5zcG9ydHM/Cj4gCgpyZWFsaXN0
+aWNhbGx5LCBzb21ldGhpbmcgbGlrZSB0aGlzIHlvdSBuZWVkIHRvIGRlc2lnbiBsaWtlIHRoaXMK
+U3RlcCAxKSBBc3N1bWUgdGhlIGhhcmR3YXJlIGlzIHNtYXJ0IGFuZCBjYW4gZG8gdGhpcyBmb3Ig
+eW91IG9uIHRoZSBmbHksCiAgICAgICAgYnV0IGl0IG1pZ2h0IG5lZWQgZ3VpZGFuY2UuCiAgICAg
+ICAgKEZvciBtYW55IGJ1c3NlcyB0aGVyZSBhcmUgcGxhdGZvcm1zIHRoYXQgZG8gdGhpcykKU3Rl
+cCAyKSBGb3IgaGFyZHdhcmUgdGhhdCBpcyBub3Qgc21hcnQsIGVtdWxhdGUgdGhlIHNtYXJ0bmVz
+cyBpbiB0aGUKICAgICAgICBkcml2ZXIsIHdpdGggaGVscCBvZiB0aGUgc3Vic3lzdGVtLiBUaGVz
+ZSB0d28gdG9nZXRoZXIgaGF2ZQogICAgICAgIHRoZSByaWdodCBrbm93bGVkZ2UgdG8gbWFrZSBz
+dWNoIGRlY2lzaW9ucy4KCgotLSAKQXJqYW4gdmFuIGRlIFZlbiAJSW50ZWwgT3BlbiBTb3VyY2Ug
+VGVjaG5vbG9neSBDZW50cmUKRm9yIGRldmVsb3BtZW50LCBkaXNjdXNzaW9uIGFuZCB0aXBzIGZv
+ciBwb3dlciBzYXZpbmdzLCAKdmlzaXQgaHR0cDovL3d3dy5sZXNzd2F0dHMub3JnCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
