@@ -1,17 +1,22 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 17:28:32 -0600
-Message-ID: <13B9B4C6EF24D648824FF11BE8967162037726145B__35313.4649027654$1234913545$gmane$org@dlee02.ent.ti.com>
-References: <200902160010.16955.rjw@sisk.pl>
-	<20090217215717.GA25605@linux.intel.com>
-	<20090217220439.GA1573@srcf.ucam.org>
-	<200902171419.14823.jbarnes@virtuousgeek.org>
+Date: Tue, 17 Feb 2009 16:04:21 -0800
+Message-ID: <20090217160421.12bc851f__45311.8770070889$1234915637$gmane$org@infradead.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
+	<20090217142001.GB12378@bulgaria.corp.google.com>
+	<20090217064630.688bf639@infradead.org>
+	<20090217145141.GA26158@srcf.ucam.org>
+	<20090217065622.3e0a9956@infradead.org>
+	<13B9B4C6EF24D648824FF11BE896716203771DD342@dlee02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902171419.14823.jbarnes@virtuousgeek.org>
-Content-Language: en-US
+In-Reply-To: <13B9B4C6EF24D648824FF11BE896716203771DD342@dlee02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +26,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "arjan@infradead.org" <arjan@infradead.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Uli Luckas <u.luckas@road.de>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+Cc: Benjamin@smtp1.linux-foundation.org, Kyle Moffett <kyle@moffetthome.net>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Uli Luckas <u.luckas@road.de>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 17 Feb 2009 09:32:46 -0600
+"Woodruff, Richard" <r-woodruff2@ti.com> wrote:
 
-> From: Jesse Barnes [mailto:jbarnes@virtuousgeek.org]
-> Sent: Tuesday, February 17, 2009 4:19 PM
+> > so use range timers / timer slack for those apps that you do not
+> > trust. That is not a big deal, and solves the issue of timer
+> > wakeups...
+> 
+> I not so sure it is that straight forward in practice.  End systems
+> integrate a lot of 3rd party software who view performance 1st and
+> have no thought of power.
 
-> On Tuesday, February 17, 2009 2:04 pm Matthew Garrett wrote:
-> > On Tue, Feb 17, 2009 at 01:57:17PM -0800, mark gross wrote:
-> > > Putting the wake on key event issue aside, is it possible to have wake
-> > > up's on the ms time scale?  I ask because I thought the XO did exactly
-> > > this (but left the screen live).  Why does it take 20 sec to get into
-> > > or out of S3 on my laptop?
-> >
-> > Graphics reinit, dumping graphics contents back into RAM, us resuming
-> > devices in series, that kind of thing. On some hardware you'll spend a
-> > noticable amount of time in the BIOS before any of the Linux resume code
-> > gets touched. I thought the XO had got sub second, but I wasn't sure
-> > that they were in the low ms range.
->
-> IME a good chunk of it is BIOS time.  On my x200s resume is very fast (on the
-> order of a second or two though I haven't measured), while on my Eee and T61
-> machines it's much slower, even though they're all using Intel gfx.
->
-> Of course we should really be shooting for sub-second times or about the time
-> it takes you to open your lid (or even much faster in the case of demand
-> suspend/resume for servers/desktops).
+you know that with the range timers/slack, you can control the
+"rounding" of the timer of the application, right?
+You can *directly* throttle the number of wakeups an application causes
+that way to a value you set.
 
-This is good example of embedded ARM time scales not matching up with x86 ones.  For OMAP3 our resumption from OFF mode (full SOC context lost) software budget was in the 10s of milliSeconds.  There is no BIOS and we must generate most of the code.
 
-As such very frequent fast OFF mode transitions are useful and possible.  As I said in another part of the thread, the slow part is Voltage ramp time. Also clock setup time of external oscillator can be 5-10mS by itself.
 
-This tight timing was the requirement of some modems which required a response ASAP when data was coming.  Not every modem is so tight but some are.
 
-Regards,
-Richard W.
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
