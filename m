@@ -1,20 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 13:40:40 +1100
-Message-ID: <1234924840.14060.342.camel@pasglop>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
-	<20090216145948.6fea81c3@infradead.org>
-	<200902170019.40599.rjw@sisk.pl>
-	<20090216232329.GA15678@srcf.ucam.org>
-	<20090217142001.GB12378@bulgaria.corp.google.com>
-	<20090217064630.688bf639@infradead.org>
-	<20090217152811.GA12686@bulgaria.corp.google.com>
+Date: Tue, 17 Feb 2009 20:46:39 -0800
+Message-ID: <d6200be20902172046sf00599ckc6710c6132d6b92f__24710.4622809731$1234932611$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
+	<200902180022.00239.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090217152811.GA12686@bulgaria.corp.google.com>
+In-Reply-To: <200902180022.00239.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,27 +18,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Feb 17, 2009 at 3:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 17 February 2009, Alan Stern wrote:
+>> On Tue, 17 Feb 2009, Rafael J. Wysocki wrote:
+>>
+>> > Phase 1: I agree that system-auto-suspend-on, system-auto-suspend-off =
+would be
+>> > useful, but I don't like the wakelocks interface.  Do you think there =
+is an
+>> > alternative way/mechanism of doing this?
+>>
+>> I rather like the suggestions Matthew Garrett has been making.  They
+>> show how to improve the wakelock interface without losing any function.
+>>
+>> Really, the idea behind wakelocks comes down to the question of how to
+>> determine when the system is sufficiently idle to go into auto-suspend.
+>> There may be occasions when no task is runnable but userspace knows
+>> that the system should not go to sleep because some work will be done
+>> in the near future.  (Arve's example of a non-empty input buffer is
+>> such a case.)  How should userspace let the kernel know whether it's
+>> okay to suspend at these times?  That is the problem userspace
+>> wakelocks are meant to solve.
+>
+> Still, do we really need multiple user space wakelocks (I'd prefer to cal=
+l them
+> sleeplocks)?  It seems that one such lock and a user space manager contro=
+lling
+> it should be sufficient.
 
-> You will end up with some crappy apps that do really dumb things.
-> However, even if they're badly written users may still install and use
-> these apps because hey, they do something the user likes.
-> 
-> >From the Android standpoint, we're trying to balance protecting the
-> system from poorly designed apps and somehow letting the user know "hey
-> app X is chewing up a lot of power" (work in progress on this).
-> 
-> While I'd love for every app developer to actively tune their apps for a
-> good mobile experience, I am skeptical that this is going to happen.
+Yes, we could have a user space manager that all userspace wakelocks
+go through, but it would have to start before any other processes that
+need wakelocks and it would need a blocking ipc mechanism. The
+wakelock api that is provided to android applications does all this,
+but it is only available to java code. Supporting multiple userspace
+wakelocks in the kernel is simpler than adding another userspace
+wakelock layer.
 
-One idea I've been toying around was to have powertune as some kind of
-background thingy, and have it pop an icon in the notification area when
-some app seems to behave badly (of course, defining "badly" is hard but
-heh...). IE. actively inform the user "this application is sucking the
-life out of your battery".
+>> Kernel wakelocks are a separate matter.  They are more like a form of
+>> optimization, preventing the kernel from starting an auto-suspend when
+>> some driver knows beforehand that it will return -EBUSY.
+>
+> I think kernel-side autosuspend (or rather autosleep) should only happen
+> after certain subset of devices have been suspended using a per-device
+> run-time autosuspend mechanism.
 
-Cheers,
-Ben.
+When the last wakelock is released the task that we woke up to perform
+has finished. Why wait to re-enter suspend.
+
+>
+>> > Phase 3: Probably explicit control left to open/close.
+>>
+>> While that's generally a good idea, it's important to recognize that
+>> some devices should be runtime-suspended even while they are open.
+>
+> From the kernel side, yes (and that should be transparent to the user spa=
+ce
+> having them open).  By the user space, no.
+
+Allowing user space to suspend input devices while they are still open
+is useful. The user-space code that reads from the input devices does
+not need to know if the device is suspended or not, and the kernel
+cannot auto suspend input devices based on inactivity.
+
+-- =
+
+Arve Hj=F8nnev=E5g
