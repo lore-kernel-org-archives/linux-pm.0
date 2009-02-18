@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 22:11:07 +0100
-Message-ID: <200902182211.09788.rjw__45009.9140908152$1234991719$gmane$org@sisk.pl>
-References: <200902160010.16955.rjw@sisk.pl>
-	<20090218002704.GB25605@linux.intel.com>
+Date: Wed, 18 Feb 2009 22:17:46 +0100
+Message-ID: <200902182217.48321.rjw__34464.2268064947$1234992122$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
+	<200902180022.00239.rjw@sisk.pl>
+	<d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090218002704.GB25605@linux.intel.com>
+In-Reply-To: <d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,87 +20,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 18 February 2009, mark gross wrote:
-> On Mon, Feb 16, 2009 at 12:10:15AM +0100, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > The recent descussion about the Android PM patches sent by Arve shows that
-> > there is a need to introduce a mechanism allowing us to:
-> > (1) automatically put the system as a whole into a sleep state (eg. suspend to
-> >     RAM) when it is found to be "idle", where the meaning of "idle" has to be
-> >     defined too,
-> 
-> Can a fast STR state be created for the generic kernel across
-> architectures?  Something that can go into and out of SRT in < 20ms?
-
-I don't think it's generally doable on PCs.
-
-> (I picked 20ms as that gives 50Hz screen refresh) I guess the XO does
-> something like this between keystrokes. 
-> 
-> Note: I don't know (but I should) if such a PM design popping into and
-> out of STR at worst every 20ms is worth doing on IA but lets assume its
-> not so bad for the sake of argument.
-> 
-> One could assume the system would be idle except for selects on HID
-> events when operating in this mode.
-> 
-> > (2) put given subset of devices into low power states whenever they are not
-> >     used, without putting the entire system into a sleep state.
-> 
-> This is a driver deal to drop the hardware they control into lower power
-> states.  Give information for PM-QOS the drivers could do the right
-> things here.  (or should be able too) 
-
-That may also depend on the bus the driver is on (like PCI for one example).
-
-> Also how do we attempt to coordinate this with an automatic STR state?
-
-That's one thing to think about.  In principle we can avoid suspending
-devices that already are in low power states before a system-wide transition
-is started (caveat: wake-up devices on ACPI systems).
- 
-> How to coexist with user requested STR?
-> 
-> Do we need to more carefully define what STR really means?  (I'm
-> thinking we do)
-
-Well, yes and no.  In fact ACPI defines STR as one of the system sleep states
-in which the CPU does not execute instructions, but the ACPI definition need
-not be applicable to non-ACPI platforms.
-
-> > To allow these two things to happen, the Andriod patches introduced the
-> > wakelocks with the associated infrastructure and the "early suspend" mechanism.
-> > However, quite a number of reviewers did not like these patches, for various
-> > reasons, so they cannot be regarded as generally acceptable.  For this reason,
-> > I think, we should discuss the problem in detail from the beginning and try to
-> > find a solution that everyone interested will be comfortable with.
-> > 
-> > For this purpose, IMO, we should at least reach an agreement on what the
-> > kernel's and the userland's roles in (1) and (2) are going to be.  There also
-> > are quite a few questions that need to be answered.  For instance, what
-> > conditions are going to be used to decide whether or not the system is idle
-> > enough so that we can put it into a sleep state?  How are we going to check
-> > these conditions?  What is going to happen if one (or more) of them changes
-> > while a system-wide power transition (eg. suspend) is in progress?  Are we
-> > going to allow the user space to take part in this and if so, to what extent?
-> > What mechanisms are going be used to put devices into low power states at run
-> > time (ie. before starting any system-wide power transition) and how are they
-> > going to be related to the suspend-resume infrastructure used during
-> > system-wide power transitions?  The answers to these (and other related)
-> > questions will likely affect all of the future Linux PM developlent, so IMO
-> > this is a very important matter.
-> > 
-> > Opinions and comments welcome.
+On Wednesday 18 February 2009, Arve Hj=F8nnev=E5g wrote:
+> On Tue, Feb 17, 2009 at 3:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday 17 February 2009, Alan Stern wrote:
+> >> On Tue, 17 Feb 2009, Rafael J. Wysocki wrote:
+> >>
+> >> > Phase 1: I agree that system-auto-suspend-on, system-auto-suspend-of=
+f would be
+> >> > useful, but I don't like the wakelocks interface.  Do you think ther=
+e is an
+> >> > alternative way/mechanism of doing this?
+> >>
+> >> I rather like the suggestions Matthew Garrett has been making.  They
+> >> show how to improve the wakelock interface without losing any function.
+> >>
+> >> Really, the idea behind wakelocks comes down to the question of how to
+> >> determine when the system is sufficiently idle to go into auto-suspend.
+> >> There may be occasions when no task is runnable but userspace knows
+> >> that the system should not go to sleep because some work will be done
+> >> in the near future.  (Arve's example of a non-empty input buffer is
+> >> such a case.)  How should userspace let the kernel know whether it's
+> >> okay to suspend at these times?  That is the problem userspace
+> >> wakelocks are meant to solve.
 > >
-> 
-> thank you for starting this FRD.
+> > Still, do we really need multiple user space wakelocks (I'd prefer to c=
+all them
+> > sleeplocks)?  It seems that one such lock and a user space manager cont=
+rolling
+> > it should be sufficient.
+> =
 
-No big deal. :-)
+> Yes, we could have a user space manager that all userspace wakelocks
+> go through, but it would have to start before any other processes that
+> need wakelocks and it would need a blocking ipc mechanism. The
+> wakelock api that is provided to android applications does all this,
+> but it is only available to java code. Supporting multiple userspace
+> wakelocks in the kernel is simpler than adding another userspace
+> wakelock layer.
+> =
 
-Thanks,
+> >> Kernel wakelocks are a separate matter.  They are more like a form of
+> >> optimization, preventing the kernel from starting an auto-suspend when
+> >> some driver knows beforehand that it will return -EBUSY.
+> >
+> > I think kernel-side autosuspend (or rather autosleep) should only happen
+> > after certain subset of devices have been suspended using a per-device
+> > run-time autosuspend mechanism.
+> =
+
+> When the last wakelock is released the task that we woke up to perform
+> has finished. Why wait to re-enter suspend.
+
+I don't really understand this comment.  Could you please explain a bit?
+
+> >> > Phase 3: Probably explicit control left to open/close.
+> >>
+> >> While that's generally a good idea, it's important to recognize that
+> >> some devices should be runtime-suspended even while they are open.
+> >
+> > From the kernel side, yes (and that should be transparent to the user s=
+pace
+> > having them open).  By the user space, no.
+> =
+
+> Allowing user space to suspend input devices while they are still open
+> is useful. The user-space code that reads from the input devices does
+> not need to know if the device is suspended or not, and the kernel
+> cannot auto suspend input devices based on inactivity.
+
+Hmm.  Why can't it?
+
 Rafael
