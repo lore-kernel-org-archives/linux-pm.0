@@ -1,18 +1,19 @@
 From: mark gross <mgross@linux.intel.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 16:34:17 -0800
-Message-ID: <20090218003417.GA26292__24296.3418867022$1234917594$gmane$org@linux.intel.com>
-References: <200902160010.16955.rjw@sisk.pl>
-	<20090217215717.GA25605@linux.intel.com>
-	<20090217220439.GA1573@srcf.ucam.org>
-	<200902171419.14823.jbarnes@virtuousgeek.org>
+Date: Tue, 17 Feb 2009 16:45:47 -0800
+Message-ID: <20090218004547.GB26292__2202.09918120435$1234918267$gmane$org@linux.intel.com>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902171419.14823.jbarnes@virtuousgeek.org>
+In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +23,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 02:19:13PM -0800, Jesse Barnes wrote:
-> On Tuesday, February 17, 2009 2:04 pm Matthew Garrett wrote:
-> > On Tue, Feb 17, 2009 at 01:57:17PM -0800, mark gross wrote:
-> > > Putting the wake on key event issue aside, is it possible to have wake
-> > > up's on the ms time scale?  I ask because I thought the XO did exactly
-> > > this (but left the screen live).  Why does it take 20 sec to get into
-> > > or out of S3 on my laptop?
-> >
-> > Graphics reinit, dumping graphics contents back into RAM, us resuming
-> > devices in series, that kind of thing. On some hardware you'll spend a
-> > noticable amount of time in the BIOS before any of the Linux resume code
-> > gets touched. I thought the XO had got sub second, but I wasn't sure
-> > that they were in the low ms range.
+On Mon, Feb 16, 2009 at 11:23:30PM +0000, Matthew Garrett wrote:
+> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
 > 
-> IME a good chunk of it is BIOS time.  On my x200s resume is very fast (on the 
-> order of a second or two though I haven't measured), while on my Eee and T61 
-> machines it's much slower, even though they're all using Intel gfx.
+> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
+> > us that on the hardware they deal with it does make sense to put the entire
+> > system to sleep even for relatively short periods of time, since the latencies
+> > involved are not too bad.
 > 
-> Of course we should really be shooting for sub-second times or about the time 
-> it takes you to open your lid (or even much faster in the case of demand 
-> suspend/resume for servers/desktops).
+> Arve said that the power state was equivalent in idle and suspend, but 
+> that they preferred suspend because it stopped any periodic timers. I'd 
+> be more interested in making sure that unnecessary timers aren't running 
+> than focusing on automatically entering system-wide suspend - Nokia have 
+> been managing this since 2005 with good results.
+>
 
-yeah I was thinking vertical blank refresh times.
-
-We would need a state where the graphics stayed on somehow too.   
+I think they where talking timers as hardware devices pulling electrons,
+not SW timers triggering wake ups.  I guess the timer hardware could be
+running, and pulling power, even when not programmed to trigger any
+event or IRQ.
 
 --mgross
