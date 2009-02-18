@@ -1,16 +1,13 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 16:05:15 +0100
-Message-ID: <200902181605.18363.oliver__40573.9268092022$1234969920$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0902162144010.24097-100000@netrider.rowland.org>
-	<200902180953.51171.oliver@neukum.org>
-	<20090218065158.5efa8536@infradead.org>
+Date: Wed, 18 Feb 2009 10:09:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0902181006150.3186-100000__46212.3681827963$1234970294$gmane$org@iolanthe.rowland.org>
+References: <20090218065158.5efa8536@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <20090218065158.5efa8536@infradead.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,30 +21,49 @@ To: Arjan van de Ven <arjan@infradead.org>
 Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-QW0gV2VkbmVzZGF5IDE4IEZlYnJ1YXJ5IDIwMDkgMTU6NTE6NTggc2NocmllYiBBcmphbiB2YW4g
-ZGUgVmVuOgo+IE9uIFdlZCwgMTggRmViIDIwMDkgMDk6NTM6NDggKzAxMDAKPiBPbGl2ZXIgTmV1
-a3VtIDxvbGl2ZXJAbmV1a3VtLm9yZz4gd3JvdGU6Cj4gCj4gPiBBbSBXZWRuZXNkYXkgMTggRmVi
-cnVhcnkgMjAwOSAwMDoyNjo1MyBzY2hyaWViIFJhZmFlbCBKLiBXeXNvY2tpOgo+ID4gPiA+IEFu
-b3RoZXIgcG9zc2liaWxpdHkgaXMgdG8gc2V0IHVwIGluZGVwZW5kZW50IHJ1bnRpbWUgUE0gZm9y
-IHRoZQo+ID4gPiA+IHRyYW5zcG9ydCBhbmQgdGhlIGRldmljZS4gwqBUaGlzIG1lYW5zIGFsbG93
-aW5nIHRoZSBwb3NzaWJpbGl0eQo+ID4gPiA+IHRoYXQgdGhlIHRyYW5zcG9ydCBpcyBzdXNwZW5k
-ZWQgd2hpbGUgaXRzIGNoaWxkICh0aGUgZGV2aWNlKSBpcwo+ID4gPiA+IG5vdC4gwqBUaGlzIGlz
-IGEgbGl0dGxlIHNpbXBsZXIgKHRoZXJlJ3Mgb25seSBvbmUgaWRsZS10aW1lb3V0IHBlcgo+ID4g
-PiA+IGRldmljZSwgc2luY2UgdGhlIGxpbmsgaXMgdHJlYXRlZCBhcyBhbiBpbmRlcGVuZGVudCBk
-ZXZpY2UpLCBidXQKPiA+ID4gPiBpdCB2aW9sYXRlcyB0aGUgcHJpbmNpcGxlIG9mIG5ldmVyIHN1
-c3BlbmRpbmcgYSBwYXJlbnQgd2hpbGUKPiA+ID4gPiB0aGVyZSBpcyBhbiBhY3RpdmUgY2hpbGQu
-Cj4gPiA+IAo+ID4gPiBXZWxsLCBJIHRoaW5rIHRoZSBmaXJzdCBhcHByb2FjaCB3b3VsZCBiZSBi
-ZXR0ZXIuCj4gPiAKPiA+IEkgYW0gYWZyYWlkIGl0IHdvdWxkbid0IGJlLiBIb3cgZG8geW91IGRl
-YWwgd2l0aCBzaGFyZWQgdHJhbnNwb3J0cz8KPiA+IAo+IAo+IHJlYWxpc3RpY2FsbHksIHNvbWV0
-aGluZyBsaWtlIHRoaXMgeW91IG5lZWQgdG8gZGVzaWduIGxpa2UgdGhpcwo+IFN0ZXAgMSkgQXNz
-dW1lIHRoZSBoYXJkd2FyZSBpcyBzbWFydCBhbmQgY2FuIGRvIHRoaXMgZm9yIHlvdSBvbiB0aGUg
-Zmx5LAo+ICAgICAgICAgYnV0IGl0IG1pZ2h0IG5lZWQgZ3VpZGFuY2UuCj4gICAgICAgICAoRm9y
-IG1hbnkgYnVzc2VzIHRoZXJlIGFyZSBwbGF0Zm9ybXMgdGhhdCBkbyB0aGlzKQo+IFN0ZXAgMikg
-Rm9yIGhhcmR3YXJlIHRoYXQgaXMgbm90IHNtYXJ0LCBlbXVsYXRlIHRoZSBzbWFydG5lc3MgaW4g
-dGhlCj4gICAgICAgICBkcml2ZXIsIHdpdGggaGVscCBvZiB0aGUgc3Vic3lzdGVtLiBUaGVzZSB0
-d28gdG9nZXRoZXIgaGF2ZQo+ICAgICAgICAgdGhlIHJpZ2h0IGtub3dsZWRnZSB0byBtYWtlIHN1
-Y2ggZGVjaXNpb25zLgoKQnV0IHRoZSB0cmFuc3BvcnQgYW5kIHRoZSBkcml2ZXIgbWF5IGJlIGlu
-IGRpZmZlcmVudCBzdWJzeXN0ZW1zLCBlLmcuCnVzYiBzdG9yYWdlLgoKCVJlZ2FyZHMKCQlPbGl2
-ZXIKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, 18 Feb 2009, Arjan van de Ven wrote:
+
+> On Wed, 18 Feb 2009 09:53:48 +0100
+> Oliver Neukum <oliver@neukum.org> wrote:
+> =
+
+> > Am Wednesday 18 February 2009 00:26:53 schrieb Rafael J. Wysocki:
+> > > > Another possibility is to set up independent runtime PM for the
+> > > > transport and the device. =C2=A0This means allowing the possibility
+> > > > that the transport is suspended while its child (the device) is
+> > > > not. =C2=A0This is a little simpler (there's only one idle-timeout =
+per
+> > > > device, since the link is treated as an independent device), but
+> > > > it violates the principle of never suspending a parent while
+> > > > there is an active child.
+> > > =
+
+> > > Well, I think the first approach would be better.
+> > =
+
+> > I am afraid it wouldn't be. How do you deal with shared transports?
+> > =
+
+> =
+
+> realistically, something like this you need to design like this
+> Step 1) Assume the hardware is smart and can do this for you on the fly,
+>         but it might need guidance.
+>         (For many busses there are platforms that do this)
+> Step 2) For hardware that is not smart, emulate the smartness in the
+>         driver, with help of the subsystem. These two together have
+>         the right knowledge to make such decisions.
+
+Arjan, you're missing the point.  This part of the discussion is =
+
+already focussed on your Step 2.  The question we are concerned with =
+
+is: _How_ shall the driver and subsystem go about emulating the =
+
+smartness?
+
+Oliver's comment is a good one.  The principle of not suspending a
+parent with active children has never been set in stone; with care we
+should be able to circumvent it.
+
+Alan Stern
