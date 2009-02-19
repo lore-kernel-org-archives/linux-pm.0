@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
 Date: Thu, 19 Feb 2009 23:21:46 +0100
-Message-ID: <200902192321.47891.rjw__1736.30561116642$1235082479$gmane$org@sisk.pl>
+Message-ID: <200902192321.47891.rjw__15401.179312221$1235082550$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
