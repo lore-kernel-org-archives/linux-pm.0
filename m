@@ -1,7 +1,7 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFD] Automatic suspend
 Date: Thu, 19 Feb 2009 17:08:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0902191659020.7953-100000__48938.6398265653$1235081581$gmane$org@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0902191659020.7953-100000__40589.8763369352$1235081625$gmane$org@iolanthe.rowland.org>
 References: <200902192215.18365.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
