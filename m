@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 00/11] Android PM extensions (version 3)
-Date: Thu, 19 Feb 2009 13:54:14 +0100
-Message-ID: <200902191354.15096.rjw@sisk.pl>
-References: <1234316955-31304-1-git-send-email-arve@android.com>
-	<20090217210504.GD1433@ucw.cz>
-	<d6200be20902181743i1bb36fe8m95b50c0fbd6d3c2@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+Date: Thu, 19 Feb 2009 13:56:51 +0100
+Message-ID: <200902191356.53584.rjw__48005.0496677451$1235048422$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902181743i1bb36fe8m95b50c0fbd6d3c2@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,69 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 19 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Tue, Feb 17, 2009 at 1:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> The following patch series adds two apis, wakelock and earlysuspend.
-> >> The Android platform uses the earlysuspend api to turn the screen
-> >> and some input devices on and off. The wakelock code determines when
-> >> to enter the full suspend state.
-> >
-> > earlysuspend is an ugly hack and wakelock is very wrong name at the
-> > very least... as seen in previous discussion. Can we get that fixed?
-> =
+On Thursday 19 February 2009, Alan Stern wrote:
+> On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> > > If some devices are autosuspended after a local inactivity timeout, I
+> > > don't want to wait for those devices to autosuspend if I know the code
+> > > that needed to run is done. This could cause delays in the normal
+> > > case,
+> > 
+> > Isn't it a matter of adjusting the inactivity timeouts in a suitable way?
+> 
+> It's not that simple.  A single device driver has a very local view, 
+> not suitable for deciding whether the entire system should go to sleep.
+> 
+> So for example, a disk driver might think it's appropriate to spin down 
+> the disk after 10 seconds of inactivity.  But an overall system monitor 
+> might realize that nothing is going on right now and want to put the 
+> system to sleep immediately, without waiting the 10 seconds for the 
+> disk to autosuspend.
 
-> I don't have a fix for earlysuspend, but it is far less important than
-> wakelocks, so I can drop it from the patch series if that is
-> preferred.
+Now, the question is what criteria would the overall system monitor use to make
+such a decision.
 
-Well, I think it should be rethought at least.
+> > > and it could prevent suspend if a background process (not using
+> > > wakelocks) is accessing a disk more frequently than its idle timeout.
+> > 
+> > Well, actually, shouldn't it prevent suspend from happening?  Arguably, it just
+> > means that the disk is continuously being accessed with respect to the inactive
+> > timeout granularity.
+> 
+> That's true, but it shows the problem of making the autosleep decision
+> based on disk activity.  An auto-sleep should not have to wait for
+> every device (or some suitable subset) to become idle for some minimum
+> time; it should be able to kick in at short notice.
 
-> Regarding the name, I don't agree with your statement that wakelock is
-> a very wrong name. Like I said before, you can view it as a
-> reader/writer lock where the readers protect the wake state of the
-> system. That said, if there is a better name that more than one person
-> can agree on, I can rename the api. Here is a list of suggestions I
-> have seen so far along with the api I think they dictate if the
-> existing functionality is to be preserved:
-> =
-
-> wake_lock:
-> - api: wake_lock_init, wake_lock_destroy, wake_lock, wake_lock_timout,
-> wake_unlock
-> - pros: matches android user space api.
-> - cons: Can be confused with mutual exclusion apis.
-> =
-
-> suspend_stop_valve:
-> - api: open/close?
-> - pros: ?
-> - cons: Api can be confused with device open/close.
-> =
-
-> suspend_lock/sleep_lock:
-> - api: same as wakelock, but replace wake with suspend or sleep
-> - pros: Sleep or suspend is more easily associated with power
-> management than wake by some people.
-> - cons: Can be confused with mutual exclusion apis, (suspend_lock) was
-> confusing to people that also wrote android user space code.
-> =
-
-> suspend_inhibitor: (from inhibit_suspend)
-> - api: suspend_inhibitor_init, suspend_inhibitor_destroy,
-> suspend_inhibit, suspend_inhibit_timeout, suspend_uninhibit
-> - pros: The effect is more obvious than *_lock.
-> - cons: Does not match android user space api (but less confusing than
-> suspend/sleep_lock).
-
-FWIW, I'd prefer the last one.
-
-The timeouted version still remains questionable, though.
+Again, the decision to trigger automatic suspend has to be based on some
+well defined criteria and the (in)activity of devices seems to be one of them.
 
 Thanks,
 Rafael
