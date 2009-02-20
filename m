@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 21:49:24 +0100
-Message-ID: <200902202149.25990.rjw__26696.2690781385$1235163192$gmane$org@sisk.pl>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<20090220182213.GA1681@ucw.cz>
-	<20090220182609.GA3289@srcf.ucam.org>
+Date: Fri, 20 Feb 2009 21:56:11 +0100
+Message-ID: <200902202156.13480.rjw__3365.48759737543$1235163629$gmane$org@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200902201657.01145.rjw@sisk.pl>
+	<f73f7ab80902200807j743a37d7hc42283bc7b9dbe6f@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090220182609.GA3289@srcf.ucam.org>
+In-Reply-To: <f73f7ab80902200807j743a37d7hc42283bc7b9dbe6f@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,30 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 20 February 2009, Matthew Garrett wrote:
-> On Fri, Feb 20, 2009 at 07:22:15PM +0100, Pavel Machek wrote:
-> >  On Mon 2009-02-16 23:23:30, Matthew Garrett wrote:
-> > > On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
-> > > 
-> > > > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
-> > > > us that on the hardware they deal with it does make sense to put the entire
-> > > > system to sleep even for relatively short periods of time, since the latencies
-> > > > involved are not too bad.
-> > > 
-> > > Arve said that the power state was equivalent in idle and suspend, but 
-> > 
-> > ...for Arve's hardware. Not all embedded systems are like that, and
-> > OLPC / PCs are definitely not like that.
+On Friday 20 February 2009, Kyle Moffett wrote:
+> On Fri, Feb 20, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > * Introduce /sys/power/sleep that will work like /sys/power/state, but:
+> >  - First, it will call ->acknowledge() for each driver (via bus types) to
+> >    check if any of them wants to postpone the suspend (this will prevent tasks
+> >    from being frozen unnecessarily if it is known in advance that the suspend
+> >    should not happen at the moment).
+> >  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
+> >    of each process and the suspend will be aborted if it is true for any of
+> >    them (quite frankly, I think that should be integrated with the freezer,
+> >    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
+> >    this flag and it should be checked in the freezer loop for every task with
+> >    TIF_FREEZE unset).
+> >  - Next, it will proceed with suspending just like /sys/power/state does (the
+> >    drivers that missed the opportunity to abort the suspend by returning
+> >    'false' from ->acknowledge() can still abort the suspend by failing their
+> >    ->suspend() routines).
+> >
+> > Then, the decision making logic will be able to use /sys/power/sleep whenever
+> > it wishes to and the kernel will be able to refuse to suspend if it's not
+> > desirable at the moment.
 > 
-> And PCs have enough latency over suspend/resume that we can't do it 
-> automatically in a non-intrusive manner anyway, so runtime pm is more 
-> interesting there as well.
+> Then, for a userspace process handling input events:
+> 
+> 1)  Unset "no-suspend flag"
+> 2)  Poll event device
+> 3)  When the poll returns true, set the "no-suspend flag"
+> 4)  Read the event device and process the event(s)
+> 5)  Go back to step 1
+> 
+> The event driver would responsible for atomically preventing suspend
+> from the moment a button is pressed until it is actually delivered to
+> a userspace process.  Since at that time the userspace process will be
+> preventing suspend, there will be no window in which we could go to
+> sleep with pending events.
 
-Agreed.
+That's correct.
 
-Thanks,
+How would you like to prevent it from happening?
+
 Rafael
