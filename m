@@ -1,17 +1,18 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Fri, 20 Feb 2009 17:07:37 +0100
-Message-ID: <20090220160737.GC11294__576.837515882467$1235146333$gmane$org@elte.hu>
-References: <20090220125516.GB10232@linux.vnet.ibm.com>
-	<20090220132145.GF26418@elte.hu>
-	<20090220141415.GA27381@dirshya.in.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Fri, 20 Feb 2009 19:22:15 +0100
+Message-ID: <20090220182213.GA1681__17146.1807600737$1235155407$gmane$org@ucw.cz>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090220141415.GA27381@dirshya.in.ibm.com>
+In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-
-> > I'd also suggest to not do that rather ugly 
-> > enable_timer_migration per-cpu variable, but simply reuse 
-> > the existing nohz.load_balancer as a target CPU.
+ On Mon 2009-02-16 23:23:30, Matthew Garrett wrote:
+> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
 > 
-> This is a good idea to automatically bias the timers.  But 
-> this nohz.load_balancer is a very fast moving target and we 
-> will need some heuristics to estimate overall system idleness 
-> before moving the timers.
+> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
+> > us that on the hardware they deal with it does make sense to put the entire
+> > system to sleep even for relatively short periods of time, since the latencies
+> > involved are not too bad.
 > 
-> I would agree that the power saving load balancer has a good 
-> view of the system and can potentially guide the timer biasing 
-> framework.
+> Arve said that the power state was equivalent in idle and suspend, but 
 
-Yeah, it's a fast moving target, but it already concentrates 
-the load somewhat.
+...for Arve's hardware. Not all embedded systems are like that, and
+OLPC / PCs are definitely not like that.
 
-	Ingo
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
