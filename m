@@ -1,15 +1,17 @@
-From: Kyle Moffett <kyle@moffetthome.net>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 11:07:16 -0500
-Message-ID: <f73f7ab80902200807j743a37d7hc42283bc7b9dbe6f__21036.1750484028$1235146275$gmane$org@mail.gmail.com>
-References: <200902192215.18365.rjw@sisk.pl> <200902201149.37921.rjw@sisk.pl>
-	<d6200be20902200326g6caa211ai388d4aa9fc270a28@mail.gmail.com>
-	<200902201657.01145.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration
+	between CPU
+Date: Fri, 20 Feb 2009 17:07:37 +0100
+Message-ID: <20090220160737.GC11294__576.837515882467$1235146333$gmane$org@elte.hu>
+References: <20090220125516.GB10232@linux.vnet.ibm.com>
+	<20090220132145.GF26418@elte.hu>
+	<20090220141415.GA27381@dirshya.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902201657.01145.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20090220141415.GA27381@dirshya.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> * Introduce /sys/power/sleep that will work like /sys/power/state, but:
->  - First, it will call ->acknowledge() for each driver (via bus types) to
->    check if any of them wants to postpone the suspend (this will prevent tasks
->    from being frozen unnecessarily if it is known in advance that the suspend
->    should not happen at the moment).
->  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
->    of each process and the suspend will be aborted if it is true for any of
->    them (quite frankly, I think that should be integrated with the freezer,
->    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
->    this flag and it should be checked in the freezer loop for every task with
->    TIF_FREEZE unset).
->  - Next, it will proceed with suspending just like /sys/power/state does (the
->    drivers that missed the opportunity to abort the suspend by returning
->    'false' from ->acknowledge() can still abort the suspend by failing their
->    ->suspend() routines).
->
-> Then, the decision making logic will be able to use /sys/power/sleep whenever
-> it wishes to and the kernel will be able to refuse to suspend if it's not
-> desirable at the moment.
 
-Then, for a userspace process handling input events:
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-1)  Unset "no-suspend flag"
-2)  Poll event device
-3)  When the poll returns true, set the "no-suspend flag"
-4)  Read the event device and process the event(s)
-5)  Go back to step 1
+> > I'd also suggest to not do that rather ugly 
+> > enable_timer_migration per-cpu variable, but simply reuse 
+> > the existing nohz.load_balancer as a target CPU.
+> 
+> This is a good idea to automatically bias the timers.  But 
+> this nohz.load_balancer is a very fast moving target and we 
+> will need some heuristics to estimate overall system idleness 
+> before moving the timers.
+> 
+> I would agree that the power saving load balancer has a good 
+> view of the system and can potentially guide the timer biasing 
+> framework.
 
-The event driver would responsible for atomically preventing suspend
-from the moment a button is pressed until it is actually delivered to
-a userspace process.  Since at that time the userspace process will be
-preventing suspend, there will be no window in which we could go to
-sleep with pending events.
+Yeah, it's a fast moving target, but it already concentrates 
+the load somewhat.
 
-Cheers,
-Kyle Moffett
+	Ingo
