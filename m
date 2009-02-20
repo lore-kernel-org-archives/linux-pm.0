@@ -1,15 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 14:43:24 -0800
-Message-ID: <d6200be20902201443l670f7ee4s8b9fd7d2400bbf9c__10068.326679948$1235170654$gmane$org@mail.gmail.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<20090220182213.GA1681@ucw.cz> <20090220182609.GA3289@srcf.ucam.org>
-	<200902202149.25990.rjw@sisk.pl>
+Date: Fri, 20 Feb 2009 23:44:18 +0100
+Message-ID: <200902202344.20040.rjw__27570.3158382841$1235170758$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org>
+	<200902201146.59944.rjw@sisk.pl>
+	<200902202305.09992.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902202149.25990.rjw@sisk.pl>
+In-Reply-To: <200902202305.09992.oliver@neukum.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 12:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday 20 February 2009, Matthew Garrett wrote:
->> On Fri, Feb 20, 2009 at 07:22:15PM +0100, Pavel Machek wrote:
->> >  On Mon 2009-02-16 23:23:30, Matthew Garrett wrote:
->> > > On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
->> > >
->> > > > This, again, seems to be a bit x86-centric. :-)  The Android peopl=
-e are telling
->> > > > us that on the hardware they deal with it does make sense to put t=
-he entire
->> > > > system to sleep even for relatively short periods of time, since t=
-he latencies
->> > > > involved are not too bad.
->> > >
->> > > Arve said that the power state was equivalent in idle and suspend, b=
-ut
->> >
->> > ...for Arve's hardware. Not all embedded systems are like that, and
->> > OLPC / PCs are definitely not like that.
->>
->> And PCs have enough latency over suspend/resume that we can't do it
->> automatically in a non-intrusive manner anyway, so runtime pm is more
->> interesting there as well.
->
-> Agreed.
+On Friday 20 February 2009, Oliver Neukum wrote:
+> Am Freitag 20 Februar 2009 11:46:55 schrieb Rafael J. Wysocki:
+> > On Thursday 19 February 2009, Oliver Neukum wrote:
+> > > Am Donnerstag 19 Februar 2009 23:21:46 schrieb Rafael J. Wysocki:
+> > > > > That's the whole point behind userspace wakelocks!  They provide a
+> > > > > mechanism for userspace to tell the kernel when (as far as userspace
+> > >
+> > > is
+> > >
+> > > > > concerned) it is or is not okay to auto-sleep.
+> > > >
+> > > > Still, one can go further and observe that the user space can in fact
+> > > > start automatic suspend by itself whenever it knows it's appropriate
+> > > > ...
+> > >
+> > > User space initiating this is a race condition.
+> >
+> > Do you mean a race with the other user space processes or with the kernel?
+> 
+> With the set of runnable processes.There's always a window between
+> evaluating the current set of runnable tasks and telling the kernel to sleep.
+> IMO the most elegant solution would be a task attribute that would signal
+> the kernel that a task should not count as keeping the system busy even
+> if it is runnable and trigger the sleep in kernel space.
 
-That high latency is coupled to a large difference in power use. If
-the latency of the lowest power state is too high to use from idle, it
-makes it more important, not less important, to enter suspend when
-possible.
+Please see my last reply to Arve (http://lkml.org/lkml/2009/2/20/182) and tell
+me what you think.
 
--- =
-
-Arve Hj=F8nnev=E5g
+Best,
+Rafael
