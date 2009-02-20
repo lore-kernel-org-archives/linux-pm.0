@@ -1,17 +1,18 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Fri, 20 Feb 2009 19:44:15 +0530
-Message-ID: <20090220141415.GA27381__8990.19972789592$1235139304$gmane$org@dirshya.in.ibm.com>
-References: <20090220125516.GB10232@linux.vnet.ibm.com>
-	<20090220132145.GF26418@elte.hu>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Fri, 20 Feb 2009 07:27:46 -0800
+Message-ID: <20090220072746.7d7a27cd__16436.065422795$1235143929$gmane$org@infradead.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
+	<d6200be20902192135y166eb90bt895c97c7b381c44c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090220132145.GF26418@elte.hu>
+In-Reply-To: <d6200be20902192135y166eb90bt895c97c7b381c44c@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,109 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Nigel@smtp1.linux-foundation.org, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Cunningham <nigel@nigel.suspend2.net>, Brian@smtp1.linux-foundation.org, Oliver@smtp1.linux-foundation.org, Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-02-20 14:21:45]:
-
-> 
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
-> 
-> > Hi,
-> > 
-> > 
-> > In an SMP system, tasks are scheduled on different CPUs by the 
-> > scheduler, interrupts are managed by irqbalancer daemon, but 
-> > timers are still stuck to the CPUs that they have been 
-> > initialised.  Timers queued by tasks gets re-queued on the CPU 
-> > where the task gets to run next, but timers from IRQ context 
-> > like the ones in device drivers are still stuck on the CPU 
-> > they were initialised.  This framework will help move all 
-> > 'movable timers' from one CPU to any other CPU of choice using 
-> > a sysfs interface.
-> 
-> hm, the intention is good, the concept of migrating timers to 
-> their target CPU is good as well. We already do some of that for 
-> regular timers.
-> 
-> But the whole sysfs interface you implemented here is not 
-> particularly clean nor is it efficient.
-> 
-> The main problem is that timers are really fast-moving entities, 
-> and so are the tasks they are related to.
-> 
-> Your implementation completely ties the direction of migration 
-> (the timer scheduling) to a clumsy sysfs interface:
-> 
-> +	if (sscanf(buf, "%d", &target_cpu) && cpu_online(target_cpu)) {
-> +               ret = count;
-> +               per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
-> +	}
-> 
-> That doesnt really scale and i doubt it works in practice. We 
-> should not schedule timers via sysfs, we should let the kernel 
-> do it auomatically. [*]
-
-Hi Ingo,
-
-Thanks for comments on the overall goal.  Having an in-kernel
-framework to attract the 'movable' timers will be ideal.
- 
-> So what i'd suggest instead is extend the scheduler power-saving 
-> code, which already identifies a 'load balancer CPU', to also 
-> attract all attractable sources of timers - automatically. See 
-> the 'load_balancer' CPU logic in kernel/sched.c.
-> 
-> Does that sound OK to you? I think the end result might even 
-> give better numbers - and out of box.
-
-I would agree that we can atleast try that approach and compare
-how we score.
-
-> I'd also suggest to not do that rather ugly 
-> enable_timer_migration per-cpu variable, but simply reuse the 
-> existing nohz.load_balancer as a target CPU.
-
-This is a good idea to automatically bias the timers.  But this
-nohz.load_balancer is a very fast moving target and we will need some
-heuristics to estimate overall system idleness before moving the
-timers.
-
-I would agree that the power saving load balancer has a good view of
-the system and can potentially guide the timer biasing framework.
-
---Vaidy
-
-> Also, please base your patches on the latest timer tree (which 
-> already modified some of this code in this cycle):
-> 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> Btw., could you please also fix your mailer to not do this to 
-> us:
-> 
-> Mail-Followup-To: linux-kernel@vger.kernel.org,
->         linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
->         ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
->         andi@firstfloor.org, venkatesh.pallipadi@intel.com,
->         vatsa@linux.vnet.ibm.com, arjan@infradead.org
-> 
-> it messes up the replies.
-> 
-> 	Ingo
-> 
-> [*] IRQ migration (where you possibly got the sysfs idea from) 
->     is a special case where 'slow scheduling' via a user-space 
->     daemon is possible: they are an external source of events 
->     and they are concentrators of work. The same concept does 
->     not apply to timers, most of which are inherently 
->     task-generated.
-
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+T24gVGh1LCAxOSBGZWIgMjAwOSAyMTozNTozOSAtMDgwMApBcnZlIEhqw7hubmV2w6VnIDxhcnZl
+QGFuZHJvaWQuY29tPiB3cm90ZToKCj4gSG93ZXZlciwgaWYgeW91Cj4gaW5zdGFsbCBhbiBhcHBs
+aWNhdGlvbiB0aGF0IHdha2VzIHVwIDYwIHRpbWVzIGEgc2Vjb25kICh0byBjaGVjayBpZiBpdAo+
+IG5lZWQgdG8gZHJhdyBzb21ldGhpbmcgb24gdGhlIHNjcmVlbikgdGhlIGRpZmZlcmVuY2UgYmV0
+d2VlbiBpZGxlIGFuZAo+IHN1c3BlbmQgYmVjb21lcyAxMCBob3VycyB2ZXJzdXMgNDAgZGF5cywg
+b3IgMTAgaG91cnMgdmVyc3VzIDMgZGF5cwo+IHdpdGggbXkgdXNlLgoKdGhlbiB0aGF0IGlzIHRo
+ZSBwb2ludCB3aGVyZSB5b3UgdXNlIHRoZSB0aW1lcnNsYWNrIHRvIHRocm90dGxlIHN1Y2gKbm9u
+LXN5c3RlbSBhcHBsaWNhdGlvbnMuLi4uIHRoYXQncyB2ZXJ5IG9idmlvdXMgYW5kIHRoZXJlIHRv
+ZGF5Li4KCgotLSAKQXJqYW4gdmFuIGRlIFZlbiAJSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
+eSBDZW50cmUKRm9yIGRldmVsb3BtZW50LCBkaXNjdXNzaW9uIGFuZCB0aXBzIGZvciBwb3dlciBz
+YXZpbmdzLCAKdmlzaXQgaHR0cDovL3d3dy5sZXNzd2F0dHMub3JnCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
