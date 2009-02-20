@@ -1,18 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 19:22:15 +0100
-Message-ID: <20090220182213.GA1681__17146.1807600737$1235155407$gmane$org@ucw.cz>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
-	<20090216145948.6fea81c3@infradead.org>
-	<200902170019.40599.rjw@sisk.pl>
-	<20090216232329.GA15678@srcf.ucam.org>
+Date: Fri, 20 Feb 2009 19:05:53 +0100
+Message-ID: <20090220180553.GB1490__1125.161702703$1235159439$gmane$org@ucw.cz>
+References: <200902160010.16955.rjw@sisk.pl>
+	<200902161748.09208.oliver@neukum.org>
+	<20090216093108.078aac35@infradead.org>
+	<200902170020.15509.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
+In-Reply-To: <200902170020.15509.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,24 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
- On Mon 2009-02-16 23:23:30, Matthew Garrett wrote:
-> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
+On Tue 2009-02-17 00:20:12, Oliver Neukum wrote:
+> Am Monday 16 February 2009 18:31:08 schrieb Arjan van de Ven:
+> > On Mon, 16 Feb 2009 17:48:06 +0100
+> > Oliver Neukum <oliver@neukum.org> wrote:
+> > 
+> > > > Userspace should just be the part that says "I'm interested in link
+> > > > notifications". The driver then just goes to the lowest power state
+> > > > for its device that still gives those notifications.
+> > > 
+> > > Should there be a channel through which drivers can tell user space
+> > > what the consequences in terms of reaching a sleep state are if a
+> > > service is requested?
+> > 
+> > Personally, I don't think so.
+> > Think about it: what would userspace do?
+> > Not ask for the functionality if it means no sleep state?
+> > Maybe it should just never ask for it then as a required functionality!
 > 
-> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
-> > us that on the hardware they deal with it does make sense to put the entire
-> > system to sleep even for relatively short periods of time, since the latencies
-> > involved are not too bad.
-> 
-> Arve said that the power state was equivalent in idle and suspend, but 
+> 1. You may have a human being using the information to make the tradeoff.
+> 2. User space may be able to select among several devices the one cheapest
+> to use
 
-...for Arve's hardware. Not all embedded systems are like that, and
-OLPC / PCs are definitely not like that.
+Well, that sounds complex/fragile... and it is really exporting
+hardware impormation driver does not even neccessarily know.
 
-								Pavel
+If this is for user, perhaps it should be in documentation and/or
+hardware user manual?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
