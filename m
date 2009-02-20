@@ -1,9 +1,9 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [RFC PATCH 4/4] timers: logic to enable timer migration.
-Date: Fri, 20 Feb 2009 18:31:31 +0530
-Message-ID: <20090220130131.GD19762__9699.68997310406$1235135180$gmane$org@linux.vnet.ibm.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration
+	between CPU
+Date: Fri, 20 Feb 2009 14:21:45 +0100
+Message-ID: <20090220132145.GF26418__14457.0364537232$1235136269$gmane$org@elte.hu>
 References: <20090220125516.GB10232@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,87 +19,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org, venkate
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org, venkatesh.pallipadi@in
 List-Id: linux-pm@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-02-20 18:25:16]:
 
-This patch migrates all non pinned timers and hrtimers to the target
-CPU.
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
 
-Timer migration is enabled by setting the sysfs entry of the
-particular CPU. At the time of queuing a timer, it is checked to see
-if migration is enabled for that particular CPU. If so, the target CPU
-base is set as the new timer base and the timer is queued on that CPU.
+> Hi,
+> 
+> 
+> In an SMP system, tasks are scheduled on different CPUs by the 
+> scheduler, interrupts are managed by irqbalancer daemon, but 
+> timers are still stuck to the CPUs that they have been 
+> initialised.  Timers queued by tasks gets re-queued on the CPU 
+> where the task gets to run next, but timers from IRQ context 
+> like the ones in device drivers are still stuck on the CPU 
+> they were initialised.  This framework will help move all 
+> 'movable timers' from one CPU to any other CPU of choice using 
+> a sysfs interface.
 
+hm, the intention is good, the concept of migrating timers to 
+their target CPU is good as well. We already do some of that for 
+regular timers.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- kernel/hrtimer.c |   12 +++++++++++-
- kernel/timer.c   |   15 ++++++++++++++-
- 2 files changed, 25 insertions(+), 2 deletions(-)
+But the whole sysfs interface you implemented here is not 
+particularly clean nor is it efficient.
 
-Index: git-2.6/kernel/timer.c
-===================================================================
---- git-2.6.orig/kernel/timer.c
-+++ git-2.6/kernel/timer.c
-@@ -616,7 +616,7 @@ int __mod_timer(struct timer_list *timer
- {
- 	struct tvec_base *base, *new_base;
- 	unsigned long flags;
--	int ret = 0;
-+	int ret = 0, target_cpu;
- 
- 	timer_stats_timer_set_start_info(timer);
- 	BUG_ON(!timer->function);
-@@ -631,6 +631,18 @@ int __mod_timer(struct timer_list *timer
- 	debug_timer_activate(timer);
- 
- 	new_base = __get_cpu_var(tvec_bases);
-+	/*
-+	 * @target_cpu: The CPU to which timers are to be migrated.
-+	 * If timer migration is disabled, target_cpu = this_cpu.
-+	 */
-+	target_cpu = __get_cpu_var(enable_timer_migration);
-+	if (!tbase_get_pinned(timer->base) && cpu_online(target_cpu)) {
-+		new_base = per_cpu(tvec_bases, target_cpu);
-+		timer_set_base(timer, new_base);
-+		timer->expires = expires;
-+		internal_add_timer(new_base, timer);
-+		goto out;
+The main problem is that timers are really fast-moving entities, 
+and so are the tasks they are related to.
+
+Your implementation completely ties the direction of migration 
+(the timer scheduling) to a clumsy sysfs interface:
+
++	if (sscanf(buf, "%d", &target_cpu) && cpu_online(target_cpu)) {
++               ret = count;
++               per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
 +	}
- 
- 	if (base != new_base) {
- 		/*
-@@ -652,6 +664,7 @@ int __mod_timer(struct timer_list *timer
- 
- 	timer->expires = expires;
- 	internal_add_timer(base, timer);
-+out:
- 	spin_unlock_irqrestore(&base->lock, flags);
- 
- 	return ret;
-Index: git-2.6/kernel/hrtimer.c
-===================================================================
---- git-2.6.orig/kernel/hrtimer.c
-+++ git-2.6/kernel/hrtimer.c
-@@ -198,8 +198,18 @@ int pinned)
- {
- 	struct hrtimer_clock_base *new_base;
- 	struct hrtimer_cpu_base *new_cpu_base;
-+	int target_cpu;
-+
-+	/*
-+	 * @target_cpu: CPU to which the timers are to be migrated.
-+	 * If timer migration is disabled, target_cpu = this_cpu
-+	 */
-+	target_cpu = __get_cpu_var(enable_timer_migration);
-+	if (cpu_online(target_cpu) && !pinned)
-+		new_cpu_base = &per_cpu(hrtimer_bases, target_cpu);
-+	else
-+		new_cpu_base = &__get_cpu_var(hrtimer_bases);
- 
--	new_cpu_base = &__get_cpu_var(hrtimer_bases);
- 	new_base = &new_cpu_base->clock_base[base->index];
- 
- 	if (base != new_base) {
+
+That doesnt really scale and i doubt it works in practice. We 
+should not schedule timers via sysfs, we should let the kernel 
+do it auomatically. [*]
+
+So what i'd suggest instead is extend the scheduler power-saving 
+code, which already identifies a 'load balancer CPU', to also 
+attract all attractable sources of timers - automatically. See 
+the 'load_balancer' CPU logic in kernel/sched.c.
+
+Does that sound OK to you? I think the end result might even 
+give better numbers - and out of box.
+
+I'd also suggest to not do that rather ugly 
+enable_timer_migration per-cpu variable, but simply reuse the 
+existing nohz.load_balancer as a target CPU.
+
+Also, please base your patches on the latest timer tree (which 
+already modified some of this code in this cycle):
+
+  http://people.redhat.com/mingo/tip.git/README
+
+Btw., could you please also fix your mailer to not do this to 
+us:
+
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+        linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+        ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+        andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+        vatsa@linux.vnet.ibm.com, arjan@infradead.org
+
+it messes up the replies.
+
+	Ingo
+
+[*] IRQ migration (where you possibly got the sysfs idea from) 
+    is a special case where 'slow scheduling' via a user-space 
+    daemon is possible: they are an external source of events 
+    and they are concentrators of work. The same concept does 
+    not apply to timers, most of which are inherently 
+    task-generated.
