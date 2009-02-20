@@ -1,8 +1,8 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [RFC PATCH 2/4] timers: sysfs hook to enable timer
-	migration.
-Date: Fri, 20 Feb 2009 18:28:58 +0530
-Message-ID: <20090220125858.GB19762__22306.5188773491$1235134958$gmane$org@linux.vnet.ibm.com>
+Subject: [RFC PATCH 3/4] timers: identifying the existing pinned
+	hrtimers.
+Date: Fri, 20 Feb 2009 18:30:05 +0530
+Message-ID: <20090220130005.GC19762__21331.5948997208$1235134996$gmane$org@linux.vnet.ibm.com>
 References: <20090220125516.GB10232@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
@@ -25,99 +25,86 @@ List-Id: linux-pm@vger.kernel.org
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-02-20 18:25:16]:
 
-This patch creates the necessary sysfs interface for timer migration.
-
-The interface is located at
-/sys/devices/system/cpu/cpuX/timer_migration
-
-These sysfs entries are initialized to their respective cpu ids.
-This represents the no timer migration state.
-By echoing a target cpu number we can enable migration for that cpu.
-
-Echo a target cpu number to the per-cpu sysfs entry and all timers
-are migrated to that cpu, instead of choosing cpu0 by default.
-
-e.g. echo 4 > /sys/devices/system/cpu/cpu1/timer_migration
-
-this would move all regular and hrtimers from cpu1 to cpu4.
+The following pinned hrtimers have been identified and marked:
+1)sched_rt_period_timer
+2)tick_sched_timer
+3)stack_trace_timer_fn
 
 
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/base/cpu.c    |   44 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/timer.h |    2 ++
- 2 files changed, 46 insertions(+)
+ kernel/sched.c               |    5 +++--
+ kernel/time/tick-sched.c     |    7 ++++---
+ kernel/trace/trace_sysprof.c |    3 ++-
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
-Index: git-2.6/drivers/base/cpu.c
+Index: git-2.6/kernel/sched.c
 ===================================================================
---- git-2.6.orig/drivers/base/cpu.c
-+++ git-2.6/drivers/base/cpu.c
-@@ -20,6 +20,45 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+--- git-2.6.orig/kernel/sched.c
++++ git-2.6/kernel/sched.c
+@@ -236,7 +236,7 @@ static void start_rt_bandwidth(struct rt
  
- static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
- 
-+DEFINE_PER_CPU(int, enable_timer_migration);
-+
-+/*
-+ * This function initializes sysfs entries for enabling timer migration.
-+ * Each per_cpu enable_timer_migration is initialized to its cpu_id.
-+ * By echo-ing a value other than its cpu_id will set that as the target cpu
-+ * to which the timers are to be migrated to.
-+ */
-+void initialize_timer_migration_sysfs(void)
-+{
-+	int cpu;
-+	for_each_possible_cpu(cpu)
-+		per_cpu(enable_timer_migration, cpu) = cpu;
-+}
-+
-+static ssize_t timer_migration_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration,
-+		cpu->sysdev.id));
-+}
-+static ssize_t
-+timer_migration_store(struct sys_device *dev, struct sysdev_attribute *attr,
-+			const char *buf, size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	ssize_t ret = -EINVAL;
-+	int target_cpu;
-+	if (sscanf(buf, "%d", &target_cpu) && cpu_online(target_cpu)) {
-+		ret = count;
-+		per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
-+	}
-+
-+	return ret;
-+}
-+static SYSDEV_ATTR(timer_migration, 0666,
-+		timer_migration_show, timer_migration_store);
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
- 			   char *buf)
-@@ -221,6 +260,11 @@ int __cpuinit register_cpu(struct cpu *c
- 	if (!error)
- 		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
- #endif
-+
-+	if (!error) {
-+		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
-+		initialize_timer_migration_sysfs();
-+	}
- 	return error;
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
++		hrtimer_start_expires_pinned(&rt_b->rt_period_timer,
+ 				HRTIMER_MODE_ABS);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+@@ -1129,7 +1129,8 @@ static __init void init_hrtick(void)
+  */
+ static void hrtick_start(struct rq *rq, u64 delay)
+ {
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(&rq->hrtick_timer, ns_to_ktime(delay),
++				HRTIMER_MODE_REL);
  }
  
-Index: git-2.6/include/linux/timer.h
+ static inline void init_hrtick(void)
+Index: git-2.6/kernel/time/tick-sched.c
 ===================================================================
---- git-2.6.orig/include/linux/timer.h
-+++ git-2.6/include/linux/timer.h
-@@ -192,3 +192,5 @@ unsigned long round_jiffies_up(unsigned 
- unsigned long round_jiffies_up_relative(unsigned long j);
+--- git-2.6.orig/kernel/time/tick-sched.c
++++ git-2.6/kernel/time/tick-sched.c
+@@ -348,7 +348,7 @@ void tick_nohz_stop_sched_tick(int inidl
+ 		ts->idle_expires = expires;
  
- #endif
-+
-+DECLARE_PER_CPU(int, enable_timer_migration);
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start(&ts->sched_timer, expires,
++			hrtimer_start_pinned(&ts->sched_timer, expires,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -394,7 +394,7 @@ static void tick_nohz_restart(struct tic
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+ 
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start_expires(&ts->sched_timer,
++			hrtimer_start_expires_pinned(&ts->sched_timer,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -698,7 +698,8 @@ void tick_setup_sched_timer(void)
+ 
+ 	for (;;) {
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+-		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS);
++		hrtimer_start_expires_pinned(&ts->sched_timer,
++						HRTIMER_MODE_ABS);
+ 		/* Check, if the timer was already in the past */
+ 		if (hrtimer_active(&ts->sched_timer))
+ 			break;
+Index: git-2.6/kernel/trace/trace_sysprof.c
+===================================================================
+--- git-2.6.orig/kernel/trace/trace_sysprof.c
++++ git-2.6/kernel/trace/trace_sysprof.c
+@@ -203,7 +203,8 @@ static void start_stack_timer(void *unus
+ 	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	hrtimer->function = stack_trace_timer_fn;
+ 
+-	hrtimer_start(hrtimer, ns_to_ktime(sample_period), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(hrtimer, ns_to_ktime(sample_period),
++				HRTIMER_MODE_REL);
+ }
+ 
+ static void start_stack_timers(void)
