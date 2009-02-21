@@ -1,16 +1,14 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 17:59:32 -0800
-Message-ID: <d6200be20902201759x7bcf3762k596d543db51ef104__11359.468024648$1235181722$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org>
-	<200902202305.09992.oliver@neukum.org>
-	<d6200be20902201511w4db68e96reaa3b0901437a1d1@mail.gmail.com>
-	<200902210020.47665.oliver@neukum.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
+	hibernation for 2.6.29
+Date: Fri, 20 Feb 2009 23:41:21 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.0902202337040.19156__19527.4266916842$1235191455$gmane$org@localhost.localdomain>
+References: <200902140157.40869.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902210020.47665.oliver@neukum.org>
+In-reply-to: <200902140157.40869.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,40 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 3:20 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Samstag 21 Februar 2009 00:11:28 schrieb Arve Hj=F8nnev=E5g:
->> On Fri, Feb 20, 2009 at 2:05 PM, Oliver Neukum <oliver@neukum.org> wrote:
->> > Am Freitag 20 Februar 2009 11:46:55 schrieb Rafael J. Wysocki:
->> >> On Thursday 19 February 2009, Oliver Neukum wrote:
->
->> > With the set of runnable processes.There's always a window between
->> > evaluating the current set of runnable tasks and telling the kernel to
->> > sleep. IMO the most elegant solution would be a task attribute that wo=
-uld
->> > signal the kernel that a task should not count as keeping the system b=
-usy
->> > even if it is runnable and trigger the sleep in kernel space.
->>
->> It is not always safe to enter suspend when no tasks are runnable. For
->> instance, a key event could be on a user space queue, but the code
->> that reads from that queue has been paged out.
->
-> In that case you'd have a task waiting for IO. The driver should refuse
-> to suspend or wake up the system as IO is completed. It may be
-> inefficient to suspend for such a presumably short time, but it is not
-> a correctness issue.
 
-In that case, yes. My point was that no-runnable-tasks is not a
-sufficient indicator of whether suspend should fail or not. We have no
-control of what a user space thread is waiting for though. It could be
-waiting on a mutex that is locked by a thread that is marked not to
-prevent suspend.
+On Sat, 14 Feb 2009, Rafael J. Wysocki wrote:
 
+> Hi Len,
+> 
+> The following are fixes related to suspend and hibernation I have collected
+> over the last couple of weeks.  Some of them are in -mm.  I think they all are
+> 2.6.29 material.
+> 
+> 1/9 and 2/9 fix hibernation regression caused by the async boot changes,
+> I hope Greg will not object if they go through your tree.
+> 
+> 3/9 fixes a long-standing hibernation issue that cause the resume partition
+> to become unuseable after two consecutive failing attempts to hibernate.
+> 
+> 4/9 fixes build of kprobes.c with CONFIG_PM unset.
 
--- =
+looks like this one added power/ twice --
+and looks like akpm sent a fixed version of this to linus already?
 
-Arve Hj=F8nnev=E5g
+> 5/9 and 6/9 clean up memory freeing code used during hibernation.
+> 
+> 7/9 fixes a bug related to the use of PM notifiers during hibernation with
+> the help of the user land interface.
+> 
+> 8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
+> 
+> Please add these patches to the suspend branch and push to Linus for 2.6.29.
+
+All except #4 are now on the suspend branch.
+thanks,
+--
+Len Brown, Intel Open Source Technology Center
