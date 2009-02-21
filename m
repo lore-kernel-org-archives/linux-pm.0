@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Sat, 21 Feb 2009 21:20:35 +0100
-Message-ID: <200902212120.37684.rjw__43333.8107461624$1235247808$gmane$org@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902211047.26787.rjw@sisk.pl>
-	<d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
+Date: Sat, 21 Feb 2009 22:14:57 +0100
+Message-ID: <200902212214.59660.rjw__28079.6425919563$1235251073$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,52 +18,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
-> >> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
-> >> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wr=
-ote:
-> >> >> > On Friday 20 February 2009, Arve Hj=F8nnev=E5g wrote:
-> >> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl>=
- wrote:
-> >> >> >> > On Friday 20 February 2009, Arve Hj=F8nnev=E5g wrote:
-> >> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.ha=
-rvard.edu> wrote:
-[--snip--]
-> >> > The idea is to have both /sys/power/state and /sys/power/sleep at th=
-e same
-> >> > time, where /sys/power/state will work just like it does right now. =
- Sure,
-> >> > there must be mutual exclusion between the two, but that's a matter =
-of
-> >> > implementation IMO.
-> >>
-> >> If you want to only prevent suspend though one interface, you have to
-> >> also pass information to the driver about its suspend hook is being
-> >> called so it can conditionally return -EBUSY. The wakelock interface
-> >> requires less code in each driver.
-> >
-> > Well, I don't think so.  Moreover, it requires you to spread wakelocks =
-all
-> > over the place if you don't use the timeouted ones which, let's face it=
-, is
-> > hardly acceptable.
-> =
+On Saturday 21 February 2009, Alan Stern wrote:
+> On Sat, 21 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> > > I think everything that uses a "trigger" logic from user space is not
+> > > a good idea. This will necessary introduce a race between the decision
+> > > and the execution during which circumstances can change.
+> > 
+> > Well, in this particulare case if the circumstances change in the meantime,
+> > the kernel will just refuse to suspend.  Also, even if the kernel starts
+> > automatic suspend, it _still_ is possible that the conditions change in the
+> > meantime (for example, one of the tasks may enter a state in which it wouldn't
+> > like to the suspend to happen just after the operation is started and before
+> > it's frozen).
+> > 
+> > > So it seems to me that an allow/disallow system from user space
+> > > would be better.
+> > 
+> > I don't really see the benefit, but I can easily see drawbacks (the handling
+> > of graphics that requires user space quirks, for instance).
+> 
+> This discussion is circling around an important point: How should 
+> auto-sleep be initiated?
+> 
+> If userspace holds any wakelocks then the system mustn't auto-sleep.  
+> So auto-sleep can be initiated when the last userspace wakelock is
+> released.  That requires calling into the kernel anyway, so it isn't a
+> problem.
+> 
+> But what about kernel wakelocks?  Again, the simplest approach is to 
+> initiate an auto-sleep when the last one is released.  But now this 
+> depends on how the implementation works.
+> 
+> In Rafael's scheme there isn't really such a thing as a kernel 
+> wakelock.  Instead there are driver methods, so the only way to find 
+> out whether auto-sleep is allowed is to poll every driver.  This is not 
+> good for systems that want to auto-sleep as soon as possible.
 
-> Your method does not reduce the number of places that has to be
-> modified. Any component where we add a wakelock, you have to add a
-> suspend handler to abort suspend when we would have held a wakelock.
+You have a valid point here, although I don't think it would be a problem in
+practice (I don't expect the systems using automatic suspend to have that
+many drivers).
 
-Well, maybe not, but it doesn't introduce entirely new API for device drive=
-rs.
-Instead, it extends the existing interfaces which I think is more appropria=
-te.
+> A variant on the scheme would use a new field in the dev_pm_info 
+> structure.  I don't know if this is better or worse the a new method; 
+> it seems likely that the new method would have to work by checking the 
+> value of some field anyway.  In any case, it shares the drawback that 
+> polling is required.
+> 
+> If kernel wakelocks were implemented more like refcounts, then
+> releasing the last one could immediately initiate an auto-sleep.  The 
+> problem with refcounts is that you can't tell (for accounting or 
+> debugging purposes) who owns the outstanding references.  However we 
+> ought to be able to come up with something intermediate between a 
+> full-blown wakelock and a simple refcount that would satisfy everybody.  
+> 
+> For example, we could use _both_ a new field in dev_pm_info and a 
+> refcount.  Or even a per-cpu refcount, to avoid cache-line contention 
+> since drivers are likely to acquire and release these things quite 
+> often.
+
+Yes, I like this idea.
+
+Automatic suspend will not occur if the refcount is greater than zero and then
+the debug/stats code can use the field in dev_pm_info to report who had
+increased it.
+
+> What about the overhead of having a permanent kernel thread that does
+> nothing but handle auto-sleeps?  This might well be an acceptable
+> tradeoff for many people.  Besides, you need something like it if a
+> driver wants to release the last wakelock while in interrupt context.  
+> Unless you fall back on polling -- and then you need a thread to do the
+> polling.
+
+But that may be a user space process.
+
+I generally think that deciding whether to start automatic suspend should
+belong to the user space, because it may involve some policies and user
+preferences etc.
+
+If you agree with that, there are two possible approaches.  First, there may be
+a kernel thread checking periodically if automatic suspend is possible and
+initiating it if that's the case.  For this purpose, the user space has to be
+able to tell the kernel thread whether it wants automatic suspend to happen
+(this is where user space wakelocks are handy).  Second, there may be a user
+space process calling the kernel whenever it finds that automatic suspend is
+desirable.  I personally prefer the latter, since the user space process can
+listen to some events and react to them as soon as they occur (also, it
+adheres to the rule of thumb that if something can be implemented in user
+space, it better should be left in there ;-)).
+
+In both cases we need to be able to abort an already started automatic suspend
+if the conditions change after the decision has been made and I think that
+using a per-process flag for that would be efficient, since we have to freeze
+the user space anyway, so we need to check some per-task flags for each task.
+Still, it may be optimized a bit by using a refcount (that may be the same
+refcount as for drivers IMO) that will be increased every time a process sets
+its "automatic_suspend_undesirable" flag.  Then, we may export the refcount
+via sysfs so that the user space power manager can monitor it and take its
+value into account when deciding whether to start automatic suspend.
+
+To summarize, we can:
+* Use a refcount such that automatic suspend will only be possible if it's
+  equal to zero (but that need not be the only criterion).
+* Use a per-device flag in dev_pm_info that will be set whenever the device
+  driver increases the refcount and unset whenever the driver decreases the
+  refcount.
+* Use a per-process flag that will be set whenever the process increases the
+  refcount and unset whenever the process decreases the refcount.
 
 Thanks,
 Rafael
