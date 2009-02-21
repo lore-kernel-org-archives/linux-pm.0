@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFD] Automatic suspend
-Date: Sat, 21 Feb 2009 22:14:57 +0100
-Message-ID: <200902212214.59660.rjw__28079.6425919563$1235251073$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
+ hibernation for 2.6.29
+Date: Sat, 21 Feb 2009 14:18:23 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
+References: <200902140157.40869.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
+	<200902211038.42169.rjw@sisk.pl> <20090221182902.GB12472@suse.de>
+	<49A056D5.5090909@linux.intel.com> <20090221194807.GA13114@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20090221194807.GA13114@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,117 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 21 February 2009, Alan Stern wrote:
-> On Sat, 21 Feb 2009, Rafael J. Wysocki wrote:
+
+
+On Sat, 21 Feb 2009, Greg KH wrote:
 > 
-> > > I think everything that uses a "trigger" logic from user space is not
-> > > a good idea. This will necessary introduce a race between the decision
-> > > and the execution during which circumstances can change.
-> > 
-> > Well, in this particulare case if the circumstances change in the meantime,
-> > the kernel will just refuse to suspend.  Also, even if the kernel starts
-> > automatic suspend, it _still_ is possible that the conditions change in the
-> > meantime (for example, one of the tasks may enter a state in which it wouldn't
-> > like to the suspend to happen just after the operation is started and before
-> > it's frozen).
-> > 
-> > > So it seems to me that an allow/disallow system from user space
-> > > would be better.
-> > 
-> > I don't really see the benefit, but I can easily see drawbacks (the handling
-> > of graphics that requires user space quirks, for instance).
-> 
-> This discussion is circling around an important point: How should 
-> auto-sleep be initiated?
-> 
-> If userspace holds any wakelocks then the system mustn't auto-sleep.  
-> So auto-sleep can be initiated when the last userspace wakelock is
-> released.  That requires calling into the kernel anyway, so it isn't a
-> problem.
-> 
-> But what about kernel wakelocks?  Again, the simplest approach is to 
-> initiate an auto-sleep when the last one is released.  But now this 
-> depends on how the implementation works.
-> 
-> In Rafael's scheme there isn't really such a thing as a kernel 
-> wakelock.  Instead there are driver methods, so the only way to find 
-> out whether auto-sleep is allowed is to poll every driver.  This is not 
-> good for systems that want to auto-sleep as soon as possible.
+> Ok, so, Len, are you willing to send these to Linus this week?
 
-You have a valid point here, although I don't think it would be a problem in
-practice (I don't expect the systems using automatic suspend to have that
-many drivers).
+I took them all, and added both of you to the cc, so if/when things break 
+and get bisected to this series, both of you should be cc'd on the 
+discussion.
 
-> A variant on the scheme would use a new field in the dev_pm_info 
-> structure.  I don't know if this is better or worse the a new method; 
-> it seems likely that the new method would have to work by checking the 
-> value of some field anyway.  In any case, it shares the drawback that 
-> polling is required.
-> 
-> If kernel wakelocks were implemented more like refcounts, then
-> releasing the last one could immediately initiate an auto-sleep.  The 
-> problem with refcounts is that you can't tell (for accounting or 
-> debugging purposes) who owns the outstanding references.  However we 
-> ought to be able to come up with something intermediate between a 
-> full-blown wakelock and a simple refcount that would satisfy everybody.  
-> 
-> For example, we could use _both_ a new field in dev_pm_info and a 
-> refcount.  Or even a per-cpu refcount, to avoid cache-line contention 
-> since drivers are likely to acquire and release these things quite 
-> often.
-
-Yes, I like this idea.
-
-Automatic suspend will not occur if the refcount is greater than zero and then
-the debug/stats code can use the field in dev_pm_info to report who had
-increased it.
-
-> What about the overhead of having a permanent kernel thread that does
-> nothing but handle auto-sleeps?  This might well be an acceptable
-> tradeoff for many people.  Besides, you need something like it if a
-> driver wants to release the last wakelock while in interrupt context.  
-> Unless you fall back on polling -- and then you need a thread to do the
-> polling.
-
-But that may be a user space process.
-
-I generally think that deciding whether to start automatic suspend should
-belong to the user space, because it may involve some policies and user
-preferences etc.
-
-If you agree with that, there are two possible approaches.  First, there may be
-a kernel thread checking periodically if automatic suspend is possible and
-initiating it if that's the case.  For this purpose, the user space has to be
-able to tell the kernel thread whether it wants automatic suspend to happen
-(this is where user space wakelocks are handy).  Second, there may be a user
-space process calling the kernel whenever it finds that automatic suspend is
-desirable.  I personally prefer the latter, since the user space process can
-listen to some events and react to them as soon as they occur (also, it
-adheres to the rule of thumb that if something can be implemented in user
-space, it better should be left in there ;-)).
-
-In both cases we need to be able to abort an already started automatic suspend
-if the conditions change after the decision has been made and I think that
-using a per-process flag for that would be efficient, since we have to freeze
-the user space anyway, so we need to check some per-task flags for each task.
-Still, it may be optimized a bit by using a refcount (that may be the same
-refcount as for drivers IMO) that will be increased every time a process sets
-its "automatic_suspend_undesirable" flag.  Then, we may export the refcount
-via sysfs so that the user space power manager can monitor it and take its
-value into account when deciding whether to start automatic suspend.
-
-To summarize, we can:
-* Use a refcount such that automatic suspend will only be possible if it's
-  equal to zero (but that need not be the only criterion).
-* Use a per-device flag in dev_pm_info that will be set whenever the device
-  driver increases the refcount and unset whenever the driver decreases the
-  refcount.
-* Use a per-process flag that will be set whenever the process increases the
-  refcount and unset whenever the process decreases the refcount.
-
-Thanks,
-Rafael
+		Linus
