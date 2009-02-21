@@ -1,13 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/2] PM: x86-64 suspend-resume fix
-Date: Fri, 20 Feb 2009 23:46:31 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.0902202345550.19156__5539.01816388151$1235191831$gmane$org@localhost.localdomain>
-References: <200902152244.47326.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
+	hibernation for 2.6.29
+Date: Sat, 21 Feb 2009 10:38:40 +0100
+Message-ID: <200902211038.42169.rjw__1813.4955237203$1235209363$gmane$org@sisk.pl>
+References: <200902140157.40869.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200902152244.47326.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Cyrill Gorcunov <gorcunov@openvz.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>, Greg KH <gregkh@suse.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-On Sun, 15 Feb 2009, Rafael J. Wysocki wrote:
-
-> Hi,
+On Saturday 21 February 2009, Len Brown wrote:
 > 
-> The following two patches clean-up and fix the x86-64 resume code.
+> On Sat, 14 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> 1/2 is a cleanup, but it is simple enough to be applied now IMO.
+> > Hi Len,
+> > 
+> > The following are fixes related to suspend and hibernation I have collected
+> > over the last couple of weeks.  Some of them are in -mm.  I think they all are
+> > 2.6.29 material.
+> > 
+> > 1/9 and 2/9 fix hibernation regression caused by the async boot changes,
+> > I hope Greg will not object if they go through your tree.
+> > 
+> > 3/9 fixes a long-standing hibernation issue that cause the resume partition
+> > to become unuseable after two consecutive failing attempts to hibernate.
+> > 
+> > 4/9 fixes build of kprobes.c with CONFIG_PM unset.
 > 
-> 2/2 is a bug fix based on 1/2, which is 2.6.29 material.
-> 
-> Please apply them to the suspend branch and push to Linus for 2.6.29 (Ingo
-> says he doesn't mind if they go through your tree).
+> looks like this one added power/ twice --
 
-1 & 2 applied to suspend branch.
+That was on purpose.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+> and looks like akpm sent a fixed version of this to linus already?
+
+Yes, he did.
+
+> > 5/9 and 6/9 clean up memory freeing code used during hibernation.
+> > 
+> > 7/9 fixes a bug related to the use of PM notifiers during hibernation with
+> > the help of the user land interface.
+> > 
+> > 8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
+> > 
+> > Please add these patches to the suspend branch and push to Linus for 2.6.29.
+> 
+> All except #4 are now on the suspend branch.
+
+1/9 and 2/9 are also in the Greg's tree, AFAICS.
+
+Greg, do you intend to push them to Linus?  In that case I think it's better if
+Len drops them.
+
+Rafael
