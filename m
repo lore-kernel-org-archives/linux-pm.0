@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Automatic suspend
-Date: Sat, 21 Feb 2009 11:52:38 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0902211135170.7396-100000__15772.0194584273$1235235431$gmane$org@netrider.rowland.org>
-References: <200902210040.50344.rjw@sisk.pl>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
+	hibernation for	2.6.29
+Date: Sat, 21 Feb 2009 10:29:02 -0800
+Message-ID: <20090221182902.GB12472__44575.552820652$1235241233$gmane$org@suse.de>
+References: <200902140157.40869.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
+	<200902211038.42169.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902210040.50344.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200902211038.42169.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,68 +22,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Arjan van de Ven <arjan@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 21 Feb 2009, Rafael J. Wysocki wrote:
-
-> > I think everything that uses a "trigger" logic from user space is not
-> > a good idea. This will necessary introduce a race between the decision
-> > and the execution during which circumstances can change.
+On Sat, Feb 21, 2009 at 10:38:40AM +0100, Rafael J. Wysocki wrote:
+> On Saturday 21 February 2009, Len Brown wrote:
+> > 
+> > On Sat, 14 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > > Hi Len,
+> > > 
+> > > The following are fixes related to suspend and hibernation I have collected
+> > > over the last couple of weeks.  Some of them are in -mm.  I think they all are
+> > > 2.6.29 material.
+> > > 
+> > > 1/9 and 2/9 fix hibernation regression caused by the async boot changes,
+> > > I hope Greg will not object if they go through your tree.
+> > > 
+> > > 3/9 fixes a long-standing hibernation issue that cause the resume partition
+> > > to become unuseable after two consecutive failing attempts to hibernate.
+> > > 
+> > > 4/9 fixes build of kprobes.c with CONFIG_PM unset.
+> > 
+> > looks like this one added power/ twice --
 > 
-> Well, in this particulare case if the circumstances change in the meantime,
-> the kernel will just refuse to suspend.  Also, even if the kernel starts
-> automatic suspend, it _still_ is possible that the conditions change in the
-> meantime (for example, one of the tasks may enter a state in which it wouldn't
-> like to the suspend to happen just after the operation is started and before
-> it's frozen).
+> That was on purpose.
 > 
-> > So it seems to me that an allow/disallow system from user space
-> > would be better.
+> > and looks like akpm sent a fixed version of this to linus already?
 > 
-> I don't really see the benefit, but I can easily see drawbacks (the handling
-> of graphics that requires user space quirks, for instance).
+> Yes, he did.
+> 
+> > > 5/9 and 6/9 clean up memory freeing code used during hibernation.
+> > > 
+> > > 7/9 fixes a bug related to the use of PM notifiers during hibernation with
+> > > the help of the user land interface.
+> > > 
+> > > 8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
+> > > 
+> > > Please add these patches to the suspend branch and push to Linus for 2.6.29.
+> > 
+> > All except #4 are now on the suspend branch.
+> 
+> 1/9 and 2/9 are also in the Greg's tree, AFAICS.
+> 
+> Greg, do you intend to push them to Linus?  In that case I think it's better if
+> Len drops them.
 
-This discussion is circling around an important point: How should 
-auto-sleep be initiated?
+I was not planning to send them for .29, sorry I got confused.  I'll
+drop them from my tree and Len can send them all to Linus now.
 
-If userspace holds any wakelocks then the system mustn't auto-sleep.  
-So auto-sleep can be initiated when the last userspace wakelock is
-released.  That requires calling into the kernel anyway, so it isn't a
-problem.
+Is that ok?
 
-But what about kernel wakelocks?  Again, the simplest approach is to 
-initiate an auto-sleep when the last one is released.  But now this 
-depends on how the implementation works.
+thanks,
 
-In Rafael's scheme there isn't really such a thing as a kernel 
-wakelock.  Instead there are driver methods, so the only way to find 
-out whether auto-sleep is allowed is to poll every driver.  This is not 
-good for systems that want to auto-sleep as soon as possible.
-
-A variant on the scheme would use a new field in the dev_pm_info 
-structure.  I don't know if this is better or worse the a new method; 
-it seems likely that the new method would have to work by checking the 
-value of some field anyway.  In any case, it shares the drawback that 
-polling is required.
-
-If kernel wakelocks were implemented more like refcounts, then
-releasing the last one could immediately initiate an auto-sleep.  The 
-problem with refcounts is that you can't tell (for accounting or 
-debugging purposes) who owns the outstanding references.  However we 
-ought to be able to come up with something intermediate between a 
-full-blown wakelock and a simple refcount that would satisfy everybody.  
-
-For example, we could use _both_ a new field in dev_pm_info and a 
-refcount.  Or even a per-cpu refcount, to avoid cache-line contention 
-since drivers are likely to acquire and release these things quite 
-often.
-
-What about the overhead of having a permanent kernel thread that does
-nothing but handle auto-sleeps?  This might well be an acceptable
-tradeoff for many people.  Besides, you need something like it if a
-driver wants to release the last wakelock while in interrupt context.  
-Unless you fall back on polling -- and then you need a thread to do the
-polling.
-
-Alan Stern
+greg k-h
