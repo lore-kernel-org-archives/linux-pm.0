@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Sun, 22 Feb 2009 14:46:18 +0100
-Message-ID: <20090222134618.GA1436__4350.90341275117$1235310550$gmane$org@ucw.cz>
-References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz>
-	<200902170026.06966.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions (version 3)
+Date: Sun, 22 Feb 2009 14:48:52 +0100
+Message-ID: <20090222134852.GB1436@ucw.cz>
+References: <1234316955-31304-1-git-send-email-arve@android.com>
+	<20090217210504.GD1433@ucw.cz>
+	<d6200be20902181743i1bb36fe8m95b50c0fbd6d3c2@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902170026.06966.rjw@sisk.pl>
+In-Reply-To: <d6200be20902181743i1bb36fe8m95b50c0fbd6d3c2@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > The recent descussion about the Android PM patches sent by Arve shows that
-> > > there is a need to introduce a mechanism allowing us to:
-> > > (1) automatically put the system as a whole into a sleep state (eg. suspend to
-> > >     RAM) when it is found to be "idle", where the meaning of "idle" has to be
-> > >     defined too,
-> > 
-> > Well; I'd prefer to keep the interface very minimal.
-> > 
-> > If no devices are being used,
+> > earlysuspend is an ugly hack and wakelock is very wrong name at the
+> > very least... as seen in previous discussion. Can we get that fixed?
 > 
-> We'll need some kind of infrastructure to detect such situations.
-
-Yes, I like the latest 'atomic_t + bit in struct device' ideas...
- 
-> > and next wakeup is far enough in the future,
+> I don't have a fix for earlysuspend, but it is far less important than
+> wakelocks, so I can drop it from the patch series if that is
+> preferred.
 > 
-> What exactly do you mean by "next wakeup"?
+> Regarding the name, I don't agree with your statement that wakelock is
+> a very wrong name. Like I said before, you can view it as a
+> reader/writer lock where the readers protect the wake state of the
+> system. That said, if there is a better name that more than one person
+> can agree on, I can rename the api. Here is a list of suggestions I
+> have seen so far along with the api I think they dictate if the
+> existing functionality is to be preserved:
 
-Next timer in kernel and next sleep/select timeout in userspace.
 
+> suspend_inhibitor: (from inhibit_suspend)
+> - api: suspend_inhibitor_init, suspend_inhibitor_destroy,
+> suspend_inhibit, suspend_inhibit_timeout, suspend_uninhibit
+> - pros: The effect is more obvious than *_lock.
+> - cons: Does not match android user space api (but less confusing than
+> suspend/sleep_lock).
+
+I like this one, as does rafael, so :-).
+
+I thought you are switching to /dev based api anyway so rename should
+not be a problem?
 								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
