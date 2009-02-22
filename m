@@ -1,18 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
-	hibernation for 2.6.29
-Date: Sat, 21 Feb 2009 21:47:11 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.0902212145050.5009__46106.724945321$1235271021$gmane$org@localhost.localdomain>
-References: <200902140157.40869.rjw@sisk.pl>
-	<alpine.LFD.2.00.0902202337040.19156@localhost.localdomain>
-	<200902211038.42169.rjw@sisk.pl> <20090221182902.GB12472@suse.de>
-	<49A056D5.5090909@linux.intel.com> <20090221194807.GA13114@suse.de>
-	<alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
+From: Raja R Harinath <harinath@hurrynot.org>
+Subject: Re:
+	=?utf-8?q?=5BPATCH_1/9=5D_Consolidate_driver=5Fprobe?=
+	=?utf-8?q?=5Fdone=28=29_loops_into=09one_place?=
+Date: Sun, 22 Feb 2009 05:29:39 +0000 (UTC)
+Message-ID: <loom.20090222T052417-460@post.gmane.org>
+References: <200902140157.40869.rjw@sisk.pl> <200902140159.08252.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,16 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-> I took them all, and added both of you to the cc, so if/when things break 
-> and get bisected to this series, both of you should be cc'd on the 
-> discussion.
+Rafael J. Wysocki <rjw <at> sisk.pl> writes:
 
-Okay, I'll delete them from my suspend branch.
+> From: Arjan van de Ven <arjan <at> linux.intel.com>
+> 
+> there's a few places that currently loop over driver_probe_done(), and
+> I'm about to add another one. This patch abstracts it into a helper
+> to reduce duplication.
+[snip]
+> +int wait_for_device_probe(void)
+> +{
+> +	/* wait for the known devices to complete their probing */
+> +	while (driver_probe_done() != 0)
+> +		msleep(100);
+> +	async_synchronize_full();
+> +	return 0;
+> +}
+[snip]
+> Index: linux-2.6/init/do_mounts.c
+> ===================================================================
+> --- linux-2.6.orig/init/do_mounts.c
+> +++ linux-2.6/init/do_mounts.c
+[snip]
+> @@ -399,6 +403,7 @@ void __init prepare_namespace(void)
+>  		while (driver_probe_done() != 0 ||
+>  			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+>  			msleep(100);
+> +		async_synchronize_full();
+>  	}
 
-thanks,
--Len
+Note that even this loop can be consolidated.  The while loop above can be
+equivalently rewritten as
+
+  while ((ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+    msleep(100);
+  while (driver_probe_done() != 0)
+    msleep(100);
+
+which, with your patch applied is equivalent to
+
+  while ((ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+    msleep(100);
+  wait_for_device_probe();
+
+- Hari
