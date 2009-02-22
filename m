@@ -1,40 +1,41 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/2] Rework disabling of interrupts
- during suspend-resume
-Date: Sun, 22 Feb 2009 15:02:31 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0902221500030.3111@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <m1skm6cd3z.fsf@fess.ebiederm.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] add mutex and hibernation notifier to memory hotplug.
+Date: Mon, 23 Feb 2009 00:26:33 +0100
+Message-ID: <200902230026.35284.rjw@sisk.pl>
+References: <20081106153444.33af7019.kamezawa.hiroyu@jp.fujitsu.com> <20090222223547.GH26999@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1skm6cd3z.fsf@fess.ebiederm.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20090222223547.GH26999@elf.ucw.cz>
+Content-Disposition: inline
+Sender: owner-linux-mm@kvack.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, gerald.schaefer@de.ibm.com, ncunningham@crca.org.au, Dave Hansen <dave@linux.vnet.ibm.com>, Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>, linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>, Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>, Yasunori Goto <y-goto@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Sun, 22 Feb 2009, Eric W. Biederman wrote:
+On Sunday 22 February 2009, Pavel Machek wrote:
+> Hi!
 > 
-> How does this sync with the ACPI requirement that the it's late suspend MUST
-> happen with irqs disabled?
+> > Sorry, I can't test this now but I post this while discussion is hot.
+> > 
+> > I'll test this with CONFIG_PM_DEBUG's hibernation test mode if I can.
+> > (But may take a long time..) 
+> > 
+> > Any feedback is welcome.
+> 
+> I lost the track here... but this may still be required... ? And given
+> that there will be both mem hotplug and swsusp in SLE11...
 
-All the system device suspend and the actual CPU power-off still happens 
-with CPU interrupts disabled.
+I think the patch would be helpful, but I've lost it somethow.  I'll try to dig
+it out in my e-mail archives.
 
-It's just that the regular two-phase device suspend code now runs first 
-with interrupts enabled (the regular "->suspend()" callback), and then the 
-second phase runs with the CPU still having interrupts on (and taking 
-timer interrupts), but with the actual device interrupts disabled.
+Thanks,
+Rafael
 
-			Linus
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
