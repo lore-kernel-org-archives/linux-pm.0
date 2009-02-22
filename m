@@ -1,15 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Sun, 22 Feb 2009 15:03:11 +0100
-Message-ID: <20090222140311.GF1387__37716.0589946017$1235311645$gmane$org@ucw.cz>
-References: <200902191356.53584.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/2] Rework disabling of interrupts during
+	suspend-resume
+Date: Sun, 22 Feb 2009 18:37:48 +0100
+Message-ID: <200902221837.49396.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> > Again, the decision to trigger automatic suspend has to be based on some
-> > well defined criteria and the (in)activity of devices seems to be one of them.
-> 
-> I don't know what criteria the system monitor would use.  It might have 
-> to be platform-specific.  The Android people seem to have a pretty good 
-> idea of what criteria will work for them.
-> 
-> Inactivity of devices isn't always a good criterion.  There might be a
-> background task which wakes up every few seconds to do something as
-> long as the system is awake, thereby keeping some device always active.  
-> The activity from this background task shouldn't prevent an auto-sleep.
+The following two patches modify the way in which we handle disabling
+interrupts during suspend and enabling them during resume.  Namely, currently
+interrupts are disabled on the boot CPU as soon as the nonboot CPUs have been
+disabled, which doesn't allow device drivers' "late" suspend and "early" resume
+callbacks to sleep.  Among other things this means they cannot execute ACPI
+AML routines, which leads to problems with suspend-resume of PCI devices,
+as recently discussed on this list.
 
-Then we'd need a interface to mark such background task... and what is
-reasonable use for such task, anyway? Either its job is neccessary, or
-it should not waste power.
+1/2 is based on an earlier patch from Linus and it only splits up
+sysdev_[suspend|resume] from the ["late suspend|"early" resume'] of devices.
 
-IOW maybe it is easier to eliminate such stuff?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2/2 actually modifies the [suspend|hibernation] and resume code, as well as the
+other code using the device PM framework.
+
+The patches have been initially tested and they don't appear to break suspend
+on my boxes, but this is the first approximation only.  In particular, I'm not sure
+if I did the XEN, kexec and APM parts right, so people with experience in these
+areas are gently requested to have a look and tell me if there's anything to
+fix in there.
+
+Moreover, the real purpose of these changes is to be able to execute the
+"late" suspend and "early" resume device callbacks with timer interrupts
+enabled, so that they can use mutexes etc.  However, x86 currently doesn't set
+the IRQF_TIMER flag and I need to make it do so before going further in this
+direction and changing the PCI PM framework to take advantage of the $subject
+changes, for example.  So, I need to know how to modify x86 timer code so that
+the IRQF_TIMER flag is set by it.
+
+Comments welcome.
+
+Thanks,
+Rafael
