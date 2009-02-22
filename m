@@ -1,15 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [RFC][PATCH 0/2] Rework disabling of interrupts
-	during suspend-resume
-Date: Sun, 22 Feb 2009 14:37:20 -0800
-Message-ID: <m1skm6cd3z.fsf__980.874969582324$1235342454$gmane$org@fess.ebiederm.org>
-References: <200902221837.49396.rjw@sisk.pl>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [RFC][PATCH 1/2] PM: Split up
+	sysdev_[suspend|resume] from	device_power_[down|up]
+Date: Mon, 23 Feb 2009 00:42:42 +0200
+Message-ID: <20090222224242.GD4485__25003.0359755785$1235342712$gmane$org@localhost.pp.htv.fi>
+References: <200902221837.49396.rjw@sisk.pl> <200902221838.51548.rjw@sisk.pl>
+	<20090222205654.GC4485@localhost.pp.htv.fi>
+	<alpine.LFD.2.00.0902221306090.3111@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902221837.49396.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun\, 22 Feb 2009 18\:37\:48 +0100")
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902221306090.3111@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Sun, Feb 22, 2009 at 01:07:28PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 22 Feb 2009, Adrian Bunk wrote:
+> > ...
+> >   MODPOST 2586 modules
+> > ERROR: "sysdev_resume" [arch/x86/kernel/apm.ko] undefined!
+> > ERROR: "sysdev_suspend" [arch/x86/kernel/apm.ko] undefined!
+> > make[2]: *** [__modpost] Error 1
+> 
+> Ahh. device_power_[down|up] were EXPORT_SYMBOL_GPL, so now that we've 
+> split them, so must sysdev_[suspend|resume] be.
+> 
+> Does this fix it?
 
-> Moreover, the real purpose of these changes is to be able to execute the
-> "late" suspend and "early" resume device callbacks with timer interrupts
-> enabled, so that they can use mutexes etc.  However, x86 currently doesn't set
-> the IRQF_TIMER flag and I need to make it do so before going further in this
-> direction and changing the PCI PM framework to take advantage of the $subject
-> changes, for example.  So, I need to know how to modify x86 timer code so that
-> the IRQF_TIMER flag is set by it.
 
-How does this sync with the ACPI requirement that the it's late suspend MUST
-happen with irqs disabled?
+Thanks, works fine.
 
-Eric
+
+> 		Linus
+> ---
+>  drivers/base/sys.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> index c98c31e..ef2055e 100644
+> --- a/drivers/base/sys.c
+> +++ b/drivers/base/sys.c
+> @@ -432,6 +432,7 @@ aux_driver:
+>  	}
+>  	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(sysdev_suspend);
+>  
+>  
+>  /**
+> @@ -463,6 +464,7 @@ int sysdev_resume(void)
+>  	}
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(sysdev_resume);
+>  
+>  
+>  int __init system_bus_init(void)
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
