@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/9] PM: Fixes related to suspend and
-	hibernation for 2.6.29
-Date: Sun, 22 Feb 2009 11:07:30 +0100
-Message-ID: <200902221107.32046.rjw__23326.0585264818$1235297540$gmane$org@sisk.pl>
-References: <200902140157.40869.rjw@sisk.pl> <20090221194807.GA13114@suse.de>
-	<alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Sun, 22 Feb 2009 14:46:18 +0100
+Message-ID: <20090222134618.GA1436__4350.90341275117$1235310550$gmane$org@ucw.cz>
+References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz>
+	<200902170026.06966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0902211417401.3111@localhost.localdomain>
 Content-Disposition: inline
+In-Reply-To: <200902170026.06966.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Johannes Weiner <hannes@cmpxchg.org>, Andrew Morton <akpm@linux-foundation.org>, Masami Hiramatsu <mhiramat@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 21 February 2009, Linus Torvalds wrote:
-> 
-> On Sat, 21 Feb 2009, Greg KH wrote:
+Hi!
+
+> > > The recent descussion about the Android PM patches sent by Arve shows that
+> > > there is a need to introduce a mechanism allowing us to:
+> > > (1) automatically put the system as a whole into a sleep state (eg. suspend to
+> > >     RAM) when it is found to be "idle", where the meaning of "idle" has to be
+> > >     defined too,
 > > 
-> > Ok, so, Len, are you willing to send these to Linus this week?
+> > Well; I'd prefer to keep the interface very minimal.
+> > 
+> > If no devices are being used,
 > 
-> I took them all, and added both of you to the cc, so if/when things break 
-> and get bisected to this series, both of you should be cc'd on the 
-> discussion.
+> We'll need some kind of infrastructure to detect such situations.
 
-Thanks Linus! :-)
+Yes, I like the latest 'atomic_t + bit in struct device' ideas...
+ 
+> > and next wakeup is far enough in the future,
+> 
+> What exactly do you mean by "next wakeup"?
 
-Rafael
+Next timer in kernel and next sleep/select timeout in userspace.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
