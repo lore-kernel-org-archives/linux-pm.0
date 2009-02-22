@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Sun, 22 Feb 2009 18:39:49 +0100
-Message-ID: <200902221839.50357.rjw__47395.5319067047$1235324633$gmane$org@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+ during suspend-resume
+Date: Sun, 22 Feb 2009 10:01:29 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902220946070.3111__131.92107803679$1235325966$gmane$org@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200902221839.50357.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902221837.49396.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200902221839.50357.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,515 +18,162 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce two helper functions allowing us to disable device
-interrupts (at the IO-APIC level) during suspend or hibernation
-and enable them during the subsequent resume, respectively, so that
-the timer interrupts are enabled while "late" suspend callbacks and
-"early" resume callbacks provided by device drivers are being
-executed.
 
-Use these functions to rework the handling of interrupts during
-suspend (hibernation) and resume.  Namely, interrupts will only be
-disabled on the CPU right before suspending sysdevs, while device
-interrupts will be disabled (at the IO-APIC level), with the help of
-the new helper function, before calling "late" suspend callbacks
-provided by device drivers and analogously during resume.
+On Sun, 22 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> Use these functions to rework the handling of interrupts during
+> suspend (hibernation) and resume.  Namely, interrupts will only be
+> disabled on the CPU right before suspending sysdevs, while device
+> interrupts will be disabled (at the IO-APIC level), with the help of
+> the new helper function, before calling "late" suspend callbacks
+> provided by device drivers and analogously during resume.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/apm_32.c  |   20 ++++++++--
- drivers/xen/manage.c      |   37 ++++++++++++--------
- include/linux/interrupt.h |    3 +
- kernel/irq/manage.c       |   85 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/kexec.c            |   11 ++++-
- kernel/power/disk.c       |   56 +++++++++++++++++++++++++++---
- kernel/power/main.c       |   27 +++++++++++---
- 7 files changed, 208 insertions(+), 31 deletions(-)
+I think this patch is actually a bit too complicated.
 
-Index: linux-2.6/kernel/irq/manage.c
-===================================================================
---- linux-2.6.orig/kernel/irq/manage.c
-+++ linux-2.6/kernel/irq/manage.c
-@@ -746,3 +746,88 @@ int request_irq(unsigned int irq, irq_ha
- 	return retval;
- }
- EXPORT_SYMBOL(request_irq);
-+
-+#ifdef CONFIG_PM_SLEEP
-+struct disabled_irq {
-+	struct list_head list;
-+	int irq;
-+};
-+
-+static LIST_HEAD(resume_irqs_list);
-+
-+/**
-+ *	enable_device_irqs - enable interrupts disabled by disable_device_irqs()
-+ *
-+ *	Enable all interrupt lines previously disabled by disable_device_irqs()
-+ *	that are on resume_irqs_list.
-+ */
-+void enable_device_irqs(void)
-+{
-+	struct disabled_irq *resume_irq, *tmp;
-+
-+	list_for_each_entry_safe(resume_irq, tmp, &resume_irqs_list, list) {
-+		enable_irq(resume_irq->irq);
-+		list_del(&resume_irq->list);
-+		kfree(resume_irq);
-+	}
-+}
-+
-+/**
-+ *	disable_device_irqs - disable all enabled interrupt lines
-+ *
-+ *	During system-wide suspend or hibernation device interrupts need to be
-+ *	disabled at the chip level and this function is provided for this
-+ *	purpose.  It disables all interrupt lines that are enabled at the
-+ *	moment and saves their numbers for enable_device_irqs().
-+ */
-+int disable_device_irqs(void)
-+{
-+	struct irq_desc *desc;
-+	int irq;
-+
-+	for_each_irq_desc(irq, desc) {
-+		unsigned long flags;
-+		struct disabled_irq *resume_irq;
-+		struct irqaction *action;
-+		bool is_timer_irq;
-+
-+		resume_irq = kzalloc(sizeof(*resume_irq), GFP_NOIO);
-+		if (!resume_irq) {
-+			enable_device_irqs();
-+			return -ENOMEM;
-+		}
-+
-+		spin_lock_irqsave(&desc->lock, flags);
-+
-+		is_timer_irq = false;
-+		action = desc->action;
-+		while (action) {
-+			if (action->flags | IRQF_TIMER) {
-+				is_timer_irq = true;
-+				break;
-+			}
-+			action = action->next;
-+		}
-+
-+		if (!is_timer_irq && !desc->depth) {
-+			desc->depth++;
-+			desc->status |= IRQ_DISABLED;
-+			desc->chip->disable(irq);
-+		} else {
-+			spin_unlock_irqrestore(&desc->lock, flags);
-+			kfree(resume_irq);
-+			continue;
-+		}
-+
-+		spin_unlock_irqrestore(&desc->lock, flags);
-+
-+		if (desc->action)
-+			synchronize_irq(irq);
-+
-+		resume_irq->irq = irq;
-+		list_add(&resume_irq->list, &resume_irqs_list);
-+	}
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PM_SLEEP */
-Index: linux-2.6/include/linux/interrupt.h
-===================================================================
---- linux-2.6.orig/include/linux/interrupt.h
-+++ linux-2.6/include/linux/interrupt.h
-@@ -470,4 +470,7 @@ extern int early_irq_init(void);
- extern int arch_early_irq_init(void);
- extern int arch_init_chip_data(struct irq_desc *desc, int cpu);
- 
-+extern int disable_device_irqs(void);
-+extern void enable_device_irqs(void);
-+
- #endif
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -22,6 +22,7 @@
- #include <linux/freezer.h>
- #include <linux/vmstat.h>
- #include <linux/syscalls.h>
-+#include <linux/interrupt.h>
- 
- #include "power.h"
- 
-@@ -287,17 +288,25 @@ void __attribute__ ((weak)) arch_suspend
-  */
- static int suspend_enter(suspend_state_t state)
- {
--	int error = 0;
-+	int error;
- 
- 	device_pm_lock();
--	arch_suspend_disable_irqs();
--	BUG_ON(!irqs_disabled());
- 
--	if ((error = device_power_down(PMSG_SUSPEND))) {
-+	error = disable_device_irqs();
-+	if (error) {
-+		printk(KERN_ERR "PM: Failed to disable device interrupts\n");
-+		goto Unlock;
-+	}
-+
-+	error = device_power_down(PMSG_SUSPEND);
-+	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down\n");
- 		goto Done;
- 	}
- 
-+	arch_suspend_disable_irqs();
-+	BUG_ON(!irqs_disabled());
-+
- 	error = sysdev_suspend(PMSG_SUSPEND);
- 	if (!error) {
- 		if (!suspend_test(TEST_CORE))
-@@ -305,11 +314,17 @@ static int suspend_enter(suspend_state_t
- 		sysdev_resume();
- 	}
- 
--	device_power_up(PMSG_RESUME);
-- Done:
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
-+
-+	device_power_up(PMSG_RESUME);
-+
-+ Done:
-+	enable_device_irqs();
-+
-+ Unlock:
- 	device_pm_unlock();
-+
- 	return error;
- }
- 
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -22,6 +22,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <linux/interrupt.h>
- 
- #include "power.h"
- 
-@@ -214,7 +215,13 @@ static int create_image(int platform_mod
- 		return error;
- 
- 	device_pm_lock();
--	local_irq_disable();
-+
-+	error = disable_device_irqs();
-+	if (error) {
-+		printk(KERN_ERR "PM: Failed to disable device interrupts\n");
-+		goto Unlock;
-+	}
-+
- 	/* At this point, device_suspend() has been called, but *not*
- 	 * device_power_down(). We *must* call device_power_down() now.
- 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-@@ -227,6 +234,9 @@ static int create_image(int platform_mod
- 			"aborting hibernation\n");
- 		goto Enable_irqs;
- 	}
-+
-+	local_irq_disable();
-+
- 	sysdev_suspend(PMSG_FREEZE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
-@@ -252,11 +262,17 @@ static int create_image(int platform_mod
- 	/* NOTE:  device_power_up() is just a resume() for devices
- 	 * that suspended with irqs off ... no overall powerup.
- 	 */
-+
-  Power_up_devices:
-+	local_irq_enable();
-+
- 	device_power_up(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+
-  Enable_irqs:
--	local_irq_enable();
-+ 	enable_device_irqs();
-+
-+ Unlock:
- 	device_pm_unlock();
- 	return error;
- }
-@@ -336,13 +352,22 @@ static int resume_target_kernel(void)
- 	int error;
- 
- 	device_pm_lock();
--	local_irq_disable();
-+
-+	error = disable_device_irqs();
-+	if (error) {
-+		printk(KERN_ERR "PM: Failed to disable device interrupts\n");
-+		goto Unlock;
-+	}
-+
- 	error = device_power_down(PMSG_QUIESCE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting resume\n");
- 		goto Enable_irqs;
- 	}
-+
-+	local_irq_disable();
-+
- 	sysdev_suspend(PMSG_QUIESCE);
- 	/* We'll ignore saved state, but this gets preempt count (etc) right */
- 	save_processor_state();
-@@ -366,11 +391,19 @@ static int resume_target_kernel(void)
- 	swsusp_free();
- 	restore_processor_state();
- 	touch_softlockup_watchdog();
-+
- 	sysdev_resume();
-+
-+	local_irq_enable();
-+
- 	device_power_up(PMSG_RECOVER);
-+
-  Enable_irqs:
--	local_irq_enable();
-+	enable_device_irqs();
-+
-+ Unlock:
- 	device_pm_unlock();
-+
- 	return error;
- }
- 
-@@ -447,15 +480,23 @@ int hibernation_platform_enter(void)
- 		goto Finish;
- 
- 	device_pm_lock();
--	local_irq_disable();
-+
-+	error = disable_device_irqs();
-+	if (error)
-+		goto Unlock;
-+
- 	error = device_power_down(PMSG_HIBERNATE);
- 	if (!error) {
-+		local_irq_disable();
- 		sysdev_suspend(PMSG_HIBERNATE);
- 		hibernation_ops->enter();
- 		/* We should never get here */
- 		while (1);
- 	}
--	local_irq_enable();
-+
-+	enable_device_irqs();
-+
-+ Unlock:
- 	device_pm_unlock();
- 
- 	/*
-@@ -464,12 +505,15 @@ int hibernation_platform_enter(void)
- 	 */
-  Finish:
- 	hibernation_ops->finish();
-+
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	device_resume(PMSG_RESTORE);
- 	resume_console();
-+
-  Close:
- 	hibernation_ops->end();
-+
- 	return error;
- }
- 
-Index: linux-2.6/arch/x86/kernel/apm_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apm_32.c
-+++ linux-2.6/arch/x86/kernel/apm_32.c
-@@ -228,6 +228,7 @@
- #include <linux/suspend.h>
- #include <linux/kthread.h>
- #include <linux/jiffies.h>
-+#include <linux/interrupt.h>
- 
- #include <asm/system.h>
- #include <asm/uaccess.h>
-@@ -1190,8 +1191,11 @@ static int suspend(int vetoable)
- 	struct apm_user	*as;
- 
- 	device_suspend(PMSG_SUSPEND);
--	local_irq_disable();
-+
-+	disable_device_irqs();
- 	device_power_down(PMSG_SUSPEND);
-+
-+	local_irq_disable();
- 	sysdev_suspend(PMSG_SUSPEND);
- 
- 	local_irq_enable();
-@@ -1209,9 +1213,13 @@ static int suspend(int vetoable)
- 	if (err != APM_SUCCESS)
- 		apm_error("suspend", err);
- 	err = (err == APM_SUCCESS) ? 0 : -EIO;
-+
- 	sysdev_resume();
--	device_power_up(PMSG_RESUME);
- 	local_irq_enable();
-+
-+	device_power_up(PMSG_RESUME);
-+	enable_device_irqs();
-+
- 	device_resume(PMSG_RESUME);
- 	queue_event(APM_NORMAL_RESUME, NULL);
- 	spin_lock(&user_list_lock);
-@@ -1228,8 +1236,10 @@ static void standby(void)
- {
- 	int err;
- 
--	local_irq_disable();
-+	disable_device_irqs();
- 	device_power_down(PMSG_SUSPEND);
-+
-+	local_irq_disable();
- 	sysdev_suspend(PMSG_SUSPEND);
- 	local_irq_enable();
- 
-@@ -1239,8 +1249,10 @@ static void standby(void)
- 
- 	local_irq_disable();
- 	sysdev_resume();
--	device_power_up(PMSG_RESUME);
- 	local_irq_enable();
-+
-+	device_power_up(PMSG_RESUME);
-+	enable_device_irqs();
- }
- 
- static apm_event_t get_event(void)
-Index: linux-2.6/drivers/xen/manage.c
-===================================================================
---- linux-2.6.orig/drivers/xen/manage.c
-+++ linux-2.6/drivers/xen/manage.c
-@@ -39,12 +39,6 @@ static int xen_suspend(void *data)
- 
- 	BUG_ON(!irqs_disabled());
- 
--	err = device_power_down(PMSG_SUSPEND);
--	if (err) {
--		printk(KERN_ERR "xen_suspend: device_power_down failed: %d\n",
--		       err);
--		return err;
--	}
- 	err = sysdev_suspend(PMSG_SUSPEND);
- 	if (err) {
- 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
-@@ -69,13 +63,6 @@ static int xen_suspend(void *data)
- 	xen_mm_unpin_all();
- 
- 	sysdev_resume();
--	device_power_up(PMSG_RESUME);
--
--	if (!*cancelled) {
--		xen_irq_resume();
--		xen_console_resume();
--		xen_timer_resume();
--	}
- 
- 	return 0;
- }
-@@ -108,6 +95,18 @@ static void do_suspend(void)
- 	/* XXX use normal device tree? */
- 	xenbus_suspend();
- 
-+	err = disable_device_irqs();
-+	if (err) {
-+		printk(KERN_ERR "disable_device_irqs failed: %d\n", err);
-+		goto resume_devices;
-+	}
-+
-+	err = device_power_down(PMSG_SUSPEND);
-+	if (err) {
-+		printk(KERN_ERR "device_power_down failed: %d\n", err);
-+		goto enable_irqs;
-+	}
-+
- 	err = stop_machine(xen_suspend, &cancelled, &cpumask_of_cpu(0));
- 	if (err) {
- 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
-@@ -120,6 +119,18 @@ static void do_suspend(void)
- 	} else
- 		xenbus_suspend_cancel();
- 
-+	device_power_up(PMSG_RESUME);
-+
-+	if (!cancelled) {
-+		xen_irq_resume();
-+		xen_console_resume();
-+		xen_timer_resume();
-+	}
-+
-+enable_irqs:
-+	enable_device_irqs();
-+
-+resume_devices:
- 	device_resume(PMSG_RESUME);
- 
- 	/* Make sure timer events get retriggered on all CPUs */
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -1454,7 +1454,11 @@ int kernel_kexec(void)
- 		if (error)
- 			goto Resume_devices;
- 		device_pm_lock();
--		local_irq_disable();
-+
-+		error = disable_device_irqs();
-+		if (error)
-+			goto Unlock_pm;
-+
- 		/* At this point, device_suspend() has been called,
- 		 * but *not* device_power_down(). We *must*
- 		 * device_power_down() now.  Otherwise, drivers for
-@@ -1466,6 +1470,7 @@ int kernel_kexec(void)
- 		if (error)
- 			goto Enable_irqs;
- 
-+		local_irq_disable();
- 		/* Suspend system devices */
- 		error = sysdev_suspend(PMSG_FREEZE);
- 		if (error)
-@@ -1484,9 +1489,11 @@ int kernel_kexec(void)
- 	if (kexec_image->preserve_context) {
- 		sysdev_resume();
-  Power_up_devices:
-+		local_irq_enable();
- 		device_power_up(PMSG_RESTORE);
-  Enable_irqs:
--		local_irq_enable();
-+		enable_device_irqs();
-+ Unlock_pm:
- 		device_pm_unlock();
- 		enable_nonboot_cpus();
-  Resume_devices:
+> +struct disabled_irq {
+> +	struct list_head list;
+> +	int irq;
+> +};
+> +
+> +static LIST_HEAD(resume_irqs_list);
+> +
+> +/**
+> + *	enable_device_irqs - enable interrupts disabled by disable_device_irqs()
+> + *
+> + *	Enable all interrupt lines previously disabled by disable_device_irqs()
+> + *	that are on resume_irqs_list.
+> + */
+> +void enable_device_irqs(void)
+> +{
+> +	struct disabled_irq *resume_irq, *tmp;
+> +
+> +	list_for_each_entry_safe(resume_irq, tmp, &resume_irqs_list, list) {
+> +		enable_irq(resume_irq->irq);
+> +		list_del(&resume_irq->list);
+> +		kfree(resume_irq);
+> +	}
+> +}
+
+Don't do this whole separate list. Instead, just add a per-irq-descriptor 
+flag to the desc->status field that says "suspended". IOW, just do 
+something like
+
+	diff --git a/include/linux/irq.h b/include/linux/irq.h
+	index f899b50..7bc2a31 100644
+	--- a/include/linux/irq.h
+	+++ b/include/linux/irq.h
+	@@ -65,6 +65,7 @@ typedef	void (*irq_flow_handler_t)(unsigned int irq,
+	 #define IRQ_SPURIOUS_DISABLED	0x00800000	/* IRQ was disabled by the spurious trap */
+	 #define IRQ_MOVE_PCNTXT		0x01000000	/* IRQ migration from process context */
+	 #define IRQ_AFFINITY_SET	0x02000000	/* IRQ affinity was set from userspace*/
+	+#define IRQ_SUSPENDED		0x04000000	/* IRQ has gone through suspend sequence */
+	 
+	 #ifdef CONFIG_IRQ_PER_CPU
+	 # define CHECK_IRQ_PER_CPU(var) ((var) & IRQ_PER_CPU)
+
+and then just make the suspend sequence do
+
+	for_each_irq_desc(irq, desc) {
+		.. check desc if we should disable it ..
+		disable_irq(irq);
+		desc->status |= IRQ_SUSPENDED;
+	}
+
+and the resume sequence do
+
+	for_each_irq_desc(irq, desc) {
+		if (!(desc->status & IRQ_SUSPENDED))
+			continue;
+		desc->status &= ~IRQ_SUSPENDED;
+		enabled_irq(irq);
+	}
+
+And that simplifcation then gets rid of
+
+> +/**
+> + *	disable_device_irqs - disable all enabled interrupt lines
+> + *
+> + *	During system-wide suspend or hibernation device interrupts need to be
+> + *	disabled at the chip level and this function is provided for this
+> + *	purpose.  It disables all interrupt lines that are enabled at the
+> + *	moment and saves their numbers for enable_device_irqs().
+> + */
+> +int disable_device_irqs(void)
+> +{
+> +	struct irq_desc *desc;
+> +	int irq;
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		unsigned long flags;
+> +		struct disabled_irq *resume_irq;
+> +		struct irqaction *action;
+> +		bool is_timer_irq;
+> +
+> +		resume_irq = kzalloc(sizeof(*resume_irq), GFP_NOIO);
+> +		if (!resume_irq) {
+> +			enable_device_irqs();
+> +			return -ENOMEM;
+> +		}
+
+this just goes away.
+
+> +		is_timer_irq = false;
+> +		action = desc->action;
+> +		while (action) {
+> +			if (action->flags | IRQF_TIMER) {
+> +				is_timer_irq = true;
+> +				break;
+> +			}
+> +			action = action->next;
+> +		}
+
+This is also pointless and wrong (and buggy). You should use '&' to 
+test that flag, not '|', but more importantly, if you share interrupts 
+with a timer irq, there's nothing sane the irq layer can do ANYWAY, so 
+just ignore the whole problem. Just look at the first one, don't try to be 
+clever, because your clever code doesn't buy anything at all. 
+
+So get rid of the loop, and just do
+
+	if (desc->action && !(desc->action->flags & IRQF_TIMER)) {
+		desc->depth++;
+		desc->status |= IRQ_DISABLED | IRQ_SUSPENDED;
+		desc->chip->disable(irq);
+	}
+	spin_unlock_irqrestore(&desc->lock, flags);
+
+and you're done.
+
+Also, I'd actually suggest that the whole "synchronize_irq()" be handled 
+in a separate loop after the main one, so make that one just be
+
+	for_each_irq_desc(irq, desc) {
+		if (desc->status & IRQ_SUSPENDED)
+			serialize_irq(irq);
+	}
+
+at the end. No need for desc->lock, since the IRQ_SUSPENDED bit is stable.	
+
+Finally:
+
+> +extern int disable_device_irqs(void);
+> +extern void enable_device_irqs(void);
+
+I think the naming is not great. It's not about disable/enable, it's very 
+much about suspend/resume. In your version, it had that global 
+"disabled_irq" list, and in mine it has that IRQ_SUSPENDED bit - and in 
+both cases you can't nest things, and you can't consider them in any way 
+"generic" enable/disable things, they are very specialized "shut up 
+everything but the timer irq".
+
+I also don't think there is any reasonable error case, so just make the 
+"suspend" thing return 'void', and don't complicate the caller. We don't 
+error out on the simple "disable_irq()" either. It's a imperative 
+statement, not a "please can you try to do that" thing.
+
+			Linus
