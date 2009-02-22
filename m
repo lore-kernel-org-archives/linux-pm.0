@@ -1,15 +1,15 @@
-From: Adrian Bunk <bunk@kernel.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [RFC][PATCH 1/2] PM: Split up
-	sysdev_[suspend|resume] from	device_power_[down|up]
-Date: Sun, 22 Feb 2009 22:56:54 +0200
-Message-ID: <20090222205654.GC4485__42253.2407254495$1235336352$gmane$org@localhost.pp.htv.fi>
+ sysdev_[suspend|resume] from device_power_[down|up]
+Date: Sun, 22 Feb 2009 13:07:28 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902221306090.3111@localhost.localdomain>
 References: <200902221837.49396.rjw@sisk.pl> <200902221838.51548.rjw@sisk.pl>
+	<20090222205654.GC4485@localhost.pp.htv.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200902221838.51548.rjw@sisk.pl>
+In-Reply-To: <20090222205654.GC4485@localhost.pp.htv.fi>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,75 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 22, 2009 at 06:38:50PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Move the sysdev_suspend/resume from the callee to the callers, with
-> no real change in semantics, so that we can rework the disabling of
-> interrupts during suspend/hibernation.
-> 
-> This is based on an earlier patch from Linus.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->...
-> --- linux-2.6.orig/arch/x86/kernel/apm_32.c
-> +++ linux-2.6/arch/x86/kernel/apm_32.c
-> @@ -1192,6 +1192,7 @@ static int suspend(int vetoable)
->  	device_suspend(PMSG_SUSPEND);
->  	local_irq_disable();
->  	device_power_down(PMSG_SUSPEND);
-> +	sysdev_suspend(PMSG_SUSPEND);
->  
->  	local_irq_enable();
->  
-> @@ -1208,6 +1209,7 @@ static int suspend(int vetoable)
->  	if (err != APM_SUCCESS)
->  		apm_error("suspend", err);
->  	err = (err == APM_SUCCESS) ? 0 : -EIO;
-> +	sysdev_resume();
->  	device_power_up(PMSG_RESUME);
->  	local_irq_enable();
->  	device_resume(PMSG_RESUME);
-> @@ -1228,6 +1230,7 @@ static void standby(void)
->  
->  	local_irq_disable();
->  	device_power_down(PMSG_SUSPEND);
-> +	sysdev_suspend(PMSG_SUSPEND);
->  	local_irq_enable();
->  
->  	err = set_system_power_state(APM_STATE_STANDBY);
-> @@ -1235,6 +1238,7 @@ static void standby(void)
->  		apm_error("standby", err);
->  
->  	local_irq_disable();
-> +	sysdev_resume();
->  	device_power_up(PMSG_RESUME);
->  	local_irq_enable();
->  }
->...
 
-This causes the following build error with CONFIG_APM=m:
 
-<--  snip  -->
+On Sun, 22 Feb 2009, Adrian Bunk wrote:
+> ...
+>   MODPOST 2586 modules
+> ERROR: "sysdev_resume" [arch/x86/kernel/apm.ko] undefined!
+> ERROR: "sysdev_suspend" [arch/x86/kernel/apm.ko] undefined!
+> make[2]: *** [__modpost] Error 1
 
-...
-  MODPOST 2586 modules
-ERROR: "sysdev_resume" [arch/x86/kernel/apm.ko] undefined!
-ERROR: "sysdev_suspend" [arch/x86/kernel/apm.ko] undefined!
-make[2]: *** [__modpost] Error 1
+Ahh. device_power_[down|up] were EXPORT_SYMBOL_GPL, so now that we've 
+split them, so must sysdev_[suspend|resume] be.
 
-<--  snip  -->
+Does this fix it?
 
-cu
-Adrian
+		Linus
+---
+ drivers/base/sys.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index c98c31e..ef2055e 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -432,6 +432,7 @@ aux_driver:
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(sysdev_suspend);
+ 
+ 
+ /**
+@@ -463,6 +464,7 @@ int sysdev_resume(void)
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(sysdev_resume);
+ 
+ 
+ int __init system_bus_init(void)
