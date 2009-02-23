@@ -1,25 +1,15 @@
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Mon, 23 Feb 2009 16:54:30 +0530
-Message-ID: <20090223112430.GC10226__42486.7798843936$1235404679$gmane$org@balbir.in.ibm.com>
-References: <20090220125516.GB10232@linux.vnet.ibm.com>
-	<20090220132145.GF26418@elte.hu>
-	<20090220141415.GA27381@dirshya.in.ibm.com>
-	<20090220160737.GC11294@elte.hu>
-	<20090220115745.43d202d6@infradead.org>
-	<20090220215318.GA30665@elte.hu>
-	<20090223075521.GA3725@balbir.in.ibm.com>
-	<20090223091158.GJ9582@elte.hu>
-	<20090223094850.GA10226@balbir.in.ibm.com>
-	<20090223102234.GQ9582@elte.hu>
-Reply-To: balbir@linux.vnet.ibm.com
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+	during	suspend-resume
+Date: Mon, 23 Feb 2009 07:52:59 -0800
+Message-ID: <1235404380.4455.13.camel__18135.3003289134$1235404709$gmane$org@johannes.local>
+References: <200902221837.49396.rjw@sisk.pl>
+	<200902230048.33635.rjw@sisk.pl> <20090223083645.GA9582@elte.hu>
+	<200902231229.58743.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============5868596265315533637=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090223102234.GQ9582@elte.hu>
+In-Reply-To: <200902231229.58743.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,170 +17,78 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-02-23 11:22:34]:
 
-> 
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * Ingo Molnar <mingo@elte.hu> [2009-02-23 10:11:58]:
-> > 
-> > > 
-> > > * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
-> > > > 
-> > > > > 
-> > > > > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > > > 
-> > > > > > On Fri, 20 Feb 2009 17:07:37 +0100
-> > > > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > > > 
-> > > > > > > 
-> > > > > > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > > > > > 
-> > > > > > > > > I'd also suggest to not do that rather ugly 
-> > > > > > > > > enable_timer_migration per-cpu variable, but simply reuse 
-> > > > > > > > > the existing nohz.load_balancer as a target CPU.
-> > > > > > > > 
-> > > > > > > > This is a good idea to automatically bias the timers.  But 
-> > > > > > > > this nohz.load_balancer is a very fast moving target and we 
-> > > > > > > > will need some heuristics to estimate overall system idleness 
-> > > > > > > > before moving the timers.
-> > > > > > > > 
-> > > > > > > > I would agree that the power saving load balancer has a good 
-> > > > > > > > view of the system and can potentially guide the timer biasing 
-> > > > > > > > framework.
-> > > > > > > 
-> > > > > > > Yeah, it's a fast moving target, but it already concentrates 
-> > > > > > > the load somewhat.
-> > > > > > > 
-> > > > > > 
-> > > > > > I wonder if the real answer for this isn't to have timers be 
-> > > > > > considered schedulable-entities and have the regular scheduler 
-> > > > > > decide where they actually run.
-> > > > > 
-> > > > > hm, not sure - it's a bit heavy for that.
-> > > > >
-> > > > 
-> > > > I think the basic timer migration policy should exist in user 
-> > > > space.
-> > > 
-> > > I disagree.
-> > >
-> > 
-> > See below
-> >  
-> > > > One of the ways of looking at it is, as we begin to 
-> > > > consolidate, using range timers and migrating all timers to 
-> > > > lesser number of CPUs would make a whole lot of sense.
-> > > > 
-> > > > As far as the scheduler making those decisions is concerned, 
-> > > > my concern is that the load balancing is a continuous process 
-> > > > and timers don't necessarily work that way. I'd put my neck 
-> > > > out and say that irqbalance, range timers and timer migration 
-> > > > should all belong to user space. irqbalance and range timers 
-> > > > do, so should timer migration.
-> > > 
-> > > As i said it my first reply, IRQ migration is special because 
-> > > they are not kernel-internal objects, they come externally so 
-> > > there's a lot of user-space enumeration, policy and other steps 
-> > > involved. Furthermore, IRQs are migrated in a 'slow' fashion.
-> > > 
-> > > Timers on the other hand are fast entities tied to _tasks_ 
-> > > primarily, not external entities. 
-> > 
-> > Timers are also queued due to external events like interrupts 
-> > (device drivers tend to set of timers all the time). [...]
-> 
-> That is a silly argument. Tasks are created due to 'external 
-> events' as well such as the user hitting a key.
-> 
+--===============5868596265315533637==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WLDOjTgt0bnjj6pp3LN6"
 
-The point I was trying to make was that not all timers are due to
-tasks, some are due to interrupts and thus the focus on looking at
-getting irqbalance and timers to work together.
 
-> What matters, and what was my argument is the distinction 
-> whether the kernel _generates_ the event. For most IRQ events it 
-> does not, for the overwhelming majority of timers events it 
-> consciously generates timer events. Which makes them all the 
-> much different.
->
+--=-WLDOjTgt0bnjj6pp3LN6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, agreed
- 
-> > [...] I am not fully against what you've said, at some 
-> > semantic level what you are suggesting is that at a higher 
-> > level of power saving, when the scheduler balances timers it 
-> > is doing a form of soft CPU hotplug on the system by migrating 
-> > timers and tasks away from idle CPUs when the load can be 
-> > handled by other CPUs. See below as well.
-> > 
-> > > Hence they should migrate 
-> > > according to the CPU where the activities of the system 
-> > > concentrates - i.e. where tasks are running.
-> > > 
-> > > Another thing: do you argue for the existing timer-migration 
-> > > code we have in mod_timer() to move to user-space too? It isnt a 
-> > > consistent argument to push 'some' of it to user-space, and some 
-> > > of it in kernel-space.
-> > > 
-> > 
-> > No.. mod_timer() is correct where it belongs.
-> 
-> You did not reply to my statement that the argument is a double 
-> standard. Why do certain migrations in the kernel and some not?
+On Mon, 2009-02-23 at 12:29 +0100, Rafael J. Wysocki wrote:
 
-Sorry, I am not sure I understand what portions of mod_timer were you
-recommending move to user space?
+> > > +     arch_suspend_disable_irqs();
+> > > +     BUG_ON(!irqs_disabled());
+> >=20
+> > Please. We just disabled all devices - a BUG_ON() is a very=20
+> > counter-productive thing to do here - chances are the user will=20
+> > never see anything but a hang. So please turn this into a nice=20
+> > WARN_ONCE().
+>=20
+> This is just moving code.  Also, the BUG_ON() can only affect powerpc and=
+ it's
+> there on purpose AFAICS (Johannes?).  Anyway, changing that would be a se=
+parate
+> patch.
 
-> 
-> > Consider the powertop usage scenario today
-> > 
-> > 1. Powertop displays a list of timers and common causes of wakeup
-> > 2. It recommends policies in user space that can affect power savings
-> >    a. usb autosuspend
-> >    b. wireless link management
-> >    c. disable HAL polling
-> 
-> That's different - those are PowerTop timer event _reduction_ 
-> policies. Not migration policies of existing timers.
-> 
-> > My argument is, why can't we add
-> > 
-> >    d. Use range timers
-> >    e. Consolidate timers
-> > 
-> > In the future.
-> > 
-> > Even sched_mc=n is set by user space, so really the
-> > policy is in user space.
-> 
-> that is different again. sched_mc is a broad switch not a 
-> dynamic control like the sysfs migration interface that was 
-> introduced in this patchset. Which patchset we are discussing.
->
+It can affect any platform that overrides the weak symbol
+arch_suspend_disable_irqs(), and I think that if you're writing this
+low-level code you better have a way to debug. As such, I don't think it
+needs changing, because you can only ever see that while implementing
+arch_suspend_disable_irqs(). OTOH, since it can only trigger then, a
+WARN_ON is probably fine as well since you'll be getting your machine
+into inconsistent states all the time while implementing this ;)
 
-The timer migration patchset. We are discussing sched_mc=n, since I
-expect sched_mc=3 or so to enable timer migration.
+johannes
 
-I guess we could try and select the target cpu for consolidation from
-within the scheduler, but my concerns are
+--=-WLDOjTgt0bnjj6pp3LN6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-1. Not all timers are due to tasks
-2. The effect of migrating a timer from the scheduler automatically
-can vary, since we don't know the load associated with a timer.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-But having said that some experimentation with Ingo's suggestion of
-automatically selecting the target CPU would be nice.
+iQIcBAABAgAGBQJJosZZAAoJEKVg1VMiehFY0vsP/1ZYOLqdIHKoeabMGn7grIrI
+PMxZQ3n5o+NgxU15eSrJllCMh4Dy5srkMYZgddt5Fz+TT7QPiGPlK60MNkhUl66/
+Nj3jJpgqTyjfLm4Da2VWpNRTbJ+sKIW9qX+vcabkU77CpH5PwQ4LinrkgSfO2LGV
+49rPoFJ5lcoj2xXL52i98gdeqesbSlt+EbFl0WcKtDi8m28sGoch4IprnbYEOVLD
+pB79qK8BhV3W9d8RVX1JmxycvvxkaaGW7Zp1nn9xQC8DPrH+uyR5NApt/SZvbeYs
+KIknVn8tJOYWSpaK7DbAAmmI/fLfSowXO9oTbwOSe4z4vKypej0FTPVHmjMa2C/x
+f6zWIOJFhtppk1FtV/4459Rp6WBT/7P4DmOC4ge2rorHvi9ZAd699kdty/J/wY9g
+I+lh+BSSV6i6EsKYGg9Be3iivVEIfpJMmIdCctaeTRXzcJpPLSDTiClsB2OYbPxO
+HLf91avps4G9d3bCWIsbMAwBIdGxhsrj9NBXy7cx/C3cDACb5Bx7caA7OVB62ySB
+O27qSnm6mHbfk2b8/oqsxJpyvPehHbTPCsD2i7g1rvaObNXFv+BWxMMvVjxAtlim
+kGF2VE2wxNws5GR0HqzXZn4KO5D4HLnCNOPZ/oKLbsb3uYrkKbnINtIiSmVooll0
+dtLkxohp5ukFcHF024DT
+=X+WV
+-----END PGP SIGNATURE-----
 
- 
+--=-WLDOjTgt0bnjj6pp3LN6--
 
--- 
-	Balbir
+
+--===============5868596265315533637==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============5868596265315533637==--
