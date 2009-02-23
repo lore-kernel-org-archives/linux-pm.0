@@ -1,17 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Sun, 22 Feb 2009 19:04:08 -0800
-Message-ID: <m1ab8ddfbr.fsf__1996.9085384675$1235358478$gmane$org@fess.ebiederm.org>
-References: <200902221837.49396.rjw@sisk.pl>
-	<alpine.LFD.2.00.0902220946070.3111@localhost.localdomain>
-	<200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration
+	between CPU
+Date: Mon, 23 Feb 2009 13:29:25 +0530
+Message-ID: <20090223075924.GA8165__27293.1731575683$1235376264$gmane$org@linux.vnet.ibm.com>
+References: <20090220125516.GB10232@linux.vnet.ibm.com>
+	<20090220132145.GF26418@elte.hu>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902230048.33635.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon\, 23 Feb 2009 00\:48\:32 +0100")
+Content-Disposition: inline
+In-Reply-To: <20090220132145.GF26418@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,60 +21,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+* Ingo Molnar <mingo@elte.hu> [2009-02-20 14:21:45]:
 
-> On Sunday 22 February 2009, Rafael J. Wysocki wrote:
->> On Sunday 22 February 2009, Linus Torvalds wrote:
->> > 
->> > On Sun, 22 Feb 2009, Rafael J. Wysocki wrote:
-> [--snip--]
->> 
->> Thanks a lot for your comments, I'll send an updated patch shortly.
+> 
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > 
+> > In an SMP system, tasks are scheduled on different CPUs by the 
+> > scheduler, interrupts are managed by irqbalancer daemon, but 
+> > timers are still stuck to the CPUs that they have been 
+> > initialised.  Timers queued by tasks gets re-queued on the CPU 
+> > where the task gets to run next, but timers from IRQ context 
+> > like the ones in device drivers are still stuck on the CPU 
+> > they were initialised.  This framework will help move all 
+> > 'movable timers' from one CPU to any other CPU of choice using 
+> > a sysfs interface.
+> 
+> hm, the intention is good, the concept of migrating timers to 
+> their target CPU is good as well. We already do some of that for 
+> regular timers.
+> 
+> But the whole sysfs interface you implemented here is not 
+> particularly clean nor is it efficient.
+> 
+> The main problem is that timers are really fast-moving entities, 
+> and so are the tasks they are related to.
+> 
+> Your implementation completely ties the direction of migration 
+> (the timer scheduling) to a clumsy sysfs interface:
+> 
+> +	if (sscanf(buf, "%d", &target_cpu) && cpu_online(target_cpu)) {
+> +               ret = count;
+> +               per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
+> +	}
+> 
+> That doesnt really scale and i doubt it works in practice. We 
+> should not schedule timers via sysfs, we should let the kernel 
+> do it auomatically. [*]
+> 
+> So what i'd suggest instead is extend the scheduler power-saving 
+> code, which already identifies a 'load balancer CPU', to also 
+> attract all attractable sources of timers - automatically. See 
+> the 'load_balancer' CPU logic in kernel/sched.c.
+> 
+> Does that sound OK to you? I think the end result might even 
+> give better numbers - and out of box.
+> 
+> I'd also suggest to not do that rather ugly 
+> enable_timer_migration per-cpu variable, but simply reuse the 
+> existing nohz.load_balancer as a target CPU.
 >
-> The updated patch is appended.
->
-> It has been initially tested, but requires more testing, especially with APM,
-> XEN, kexec jump etc.
->
-> Thanks,
-> Rafael
->
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Rework handling of interrupts during suspend-resume (rev. 2)
->
-> Introduce two helper functions allowing us to disable device
-> interrupts (at the IO-APIC level) during suspend or hibernation
-> and enable them during the subsequent resume, respectively, so that
-> the timer interrupts are enabled while "late" suspend callbacks and
-> "early" resume callbacks provided by device drivers are being
-> executed.
->
-> Use these functions to rework the handling of interrupts during
-> suspend (hibernation) and resume.  Namely, interrupts will only be
-> disabled on the CPU right before suspending sysdevs, while device
-> interrupts will be disabled (at the IO-APIC level), with the help of
-> the new helper function, before calling "late" suspend callbacks
-> provided by device drivers and analogously during resume.
 
-I don't have an issue with the code, but I do have an issue with
-this description of it.
+Hi Ingo,
 
-Calling disable especially for ioapics does nothing directly.
-It simply arranges for the irq to be marked pending and for the
-irq to be masked if the irq happens.
+Thanks a lot for your comments.
+Sure, what you are suggesting makes sense. Having an in-kernel method
+to move timers is much better than exposing the interface to the user.
+I will give this a shot.
 
-So what you are doing is arranging so that no interrupts will be
-delivered to drivers.  Not really disabling interrupts at the IO-APIC
-level.
+--arun
 
-In addition not all interrupts (even on x86) go through an IO-APIC anymore
-so describing the patch in terms of an IO-APIC makes it a bit hard to
-understand what your intent actually is.
-
-
-Eric
+> Also, please base your patches on the latest timer tree (which 
+> already modified some of this code in this cycle):
+> 
+>   http://people.redhat.com/mingo/tip.git/README
+> 
+> Btw., could you please also fix your mailer to not do this to 
+> us:
+> 
+> Mail-Followup-To: linux-kernel@vger.kernel.org,
+>         linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+>         ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+>         andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+>         vatsa@linux.vnet.ibm.com, arjan@infradead.org
+> 
+> it messes up the replies.
+> 
+> 	Ingo
+> 
+> [*] IRQ migration (where you possibly got the sysfs idea from) 
+>     is a special case where 'slow scheduling' via a user-space 
+>     daemon is possible: they are an external source of events 
+>     and they are concentrators of work. The same concept does 
+>     not apply to timers, most of which are inherently 
+>     task-generated.
+> 
