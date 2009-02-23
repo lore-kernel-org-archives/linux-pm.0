@@ -1,11 +1,17 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] pm: rework includes, remove arch ifdefs
-Date: Mon, 23 Feb 2009 17:02:04 +0900
-Message-ID: <20090223080204.13536.67018.sendpatchset__7977.4675345563$1235376497$gmane$org@rx1.opensource.se>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+	during	suspend-resume
+Date: Mon, 23 Feb 2009 09:36:45 +0100
+Message-ID: <20090223083645.GA9582__16690.9850704998$1235378483$gmane$org@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902220946070.3111@localhost.localdomain>
+	<200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200902230048.33635.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,57 +21,309 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: akpm@linux-foundation.org, linux-sh@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
 
-This patch contains the following header file changes:
- - remove arch ifdefs and asm/suspend.h from linux/suspend.h
- - add asm/suspend.h to disk.c (for arch_prepare_suspend())
- - add linux/io.h to swsusp.c (for ioremap())
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+> On Sunday 22 February 2009, Rafael J. Wysocki wrote:
+> > On Sunday 22 February 2009, Linus Torvalds wrote:
+> > > 
+> > > On Sun, 22 Feb 2009, Rafael J. Wysocki wrote:
+> [--snip--]
+> > 
+> > Thanks a lot for your comments, I'll send an updated patch shortly.
+> 
+> The updated patch is appended.
+> 
+> It has been initially tested, but requires more testing, 
+> especially with APM, XEN, kexec jump etc.
 
- These are the only generic changes needed to get
- CONFIG_HIBERNATION working on SuperH.
+>  arch/x86/kernel/apm_32.c  |   20 ++++++++++++----
+>  drivers/xen/manage.c      |   32 +++++++++++++++----------
+>  include/linux/interrupt.h |    3 ++
+>  include/linux/irq.h       |    1 
+>  kernel/irq/manage.c       |   57 ++++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/kexec.c            |   10 ++++----
+>  kernel/power/disk.c       |   46 +++++++++++++++++++++++++++++--------
+>  kernel/power/main.c       |   20 +++++++++++-----
+>  8 files changed, 152 insertions(+), 37 deletions(-)
+> 
+> Index: linux-2.6/kernel/irq/manage.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/irq/manage.c
+> +++ linux-2.6/kernel/irq/manage.c
+> @@ -746,3 +746,60 @@ int request_irq(unsigned int irq, irq_ha
+>  	return retval;
+>  }
+>  EXPORT_SYMBOL(request_irq);
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +/**
+> + *	suspend_device_irqs - disable all currently enabled interrupt lines
 
- include/linux/suspend.h |    3 ---
- kernel/power/disk.c     |    1 +
- kernel/power/swsusp.c   |    1 +
- 3 files changed, 2 insertions(+), 3 deletions(-)
+Code placement nit: please dont put new #ifdef blocks into the 
+core IRQ code, add a kernel/irq/power.c file instead and make 
+the kbuild rule depend on PM_SLEEP.
 
---- 0001/include/linux/suspend.h
-+++ work/include/linux/suspend.h	2009-02-23 14:44:28.000000000 +0900
-@@ -1,9 +1,6 @@
- #ifndef _LINUX_SUSPEND_H
- #define _LINUX_SUSPEND_H
- 
--#if defined(CONFIG_X86) || defined(CONFIG_FRV) || defined(CONFIG_PPC32) || defined(CONFIG_PPC64)
--#include <asm/suspend.h>
--#endif
- #include <linux/swap.h>
- #include <linux/notifier.h>
- #include <linux/init.h>
---- 0001/kernel/power/disk.c
-+++ work/kernel/power/disk.c	2009-02-23 14:44:02.000000000 +0900
-@@ -22,6 +22,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <asm/suspend.h>
- 
- #include "power.h"
- 
---- 0001/kernel/power/swsusp.c
-+++ work/kernel/power/swsusp.c	2009-02-23 14:43:17.000000000 +0900
-@@ -51,6 +51,7 @@
- #include <linux/highmem.h>
- #include <linux/time.h>
- #include <linux/rbtree.h>
-+#include <linux/io.h>
- 
- #include "power.h"
- 
+The new suspend_device_irqs() and resume_device_irqs() doesnt 
+use any manage.c internals so this should work straight away.
+
+> + *
+> + *	During system-wide suspend or hibernation device interrupts need to be
+> + *	disabled at the chip level and this function is provided for this
+> + *	purpose.  It disables all interrupt lines that are enabled at the
+> + *	moment and sets the IRQ_SUSPENDED flag for them.
+> + */
+> +void suspend_device_irqs(void)
+> +{
+> +	struct irq_desc *desc;
+> +	int irq;
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		unsigned long flags;
+> +
+> +		spin_lock_irqsave(&desc->lock, flags);
+> +
+> +		if (!desc->depth && desc->action
+> +		    && !(desc->action->flags & IRQF_TIMER)) {
+> +			desc->depth++;
+> +			desc->status |= IRQ_DISABLED | IRQ_SUSPENDED;
+> +			desc->chip->disable(irq);
+> +		}
+> +
+> +		spin_unlock_irqrestore(&desc->lock, flags);
+> +	}
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		if (desc->status & IRQ_SUSPENDED)
+> +			synchronize_irq(irq);
+> +	}
+
+Optimization/code-flow nit: a possibility might be to do a 
+single loop, i.e. i think it's safe to couple the disable+sync 
+bits [as in 99.99% of the cases there will be no in-execution 
+irq handlers when we execute this.]
+
+Something like:
+
+		int do_sync = 0;
+
+		spin_lock_irqsave(&desc->lock, flags);
+
+		if (!desc->depth && desc->action
+		    && !(desc->action->flags & IRQF_TIMER)) {
+
+			desc->depth++;
+			desc->status |= IRQ_DISABLED | IRQ_SUSPENDED;
+			desc->chip->disable(irq);
+			do_sync = 1;
+		}
+
+		spin_unlock_irqrestore(&desc->lock, flags);
+
+		if (do_sync)
+			synchronize_irq(irq);
+
+In fact i'd suggest to factor out this logic into a separate 
+__suspend_irq(irq) / __resume_irq(irq) inline helper functions. 
+(They should be inline for the time being as they are not 
+shared-irq-safe so they shouldnt really be exposed to drivers in 
+such a singular capacity.)
+
+Doing so will also fix the line-break ugliness of the first 
+branch - as in a standalone function the condition fits into a 
+single line.
+
+There's a performance reason as well: especially when we have a 
+lot of IRQ descriptors that will be about twice as fast. (with a 
+large iteration scope this function is cachemiss-limited and 
+doing this passes doubles the cachemiss rate.)
+
+> +}
+> +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> +
+> +/**
+> + *	resume_device_irqs - enable interrupts disabled by suspend_device_irqs()
+> + *
+> + *	Enable all interrupt lines previously disabled by suspend_device_irqs()
+> + *	that have the IRQ_SUSPENDED flag set.
+> + */
+> +void resume_device_irqs(void)
+> +{
+> +	struct irq_desc *desc;
+> +	int irq;
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		if (!(desc->status & IRQ_SUSPENDED))
+> +			continue;
+> +		desc->status &= ~IRQ_SUSPENDED;
+> +		enable_irq(irq);
+> +	}
+
+Robustness+optimization nit: this will work but could be done in 
+a nicer way: enable_irq() should auto-clear IRQ_SUSPENDED. (We 
+already clear flags there so it's even a tiny bit faster this 
+way.)
+
+We definitely dont want IRQ_SUSPENDED to 'leak' out into an 
+enabled line, should something call enable_irq() on a suspended 
+line. So either make it auto-unsuspend in enable_irq(), or add 
+an extra WARN_ON() to enable_irq(), to make sure IRQ_SUSPENDED 
+is always off by that time.
+
+> +     arch_suspend_disable_irqs();
+> +     BUG_ON(!irqs_disabled());
+
+Please. We just disabled all devices - a BUG_ON() is a very 
+counter-productive thing to do here - chances are the user will 
+never see anything but a hang. So please turn this into a nice 
+WARN_ONCE().
+
+> --- linux-2.6.orig/include/linux/interrupt.h
+> +++ linux-2.6/include/linux/interrupt.h
+> @@ -470,4 +470,7 @@ extern int early_irq_init(void);
+>  extern int arch_early_irq_init(void);
+>  extern int arch_init_chip_data(struct irq_desc *desc, int cpu);
+>  
+> +extern void suspend_device_irqs(void);
+> +extern void resume_device_irqs(void);
+
+Header cleanliness nit: please dont just throw new prototypes to 
+the tail of headers, but think about where they fit in best, 
+logically.
+
+These two new prototypes should go straight after the normal irq 
+line state management functions:
+
+  extern void disable_irq_nosync(unsigned int irq);
+  extern void disable_irq(unsigned int irq);
+  extern void enable_irq(unsigned int irq);
+
+Perhaps also with a comment like this:
+
+/*
+ * Note: dont use these functions in driver code - they are for 
+ * core kernel use only.
+ */
+
+> +++ linux-2.6/kernel/power/main.c
+[...]
+> +
+> + Unlock:
+> +	resume_device_irqs();
+
+Small drive-by style nit: while at it could you please fix the 
+capitalization and the naming of the label (and all labels in 
+this file)? The standard label is "out_unlock". [and 
+"err_unlock" for failure cases - but this isnt a failure case.]
+
+There's 43 such bad label names in kernel/power/*.c, see the 
+output of:
+
+  git grep '^ [A-Z][a-z].*:$' kernel/power/
+
+> Index: linux-2.6/arch/x86/kernel/apm_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apm_32.c
+> +++ linux-2.6/arch/x86/kernel/apm_32.c
+
+> +
+> +	suspend_device_irqs();
+>  	device_power_down(PMSG_SUSPEND);
+> +
+> +	local_irq_disable();
+
+hm, this is a very repetitive pattern, all around the various 
+suspend/resume variants. Might make sense to make:
+
+  	device_power_down(PMSG_SUSPEND);
+
+do the irq line disabling plus the local irq disabling 
+automatically. That also means it cannot be forgotten. The 
+symmetric action should happen for PMSG_RESUME.
+
+Is there ever a case where we want a different pattern?
+
+> Index: linux-2.6/drivers/xen/manage.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/xen/manage.c
+> +++ linux-2.6/drivers/xen/manage.c
+> @@ -39,12 +39,6 @@ static int xen_suspend(void *data)
+
+> -	if (!*cancelled) {
+> -		xen_irq_resume();
+> -		xen_console_resume();
+> -		xen_timer_resume();
+
+This change needs a second look. xen_suspend() is a 
+stop_machine() handler and as such executes on specific CPUs, 
+and your change modifies this. OTOH, i had a look at these 
+handlers and it all looks safe. Jeremy?
+
+> +resume_devices:
+> +	resume_device_irqs();
+
+Small style nit: labels should start with a space character. 
+I.e. it should be:
+
+> + resume_devices:
+> +	resume_device_irqs();
+
+> +++ linux-2.6/kernel/kexec.c
+> @@ -1454,7 +1454,7 @@ int kernel_kexec(void)
+>  		if (error)
+>  			goto Resume_devices;
+>  		device_pm_lock();
+> -		local_irq_disable();
+> +		suspend_device_irqs();
+>  		/* At this point, device_suspend() has been called,
+>  		 * but *not* device_power_down(). We *must*
+>  		 * device_power_down() now.  Otherwise, drivers for
+> @@ -1464,8 +1464,9 @@ int kernel_kexec(void)
+>  		 */
+>  		error = device_power_down(PMSG_FREEZE);
+>  		if (error)
+> -			goto Enable_irqs;
+> +			goto Resume_irqs;
+>  
+> +		local_irq_disable();
+>  		/* Suspend system devices */
+>  		error = sysdev_suspend(PMSG_FREEZE);
+>  		if (error)
+> @@ -1484,9 +1485,10 @@ int kernel_kexec(void)
+>  	if (kexec_image->preserve_context) {
+>  		sysdev_resume();
+>   Power_up_devices:
+> -		device_power_up(PMSG_RESTORE);
+> - Enable_irqs:
+>  		local_irq_enable();
+> +		device_power_up(PMSG_RESTORE);
+> + Resume_irqs:
+> +		resume_device_irqs();
+>  		device_pm_unlock();
+>  		enable_nonboot_cpus();
+>   Resume_devices:
+
+(same comment about label style applies here too.)
+
+> Index: linux-2.6/include/linux/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/irq.h
+> +++ linux-2.6/include/linux/irq.h
+> @@ -65,6 +65,7 @@ typedef	void (*irq_flow_handler_t)(unsig
+>  #define IRQ_SPURIOUS_DISABLED	0x00800000	/* IRQ was disabled by the spurious trap */
+>  #define IRQ_MOVE_PCNTXT		0x01000000	/* IRQ migration from process context */
+>  #define IRQ_AFFINITY_SET	0x02000000	/* IRQ affinity was set from userspace*/
+> +#define IRQ_SUSPENDED		0x04000000	/* IRQ has gone through suspend sequence */
+>  
+>  #ifdef CONFIG_IRQ_PER_CPU
+>  # define CHECK_IRQ_PER_CPU(var) ((var) & IRQ_PER_CPU)
+
+Note, you should probably make PM_SLEEP depend on 
+GENERIC_HARDIRQS - as this change will break the build on all 
+non-genirq architectures. (sparc, alpha, etc.)
+
+	Ingo
