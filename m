@@ -1,21 +1,18 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Mon, 23 Feb 2009 10:11:58 +0100
-Message-ID: <20090223091158.GJ9582__31386.0786649913$1235380496$gmane$org@elte.hu>
-References: <20090220125516.GB10232@linux.vnet.ibm.com>
-	<20090220132145.GF26418@elte.hu>
-	<20090220141415.GA27381@dirshya.in.ibm.com>
-	<20090220160737.GC11294@elte.hu>
-	<20090220115745.43d202d6@infradead.org>
-	<20090220215318.GA30665@elte.hu>
-	<20090223075521.GA3725@balbir.in.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+	during suspend-resume
+Date: Mon, 23 Feb 2009 01:22:55 -0800
+Message-ID: <m17i3ha4nk.fsf__15294.9795512997$1235381189$gmane$org@fess.ebiederm.org>
+References: <200902221837.49396.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902220946070.3111@localhost.localdomain>
+	<200902222342.08285.rjw@sisk.pl> <200902230048.33635.rjw@sisk.pl>
+	<m1ab8ddfbr.fsf@fess.ebiederm.org> <20090223084400.GB9582@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090223075521.GA3725@balbir.in.ibm.com>
+In-Reply-To: <20090223084400.GB9582@elte.hu> (Ingo Molnar's message of "Mon\,
+	23 Feb 2009 09\:44\:00 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,77 +22,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> * Ingo Molnar <mingo@elte.hu> [2009-02-20 22:53:18]:
-> 
-> > 
-> > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > 
-> > > On Fri, 20 Feb 2009 17:07:37 +0100
-> > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > 
-> > > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > > I'd also suggest to not do that rather ugly 
-> > > > > > enable_timer_migration per-cpu variable, but simply reuse 
-> > > > > > the existing nohz.load_balancer as a target CPU.
-> > > > > 
-> > > > > This is a good idea to automatically bias the timers.  But 
-> > > > > this nohz.load_balancer is a very fast moving target and we 
-> > > > > will need some heuristics to estimate overall system idleness 
-> > > > > before moving the timers.
-> > > > > 
-> > > > > I would agree that the power saving load balancer has a good 
-> > > > > view of the system and can potentially guide the timer biasing 
-> > > > > framework.
-> > > > 
-> > > > Yeah, it's a fast moving target, but it already concentrates 
-> > > > the load somewhat.
-> > > > 
-> > > 
-> > > I wonder if the real answer for this isn't to have timers be 
-> > > considered schedulable-entities and have the regular scheduler 
-> > > decide where they actually run.
-> > 
-> > hm, not sure - it's a bit heavy for that.
-> >
-> 
-> I think the basic timer migration policy should exist in user 
-> space.
+> I think this aspect has been well-understood during the 
+> discussion of this topic and it's just a slightly misleading 
+> changelog.
 
-I disagree.
+As I was a member of that discussion I did not see that.
 
-> One of the ways of looking at it is, as we begin to 
-> consolidate, using range timers and migrating all timers to 
-> lesser number of CPUs would make a whole lot of sense.
-> 
-> As far as the scheduler making those decisions is concerned, 
-> my concern is that the load balancing is a continuous process 
-> and timers don't necessarily work that way. I'd put my neck 
-> out and say that irqbalance, range timers and timer migration 
-> should all belong to user space. irqbalance and range timers 
-> do, so should timer migration.
+It took me several passes through the patches to realize
+the goal is to allow drivers to be able to sleep while they
+are in their late pm shutdown routines.
 
-As i said it my first reply, IRQ migration is special because 
-they are not kernel-internal objects, they come externally so 
-there's a lot of user-space enumeration, policy and other steps 
-involved. Furthermore, IRQs are migrated in a 'slow' fashion.
+Why we want this I don't know.  But it seems simple enough
+to implement, and it makes it harder to get the late pm
+suspend routines wrong, which is always good.
 
-Timers on the other hand are fast entities tied to _tasks_ 
-primarily, not external entities. Hence they should migrate 
-according to the CPU where the activities of the system 
-concentrates - i.e. where tasks are running.
+> The new suspend code does not rely on truly disabling IRQs on 
+> the low level. The purpose is to not get IRQs to drivers - which 
+> might crash/hang/race/misbehave.
 
-Another thing: do you argue for the existing timer-migration 
-code we have in mod_timer() to move to user-space too? It isnt a 
-consistent argument to push 'some' of it to user-space, and some 
-of it in kernel-space.
+Reasonable.  I expect one of the problems with drivers getting it
+wrong is that the interface is too complex for mortal humans to
+understand.
 
-	Ingo
+> Still, it might make sense to not just use the ->disable 
+> sequence but primarily the ->shutdown irqchip method (when it's 
+> available in the irqchip).
+
+Disable seems fine to me.  This is interesting in the context
+of all of the irqs that will when masked show up somewhere
+else (think boot interrupts).
+
+> While we obviously cannot turn off the PIC that delivers timer 
+> IRQs at this stage - there's no theoretical reason why the 
+> suspend sequence couldnt power down some secondary PICs as well 
+> - in some arch code, or maybe even in the generic driver suspend 
+> sequence if the device tree is structured carefully enough so 
+> that the PIC gets turned off last.
+
+If the point is simply to prevent deliver of irqs to the drivers
+I don't see the point of anything more than what the patch does
+now.
+
+Eric
