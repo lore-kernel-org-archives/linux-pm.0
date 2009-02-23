@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
 	during suspend-resume
-Date: Mon, 23 Feb 2009 15:45:25 +0100
-Message-ID: <200902231545.26250.rjw__44745.5619615086$1235400582$gmane$org@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <m1bpst77te.fsf@fess.ebiederm.org>
-	<20090223110433.GA17312@elte.hu>
+Date: Mon, 23 Feb 2009 15:48:11 +0100
+Message-ID: <200902231548.12821.rjw@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200902231229.58743.rjw@sisk.pl>
+	<20090223122832.GB31427@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090223110433.GA17312@elte.hu>
+In-Reply-To: <20090223122832.GB31427@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,88 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 23 February 2009, Ingo Molnar wrote:
 > 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> > > What makes s2ram fragile is not human failure but the 
-> > > combination of a handful of physical property:
-> > >
-> > > 1) Psychology: shutting the lid or pushing the suspend button is 
-> > >    a deceivingly 'simple' action to the user. But under the 
-> > >    hood, a ton of stuff happens: we deinitialize a lot of 
-> > >    things, we go through _all hardware state_, and we do so in a 
-> > >    serial fashion. If just one piece fails to do the right 
-> > >    thing, the box might not resume. Still, the user expects this 
-> > >    'simple' thing to just work, all the time. No excuses 
-> > >    accepted.
-> > >
-> > > 2) Length of code: To get a successful s2ram sequence the kernel
-> > >    runs through tens of thousands of lines of code. Code which
-> > >    never gets executed on a normal box - only if we s2ram. If 
-> > >    just one step fails, we get a hung box.
-> > >
-> > > 3) Debuggability: a lot of s2ram code runs with the console off, 
-> > >    making any bugs hard to debug. Furthermore we have no 
-> > >    meaningful persistent storage either for kernel bug messages. 
-> > >    The RTC trick of PM_DEBUG works but is a very narrow channel 
-> > >    of information and it takes a lot of time to debug a bug via 
-> > >    that method.
+> > > > Index: linux-2.6/arch/x86/kernel/apm_32.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/arch/x86/kernel/apm_32.c
+> > > > +++ linux-2.6/arch/x86/kernel/apm_32.c
+> > > 
+> > > > +
+> > > > +	suspend_device_irqs();
+> > > >  	device_power_down(PMSG_SUSPEND);
+> > > > +
+> > > > +	local_irq_disable();
+> > > 
+> > > hm, this is a very repetitive pattern, all around the various 
+> > > suspend/resume variants. Might make sense to make:
+> > > 
+> > >   	device_power_down(PMSG_SUSPEND);
+> > > 
+> > > do the irq line disabling plus the local irq disabling 
+> > > automatically. That also means it cannot be forgotten. The 
+> > > symmetric action should happen for PMSG_RESUME.
+> > > 
+> > > Is there ever a case where we want a different pattern?
 > > 
-> > Yep that is an issue.
+> > Even if there's no such case, I prefer to call 
+> > local_irq_disable() explicitly in here, so that it's clearly 
+> > known where it happens to anyone reading this code.
 > 
-> I'd also like to add #4:
+> That property can be implied in the function name:
 > 
->      4) One more thing that makes s2ram special is that when the 
->         resume path finds hardware often in an even more 
->         deinitialized form than during normal bootup. During
->         normal bootup the BIOS/firmware has at least done some
->         minimal bootstrap (to get the kernel loaded), which
->         makes life easier for the kernel.
+>    	device_power_down_irq_disable(PMSG_SUSPEND);
 > 
->         At s2ram stage we've got a completely pure hardware
->         init state, with very minimal firmware activation.
+> Open-coding it, if it looks the same in all the cases just 
+> increases the chances that someone somewhere copies them 
+> incorrectly.
 
-This is very true and at least in some cases done on purpose, AFAICS, due to
-some timing constraints forced on HW vendors by M$, for example.
-
->         So many of the init and deinit problems and bugs we only 
->         hit in the s2ram path - which dynamics is again not 
->         helpful.
-
-Plus ACPI requires us to do additional things during suspend-resume that
-are not done on boot-shutdown and which have their own ordering requirements
-(not necessarily stated directly, but such that we have do discover
-experimentally).  That also change from one BIOS to another.
-
-> > > The combination of these factors really makes up for a 
-> > > perfect storm in terms of kernel technology: we have this 
-> > > very-deceivingly-simple-looking but 
-> > > complex-and-rarely-executed piece of code, which is very 
-> > > hard to debug.
-> > 
-> > And much of this as you are finding with this piece of code is 
-> > how the software was designed rather then how the software 
-> > needed to be.
-> 
-> Well most of the 4 problems above are externalities and cannot 
-> go away just by fixing the kernel.
-> 
->  #1 will always be with us.
->  #3 needs the hardware to change. It's happening, but slowly.
->  #4 will be with us as long as there's non-Linux BIOSes
-> 
-> #2 is the only thing where we can make a realistic difference,
-> but there's just so much we can do there.
-> 
-> And that still leaves the other three items: each of which is 
-> powerful enough of a force to give a bad name to any normal 
-> subsystem.
-
-Agreed.
+Well, I see your point, but in that case I'd rather couple the disabling of
+local interrupts on the CPU with sysdev_suspend and the disabling (or whatever
+Eric would like to call that) of device interrupts with device_power_down().
 
 Thanks,
 Rafael
