@@ -1,16 +1,15 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Mon, 23 Feb 2009 14:44:17 -0800
-Message-ID: <d6200be20902231444q141dadcemb0123567a90defb0__18775.4692080945$1235429301$gmane$org@mail.gmail.com>
-References: <200902221837.49396.rjw@sisk.pl> <200902221839.50357.rjw@sisk.pl>
-	<d6200be20902231411s654f8b3csf1388a97f3f94ac4@mail.gmail.com>
-	<200902232323.25583.rjw@sisk.pl>
+Subject: Re: [RFD] Automatic suspend
+Date: Mon, 23 Feb 2009 15:13:19 -0800
+Message-ID: <d6200be20902231513h31661a95n63407b5194b56d51__41580.4169061177$1235431392$gmane$org@mail.gmail.com>
+References: <200902192215.18365.rjw@sisk.pl> <200902211047.26787.rjw@sisk.pl>
+	<d6200be20902210232m71700247k8914ca3735563881@mail.gmail.com>
+	<200902212120.37684.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902232323.25583.rjw@sisk.pl>
+In-Reply-To: <200902212120.37684.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 2:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 23 February 2009, Arve Hj=F8nnev=E5g wrote:
->> On Sun, Feb 22, 2009 at 9:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, Feb 21, 2009 at 12:20 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
+>> On Sat, Feb 21, 2009 at 1:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
+>> >> On Fri, Feb 20, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
+e:
+>> >> > On Saturday 21 February 2009, Arve Hj=F8nnev=E5g wrote:
+>> >> >> On Fri, Feb 20, 2009 at 7:56 AM, Rafael J. Wysocki <rjw@sisk.pl> w=
+rote:
+>> >> >> > On Friday 20 February 2009, Arve Hj=F8nnev=E5g wrote:
+>> >> >> >> On Fri, Feb 20, 2009 at 2:49 AM, Rafael J. Wysocki <rjw@sisk.pl=
+> wrote:
+>> >> >> >> > On Friday 20 February 2009, Arve Hj=F8nnev=E5g wrote:
+>> >> >> >> >> On Thu, Feb 19, 2009 at 2:08 PM, Alan Stern <stern@rowland.h=
+arvard.edu> wrote:
+> [--snip--]
+>> >> > The idea is to have both /sys/power/state and /sys/power/sleep at t=
+he same
+>> >> > time, where /sys/power/state will work just like it does right now.=
+  Sure,
+>> >> > there must be mutual exclusion between the two, but that's a matter=
+ of
+>> >> > implementation IMO.
+>> >>
+>> >> If you want to only prevent suspend though one interface, you have to
+>> >> also pass information to the driver about its suspend hook is being
+>> >> called so it can conditionally return -EBUSY. The wakelock interface
+>> >> requires less code in each driver.
 >> >
->> > Introduce two helper functions allowing us to disable device
->> > interrupts (at the IO-APIC level) during suspend or hibernation
->> > and enable them during the subsequent resume, respectively, so that
->> > the timer interrupts are enabled while "late" suspend callbacks and
->> > "early" resume callbacks provided by device drivers are being
->> > executed.
->> >
->> > Use these functions to rework the handling of interrupts during
->> > suspend (hibernation) and resume.  Namely, interrupts will only be
->> > disabled on the CPU right before suspending sysdevs, while device
->> > interrupts will be disabled (at the IO-APIC level), with the help of
->> > the new helper function, before calling "late" suspend callbacks
->> > provided by device drivers and analogously during resume.
->> >
+>> > Well, I don't think so.  Moreover, it requires you to spread wakelocks=
+ all
+>> > over the place if you don't use the timeouted ones which, let's face i=
+t, is
+>> > hardly acceptable.
 >>
->> What impact does this have on wakeup interrupts? Unless you add a
->> check, after masking all interrupt at the CPU, to abort suspend if any
->> wakeup interrupt has IRQ_PENDING set I think you will loose wakeup
->> interrupts (at least for irqs that use default_disable).
+>> Your method does not reduce the number of places that has to be
+>> modified. Any component where we add a wakelock, you have to add a
+>> suspend handler to abort suspend when we would have held a wakelock.
 >
-> I _think_ they would have to be reenabled after we've called
-> local_irq_disable().
+> Well, maybe not, but it doesn't introduce entirely new API for device dri=
+vers.
+> Instead, it extends the existing interfaces which I think is more appropr=
+iate.
 
-Are you talking about the irq_chip switching from enabled interrupts
-to wake interrupts? It is not enough for the irq_chip to reenable the
-hardware interrupt. If the interrupt is edge triggered and occurred
-after you disabled it, but before local_irq_disable, the only record
-of it is the IRQ_PENDING flag.
+The existing interfaces require polling. I don't think extending these
+interfaces to make the polling faster is a better solution than adding
+an interface to avoid polling.
+
+Also, with your solution, how would you modify evdev.c to prevent
+suspend while the event queue is not empty. This code does not have
+any suspend hooks and the queue is not tied to any thread.
 
 -- =
 
