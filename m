@@ -1,8 +1,8 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Subject: Re: [RFC PATCH 0/4] timers: framework for migration
 	between CPU
-Date: Mon, 23 Feb 2009 11:22:34 +0100
-Message-ID: <20090223102234.GQ9582__37912.7165223055$1235384744$gmane$org@elte.hu>
+Date: Mon, 23 Feb 2009 16:08:14 +0530
+Message-ID: <20090223103814.GB8817__16681.569213006$1235385535$gmane$org@dirshya.in.ibm.com>
 References: <20090220125516.GB10232@linux.vnet.ibm.com>
 	<20090220132145.GF26418@elte.hu>
 	<20090220141415.GA27381@dirshya.in.ibm.com>
@@ -12,6 +12,7 @@ References: <20090220125516.GB10232@linux.vnet.ibm.com>
 	<20090223075521.GA3725@balbir.in.ibm.com>
 	<20090223091158.GJ9582@elte.hu>
 	<20090223094850.GA10226@balbir.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,11 +29,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
+Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-02-23 15:18:50]:
 
 > * Ingo Molnar <mingo@elte.hu> [2009-02-23 10:11:58]:
 > 
@@ -81,7 +81,7 @@ List-Id: linux-pm@vger.kernel.org
 > >
 > 
 > See below
->  
+> 
 > > > One of the ways of looking at it is, as we begin to 
 > > > consolidate, using range timers and migrating all timers to 
 > > > lesser number of CPUs would make a whole lot of sense.
@@ -101,23 +101,12 @@ List-Id: linux-pm@vger.kernel.org
 > > Timers on the other hand are fast entities tied to _tasks_ 
 > > primarily, not external entities. 
 > 
-> Timers are also queued due to external events like interrupts 
-> (device drivers tend to set of timers all the time). [...]
-
-That is a silly argument. Tasks are created due to 'external 
-events' as well such as the user hitting a key.
-
-What matters, and what was my argument is the distinction 
-whether the kernel _generates_ the event. For most IRQ events it 
-does not, for the overwhelming majority of timers events it 
-consciously generates timer events. Which makes them all the 
-much different.
-
-> [...] I am not fully against what you've said, at some 
-> semantic level what you are suggesting is that at a higher 
-> level of power saving, when the scheduler balances timers it 
-> is doing a form of soft CPU hotplug on the system by migrating 
-> timers and tasks away from idle CPUs when the load can be 
+> Timers are also queued due to external events like interrupts (device
+> drivers tend to set of timers all the time). I am not fully against
+> what you've said, at some semantic level what you are suggesting is
+> that at a higher level of power saving, when the scheduler balances
+> timers it is doing a form of soft CPU hotplug on the system by
+> migrating timers and tasks away from idle CPUs when the load can be
 > handled by other CPUs. See below as well.
 > 
 > > Hence they should migrate 
@@ -131,10 +120,7 @@ much different.
 > > 
 > 
 > No.. mod_timer() is correct where it belongs.
-
-You did not reply to my statement that the argument is a double 
-standard. Why do certain migrations in the kernel and some not?
-
+> 
 > Consider the powertop usage scenario today
 > 
 > 1. Powertop displays a list of timers and common causes of wakeup
@@ -142,10 +128,7 @@ standard. Why do certain migrations in the kernel and some not?
 >    a. usb autosuspend
 >    b. wireless link management
 >    c. disable HAL polling
-
-That's different - those are PowerTop timer event _reduction_ 
-policies. Not migration policies of existing timers.
-
+> 
 > My argument is, why can't we add
 > 
 >    d. Use range timers
@@ -156,8 +139,31 @@ policies. Not migration policies of existing timers.
 > Even sched_mc=n is set by user space, so really the
 > policy is in user space.
 
-that is different again. sched_mc is a broad switch not a 
-dynamic control like the sysfs migration interface that was 
-introduced in this patchset. Which patchset we are discussing.
+Hi Balbir, 
 
-	Ingo
+I would agree that the policy would exist in user space.  But what
+Ingo is suggesting is that the decision of actually choosing the
+destination cpu to consolidate should come from existing scheduler's
+power save balancer code.
+
+My understanding is that we will certainly have a sysfs tunable to
+'enable' timer migration or consolidation, similar to the sched_mc=2
+policy, but the actual set of CPUs to evacuate and the correct set of
+target CPUs to consolidate should come from the scheduler and not
+necessarily from the user space.
+
+The scheduler should be able to figure out the following parameters:
+
+* Identify set of idle CPUs (CPU package) from which timers can be
+  removed
+* Identify a semi-idle or idle CPU package to which the timers can be
+  moved
+* Decide when to start moving timers as the system has large number of
+  idle CPUs
+* Decide when to stop migrating as system becomes less idle and
+  utilisation increases
+
+Guiding all of the above decisions from user space may not be fast
+enough.
+
+--Vaidy
