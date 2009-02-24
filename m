@@ -1,16 +1,14 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Mon, 23 Feb 2009 19:30:16 -0800
-Message-ID: <m1iqn01ph3.fsf__20110.8915651732$1235446444$gmane$org@fess.ebiederm.org>
-References: <200902221837.49396.rjw@sisk.pl> <200902231203.09082.rjw@sisk.pl>
-	<m18wnx41h5.fsf@fess.ebiederm.org> <200902232239.05926.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.29-rc6: Reported regressions from 2.6.28
+Date: Tue, 24 Feb 2009 08:15:50 +0100
+Message-ID: <20090224071550.GA10436__26340.7903993086$1235459938$gmane$org@elte.hu>
+References: <GVhknozYwrL.A.hiC.rozoJB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902232239.05926.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon\, 23 Feb 2009 22\:39\:04 +0100")
+Content-Disposition: inline
+In-Reply-To: <GVhknozYwrL.A.hiC.rozoJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Adam J. Richter" <adam@yggdrasil.com>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zij>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> On Monday 23 February 2009, Eric W. Biederman wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->> >> I don't know where in the state machine this is getting called but
->> >> I would suggest doing this before we shutdown cpus.
->> >
->> > This is the plan.  In fact, I'm going to do this in the next patch after the
->> > $subject one has been tested and found acceptable.
->> 
->> Good to hear.  Then let's please get a version of the irq disable that calls
->> shutdown, so we can be certain we don't have hardware irqs in flight.
->> 
->> For the drivers it should not matter for clean cpu shutdown it will.
->
-> OK, I will.
+(note, the standalone mail of this bug entry did not make it out 
+for some reason.)
 
-My apologies I was wrong.  Calling shutdown is not safe.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-I just remembered that masking an ioapic from anywhere besides the
-irq handler can lock the ioapic state machine, and lead to non-recoverable
-interrupts.  It is rare but I have seen it happen.  I wanted to figure out
-how to migrate interrupts outside of interrupt context and this was what
-prevented me.  A suspend/resume cycle might be enough of a reset to
-get the ioapic out of that state but I don't know.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12760
+> Subject		: 2.6.29-rc5 hanging at boot when CONFIG_LOCK_STAT=y
+> Submitter	: Adam J. Richter <adam@yggdrasil.com>
+> Date		: 2009-02-16 6:50 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123476768023893&w=4
+> Handled-By	: Ingo Molnar <mingo@elte.hu>
 
-The only safe way on x86 to shutdown a level triggered ioapic irq
-outside of irq context is for the driver to program the hardware to
-not generate an irq.
+Here we came to the conclusion that this is some LILO bug with a 
+too large BSS section - that's one thing that CONFIG_LOCK_STAT 
+causes. Under Grub the same kernel image boots fine. So unless 
+Adam has new data that contradicts this i think we can close 
+this bug.
 
-Therefore doing anything with the irqs at the point where we are
-suspending them is a formality, and perhaps simply code that ensures
-in-flight irqs don't make it past a certain point.
-
-I believe we just need to call disable() and print a big nasty warning
-if any irq comes in after the suspend stage.
-
-Eric
+	Ingo
