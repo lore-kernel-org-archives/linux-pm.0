@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Tue, 24 Feb 2009 23:42:06 +0100
-Message-ID: <200902242342.07721.rjw__33869.7600913749$1235515637$gmane$org@sisk.pl>
+ during suspend-resume
+Date: Tue, 24 Feb 2009 14:51:45 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902241449221.3111__30902.6871495464$1235516106$gmane$org@localhost.localdomain>
 References: <200902221837.49396.rjw@sisk.pl> <200902232239.05926.rjw@sisk.pl>
-	<m1iqn01ph3.fsf@fess.ebiederm.org>
+	<m1iqn01ph3.fsf@fess.ebiederm.org> <200902242342.07721.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1iqn01ph3.fsf@fess.ebiederm.org>
-Content-Disposition: inline
+In-Reply-To: <200902242342.07721.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 24 February 2009, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Monday 23 February 2009, Eric W. Biederman wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >> >> I don't know where in the state machine this is getting called but
-> >> >> I would suggest doing this before we shutdown cpus.
-> >> >
-> >> > This is the plan.  In fact, I'm going to do this in the next patch after the
-> >> > $subject one has been tested and found acceptable.
-> >> 
-> >> Good to hear.  Then let's please get a version of the irq disable that calls
-> >> shutdown, so we can be certain we don't have hardware irqs in flight.
-> >> 
-> >> For the drivers it should not matter for clean cpu shutdown it will.
-> >
-> > OK, I will.
-> 
-> My apologies I was wrong.  Calling shutdown is not safe.
-> 
-> I just remembered that masking an ioapic from anywhere besides the
-> irq handler can lock the ioapic state machine, and lead to non-recoverable
-> interrupts.  It is rare but I have seen it happen.  I wanted to figure out
-> how to migrate interrupts outside of interrupt context and this was what
-> prevented me.  A suspend/resume cycle might be enough of a reset to
-> get the ioapic out of that state but I don't know.
-> 
-> The only safe way on x86 to shutdown a level triggered ioapic irq
-> outside of irq context is for the driver to program the hardware to
-> not generate an irq.
 
-Well, that changes things quite a bit, because it means we can't change the
-suspend-resume sequence in a way we thought we could without fixing all
-drivers first, but this is exactly what we'd like to avoid by changing the
-core.
 
-I think the most important source of level triggered interrupts are PCI
-devices, so perhaps we can make the PCI PM core use bit 10 of the PCI Device
-Control register to prevent devices from generating INTx after the drivers'
-suspend routines have been executed?
-
-> Therefore doing anything with the irqs at the point where we are
-> suspending them is a formality, and perhaps simply code that ensures
-> in-flight irqs don't make it past a certain point.
+On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
+>
+> > The only safe way on x86 to shutdown a level triggered ioapic irq
+> > outside of irq context is for the driver to program the hardware to
+> > not generate an irq.
 > 
-> I believe we just need to call disable() and print a big nasty warning
-> if any irq comes in after the suspend stage.
+> Well, that changes things quite a bit, because it means we can't change the
+> suspend-resume sequence in a way we thought we could without fixing all
+> drivers first, but this is exactly what we'd like to avoid by changing the
+> core.
 
-At the moment we're safe, since PCI devices are put into low power states
-in the suspend stage.  However, we'd like to make that happen in the "late
-suspend" stage to avoid a problem with a shared interrupt occuring after one
-of the devices using it has been suspended and its driver's irq handler can't
-cope with that.
+Calling "disable_irq()" is perfectly fine.
 
-Thanks,
-Rafael
+What is not possible on that broken IO-APIC (among other things) is to 
+actually turn the interrupts off at the apic (ie the whole ->shutdown() 
+thing). But that's not what we even want to do. What we care about is 
+just disabling the interrupt from a drievr perspective.
+
+IOW, the patches I have seen are fine, and all the comments from Eric are 
+just confusion about what we want done.
+
+WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may happen later, but 
+that's totally unrelated to this whole "suspend_device_irq()" thing.
+
+		Linus
