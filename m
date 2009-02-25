@@ -1,20 +1,16 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Tue, 24 Feb 2009 20:59:43 -0800
-Message-ID: <m1eixnru0w.fsf__19429.9683360898$1235538170$gmane$org@fess.ebiederm.org>
-References: <200902221837.49396.rjw@sisk.pl> <200902232239.05926.rjw@sisk.pl>
-	<m1iqn01ph3.fsf@fess.ebiederm.org> <200902242342.07721.rjw@sisk.pl>
-	<alpine.LFD.2.00.0902241449221.3111@localhost.localdomain>
-	<m18wnvup53.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.00.0902242020120.3111@localhost.localdomain>
+	during	suspend-resume
+Date: Wed, 25 Feb 2009 14:23:25 +0100
+Message-ID: <20090225132325.GB30206__33921.8580200852$1235568385$gmane$org@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl> <200902250007.13069.rjw@sisk.pl>
+	<20090224230935.GA15165@elte.hu> <200902250029.16107.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0902242020120.3111@localhost.localdomain> (Linus
-	Torvalds's message of "Tue\,
-	24 Feb 2009 20\:26\:29 -0800 \(PST\)")
+Content-Disposition: inline
+In-Reply-To: <200902250029.16107.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,48 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> On Tue, 24 Feb 2009, Eric W. Biederman wrote:
->> The question I was asking is:
->> Can we get the broken cpu hotunplug code out of the suspend path?
->
-> I think we can move it around. I don't think we can get rid of it.
->
->> If we can get the devices into a low power state and not generating
->> interrupts by the time we disable cpus then we do not need to migrate
->> irqs from process context and risk hitting the ioapic bugs.
->
-> At least one issue is that the actual final "go to sleep" is something 
-> that has to happen on just one CPU. And I'm pretty sure the others have to 
-> have gone through the shutdown sequence before that.
->
-> And knowing ACPI, the ordering requirements will boil down to something 
-> insane, like "you have to turn off the other CPU's _before_ you turn off 
-> some od the core devices, because turning off the other CPU's may involve 
-> them". 
->
-> So if what you would _want_ to do is to move the "turn off CPU's" into the 
-> very innermost layer, so that different architectures can then decide 
-> whether they even need to go through that whole thing or not (because 
-> turning off one core will automatically turn off all the others, simply 
-> because the power was turned off), I suspect the answer is "no".
->
-> So you were probably hoping to never have to have that whole horrible 
-> issue with moving interrupts around. I'm afraid I'm not seeing it happen. 
-> But maybe we can have it happen after we've disabled all the non-system 
-> devices, so that in practice there simply won't be any new interrupts 
-> coming in any more.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Right.  That is what I am hoping for.  No device interrupts coming into the
-cpus at the time we turn them off.
+> On Wednesday 25 February 2009, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > On Tuesday 24 February 2009, Linus Torvalds wrote:
+> > > > 
+> > > > On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
+> > > > >
+> > > > > > The only safe way on x86 to shutdown a level triggered ioapic irq
+> > > > > > outside of irq context is for the driver to program the hardware to
+> > > > > > not generate an irq.
+> > > > > 
+> > > > > Well, that changes things quite a bit, because it means we can't change the
+> > > > > suspend-resume sequence in a way we thought we could without fixing all
+> > > > > drivers first, but this is exactly what we'd like to avoid by changing the
+> > > > > core.
+> > > > 
+> > > > Calling "disable_irq()" is perfectly fine.
+> > > > 
+> > > > What is not possible on that broken IO-APIC (among other 
+> > > > things) is to actually turn the interrupts off at the apic 
+> > > > (ie the whole ->shutdown() thing). But that's not what we 
+> > > > even want to do. What we care about is just disabling the 
+> > > > interrupt from a drievr perspective.
+> > > > 
+> > > > IOW, the patches I have seen are fine, and all the comments 
+> > > > from Eric are just confusion about what we want done.
+> > > 
+> > > Ah, OK.  Thanks for the explanation, I got confused too.
+> > > 
+> > > > WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may 
+> > > > happen later, but that's totally unrelated to this whole 
+> > > > "suspend_device_irq()" thing.
+> > > 
+> > > Yeah.
+> > 
+> > We definitely dont want to turn off x86 IO-APICs - the timer IRQ 
+> > goes via one of them.
+> 
+> No, we don't.  At least not at this point.
+> 
+> BTW, appended is the current (3rd) version of the $subject patch with some
+> of your comments taken into account.  In particular, I did the following:
+> - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
+> - fixed interrupt.h so that their headers are at a better place
+> - made enable_irq() clear IRQ_SUSPENDED
+> - made device_power_down() and device_power_up() call
+>   suspend_device_irqs() and resume_device_irqs(), respectively, which
+>   simplified the callers quite a bit (it changed the Xen code ordering, though,
+>   but I _think_ it still should work).
+> 
+> Please have a look.
 
-We can disable the devices and thus disable the interrupts the devices
-are sending before we disable the cpus.  That should make cpu disable
-on suspend much easier to get solid then general x86 cpu hot-unplug.
+Looks good, thanks Rafael!
 
-Eric
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
