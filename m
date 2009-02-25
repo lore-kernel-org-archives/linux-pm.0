@@ -1,16 +1,18 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during	suspend-resume
-Date: Wed, 25 Feb 2009 14:23:25 +0100
-Message-ID: <20090225132325.GB30206__33921.8580200852$1235568385$gmane$org@elte.hu>
-References: <200902221837.49396.rjw@sisk.pl> <200902250007.13069.rjw@sisk.pl>
-	<20090224230935.GA15165@elte.hu> <200902250029.16107.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 00/11] Android PM extensions (version 3)
+Date: Wed, 25 Feb 2009 14:23:53 +0100
+Message-ID: <20090225132353.GA5109@atrey.karlin.mff.cuni.cz>
+References: <1234316955-31304-1-git-send-email-arve@android.com>
+	<20090217210504.GD1433@ucw.cz>
+	<d6200be20902181743i1bb36fe8m95b50c0fbd6d3c2@mail.gmail.com>
+	<20090222134852.GB1436@ucw.cz>
+	<d6200be20902231531r75f8ee05o1f512d1636710c3d@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902250029.16107.rjw@sisk.pl>
+In-Reply-To: <d6200be20902231531r75f8ee05o1f512d1636710c3d@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +22,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Wednesday 25 February 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday 24 February 2009, Linus Torvalds wrote:
-> > > > 
-> > > > On Tue, 24 Feb 2009, Rafael J. Wysocki wrote:
-> > > > >
-> > > > > > The only safe way on x86 to shutdown a level triggered ioapic irq
-> > > > > > outside of irq context is for the driver to program the hardware to
-> > > > > > not generate an irq.
-> > > > > 
-> > > > > Well, that changes things quite a bit, because it means we can't change the
-> > > > > suspend-resume sequence in a way we thought we could without fixing all
-> > > > > drivers first, but this is exactly what we'd like to avoid by changing the
-> > > > > core.
-> > > > 
-> > > > Calling "disable_irq()" is perfectly fine.
-> > > > 
-> > > > What is not possible on that broken IO-APIC (among other 
-> > > > things) is to actually turn the interrupts off at the apic 
-> > > > (ie the whole ->shutdown() thing). But that's not what we 
-> > > > even want to do. What we care about is just disabling the 
-> > > > interrupt from a drievr perspective.
-> > > > 
-> > > > IOW, the patches I have seen are fine, and all the comments 
-> > > > from Eric are just confusion about what we want done.
-> > > 
-> > > Ah, OK.  Thanks for the explanation, I got confused too.
-> > > 
-> > > > WE DO NOT WANT TO TURN OFF THE IO-APIC. That may or may 
-> > > > happen later, but that's totally unrelated to this whole 
-> > > > "suspend_device_irq()" thing.
-> > > 
-> > > Yeah.
-> > 
-> > We definitely dont want to turn off x86 IO-APICs - the timer IRQ 
-> > goes via one of them.
+> There is no requirement for the kernel api to match the user-space
+> api, it is just less confusing. The android java apis provide a
+> wakelock interface. We cannot change this api, but the both the in
+> kernel api and the api from the kernel to user space can be changed.
 > 
-> No, we don't.  At least not at this point.
-> 
-> BTW, appended is the current (3rd) version of the $subject patch with some
-> of your comments taken into account.  In particular, I did the following:
-> - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
-> - fixed interrupt.h so that their headers are at a better place
-> - made enable_irq() clear IRQ_SUSPENDED
-> - made device_power_down() and device_power_up() call
->   suspend_device_irqs() and resume_device_irqs(), respectively, which
->   simplified the callers quite a bit (it changed the Xen code ordering, though,
->   but I _think_ it still should work).
-> 
-> Please have a look.
+> I did a quick poll here. 2 people preferred suspend_inhibitor and 3
+> people preferred wake_lock. The people who preferred wake_lock did not
+> like the word inhibit(or). Block(er) was suggested as an alternative.
 
-Looks good, thanks Rafael!
+suspend_block / suspend_unblock sounds fine to me.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
