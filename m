@@ -1,23 +1,25 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Wed, 25 Feb 2009 20:24:03 -0800
-Message-ID: <d6200be20902252024ie529433r9790f5d5ec7b8b5a__14109.6029467464$1235622615$gmane$org@mail.gmail.com>
-References: <200902221837.49396.rjw@sisk.pl>
-	<d6200be20902251813o3ff4a065nb0a54321e27c512d@mail.gmail.com>
-	<alpine.LFD.2.00.0902251848120.3111@localhost.localdomain>
-	<20090226030050.GA3361@elte.hu>
-	<d6200be20902251931lf563c2aw43d5266e9677e168@mail.gmail.com>
-	<alpine.LFD.2.00.0902251935190.3111@localhost.localdomain>
-	<d6200be20902251950l34d5968q4b553ce8305ebd4b@mail.gmail.com>
-	<alpine.LFD.2.00.0902251956450.3111@localhost.localdomain>
-	<d6200be20902252013v366ce771w8a129e9f3b75927f@mail.gmail.com>
-	<m1y6vtkewc.fsf@fess.ebiederm.org>
+From: Dipankar Sarma <dipankar@in.ibm.com>
+Subject: Re: [RFC PATCH 0/4] timers: framework for migration
+	between CPU
+Date: Thu, 26 Feb 2009 14:28:31 +0530
+Message-ID: <20090226085831.GA28397__10275.7238470533$1235639003$gmane$org@in.ibm.com>
+References: <20090220132145.GF26418@elte.hu>
+	<20090220141415.GA27381@dirshya.in.ibm.com>
+	<20090220160737.GC11294@elte.hu>
+	<20090220115745.43d202d6@infradead.org>
+	<20090220215318.GA30665@elte.hu>
+	<20090223075521.GA3725@balbir.in.ibm.com>
+	<20090223091158.GJ9582@elte.hu>
+	<20090223094850.GA10226@balbir.in.ibm.com>
+	<20090223103814.GB8817@dirshya.in.ibm.com>
+	<20090223110725.GB17312@elte.hu>
+Reply-To: dipankar@in.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1y6vtkewc.fsf@fess.ebiederm.org>
+Content-Disposition: inline
+In-Reply-To: <20090223110725.GB17312@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,26 +29,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 8:20 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Arve Hj=F8nnev=E5g <arve@android.com> writes:
->
->> We only have one gpio input driver, but I don't think is good to loose
->> any wakeup interrupts. Any driver that needs an edge triggered wakeup
->> interrupt will have problems if the hardware does not regenerate the
->> interrupt when the host does not respond.
->
-> We are not loosing interrupts. =A0The normal implementation of disable
-> is a software disable and sets IRQ_PENDING to ensure we don't loose
-> interrupts when the interrupt is disabled.
+On Mon, Feb 23, 2009 at 12:07:25PM +0100, Ingo Molnar wrote:
+> 
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> 
+> > * Identify set of idle CPUs (CPU package) from which timers 
+> >   can be removed
+> > * Identify a semi-idle or idle CPU package to which the timers
+> >   can be moved
+> > * Decide when to start moving timers as the system has large
+> >   number of idle CPUs
+> > * Decide when to stop migrating as system becomes less idle
+> >   and utilisation increases
+> > 
+> > Guiding all of the above decisions from user space may not be 
+> > fast enough.
+> 
+> Exactly.
 
-We loose the wakeup, but yes, the interrupt will be delivered if the
-system wakes up for any other reason.
+That is true for power management. However there are other
+situations where we may need targeted avoidance of timers.
+Certain type of applications - HPC for example - prefer avoidance
+of jitters due to periodic timers. It would be good to be
+able to say "avoid these CPUs for timers" while they are being
+used for HPC tasks.
 
--- =
-
-Arve Hj=F8nnev=E5g
+Thanks
+Dipankar
