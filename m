@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc6: Reported regressions from 2.6.28
-Date: Thu, 26 Feb 2009 00:12:17 +0100
-Message-ID: <200902260012.19083.rjw__23220.528351567$1235604867$gmane$org@sisk.pl>
-References: <GVhknozYwrL.A.hiC.rozoJB@chimera> <20090224071550.GA10436@elte.hu>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+	during suspend-resume
+Date: Wed, 25 Feb 2009 17:17:23 -0800
+Message-ID: <d6200be20902251717r531c022bl4c25fcb902201188__15203.1195852489$1235611316$gmane$org@mail.gmail.com>
+References: <200902221837.49396.rjw@sisk.pl> <200902250007.13069.rjw@sisk.pl>
+	<20090224230935.GA15165@elte.hu> <200902250029.16107.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090224071550.GA10436@elte.hu>
-Content-Disposition: inline
+In-Reply-To: <200902250029.16107.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux SCSI List <linux-scsi@vger.kernel.org>, "Adam J. Richter" <adam@yggdrasil.com>, Network Development <netdev@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 24 February 2009, Ingo Molnar wrote:
-> 
-> (note, the standalone mail of this bug entry did not make it out 
-> for some reason.)
+On Tue, Feb 24, 2009 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> BTW, appended is the current (3rd) version of the $subject patch with some
+> of your comments taken into account. =A0In particular, I did the followin=
+g:
+> - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
+> - fixed interrupt.h so that their headers are at a better place
+> - made enable_irq() clear IRQ_SUSPENDED
+> - made device_power_down() and device_power_up() call
+> =A0suspend_device_irqs() and resume_device_irqs(), respectively, which
+> =A0simplified the callers quite a bit (it changed the Xen code ordering, =
+though,
+> =A0but I _think_ it still should work).
 
-Hm, strange.  I certainly received it from one of the lists.
+Do you plan to fix edge triggered wakeup interrupts? It still looks
+like edge triggered wakeup interrupts that occur between
+suspend_device_irqs and local_irq_disable will not cause a wakeup.
 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12760
-> > Subject		: 2.6.29-rc5 hanging at boot when CONFIG_LOCK_STAT=y
-> > Submitter	: Adam J. Richter <adam@yggdrasil.com>
-> > Date		: 2009-02-16 6:50 (8 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123476768023893&w=4
-> > Handled-By	: Ingo Molnar <mingo@elte.hu>
-> 
-> Here we came to the conclusion that this is some LILO bug with a 
-> too large BSS section - that's one thing that CONFIG_LOCK_STAT 
-> causes. Under Grub the same kernel image boots fine. So unless 
-> Adam has new data that contradicts this i think we can close 
-> this bug.
+-- =
 
-Thanks, closed.
-
-Rafael
+Arve Hj=F8nnev=E5g
