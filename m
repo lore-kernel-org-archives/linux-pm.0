@@ -1,25 +1,16 @@
-From: Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: [RFC PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Thu, 26 Feb 2009 14:28:31 +0530
-Message-ID: <20090226085831.GA28397__10275.7238470533$1235639003$gmane$org@in.ibm.com>
-References: <20090220132145.GF26418@elte.hu>
-	<20090220141415.GA27381@dirshya.in.ibm.com>
-	<20090220160737.GC11294@elte.hu>
-	<20090220115745.43d202d6@infradead.org>
-	<20090220215318.GA30665@elte.hu>
-	<20090223075521.GA3725@balbir.in.ibm.com>
-	<20090223091158.GJ9582@elte.hu>
-	<20090223094850.GA10226@balbir.in.ibm.com>
-	<20090223103814.GB8817@dirshya.in.ibm.com>
-	<20090223110725.GB17312@elte.hu>
-Reply-To: dipankar@in.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+	during suspend-resume
+Date: Thu, 26 Feb 2009 10:50:49 +0100
+Message-ID: <200902261050.50531.rjw__20056.9052402445$1235642109$gmane$org@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
+	<d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20090223110725.GB17312@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,34 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: a.p.zijlstra@chello.nl, Suresh Siddha <suresh.b.siddha@intel.com>, Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 23, 2009 at 12:07:25PM +0100, Ingo Molnar wrote:
-> 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> 
-> > * Identify set of idle CPUs (CPU package) from which timers 
-> >   can be removed
-> > * Identify a semi-idle or idle CPU package to which the timers
-> >   can be moved
-> > * Decide when to start moving timers as the system has large
-> >   number of idle CPUs
-> > * Decide when to stop migrating as system becomes less idle
-> >   and utilisation increases
-> > 
-> > Guiding all of the above decisions from user space may not be 
-> > fast enough.
-> 
-> Exactly.
+On Thursday 26 February 2009, Arve Hj=F8nnev=E5g wrote:
+> On Tue, Feb 24, 2009 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > BTW, appended is the current (3rd) version of the $subject patch with s=
+ome
+> > of your comments taken into account.  In particular, I did the followin=
+g:
+> > - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
+> > - fixed interrupt.h so that their headers are at a better place
+> > - made enable_irq() clear IRQ_SUSPENDED
+> > - made device_power_down() and device_power_up() call
+> >  suspend_device_irqs() and resume_device_irqs(), respectively, which
+> >  simplified the callers quite a bit (it changed the Xen code ordering, =
+though,
+> >  but I _think_ it still should work).
+> =
 
-That is true for power management. However there are other
-situations where we may need targeted avoidance of timers.
-Certain type of applications - HPC for example - prefer avoidance
-of jitters due to periodic timers. It would be good to be
-able to say "avoid these CPUs for timers" while they are being
-used for HPC tasks.
+> Do you plan to fix edge triggered wakeup interrupts? It still looks
+> like edge triggered wakeup interrupts that occur between
+> suspend_device_irqs and local_irq_disable will not cause a wakeup.
 
-Thanks
-Dipankar
+In the current version of the patch the interrupts that have IRQ_WAKEUP set
+in status are not disabled.  Is this not enough?
+
+Rafael
