@@ -1,21 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Thu, 26 Feb 2009 22:36:08 +0100
-Message-ID: <20090226213608.GB2214@elf.ucw.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902112323.53421.rjw@sisk.pl>
-	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
-	<200902122322.30864.rjw@sisk.pl>
-	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
-	<20090213011035.GA8664@srcf.ucam.org>
-	<20090226150430.GA1398@ucw.cz>
-	<d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+ during suspend-resume
+Date: Fri, 27 Feb 2009 08:49:40 +1100
+Message-ID: <1235684980.7388.24.camel__9295.90588571063$1235685297$gmane$org@pasglop>
+References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
+	<d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
+	<200902261050.50531.rjw@sisk.pl>
+	<d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+	<1235681849.7388.22.camel@pasglop>
+	<d6200be20902261320q58a347e5s1af790e56b186c81@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
+In-Reply-To: <d6200be20902261320q58a347e5s1af790e56b186c81@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,43 +23,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "swetland@google.com" <swetland@google.com>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-02-26 13:11:05, Arve Hj?nnev?g wrote:
-> On Thu, Feb 26, 2009 at 7:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> > It is discouraging to hear comments like "we have been talking about for years something else" yet nothing exists or is in open development. Things can evolve in place.
-> >>
-> >> This is userlad-visible ABI. We can't evolve it in place - we need to
-> >> get it right before merging it, otherwise we need to carry on
-> >> maintaining code for an extended period of time in order to ensure that
-> >> there's no userland code that depends on it.
-> >
-> > Plus... sleepy patches showed that autosuspend can be done *without*
-> > new userland ABIs.
-> 
-> As far as I can tell the sleepy patches tries to enter suspend if the
-> system is idle. If you plan to wake back up for the first timer, then
-> the end result of this is the same as what we get by entering the low
-> power state from arch_idle in the msm platform. Due to the frequent
-> wakeups, the power use is higher than our suspend state. If you don't
-> wake up on the first timer, you need something like the wakelock api
-> so apps specify that they need to run even if they were inactive for 3
-> seconds.
-
-You understand it right... it wakes up on first event. So you
-eliminate all the timers that fire too often... and fix userspace if
-neccessary.
-
-Given that your 3rd party apps are written in java, you should have
-enough control over them.
-
-What in-kernel timers are causing problems for you? For how long can
-Android sleep?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+T24gVGh1LCAyMDA5LTAyLTI2IGF0IDEzOjIwIC0wODAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIFRodSwgRmViIDI2LCAyMDA5IGF0IDEyOjU3IFBNLCBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0Cj4gPGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZz4gd3JvdGU6Cj4gPiBPbiBUaHUsIDIwMDkt
+MDItMjYgYXQgMTI6MzQgLTA4MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPj4gVGhhdCBp
+cyBlbm91Z2ggZm9yIGRyaXZlcnMgdGhhdCB1c2Ugd2FrZWxvY2tzIHRvIGFib3J0IHN1c3BlbmQg
+KGlmIEkKPiA+PiBmaXggdGhlIHdha2Vsb2NrIGNvZGUgdG8gbm90IHVzZSBhIHBsYXRmb3JtIGRl
+dmljZSBhcyBpdHMgbGFzdCBhYm9ydAo+ID4+IHBvaW50KS4gSXQgaXMgbm90IGVub3VnaCBpZiB5
+b3UgZG9uJ3QgaGF2ZSB3YWtlbG9ja3MsIHNpbmNlIHRoZQo+ID4+IGludGVycnVwdCBjYW4gb2Nj
+dXIgYWZ0ZXIgc3VzcGVuZF9sYXRlIGhhcyBiZWVuIGNhbGxlZCBhbmQgdGhlIGRyaXZlcgo+ID4+
+IGhhcyBubyB3YXkgdG8gYWJvcnQgc3VzcGVuZC4KPiA+Pgo+ID4gSSBzdGlsbCBkb24ndCBxdWl0
+ZSBzZWUgaG93IHlvdSBkZWFsIHdpdGggdGhlIHJhY2UgYW55d2F5LiBJZS4gRXZlbgo+ID4gd2l0
+aG91dCBSYWZhZWwgcGF0Y2gsIHdoYXQgaWYgdGhlIGludGVycnVwdCBvY2N1cnMgYWZ0ZXIgeW91
+ciBzeXNkZXYKPiA+IHN1c3BlbmQgPwo+IAo+IEFmdGVyIGxvY2FsX2lycV9kaXNhYmxlIGhhcyBi
+ZWVuIGNhbGxlZCwgdGhlIGludGVycnVwdCB3aWxsIG5vIGxvbmdlcgo+IGJlIGNsZWFyZWQgYnkg
+TGludXggd2hlbiBpdCBvY2N1cnMuIFRoaXMgbWVhbnMgdGhhdCBpcyBzdGlsbCBwZW5kaW5nCj4g
+d2hlbiB5b3UgZ2V0IHRvIHRoZSBsb3cgbGV2ZWwgc3VzcGVuZCBjb2RlIHdoaWNoIHdpbGwgcHJl
+dmVudCBzdXNwZW5kLgoKT2sgc28geW91IHdhbnQgdGhpcyBpbnRlcnJ1cHQgdG8gc3RheSBwZW5k
+aW5nIGF0IHRoZSBQSUMgbGV2ZWwgPyBTbyBqdXN0Cm1hcmtpbmcgaXQgc28gdGhlIGtlcm5lbCBk
+b2Vzbid0IGRpc2FibGUgaXQgc2hvdWxkIGRvIHRoZSB0cmljay4KCj4gPiBJbiBnZW5lcmFsLCB1
+bmxlc3MgdGhleSBhcmUgbGV2ZWwgc2Vuc2l0aXZlLCB3YWtldXAgaW50ZXJydXB0cyB0ZW5kIHRv
+Cj4gPiBhbHdheXMgYmUgc29tZXdoYXQgcmFjeS4KPiAKPiBUaGV5IGRvbid0IGhhdmUgdG8gYmUu
+IElmIHlvdSBoYXZlIGEgc2VwYXJhdGUgaGFyZHdhcmUgY29tcG9uZW50IHRoYXQKPiB0cmFja3Mg
+d2FrZXVwIGludGVycnVwdHMsIHlvdSBuZWVkIHRvIHN0YXJ0IHRoaXMgYmVmb3JlIHlvdSBzdG9w
+IHRoZQo+IG1haW4gaW50ZXJydXB0IGNvbnRyb2xsZXIuIElmIGFueSBpbnRlcnJ1cHRzIGFyZSBw
+ZW5kaW5nIGF0IHRoaXMgdGltZQo+IHlvdSBhYm9ydCBzdXNwZW5kLiBBZnRlciBhIHdha2V1cCB5
+b3UgZG8gdGhlIHJldmVyc2UuCgpSaWdodCBidXQgdGhlbiB5b3UgY2FuIHN0YXJ0IHRoaXMgZWFy
+bGllciBhbmQgdGhlcmUgaXMgbm8gcHJvYmxlbS4gQnV0CmlmIHlvdSBkbyB3YW50IHRoZSBpbnRl
+cnJ1cHQgdG8gcmVtYWluaW5nIHBlbmRpbmcgaW4gdGhlIFBJQywgdGhlbiB5b3UKcHJvYmFibHkg
+bmVlZCB0byBzZXQgdGhhdCBtYWdpYyBmbGFnIHNvIHdlIGRvbid0IGRpc2FibGUgaXQsIHRoYXQg
+c2hvdWxkCmRvIHRoZSB0cmljayBqdXN0IGZpbmUgbm8gPwoKSXQncyBoYXJkIHRvIHRlbGwgd2l0
+aG91dCBtb3JlIGRldGFpbGVkIEhXIHNwZWNzIG9mIGNvdXJzZS4uLgoKQmVuLgoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
