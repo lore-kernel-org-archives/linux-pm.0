@@ -1,18 +1,21 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Thu, 26 Feb 2009 13:20:21 -0800
-Message-ID: <d6200be20902261320q58a347e5s1af790e56b186c81__8784.44711347601$1235683502$gmane$org@mail.gmail.com>
-References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
-	<d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
-	<200902261050.50531.rjw@sisk.pl>
-	<d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
-	<1235681849.7388.22.camel@pasglop>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Thu, 26 Feb 2009 22:36:08 +0100
+Message-ID: <20090226213608.GB2214@elf.ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902112323.53421.rjw@sisk.pl>
+	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
+	<200902122322.30864.rjw@sisk.pl>
+	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
+	<20090213011035.GA8664@srcf.ucam.org>
+	<20090226150430.GA1398@ucw.cz>
+	<d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1235681849.7388.22.camel@pasglop>
+Content-Disposition: inline
+In-Reply-To: <d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,35 +25,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "swetland@google.com" <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 12:57 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Thu, 2009-02-26 at 12:34 -0800, Arve Hj=F8nnev=E5g wrote:
->> That is enough for drivers that use wakelocks to abort suspend (if I
->> fix the wakelock code to not use a platform device as its last abort
->> point). It is not enough if you don't have wakelocks, since the
->> interrupt can occur after suspend_late has been called and the driver
->> has no way to abort suspend.
->>
-> I still don't quite see how you deal with the race anyway. Ie. Even
-> without Rafael patch, what if the interrupt occurs after your sysdev
-> suspend ?
+On Thu 2009-02-26 13:11:05, Arve Hj?nnev?g wrote:
+> On Thu, Feb 26, 2009 at 7:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >> > It is discouraging to hear comments like "we have been talking about for years something else" yet nothing exists or is in open development. Things can evolve in place.
+> >>
+> >> This is userlad-visible ABI. We can't evolve it in place - we need to
+> >> get it right before merging it, otherwise we need to carry on
+> >> maintaining code for an extended period of time in order to ensure that
+> >> there's no userland code that depends on it.
+> >
+> > Plus... sleepy patches showed that autosuspend can be done *without*
+> > new userland ABIs.
+> 
+> As far as I can tell the sleepy patches tries to enter suspend if the
+> system is idle. If you plan to wake back up for the first timer, then
+> the end result of this is the same as what we get by entering the low
+> power state from arch_idle in the msm platform. Due to the frequent
+> wakeups, the power use is higher than our suspend state. If you don't
+> wake up on the first timer, you need something like the wakelock api
+> so apps specify that they need to run even if they were inactive for 3
+> seconds.
 
-After local_irq_disable has been called, the interrupt will no longer
-be cleared by Linux when it occurs. This means that is still pending
-when you get to the low level suspend code which will prevent suspend.
+You understand it right... it wakes up on first event. So you
+eliminate all the timers that fire too often... and fix userspace if
+neccessary.
 
-> In general, unless they are level sensitive, wakeup interrupts tend to
-> always be somewhat racy.
+Given that your 3rd party apps are written in java, you should have
+enough control over them.
 
-They don't have to be. If you have a separate hardware component that
-tracks wakeup interrupts, you need to start this before you stop the
-main interrupt controller. If any interrupts are pending at this time
-you abort suspend. After a wakeup you do the reverse.
-
--- =
-
-Arve Hj=F8nnev=E5g
+What in-kernel timers are causing problems for you? For how long can
+Android sleep?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
