@@ -1,8 +1,8 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
 Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
 	during suspend-resume
-Date: Wed, 25 Feb 2009 20:13:27 -0800
-Message-ID: <d6200be20902252013v366ce771w8a129e9f3b75927f__38892.9714485586$1235621771$gmane$org@mail.gmail.com>
+Date: Wed, 25 Feb 2009 20:20:35 -0800
+Message-ID: <m1y6vtkewc.fsf__38093.6104724698$1235622285$gmane$org@fess.ebiederm.org>
 References: <200902221837.49396.rjw@sisk.pl>
 	<d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
 	<alpine.LFD.2.00.0902251724220.3111@localhost.localdomain>
@@ -13,11 +13,14 @@ References: <200902221837.49396.rjw@sisk.pl>
 	<alpine.LFD.2.00.0902251935190.3111@localhost.localdomain>
 	<d6200be20902251950l34d5968q4b553ce8305ebd4b@mail.gmail.com>
 	<alpine.LFD.2.00.0902251956450.3111@localhost.localdomain>
+	<d6200be20902252013v366ce771w8a129e9f3b75927f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0902251956450.3111@localhost.localdomain>
+In-Reply-To: <d6200be20902252013v366ce771w8a129e9f3b75927f@mail.gmail.com>
+	("Arve =?utf-8?B?SGrDuG5uZXbDpWciJ3M=?= message of "Wed\, 25 Feb 2009
+	20\:13\:27 -0800")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,35 +30,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 7:57 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Wed, 25 Feb 2009, Arve Hj=F8nnev=E5g wrote:
->>
->> I don't think this is a oddball case. It is very common to connect
->> keys or keypads to gpios. If these keys are wakeup keys, it is not OK
->> to loose interrupts during the suspend phase.
->
-> .. and how many drivers is that? Is it one or two "gpio input drivers" or
-> is it a hundred?
->
-> The "common" is not so much about "how many machines", but "in how many
-> drivers would you actually do this".
-
-We only have one gpio input driver, but I don't think is good to loose
-any wakeup interrupts. Any driver that needs an edge triggered wakeup
-interrupt will have problems if the hardware does not regenerate the
-interrupt when the host does not respond.
-
-It is not hard to work around this problem in the platform specific
-interrupt code, but I think it is a generic problem worth fixing for
-every platform.
-
--- =
-
-Arve Hj=F8nnev=E5g
+QXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4gd3JpdGVzOgoKPiBXZSBvbmx5IGhh
+dmUgb25lIGdwaW8gaW5wdXQgZHJpdmVyLCBidXQgSSBkb24ndCB0aGluayBpcyBnb29kIHRvIGxv
+b3NlCj4gYW55IHdha2V1cCBpbnRlcnJ1cHRzLiBBbnkgZHJpdmVyIHRoYXQgbmVlZHMgYW4gZWRn
+ZSB0cmlnZ2VyZWQgd2FrZXVwCj4gaW50ZXJydXB0IHdpbGwgaGF2ZSBwcm9ibGVtcyBpZiB0aGUg
+aGFyZHdhcmUgZG9lcyBub3QgcmVnZW5lcmF0ZSB0aGUKPiBpbnRlcnJ1cHQgd2hlbiB0aGUgaG9z
+dCBkb2VzIG5vdCByZXNwb25kLgoKV2UgYXJlIG5vdCBsb29zaW5nIGludGVycnVwdHMuICBUaGUg
+bm9ybWFsIGltcGxlbWVudGF0aW9uIG9mIGRpc2FibGUKaXMgYSBzb2Z0d2FyZSBkaXNhYmxlIGFu
+ZCBzZXRzIElSUV9QRU5ESU5HIHRvIGVuc3VyZSB3ZSBkb24ndCBsb29zZQppbnRlcnJ1cHRzIHdo
+ZW4gdGhlIGludGVycnVwdCBpcyBkaXNhYmxlZC4KCkVyaWMKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
