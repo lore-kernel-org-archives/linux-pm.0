@@ -1,19 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
- during suspend-resume
-Date: Fri, 27 Feb 2009 08:49:40 +1100
-Message-ID: <1235684980.7388.24.camel__9295.90588571063$1235685297$gmane$org@pasglop>
-References: <200902221837.49396.rjw@sisk.pl> <200902250029.16107.rjw@sisk.pl>
-	<d6200be20902251717r531c022bl4c25fcb902201188@mail.gmail.com>
-	<200902261050.50531.rjw@sisk.pl>
+	during suspend-resume
+Date: Thu, 26 Feb 2009 22:58:54 +0100
+Message-ID: <200902262258.55835.rjw__4581.84631211243$1235685769$gmane$org@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200902261050.50531.rjw@sisk.pl>
 	<d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
-	<1235681849.7388.22.camel@pasglop>
-	<d6200be20902261320q58a347e5s1af790e56b186c81@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902261320q58a347e5s1af790e56b186c81@mail.gmail.com>
+In-Reply-To: <d6200be20902261234i5a3896fo78a7f56d16a247c7@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +20,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMDA5LTAyLTI2IGF0IDEzOjIwIC0wODAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IE9uIFRodSwgRmViIDI2LCAyMDA5IGF0IDEyOjU3IFBNLCBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0Cj4gPGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZz4gd3JvdGU6Cj4gPiBPbiBUaHUsIDIwMDkt
-MDItMjYgYXQgMTI6MzQgLTA4MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPj4gVGhhdCBp
-cyBlbm91Z2ggZm9yIGRyaXZlcnMgdGhhdCB1c2Ugd2FrZWxvY2tzIHRvIGFib3J0IHN1c3BlbmQg
-KGlmIEkKPiA+PiBmaXggdGhlIHdha2Vsb2NrIGNvZGUgdG8gbm90IHVzZSBhIHBsYXRmb3JtIGRl
-dmljZSBhcyBpdHMgbGFzdCBhYm9ydAo+ID4+IHBvaW50KS4gSXQgaXMgbm90IGVub3VnaCBpZiB5
-b3UgZG9uJ3QgaGF2ZSB3YWtlbG9ja3MsIHNpbmNlIHRoZQo+ID4+IGludGVycnVwdCBjYW4gb2Nj
-dXIgYWZ0ZXIgc3VzcGVuZF9sYXRlIGhhcyBiZWVuIGNhbGxlZCBhbmQgdGhlIGRyaXZlcgo+ID4+
-IGhhcyBubyB3YXkgdG8gYWJvcnQgc3VzcGVuZC4KPiA+Pgo+ID4gSSBzdGlsbCBkb24ndCBxdWl0
-ZSBzZWUgaG93IHlvdSBkZWFsIHdpdGggdGhlIHJhY2UgYW55d2F5LiBJZS4gRXZlbgo+ID4gd2l0
-aG91dCBSYWZhZWwgcGF0Y2gsIHdoYXQgaWYgdGhlIGludGVycnVwdCBvY2N1cnMgYWZ0ZXIgeW91
-ciBzeXNkZXYKPiA+IHN1c3BlbmQgPwo+IAo+IEFmdGVyIGxvY2FsX2lycV9kaXNhYmxlIGhhcyBi
-ZWVuIGNhbGxlZCwgdGhlIGludGVycnVwdCB3aWxsIG5vIGxvbmdlcgo+IGJlIGNsZWFyZWQgYnkg
-TGludXggd2hlbiBpdCBvY2N1cnMuIFRoaXMgbWVhbnMgdGhhdCBpcyBzdGlsbCBwZW5kaW5nCj4g
-d2hlbiB5b3UgZ2V0IHRvIHRoZSBsb3cgbGV2ZWwgc3VzcGVuZCBjb2RlIHdoaWNoIHdpbGwgcHJl
-dmVudCBzdXNwZW5kLgoKT2sgc28geW91IHdhbnQgdGhpcyBpbnRlcnJ1cHQgdG8gc3RheSBwZW5k
-aW5nIGF0IHRoZSBQSUMgbGV2ZWwgPyBTbyBqdXN0Cm1hcmtpbmcgaXQgc28gdGhlIGtlcm5lbCBk
-b2Vzbid0IGRpc2FibGUgaXQgc2hvdWxkIGRvIHRoZSB0cmljay4KCj4gPiBJbiBnZW5lcmFsLCB1
-bmxlc3MgdGhleSBhcmUgbGV2ZWwgc2Vuc2l0aXZlLCB3YWtldXAgaW50ZXJydXB0cyB0ZW5kIHRv
-Cj4gPiBhbHdheXMgYmUgc29tZXdoYXQgcmFjeS4KPiAKPiBUaGV5IGRvbid0IGhhdmUgdG8gYmUu
-IElmIHlvdSBoYXZlIGEgc2VwYXJhdGUgaGFyZHdhcmUgY29tcG9uZW50IHRoYXQKPiB0cmFja3Mg
-d2FrZXVwIGludGVycnVwdHMsIHlvdSBuZWVkIHRvIHN0YXJ0IHRoaXMgYmVmb3JlIHlvdSBzdG9w
-IHRoZQo+IG1haW4gaW50ZXJydXB0IGNvbnRyb2xsZXIuIElmIGFueSBpbnRlcnJ1cHRzIGFyZSBw
-ZW5kaW5nIGF0IHRoaXMgdGltZQo+IHlvdSBhYm9ydCBzdXNwZW5kLiBBZnRlciBhIHdha2V1cCB5
-b3UgZG8gdGhlIHJldmVyc2UuCgpSaWdodCBidXQgdGhlbiB5b3UgY2FuIHN0YXJ0IHRoaXMgZWFy
-bGllciBhbmQgdGhlcmUgaXMgbm8gcHJvYmxlbS4gQnV0CmlmIHlvdSBkbyB3YW50IHRoZSBpbnRl
-cnJ1cHQgdG8gcmVtYWluaW5nIHBlbmRpbmcgaW4gdGhlIFBJQywgdGhlbiB5b3UKcHJvYmFibHkg
-bmVlZCB0byBzZXQgdGhhdCBtYWdpYyBmbGFnIHNvIHdlIGRvbid0IGRpc2FibGUgaXQsIHRoYXQg
-c2hvdWxkCmRvIHRoZSB0cmljayBqdXN0IGZpbmUgbm8gPwoKSXQncyBoYXJkIHRvIHRlbGwgd2l0
-aG91dCBtb3JlIGRldGFpbGVkIEhXIHNwZWNzIG9mIGNvdXJzZS4uLgoKQmVuLgoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Thursday 26 February 2009, Arve Hj=F8nnev=E5g wrote:
+> On Thu, Feb 26, 2009 at 1:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday 26 February 2009, Arve Hj=F8nnev=E5g wrote:
+> >> On Tue, Feb 24, 2009 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > BTW, appended is the current (3rd) version of the $subject patch wit=
+h some
+> >> > of your comments taken into account.  In particular, I did the follo=
+wing:
+> >> > - moved [suspend|resume]_device_irqs() to a separate file (pm.c)
+> >> > - fixed interrupt.h so that their headers are at a better place
+> >> > - made enable_irq() clear IRQ_SUSPENDED
+> >> > - made device_power_down() and device_power_up() call
+> >> >  suspend_device_irqs() and resume_device_irqs(), respectively, which
+> >> >  simplified the callers quite a bit (it changed the Xen code orderin=
+g, though,
+> >> >  but I _think_ it still should work).
+> >>
+> >> Do you plan to fix edge triggered wakeup interrupts? It still looks
+> >> like edge triggered wakeup interrupts that occur between
+> >> suspend_device_irqs and local_irq_disable will not cause a wakeup.
+> >
+> > In the current version of the patch the interrupts that have IRQ_WAKEUP=
+ set
+> > in status are not disabled.  Is this not enough?
+> =
+
+> That is enough for drivers that use wakelocks to abort suspend (if I
+> fix the wakelock code to not use a platform device as its last abort
+> point). It is not enough if you don't have wakelocks, since the
+> interrupt can occur after suspend_late has been called and the driver
+> has no way to abort suspend.
+
+Well, how exactly the $subject patch does cause this problem to happen?
+
+Rafael
