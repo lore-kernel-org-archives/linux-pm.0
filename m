@@ -1,17 +1,20 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Thu, 26 Feb 2009 16:00:52 -0800
-Message-ID: <d6200be20902261600t7531568ekd9a7aa9215f53263__42191.0702404149$1235693097$gmane$org@mail.gmail.com>
-References: <200902221837.49396.rjw@sisk.pl>
-	<alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
-	<d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>
-	<200902270010.38291.rjw@sisk.pl>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Thu, 26 Feb 2009 16:16:19 -0800
+Message-ID: <d6200be20902261616g1472c9d6u5e01a6941e37be6e@mail.gmail.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902112323.53421.rjw@sisk.pl>
+	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
+	<200902122322.30864.rjw@sisk.pl>
+	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
+	<20090213011035.GA8664@srcf.ucam.org> <20090226150430.GA1398@ucw.cz>
+	<d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
+	<20090226213608.GB2214@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200902270010.38291.rjw@sisk.pl>
+In-Reply-To: <20090226213608.GB2214@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,82 +24,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "swetland@google.com" <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday 26 February 2009, Arve Hj=F8nnev=E5g wrote:
->> On Thu, Feb 26, 2009 at 2:10 PM, Linus Torvalds
->> <torvalds@linux-foundation.org> wrote:
+On Thu, Feb 26, 2009 at 1:36 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Thu 2009-02-26 13:11:05, Arve Hj?nnev?g wrote:
+>> On Thu, Feb 26, 2009 at 7:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>> > Hi!
 >> >
->> >
->> > On Thu, 26 Feb 2009, Rafael J. Wysocki wrote:
+>> >> > It is discouraging to hear comments like "we have been talking abou=
+t for years something else" yet nothing exists or is in open development. T=
+hings can evolve in place.
 >> >>
->> >> Well, how exactly the $subject patch does cause this problem to happe=
-n?
+>> >> This is userlad-visible ABI. We can't evolve it in place - we need to
+>> >> get it right before merging it, otherwise we need to carry on
+>> >> maintaining code for an extended period of time in order to ensure th=
+at
+>> >> there's no userland code that depends on it.
 >> >
->> > Rafael, the problem is that if an interrupt happens while it's disable=
-d -
->> > but before the CPU has actually turned all interrupts off - the CPU wi=
-ll
->> > ACK the interrupt (but just set a flag for it being PENDING), so now t=
-he
->> > chipset logic around it will not see it as pending any more, so now the
->> > chipset won't auto-wake the CPU immediately (or more likely, it won't
->> > even suspend it).
->> >
->> > It's trivial to fix multiple ways, so I wouldn't worry. The most trivi=
-al
->> > way is to just have some sysdev drievr code simply do something like
->> >
->> > =A0static int sysdev_suspend()
->> > =A0{
->> > =A0 =A0 =A0 =A0for_each_irq(irq,desc) {
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!(desc->flags & IRQF_WAKE))
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0continue;
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (desc->flags & IRQ_PENDING)
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EBUSY;
->> > =A0 =A0 =A0 =A0}
->> > =A0 =A0 =A0 =A0return 0;
->> > =A0}
->> >
->> > and that should automatically mean that if any irq is pending, the sus=
-pend
->> > will fail and we'll immediately wake up again.
->> >
->> > It looks trivial, and I don't understand why Arve can't just do the sy=
-sdev
->> > thing.
+>> > Plus... sleepy patches showed that autosuspend can be done *without*
+>> > new userland ABIs.
 >>
->> I can. My point is that the patch breaks our existing code.
+>> As far as I can tell the sleepy patches tries to enter suspend if the
+>> system is idle. If you plan to wake back up for the first timer, then
+>> the end result of this is the same as what we get by entering the low
+>> power state from arch_idle in the msm platform. Due to the frequent
+>> wakeups, the power use is higher than our suspend state. If you don't
+>> wake up on the first timer, you need something like the wakelock api
+>> so apps specify that they need to run even if they were inactive for 3
+>> seconds.
 >
-> Is that a mainline kernel code?
-
-No, the msm suspend support has not been merged.
-
+> You understand it right... it wakes up on first event. So you
+> eliminate all the timers that fire too often... and fix userspace if
+> neccessary.
 >
->> If anyone else uses edge triggered wakeup interrupt it may break from th=
-em as
->> well. The main question if this should be fixed separately for every
->> platform that needs it, or if pending wakeup interrupts should always
->> abort sleep.
->
-> Well, I'm not really sure if this is the problem. =A0In fact the problem =
-is that
-> you have a regular device the interrupt of which can be a wake-up one. =
-=A0I think
+> Given that your 3rd party apps are written in java, you should have
+> enough control over them.
 
-Is that not a common case and what enable_irq_wake is for?
+How does the language the apps are written in affect this problem? Are
+you saying that java apps should not be allowed to run every second?
 
-> the problem wouldn't have existed at all if it had been a sysdev. =A0Is t=
-hat
-> correct?
+> What in-kernel timers are causing problems for you?
 
-How many sysdevs use interrupts?
+I don't know for sure, but last time I checked, the the network stack
+woke up every second. /proc/timer_list shows tick_sched_timer always
+running in the next second.
 
-I found may drivers in the mainline kernel that use enable_irq_wake,
-but I did not see any that handle this race condition.
+> For how long can Android sleep?
+
+>From idle, about a second. From suspend, minutes with the radio on, an
+hour (msm limitation) with the radio off.
 
 -- =
 
