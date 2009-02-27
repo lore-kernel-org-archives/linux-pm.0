@@ -1,17 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 11:18:18 +0100
-Message-ID: <20090227101818.GH4582__5911.67082679949$1235729893$gmane$org@elf.ucw.cz>
-References: <200902191356.53584.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
-	<20090222140311.GF1387@ucw.cz>
-	<200902231504.27879.oliver@neukum.org>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 27 Feb 2009 14:18:07 +0100
+Message-ID: <20090227131807.GA1482@ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902131155.07530.u.luckas@road.de>
+	<20090213140654.GC26549@srcf.ucam.org>
+	<200902131749.57728.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902231504.27879.oliver@neukum.org>
+In-Reply-To: <200902131749.57728.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Uli Luckas <u.luckas@road.de>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2009-02-23 15:04:22, Oliver Neukum wrote:
-> Am Sonntag 22 Februar 2009 15:03:11 schrieb Pavel Machek:
-> > Hi!
+On Fri 2009-02-13 17:49:57, Uli Luckas wrote:
+> On Friday, 13. February 2009, Matthew Garrett wrote:
+> > Userland ABI would then be a single /dev/inhibit_suspend,
+> > with the counter being bumped each time an application opens it. It'll
+> > automatically be dropped if the application exits without cleaning up.
 > >
-> > > > Again, the decision to trigger automatic suspend has to be based on
-> > > > some well defined criteria and the (in)activity of devices seems to be
-> > > > one of them.
-> > >
-> > > I don't know what criteria the system monitor would use.  It might have
-> > > to be platform-specific.  The Android people seem to have a pretty good
-> > > idea of what criteria will work for them.
-> > >
-> > > Inactivity of devices isn't always a good criterion.  There might be a
-> > > background task which wakes up every few seconds to do something as
-> > > long as the system is awake, thereby keeping some device always active.
-> > > The activity from this background task shouldn't prevent an auto-sleep.
-> >
-> > Then we'd need a interface to mark such background task... and what is
-> > reasonable use for such task, anyway? Either its job is neccessary, or
-> > it should not waste power.
-> 
-> Why? We have decided that some tasks are more important than
-> other tasks, to the point of starving some tasks. Posix real time
-> already does that.
-> 
-> We can just as well have a class of tasks less important than power
-> saving. They'd just run when power saving is not active for some other
-> reason. Just like other such schemes we end up with the problem
-> of priority inversion with locking.
+> > This seems simpler and also avoids any arguments about the naming
+> > scheme. What am I missing?
+> Opening and closing an fd sounds like a lot of overhead. Taking and releasing 
+> locks if going to be a called with very highg frequency. I'd go for an ioctl.
 
-Ok, I guess this could be interesting in some cases... maybe. What are
-real examples of such tasks?
+Ehm?
 
-Note that this will be fairly hard to implement due to all the
-priority inversions; so it better be pretty important.
-									Pavel
+And introduce nasty interface, and probably slower too since open() is
+time-critical and ioctl() is not? Or do you have benchmarks?
+								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
