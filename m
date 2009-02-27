@@ -1,20 +1,18 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Thu, 26 Feb 2009 16:16:19 -0800
-Message-ID: <d6200be20902261616g1472c9d6u5e01a6941e37be6e@mail.gmail.com>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902112323.53421.rjw@sisk.pl>
-	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
-	<200902122322.30864.rjw@sisk.pl>
-	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
-	<20090213011035.GA8664@srcf.ucam.org> <20090226150430.GA1398@ucw.cz>
-	<d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
-	<20090226213608.GB2214@elf.ucw.cz>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+ during suspend-resume
+Date: Thu, 26 Feb 2009 16:27:29 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902261620370.3111__12817.6866950982$1235694711$gmane$org@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl>
+	<alpine.LFD.2.00.0902261404580.3111@localhost.localdomain>
+	<d6200be20902261430w19ea3e6fye014f8443d9ab5ca@mail.gmail.com>
+	<200902270010.38291.rjw@sisk.pl>
+	<d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090226213608.GB2214@elf.ucw.cz>
+In-Reply-To: <d6200be20902261600t7531568ekd9a7aa9215f53263@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,58 +22,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "swetland@google.com" <swetland@google.com>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 1:36 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2009-02-26 13:11:05, Arve Hj?nnev?g wrote:
->> On Thu, Feb 26, 2009 at 7:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> > Hi!
->> >
->> >> > It is discouraging to hear comments like "we have been talking abou=
-t for years something else" yet nothing exists or is in open development. T=
-hings can evolve in place.
->> >>
->> >> This is userlad-visible ABI. We can't evolve it in place - we need to
->> >> get it right before merging it, otherwise we need to carry on
->> >> maintaining code for an extended period of time in order to ensure th=
-at
->> >> there's no userland code that depends on it.
->> >
->> > Plus... sleepy patches showed that autosuspend can be done *without*
->> > new userland ABIs.
->>
->> As far as I can tell the sleepy patches tries to enter suspend if the
->> system is idle. If you plan to wake back up for the first timer, then
->> the end result of this is the same as what we get by entering the low
->> power state from arch_idle in the msm platform. Due to the frequent
->> wakeups, the power use is higher than our suspend state. If you don't
->> wake up on the first timer, you need something like the wakelock api
->> so apps specify that they need to run even if they were inactive for 3
->> seconds.
->
-> You understand it right... it wakes up on first event. So you
-> eliminate all the timers that fire too often... and fix userspace if
-> neccessary.
->
-> Given that your 3rd party apps are written in java, you should have
-> enough control over them.
 
-How does the language the apps are written in affect this problem? Are
-you saying that java apps should not be allowed to run every second?
 
-> What in-kernel timers are causing problems for you?
+On Thu, 26 Feb 2009, Arve Hj=F8nnev=E5g wrote:
+> =
 
-I don't know for sure, but last time I checked, the the network stack
-woke up every second. /proc/timer_list shows tick_sched_timer always
-running in the next second.
+> How many sysdevs use interrupts?
+> =
 
-> For how long can Android sleep?
+> I found may drivers in the mainline kernel that use enable_irq_wake,
+> but I did not see any that handle this race condition.
 
->From idle, about a second. From suspend, minutes with the radio on, an
-hour (msm limitation) with the radio off.
+The _only_ driver that does enable_irq_wake() on x86 is the cmos timer =
 
--- =
+driver, and even there it actually doesn't use irq_wake, but ACPI. Why? =
 
-Arve Hj=F8nnev=E5g
+Because I don't think irq wakeup even _works_ on x86.
+
+So the whole enable_irq_wake is largely some embedded ARM platform issue, =
+
+and a very special case, and doesn't exist anywhere else.
+
+Maybe I'm missing something, but it's definitely not the normal case.
+
+		Linus
