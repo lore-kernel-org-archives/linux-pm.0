@@ -1,17 +1,14 @@
-From: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 11:09:45 -0600
-Message-ID: <49A81E59.6010105__8159.20235259018$1235754969$gmane$org@nortel.com>
-References: <200902191356.53584.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org>
-	<20090222140311.GF1387@ucw.cz>
-	<200902231504.27879.oliver@neukum.org>
-	<20090227101818.GH4582@elf.ucw.cz>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+ during suspend-resume
+Date: Fri, 27 Feb 2009 12:30:33 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902271221360.3111__35808.4864369177$1235766803$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0902270948540.2926-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090227101818.GH4582@elf.ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0902270948540.2926-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> On Mon 2009-02-23 15:04:22, Oliver Neukum wrote:
 
->> We can just as well have a class of tasks less important than power
->> saving. They'd just run when power saving is not active for some other
->> reason. Just like other such schemes we end up with the problem
->> of priority inversion with locking.
+
+On Fri, 27 Feb 2009, Alan Stern wrote:
 > 
-> Ok, I guess this could be interesting in some cases... maybe. What are
-> real examples of such tasks?
+> Perhaps these aren't all the sort of usage you're talking about, but I
+> bet most of them are.  It certainly looks like more than just ARM.  
+> Maybe not all that much more, but definitely more.  And the number will
+> only grow in the future.
 
-Some people might put casual system monitoring tools into this 
-category--top, xload, gkrellm, xclock, etc.
+Are you really sure? Because it can't be x86. I'm pretty sure that that is 
+simply not how x86 wake events _work_ - they're not interrupts.
 
-It'd be nice if the animated banner ad in my web browser could be 
-treated this way. :)
+And that's the big point that people seem to be missing here: the whole 
+"wake up interrupt" thing is not some generic model in the first place. I 
+strongly suspect that it literally only works on certain architectures.
 
-Chris
+In other words, I'm getting damn tired of people who CLEARLY DON'T EVEN 
+KNOW HOW THE HARDWARE WORKS arguing over this.
+
+Here's another hint: that whole "enable_irq_wake()" - have you possibly 
+spent even five seconds to look at what it actually does? I bet you 
+haven't. Because what it does is to call the irq controller "set_wake" 
+function.
+
+Now, grep for that. Whay do you find? Like maybe ARM and BlackFin? Oh, and 
+I note one MIPS platform.
+
+The point is, that whole "irq wake" really is system dependent. We can do 
+helper functions for it, but anybody who thinks it's anything "generic" is 
+totally mistaken.
+
+In other words, making it a sysdev thing is the CORRECT thing to do. It 
+really is not just "here's how you work around something". It really is 
+"this is how the hardware FUNDAMENTALLY WORKS".
+
+Please, stop arguing. At least argue only after you understand what the 
+physical hardware actyally does. 
+
+			Linus
