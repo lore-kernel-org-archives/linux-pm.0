@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 21:55:40 +0100
-Message-ID: <200902272155.42010.rjw__44487.4468179934$1235768418$gmane$org@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902271522.41915.rjw@sisk.pl>
-	<20090227204053.GB1387@ucw.cz>
+Date: Fri, 27 Feb 2009 21:58:29 +0100
+Message-ID: <200902272158.31784.rjw__26076.7240929001$1235768501$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0902270943490.2926-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090227204053.GB1387@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0902270943490.2926-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,42 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 27 February 2009, Pavel Machek wrote:
-> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
-> > On Friday 27 February 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> > > > > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> > > > > > desirable at the moment.
-> > > > > >
-> > > > > > It seems to be flexible enough to me.
-> > > > > 
-> > > > > This seems flexible enough to avoid race conditions, but it forces the
-> > > > > user space power manager to poll when the kernel refuse suspend.
-> > > > 
-> > > > And if the kernel is supposed to start automatic suspend, it has to monitor
-> > > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> > > > kernel if it refuses to suspend.
-> > > 
-> > > polling is evil -- it keeps CPU wake up => wastes power.
-> > > 
-> > > Wakelocks done right are single atomic_t... and if you set it to 0,
-> > > you just unblock "sleeper" thread or something. Zero polling and very
-> > > simple...
-> > 
-> > Except that you have to check all of the wakelocks periodically in a loop =>
-> > polling.  So?
+On Friday 27 February 2009, Alan Stern wrote:
+> On Fri, 27 Feb 2009, Pavel Machek wrote:
 > 
-> No. I want to have single atomic_t for all the wakelocks... at least
-> in non-debug version. Debug version will be slower. I believe you
-> originally suggested that.
+> > 
+> > > To summarize, we can:
+> > > * Use a refcount such that automatic suspend will only be possible if it's
+> > >   equal to zero (but that need not be the only criterion).
+> > > * Use a per-device flag in dev_pm_info that will be set whenever the device
+> > >   driver increases the refcount and unset whenever the driver decreases the
+> > >   refcount.
+> > > * Use a per-process flag that will be set whenever the process increases the
+> > >   refcount and unset whenever the process decreases the refcount.
+> > 
+> > Yes, that sounds sane, and that's how reasonable wakelock
+> > implementation should look like.
+> 
+> One small point: If you add a per-device flag and a per-process flag as 
+> described above, then drivers and processes must not acquire nested 
+> references.
+> 
+> Obviously this is fixable, but it's worth mentioning...
 
-I did, but please don't call it "wakelocks".  It's confusing.
+Yes, it's important to remeber IMO.
 
 Thanks,
 Rafael
