@@ -1,15 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 14:29:46 +0000
-Message-ID: <20090227142946.GA13650__12118.9847043299$1235745273$gmane$org@srcf.ucam.org>
-References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl>
-	<20090227100941.GE4582@elf.ucw.cz> <200902271522.41915.rjw@sisk.pl>
+Date: Fri, 27 Feb 2009 09:46:16 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0902270943490.2926-100000__1689.78617662123$1235746127$gmane$org@iolanthe.rowland.org>
+References: <20090227101632.GG4582@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200902271522.41915.rjw@sisk.pl>
+In-Reply-To: <20090227101632.GG4582@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 03:22:39PM +0100, Rafael J. Wysocki wrote:
-> On Friday 27 February 2009, Pavel Machek wrote:
-> > Wakelocks done right are single atomic_t... and if you set it to 0,
-> > you just unblock "sleeper" thread or something. Zero polling and very
-> > simple...
+On Fri, 27 Feb 2009, Pavel Machek wrote:
+
 > 
-> Except that you have to check all of the wakelocks periodically in a loop =>
-> polling.  So?
+> > To summarize, we can:
+> > * Use a refcount such that automatic suspend will only be possible if it's
+> >   equal to zero (but that need not be the only criterion).
+> > * Use a per-device flag in dev_pm_info that will be set whenever the device
+> >   driver increases the refcount and unset whenever the driver decreases the
+> >   refcount.
+> > * Use a per-process flag that will be set whenever the process increases the
+> >   refcount and unset whenever the process decreases the refcount.
+> 
+> Yes, that sounds sane, and that's how reasonable wakelock
+> implementation should look like.
 
-Why do you need to check them? If you're taking this approach you just 
-have something like:
+One small point: If you add a per-device flag and a per-process flag as 
+described above, then drivers and processes must not acquire nested 
+references.
 
-suspend_unblock() {
-	if (atomc_dec_and_test(&suspend_lock))
-		suspend();
-}
+Obviously this is fixable, but it's worth mentioning...
 
-and then check that the lock count is still 0 after device_suspend(). 
-There's no need to poll.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
