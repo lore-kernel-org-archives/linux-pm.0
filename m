@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFD] Automatic suspend
-Date: Sat, 28 Feb 2009 11:18:12 +0100
-Message-ID: <200902281118.14595.rjw__13680.2162662663$1235816450$gmane$org@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl>
-	<d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 27 Feb 2009 21:32:52 +0100
+Message-ID: <20090227203252.GB1397@ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902131749.57728.u.luckas@road.de>
+	<20090227131807.GA1482@ucw.cz>
+	<200902271507.14747.u.luckas@road.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
 Content-Disposition: inline
+In-Reply-To: <200902271507.14747.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,101 +21,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Uli Luckas <u.luckas@road.de>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 27 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Fri, Feb 27, 2009 at 12:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
-> >> > On Friday 27 February 2009, Pavel Machek wrote:
-> >> > > Hi!
-> >> > >
-> >> > > > > > Then, the decision making logic will be able to use /sys/pow=
-er/sleep whenever
-> >> > > > > > it wishes to and the kernel will be able to refuse to suspen=
-d if it's not
-> >> > > > > > desirable at the moment.
-> >> > > > > >
-> >> > > > > > It seems to be flexible enough to me.
-> >> > > > >
-> >> > > > > This seems flexible enough to avoid race conditions, but it fo=
-rces the
-> >> > > > > user space power manager to poll when the kernel refuse suspen=
-d.
-> >> > > >
-> >> > > > And if the kernel is supposed to start automatic suspend, it has=
- to monitor
-> >> > > > all of the wakelocks.  IMO, it's better to allow the power manag=
-er to poll the
-> >> > > > kernel if it refuses to suspend.
-> >> > >
-> >> > > polling is evil -- it keeps CPU wake up =3D> wastes power.
-> >> > >
-> >> > > Wakelocks done right are single atomic_t... and if you set it to 0,
-> >> > > you just unblock "sleeper" thread or something. Zero polling and v=
-ery
-> >> > > simple...
-> >> >
-> >> > Except that you have to check all of the wakelocks periodically in a=
- loop =3D>
-> >> > polling.  So?
-> >>
-> >> No. I want to have single atomic_t for all the wakelocks... at least
-> >> in non-debug version. Debug version will be slower. I believe you
-> >> originally suggested that.
+On Fri 2009-02-27 15:07:14, Uli Luckas wrote:
+> On Friday, 27. February 2009, Pavel Machek wrote:
+> > On Fri 2009-02-13 17:49:57, Uli Luckas wrote:
+> > > On Friday, 13. February 2009, Matthew Garrett wrote:
+> > > > Userland ABI would then be a single /dev/inhibit_suspend,
+> > > > with the counter being bumped each time an application opens it. It'll
+> > > > automatically be dropped if the application exits without cleaning up.
+> > > >
+> > > > This seems simpler and also avoids any arguments about the naming
+> > > > scheme. What am I missing?
+> > >
+> > > Opening and closing an fd sounds like a lot of overhead. Taking and
+> > > releasing locks if going to be a called with very highg frequency. I'd go
+> > > for an ioctl.
 > >
-> > I did, but please don't call it "wakelocks".  It's confusing.
-> =
+> > Ehm?
+> >
+> > And introduce nasty interface, and probably slower too since open() is
+> > time-critical and ioctl() is not? Or do you have benchmarks?
+> 
+> No, just specualting as open() needs to do a directory lookup. It also needs 
+> to do book keeping. I'd be surprised if open was faster then ioctl.
 
-> What you are talking about here is mostly an optimization of the
-> wakelock api. You have removed timeout support and made each wakelock
-> reference counted.
+Unless you measure how much slower it is...
 
-I also removed the arbitrary number of wakelocks (I really _hate_ the name,
-can we please stop using it from now on?).
+> On the otherhand if you consider ioctl nasty, maybe write() is an option?
 
-> If you ignore wakelocks with timeouts, the current
-> wakelock interface can be implemented with a global atomic_t to
-> prevent suspend, and a per wakelock atomic_t to prevent a single
-> client from changing the global reference count by more than one.
-> =
+You want sleepvetos to be automatically unlocked/freed on close and
+process exit/kill, so neither write nor ioctl is the right interface.
 
-> There are a couple of reasons that I have not done this. It removes
-> the ability to easily inspect the system when it is not suspending.
 
-Care to elaborate?
-
-> I do provide an option to turn off the wakelock stats, which makes
-> wake_lock/unlock significantly faster, but we never run with wakelock
-> stats off. Also, it pushes timeout handling to the drivers. I know may
-> of you don't like timeout support, but ignoring the problem is not a
-> solution. If each driver that needs timeouts uses its own timer, then
-> you will often wakeup from idle just to unlock a wakelock that will
-> not trigger suspend. This wakeup is a thousand times as costly on the
-> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
-
-Well, at least a couple of people told you that the timeouts are hardly
-acceptable and they told you why.  Please stop repeating the same arguments=
- you
-have given already for a couple of times.  They're not convincing.
-
-Instead of trying to convince everyone to accept your solution that you're
-not willing to change, please try to listen and think how to do things
-differently so that everyone is comfortable with them.  I'm sure you're more
-than capable of doing that.
-
-I do realize that you consider your current solution as the best thing since
-the sliced bread, but please accept the fact that the other people think
-differently.
-
-> I just checked my phone, and over a 24 hour awake time (370 hours
-> uptime) period, it acquired about 5 million wakelocks (mostly for
-> input events). If these were cache hits, and took as long as my
-> benchmark did, that accounts for 20 seconds of overhead (0.023% of
-> awake, 0.1% of not-idle (5.5h).
-
-Which proves what exactly?
-
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
