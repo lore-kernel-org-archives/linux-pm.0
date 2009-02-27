@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 11:12:47 +0100
-Message-ID: <20090227101247.GF4582__18947.5841391415$1235729558$gmane$org@elf.ucw.cz>
-References: <200902192215.18365.rjw@sisk.pl> <200902210057.27781.rjw@sisk.pl>
-	<d6200be20902201708g45540f60ib024c3365c85aef4@mail.gmail.com>
-	<200902211047.26787.rjw@sisk.pl>
+Date: Fri, 27 Feb 2009 11:16:32 +0100
+Message-ID: <20090227101632.GG4582__42878.4776050181$1235729771$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0902211135170.7396-100000@netrider.rowland.org>
+	<200902212214.59660.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200902211047.26787.rjw@sisk.pl>
+In-Reply-To: <200902212214.59660.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,27 +23,19 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > And if the kernel is supposed to start automatic suspend, it has to monitor
-> > > all of the wakelocks.  IMO, it's better to allow the power manager to poll the
-> > > kernel if it refuses to suspend.
-> > 
-> > What is better about polling in userspace?
-> 
-> One kernel thread less, for example?
+> To summarize, we can:
+> * Use a refcount such that automatic suspend will only be possible if it's
+>   equal to zero (but that need not be the only criterion).
+> * Use a per-device flag in dev_pm_info that will be set whenever the device
+>   driver increases the refcount and unset whenever the driver decreases the
+>   refcount.
+> * Use a per-process flag that will be set whenever the process increases the
+>   refcount and unset whenever the process decreases the refcount.
 
-One kernel thread is about as costly as one userland thread. And I
-believe we should not design new code that _needs_ polling.
+Yes, that sounds sane, and that's how reasonable wakelock
+implementation should look like.
 
-I think it is better to have kernel thread than userland polling us
-all the time.
-
-Now... on PC it will be "interesting". Your solution has great
-advantage of being able to work with s2ram quirks... But s2ram quirks
-are not an issue on embedded hardware or OLPC, and hopefully kernel
-mode setting will fix it on PCs, too...
-								Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
