@@ -1,17 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Fri, 27 Feb 2009 21:32:52 +0100
-Message-ID: <20090227203252.GB1397@ucw.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902131749.57728.u.luckas@road.de>
-	<20090227131807.GA1482@ucw.cz>
-	<200902271507.14747.u.luckas@road.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
+ during suspend-resume
+Date: Sat, 28 Feb 2009 09:03:20 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0902280856270.3111@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0902270948540.2926-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.0902271221360.3111@localhost.localdomain>
+	<d6200be20902271954q16697282ia056d4f40ab49184@mail.gmail.com>
+	<200902281106.41793.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200902271507.14747.u.luckas@road.de>
+In-Reply-To: <200902281106.41793.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Uli Luckas <u.luckas@road.de>
-Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2009-02-27 15:07:14, Uli Luckas wrote:
-> On Friday, 27. February 2009, Pavel Machek wrote:
-> > On Fri 2009-02-13 17:49:57, Uli Luckas wrote:
-> > > On Friday, 13. February 2009, Matthew Garrett wrote:
-> > > > Userland ABI would then be a single /dev/inhibit_suspend,
-> > > > with the counter being bumped each time an application opens it. It'll
-> > > > automatically be dropped if the application exits without cleaning up.
-> > > >
-> > > > This seems simpler and also avoids any arguments about the naming
-> > > > scheme. What am I missing?
-> > >
-> > > Opening and closing an fd sounds like a lot of overhead. Taking and
-> > > releasing locks if going to be a called with very highg frequency. I'd go
-> > > for an ioctl.
-> >
-> > Ehm?
-> >
-> > And introduce nasty interface, and probably slower too since open() is
-> > time-critical and ioctl() is not? Or do you have benchmarks?
+
+
+On Sat, 28 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> No, just specualting as open() needs to do a directory lookup. It also needs 
-> to do book keeping. I'd be surprised if open was faster then ioctl.
+> Still, if Linus agrees, I can put the loop suggested by him directly into
+> sysdev_suspend().  Linus?
 
-Unless you measure how much slower it is...
+I don't much care - it's going to be a no-op on architectures that don't 
+have that kind of "turn an interrupt into a wakeup event" capability. So 
+it's not going to break for things like x86, and it's not like going over 
+the irq list one more time is going to be so expensive as to be 
+noticeable, even if that architecture doesn't ever get any advantage of 
+it.
 
-> On the otherhand if you consider ioctl nasty, maybe write() is an option?
+However - my main worry is that we will notice that different 
+architectures (and possibly even different platforms _within_ the same 
+architecture - depending on which kind of interrupt/pm controller they 
+have) will want to do different things, and actually do something to the 
+interrupt controller itself too at that point.
 
-You want sleepvetos to be automatically unlocked/freed on close and
-process exit/kill, so neither write nor ioctl is the right interface.
+But we can certainly try starting out with just the generic "if a wakeup 
+interrupt is pending, sysdev_suspend() returns an error immediately".
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+			Linus
