@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 2/2] PM: Rework handling of interrupts
-	during suspend-resume
-Date: Sat, 28 Feb 2009 11:06:40 +0100
-Message-ID: <200902281106.41793.rjw__35505.6899752983$1235815803$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0902270948540.2926-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0902271221360.3111@localhost.localdomain>
-	<d6200be20902271954q16697282ia056d4f40ab49184@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+Date: Sat, 28 Feb 2009 11:18:12 +0100
+Message-ID: <200902281118.14595.rjw__13680.2162662663$1235816450$gmane$org@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl>
+	<d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902271954q16697282ia056d4f40ab49184@mail.gmail.com>
+In-Reply-To: <d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,69 +19,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 28 February 2009, Arve Hj=F8nnev=E5g wrote:
-> On Fri, Feb 27, 2009 at 12:30 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> >
-> > On Fri, 27 Feb 2009, Alan Stern wrote:
+On Friday 27 February 2009, Arve Hj=F8nnev=E5g wrote:
+> On Fri, Feb 27, 2009 at 12:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday 27 February 2009, Pavel Machek wrote:
+> >> On Fri 2009-02-27 15:22:39, Rafael J. Wysocki wrote:
+> >> > On Friday 27 February 2009, Pavel Machek wrote:
+> >> > > Hi!
+> >> > >
+> >> > > > > > Then, the decision making logic will be able to use /sys/pow=
+er/sleep whenever
+> >> > > > > > it wishes to and the kernel will be able to refuse to suspen=
+d if it's not
+> >> > > > > > desirable at the moment.
+> >> > > > > >
+> >> > > > > > It seems to be flexible enough to me.
+> >> > > > >
+> >> > > > > This seems flexible enough to avoid race conditions, but it fo=
+rces the
+> >> > > > > user space power manager to poll when the kernel refuse suspen=
+d.
+> >> > > >
+> >> > > > And if the kernel is supposed to start automatic suspend, it has=
+ to monitor
+> >> > > > all of the wakelocks.  IMO, it's better to allow the power manag=
+er to poll the
+> >> > > > kernel if it refuses to suspend.
+> >> > >
+> >> > > polling is evil -- it keeps CPU wake up =3D> wastes power.
+> >> > >
+> >> > > Wakelocks done right are single atomic_t... and if you set it to 0,
+> >> > > you just unblock "sleeper" thread or something. Zero polling and v=
+ery
+> >> > > simple...
+> >> >
+> >> > Except that you have to check all of the wakelocks periodically in a=
+ loop =3D>
+> >> > polling.  So?
 > >>
-> >> Perhaps these aren't all the sort of usage you're talking about, but I
-> >> bet most of them are.  It certainly looks like more than just ARM.
-> >> Maybe not all that much more, but definitely more.  And the number will
-> >> only grow in the future.
+> >> No. I want to have single atomic_t for all the wakelocks... at least
+> >> in non-debug version. Debug version will be slower. I believe you
+> >> originally suggested that.
 > >
-> > Are you really sure? Because it can't be x86. I'm pretty sure that that=
- is
-> > simply not how x86 wake events _work_ - they're not interrupts.
+> > I did, but please don't call it "wakelocks".  It's confusing.
 > =
 
-> They are not interrupts on every arm platform that implements set_wake
-> either, but it is useful to pretend that they are. If the platform
-> code reads the wakeup status and marks the corresponding interrupt
-> pending, the driver does not need to know if the event occurred before
-> or after the system entered the low power state. I don't know if this
-> can be implemented on x86, but it might be worth looking into.
+> What you are talking about here is mostly an optimization of the
+> wakelock api. You have removed timeout support and made each wakelock
+> reference counted.
 
-That would have been a new feature, no?  And I don't think anyone except for
-you does it.  So, what you're saying boils down to "please don't break my n=
-ew
-feature that hasn't been merged yet".
+I also removed the arbitrary number of wakelocks (I really _hate_ the name,
+can we please stop using it from now on?).
 
-> > And that's the big point that people seem to be missing here: the whole
-> > "wake up interrupt" thing is not some generic model in the first place.=
- I
-> > strongly suspect that it literally only works on certain architectures.
+> If you ignore wakelocks with timeouts, the current
+> wakelock interface can be implemented with a global atomic_t to
+> prevent suspend, and a per wakelock atomic_t to prevent a single
+> client from changing the global reference count by more than one.
 > =
 
-> My point was that it was not specific to our platform. I don't have a
-> problem fixing our platform if this patch is merged, but this is case
-> where a change to the generic code breaks some platforms.
+> There are a couple of reasons that I have not done this. It removes
+> the ability to easily inspect the system when it is not suspending.
 
-Quite frankly, I don't really think it will break anything else than your
-platform.
+Care to elaborate?
 
-Still, if Linus agrees, I can put the loop suggested by him directly into
-sysdev_suspend().  Linus?
+> I do provide an option to turn off the wakelock stats, which makes
+> wake_lock/unlock significantly faster, but we never run with wakelock
+> stats off. Also, it pushes timeout handling to the drivers. I know may
+> of you don't like timeout support, but ignoring the problem is not a
+> solution. If each driver that needs timeouts uses its own timer, then
+> you will often wakeup from idle just to unlock a wakelock that will
+> not trigger suspend. This wakeup is a thousand times as costly on the
+> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
 
-> I don't think there is a good reason to make the fix arm specific, trivia=
-l or
-> not, since any platform implementing set_wake may run into the race
-> condition that this patch introduced. If the platform does not
-> implement set_wake, IRQ_WAKEUP never gets set, and the fix should not
-> have any effect.
+Well, at least a couple of people told you that the timeouts are hardly
+acceptable and they told you why.  Please stop repeating the same arguments=
+ you
+have given already for a couple of times.  They're not convincing.
 
-The point is, if we put anything like this into the generic code, platforms
-start to rely on this and it will become more and more difficult to change =
-at
-the generic level if need be.
+Instead of trying to convince everyone to accept your solution that you're
+not willing to change, please try to listen and think how to do things
+differently so that everyone is comfortable with them.  I'm sure you're more
+than capable of doing that.
 
-The fact that your platform relies on the generic code to disable IRQs on
-the CPU at a particular point shows the mechanism very well. :-)
+I do realize that you consider your current solution as the best thing since
+the sliced bread, but please accept the fact that the other people think
+differently.
 
-Thanks,
+> I just checked my phone, and over a 24 hour awake time (370 hours
+> uptime) period, it acquired about 5 million wakelocks (mostly for
+> input events). If these were cache hits, and took as long as my
+> benchmark did, that accounts for 20 seconds of overhead (0.023% of
+> awake, 0.1% of not-idle (5.5h).
+
+Which proves what exactly?
+
 Rafael
