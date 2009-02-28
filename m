@@ -1,16 +1,21 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 27 Feb 2009 19:04:12 -0800
-Message-ID: <d6200be20902271904t4500e59eld7ea3cebef75cfad__46344.4110857838$1235790425$gmane$org@mail.gmail.com>
-References: <200902192215.18365.rjw@sisk.pl> <200902271522.41915.rjw@sisk.pl>
-	<20090227204053.GB1387@ucw.cz> <200902272155.42010.rjw@sisk.pl>
-	<d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
-	<20090227234458.GB2089@elf.ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Fri, 27 Feb 2009 19:20:02 -0800
+Message-ID: <d6200be20902271920l49360e54y9cac06818645e13@mail.gmail.com>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<d6200be20902111542r3592f64dt41a282221aed1268@mail.gmail.com>
+	<200902122322.30864.rjw@sisk.pl>
+	<13B9B4C6EF24D648824FF11BE89671620377169672@dlee02.ent.ti.com>
+	<20090213011035.GA8664@srcf.ucam.org> <20090226150430.GA1398@ucw.cz>
+	<d6200be20902261311q103641dap57425fc8e49cd549@mail.gmail.com>
+	<20090226213608.GB2214@elf.ucw.cz>
+	<d6200be20902261616g1472c9d6u5e01a6941e37be6e@mail.gmail.com>
+	<20090227095650.GA4582@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090227234458.GB2089@elf.ucw.cz>
+In-Reply-To: <20090227095650.GA4582@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,112 +26,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+Cc: "ncunningham@crca.org.au" <ncunningham@crca.org.au>, "u.luckas@road.de" <u.luckas@road.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "swetland@google.com" <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 3:44 PM, Pavel Machek <pavel@ucw.cz> wrote:
+On Fri, Feb 27, 2009 at 1:56 AM, Pavel Machek <pavel@ucw.cz> wrote:
 > Hi!
 >
->> >> > > Wakelocks done right are single atomic_t... and if you set it to =
-0,
->> >> > > you just unblock "sleeper" thread or something. Zero polling and =
-very
->> >> > > simple...
->> >> >
->> >> > Except that you have to check all of the wakelocks periodically in =
-a loop =3D>
->> >> > polling. =A0So?
->> >>
->> >> No. I want to have single atomic_t for all the wakelocks... at least
->> >> in non-debug version. Debug version will be slower. I believe you
->> >> originally suggested that.
+>> >> As far as I can tell the sleepy patches tries to enter suspend if the
+>> >> system is idle. If you plan to wake back up for the first timer, then
+>> >> the end result of this is the same as what we get by entering the low
+>> >> power state from arch_idle in the msm platform. Due to the frequent
+>> >> wakeups, the power use is higher than our suspend state. If you don't
+>> >> wake up on the first timer, you need something like the wakelock api
+>> >> so apps specify that they need to run even if they were inactive for 3
+>> >> seconds.
 >> >
->> > I did, but please don't call it "wakelocks". =A0It's confusing.
+>> > You understand it right... it wakes up on first event. So you
+>> > eliminate all the timers that fire too often... and fix userspace if
+>> > neccessary.
+>> >
+>> > Given that your 3rd party apps are written in java, you should have
+>> > enough control over them.
 >>
->> What you are talking about here is mostly an optimization of the
->> wakelock api. You have removed timeout support and made each wakelock
->> reference counted. If you ignore wakelocks with timeouts, the current
->> wakelock interface can be implemented with a global atomic_t to
->> prevent suspend, and a per wakelock atomic_t to prevent a single
->> client from changing the global reference count by more than one.
+>> How does the language the apps are written in affect this problem? Are
+>> you saying that java apps should not be allowed to run every second?
 >
-> Actually I'd go to global atomic_t to prevent suspend, and make sure
-> single client only changes it once by design.
+> I'm trying to say that you have pretty good control over java apps. So
 
-If you go with only a global atomic_t then you automatically allow
-clients to change the count by more than one. Our userland api calls
-this a reference counted wakelock, and reference counted wakelocks
-have been a frequent source of bugs. We have code that calls wake_lock
-every time an item is added to a queue and wake_unlock when it gets a
-notification that item was removed. If you miss a notification the
-lock is never released. With non reference counted wakelocks, can
-unlock every time the queue is empty, and lock either when adding the
-first item or every time you add an item (useful when combined with
-timeouts).
+I'm trying to say that we do not.
 
-I could extend the wakelock api to allow reference counted wakelocks,
-but I have not come across any drivers where it would be beneficial
-(to the driver, not the wakelock implementation), and causes conflicts
-with timeouts.
-
->> There are a couple of reasons that I have not done this. It removes
->> the ability to easily inspect the system when it is not suspending. I
->> do provide an option to turn off the wakelock stats, which makes
->> wake_lock/unlock significantly faster, but we never run with wakelock
->> stats off.
+> you could for example make them call modified select with sloppiness,
+> or make them set their own sloppiness etc...
 >
-> It seems wrong to design for the "debugging" case. ... even if you run
-> with debugging enabled.
-
-I'm not sure I would call wakelock stats purely a debugging feature.
-Either way, designing the api to pass in an object, allows stats and
-debugging features to be implemented. Designing the api to be a global
-reference count without an object prevents both.
-
-I realize that some of the proposed alternatives allow the same stats
-and debugging information to be added to other kernel objects (tasks
-and devices), but I prefer a separate wakelock object. We have drivers
-that use more then one wakelock per device, and many wakelocks do not
-have any association with a task either.
-
+>> > What in-kernel timers are causing problems for you?
+>>
+>> I don't know for sure, but last time I checked, the the network stack
+>> woke up every second. /proc/timer_list shows tick_sched_timer always
+>> running in the next second.
 >
->> Also, it pushes timeout handling to the drivers. I know
->> may
->> of you don't like timeout support, but ignoring the problem is not a
->> solution. If each driver that needs timeouts uses its own timer, then
->> you will often wakeup from idle just to unlock a wakelock that will
->> not trigger suspend. This wakeup is a thousand times as costly on the
->> msm platform as a wakelock/unlock pair (with wakelock stats
->> enabled).
->
-> Well, you are free to have a library (or something) those broken
-> drivers can use. But you have to understand that those drivers are
-> broken... and please don't make it part of core API.
+> I went through those in minimal system, and was able to mostly solve
+> that. Can we simply get network stack (etc) fixed?
 
-I don't agree. Not all the timeout uses are broken. The unknown-wakeup
-wakelock that is used if suspend fails preserved compatibility with
-existing drivers without introducing any race conditions. I also use a
-wakelock with a one second timeout if the alarm driver is suspended
-less than a second before the alarm is supposed to expire. I could
-probably rewrite this driver to not use a timeout, but the current
-implementation is not broken.
-
-> It should also make the merging easier; merge non-contraversial parts
-> first (single atomic_t), then add debugging infrastructure, then maybe
-> add timeout handling if those drivers can really not be fixed in a
-> nicer way...
-
-Why is a single atomic_t less controversial? It is just as invasive as
-the wakelock interface and it provides no help in interacting with
-unmodified subsystems.
-
-I'm more interested in getting code merged that can easily be used in
-a fully functional system, than code that only works for test systems,
-but if the implementation details of the wakelock interface is the
-only thing that prevents it from being merged, I can change it. I do
-find it odd that this is what is objectionable though, as it is
-already more efficient than the pm_qos interface that people want us
-to use instead of idle wakelocks.
+If you have fixes to eliminate polling in the network stack, please
+submit them (unless you already have) as this would benefit every
+system. Even if you eliminate all polling in the kernel, and the
+platform supports the same low power state from idle, I still think
+suspend is a useful way to pause the entire system when it does not
+need to run.
 
 -- =
 
