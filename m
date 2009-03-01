@@ -1,7 +1,7 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Sat, 28 Feb 2009 15:38:00 -0800
-Message-ID: <d6200be20902281538g1dd6aec4q1b42b610d3ea15d1__33011.1903408126$1235864523$gmane$org@mail.gmail.com>
+Date: Sat, 28 Feb 2009 16:06:12 -0800
+Message-ID: <d6200be20902281606g1c5db332r9970931d7080717f__26049.0855471746$1235866120$gmane$org@mail.gmail.com>
 References: <200902192215.18365.rjw@sisk.pl> <200902281118.14595.rjw@sisk.pl>
 	<d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
 	<200902282353.39763.rjw@sisk.pl>
@@ -24,75 +24,86 @@ Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <li
 List-Id: linux-pm@vger.kernel.org
 
 On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday 28 February 2009, Arve Hj=F8nnev=E5g wrote:
->> Can you summarize what the problems with my current api are? I get the
->> impression that you think the overhead of using a list is too high,
->> and that timeout support should be removed because you think all
->> drivers that use it are broken.
+>> >> What you are talking about here is mostly an optimization of the
+>> >> wakelock api. You have removed timeout support and made each wakelock
+>> >> reference counted.
+>> >
+>> > I also removed the arbitrary number of wakelocks (I really _hate_ the =
+name,
+>> > can we please stop using it from now on?).
+>>
+>> What do you mean by this? You removed the struct wake_lock?
 >
-> In no particular order:
-> 1. One user space process can create an unlimited number of wakelocks. =
-=A0This
-> =A0 shouldn't be possible. =A0Moreover, it is not even necessary for any =
-process
-> =A0 to have more than one wakelock held at any time.
+> Basically, yes.
 
-This has been addressed. A user space process cannot create more
-wakelocks than it has filedescriptors.
+Why is this better? If you move the stats into devices and tasks, this
+may take up more space than adding an object to the structures or
+tasks that you are protecting.
 
-> 2. Timeouts are wrong, because they don't really _solve_ any problem. =A0=
-They are
-> =A0 useful for working around the fact that you can't or you don't want to
-> =A0 modify every piece of code that in principle should take a wakelock a=
-nd
-> =A0 that's it.
 
-Yes, timeouts are sometimes wrong, but they are not always wrong. I
-gave two examples where the use of timeouts was not incorrect.
+>> >> I do provide an option to turn off the wakelock stats, which makes
+>> >> wake_lock/unlock significantly faster, but we never run with wakelock
+>> >> stats off. Also, it pushes timeout handling to the drivers. I know may
+>> >> of you don't like timeout support, but ignoring the problem is not a
+>> >> solution. If each driver that needs timeouts uses its own timer, then
+>> >> you will often wakeup from idle just to unlock a wakelock that will
+>> >> not trigger suspend. This wakeup is a thousand times as costly on the
+>> >> msm platform as a wakelock/unlock pair (with wakelock stats enabled).
+>> >
+>> > Well, at least a couple of people told you that the timeouts are hardly
+>> > acceptable and they told you why. =A0Please stop repeating the same ar=
+guments you
+>> > have given already for a couple of times. =A0They're not convincing.
+>>
+>> And you keep ignoring them.
+>
+> Not ignoring, but considering them as insufficient. =A0And since they've =
+already
+> been considered as insufficient, there's no point repeating them over and=
+ over
+> again. =A0That doesn't make them any better.
 
-> =A0However, =A0entire concept of having one code path acting on
-> =A0 behalf of another one on a hunch that it might be doing something mak=
-ing
-> =A0 suspend undesirable is conceptually broken IMO.
+The problem is that what you consider insufficient is what allows us
+to ship a product.
 
-OK. Do you have an alternative?
+>> > I do realize that you consider your current solution as the best thing=
+ since
+>> > the sliced bread, but please accept the fact that the other people thi=
+nk
+>> > differently.
+>>
+>> I certainly do not think my current solution is the best, it is very
+>> invasive. I do however think your proposed solution is worse. The only
+>> proposed alternative that we could actually ship a product on today is
+>> to not use suspend at all.
+>
+> Well, I'm sure your code is useful for the Android platform, but the ques=
+tion
+> is whether we want this code in the mainline kernel. =A0For now, the answ=
+er is
+> "no, we don't". =A0Moreover, since you're the one who wants the code to be
+> merged, it's your burden to make it acceptable for us. =A0However you're =
+going
+> to do it is up to you, but certainly trying to force your current code on=
+ us
+> is not going to work.
 
-I my opinion this is how the entire system works if you do autosuspend
-without a mechanism like wakelocks.
+I don't think I am the only one who want this code in the mainline
+kernel. Many people want to use the android platform, and support in
+the mainline kernel would be beneficial to some of them. I made many
+requested changes to my code that provides no benefit to us, but I
+have not made any changes that breaks our own use.
 
-> 3. The overhead of using a list is unnecessary and _therefore_ too high (=
-not
-> =A0 just too high).
+> BTW, I think you handled the thing wrong. =A0If I were you, I wouldn't ev=
+en try
+> to push the code as you did. =A0I would instead make it as simple as reas=
+onably
+> possible so that the basic idea was clear and understandable to everyone.
+> Then, if there were any doubts with respect to the basic idea, I'd try to
+> clarify them and I'd consider modifying the code to address objections.
+> I'd only try to add more features after the basic idea had been accepted.
 
-It is only unnecessary if you do not want accounting or timeouts. The
-overhead of a timer going off when it is not needed (if you push
-timeouts to the drivers) is way higher then the overhead putting
-wakelocks on a list.
-
-> 4. There seems to be a race between user space wakelocks and the freezer
-> =A0 (perhaps I overlooked something, in which case please disregard this =
-item).
-
-You are missing something. Wakelocks overlap.
-
-> 5. The name "wakelocks" is confusing, because they aren't locks and they
-> =A0 affect suspend, not wake.
-
-I can change the name. Currently suspend_blocker seems to be
-acceptable many people, but some don't like this name either.
-
-> 6. Last time I saw the patches they were barely commented and the changel=
-ogs
-> =A0 didn't describe the code well (if at all).
-
-I have not added many inline comments, but I did add the kerneldoc
-comments you requested, and a lot of documentation since the first
-patches.
-
-> 7. There's no clear distinction between debug/stats code and the basic
-> =A0 functionality.
-
-I don't think this is still true.
+The basic concept was developed long before android was a public project.
 
 -- =
 
