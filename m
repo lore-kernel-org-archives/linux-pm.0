@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFD] Automatic suspend
-Date: Sun, 1 Mar 2009 10:11:18 +0100
-Message-ID: <200903011011.20703.rjw__19064.8709693507$1235898921$gmane$org@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl>
+Date: Sun, 1 Mar 2009 10:20:51 +0100
+Message-ID: <200903011020.53130.rjw__8417.58351675725$1235899492$gmane$org@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
 	<d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
-	<1235888923.7388.121.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1235888923.7388.121.camel@pasglop>
+In-Reply-To: <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,35 +19,121 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Brian Swetland <swetland@google.com>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5IDAxIE1hcmNoIDIwMDksIEJlbmphbWluIEhlcnJlbnNjaG1pZHQgd3JvdGU6Cj4g
-T24gU2F0LCAyMDA5LTAyLTI4IGF0IDE2OjA2IC0wODAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IAo+IEknbSBub3QgdGFraW5nIGEgcG9zaXRpb24gb24gdGhlIG1lcml0IG9mIHRoZSB3YWtl
-bG9ja3MgcGVyIHNlIG5vcgo+IHdoZXRoZXIgUmFmYWVsIGlzIHJpZ2h0IG9yIHdyb25nIGhlcmUs
-IEkgaGF2ZW4ndCBsb29rZWQgYXQgdGhlIHByb2JsZW0KPiBjbG9zZWx5IGVub3VnaC4gSSBqdXN0
-IHdhbnQgdG8gcmVhY3QgdG8gdGhpczoKPiAKPiA+IFRoZSBiYXNpYyBjb25jZXB0IHdhcyBkZXZl
-bG9wZWQgbG9uZyBiZWZvcmUgYW5kcm9pZCB3YXMgYSBwdWJsaWMKPiA+IHByb2plY3QuCj4gCj4g
-VGhpcyBpc24ndCBnb2luZyB0byBicmluZyB5b3UgYW55IGdvb2Qgd2lsbC4gV2UgZG9uJ3QgY2Fy
-ZSB3aGF0IHdhcyBkb25lCj4gYmVmb3JlIGl0IHdhcyBhIHB1YmxpYyBwcm9qZWN0LiBUaGF0IGhh
-cyBzdHJpY3RseSBubyByZWxldmFuY2UgdG8gaG93IGl0Cj4gc2hvdWxkIGJlIHN1Ym1pdHRlZCB1
-cHN0cmVhbS4KPiAKPiBIb3cgbG9uZyB0aGUgY29kZSBoYXMgYmVlbiBzaW1tZXJpbmcgaW50ZXJu
-YWxseSB0byBjb21wYW55IFggb3IgWSBvcgo+IGV2ZW4gaW4gYSBwdWJsaWMgdHJlZSBkb2Vzbid0
-IG1hdHRlci4gU29tZSB0aW1lcywgeWVzLCB3ZSBkbyB0YWtlCj4gc29tZXRoaW5nIGFzIGEgd2hv
-bGUsIHdoZW4gaXQgbWFrZXMgbm8gc2Vuc2UgdG8gZG8gb3RoZXJ3aXNlIChhIGRyaXZlciwKPiBh
-IGZpbGVzeXN0ZW0sIC4uLikuIAo+IAo+IEJ1dCBzb21ldGhpbmcgbGlrZSB3aGF0IHlvdSBwcm9w
-b3NlLCBpdCBzZWVtcywgY291bGQgZWFzaWx5IGJlIGJyb2tlbgo+IGRvd24gaW50byBhIGJhc2lj
-IGNvbmNlcHQsIG9uIHdoaWNoIGZlYXR1cmVzIGFyZSBhZGRlZCBvbmUgYWZ0ZXIgdGhlCj4gb3Ro
-ZXIsIGFuZCBpbiB0aGlzIGNhc2UsIGl0J3MgdGhlIHJpZ2h0IHdheSB0byBnbywgc2ltcGx5IGJl
-Y2F1c2UgaXQncwo+IGVhc2llciB0byBhcmd1ZSBmb3IgdGhlIGJhc2ljIGNvbmNlcHQgYWxvbmUg
-aWYgeW91IGRvbid0IGhhdmUgdG8gaGFuZGxlCj4gY29tbWVudHMgZnJvbXMgcGVvcGxlIHdobyBk
-b24ndCBhZ3JlZSB3aXRoIGFzcGVjdCBBIEIgb3IgQyBvZiB0aGUgb3RoZXIKPiBmZWF0dXJlcyBp
-bnZvbHZlZC4KPiAKPiBBbmQgaWYgdGhlIGJhc2ljIGNvbmNlcHQgZG9lc24ndCBnZXQgYWNjZXB0
-ZWQgaW4gdGhlIGZpcnN0IHBsYWNlLCB0aGVuCj4gdGhlIHdob2xlIHBvaW50IGlzIG1vb3QuLi4K
-CkV4YWN0bHkuICBUaGlzIGlzIHdoYXQgSSd2ZSBiZWVuIHRyeWluZyB0byBzYXkgZm9yIHNvbWUg
-dGltZSBub3cuCgpUaGFua3MgQmVuIQoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Sunday 01 March 2009, Arve Hj=F8nnev=E5g wrote:
+> On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> What you are talking about here is mostly an optimization of the
+> >> >> wakelock api. You have removed timeout support and made each wakelo=
+ck
+> >> >> reference counted.
+> >> >
+> >> > I also removed the arbitrary number of wakelocks (I really _hate_ th=
+e name,
+> >> > can we please stop using it from now on?).
+> >>
+> >> What do you mean by this? You removed the struct wake_lock?
+> >
+> > Basically, yes.
+> =
+
+> Why is this better? If you move the stats into devices and tasks, this
+> may take up more space than adding an object to the structures or
+> tasks that you are protecting.
+
+OK, this is a valid point as long as we're going to use the stats in the
+original form (which I'm not sure we want).
+
+Still, as far as the number of "locks" one process can take is limited, it's
+fine.
+
+> >> >> I do provide an option to turn off the wakelock stats, which makes
+> >> >> wake_lock/unlock significantly faster, but we never run with wakelo=
+ck
+> >> >> stats off. Also, it pushes timeout handling to the drivers. I know =
+may
+> >> >> of you don't like timeout support, but ignoring the problem is not a
+> >> >> solution. If each driver that needs timeouts uses its own timer, th=
+en
+> >> >> you will often wakeup from idle just to unlock a wakelock that will
+> >> >> not trigger suspend. This wakeup is a thousand times as costly on t=
+he
+> >> >> msm platform as a wakelock/unlock pair (with wakelock stats enabled=
+).
+> >> >
+> >> > Well, at least a couple of people told you that the timeouts are har=
+dly
+> >> > acceptable and they told you why.  Please stop repeating the same ar=
+guments you
+> >> > have given already for a couple of times.  They're not convincing.
+> >>
+> >> And you keep ignoring them.
+> >
+> > Not ignoring, but considering them as insufficient.  And since they've =
+already
+> > been considered as insufficient, there's no point repeating them over a=
+nd over
+> > again.  That doesn't make them any better.
+> =
+
+> The problem is that what you consider insufficient is what allows us
+> to ship a product.
+
+This doesn't matter a whit, because the mainline kernel is not just your
+product.
+
+By the same rule you could say that every working vendor driver is worth
+merging into the mainline kernel, which clearly is not the case.
+
+> >> > I do realize that you consider your current solution as the best thi=
+ng since
+> >> > the sliced bread, but please accept the fact that the other people t=
+hink
+> >> > differently.
+> >>
+> >> I certainly do not think my current solution is the best, it is very
+> >> invasive. I do however think your proposed solution is worse. The only
+> >> proposed alternative that we could actually ship a product on today is
+> >> to not use suspend at all.
+> >
+> > Well, I'm sure your code is useful for the Android platform, but the qu=
+estion
+> > is whether we want this code in the mainline kernel.  For now, the answ=
+er is
+> > "no, we don't".  Moreover, since you're the one who wants the code to be
+> > merged, it's your burden to make it acceptable for us.  However you're =
+going
+> > to do it is up to you, but certainly trying to force your current code =
+on us
+> > is not going to work.
+> =
+
+> I don't think I am the only one who want this code in the mainline
+> kernel. Many people want to use the android platform, and support in
+> the mainline kernel would be beneficial to some of them. I made many
+> requested changes to my code that provides no benefit to us, but I
+> have not made any changes that breaks our own use.
+
+OK, please resubmit the patches, then.
+
+> > BTW, I think you handled the thing wrong.  If I were you, I wouldn't ev=
+en try
+> > to push the code as you did.  I would instead make it as simple as reas=
+onably
+> > possible so that the basic idea was clear and understandable to everyon=
+e.
+> > Then, if there were any doubts with respect to the basic idea, I'd try =
+to
+> > clarify them and I'd consider modifying the code to address objections.
+> > I'd only try to add more features after the basic idea had been accepte=
+d.
+> =
+
+> The basic concept was developed long before android was a public project.
+
+Please refer to the Ben's message for a good answer to this.
+
+Thanks,
+Rafael
