@@ -1,14 +1,21 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 3/4] PM: Change hibernation code ordering
-Date: Sun, 1 Mar 2009 23:26:46 +0100
-Message-ID: <200903012326.48459.rjw__48064.4720759757$1235947303$gmane$org@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Sun, 1 Mar 2009 23:51:17 +0100
+Message-ID: <20090301225117.GD1961__49485.7067279101$1235947863$gmane$org@elf.ucw.cz>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
+	<20090217142001.GB12378@bulgaria.corp.google.com>
+	<20090217064630.688bf639@infradead.org>
+	<20090217152811.GA12686@bulgaria.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903012321.40328.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <20090217152811.GA12686@bulgaria.corp.google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,229 +25,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Brian Swetland <swetland@google.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+HI!
 
-Change the ordering of the hibernation core code so that the platform
-"prepare" callbacks are executed and the nonboot CPUs are disabled
-after calling device drivers' "late suspend" methods.
+> > > Of course that still doesn't address userspace.  Aggressively going to
+> > > suspend lets us compensate for userspace programs that do somewhat
+> > > silly things (I agree that it would be best if they didn't but they
+> > > do and getting *everyone* to write their userspace code to avoid
+> > > spinning or avoid waking up on short-duration timers to poll is a
+> > > losing battle).
+> > 
+> > actually with powertop... on the open source side things are actually
+> > won. It took all of 6 months...
+> > I don't see that as a valid excuse. In fact, if this kind of solution
+> > makes real userspace scheduled timers to be missed then I consider it a
+> > serious functionality misfeature.
+> 
+> While you can't expect the kernel to solve all the problems of
+> userspace, here's the broad situation one could end up in
+> (note this specific sequence is generic and not based on any one
+> specific product experience):
+> 
+> - carrier deploys a device 
+> - carrier agrees to allow installation of arbitrary third party apps
+>   without some horrible certification program requiring app authors
+>   to jump through hoops, wait ages for approval, etc
+> - users rejoice and install all kinds of apps
+> - some apps are poorly written and impact battery life
+> - users complain to carrier about battery life
+> 
+> You will end up with some crappy apps that do really dumb things.
+> However, even if they're badly written users may still install and use
+> these apps because hey, they do something the user likes.
 
-This change (along with the previous analogous change of the suspend
-core code) will allow us to rework the PCI PM core so that the power
-state of devices is changed in the "late" phase of suspend (and
-analogously in the "early" phase of resume), which in turn will allow
-us to avoid the race condition where a device using shared interrupts
-is put into a low power state with interrupts enabled and then an
-interrupt (for another device) comes in and confuses its driver.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |  109 +++++++++++++++++++++++++++++-----------------------
- 1 file changed, 61 insertions(+), 48 deletions(-)
-
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -228,13 +228,22 @@ static int create_image(int platform_mod
- 		goto Unlock;
- 	}
- 
-+	error = platform_pre_snapshot(platform_mode);
-+	if (error || hibernation_test(TEST_PLATFORM))
-+		goto Platform_finish;
-+
-+	error = disable_nonboot_cpus();
-+	if (error || hibernation_test(TEST_CPUS)
-+	    || hibernation_testmode(HIBERNATION_TEST))
-+		goto Enable_cpus;
-+
- 	local_irq_disable();
- 
- 	sysdev_suspend(PMSG_FREEZE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting hibernation\n");
--		goto Power_up_devices;
-+		goto Enable_irqs;
- 	}
- 
- 	if (hibernation_test(TEST_CORE))
-@@ -250,15 +259,22 @@ static int create_image(int platform_mod
- 	restore_processor_state();
- 	if (!in_suspend)
- 		platform_leave(platform_mode);
-+
-  Power_up:
- 	sysdev_resume();
- 	/* NOTE:  device_power_up() is just a resume() for devices
- 	 * that suspended with irqs off ... no overall powerup.
- 	 */
- 
-- Power_up_devices:
-+ Enable_irqs:
- 	local_irq_enable();
- 
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Platform_finish:
-+	platform_finish(platform_mode);
-+
- 	device_power_up(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
- 
-@@ -298,25 +314,9 @@ int hibernation_snapshot(int platform_mo
- 	if (hibernation_test(TEST_DEVICES))
- 		goto Recover_platform;
- 
--	error = platform_pre_snapshot(platform_mode);
--	if (error || hibernation_test(TEST_PLATFORM))
--		goto Finish;
--
--	error = disable_nonboot_cpus();
--	if (!error) {
--		if (hibernation_test(TEST_CPUS))
--			goto Enable_cpus;
--
--		if (hibernation_testmode(HIBERNATION_TEST))
--			goto Enable_cpus;
-+	error = create_image(platform_mode);
-+	/* Control returns here after successful restore */
- 
--		error = create_image(platform_mode);
--		/* Control returns here after successful restore */
--	}
-- Enable_cpus:
--	enable_nonboot_cpus();
-- Finish:
--	platform_finish(platform_mode);
-  Resume_devices:
- 	device_resume(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-@@ -338,7 +338,7 @@ int hibernation_snapshot(int platform_mo
-  *	kernel.
-  */
- 
--static int resume_target_kernel(void)
-+static int resume_target_kernel(bool platform_mode)
- {
- 	int error;
- 
-@@ -351,9 +351,20 @@ static int resume_target_kernel(void)
- 		goto Unlock;
- 	}
- 
-+	error = platform_pre_restore(platform_mode);
-+	if (error)
-+		goto Cleanup;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Enable_cpus;
-+
- 	local_irq_disable();
- 
--	sysdev_suspend(PMSG_QUIESCE);
-+	error = sysdev_suspend(PMSG_QUIESCE);
-+	if (error)
-+		goto Enable_irqs;
-+
- 	/* We'll ignore saved state, but this gets preempt count (etc) right */
- 	save_processor_state();
- 	error = restore_highmem();
-@@ -379,8 +390,15 @@ static int resume_target_kernel(void)
- 
- 	sysdev_resume();
- 
-+ Enable_irqs:
- 	local_irq_enable();
- 
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Cleanup:
-+	platform_restore_cleanup(platform_mode);
-+
- 	device_power_up(PMSG_RECOVER);
- 
-  Unlock:
-@@ -405,19 +423,10 @@ int hibernation_restore(int platform_mod
- 	pm_prepare_console();
- 	suspend_console();
- 	error = device_suspend(PMSG_QUIESCE);
--	if (error)
--		goto Finish;
--
--	error = platform_pre_restore(platform_mode);
- 	if (!error) {
--		error = disable_nonboot_cpus();
--		if (!error)
--			error = resume_target_kernel();
--		enable_nonboot_cpus();
-+		error = resume_target_kernel(platform_mode);
-+		device_resume(PMSG_RECOVER);
- 	}
--	platform_restore_cleanup(platform_mode);
--	device_resume(PMSG_RECOVER);
-- Finish:
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -453,34 +462,38 @@ int hibernation_platform_enter(void)
- 		goto Resume_devices;
- 	}
- 
-+	device_pm_lock();
-+
-+	error = device_power_down(PMSG_HIBERNATE);
-+	if (error)
-+		goto Unlock;
-+
- 	error = hibernation_ops->prepare();
- 	if (error)
--		goto Resume_devices;
-+		goto Platofrm_finish;
- 
- 	error = disable_nonboot_cpus();
- 	if (error)
--		goto Finish;
--
--	device_pm_lock();
--
--	error = device_power_down(PMSG_HIBERNATE);
--	if (!error) {
--		local_irq_disable();
--		sysdev_suspend(PMSG_HIBERNATE);
--		hibernation_ops->enter();
--		/* We should never get here */
--		while (1);
--	}
-+		goto Platofrm_finish;
- 
--	device_pm_unlock();
-+	local_irq_disable();
-+	sysdev_suspend(PMSG_HIBERNATE);
-+	hibernation_ops->enter();
-+	/* We should never get here */
-+	while (1);
- 
- 	/*
- 	 * We don't need to reenable the nonboot CPUs or resume consoles, since
- 	 * the system is going to be halted anyway.
- 	 */
-- Finish:
-+ Platofrm_finish:
- 	hibernation_ops->finish();
- 
-+	device_power_up(PMSG_RESTORE);
-+
-+ Unlock:
-+	device_pm_unlock();
-+
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	device_resume(PMSG_RESTORE);
+Yes, crappy apps exist. Fortunately for you, they are written in Java,
+so you can do all the magic in the JVM, no need to hack it into
+kernel.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
