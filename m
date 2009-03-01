@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFD] Automatic suspend
-Date: Sun, 1 Mar 2009 10:20:51 +0100
-Message-ID: <200903011020.53130.rjw__8417.58351675725$1235899492$gmane$org@sisk.pl>
-References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
-	<d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Very rare resume bug
+Date: Sun, 01 Mar 2009 15:05:55 +0200
+Message-ID: <1235912755.7665.4.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,121 +15,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 01 March 2009, Arve Hj=F8nnev=E5g wrote:
-> On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> >> What you are talking about here is mostly an optimization of the
-> >> >> wakelock api. You have removed timeout support and made each wakelo=
-ck
-> >> >> reference counted.
-> >> >
-> >> > I also removed the arbitrary number of wakelocks (I really _hate_ th=
-e name,
-> >> > can we please stop using it from now on?).
-> >>
-> >> What do you mean by this? You removed the struct wake_lock?
-> >
-> > Basically, yes.
-> =
+I currently am testing suspend/resume on my desktop system.
+I already kept it in suspend to ram state in 2 weeks, and now
+I resumed it, and screen didn't came back, I tried switching vts
+it did seem to help, but then everything hung.
 
-> Why is this better? If you move the stats into devices and tasks, this
-> may take up more space than adding an object to the structures or
-> tasks that you are protecting.
+I got this in logs:
 
-OK, this is a valid point as long as we're going to use the stats in the
-original form (which I'm not sure we want).
 
-Still, as far as the number of "locks" one process can take is limited, it's
-fine.
 
-> >> >> I do provide an option to turn off the wakelock stats, which makes
-> >> >> wake_lock/unlock significantly faster, but we never run with wakelo=
-ck
-> >> >> stats off. Also, it pushes timeout handling to the drivers. I know =
-may
-> >> >> of you don't like timeout support, but ignoring the problem is not a
-> >> >> solution. If each driver that needs timeouts uses its own timer, th=
-en
-> >> >> you will often wakeup from idle just to unlock a wakelock that will
-> >> >> not trigger suspend. This wakeup is a thousand times as costly on t=
-he
-> >> >> msm platform as a wakelock/unlock pair (with wakelock stats enabled=
-).
-> >> >
-> >> > Well, at least a couple of people told you that the timeouts are har=
-dly
-> >> > acceptable and they told you why.  Please stop repeating the same ar=
-guments you
-> >> > have given already for a couple of times.  They're not convincing.
-> >>
-> >> And you keep ignoring them.
-> >
-> > Not ignoring, but considering them as insufficient.  And since they've =
-already
-> > been considered as insufficient, there's no point repeating them over a=
-nd over
-> > again.  That doesn't make them any better.
-> =
+> Feb 27 21:45:12 MAIN kernel: [47277.954656] WARNING: at /build/buildd/linux-2.6.27/kernel/power/main.c:176 suspend_test_finish+0x74/0x80()
+> Feb 27 21:45:12 MAIN kernel: [47277.954658] Modules linked in: videodev v4l1_compat af_packet binfmt_misc ipv6 nfsd auth_rpcgss exportfs ppdev video output battery container wmi sbs pci_slot sbshc nfs lockd nfs_acl sunrpc iptable_filter ip_tables x_tables ext2 mbcache vfat fat ac kvm_intel kvm i2c_dev snd_virmidi snd_seq_virmidi coretemp cpufreq_ondemand cpufreq_powersave cpufreq_userspace acpi_cpufreq freq_table sbp2 eeprom lp snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi nvidia(P) snd_pcm_oss joydev snd_mixer_oss snd_rawmidi snd_pcm parport_pc snd_seq_midi_event snd_seq psmouse intel_agp shpchp evdev iTCO_wdt serio_raw pci_hotplug i2c_i801 parport button iTCO_vendor_support agpgart snd_timer snd_seq_device snd soundcore i2c_core snd_page_alloc heci reiserfs sd_mod crc_t10dif sr_
+ mod cdrom sg usbhid hid ata_piix pata_marvell ata_generic ohci1394 pata_acpi ieee1394 libata scsi_mod dock uhci_hcd ehci_hcd usbcore e1000e dm_mirror dm_log dm_snapshot dm_mod thermal proce!
+ ssor fan fuse vesafb fbcon tileblit f
+> Feb 27 21:45:12 MAIN kernel: nt bitblit softcursor [last unloaded: microcode]
+> Feb 27 21:45:12 MAIN kernel: [47277.954720] Pid: 27868, comm: pm-suspend Tainted: P        W 2.6.27-11-generic #1
+> Feb 27 21:45:12 MAIN kernel: [47277.954722]  [<c037d236>] ? printk+0x1d/0x1f
+> Feb 27 21:45:12 MAIN kernel: [47277.954726]  [<c0131e99>] warn_on_slowpath+0x59/0x90
+> Feb 27 21:45:12 MAIN kernel: [47277.954730]  [<c014d305>] ? sched_clock_cpu+0xd5/0x170
+> Feb 27 21:45:12 MAIN kernel: [47277.954734]  [<c014c15f>] ? down_trylock+0x2f/0x40
+> Feb 27 21:45:12 MAIN kernel: [47277.954737]  [<c0132572>] ? try_acquire_console_sem+0x12/0x40
+> Feb 27 21:45:12 MAIN kernel: [47277.954740]  [<c024ed00>] ? kobject_put+0x20/0x50
+> Feb 27 21:45:12 MAIN kernel: [47277.954744]  [<c015d2b4>] suspend_test_finish+0x74/0x80
+> Feb 27 21:45:12 MAIN kernel: [47277.954747]  [<c015d3a6>] suspend_devices_and_enter+0xe6/0x190
+> Feb 27 21:45:12 MAIN kernel: [47277.954750]  [<c015d621>] enter_state+0xd1/0x100
+> Feb 27 21:45:12 MAIN kernel: [47277.954752]  [<c015d6d5>] state_store+0x85/0xd0
+> Feb 27 21:45:12 MAIN kernel: [47277.954754]  [<c015d650>] ? state_store+0x0/0xd0
+> Feb 27 21:45:12 MAIN kernel: [47277.954757]  [<c024ebc4>] kobj_attr_store+0x24/0x30
+> Feb 27 21:45:12 MAIN kernel: [47277.954759]  [<c01ffac7>] sysfs_write_file+0x97/0x100
+> Feb 27 21:45:12 MAIN kernel: [47277.954763]  [<c01b2760>] vfs_write+0xa0/0x110
+> Feb 27 21:45:12 MAIN kernel: [47277.954765]  [<c01ffa30>] ? sysfs_write_file+0x0/0x100
+> Feb 27 21:45:12 MAIN kernel: [47277.954768]  [<c01b28a2>] sys_write+0x42/0x70
+> Feb 27 21:45:12 MAIN kernel: [47277.954771]  [<c0103f7b>] sysenter_do_call+0x12/0x2f
+> Feb 27 21:45:12 MAIN kernel: [47277.954774]  [<c0370000>] ? enable_nonboot_cpus+0x60/0xc0
+> Feb 27 21:45:12 MAIN kernel: [47277.954777]  =======================
+> Feb 27 21:45:12 MAIN kernel: [47277.954779] ---[ end trace f9ae6cac97d5cf9f ]---
 
-> The problem is that what you consider insufficient is what allows us
-> to ship a product.
 
-This doesn't matter a whit, because the mainline kernel is not just your
-product.
+I have nvidia driver loaded - otherwise nothing suspends.
 
-By the same rule you could say that every working vendor driver is worth
-merging into the mainline kernel, which clearly is not the case.
-
-> >> > I do realize that you consider your current solution as the best thi=
-ng since
-> >> > the sliced bread, but please accept the fact that the other people t=
-hink
-> >> > differently.
-> >>
-> >> I certainly do not think my current solution is the best, it is very
-> >> invasive. I do however think your proposed solution is worse. The only
-> >> proposed alternative that we could actually ship a product on today is
-> >> to not use suspend at all.
-> >
-> > Well, I'm sure your code is useful for the Android platform, but the qu=
-estion
-> > is whether we want this code in the mainline kernel.  For now, the answ=
-er is
-> > "no, we don't".  Moreover, since you're the one who wants the code to be
-> > merged, it's your burden to make it acceptable for us.  However you're =
-going
-> > to do it is up to you, but certainly trying to force your current code =
-on us
-> > is not going to work.
-> =
-
-> I don't think I am the only one who want this code in the mainline
-> kernel. Many people want to use the android platform, and support in
-> the mainline kernel would be beneficial to some of them. I made many
-> requested changes to my code that provides no benefit to us, but I
-> have not made any changes that breaks our own use.
-
-OK, please resubmit the patches, then.
-
-> > BTW, I think you handled the thing wrong.  If I were you, I wouldn't ev=
-en try
-> > to push the code as you did.  I would instead make it as simple as reas=
-onably
-> > possible so that the basic idea was clear and understandable to everyon=
-e.
-> > Then, if there were any doubts with respect to the basic idea, I'd try =
-to
-> > clarify them and I'd consider modifying the code to address objections.
-> > I'd only try to add more features after the basic idea had been accepte=
-d.
-> =
-
-> The basic concept was developed long before android was a public project.
-
-Please refer to the Ben's message for a good answer to this.
-
-Thanks,
-Rafael
+Best regards,
+	Maxim Levitsky
