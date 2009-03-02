@@ -1,16 +1,14 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 2 Mar 2009 07:13:55 -0800
-Message-ID: <20090302071355.540e5651__29415.7228585847$1236007008$gmane$org@infradead.org>
-References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
-	<d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
-	<20090301225647.GE1961@elf.ucw.cz>
-	<200903020924.42451.oliver@neukum.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/4] PM: Change suspend code ordering
+Date: Mon, 2 Mar 2009 12:48:00 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0903021246250.3111@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+	<200903012325.53084.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903020924.42451.oliver@neukum.org>
+In-Reply-To: <200903012325.53084.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, mark@smtp1.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2 Mar 2009 09:24:36 +0100
-Oliver Neukum <oliver@neukum.org> wrote:
-
-> - you may want to avoid repeating expensive initialisations
-
-btw this "expensive intialization" for a correct driver... is the same
-thing  you need to do to get the device out of power saving mode..
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+On Sun, 1 Mar 2009, Rafael J. Wysocki wrote:
+>
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Change the ordering of the suspend core code so that the platform
+> "prepare" callback is executed and the nonboot CPUs are disabled
+> after calling device drivers' "late suspend" methods.
+
+Ok, ack on this whole series, looks fine.
+
+I'd like to see a 5/4 though:
+
+> This change will allow us to rework the PCI PM core so that the power
+> state of devices is changed in the "late" phase of suspend (and
+> analogously in the "early" phase of resume)
+
+.. doing this. Right now we have that hacky "avoid ACPI by doing a special 
+limited form of pci_set_power_state() and pci_enable() in the 
+early_resume. I'd love to see the actual PCI code cleanup too.
+
+			Linus
