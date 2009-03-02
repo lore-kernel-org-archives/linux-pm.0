@@ -1,16 +1,17 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Mon, 2 Mar 2009 14:53:19 +0100
-Message-ID: <200903021453.19482.u.luckas@road.de>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902271507.14747.u.luckas@road.de>
-	<20090227203252.GB1397@ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Mon, 2 Mar 2009 15:34:22 +0100
+Message-ID: <20090302143422.GE2527__36788.9025518254$1236004578$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0902162156380.24097-100000@netrider.rowland.org>
+	<d6200be20902172046sf00599ckc6710c6132d6b92f@mail.gmail.com>
+	<20090301225647.GE1961@elf.ucw.cz>
+	<200903020924.42451.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090227203252.GB1397@ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200903020924.42451.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 27. February 2009, Pavel Machek wrote:
-> On Fri 2009-02-27 15:07:14, Uli Luckas wrote:
-> > On Friday, 27. February 2009, Pavel Machek wrote:
-> > > On Fri 2009-02-13 17:49:57, Uli Luckas wrote:
-> > > > On Friday, 13. February 2009, Matthew Garrett wrote:
-> > > > > Userland ABI would then be a single /dev/inhibit_suspend,
-> > > > > with the counter being bumped each time an application opens it.
-> > > > > It'll automatically be dropped if the application exits without
-> > > > > cleaning up.
-> > > > >
-> > > > > This seems simpler and also avoids any arguments about the naming
-> > > > > scheme. What am I missing?
-> > > >
-> > > > Opening and closing an fd sounds like a lot of overhead. Taking and
-> > > > releasing locks if going to be a called with very highg frequency.
-> > > > I'd go for an ioctl.
-> > >
-> > > Ehm?
-> > >
-> > > And introduce nasty interface, and probably slower too since open() is
-> > > time-critical and ioctl() is not? Or do you have benchmarks?
+On Mon 2009-03-02 09:24:36, Oliver Neukum wrote:
+> Am Sonntag 01 M=E4rz 2009 23:56:47 schrieb Pavel Machek:
+> > > Allowing user space to suspend input devices while they are still open
+> > > is useful. The user-space code that reads from the input devices does
+> > > not need to know if the device is suspended or not, and the kernel
+> > > cannot auto suspend input devices based on inactivity.
 > >
-> > No, just specualting as open() needs to do a directory lookup. It also
-> > needs to do book keeping. I'd be surprised if open was faster then ioctl.
->
-> Unless you measure how much slower it is...
->
-OK. Opening /dev/null 100000 times readonly takes 365 ms on my machine. 
-Opening it once and then, 100000 times writing 1 byte takes 32 ms.
-Why exactly did you think I had to provide numbers???
+> > Actually, I'd like you to fix your userspace and close input devices
+> > when it does not need them. Given the way you control the platform it
+> > should not be that hard. I do not see why we'd want to invent new
+> > interface for "uhuh, I have opened the keyboard but I am not really
+> > interested in keys being pressed".
+> =
 
-> > On the otherhand if you consider ioctl nasty, maybe write() is an option?
->
-> You want sleepvetos to be automatically unlocked/freed on close and
-> process exit/kill, so neither write nor ioctl is the right interface.
-An application opens a device node and then writes 1s to take the lock and 0s 
-to release it.
-Why does that make it impossible to auto-release the lock on close?
+> Generally you can't do this. A task has an open fd.
+> =
 
-Uli
+> - you cannot assume it can open the device again (fd may be
+> inherited)
 
+Well, those tasks that matter - X servers and similar - usually can.
 
--- 
+> - keeping the device open makes sure you are talking to the same device
 
-------- ROAD ...the handyPC Company - - -  ) ) )
+Well, you have to handle hotplug anyway, so... and the name will not
+change unless you unplug/replug.
 
-Uli Luckas
-Head of Software Development
+> - you may want to avoid repeating expensive initialisations
 
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
-url: www.road.de
+That kind of initializations should perhaps be done at insmod, not
+open time?
 
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing director: Hans-Peter Constien
+> - some input devices also do output
+
+I guess you want to separate those to two different devices, then.
+
+Anyway...
+
+* I'd prefer "close to powersave". I can see that can be tricky to
+use. So the alternative is
+
+* ioctl() "I'm not interested in exact keys, powersave" is something
+that makes sense. It should really be discussed with input people.
+
+I'd hate to see
+
+* magic /sys/.../file where you echo 1 to powersave. It is too
+disconnected from the input fd, and while it may make it easier to
+retrofit powermanagement without modifying Xservers etc... it will
+ultimately result in pretty ugly hacks.
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
