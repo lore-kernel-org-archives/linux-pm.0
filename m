@@ -1,20 +1,11 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts
-	during suspend-resume (rev. 4)
-Date: Tue, 3 Mar 2009 00:41:06 -0800
-Message-ID: <d6200be20903030041x303293ddn2d07afed318e2f49__21531.7131406211$1236069830$gmane$org@mail.gmail.com>
-References: <200902221837.49396.rjw@sisk.pl> <200903012324.39327.rjw@sisk.pl>
-	<d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
-	<200903030013.02805.rjw@sisk.pl>
-	<d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
-	<alpine.LFD.2.00.0903021530200.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0903021533130.3111@localhost.localdomain>
-	<d6200be20903021608x3ccd8d47u613b35f2ebc609be@mail.gmail.com>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [RFC][Patch 0/3] Fix device_move() vs. dpm_list issues.
+Date: Tue, 3 Mar 2009 11:20:58 +0100
+Message-ID: <20090303112058.1f57d161@gondolin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20903021608x3ccd8d47u613b35f2ebc609be@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,52 +15,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Rafael J.
+	Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Marcel Holtmann <marcel@>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 2, 2009 at 4:08 PM, Arve Hj=F8nnev=E5g <arve@android.com> wrote:
-> On Mon, Mar 2, 2009 at 3:35 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
->>
->>
->> On Mon, 2 Mar 2009, Linus Torvalds wrote:
->>>
->>> If IRQ_SUSPENDED _is_ set, then that means that we're after the
->>> suspend_late() sequence and before the resume_early() sequence
->>
->> Sorry, after the suspend, and before the resume.
->>
->> We could be _in_ the suspend_late/resume_early sequence, but a driver th=
-at
->> were to try to play with interrupts at that stage would be broken. It
->> can't very well do a enable_irq(), because that would be a MAJOR BUG - it
->> would make the whole irq suspend thing pointless, since now interrupts
->> would start to happen exactly where they must not happen!
->
-> It may be pointless for a driver to call disable_irq and enable_irq
-> from suspend_late or resume_early (instead of suspend and resume), but
-> I would not call it a bug. Since disable_irq and enable_irq are
-> reference counted all this is doing is indicating that this driver can
-> or cannot accept interrupts. If you want to make an additional
-> restriction that drivers are not allowed to call disable_irq or
-> enable_irq from suspend_late and resume_early, then yes you can tell
-> that enable_irq was called from resume_device_irqs.
->
-> I don't know of any drivers that do this, I was just pointing out the
-> danger of releasing a reference without knowing if you acquired that
-> reference.
+Hi,
 
-I did think of a driver that can call enable_irq during the
-suspend_late phase with this patch. This will not cause an extra
-enable_irq, but it will enable the interrupt since suspend_device_irqs
-never incremented depth. Our keypad driver disables its interrupt(s)
-as soon as you press a key and starts a timer to scan the keypad. When
-the timer detects that no keys are pressed, it re-enables the
-interrupt. Since timers now run during suspend_late, this enable_irq
-call can happen after suspend_device_irqs. If suspend_device_irqs
-increments depth even if it is not zero, this can be avoided.
+in thread [1], we discussed the issue of device_move() causing a
+reordering of devices without adapting the ancestral order in dpm_list.
+If a device is moved to a new parent that was registered after the
+device itself, it would still be after its new parent in dpm_list, thus
+causing the parent to be suspended before its child.
 
--- =
+This patchset attempts to remedy this situation by introducing an
+interface for a driver to manipulate dpm_list with the dpm_list_mtx
+held. (device_move() does not have enough information to do this
+manipulation itself.) The calling sequence for a driver would be:
 
-Arve Hj=F8nnev=E5g
+- lock the dpm_list
+- call device_move()
+- if device_move() succeeded, fix up dpm_list
+- unlock the dpm_list
+
+Following are three patches:
+
+Patch 1 - Introduce the dpm_list manipulation interfaces. I'm not sure
+whether the BUG_ON()s should be WARN_ON()s instead.
+
+Patch 2 - Make bluetooth use the new interfaces. I didn't introduce
+proper handling for device_move() failures. Very lightly tested (did
+not break my setup :)), needs proper review.
+
+Patch 3 - Make s390 use the new interfaces. I'm more confident this
+patch is correct, but it is hard to test power management related stuff
+without power management support (no regressions were introduced for my
+attach/detach testcases though).
+
+
+[1] https://lists.linux-foundation.org/pipermail/linux-pm/2007-July/014428.html
