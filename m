@@ -1,14 +1,17 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [RFC][Patch 3/3] s390: cio: Fix device_move() vs.
-	dpm_list.
-Date: Tue, 3 Mar 2009 11:21:05 +0100
-Message-ID: <20090303112105.7c6b1d13@gondolin>
-References: <20090224165311.5d103b67@gondolin>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] Automatic suspend
+Date: Tue, 3 Mar 2009 14:51:43 +0100
+Message-ID: <20090303135143.GA5060__839.049570686434$1236088387$gmane$org@elf.ucw.cz>
+References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
+	<d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
+	<200903011020.53130.rjw@sisk.pl>
+	<d6200be20903021722y7f085482o66f6dee8c4004acd@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090224165311.5d103b67@gondolin>
+Content-Disposition: inline
+In-Reply-To: <d6200be20903021722y7f085482o66f6dee8c4004acd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,149 +21,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Rafael J.
-	Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Martin Schwidefsky <schw>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Make use of the newly introduced device_pm_move_*() functions
-in order to make sure that subchannels and their ccw device are
-in the correct order in dpm_list after moving them around.
+Hi!
 
-We don't need to do anything for devices in the orphanage, since
-their parent is a pseudo subchannel which won't need suspending.
+> >> > Not ignoring, but considering them as insufficient. =A0And since the=
+y've already
+> >> > been considered as insufficient, there's no point repeating them ove=
+r and over
+> >> > again. =A0That doesn't make them any better.
+> >>
+> >> The problem is that what you consider insufficient is what allows us
+> >> to ship a product.
+> >
+> > This doesn't matter a whit, because the mainline kernel is not just your
+> > product.
+> =
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Unless you are saying that changes in the mainline kernel does not
+> need be usable in practice, then it does matter. If we remove the
+> feature that allows us to interact with existing code, it will take
+> much longer before it is usable by anyone.
 
----
- drivers/s390/cio/device.c |   46 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
+Well, taking longer before "being usable" is good tradeoff if it means
+"we get cleaner/actually correct system in mainline sooner".
 
---- linux-2.6.orig/drivers/s390/cio/device.c
-+++ linux-2.6/drivers/s390/cio/device.c
-@@ -788,6 +788,10 @@ static void sch_attach_device(struct sub
- 	spin_unlock_irq(sch->lock);
- }
- 
-+/*
-+ * Note: This function is only called from ccw_device_move_to_orphanage,
-+ * so we are guaranteed to hold the dpm_list mutex.
-+ */
- static void sch_attach_disconnected_device(struct subchannel *sch,
- 					   struct ccw_device *cdev)
- {
-@@ -801,6 +805,7 @@ static void sch_attach_disconnected_devi
- 	/* Note: device_move() changes cdev->dev.parent */
- 	ret = device_move(&cdev->dev, &sch->dev);
- 	if (ret) {
-+		device_pm_unlock();
- 		CIO_MSG_EVENT(0, "Moving disconnected device 0.%x.%04x failed "
- 			      "(ret=%d)!\n", cdev->private->dev_id.ssid,
- 			      cdev->private->dev_id.devno, ret);
-@@ -808,6 +813,15 @@ static void sch_attach_disconnected_devi
- 		put_device(&sch->dev);
- 		return;
- 	}
-+	/*
-+	 * We already reorder dpm_list here since we may not hold
-+	 * the dpm_list mutex when deregistering other_sch.
-+	 * Order of devices will be correct after moving sch since
-+	 * sch's parent (the css) is guaranteed to be after cdev
-+	 * already.
-+	 */
-+	device_pm_move_after(&sch->dev, &cdev->dev);
-+	device_pm_unlock();
- 	sch_set_cdev(other_sch, NULL);
- 	/* No need to keep a subchannel without ccw device around. */
- 	css_sch_device_unregister(other_sch);
-@@ -816,6 +830,10 @@ static void sch_attach_disconnected_devi
- 	put_device(&other_sch->dev);
- }
- 
-+/*
-+ * Note: This function is only called from ccw_device_move_to_orphanage,
-+ * so we are guaranteed to hold the dpm_list mutex.
-+ */
- static void sch_attach_orphaned_device(struct subchannel *sch,
- 				       struct ccw_device *cdev)
- {
-@@ -832,6 +850,7 @@ static void sch_attach_orphaned_device(s
- 	 */
- 	ret = device_move(&cdev->dev, &sch->dev);
- 	if (ret) {
-+		device_pm_unlock();
- 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x from orphanage "
- 			      "failed (ret=%d)!\n",
- 			      cdev->private->dev_id.ssid,
-@@ -840,6 +859,12 @@ static void sch_attach_orphaned_device(s
- 		put_device(&sch->dev);
- 		return;
- 	}
-+	/*
-+	 * sch's parent (the css) is guaranteed to be after cdev
-+	 * already (must have been registered earlier).
-+	 */
-+	device_pm_move_after(&sch->dev, &cdev->dev);
-+	device_pm_unlock();
- 	sch_attach_device(sch, cdev);
- 	/* Put reference on pseudo subchannel. */
- 	put_device(&pseudo_sch->dev);
-@@ -897,8 +922,10 @@ void ccw_device_move_to_orphanage(struct
- 	 * ccw device can take its place on the subchannel.
- 	 * Note: device_move() changes cdev->dev.parent
- 	 */
-+	device_pm_lock();
- 	ret = device_move(&cdev->dev, &css->pseudo_subchannel->dev);
- 	if (ret) {
-+		device_pm_unlock();
- 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x to orphanage failed "
- 			      "(ret=%d)!\n", cdev->private->dev_id.ssid,
- 			      cdev->private->dev_id.devno, ret);
-@@ -906,6 +933,11 @@ void ccw_device_move_to_orphanage(struct
- 		put_device(&css->pseudo_subchannel->dev);
- 		return;
- 	}
-+	/*
-+	 * No need to reorder dpm_list for devices in the orphanage,
-+	 * since they have not to be suspended before a subchannel
-+	 * (nothing needs to be done suspend-wise for the pseudo subchannel).
-+	 */
- 	cdev->ccwlock = css->pseudo_subchannel->lock;
- 	/*
- 	 * Search for the replacing ccw device
-@@ -930,6 +962,7 @@ void ccw_device_move_to_orphanage(struct
- 		put_device(&sch->dev);
- 		return;
- 	}
-+	device_pm_unlock();
- 	sch_create_and_recog_new_device(sch);
- 	/* Release reference of subchannel from old cdev. */
- 	put_device(&sch->dev);
-@@ -1129,9 +1162,11 @@ static void ccw_device_move_to_sch(struc
- 	 * Try to move the ccw device to its new subchannel.
- 	 * Note: device_move() changes cdev->dev.parent
- 	 */
-+	device_pm_lock();
- 	rc = device_move(&cdev->dev, &sch->dev);
--	mutex_unlock(&sch->reg_mutex);
- 	if (rc) {
-+		device_pm_unlock();
-+		mutex_unlock(&sch->reg_mutex);
- 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x to subchannel "
- 			      "0.%x.%04x failed (ret=%d)!\n",
- 			      cdev->private->dev_id.ssid,
-@@ -1142,6 +1177,15 @@ static void ccw_device_move_to_sch(struc
- 		put_device(&sch->dev);
- 		goto out;
- 	}
-+	/*
-+	 * We need to reorder the dpm_list here so that unregistering
-+	 * the former parent cannot deadlock.
-+	 * sch's parent (the css) is already guaranteed to come after
-+	 * cdev.
-+	 */
-+	device_pm_move_after(&sch->dev, &cdev->dev);
-+	device_pm_unlock();
-+	mutex_unlock(&sch->reg_mutex);
- 	if (!sch_is_pseudo_sch(former_parent)) {
- 		spin_lock_irq(former_parent->lock);
- 		sch_set_cdev(former_parent, NULL);
+> >> I don't think I am the only one who want this code in the mainline
+> >> kernel. Many people want to use the android platform, and support in
+> >> the mainline kernel would be beneficial to some of them. I made many
+> >> requested changes to my code that provides no benefit to us, but I
+> >> have not made any changes that breaks our own use.
+> >
+> > OK, please resubmit the patches, then.
+> =
+
+> I submitted them three weeks ago. I'll submit a new set after I rename
+> the api (presumably to suspend_block(er)) but I would like more
+> agreement on the timeout issue first.
+
+I do believe that everyone (including you :-) agrees that timeouts are
+ugly hack. So just reorder the series so they come at the end.
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
