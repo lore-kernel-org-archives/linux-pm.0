@@ -1,15 +1,19 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 2 Mar 2009 15:48:44 -0800
-Message-ID: <d6200be20903021548h11f57283t6d6a9053f3feb3fd__49353.6162692637$1236038005$gmane$org@mail.gmail.com>
-References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
-	<d6200be20902281538g1dd6aec4q1b42b610d3ea15d1@mail.gmail.com>
-	<200903020017.52390.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/4] PM: Rework handling of interrupts
+	during suspend-resume (rev. 4)
+Date: Mon, 2 Mar 2009 16:08:52 -0800
+Message-ID: <d6200be20903021608x3ccd8d47u613b35f2ebc609be__20695.2794841074$1236039141$gmane$org@mail.gmail.com>
+References: <200902221837.49396.rjw@sisk.pl> <200903012324.39327.rjw@sisk.pl>
+	<d6200be20903021501x4ad710fbr834b11b8a6647d2c@mail.gmail.com>
+	<200903030013.02805.rjw@sisk.pl>
+	<d6200be20903021518r48fe6fb2vd07e9dedc4f5ff44@mail.gmail.com>
+	<alpine.LFD.2.00.0903021530200.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0903021533130.3111@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903020017.52390.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0903021533130.3111@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +23,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 1, 2009 at 3:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday 01 March 2009, Arve Hj=F8nnev=E5g wrote:
->> On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Saturday 28 February 2009, Arve Hj=F8nnev=E5g wrote:
->> >> Can you summarize what the problems with my current api are? I get the
->> >> impression that you think the overhead of using a list is too high,
->> >> and that timeout support should be removed because you think all
->> >> drivers that use it are broken.
->> >
->> > In no particular order:
->> > 1. One user space process can create an unlimited number of wakelocks.=
- =A0This
->> > =A0 shouldn't be possible. =A0Moreover, it is not even necessary for a=
-ny process
->> > =A0 to have more than one wakelock held at any time.
->>
->> This has been addressed. A user space process cannot create more
->> wakelocks than it has filedescriptors.
->>
->> > 2. Timeouts are wrong, because they don't really _solve_ any problem. =
-=A0They are
->> > =A0 useful for working around the fact that you can't or you don't wan=
-t to
->> > =A0 modify every piece of code that in principle should take a wakeloc=
-k and
->> > =A0 that's it.
->>
->> Yes, timeouts are sometimes wrong, but they are not always wrong. I
->> gave two examples where the use of timeouts was not incorrect.
+On Mon, Mar 2, 2009 at 3:35 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> There still is a problem that the same operation can take time X on one
-> platform and time Y on another, so how are you going to determine the tim=
-eouts
-> that will be suitable for all platforms?
-
-This only applies to the timeouts that fall into the wrong category.
-The timeout used when a driver returns -EBUSY is arbitrary, but any
-value is technically correct. The one second timeout in the alarm
-driver is not platform specific. It is one second because the
-resolution of the rtc api is only one second.
-
-For the timeouts that do fall into the wrong category (use a timeout
-when passing data to a unmodified subsystem), the drivers are mostly
-(if not all) platform specific.
-
 >
->> > =A0However, =A0entire concept of having one code path acting on
->> > =A0 behalf of another one on a hunch that it might be doing something =
-making
->> > =A0 suspend undesirable is conceptually broken IMO.
+> On Mon, 2 Mar 2009, Linus Torvalds wrote:
 >>
->> OK. Do you have an alternative?
+>> If IRQ_SUSPENDED _is_ set, then that means that we're after the
+>> suspend_late() sequence and before the resume_early() sequence
 >
-> Well, IMO every code path doing something that makes automatic suspend
-> undesirable should use a suspend blocker of some sort. =A0I'm afraid any =
-other
-> approach will be unreliable and racy.
+> Sorry, after the suspend, and before the resume.
+>
+> We could be _in_ the suspend_late/resume_early sequence, but a driver that
+> were to try to play with interrupts at that stage would be broken. It
+> can't very well do a enable_irq(), because that would be a MAJOR BUG - it
+> would make the whole irq suspend thing pointless, since now interrupts
+> would start to happen exactly where they must not happen!
 
-I agree with this, but I cannot change every code path at once. I also
-don't know if every code path can be easily fixed. Using a timeout in
-this case is a compromise. It is not as good as protecting every code
-path, but it is much better than doing nothing. The race condition you
-have when preventing suspend with a timeout is the same as every code
-using a timeout. If the system is busy it can fail. The race condition
-that you have with no protection happens with any load. If the system
-decides to go to sleep at the same time as a wakeup event occur, the
-system will sleep.
+It may be pointless for a driver to call disable_irq and enable_irq
+from suspend_late or resume_early (instead of suspend and resume), but
+I would not call it a bug. Since disable_irq and enable_irq are
+reference counted all this is doing is indicating that this driver can
+or cannot accept interrupts. If you want to make an additional
+restriction that drivers are not allowed to call disable_irq or
+enable_irq from suspend_late and resume_early, then yes you can tell
+that enable_irq was called from resume_device_irqs.
+
+I don't know of any drivers that do this, I was just pointing out the
+danger of releasing a reference without knowing if you acquired that
+reference.
 
 -- =
 
