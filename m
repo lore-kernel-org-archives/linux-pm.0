@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Tue, 3 Mar 2009 15:02:16 +0100
-Message-ID: <20090303140215.GD5060@elf.ucw.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200902271507.14747.u.luckas@road.de>
-	<20090227203252.GB1397@ucw.cz>
-	<200903021453.19482.u.luckas@road.de>
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [RFC][Patch 0/3] Fix device_move() vs. dpm_list
+	issues.
+Date: Tue, 3 Mar 2009 22:02:40 +0800
+Message-ID: <d82e647a0903030602i3937f8fbq3c2e93573b7714a8@mail.gmail.com>
+References: <20090303112058.1f57d161@gondolin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200903021453.19482.u.luckas@road.de>
+In-Reply-To: <20090303112058.1f57d161@gondolin>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,52 +18,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Uli Luckas <u.luckas@road.de>
-Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Heiko Carstens <heiko.carstens@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+2009/3/3 Cornelia Huck <cornelia.huck@de.ibm.com>:
+> Hi,
+>
+> in thread [1], we discussed the issue of device_move() causing a
+> reordering of devices without adapting the ancestral order in dpm_list.
+> If a device is moved to a new parent that was registered after the
+> device itself, it would still be after its new parent in dpm_list, thus
+> causing the parent to be suspended before its child.
+>
+> This patchset attempts to remedy this situation by introducing an
+> interface for a driver to manipulate dpm_list with the dpm_list_mtx
+> held. (device_move() does not have enough information to do this
+> manipulation itself.) The calling sequence for a driver would be:
+>
+> - lock the dpm_list
+> - call device_move()
+> - if device_move() succeeded, fix up dpm_list
+> - unlock the dpm_list
 
-> > > > And introduce nasty interface, and probably slower too since open() is
-> > > > time-critical and ioctl() is not? Or do you have benchmarks?
-> > >
-> > > No, just specualting as open() needs to do a directory lookup. It also
-> > > needs to do book keeping. I'd be surprised if open was faster then ioctl.
-> >
-> > Unless you measure how much slower it is...
-> >
-> OK. Opening /dev/null 100000 times readonly takes 365 ms on my machine. 
-> Opening it once and then, 100000 times writing 1 byte takes 32 ms.
-> Why exactly did you think I had to provide numbers???
+IMHO, It is better to fix up dpm_list inside device_move() , like device_add(),
+which may let s390, bluetooth or other possible users more happy with
+device_remove().
 
-Arve said:
+Thanks
 
-> >> I just checked my phone, and over a 24 hour awake time (370 hours
-> >> uptime) period, it acquired about 5 million wakelocks (mostly for
-> >> input events). If these were cache hits, and took as long as my
-> >> benchmark did, that accounts for 20 seconds of overhead (0.023%
-> >> of
-> >> awake, 0.1% of not-idle (5.5h).
+>
+> Following are three patches:
+>
+> Patch 1 - Introduce the dpm_list manipulation interfaces. I'm not sure
+> whether the BUG_ON()s should be WARN_ON()s instead.
+>
+> Patch 2 - Make bluetooth use the new interfaces. I didn't introduce
+> proper handling for device_move() failures. Very lightly tested (did
+> not break my setup :)), needs proper review.
+>
+> Patch 3 - Make s390 use the new interfaces. I'm more confident this
+> patch is correct, but it is hard to test power management related stuff
+> without power management support (no regressions were introduced for my
+> attach/detach testcases though).
+>
+>
+> [1] https://lists.linux-foundation.org/pipermail/linux-pm/2007-July/014428.html
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
 
-Ok. 20seconds vs. 200 seconds seems interesting.
 
-OTOH... Android seems to do IPC for wakelock manipulation, and that's
-way higher overhead than open() syscall, so perhaps it is not that
-critical?
 
-Hmm ...given that original interface was "open /sys file, write,
-close", I can't believe wakelocks are so critical that they are worth
-ugly interface.
-
-> > > On the otherhand if you consider ioctl nasty, maybe write() is an option?
-> >
-> > You want sleepvetos to be automatically unlocked/freed on close and
-> > process exit/kill, so neither write nor ioctl is the right interface.
-> An application opens a device node and then writes 1s to take the lock and 0s 
-> to release it.
-
-For example doing binary 0/1 writes from shell is hard... 
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Lei Ming
