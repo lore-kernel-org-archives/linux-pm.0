@@ -1,15 +1,15 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [RFC][Patch 0/3] Fix device_move() vs. dpm_list
- issues.
-Date: Tue, 3 Mar 2009 16:24:46 +0100
-Message-ID: <20090303162446.3aff4457@gondolin>
-References: <d82e647a0903030602i3937f8fbq3c2e93573b7714a8@mail.gmail.com>
-	<Pine.LNX.4.44L0.0903030953310.3274-100000@iolanthe.rowland.org>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.29-rc6: Reported regressions from 2.6.28
+Date: Tue, 3 Mar 2009 14:45:13 -0500
+Message-ID: <20090303194513.GA10548__2972.01521830193$1236109925$gmane$org@infradead.org>
+References: <GVhknozYwrL.A.hiC.rozoJB@chimera>
+	<20090303193609.GE27178@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903030953310.3274-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20090303193609.GE27178@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,57 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Marcel Holtmann <marcel@holtmann.org>, Heiko Carstens <heiko.carstens@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 3 Mar 2009 09:55:27 -0500 (EST),
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Tue, 3 Mar 2009, Ming Lei wrote:
+On Tue, Mar 03, 2009 at 08:36:10PM +0100, Jan Kara wrote:
+>   Hi,
 > 
-> > 2009/3/3 Cornelia Huck <cornelia.huck@de.ibm.com>:
-> > > Hi,
-> > >
-> > > in thread [1], we discussed the issue of device_move() causing a
-> > > reordering of devices without adapting the ancestral order in dpm_list.
-> > > If a device is moved to a new parent that was registered after the
-> > > device itself, it would still be after its new parent in dpm_list, thus
-> > > causing the parent to be suspended before its child.
-> > >
-> > > This patchset attempts to remedy this situation by introducing an
-> > > interface for a driver to manipulate dpm_list with the dpm_list_mtx
-> > > held. (device_move() does not have enough information to do this
-> > > manipulation itself.) The calling sequence for a driver would be:
-> > >
-> > > - lock the dpm_list
-> > > - call device_move()
-> > > - if device_move() succeeded, fix up dpm_list
-> > > - unlock the dpm_list
+> > Unresolved regressions
+> > ----------------------
 > > 
-> > IMHO, It is better to fix up dpm_list inside device_move() , like device_add(),
-> > which may let s390, bluetooth or other possible users more happy with
-> > device_remove().
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12551
+> > Subject		: end_request: I/O error, dev cciss/c0d0, sector 87435720
+> > Submitter	: Ralf Hildebrandt <ralf.hildebrandt@charite.de>
+> > Date		: 2009-01-27 06:51 (28 days old)
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12497
+> > Subject		: new barrier warnings in 2.6.29-rc1
+> > Submitter	: Christoph Hellwig <hch@lst.de>
+> > Date		: 2009-01-12 15:46 (43 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123177528217154&w=4
+> > Handled-By	: Jens Axboe <jens.axboe@oracle.com>
+>   I've just noticed that the above two reports are probably the same bug...
+> Just that we don't duplicate the effort.
 
-Maybe I'm a bit dense today, but I don't understand the problem with
-device_remove()?
-
-> 
-> I agree; it would be cleaner if device_move() could fix up dpm_list 
-> directly.  If it doesn't have enough information to do so then change 
-> the interface so that it does.  That should be pretty easy since there 
-> are only a handful of callers.
-
-The only really obvious one is 'move to NULL' -> 'move to end of
-dpm_list'.
-AFAICS, for that device_move() would need the following
-parameters:
-- device to be moved
-- new parent
-- which device to move in dpm_list (device, parent, or none)
-and then still the moves I do in the s390 code don't seem obvious for
-the driver core to get.
-
-Given that the callers still need to specify what to do, I find it much
-easier (and the resulting code much more understandable) if the callers
-fix up dpm_list...
+At least on the XFS side it's fixed now.  The block layer gets the
+initial detection right without warning, and a patch to fix the
+unconditional cache flush on unmount is on it's way.
