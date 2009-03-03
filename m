@@ -1,17 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Tue, 3 Mar 2009 14:57:50 +0100
-Message-ID: <20090303135750.GC5060__27620.2117828236$1236088739$gmane$org@elf.ucw.cz>
-References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl>
-	<d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
-	<200902281118.14595.rjw@sisk.pl>
-	<d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Tue, 3 Mar 2009 15:02:16 +0100
+Message-ID: <20090303140215.GD5060@elf.ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200902271507.14747.u.luckas@road.de>
+	<20090227203252.GB1397@ucw.cz>
+	<200903021453.19482.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
+In-Reply-To: <200903021453.19482.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,28 +21,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Uli Luckas <u.luckas@road.de>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> >> If you ignore wakelocks with timeouts, the current
-> >> wakelock interface can be implemented with a global atomic_t to
-> >> prevent suspend, and a per wakelock atomic_t to prevent a single
-> >> client from changing the global reference count by more than one.
-> >>
-> >> There are a couple of reasons that I have not done this. It removes
-> >> the ability to easily inspect the system when it is not suspending.
+> > > > And introduce nasty interface, and probably slower too since open() is
+> > > > time-critical and ioctl() is not? Or do you have benchmarks?
+> > >
+> > > No, just specualting as open() needs to do a directory lookup. It also
+> > > needs to do book keeping. I'd be surprised if open was faster then ioctl.
 > >
-> > Care to elaborate?
-> 
-> If you have a single atomic_t and it is not 0, you do not know who
-> incremented it.
+> > Unless you measure how much slower it is...
+> >
+> OK. Opening /dev/null 100000 times readonly takes 365 ms on my machine. 
+> Opening it once and then, 100000 times writing 1 byte takes 32 ms.
+> Why exactly did you think I had to provide numbers???
 
-Which is okay for already debugged system. For debugging, yes some
-support can be nice.
+Arve said:
 
+> >> I just checked my phone, and over a 24 hour awake time (370 hours
+> >> uptime) period, it acquired about 5 million wakelocks (mostly for
+> >> input events). If these were cache hits, and took as long as my
+> >> benchmark did, that accounts for 20 seconds of overhead (0.023%
+> >> of
+> >> awake, 0.1% of not-idle (5.5h).
+
+Ok. 20seconds vs. 200 seconds seems interesting.
+
+OTOH... Android seems to do IPC for wakelock manipulation, and that's
+way higher overhead than open() syscall, so perhaps it is not that
+critical?
+
+Hmm ...given that original interface was "open /sys file, write,
+close", I can't believe wakelocks are so critical that they are worth
+ugly interface.
+
+> > > On the otherhand if you consider ioctl nasty, maybe write() is an option?
+> >
+> > You want sleepvetos to be automatically unlocked/freed on close and
+> > process exit/kill, so neither write nor ioctl is the right interface.
+> An application opens a device node and then writes 1s to take the lock and 0s 
+> to release it.
+
+For example doing binary 0/1 writes from shell is hard... 
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
