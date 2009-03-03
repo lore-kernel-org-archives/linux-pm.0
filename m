@@ -1,7 +1,8 @@
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [RFC][Patch 1/3] Add device_pm_move_*() API.
-Date: Tue, 3 Mar 2009 11:21:00 +0100
-Message-ID: <20090303112100.41c0bcde@gondolin>
+Subject: [RFC][Patch 3/3] s390: cio: Fix device_move() vs.
+	dpm_list.
+Date: Tue, 3 Mar 2009 11:21:05 +0100
+Message-ID: <20090303112105.7c6b1d13@gondolin>
 References: <20090224165311.5d103b67@gondolin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,179 +19,148 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Rafael J.
-	Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Marcel Holtmann <marcel@>
+	Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Martin Schwidefsky <schw>
 List-Id: linux-pm@vger.kernel.org
 
-dpm_list currently relies on the fact that child devices will
-be registered after their parents to get a correct suspend
-order. However, using device_move() destroys this assumption, as
-an already registered device may be moved under a newly registered
-one.
+Make use of the newly introduced device_pm_move_*() functions
+in order to make sure that subchannels and their ccw device are
+in the correct order in dpm_list after moving them around.
 
-This problem was discussed in the thread starting at
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-July/014428.html
-The consensus seemed to be that it would be best if drivers
-were offered a set of function for manipulating dpm_list.
-
-This patch does the following:
-- Export device_pm_{lock,unlock} so that drivers may lock the
-  dpm_list in order to avoid races.
-- Introduce device_pm_move_*() functions that manipulate dpm_list.
-  Those function must be called with the dpm_list mutex held.
+We don't need to do anything for devices in the orphanage, since
+their parent is a pseudo subchannel which won't need suspending.
 
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- drivers/base/core.c       |    4 ++
- drivers/base/power/main.c |   68 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm.h        |   19 ++++++++++++
- 3 files changed, 91 insertions(+)
+ drivers/s390/cio/device.c |   46 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -32,6 +32,9 @@
-  * because children are guaranteed to be discovered after parents, and
-  * are inserted at the back of the list on discovery.
-  *
-+ * However, since device_move() destroys this assumption, callers
-+ * need to fix up the dpm_list if they use device_move().
-+ *
-  * Since device_pm_add() may be called with a device semaphore held,
-  * we must never try to acquire a device semaphore while holding
-  * dpm_list_mutex.
-@@ -54,6 +57,7 @@ void device_pm_lock(void)
- {
- 	mutex_lock(&dpm_list_mtx);
- }
-+EXPORT_SYMBOL_GPL(device_pm_lock);
- 
- /**
-  *	device_pm_unlock - unlock the list of active devices used by the PM core
-@@ -62,6 +66,7 @@ void device_pm_unlock(void)
- {
- 	mutex_unlock(&dpm_list_mtx);
- }
-+EXPORT_SYMBOL_GPL(device_pm_unlock);
- 
- /**
-  *	device_pm_add - add a device to the list of active devices
-@@ -107,6 +112,69 @@ void device_pm_remove(struct device *dev
+--- linux-2.6.orig/drivers/s390/cio/device.c
++++ linux-2.6/drivers/s390/cio/device.c
+@@ -788,6 +788,10 @@ static void sch_attach_device(struct sub
+ 	spin_unlock_irq(sch->lock);
  }
  
- /**
-+ *	device_pm_move_before - move device in dpm_list
-+ *	@deva:	Device to move in dpm_list
-+ *	@devb:	Device @deva should come before
-+ *
-+ *	The purpose of this function is to allow reordering of
-+ *	dpm_list after calling device_move().
-+ *	Callers need to hold the dpm_list mutex.
++/*
++ * Note: This function is only called from ccw_device_move_to_orphanage,
++ * so we are guaranteed to hold the dpm_list mutex.
 + */
-+void device_pm_move_before(struct device *deva, struct device *devb)
-+{
-+	BUG_ON(!mutex_is_locked(&dpm_list_mtx));
-+	pr_debug("PM: Moving %s:%s before %s:%s\n",
-+		 deva->bus ? deva->bus->name : "No Bus",
-+		 kobject_name(&deva->kobj),
-+		 devb->bus ? devb->bus->name : "No Bus",
-+		 kobject_name(&devb->kobj));
-+	/* Delete deva from dpm_list and reinsert before devb. */
-+	list_move_tail(&deva->power.entry, &devb->power.entry);
-+}
-+EXPORT_SYMBOL_GPL(device_pm_move_before);
-+
-+/**
-+ *	device_pm_move_after - move device in dpm_list
-+ *	@deva:	Device to move in dpm_list
-+ *	@devb:	Device @deva should come after
-+ *
-+ *	The purpose of this function is to allow reordering of
-+ *	dpm_list after calling device_move().
-+ *	Callers need to hold the dpm_list mutex.
-+ */
-+void device_pm_move_after(struct device *deva, struct device *devb)
-+{
-+	BUG_ON(!mutex_is_locked(&dpm_list_mtx));
-+	pr_debug("PM: Moving %s:%s after %s:%s\n",
-+		 deva->bus ? deva->bus->name : "No Bus",
-+		 kobject_name(&deva->kobj),
-+		 devb->bus ? devb->bus->name : "No Bus",
-+		 kobject_name(&devb->kobj));
-+	/* Delete deva from dpm_list and reinsert after devb. */
-+	list_move(&deva->power.entry, &devb->power.entry);
-+}
-+EXPORT_SYMBOL_GPL(device_pm_move_after);
-+
-+/**
-+ *	device_pm_move_last - move device to end of dpm_list
-+ *	@dev:	Device to move in dpm_list
-+ *
-+ *	The purpose of this function is to allow reordering of
-+ *	dpm_list after calling device_move().
-+ *	Callers need to hold the dpm_list mutex.
-+ *	@dev must not have any children.
-+ */
-+void device_pm_move_last(struct device *dev)
-+{
-+	BUG_ON(!mutex_is_locked(&dpm_list_mtx));
-+	pr_debug("PM: Moving %s:%s to end of list\n",
-+		 dev->bus ? dev->bus->name : "No Bus",
-+		 kobject_name(&dev->kobj));
-+	list_move(&dev->power.entry, &dpm_list);
-+}
-+EXPORT_SYMBOL_GPL(device_pm_move_last);
-+
-+/**
-  *	pm_op - execute the PM operation appropiate for given PM event
-  *	@dev:	Device.
-  *	@ops:	PM operations to choose from.
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -398,15 +398,34 @@ extern void __suspend_report_result(cons
- 		__suspend_report_result(__func__, fn, ret);		\
- 	} while (0)
- 
-+extern void device_pm_move_before(struct device *deva, struct device *devb);
-+extern void device_pm_move_after(struct device *deva, struct device *devb);
-+extern void device_pm_move_last(struct device *dev);
- #else /* !CONFIG_PM_SLEEP */
- 
-+#define device_pm_lock() do {} while (0)
- static inline int device_suspend(pm_message_t state)
+ static void sch_attach_disconnected_device(struct subchannel *sch,
+ 					   struct ccw_device *cdev)
  {
- 	return 0;
+@@ -801,6 +805,7 @@ static void sch_attach_disconnected_devi
+ 	/* Note: device_move() changes cdev->dev.parent */
+ 	ret = device_move(&cdev->dev, &sch->dev);
+ 	if (ret) {
++		device_pm_unlock();
+ 		CIO_MSG_EVENT(0, "Moving disconnected device 0.%x.%04x failed "
+ 			      "(ret=%d)!\n", cdev->private->dev_id.ssid,
+ 			      cdev->private->dev_id.devno, ret);
+@@ -808,6 +813,15 @@ static void sch_attach_disconnected_devi
+ 		put_device(&sch->dev);
+ 		return;
+ 	}
++	/*
++	 * We already reorder dpm_list here since we may not hold
++	 * the dpm_list mutex when deregistering other_sch.
++	 * Order of devices will be correct after moving sch since
++	 * sch's parent (the css) is guaranteed to be after cdev
++	 * already.
++	 */
++	device_pm_move_after(&sch->dev, &cdev->dev);
++	device_pm_unlock();
+ 	sch_set_cdev(other_sch, NULL);
+ 	/* No need to keep a subchannel without ccw device around. */
+ 	css_sch_device_unregister(other_sch);
+@@ -816,6 +830,10 @@ static void sch_attach_disconnected_devi
+ 	put_device(&other_sch->dev);
  }
  
-+#define device_pm_unlock() do {} while (0)
-+
- #define suspend_report_result(fn, ret)		do {} while (0)
- 
-+static inline void device_pm_move_before(struct device *deva,
-+					 struct device *devb)
-+{
-+}
-+
-+static inline void device_pm_move_after(struct device *deva,
-+					struct device *devb)
-+{
-+}
-+
-+static inline void device_pm_move_last(struct device *dev)
-+{
-+}
- #endif /* !CONFIG_PM_SLEEP */
- 
- /*
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -1563,6 +1563,10 @@ out:
-  * device_move - moves a device to a new parent
-  * @dev: the pointer to the struct device to be moved
-  * @new_parent: the new parent of the device (can by NULL)
-+ *
-+ * Note: device_move() does not change the ancestral order as reflected
-+ * in dpm_list; you will need to do it yourself using the device_pm_move_*
-+ * functions.
-  */
- int device_move(struct device *dev, struct device *new_parent)
++/*
++ * Note: This function is only called from ccw_device_move_to_orphanage,
++ * so we are guaranteed to hold the dpm_list mutex.
++ */
+ static void sch_attach_orphaned_device(struct subchannel *sch,
+ 				       struct ccw_device *cdev)
  {
+@@ -832,6 +850,7 @@ static void sch_attach_orphaned_device(s
+ 	 */
+ 	ret = device_move(&cdev->dev, &sch->dev);
+ 	if (ret) {
++		device_pm_unlock();
+ 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x from orphanage "
+ 			      "failed (ret=%d)!\n",
+ 			      cdev->private->dev_id.ssid,
+@@ -840,6 +859,12 @@ static void sch_attach_orphaned_device(s
+ 		put_device(&sch->dev);
+ 		return;
+ 	}
++	/*
++	 * sch's parent (the css) is guaranteed to be after cdev
++	 * already (must have been registered earlier).
++	 */
++	device_pm_move_after(&sch->dev, &cdev->dev);
++	device_pm_unlock();
+ 	sch_attach_device(sch, cdev);
+ 	/* Put reference on pseudo subchannel. */
+ 	put_device(&pseudo_sch->dev);
+@@ -897,8 +922,10 @@ void ccw_device_move_to_orphanage(struct
+ 	 * ccw device can take its place on the subchannel.
+ 	 * Note: device_move() changes cdev->dev.parent
+ 	 */
++	device_pm_lock();
+ 	ret = device_move(&cdev->dev, &css->pseudo_subchannel->dev);
+ 	if (ret) {
++		device_pm_unlock();
+ 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x to orphanage failed "
+ 			      "(ret=%d)!\n", cdev->private->dev_id.ssid,
+ 			      cdev->private->dev_id.devno, ret);
+@@ -906,6 +933,11 @@ void ccw_device_move_to_orphanage(struct
+ 		put_device(&css->pseudo_subchannel->dev);
+ 		return;
+ 	}
++	/*
++	 * No need to reorder dpm_list for devices in the orphanage,
++	 * since they have not to be suspended before a subchannel
++	 * (nothing needs to be done suspend-wise for the pseudo subchannel).
++	 */
+ 	cdev->ccwlock = css->pseudo_subchannel->lock;
+ 	/*
+ 	 * Search for the replacing ccw device
+@@ -930,6 +962,7 @@ void ccw_device_move_to_orphanage(struct
+ 		put_device(&sch->dev);
+ 		return;
+ 	}
++	device_pm_unlock();
+ 	sch_create_and_recog_new_device(sch);
+ 	/* Release reference of subchannel from old cdev. */
+ 	put_device(&sch->dev);
+@@ -1129,9 +1162,11 @@ static void ccw_device_move_to_sch(struc
+ 	 * Try to move the ccw device to its new subchannel.
+ 	 * Note: device_move() changes cdev->dev.parent
+ 	 */
++	device_pm_lock();
+ 	rc = device_move(&cdev->dev, &sch->dev);
+-	mutex_unlock(&sch->reg_mutex);
+ 	if (rc) {
++		device_pm_unlock();
++		mutex_unlock(&sch->reg_mutex);
+ 		CIO_MSG_EVENT(0, "Moving device 0.%x.%04x to subchannel "
+ 			      "0.%x.%04x failed (ret=%d)!\n",
+ 			      cdev->private->dev_id.ssid,
+@@ -1142,6 +1177,15 @@ static void ccw_device_move_to_sch(struc
+ 		put_device(&sch->dev);
+ 		goto out;
+ 	}
++	/*
++	 * We need to reorder the dpm_list here so that unregistering
++	 * the former parent cannot deadlock.
++	 * sch's parent (the css) is already guaranteed to come after
++	 * cdev.
++	 */
++	device_pm_move_after(&sch->dev, &cdev->dev);
++	device_pm_unlock();
++	mutex_unlock(&sch->reg_mutex);
+ 	if (!sch_is_pseudo_sch(former_parent)) {
+ 		spin_lock_irq(former_parent->lock);
+ 		sch_set_cdev(former_parent, NULL);
