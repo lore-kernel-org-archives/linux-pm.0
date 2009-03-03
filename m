@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.29-rc6-git7: Reported regressions 2.6.27 -> 2.6.28
-Date: Tue,  3 Mar 2009 20:34:54 +0100 (CET)
-Message-ID: <r4SCKuuJK0F.A.UrB.QdarJB__39184.5523765825$1236118294$gmane$org@chimera>
+Subject: Re: [RFD] Automatic suspend
+Date: Tue, 3 Mar 2009 23:39:00 +0100
+Message-ID: <200903032339.02002.rjw__49682.5861781419$1236120093$gmane$org@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200903020017.52390.rjw@sisk.pl>
+	<d6200be20903021548h11f57283t6d6a9053f3feb3fd@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <d6200be20903021548h11f57283t6d6a9053f3feb3fd@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,225 +19,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Stable Kernel Team <stable@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-[NOTE: I'm going to close the unresolved bugs in this list where the submitter
- has not been responding.]
+On Tuesday 03 March 2009, Arve Hj=F8nnev=E5g wrote:
+> On Sun, Mar 1, 2009 at 3:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday 01 March 2009, Arve Hj=F8nnev=E5g wrote:
+> >> On Sat, Feb 28, 2009 at 2:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Saturday 28 February 2009, Arve Hj=F8nnev=E5g wrote:
+> >> >> Can you summarize what the problems with my current api are? I get =
+the
+> >> >> impression that you think the overhead of using a list is too high,
+> >> >> and that timeout support should be removed because you think all
+> >> >> drivers that use it are broken.
+> >> >
+> >> > In no particular order:
+> >> > 1. One user space process can create an unlimited number of wakelock=
+s.  This
+> >> >   shouldn't be possible.  Moreover, it is not even necessary for any=
+ process
+> >> >   to have more than one wakelock held at any time.
+> >>
+> >> This has been addressed. A user space process cannot create more
+> >> wakelocks than it has filedescriptors.
+> >>
+> >> > 2. Timeouts are wrong, because they don't really _solve_ any problem=
+.  They are
+> >> >   useful for working around the fact that you can't or you don't wan=
+t to
+> >> >   modify every piece of code that in principle should take a wakeloc=
+k and
+> >> >   that's it.
+> >>
+> >> Yes, timeouts are sometimes wrong, but they are not always wrong. I
+> >> gave two examples where the use of timeouts was not incorrect.
+> >
+> > There still is a problem that the same operation can take time X on one
+> > platform and time Y on another, so how are you going to determine the t=
+imeouts
+> > that will be suitable for all platforms?
+> =
 
-This message contains a list of some regressions introduced between 2.6.27 and
-2.6.28, for which there are no fixes in the mainline I know of.  If any of them
-have been fixed already, please let me know.
+> This only applies to the timeouts that fall into the wrong category.
+> The timeout used when a driver returns -EBUSY is arbitrary, but any
+> value is technically correct. The one second timeout in the alarm
+> driver is not platform specific. It is one second because the
+> resolution of the rtc api is only one second.
+> =
 
-If you know of any other unresolved regressions introduced between 2.6.27
-and 2.6.28, please let me know either and I'll add them to the list.
-Also, please let me know if any of the entries below are invalid.
+> For the timeouts that do fall into the wrong category (use a timeout
+> when passing data to a unmodified subsystem), the drivers are mostly
+> (if not all) platform specific.
 
-Each entry from the list will be sent additionally in an automatic reply to
-this message with CCs to the people involved in reporting and handling the
-issue.
+What drivers are they?
 
+> >> >  However,  entire concept of having one code path acting on
+> >> >   behalf of another one on a hunch that it might be doing something =
+making
+> >> >   suspend undesirable is conceptually broken IMO.
+> >>
+> >> OK. Do you have an alternative?
+> >
+> > Well, IMO every code path doing something that makes automatic suspend
+> > undesirable should use a suspend blocker of some sort.  I'm afraid any =
+other
+> > approach will be unreliable and racy.
+> =
 
-Listed regressions statistics:
+> I agree with this,
 
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2009-03-03      153       21          16
-  2009-02-24      154       27          23
-  2009-02-15      152       30          26
-  2009-02-04      149       33          30
-  2009-01-20      144       30          27
-  2009-01-11      139       33          30
-  2008-12-21      120       19          17
-  2008-12-13      111       14          13
-  2008-12-07      106       20          17
-  2008-12-04      106       29          21
-  2008-11-22       93       25          15
-  2008-11-16       89       32          18
-  2008-11-09       73       40          27
-  2008-11-02       55       41          29
-  2008-10-25       26       25          20
+Good.
 
+> but I cannot change every code path at once.
 
-Unresolved regressions
-----------------------
+That need not happen at once (eg. in one patch or something).  Once we've
+introduced the basics, the changes can be made gradually wherever necessary,
+step by step.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12759
-Subject		: scsi: aic7xxx hang since v2.6.28-rc1 ...
-Submitter	: Ingo Molnar <mingo@elte.hu>
-Date		: 2009-02-15 11:44 (17 days old)
-References	: http://marc.info/?l=linux-kernel&m=123469852817058&w=4
-Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> I also don't know if every code path can be easily fixed. Using a timeout=
+ in
+> this case is a compromise. It is not as good as protecting every code
+> path, but it is much better than doing nothing. The race condition you
+> have when preventing suspend with a timeout is the same as every code
+> using a timeout. If the system is busy it can fail. The race condition
+> that you have with no protection happens with any load. If the system
+> decides to go to sleep at the same time as a wakeup event occur, the
+> system will sleep.
 
+Well, if you have strictly limited time (eg. you want to ship a product at
+specific date), you have to go for compromises like this, but we're not in a
+hurry (or are we for some unspecified reason?).  There's no deadline etc., =
+so
+we can afford to do it right from the start (which BTW is likely to save us
+time in future).
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12690
-Subject		: DPMS (LCD powersave, poweroff) don't work
-Submitter	: Antonin Kolisek <akolisek@linuxx.hyperlinx.cz>
-Date		: 2009-02-11 09:40 (21 days old)
+So, I'd suggest to just separate the timeouted suspend blockers from the
+basic code and introduce the latter first.
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12645
-Subject		: DMI low-memory-protect quirk causes resume hang on Samsung NC10
-Submitter	: Patrick Walton <pcwalton@cs.ucla.edu>
-Date		: 2009-02-06 18:35 (26 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0af40a4b1050c050e62eb1dc30b82d5ab22bf221
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12634
-Subject		: video distortion and lockup with i830 video chip and 2.6.28.3
-Submitter	: Bob Raitz <pappy_mcfae@yahoo.com>
-Date		: 2009-02-04 21:10 (28 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12619
-Subject		: Regression 2.6.28 and last - boot failed
-Submitter	: jan sonnek <ha2nny@gmail.com>
-Date		: 2009-02-01 19:59 (31 days old)
-References	: http://marc.info/?l=linux-kernel&m=123351836213969&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12500
-Subject		: r8169: NETDEV WATCHDOG: eth0 (r8169): transmit timed out
-Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
-Date		: 2009-01-13 21:19 (50 days old)
-References	: http://marc.info/?l=linux-kernel&m=123188160811322&w=4
-Handled-By	: Francois Romieu <romieu@fr.zoreil.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
-Subject		: KVM guests stalling on 2.6.28 (bisected)
-Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
-Date		: 2009-01-17 03:37 (46 days old)
-Handled-By	: Avi Kivity <avi@redhat.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12421
-Subject		: GPF on 2.6.28 and 2.6.28-rc9-git3, e1000e and e1000 issues
-Submitter	: Doug Bazarnic <doug@bazarnic.net>
-Date		: 2009-01-09 21:26 (54 days old)
-References	: http://marc.info/?l=linux-kernel&m=123153653120204&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12411
-Subject		: 2.6.28: BUG in r8169
-Submitter	: Andrey Vul <andrey.vul@gmail.com>
-Date		: 2008-12-31 18:37 (63 days old)
-References	: http://marc.info/?l=linux-kernel&m=123074869611409&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12408
-Subject		: Funny problem with 2.6.28: Kernel stalls
-Submitter	: Michael Roth <mroth@nessie.de>
-Date		: 2008-12-25 15:14 (69 days old)
-References	: http://marc.info/?l=linux-kernel&m=123021931714282&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12405
-Subject		: oops in __bounce_end_io_read under kvm
-Submitter	: Christoph Hellwig <hch@lst.de>
-Date		: 2008-12-26 17:36 (68 days old)
-References	: http://marc.info/?l=linux-kernel&m=123031303400676&w=4
-Handled-By	: Jens Axboe <jens.axboe@oracle.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12404
-Subject		: Oops in 2.6.28-rc9 and -rc8 -- mtrr issues / e1000e
-Submitter	: Kernel <kernel@bazarnic.net>
-Date		: 2008-12-22 9:37 (72 days old)
-References	: http://marc.info/?l=linux-kernel&m=122993873320150&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12337
-Subject		: ~100 extra wakeups reported by powertop
-Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
-Date		: 2008-12-31 12:25 (63 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12209
-Subject		: oldish top core dumps (in its meminfo() function)
-Submitter	: Andreas Mohr <andi@lisas.de>
-Date		: 2008-12-12 18:49 (82 days old)
-References	: http://marc.info/?l=linux-kernel&m=122910784006472&w=4
-		  http://marc.info/?l=linux-kernel&m=122907511319288&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-Subject		: uml is very slow on 2.6.28 host
-Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-Date		: 2008-12-12 9:35 (82 days old)
-References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12061
-Subject		: snd_hda_intel: power_save: sound cracks on powerdown
-Submitter	: Jens Weibler <bugzilla-kernel@jensthebrain.de>
-Date		: 2008-11-18 12:07 (106 days old)
-Handled-By	: Takashi Iwai <tiwai@suse.de>
-
-
-Regressions with patches
-------------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12798
-Subject		: No wake up after suspend.
-Submitter	: Michal Graczyk <zazulas@gmail.com>
-Date		: 2009-03-01 15:30 (3 days old)
-Handled-By	: Zhang Rui <rui.zhang@intel.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=20402&action=view
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12614
-Subject		: WOL with forcedeth broken since f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
-Submitter	: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Date		: 2009-01-29 6:31 (34 days old)
-References	: http://marc.info/?l=linux-kernel&m=123321232825316&w=4
-Handled-By	: Yinghai Lu <yinghai@kernel.org>
-		  Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Patch		: http://marc.info/?l=linux-kernel&m=123330459229248&w=4
-		  http://marc.info/?l=linux-kernel&m=123411195117835&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
-Subject		: hard lockup when interrupting cdda2wav
-Submitter	: Matthias Reichl <hias@horus.com>
-Date		: 2009-01-28 16:41 (35 days old)
-References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
-Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Patch		: http://marc.info/?l=linux-scsi&m=123371501613019&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12406
-Subject		: 2.6.28 thinks that my PS/2 mouse is a touchpad
-Submitter	: Alexander E. Patrakov <patrakov@gmail.com>
-Date		: 2008-12-27 9:06 (67 days old)
-References	: http://marc.info/?l=linux-kernel&m=123036893817280&w=4
-Handled-By	: Arjan Opmeer <arjan@opmeer.net>
-Patch		: http://marc.info/?l=linux-kernel&m=123092147703236&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12395
-Subject		: 2.6.28-rc9: oprofile regression
-Submitter	: Tim Blechmann <tim@klingt.org>
-Date		: 2008-12-21 14:23 (73 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b99170288421c79f0c2efa8b33e26e65f4bb7fb8
-References	: http://marc.info/?l=linux-kernel&m=122986946614791&w=4
-Handled-By	: Andi Kleen <ak@linux.intel.com>
-		  Tim Blechmann <tim@klingt.org>
-Patch		: http://marc.info/?l=linux-kernel&m=123506131927371&w=4
-
-
-For details, please visit the bug entries and follow the links given in
-references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions introduced
-between 2.6.27 and 2.6.28, unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11808
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
+IOW, let's first try to merge things that everybody is comfortable with and
+postpone the merging of the rest.  I don't think we're going to lose
+anything by doing it this way.
 
 Thanks,
 Rafael
