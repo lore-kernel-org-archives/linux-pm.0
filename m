@@ -1,15 +1,16 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v2 PATCH 4/4] timers: logic to enable timer migration.
-Date: Wed, 4 Mar 2009 17:49:37 +0530
-Message-ID: <20090304121937.GE9855__14487.8080151559$1236169482$gmane$org@linux.vnet.ibm.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
+From: Uli Luckas <u.luckas@road.de>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Wed, 4 Mar 2009 14:41:46 +0100
+Message-ID: <200903041441.47146.u.luckas@road.de>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200903021453.19482.u.luckas@road.de>
+	<20090303140215.GD5060@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090303140215.GD5060@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <20090304121249.GA9855@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,119 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-03-04 17:42:49]:
+> > > > On the otherhand if you consider ioctl nasty, maybe write() is an
+> > > > option?
+> > >
+> > > You want sleepvetos to be automatically unlocked/freed on close and
+> > > process exit/kill, so neither write nor ioctl is the right interface.
+> >
+> > An application opens a device node and then writes 1s to take the lock
+> > and 0s to release it.
+>
+> For example doing binary 0/1 writes from shell is hard...
+> 									Pavel
+If you have a strategy to hold an fd open from a shell, we can always agree on 
+writing '0's and '1's to that fd.
 
-This patch migrates all non pinned timers and hrtimers to the current
-idle load balancer, from all the idle CPUs. Timers firing on busy CPUs
-are not migrated.
+Uli
 
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- include/linux/sched.h |    1 +
- kernel/hrtimer.c      |   12 +++++++++++-
- kernel/sched.c        |    5 +++++
- kernel/timer.c        |   13 ++++++++++++-
- 4 files changed, 29 insertions(+), 2 deletions(-)
+-- 
 
-Index: linux.trees.git/kernel/timer.c
-===================================================================
---- linux.trees.git.orig/kernel/timer.c
-+++ linux.trees.git/kernel/timer.c
-@@ -38,6 +38,7 @@
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
- #include <linux/timer.h>
-+#include <linux/sched.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -628,7 +629,7 @@ __mod_timer(struct timer_list *timer, un
- {
- 	struct tvec_base *base, *new_base;
- 	unsigned long flags;
--	int ret;
-+	int ret, current_cpu, preferred_cpu;
- 
- 	ret = 0;
- 
-@@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
- 
- 	new_base = __get_cpu_var(tvec_bases);
- 
-+	current_cpu = smp_processor_id();
-+	preferred_cpu = get_nohz_load_balancer();
-+	if (enable_timer_migration && !tbase_get_pinned(timer->base) &&
-+			idle_cpu(current_cpu) && preferred_cpu != -1) {
-+		new_base = per_cpu(tvec_bases, preferred_cpu);
-+		timer_set_base(timer, new_base);
-+		timer->expires = expires;
-+		internal_add_timer(new_base, timer);
-+		goto out_unlock;
-+	}
- 	if (base != new_base) {
- 		/*
- 		 * We are trying to schedule the timer on the local CPU.
-Index: linux.trees.git/kernel/hrtimer.c
-===================================================================
---- linux.trees.git.orig/kernel/hrtimer.c
-+++ linux.trees.git/kernel/hrtimer.c
-@@ -43,6 +43,8 @@
- #include <linux/seq_file.h>
- #include <linux/err.h>
- #include <linux/debugobjects.h>
-+#include <linux/sched.h>
-+#include <linux/timer.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -198,8 +200,16 @@ int pinned)
- {
- 	struct hrtimer_clock_base *new_base;
- 	struct hrtimer_cpu_base *new_cpu_base;
-+	int current_cpu, preferred_cpu;
-+
-+	current_cpu = smp_processor_id();
-+	preferred_cpu = get_nohz_load_balancer();
-+	if (enable_timer_migration && !pinned && preferred_cpu != -1 &&
-+			idle_cpu(current_cpu))
-+		new_cpu_base = &per_cpu(hrtimer_bases, preferred_cpu);
-+	else
-+		new_cpu_base = &__get_cpu_var(hrtimer_bases);
- 
--	new_cpu_base = &__get_cpu_var(hrtimer_bases);
- 	new_base = &new_cpu_base->clock_base[base->index];
- 
- 	if (base != new_base) {
-Index: linux.trees.git/include/linux/sched.h
-===================================================================
---- linux.trees.git.orig/include/linux/sched.h
-+++ linux.trees.git/include/linux/sched.h
-@@ -265,6 +265,7 @@ static inline int select_nohz_load_balan
- }
- #endif
- 
-+extern int get_nohz_load_balancer(void);
- /*
-  * Only dump TASK_* tasks. (0 for all tasks)
-  */
-Index: linux.trees.git/kernel/sched.c
-===================================================================
---- linux.trees.git.orig/kernel/sched.c
-+++ linux.trees.git/kernel/sched.c
-@@ -4009,6 +4009,11 @@ static struct {
- 	.load_balancer = ATOMIC_INIT(-1),
- };
- 
-+inline int get_nohz_load_balancer(void)
-+{
-+	return atomic_read(&nohz.load_balancer);
-+}
-+
- /*
-  * This routine will try to nominate the ilb (idle load balancing)
-  * owner among the cpus whose ticks are stopped. ilb owner will do the idle
+------- ROAD ...the handyPC Company - - -  ) ) )
+
+Uli Luckas
+Head of Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing director: Hans-Peter Constien
