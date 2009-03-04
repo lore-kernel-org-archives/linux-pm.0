@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 01/13] PM: Add wake lock api.
-Date: Wed, 4 Mar 2009 18:10:58 +0100
-Message-ID: <20090304171058.GE18675@elf.ucw.cz>
-References: <1233802226-23386-1-git-send-email-arve@android.com>
-	<200903041500.06016.u.luckas@road.de>
-	<20090304141323.GB16604@elf.ucw.cz>
-	<200903041534.02035.u.luckas@road.de>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [v2 PATCH 0/4] timers: framework for migration
+	between CPU
+Date: Wed, 4 Mar 2009 18:33:21 +0100
+Message-ID: <20090304173321.GB25962__13495.863954495$1236188269$gmane$org@elte.hu>
+References: <20090304121249.GA9855@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200903041534.02035.u.luckas@road.de>
+In-Reply-To: <20090304121249.GA9855@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Uli Luckas <u.luckas@road.de>
-Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > here is network packets. You just don't want to open/close a fd for every
-> > > network packet that you process. Neither for serial data, bluetooth
-> > > packets, ...
-> >
-> > You mix userland and kernel users.
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
 
-> No. I don't.
-> The idea of wake locks was to hand locks over from a driver's interrupt all 
-> the way to userspace. 
-> This is done in an interlocked way to ensure that the device does not suspend 
-> from the time of interrupt until userspace has handled the event that caused 
-> the interrupt (e.g. A modem sending "RING" on the serial line).
-> Basically, in a timerless wake lock implementation userspace has to take a 
-> wake lock every time select returns.
+> $taskset -c 4,5,6,7 make -j4
+> 
+> my_driver queuing timers continuously on CPU 10.
+> 
+> idle load balancer currently on CPU 15
+> 
+> 
+> Case1: Without timer migration		Case2: With timer migration
+> 
+>    --------------------			   --------------------
+>    | Core | LOC Count |			   | Core | LOC Count |
+>    | 4    |   2504    |			   | 4    |   2503    |
+>    | 5    |   2502    |			   | 5    |   2503    |
+>    | 6    |   2502    |			   | 6    |   2502    |
+>    | 7    |   2498    |			   | 7    |   2500    |
+>    | 10   |   2501    |			   | 10   |     35    |
+>    | 15   |   2501    |			   | 15   |   2501    |
+>    --------------------			   --------------------
+> 
+>    ---------------------		   --------------------
+>    | Core | Sleep time |		   | Core | Sleep time |
+>    | 4    |    0.47168 |		   | 4    |    0.49601 |
+>    | 5    |    0.44301 |		   | 5    |    0.37153 |
+>    | 6    |    0.38979 |		   | 6    |    0.51286 |
+>    | 7    |    0.42829 |		   | 7    |    0.49635 |
+>    | 10   |    9.86652 |		   | 10   |   10.04216 |
+>    | 15   |    0.43048 |		   | 15   |    0.49056 |
+>    ---------------------		   ---------------------
+> 
+> Here, all the timers queued by the driver on CPU10 are moved to CPU15,
+> which is the idle load balancer.
 
-Well... in case it is really performance critical, we may want new
-syscalls.
+The numbers with this automatic method based on the ilb-cpu look 
+pretty convincing. Is this what you expected it to be?
 
-Actually, given how deep change of semantics this is, new syscalls may
-be good idea.
-
-Or better yet eliminate polling from userspace apps and just avoid
-suspending whenever userspace is running (like sleepy patches do).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
