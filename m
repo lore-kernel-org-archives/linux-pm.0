@@ -1,17 +1,17 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [RFD] Automatic suspend
-Date: Tue, 3 Mar 2009 15:51:58 -0800
-Message-ID: <d6200be20903031551s1b834c77u1469ef9025fda904__15439.6545295187$1236124552$gmane$org@mail.gmail.com>
-References: <200902192215.18365.rjw@sisk.pl> <200902272155.42010.rjw@sisk.pl>
-	<d6200be20902271456w77951afata1d5f378ddbe6b84@mail.gmail.com>
-	<200902281118.14595.rjw@sisk.pl>
-	<d6200be20902281357r2d3a0075q77055c1781f174d7@mail.gmail.com>
-	<20090303135750.GC5060@elf.ucw.cz>
+Date: Tue, 3 Mar 2009 16:06:02 -0800
+Message-ID: <d6200be20903031606k338168d2g2f012965a197fe5c@mail.gmail.com>
+References: <200902192215.18365.rjw@sisk.pl> <200902282353.39763.rjw@sisk.pl>
+	<d6200be20902281606g1c5db332r9970931d7080717f@mail.gmail.com>
+	<200903011020.53130.rjw@sisk.pl>
+	<d6200be20903021722y7f085482o66f6dee8c4004acd@mail.gmail.com>
+	<20090303135143.GA5060@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090303135750.GC5060@elf.ucw.cz>
+In-Reply-To: <20090303135143.GA5060@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,35 +25,54 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 3, 2009 at 5:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
+On Tue, Mar 3, 2009 at 5:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
 > Hi!
 >
->> >> If you ignore wakelocks with timeouts, the current
->> >> wakelock interface can be implemented with a global atomic_t to
->> >> prevent suspend, and a per wakelock atomic_t to prevent a single
->> >> client from changing the global reference count by more than one.
+>> >> > Not ignoring, but considering them as insufficient. =A0And since th=
+ey've already
+>> >> > been considered as insufficient, there's no point repeating them ov=
+er and over
+>> >> > again. =A0That doesn't make them any better.
 >> >>
->> >> There are a couple of reasons that I have not done this. It removes
->> >> the ability to easily inspect the system when it is not suspending.
+>> >> The problem is that what you consider insufficient is what allows us
+>> >> to ship a product.
 >> >
->> > Care to elaborate?
+>> > This doesn't matter a whit, because the mainline kernel is not just yo=
+ur
+>> > product.
 >>
->> If you have a single atomic_t and it is not 0, you do not know who
->> incremented it.
+>> Unless you are saying that changes in the mainline kernel does not
+>> need be usable in practice, then it does matter. If we remove the
+>> feature that allows us to interact with existing code, it will take
+>> much longer before it is usable by anyone.
 >
-> Which is okay for already debugged system. For debugging, yes some
-> support can be nice.
+> Well, taking longer before "being usable" is good tradeoff if it means
+> "we get cleaner/actually correct system in mainline sooner".
 
-Yes, but installing an app can turn your debugged system into an
-undebugged system. I think is fine to have a kernel option to disable
-all debugging support, I just don't think it is the top priority. I
-have two options for making the no-stats no-timeout configuration
-faster. Option one, always use a reference count, and implement the
-other configurations on top of this. This makes the shipping
-configuration slower. Option two, use a completely separate
-implementation when stats or timeouts are enabled. This makes the fast
-version virtually untested. Neither of these are very appealing at the
-moment.
+I think this could go either way. If the system is usable, it may get
+more use from developers that know how to improve a specific subsystem
+to not use timeouts. Or, it may be considered good enough, and nobody
+bothers coming up with a correct solution. I think the latter is what
+you are worried will happen.
+
+>
+>> >> I don't think I am the only one who want this code in the mainline
+>> >> kernel. Many people want to use the android platform, and support in
+>> >> the mainline kernel would be beneficial to some of them. I made many
+>> >> requested changes to my code that provides no benefit to us, but I
+>> >> have not made any changes that breaks our own use.
+>> >
+>> > OK, please resubmit the patches, then.
+>>
+>> I submitted them three weeks ago. I'll submit a new set after I rename
+>> the api (presumably to suspend_block(er)) but I would like more
+>> agreement on the timeout issue first.
+>
+> I do believe that everyone (including you :-) agrees that timeouts are
+> ugly hack. So just reorder the series so they come at the end.
+
+No, I think many uses of timeouts are a ugly hack, not all, but OK I
+will try to move timeout support to a separate patch.
 
 -- =
 
