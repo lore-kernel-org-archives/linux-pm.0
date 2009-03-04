@@ -1,17 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [v2 PATCH 0/4] timers: framework for migration
-	between CPU
-Date: Wed, 4 Mar 2009 19:29:14 +0100
-Message-ID: <20090304182914.GF1537__27703.5536863425$1236191647$gmane$org@elte.hu>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	<20090304173321.GB25962@elte.hu>
-	<20090304180657.GA27520@dirshya.in.ibm.com>
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: 2.6.29-rc6-git7: Reported regressions from 2.6.28
+Date: Wed, 4 Mar 2009 20:14:21 +0100
+Message-ID: <8db1092f0903041114o767d0079s4c1626dae5335d70__13707.9777349301$1236194303$gmane$org@mail.gmail.com>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090304180657.GA27520@dirshya.in.ibm.com>
+In-Reply-To: <KiHv0irKPzE.A.l3.hUarJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,91 +17,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-
-> * Ingo Molnar <mingo@elte.hu> [2009-03-04 18:33:21]:
-> 
-> > 
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
-> > 
-> > > $taskset -c 4,5,6,7 make -j4
-> > > 
-> > > my_driver queuing timers continuously on CPU 10.
-> > > 
-> > > idle load balancer currently on CPU 15
-> > > 
-> > > 
-> > > Case1: Without timer migration		Case2: With timer migration
-> > > 
-> > >    --------------------			   --------------------
-> > >    | Core | LOC Count |			   | Core | LOC Count |
-> > >    | 4    |   2504    |			   | 4    |   2503    |
-> > >    | 5    |   2502    |			   | 5    |   2503    |
-> > >    | 6    |   2502    |			   | 6    |   2502    |
-> > >    | 7    |   2498    |			   | 7    |   2500    |
-> > >    | 10   |   2501    |			   | 10   |     35    |
-> > >    | 15   |   2501    |			   | 15   |   2501    |
-> > >    --------------------			   --------------------
-> > > 
-> > >    ---------------------		   --------------------
-> > >    | Core | Sleep time |		   | Core | Sleep time |
-> > >    | 4    |    0.47168 |		   | 4    |    0.49601 |
-> > >    | 5    |    0.44301 |		   | 5    |    0.37153 |
-> > >    | 6    |    0.38979 |		   | 6    |    0.51286 |
-> > >    | 7    |    0.42829 |		   | 7    |    0.49635 |
-> > >    | 10   |    9.86652 |		   | 10   |   10.04216 |
-> > >    | 15   |    0.43048 |		   | 15   |    0.49056 |
-> > >    ---------------------		   ---------------------
-> > > 
-> > > Here, all the timers queued by the driver on CPU10 are moved to CPU15,
-> > > which is the idle load balancer.
-> > 
-> > The numbers with this automatic method based on the ilb-cpu look 
-> > pretty convincing. Is this what you expected it to be?
-> 
-> Yes Ingo, this is the expected results and looks pretty good.  However
-> there are two parameters controlled in this experiment:
-> 
-> 1) The system is moderately loaded with kernbench so that there are
->    some busy CPUs and some idle cpus, and the no_hz mask is does not
->    change often.  This leads to stable ilb-cpu selection.  If the
->    system is either completely idle or loaded too little leading to
->    ilb nominations, then timers keep following the ilb cpu and it is
->    very difficult to experimentally observe the benefits.
-> 
->    Even if the ilb bounces, consolidating timers should increase
->    overlap between timers and reduce the wakeup from idle.
-> 
->    Optimising the ilb selection should significantly improve
->    experimental results for this patch.
-> 
-> 2) The timer test driver creates quite large timer load so that the
->    effect of migration is observable as sleep time difference on the
->    expected target cpu.  This kind of timer load may not be uncommon
->    with lots of application stack loaded in an enterprise system
-
-the important thing to watch out for is to not have _worse_ 
-performance due to ilb jumping too much. So as long as you can 
-prove that numbers dont get worse you are golden.
-
-Power-saving via migration will only work if there's a 
-concentrated workload to begin with.
-
-So the best results will be in combination with scheduler 
-power-saving patches. (which too make the ilb jump less in 
-essence)
-
-So by getting scheduler power saving enhancements your method 
-will work better too - there's good synergy and no dependency on 
-any user-space component.
-
-Btw., could you please turn the runtime switch into a /proc/sys 
-sysctl, and only when CONFIG_SCHED_DEBUG=y. Otherwise it should 
-be default-enabled with no ability to turn it off.
-
-	Ingo
+MjAwOS8zLzMgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKCj4KPiBCdWctRW50cnkg
+wqAgwqAgwqAgOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI3
+NjQKPiBTdWJqZWN0IMKgIMKgIMKgIMKgIDogQ2FuIG5vdCBpb3JlbWFwIHZpcnR1YWwgYWRkcmVz
+cyBmb3IgRzMzIGh3IHN0YXR1cyBwYWdlCj4gU3VibWl0dGVyIMKgIMKgIMKgIDogTWFjaWVqIFJ1
+dGVja2kgPG1hY2llai5ydXRlY2tpQGdtYWlsLmNvbT4KPiBEYXRlIMKgIMKgIMKgIMKgIMKgIMKg
+OiAyMDA5LTAyLTIzIDE0OjQ2ICg5IGRheXMgb2xkKQo+IEZpcnN0LUJhZC1Db21taXQ6IGh0dHA6
+Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5n
+aXQ7YT1jb21taXQ7aD02ZmI4ODU4ODU1NWExODc5MmEyN2Y0ODM4ODdmZTFmMmFmNWY5YzliCj4g
+UmVmZXJlbmNlcyDCoCDCoCDCoDogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0x
+MjM1NDAwNTMyMTk1MDUmdz00CgpQcm9ibGVtIHNlZW1zIGJ5IHNvbHZlZCBpbiAyLjYuMjktcmM3
+CgotLSAKTWFjaWVqIFJ1dGVja2kKaHR0cDovL3d3dy5tYWNpZWsudW5peHkucGwKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
+aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
