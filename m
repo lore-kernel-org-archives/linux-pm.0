@@ -1,18 +1,17 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer
-	migration.
-Date: Wed, 4 Mar 2009 22:22:08 +0530
-Message-ID: <20090304165208.GA26432__29652.3602250547$1236185774$gmane$org@linux.vnet.ibm.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	<20090304121937.GE9855@linux.vnet.ibm.com>
-	<1236184389.5937.40.camel@desktop>
-Reply-To: arun@linux.vnet.ibm.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Wed, 4 Mar 2009 18:10:58 +0100
+Message-ID: <20090304171058.GE18675@elf.ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200903041500.06016.u.luckas@road.de>
+	<20090304141323.GB16604@elf.ucw.cz>
+	<200903041534.02035.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1236184389.5937.40.camel@desktop>
+In-Reply-To: <200903041534.02035.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: Uli Luckas <u.luckas@road.de>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-* Daniel Walker <dwalker@fifo99.com> [2009-03-04 08:33:09]:
+Hi!
 
-> On Wed, 2009-03-04 at 17:49 +0530, Arun R Bharadwaj wrote:
-> > @@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
-> >  
-> >         new_base = __get_cpu_var(tvec_bases);
-> >  
-> > +       current_cpu = smp_processor_id();
-> > +       preferred_cpu = get_nohz_load_balancer();
-> > +       if (enable_timer_migration && !tbase_get_pinned(timer->base)
-> > &&
-> > +                       idle_cpu(current_cpu) && preferred_cpu != -1)
-> > {
-> > +               new_base = per_cpu(tvec_bases, preferred_cpu);
-> > +               timer_set_base(timer, new_base);
-> > +               timer->expires = expires;
-> > +               internal_add_timer(new_base, timer);
-> > +               goto out_unlock;
-> > +       }
-> 
-> Are you sure this compiles w/ CONFIG_SMP=n ? It looks like
-> enable_timer_migration wouldn't exist in that case, but the chunks your
-> adding in the timer code are still using it.
-> 
-> Daniel
->
+> > > here is network packets. You just don't want to open/close a fd for every
+> > > network packet that you process. Neither for serial data, bluetooth
+> > > packets, ...
+> >
+> > You mix userland and kernel users.
 
-Hi Daniel,
+> No. I don't.
+> The idea of wake locks was to hand locks over from a driver's interrupt all 
+> the way to userspace. 
+> This is done in an interlocked way to ensure that the device does not suspend 
+> from the time of interrupt until userspace has handled the event that caused 
+> the interrupt (e.g. A modem sending "RING" on the serial line).
+> Basically, in a timerless wake lock implementation userspace has to take a 
+> wake lock every time select returns.
 
-Thanks for pointing this out. I'll clean this up in my next iteration.
+Well... in case it is really performance critical, we may want new
+syscalls.
 
---arun
+Actually, given how deep change of semantics this is, new syscalls may
+be good idea.
+
+Or better yet eliminate polling from userspace apps and just avoid
+suspending whenever userspace is running (like sleepy patches do).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
