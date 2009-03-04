@@ -1,14 +1,16 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v2 PATCH 0/4] timers: framework for migration between
-	CPU
-Date: Wed, 4 Mar 2009 17:42:49 +0530
-Message-ID: <20090304121249.GA9855__47635.4112070569$1236169110$gmane$org@linux.vnet.ibm.com>
+Subject: [v2 PATCH 1/4] timers: framework to identify pinned
+	timers.
+Date: Wed, 4 Mar 2009 17:44:56 +0530
+Message-ID: <20090304121456.GB9855__48425.8108110682$1236169422$gmane$org@linux.vnet.ibm.com>
+References: <20090304121249.GA9855@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <20090304121249.GA9855@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,116 +21,234 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
+Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-03-04 17:42:49]:
+
+This patch creates a new framework for identifying cpu-pinned timers
+and hrtimers.
 
 
-In an SMP system, tasks are scheduled on different CPUs by the
-scheduler, interrupts are managed by irqbalancer daemon, but timers
-are still stuck to the CPUs that they have been initialised.  Timers
-queued by tasks gets re-queued on the CPU where the task gets to run
-next, but timers from IRQ context like the ones in device drivers are
-still stuck on the CPU they were initialised.  This framework will
-help move all 'movable timers' from one CPU to any other CPU of choice
-using a sysfs interface.
-
-Original posting can be found here --> http://lkml.org/lkml/2009/2/20/121
-
-Based on Ingo's suggestion, I have extended the scheduler power-saving
-code, which already identifies an idle load balancer CPU, to also attract
-all the attractable sources of timers, automatically.
-
-Also, I have removed the per-cpu sysfs interface and instead created a
-single entry at /sys/devices/system/cpu/enable_timer_migration.
-This allows users to enable timer migration as a policy and let
-the kernel decide the target CPU to move timers and also decide on
-the thresholds on when to initiate a timer migration and when to stop.
-
-Timers from idle cpus are migrated to the idle-load-balancer-cpu.
-The idle load balancer is one of the idle cpus that has the sched
-ticks running and does other system management tasks and load
-balancing on behalf of other idle cpus.  Attracting timers from
-other idle cpus will reduce wakeups for them while increasing the
-probability of overlap with sched ticks on the idle load balancer cpu.
-
-However, this technique has drawbacks if the idle load balancer cpu
-is re-nominated too often based on the system behaviour leading to
-ping-pong of the timers in the system. This issue can be solved by
-optimising the selection of the idle load balancer cpu as described
-by Gautham in the following patch http://lkml.org/lkml/2008/9/23/82.
-
-If the idle-load-balancer is selected from a semi-idle package by
-including Gautham's patch, then we are able to experimentally verify
-consistent selection of idle-load-balancer cpu and timers are also
-consolidated to this cpu.
-
-The following patches are included:
-PATCH 1/4 - framework to identify pinned timers.
-PATCH 2/4 - identifying the existing pinned hrtimers.
-PATCH 3/4 - sysfs hook to enable timer migration.
-PATCH 4/4 - logic to enable timer migration.
-
-The patchset is based on the latest tip/master.
+This framework is needed because pinned timers are expected to fire on
+the same CPU on which they are queued. So it is essential to identify
+these and not migrate them, in case there are any.
 
 
-The following experiment was carried out to demonstrate the
-functionality of the patch.
-The machine used is a 2 socket, quad core machine, with HT enabled.
-
-I run a `make -j4` pinned to 4 CPUs.
-I have used a driver which continuously queues timers on a CPU.
-With the timers queued I measure the sleep state residency
-for a period of 10s.
-Next, I enable timer migration and measure the sleep state
-residency period.
-The comparison in sleep state residency values is posted below.
-
-Also the difference in Local Timer Interrupt rate(LOC) rate
-from /proc/interrupts is posted below.
-
-This enables timer migration.
-
-	echo 1 > /sys/devices/system/cpu/enable_timer_migration
-
-similarly,
-
-	echo 0 > /sys/devices/system/cpu/enable_timer_migration
-disables timer migration.
+For regular timers a new flag called TBASE_PINNED_FLAG is created.
+Since the last 3 bits of the tvec_base is guaranteed to be 0, and
+since the last bit is being used to indicate deferrable timers,
+the second last bit is used to indicate cpu-pinned regular timers.
+The implementation of functions to manage the TBASE_PINNED_FLAG is
+similar to those which manage the TBASE_DEFERRABLE_FLAG.
 
 
-$taskset -c 4,5,6,7 make -j4
-
-my_driver queuing timers continuously on CPU 10.
-
-idle load balancer currently on CPU 15
+For hrtimers, a new interface hrtimer_start_pinned() is created,
+which can be used to queue cpu-pinned hrtimer.
 
 
-Case1: Without timer migration		Case2: With timer migration
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ include/linux/hrtimer.h |   24 ++++++++++++++++++++----
+ kernel/hrtimer.c        |   34 ++++++++++++++++++++++++++++------
+ kernel/timer.c          |   30 +++++++++++++++++++++++++++---
+ 3 files changed, 75 insertions(+), 13 deletions(-)
 
-   --------------------			   --------------------
-   | Core | LOC Count |			   | Core | LOC Count |
-   | 4    |   2504    |			   | 4    |   2503    |
-   | 5    |   2502    |			   | 5    |   2503    |
-   | 6    |   2502    |			   | 6    |   2502    |
-   | 7    |   2498    |			   | 7    |   2500    |
-   | 10   |   2501    |			   | 10   |     35    |
-   | 15   |   2501    |			   | 15   |   2501    |
-   --------------------			   --------------------
-
-   ---------------------		   --------------------
-   | Core | Sleep time |		   | Core | Sleep time |
-   | 4    |    0.47168 |		   | 4    |    0.49601 |
-   | 5    |    0.44301 |		   | 5    |    0.37153 |
-   | 6    |    0.38979 |		   | 6    |    0.51286 |
-   | 7    |    0.42829 |		   | 7    |    0.49635 |
-   | 10   |    9.86652 |		   | 10   |   10.04216 |
-   | 15   |    0.43048 |		   | 15   |    0.49056 |
-   ---------------------		   ---------------------
-
-Here, all the timers queued by the driver on CPU10 are moved to CPU15,
-which is the idle load balancer.
-
-
---arun
+Index: linux.trees.git/kernel/timer.c
+===================================================================
+--- linux.trees.git.orig/kernel/timer.c
++++ linux.trees.git/kernel/timer.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/timer.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -87,8 +88,12 @@ static DEFINE_PER_CPU(struct tvec_base *
+  * the new flag to indicate whether the timer is deferrable
+  */
+ #define TBASE_DEFERRABLE_FLAG		(0x1)
++#define TBASE_PINNED_FLAG		(0x2)
+ 
+-/* Functions below help us manage 'deferrable' flag */
++/*
++ * Functions below help us manage
++ * 'deferrable' flag and 'cpu-pinned-timer' flag
++ */
+ static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
+ {
+ 	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
+@@ -96,7 +101,8 @@ static inline unsigned int tbase_get_def
+ 
+ static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
+ {
+-	return ((struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG));
++	return (struct tvec_base *)((unsigned long)base &
++			~(TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG));
+ }
+ 
+ static inline void timer_set_deferrable(struct timer_list *timer)
+@@ -105,11 +111,28 @@ static inline void timer_set_deferrable(
+ 				       TBASE_DEFERRABLE_FLAG));
+ }
+ 
++static inline unsigned long tbase_get_pinned(struct tvec_base *base)
++{
++	return (unsigned long)base & TBASE_PINNED_FLAG;
++}
++
++static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
++{
++	return tbase_get_deferrable(timer->base) |
++				tbase_get_pinned(timer->base);
++}
++
+ static inline void
+ timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
+ {
+ 	timer->base = (struct tvec_base *)((unsigned long)(new_base) |
+-				      tbase_get_deferrable(timer->base));
++					tbase_get_flag_bits(timer));
++}
++
++static inline void timer_set_pinned(struct timer_list *timer)
++{
++	timer->base = ((struct tvec_base *)((unsigned long)(timer->base) |
++				TBASE_PINNED_FLAG));
+ }
+ 
+ static unsigned long round_jiffies_common(unsigned long j, int cpu,
+@@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
+ 	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+ 	unsigned long flags;
+ 
++	timer_set_pinned(timer);
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+Index: linux.trees.git/include/linux/hrtimer.h
+===================================================================
+--- linux.trees.git.orig/include/linux/hrtimer.h
++++ linux.trees.git/include/linux/hrtimer.h
+@@ -331,23 +331,39 @@ static inline void hrtimer_init_on_stack
+ static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
+ #endif
+ 
++#define HRTIMER_NOT_PINNED	0
++#define HRTIMER_PINNED		1
+ /* Basic timer operations: */
+ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
+ 			 const enum hrtimer_mode mode);
++extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
++			const enum hrtimer_mode mode);
+ extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+-			unsigned long range_ns, const enum hrtimer_mode mode);
++	unsigned long range_ns, const enum hrtimer_mode mode, int pinned);
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+ 
+-static inline int hrtimer_start_expires(struct hrtimer *timer,
+-						enum hrtimer_mode mode)
++static inline int __hrtimer_start_expires(struct hrtimer *timer,
++					enum hrtimer_mode mode, int pinned)
+ {
+ 	unsigned long delta;
+ 	ktime_t soft, hard;
+ 	soft = hrtimer_get_softexpires(timer);
+ 	hard = hrtimer_get_expires(timer);
+ 	delta = ktime_to_ns(ktime_sub(hard, soft));
+-	return hrtimer_start_range_ns(timer, soft, delta, mode);
++	return hrtimer_start_range_ns(timer, soft, delta, mode, pinned);
++}
++
++static inline int hrtimer_start_expires(struct hrtimer *timer,
++						enum hrtimer_mode mode)
++{
++	return __hrtimer_start_expires(timer, mode, HRTIMER_NOT_PINNED);
++}
++
++static inline int hrtimer_start_expires_pinned(struct hrtimer *timer,
++						enum hrtimer_mode mode)
++{
++	return __hrtimer_start_expires(timer, mode, HRTIMER_PINNED);
+ }
+ 
+ static inline int hrtimer_restart(struct hrtimer *timer)
+Index: linux.trees.git/kernel/hrtimer.c
+===================================================================
+--- linux.trees.git.orig/kernel/hrtimer.c
++++ linux.trees.git/kernel/hrtimer.c
+@@ -193,7 +193,8 @@ struct hrtimer_clock_base *lock_hrtimer_
+  * Switch the timer base to the current CPU when possible.
+  */
+ static inline struct hrtimer_clock_base *
+-switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base)
++switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
++int pinned)
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
+@@ -897,9 +898,8 @@ remove_hrtimer(struct hrtimer *timer, st
+  *  0 on success
+  *  1 when the timer was active
+  */
+-int
+-hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
+-			const enum hrtimer_mode mode)
++int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++	unsigned long delta_ns, const enum hrtimer_mode mode, int pinned)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+@@ -911,7 +911,7 @@ hrtimer_start_range_ns(struct hrtimer *t
+ 	ret = remove_hrtimer(timer, base);
+ 
+ 	/* Switch the timer base, if necessary: */
+-	new_base = switch_hrtimer_base(timer, base);
++	new_base = switch_hrtimer_base(timer, base, pinned);
+ 
+ 	if (mode == HRTIMER_MODE_REL) {
+ 		tim = ktime_add_safe(tim, new_base->get_time());
+@@ -948,6 +948,12 @@ hrtimer_start_range_ns(struct hrtimer *t
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 
++int __hrtimer_start(struct hrtimer *timer, ktime_t tim,
++const enum hrtimer_mode mode, int pinned)
++{
++	return hrtimer_start_range_ns(timer, tim, 0, mode, pinned);
++}
++
+ /**
+  * hrtimer_start - (re)start an hrtimer on the current CPU
+  * @timer:	the timer to be added
+@@ -961,10 +967,26 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
+ int
+ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+-	return hrtimer_start_range_ns(timer, tim, 0, mode);
++	return __hrtimer_start(timer, tim, mode, HRTIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
++/**
++ * hrtimer_start_pinned - start a CPU-pinned hrtimer
++ * @timer:      the timer to be added
++ * @tim:        expiry time
++ * @mode:       expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
++ *
++ * Returns:
++ *  0 on success
++ *  1 when the timer was active
++ */
++int hrtimer_start_pinned(struct hrtimer *timer,
++	ktime_t tim, const enum hrtimer_mode mode)
++{
++	return __hrtimer_start(timer, tim, mode, HRTIMER_PINNED);
++}
++EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
+ 
+ /**
+  * hrtimer_try_to_cancel - try to deactivate a timer
