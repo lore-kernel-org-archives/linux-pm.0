@@ -1,17 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Wed, 4 Mar 2009 01:49:34 +0100
-Message-ID: <20090304004934.GC6280__40539.393379777$1236130084$gmane$org@elf.ucw.cz>
-References: <200902192215.18365.rjw@sisk.pl> <200903020017.52390.rjw@sisk.pl>
-	<d6200be20903021548h11f57283t6d6a9053f3feb3fd@mail.gmail.com>
-	<200903032339.02002.rjw@sisk.pl>
-	<d6200be20903031538s42c8243dk59c505857cdab7cb@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: 2.6.29-rc6-git7: Reported regressions from 2.6.28
+Date: Wed, 04 Mar 2009 09:03:46 +0800
+Message-ID: <1236128626.32297.254.camel__1607.64988181672$1236130118$gmane$org@rzhang-dt>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20903031538s42c8243dk59c505857cdab7cb@mail.gmail.com>
+In-Reply-To: <KiHv0irKPzE.A.l3.hUarJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +17,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed, 2009-03-04 at 03:22 +0800, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12501
+> Subject         : build bug in eeepc-laptop.c
+> Submitter       : Ingo Molnar <mingo@elte.hu>
+> Date            : 2009-01-14 17:25 (49 days old)
+> References      : http://lkml.org/lkml/2009/1/14/315
+> 
+the problem has already been fixed by
+3a5093ee6728c8cbe9c039e685fc1fca8f965048
 
-> > That need not happen at once (eg. in one patch or something). =A0Once w=
-e've
-> > introduced the basics, the changes can be made gradually wherever neces=
-sary,
-> > step by step.
-> =
-
-> If you are OK with merging an unfinished system then this may work.
-
-Good.
-
-> > So, I'd suggest to just separate the timeouted suspend blockers from the
-> > basic code and introduce the latter first.
-> =
-
-> How do you want to handle drivers that return -EBUSY from suspend. The
-> basic code uses a wakelock with a timeout to handle this now. Without
-> this we can either try suspend again immediately, or activate a
-> suspend blocker and use a timer to release it.
-
-Just printk() and complain. That should be good enough solution for
-now... (Those drivers are arguably buggy already. If user told machine
-to go to sleep, it should not randomly refuse to do that.)
-
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+thanks,
+rui
