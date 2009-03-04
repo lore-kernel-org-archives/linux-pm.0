@@ -1,14 +1,18 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.29-rc: PM notifiers are not called during
-	hibernation
-Date: Wed, 4 Mar 2009 19:33:26 +0300
-Message-ID: <200903041933.40837.arvidjaar__7914.81847777522$1236184597$gmane$org@mail.ru>
-References: <200901292254.09562.arvidjaar@mail.ru>
-	<20090304074733.GA1405@ucw.cz>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer
+	migration.
+Date: Wed, 4 Mar 2009 22:22:08 +0530
+Message-ID: <20090304165208.GA26432__29652.3602250547$1236185774$gmane$org@linux.vnet.ibm.com>
+References: <20090304121249.GA9855@linux.vnet.ibm.com>
+	<20090304121937.GE9855@linux.vnet.ibm.com>
+	<1236184389.5937.40.camel@desktop>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2927295440339354627=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090304074733.GA1405@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1236184389.5937.40.camel@desktop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,67 +20,41 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2927295440339354627==
-Content-Type: multipart/signed;
-  boundary="nextPart1287186.uxLbmaekjt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+* Daniel Walker <dwalker@fifo99.com> [2009-03-04 08:33:09]:
 
---nextPart1287186.uxLbmaekjt
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On 4 =D0=BC=D0=B0=D1=80=D1=82=D0=B0 2009 10:47:33 Pavel Machek wrote:
-> On Thu 2009-01-29 22:53:57, Andrey Borzenkov wrote:
-> > rc2 and now rc3
-> >
-> > Orinoco driver uses notifications to request firmware before
-> > suspend/hibernation. This is OK for suspend, but does not seem to
-> > work for hibernation. I get what suspiciously looks like 60 seconds
-> > timeout for request_firmware, but I do not see either usual
-> > request_firmware output, nor debug output.
-> >
-> > Suspend is OK.
-> >
-> > orinoco notification handlers is:
+> On Wed, 2009-03-04 at 17:49 +0530, Arun R Bharadwaj wrote:
+> > @@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
+> >  
+> >         new_base = __get_cpu_var(tvec_bases);
+> >  
+> > +       current_cpu = smp_processor_id();
+> > +       preferred_cpu = get_nohz_load_balancer();
+> > +       if (enable_timer_migration && !tbase_get_pinned(timer->base)
+> > &&
+> > +                       idle_cpu(current_cpu) && preferred_cpu != -1)
+> > {
+> > +               new_base = per_cpu(tvec_bases, preferred_cpu);
+> > +               timer_set_base(timer, new_base);
+> > +               timer->expires = expires;
+> > +               internal_add_timer(new_base, timer);
+> > +               goto out_unlock;
+> > +       }
+> 
+> Are you sure this compiles w/ CONFIG_SMP=n ? It looks like
+> enable_timer_migration wouldn't exist in that case, but the chunks your
+> adding in the timer code are still using it.
+> 
+> Daniel
 >
-> Is it fixed in newer -rc?
 
-yes
+Hi Daniel,
 
-> If not, does rafael know?
+Thanks for pointing this out. I'll clean this up in my next iteration.
 
-under different subject :)
-
---nextPart1287186.uxLbmaekjt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmurVoACgkQR6LMutpd94yA+QCfUUxTQjFmPuEedxyjp3IznFSq
-MYEAoM8EZW4ihhRiwFLXOuWsfDlR/2Hu
-=uWNP
------END PGP SIGNATURE-----
-
---nextPart1287186.uxLbmaekjt--
-
---===============2927295440339354627==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2927295440339354627==--
+--arun
