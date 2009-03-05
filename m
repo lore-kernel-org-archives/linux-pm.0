@@ -1,16 +1,16 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned
-	timers.
-Date: Thu, 5 Mar 2009 17:53:40 +0100
-Message-ID: <20090305165340.GA6984__33074.2277707488$1236272704$gmane$org@redhat.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	<20090304121456.GB9855@linux.vnet.ibm.com>
+From: Uli Luckas <u.luckas@road.de>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Thu, 5 Mar 2009 18:42:05 +0100
+Message-ID: <200903051842.05738.u.luckas@road.de>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200903041534.02035.u.luckas@road.de>
+	<20090304171058.GE18675@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090304171058.GE18675@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <20090304121456.GB9855@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/04, Arun R Bharadwaj wrote:
+On Wednesday, 4. March 2009, Pavel Machek wrote:
+> Hi!
 >
-> +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
-> +{
-> +	return tbase_get_deferrable(timer->base) |
-> +				tbase_get_pinned(timer->base);
-> +}
-
-I'd say this looks a bit strange. Hopefully compiler can optimize this code
-to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
-
-> @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
->  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
->  	unsigned long flags;
+> > > > here is network packets. You just don't want to open/close a fd for
+> > > > every network packet that you process. Neither for serial data,
+> > > > bluetooth packets, ...
+> > >
+> > > You mix userland and kernel users.
+> >
+> > No. I don't.
+> > The idea of wake locks was to hand locks over from a driver's interrupt
+> > all the way to userspace.
+> > This is done in an interlocked way to ensure that the device does not
+> > suspend from the time of interrupt until userspace has handled the event
+> > that caused the interrupt (e.g. A modem sending "RING" on the serial
+> > line).
+> > Basically, in a timerless wake lock implementation userspace has to take
+> > a wake lock every time select returns.
 >
-> +	timer_set_pinned(timer);
+> Well... in case it is really performance critical, we may want new
+> syscalls.
+>
+> Actually, given how deep change of semantics this is, new syscalls may
+> be good idea.
+>
+> Or better yet eliminate polling from userspace apps and just avoid
+> suspending whenever userspace is running (like sleepy patches do).
+> 									Pavel
+I don't know the details of sleepy linux so I'd appreciate if someone can 
+eluminate if the following scenarios could be handled efficiently with sleepy 
+linux:
+1) You wake up through RTC, read the battery, update the color of your 
+   fancy 'battery good' LED and go back to sleep imediately. The real work
+   takes milliseconds.
+2) You send a request to the internet and go idle by selecting for an answer.
+   You probably don't want to go to sleep as you know, the answer will be
+   there shortly.
 
-But we never clear TBASE_PINNED_FLAG?
+Uli
 
-If we use mod_timer() next time, the timer remains "pinned". I do not say
-this is really wrong, but a bit strange imho.
+-- 
 
-Oleg.
+------- ROAD ...the handyPC Company - - -  ) ) )
+
+Uli Luckas
+Head of Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 62 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing director: Hans-Peter Constien
