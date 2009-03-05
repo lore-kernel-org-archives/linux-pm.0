@@ -1,8 +1,8 @@
 From: Oleg Nesterov <oleg@redhat.com>
 Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer
 	migration.
-Date: Thu, 5 Mar 2009 16:34:36 +0100
-Message-ID: <20090305153436.GA3939__33020.2511199333$1236268282$gmane$org@redhat.com>
+Date: Thu, 5 Mar 2009 17:23:29 +0100
+Message-ID: <20090305162329.GA5294__10284.3657289215$1236270606$gmane$org@redhat.com>
 References: <20090304121249.GA9855@linux.vnet.ibm.com>
 	<20090304121937.GE9855@linux.vnet.ibm.com>
 Mime-Version: 1.0
@@ -26,44 +26,20 @@ List-Id: linux-pm@vger.kernel.org
 
 On 03/04, Arun R Bharadwaj wrote:
 >
-> @@ -628,7 +629,7 @@ __mod_timer(struct timer_list *timer, un
->  {
->  	struct tvec_base *base, *new_base;
->  	unsigned long flags;
-> -	int ret;
-> +	int ret, current_cpu, preferred_cpu;
->  
->  	ret = 0;
->  
-> @@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
->  
->  	new_base = __get_cpu_var(tvec_bases);
->  
-> +	current_cpu = smp_processor_id();
-> +	preferred_cpu = get_nohz_load_balancer();
-> +	if (enable_timer_migration && !tbase_get_pinned(timer->base) &&
-> +			idle_cpu(current_cpu) && preferred_cpu != -1) {
-> +		new_base = per_cpu(tvec_bases, preferred_cpu);
-> +		timer_set_base(timer, new_base);
-> +		timer->expires = expires;
-> +		internal_add_timer(new_base, timer);
-> +		goto out_unlock;
+> +++ linux.trees.git/kernel/sched.c
+> @@ -4009,6 +4009,11 @@ static struct {
+>  	.load_balancer = ATOMIC_INIT(-1),
+>  };
+>
+> +inline int get_nohz_load_balancer(void)
 
-I didn't read the whole series, but this looks very wrong.
+inline?
 
-We can not do internal_add_timer/etc until we lock new_base, please
-look how the current code does this under "if (base != new_base)".
+> +{
+> +	return atomic_read(&nohz.load_balancer);
+> +}
 
-I think you can do something like
-
-	-	new_base = __get_cpu_var(tvec_bases);
-	+
-	+	new_cpu = smp_processor_id();
-	+	if (enable_timer_migration && ....)
-	+		new_cpu = preferred_cpu;
-	+
-	+	new_base = per_cpu(tvec_bases, new_cpu);
-
-		if (base != new_base) {
+Shouldn't we reset .load_balancer when this CPU is CPU_DOWN'ed ?
+Otherwise the timer can migrate to the dead CPU.
 
 Oleg.
