@@ -1,15 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Automatic suspend
-Date: Thu, 5 Mar 2009 14:48:06 +0100
-Message-ID: <20090305134806.GA1697__25580.7168585763$1236261205$gmane$org@elf.ucw.cz>
-References: <200902190004.18878.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer
+	migration.
+Date: Thu, 5 Mar 2009 16:34:36 +0100
+Message-ID: <20090305153436.GA3939__33020.2511199333$1236268282$gmane$org@redhat.com>
+References: <20090304121249.GA9855@linux.vnet.ibm.com>
+	<20090304121937.GE9855@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
+In-Reply-To: <20090304121937.GE9855@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kyle Moffett <kyle@moffetthome.net>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Brian Swetland <swetland@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2009-02-18 18:31:15, Alan Stern wrote:
-> On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
-> 
-> > > If some devices are autosuspended after a local inactivity timeout, I
-> > > don't want to wait for those devices to autosuspend if I know the code
-> > > that needed to run is done. This could cause delays in the normal
-> > > case,
-> > 
-> > Isn't it a matter of adjusting the inactivity timeouts in a suitable way?
-> 
-> It's not that simple.  A single device driver has a very local view, 
-> not suitable for deciding whether the entire system should go to sleep.
-> 
-> So for example, a disk driver might think it's appropriate to spin down 
-> the disk after 10 seconds of inactivity.  But an overall system monitor 
-> might realize that nothing is going on right now and want to put the 
-> system to sleep immediately, without waiting the 10 seconds for the 
-> disk to autosuspend.
+On 03/04, Arun R Bharadwaj wrote:
+>
+> @@ -628,7 +629,7 @@ __mod_timer(struct timer_list *timer, un
+>  {
+>  	struct tvec_base *base, *new_base;
+>  	unsigned long flags;
+> -	int ret;
+> +	int ret, current_cpu, preferred_cpu;
+>  
+>  	ret = 0;
+>  
+> @@ -649,6 +650,16 @@ __mod_timer(struct timer_list *timer, un
+>  
+>  	new_base = __get_cpu_var(tvec_bases);
+>  
+> +	current_cpu = smp_processor_id();
+> +	preferred_cpu = get_nohz_load_balancer();
+> +	if (enable_timer_migration && !tbase_get_pinned(timer->base) &&
+> +			idle_cpu(current_cpu) && preferred_cpu != -1) {
+> +		new_base = per_cpu(tvec_bases, preferred_cpu);
+> +		timer_set_base(timer, new_base);
+> +		timer->expires = expires;
+> +		internal_add_timer(new_base, timer);
+> +		goto out_unlock;
 
-Hmm, I'm not sure. If system is so busy that it keeps the disk up, it
-may not be good idea to sleep whole system.
+I didn't read the whole series, but this looks very wrong.
 
-Example: "idle fileserver". Current command is done, so we seem to be
-idle; but when we sleep, new command comes. While system really is
-idle, it is bad idea to suspend.
+We can not do internal_add_timer/etc until we lock new_base, please
+look how the current code does this under "if (base != new_base)".
 
-If the overall system monitor can decide disk will not be used, it can
-just sleep the disk.
+I think you can do something like
 
-> > > and it could prevent suspend if a background process (not using
-> > > wakelocks) is accessing a disk more frequently than its idle timeout.
-> > 
-> > Well, actually, shouldn't it prevent suspend from happening?  Arguably, it just
-> > means that the disk is continuously being accessed with respect to the inactive
-> > timeout granularity.
-> 
-> That's true, but it shows the problem of making the autosleep decision
-> based on disk activity.  An auto-sleep should not have to wait for
-> every device (or some suitable subset) to become idle for some minimum
-> time; it should be able to kick in at short notice.
+	-	new_base = __get_cpu_var(tvec_bases);
+	+
+	+	new_cpu = smp_processor_id();
+	+	if (enable_timer_migration && ....)
+	+		new_cpu = preferred_cpu;
+	+
+	+	new_base = per_cpu(tvec_bases, new_cpu);
 
-I believe we do want to wake for timeouts, as not all sources of
-wakeup are local.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+		if (base != new_base) {
+
+Oleg.
