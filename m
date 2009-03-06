@@ -1,18 +1,18 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [v2 PATCH 4/4] timers: logic to enable timer
-	migration.
-Date: Fri, 6 Mar 2009 15:50:02 +0100
-Message-ID: <20090306145002.GA5828__2463.34063490412$1236351376$gmane$org@redhat.com>
+Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned
+	timers.
+Date: Fri, 6 Mar 2009 16:03:35 +0100
+Message-ID: <20090306150335.GB5828__36989.4468728036$1236352195$gmane$org@redhat.com>
 References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	<20090304121937.GE9855@linux.vnet.ibm.com>
-	<20090305162329.GA5294@redhat.com>
-	<20090306032122.GA32316@in.ibm.com>
+	<20090304121456.GB9855@linux.vnet.ibm.com>
+	<20090305165340.GA6984@redhat.com>
+	<20090306061438.GB9190@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090306032122.GA32316@in.ibm.com>
+In-Reply-To: <20090306061438.GB9190@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,44 +22,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, tglx@linutronix.de, Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/06, Gautham R Shenoy wrote:
+On 03/06, Arun R Bharadwaj wrote:
 >
-> On Thu, Mar 05, 2009 at 05:23:29PM +0100, Oleg Nesterov wrote:
-> > On 03/04, Arun R Bharadwaj wrote:
-> > >
-> > > +++ linux.trees.git/kernel/sched.c
-> > > @@ -4009,6 +4009,11 @@ static struct {
-> > >  	.load_balancer = ATOMIC_INIT(-1),
-> > >  };
-> > >
-> > > +inline int get_nohz_load_balancer(void)
-> >
-> > inline?
-> > 
-> > > +{
-> > > +	return atomic_read(&nohz.load_balancer);
-> > > +}
-> >
-> > Shouldn't we reset .load_balancer when this CPU is CPU_DOWN'ed ?
-> > Otherwise the timer can migrate to the dead CPU.
+> * Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
 >
-> In the select_nohz_load_balancer() code, we check if this CPU is in the
-> cpu_active_map. If no, then this CPU relinquishes being the idle
-> load balancer.
+> > > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
+> > >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+> > >  	unsigned long flags;
+> > >
+> > > +	timer_set_pinned(timer);
+> >
+> > But we never clear TBASE_PINNED_FLAG?
+> >
+> > If we use mod_timer() next time, the timer remains "pinned". I do not say
+> > this is really wrong, but a bit strange imho.
+> >
+> > Oleg.
+> >
+>
+> The pinned timer would expect to continue firing on the same CPU
+> although it does a mod_timer() the next time, right?
 
-I don't understand this code, but I am not sure select_nohz_load_balancer()
-is always called on cpu_down() path before migrate_timers/migrate_hrtimers.
+Why? Let's suppose we call queue_delayed_work_on(), and next time
+we use queue_delayed_work() with the same dwork. The timer is still
+pinned, this doesn't look consistent to me.
 
-If this is true, then there is no problem.
+> Thats why I have not cleared the TBASE_PINNED_FLAG.
 
-> Also, the timer migration code in the CPU down path would
-> migrate any timers queued onto this CPU, right ?
-
-Yes, but if .load_balancer is not cleared before the timer migration,
-mod_timer() can move the timer to the dead CPU after migration.
+Personally, I don't like this flag. I think that "pinned" should
+be the argument for mod_timer(), not the "property" of timer_list.
 
 Oleg.
