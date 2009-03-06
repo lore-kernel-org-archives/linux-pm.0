@@ -1,18 +1,16 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v2 PATCH 1/4] timers: framework to identify pinned
-	timers.
-Date: Fri, 6 Mar 2009 12:31:07 +0530
-Message-ID: <20090306070107.GC9190__15820.0061101981$1236323024$gmane$org@linux.vnet.ibm.com>
-References: <20090304121249.GA9855@linux.vnet.ibm.com>
-	<20090304121456.GB9855@linux.vnet.ibm.com>
-	<20090305165340.GA6984@redhat.com>
-Reply-To: arun@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/4] Rework disabling of interrupts
+	during suspend-resume
+Date: Fri, 6 Mar 2009 11:19:29 +0100
+Message-ID: <200903061119.33023.rjw__17655.8973537341$1236335062$gmane$org@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl>
+	<alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
 Content-Disposition: inline
-In-Reply-To: <20090305165340.GA6984@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, arjan@infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Oleg Nesterov <oleg@redhat.com> [2009-03-05 17:53:40]:
+On Friday 06 March 2009, Linus Torvalds wrote:
+> 
+> On Sun, 1 Mar 2009, Rafael J. Wysocki wrote:
+> > 
+> > The following patches modifiy the way in which we handle disabling interrupts
+> > during suspend and enabling them during resume.  They also change the ordering
+> > of the core suspend and hibernation code.
+> 
+> Side note - I've tested them on the EeePC that had trouble resuming due to 
+> interrupt timings, and it suspends and resumes fine with these patches 
+> (modulo some new X problems, but that's what I get for living with 
+> Fedora-11 testing).
+> 
+> Of course, it also suspends and resumes without them, since the CPU "cli" 
+> was sufficient for that machine, and it doesn't have any ACPI issues. But 
+> it's still an ack that at least nothing breaks that I can tell.
 
-> On 03/04, Arun R Bharadwaj wrote:
-> >
-> > +static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
-> > +{
-> > +	return tbase_get_deferrable(timer->base) |
-> > +				tbase_get_pinned(timer->base);
-> > +}
-> 
-> I'd say this looks a bit strange. Hopefully compiler can optimize this code
-> to return (unsigned long)base & (TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG).
->
+OK, thanks for testing!  The next-step patches (ie. PCI suspend-resume rework)
+are in the works.
 
-Misread the above statement.
-The code is functionally correct. But not sure if the compiler
-optimizes in the way that you have mentioned.
-
-> > @@ -736,6 +759,7 @@ void add_timer_on(struct timer_list *tim
-> >  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
-> >  	unsigned long flags;
-> >
-> > +	timer_set_pinned(timer);
-> 
-> But we never clear TBASE_PINNED_FLAG?
-> 
-> If we use mod_timer() next time, the timer remains "pinned". I do not say
-> this is really wrong, but a bit strange imho.
-> 
-> Oleg.
-> 
+Rafael
