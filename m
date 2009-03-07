@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH][2/8] PM: Change suspend code ordering
-Date: Sat, 7 Mar 2009 11:21:47 +0100
-Message-ID: <200903071121.48780.rjw__36710.6486148716$1236422540$gmane$org@sisk.pl>
+Subject: [RFC][PATCH][5/8] PCI PM: Consistently use variable name
+	"error" for pm call return values
+Date: Sat, 7 Mar 2009 11:24:15 +0100
+Message-ID: <200903071124.17076.rjw__47453.6744798117$1236422579$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903071119.16651.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,88 +20,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Frans Pop <elendil@planet.nl>
 
-Change the ordering of the suspend core code so that the platform
-"prepare" callback is executed and the nonboot CPUs are disabled
-after calling device drivers' "late suspend" methods.
+I noticed two functions use a variable "i" to store the return value of PM
+function calls while the rest of the file uses "error". As "i" normally
+indicates a counter of some sort it seems better to keep this consistent.
 
-This change will allow us to rework the PCI PM core so that the power
-state of devices is changed in the "late" phase of suspend (and
-analogously in the "early" phase of resume), which in turn will allow
-us to avoid the race condition where a device using shared interrupts
-is put into a low power state with interrupts enabled and then an
-interrupt (for another device) comes in and confuses its driver.
-
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/main.c |   38 ++++++++++++++++++++++----------------
- 1 file changed, 22 insertions(+), 16 deletions(-)
+ drivers/pci/pci-driver.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -297,6 +297,19 @@ static int suspend_enter(suspend_state_t
- 		goto Done;
- 	}
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -352,17 +352,17 @@ static int pci_legacy_suspend(struct dev
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
  
-+	if (suspend_ops->prepare) {
-+		error = suspend_ops->prepare();
+ 	if (drv && drv->suspend) {
+ 		pci_power_t prev = pci_dev->current_state;
+ 
+ 		pci_dev->state_saved = false;
+ 
+-		i = drv->suspend(pci_dev, state);
+-		suspend_report_result(drv->suspend, i);
+-		if (i)
+-			return i;
++		error = drv->suspend(pci_dev, state);
++		suspend_report_result(drv->suspend, error);
 +		if (error)
-+			goto Power_up_devices;
-+	}
-+
-+	if (suspend_test(TEST_PLATFORM))
-+		goto Platfrom_finish;
-+
-+	error = disable_nonboot_cpus();
-+	if (error || suspend_test(TEST_CPUS))
-+		goto Enable_cpus;
-+
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
++			return error;
  
-@@ -310,6 +323,14 @@ static int suspend_enter(suspend_state_t
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
+ 		if (pci_dev->state_saved)
+ 			goto Fixup;
+@@ -385,20 +385,20 @@ static int pci_legacy_suspend(struct dev
+  Fixup:
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
  
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Platfrom_finish:
-+	if (suspend_ops->finish)
-+		suspend_ops->finish();
-+
-+ Power_up_devices:
- 	device_power_up(PMSG_RESUME);
+-	return i;
++	return error;
+ }
  
-  Done:
-@@ -346,23 +367,8 @@ int suspend_devices_and_enter(suspend_st
- 	if (suspend_test(TEST_DEVICES))
- 		goto Recover_platform;
+ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
  
--	if (suspend_ops->prepare) {
--		error = suspend_ops->prepare();
--		if (error)
--			goto Resume_devices;
--	}
--
--	if (suspend_test(TEST_PLATFORM))
--		goto Finish;
-+	suspend_enter(state);
+ 	if (drv && drv->suspend_late) {
+-		i = drv->suspend_late(pci_dev, state);
+-		suspend_report_result(drv->suspend_late, i);
++		error = drv->suspend_late(pci_dev, state);
++		suspend_report_result(drv->suspend_late, error);
+ 	}
+-	return i;
++	return error;
+ }
  
--	error = disable_nonboot_cpus();
--	if (!error && !suspend_test(TEST_CPUS))
--		suspend_enter(state);
--
--	enable_nonboot_cpus();
-- Finish:
--	if (suspend_ops->finish)
--		suspend_ops->finish();
-  Resume_devices:
- 	suspend_test_start();
- 	device_resume(PMSG_RESUME);
+ static int pci_legacy_resume_early(struct device *dev)
