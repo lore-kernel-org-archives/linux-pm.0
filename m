@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH][5/8] PCI PM: Consistently use variable name
-	"error" for pm call return values
-Date: Sat, 7 Mar 2009 11:24:15 +0100
-Message-ID: <200903071124.17076.rjw__47453.6744798117$1236422579$gmane$org@sisk.pl>
+Subject: [RFC][PATCH][4/8] kexec: Change kexec jump code ordering
+Date: Sat, 7 Mar 2009 11:23:14 +0100
+Message-ID: <200903071123.15418.rjw__22365.0696724237$1236422691$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903071119.16651.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,72 +19,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frans Pop <elendil@planet.nl>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I noticed two functions use a variable "i" to store the return value of PM
-function calls while the rest of the file uses "error". As "i" normally
-indicates a counter of some sort it seems better to keep this consistent.
+Change the ordering of the kexec jump code so that the nonboot CPUs
+are disabled after calling device drivers' "late suspend" methods.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+This change reflects the recent modifications of the power management
+code that is also used by kexec jump.
+
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ kernel/kexec.c |   19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/kernel/kexec.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -352,17 +352,17 @@ static int pci_legacy_suspend(struct dev
- {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int i = 0;
-+	int error = 0;
- 
- 	if (drv && drv->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
- 
- 		pci_dev->state_saved = false;
- 
--		i = drv->suspend(pci_dev, state);
--		suspend_report_result(drv->suspend, i);
--		if (i)
--			return i;
-+		error = drv->suspend(pci_dev, state);
-+		suspend_report_result(drv->suspend, error);
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -1450,9 +1450,6 @@ int kernel_kexec(void)
+ 		error = device_suspend(PMSG_FREEZE);
+ 		if (error)
+ 			goto Resume_console;
+-		error = disable_nonboot_cpus();
+-		if (error)
+-			goto Resume_devices;
+ 		device_pm_lock();
+ 		/* At this point, device_suspend() has been called,
+ 		 * but *not* device_power_down(). We *must*
+@@ -1463,13 +1460,15 @@ int kernel_kexec(void)
+ 		 */
+ 		error = device_power_down(PMSG_FREEZE);
+ 		if (error)
+-			goto Unlock_pm;
+-
++			goto Resume_devices;
++		error = disable_nonboot_cpus();
 +		if (error)
-+			return error;
- 
- 		if (pci_dev->state_saved)
- 			goto Fixup;
-@@ -385,20 +385,20 @@ static int pci_legacy_suspend(struct dev
-  Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
--	return i;
-+	return error;
- }
- 
- static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
- {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int i = 0;
-+	int error = 0;
- 
- 	if (drv && drv->suspend_late) {
--		i = drv->suspend_late(pci_dev, state);
--		suspend_report_result(drv->suspend_late, i);
-+		error = drv->suspend_late(pci_dev, state);
-+		suspend_report_result(drv->suspend_late, error);
- 	}
--	return i;
-+	return error;
- }
- 
- static int pci_legacy_resume_early(struct device *dev)
++			goto Enable_cpus;
+ 		local_irq_disable();
+ 		/* Suspend system devices */
+ 		error = sysdev_suspend(PMSG_FREEZE);
+ 		if (error)
+-			goto Power_up_devices;
++			goto Enable_irqs;
+ 	} else
+ #endif
+ 	{
+@@ -1483,13 +1482,13 @@ int kernel_kexec(void)
+ #ifdef CONFIG_KEXEC_JUMP
+ 	if (kexec_image->preserve_context) {
+ 		sysdev_resume();
+- Power_up_devices:
++ Enable_irqs:
+ 		local_irq_enable();
+-		device_power_up(PMSG_RESTORE);
+- Unlock_pm:
+-		device_pm_unlock();
++ Enable_cpus:
+ 		enable_nonboot_cpus();
++		device_power_up(PMSG_RESTORE);
+  Resume_devices:
++		device_pm_unlock();
+ 		device_resume(PMSG_RESTORE);
+  Resume_console:
+ 		resume_console();
