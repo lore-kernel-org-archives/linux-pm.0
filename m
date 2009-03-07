@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH][7/8] PCI PM: Move
-	pci_restore_standard_config to pci-driver.c
-Date: Sat, 7 Mar 2009 11:26:10 +0100
-Message-ID: <200903071126.11408.rjw__32224.5791009211$1236423995$gmane$org@sisk.pl>
+Subject: [RFC][PATCH][6/8] PCI PM: Use pci_set_power_state during
+	early resume
+Date: Sat, 7 Mar 2009 11:25:28 +0100
+Message-ID: <200903071125.29502.rjw__39766.5505683564$1236424116$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903071119.16651.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,85 +25,121 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move pci_restore_standard_config() from pci.c to pci-driver.c and
-make it static.
+Once we have allowed timer interrupts to be enabled during the early
+phase of resuming devices, we are now able to use the generic
+pci_set_power_state() to put PCI devices into D0 at that time.  Then,
+the platform-specific PM code will have a chance to handle devices
+that don't implement the native PCI PM or that require some
+additional, platform-specific operations to be carried out to power
+them up.  Also, by doing this we can simplify the code quite a bit.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   17 +++++++++++++++++
- drivers/pci/pci.c        |   21 ---------------------
- drivers/pci/pci.h        |    1 -
- 3 files changed, 17 insertions(+), 22 deletions(-)
+ drivers/pci/pci.c |   48 +++++++++---------------------------------------
+ 1 file changed, 9 insertions(+), 39 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -423,6 +423,23 @@ static int pci_legacy_resume(struct devi
- 
- /* Auxiliary functions used by the new power management framework */
- 
-+/**
-+ * pci_restore_standard_config - restore standard config registers of PCI device
-+ * @pci_dev: PCI device to handle
-+ */
-+static int pci_restore_standard_config(struct pci_dev *pci_dev)
-+{
-+	pci_update_current_state(pci_dev, PCI_UNKNOWN);
-+
-+	if (pci_dev->current_state != PCI_D0) {
-+		int error = pci_set_power_state(pci_dev, PCI_D0);
-+		if (error)
-+			return error;
-+	}
-+
-+	return pci_dev->state_saved ? pci_restore_state(pci_dev) : 0;
-+}
-+
- static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
- {
- 	pci_restore_standard_config(pci_dev);
 Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci.c
 +++ linux-2.6/drivers/pci/pci.c
-@@ -1374,27 +1374,6 @@ void pci_allocate_cap_save_buffers(struc
+@@ -426,7 +426,6 @@ static inline int platform_pci_sleep_wak
+  *                           given PCI device
+  * @dev: PCI device to handle.
+  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
+- * @wait: If 'true', wait for the device to change its power state
+  *
+  * RETURN VALUE:
+  * -EINVAL if the requested state is invalid.
+@@ -435,8 +434,7 @@ static inline int platform_pci_sleep_wak
+  * 0 if device already is in the requested state.
+  * 0 if device's power state has been successfully changed.
+  */
+-static int
+-pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state, bool wait)
++static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+ {
+ 	u16 pmcsr;
+ 	bool need_restore = false;
+@@ -481,10 +479,8 @@ pci_raw_set_power_state(struct pci_dev *
+ 		break;
+ 	case PCI_UNKNOWN: /* Boot-up */
+ 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
+-		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET)) {
++		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET))
+ 			need_restore = true;
+-			wait = true;
+-		}
+ 		/* Fall-through: force to D0 */
+ 	default:
+ 		pmcsr = 0;
+@@ -494,9 +490,6 @@ pci_raw_set_power_state(struct pci_dev *
+ 	/* enter specified state */
+ 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
+ 
+-	if (!wait)
+-		return 0;
+-
+ 	/* Mandatory power management transition delays */
+ 	/* see PCI PM 1.1 5.6.1 table 18 */
+ 	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
+@@ -521,7 +514,7 @@ pci_raw_set_power_state(struct pci_dev *
+ 	if (need_restore)
+ 		pci_restore_bars(dev);
+ 
+-	if (wait && dev->bus->self)
++	if (dev->bus->self)
+ 		pcie_aspm_pm_state_change(dev->bus->self);
+ 
+ 	return 0;
+@@ -591,7 +584,7 @@ int pci_set_power_state(struct pci_dev *
+ 	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
+ 		return 0;
+ 
+-	error = pci_raw_set_power_state(dev, state, true);
++	error = pci_raw_set_power_state(dev, state);
+ 
+ 	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
+ 		/* Allow the platform to finalize the transition */
+@@ -1390,37 +1383,14 @@ void pci_allocate_cap_save_buffers(struc
+  */
+ int pci_restore_standard_config(struct pci_dev *dev)
+ {
+-	pci_power_t prev_state;
+-	int error;
+-
+-	pci_update_current_state(dev, PCI_D0);
+-
+-	prev_state = dev->current_state;
+-	if (prev_state == PCI_D0)
+-		goto Restore;
+-
+-	error = pci_raw_set_power_state(dev, PCI_D0, false);
+-	if (error)
+-		return error;
++	pci_update_current_state(dev, PCI_UNKNOWN);
+ 
+-	/*
+-	 * This assumes that we won't get a bus in B2 or B3 from the BIOS, but
+-	 * we've made this assumption forever and it appears to be universally
+-	 * satisfied.
+-	 */
+-	switch(prev_state) {
+-	case PCI_D3cold:
+-	case PCI_D3hot:
+-		mdelay(pci_pm_d3_delay);
+-		break;
+-	case PCI_D2:
+-		udelay(PCI_PM_D2_DELAY);
+-		break;
++	if (dev->current_state != PCI_D0) {
++		int error = pci_set_power_state(dev, PCI_D0);
++		if (error)
++			return error;
+ 	}
+ 
+-	pci_update_current_state(dev, PCI_D0);
+-
+- Restore:
+ 	return dev->state_saved ? pci_restore_state(dev) : 0;
  }
  
- /**
-- * pci_restore_standard_config - restore standard config registers of PCI device
-- * @dev: PCI device to handle
-- *
-- * This function assumes that the device's configuration space is accessible.
-- * If the device needs to be powered up, the function will wait for it to
-- * change the state.
-- */
--int pci_restore_standard_config(struct pci_dev *dev)
--{
--	pci_update_current_state(dev, PCI_UNKNOWN);
--
--	if (dev->current_state != PCI_D0) {
--		int error = pci_set_power_state(dev, PCI_D0);
--		if (error)
--			return error;
--	}
--
--	return dev->state_saved ? pci_restore_state(dev) : 0;
--}
--
--/**
-  * pci_enable_ari - enable ARI forwarding if hardware support it
-  * @dev: the PCI device
-  */
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -49,7 +49,6 @@ extern void pci_disable_enabled_device(s
- extern void pci_pm_init(struct pci_dev *dev);
- extern void platform_pci_wakeup_init(struct pci_dev *dev);
- extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
--extern int pci_restore_standard_config(struct pci_dev *dev);
- 
- static inline bool pci_is_bridge(struct pci_dev *pci_dev)
- {
