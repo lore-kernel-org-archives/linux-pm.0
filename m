@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH][1/8] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-Date: Sat, 7 Mar 2009 22:53:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0903072248030.8870-100000__12650.2527310096$1236484603$gmane$org@netrider.rowland.org>
-References: <200903071856.36230.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/13] PM: Add wake lock api.
+Date: Sun, 8 Mar 2009 09:32:43 +0100
+Message-ID: <20090308083243.GD1371@ucw.cz>
+References: <1233802226-23386-1-git-send-email-arve@android.com>
+	<200903041534.02035.u.luckas@road.de>
+	<20090304171058.GE18675@elf.ucw.cz>
+	<200903051842.05738.u.luckas@road.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903071856.36230.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200903051842.05738.u.luckas@road.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +21,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Uli Luckas <u.luckas@road.de>
+Cc: "swetland@google.com" <swetland@google.com>, linux-pm@lists.linux-foundation.org, "ncunningham@crca.org.au" <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
+On Thu 2009-03-05 18:42:05, Uli Luckas wrote:
+> On Wednesday, 4. March 2009, Pavel Machek wrote:
+> > Hi!
+> >
+> > > > > here is network packets. You just don't want to open/close a fd for
+> > > > > every network packet that you process. Neither for serial data,
+> > > > > bluetooth packets, ...
+> > > >
+> > > > You mix userland and kernel users.
+> > >
+> > > No. I don't.
+> > > The idea of wake locks was to hand locks over from a driver's interrupt
+> > > all the way to userspace.
+> > > This is done in an interlocked way to ensure that the device does not
+> > > suspend from the time of interrupt until userspace has handled the event
+> > > that caused the interrupt (e.g. A modem sending "RING" on the serial
+> > > line).
+> > > Basically, in a timerless wake lock implementation userspace has to take
+> > > a wake lock every time select returns.
+> >
+> > Well... in case it is really performance critical, we may want new
+> > syscalls.
+> >
+> > Actually, given how deep change of semantics this is, new syscalls may
+> > be good idea.
+> >
+> > Or better yet eliminate polling from userspace apps and just avoid
+> > suspending whenever userspace is running (like sleepy patches do).
+> > 									Pavel
+> I don't know the details of sleepy linux so I'd appreciate if someone can 
+> eluminate if the following scenarios could be handled efficiently with sleepy 
+> linux:
+> 1) You wake up through RTC, read the battery, update the color of your 
+>    fancy 'battery good' LED and go back to sleep imediately. The real work
+>    takes milliseconds.
 
-> > One thing about this isn't clear: the distinction between "wake-up" 
-> > interrupts and other interrupts.
-> > 
-> > In an ideal world, the only pending interrupts during sysdev_suspend
-> > would be wake-up interrupts, because drivers would have prevented their
-> > devices from generating any other kind of IRQ and would have done all
-> > the necessary synchronization as part of their suspend (_not_
-> > suspend_late) methods.  Thus there would be no need to distinguish
-> > between wake-up and non-wake-up interrupts.
-> > 
-> > So perhaps you're worried about drivers that aren't sufficiently
-> > clever.  Or is something deeper going on?
-> 
-> Some drivers leave interrupts enabled during suspend on purpose and mark
-> them as "wake-up interrupts" so that the platform can abort suspend if any
-> of them is pending at the time the "enter suspend" hook is called (this doesn't
-> happen on x86 AFAICS).
-> 
-> However, after the $subject patch the CPU will ACK those interrupts if they
-> happen between suspend_device_irqs() and local_irq_disable(), so the platform
-> won't see them as pending.  Instead, they will have IRQ_PENDING set in
-> desc->status, so we check if this is the case.
+This should work.
 
-You didn't answer my question.  Why bother to distinguish between 
-"wake-up" interrupts and non-"wake-up" interrupts?
+> 2) You send a request to the internet and go idle by selecting for an answer.
+>    You probably don't want to go to sleep as you know, the answer will be
+>    there shortly.
 
-In other words, why not simply abort the suspend if IRQ_PENDING is set
-for _any_ interrupt during sysdev_suspend()?
-
-Alan Stern
+Way to get this to work would be to keep the system woke up 300msec or
+so after each network packet -- assuming that if one came another is
+probably coming soon.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
