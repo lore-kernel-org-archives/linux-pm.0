@@ -1,14 +1,14 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH][1/8] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-Date: Mon, 9 Mar 2009 08:40:58 -0700 (PDT)
-Message-ID: <alpine.LFD.2.00.0903090837340.19207__49741.8664665476$1236615832$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0903091106010.3778-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] pm: rework includes, remove arch ifdefs V2
+Date: Tue, 10 Mar 2009 12:24:18 +0100
+Message-ID: <20090310112418.GG1337__25261.6511578255$1236684622$gmane$org@ucw.cz>
+References: <20090225035929.18506.46282.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903091106010.3778-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20090225035929.18506.46282.sendpatchset@rx1.opensource.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +18,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+To: Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Mon, 9 Mar 2009, Alan Stern wrote:
+On Wed 2009-02-25 12:59:29, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> I see.  The unstated key point is this:
-> 
-> 	Unsophisticated drivers [...]
+> This patch contains the following header file changes:
+>  - remove arch ifdefs and asm/suspend.h from linux/suspend.h
+>  - add asm/suspend.h to disk.c (for arch_prepare_suspend())
+>  - add linux/io.h to swsusp.c (for ioremap())
+>  - x86 32/64 bit compile fixes
 
-Another key point is:
+Looks ok to me, but I did not test it. ACK.
 
- - _un_sophisticated is the norm, and anybody who expects otherwise is 
-   living in some odd la-la-land together with his or her pink unicorn and 
-   endless supplies of quaaludes.
-
-The thing is, we have about a metric sh*tload of drivers, and many of them 
-are effectively written by people who don't really do kernel work, and are
-basically unmaintained in the long run (ie they may be maintained while 
-written, but two years down the line they have a couple of hundred users 
-and nobody who really cares about it, because the original author long 
-since moved on to fancier hardware).
-
-			Linus
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
