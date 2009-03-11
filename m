@@ -1,18 +1,17 @@
 From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts
  during suspend-resume (rev. 5)
-Date: Wed, 11 Mar 2009 23:25:12 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.0903112320520.29264__32363.6112771512$1236811408$gmane$org@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <200903112215.02445.rjw@sisk.pl>
-	<alpine.LFD.2.00.0903112234530.29264@localhost.localdomain>
-	<200903112250.10572.rjw@sisk.pl>
-	<alpine.LFD.2.00.0903112251150.29264@localhost.localdomain>
-	<alpine.LFD.2.00.0903111459210.32478@localhost.localdomain>
+Date: Wed, 11 Mar 2009 23:45:48 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.0903112342440.29264__34895.0517284267$1236812713$gmane$org@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <200903111036.02482.rjw@sisk.pl>
+	<alpine.LFD.2.00.0903111106450.29264@localhost.localdomain>
+	<200903112159.21166.rjw@sisk.pl>
+	<alpine.LFD.2.00.0903112238280.29264@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903111459210.32478@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903112238280.29264@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 11 Mar 2009, Linus Torvalds wrote:
-> On Wed, 11 Mar 2009, Thomas Gleixner wrote:
+On Wed, 11 Mar 2009, Thomas Gleixner wrote:
+> On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> > > 
+> > >   I'm not too enthusiastic about this open coded implementation of
+> > >   disable_irq() with slightly different semantics.
 > > 
-> > I'm not worried about nested ones.
+> > The difference in semantics is important IMO, otherwise I woulndn't have
+> > done that.  In particular, IMO, the condition should be under the spinlock IMO
+> > and I'd rather not synchronize all interrupts we don't really disable here.
 > 
-> Then you shouldn't be worried about IRQ_SUSPENDED at all, since that one 
-> increments the disabled depth count.
-> 
-> So _all_ disable/enable_irq calls will by definition be nested inside 
-> IRQ_SUSPENDED. 
+> I don't say that the difference is not relevant. But the code is
+> almost the same and disable_irq() could have the sync_irq optimization
+> as well.
 
-Right, if they are in disable -> enable order.
+Thought more about that. Avoiding the sync_irq() for irqs which have
+no action associated is fine, but you need to catch the following case
+as well:
 
-But the stupid stray enable will be visible either by wrecking the
-suspend with hard to debug failures or trigger the depth check in the
-resume code. I'm burned enough by the timer failures which pop up long
-after the real bug happened.
+   driver code calls disable_irq_nosyc() from the handler (which is
+   still running)
+
+   suspend code skips the sync due to depth > 0
+
+The sync operation is not that expensive.
 
 Thanks,
 
