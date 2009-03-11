@@ -1,17 +1,16 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-Date: Wed, 11 Mar 2009 15:01:11 -0700 (PDT)
-Message-ID: <alpine.LFD.2.00.0903111459210.32478@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <200903112215.02445.rjw@sisk.pl>
-	<alpine.LFD.2.00.0903112234530.29264@localhost.localdomain>
-	<200903112250.10572.rjw@sisk.pl>
+	during suspend-resume (rev. 5)
+Date: Wed, 11 Mar 2009 23:07:05 +0100
+Message-ID: <200903112307.06846.rjw__2897.3973160193$1236809557$gmane$org@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl> <200903112250.10572.rjw@sisk.pl>
 	<alpine.LFD.2.00.0903112251150.29264@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <alpine.LFD.2.00.0903112251150.29264@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,19 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Wed, 11 Mar 2009, Thomas Gleixner wrote:
+On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> 
+> > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> > > > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > > > > +			desc->status |= IRQ_SUSPENDED;
+> > > > > 
+> > > > >   This flag needs to be checked in __enable_irq().
+> > > > 
+> > > > [I overlooked this comment, sorry.]
+> > > > 
+> > > > Why does it?
+> > > 
+> > > To catch abuse and callers of enable_irq() when this flag is set.
+> > 
+> > Hmm.  This means you'd like to make enable_irq() fail if called with
+> > IRQ_SUSPENDED set, correct?
+> > 
+> > What if someone calls irq_disable() and then irq_enable() between
+> > suspend_device_irqs() and resume_device_irqs()?  That would be pointless, but
+> > surely not a bug?  Should irq_disable() also fail if IRQ_SUSPENDED is set?
 > 
 > I'm not worried about nested ones.
+> 
+> > Or should __enable_irq() only fail with IRQ_SUSPENDED set for desc->depth == 1?
+> 
+> At least it needs a WARN_ON() in that case. A very prominent one.
 
-Then you shouldn't be worried about IRQ_SUSPENDED at all, since that one 
-increments the disabled depth count.
+I'm going to make it fail and print a warning for desc->depth == 1if IRQ_SUSPENDED is set.
+Hope that's fine with everyone.
 
-So _all_ disable/enable_irq calls will by definition be nested inside 
-IRQ_SUSPENDED. 
-
-		Linus
+Thanks,
+Rafael
