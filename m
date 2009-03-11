@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/10] PCI PM: Consistently use variable name
-	"error" for pm call return values
-Date: Wed, 11 Mar 2009 10:41:27 +0100
-Message-ID: <200903111041.29114.rjw__18535.3642948487$1236766334$gmane$org@sisk.pl>
+Subject: [PATCH 7/10] PCI PM: Move pci_restore_standard_config to
+	pci-driver.c
+Date: Wed, 11 Mar 2009 10:47:07 +0100
+Message-ID: <200903111047.09334.rjw__49434.1620397337$1236766392$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903111030.39371.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,69 +23,87 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, Frans Pop <elendil@planet.nl>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frans Pop <elendil@planet.nl>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I noticed two functions use a variable "i" to store the return value of PM
-function calls while the rest of the file uses "error". As "i" normally
-indicates a counter of some sort it seems better to keep this consistent.
+Move pci_restore_standard_config() from pci.c to pci-driver.c and
+make it static.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/pci/pci-driver.c |   17 +++++++++++++++++
+ drivers/pci/pci.c        |   21 ---------------------
+ drivers/pci/pci.h        |    1 -
+ 3 files changed, 17 insertions(+), 22 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-driver.c
 +++ linux-2.6/drivers/pci/pci-driver.c
-@@ -352,17 +352,17 @@ static int pci_legacy_suspend(struct dev
- {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int i = 0;
-+	int error = 0;
+@@ -423,6 +423,23 @@ static int pci_legacy_resume(struct devi
  
- 	if (drv && drv->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
+ /* Auxiliary functions used by the new power management framework */
  
- 		pci_dev->state_saved = false;
- 
--		i = drv->suspend(pci_dev, state);
--		suspend_report_result(drv->suspend, i);
--		if (i)
--			return i;
-+		error = drv->suspend(pci_dev, state);
-+		suspend_report_result(drv->suspend, error);
++/**
++ * pci_restore_standard_config - restore standard config registers of PCI device
++ * @pci_dev: PCI device to handle
++ */
++static int pci_restore_standard_config(struct pci_dev *pci_dev)
++{
++	pci_update_current_state(pci_dev, PCI_UNKNOWN);
++
++	if (pci_dev->current_state != PCI_D0) {
++		int error = pci_set_power_state(pci_dev, PCI_D0);
 +		if (error)
 +			return error;
- 
- 		if (pci_dev->state_saved)
- 			goto Fixup;
-@@ -385,20 +385,20 @@ static int pci_legacy_suspend(struct dev
-  Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
--	return i;
-+	return error;
- }
- 
- static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
++	}
++
++	return pci_dev->state_saved ? pci_restore_state(pci_dev) : 0;
++}
++
+ static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
  {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int i = 0;
-+	int error = 0;
- 
- 	if (drv && drv->suspend_late) {
--		i = drv->suspend_late(pci_dev, state);
--		suspend_report_result(drv->suspend_late, i);
-+		error = drv->suspend_late(pci_dev, state);
-+		suspend_report_result(drv->suspend_late, error);
- 	}
--	return i;
-+	return error;
+ 	pci_restore_standard_config(pci_dev);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1374,27 +1374,6 @@ void pci_allocate_cap_save_buffers(struc
  }
  
- static int pci_legacy_resume_early(struct device *dev)
+ /**
+- * pci_restore_standard_config - restore standard config registers of PCI device
+- * @dev: PCI device to handle
+- *
+- * This function assumes that the device's configuration space is accessible.
+- * If the device needs to be powered up, the function will wait for it to
+- * change the state.
+- */
+-int pci_restore_standard_config(struct pci_dev *dev)
+-{
+-	pci_update_current_state(dev, PCI_UNKNOWN);
+-
+-	if (dev->current_state != PCI_D0) {
+-		int error = pci_set_power_state(dev, PCI_D0);
+-		if (error)
+-			return error;
+-	}
+-
+-	return dev->state_saved ? pci_restore_state(dev) : 0;
+-}
+-
+-/**
+  * pci_enable_ari - enable ARI forwarding if hardware support it
+  * @dev: the PCI device
+  */
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -49,7 +49,6 @@ extern void pci_disable_enabled_device(s
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+-extern int pci_restore_standard_config(struct pci_dev *dev);
+ 
+ static inline bool pci_is_bridge(struct pci_dev *pci_dev)
+ {
