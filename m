@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 10/10] PCI PM: Restore config spaces of all
-	devices during early resume
-Date: Wed, 11 Mar 2009 10:56:51 +0100
-Message-ID: <200903111056.52716.rjw__26394.5742896341$1236766744$gmane$org@sisk.pl>
+Subject: [PATCH 9/10] PCI PM: Make pci_set_power_state() handle
+	devices with no PM support
+Date: Wed, 11 Mar 2009 10:55:50 +0100
+Message-ID: <200903111055.51656.rjw__36063.876518938$1236766959$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903111030.39371.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,79 +25,68 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-At present the configuration spaces of PCI devices that have no drivers
-or no PM support in the drivers (either legacy or through a pm object) are not
-saved during suspend and, consequently, they are not restored during resume.
-This generally may lead to the state of the system being slightly inconsistent
-after the resume, so it's better to save and restore the configuration spaces
-of these devices as well.
+There is a problem with PCI devices without any PM support (either native or
+through the platform) that pci_set_power_state() always returns error code for
+them, even if they are being put into D0.  However, such devices are always in
+D0, so pci_set_power_state() should return success when attempting to put such a
+device into D0.  It also should update the current_state field for these
+devices as appropriate.  This modification is necessary so that the standard
+configuration registers of these devices are successfully restored by
+pci_restore_standard_config() during the "early" phase of resume.
+
+In addition, pci_set_power_state() should check the value of current_state
+before calling the platform to change the power state of the device to avoid
+doing that unnecessarily.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/pci/pci.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -516,13 +516,13 @@ static int pci_pm_suspend(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -439,6 +439,10 @@ static int pci_raw_set_power_state(struc
+ 	u16 pmcsr;
+ 	bool need_restore = false;
  
-+	pci_dev->state_saved = false;
++	/* Check if we're already there */
++	if (dev->current_state == state)
++		return 0;
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
+ 	if (!dev->pm_cap)
+ 		return -EIO;
  
--	pci_dev->state_saved = false;
--
- 	if (pm->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
- 		int error;
-@@ -554,8 +554,10 @@ static int pci_pm_suspend_noirq(struct d
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
- 
--	if (!pm)
-+	if (!pm) {
-+		pci_save_state(pci_dev);
+@@ -449,10 +453,7 @@ static int pci_raw_set_power_state(struc
+ 	 * Can enter D0 from any state, but if we can only go deeper 
+ 	 * to sleep if we're already in a low power state
+ 	 */
+-	if (dev->current_state == state) {
+-		/* we're already there */
+-		return 0;
+-	} else if (state != PCI_D0 && dev->current_state <= PCI_D3cold
++	if (state != PCI_D0 && dev->current_state <= PCI_D3cold
+ 	    && dev->current_state > state) {
+ 		dev_err(&dev->dev, "invalid power transition "
+ 			"(from state %d to %d)\n", dev->current_state, state);
+@@ -570,12 +571,17 @@ int pci_set_power_state(struct pci_dev *
+ 		 */
  		return 0;
-+	}
  
- 	if (pm->suspend_noirq) {
- 		pci_power_t prev = pci_dev->current_state;
-@@ -650,13 +652,13 @@ static int pci_pm_freeze(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
- 
-+	pci_dev->state_saved = false;
+-	if (state == PCI_D0 && platform_pci_power_manageable(dev)) {
++	/* Check if we're already there */
++	if (dev->current_state == state)
++		return 0;
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		return 0;
++	if (state == PCI_D0) {
+ 		/*
+ 		 * Allow the platform to change the state, for example via ACPI
+ 		 * _PR0, _PS0 and some such, but do not trust it.
+ 		 */
+-		int ret = platform_pci_set_power_state(dev, PCI_D0);
++		int ret = platform_pci_power_manageable(dev) ?
++			platform_pci_set_power_state(dev, PCI_D0) : 0;
+ 		if (!ret)
+ 			pci_update_current_state(dev, PCI_D0);
  	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->freeze) {
- 		int error;
- 
-@@ -738,13 +740,13 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
-+	pci_dev->state_saved = false;
-+
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->poweroff) {
- 		int error;
- 
