@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 11/11] PCI PM: Restore config spaces of all
-	devices during early resume
-Date: Sat, 14 Mar 2009 12:34:47 +0100
-Message-ID: <200903141234.49095.rjw__9625.61591663889$1237030987$gmane$org@sisk.pl>
+Subject: [PATCH 8/11] PCI PM: Move pci_restore_standard_config to
+	pci-driver.c
+Date: Sat, 14 Mar 2009 12:32:04 +0100
+Message-ID: <200903141232.05762.rjw__24165.7030223452$1237031103$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903141224.29591.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,80 +25,85 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-At present the configuration spaces of PCI devices that have no
-drivers or no PM support in the drivers (either legacy or through a
-pm object) are not saved during suspend and, consequently, they are
-not restored during resume.  This generally may lead to the state of
-the system being slightly inconsistent after the resume, so it's
-better to save and restore the configuration spaces of these devices
-as well.
+Move pci_restore_standard_config() from pci.c to pci-driver.c and
+make it static.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/pci/pci-driver.c |   17 +++++++++++++++++
+ drivers/pci/pci.c        |   21 ---------------------
+ drivers/pci/pci.h        |    1 -
+ 3 files changed, 17 insertions(+), 22 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-driver.c
 +++ linux-2.6/drivers/pci/pci-driver.c
-@@ -516,13 +516,13 @@ static int pci_pm_suspend(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+@@ -423,6 +423,23 @@ static int pci_legacy_resume(struct devi
  
-+	pci_dev->state_saved = false;
+ /* Auxiliary functions used by the new power management framework */
+ 
++/**
++ * pci_restore_standard_config - restore standard config registers of PCI device
++ * @pci_dev: PCI device to handle
++ */
++static int pci_restore_standard_config(struct pci_dev *pci_dev)
++{
++	pci_update_current_state(pci_dev, PCI_UNKNOWN);
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
- 		int error;
-@@ -554,8 +554,10 @@ static int pci_pm_suspend_noirq(struct d
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
- 
--	if (!pm)
-+	if (!pm) {
-+		pci_save_state(pci_dev);
- 		return 0;
++	if (pci_dev->current_state != PCI_D0) {
++		int error = pci_set_power_state(pci_dev, PCI_D0);
++		if (error)
++			return error;
 +	}
- 
- 	if (pm->suspend_noirq) {
- 		pci_power_t prev = pci_dev->current_state;
-@@ -650,13 +652,13 @@ static int pci_pm_freeze(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
- 
-+	pci_dev->state_saved = false;
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		return 0;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->freeze) {
- 		int error;
- 
-@@ -738,13 +740,13 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
-+	pci_dev->state_saved = false;
++	return pci_dev->state_saved ? pci_restore_state(pci_dev) : 0;
++}
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
+ static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
+ {
+ 	pci_restore_standard_config(pci_dev);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1374,27 +1374,6 @@ void pci_allocate_cap_save_buffers(struc
+ }
  
--	pci_dev->state_saved = false;
+ /**
+- * pci_restore_standard_config - restore standard config registers of PCI device
+- * @dev: PCI device to handle
+- *
+- * This function assumes that the device's configuration space is accessible.
+- * If the device needs to be powered up, the function will wait for it to
+- * change the state.
+- */
+-int pci_restore_standard_config(struct pci_dev *dev)
+-{
+-	pci_update_current_state(dev, PCI_UNKNOWN);
 -
- 	if (pm->poweroff) {
- 		int error;
+-	if (dev->current_state != PCI_D0) {
+-		int error = pci_set_power_state(dev, PCI_D0);
+-		if (error)
+-			return error;
+-	}
+-
+-	return dev->state_saved ? pci_restore_state(dev) : 0;
+-}
+-
+-/**
+  * pci_enable_ari - enable ARI forwarding if hardware support it
+  * @dev: the PCI device
+  */
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -49,7 +49,6 @@ extern void pci_disable_enabled_device(s
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+-extern int pci_restore_standard_config(struct pci_dev *dev);
  
+ static inline bool pci_is_bridge(struct pci_dev *pci_dev)
+ {
