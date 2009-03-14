@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/11] kexec: Change kexec jump code ordering
-Date: Sat, 14 Mar 2009 12:29:30 +0100
-Message-ID: <200903141229.31860.rjw__17691.459801472$1237030892$gmane$org@sisk.pl>
+Subject: [PATCH 11/11] PCI PM: Restore config spaces of all
+	devices during early resume
+Date: Sat, 14 Mar 2009 12:34:47 +0100
+Message-ID: <200903141234.49095.rjw__9625.61591663889$1237030987$gmane$org@sisk.pl>
 References: <200902221837.49396.rjw@sisk.pl> <200903141224.29591.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,65 +25,80 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Change the ordering of the kexec jump code so that the nonboot CPUs
-are disabled after calling device drivers' "late suspend" methods.
-
-This change reflects the recent modifications of the power management
-code that is also used by kexec jump.
+At present the configuration spaces of PCI devices that have no
+drivers or no PM support in the drivers (either legacy or through a
+pm object) are not saved during suspend and, consequently, they are
+not restored during resume.  This generally may lead to the state of
+the system being slightly inconsistent after the resume, so it's
+better to save and restore the configuration spaces of these devices
+as well.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/kexec.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ drivers/pci/pci-driver.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/kernel/kexec.c
+Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -1450,9 +1450,6 @@ int kernel_kexec(void)
- 		error = device_suspend(PMSG_FREEZE);
- 		if (error)
- 			goto Resume_console;
--		error = disable_nonboot_cpus();
--		if (error)
--			goto Resume_devices;
- 		device_pm_lock();
- 		/* At this point, device_suspend() has been called,
- 		 * but *not* device_power_down(). We *must*
-@@ -1463,13 +1460,15 @@ int kernel_kexec(void)
- 		 */
- 		error = device_power_down(PMSG_FREEZE);
- 		if (error)
--			goto Unlock_pm;
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -516,13 +516,13 @@ static int pci_pm_suspend(struct device 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+ 
++	pci_dev->state_saved = false;
++
+ 	if (!pm) {
+ 		pci_pm_default_suspend(pci_dev);
+ 		goto Fixup;
+ 	}
+ 
+-	pci_dev->state_saved = false;
 -
-+			goto Resume_devices;
-+		error = disable_nonboot_cpus();
-+		if (error)
-+			goto Enable_cpus;
- 		local_irq_disable();
- 		/* Suspend system devices */
- 		error = sysdev_suspend(PMSG_FREEZE);
- 		if (error)
--			goto Power_up_devices;
-+			goto Enable_irqs;
- 	} else
- #endif
- 	{
-@@ -1483,13 +1482,13 @@ int kernel_kexec(void)
- #ifdef CONFIG_KEXEC_JUMP
- 	if (kexec_image->preserve_context) {
- 		sysdev_resume();
-- Power_up_devices:
-+ Enable_irqs:
- 		local_irq_enable();
--		device_power_up(PMSG_RESTORE);
-- Unlock_pm:
--		device_pm_unlock();
-+ Enable_cpus:
- 		enable_nonboot_cpus();
-+		device_power_up(PMSG_RESTORE);
-  Resume_devices:
-+		device_pm_unlock();
- 		device_resume(PMSG_RESTORE);
-  Resume_console:
- 		resume_console();
+ 	if (pm->suspend) {
+ 		pci_power_t prev = pci_dev->current_state;
+ 		int error;
+@@ -554,8 +554,10 @@ static int pci_pm_suspend_noirq(struct d
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
+ 
+-	if (!pm)
++	if (!pm) {
++		pci_save_state(pci_dev);
+ 		return 0;
++	}
+ 
+ 	if (pm->suspend_noirq) {
+ 		pci_power_t prev = pci_dev->current_state;
+@@ -650,13 +652,13 @@ static int pci_pm_freeze(struct device *
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend(dev, PMSG_FREEZE);
+ 
++	pci_dev->state_saved = false;
++
+ 	if (!pm) {
+ 		pci_pm_default_suspend(pci_dev);
+ 		return 0;
+ 	}
+ 
+-	pci_dev->state_saved = false;
+-
+ 	if (pm->freeze) {
+ 		int error;
+ 
+@@ -738,13 +740,13 @@ static int pci_pm_poweroff(struct device
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
+ 
++	pci_dev->state_saved = false;
++
+ 	if (!pm) {
+ 		pci_pm_default_suspend(pci_dev);
+ 		goto Fixup;
+ 	}
+ 
+-	pci_dev->state_saved = false;
+-
+ 	if (pm->poweroff) {
+ 		int error;
+ 
