@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/11] PCI PM: Put devices into low power states
-	during late suspend (rev. 2)
-Date: Sat, 14 Mar 2009 12:32:54 +0100
-Message-ID: <200903141232.55346.rjw__14500.0685508878$1237031393$gmane$org@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903141224.29591.rjw@sisk.pl>
+Subject: [PATCH 0/11] PM: Rework suspend-resume ordering to avoid
+	problems with shared interrupts (updated 2x)
+Date: Sat, 14 Mar 2009 12:24:28 +0100
+Message-ID: <200903141224.29591.rjw__42629.1042160757$1237031494$gmane$org@sisk.pl>
+References: <200902221837.49396.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903141224.29591.rjw@sisk.pl>
+In-Reply-To: <200902221837.49396.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,291 +23,67 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: Arve@smtp1.linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Linux PCI <linux-pci@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Once we have allowed timer interrupts to be enabled during the late
-phase of suspending devices, we are now able to use the generic
-pci_set_power_state() to put PCI devices into low power states at
-that time.  We can also use some related platform callbacks, like the
-ones preparing devices for wake-up, during the late suspend.
+This is an update of the patch series reworking the handling of interrupts
+during suspend-resume, addressing some comments from Thomas and Ingo.
 
-Doing this will allow us to avoid the race condition where a device
-using shared interrupts is put into a low power state with interrupts
-enabled and then an interrupt (for another device) comes in and
-confuses its driver.  At the same time, devices that don't support
-the native PCI PM or that require some additional, platform-specific
-operations to be carried out to put them into low power states will
-be handled as appropriate.
+The following patches modifiy the way in which we handle disabling interrupts
+during suspend and enabling them during resume.  They also change the ordering
+of the core suspend and hibernation code to take advantage of the new approach
+to the interrupts and modify the PCI PM core to avoid a few problems.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci-driver.c |  134 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 81 insertions(+), 53 deletions(-)
+Namely, interrupts are currently disabled on the boot CPU as soon as the
+nonboot CPUs have been disabled, which doesn't allow device drivers' "late"
+suspend and "early" resume callbacks to sleep.  Among other things this means
+they cannot execute ACPI AML routines, which leads to problems with
+suspend-resume of PCI devices, as recently discussed.
 
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -352,53 +352,60 @@ static int pci_legacy_suspend(struct dev
- {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int error = 0;
-+
-+	pci_dev->state_saved = false;
- 
- 	if (drv && drv->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
--
--		pci_dev->state_saved = false;
-+		int error;
- 
- 		error = drv->suspend(pci_dev, state);
- 		suspend_report_result(drv->suspend, error);
- 		if (error)
- 			return error;
- 
--		if (pci_dev->state_saved)
--			goto Fixup;
--
--		if (pci_dev->current_state != PCI_D0
-+		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
- 		    && pci_dev->current_state != PCI_UNKNOWN) {
- 			WARN_ONCE(pci_dev->current_state != prev,
- 				"PCI PM: Device state not saved by %pF\n",
- 				drv->suspend);
--			goto Fixup;
- 		}
- 	}
- 
--	pci_save_state(pci_dev);
--	/*
--	 * This is for compatibility with existing code with legacy PM support.
--	 */
--	pci_pm_set_unknown_state(pci_dev);
--
-- Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
--	return error;
-+	return 0;
- }
- 
- static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
- {
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
--	int error = 0;
- 
- 	if (drv && drv->suspend_late) {
-+		pci_power_t prev = pci_dev->current_state;
-+		int error;
-+
- 		error = drv->suspend_late(pci_dev, state);
- 		suspend_report_result(drv->suspend_late, error);
-+		if (error)
-+			return error;
-+
-+		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-+		    && pci_dev->current_state != PCI_UNKNOWN) {
-+			WARN_ONCE(pci_dev->current_state != prev,
-+				"PCI PM: Device state not saved by %pF\n",
-+				drv->suspend_late);
-+			return 0;
-+		}
- 	}
--	return error;
-+
-+	if (!pci_dev->state_saved)
-+		pci_save_state(pci_dev);
-+
-+	pci_pm_set_unknown_state(pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_legacy_resume_early(struct device *dev)
-@@ -460,7 +467,6 @@ static void pci_pm_default_suspend(struc
- 	/* Disable non-bridge devices without PM support */
- 	if (!pci_is_bridge(pci_dev))
- 		pci_disable_enabled_device(pci_dev);
--	pci_save_state(pci_dev);
- }
- 
- static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
-@@ -526,24 +532,14 @@ static int pci_pm_suspend(struct device 
- 		if (error)
- 			return error;
- 
--		if (pci_dev->state_saved)
--			goto Fixup;
--
--		if (pci_dev->current_state != PCI_D0
-+		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
- 		    && pci_dev->current_state != PCI_UNKNOWN) {
- 			WARN_ONCE(pci_dev->current_state != prev,
- 				"PCI PM: State of device not saved by %pF\n",
- 				pm->suspend);
--			goto Fixup;
- 		}
- 	}
- 
--	if (!pci_dev->state_saved) {
--		pci_save_state(pci_dev);
--		if (!pci_is_bridge(pci_dev))
--			pci_prepare_to_sleep(pci_dev);
--	}
--
-  Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
-@@ -553,21 +549,41 @@ static int pci_pm_suspend(struct device 
- static int pci_pm_suspend_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct device_driver *drv = dev->driver;
--	int error = 0;
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
- 
--	if (drv && drv->pm && drv->pm->suspend_noirq) {
--		error = drv->pm->suspend_noirq(dev);
--		suspend_report_result(drv->pm->suspend_noirq, error);
-+	if (!pm)
-+		return 0;
-+
-+	if (pm->suspend_noirq) {
-+		pci_power_t prev = pci_dev->current_state;
-+		int error;
-+
-+		error = pm->suspend_noirq(dev);
-+		suspend_report_result(pm->suspend_noirq, error);
-+		if (error)
-+			return error;
-+
-+		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-+		    && pci_dev->current_state != PCI_UNKNOWN) {
-+			WARN_ONCE(pci_dev->current_state != prev,
-+				"PCI PM: State of device not saved by %pF\n",
-+				pm->suspend_noirq);
-+			return 0;
-+		}
- 	}
- 
--	if (!error)
--		pci_pm_set_unknown_state(pci_dev);
-+	if (!pci_dev->state_saved) {
-+		pci_save_state(pci_dev);
-+		if (!pci_is_bridge(pci_dev))
-+			pci_prepare_to_sleep(pci_dev);
-+	}
- 
--	return error;
-+	pci_pm_set_unknown_state(pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_pm_resume_noirq(struct device *dev)
-@@ -650,9 +666,6 @@ static int pci_pm_freeze(struct device *
- 			return error;
- 	}
- 
--	if (!pci_dev->state_saved)
--		pci_save_state(pci_dev);
--
- 	return 0;
- }
- 
-@@ -660,20 +673,25 @@ static int pci_pm_freeze_noirq(struct de
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_FREEZE);
- 
- 	if (drv && drv->pm && drv->pm->freeze_noirq) {
-+		int error;
-+
- 		error = drv->pm->freeze_noirq(dev);
- 		suspend_report_result(drv->pm->freeze_noirq, error);
-+		if (error)
-+			return error;
- 	}
- 
--	if (!error)
--		pci_pm_set_unknown_state(pci_dev);
-+	if (!pci_dev->state_saved)
-+		pci_save_state(pci_dev);
- 
--	return error;
-+	pci_pm_set_unknown_state(pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_pm_thaw_noirq(struct device *dev)
-@@ -716,7 +734,6 @@ static int pci_pm_poweroff(struct device
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
--	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
-@@ -729,33 +746,44 @@ static int pci_pm_poweroff(struct device
- 	pci_dev->state_saved = false;
- 
- 	if (pm->poweroff) {
-+		int error;
-+
- 		error = pm->poweroff(dev);
- 		suspend_report_result(pm->poweroff, error);
-+		if (error)
-+			return error;
- 	}
- 
--	if (!pci_dev->state_saved && !pci_is_bridge(pci_dev))
--		pci_prepare_to_sleep(pci_dev);
--
-  Fixup:
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
--	return error;
-+	return 0;
- }
- 
- static int pci_pm_poweroff_noirq(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(to_pci_dev(dev)))
- 		return pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
- 
--	if (drv && drv->pm && drv->pm->poweroff_noirq) {
-+	if (!drv || !drv->pm)
-+		return 0;
-+
-+	if (drv->pm->poweroff_noirq) {
-+		int error;
-+
- 		error = drv->pm->poweroff_noirq(dev);
- 		suspend_report_result(drv->pm->poweroff_noirq, error);
-+		if (error)
-+			return error;
- 	}
- 
--	return error;
-+	if (!pci_dev->state_saved && !pci_is_bridge(pci_dev))
-+		pci_prepare_to_sleep(pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_pm_restore_noirq(struct device *dev)
+1/11 introduces helper functions used by the subsequent patches.
+
+2/11 modifies the [suspend|hibernation] and resume code, as well as the other
+code using the device PM framework, so that device drivers will not receive
+interrupts during the "late" suspend phase, although interrupts will only be
+disabled on the CPU right before calling sysdev_suspend() (and analogously
+during resume).
+
+3/11 - 5/11 modify the suspend, hibernation and kexec jump code, respectively,
+so that the "late" phase of suspending devices will happen before executing the
+platform "prepare" callback and disabling nonboot CPUs (and analogously during
+resume).
+
+6/11 is a patch that's already in the PCI linux-next tree and I included it in
+the series, because the next patches depend on it.
+
+7/11 makes the PCI PM core use pci_set_power_state() to put devices into
+D0 during early resume, which allows the platform-specific operations to be
+carried out at that time, if necessary.
+
+8/11 uses the opportunity to move pci_restore_standard_config() to pci-driver.c,
+where it belongs IMO.
+
+9/11 makes the PCI PM core code put devices into low power states during the
+"late" phase of suspend which allows us to avoid a long-standing race related
+to shared interrupts and to handle devices that require some platform-specific
+operations to be put into low power states appropriately at the same time.
+[The second rev of the patch retains the current behavior during the
+"power-off" phase of hibernation, which is that the devices without drivers or
+without PM support in the drivers are not power managed by the core.]
+
+10/11 fixes pci_set_power_state() so that it doesn't return error code when
+attempting to put a PCI device without PM support (either native or through the
+platform) into D0 (such devices are always in D0).
+
+11/11 makes the PCI PM core save and restore the configuration spaces of
+devices that have no drivers or no PM support in the drivers during suspend and
+resume, respectively.
+
+There is a git tree containing these patches, for easier testing, at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+
+(linux-next branch).  At the moment it has a merge conflict with the PCI
+linux-next tree due to 6/11.
+
+Thanks,
+Rafael
