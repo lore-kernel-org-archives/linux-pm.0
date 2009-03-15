@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH][0/8] PM: Rework suspend-resume ordering
-	to avoid problems with shared interrupts
-Date: Sat, 14 Mar 2009 23:31:26 +0100
-Message-ID: <200903142331.27304.rjw__40458.5650693209$1237070195$gmane$org@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl> <200903141259.02164.rjw@sisk.pl>
-	<200903141511.58455.elendil@planet.nl>
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+Date: Sun, 15 Mar 2009 10:58:16 +0800
+Message-ID: <b6a2187b0903141958u9dae0fdk1f44b387108b99e4__46580.9834925041$1237086205$gmane$org@mail.gmail.com>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903141511.58455.elendil@planet.nl>
-Content-Disposition: inline
+In-Reply-To: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,25 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 14 March 2009, Frans Pop wrote:
-> On Saturday 14 March 2009, you wrote:
-> > Could you please also test the last iteration of the $subject patch
-> > series (just sent) with the appended patch applied on top and post
-> > dmesg output?
-> 
-> Here you are:
-> - boot
-> - STR with wireless networking
-> - STD with wireless networking
-> - STR with wired networking and killswitch on wireless
-> 
-> No problems seen :-)
+On Sun, Mar 15, 2009 at 3:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D12414
+> Subject =A0 =A0 =A0 =A0 : iwl4965 cannot use "ap auto" on latest 2.6.28/2=
+9?
+> Submitter =A0 =A0 =A0 : Jeff Chua <jeff.chua.linux@gmail.com>
+> Date =A0 =A0 =A0 =A0 =A0 =A0: 2009-01-05 4:13 (69 days old)
+> References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D1231128821=
+27823&w=3D4
 
-Great, thanks for the log, it looks correct.
+Still not working in linux-2.6.29-rc8. Broken after the commit below.
+There were many changes to wireless after this commit, and simply
+reverting this commit will break compiling.
 
-Best,
-Rafael
+Jeff.
+
+
+
+commit 41bb73eeac5ff5fb217257ba33b654747b3abf11
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Wed Oct 29 01:09:37 2008 +0100
+
+    mac80211: remove SSID driver code
