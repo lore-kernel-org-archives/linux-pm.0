@@ -1,11 +1,11 @@
-From: Jeff Chua <jeff.chua.linux@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-Date: Sun, 15 Mar 2009 10:58:16 +0800
-Message-ID: <b6a2187b0903141958u9dae0fdk1f44b387108b99e4__46580.9834925041$1237086205$gmane$org@mail.gmail.com>
+Date: Mon, 16 Mar 2009 09:02:53 +0800
+Message-ID: <1237165373.2807.140.camel__14107.6156789952$1237165643$gmane$org@rzhang-dt>
 References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -21,25 +21,44 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 15, 2009 at 3:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D12414
-> Subject =A0 =A0 =A0 =A0 : iwl4965 cannot use "ap auto" on latest 2.6.28/2=
-9?
-> Submitter =A0 =A0 =A0 : Jeff Chua <jeff.chua.linux@gmail.com>
-> Date =A0 =A0 =A0 =A0 =A0 =A0: 2009-01-05 4:13 (69 days old)
-> References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D1231128821=
-27823&w=3D4
+On Sun, 2009-03-15 at 03:01 +0800, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.28, for which there
+> are no fixes in the mainline I know of.  If any of them have been fixed already,
+> please let me know.
+> 
+> If you know of any other unresolved regressions from 2.6.28, please let me know
+> either and I'll add them to the list.  Also, please let me know if any of the
+> entries below are invalid.
+> 
+> Each entry from the list will be sent additionally in an automatic reply to
+> this message with CCs to the people involved in reporting and handling the
+> issue.
+> 
+> 
+> Listed regressions statistics:
+> 
+>   Date          Total  Pending  Unresolved
+>   ----------------------------------------
+>   2009-03-14      124       36          32
+>   2009-03-03      108       33          28
+>   2009-02-24       95       32          24
+>   2009-02-14       85       33          27
+>   2009-02-08       82       45          36
+>   2009-02-04       66       51          39
+>   2009-01-20       38       35          27
+>   2009-01-11       13       13          10
+> 
+> 
+> Unresolved regressions
+> ----------------------
 
-Still not working in linux-2.6.29-rc8. Broken after the commit below.
-There were many changes to wireless after this commit, and simply
-reverting this commit will break compiling.
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12831
+> Subject         : Hot/Fn Keys do not work EEEPC 1000HE (eeepc_laptop)
+> Submitter       : Matthew <pyther@pyther.net>
+> Date            : 2009-03-07 10:05 (8 days old)
 
-Jeff.
+patch is available at
+http://bugzilla.kernel.org/show_bug.cgi?id=12831#c11
 
-
-
-commit 41bb73eeac5ff5fb217257ba33b654747b3abf11
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Wed Oct 29 01:09:37 2008 +0100
-
-    mac80211: remove SSID driver code
+thanks,
+rui
