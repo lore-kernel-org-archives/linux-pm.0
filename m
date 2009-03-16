@@ -1,13 +1,13 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-Date: Mon, 16 Mar 2009 09:02:53 +0800
-Message-ID: <1237165373.2807.140.camel__14107.6156789952$1237165643$gmane$org@rzhang-dt>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v3 PATCH 0/4] timers: Framework for migration of timers
+Date: Mon, 16 Mar 2009 16:40:45 +0530
+Message-ID: <20090316111045.GA4686__45948.3595252552$1237202111$gmane$org@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,48 +17,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2009-03-15 at 03:01 +0800, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.28, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
-> 
-> If you know of any other unresolved regressions from 2.6.28, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
-> 
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
-> 
-> 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2009-03-14      124       36          32
->   2009-03-03      108       33          28
->   2009-02-24       95       32          24
->   2009-02-14       85       33          27
->   2009-02-08       82       45          36
->   2009-02-04       66       51          39
->   2009-01-20       38       35          27
->   2009-01-11       13       13          10
-> 
-> 
-> Unresolved regressions
-> ----------------------
+Hi,
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12831
-> Subject         : Hot/Fn Keys do not work EEEPC 1000HE (eeepc_laptop)
-> Submitter       : Matthew <pyther@pyther.net>
-> Date            : 2009-03-07 10:05 (8 days old)
 
-patch is available at
-http://bugzilla.kernel.org/show_bug.cgi?id=12831#c11
+In an SMP system, tasks are scheduled on different CPUs by the
+scheduler, interrupts are managed by irqbalancer daemon, but timers
+are still stuck to the CPUs that they have been initialised.  Timers
+queued by tasks gets re-queued on the CPU where the task gets to run
+next, but timers from IRQ context like the ones in device drivers are
+still stuck on the CPU they were initialised.  This framework will
+help move all 'movable timers' using a sysctl interface.
 
-thanks,
-rui
+Iteration v2 of this patch can be found at
+http://lkml.org/lkml/2009/3/4/130
+
+
+Changelog: v2->v3
+
+-removed the sysfs interface for enabling timer migration
+and instead created a /proc/sys sysctl, which can turn off
+timer_migration when CONFIG_SCHED_DEBUG =y.(as suggested by Ingo)
+
+-modified the interface to identify pinned regular timers,
+made it cleaner and simpler to understand.(as suggested by Oleg)
+
+
+The following patches are included:
+PATCH 1/4 - framework to identify pinned timers.
+PATCH 2/4 - identifying the existing pinned hrtimers.
+PATCH 3/4 - /proc/sys sysctl hook to enable timer migration.
+PATCH 4/4 - logic to enable timer migration.
+
+The patchset is based on the latest tip/master.
+
+Timer migration is enabled by default as suggested by Ingo.
+It can be turned off when CONFIG_SCHED_DEBUG=y by
+
+echo 0 > /proc/sys/kernel/timer_migration
+
+
+Benchmark tested: Kernbench
+
+Kernbench results on an 2-socket, quad-core machine
+Averaged over 3 iterations.
+sched_mc_power_savings = 2
+
+------------------------------------------------------------------------
+|No. of	    Time taken(s)      Time Taken(s)	      Time Taken(s)    |
+|Threads  Patch Not Applied (Migration Disabled)   (Migration Enabled) |
+|								       |
+|  32	     64.02		64.05			63.73	       |
+|  16	     63.31		63.71			62.91	       |
+|   8	     67.20		67.38			67.32	       |
+|   4	    115.67	       114.72		       114.54	       |
+|   2	    222.21	       220.63		       218.13	       |
+------------------------------------------------------------------------
+
+
+TODO:
+
+-Yet to implement Oleg's comment on my previous post PATCH 4/4.
+Current code seems to be working fine. Working on it to implement
+what has been suggested.
+
+
+Please let me know your comments.
+
+--arun
