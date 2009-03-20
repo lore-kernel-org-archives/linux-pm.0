@@ -1,18 +1,15 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 2/4] timers: Identifying the existing
-	pinned timers
-Date: Wed, 18 Mar 2009 10:06:50 +0530
-Message-ID: <20090318043650.GA7138__35374.779351014$1237351263$gmane$org@linux.vnet.ibm.com>
-References: <20090316111045.GA4686@linux.vnet.ibm.com>
-	<20090316111337.GC4686@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0903171401190.29264@localhost.localdomain>
-Reply-To: arun@linux.vnet.ibm.com
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] pci: fix kexec with power state D3
+Date: Thu, 19 Mar 2009 18:49:48 -0700
+Message-ID: <20090319184948.44bf5e9a__6205.32581019706$1237514106$gmane$org@hobbes.lan>
+References: <49B1F934.5050006@kernel.org> <20090308101530.GB14133@elte.hu>
+	<200903081128.35970.rjw@sisk.pl> <200903081133.33020.rjw@sisk.pl>
+	<20090308110835.GB27811@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903171401190.29264@localhost.localdomain>
+In-Reply-To: <20090308110835.GB27811@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Matthew Wilcox <matthew@wil.cx>, NetDev <netdev@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jesse Brandeburg <jesse.brandeburg@gmail.com>, linux-pci@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <yinghai@kernel.org>, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-03-17 14:07:44]:
-
-> On Mon, 16 Mar 2009, Arun R Bharadwaj wrote:
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-03-16 16:40:45]:
-> > 
-> > The following pinned hrtimers have been identified and marked:
-> > 1)sched_rt_period_timer
-> > 2)tick_sched_timer
-> > 3)stack_trace_timer_fn
+> > And, quite frankly, I'm not sure if users will be happy with 
+> > the $subject patch, because it _really_ breaks things (well, 
+> > the kexec users who don't use suspend might be, but surely 
+> > suspend users who don't use kexec won't).
 > 
-> How did you verify that these are the only timers which need to be
-> pinned ?
->
+> Please note that i havent reviewed the patches and i did not 
+> take any sides in the discussion - i just flagged the maintainer 
+> ping-pong. As long as we pick one of the patches (or a third 
+> one) within a bound amount of time we should be fine :)
 
-Until 2.6.28, there was a callback mode called HRTIMER_CB_IRQSAFE_PERCPU
-which did not allow timers to be migrated, if set.
-These were the only 3 hrtimers which were using that callback mode.
+I'll defer to Rafael here; he's been working the most in this area.
+The changelog wasn't very complete for the original patch, but it
+sounds like in the kexec case the newly booted kernel will get an igb
+device in D3 which it can't handle?  That really does sound like a
+driver bug, not something we should mess with in the core.
 
---arun
-
-> Can we be sure that there is no code which relies on the current
-> behaviour to keep functionality tied together ? Networking and block
-> layer comes to mind.
-> 
-> Thanks,
-> 
-> 	tglx
+-- 
+Jesse Barnes, Intel Open Source Technology Center
