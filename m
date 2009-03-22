@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 2/2] radeonfb: Avoid open coding of PCI PM
-	operations
-Date: Sun, 22 Mar 2009 22:13:13 +0100
-Message-ID: <200903222213.14186.rjw__33680.5345993072$1237756639$gmane$org@sisk.pl>
-References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
+Subject: [RFC][PATCH 0/2] Make radeonfb use PCI PM core for
+	suspendig device (was: Re: [RFC][PATCH] PCI PM: Be extra
+	careful when changing power states of devices)
+Date: Sun, 22 Mar 2009 22:08:21 +0100
+Message-ID: <200903222208.22434.rjw__27372.3884755329$1237756666$gmane$org@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903222208.22434.rjw@sisk.pl>
+In-Reply-To: <200903210003.55161.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,60 +24,29 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Saturday 21 March 2009, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
+> that setting the power state of a PCI device by
+> pci_raw_set_power_state() may sometimes fail.  For this reason,
+> pci_raw_set_power_state() should not assume that the power state of
+> the device has actually changed after writing into its PMCSR.
+> Instead, it should read the value from there and use it to update
+> dev->current_state.  It also is useful to print a warning if the
+> device's power state hasn't changed as expected.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+OK, since the Ben's radeonfb fix for bug #12846 has been merged, I'd like
+to do something a bit different.
 
-The radeonfb driver uses open coded programming of the low power
-state D2 into the device, because it has to handle some chips
-that don't follow the specification.  Avoid that by making it use
-__pci_set_power_state() for this purpose.
+Patch 1/2 introduces __pci_set_power_state() that will allow the radeonfb
+driver not to open code PCI PM operations.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/video/aty/radeon_pm.c |   26 +++-----------------------
- 1 file changed, 3 insertions(+), 23 deletions(-)
+Patch 2/2 makes the driver use __pci_set_power_state().
 
-Index: linux-2.6/drivers/video/aty/radeon_pm.c
-===================================================================
---- linux-2.6.orig/drivers/video/aty/radeon_pm.c
-+++ linux-2.6/drivers/video/aty/radeon_pm.c
-@@ -2507,25 +2507,6 @@ static void radeon_reinitialize_QW(struc
- 
- #endif /* CONFIG_PPC_OF */
- 
--static void radeonfb_whack_power_state(struct radeonfb_info *rinfo, pci_power_t state)
--{
--	u16 pwr_cmd;
--
--	for (;;) {
--		pci_read_config_word(rinfo->pdev,
--				     rinfo->pm_reg+PCI_PM_CTRL,
--				     &pwr_cmd);
--		if (pwr_cmd & 2)
--			break;
--		pwr_cmd = (pwr_cmd & ~PCI_PM_CTRL_STATE_MASK) | 2;
--		pci_write_config_word(rinfo->pdev,
--				      rinfo->pm_reg+PCI_PM_CTRL,
--				      pwr_cmd);
--		msleep(500);
--	}
--	rinfo->pdev->current_state = state;
--}
--
- static void radeon_set_suspend(struct radeonfb_info *rinfo, int suspend)
- {
- 	u32 tmp;
-@@ -2578,11 +2559,10 @@ static void radeon_set_suspend(struct ra
- 		pci_disable_device(rinfo->pdev);
- 		pci_save_state(rinfo->pdev);
- 		/* The chip seems to need us to whack the PM register
--		 * repeatedly until it sticks. We do that -prior- to
--		 * calling pci_set_power_state()
-+		 * repeatedly until it sticks.  However, with the 500 ms delay,
-+		 * it's better to give up after 10 unsuccessful attempts.
- 		 */
--		radeonfb_whack_power_state(rinfo, PCI_D2);
--		pci_set_power_state(rinfo->pdev, PCI_D2);
-+		__pci_set_power_state(rinfo->pdev, PCI_D2, 10, 500);
- 	} else {
- 		printk(KERN_DEBUG "radeonfb (%s): switching to D0 state...\n",
- 		       pci_name(rinfo->pdev));
+Comments welcome.
+
+Thanks,
+Rafael
