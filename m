@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 1/2] PCI PM: Introduce
-	__pci_set_power_state()
-Date: Sun, 22 Mar 2009 22:11:49 +0100
-Message-ID: <200903222211.50930.rjw__5061.06214966184$1237756688$gmane$org@sisk.pl>
-References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mmotm] fbmem: fix fb_info->lock and
+ mm->mmap_sem circular locking dependency
+Date: Sun, 22 Mar 2009 14:52:19 -0700
+Message-ID: <20090322145219.ad294615.akpm__22507.4828522795$1237759727$gmane$org@linux-foundation.org>
+References: <498817E2.3020008@gmail.com>
+	<1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
+	<200903221748.42871.arvidjaar@gmail.com>
+	<200903221857.20473.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903222208.22434.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200903221857.20473.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,171 +21,287 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Andrey Borzenkov <arvidjaar@gmail.com>, linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>, Dave@smtp1.linux-foundation.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Geert Uytterhoeven <geert@linux-m68k.org>, Johannes Weiner <hannes@cmpxchg.org>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>, Andrea Righi <righi.andrea@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun, 22 Mar 2009 18:57:19 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
-that setting the power state of a PCI device may sometimes require
-multiple attempts to program the device's PMCSR and and/or an delay
-longer than the default one.  For this reason, introduce
-__pci_set_power_state() that will take two additional arguments, the
-number of attempts to program the power state of the device to be
-made and the delay after writing a new value to the device's PMCSR.
-Redefine pci_set_power_state() as __pci_set_power_state() using the
-default values of the new arguments.
+> On Sunday 22 March 2009, Andrey Borzenkov wrote:
+> > On 5 ______________ 2009 00:46:23 Andrea Righi wrote:
+> > > Fix this circular locking dependencies in the frame buffer console
+> > > driver pushing down the mutex fb_info->lock.
+> > >
+> > > Circular locking dependecies occur calling the blocking
+> > > fb_notifier_call_chain() with fb_info->lock held. Notifier callbacks
+> > > can try to acquire mm->mmap_sem, while fb_mmap() acquires the locks
+> > > in the reverse order mm->mmap_sem => fb_info->lock.
+> > >
+> > > Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+> > > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> > 
+> > Hmm ... is it in current Linus tree? Because I happened to have this again 
+> > in rc8:
+> 
+> It doesn't seems so, at least I don't see it in there.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+I didn't realise that this was needed in mainline.
+
+I would hate to mrege it this late and find that it introduces some nasty
+new deadlock which everyone hits.  Probably it's more prodent to merge it
+into 2.6.29.1 now.
+
+
+
+From: Andrea Righi <righi.andrea@gmail.com>
+
+Fix a circular locking dependency in the frame buffer console driver
+pushing down the mutex fb_info->lock.
+
+Circular locking dependecies occur calling the blocking
+fb_notifier_call_chain() with fb_info->lock held.  Notifier callbacks can
+try to acquire mm->mmap_sem, while fb_mmap() acquires the locks in the
+reverse order mm->mmap_sem => fb_info->lock.
+
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/pci/pci.c   |   63 +++++++++++++++++++++++++++++++++++++++-------------
- include/linux/pci.h |    7 ++++-
- 2 files changed, 54 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -426,6 +426,9 @@ static inline int platform_pci_sleep_wak
-  *                           given PCI device
-  * @dev: PCI device to handle.
-  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
-+ * @attempts: How many times to try to change the power state of the device
-+ * @delay: Delay after programming the new power state, in miliseconds (0 means
-+ * use default)
-  *
-  * RETURN VALUE:
-  * -EINVAL if the requested state is invalid.
-@@ -434,9 +437,13 @@ static inline int platform_pci_sleep_wak
-  * 0 if device already is in the requested state.
-  * 0 if device's power state has been successfully changed.
-  */
--static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
-+static int pci_raw_set_power_state(
-+	struct pci_dev *dev,
-+	pci_power_t state,
-+	unsigned int attempts,
-+	unsigned int delay)
- {
--	u16 pmcsr;
-+	u16 pmcsr, new_pmcsr;
- 	bool need_restore = false;
- 
- 	/* Check if we're already there */
-@@ -488,17 +495,36 @@ static int pci_raw_set_power_state(struc
- 		break;
- 	}
- 
--	/* enter specified state */
--	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
-+	do {
-+		/* Program the requested state */
-+		pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
- 
--	/* Mandatory power management transition delays */
--	/* see PCI PM 1.1 5.6.1 table 18 */
--	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
--		msleep(pci_pm_d3_delay);
--	else if (state == PCI_D2 || dev->current_state == PCI_D2)
--		udelay(PCI_PM_D2_DELAY);
-+		/*
-+		 * If delay has not been specified, use mandatory PCI power
-+		 * management transition delays (see PCI PM 1.1 5.6.1 table 18).
-+		 */
-+		if (delay)
-+			msleep(delay);
-+		else if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-+			msleep(pci_pm_d3_delay);
-+		else if (state == PCI_D2 || dev->current_state == PCI_D2)
-+			udelay(PCI_PM_D2_DELAY);
-+
-+		/* Check if the power state has actually changed */
-+		pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL,
-+					&new_pmcsr);
-+		if (pmcsr == new_pmcsr) {
-+			dev->current_state = state;
-+			break;
-+		}
-+	} while (--attempts);
- 
--	dev->current_state = state;
-+	if (pmcsr != new_pmcsr) {
-+		dev->current_state = (new_pmcsr & PCI_PM_CTRL_STATE_MASK);
-+		dev_warn(&dev->dev,
-+			"failed to set power state to D%d, is D%d\n", state,
-+			dev->current_state);
-+	}
- 
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
-@@ -540,9 +566,12 @@ void pci_update_current_state(struct pci
- }
- 
- /**
-- * pci_set_power_state - Set the power state of a PCI device
-+ * __pci_set_power_state - Set the power state of a PCI device
-  * @dev: PCI device to handle.
-  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
-+ * @attempts: How many times to try to change the power state of the device.
-+ * @delay: Delay after programming the new power state, in miliseconds (0 means
-+ * use default).
-  *
-  * Transition a device to a new power state, using the platform formware and/or
-  * the device's PCI PM registers.
-@@ -554,7 +583,11 @@ void pci_update_current_state(struct pci
-  * 0 if device already is in the requested state.
-  * 0 if device's power state has been successfully changed.
-  */
--int pci_set_power_state(struct pci_dev *dev, pci_power_t state)
-+int __pci_set_power_state(
-+	struct pci_dev *dev,
-+	pci_power_t state,
-+	unsigned int attempts,
-+	unsigned int delay)
- {
- 	int error;
- 
-@@ -590,7 +623,7 @@ int pci_set_power_state(struct pci_dev *
- 	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
+ drivers/video/backlight/backlight.c |    3 +
+ drivers/video/backlight/lcd.c       |    3 +
+ drivers/video/console/fbcon.c       |   73 ++++++++++++++++++++++----
+ drivers/video/fbmem.c               |   11 ---
+ 4 files changed, 70 insertions(+), 20 deletions(-)
+
+diff -puN drivers/video/backlight/backlight.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency drivers/video/backlight/backlight.c
+--- a/drivers/video/backlight/backlight.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency
++++ a/drivers/video/backlight/backlight.c
+@@ -35,6 +35,8 @@ static int fb_notifier_callback(struct n
  		return 0;
  
--	error = pci_raw_set_power_state(dev, state);
-+	error = pci_raw_set_power_state(dev, state, attempts, delay);
- 
- 	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
- 		/* Allow the platform to finalize the transition */
-@@ -603,6 +636,7 @@ int pci_set_power_state(struct pci_dev *
- 
- 	return error;
+ 	bd = container_of(self, struct backlight_device, fb_notif);
++	if (!lock_fb_info(evdata->info))
++		return -ENODEV;
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+@@ -47,6 +49,7 @@ static int fb_notifier_callback(struct n
+ 			backlight_update_status(bd);
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
++	unlock_fb_info(evdata->info);
+ 	return 0;
  }
-+EXPORT_SYMBOL(__pci_set_power_state);
  
- /**
-  * pci_choose_state - Choose the power state of a PCI device
-@@ -2409,7 +2443,6 @@ EXPORT_SYMBOL(pci_assign_resource);
- EXPORT_SYMBOL(pci_find_parent_resource);
- EXPORT_SYMBOL(pci_select_bars);
+diff -puN drivers/video/backlight/lcd.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency drivers/video/backlight/lcd.c
+--- a/drivers/video/backlight/lcd.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency
++++ a/drivers/video/backlight/lcd.c
+@@ -40,6 +40,8 @@ static int fb_notifier_callback(struct n
+ 	if (!ld->ops)
+ 		return 0;
  
--EXPORT_SYMBOL(pci_set_power_state);
- EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
- EXPORT_SYMBOL(pci_pme_capable);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -689,7 +689,12 @@ size_t pci_get_rom_size(struct pci_dev *
- /* Power management related routines */
- int pci_save_state(struct pci_dev *dev);
- int pci_restore_state(struct pci_dev *dev);
--int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
-+int __pci_set_power_state(struct pci_dev *dev, pci_power_t state,
-+				unsigned int attempts, unsigned int delay);
-+static inline int pci_set_power_state(struct pci_dev *dev, pci_power_t state)
-+{
-+	return __pci_set_power_state(dev, state, 1, 0);
-+}
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
- void pci_pme_active(struct pci_dev *dev, bool enable);
++	if (!lock_fb_info(evdata->info))
++		return -ENODEV;
+ 	mutex_lock(&ld->ops_lock);
+ 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
+ 		if (event == FB_EVENT_BLANK) {
+@@ -51,6 +53,7 @@ static int fb_notifier_callback(struct n
+ 		}
+ 	}
+ 	mutex_unlock(&ld->ops_lock);
++	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
+ 
+diff -puN drivers/video/console/fbcon.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency
++++ a/drivers/video/console/fbcon.c
+@@ -2954,8 +2954,11 @@ static int fbcon_fb_unbind(int idx)
+ 
+ static int fbcon_fb_unregistered(struct fb_info *info)
+ {
+-	int i, idx = info->node;
++	int i, idx;
+ 
++	if (!lock_fb_info(info))
++		return -ENODEV;
++	idx = info->node;
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] == idx)
+ 			con2fb_map[i] = -1;
+@@ -2979,13 +2982,14 @@ static int fbcon_fb_unregistered(struct 
+ 		}
+ 	}
+ 
+-	if (!num_registered_fb)
+-		unregister_con_driver(&fb_con);
+-
+-
+ 	if (primary_device == idx)
+ 		primary_device = -1;
+ 
++	unlock_fb_info(info);
++
++	if (!num_registered_fb)
++		unregister_con_driver(&fb_con);
++
+ 	return 0;
+ }
+ 
+@@ -3021,9 +3025,13 @@ static inline void fbcon_select_primary(
+ 
+ static int fbcon_fb_registered(struct fb_info *info)
+ {
+-	int ret = 0, i, idx = info->node;
++	int ret = 0, i, idx;
+ 
++	if (!lock_fb_info(info))
++		return -ENODEV;
++	idx = info->node;
+ 	fbcon_select_primary(info);
++	unlock_fb_info(info);
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3124,7 +3132,7 @@ static void fbcon_get_requirement(struct
+ 	}
+ }
+ 
+-static int fbcon_event_notify(struct notifier_block *self, 
++static int fbcon_event_notify(struct notifier_block *self,
+ 			      unsigned long action, void *data)
+ {
+ 	struct fb_event *event = data;
+@@ -3132,7 +3140,7 @@ static int fbcon_event_notify(struct not
+ 	struct fb_videomode *mode;
+ 	struct fb_con2fbmap *con2fb;
+ 	struct fb_blit_caps *caps;
+-	int ret = 0;
++	int idx, ret = 0;
+ 
+ 	/*
+ 	 * ignore all events except driver registration and deregistration
+@@ -3144,23 +3152,54 @@ static int fbcon_event_notify(struct not
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_suspended(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_RESUME:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_resumed(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_modechanged(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE_ALL:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_set_all_vcs(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_DELETE:
+ 		mode = event->data;
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		ret = fbcon_mode_deleted(info, mode);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_FB_UNBIND:
+-		ret = fbcon_fb_unbind(info->node);
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
++		idx = info->node;
++		unlock_fb_info(info);
++		ret = fbcon_fb_unbind(idx);
+ 		break;
+ 	case FB_EVENT_FB_REGISTERED:
+ 		ret = fbcon_fb_registered(info);
+@@ -3178,17 +3217,31 @@ static int fbcon_event_notify(struct not
+ 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
+ 		break;
+ 	case FB_EVENT_BLANK:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_fb_blanked(info, *(int *)event->data);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_NEW_MODELIST:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_new_modelist(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_GET_REQ:
+ 		caps = event->data;
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_get_requirement(info, caps);
++		unlock_fb_info(info);
+ 		break;
+ 	}
+-
+ done:
+ 	return ret;
+ }
+diff -puN drivers/video/fbmem.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c~fbmem-fix-fb_info-lock-and-mm-mmap_sem-circular-locking-dependency
++++ a/drivers/video/fbmem.c
+@@ -1086,13 +1086,8 @@ static long do_fb_ioctl(struct fb_info *
+ 			return -EINVAL;
+ 		con2fb.framebuffer = -1;
+ 		event.data = &con2fb;
+-
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		event.info = info;
+ 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
+-		unlock_fb_info(info);
+-
+ 		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_CON2FBMAP:
+@@ -1109,12 +1104,8 @@ static long do_fb_ioctl(struct fb_info *
+ 			break;
+ 		}
+ 		event.data = &con2fb;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		event.info = info;
+-		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
+-					      &event);
+-		unlock_fb_info(info);
++		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
+ 		break;
+ 	case FBIOBLANK:
+ 		if (!lock_fb_info(info))
+_
