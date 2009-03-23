@@ -1,14 +1,14 @@
-From: Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume
-	if a device was disconnected
-Date: Mon, 23 Mar 2009 22:30:18 +0100
-Message-ID: <200903232230.19330.elendil__43258.9595475749$1237844152$gmane$org@planet.nl>
-References: <200903232211.51154.elendil@planet.nl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/2] Export platform_pci_set_power_state()
+	and make radeonfb use it
+Date: Mon, 23 Mar 2009 22:30:09 +0100
+Message-ID: <200903232230.10831.rjw__48707.2010561407$1237844371$gmane$org@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903232211.51154.elendil@planet.nl>
+In-Reply-To: <200903222208.22434.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,35 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-usb@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 23 March 2009, Frans Pop wrote:
-> Currently if a laptop is suspended e.g. while docked and then resumed
-> after undocking it, the following errors get generated because the USB
-> hub in the docking station and the devices connected to it are no
-> longer available:
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19 
-> PM: Device 1-2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.3 failed to resume: error -19
->
-> As the removal of USB devices while a system is suspended is a
-> relatively common use case and in most cases not an error, just return
-> success on -ENODEV. The user gets informed anyway as the USB subsystem
-> generates regular disconnect messages for the devices shortly
-> afterwards:
-> usb 1-2: USB disconnect, address 3 
-> usb 1-2.2: USB disconnect, address 4
-> usblp0: removed
-> usb 1-2.3: USB disconnect, address 5
->
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+On Sunday 22 March 2009, Rafael J. Wysocki wrote:
+> On Saturday 21 March 2009, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
+> > that setting the power state of a PCI device by
+> > pci_raw_set_power_state() may sometimes fail.  For this reason,
+> > pci_raw_set_power_state() should not assume that the power state of
+> > the device has actually changed after writing into its PMCSR.
+> > Instead, it should read the value from there and use it to update
+> > dev->current_state.  It also is useful to print a warning if the
+> > device's power state hasn't changed as expected.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> OK, since the Ben's radeonfb fix for bug #12846 has been merged, I'd like
+> to do something a bit different.
+> 
+> Patch 1/2 introduces __pci_set_power_state() that will allow the radeonfb
+> driver not to open code PCI PM operations.
+> 
+> Patch 2/2 makes the driver use __pci_set_power_state().
+> 
+> Comments welcome.
 
-Forgot to mention that the patch is intended on top of Rafael's "Rework 
-disabling of interrupts during suspend-resume" series.
+Well, Jesse doesn't like these patches very much, so here's an alternative.
+
+1/2 changes platform_pci_set_power_state() into an exported function (and uses
+it to simplify pci_set_power_state() a bit) so that the radeonfb driver can use
+it.
+
+2/2 modifies the radeonfb driver itself.
+
+Thanks,
+Rafael
