@@ -1,15 +1,15 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC][PATCH 0/2] Export
- platform_pci_set_power_state() and make radeonfb use it
-Date: Mon, 23 Mar 2009 15:23:30 -0700
-Message-ID: <20090323152330.536a5a1c__9106.40559527582$1237847298$gmane$org@hobbes.virtuouswap>
-References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
-	<200903232230.10831.rjw@sisk.pl>
+From: Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH] usb: avoid PM error messages during resume
+	if a device was disconnected
+Date: Mon, 23 Mar 2009 23:25:02 +0100
+Message-ID: <200903232325.04181.elendil__24293.7492359944$1237847410$gmane$org@planet.nl>
+References: <Pine.LNX.4.44L0.0903231738300.3610-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903232230.10831.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0903231738300.3610-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,56 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Mar 2009 22:30:09 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Monday 23 March 2009, Alan Stern wrote:
+> > diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+> > index d0a21a5..97ea69b 100644
+> > --- a/drivers/usb/core/driver.c
+> > +++ b/drivers/usb/core/driver.c
+> > @@ -1727,6 +1727,10 @@ int usb_external_resume_device(struct usb_device *udev, pm_message_t msg)
+> >     status = usb_resume_both(udev, msg);
+> >  	udev->last_busy = jiffies;
+> >  	usb_pm_unlock(udev);
+> > +
+> > +	if (status == -ENODEV)
+> > +		return 0;
+> > +
+> >  	if (status == 0)
+> >  		do_unbind_rebind(udev, DO_REBIND);
+>
+> Please include a short comment explaining the reason for this test
+> (i.e., that there's no advantage in producing an error message since
+> the regular disconnect messages will be generated shortly).
 
-> On Sunday 22 March 2009, Rafael J. Wysocki wrote:
-> > On Saturday 21 March 2009, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846
-> > > shows that setting the power state of a PCI device by
-> > > pci_raw_set_power_state() may sometimes fail.  For this reason,
-> > > pci_raw_set_power_state() should not assume that the power state
-> > > of the device has actually changed after writing into its PMCSR.
-> > > Instead, it should read the value from there and use it to update
-> > > dev->current_state.  It also is useful to print a warning if the
-> > > device's power state hasn't changed as expected.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > OK, since the Ben's radeonfb fix for bug #12846 has been merged,
-> > I'd like to do something a bit different.
-> > 
-> > Patch 1/2 introduces __pci_set_power_state() that will allow the
-> > radeonfb driver not to open code PCI PM operations.
-> > 
-> > Patch 2/2 makes the driver use __pci_set_power_state().
-> > 
-> > Comments welcome.
-> 
-> Well, Jesse doesn't like these patches very much, so here's an
-> alternative.
-> 
-> 1/2 changes platform_pci_set_power_state() into an exported function
-> (and uses it to simplify pci_set_power_state() a bit) so that the
-> radeonfb driver can use it.
-> 
-> 2/2 modifies the radeonfb driver itself.
+Will do if there are no other comments.
 
-The thing I didn't like was that it made the radeon driver use an
-internal interface; I'd really prefer a proper return value from
-pci_set_power_state, which in turn means auditing all its current
-callers. But that doesn't seem worth it unless we see other drivers
-needing something similar...
+> Or do you think maybe it would be better to move this test up into the
+> PM core?  After all, other subsystems will face the same issue.  I
+> think that would be the best approach.  Yes?
 
-And if we did go with something like your first patch, I'd still rather
-see the timeout done in the driver, rather than having the attempts &
-delay included in the function...
+I did look at that option, but implementing it in the USB subsystem seemed
+more logical to me, for example as other subsystems possibly would want to
+display an info message.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+And is -ENODEV safe to ignore in all cases? Would there be other errors that
+should be ignored too?
+
+if Rafael would be happy with a generic test for -ENODEV, it could be done.
+If not, maybe some other special error code would need to be used but then
+you'd still need to test in the subsystem to set that error.
+Disadvantage is also that it would make resume_device() and related PM
+driver core functions quite a bit less clean than they currently are.
+
+Implementing the test in USB was quite a bit simpler (for me at least ;-)
+
+Thanks,
+FJP
