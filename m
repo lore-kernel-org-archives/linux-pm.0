@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume
- if a device was disconnected
-Date: Mon, 23 Mar 2009 17:44:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0903231738300.3610-100000__45979.9434677281$1237844958$gmane$org@iolanthe.rowland.org>
-References: <200903232211.51154.elendil@planet.nl>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [RFC][PATCH 0/2] Export
+ platform_pci_set_power_state() and make radeonfb use it
+Date: Mon, 23 Mar 2009 15:23:30 -0700
+Message-ID: <20090323152330.536a5a1c__9106.40559527582$1237847298$gmane$org@hobbes.virtuouswap>
+References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
+	<200903232230.10831.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903232211.51154.elendil@planet.nl>
+In-Reply-To: <200903232230.10831.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Mar 2009, Frans Pop wrote:
+On Mon, 23 Mar 2009 22:30:09 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Currently if a laptop is suspended e.g. while docked and then resumed after
-> undocking it, the following errors get generated because the USB hub in the
-> docking station and the devices connected to it are no longer available:
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.3 failed to resume: error -19
+> On Sunday 22 March 2009, Rafael J. Wysocki wrote:
+> > On Saturday 21 March 2009, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846
+> > > shows that setting the power state of a PCI device by
+> > > pci_raw_set_power_state() may sometimes fail.  For this reason,
+> > > pci_raw_set_power_state() should not assume that the power state
+> > > of the device has actually changed after writing into its PMCSR.
+> > > Instead, it should read the value from there and use it to update
+> > > dev->current_state.  It also is useful to print a warning if the
+> > > device's power state hasn't changed as expected.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > OK, since the Ben's radeonfb fix for bug #12846 has been merged,
+> > I'd like to do something a bit different.
+> > 
+> > Patch 1/2 introduces __pci_set_power_state() that will allow the
+> > radeonfb driver not to open code PCI PM operations.
+> > 
+> > Patch 2/2 makes the driver use __pci_set_power_state().
+> > 
+> > Comments welcome.
 > 
-> As the removal of USB devices while a system is suspended is a relatively
-> common use case and in most cases not an error, just return success on
-> -ENODEV. The user gets informed anyway as the USB subsystem generates
-> regular disconnect messages for the devices shortly afterwards:
-> usb 1-2: USB disconnect, address 3
-> usb 1-2.2: USB disconnect, address 4
-> usblp0: removed
-> usb 1-2.3: USB disconnect, address 5
+> Well, Jesse doesn't like these patches very much, so here's an
+> alternative.
 > 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
+> 1/2 changes platform_pci_set_power_state() into an exported function
+> (and uses it to simplify pci_set_power_state() a bit) so that the
+> radeonfb driver can use it.
 > 
-> I've walked through the code and AFAICT just returning 0 does not make any
-> difference for the PM core code.
+> 2/2 modifies the radeonfb driver itself.
 
-That's right.  After all, there isn't much the PM core can do when an 
-error occurs.
+The thing I didn't like was that it made the radeon driver use an
+internal interface; I'd really prefer a proper return value from
+pci_set_power_state, which in turn means auditing all its current
+callers. But that doesn't seem worth it unless we see other drivers
+needing something similar...
 
-> In a first version of this patch I had the following included just before
-> the 'return 0':
-> 	pr_info("usb %s: failed to resume: no longer connected\n",
-> 						dev_name(&udev->dev));
-> 
-> Problem with that was that the message got printed twice for each device,
-> once for .resume and once for .complete. Given that the disconnects are
-> reported shortly after anyway, I decided the simpler patch might do just
-> as well.
-> 
-> Cheers,
-> FJP
-> 
-> diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-> index d0a21a5..97ea69b 100644
-> --- a/drivers/usb/core/driver.c
-> +++ b/drivers/usb/core/driver.c
-> @@ -1727,6 +1727,10 @@ int usb_external_resume_device(struct usb_device *udev, pm_message_t msg)
->  	status = usb_resume_both(udev, msg);
->  	udev->last_busy = jiffies;
->  	usb_pm_unlock(udev);
-> +
-> +	if (status == -ENODEV)
-> +		return 0;
-> +
->  	if (status == 0)
->  		do_unbind_rebind(udev, DO_REBIND);
+And if we did go with something like your first patch, I'd still rather
+see the timeout done in the driver, rather than having the attempts &
+delay included in the function...
 
-Please include a short comment explaining the reason for this test 
-(i.e., that there's no advantage in producing an error message since 
-the regular disconnect messages will be generated shortly).
-
-Or do you think maybe it would be better to move this test up into the
-PM core?  After all, other subsystems will face the same issue.  I 
-think that would be the best approach.  Yes?
-
-Alan STern
+-- 
+Jesse Barnes, Intel Open Source Technology Center
