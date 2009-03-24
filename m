@@ -1,16 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: [RFC][PATCH 0/2] Export
  platform_pci_set_power_state() and make radeonfb use it
-Date: Tue, 24 Mar 2009 11:57:19 +1100
-Message-ID: <1237856239.25062.696.camel__31522.7315565155$1237856768$gmane$org@pasglop>
-References: <200903210003.55161.rjw@sisk.pl>
-	<200903222208.22434.rjw@sisk.pl> <200903232230.10831.rjw@sisk.pl>
+Date: Mon, 23 Mar 2009 18:14:20 -0700
+Message-ID: <20090323181420.30125d59__24713.8128070675$1237857568$gmane$org@hobbes.virtuouswap>
+References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
+	<200903232230.10831.rjw@sisk.pl>
 	<20090323152330.536a5a1c@hobbes.virtuouswap>
+	<1237856239.25062.696.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090323152330.536a5a1c@hobbes.virtuouswap>
+In-Reply-To: <1237856239.25062.696.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,56 +21,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Alex Deucher <alexdeucher@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2009-03-23 at 15:23 -0700, Jesse Barnes wrote:
-> The thing I didn't like was that it made the radeon driver use an
-> internal interface; I'd really prefer a proper return value from
-> pci_set_power_state, which in turn means auditing all its current
-> callers. But that doesn't seem worth it unless we see other drivers
-> needing something similar...
+On Tue, 24 Mar 2009 11:57:19 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Mon, 2009-03-23 at 15:23 -0700, Jesse Barnes wrote:
+> > The thing I didn't like was that it made the radeon driver use an
+> > internal interface; I'd really prefer a proper return value from
+> > pci_set_power_state, which in turn means auditing all its current
+> > callers. But that doesn't seem worth it unless we see other drivers
+> > needing something similar...
+> > 
+> > And if we did go with something like your first patch, I'd still
+> > rather see the timeout done in the driver, rather than having the
+> > attempts & delay included in the function...
 > 
-> And if we did go with something like your first patch, I'd still rather
-> see the timeout done in the driver, rather than having the attempts &
-> delay included in the function...
+> So what ? The driver would call pci_set_power_state() until it stops
+> failing ?
 
-So what ? The driver would call pci_set_power_state() until it stops
-failing ?
+Yeah, that's what I had in mind.
 
-I'm not too fan of that, because it will change the access pattern
-to the chip:
+> I'm not too fan of that, because it will change the access pattern
+> to the chip:
+> 
+>  - write PM to 2
+>  - short delay
+>  - read PM, see 0, return error
+>  - driver does big delay
+>  - write PM to 2
+>  - short delay
+>  - read PM ....
+> 
+> vs. the current sequence which is
+> 
+>  - write PM to 2
+>  - long delay
+>  - read PM, be happy
+> 
+> Which -seems- to be pretty much what happens in practice, though on
+> that chip, I don't know for sure about others.
+> 
+> I'm worried of the possible side effects of the first sequence that
+> you propose since it would do 2 things potentially confusing to the
+> HW:
+> 
+>  - read PM after a short delay... it -should- be harmless but you know
+> HW as well as I do ...
+> 
+>  - write PM to 2 a second time after the long delay. Again, it
+> -should- be harmless since the chip at this stage should already be
+> in D2 state but god knows how the HW will react.
+> 
+> I'm especially worried about the later in fact. Maybe we can minimize
+> it by having pci_set_power_state() dbl check the content of the PM
+> reg before writing to it...
 
- - write PM to 2
- - short delay
- - read PM, see 0, return error
- - driver does big delay
- - write PM to 2
- - short delay
- - read PM ....
+Honestly I'm not too happy about any of the approaches, but yeah I see
+your point.  The main thing is to prevent any config space access for
+a specified time after the first D-state transition, which I think we
+do correctly in the core.  Beyond that, we just have to make sure the
+core state is updated correctly; Rafael's first patch does that
+correctly I think.
 
-vs. the current sequence which is
+Actually now that I think of it, maybe Alex can get us details on the
+errata here.  If we just need a longer wait between a D-state transition
+and the next config space access for this chip (or set of chips), we
+could add that as a proper quirk to the core...
 
- - write PM to 2
- - long delay
- - read PM, be happy
+Alex, any thoughts about the bug & patch in
+http://bugzilla.kernel.org/show_bug.cgi?id=12846 ?  Looks like old
+radeon chips need a workaround when transitioning from D0 -> D2...
 
-Which -seems- to be pretty much what happens in practice, though on that chip,
-I don't know for sure about others.
-
-I'm worried of the possible side effects of the first sequence that you propose
-since it would do 2 things potentially confusing to the HW:
-
- - read PM after a short delay... it -should- be harmless but you know
-HW as well as I do ...
-
- - write PM to 2 a second time after the long delay. Again, it -should- be
-harmless since the chip at this stage should already be in D2 state but god
-knows how the HW will react.
-
-I'm especially worried about the later in fact. Maybe we can minimize it by
-having pci_set_power_state() dbl check the content of the PM reg before writing
-to it...
-
-Ben.
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
