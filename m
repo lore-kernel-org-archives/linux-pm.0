@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume
- if a device was disconnected
-Date: Tue, 24 Mar 2009 10:11:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0903241004160.3162-100000__12269.4507860162$1237904158$gmane$org@iolanthe.rowland.org>
-References: <200903232325.04181.elendil@planet.nl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 0/2] Export
+ platform_pci_set_power_state() and make radeonfb use it
+Date: Wed, 25 Mar 2009 08:12:55 +1100
+Message-ID: <1237929175.25062.727.camel__24419.7586588145$1237929539$gmane$org@pasglop>
+References: <200903210003.55161.rjw@sisk.pl>
+	<1237856239.25062.696.camel@pasglop>
+	<20090323181420.30125d59@hobbes.virtuouswap>
+	<200903241200.37982.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903232325.04181.elendil@planet.nl>
+In-Reply-To: <200903241200.37982.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alex Deucher <alexdeucher@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Mar 2009, Frans Pop wrote:
+On Tue, 2009-03-24 at 12:00 +0100, Rafael J. Wysocki wrote:
 
-> > Or do you think maybe it would be better to move this test up into the
-> > PM core?  After all, other subsystems will face the same issue.  I
-> > think that would be the best approach.  Yes?
+> In fact I have yet another idea.  If we use the "retransmission with exponential
+> backoff" algorithm in pci_raw_set_power_state(), we won't have to add any
+> extra parameters to pci_set_power_state() and the radeon case will be covered
+> automatically.  That should also cover any other devices having similar
+> problems IMO.
 > 
-> I did look at that option, but implementing it in the USB subsystem seemed
-> more logical to me, for example as other subsystems possibly would want to
-> display an info message.
+> A patch to implement that is appended, please tell me what you think.
 
-They still can...
+This is crazy....
 
-> And is -ENODEV safe to ignore in all cases? Would there be other errors that
-> should be ignored too?
+Most devices don't need that and those who are a bit "touchy" may well
+puke on being written to too fast while they are in the middle of
+the transition.
 
-In general, the PM core ignores _all_ errors during resume -- in the
-sense that it doesn't try to recover from them or do anything to handle
-them.  All it does is put a message in the log.
+Let's wait to see if Alex from ATI has an answer here, and if not, I
+would suggest keeping the dirt inside radeonfb.
 
-So your question becomes: For which errors should a message be added to 
-the system log?  The most logical answer seems to be that we want an 
-error message whenever something bad or unexpected occurs.
-
-Removal of a hot-unpluggable device isn't really bad or unexpected.  
-Removal of a non-hot-unpluggable device might be bad, but on the other
-hand the system isn't really "hot" while it is suspended.  Besides, the
-appropriate subsystem can print an error message.  Furthermore the
-kernel can't easily tell which devices are hot-unpluggable and which
-aren't.
-
-Anything else amounts to failure resuming a device that still exists.  
-As such, it probably deserves an error message.
-
-> if Rafael would be happy with a generic test for -ENODEV, it could be done.
-> If not, maybe some other special error code would need to be used but then
-> you'd still need to test in the subsystem to set that error.
-> Disadvantage is also that it would make resume_device() and related PM
-> driver core functions quite a bit less clean than they currently are.
-> 
-> Implementing the test in USB was quite a bit simpler (for me at least ;-)
-
-We should get Rafael's opinion.
-
-Alan Stern
+Ben.
