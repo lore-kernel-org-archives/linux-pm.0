@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 0/2] Export
 	platform_pci_set_power_state() and make radeonfb use it
-Date: Tue, 24 Mar 2009 23:00:46 +0100
-Message-ID: <200903242300.47417.rjw__46197.2001627602$1237932261$gmane$org@sisk.pl>
+Date: Tue, 24 Mar 2009 23:25:22 +0100
+Message-ID: <200903242325.23483.rjw__49883.5800601684$1237933818$gmane$org@sisk.pl>
 References: <200903210003.55161.rjw@sisk.pl> <200903241200.37982.rjw@sisk.pl>
 	<1237929175.25062.727.camel@pasglop>
 Mime-Version: 1.0
@@ -44,9 +44,10 @@ On Tuesday 24 March 2009, Benjamin Herrenschmidt wrote:
 > Let's wait to see if Alex from ATI has an answer here, and if not, I
 > would suggest keeping the dirt inside radeonfb.
 
-OK, so what would you like to do exactly?
+BTW, whatever you do inside of radeonfb will be based on specific assumptions
+regarding how pci_set_power_state() works internally, which makes that
+extremely fragile.  This way you'll also make the core depend on the radeonfb
+driver to some extent, which I don't think is desirable.
 
-The only thing I see is not to set current_state to PCI_D2 before calling the
-final pci_set_power_state().
-
+Thanks,
 Rafael
