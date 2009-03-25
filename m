@@ -1,18 +1,15 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [RFC][PATCH 0/2] Export
-	platform_pci_set_power_state() and make radeonfb use it
-Date: Tue, 24 Mar 2009 18:04:25 -0400
-Message-ID: <a728f9f90903241504m3fbd3417ke8705a415d7761df__46389.6153415137$1237939364$gmane$org@mail.gmail.com>
-References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
-	<200903232230.10831.rjw@sisk.pl>
-	<20090323152330.536a5a1c@hobbes.virtuouswap>
-	<1237856239.25062.696.camel@pasglop>
-	<20090323181420.30125d59@hobbes.virtuouswap>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 2/2] radeonfb: Use
+	__pci_complete_power_transition()
+Date: Wed, 25 Mar 2009 01:42:08 +0100
+Message-ID: <200903250142.09545.rjw@sisk.pl>
+References: <200903250138.53234.linux-pci-owner@vger.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090323181420.30125d59@hobbes.virtuouswap>
+In-Reply-To: <200903250138.53234.linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,80 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/23/09, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Tue, 24 Mar 2009 11:57:19 +1100
->  Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->  > On Mon, 2009-03-23 at 15:23 -0700, Jesse Barnes wrote:
->  > > The thing I didn't like was that it made the radeon driver use an
->  > > internal interface; I'd really prefer a proper return value from
->  > > pci_set_power_state, which in turn means auditing all its current
->  > > callers. But that doesn't seem worth it unless we see other drivers
->  > > needing something similar...
->  > >
->  > > And if we did go with something like your first patch, I'd still
->  > > rather see the timeout done in the driver, rather than having the
->  > > attempts & delay included in the function...
->  >
->  > So what ? The driver would call pci_set_power_state() until it stops
->  > failing ?
->
->  Yeah, that's what I had in mind.
->
->  > I'm not too fan of that, because it will change the access pattern
->  > to the chip:
->  >
->  >  - write PM to 2
->  >  - short delay
->  >  - read PM, see 0, return error
->  >  - driver does big delay
->  >  - write PM to 2
->  >  - short delay
->  >  - read PM ....
->  >
->  > vs. the current sequence which is
->  >
->  >  - write PM to 2
->  >  - long delay
->  >  - read PM, be happy
->  >
->  > Which -seems- to be pretty much what happens in practice, though on
->  > that chip, I don't know for sure about others.
->  >
->  > I'm worried of the possible side effects of the first sequence that
->  > you propose since it would do 2 things potentially confusing to the
->  > HW:
->  >
->  >  - read PM after a short delay... it -should- be harmless but you know
->  > HW as well as I do ...
->  >
->  >  - write PM to 2 a second time after the long delay. Again, it
->  > -should- be harmless since the chip at this stage should already be
->  > in D2 state but god knows how the HW will react.
->  >
->  > I'm especially worried about the later in fact. Maybe we can minimize
->  > it by having pci_set_power_state() dbl check the content of the PM
->  > reg before writing to it...
->
->  Honestly I'm not too happy about any of the approaches, but yeah I see
->  your point.  The main thing is to prevent any config space access for
->  a specified time after the first D-state transition, which I think we
->  do correctly in the core.  Beyond that, we just have to make sure the
->  core state is updated correctly; Rafael's first patch does that
->  correctly I think.
->
->  Actually now that I think of it, maybe Alex can get us details on the
->  errata here.  If we just need a longer wait between a D-state transition
->  and the next config space access for this chip (or set of chips), we
->  could add that as a proper quirk to the core...
->
->  Alex, any thoughts about the bug & patch in
->  http://bugzilla.kernel.org/show_bug.cgi?id=12846 ?  Looks like old
->  radeon chips need a workaround when transitioning from D0 -> D2...
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I don't see any errata for this, but it's hard to find stuff as chips get older.
+Use __pci_complete_power_transition() to finalize the transition into
+D2 after programming the PMCSR of the device directly.
 
-Alex
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/video/aty/radeon_pm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/video/aty/radeon_pm.c
+===================================================================
+--- linux-2.6.orig/drivers/video/aty/radeon_pm.c
++++ linux-2.6/drivers/video/aty/radeon_pm.c
+@@ -2582,7 +2582,7 @@ static void radeon_set_suspend(struct ra
+ 		 * calling pci_set_power_state()
+ 		 */
+ 		radeonfb_whack_power_state(rinfo, PCI_D2);
+-		pci_set_power_state(rinfo->pdev, PCI_D2);
++		__pci_complete_power_transition(rinfo->pdev, PCI_D2);
+ 	} else {
+ 		printk(KERN_DEBUG "radeonfb (%s): switching to D0 state...\n",
+ 		       pci_name(rinfo->pdev));
