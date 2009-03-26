@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
 Subject: Re: Resume after hibernation regression in 2.6.29
-Date: Thu, 26 Mar 2009 22:35:29 +0100
-Message-ID: <200903262235.29576.rjw__25801.2444283397$1238103535$gmane$org@sisk.pl>
+Date: Thu, 26 Mar 2009 22:01:03 +0000
+Message-ID: <200903262201.03931.tvrtko__5980.26126758686$1238105084$gmane$org@ursulin.net>
 References: <200903261920.32173.tvrtko@ursulin.net>
-	<200903262055.23749.tvrtko@ursulin.net>
 	<20090326211406.GC29836@elf.ucw.cz>
+	<200903262235.29576.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090326211406.GC29836@elf.ucw.cz>
+In-Reply-To: <200903262235.29576.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,46 +20,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>, linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 26 March 2009, Pavel Machek wrote:
-> On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
-> > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
-> > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
-> > > > Hi guys,
-> > > > I have been running custom compiled 2.6.28.7 in OpenSUSE 11.1 and using
-> > > > hiberation/resume daily as configured by the distro. Yesterday I upgraded
-> > > > to 2.6.29 (make oldconfig from 2.6.28.7, attached) and after resume
-> > > > networking (at least) does not work. Reboot at this point takes very long
-> > > > because of timeouts on CIFS and whatelse.
+On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
+> On Thursday 26 March 2009, Pavel Machek wrote:
+> > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
+> > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
+> > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
+> > > > > Hi guys,
+> > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE 11.1 and
+> > > > > using hiberation/resume daily as configured by the distro.
+> > > > > Yesterday I upgraded to 2.6.29 (make oldconfig from 2.6.28.7,
+> > > > > attached) and after resume networking (at least) does not work.
+> > > > > Reboot at this point takes very long because of timeouts on CIFS
+> > > > > and whatelse.
+> > > > >
+> > > > > Below is how /var/log/messagess looks for one cycle
+> > > > > (hibernate-resume-reboot) and I am also attaching kernel config and
+> > > > > /var/log/pm-suspend.log.
+> > > > >
+> > > > > You will probably notice evil nvidia.ko in there but don't panic,
+> > > > > it all happens without it as well. Tested from runlevel 3 and by
+> > > > > running pm-hibernate. After resume from that NIC LEDs were off. I
+> > > > > tried /etc/init.d/network restart but that hung so I ^C and tried
+> > > > > rmmod forcedeth && modprobe forcedeth && ifup eth0 and after some
+> > > > > time network went live again. Haven't had time to test further
+> > > > > though, so this is all pretty rough.
 > > > >
-> > > > Below is how /var/log/messagess looks for one cycle
-> > > > (hibernate-resume-reboot) and I am also attaching kernel config and
-> > > > /var/log/pm-suspend.log.
-> > > >
-> > > > You will probably notice evil nvidia.ko in there but don't panic, it all
-> > > > happens without it as well. Tested from runlevel 3 and by running
-> > > > pm-hibernate. After resume from that NIC LEDs were off. I
-> > > > tried /etc/init.d/network restart but that hung so I ^C and tried rmmod
-> > > > forcedeth && modprobe forcedeth && ifup eth0 and after some time network
-> > > > went live again. Haven't had time to test further though, so this is all
-> > > > pretty rough.
+> > > > Ok, can you try to rmmod forcedeth before hibernation, then insmod it
+> > > > after resume?
 > > >
-> > > Ok, can you try to rmmod forcedeth before hibernation, then insmod it
-> > > after resume?
-> > 
-> > Sure, after insmod and /etc/init.d/network start following resume network was 
-> > fine. Guess I could kludge that sequence into pm scripts somehow but would 
-> > rather avoid that since it slows down the cycle and would make scripts 
-> > non-stock.
-> 
-> Ok, I guess you need to talk to forcedeth maintainers then... sounds
-> like a forcedeth problem to me.
+> > > Sure, after insmod and /etc/init.d/network start following resume
+> > > network was fine. Guess I could kludge that sequence into pm scripts
+> > > somehow but would rather avoid that since it slows down the cycle and
+> > > would make scripts non-stock.
+> >
+> > Ok, I guess you need to talk to forcedeth maintainers then... sounds
+> > like a forcedeth problem to me.
+>
+> I have a box with forcedeth somewhere here, I should be able to check that
+> in the next few days.
 
-I have a box with forcedeth somewhere here, I should be able to check that
-in the next few days.
+Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC two guys 
+who commited changes in that period. Ayaz, Tobias, forcedeth does not seem to 
+come up after hibernation well for me. Actual hardware is:
 
-Thanks,
-Rafael
+00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev a2)
+
+Anything more I can do just shout!
+
+Tvrtko
