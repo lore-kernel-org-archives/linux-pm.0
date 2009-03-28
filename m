@@ -1,17 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Regression in 2.6.29] forcedeth doesn't work after
-	resume from hibernation (was: Re: Resume after hibernation
-	regression in 2.6.29)
-Date: Fri, 27 Mar 2009 21:09:20 +0100
-Message-ID: <200903272109.21259.rjw__27253.3897580162$1238186493$gmane$org@sisk.pl>
-References: <200903261920.32173.tvrtko@ursulin.net>
-	<200903270801.46712.tvrtko@ursulin.net>
-	<200903271255.36429.rjw@sisk.pl>
+Subject: [PATCH] PCI PM: Make pci_prepare_to_sleep() disable
+	wake-up if needed
+Date: Sat, 28 Mar 2009 22:26:15 +0100
+Message-ID: <200903282226.15511.rjw__23067.1425270431$1238275813$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903271255.36429.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,93 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Ed Swierk <eswierk@arastra.com>, "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Arthur Jones <ajones@riverbed.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 27 March 2009, Rafael J. Wysocki wrote:
-> On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
-> > On Thursday 26 March 2009 23:08:59 Rafael J. Wysocki wrote:
-> > > On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
-> > > > On Thursday 26 March 2009 22:38:55 Pavel Machek wrote:
-> > > > > On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
-> > > > > > On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
-> > > > > > > On Thursday 26 March 2009, Pavel Machek wrote:
-> > > > > > > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
-> > > > > > > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
-> > > > > > > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
-> > > > > > > > > > > Hi guys,
-> > > > > > > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE
-> > > > > > > > > > > 11.1 and using hiberation/resume daily as configured by the
-> > > > > > > > > > > distro. Yesterday I upgraded to 2.6.29 (make oldconfig from
-> > > > > > > > > > > 2.6.28.7, attached) and after resume networking (at least)
-> > > > > > > > > > > does not work. Reboot at this point takes very long because
-> > > > > > > > > > > of timeouts on CIFS and whatelse.
-> > > > > > > > > > >
-> > > > > > > > > > > Below is how /var/log/messagess looks for one cycle
-> > > > > > > > > > > (hibernate-resume-reboot) and I am also attaching kernel
-> > > > > > > > > > > config and /var/log/pm-suspend.log.
-> > > > > > > > > > >
-> > > > > > > > > > > You will probably notice evil nvidia.ko in there but don't
-> > > > > > > > > > > panic, it all happens without it as well. Tested from
-> > > > > > > > > > > runlevel 3 and by running pm-hibernate. After resume from
-> > > > > > > > > > > that NIC LEDs were off. I tried /etc/init.d/network restart
-> > > > > > > > > > > but that hung so I ^C and tried rmmod forcedeth && modprobe
-> > > > > > > > > > > forcedeth && ifup eth0 and after some time network went
-> > > > > > > > > > > live again. Haven't had time to test further though, so
-> > > > > > > > > > > this is all pretty rough.
-> > > > > > > > > >
-> > > > > > > > > > Ok, can you try to rmmod forcedeth before hibernation, then
-> > > > > > > > > > insmod it after resume?
-> > > > > > > > >
-> > > > > > > > > Sure, after insmod and /etc/init.d/network start following
-> > > > > > > > > resume network was fine. Guess I could kludge that sequence
-> > > > > > > > > into pm scripts somehow but would rather avoid that since it
-> > > > > > > > > slows down the cycle and would make scripts non-stock.
-> > > > > > > >
-> > > > > > > > Ok, I guess you need to talk to forcedeth maintainers then...
-> > > > > > > > sounds like a forcedeth problem to me.
-> > > > > > >
-> > > > > > > I have a box with forcedeth somewhere here, I should be able to
-> > > > > > > check that in the next few days.
-> > > > > >
-> > > > > > Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC
-> > > > > > two guys who commited changes in that period. Ayaz, Tobias, forcedeth
-> > > > > > does not seem to come up after hibernation well for me. Actual
-> > > > > > hardware is:
-> > > > > >
-> > > > > > 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev
-> > > > > > a2)
-> > > > > >
-> > > > > > Anything more I can do just shout!
-> > > > >
-> > > > > Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
-> > > > > way to prove problem is indeed in that module.
-> > > >
-> > > > Good idea, I had to massage it a bit due to some API changes, but the end
-> > > > result is a correct resume which proves that the problem really is in
-> > > > forcedeth.
-> > >
-> > > Well, since you can easily check what commits changed forcedeth between
-> > > 2.6.28 and 2.6.29, you can find the one that introduced the problem for
-> > > you.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I was able to reproduce the problem and identify the commit that broke the
-resume of forcedeth, which turned out to be:
+If the device is not supposed to wake up the system, ie. when
+device_may_wakeup(&dev->dev) returns 'false', pci_prepare_to_sleep()
+should pass 'false' to pci_enable_wake() so that it calls the
+platform to disable the wake-up capability of the device.
 
-commit cb52deba12f27af90a46d2f8667a64888118a888
-Author: Ed Swierk <eswierk@arastra.com>
-Date:   Mon Dec 1 12:24:43 2008 +0000
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    forcedeth: power down phy when interface is down
-
-    Signed-off-by: Ed Swierk <eswierk@arastra.com>
-    Tested-by: Arthur Jones <ajones@riverbed.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Since I have no slightest idea of what this commit is supposed to achieve,
-I can only ask for reverting it.  It reverts cleanly, BTW.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1268,7 +1268,7 @@ int pci_prepare_to_sleep(struct pci_dev 
+ 	if (target_state == PCI_POWER_ERROR)
+ 		return -EIO;
+ 
+-	pci_enable_wake(dev, target_state, true);
++	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
+ 
+ 	error = pci_set_power_state(dev, target_state);
+ 
