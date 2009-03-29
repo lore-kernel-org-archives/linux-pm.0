@@ -1,12 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI PM: Make pci_prepare_to_sleep() disable
-	wake-up if needed
-Date: Sat, 28 Mar 2009 22:26:15 +0100
-Message-ID: <200903282226.15511.rjw__23067.1425270431$1238275813$gmane$org@sisk.pl>
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after
+	resume from hibernation (was: Re: Resume after hibernation
+	regression in 2.6.29)
+Date: Sun, 29 Mar 2009 09:03:57 +0100
+Message-ID: <200903290903.57911.tvrtko__9752.55358866907$1238314071$gmane$org@ursulin.net>
+References: <200903261920.32173.tvrtko@ursulin.net>
+	<200903271255.36429.rjw@sisk.pl> <200903272109.21259.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200903272109.21259.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,32 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Ed Swierk <eswierk@arastra.com>, "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Arthur Jones <ajones@riverbed.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday 27 March 2009 20:09:20 Rafael J. Wysocki wrote:
+> I was able to reproduce the problem and identify the commit that broke the
+> resume of forcedeth, which turned out to be:
+>
+> commit cb52deba12f27af90a46d2f8667a64888118a888
+> Author: Ed Swierk <eswierk@arastra.com>
+> Date:   Mon Dec 1 12:24:43 2008 +0000
+>
+>     forcedeth: power down phy when interface is down
+>
+>     Signed-off-by: Ed Swierk <eswierk@arastra.com>
+>     Tested-by: Arthur Jones <ajones@riverbed.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+> Since I have no slightest idea of what this commit is supposed to achieve,
+> I can only ask for reverting it.  It reverts cleanly, BTW.
 
-If the device is not supposed to wake up the system, ie. when
-device_may_wakeup(&dev->dev) returns 'false', pci_prepare_to_sleep()
-should pass 'false' to pci_enable_wake() so that it calls the
-platform to disable the wake-up capability of the device.
+Reverting this fixes it for me as well.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks for your effort!
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1268,7 +1268,7 @@ int pci_prepare_to_sleep(struct pci_dev 
- 	if (target_state == PCI_POWER_ERROR)
- 		return -EIO;
- 
--	pci_enable_wake(dev, target_state, true);
-+	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
- 
- 	error = pci_set_power_state(dev, target_state);
- 
+Tvrtko
