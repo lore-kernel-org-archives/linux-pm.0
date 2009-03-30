@@ -1,17 +1,20 @@
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after
-	resume from hibernation (was: Re: Resume after hibernation
-	regression in 2.6.29)
-Date: Sun, 29 Mar 2009 09:03:57 +0100
-Message-ID: <200903290903.57911.tvrtko__9752.55358866907$1238314071$gmane$org@ursulin.net>
-References: <200903261920.32173.tvrtko@ursulin.net>
-	<200903271255.36429.rjw@sisk.pl> <200903272109.21259.rjw@sisk.pl>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v3 PATCH 4/4] timers: logic to move non pinned
+	timers
+Date: Mon, 30 Mar 2009 10:30:50 +0530
+Message-ID: <20090330050050.GA7494__30766.8248111897$1238389664$gmane$org@linux.vnet.ibm.com>
+References: <20090316111045.GA4686@linux.vnet.ibm.com>
+	<20090316111548.GE4686@linux.vnet.ibm.com>
+	<alpine.LFD.2.00.0903171017590.29264@localhost.localdomain>
+	<20090317114557.GA32233@linux.vnet.ibm.com>
+	<alpine.LFD.2.00.0903171350020.29264@localhost.localdomain>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200903272109.21259.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903171350020.29264@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +24,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Ed Swierk <eswierk@arastra.com>, "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Arthur Jones <ajones@riverbed.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 27 March 2009 20:09:20 Rafael J. Wysocki wrote:
-> I was able to reproduce the problem and identify the commit that broke the
-> resume of forcedeth, which turned out to be:
->
-> commit cb52deba12f27af90a46d2f8667a64888118a888
-> Author: Ed Swierk <eswierk@arastra.com>
-> Date:   Mon Dec 1 12:24:43 2008 +0000
->
->     forcedeth: power down phy when interface is down
->
->     Signed-off-by: Ed Swierk <eswierk@arastra.com>
->     Tested-by: Arthur Jones <ajones@riverbed.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> Since I have no slightest idea of what this commit is supposed to achieve,
-> I can only ask for reverting it.  It reverts cleanly, BTW.
+* Thomas Gleixner <tglx@linutronix.de> [2009-03-17 14:01:00]:
 
-Reverting this fixes it for me as well.
+> On Tue, 17 Mar 2009, Arun R Bharadwaj wrote:
+> > * Thomas Gleixner <tglx@linutronix.de> [2009-03-17 11:22:24]:
+> > >   Let's assume we are on CPU0 and try to enqueue the timer on CPU1,
+> > >   where the next timer expiry is 5ms away. The timer which we enqueue
+> > >   is due in 500us. So you introduce 4.5ms latency.
+> > >
+> > We are moving timers to the ilb which wakes up every jiffy.
+> > So we can move the timer to the ilb only if it's expiry
+> > time is greater than 1 jiffy. Else we can fire on the same CPU.
+> 
+> Please do not start to add some obscure jiffies magic. The correct
+> check is whether the new timers expiry time is before the first timers
+> expiry time on the target CPU.
+>
 
-Thanks for your effort!
+Hi Thomas,
 
-Tvrtko
+Currently, there is a function get_next_timer_interrupt() which
+returns the next timer's expiry on the CPU. This is used by
+tick_nohz_stop_sched_tick() in order to reprogram the timer device
+before stopping the tick.
+
+get_next_timer_interrupt() returns the earliest between the
+next timer expiry and the next hrtimer expiry.
+
+In case of the hrtimer expiry, the ktime is rounded off to the next
+jiffie and returned.
+
+So using the current infrastructure, there is no benefit in finding
+out when the next timer is going to fire on the target cpu over just
+checking if the current hrtimer which we are migrating is firing
+before the next jiffie or not. If it is firing after 1 jiffie, it can
+be migrated and the target cpu (idle load balancer) will reprogram
+its timer device accordingly.
+
+--arun
+> Thanks,
+> 
+> 	tglx
