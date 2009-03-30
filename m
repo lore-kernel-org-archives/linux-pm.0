@@ -1,20 +1,12 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 4/4] timers: logic to move non pinned
-	timers
-Date: Mon, 30 Mar 2009 10:30:50 +0530
-Message-ID: <20090330050050.GA7494__30766.8248111897$1238389664$gmane$org@linux.vnet.ibm.com>
-References: <20090316111045.GA4686@linux.vnet.ibm.com>
-	<20090316111548.GE4686@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0903171017590.29264@localhost.localdomain>
-	<20090317114557.GA32233@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0903171350020.29264@localhost.localdomain>
-Reply-To: arun@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM changes for 2.6.30
+Date: Mon, 30 Mar 2009 23:51:23 +0200
+Message-ID: <200903302351.24438.rjw__46366.0660353073$1238450126$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903171350020.29264@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,48 +16,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-03-17 14:01:00]:
+Hi Linus,
 
-> On Tue, 17 Mar 2009, Arun R Bharadwaj wrote:
-> > * Thomas Gleixner <tglx@linutronix.de> [2009-03-17 11:22:24]:
-> > >   Let's assume we are on CPU0 and try to enqueue the timer on CPU1,
-> > >   where the next timer expiry is 5ms away. The timer which we enqueue
-> > >   is due in 500us. So you introduce 4.5ms latency.
-> > >
-> > We are moving timers to the ilb which wakes up every jiffy.
-> > So we can move the timer to the ilb only if it's expiry
-> > time is greater than 1 jiffy. Else we can fire on the same CPU.
-> 
-> Please do not start to add some obscure jiffies magic. The correct
-> check is whether the new timers expiry time is before the first timers
-> expiry time on the target CPU.
->
+Please pull the power management updates for 2.6.30 from:
 
-Hi Thomas,
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-Currently, there is a function get_next_timer_interrupt() which
-returns the next timer's expiry on the CPU. This is used by
-tick_nohz_stop_sched_tick() in order to reprogram the timer device
-before stopping the tick.
+This contains the patches that modify the handling of interrupts during suspend
+and resume and the associated PCI PM patches.  All of them have been reviewed
+and accepted by the appropriate maintainers.
 
-get_next_timer_interrupt() returns the earliest between the
-next timer expiry and the next hrtimer expiry.
+ arch/x86/kernel/apm_32.c      |   15 +++-
+ drivers/base/power/main.c     |   20 +++--
+ drivers/base/sys.c            |    8 ++
+ drivers/pci/pci-driver.c      |  177 ++++++++++++++++++++++++++---------------
+ drivers/pci/pci.c             |  142 +++++++++++++++------------------
+ drivers/pci/pci.h             |    1 -
+ drivers/video/aty/radeon_pm.c |    2 +-
+ drivers/xen/manage.c          |   16 ++--
+ include/linux/interrupt.h     |    9 ++
+ include/linux/irq.h           |    1 +
+ include/linux/pci.h           |    1 +
+ kernel/irq/Makefile           |    1 +
+ kernel/irq/internals.h        |    2 +
+ kernel/irq/manage.c           |   31 ++++++--
+ kernel/irq/pm.c               |   79 ++++++++++++++++++
+ kernel/kexec.c                |   19 ++---
+ kernel/power/disk.c           |  138 ++++++++++++++++++++------------
+ kernel/power/main.c           |   55 ++++++++-----
+ 18 files changed, 461 insertions(+), 256 deletions(-)
 
-In case of the hrtimer expiry, the ktime is rounded off to the next
-jiffie and returned.
+---------------
 
-So using the current infrastructure, there is no benefit in finding
-out when the next timer is going to fire on the target cpu over just
-checking if the current hrtimer which we are migrating is firing
-before the next jiffie or not. If it is firing after 1 jiffie, it can
-be migrated and the target cpu (idle load balancer) will reprogram
-its timer device accordingly.
+Frans Pop <elendil@planet.nl> (1):
+      PCI PM: Consistently use variable name "error" for pm call return values
 
---arun
-> Thanks,
-> 
-> 	tglx
+Rafael J. Wysocki <rjw@sisk.pl> (13):
+      PM: Introduce functions for suspending and resuming device interrupts
+      PM: Rework handling of interrupts during suspend-resume
+      PM: Change suspend code ordering
+      PM: Change hibernation code ordering
+      kexec: Change kexec jump code ordering
+      PCI PM: Use pci_set_power_state during early resume
+      PCI PM: Move pci_restore_standard_config to pci-driver.c
+      PCI PM: Put devices into low power states during late suspend (rev. 2)
+      PCI PM: Make pci_set_power_state() handle devices with no PM support
+      PCI PM: Restore config spaces of all devices during early resume
+      PCI PM: Introduce __pci_[start|complete]_power_transition() (rev. 2)
+      radeonfb: Use __pci_complete_power_transition()
+      PCI PM: Make pci_prepare_to_sleep() disable wake-up if needed
+
+[This is my first pull request, so please be patient ... ;-)]
+
+Thanks,
+Rafael
