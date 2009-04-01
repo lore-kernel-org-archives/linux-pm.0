@@ -1,7 +1,9 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM changes for 2.6.30
-Date: Mon, 30 Mar 2009 23:51:23 +0200
-Message-ID: <200903302351.24438.rjw__46366.0660353073$1238450126$gmane$org@sisk.pl>
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v4 RFC PATCH 0/4] timers: Framework for migration of
+	timers
+Date: Wed, 1 Apr 2009 17:01:28 +0530
+Message-ID: <20090401113128.GA22478__10756.3253761784$1238585986$gmane$org@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,61 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hi,
 
-Please pull the power management updates for 2.6.30 from:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+In an SMP system, tasks are scheduled on different CPUs by the
+scheduler, interrupts are managed by irqbalancer daemon, but timers
+are still stuck to the CPUs that they have been initialised.  Timers
+queued by tasks gets re-queued on the CPU where the task gets to run
+next, but timers from IRQ context like the ones in device drivers are
+still stuck on the CPU they were initialised.  This framework will
+help move all 'movable timers' using a sysctl interface.
 
-This contains the patches that modify the handling of interrupts during suspend
-and resume and the associated PCI PM patches.  All of them have been reviewed
-and accepted by the appropriate maintainers.
+Iteration v3 of this patch can be found at
+http://lkml.org/lkml/2009/3/16/162
 
- arch/x86/kernel/apm_32.c      |   15 +++-
- drivers/base/power/main.c     |   20 +++--
- drivers/base/sys.c            |    8 ++
- drivers/pci/pci-driver.c      |  177 ++++++++++++++++++++++++++---------------
- drivers/pci/pci.c             |  142 +++++++++++++++------------------
- drivers/pci/pci.h             |    1 -
- drivers/video/aty/radeon_pm.c |    2 +-
- drivers/xen/manage.c          |   16 ++--
- include/linux/interrupt.h     |    9 ++
- include/linux/irq.h           |    1 +
- include/linux/pci.h           |    1 +
- kernel/irq/Makefile           |    1 +
- kernel/irq/internals.h        |    2 +
- kernel/irq/manage.c           |   31 ++++++--
- kernel/irq/pm.c               |   79 ++++++++++++++++++
- kernel/kexec.c                |   19 ++---
- kernel/power/disk.c           |  138 ++++++++++++++++++++------------
- kernel/power/main.c           |   55 ++++++++-----
- 18 files changed, 461 insertions(+), 256 deletions(-)
+Changelog: v3->v4
 
----------------
+-An hrtimer is migrated *only* if its expiry occurs after the next timer
+interrupt on the CPU to which it is being migrated to. This prevents any
+possible latency, which might have arised otherwise due to migration.
 
-Frans Pop <elendil@planet.nl> (1):
-      PCI PM: Consistently use variable name "error" for pm call return values
+So, a few helper functions have been added to check if migration would
+result in latency or not.
+Thanks to Thomas for pointing out this issue.
 
-Rafael J. Wysocki <rjw@sisk.pl> (13):
-      PM: Introduce functions for suspending and resuming device interrupts
-      PM: Rework handling of interrupts during suspend-resume
-      PM: Change suspend code ordering
-      PM: Change hibernation code ordering
-      kexec: Change kexec jump code ordering
-      PCI PM: Use pci_set_power_state during early resume
-      PCI PM: Move pci_restore_standard_config to pci-driver.c
-      PCI PM: Put devices into low power states during late suspend (rev. 2)
-      PCI PM: Make pci_set_power_state() handle devices with no PM support
-      PCI PM: Restore config spaces of all devices during early resume
-      PCI PM: Introduce __pci_[start|complete]_power_transition() (rev. 2)
-      radeonfb: Use __pci_complete_power_transition()
-      PCI PM: Make pci_prepare_to_sleep() disable wake-up if needed
+The following patches are included:
+PATCH 1/4 - framework to identify pinned timers.
+PATCH 2/4 - identifying the existing pinned hrtimers.
+PATCH 3/4 - /proc/sys sysctl hook to enable timer migration.
+PATCH 4/4 - logic to enable timer migration.
 
-[This is my first pull request, so please be patient ... ;-)]
+The patchset is based on the latest tip/master.
 
-Thanks,
-Rafael
+Timer migration is enabled by default as suggested by Ingo.
+It can be turned off when CONFIG_SCHED_DEBUG=y by
+
+echo 0 > /proc/sys/kernel/timer_migration
+
+
+
+Please let me know your comments.
+
+--arun
