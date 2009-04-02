@@ -1,12 +1,15 @@
-From: "Premi, Sanjeev" <premi@ti.com>
-Subject: Adding PM QoS parameters
-Date: Fri, 3 Apr 2009 01:55:06 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301CC66C7DE@dbde02.ent.ti.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/9] hp_accel: remove unused #include
+	<version.h>
+Date: Thu, 2 Apr 2009 22:27:42 +0200
+Message-ID: <20090402202742.GC16460__42802.1703650758$1238704296$gmane$org@elf.ucw.cz>
+References: <1238686212-3920-1-git-send-email-weiyi.huang@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1238686212-3920-1-git-send-email-weiyi.huang@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,29 +19,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Huang Weiyi <weiyi.huang@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.linux-foundation.org, Eric Piel <eric.piel@tremplin-utc.net>, kernel list <linux-kernel@vger.kernel.org>, Vladimir Botka <vbotka@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-I have just started looking at the PM QoS implementation; I came across this
-text in "pm_qos_interface.txt"
+On Thu 2009-04-02 23:30:12, Huang Weiyi wrote:
+> Remove unused #include <version.h> in drivers/hwmon/hp_accel.c.
+> 
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-[quote]
-The infrastructure exposes multiple misc device nodes one per implemented
-parameter.  The set of parameters implement is defined by pm_qos_power_init()
-and pm_qos_params.h.  This is done because having the available parameters
-being runtime configurable or changeable from a driver was seen as too easy to
-abuse.
-[/quote]
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Though I have understood the intent; i feel it may also be limiting the use
-where there is a genuine need - specific to an arch/ platform.
-
-Can we allow number of these params to grow upto a reasonable limit (say 8)?
-If an arch/platform does not specifies more params, everything remains same.
-But we get an opportunity to add arch/platform specific requirements.
-
-Not sure if this has already been discussed earlier, but would like to hear
-more thoughts.
-
-Best regards,
-Sanjeev
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
