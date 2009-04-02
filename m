@@ -1,11 +1,12 @@
-From: Huang Weiyi <weiyi.huang@gmail.com>
-Subject: [PATCH 2/9] hp_accel: remove unused #include <version.h>
-Date: Thu,  2 Apr 2009 23:30:12 +0800
-Message-ID: <1238686212-3920-1-git-send-email-weiyi.huang@gmail.com>
+From: "Premi, Sanjeev" <premi@ti.com>
+Subject: Adding PM QoS parameters
+Date: Fri, 3 Apr 2009 01:55:06 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301CC66C7DE@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,28 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
-Cc: linux-pm@lists.linux-foundation.org, Huang Weiyi <weiyi.huang@gmail.com>
+To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Remove unused #include <version.h> in drivers/hwmon/hp_accel.c.
+I have just started looking at the PM QoS implementation; I came across this
+text in "pm_qos_interface.txt"
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
----
- drivers/hwmon/hp_accel.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+[quote]
+The infrastructure exposes multiple misc device nodes one per implemented
+parameter.  The set of parameters implement is defined by pm_qos_power_init()
+and pm_qos_params.h.  This is done because having the available parameters
+being runtime configurable or changeable from a driver was seen as too easy to
+abuse.
+[/quote]
 
-diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
-index 55d3dc5..abca7e9 100644
---- a/drivers/hwmon/hp_accel.c
-+++ b/drivers/hwmon/hp_accel.c
-@@ -34,7 +34,6 @@
- #include <linux/wait.h>
- #include <linux/poll.h>
- #include <linux/freezer.h>
--#include <linux/version.h>
- #include <linux/uaccess.h>
- #include <linux/leds.h>
- #include <acpi/acpi_drivers.h>
--- 
-1.6.0.4
+Though I have understood the intent; i feel it may also be limiting the use
+where there is a genuine need - specific to an arch/ platform.
+
+Can we allow number of these params to grow upto a reasonable limit (say 8)?
+If an arch/platform does not specifies more params, everything remains same.
+But we get an opportunity to add arch/platform specific requirements.
+
+Not sure if this has already been discussed earlier, but would like to hear
+more thoughts.
+
+Best regards,
+Sanjeev
