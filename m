@@ -1,17 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after
-	resume from hibernation (was: Re: Resume after hibernation
-	regression in 2.6.29)
-Date: Sat, 4 Apr 2009 15:07:41 +0200
-Message-ID: <200904041507.42927.rjw__42775.3410688185$1238850757$gmane$org@sisk.pl>
-References: <200903261920.32173.tvrtko@ursulin.net>
-	<1238780473.19305.3.camel@localhost.localdomain>
-	<200904041404.24616.tvrtko@ursulin.net>
+Subject: [RFC][PATCH] PM: Warn if interrupts are enabled during
+	suspend-resume of sysdevs
+Date: Sat, 4 Apr 2009 23:23:19 +0200
+Message-ID: <200904042323.19866.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904041404.24616.tvrtko@ursulin.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,72 +17,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, "David S. Miller" <davem@davemloft.net>, netdev <netdev@vger.kernel.org>, kernel list <linux-kernel@vger.kernel.org>, Ed Swierk <eswierk@aristanetworks.com>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, stable@kernel.org, Arthur Jones <ajones@riverbed.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 04 April 2009, Tvrtko A. Ursulin wrote:
-> On Friday 03 April 2009 18:41:12 Ed Swierk wrote:
-> > On Fri, 2009-04-03 at 08:24 -0700, Ed Swierk wrote:
-> > > On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > I was able to reproduce the problem and identify the commit that broke
-> > > > the resume of forcedeth, which turned out to be:
-> > > >
-> > > > commit cb52deba12f27af90a46d2f8667a64888118a888
-> > > > Author: Ed Swierk <eswierk@arastra.com>
-> > > > Date:   Mon Dec 1 12:24:43 2008 +0000
-> > > >
-> > > >    forcedeth: power down phy when interface is down
-> > > >
-> > > >    Signed-off-by: Ed Swierk <eswierk@arastra.com>
-> > > >    Tested-by: Arthur Jones <ajones@riverbed.com>
-> > > >    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > >    Signed-off-by: David S. Miller <davem@davemloft.net>
-> > > >
-> > > > Since I have no slightest idea of what this commit is supposed to
-> > > > achieve, I can only ask for reverting it.  It reverts cleanly, BTW.
-> > >
-> > > The change causes forcedeth to bring down the physical link when an
-> > > interface goes down; leaving it up causes the switch at the other end
-> > > to think the port is still active, with potentially random speed and
-> > > duplex parameters.
-> > >
-> > > It's possible that the forcedeth driver needs to reset autonegotiation
-> > > after bringing it up the link again.
-> > >
-> > > Can you please try this on a 2.6.29 kernel that's exhibiting the
-> > > symptoms you describe, after resuming the machine from hibernation:
-> > >
-> > >   ethtool -s eth1 autoneg off speed 100 duplex full
-> > >   ethtool -s eth1 autoneg on
-> > >
-> > > This should reset autonegotiation manually and bring the link. Let me
-> > > know how it goes.
-> >
-> > Also please try this patch; it fixes the problem on my test system (a
-> > DFI board with an nVidia MCP55).
-> >
-> > Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-> > --
-> > --- linux-2.6.29.x86_64/drivers/net/forcedeth.c.orig	2009-03-23
-> > 16:12:14.000000000 -0700 +++
-> > linux-2.6.29.x86_64/drivers/net/forcedeth.c	2009-04-03 10:11:26.839614710
-> > -0700 @@ -5995,6 +5995,9 @@
-> >  	for (i = 0;i <= np->register_size/sizeof(u32); i++)
-> >  		writel(np->saved_config_space[i], base+i*sizeof(u32));
-> >
-> > +	/* restore phy state, including autoneg */
-> > +	phy_init(dev);
-> > +
-> >  	netif_device_attach(dev);
-> >  	if (netif_running(dev)) {
-> >  		rc = nv_open(dev);
-> 
-> Works for me on MCP73 as well.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Great, thanks for testing.
+Sysdev have to be suspended and resumed with interrupts disabled and
+things usually break in a way that's difficult to debug if one of
+sysdev drivers enables interrupts by mistake during suspend or
+resume.  Add extra checks that will generate warnings in such cases.
 
-I think the patch should go to Linus ASAP and to -stable as a regression fix.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/sys.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-Thanks,
-Rafael
+Index: linux-2.6/drivers/base/sys.c
+===================================================================
+--- linux-2.6.orig/drivers/base/sys.c
++++ linux-2.6/drivers/base/sys.c
+@@ -343,11 +343,15 @@ static void __sysdev_resume(struct sys_d
+ 	/* First, call the class-specific one */
+ 	if (cls->resume)
+ 		cls->resume(dev);
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled after %pF\n", cls->resume);
+ 
+ 	/* Call auxillary drivers next. */
+ 	list_for_each_entry(drv, &cls->drivers, entry) {
+ 		if (drv->resume)
+ 			drv->resume(dev);
++		WARN_ONCE(!irqs_disabled(),
++			"Interrupts enabled after %pF\n", drv->resume);
+ 	}
+ }
+ 
+@@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)
+ 	if (ret)
+ 		return ret;
+ 
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled while suspending system devices");
++
+ 	pr_debug("Suspending System Devices\n");
+ 
+ 	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
+@@ -393,6 +400,9 @@ int sysdev_suspend(pm_message_t state)
+ 					if (ret)
+ 						goto aux_driver;
+ 				}
++				WARN_ONCE(!irqs_disabled(),
++					"Interrupts enabled after %pF\n",
++					drv->suspend);
+ 			}
+ 
+ 			/* Now call the generic one */
+@@ -400,6 +410,9 @@ int sysdev_suspend(pm_message_t state)
+ 				ret = cls->suspend(sysdev, state);
+ 				if (ret)
+ 					goto cls_driver;
++				WARN_ONCE(!irqs_disabled(),
++					"Interrupts enabled after %pF\n",
++					cls->suspend);
+ 			}
+ 		}
+ 	}
+@@ -452,6 +465,9 @@ int sysdev_resume(void)
+ {
+ 	struct sysdev_class *cls;
+ 
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled while resuming system devices");
++
+ 	pr_debug("Resuming System Devices\n");
+ 
+ 	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
