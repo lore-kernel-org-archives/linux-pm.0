@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Warn if interrupts are enabled
-	during suspend-resume of sysdevs
-Date: Sun, 5 Apr 2009 19:39:29 +0200
-Message-ID: <200904051939.30170.rjw__33694.5378840484$1238953392$gmane$org@sisk.pl>
-References: <200904042323.19866.rjw@sisk.pl> <20090405135108.GC25250@elte.hu>
+Subject: [PATCH] NET/r8169: Rework suspend and resume
+Date: Sun, 5 Apr 2009 20:40:04 +0200
+Message-ID: <200904052040.04752.rjw__23426.4393257492$1238957021$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090405135108.GC25250@elte.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,36 +16,140 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: NetDev <netdev@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 05 April 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Sysdev have to be suspended and resumed with interrupts disabled 
-> > and things usually break in a way that's difficult to debug if one 
-> > of sysdev drivers enables interrupts by mistake during suspend or 
-> > resume.  Add extra checks that will generate warnings in such 
-> > cases.
-> 
-> no objections - but obviously the real solution would be to finish 
-> PeterZ's "detect assymetric kernel functions" patch:
-> 
-> That patch (Peter posted an initial version of it already on lkml) 
-> works the following way:
-> 
-> the ftrace function-graph-tracer plugin is utilized to instrument 
-> every function call in the kernel. That is extended with the 
-> following check: every function except __lockfunc and __sched 
-> functions must be 'balanced' - i.e. they must enter and exit with 
-> the same IRQ flags, preempt count and lock depth counter.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Nothing wrong with that, but I'd also like to have checks that don't depend on
-ftrace. :-)
+The recent changes of the PCI PM core allow us to simplify the
+suspend and resume handling in a number of device drivers, since they
+don't need to carry out the general PCI PM operations, such as
+changing the power state of the device, during suspend and resume any
+more.
 
-Thanks,
-Rafael
+Simplify the suspend and resume callbacks of r8169 using the
+observation that the PCI PM core can take care of some operations
+carried out by the driver.
+
+Additionally, make the shutdown callback of r8169 only put the device
+into a low power state if the system is going to be powered off
+(kexec is known to have problems with network adapters that are put
+into low power states on shutdown).
+
+This patch has been tested on MSI Wind U100.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/r8169.c |   61 +++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 39 insertions(+), 22 deletions(-)
+
+Index: linux-2.6/drivers/net/r8169.c
+===================================================================
+--- linux-2.6.orig/drivers/net/r8169.c
++++ linux-2.6/drivers/net/r8169.c
+@@ -3791,16 +3791,13 @@ static struct net_device_stats *rtl8169_
+ 	return &dev->stats;
+ }
+ 
+-#ifdef CONFIG_PM
+-
+-static int rtl8169_suspend(struct pci_dev *pdev, pm_message_t state)
++static void rtl8169_net_suspend(struct net_device *dev)
+ {
+-	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 
+ 	if (!netif_running(dev))
+-		goto out_pci_suspend;
++		return;
+ 
+ 	netif_device_detach(dev);
+ 	netif_stop_queue(dev);
+@@ -3812,24 +3809,25 @@ static int rtl8169_suspend(struct pci_de
+ 	rtl8169_rx_missed(dev, ioaddr);
+ 
+ 	spin_unlock_irq(&tp->lock);
++}
+ 
+-out_pci_suspend:
+-	pci_save_state(pdev);
+-	pci_enable_wake(pdev, pci_choose_state(pdev, state),
+-		(tp->features & RTL_FEATURE_WOL) ? 1 : 0);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++#ifdef CONFIG_PM
++
++static int rtl8169_suspend(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct net_device *dev = pci_get_drvdata(pdev);
++
++	rtl8169_net_suspend(dev);
+ 
+ 	return 0;
+ }
+ 
+-static int rtl8169_resume(struct pci_dev *pdev)
++static int rtl8169_resume(struct device *device)
+ {
++	struct pci_dev *pdev = to_pci_dev(device);
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 
+-	pci_set_power_state(pdev, PCI_D0);
+-	pci_restore_state(pdev);
+-	pci_enable_wake(pdev, PCI_D0, 0);
+-
+ 	if (!netif_running(dev))
+ 		goto out;
+ 
+@@ -3840,23 +3838,42 @@ out:
+ 	return 0;
+ }
+ 
++static struct dev_pm_ops rtl8169_pm_ops = {
++	.suspend = rtl8169_suspend,
++	.resume = rtl8169_resume,
++	.freeze = rtl8169_suspend,
++	.thaw = rtl8169_resume,
++	.poweroff = rtl8169_suspend,
++	.restore = rtl8169_resume,
++};
++
++#define RTL8169_PM_OPS	(&rtl8169_pm_ops)
++
++#else /* !CONFIG_PM */
++
++#define RTL8169_PM_OPS	NULL
++
++#endif /* !CONFIG_PM */
++
+ static void rtl_shutdown(struct pci_dev *pdev)
+ {
+-	rtl8169_suspend(pdev, PMSG_SUSPEND);
+-}
++	struct net_device *dev = pci_get_drvdata(pdev);
+ 
+-#endif /* CONFIG_PM */
++	rtl8169_net_suspend(dev);
++
++	if (system_state == SYSTEM_POWER_OFF) {
++		pci_wake_from_d3(pdev, true);
++		pci_set_power_state(pdev, PCI_D3hot);
++	}
++}
+ 
+ static struct pci_driver rtl8169_pci_driver = {
+ 	.name		= MODULENAME,
+ 	.id_table	= rtl8169_pci_tbl,
+ 	.probe		= rtl8169_init_one,
+ 	.remove		= __devexit_p(rtl8169_remove_one),
+-#ifdef CONFIG_PM
+-	.suspend	= rtl8169_suspend,
+-	.resume		= rtl8169_resume,
+ 	.shutdown	= rtl_shutdown,
+-#endif
++	.driver.pm	= RTL8169_PM_OPS,
+ };
+ 
+ static int __init rtl8169_init_module(void)
