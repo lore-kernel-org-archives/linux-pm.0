@@ -1,23 +1,14 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned
+Subject: [v5 PATCH 1/4] timers: Framework for identifying pinned
 	timers
-Date: Mon, 6 Apr 2009 21:30:39 +0530
-Message-ID: <20090406160039.GA15269__19283.9484349408$1239034215$gmane$org@linux.vnet.ibm.com>
-References: <20090401113128.GA22478@linux.vnet.ibm.com>
-	<20090401113738.GE22478@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0904032142460.12916@localhost.localdomain>
-	<20090406051656.GA17412@linux.vnet.ibm.com>
-	<20090406104228.GB17412@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0904061248120.747@localhost.localdomain>
-	<20090406152843.GA11645@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
+Date: Mon, 6 Apr 2009 21:43:57 +0530
+Message-ID: <20090406161357.GB15269__35096.4303630919$1239034817$gmane$org@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,67 +18,237 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, vaidy@linux.vnet.ibm.com, arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-04-06 17:35:09]:
+This patch creates a new framework for identifying cpu-pinned timers
+and hrtimers.
 
-> Arun,
-> 
-> On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
-> > > > -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-> > > > +again:
-> > > > +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
-> > > >  	new_base = &new_cpu_base->clock_base[base->index];
-> > > >  
-> > > >  	if (base != new_base) {
-> > > > @@ -220,6 +242,32 @@ switch_hrtimer_base(struct hrtimer *time
-> > > >  		spin_unlock(&base->cpu_base->lock);
-> > > >  		spin_lock(&new_base->cpu_base->lock);
-> > > >  		timer->base = new_base;
-> > > > +
-> > > > +		if (cpu == preferred_cpu) {
-> > > > +			/* Calculate clock monotonic expiry time */
-> > > > +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
-> > > > +							new_base->offset);
-> > > > +
-> > > > +			/*
-> > > > +			 * Get the next event on target cpu from the
-> > > > +			 * clock events layer.
-> > > > +			 * This covers the highres=off nohz=on case as well.
-> > > > +			 */
-> > > > +			ktime_t next = clockevents_get_next_event(cpu);
-> > > > +
-> > > > +			ktime_t delta = ktime_sub(expires, next);
-> > > > +
-> > > > +			/*
-> > > > +			 * We do not migrate the timer when it is expiring
-> > > > +			 * before the next event on the target cpu because
-> > > > +			 * we cannot reprogram the target cpu hardware and
-> > > > +			 * we would cause it to fire late.
-> > > > +			 */
-> > > > +			if (delta.tv64 < 0) {
-> > > > +				cpu = smp_processor_id();
-> > > 
-> > >   You are missing a small but fatal detail here: You hold
-> > >   new_base->cpu_base->lock. So you need to do:
-> > >
-> > 
-> > I just moved the if block.. if (cpu==preferred_cpu) above the base
-> > locking part to avoid the extra unlocking.
-> 
-> That's not a good idea. You want to look at the next event with the
-> base lock of the other cpu held. That prevents that expires the first
-> pending timer right after you checked next_event and before you queue
-> your timer, which then might become the first timer to expire but you
-> can't reprogram the clock event device on the other cpu.
->
 
-Okay... I understand. Thanks for the explanation :)
-Will post all the changes together in a separate thread.
+This framework is needed because pinned timers are expected to fire on
+the same CPU on which they are queued. So it is essential to identify
+these and not migrate them, in case there are any.
 
---arun
-> Thanks,
-> 
-> 	tglx
+For regular timers, the currently existing add_timer_on() can be used
+queue pinned timers and subsequently mod_timer_pinned() can be used
+to modify the 'expires' field.
+
+For hrtimers, a new interface hrtimer_start_pinned() is created,
+which can be used to queue cpu-pinned hrtimer.
+
+
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ include/linux/hrtimer.h |   24 ++++++++++++++++++++----
+ include/linux/timer.h   |    3 +++
+ kernel/hrtimer.c        |   34 ++++++++++++++++++++++++++++------
+ kernel/timer.c          |   31 +++++++++++++++++++++++++++----
+ 4 files changed, 78 insertions(+), 14 deletions(-)
+
+Index: linux.trees.git/include/linux/hrtimer.h
+===================================================================
+--- linux.trees.git.orig/include/linux/hrtimer.h
++++ linux.trees.git/include/linux/hrtimer.h
+@@ -331,23 +331,39 @@ static inline void hrtimer_init_on_stack
+ static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
+ #endif
+ 
++#define HRTIMER_NOT_PINNED	0
++#define HRTIMER_PINNED		1
+ /* Basic timer operations: */
+ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
+ 			 const enum hrtimer_mode mode);
++extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
++			const enum hrtimer_mode mode);
+ extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+-			unsigned long range_ns, const enum hrtimer_mode mode);
++	unsigned long range_ns, const enum hrtimer_mode mode, int pinned);
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+ 
+-static inline int hrtimer_start_expires(struct hrtimer *timer,
+-						enum hrtimer_mode mode)
++static inline int __hrtimer_start_expires(struct hrtimer *timer,
++					enum hrtimer_mode mode, int pinned)
+ {
+ 	unsigned long delta;
+ 	ktime_t soft, hard;
+ 	soft = hrtimer_get_softexpires(timer);
+ 	hard = hrtimer_get_expires(timer);
+ 	delta = ktime_to_ns(ktime_sub(hard, soft));
+-	return hrtimer_start_range_ns(timer, soft, delta, mode);
++	return hrtimer_start_range_ns(timer, soft, delta, mode, pinned);
++}
++
++static inline int hrtimer_start_expires(struct hrtimer *timer,
++						enum hrtimer_mode mode)
++{
++	return __hrtimer_start_expires(timer, mode, HRTIMER_NOT_PINNED);
++}
++
++static inline int hrtimer_start_expires_pinned(struct hrtimer *timer,
++						enum hrtimer_mode mode)
++{
++	return __hrtimer_start_expires(timer, mode, HRTIMER_PINNED);
+ }
+ 
+ static inline int hrtimer_restart(struct hrtimer *timer)
+Index: linux.trees.git/kernel/hrtimer.c
+===================================================================
+--- linux.trees.git.orig/kernel/hrtimer.c
++++ linux.trees.git/kernel/hrtimer.c
+@@ -193,7 +193,8 @@ struct hrtimer_clock_base *lock_hrtimer_
+  * Switch the timer base to the current CPU when possible.
+  */
+ static inline struct hrtimer_clock_base *
+-switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base)
++switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
++	int pinned)
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
+@@ -897,9 +898,8 @@ remove_hrtimer(struct hrtimer *timer, st
+  *  0 on success
+  *  1 when the timer was active
+  */
+-int
+-hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
+-			const enum hrtimer_mode mode)
++int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++	unsigned long delta_ns, const enum hrtimer_mode mode, int pinned)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+@@ -911,7 +911,7 @@ hrtimer_start_range_ns(struct hrtimer *t
+ 	ret = remove_hrtimer(timer, base);
+ 
+ 	/* Switch the timer base, if necessary: */
+-	new_base = switch_hrtimer_base(timer, base);
++	new_base = switch_hrtimer_base(timer, base, pinned);
+ 
+ 	if (mode == HRTIMER_MODE_REL) {
+ 		tim = ktime_add_safe(tim, new_base->get_time());
+@@ -948,6 +948,12 @@ hrtimer_start_range_ns(struct hrtimer *t
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 
++int __hrtimer_start(struct hrtimer *timer, ktime_t tim,
++	const enum hrtimer_mode mode, int pinned)
++{
++	return hrtimer_start_range_ns(timer, tim, 0, mode, pinned);
++}
++
+ /**
+  * hrtimer_start - (re)start an hrtimer on the current CPU
+  * @timer:	the timer to be added
+@@ -961,10 +967,26 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
+ int
+ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+-	return hrtimer_start_range_ns(timer, tim, 0, mode);
++	return __hrtimer_start(timer, tim, mode, HRTIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
++/**
++ * hrtimer_start_pinned - start a CPU-pinned hrtimer
++ * @timer:      the timer to be added
++ * @tim:        expiry time
++ * @mode:       expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
++ *
++ * Returns:
++ *  0 on success
++ *  1 when the timer was active
++ */
++int hrtimer_start_pinned(struct hrtimer *timer,
++	ktime_t tim, const enum hrtimer_mode mode)
++{
++	return __hrtimer_start(timer, tim, mode, HRTIMER_PINNED);
++}
++EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
+ 
+ /**
+  * hrtimer_try_to_cancel - try to deactivate a timer
+Index: linux.trees.git/include/linux/timer.h
+===================================================================
+--- linux.trees.git.orig/include/linux/timer.h
++++ linux.trees.git/include/linux/timer.h
+@@ -163,7 +163,10 @@ extern void add_timer_on(struct timer_li
+ extern int del_timer(struct timer_list * timer);
+ extern int mod_timer(struct timer_list *timer, unsigned long expires);
+ extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
++extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+ 
++#define TIMER_NOT_PINNED	0
++#define TIMER_PINNED		1
+ /*
+  * The jiffies value which is added to now, when there is no timer
+  * in the timer wheel:
+Index: linux.trees.git/kernel/timer.c
+===================================================================
+--- linux.trees.git.orig/kernel/timer.c
++++ linux.trees.git/kernel/timer.c
+@@ -601,7 +601,8 @@ static struct tvec_base *lock_timer_base
+ }
+ 
+ static inline int
+-__mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
++__mod_timer(struct timer_list *timer, unsigned long expires,
++						bool pending_only, int pinned)
+ {
+ 	struct tvec_base *base, *new_base;
+ 	unsigned long flags;
+@@ -665,7 +666,7 @@ out_unlock:
+  */
+ int mod_timer_pending(struct timer_list *timer, unsigned long expires)
+ {
+-	return __mod_timer(timer, expires, true);
++	return __mod_timer(timer, expires, true, TIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL(mod_timer_pending);
+ 
+@@ -699,11 +700,33 @@ int mod_timer(struct timer_list *timer, 
+ 	if (timer->expires == expires && timer_pending(timer))
+ 		return 1;
+ 
+-	return __mod_timer(timer, expires, false);
++	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL(mod_timer);
+ 
+ /**
++ * mod_timer_pinned - modify a timer's timeout
++ * @timer: the timer to be modified
++ * @expires: new timeout in jiffies
++ *
++ * mod_timer_pinned() is a way to update the expire field of an
++ * active timer (if the timer is inactive it will be activated)
++ * and not allow the timer to be migrated to a different CPU.
++ *
++ * mod_timer_pinned(timer, expires) is equivalent to:
++ *
++ *     del_timer(timer); timer->expires = expires; add_timer(timer);
++ */
++int mod_timer_pinned(struct timer_list *timer, unsigned long expires)
++{
++	if (timer->expires == expires && timer_pending(timer))
++		return 1;
++
++	return __mod_timer(timer, expires, false, TIMER_PINNED);
++}
++EXPORT_SYMBOL(mod_timer_pinned);
++
++/**
+  * add_timer - start a timer
+  * @timer: the timer to be added
+  *
+@@ -1350,7 +1373,7 @@ signed long __sched schedule_timeout(sig
+ 	expire = timeout + jiffies;
+ 
+ 	setup_timer_on_stack(&timer, process_timeout, (unsigned long)current);
+-	__mod_timer(&timer, expire, false);
++	__mod_timer(&timer, expire, false, TIMER_NOT_PINNED);
+ 	schedule();
+ 	del_singleshot_timer_sync(&timer);
+ 
