@@ -1,18 +1,10 @@
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned
-	timers
-Date: Mon, 6 Apr 2009 10:46:56 +0530
-Message-ID: <20090406051656.GA17412__5045.68057735941$1238995355$gmane$org@linux.vnet.ibm.com>
-References: <20090401113128.GA22478@linux.vnet.ibm.com>
-	<20090401113738.GE22478@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.0904032142460.12916@localhost.localdomain>
-Reply-To: arun@linux.vnet.ibm.com
+From: =?gbk?B?tPPE8Q==?= <greatliuyp@163.com>
+Subject: IOAT DMA in  i7300 idle
+Date: Mon, 6 Apr 2009 14:00:55 +0800 (CST)
+Message-ID: <5170805.299491238997655976.JavaMail.coremail@bj163app29.163.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7305172360787834873=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904032142460.12916@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,18 +12,45 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-04-03 23:52:51]:
+--===============7305172360787834873==
+Content-Type: multipart/alternative;
+	boundary="----=_Part_80065_2471919.1238997655975"
 
-Hi Thomas,
+------=_Part_80065_2471919.1238997655975
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 7bit
 
-Thanks for the really detailed review of my patch.
-I'll work on the things that you have suggested and get back with
-the changes.
+In 2.6.28, we can find power management support for memory in i7300 idle.
+It control the power consumption of memory based on the power throttling mechnism of i7300 MCH. 
+Why loop IOAT DMA memory copy is activated in throttling? Is it only used to show the effect of throttling in experiment?
+------=_Part_80065_2471919.1238997655975
+Content-Type: text/html; charset=gbk
+Content-Transfer-Encoding: quoted-printable
 
---arun
+<DIV>In 2.6.28, we can find power management support for memory in i7300 id=
+le.</DIV>
+<DIV>It control the power consumption of memory based on the power throttli=
+ng mechnism of i7300 MCH. </DIV>
+<DIV>Why loop IOAT DMA memory copy is activated in&nbsp;throttling? Is it o=
+nly used to show&nbsp;the effect of throttling in experiment?</DIV><br><!--=
+ footer --><br><span title=3D"neteasefooter"/><hr/>
+<a href=3D"http://email.163.com">=CD=F8=D2=D7=D3=CA=CF=E4=A3=AC=D6=D0=B9=FA=
+=B5=DA=D2=BB=B4=F3=B5=E7=D7=D3=D3=CA=BC=FE=B7=FE=CE=F1=C9=CC</a>
+</span>
+------=_Part_80065_2471919.1238997655975--
+
+
+--===============7305172360787834873==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7305172360787834873==--
