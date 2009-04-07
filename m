@@ -1,15 +1,15 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: pm-hibernate : possible circular locking dependency
- detected
-Date: Tue, 07 Apr 2009 10:43:50 +0200
-Message-ID: <1239093831.798.5717.camel__34642.8214958452$1239094078$gmane$org@twins>
-References: <Pine.LNX.4.44L0.0904061439230.4571-100000@iolanthe.rowland.org>
-	<200904062158.11245.rjw@sisk.pl>
+From: "Premi, Sanjeev" <premi@ti.com>
+Subject: Re: Adding PM QoS parameters
+Date: Tue, 7 Apr 2009 14:30:40 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301CC7972A5@dbde02.ent.ti.com>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301CC66C7DE@dbde02.ent.ti.com>
+	<20090406211237.GA25173@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904062158.11245.rjw@sisk.pl>
+In-Reply-To: <20090406211237.GA25173@linux.intel.com>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rusty Russell <rusty@rustcorp.com.au>, Linux Kernel List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: "mgross@linux.intel.com" <mgross@linux.intel.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2009-04-06 at 21:58 +0200, Rafael J. Wysocki wrote:
-> On Monday 06 April 2009, Alan Stern wrote:
-> > On Mon, 6 Apr 2009, Gautham R Shenoy wrote:
-> > 
-> > > > If I understand correctly it isn't really a deadlock scenario, but it
-> > > > is a lockdep violation.  The violation is:
-> > > > 
-> > > > 	The pci_device_probe() path 2) proves that dpm_list_mtx [4] can
-> > > > 	be acquired while cpu_hotplug.lock [3] is held;
-> > > > 
-> > > > 	The hibernate() path 3) proves that cpu_hotplug.lock [3] can be
-> > > > 	acquired while dpm_list_mtx [4] is held.
-> > > > 
-> > > > The two pathways cannot run simultaneously (and hence cannot deadlock) 
-> > > > because the prepare() stage of hibernation is supposed to stop all 
-> > > > device probing.  But lockdep will still report a problem.
-> > > 
-> > > Thanks for clarifying this Alan. I guess it boils down to teaching
-> > > lockdep about this false-positive.
-> > 
-> > Or else changing the code somehow to avoid the violation completely.  
-> > But I have no idea how...  And AFAIK, teaching lockdep about special 
-> > cases like this is not so easy to do.
+> -----Original Message-----
+> From: mark gross [mailto:mgross@linux.intel.com] 
+> Sent: Tuesday, April 07, 2009 2:43 AM
+> To: Premi, Sanjeev
+> Cc: linux-pm@lists.linux-foundation.org
+> Subject: Re: [linux-pm] Adding PM QoS parameters
 > 
-> Yeah, I've just wanted to ask about that.  Peter, how can we do it?
+> On Fri, Apr 03, 2009 at 01:55:06AM +0530, Premi, Sanjeev wrote:
+> > I have just started looking at the PM QoS implementation; I 
+> came across this
+> > text in "pm_qos_interface.txt"
+> > 
+> > [quote]
+> > The infrastructure exposes multiple misc device nodes one 
+> per implemented
+> > parameter.  The set of parameters implement is defined by 
+> pm_qos_power_init()
+> > and pm_qos_params.h.  This is done because having the 
+> available parameters
+> > being runtime configurable or changeable from a driver was 
+> seen as too easy to
+> > abuse.
+> > [/quote]
+> > 
+> > Though I have understood the intent; i feel it may also be 
+> limiting the use
+> > where there is a genuine need - specific to an arch/ platform.
+> > 
+> > Can we allow number of these params to grow upto a 
+> reasonable limit (say 8)?
+> > If an arch/platform does not specifies more params, 
+> everything remains same.
+> > But we get an opportunity to add arch/platform specific 
+> requirements.
+> 
+> If you do this then user mode software using the interface will not be
+> portable across architectures.  Is that what you want?
 
-I think it would come down to modeling that blocking of probes as a lock
-or something -- because that's basically what it is.
+[sp] Not really. I was more looking at extending the current set
+     to include params specific to the architectures so that the
+     apps running on these apps are able to make use of these
+     params without inventing custom tricks.
 
-So on the regular probe path, take a read lock of this lock, and on the
-suspend path take it as write or something.
+> 
+> What parameters are you looking to add?  I have gotten very little
+> feedback on what parameters are missing or wanted.
+
+[sp] As an example, the OMAP processors support multiple
+     scalable voltage domains. Depending upon operating
+     conditions, target voltage can be a param.
+
+> 
+> > 
+> > Not sure if this has already been discussed earlier, but 
+> would like to hear
+> > more thoughts.
+> 
+> This has not been discussed, but changing the data structures to use
+> handles instead of strings has brought up once without data 
+> showing the
+> strcmps where a measurable issue.
+> 
+> I'm very open to improvements, applications and further discussions.
+
+[sp] Here is rough outline
+
+     Initialize the QoS array (with room to extend) as:
+
+    static struct pm_qos_object *pm_qos_array[] = {
+        &null_pm_qos,
+        &cpu_dma_pm_qos,
+        &network_lat_pm_qos,
+        &network_throughput_pm_qos
+        &null_pm_qos,
+        &null_pm_qos,
+        &null_pm_qos,
+        &null_pm_qos,
+        &null_pm_qos,
+    };
+
+     Assuming there is an API to add objects to this array, one
+     could define additional param as:
+
+    static BLOCKING_NOTIFIER_HEAD(voltage_notifier);
+    static struct pm_qos_object voltage_pm_qos = {
+        .requirements = {LIST_HEAD_INIT(voltage_pm_qos.requirements.list)},
+        .notifiers = &voltage_notifier,
+        .name = "voltage_level",
+        .default_value = 1200,              /* in mVolts */
+        .target_value = ATOMIC_INIT(1200),  /* in mVolts */,
+        .comparitor = min_compare
+    };
+
+     Now, this can be added to pm_qos_array replacing a
+     trailing null_pm_qos.
+
+     Requirements for voltage levels across domains
+     can be added to voltage_pm_qos.requirements.list
+     in platform specific init.
+
+     Applications for this platform can choose to use
+     this param - for better power savings or choose
+     to ignore for portability.
+
+
+
+     As I mentioned, I just started on the QoS infra. So, do
+     correct me if any of this can be achieved via current
+     params.
+> 
+> --mgross
+> 
+> 
+> > 
+> > Best regards,
+> > Sanjeev
+> > _______________________________________________
+> > linux-pm mailing list
+> > linux-pm@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> 
+> 
