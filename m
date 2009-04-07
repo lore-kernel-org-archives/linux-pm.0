@@ -1,14 +1,16 @@
 From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
 Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-Date: Mon, 6 Apr 2009 21:56:27 -0600
-Message-ID: <9b1675090904062056v235af58ehc99cce8ff97fe501__43656.8043697209$1239116204$gmane$org@mail.gmail.com>
+Date: Mon, 6 Apr 2009 22:23:29 -0600
+Message-ID: <9b1675090904062123u42a00a80y3a4385740ecc0121__7329.47640722177$1239116298$gmane$org@mail.gmail.com>
 References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
 	<alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+	<9b1675090904062056v235af58ehc99cce8ff97fe501@mail.gmail.com>
+	<alpine.LFD.2.00.0904062103531.4010@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904062103531.4010@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,33 +24,52 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 6, 2009 at 3:53 PM, Linus Torvalds
+On Mon, Apr 6, 2009 at 10:07 PM, Linus Torvalds
 <torvalds@linux-foundation.org> wrote:
 >
 >
-> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+> On Mon, 6 Apr 2009, Trenton D. Adams wrote:
+>> >
+>> > This went through bisection, but looking at the email log, I tend to
+>> > suspect that maybe Trenton marked some versions good even though they
+>> > weren't (because they got versions numbers from v2.6.27), and didn't
+>> > realize that that messes up bisection in a big way.
 >>
->> Bug-Entry =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D13018
->> Subject =A0 =A0 =A0 =A0 =A0 =A0 =A0 : 2.6.29 on MacBook 2,1 fails to reb=
-oot
->> Submitter =A0 =A0 : Trenton Adams <trenton.d.adams@gmail.com>
->> Date =A0 =A0 =A0 =A0 =A0: 2009-03-30 2:04 (8 days old)
->> References =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D1238378703072=
-49&w=3D4
->> Handled-By =A0 =A0: "Morten P.D. Stevens" <mstevens@win-professional.com>
+>> Is it appropriate for me to respond to these things?
 >
-> This went through bisection, but looking at the email log, I tend to
-> suspect that maybe Trenton marked some versions good even though they
-> weren't (because they got versions numbers from v2.6.27), and didn't
-> realize that that messes up bisection in a big way.
+> Yes. I added you to the cc exactly because it was hard for me to judge
+> from the email discussion that is linked to in the regression list whether
+> you actually _did_ mark some versions good because of confusion about the
+> version numbering.
 
-Is it appropriate for me to respond to these things?
+Oh, didn't know you CC'd me.  I have just been searching for my name
+to try and keep up to date on threads I participated in, because the
+list volume is just too much.
 
-I was wondering about that.  Someone had mentioned that I should trust
-the bisect, even when it takes me into "other versions", and it was
-taking me through 2.6.27, which I thought was just really weird.
-Would you like me to try the bisect again with a little more
-diligence, or do you think it can be found with the info given?  It
-may take a week or so, due to being a bit busy.
+> So you may well have done everything right, and I'm not trying to blame
+> you. I just was hoping that maybe that confusion would explain why the
+> bisection didn't seem to pinpoint anything sane..
 
-Thanks
+This gave me a bit of a chuckle. ROFL.  I didn't think you were
+_blaming_ me.  And even if you were, I'd just say "I'M HUMAN MAN". ;)
+
+It is very well possible that I simply booted the wrong kernel, seeing
+I had like 20 to choose from at the time, after doing all those
+bisects.  This time, I will make the new kernels the default so that
+it is impossible to happen again, assuming that is what happened.  I
+will also stop and start alsa 2 or 3 times, in case it is a deadlock
+timing issue as you mentioned.
+
+I'm glad to know that I shouldn't be switching kernel versions though.
+ I thought that was really crazy.
+
+>
+>
+> It would be good, especially if this bug doesn't end up being solved some
+> other way... And slow results are better than no results at all ;)
+>
+>                        Linus
+>
+
+Okay, I will try again.  Hopefully in a few days I'll have something
+for the bug.
