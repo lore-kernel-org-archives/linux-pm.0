@@ -1,15 +1,14 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [RFC Disable suspend on a specific device] This is a
- little change in linux power scheme
-Date: Tue, 07 Apr 2009 17:39:51 +0200
-Message-ID: <49DB73C7.2090406@gandalf.sssup.it>
-References: <20090407102914.GA25796@gandalf.sssup.it>
-	<200904071545.03167.rjw@sisk.pl>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+Date: Tue, 07 Apr 2009 18:16:55 +0200
+Message-ID: <49DB7C77.1000702__26609.6888612539$1239121480$gmane$org@s5r6.in-berlin.de>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	<alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904071545.03167.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,216 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Trenton Adams <trenton.d.adams@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Linus Torvalds wrote:
+> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13018
+>> Subject		: 2.6.29 on MacBook 2,1 fails to reboot
+>> Submitter	: Trenton Adams <trenton.d.adams@gmail.com>
+>> Date		: 2009-03-30 2:04 (8 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=123837870307249&w=4
+>> Handled-By	: "Morten P.D. Stevens" <mstevens@win-professional.com>
+> 
+> This went through bisection, but looking at the email log, I tend to 
+> suspect that maybe Trenton marked some versions good even though they 
+> weren't (because they got versions numbers from v2.6.27), and didn't 
+> realize that that messes up bisection in a big way.
+> 
+> The bug _sounds_ like some deadlock due to lock problems - the shutdown 
+> path often triggers locks that no other path really cares about. And we 
+> had some lock problems in the sound subsystem that got fixed post-2.6.28, 
+> for example. 
+> 
+> And it looks like the problem is somewhere in sound shutdown:
+> 
+> 12181 delete_module("snd_hda_codec", O_RDONLY|O_EXCL) = -1 EAGAIN (Resource temporarily unavailable) <0.000011>
+> 
+> So commits like 91054598f794fb5d8a0b1e747ff8e2e8fc2115b3 ("ALSA: pcm_oss, 
+> fix locking typo") might explain it.
 
-Rafael J. Wysocki wrote:
-> On Tuesday 07 April 2009, Michael Trimarchi wrote:
->   
->> This is a little rework of linux power scheme. TODO:
->> - remove recursive call
->> - clean-up code
->>
->> Avoid suspend of a device that is connected with other coprocessor
->> like GSM chip.
->>     
->
-> Well, can you please tell us a bit about the motivation for this work?
->
-> I don't like the approach, but I'd like to know what you're trying to achieve.
->   
-I works on an hardware that have the gsm connect to wm8753 and the 
-bluetooth subsystem
-too direct connected. So I would like that a phone call for example 
-remains on during
-system suspend. With this approch I can disable suspend of an entire 
-subtree of device,
-that can be used by other hardware component. This change avoid any 
-specific change to the
-driver.
-
-Michael
-> Rafael
->
->
->   
->> Signed-off-by: Michael Trimarchi <trimarchi@gandalf.sssup.it>
->>
->> ---
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index 3098c46..2a6ddb3 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -63,6 +63,40 @@ void device_pm_unlock(void)
->>  	mutex_unlock(&dpm_list_mtx);
->>  }
->>  
->> +int device_set_may_suspend_enable(struct device *dev, void *data)
->> +{
->> +	/* if the device is suspend the subtree is in may_suspend status */
->> +	if (!dev->power.can_suspend)
->> +		goto out;
->> +
->> +	dev->power.may_suspend = (unsigned int)data;
->> +	device_for_each_child(dev, data,
->> +			      device_set_may_suspend_enable);
->> +out:
->> +	return 0;
->> +}
->> +
->> +/**
->> + *	device_set_suspend_enable - enable/disable device to suspend
->> + */
->> +int device_set_suspend_enable(struct device *dev, int enable)
->> +{
->> +	mutex_lock(&dpm_list_mtx);
->> +
->> +	if (dev->power.can_suspend == !!enable)
->> +		goto out;
->> +
->> +	/* Update device children to avoid suspend */
->> +	device_for_each_child(dev, (void *)!!enable,
->> +			      device_set_may_suspend_enable);
->> +
->> +	dev->power.can_suspend = !!enable;
->> +out:
->> +	mutex_unlock(&dpm_list_mtx);
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(device_set_suspend_enable);
->> +
->>  /**
->>   *	device_pm_add - add a device to the list of active devices
->>   *	@dev:	Device to be added to the list
->> @@ -77,6 +111,13 @@ void device_pm_add(struct device *dev)
->>  		if (dev->parent->power.status >= DPM_SUSPENDING)
->>  			dev_warn(dev, "parent %s should not be sleeping\n",
->>  				 dev_name(dev->parent));
->> +		if (!device_can_suspend(dev->parent)) {
->> +			mutex_unlock(&dpm_list_mtx);
->> +			/* if the parent has suspend disable, propagate it
->> +			 * to the new child */
->> +			device_set_may_suspend_enable(dev, 0);
->> +			mutex_lock(&dpm_list_mtx);
->> +		}
->>  	} else if (transition_started) {
->>  		/*
->>  		 * We refuse to register parentless devices while a PM
->> @@ -120,13 +161,13 @@ static int pm_op(struct device *dev, struct dev_pm_ops *ops,
->>  	switch (state.event) {
->>  #ifdef CONFIG_SUSPEND
->>  	case PM_EVENT_SUSPEND:
->> -		if (ops->suspend) {
->> +		if (device_can_suspend(dev) && ops->suspend) {
->>  			error = ops->suspend(dev);
->>  			suspend_report_result(ops->suspend, error);
->>  		}
->>  		break;
->>  	case PM_EVENT_RESUME:
->> -		if (ops->resume) {
->> +		if (device_can_suspend(dev) && ops->resume) {
->>  			error = ops->resume(dev);
->>  			suspend_report_result(ops->resume, error);
->>  		}
->> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
->> index 41f51fa..1197b13 100644
->> --- a/drivers/base/power/power.h
->> +++ b/drivers/base/power/power.h
->> @@ -1,6 +1,13 @@
->>  static inline void device_pm_init(struct device *dev)
->>  {
->>  	dev->power.status = DPM_ON;
->> +	dev->power.can_suspend = 1;
->> +	dev->power.may_suspend = 1;
->> +}
->> +
->> +static inline int device_can_suspend(struct device *dev)
->> +{
->> +	return (dev->power.can_suspend && dev->power.may_suspend);
->>  }
->>  
->>  #ifdef CONFIG_PM_SLEEP
->> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
->> index 596aeec..25236aa 100644
->> --- a/drivers/base/power/sysfs.c
->> +++ b/drivers/base/power/sysfs.c
->> @@ -43,6 +43,34 @@
->>  static const char enabled[] = "enabled";
->>  static const char disabled[] = "disabled";
->>  
->> +static ssize_t suspend_show(struct device *dev, struct device_attribute *attr,
->> +				char *buf)
->> +{
->> +	return sprintf(buf, "%s\n", device_can_suspend(dev)
->> +		? enabled : disabled);
->> +}
->> +
->> +static ssize_t
->> +suspend_store(struct device *dev, struct device_attribute *attr,
->> +		const char *buf, size_t n)
->> +{
->> +	char *cp;
->> +	int len = n;
->> +
->> +	cp = memchr(buf, '\n', n);
->> +	if (cp)
->> +		len = cp - buf;
->> +	if (len == sizeof enabled - 1
->> +			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
->> +		device_set_suspend_enable(dev, 1);
->> +	else if (len == sizeof disabled - 1
->> +			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
->> +		device_set_suspend_enable(dev, 0);
->> +	else
->> +		return -EINVAL;
->> +	return n;
->> +}
->> +
->>  static ssize_t
->>  wake_show(struct device * dev, struct device_attribute *attr, char * buf)
->>  {
->> @@ -76,10 +104,11 @@ wake_store(struct device * dev, struct device_attribute *attr,
->>  }
->>  
->>  static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
->> -
->> +static DEVICE_ATTR(suspend, 0644, suspend_show, suspend_store);
->>  
->>  static struct attribute * power_attrs[] = {
->>  	&dev_attr_wakeup.attr,
->> +	&dev_attr_suspend.attr,
->>  	NULL,
->>  };
->>  static struct attribute_group pm_attr_group = {
->> diff --git a/include/linux/device.h b/include/linux/device.h
->> index fdb073b..dc9f242 100644
->> --- a/include/linux/device.h
->> +++ b/include/linux/device.h
->> @@ -487,6 +487,7 @@ extern struct device *device_find_child(struct device *dev, void *data,
->>  				int (*match)(struct device *dev, void *data));
->>  extern int device_rename(struct device *dev, char *new_name);
->>  extern int device_move(struct device *dev, struct device *new_parent);
->> +extern int device_set_suspend_enable(struct device *dev, int enable);
->>  
->>  /*
->>   * Root device objects for grouping under /sys/devices
->> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> index de2e0a8..7586a90 100644
->> --- a/include/linux/pm.h
->> +++ b/include/linux/pm.h
->> @@ -319,6 +319,9 @@ struct dev_pm_info {
->>  	pm_message_t		power_state;
->>  	unsigned		can_wakeup:1;
->>  	unsigned		should_wakeup:1;
->> +	unsigned		can_suspend:1;
->> +	unsigned		may_suspend:1;
->> +
->>  	enum dpm_state		status;		/* Owned by the PM core */
->>  #ifdef	CONFIG_PM_SLEEP
->>  	struct list_head	entry;
->>     
->
->   
+Trenton,
+could it be the same as this one?
+http://bugzilla.kernel.org/show_bug.cgi?id=12321
+"System hangs when unloading alsa modules"
+http://bugs.gentoo.org/show_bug.cgi?id=253535
+"System hangs when unloading alsa modules on Kernel >2.6.28"
+-- 
+Stefan Richter
+-=====-==--= -=-- --===
+http://arcgraph.de/sr/
