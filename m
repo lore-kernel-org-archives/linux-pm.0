@@ -1,16 +1,16 @@
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-Date: Mon, 6 Apr 2009 22:23:29 -0600
-Message-ID: <9b1675090904062123u42a00a80y3a4385740ecc0121__7329.47640722177$1239116298$gmane$org@mail.gmail.com>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-	<alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
-	<9b1675090904062056v235af58ehc99cce8ff97fe501@mail.gmail.com>
-	<alpine.LFD.2.00.0904062103531.4010@localhost.localdomain>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: pm-hibernate : possible circular locking dependency
+	detected
+Date: Tue, 7 Apr 2009 13:56:28 +0930
+Message-ID: <200904071356.29914.rusty__7198.98705506257$1239116417$gmane$org@rustcorp.com.au>
+References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com>
+	<200904051212.53353.rjw@sisk.pl> <20090405134454.GB25250@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0904062103531.4010@localhost.localdomain>
+In-Reply-To: <20090405134454.GB25250@elte.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,56 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel List <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 6, 2009 at 10:07 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Mon, 6 Apr 2009, Trenton D. Adams wrote:
->> >
->> > This went through bisection, but looking at the email log, I tend to
->> > suspect that maybe Trenton marked some versions good even though they
->> > weren't (because they got versions numbers from v2.6.27), and didn't
->> > realize that that messes up bisection in a big way.
->>
->> Is it appropriate for me to respond to these things?
->
-> Yes. I added you to the cc exactly because it was hard for me to judge
-> from the email discussion that is linked to in the regression list whether
-> you actually _did_ mark some versions good because of confusion about the
-> version numbering.
+On Sunday 05 April 2009 23:14:54 Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Sunday 05 April 2009, Ming Lei wrote:
+> > > kernel version : one simple usb-serial patch against  commit
+> > > 6bb597507f9839b13498781e481f5458aea33620.
+> > > 
+> > > Thanks.
+> > 
+> > Hmm, CPU hotplug again, it seems.
+> > 
+> > I'm not sure who's the maintainer at the moment.  Andrew, is that 
+> > Gautham?
+> 
+> CPU hotplug tends to land on the scheduler people's desk normally.
+> 
+> But i'm not sure that's the real thing here - key appears to be this 
+> work_on_cpu() worklet by the cpufreq code:
 
-Oh, didn't know you CC'd me.  I have just been searching for my name
-to try and keep up to date on threads I participated in, because the
-list volume is just too much.
+Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
+patch which I just put out the pull request for.
 
-> So you may well have done everything right, and I'm not trying to blame
-> you. I just was hoping that maybe that confusion would explain why the
-> bisection didn't seem to pinpoint anything sane..
-
-This gave me a bit of a chuckle. ROFL.  I didn't think you were
-_blaming_ me.  And even if you were, I'd just say "I'M HUMAN MAN". ;)
-
-It is very well possible that I simply booted the wrong kernel, seeing
-I had like 20 to choose from at the time, after doing all those
-bisects.  This time, I will make the new kernels the default so that
-it is impossible to happen again, assuming that is what happened.  I
-will also stop and start alsa 2 or 3 times, in case it is a deadlock
-timing issue as you mentioned.
-
-I'm glad to know that I shouldn't be switching kernel versions though.
- I thought that was really crazy.
-
->
->
-> It would be good, especially if this bug doesn't end up being solved some
-> other way... And slow results are better than no results at all ;)
->
->                        Linus
->
-
-Okay, I will try again.  Hopefully in a few days I'll have something
-for the bug.
+Cheers,
+Rusty.
