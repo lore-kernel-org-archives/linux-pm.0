@@ -1,16 +1,16 @@
-From: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-Date: Tue, 7 Apr 2009 06:41:02 +0000
-Message-ID: <20090407064102.GB4195__30796.3897394531$1239086681$gmane$org@ff.dom.local>
-References: <9b1675090904062123u42a00a80y3a4385740ecc0121@mail.gmail.com>
-	<20090407062425.GA4195@ff.dom.local>
-	<9b1675090904062331m56c09a09r88594381a3eaad48@mail.gmail.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: pm-hibernate : possible circular locking dependency
+	detected
+Date: Tue, 07 Apr 2009 09:05:53 +0200
+Message-ID: <1239087953.798.5513.camel__27889.4546012909$1239088173$gmane$org@twins>
+References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com>
+	<200904051212.53353.rjw@sisk.pl> <20090405134454.GB25250@elte.hu>
+	<200904071356.29914.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <9b1675090904062331m56c09a09r88594381a3eaad48@mail.gmail.com>
+In-Reply-To: <200904071356.29914.rusty@rustcorp.com.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 12:31:52AM -0600, Trenton D. Adams wrote:
-> On Tue, Apr 7, 2009 at 12:24 AM, Jarek Poplawski <jarkao2@gmail.com> wrot=
-e:
-> > On 07-04-2009 06:23, Trenton D. Adams wrote:
-> > ...
-> >> This gave me a bit of a chuckle. ROFL. =A0I didn't think you were
-> >> _blaming_ me. =A0And even if you were, I'd just say "I'M HUMAN MAN". ;)
-> >
-> > So, do you think you should be treated better than others? @-)
-> >
-> > Jarek P.
-> >
-> =
+On Tue, 2009-04-07 at 13:56 +0930, Rusty Russell wrote:
+> On Sunday 05 April 2009 23:14:54 Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > On Sunday 05 April 2009, Ming Lei wrote:
+> > > > kernel version : one simple usb-serial patch against  commit
+> > > > 6bb597507f9839b13498781e481f5458aea33620.
+> > > > 
+> > > > Thanks.
+> > > 
+> > > Hmm, CPU hotplug again, it seems.
+> > > 
+> > > I'm not sure who's the maintainer at the moment.  Andrew, is that 
+> > > Gautham?
+> > 
+> > CPU hotplug tends to land on the scheduler people's desk normally.
+> > 
+> > But i'm not sure that's the real thing here - key appears to be this 
+> > work_on_cpu() worklet by the cpufreq code:
+> 
+> Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
+> patch which I just put out the pull request for.
 
-> This gave me a bit of a confused look. Better, how so?  And what would
+Would it make sense to teach it about a short-circuit like:
 
-Hmm... I mean better than NON-HUMANS of course! Everybody is equal here.
+work_on_cpu() {
 
-Jarek P.
+  if (cpumask_weight(current->cpus_allowed) == 1 && 
+      smp_processor_id() == cpu)
+    return do_work_right_here();
+
+  queue_the_bugger();
+}
+
+?
