@@ -1,8 +1,8 @@
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 Subject: Re: [v5 PATCH 4/4] timers: logic to move non pinned
 	timers
-Date: Tue, 7 Apr 2009 13:41:57 +0530
-Message-ID: <20090407081157.GA7628__28801.4369005852$1239092197$gmane$org@linux.vnet.ibm.com>
+Date: Tue, 7 Apr 2009 13:47:52 +0530
+Message-ID: <20090407081752.GB7628__38776.9973175184$1239092538$gmane$org@linux.vnet.ibm.com>
 References: <20090406161357.GB15269@linux.vnet.ibm.com>
 	<20090406162205.GE15269@linux.vnet.ibm.com>
 	<alpine.LFD.2.00.0904061846140.21577@localhost.localdomain>
@@ -23,10 +23,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, linux-pm@lists.linux-foundation.org, arjan@infradead.org
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, andi@firstfloor.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 * Thomas Gleixner <tglx@linutronix.de> [2009-04-06 18:48:48]:
+
+(The patch changelog got missed out somehow, so reposting)
 
 Hi,
 
@@ -60,6 +62,17 @@ Kernbech results on an 8-cpu, 2 package machine.
 
 --arun
 ---
+
+This patch migrates all non pinned timers and hrtimers to the current
+idle load balancer, from all the idle CPUs. Timers firing on busy CPUs
+are not migrated.
+
+While migrating hrtimers, care should be taken to check if migrating
+a hrtimer would result in a latency or not. So we compare the expiry of the
+hrtimer with the next timer interrupt on the target cpu and migrate the
+hrtimer only if it expires *after* the next interrupt on the target cpu.
+So, added a clockevents_get_next_event() helper function to return the
+next_event on the target cpu's clock_event_device.
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
