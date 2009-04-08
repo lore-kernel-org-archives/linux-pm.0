@@ -1,15 +1,18 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [RFC Disable suspend on a specific device] This is a
- little	change in linux power scheme
-Date: Wed, 08 Apr 2009 07:59:06 +0200
-Message-ID: <49DC3D2A.1020405@gandalf.sssup.it>
-References: <200904072257.23756.rjw@sisk.pl>	<Pine.LNX.4.44L0.0904071729210.307-100000@netrider.rowland.org>	<20090407213824.GM3278@elf.ucw.cz>
-	<1239143110.7183.56.camel@nigel-laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.29 on MacBook 2,
+	1 fails to reboot (was Re: 2.6.29-git13: Reported regressions from
+	2.6.28)
+Date: Wed, 8 Apr 2009 10:00:28 +0200
+Message-ID: <200904081000.30313.rjw__22070.5182794065$1239177845$gmane$org@sisk.pl>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	<9b1675090904071352x513510ecm8b2574859b088275@mail.gmail.com>
+	<9b1675090904071816k59080f1fn39737767db4dc0c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1239143110.7183.56.camel@nigel-laptop>
+In-Reply-To: <9b1675090904071816k59080f1fn39737767db4dc0c@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +22,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wednesday 08 April 2009, Trenton D. Adams wrote:
+> On Tue, Apr 7, 2009 at 2:52 PM, Trenton D. Adams
+> <trenton.d.adams@gmail.com> wrote:
+> > On Tue, Apr 7, 2009 at 1:23 PM, Stefan Richter
+> > <stefanr@s5r6.in-berlin.de> wrote:
+> >>
+> >> But more importantly, is this init scripts related bug really what's
+> >> happening at your system?  Or do you actually experience an entirely
+> >> different bug?
+> >
+> > It could be.  I will try it out when I get home from work, and get
+> > back to you.  That would be cool if it was a simple init script
+> > problem.  Cause then I don't have to do anymore git bisects. ;)
+> 
+> Yes, the order is what causes this, you can close the bug.
 
-Nigel Cunningham wrote:
-> Hi.
->
-> On Tue, 2009-04-07 at 23:38 +0200, Pavel Machek wrote:
->> Well.... userspace should not have to decide this. If userspace tells
->> kernel not to suspend video card (on PC/ACPI), then we either honour
->> the request, or violate ACPI spec (and probably break suspend).
->
-> What about the cases where the ACPI spec is irrelevant? (As I understand
-> it, not all embedded boards use ACPI). Would this be a good approach in
-> those cases? If so, perhaps the trick would be to make the functionality
-> depend on !CONFIG_ACPI?
-It can be an option, or just add only in embedded configuration where is 
-not ACPI configured.
-The dependences is allready provided by the kernel. The default is to 
-have suspend enabled.
-The user level access it's needed because the kernel does't exacly know 
-when the device
-must remain on/off during suspend. This api change can't cover any 
-possible scenario but
-introduce a flexbility scheame in suspend process. Avoid suspend in some 
-device can be obtain
-looking at dependece too? I don't know exacly if the acpi capapiblity 
-can be seen throw the
-link to a bus or a specific class, but we can limit it to the platform 
-device instead
-all device.
+Closed.
 
-Michael
->
-> Regards,
->
-> Nigel
->
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+Thanks,
+Rafael
