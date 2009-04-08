@@ -1,19 +1,14 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: [RFC Disable suspend on a specific device] This	is	a
-	little change in linux power scheme
-Date: Wed, 08 Apr 2009 22:53:07 +0300
-Message-ID: <1239220387.6228.233.camel@localhost>
-References: <200904072257.23756.rjw@sisk.pl>
-	<200904081013.25301.rjw@sisk.pl> <49DC5F58.7070705@gandalf.sssup.it>
-	<200904081034.56624.rjw@sisk.pl> <20090408114212.GK20122@sirena.org.uk>
-	<1239209041.6228.217.camel@localhost>
-	<20090408182330.GA6843@sirena.org.uk>
-Reply-To: igor.stoppa@nokia.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Disable suspend on a specific device] This is a
+ little change in linux power scheme
+Date: Wed, 8 Apr 2009 16:37:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0904081607580.3138-100000@iolanthe.rowland.org>
+References: <200904072340.53638.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090408182330.GA6843@sirena.org.uk>
+In-Reply-To: <200904072340.53638.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,65 +18,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Mark Brown <broonie@sirena.org.uk>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Wed, 2009-04-08 at 20:23 +0200, ext Mark Brown wrote:
+On Tue, 7 Apr 2009, Rafael J. Wysocki wrote:
 
-> You might want to read the Android wakelock thread here - this comes
-> from Android and has been gone over in some detail in the threads
-> generated from their wakelock stuff.  
+> Well, in fact I wanted to know your opinion about this patch. :-)
 
-I did follow it. Didn't really like that either.
+Clearly this patch isn't appropriate for regular desktop or laptop 
+systems.  I'm not so sure it's the best approach for embedded systems 
+either.
 
-> Essentially what they are doing is
-> exactly what you suggest, they've identified that suspend is a low power
-> state and make every effort to enter it as often as possible, including
-> when on a call. 
+Part of the problem is the set of devices which would remain 
+unsuspended: the device for which the flag is set plus everything below 
+it in the device tree.  This goes against the way the kernel has 
+behaved up to now, which is that a device may not be suspended before 
+all its children are suspended.
 
-I'm not suggesting that. Suspend is inadequate for _real_ runtime power
-management. Certainly it is not seamless.
-Of course a smarter approach depends on the HW supporting certain
-features, but if the HW is not there, I'd rather consider the suspend
-based approach a workaround, rather than a real solution.
+In addition, the patch appears to ignore issues involving clock and
+voltage domains.  These things often are not reflected directly in the 
+structure of the device tree.
 
->  Clearly there are some issues with this approach but
-> the Android guys did feel that entering suspend was worthwhile for them,
-> especially since their users are able to download applications to the
-> phone.
+At a more fundamental level, this change points out a real weakness in
+the way suspend is currently implemented.  From the PM core's point of
+view, system suspend involves two main activities:
 
-I don't think this is anyhow different from the Nokia Internet Tablets.
+	Telling drivers to stop using their devices, and
 
-> Besides, no matter how low the power drain from your CPU when fully
-> gated and at the lowest DVFS setting it's still possible to get a lower
-> power drain since the CPU is going to be burning something and the
-> regulators providing the supply to it are going to be burning something.
+	Turning off (or reducing) power to the devices.
 
-If you have a proper SoC, it can enter clock stop, lower voltage and
-possibly even OFF mode. DVFS is by no means the way to save power in
-general. It just addresses certain cases where the latency requirements
-are too strict to afford entering really deep power saving states.
-Otherwise it would mostly be better to run at max speed and do race to
-OFF.
+The PM framework does not treat these separately; a single suspend
+method call is used for both purposes.  But more and more we are seeing
+that they should be, especially on non-ACPI systems.  This patch is, in
+a roundabout way, an attempt to do so.
 
-Regulators should have the options to be switched off if they are not
-needed to preserve states, or enter a low power mode when only minimal
-(non functional current) is needed.
+Part of the problem is that people tend to think of "suspend" as
+meaning "suspend the system".  However a much more flexible -- dare I
+say more valid? -- point of view is "suspend the CPUs and at the same
+time remove (or reduce) power for devices that will no longer need it".  
+In other words, system suspend really is just a kind of runtime
+suspend, in which the devices being suspended are the CPUs and the
+sysdevs.
 
-> In most cases it's going to be peanuts - it certainly will be in the
-> phone use case where you've got radios going.
+Obviously this is an oversimplification, but I think it's a useful 
+approach.
 
-I know that, but for this, suspend is still a poor man's power
-management solution.
-Of course the HW needs to be up to the intended task.
+Just think about it.  Suppose every driver supported autosuspend.  
+When a driver received a notification that the CPU was going to be
+suspended, it would know that its device wasn't going to need power
+(since the device can't do anything useful without the driver telling
+it what to do) and so it would automatically power the device down,
+while also arranging not to access the device any more.  Thus the
+suspend method calls would really exist only to let drivers know that
+their code was going to stop running (since the CPU was about to stop
+all activity); the device-power management part would merely be a side
+effect.
 
--- 
+And then, of course, drivers on embedded systems would be smart enough 
+to know that some of the devices _should_ remain powered up, because 
+they could still be useful even when the CPU wasn't running.  The only 
+obstacle is letting the drivers know when their devices actually _are_ 
+in use -- sometimes this is apparent only at the application level.
 
-Cheers, Igor
+So the patch should be rewritten.  Change the name of the new attribute
+to something like "autonomous" or "in_use", and don't make the PM core 
+skip devices when the attribute is set.  Instead, change the relevant 
+drivers.  Their suspend methods should arrange for the driver to stop 
+using the device, but if the attribute is set then the device should 
+not be powered down.
 
----
-
-Igor Stoppa
-Maemo Software - Nokia Devices R&D - Helsinki
+Alan Stern
