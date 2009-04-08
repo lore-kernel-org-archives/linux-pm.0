@@ -1,17 +1,15 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: pm-hibernate : possible circular locking dependency
-	detected
-Date: Wed, 8 Apr 2009 12:47:08 +0930
-Message-ID: <200904081247.08712.rusty__30951.3616878123$1239160881$gmane$org@rustcorp.com.au>
-References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com>
-	<200904071356.29914.rusty@rustcorp.com.au>
-	<1239087953.798.5513.camel@twins>
+From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+Subject: Re: [RFC Disable suspend on a specific device] This is a
+ little	change in linux power scheme
+Date: Wed, 08 Apr 2009 07:59:06 +0200
+Message-ID: <49DC3D2A.1020405@gandalf.sssup.it>
+References: <200904072257.23756.rjw@sisk.pl>	<Pine.LNX.4.44L0.0904071729210.307-100000@netrider.rowland.org>	<20090407213824.GM3278@elf.ucw.cz>
+	<1239143110.7183.56.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1239087953.798.5513.camel@twins>
-Content-Disposition: inline
+In-Reply-To: <1239143110.7183.56.camel@nigel-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 07 April 2009 16:35:53 Peter Zijlstra wrote:
-> On Tue, 2009-04-07 at 13:56 +0930, Rusty Russell wrote:
-> > Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
-> > patch which I just put out the pull request for.
-> 
-> Would it make sense to teach it about a short-circuit like:
-> 
-> work_on_cpu() {
-> 
->   if (cpumask_weight(current->cpus_allowed) == 1 && 
->       smp_processor_id() == cpu)
->     return do_work_right_here();
+Hi,
 
-Does that happen much?  I guess put a counter in and see?
+Nigel Cunningham wrote:
+> Hi.
+>
+> On Tue, 2009-04-07 at 23:38 +0200, Pavel Machek wrote:
+>> Well.... userspace should not have to decide this. If userspace tells
+>> kernel not to suspend video card (on PC/ACPI), then we either honour
+>> the request, or violate ACPI spec (and probably break suspend).
+>
+> What about the cases where the ACPI spec is irrelevant? (As I understand
+> it, not all embedded boards use ACPI). Would this be a good approach in
+> those cases? If so, perhaps the trick would be to make the functionality
+> depend on !CONFIG_ACPI?
+It can be an option, or just add only in embedded configuration where is 
+not ACPI configured.
+The dependences is allready provided by the kernel. The default is to 
+have suspend enabled.
+The user level access it's needed because the kernel does't exacly know 
+when the device
+must remain on/off during suspend. This api change can't cover any 
+possible scenario but
+introduce a flexbility scheame in suspend process. Avoid suspend in some 
+device can be obtain
+looking at dependece too? I don't know exacly if the acpi capapiblity 
+can be seen throw the
+link to a bus or a specific class, but we can limit it to the platform 
+device instead
+all device.
 
-Rusty.
+Michael
+>
+> Regards,
+>
+> Nigel
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
