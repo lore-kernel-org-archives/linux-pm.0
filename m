@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC Disable suspend on a specific device] This is a
-	little change in linux power scheme
-Date: Fri, 10 Apr 2009 00:33:06 +0200
-Message-ID: <200904100033.07171.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0904091419330.2992-100000@iolanthe.rowland.org>
+Subject: [2.6.30-rc1-git2 regressions] Hibernation broken and
+	(minor but annoying) audio problem
+Date: Fri, 10 Apr 2009 00:57:41 +0200
+Message-ID: <200904100057.43827.rjw__38616.6919641711$1239318301$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0904091419330.2992-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,76 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Arjan van de Ven <arjan@linux.intel.com>, Takashi Iwai <tiwai@suse.de>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 09 April 2009, Alan Stern wrote:
-> On Wed, 8 Apr 2009, Rafael J. Wysocki wrote:
-> 
-> > > the way suspend is currently implemented.  From the PM core's point of
-> > > view, system suspend involves two main activities:
-> > > 
-> > > 	Telling drivers to stop using their devices, and
-> > > 
-> > > 	Turning off (or reducing) power to the devices.
-> > > 
-> > > The PM framework does not treat these separately; a single suspend
-> > > method call is used for both purposes.  But more and more we are seeing
-> > > that they should be, especially on non-ACPI systems.  This patch is, in
-> > > a roundabout way, an attempt to do so.
-> > 
-> > Well, with the recent changes of the PM framework that have just gone into
-> > .30-rc1 the "late" suspend call may in fact be regarded as a "turn off" or
-> > "power down" one, while the "regular" suspend callback has become a "stop using
-> > the device" one.
-> 
-> Sort of, but that's not the real difference between suspend and 
-> suspend_late.  The real difference has to do with whether or not 
-> interrupts are enabled.
+Hi,
 
-Yes, but also the powering down/up should be moved to the late suspend/early
-resume callbacks IMO.  Moreover, some PCI drivers may just let the core do
-the power state changes which are then going to take place in the late/early
-phases of suspend/resume.
+I'm seeing two problems with -git from today.
 
-> Still, if drivers begin to adopt this approach then it is a step in the 
-> right direction.
+First, resume from hibernation is apparently broken if the storage driver
+handling the resume device is modular.  If it is compiled statically into
+the kernel, the resume works correctly.  I guess this is a consequence of the
+async changes (Arjan, please help).
 
-Agreed.
-
-> > > Part of the problem is that people tend to think of "suspend" as
-> > > meaning "suspend the system".  However a much more flexible -- dare I
-> > > say more valid? -- point of view is "suspend the CPUs and at the same
-> > > time remove (or reduce) power for devices that will no longer need it".  
-> > > In other words, system suspend really is just a kind of runtime
-> > > suspend, in which the devices being suspended are the CPUs and the
-> > > sysdevs.
-> > > 
-> > > Obviously this is an oversimplification, but I think it's a useful 
-> > > approach.
-> > 
-> > Well, unfortunately ACPI makes the distinction between suspending devices
-> > in order to put the system into a sleep state and suspending devices at run
-> > time (ACPI requires us to specify the target sleep state of the whole system in
-> > advance and presumably the outcome of some AML routines used for suspending
-> > devices may depend on this).  That's why the people who work primarily on ACPI
-> > systems regard suspend as meaning "suspend the system".
-> 
-> Just because ACPI has this requirement, that doesn't mean drivers have
-> to be designed around it.  We should be able to write a runtime-suspend
-> routine that does the right thing even when a system-suspend transition
-> is underway.
-> 
-> BTW, how does ACPI formally handle the case where the system is about
-> to go to sleep and some devices are already runtime-suspended?  Does it
-> require that the devices be resumed first so that they can be suspended
-> again the "right" way?
-
-This, I must admit, is unclear to me, but I can imagine a situation in which
-some extra preparations of the platform are needed for waking up the system
-from a sleep state.  In such a case, I think, the wake-up device in question
-should better be put into D0 before it can be prepared for the system suspend.
+Second, KDE4 on openSUSE 11.1 sometimes fails to handle audio correctly after
+a fresh boot.  Everything seems to work, but there's no sound at all.  It is
+sufficient to close the X session and start the desktop environment again to
+make it work, though (may that be async too? ;-)).  The hardware in question is
+Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller
+(rev 02) and the driver is snd_hda_intel.
 
 Thanks,
 Rafael
