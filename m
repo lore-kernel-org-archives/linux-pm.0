@@ -1,7 +1,7 @@
 From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
 Subject: Re: [PATCH/RFC] do not count frozen tasks toward load
-Date: Thu, 09 Apr 2009 10:56:07 +1000
-Message-ID: <1239238567.14883.2.camel__24587.6824287281$1239288186$gmane$org@nigel-laptop>
+Date: Thu, 09 Apr 2009 11:21:43 +1000
+Message-ID: <1239240103.9869.1.camel__26070.7148038366$1239288288$gmane$org@nigel-laptop>
 References: <20090408194512.47a99b95@manatee.lan>
 Reply-To: ncunningham-lkml@crca.org.au
 Mime-Version: 1.0
@@ -22,7 +22,7 @@ To: Nathan Lynch <ntl@pobox.com>
 Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi again.
 
 On Wed, 2009-04-08 at 19:45 -0500, Nathan Lynch wrote:
 > Freezing tasks via the cgroup freezer causes the load average to climb
@@ -40,14 +40,34 @@ On Wed, 2009-04-08 at 19:45 -0500, Nathan Lynch wrote:
 > Change task_contributes_to_load() to return false if the task is
 > frozen.  This results in /proc/loadavg behavior that better meets
 > users' expectations.
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> ---
+>  include/linux/sched.h |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 011db2f..f8af167 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -202,7 +202,8 @@ extern unsigned long long time_sync_thresh;
+>  #define task_is_stopped_or_traced(task)	\
+>  			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+>  #define task_contributes_to_load(task)	\
+> -				((task->state & TASK_UNINTERRUPTIBLE) != 0)
+> +				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
+> +				 (task->flags & PF_FROZEN) == 0)
+>  
+>  #define __set_task_state(tsk, state_value)		\
+>  	do { (tsk)->state = (state_value); } while (0)
 
-Sounds great to me - TuxOnIce has had code to save and restore the load
-average for ages because of the same issue. This is much better because
-it gets to the root of the problem.
+Tested-by: Nigel Cunningham <nigel@tuxonice.net>
 
-I'll apply it here, give it a test and hopefully give you an Acked-by
-shortly.
+Looks good to me (though I like Andrew's point about using task_frozen).
 
-Regards,
-
-Nigel
+nigel@nigel-laptop:~$ cat /proc/loadavg 
+0.34 0.27 0.12 1/251 9001
+nigel@nigel-laptop:~$ sudo hibernate
+nigel@nigel-laptop:~$ cat /proc/loadavg 
+0.52 0.33 0.14 2/250 9807
+nigel@nigel-laptop:~$ 
