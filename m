@@ -1,17 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@suse.com>
-Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and
-	(minor but annoying) audio problem
-Date: Sat, 11 Apr 2009 12:46:19 +0200
-Message-ID: <200904111246.20463.rjw__27687.4765674167$1239447019$gmane$org@suse.com>
-References: <200904100057.43827.rjw@sisk.pl>
-	<alpine.LFD.2.00.0904101817100.4583@localhost.localdomain>
-	<49DFFC05.7070509@linux.intel.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix
+	fb_info->lock and	mm->mmap_sem ...} causes Xfbdev not working
+Date: Sat, 11 Apr 2009 13:08:41 +0200
+Message-ID: <20090411110840.GA7108__31456.8419744775$1239448352$gmane$org@linux>
+References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
+	<20090409125850.GA2727@linux>
+	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
+	<20090410220521.GB21294@linux>
+	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
+	<49E05C36.9040204@s5r6.in-berlin.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49DFFC05.7070509@linux.intel.com>
 Content-Disposition: inline
+In-Reply-To: <49E05C36.9040204@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,130 +24,313 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrey Borzenkov <arvidjaar@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 11 April 2009, Arjan van de Ven wrote:
-> Linus Torvalds wrote:
+On Sat, Apr 11, 2009 at 11:00:38AM +0200, Stefan Richter wrote:
+> Krzysztof Helt wrote:
+> > On Sat, 11 Apr 2009 00:05:22 +0200
+> > Andrea Righi <righi.andrea@gmail.com> wrote:
 > > 
-> > On Sat, 11 Apr 2009, Rafael J. Wysocki wrote:
-> >> On Friday 10 April 2009, Linus Torvalds wrote:
-> >>> On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
-> >>>> I've just verified that the resume-after-hibernation issue goes away after
-> >>>> reverting commit 9710794383ee5008d67f1a6613a4717bf6de47bc
-> >>>> (async: remove the temporary (2.6.29) "async is off by default" code) , so it
-> >>>> is async-related.
-> >>> Arjan? Clearly all the necessary fixes weren't found..
-> >>>
-> >>> There _is_ a module loading problem wrt initmem - I think you found that 
-> >>> and we added a hack for it for the ACPI battery driver. I wonder if we're 
-> >>> hitting a similar issue now with module discovery: modules that use 
-> >>> "async_schedule()" to do their discovery asynchronously are now not 
-> >>> necessarily fully "done" when the module is loaded. 
-> >>>
-> >>> And so, anything that expected the devices to be available after module 
-> >>> load (like they used to) would be screwed.
-> >>>
-> >>> IOW, maybe something like the totally untested patch appended here (that 
-> >>> should also allow us to make the ACPI battery code to go back to using 
-> >>> __init).
-> >> I tested it and it worked.
+> >> mmmh... I may have missed something, but the common fb_mmap() should
+> >> acquire mm->mmap_sem and then info->lock, while fb_ioctl() can do that
+> >> in reverse order (info->lock first and then mm->mmap_sem) causing the
+> >> circular locking dependency. Are you sure that pushing info->lock down
+> >> each driver's fb_mmap will fix the problem?
 > > 
-> > Hmm.
-> > 
-> > I'm not 100% sure that patch is good.
-> > 
-> > The reason? I think it's going to deadlock if an async caller ends up 
-> > wanting to load a module, because then the nested 
-> > "async_synchronize_full()" will basically want to wait for itself.
-> > 
-> > So it's a good test-patch, and maybe no async caller ever loads a module, 
-> > but it makes me a bit nervous.
+> > Right. The fb_mmap is called with the mmap_sem already held.
+> > I will try other possibilities like breaking info->lock() into two
+> > mutexex.
 > 
-> It would make a rule that async context can only use request_module_nowait().
-> Not too nice, I think we can do better.
+> I had to deal with interaction of mmap_sem with a driver lock twice yet.
+> I solved it cheaply by replacing mutex_lock(driver_mutex) by
+> mutex_trylock(driver_mutex).
 > 
-> > But the fact that it fixes things for you at least means that the _reason_ 
-> > for the problem is know, and maybe there are alternative solutions. Arjan?
+> The obvious drawback is that thic changes kernel behaviour visibly to
+> userspace:  Under contention, the ioctl/read/write fails with -EAGAIN
+> instead of being blocked until the other thread finished its
+> ioctl/read/write/mmap on the same fd (if the driver mutex is
+> instantiated per fd, like in my case).
 > 
-> We have async domains; for the acpi type of case we could make a "__init" domain
-> that we wait on selectively... but I'm not too fond of this since it'll be fragile over time.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8449fc3ae58bf8ee5acbd2280754cde67b5db128
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=638570b54346f140bc09b986d93e76025d35180f
 > 
-> I suppose this got exposed now that we (just) removed the stop_machine stuff from the module loader...
-> (which is a generally good improvement, don't get me wrong).
-> 
-> For the __init freeing case there is a even more interesting option:
-> We can schedule an async task that will free the init mem of the module, and have that
-> async task just wait for all its predecessors to complete before doing the actual work.
-> That way the module is available and ready to its caller, while the freeing of the init mem
-> will be done at a safe time.
-> 
-> Like this (not yet tested):
-> 
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 1196f5d..4ec90e8 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2312,6 +2312,22 @@ static noinline struct module *load_module(void __user *umod,
->   	goto free_hdr;
->   }
-> 
-> +static void async_module_free_initmem(void *data, async_cookie_t cookie)
-> +{
-> +	struct module *mod = data;
-> +	async_synchronize_cookie(cookie);
-> +
-> +	mutex_lock(&module_mutex);
-> +	/* Drop initial reference. */
-> +	module_put(mod);
-> +	module_free(mod, mod->module_init);
-> +	mod->module_init = NULL;
-> +	mod->init_size = 0;
-> +	mod->init_text_size = 0;
-> +	mutex_unlock(&module_mutex);
-> +
-> +}
-> +
->   /* This is where the real work happens */
->   SYSCALL_DEFINE3(init_module, void __user *, umod,
->   		unsigned long, len, const char __user *, uargs)
-> @@ -2372,15 +2388,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
->   	blocking_notifier_call_chain(&module_notify_list,
->   				     MODULE_STATE_LIVE, mod);
-> 
-> -	mutex_lock(&module_mutex);
-> -	/* Drop initial reference. */
-> -	module_put(mod);
-> -	module_free(mod, mod->module_init);
-> -	mod->module_init = NULL;
-> -	mod->init_size = 0;
-> -	mod->init_text_size = 0;
-> -	mutex_unlock(&module_mutex);
-> -
-> +	async_schedule(async_module_free_initmem, mod);
->   	return 0;
->   }
-> 
-> 
-> 
-> Now the second case of "the devices are available when the module load is done".
-> 
-> The hard case here is that we're talking about a storage device. In 2.6.28 and before (eg well before
-> any async stuff landed), SCSI probing already was done asynchronously. Same for USB. Libata I think is the same,
-> by virtue of using scsi as infrastructure.
-> 
-> Realistically, unless you call scsi_complete_async_scans(), you could not depend on scsi devices being available
-> after loading one of their modules. (from userland you could do this via the scsi_wait_scan module)
-> 
-> (speculation: on ATA likely the scan was done relatively quickly ... and with async it's just done with different timing. So it
-> was kind of luck before)
-> 
-> Rafael: would it be reasonable to call "scsi_compete_async_scans()" from the resume-from-disk code ?
+> (In these two drivers, the change of behaviour is irrelevant to real
+> userspace clients.)
 
-I think it would.
+I've looked at the code again. I think the main problem here (at last
+the last one reported) is that fb_notifier_call_chain() is called with
+info->lock held, i.e. in do_fb_ioctl() => FBIOPUT_VSCREENINFO =>
+fb_set_var() and the some notifier callbacks, like fbcon_event_notify(),
+try to re-acquire info->lock again.
 
-I'll try to put it in there and see if that helps.
+Probably we can just remove the lock/unlock_fb_info() in all the fb
+notifier callbacks' and be sure to always call fb_notifier_call_chain()
+with info->lock held.
 
-Thanks,
-Rafael
+Something like this (untested). I'll test it later and re-submit if it
+makes sense.
+
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ drivers/video/backlight/backlight.c |    3 --
+ drivers/video/backlight/lcd.c       |    3 --
+ drivers/video/console/fbcon.c       |   55 ++---------------------------------
+ drivers/video/fbmem.c               |   19 ++++++++++++
+ 4 files changed, 22 insertions(+), 58 deletions(-)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index dd37cbc..157057c 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -35,8 +35,6 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 		return 0;
+ 
+ 	bd = container_of(self, struct backlight_device, fb_notif);
+-	if (!lock_fb_info(evdata->info))
+-		return -ENODEV;
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+@@ -49,7 +47,6 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 			backlight_update_status(bd);
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
+-	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index 0bb13df..b644947 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -40,8 +40,6 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	if (!ld->ops)
+ 		return 0;
+ 
+-	if (!lock_fb_info(evdata->info))
+-		return -ENODEV;
+ 	mutex_lock(&ld->ops_lock);
+ 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
+ 		if (event == FB_EVENT_BLANK) {
+@@ -53,7 +51,6 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 		}
+ 	}
+ 	mutex_unlock(&ld->ops_lock);
+-	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 2cd500a..ec7d9ba 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2263,9 +2263,12 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
+ 	}
+ 
+ 
++	if (!lock_fb_info(info))
++		return -ENODEV;
+ 	event.info = info;
+ 	event.data = &blank;
+ 	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
++	unlock_fb_info(info);
+ }
+ 
+ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+@@ -2956,8 +2959,6 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ {
+ 	int i, idx;
+ 
+-	if (!lock_fb_info(info))
+-		return -ENODEV;
+ 	idx = info->node;
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] == idx)
+@@ -2985,8 +2986,6 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ 	if (primary_device == idx)
+ 		primary_device = -1;
+ 
+-	unlock_fb_info(info);
+-
+ 	if (!num_registered_fb)
+ 		unregister_con_driver(&fb_con);
+ 
+@@ -3027,11 +3026,8 @@ static int fbcon_fb_registered(struct fb_info *info)
+ {
+ 	int ret = 0, i, idx;
+ 
+-	if (!lock_fb_info(info))
+-		return -ENODEV;
+ 	idx = info->node;
+ 	fbcon_select_primary(info);
+-	unlock_fb_info(info);
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3152,53 +3148,23 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_suspended(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_RESUME:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_resumed(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_modechanged(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE_ALL:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_set_all_vcs(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_DELETE:
+ 		mode = event->data;
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		ret = fbcon_mode_deleted(info, mode);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_FB_UNBIND:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		idx = info->node;
+-		unlock_fb_info(info);
+ 		ret = fbcon_fb_unbind(idx);
+ 		break;
+ 	case FB_EVENT_FB_REGISTERED:
+@@ -3217,29 +3183,14 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
+ 		break;
+ 	case FB_EVENT_BLANK:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_fb_blanked(info, *(int *)event->data);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_NEW_MODELIST:
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_new_modelist(info);
+-		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_GET_REQ:
+ 		caps = event->data;
+-		if (!lock_fb_info(info)) {
+-			ret = -ENODEV;
+-			goto done;
+-		}
+ 		fbcon_get_requirement(info, caps);
+-		unlock_fb_info(info);
+ 		break;
+ 	}
+ done:
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 2ac32e6..d412a1d 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1097,8 +1097,11 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			return -EINVAL;
+ 		con2fb.framebuffer = -1;
+ 		event.data = &con2fb;
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
++		unlock_fb_info(info);
+ 		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_CON2FBMAP:
+@@ -1115,8 +1118,11 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			break;
+ 		}
+ 		event.data = &con2fb;
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
++		unlock_fb_info(info);
+ 		break;
+ 	case FBIOBLANK:
+ 		if (!lock_fb_info(info))
+@@ -1521,7 +1527,10 @@ register_framebuffer(struct fb_info *fb_info)
+ 	registered_fb[i] = fb_info;
+ 
+ 	event.info = fb_info;
++	if (!lock_fb_info(fb_info))
++		return -ENODEV;
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
++	unlock_fb_info(fb_info);
+ 	return 0;
+ }
+ 
+@@ -1555,8 +1564,12 @@ unregister_framebuffer(struct fb_info *fb_info)
+ 		goto done;
+ 	}
+ 
++
++	if (!lock_fb_info(fb_info))
++		return -ENODEV;
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
++	unlock_fb_info(fb_info);
+ 
+ 	if (ret) {
+ 		ret = -EINVAL;
+@@ -1590,6 +1603,8 @@ void fb_set_suspend(struct fb_info *info, int state)
+ {
+ 	struct fb_event event;
+ 
++	if (!lock_fb_info(info))
++		return;
+ 	event.info = info;
+ 	if (state) {
+ 		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
+@@ -1598,6 +1613,7 @@ void fb_set_suspend(struct fb_info *info, int state)
+ 		info->state = FBINFO_STATE_RUNNING;
+ 		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
+ 	}
++	unlock_fb_info(info);
+ }
+ 
+ /**
+@@ -1667,8 +1683,11 @@ int fb_new_modelist(struct fb_info *info)
+ 	err = 1;
+ 
+ 	if (!list_empty(&info->modelist)) {
++		if (!lock_fb_info(info))
++			return -ENODEV;
+ 		event.info = info;
+ 		err = fb_notifier_call_chain(FB_EVENT_NEW_MODELIST, &event);
++		unlock_fb_info(info);
+ 	}
+ 
+ 	return err;
