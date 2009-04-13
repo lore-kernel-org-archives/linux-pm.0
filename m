@@ -1,16 +1,15 @@
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and
-	(minor but annoying) audio problem
-Date: Sat, 11 Apr 2009 22:18:01 +0200
-Message-ID: <200904112218.02159.a.miskiewicz__7394.19485112212$1239634996$gmane$org@gmail.com>
-References: <200904100057.43827.rjw@sisk.pl> <49E0EC87.9080808@linux.intel.com>
-	<alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] NET/r8169: Rework suspend and resume
+Date: Mon, 13 Apr 2009 16:20:42 -0700 (PDT)
+Message-ID: <20090413.162042.79456870.davem__1214.90310780263$1239665075$gmane$org@davemloft.net>
+References: <200904052040.04752.rjw@sisk.pl>
+	<20090405223318.5a494e4e@neptune.home>
+	<200904052359.31629.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <200904052359.31629.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Heinz Diehl <htd@fancy-poultry.org>
+To: rjw@sisk.pl
+Cc: netdev@vger.kernel.org, bonbons@linux-vserver.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0dXJkYXkgMTEgb2YgQXByaWwgMjAwOSwgTGludXMgVG9ydmFsZHMgd3JvdGU6Cj4gT24g
-U2F0LCAxMSBBcHIgMjAwOSwgQXJqYW4gdmFuIGRlIFZlbiB3cm90ZToKPiA+IE5vdyB0aGF0IEkn
-dmUgYmVlbiBhYmxlIHRvIHNjYW4gbW9zdCBvZiBteSBtYWlsOyBpdCBsb29rcyBsaWtlIHRoZQo+
-ID4gb25lLWxpbmVyIHNob3VsZCBqdXN0IGdvIGluLgo+Cj4gT2ssIEkgY29tbWl0dGVkIG15IG9u
-ZS1saW5lciwgYW5kIHRoZW4gYWxzbyByZXZlcnRlZCB0aGUgQUNQSSBiYXR0ZXJ5Cj4gd29ya2Fy
-b3VuZCBvZiByZW1vdmluZyBfX2luaXQsIHNpbmNlIHRoZSBvbmUtbGluZXIgc2hvdWxkIGZpeCB0
-aGF0IHRvby4KClRlc3RlZCAtIHdvcmtzIGhlcmV8LgoKPiAJCQlMaW51cwoKCi0tIApBcmthZGl1
-c3ogTWnFm2tpZXdpY3ogICAgICAgIFBMRC9MaW51eCBUZWFtCmFyZWttIC8gbWF2ZW4ucGwgICAg
-ICAgICAgICBodHRwOi8vZnRwLnBsZC1saW51eC5vcmcvCgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sun, 5 Apr 2009 23:59:31 +0200
+
+> On Sunday 05 April 2009, Bruno Pr=E9mont wrote:
+>> On Sun, 05 April 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>> > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> > =
+
+>> > The recent changes of the PCI PM core allow us to simplify the
+>> > suspend and resume handling in a number of device drivers, since they
+>> > don't need to carry out the general PCI PM operations, such as
+>> > changing the power state of the device, during suspend and resume any
+>> > more.
+>> > =
+
+>> > Simplify the suspend and resume callbacks of r8169 using the
+>> > observation that the PCI PM core can take care of some operations
+>> > carried out by the driver.
+>> > =
+
+>> > Additionally, make the shutdown callback of r8169 only put the device
+>> > into a low power state if the system is going to be powered off
+>> > (kexec is known to have problems with network adapters that are put
+>> > into low power states on shutdown).
+>> > =
+
+>> > This patch has been tested on MSI Wind U100.
+>> =
+
+>> Tested against 2.6.29.1 on my Commell LE-365 and suspend (S3) + WoL
+>> still works as expected.
+>> =
+
+>> 02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd.
+>>                      RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
+> =
+
+> Thanks for testing!
+
+I've applied this patch to net-next-2.6, thanks everyone.
