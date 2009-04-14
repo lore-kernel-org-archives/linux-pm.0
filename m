@@ -1,21 +1,13 @@
-From: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix
-	fb_info->lock and mm->mmap_sem ...} causes Xfbdev not working
-Date: Tue, 14 Apr 2009 01:34:47 +0200
-Message-ID: <m21vrwi0vc.fsf__22620.4725252048$1239726419$gmane$org@igel.home>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-	<20090409125850.GA2727@linux>
-	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
-	<20090410220521.GB21294@linux>
-	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
-	<49E05C36.9040204@s5r6.in-berlin.de> <20090411110840.GA7108@linux>
-	<20090411150359.GA8265@linux>
+From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] Add late pm notifiers for hibernate
+Date: Tue, 14 Apr 2009 18:00:43 +0200
+Message-ID: <1239724843.4295.19.camel__16369.9909965091$1239726745$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0904091414340.2992-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090411150359.GA8265@linux> (Andrea Righi's message of "Sat, 11
-	Apr 2009 17:04:00 +0200")
+In-Reply-To: <Pine.LNX.4.44L0.0904091414340.2992-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,25 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Pavel Roskin <proski@gnu.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Andrey Borzenkov <arvidjaar@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: schwidefsky@de.ibm.com, linux-pm@lists.linux-foundation.org, heiko.carstens@de.ibm.com, ubraun@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Andrea Righi <righi.andrea@gmail.com> writes:
+Hallo Alan,
 
-> Tested intelfb and X11 with fbdev. It seems to work fine, but I may be
-> unable to test the mode switching right now:
->
->   intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
->
-> It would be great if someone could help me to test this patch (against
-> latest Linus' git - no need to revert 66c1ca).
+Am Donnerstag, den 09.04.2009, 14:17 -0400 schrieb Alan Stern:
+> On Wed, 8 Apr 2009, Michael Holzheu wrote:
+> 
+> > From: Michael Holzheu <holzheu at linux.vnet.ibm.com>
+> > 
+> > This patch is a suggestion to solve the issue reported by Ursula Braun:
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-March/020443.html
+> > 
+> > On s390 we have device drivers that don't belong to a Linux bus. Therefore
+> > we can't use the PM device callbacks (dev_pm_ops). The only way to get
+> > informed that we hibernate or resume is the pm_notifier_call_chain.
+> 
+> I'm curious to know what device drivers these are that don't have a 
+> bus.  Could they use the platform bus?  That's more or less what it's 
+> intended for -- devices that don't fit anywhere else.
 
-I can confirm that it fixes the issue.  Tested with radeonfb and MOL.
+Examples are:
 
-Andreas.
+* xpram: drivers/s390/block/xpram.c - Block device driver that exports  
+         expanded ram as block devices.
+* sclp:  drivers/s390/char/sclp.c - Driver to talk to the s390
+         service element. E.g. used to control the console.
+* and some others like DCSS driver etc ...
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Your suggestion with the platform bus looks good. Probably we can use it
+for those drivers. At least for xpram and sclp. For the other device
+drivers we are still discussing.
+
+> > Unfortunately some of our drivers need a frozen userspace to do their
+> > hibernate actions and the current notifiers are called before userspace is
+> > frozen. Another point is that we want our console driver to suspend as late
+> > as possible so that we can see all the hibernate progress messages on the
+> > console.
+> 
+> It's possible to avoid suspending the console at all if you boot with
+> "no_console_suspend" as a kernel parameter.
+
+For s390 we have real console devices that do IO and get interrupts. We
+have to suspend these devices. The problem is that when the console
+device is suspended, we do not get any more messages - independent from
+no_console_suspend.
+
+In case of panic, we have implemented a hack, where we register a panic
+notifier that enables the console again and writes out the last
+messages. This ensures that when the kernel crashes during suspend or
+resume we get at least the last messages. Not nice, but useful.
+
+Michael
