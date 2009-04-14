@@ -1,15 +1,11 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] NET/r8169: Rework suspend and resume
-Date: Mon, 13 Apr 2009 16:20:42 -0700 (PDT)
-Message-ID: <20090413.162042.79456870.davem__1214.90310780263$1239665075$gmane$org@davemloft.net>
-References: <200904052040.04752.rjw@sisk.pl>
-	<20090405223318.5a494e4e@neptune.home>
-	<200904052359.31629.rjw@sisk.pl>
+From: simon polette <spolette@gmail.com>
+Subject: Any solution for suspend to disk on ARM devices ?
+Date: Tue, 14 Apr 2009 10:41:55 +0200
+Message-ID: <72795ccb0904140141n1fb38f23y29539be25e0f1e22@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904052359.31629.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +15,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: netdev@vger.kernel.org, bonbons@linux-vserver.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, romieu@fr.zoreil.com
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sun, 5 Apr 2009 23:59:31 +0200
+Hi,
 
-> On Sunday 05 April 2009, Bruno Pr=E9mont wrote:
->> On Sun, 05 April 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> > =
+I'm working on an AT91SAM9261 board and I'm searching solution to
+implement suspend to disk. I found some information and patches for a
+2.6.11 kernel which is not compatible with my device. I heard about 3
+way to implement suspend to disk with linux kernel which are swsusp,
+uswsusp and tux on ice, but according this table :
+http://www.tuxonice.net/features , they are not compatible with arm.
+Do you know if any patch exists, or do you know any other solution to
+my problem?
+Any idea is welcome.
+Best regards,
 
->> > The recent changes of the PCI PM core allow us to simplify the
->> > suspend and resume handling in a number of device drivers, since they
->> > don't need to carry out the general PCI PM operations, such as
->> > changing the power state of the device, during suspend and resume any
->> > more.
->> > =
-
->> > Simplify the suspend and resume callbacks of r8169 using the
->> > observation that the PCI PM core can take care of some operations
->> > carried out by the driver.
->> > =
-
->> > Additionally, make the shutdown callback of r8169 only put the device
->> > into a low power state if the system is going to be powered off
->> > (kexec is known to have problems with network adapters that are put
->> > into low power states on shutdown).
->> > =
-
->> > This patch has been tested on MSI Wind U100.
->> =
-
->> Tested against 2.6.29.1 on my Commell LE-365 and suspend (S3) + WoL
->> still works as expected.
->> =
-
->> 02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd.
->>                      RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
-> =
-
-> Thanks for testing!
-
-I've applied this patch to net-next-2.6, thanks everyone.
+Simon Polette
