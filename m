@@ -1,13 +1,10 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: [RFC Add in_use attribute] Let the driver know if it's
-	in use
-Date: Thu, 16 Apr 2009 15:13:24 +0200
-Message-ID: <20090416131323.GA16752@gandalf.sssup.it>
+From: Sam Shang <sam_s_shang@hotmail.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api
+Date: Thu, 16 Apr 2009 14:00:35 +0800
+Message-ID: <BAY123-W42BB353AA5E68DFC09E11AB07A0@phx.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7664893916163317537=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,244 +12,222 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: len.brown@intel.com, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-Drivers on embedded systems would be smart enough
-to know that some of the devices should remain powered up, because
-they could still be useful even when the CPU wasn't running.
-The patch add the in_use attribute, that it can be used by the
-the drivers to avoid power down during suspend.
+--===============7664893916163317537==
+Content-Type: multipart/alternative;
+	boundary="_4e6dcd85-f65f-4f31-b9fe-d199d95486c5_"
 
-Signed-off-by: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Cc: "Alan Stern" <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Pavel Mackek" <pavel@ucw.cz>
-Cc: "Len Brown" <lenb@kernel.org>
+--_4e6dcd85-f65f-4f31-b9fe-d199d95486c5_
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 
----
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index e73c92d..d67043b 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1124,6 +1124,49 @@ static struct device *next_device(struct klist_iter *i)
- }
- 
- /**
-+ * device_visit_subtree - device subtree iterator.
-+ * @root: root struct device.
-+ * @data: data for the callback.
-+ * @fn: function to be called for each device.
-+ *
-+ * Iterate the @parent's subtree devices, and call @fn for each,
-+ * passing it @data.
-+ *
-+ */
-+void device_visit_subtree(struct device *root, void *data,
-+			  int (*fn)(struct device *dev, void *data))
-+{
-+	struct klist_iter i;
-+	struct device *parent = root;
-+	struct device *child = NULL;
-+	int error;
-+
-+	klist_iter_init(&parent->p->klist_children, &i);
-+move_down:
-+	error = fn(parent, data);
-+	if (error && parent != root)
-+		goto move_up;
-+
-+	pr_debug("device: '%s': %s\n", dev_name(parent), __func__);
-+
-+	child = next_device(&i);
-+	if (child) {
-+		parent = child;
-+		goto move_down;
-+	}
-+move_up:
-+	klist_iter_exit(&i);
-+	if (parent != root) {
-+		klist_iter_init_node(&parent->parent->p->klist_children, &i,
-+				     &parent->p->knode_parent);
-+		parent = next_device(&i);
-+		if (parent)
-+			goto move_down;
-+		klist_iter_exit(&i);
-+	}
-+}
-+
-+/**
-  * device_for_each_child - device child iterator.
-  * @parent: parent struct device.
-  * @data: data for the callback.
-@@ -1207,6 +1250,7 @@ int __init devices_init(void)
- 	return -ENOMEM;
- }
- 
-+EXPORT_SYMBOL_GPL(device_visit_subtree);
- EXPORT_SYMBOL_GPL(device_for_each_child);
- EXPORT_SYMBOL_GPL(device_find_child);
- 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 69b4ddb..00ad150 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -64,6 +64,45 @@ void device_pm_unlock(void)
- 	mutex_unlock(&dpm_list_mtx);
- }
- 
-+int device_set_may_inuse_enable(struct device *dev, void *data)
-+{
-+	pr_debug("PM: Device change in use status: %s\n", dev_name(dev));
-+
-+	/* if the device is suspend the subtree is in may_suspend status */
-+	if (dev->power.is_inuse)
-+		goto out;
-+
-+	dev->power.may_inuse = (unsigned int)data;
-+	return 0;
-+out:
-+	/* cut the entire subtree */
-+	return 1;
-+}
-+
-+/**
-+ *	device_set_inuse_enable - Mark the device as used by userspace
-+ *	application
-+ */
-+int device_set_inuse_enable(struct device *dev, int enable)
-+{
-+	mutex_lock(&dpm_list_mtx);
-+
-+	/* the new status is equal the old one */
-+	if (dev->power.is_inuse == enable)
-+		goto out;
-+
-+	dev->power.is_inuse = enable;
-+
-+	/* Update device children to set the in use status */
-+	device_visit_subtree(dev, (void *)enable,
-+				device_set_may_inuse_enable);
-+
-+out:
-+	mutex_unlock(&dpm_list_mtx);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(device_set_inuse_enable);
-+
- /**
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
-@@ -78,6 +117,13 @@ void device_pm_add(struct device *dev)
- 		if (dev->parent->power.status >= DPM_SUSPENDING)
- 			dev_warn(dev, "parent %s should not be sleeping\n",
- 				 dev_name(dev->parent));
-+		if (device_is_inuse(dev->parent)) {
-+			mutex_unlock(&dpm_list_mtx);
-+			/* if the parent has suspend disable, propagate it
-+			 * to the new child */
-+			device_set_may_inuse_enable(dev, (void *)1);
-+			mutex_lock(&dpm_list_mtx);
-+		}
- 	} else if (transition_started) {
- 		/*
- 		 * We refuse to register parentless devices while a PM
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index c7cb4fc..e7d21bb 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -3,6 +3,11 @@ static inline void device_pm_init(struct device *dev)
- 	dev->power.status = DPM_ON;
- }
- 
-+static inline int device_is_inuse(struct device *dev)
-+{
-+	return dev->power.is_inuse || dev->power.may_inuse;
-+}
-+
- #ifdef CONFIG_PM_SLEEP
- 
- /*
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index 596aeec..45d7f60 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -43,6 +43,34 @@
- static const char enabled[] = "enabled";
- static const char disabled[] = "disabled";
- 
-+static ssize_t inuse_show(struct device *dev, struct device_attribute *attr,
-+				char *buf)
-+{
-+	return sprintf(buf, "%s\n", device_is_inuse(dev)
-+		? enabled : disabled);
-+}
-+
-+static ssize_t
-+inuse_store(struct device *dev, struct device_attribute *attr,
-+		const char *buf, size_t n)
-+{
-+	char *cp;
-+	int len = n;
-+
-+	cp = memchr(buf, '\n', n);
-+	if (cp)
-+		len = cp - buf;
-+	if (len == sizeof enabled - 1
-+			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
-+		device_set_inuse_enable(dev, 1);
-+	else if (len == sizeof disabled - 1
-+			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
-+		device_set_inuse_enable(dev, 0);
-+	else
-+		return -EINVAL;
-+	return n;
-+}
-+
- static ssize_t
- wake_show(struct device * dev, struct device_attribute *attr, char * buf)
- {
-@@ -76,10 +104,11 @@ wake_store(struct device * dev, struct device_attribute *attr,
- }
- 
- static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
--
-+static DEVICE_ATTR(in_use, 0644, inuse_show, inuse_store);
- 
- static struct attribute * power_attrs[] = {
- 	&dev_attr_wakeup.attr,
-+	&dev_attr_in_use.attr,
- 	NULL,
- };
- static struct attribute_group pm_attr_group = {
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2918c0e..84a2bab 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -496,6 +496,9 @@ extern struct device *device_find_child(struct device *dev, void *data,
- extern int device_rename(struct device *dev, char *new_name);
- extern int device_move(struct device *dev, struct device *new_parent,
- 		       enum dpm_order dpm_order);
-+extern int device_set_inuse_enable(struct device *dev, int enable);
-+extern void device_visit_subtree(struct device *root, void *data,
-+				 int (*fn)(struct device *dev, void *data));
- 
- /*
-  * Root device objects for grouping under /sys/devices
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 1d4e2d2..85f3fb2 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -319,6 +319,9 @@ struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned		can_wakeup:1;
- 	unsigned		should_wakeup:1;
-+	unsigned		is_inuse:1;
-+	unsigned		may_inuse:1;
-+
- 	enum dpm_state		status;		/* Owned by the PM core */
- #ifdef	CONFIG_PM_SLEEP
- 	struct list_head	entry;
+
+Arve=2C
+=20
+I can see the usage of suspend blockers from the example you described belo=
+w. I understand how applications can make use of suspend blockers to save p=
+ower. Still=2C my first rule of their usage is don't use them unless necess=
+ary=2C as their misuse might cause increase of power usage.
+=20
+I'm wondering whether you have a recommended rule of suspend blocker usage =
+for both applications and drivers. From application and driver development =
+point of view=2C I don't want to add suspend blockers everywhere.
+=20
+Sam Shang
+=20
+*******************
+Date: Wed=2C 15 Apr 2009 17:34:43 -0700
+From: Arve Hj?nnev?g <arve@android.com>
+Subject: Re: [linux-pm] [PATCH 1/8] PM: Add suspend block api.
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ncunningham@crca.org.au=2C u.luckas@road.de=2C swetland@google.com=2C
+        Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Message-ID:
+        <d6200be20904151734o738c7a5dx52a800b97ebc2708@mail.gmail.com>
+Content-Type: text/plain=3B charset=3DISO-8859-1
+=20
+2009/4/15 Alan Stern <stern@rowland.harvard.edu>:
+> On Tue=2C 14 Apr 2009=2C [utf-8] Arve Hj?nnev?g wrote:
+>=20
+>> +Suspend blockers can be used to allow user-space to decide which keys s=
+hould
+>=20
+> Then in the last section=2C say this:
+>=20
+> ? ? ?- The user-space input-event thread returns from read. If it
+> ? ? ? ?determines that the key should leave the screen off=2C it
+> ? ? ? ?calls suspend_unblock on the process_input_events
+> ? ? ? ?suspend_blocker and then calls select or poll. ?The system
+> ? ? ? ?will automatically suspend again=2C since now no suspend blockers
+> ? ? ? ?are active.
+>=20
+=20
+This sounds reasonable too me.
+=20
+--=20
+Arve Hj?nnev?g
+_________________________________________________________________
+More than messages=96check out the rest of the Windows Live=99.
+http://www.microsoft.com/windows/windowslive/=
+
+--_4e6dcd85-f65f-4f31-b9fe-d199d95486c5_
+Content-Type: text/html; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3><SPAN lang=3DEN-US><FONT face=
+=3DCalibri color=3D#000000 size=3D3>Arve</FONT></SPAN>=2C</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3></FONT></SPAN>&nbsp=3B</P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>I can see the usage of suspend =
+blockers from the example you described below. I understand how application=
+s can make use of suspend blockers to save power.&nbsp=3BStill=2C my first =
+rule of their usage is don't use them unless necessary=2C as their misuse m=
+ight cause increase of power usage.</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3></FONT></SPAN>&nbsp=3B</P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>I'm wondering whether you have =
+a recommended rule of suspend blocker usage for both applications and drive=
+rs. From application and driver development point of view=2C I don't want t=
+o add suspend blockers everywhere.</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3></FONT></SPAN>&nbsp=3B</P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Sam Shang</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3></FONT></SPAN>&nbsp=3B</P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>*******************</FONT></SPA=
+N></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Date: Wed=2C 15 Apr 2009 17:34:=
+43 -0700</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>From: Arve Hj?nnev?g &lt=3Barve=
+@android.com&gt=3B</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Subject: Re: [linux-pm] [PATCH =
+1/8] PM: Add suspend block api.</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>To: Alan Stern &lt=3Bstern@rowl=
+and.harvard.edu&gt=3B</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Cc: ncunningham@crca.org.au=2C =
+u.luckas@road.de=2C swetland@google.com=2C</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri><SPAN style=3D"mso-=
+tab-count: 1">&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B </SP=
+AN>Linux-pm mailing list &lt=3Blinux-pm@lists.linux-foundation.org&gt=3B</F=
+ONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Message-ID:</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri><SPAN style=3D"mso-=
+tab-count: 1">&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B&nbsp=3B </SP=
+AN>&lt=3Bd6200be20904151734o738c7a5dx52a800b97ebc2708@mail.gmail.com&gt=3B<=
+/FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>Content-Type: text/plain=3B cha=
+rset=3DISO-8859-1</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><?=
+xml:namespace prefix =3D o ns =3D "urn:schemas-microsoft-com:office:office"=
+ /><o:p><FONT face=3DCalibri color=3D#000000 size=3D3>&nbsp=3B</FONT></o:p>=
+</SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>2009/4/15 Alan Stern &lt=3B</FO=
+NT><A href=3D"mailto:stern@rowland.harvard.edu"><FONT face=3DCalibri size=
+=3D3>stern@rowland.harvard.edu</FONT></A><FONT face=3DCalibri color=3D#0000=
+00 size=3D3>&gt=3B:</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B On Tue=2C 14 Apr 2009=2C=
+ [utf-8] Arve Hj?nnev?g wrote:</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri>&gt=3B<o:p>&nbsp=3B=
+</o:p></FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B&gt=3B +Suspend blockers =
+can be used to allow user-space to decide which keys should</FONT></SPAN></=
+P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri>&gt=3B<o:p>&nbsp=3B=
+</o:p></FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B Then in the last section=
+=2C say this:</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri>&gt=3B<o:p>&nbsp=3B=
+</o:p></FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ?- The user-space in=
+put-event thread returns from read. If it</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ? ?determines that t=
+he key should leave the screen off=2C it</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ? ?calls suspend_unb=
+lock on the process_input_events</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ? ?suspend_blocker a=
+nd then calls select or poll. ?The system</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ? ?will automaticall=
+y suspend again=2C since now no suspend blockers</FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>&gt=3B ? ? ? ?are active.</FONT=
+></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT size=3D3><FONT color=3D#000000><FONT face=3DCalibri>&gt=3B<o:p>&nbsp=3B=
+</o:p></FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><o=
+:p><FONT face=3DCalibri color=3D#000000 size=3D3>&nbsp=3B</FONT></o:p></SPA=
+N></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>This sounds reasonable too me.<=
+/FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><o=
+:p><FONT face=3DCalibri color=3D#000000 size=3D3>&nbsp=3B</FONT></o:p></SPA=
+N></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3>-- </FONT></SPAN></P>
+<P class=3DMsoPlainText style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><F=
+ONT face=3DCalibri color=3D#000000 size=3D3><SPAN lang=3DEN-US><FONT face=
+=3DCalibri color=3D#000000 size=3D3>Arve</FONT></SPAN> Hj?nnev?g</FONT></SP=
+AN></P><br /><hr />check out the rest of the Windows Live=99.
+More than mail=96Windows Live=99 goes way beyond your inbox.
+ <a href=3D'http://www.microsoft.com/windows/windowslive/' target=3D'_new'>=
+More than messages</a></body>
+</html>=
+
+--_4e6dcd85-f65f-4f31-b9fe-d199d95486c5_--
+
+--===============7664893916163317537==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7664893916163317537==--
