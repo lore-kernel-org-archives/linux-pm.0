@@ -1,18 +1,16 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [RFC Disable suspend on a specific device] This is a
- little change in linux power scheme
-Date: Mon, 20 Apr 2009 14:55:37 +0200
-Message-ID: <49EC70C9.2030705@gandalf.sssup.it>
-References: <200904072257.23756.rjw@sisk.pl> <200904081013.25301.rjw@sisk.pl>
-	<49DC5F58.7070705@gandalf.sssup.it>
-	<200904081034.56624.rjw@sisk.pl>
-	<49DC6442.3040506@gandalf.sssup.it> <20090407080611.GF1408@ucw.cz>
-	<20090420124650.GD8776@sirena.org.uk>
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Sat, 18 Apr 2009 01:56:23 +0200
+Message-ID: <200904180156.24366.laurent.pinchart__33819.3776704886$1240242527$gmane$org@skynet.be>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	<d82e647a0904161837w6b6fb652la0da05f9061e95dc@mail.gmail.com>
+	<200904172336.12414.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090420124650.GD8776@sirena.org.uk>
+In-Reply-To: <200904172336.12414.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,47 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, Network Development <netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-Mark Brown wrote:
-> On Tue, Apr 07, 2009 at 10:06:11AM +0200, Pavel Machek wrote:
+On Friday 17 April 2009 23:36:11 Rafael J. Wysocki wrote:
+> On Friday 17 April 2009, Ming Lei wrote:
+> > 2009/4/17 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13125
+> > > Subject         : active uvcvideo breaks over suspend
+> > > Submitter       : Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > > Date            : 2009-04-15 10:12 (2 days old)
+> > > References      :
+> > > http://marc.info/?l=linux-kernel&m=123979009508840&w=4
+> >
+> > It is a bug in resume path of uvcvideo driver, and I have sent a patch
+> > to laurent.pinchart@skynet.be,
+> > mchehab@infradead.org  and video4linux-list@redhat.com to fix it, but
+> > still no echo from them.
+> >
+> > The patch title is V4L/DVB:usbvideo:fix uvc resume failed.
+> >
+> > Rafael J.
+> >         If you would like to apply it ,I can resend to you.  Thanks!
 >
->   
->>> the WM8753.  Audio from a bluetooth headset is decoded by and sent digitially 
->>> to the WM8753 which does the digital to analogue conversion and 
->>> routes it out via the appropriate outputs.
->>> Analogue problem has the ti-caplyso when the audio is routed for a phone call.
->>>       
->
->   
->> I still believe it should be done in the driver... at least
->> today. Perhaps driver should just keep i2s/bluetooth powered up when
->> it is in use.
->>     
->
-> The driver needs some way to figure out what it's supposed to do - it's
-> not immediately obvious without some policy information if suspend means
-> to suspend everything or if things that can keep working should do so.
-> The natural assumption for most systems would be that suspend means
-> suspend everything so that's what ASoC (the embedded audio subsystem
-> within ALSA) is doing.
->
-> Note also that there are multiple drivers involved in this decision.
-> The audio subsystem is separate from the bluetooth subsystem (which is
-> mostly managed from user space rather than by a driver) and the audio
-> subsystem is itself decomposed with three separate drivers in play,
-> though there is also an entry point for the subsystem which orchestrates
-> the audio side.  Keeping the audio live if the bluetooth suspends isn't
-> too useful.
->
->   
-I sent a new patches moving the decision to the driver and implement a flag
-that notify the driver is in_use by userspace application as proposed by 
-Alan Stern
-during the previus discussion.
+> Please resend.
 
-Michael
+I'm reviewing the patch and I'll push it through my tree during the weekend. 
+Sorry for the delay, I'm currently traveling.
+
+Best regards,
+
+Laurent Pinchart
