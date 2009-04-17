@@ -1,12 +1,19 @@
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-Date: Fri, 17 Apr 2009 18:23:13 +0200
-Message-ID: <200904171823.20897.eike-kernel__7618.20803531936$1239985977$gmane$org@sf-tec.de>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix
+ fb_info->lock and mm->mmap_sem ...} causes Xfbdev not working
+Date: Fri, 17 Apr 2009 18:25:07 +0200
+Message-ID: <20090417182507.0bd85ccc.krzysztof.h1__11180.2391861149$1239987271$gmane$org@poczta.fm>
+References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
+	<20090409125850.GA2727@linux>
+	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
+	<20090410220521.GB21294@linux>
+	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
+	<49E05C36.9040204@s5r6.in-berlin.de> <20090411110840.GA7108@linux>
+	<20090411150359.GA8265@linux>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2176931024017285224=="
+Content-Type: multipart/mixed; boundary="===============7951653419963367631=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+In-Reply-To: <20090411150359.GA8265@linux>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +24,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, dri-devel@lists.sourceforge.net, David Airlie <airlied@linux.ie>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Pavel Roskin <proski@gnu.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Andrey Borzenkov <arvidjaar@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, LKML <linux-kernel@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============2176931024017285224==
-Content-Type: multipart/signed;
-  boundary="nextPart5710256.augzhveVOz";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+--===============7951653419963367631==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id n3HGowjv026086
 
---nextPart5710256.augzhveVOz
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, 11 Apr 2009 17:04:00 +0200
+Andrea Righi <righi.andrea@gmail.com> wrote:
 
-Rafael J. Wysocki wrote:
+> It would be great if someone could help me to test this patch (against
+> latest Linus' git - no need to revert 66c1ca).
+>=20
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12836
-> Subject		: 2.6.29-rc breaks STD using Intel 945
-> Submitter	: Rolf Eike Beer <eike-kernel@sf-tec.de>
-> Date		: 2009-03-04 19:20 (34 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123619451406192&w=4
+I can confirm the patch fixes the issue on radeonfb and cirrusfb drivers =
+tested so far.
 
-Looks like this is fixed since 2.6.30-rc1.
+Regards,
+Krzysztof
 
-Eike
+----------------------------------------------------------------------
+Dzwonki na komork=EA!
+Sprawdz >> http://link.interia.pl/f2127=20
 
---nextPart5710256.augzhveVOz
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAknorPgACgkQXKSJPmm5/E5S2gCggsu0e9N7V91l2q0D1jUODhKs
-MgUAoIfck2dKs4e1qnDk20Xbs6WxVhMp
-=GhPw
------END PGP SIGNATURE-----
-
---nextPart5710256.augzhveVOz--
-
---===============2176931024017285224==
+--===============7951653419963367631==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
 
---===============2176931024017285224==--
+--===============7951653419963367631==--
