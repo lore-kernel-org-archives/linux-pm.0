@@ -1,7 +1,7 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-Date: Thu, 16 Apr 2009 17:40:53 -0700 (PDT)
-Message-ID: <alpine.LFD.2.00.0904161738030.4042@localhost.localdomain>
+Date: Thu, 16 Apr 2009 17:46:15 -0700 (PDT)
+Message-ID: <alpine.LFD.2.00.0904161742140.4042__15637.4699705795$1239929852$gmane$org@localhost.localdomain>
 References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,18 +23,24 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-I think you put this in the wrong regression pile:
+On Thu, 16 Apr 2009, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13098
+> Subject		: 2.6.29-git12 breaks vga=0x0f07 on MSI/Intel GPU
+> Submitter	: Andi Kleen <andi@firstfloor.org>
+> Date		: 2009-04-06 01:14 (11 days old)
+> References	: http://lkml.org/lkml/2009/4/5/200
+> Handled-By	: H. Peter Anvin <hpa@zytor.com>
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13112
-> Subject		: Oops in drain_array
-> Submitter	: Bart <mmx@riz.pl>
-> Date		: 2009-04-14 10:21 (3 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123970493224628&w=4
+I think this got fixed already. The VGA moresettign was reverted back to 
+the old order.
 
-Hmm. This one seems like it should be in the "since 2.6.28" camp, since if 
-I read that one right, it happens with 2.6.29.1.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13044
+> Subject		: 2.6.30-rc1 can't find the root fs
+> Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+> Date		: 2009-04-08 13:35 (9 days old)
 
-(I mean sure, it might be new since 2.6.29, but it sounds more likely that 
-it's already in 2.6.29)
+This was one of the async things that got fixed by just waiting for module 
+async work to finish.
 
 		Linus
