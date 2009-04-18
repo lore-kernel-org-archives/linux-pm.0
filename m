@@ -1,22 +1,15 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix
-	fb_info->lock and	mm->mmap_sem ...} causes Xfbdev not working
-Date: Sat, 18 Apr 2009 00:51:11 +0200
-Message-ID: <20090417225110.GA6972__28673.4518981122$1240009008$gmane$org@linux>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-	<20090409125850.GA2727@linux>
-	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
-	<20090410220521.GB21294@linux>
-	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
-	<49E05C36.9040204@s5r6.in-berlin.de>
-	<20090411110840.GA7108@linux> <20090411150359.GA8265@linux>
-	<20090417182507.0bd85ccc.krzysztof.h1@poczta.fm>
+From: leiming <tom.leiming@gmail.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Sat, 18 Apr 2009 10:32:26 +0800
+Message-ID: <20090418103226.54250420__30770.1139980511$1240022685$gmane$org@linux-lm>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	<d82e647a0904161837w6b6fb652la0da05f9061e95dc@mail.gmail.com>
+	<200904172336.12414.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090417182507.0bd85ccc.krzysztof.h1@poczta.fm>
+In-Reply-To: <200904172336.12414.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,22 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Pavel Roskin <proski@gnu.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Andrey Borzenkov <arvidjaar@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, LKML <linux-kernel@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Linus@smtp1.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, laurent.pinchart@skynet.be, Network Development <netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 17, 2009 at 06:25:07PM +0200, Krzysztof Helt wrote:
-> On Sat, 11 Apr 2009 17:04:00 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
-> 
-> > It would be great if someone could help me to test this patch (against
-> > latest Linus' git - no need to revert 66c1ca).
-> > 
-> 
-> I can confirm the patch fixes the issue on radeonfb and cirrusfb drivers tested so far.
-> 
-> Regards,
-> Krzysztof
-
-Thanks for testing!
--Andrea
+09ogRnJpLCAxNyBBcHIgMjAwOSAyMzozNjoxMSArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
+andAc2lzay5wbD4g0LS1wDoKCj4gT24gRnJpZGF5IDE3IEFwcmlsIDIwMDksIE1pbmcgTGVpIHdy
+b3RlOgo+ID4gMjAwOS80LzE3IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gPiA+
+Cj4gPiA+IEJ1Zy1FbnRyeSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xMzEyNQo+ID4gPiBTdWJqZWN0ICAgICAgICAgOiBhY3RpdmUgdXZjdmlkZW8g
+YnJlYWtzIG92ZXIgc3VzcGVuZAo+ID4gPiBTdWJtaXR0ZXIgICAgICAgOiBBbGFuIEplbmtpbnMg
+PGFsYW4tamVua2luc0B0dWZmbWFpbC5jby51az4KPiA+ID4gRGF0ZSAgICAgICAgICAgIDogMjAw
+OS0wNC0xNSAxMDoxMiAoMiBkYXlzIG9sZCkKPiA+ID4gUmVmZXJlbmNlcyAgICAgIDoKPiA+ID4g
+aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjM5NzkwMDk1MDg4NDAmdz00Cj4g
+PiA+Cj4gPiAKPiA+IEl0IGlzIGEgYnVnIGluIHJlc3VtZSBwYXRoIG9mIHV2Y3ZpZGVvIGRyaXZl
+ciwgYW5kIEkgaGF2ZSBzZW50IGEKPiA+IHBhdGNoIHRvIGxhdXJlbnQucGluY2hhcnRAc2t5bmV0
+LmJlLAo+ID4gbWNoZWhhYkBpbmZyYWRlYWQub3JnICBhbmQgdmlkZW80bGludXgtbGlzdEByZWRo
+YXQuY29tIHRvIGZpeCBpdCwKPiA+IGJ1dCBzdGlsbCBubyBlY2hvIGZyb20gdGhlbS4KPiA+IAo+
+ID4gVGhlIHBhdGNoIHRpdGxlIGlzIFY0TC9EVkI6dXNidmlkZW86Zml4IHV2YyByZXN1bWUgZmFp
+bGVkLgo+ID4gCj4gPiBSYWZhZWwgSi4KPiA+ICAgICAgICAgSWYgeW91IHdvdWxkIGxpa2UgdG8g
+YXBwbHkgaXQgLEkgY2FuIHJlc2VuZCB0byB5b3UuICBUaGFua3MhCj4gCj4gUGxlYXNlIHJlc2Vu
+ZC4KPiAKPiBSYWZhZWwKCkZyb20gNTcxNWUzMTBhOTM5ZjNmN2NkM2U4OGVhZThmMjVmZWRiYjI4
+ZGVmNCBNb24gU2VwIDE3IDAwOjAwOjAwIDIwMDEKRnJvbTogTWluZyBMZWkgPHRvbS5sZWltaW5n
+QGdtYWlsLmNvbT4KRGF0ZTogV2VkLCAxNSBBcHIgMjAwOSAyMjozMjo1MSArMDgwMApTdWJqZWN0
+OiBbUEFUQ0hdIFY0TC9EVkI6dXNidmlkZW86Zml4IHV2YyByZXN1bWUgZmFpbGVkCgpOb3cgdXJi
+IGJ1ZmZlcnMgaXMgbm90IGZyZWVkIGJlZm9yZSBzdXNwZW5kLCBzbyB1dmNfYWxsb2NfdXJiX2J1
+ZmZlcnMKc2hvdWxkIHJldHVybiBwYWNrZXQgY291bnRzIGFsbG9jYXRlZCBvcmlnaW5hbGx5IGR1
+cmluZyB1dmMgcmVzdW1lCiwgaW5zdGVhZCBvZiB6ZXJvLgoKVGhpcyBwYXRjaCBpcyBhZ2FpbnN0
+IHYyLjYuMzAtcmMyLgoKU2lnbmVkLW9mZi1ieTogTWluZyBMZWkgPHRvbS5sZWltaW5nQGdtYWls
+LmNvbT4KLS0tCiBkcml2ZXJzL21lZGlhL3ZpZGVvL3V2Yy91dmNfdmlkZW8uYyB8ICAgIDIgKy0K
+IDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvbWVkaWEvdmlkZW8vdXZjL3V2Y192aWRlby5jIGIvZHJpdmVycy9tZWRp
+YS92aWRlby91dmMvdXZjX3ZpZGVvLmMKaW5kZXggYTk1ZTE3My4uYzA1MGIyMiAxMDA2NDQKLS0t
+IGEvZHJpdmVycy9tZWRpYS92aWRlby91dmMvdXZjX3ZpZGVvLmMKKysrIGIvZHJpdmVycy9tZWRp
+YS92aWRlby91dmMvdXZjX3ZpZGVvLmMKQEAgLTc0Miw3ICs3NDIsNyBAQCBzdGF0aWMgaW50IHV2
+Y19hbGxvY191cmJfYnVmZmVycyhzdHJ1Y3QgdXZjX3ZpZGVvX2RldmljZSAqdmlkZW8sCiAKIAkv
+KiBCdWZmZXJzIGFyZSBhbHJlYWR5IGFsbG9jYXRlZCwgYmFpbCBvdXQuICovCiAJaWYgKHZpZGVv
+LT51cmJfc2l6ZSkKLQkJcmV0dXJuIDA7CisJCXJldHVybiBESVZfUk9VTkRfVVAodmlkZW8tPnVy
+Yl9zaXplLCBwc2l6ZSk7CiAKIAkvKiBDb21wdXRlIHRoZSBudW1iZXIgb2YgcGFja2V0cy4gQnVs
+ayBlbmRwb2ludHMgbWlnaHQgdHJhbnNmZXIgVVZDCiAJICogcGF5bG9hZHMgYWNjcm9zcyBtdWx0
+aXBsZSBVUkJzLgotLSAKMS42LjAuR0lUCgoKCi0tIApMZWkgTWluZwpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
+dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
