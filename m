@@ -1,15 +1,15 @@
-From: leiming <tom.leiming@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-Date: Sat, 18 Apr 2009 10:32:26 +0800
-Message-ID: <20090418103226.54250420__30770.1139980511$1240022685$gmane$org@linux-lm>
+Date: Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
+Message-ID: <alpine.LFD.2.00.0904171952260.4042__13369.715496856$1240024108$gmane$org@localhost.localdomain>
 References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
 	<d82e647a0904161837w6b6fb652la0da05f9061e95dc@mail.gmail.com>
-	<200904172336.12414.rjw@sisk.pl>
+	<200904172336.12414.rjw@sisk.pl> <20090418103226.54250420@linux-lm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904172336.12414.rjw@sisk.pl>
+In-Reply-To: <20090418103226.54250420@linux-lm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Linus@smtp1.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, laurent.pinchart@skynet.be, Network Development <netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: leiming <tom.leiming@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, laurent.pinchart@skynet.be, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-09ogRnJpLCAxNyBBcHIgMjAwOSAyMzozNjoxMSArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
-andAc2lzay5wbD4g0LS1wDoKCj4gT24gRnJpZGF5IDE3IEFwcmlsIDIwMDksIE1pbmcgTGVpIHdy
-b3RlOgo+ID4gMjAwOS80LzE3IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gPiA+
-Cj4gPiA+IEJ1Zy1FbnRyeSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMzEyNQo+ID4gPiBTdWJqZWN0ICAgICAgICAgOiBhY3RpdmUgdXZjdmlkZW8g
-YnJlYWtzIG92ZXIgc3VzcGVuZAo+ID4gPiBTdWJtaXR0ZXIgICAgICAgOiBBbGFuIEplbmtpbnMg
-PGFsYW4tamVua2luc0B0dWZmbWFpbC5jby51az4KPiA+ID4gRGF0ZSAgICAgICAgICAgIDogMjAw
-OS0wNC0xNSAxMDoxMiAoMiBkYXlzIG9sZCkKPiA+ID4gUmVmZXJlbmNlcyAgICAgIDoKPiA+ID4g
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjM5NzkwMDk1MDg4NDAmdz00Cj4g
-PiA+Cj4gPiAKPiA+IEl0IGlzIGEgYnVnIGluIHJlc3VtZSBwYXRoIG9mIHV2Y3ZpZGVvIGRyaXZl
-ciwgYW5kIEkgaGF2ZSBzZW50IGEKPiA+IHBhdGNoIHRvIGxhdXJlbnQucGluY2hhcnRAc2t5bmV0
-LmJlLAo+ID4gbWNoZWhhYkBpbmZyYWRlYWQub3JnICBhbmQgdmlkZW80bGludXgtbGlzdEByZWRo
-YXQuY29tIHRvIGZpeCBpdCwKPiA+IGJ1dCBzdGlsbCBubyBlY2hvIGZyb20gdGhlbS4KPiA+IAo+
-ID4gVGhlIHBhdGNoIHRpdGxlIGlzIFY0TC9EVkI6dXNidmlkZW86Zml4IHV2YyByZXN1bWUgZmFp
-bGVkLgo+ID4gCj4gPiBSYWZhZWwgSi4KPiA+ICAgICAgICAgSWYgeW91IHdvdWxkIGxpa2UgdG8g
-YXBwbHkgaXQgLEkgY2FuIHJlc2VuZCB0byB5b3UuICBUaGFua3MhCj4gCj4gUGxlYXNlIHJlc2Vu
-ZC4KPiAKPiBSYWZhZWwKCkZyb20gNTcxNWUzMTBhOTM5ZjNmN2NkM2U4OGVhZThmMjVmZWRiYjI4
-ZGVmNCBNb24gU2VwIDE3IDAwOjAwOjAwIDIwMDEKRnJvbTogTWluZyBMZWkgPHRvbS5sZWltaW5n
-QGdtYWlsLmNvbT4KRGF0ZTogV2VkLCAxNSBBcHIgMjAwOSAyMjozMjo1MSArMDgwMApTdWJqZWN0
-OiBbUEFUQ0hdIFY0TC9EVkI6dXNidmlkZW86Zml4IHV2YyByZXN1bWUgZmFpbGVkCgpOb3cgdXJi
-IGJ1ZmZlcnMgaXMgbm90IGZyZWVkIGJlZm9yZSBzdXNwZW5kLCBzbyB1dmNfYWxsb2NfdXJiX2J1
-ZmZlcnMKc2hvdWxkIHJldHVybiBwYWNrZXQgY291bnRzIGFsbG9jYXRlZCBvcmlnaW5hbGx5IGR1
-cmluZyB1dmMgcmVzdW1lCiwgaW5zdGVhZCBvZiB6ZXJvLgoKVGhpcyBwYXRjaCBpcyBhZ2FpbnN0
-IHYyLjYuMzAtcmMyLgoKU2lnbmVkLW9mZi1ieTogTWluZyBMZWkgPHRvbS5sZWltaW5nQGdtYWls
-LmNvbT4KLS0tCiBkcml2ZXJzL21lZGlhL3ZpZGVvL3V2Yy91dmNfdmlkZW8uYyB8ICAgIDIgKy0K
-IDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvbWVkaWEvdmlkZW8vdXZjL3V2Y192aWRlby5jIGIvZHJpdmVycy9tZWRp
-YS92aWRlby91dmMvdXZjX3ZpZGVvLmMKaW5kZXggYTk1ZTE3My4uYzA1MGIyMiAxMDA2NDQKLS0t
-IGEvZHJpdmVycy9tZWRpYS92aWRlby91dmMvdXZjX3ZpZGVvLmMKKysrIGIvZHJpdmVycy9tZWRp
-YS92aWRlby91dmMvdXZjX3ZpZGVvLmMKQEAgLTc0Miw3ICs3NDIsNyBAQCBzdGF0aWMgaW50IHV2
-Y19hbGxvY191cmJfYnVmZmVycyhzdHJ1Y3QgdXZjX3ZpZGVvX2RldmljZSAqdmlkZW8sCiAKIAkv
-KiBCdWZmZXJzIGFyZSBhbHJlYWR5IGFsbG9jYXRlZCwgYmFpbCBvdXQuICovCiAJaWYgKHZpZGVv
-LT51cmJfc2l6ZSkKLQkJcmV0dXJuIDA7CisJCXJldHVybiBESVZfUk9VTkRfVVAodmlkZW8tPnVy
-Yl9zaXplLCBwc2l6ZSk7CiAKIAkvKiBDb21wdXRlIHRoZSBudW1iZXIgb2YgcGFja2V0cy4gQnVs
-ayBlbmRwb2ludHMgbWlnaHQgdHJhbnNmZXIgVVZDCiAJICogcGF5bG9hZHMgYWNjcm9zcyBtdWx0
-aXBsZSBVUkJzLgotLSAKMS42LjAuR0lUCgoKCi0tIApMZWkgTWluZwpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
-dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+
+
+On Sat, 18 Apr 2009, leiming wrote:
+> 
+> >From 5715e310a939f3f7cd3e88eae8f25fedbb28def4 Mon Sep 17 00:00:00 2001
+> From: Ming Lei <tom.leiming@gmail.com>
+> Date: Wed, 15 Apr 2009 22:32:51 +0800
+> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed
+> 
+> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
+> should return packet counts allocated originally during uvc resume
+> , instead of zero.
+> 
+> This patch is against v2.6.30-rc2.
+> 
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+> ---
+>  drivers/media/video/uvc/uvc_video.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+> index a95e173..c050b22 100644
+> --- a/drivers/media/video/uvc/uvc_video.c
+> +++ b/drivers/media/video/uvc/uvc_video.c
+> @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct uvc_video_device *video,
+>  
+>  	/* Buffers are already allocated, bail out. */
+>  	if (video->urb_size)
+> -		return 0;
+> +		return DIV_ROUND_UP(video->urb_size, psize);
+
+I don't think this is right. It should round _down_.
+
+It's supposed to return 'npackets', but if you pass it a different packet 
+size than it was passed originally, it can now return a potentially bigger 
+number than the already allocated buffer, no?
+
+So I think it should round down (ie use a regular divide). No?
+
+		Linuse
