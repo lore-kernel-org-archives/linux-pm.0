@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Resume after suspend-to-ram broken for Vaio SR19VN
-	in 30rc2
-Date: Mon, 20 Apr 2009 22:53:54 +0200
-Message-ID: <200904202253.54768.rjw@sisk.pl>
-References: <31c940650904201152y5f440237rb9c49f1aedfef5a6@mail.gmail.com>
+From: "Chris Friesen" <cfriesen@nortel.com>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+Date: Mon, 20 Apr 2009 15:22:11 -0600
+Message-ID: <49ECE783.5050704__34997.7026031867$1240262911$gmane$org@nortel.com>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	<alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+	<200904070035.00784.rjw@sisk.pl> <49E79E58.9000606@nortel.com>
+	<alpine.LFD.2.00.0904161432000.4042@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <31c940650904201152y5f440237rb9c49f1aedfef5a6@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904161432000.4042@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: fanderay <fanderay4@googlemail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Trenton Adams <trenton.d.adams@gmail.com>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 20 April 2009, fanderay wrote:
-> Hi,
+Linus Torvalds wrote:
+> 
+> On Thu, 16 Apr 2009, Chris Friesen wrote:
+>> I'm okay with that.  The problem causes some backwards compatibility problems
+>> with existing apps that get confused by the large "offset" number.  The fix is
+>> going to cause problems too, but in a different way.
+>>
+>> We'll work around it.
+> 
+> If you have actual apps that care, that's a different issue.
+> 
+> We do try to bend over backwards on ABI issues if it really is noticeable 
+> for applications. Now, in this case, if you can just fix your app to not 
+> care (because it really was badly written in the first place to even 
+> notice), then that is the _much_ superior solution.
 
-Hi,
+Yep, we can fix the app to ignore that field for anonymous mappings.
 
-> I have a Vaio SR19VN (Radeon HD 3400 video) and resume after
-> suspend-to-ram fails with 2.6.30rc2/x86_64.  I have been testing with
-> the s2ram tool using the approach described at
-> http://en.opensuse.org/S2ram.  None of the s2ram options changes the
-> behavior, which is that the system freezes hard while attempting to
-> resume (screen stays off/black) and must be physically powered down.
-> The caps-lock test fails, which suggests this is more than just a
-> video problem.  Suspend/resume actually did work with the stock Debian
-> lenny kernel (2.6.26/amd64).  The kernel config is pasted at
-> http://pastebin.com/mb4dd790.  Any idea what might be wrong?
+> Although I don't really even see what we can sanely do except for the 0 
+> case. We could put the virtual address in there instead of zero (I forget 
+> what old kernels used to do - whatever magic value the anonymous mappings 
+> got, it wasn't really designed as an important value in its own right, it 
+> was designed to trigger the "we can merge these vma's" logic.
 
-Have you tried to suspend after booting with init=/bin/bash ?
-You'll need to mount /sys and /proc manually before the suspend for it to work.
+For anonymous mappings, the older kernels put the starting address of 
+the VMA (from the point of view of the app) as the offset.  Until the 
+recent change, new kernels still did this for most VMAs, but the stack 
+offset was a 64-bit value with no obvious relation to the VMA start address.
 
-Also it might be worth checking if anything changes with the fglrx binary
-driver.
-
-Thanks,
-Rafael
+Chris
