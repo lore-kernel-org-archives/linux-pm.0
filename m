@@ -1,9 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM/Suspend: Introduce two new platform
-	callbacks to avoid breakage (Re: 900af0d breaks some embedded
-	suspend/resume)
-Date: Mon, 20 Apr 2009 02:50:49 +0200
-Message-ID: <200904200250.50476.rjw__34372.1956749961$1240189124$gmane$org@sisk.pl>
+Subject: [GIT PULL] PM update for 2.6.30
+Date: Mon, 20 Apr 2009 02:56:16 +0200
+Message-ID: <200904200256.17028.rjw__32191.1143175841$1240189319$gmane$org@sisk.pl>
 References: <20090417231009.GB6900@flint.arm.linux.org.uk>
 	<alpine.LFD.2.00.0904191357280.12867@localhost.localdomain>
 	<20090419200330.GA16002@flint.arm.linux.org.uk>
@@ -22,16 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Russell King <rmk+lkml@arm.linux.org.uk>, pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 19 April 2009, Russell King wrote:
-> On Sun, Apr 19, 2009 at 01:57:44PM -0400, Len Brown wrote:
-> > Acked-by: Len Brown <len.brown@intel.com>
-> 
-> Thanks.  Since there's no objections yet, can we get this merged?
+Hi Linus,
 
-I'm going to send a pull request in a minute.
+Please pull a power management update for 2.6.30 from:
 
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+
+This fixes the ARM breakage caused by the recent reordering of suspend code.
+
+ drivers/acpi/sleep.c    |    8 ++++----
+ include/linux/suspend.h |   36 ++++++++++++++++++++++++++----------
+ kernel/power/main.c     |   24 +++++++++++++++++-------
+ 3 files changed, 47 insertions(+), 21 deletions(-)
+
+---------------
+
+Rafael J. Wysocki (1):
+      PM/Suspend: Introduce two new platform callbacks to avoid breakage
+
+
+Thanks,
 Rafael
