@@ -1,16 +1,17 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC Add in_use attribute] Let the driver know if
-	it's in use
-Date: Mon, 20 Apr 2009 15:45:55 -0700
-Message-ID: <20090420224555.GA28697@kroah.com>
-References: <20090416131323.GA16752@gandalf.sssup.it>
-	<200904202354.04777.rjw@sisk.pl>
+From: Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+Date: Tue, 21 Apr 2009 00:08:03 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0904202352520.2924__26597.8260468275$1240272996$gmane$org@blonde.anvils>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	<alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+	<200904070035.00784.rjw@sisk.pl> <49E79E58.9000606@nortel.com>
+	<alpine.LFD.2.00.0904161432000.4042@localhost.localdomain>
+	<49ECE783.5050704@nortel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200904202354.04777.rjw@sisk.pl>
+In-Reply-To: <49ECE783.5050704@nortel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,75 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Trenton Adams <trenton.d.adams@gmail.com>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 11:54:04PM +0200, Rafael J. Wysocki wrote:
-> On Thursday 16 April 2009, Michael Trimarchi wrote:
-> > Drivers on embedded systems would be smart enough
-> > to know that some of the devices should remain powered up, because
-> > they could still be useful even when the CPU wasn't running.
-> > The patch add the in_use attribute, that it can be used by the
-> > the drivers to avoid power down during suspend.
-> 
-> OK, so the idea is that in_use will be set by the user space for devices that
-> shouldn't be suspended.  Is this correct?
-
-If so, why?  Why would you suspend anything then?  Why not just have
-userspace suspend the devices it wants to suspend and leave the ones it
-thinks is "in_use" alone?
-
-> Assuming it is, I'd call the flag 'in_use' rather than 'is_inuse'.  Also, if
-> may_inuse is supposed to mean that we can set in_use for this device, I'd call
-> it 'in_use_valid', I'd make it be unset by default and I'd allow the driver to
-> unset it if it is going to react to 'in_use'.
-> 
-> > Signed-off-by: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-> > Cc: "Alan Stern" <stern@rowland.harvard.edu>
-> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Cc: "Pavel Mackek" <pavel@ucw.cz>
-> > Cc: "Len Brown" <lenb@kernel.org>
+On Mon, 20 Apr 2009, Chris Friesen wrote:
+> Linus Torvalds wrote:
+> > On Thu, 16 Apr 2009, Chris Friesen wrote:
+> > > I'm okay with that.  The problem causes some backwards compatibility
+> > > problems
+> > > with existing apps that get confused by the large "offset" number.  The
+> > > fix is
+> > > going to cause problems too, but in a different way.
+> > >
+> > > We'll work around it.
 > > 
-> > ---
-> > diff --git a/drivers/base/core.c b/drivers/base/core.c
-> > index e73c92d..d67043b 100644
-> > --- a/drivers/base/core.c
-> > +++ b/drivers/base/core.c
-> > @@ -1124,6 +1124,49 @@ static struct device *next_device(struct klist_iter *i)
-> >  }
-> >  
-> >  /**
-> > + * device_visit_subtree - device subtree iterator.
-> > + * @root: root struct device.
-> > + * @data: data for the callback.
-> > + * @fn: function to be called for each device.
-> > + *
-> > + * Iterate the @parent's subtree devices, and call @fn for each,
-> > + * passing it @data.
-> > + *
-> > + */
+> > If you have actual apps that care, that's a different issue.
+
+Yes, that's what I told Chris too.
+But asked for more info, suspecting his app was already broken.
+
+> > 
+> > We do try to bend over backwards on ABI issues if it really is noticeable
+> > for applications. Now, in this case, if you can just fix your app to not
+> > care (because it really was badly written in the first place to even
+> > notice), then that is the _much_ superior solution.
 > 
-> Hmm, I'm not sure ig Greg is going to like it.
+> Yep, we can fix the app to ignore that field for anonymous mappings.
+> 
+> > Although I don't really even see what we can sanely do except for the 0
+> > case. We could put the virtual address in there instead of zero (I forget
+> > what old kernels used to do - whatever magic value the anonymous mappings
+> > got, it wasn't really designed as an important value in its own right, it
+> > was designed to trigger the "we can merge these vma's" logic.
+> 
+> For anonymous mappings, the older kernels put the starting address of the VMA
+> (from the point of view of the app) as the offset.  Until the recent change,
+> new kernels still did this for most VMAs, but the stack offset was a 64-bit
+> value with no obvious relation to the VMA start address.
 
-I have the same big question you do:
+No, what they put there was something that in most cases matched the
+starting address of the VMA; but try moving that VMA with mremap (and
+an old /proc/<pid>/maps!) and you'll see that the "offset" remained
+unchanged even when the starting address of the VMA was changed.
 
-> Besides, I'm not sure if it's really necessary.  What's wrong with using
-> simply device_for_each_child() instead?
+(The offset remaining constant so that rmap can locate the VMA's pages
+and unmap them, despite their being mapped at different virtual
+addresses in parent and child after a move in one of them.)
 
-Exactly, what are you trying to do that differs from
-device_for_each_child()?
+... so I think your app was indeed already broken, wasn't it?
 
-> > @@ -1207,6 +1250,7 @@ int __init devices_init(void)
-> >  	return -ENOMEM;
-> >  }
-> >  
-> > +EXPORT_SYMBOL_GPL(device_visit_subtree);
+It's also unclear why you'd want to use the offset field for the
+starting address of the VMA, when /proc/<pid>/maps already shows
+the starting address of the VMA.  I think you've more to tell us!
 
-I see you didn't run your patch through scripts/checkpatch.pl :)
-
-Please do so in the future.
-
-thanks,
-
-greg k-h
+Hugh
