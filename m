@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC Add in_use attribute] Let the driver know if
 	it's in use
-Date: Tue, 21 Apr 2009 20:30:56 +0200
-Message-ID: <200904212030.57316.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0904201806420.6832-100000@iolanthe.rowland.org>
+Date: Tue, 21 Apr 2009 20:33:01 +0200
+Message-ID: <200904212033.02035.rjw@sisk.pl>
+References: <200904202354.04777.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0904201806420.6832-100000@iolanthe.rowland.org>
+	<20090420221518.GA28499@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0904201806420.6832-100000@iolanthe.rowland.org>
+In-Reply-To: <20090420221518.GA28499@kroah.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,50 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz, Greg KH <greg@kroah.com>
+To: Greg KH <greg@kroah.com>
+Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 21 April 2009, Alan Stern wrote:
-> On Mon, 20 Apr 2009, Rafael J. Wysocki wrote:
+On Tuesday 21 April 2009, Greg KH wrote:
 > 
-> > On Thursday 16 April 2009, Michael Trimarchi wrote:
-> > > Drivers on embedded systems would be smart enough
-> > > to know that some of the devices should remain powered up, because
-> > > they could still be useful even when the CPU wasn't running.
-> > > The patch add the in_use attribute, that it can be used by the
-> > > the drivers to avoid power down during suspend.
-> > 
-> > OK, so the idea is that in_use will be set by the user space for devices that
-> > shouldn't be suspended.  Is this correct?
-> > 
-> > Assuming it is, I'd call the flag 'in_use' rather than 'is_inuse'.  Also, if
-> > may_inuse is supposed to mean that we can set in_use for this device, I'd call
-> > it 'in_use_valid', I'd make it be unset by default and I'd allow the driver to
-> > unset it if it is going to react to 'in_use'.
+> I seem to not have seen the original post about this, thanks Alan for
+> adding me to the cc:
 > 
-> I don't see why two separate flags are needed.  Why can't there be just 
-> one?
+> On Mon, Apr 20, 2009 at 06:11:18PM -0400, Alan Stern wrote:
+> > On Mon, 20 Apr 2009, Rafael J. Wysocki wrote:
+> > 
+> > > On Thursday 16 April 2009, Michael Trimarchi wrote:
+> > > > Drivers on embedded systems would be smart enough
+> > > > to know that some of the devices should remain powered up, because
+> > > > they could still be useful even when the CPU wasn't running.
+> > > > The patch add the in_use attribute, that it can be used by the
+> > > > the drivers to avoid power down during suspend.
+> 
+> I'm confused, why would a driver not know if it was in use or not?
+> Actually, how would it not know already by virtue of what is happening
+> within it (io in flight, buttons being pushed, dma streaming, etc.)?
+> 
+> > > OK, so the idea is that in_use will be set by the user space for devices that
+> > > shouldn't be suspended.  Is this correct?
+> 
+> So userspace knows better than the kernel as to if a specific driver is
+> being used at the moment?  Why is this so?
 
-There could be one, but since the core would handle the sysfs attribute
-associated with it, the second flag would be useful to indicate to the core
-whether or not the attribute should be available at all.
+The name of the flag is not the best one. :-)
 
-> Also, I don't see why the in_use flag has to propagate down to all the 
-> descendant devices when it is set.  Why not let userspace be 
-> responsible for that?
+The flag is supposed to mean "don't suspend this device during system-wide
+suspend, because it's being used for something you may be unaware of".
+AFAICS.
 
-Agreed.
-
-Michael, would it be a problem if the user space were responsible for
-setting the flag for all devices that shouldn't be suspended?
-
-> Finally, I don't like either name very much.  This flag is supposed to
-> indicate that the device is being used in a mode that can run by itself
-> even when the rest of the system is suspended.  Calling it "in_use" 
-> doesn't express the crucial fact that the device is self-sufficient.
-
-You're rignt, it would be better to call it something like 'no_suspend'.
-
-Thanks,
+Best,
 Rafael
