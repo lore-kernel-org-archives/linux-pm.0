@@ -1,16 +1,15 @@
-From: Ming Lei <tom.leiming@gmail.com>
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-Date: Tue, 21 Apr 2009 09:47:34 +0800
-Message-ID: <d82e647a0904201847n403424efnb5a0c40a4cac365d__42026.590210344$1240278673$gmane$org@mail.gmail.com>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
-	<alpine.LFD.2.00.0904171952260.4042@localhost.localdomain>
-	<20090418125111.6646e997@linux-lm>
-	<200904202208.23899.laurent.pinchart@skynet.be>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Mon, 20 Apr 2009 21:44:54 -0700
+Message-ID: <d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
+References: <1239759692-28617-1-git-send-email-arve@android.com>
+	<1239759692-28617-2-git-send-email-arve@android.com>
+	<20090420092905.GB8873@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200904202208.23899.laurent.pinchart@skynet.be>
+In-Reply-To: <20090420092905.GB8873@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,79 +19,406 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-2009/4/21 Laurent Pinchart <laurent.pinchart@skynet.be>:
-> On Saturday 18 April 2009 06:51:11 leiming wrote:
->> On Fri, 17 Apr 2009 19:55:29 -0700 (PDT)
->>
->> Linus Torvalds <torvalds@linux-foundation.org> wrote:
->> > > @@ -742,7 +742,7 @@ static int uvc_alloc_urb_buffers(struct
->> > > uvc_video_device *video,
->> > > =A0 /* Buffers are already allocated, bail out. */
->> > > =A0 if (video->urb_size)
->> > > - =A0 =A0 =A0 =A0 return 0;
->> > > + =A0 =A0 =A0 =A0 return DIV_ROUND_UP(video->urb_size, psize);
->> >
->> > I don't think this is right. It should round _down_.
->> >
->> > It's supposed to return 'npackets', but if you pass it a different
->> > packet size than it was passed originally, it can now return a
->> > potentially bigger number than the already allocated buffer, no?
->> >
->> > So I think it should round down (ie use a regular divide). No?
->>
->> Yes,you are correct, please ignore my last reply, and following is
->> the fixed patch.
+On Mon, Apr 20, 2009 at 2:29 AM, Pavel Machek <pavel@ucw.cz> wrote:
+
+>> +When the driver determines that it needs to run (usually in an interrupt
+>> +handler) it calls suspend_block:
+>> + =A0 =A0 suspend_block(&state->suspend_blocker);
+>> +
+>> +When it no longer needs to run it calls suspend_unblock:
+>> + =A0 =A0 suspend_unblock(&state->suspend_blocker);
 >
-> psize and video->urb_size shouldn't have changed before and after resume,
-> otherwise we'll get into trouble anyway. A regular divide and a round-up
-> divide should then return the same result. I'll take the regular divide, =
-as it
-> will be more efficient.
+> Sounds reasonably sane. Maybe it should be block_suspend(), because
+> suspend_block() sounds like... something that builds suspend, but I
+> guess it is good enough.
+>
 
-Yes.
+I was trying to keep a common prefix.
+
+>> +/* A suspend_blocker prevents the system from entering suspend when act=
+ive.
+>> + */
+>> +
+>
+> linuxdoc?
+>
+>> +struct suspend_blocker {
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> + =A0 =A0 atomic_t =A0 =A0 =A0 =A0 =A0 =A0flags;
+>> + =A0 =A0 const char =A0 =A0 =A0 =A0 *name;
+>> +#endif
+>> +};
+>> +
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> +
+>> +void suspend_blocker_init(struct suspend_blocker *blocker, const char *=
+name);
+>> +void suspend_blocker_destroy(struct suspend_blocker *blocker);
+>> +void suspend_block(struct suspend_blocker *blocker);
+>> +void suspend_unblock(struct suspend_blocker *blocker);
+>> +
+>> +/* is_blocking_suspend returns true if the suspend_blocker is currently=
+ active.
+>> + */
+>> +bool is_blocking_suspend(struct suspend_blocker *blocker);
+>
+> Same here?
+
+I moved this to the c file, see diff below.
 
 >
->> Thanks.
+>> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+>> index 23bd4da..9d1df13 100644
+>> --- a/kernel/power/Kconfig
+>> +++ b/kernel/power/Kconfig
+>> @@ -116,6 +116,16 @@ config SUSPEND_FREEZER
 >>
->> From a3b3d72cdd57a0699fb643b41b78eb7beb211ff5 Mon Sep 17 00:00:00 2001
->> From: Ming Lei <tom.leiming@gmail.com>
->> Date: Wed, 15 Apr 2009 22:32:51 +0800
->> Subject: [PATCH] V4L/DVB:usbvideo:fix uvc resume failed(v2)
+>> =A0 =A0 =A0 =A0 Turning OFF this setting is NOT recommended! If in doubt=
+, say Y.
 >>
->> Now urb buffers is not freed before suspend, so uvc_alloc_urb_buffers
->> should return packet counts allocated originally during uvc resume
->> , instead of zero.
->>
->> This version uses round down to return packet counts on Linus's
->> suggestions, or else may lead to buffer destructed if packet size
->> is changed before calling uvc_alloc_urb_buffers() in this kind of
->> case.
+>> +config SUSPEND_BLOCK
+>> + =A0 =A0 bool "Suspend block"
+>> + =A0 =A0 depends on PM
+>> + =A0 =A0 select RTC_LIB
 >
-> The comment is misleading. If the packet size changes we need to realloca=
-te
-> the buffers anyway. Have you checked if the packet size (which depends on=
- the
-> endpoint being selected) can be changed between suspend and resume, eithe=
-r by
-> the uvcvideo driver (I don't think it can) or the USB core ?
+> Is RTC_LIB okay to select?
 
-The packet size does not change between suspend and resume.  I mean
-uvc_alloc_urb_buffers()
-still can be used in other cases if buffers was not freed and is
-reuesed in future. It seems there is no
-such cases in uvcvideo now, but uvc_alloc_urb_buffers() really __can__
- work in such case, isn't it?
+It should be. It cannot be enabled manually.
 
-IMHO It is only used to allocate or reserve UVC_URBS usb buffers,
-which size is video->urb_size, and
-npackets can be shortened or enlarged if psize is changed, after all.
+>> @@ -392,6 +393,9 @@ static void suspend_finish(void)
+>>
+>>
+>> =A0static const char * const pm_states[PM_SUSPEND_MAX] =3D {
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> + =A0 =A0 [PM_SUSPEND_ON] =A0 =A0 =A0 =A0 =3D "on",
+>> +#endif
+>> =A0 =A0 =A0 [PM_SUSPEND_STANDBY] =A0 =A0=3D "standby",
+>> =A0 =A0 =A0 [PM_SUSPEND_MEM] =A0 =A0 =A0 =A0=3D "mem",
+>> =A0};
+>
+> This allows you to write "on" to the other interfaces where that makes
+> no sense.... right?
 
-Thanks!
+state_store starts iterating at PM_SUSPEND_STANDBY, so don't think so.
+
+>
+>> +static bool enable_suspend_blockers;
+>
+> Uhuh... What is this good for... except debugging?
+
+It prevents suspend blockers from affecting existing suspend and
+freezing interfaces (while auto suspend is not active).
+
+>
+>> +bool suspend_is_blocked(void)
+>> +{
+>> + =A0 =A0 if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend bloc=
+kers\n"))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> + =A0 =A0 return !!atomic_read(&suspend_block_count);
+>> +}
+>
+> Yes, if enable_suspend_blockers is one, we are in deep trouble.
+
+It just means that you compiled suspend blocker support into the
+kernel, but used an old interface to enter suspend. It warns if
+enable_suspend_blockers is 0 not 1.
+
+>
+>> +/**
+>> + * suspend_blocker_init() - Initialize a suspend blocker
+>> + * @blocker: The suspend blocker to initialize.
+>> + * @name: =A0 =A0The name of the suspend blocker to show in
+>> + * =A0 =A0 =A0 =A0 =A0 /proc/suspend_blockers
+>
+> I don't think suspend_blockers should go to /proc. They are not process-r=
+elated.
+
+I moved that comment to the stats patch. It is still in procfs though,
+as it is most similar to other procfs entries. It is not allowed under
+the sysfs rules, and we do not want to enable debugfs on a production
+system since it exposes some unsafe interfaces.
+
+>
+>> +/**
+>> + * suspend_block() - Block suspend
+>> + * @blocker: The suspend blocker to use
+>> + */
+>> +void suspend_block(struct suspend_blocker *blocker)
+>> +{
+>> + =A0 =A0 BUG_ON(!(atomic_read(&blocker->flags) & SB_INITIALIZED));
+> As blocker->flags seem to be used mostly for debugging; do they have
+> to use "atomic"? Normally, "magic" variable is used, instead. (Single
+> bit is probably not enough to guard against using uninitialized
+> memory.)
+
+It is mostly used to determine if the suspend blocker is already
+active, so yes it has to be atomic. I could add a magic value, but a
+single bit is enough to catch uninitialized global and kzalloced
+members.
+
+>
+>> + * suspend_unblock() - Unblock suspend
+>> + * @blocker: The suspend blocker to unblock.
+>> + *
+>> + * If no other suspend blockers block suspend, the system will suspend.
+>> + */
+>> +void suspend_unblock(struct suspend_blocker *blocker)
+>> +{
+>
+> ...BUG_ON(!(atomic_read(&blocker->flags) & SB_INITIALIZED)); ?
+
+Perhaps. This function does not do anything unless you have already
+called suspend_block though.
+
+>
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND_BLOCKER)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_unblock: %s\n", blocker->name=
+);
+>> +
+>> + =A0 =A0 if (atomic_cmpxchg(&blocker->flags, SB_INITIALIZED | SB_ACTIVE,
+>> + =A0 =A0 =A0 =A0 SB_INITIALIZED) =3D=3D (SB_INITIALIZED | SB_ACTIVE))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (atomic_dec_and_test(&suspend_block_count))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_work(suspend_work_queue,=
+ &suspend_work);
+>> +}
+>> +EXPORT_SYMBOL(suspend_unblock);
+>
+> Uhuh... can we "loose a oportunity to suspend" here? If someone is
+> just updating the flags...? Is it guaranteed that if two people do
+> suspend_unblock at the same time, one of them will pass?
+
+What do you mean by just updating the flags? SB_ACTIVE was either
+cleared or not, if it was, then atomic_dec_and_test is called.
+
+>
+>> +void request_suspend_state(suspend_state_t state)
+>> +{
+>> + =A0 =A0 unsigned long irqflags;
+>> + =A0 =A0 spin_lock_irqsave(&state_lock, irqflags);
+>> + =A0 =A0 if (debug_mask & DEBUG_USER_STATE) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct timespec ts;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct rtc_time tm;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 getnstimeofday(&ts);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 rtc_time_to_tm(ts.tv_sec, &tm);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("request_suspend_state: %s (%d->%d) at=
+ %lld "
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "(%d-%02d-%02d %02d:%02d:%02d.=
+%09lu UTC)\n",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 state !=3D PM_SUSPEND_ON ? "sl=
+eep" : "wakeup",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 requested_suspend_state, state,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ktime_to_ns(ktime_get()),
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_year + 1900, tm.tm_mon +=
+ 1, tm.tm_mday,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_hour, tm.tm_min, tm.tm_s=
+ec, ts.tv_nsec);
+>
+> Introduce macro for printing time?
+
+OK.
 
 -- =
 
-Lei Ming
+Arve Hj=F8nnev=E5g
+
+----
+diff --git a/Documentation/power/suspend-blockers.txt
+b/Documentation/power/suspend-blockers.txt
+index 743b870..e95a507 100644
+--- a/Documentation/power/suspend-blockers.txt
++++ b/Documentation/power/suspend-blockers.txt
+@@ -10,10 +10,14 @@ interrupt handler or a freezeable thread always
+works, but if you call
+ block_suspend from a sysdev suspend handler you must also return an error =
+from
+ that handler to abort suspend.
+
+-Suspend blockers can be used to allow user-space to decide which keys shou=
+ld
+-wake the full system up and turn the screen on. Use set_irq_wake or a plat=
+form
+-specific api to make sure the keypad interrupt wakes up the cpu. Once
+the keypad
+-driver has resumed, the sequence of events can look like this:
++In cell phones or other embedded systems where powering the screen is a
++significant drain on the battery, suspend blockers can be used to allow
++user-space to decide whether a keystroke received while the system is susp=
+ended
++should cause the screen to be turned back on or allow the system to
+go back into
++suspend. Use set_irq_wake or a platform specific api to make sure the keyp=
+ad
++interrupt wakes up the cpu. Once the keypad driver has resumed, the sequen=
+ce of
++events can look like this:
++
+ - The Keypad driver gets an interrupt. It then calls suspend_block on the
+   keypad-scan suspend_blocker and starts scanning the keypad matrix.
+ - The keypad-scan code detects a key change and reports it to the input-ev=
+ent
+@@ -27,9 +31,11 @@ driver has resumed, the sequence of events can look
+like this:
+   on the input-event device.
+ - The input-event driver dequeues the key-event and, since the queue is now
+   empty, it calls suspend_unblock on the input-event-queue suspend_blocker.
+-- The user-space input-event thread returns from read. It determines that =
+the
+-  key should not wake up the full system, calls suspend_unblock on the
+-  process-input-events suspend_blocker and calls select or poll.
++- The user-space input-event thread returns from read. If it determines th=
+at
++  the key should leave the screen off, it calls suspend_unblock on the
++  process_input_events suspend_blocker and then calls select or poll. The
++  system will automatically suspend again, since now no suspend blockers a=
+re
++  active.
+
+                  Key pressed   Key released
+                      |             |
+diff --git a/include/linux/suspend_block.h b/include/linux/suspend_block.h
+index 7820c60..54bf9c4 100755
+--- a/include/linux/suspend_block.h
++++ b/include/linux/suspend_block.h
+@@ -16,7 +16,15 @@
+ #ifndef _LINUX_SUSPEND_BLOCK_H
+ #define _LINUX_SUSPEND_BLOCK_H
+
+-/* A suspend_blocker prevents the system from entering suspend when active.
++/**
++ * struct suspend_blocker - the basic suspend_blocker structure
++ * @flags:     Tracks initialized and active state.
++ * @name:      Name used for debugging.
++ *
++ * When a suspend_blocker is active it prevents the system from entering
++ * suspend.
++ *
++ * The suspend_blocker structure must be initialized by suspend_blocker_in=
+it()
+  */
+
+ struct suspend_blocker {
+@@ -32,17 +40,7 @@ void suspend_blocker_init(struct suspend_blocker
+*blocker, const char *name);
+ void suspend_blocker_destroy(struct suspend_blocker *blocker);
+ void suspend_block(struct suspend_blocker *blocker);
+ void suspend_unblock(struct suspend_blocker *blocker);
+-
+-/* is_blocking_suspend returns true if the suspend_blocker is currently ac=
+tive.
+- */
+ bool is_blocking_suspend(struct suspend_blocker *blocker);
+-
+-/* suspend_is_blocked can be used by generic power management code to abort
+- * suspend.
+- *
+- * To preserve backward compatibility suspend_is_blocked returns 0 unless =
+it
+- * is called during suspend initiated from the suspend_block code.
+- */
+ bool suspend_is_blocked(void);
+
+ #else
+diff --git a/kernel/power/suspend_block.c b/kernel/power/suspend_block.c
+index b4f2191..1adf075 100644
+--- a/kernel/power/suspend_block.c
++++ b/kernel/power/suspend_block.c
+@@ -41,6 +41,27 @@ struct suspend_blocker main_suspend_blocker;
+ static suspend_state_t requested_suspend_state =3D PM_SUSPEND_MEM;
+ static bool enable_suspend_blockers;
+
++#define pr_info_time(fmt, args...) \
++       do { \
++               struct timespec ts; \
++               struct rtc_time tm; \
++               getnstimeofday(&ts); \
++               rtc_time_to_tm(ts.tv_sec, &tm); \
++               pr_info(fmt "(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n" , \
++                       args, \
++                       tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, \
++                       tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec); \
++       } while (0);
++
++/**
++ * suspend_is_blocked() - Check if suspend should be blocked
++ *
++ * suspend_is_blocked can be used by generic power management code to abort
++ * suspend.
++ *
++ * To preserve backward compatibility suspend_is_blocked returns 0 unless =
+it
++ * is called during suspend initiated from the suspend_block code.
++ */
+ bool suspend_is_blocked(void)
+ {
+        if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend blockers\=
+n"))
+@@ -66,16 +87,8 @@ retry:
+        if (debug_mask & DEBUG_SUSPEND)
+                pr_info("suspend: enter suspend\n");
+        ret =3D pm_suspend(requested_suspend_state);
+-       if (debug_mask & DEBUG_EXIT_SUSPEND) {
+-               struct timespec ts;
+-               struct rtc_time tm;
+-               getnstimeofday(&ts);
+-               rtc_time_to_tm(ts.tv_sec, &tm);
+-               pr_info("suspend: exit suspend, ret =3D %d "
+-                       "(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n", ret,
+-                       tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+-                       tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+-       }
++       if (debug_mask & DEBUG_EXIT_SUSPEND)
++               pr_info_time("suspend: exit suspend, ret =3D %d ", ret);
+        if (atomic_read(&current_event_num) =3D=3D entry_event_num) {
+                if (debug_mask & DEBUG_SUSPEND)
+                        pr_info("suspend: pm_suspend returned with no event=
+\n");
+@@ -105,8 +118,7 @@ static struct sys_device suspend_block_sysdev =3D {
+ /**
+  * suspend_blocker_init() - Initialize a suspend blocker
+  * @blocker:   The suspend blocker to initialize.
+- * @name:      The name of the suspend blocker to show in
+- *             /proc/suspend_blockers
++ * @name:      The name of the suspend blocker to show in debug messages.
+  */
+ void suspend_blocker_init(struct suspend_blocker *blocker, const char *nam=
+e)
+ {
+@@ -178,6 +190,8 @@ EXPORT_SYMBOL(suspend_unblock);
+ /**
+  * is_blocking_suspend() - Test if a suspend blocker is blocking suspend
+  * @blocker:   The suspend blocker to check.
++ *
++ * Returns true if the suspend_blocker is currently active.
+  */
+ bool is_blocking_suspend(struct suspend_blocker *blocker)
+ {
+@@ -189,19 +203,11 @@ void request_suspend_state(suspend_state_t state)
+ {
+        unsigned long irqflags;
+        spin_lock_irqsave(&state_lock, irqflags);
+-       if (debug_mask & DEBUG_USER_STATE) {
+-               struct timespec ts;
+-               struct rtc_time tm;
+-               getnstimeofday(&ts);
+-               rtc_time_to_tm(ts.tv_sec, &tm);
+-               pr_info("request_suspend_state: %s (%d->%d) at %lld "
+-                       "(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n",
+-                       state !=3D PM_SUSPEND_ON ? "sleep" : "wakeup",
+-                       requested_suspend_state, state,
+-                       ktime_to_ns(ktime_get()),
+-                       tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+-                       tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+-       }
++       if (debug_mask & DEBUG_USER_STATE)
++               pr_info_time("request_suspend_state: %s (%d->%d) at %lld ",
++                            state !=3D PM_SUSPEND_ON ? "sleep" : "wakeup",
++                            requested_suspend_state, state,
++                            ktime_to_ns(ktime_get()));
+        requested_suspend_state =3D state;
+        if (state =3D=3D PM_SUSPEND_ON)
+                suspend_block(&main_suspend_blocker);
