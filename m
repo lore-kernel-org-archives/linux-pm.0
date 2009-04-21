@@ -1,14 +1,17 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [RFC Add in_use attribute] Let the driver know if
 	it's in use
-Date: Tue, 21 Apr 2009 07:17:52 +0200
-Message-ID: <49ED5700.8060002@gandalf.sssup.it>
-References: <Pine.LNX.4.44L0.0904201806420.6832-100000@iolanthe.rowland.org>
+Date: Mon, 20 Apr 2009 23:17:54 -0700
+Message-ID: <20090421061754.GA20726@kroah.com>
+References: <20090416131323.GA16752@gandalf.sssup.it>
+	<200904202354.04777.rjw@sisk.pl> <20090420224555.GA28697@kroah.com>
+	<49ED54DC.6040407@gandalf.sssup.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0904201806420.6832-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <49ED54DC.6040407@gandalf.sssup.it>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +21,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz, Greg KH <greg@kroah.com>
+To: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern wrote:
-> On Mon, 20 Apr 2009, Rafael J. Wysocki wrote:
->
->   
->> On Thursday 16 April 2009, Michael Trimarchi wrote:
->>     
->>> Drivers on embedded systems would be smart enough
->>> to know that some of the devices should remain powered up, because
->>> they could still be useful even when the CPU wasn't running.
->>> The patch add the in_use attribute, that it can be used by the
->>> the drivers to avoid power down during suspend.
->>>       
->> OK, so the idea is that in_use will be set by the user space for devices that
->> shouldn't be suspended.  Is this correct?
->>
->> Assuming it is, I'd call the flag 'in_use' rather than 'is_inuse'.  Also, if
->> may_inuse is supposed to mean that we can set in_use for this device, I'd call
->> it 'in_use_valid', I'd make it be unset by default and I'd allow the driver to
->> unset it if it is going to react to 'in_use'.
->>     
->
-> I don't see why two separate flags are needed.  Why can't there be just 
-> one?
->
-> Also, I don't see why the in_use flag has to propagate down to all the 
-> descendant devices when it is set.  Why not let userspace be 
-> responsible for that?
->   
-Yes it is possible to leave the possibility to the userspace. With this 
-patch
-the userspace can deselect/select a tree in one write and eventually 
-reanable subpart. This
-was the old design choice to use kernel to track dependences.
-> Finally, I don't like either name very much.  This flag is supposed to
-> indicate that the device is being used in a mode that can run by itself
-> even when the rest of the system is suspended.  Calling it "in_use" 
-> doesn't express the crucial fact that the device is self-sufficient.
->   
-Ok I will change
-> Alan Stern
->
->
->   
-Michael
+On Tue, Apr 21, 2009 at 07:08:44AM +0200, Michael Trimarchi wrote:
+> Hi,
+> 
+> Greg KH wrote:
+> > On Mon, Apr 20, 2009 at 11:54:04PM +0200, Rafael J. Wysocki wrote:
+> >   
+> >> On Thursday 16 April 2009, Michael Trimarchi wrote:
+> >>     
+> >>> Drivers on embedded systems would be smart enough
+> >>> to know that some of the devices should remain powered up, because
+> >>> they could still be useful even when the CPU wasn't running.
+> >>> The patch add the in_use attribute, that it can be used by the
+> >>> the drivers to avoid power down during suspend.
+> >>>       
+> >> OK, so the idea is that in_use will be set by the user space for devices that
+> >> shouldn't be suspended.  Is this correct?
+> >>     
+> >
+> > If so, why?  Why would you suspend anything then?  Why not just have
+> > userspace suspend the devices it wants to suspend and leave the ones it
+> > thinks is "in_use" alone?
+> >
+> >   
+> Because it the previus thread the idea is that the driver should use 
+> this flag
+> 
+> "[linux-pm] [RFC Disable suspend on a
+> specific device] This is a little change in linux power scheme".
+
+I wasn't involved in that thread, and am not on linux-pm, care to
+summarize why this change is now recommended?
+
+> > Exactly, what are you trying to do that differs from
+> > device_for_each_child()?
+> >   
+> Is device for each child use to visist the first level of the tree?
+
+Have you tried it?
+
+thanks,
+
+greg k-h
