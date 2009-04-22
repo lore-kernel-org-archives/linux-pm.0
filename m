@@ -1,21 +1,17 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: Re: Adding PM QoS parameters
-Date: Tue, 21 Apr 2009 16:43:20 -0700
-Message-ID: <20090421234320.GA13911@linux.intel.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301CC66C7DE@dbde02.ent.ti.com>
-	<20090406211237.GA25173@linux.intel.com>
-	<B85A65D85D7EB246BE421B3FB0FBB59301CC7972A5@dbde02.ent.ti.com>
-	<20090409185738.GA26224@linux.intel.com>
-	<loom.20090414T111905-377@post.gmane.org>
-	<20090415183545.GA3679@linux.intel.com>
-	<aa8983610904210108v6490ee58hfa47ef126dca0f7d@mail.gmail.com>
-Reply-To: mgross@linux.intel.com
+From: fanderay <fanderay4@googlemail.com>
+Subject: Re: Resume after suspend-to-ram broken for Vaio SR19VN
+	in 30rc2
+Date: Wed, 22 Apr 2009 13:55:15 +0100
+Message-ID: <31c940650904220555v1c1a6046ifa40b9c81b390731@mail.gmail.com>
+References: <31c940650904201152y5f440237rb9c49f1aedfef5a6@mail.gmail.com>
+	<200904211521.31450.rjw@sisk.pl>
+	<31c940650904210800l6934d1d9h350a1e9d7e3bd32e@mail.gmail.com>
+	<200904212050.25531.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <aa8983610904210108v6490ee58hfa47ef126dca0f7d@mail.gmail.com>
+In-Reply-To: <200904212050.25531.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,280 +21,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Derkling <derkling@gmail.com>
-Cc: Matteo Carnevali <rekstorm@gmail.com>, David Siorpaes <david.siorpaes@st.com>, linux-pm@lists.osdl.org, Stefano Bosisio <stebosisio@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 21, 2009 at 10:08:18AM +0200, Derkling wrote:
-> On Wed, Apr 15, 2009 at 20:35, mark gross <mgross@linux.intel.com> wrote:
-> > > Hi,
-> > >    we are a group that since some months is working on "Constrained Power
-> > > Management" in STMicroelectronics.
-> >
-> > I would like to hear what your ideas are around applying constraints to
-> > power management!  The notion of constraint based PM has been rattling
-> > around, in my head and elsewhere, for a while now (a couple of years).
-> > PMQoS is just an early application of it.  I think a lot more could be
-> > done in this area.
-> 
-> We are working on the concept of constrained power management since the times
-> of DPM.
-> We ported that framework to Nomadik platform and then we started reasoning on a
-> different implementation with the aims of overcoming its main drawbacks.
-> 
-> In the meantime pm_qos had been released and since then, this topic, i.e.
-> constrained power management (CPM), has officially become the main subject of my
-> PhD study; I agree with you that a lot can be done in this area.
+Hi Rafael,
 
-cool.
- 
-> In the last few months have focused on these tasks:
-> 1. define a formal model to state the CPM problem (based both on linear
-> programming and constraint programming)
-> 2. evaluate pm_qos with respect to this formal model and highlight its
-> potential wekenesses
-> 3. identify an extension/refactoring of pm_qos in order to overcame its
-> limitations and perhaps advance the proposal for a more general implementation
-> 4. code a first release of the proposal and submit it to the community for a
-> review ... and now we are at THIS fourth step.
-> 
-
-also cool.
-
-> > Recently I've been thinking about re-factoring PMQoS in possibly crazy
-> > ways with the goal of somehow supporting a more generic constraint
-> > notion without making the PMQoS ABI into a free for all.
-> 
-> Our re-factoring is for sure quite crazy. The proposal inherits many ideas and
-> concepts from both DPM and PM_QoS, perhaps only the strenghts of these two
-> frameworks:
-> - from DPM the concept of Operating Points (OP) (but don't worry: it has been
-> 	highly reworked)
-> - from PM_QoS the concept of "aggregation function" for constraint management
-> 
-> The idea is still to consider the framework to be simply a "constraint manager"
-> that supports a "distributed power management model".
-> In such a model each driver usually runs its own local optimization policy
-> (e.g. cpufreq), but at the same time exchanges some information with the rest of
-> the system in order to either require or provide QoS levels
-> (e.g. admitted latency).
-> 
-> In this big picture PM_QoS works quite well, but perhaps we have spotted two
-> limitations to be better investigated:
-> 1. it is a "best-effort" framework
-
-this is a hard nut to crack, if you get anywhere on it do let me know!
-
-> 2. it does not handle properly "additive constraints"
-
-this is easier to address.
-
-> 
-> * Best-effort: pm_qos cannot grant that a required QoS level can be effectively
-> provided, and even worst pm_qos don't provide mechanisms to notify a constraint
-> requester that the required qos level cannot be satisfied by other components.
-> This can turn into a "misconfiguration" of a device: its local policy configure
-> itself expecting the required level even when actually it's impossible to get
-> that.
-> No one notifies the device about the effective QoS levels that can be
-> reached; all that other devices can do it is only the best they can in order to
-> grant the required level.
-> Can that leads to an only sub-optimal power optimization for the device
-> requesting the constraint? We have this suspect...
-
-There is room to grow here.
-
-> 
-> * additive constraints: pm_qos perhaps does not properly aggregate constraints
-> requests on shared resources.
-> If multiple applications assert a bandwidth (or throughput) request: pm_qos
-> aggregate them considering the MAX (or MIN) of the collected requests:
-> this seems to be not properly correct.
-> We think that in this case (e.g. bandwidth) the driver of the service provider
-> should be aware of the "accumulated" requests to properly configure itself and
-> satisfy all concurrent requirements.
-> We define "additive constraints" those that refer to shared resources
-> (e.g. bandwidth). They differ from "restrictive constraints" (e.g. latency)
-> since the aggregation function cannot be a simple "bound-value" (i.e. max
-> or min) but should be an "sum-value" in order to get the real system-wide QoS
-> requirement.
-
-do a thought experiment around network bandwidth, where multiple
-applications ask for max bandwidth from the NIC.  (just like they all
-expect to 100% of the CPU resources)  You quickly get to a point where
-(just like for CPU resources) that aggregating cumulative QoS requests as
-a sum becomes silly.
-
-I know there are applications that need hard real time and "hard QoS"
-from the platform, and the idea of building up an OS around the QoS
-notion is "interesting"(really), but it just didn't see how I could
-apply that to an initial implementation like pmqos.
-
-> 
-> These considerations made us thinking about a rework on pm_qos in order to build
-> a more comprehensive framework able to:
-> - properly handle both restrictive and additive constraints
-> - provide an agreement mechanism that allows to notify constraint requester
-> about real system run-time capabilities.
-> 
-
-It looks like some useful nuggets may come from your work.
-
-> These are basically the ideas behind our rework. As soon as it will be ready we
-> will deliver the code for review. In the meantime we are also producing a paper
-> describing in details theoretical foundation of the model we advance and its
-> implementation.
-
-very cool.
-
-
-> 
-> > > I think that a good trade-off between "LKML control on new parameters" and
-> > > "platform extensibility" is hard to identify if we don't refine the concept of
-> > > QoS parameters first.
-> > > The QoS params defined by pm_qos should avoid to be not-sufficiently general,
-> > > to be really useful to applications, but also avoid to be too much abstract to
-> > > support platform-specific capabilities.
-> > > Since anyway the core pm_qos implementation is sufficiently general to handle
-> > > both abstract and platform-specific params, maybe we should better distinguish
-> > > among "abstract qos parameters" (AQP) and "platform-specific qos parameters"
-> > > PQP).
-> > >
-> > > AQP should be intended to be used by applications to assert abstract
-> > > requirements on system behaviors, while PQP can be added by platform code in
-> > > order to enable the "constrained power management paradigm" for
-> > > architecture/board specific devices.
-> >
-> > Maybe.
-> 
-> In our model platform code can define both platform-specific and architecture
-> independent constraints. The formers, since are architecture specific, can be
-> exposed read-only to user-space (e.g. just to be used for debugging purpose).
-> The latter instead can be exposed read-write and applications can assert
-> requirements on them. These constraints should be sufficiently abstract to be
-> platform independent and generally usable to express high-level requirements for
-> an application (e.g. the network bandwidth a VoIP application requires).
-> 
-> A device drivers is in charge to "maps" abstract parameters on its own specific
-> params and eventually on other platform-specific parameters, whenever they are
-> platform driver (e.g. a network driver can map a bandwidth request on a
-> platform-specific constraint on dma-latency or amba-bus throughput).
-> 
-> 
-> > > In this hypothesis the better solution would be to use a dynamic data structure
-> > > that will be initialized by the core itself to contain just the set of AQP that
-> > > has been reviewed and approved by LKML.
-> > > Platform code will then have the chance to add its own specific parameters too.
-> > >
-> > > Moreover we could imagine that AQP will be exported to user-land, in order to
-> > > be asserted by application software, while PQP may be hidden within the core
-> > > and accessible only by platform drivers.
-> > >
-> >
-> > I don't know if we can keep any PQP interfaces kernel only.  Policy
-> > managers really like to run in user mode, even if its just to set the
-> > constraints.
-> 
-> This is not what is actually going on with both cpufreq and cpuidle.
-> Really few clients of pm_qos exist now, but among them the kernel-space running
-> policy seems to be the more widely adopted solution... may be because of
-> efficiency? User-space can still be in charge of choosing the policy/governor,
-> but then it's up to this piece of code to manage constraints requests.
-> In the case of it needs having a user-space policy, a simple kernel-space
-> wrapper defining a "forwarding policy" will be sufficient to expose the required
-> PQP to user-space.
-
-
-I need to think more about this when your code is available.
- 
-> 
-> > > I agree: user-land accessible params should be platform-independent and define
-> > > a portable API for applications.
-> > > This requires also to have sufficiently abstract parameters: e.g. network
-> > > bandwidth can be easily asserted by an application while cpu-dma-latency is
-> > > perhaps too difficult to identify at application level.
-> >
-> > DMA latency is a somewhat sucky name for constraining CPU Idle /
-> > C-states, but I can't think of a better name.
-> 
-> I understand, but: is it so common to have user-space code that needs to assert
-> such "real-time" requirements? It seems to us that user-land should be given
-> access only to sufficiently abstract constraints that roughly define system
-> requirements. While more architecture-specific constraints should come from
-> drivers. This should improve solution portability, isn't it?
->
-
-cpu dma latency was chosen thinking it was a abstract / canonical
-notion across CPU architectures.  I guess idle-cpu-wake-up-latency may be
-slightly better.
-
-Hardware will only get better at being idle, the longer a system can
-do a low power idle the more likely user mode applications (policy
-managers mostly) will need API's to modify constraints. 
-
-> 
-> > As I type this reply I'm thinking an ok way could be to re-factor PMQoS
-> > into a constraint framework that exposes platform specific constraint
-> > ABI's (in some TBD sane manner---somehow), and set PMQoS on top of this
-> > keeping same ABI and KABI's stable.
-> 
-> Are you thinking to something like an abstract API that each platform code
-> should implements in its own way?
-
-no.
-
-But, I would like to make it easier for different architectures to add
-stuff like voltage constraints that don't really fit in a QoS only world
-without making a miss of the ABI.  Basically I'd like to keep those
-sorts of things off to the side and protect the ABI stability.
-
-> 
-> > I could use some input on the way folks anticipate a constraint
-> > infrastructure to be used.  How hot could the code paths be?  How complex
-> > could the dependencies and inter dependencies become?
-> 
-> These are interesting questions! We should deepen those aspects, anyway we think
-> that dependencies, e.g. among constraints, can also be an interesting concept in
-> order to build modular solutions.
-> In instance the mapping that a driver needs to provide between an
-> (platform-independent) abstract constraint and a platform-specific one should
-> allow to write more portable drivers that:
-> 1. tune on platform-independent requirements
-> 2. translate abstract requirements into platform-specific ones
-
-True, with thinking about parameters, I try to think top down.  What
-does application x need to execute "properly".  If you go bottoms up
-from DPM or Op-points you end up with a mess only a mother could love.
-
-Keep in mind pm-qos is about best effort PM while providing what the
-applications need to execute properly.  This is not optimal PM control
-theory.  (yet)  Don't feel bad if there is push back on some ideas, the
-theme of providing an interface for enabling best effort PM will be
-protected.
- 
-> > Am I thinking about taking a walk on a slippery slope?
-> >
-> > > > 2) is it the right thing to keep pm-qos-params a compile time array and
-> > > > control the growth of the ABI via these mailing lists or make it a list
-> > > > and enable driver creation of new parameters as they wish.
-> > >
-> > > In my opinion a mixed approach, using a dynamic data structure, could be more
-> > > interesting to target both requirements.
-> > >
-> > > > Both are good things for us to discuss on the list.
-> > >
-> > > We are tuned on this thread and happy to contribute to the discussion.
-> >
-> > very cool.
-> 
-> It will be interesting even just to have some shared ideas on the table before
-> the upcoming LPC.
-
-That would be really cool to be ready to talk and work on this stuff at
-the LPC.  FWIW I've been grounded by cost saving measures and the LPC is
-about the only conference I'll get to this year.  I don't like it but
-thats the way it goes some years.
-
-we should keep in touch and bounce some ideas around.
-
---mgross
+I found the problem: it's the Sony laptop driver.  With
+CONFIG_SONY_LAPTOP=y, the hard freeze on resume occurs.  Without this
+driver in the kernel, resume after s2ram -f -p appears to work
+correctly.
