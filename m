@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC Add in_use attribute] Let the driver know if
 	it's in use
-Date: Thu, 23 Apr 2009 16:56:51 +0200
-Message-ID: <200904231656.51895.rjw@sisk.pl>
+Date: Thu, 23 Apr 2009 16:59:19 +0200
+Message-ID: <200904231659.20598.rjw@sisk.pl>
 References: <20090416131323.GA16752@gandalf.sssup.it>
-	<200904212046.45671.rjw@sisk.pl>
-	<49F0067F.6050403@gandalf.sssup.it>
+	<20090421215632.GB10343@kroah.com>
+	<49F02B2A.7030701@gandalf.sssup.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49F0067F.6050403@gandalf.sssup.it>
+In-Reply-To: <49F02B2A.7030701@gandalf.sssup.it>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,66 +22,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, pavel@suse.cz, Greg KH <greg@kroah.com>
+Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, pavel@suse.cz, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 23 April 2009, Michael Trimarchi wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday 21 April 2009, Michael Trimarchi wrote:
+> Greg KH wrote:
+> > On Tue, Apr 21, 2009 at 08:43:28AM +0200, Michael Trimarchi wrote:
 > >   
-> >> Rafael J. Wysocki wrote:
-> >>     
-> >>> On Thursday 16 April 2009, Michael Trimarchi wrote:
+> >>>>> Exactly, what are you trying to do that differs from
+> >>>>> device_for_each_child()?
+> >>>>>   
+> >>>>>       
+> >>>>>           
+> >>>> Is device for each child use to visist the first level of the tree?
+> >>>>     
+> >>>>         
+> >>> Have you tried it?
 > >>>   
-> >> Maybe the idea is if the parent is in_use the child are may_inuse so 
-> >> they are potentialy in
-> >> use. The user can disable a tree and after reanable a child.
+> >>>       
+> >> No, I take a look at the code.
+> >>
+> >> int device_for_each_child(struct device *parent, void *data,
+> >>                           int (*fn)(struct device *dev, void *data))
+> >> {
+> >>         struct klist_iter i;
+> >>         struct device *child;
+> >>         int error = 0;
+> >>
+> >>         klist_iter_init(&parent->p->klist_children, &i);
+> >>
+> >> I was thinking that the klist_children is the fist_level one children, 
+> >> so each time
+> >> a device is registerd it add the link to the parent.
 > >>     
 > >
-> > So I'd call the flag subtree_in_use or better subtree_no_suspend, then.
+> > Yes it does.
+> >
+> > But you have to start at some device, right?  So you don't need to
+> > iterate over it, just go from there on down if needed.
 > >   
-> If you say just subtree is in use, you have this case:
-
-I didn't mean that.  The suggestion was only to change the _names_ of the
-flags, so that 'no_suspend' means "leave this device alone during suspend" and
-'subtree_no_suspend' means "you may want to leave this device alone during
-suspend, because one of the devices it depends on has no_suspend set".  This
-still is a per-device flag, though, so the user space may be allowed to unset
-it if there's an interface for that.
-
-> A in_use ---> A1 may_inuse----->A4 may_inuse---- A6 no_in_use
-> |              |
-> \----> A2      \ --A7 may_inuse ---- A5 no_in_use
-> |
-> \----> A3
-> 
-> The user do echo "enabled" > in_use for device A
-> 
-> A1, A2, A4, A6, A7, A5 go in may_inuse state.
-> 
-> The user space can check that the device is in_use. it does't know is for
-> an in_use or may_inuse condition but it doesnt metter because the user space
-> can change for example the A5 and A6 and give the graph above. This is 
-> the recursion
-> issue.
->
-> > Moreover, you don't really have to propagate the no_suspend bit down the
-> > device tree when the flag is set for a device.  You can simply modify the
-> > prepare phase of suspend to check if the current device's parent has
-> > no_suspend or subtree_no_suspend set and to set that for the current device
-> > if so (or clear otherwise).
+> I start for a device, go down until I find a leaf or find that the 
+> subtree is marked.
+> Mark the leaf and go up and take the next node like the walk_tg_tree. 
+> The difference is
+> that I skip subtree if they are mark in_use.
+> > So I don't see why this helper function is needed at all yet, shouldn't
+> > we be doing the check within the normal suspend device walk of the tree?
 > >   
-> If I understand we don't want that this flag change the pm transition.
+> Sorry but here I need some help here. Where is the walk of the device 
+> tree during suspend?
 
-The idea was that if you wanted to propagate 'no_suspend' down the device
-tree from given parent, then you could use the existing suspend code for
-that without adding any new code walking the device tree.
-
-Still, if you want the user space to be able to allow the device to suspend
-even if, for example, its parent has 'no_suspend' set, then IMO the best
-approach would be to require the user space to set 'no_suspend' directly for
-each device it doesn't want to suspend, regardless of the dependencies
-between the devices.
+In drivers/base/power/main.c there are functions like dpm_suspend(), for one
+example, that walk the device tree, but they do it in a simplified way, using a
+list prepared specifically for this purpose (so the walk is in fact linear).
 
 Thanks,
 Rafael
