@@ -1,14 +1,17 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
- know if	it's in	use
-Date: Fri, 24 Apr 2009 19:55:55 +0200
-Message-ID: <49F1FD2B.5020906@gandalf.sssup.it>
-References: <20090424172435.GA18448@gandalf.sssup.it>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 24 Apr 2009 22:59:40 +0200
+Message-ID: <20090424205940.GA10735@elf.ucw.cz>
+References: <1239759692-28617-1-git-send-email-arve@android.com>
+	<1239759692-28617-2-git-send-email-arve@android.com>
+	<20090420092905.GB8873@elf.ucw.cz>
+	<d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090424172435.GA18448@gandalf.sssup.it>
+Content-Disposition: inline
+In-Reply-To: <d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,157 +21,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: len.brown@intel.com, Greg KH <greg@kroah.com>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+Hi!
 
-I add all in cc because mutt give me some trouble :(
-Michael Trimarchi wrote:
-> Drivers on embedded systems would be smart enough to know that some
-> of the devices _should_ remain powered up, because they could still
-> be useful even when the CPU wasn't running.  The only obstacle is
-> letting the drivers know when their devices actually _are_ in use
-> and sometimes this is apparent only at the application level.
-> The patch add the no_suspend attribute and it can be used by the
-> the drivers to stop power down during suspend.
->
-> Signed-off-by: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-> Cc: "Alan Stern" <stern@rowland.harvard.edu>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: "Pavel Mackek" <pavel@ucw.cz>
-> Cc: "Len Brown" <lenb@kernel.org>
->
-> ---
->  drivers/base/power/main.c  |   54 +++++++++++++++++++++++++++++++++++++++++++-
->  drivers/base/power/power.h |    5 ++++
->  include/linux/device.h     |    1 +
->  include/linux/pm.h         |    3 ++
->  4 files changed, 62 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 69b4ddb..baae309 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -65,6 +65,45 @@ void device_pm_unlock(void)
->  }
->  
->  /**
-> + *	device_set_no_suspend_enable - Mark the device as used by userspace
-> + *	application
-> + */
-> +void device_set_no_suspend_enable(struct device *dev, bool enable)
-> +{
-> +	struct device *next;
-> +
-> +	mutex_lock(&dpm_list_mtx);
-> +
-> +	/* the new status is equal the old one */
-> +	if (dev->power.no_suspend == !!enable)
-> +		goto out;
-> +
-> +	/* change the device status */
-> +	dev->power.no_suspend = !!enable;
-> +	if (dev->power.no_suspend)
-> +		dev->power.subtree_no_suspend = 0;
->   
-I find a bug here, i will fix.
-It can be ok the rest of the code?
-> +
-> +	list_for_each_entry_reverse(next, &dev->power.entry, power.entry) {
-> +		/* 
-> +		 * exit if we find a node with the same parent of the start
-> +		 * device
-> +		 */
-> +		if (dev->parent && next->parent == dev->parent)
-> +			break;
-> +
-> +		if (next->parent) {
-> +			/* Propagate the status */
-> +			next->power.subtree_no_suspend =
-> +				device_no_suspend_enable(next->parent);
-> +		}
-> +	}
-> +out:
-> +	mutex_unlock(&dpm_list_mtx);
-> +	return;
-> +}
-> +EXPORT_SYMBOL_GPL(device_set_no_suspend_enable);
-> +
-> +/**
->   *	device_pm_add - add a device to the list of active devices
->   *	@dev:	Device to be added to the list
->   */
-> @@ -78,6 +117,11 @@ void device_pm_add(struct device *dev)
->  		if (dev->parent->power.status >= DPM_SUSPENDING)
->  			dev_warn(dev, "parent %s should not be sleeping\n",
->  				 dev_name(dev->parent));
-> +		if (device_no_suspend_enable(dev->parent)) {
-> +			/* if the parent has suspend disable, propagate it
-> +			 * to the new child */
-> +			dev->power.subtree_no_suspend = 1;
-> +		}
->  	} else if (transition_started) {
->  		/*
->  		 * We refuse to register parentless devices while a PM
-> @@ -87,7 +131,15 @@ void device_pm_add(struct device *dev)
->  		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
->  	}
->  
-> -	list_add_tail(&dev->power.entry, &dpm_list);
-> +	if (dev->parent) {
-> +		/*
-> +		 * if the device has a parent insert just before it.
-> +		 */
-> +		list_add_tail(&dev->power.entry, &(dev->parent)->power.entry);
-> +	}
-> +	else
-> +		list_add_tail(&dev->power.entry, &dpm_list);
-> +
->  	mutex_unlock(&dpm_list_mtx);
->  }
->  
-> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-> index c7cb4fc..a997b20 100644
-> --- a/drivers/base/power/power.h
-> +++ b/drivers/base/power/power.h
-> @@ -3,6 +3,11 @@ static inline void device_pm_init(struct device *dev)
->  	dev->power.status = DPM_ON;
->  }
->  
-> +static inline int device_no_suspend_enable(struct device *dev)
-> +{
-> +	return dev->power.no_suspend || dev->power.subtree_no_suspend;
-> +}
-> +
->  #ifdef CONFIG_PM_SLEEP
->  
->  /*
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 2918c0e..74ca60d 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -496,6 +496,7 @@ extern struct device *device_find_child(struct device *dev, void *data,
->  extern int device_rename(struct device *dev, char *new_name);
->  extern int device_move(struct device *dev, struct device *new_parent,
->  		       enum dpm_order dpm_order);
-> +extern void device_set_no_suspend_enable(struct device *dev, bool enable);
->  
->  /*
->   * Root device objects for grouping under /sys/devices
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 1d4e2d2..e664d63 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -319,6 +319,9 @@ struct dev_pm_info {
->  	pm_message_t		power_state;
->  	unsigned		can_wakeup:1;
->  	unsigned		should_wakeup:1;
-> +	unsigned		no_suspend:1;
-> +	unsigned		subtree_no_suspend:1;
-> +
->  	enum dpm_state		status;		/* Owned by the PM core */
->  #ifdef	CONFIG_PM_SLEEP
->  	struct list_head	entry;
->   
+> >> @@ -392,6 +393,9 @@ static void suspend_finish(void)
+> >>
+> >>
+> >> =A0static const char * const pm_states[PM_SUSPEND_MAX] =3D {
+> >> +#ifdef CONFIG_SUSPEND_BLOCK
+> >> + =A0 =A0 [PM_SUSPEND_ON] =A0 =A0 =A0 =A0 =3D "on",
+> >> +#endif
+> >> =A0 =A0 =A0 [PM_SUSPEND_STANDBY] =A0 =A0=3D "standby",
+> >> =A0 =A0 =A0 [PM_SUSPEND_MEM] =A0 =A0 =A0 =A0=3D "mem",
+> >> =A0};
+> >
+> > This allows you to write "on" to the other interfaces where that makes
+> > no sense.... right?
+> =
+
+> state_store starts iterating at PM_SUSPEND_STANDBY, so don't think so.
+
+Good.
+
+
+> >> +bool suspend_is_blocked(void)
+> >> +{
+> >> + =A0 =A0 if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend bl=
+ockers\n"))
+> >> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> >> + =A0 =A0 return !!atomic_read(&suspend_block_count);
+> >> +}
+> >
+> > Yes, if enable_suspend_blockers is one, we are in deep trouble.
+> =
+
+> It just means that you compiled suspend blocker support into the
+> kernel, but used an old interface to enter suspend. It warns if
+> enable_suspend_blockers is 0 not 1.
+
+I do not think WARN_ONCE() should be that easy to trigger. WARN is
+very scary animal; better use normal printk?
+
+
+
+> >> +/**
+> >> + * suspend_blocker_init() - Initialize a suspend blocker
+> >> + * @blocker: The suspend blocker to initialize.
+> >> + * @name: =A0 =A0The name of the suspend blocker to show in
+> >> + * =A0 =A0 =A0 =A0 =A0 /proc/suspend_blockers
+> >
+> > I don't think suspend_blockers should go to /proc. They are not process=
+-related.
+> =
+
+> I moved that comment to the stats patch. It is still in procfs though,
+> as it is most similar to other procfs entries. It is not allowed under
+> the sysfs rules, and we do not want to enable debugfs on a production
+> system since it exposes some unsafe interfaces.
+
+You have to sort this out somehow. It does not belong to /proc.
+
+									Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
