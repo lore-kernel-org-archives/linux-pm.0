@@ -1,20 +1,14 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: [Regression] sony-laptop breaks resume from S2RAM
-	(was: Re:	 Resume after suspend-to-ram broken for Vaio SR19VN
-	in	30rc2)
-Date: Thu, 23 Apr 2009 21:50:25 +0900
-Message-ID: <20090423125025.GA6195__8317.55238255045$1240856851$gmane$org@kamineko.org>
-References: <31c940650904201152y5f440237rb9c49f1aedfef5a6@mail.gmail.com>
-	<200904212050.25531.rjw@sisk.pl>
-	<31c940650904220555v1c1a6046ifa40b9c81b390731@mail.gmail.com>
-	<200904222202.24271.rjw@sisk.pl>
-	<31c940650904221335v21fbffc2y2e9598b564d65659@mail.gmail.com>
+From: Kalle Valo <kalle.valo@nokia.com>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Fri, 24 Apr 2009 16:44:22 +0300
+Message-ID: <87ljpqqi89.fsf__24482.7072056525$1240856855$gmane$org@nokia.com>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <31c940650904221335v21fbffc2y2e9598b564d65659@mail.gmail.com>
+In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> (ext Rafael J. Wysocki's
+	message of "Thu\, 16 Apr 2009 23\:42\:31 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,35 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: fanderay <fanderay4@googlemail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Almer S. Tigelaar" <almer@gnome.org>
+To: "ext Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 09:35:13PM +0100, fanderay wrote:
-> On Wed, Apr 22, 2009 at 9:02 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> Hi Rafael,
-> >>
-> >> I found the problem: it's the Sony laptop driver. =A0With
-> >> CONFIG_SONY_LAPTOP=3Dy, the hard freeze on resume occurs. =A0Without t=
-his
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-what happens if you configure it as a module instead?
+> This message contains a list of some regressions from 2.6.29, for
+> which there are no fixes in the mainline I know of. If any of them
+> have been fixed already, please let me know.
+>
+> If you know of any other unresolved regressions from 2.6.29, please
+> let me know either and I'll add them to the list. Also, please let
+> me know if any of the entries below are invalid.
+>
+> Each entry from the list will be sent additionally in an automatic reply to
+> this message with CCs to the people involved in reporting and handling the
+> issue.
+>
 
-> >> driver in the kernel, resume after s2ram -f -p appears to work
-> >> correctly.
-> >
-> > It seems to be an ACPI problem, then. =A0Added some CCs.
-> =
+[...]
 
-> Thanks, I raised bug <http://bugzilla.kernel.org/show_bug.cgi?id=3D13148>.
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13067
+> Subject         : iwl3945: wlan0: beacon loss from AP - sending probe request
+> Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
+> Date            : 2009-04-05 9:11 (12 days old)
+> References      : http://marc.info/?l=linux-kernel&m=123892272218266&w=4
 
-I'll try to reproduce it.
+The regression here is that I added a printk() to inform about beacon
+loss. The issue has been there a long time, the printk() just exposed
+it.
 
-Almer,
-you have an SR too, do you see the same problem as fanderay?
+Michael wrote a patch which silences the printk:
 
-Thanks
--- =
+http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=16eaea5faa37d552b14e246ca56a436e55ca67b3
 
-mattia
-:wq!
+I fixed the beacon loss detection here:
+
+http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=3b6dc5a431e4fef35717cba53544a95209f49b68
+
+John, I think Michael's patch should be sent to 2.6.30. Any chances
+for that?
+
+Rafael, is it possible to send your regression mails to
+linux-wireless@vger.kernel.org as well? Very few wireless developers
+have time to follow netdev or lkml.
+
+-- 
+Kalle Valo
