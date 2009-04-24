@@ -1,17 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 24 Apr 2009 22:59:40 +0200
-Message-ID: <20090424205940.GA10735@elf.ucw.cz>
-References: <1239759692-28617-1-git-send-email-arve@android.com>
-	<1239759692-28617-2-git-send-email-arve@android.com>
-	<20090420092905.GB8873@elf.ucw.cz>
-	<d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PM/Hibernate: Fix waiting for image device to
+	appear on resume
+Date: Sat, 25 Apr 2009 00:16:06 +0200
+Message-ID: <200904250016.07088.rjw__35777.659159112$1240611751$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,73 +17,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> >> @@ -392,6 +393,9 @@ static void suspend_finish(void)
-> >>
-> >>
-> >> =A0static const char * const pm_states[PM_SUSPEND_MAX] =3D {
-> >> +#ifdef CONFIG_SUSPEND_BLOCK
-> >> + =A0 =A0 [PM_SUSPEND_ON] =A0 =A0 =A0 =A0 =3D "on",
-> >> +#endif
-> >> =A0 =A0 =A0 [PM_SUSPEND_STANDBY] =A0 =A0=3D "standby",
-> >> =A0 =A0 =A0 [PM_SUSPEND_MEM] =A0 =A0 =A0 =A0=3D "mem",
-> >> =A0};
-> >
-> > This allows you to write "on" to the other interfaces where that makes
-> > no sense.... right?
-> =
+Commit c751085943362143f84346d274e0011419c84202
+(PM/Hibernate: Wait for SCSI devices scan to complete during resume)
+added scsi_complete_async_scans() to software_resume(), so that it
+waited for the SCSI scanning to complete, but the call was added at a
+wrong place.  Namely, it should have been added after
+wait_for_device_probe(), which is called only if the image partition
+hasn't been specified yet.  Also, it's reasonable to check if the
+image partition is present and only wait for the device probing and
+SCSI scanning to complete if it is not the case.
 
-> state_store starts iterating at PM_SUSPEND_STANDBY, so don't think so.
+Additionally, since noresume is checked right at the beginning of
+software_resume() and the function returns immediately if it's set,
+it doesn't make sense to check it once again later.
 
-Good.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   51 +++++++++++++++++++++++++++------------------------
+ 1 file changed, 27 insertions(+), 24 deletions(-)
 
-
-> >> +bool suspend_is_blocked(void)
-> >> +{
-> >> + =A0 =A0 if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend bl=
-ockers\n"))
-> >> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> >> + =A0 =A0 return !!atomic_read(&suspend_block_count);
-> >> +}
-> >
-> > Yes, if enable_suspend_blockers is one, we are in deep trouble.
-> =
-
-> It just means that you compiled suspend blocker support into the
-> kernel, but used an old interface to enter suspend. It warns if
-> enable_suspend_blockers is 0 not 1.
-
-I do not think WARN_ONCE() should be that easy to trigger. WARN is
-very scary animal; better use normal printk?
-
-
-
-> >> +/**
-> >> + * suspend_blocker_init() - Initialize a suspend blocker
-> >> + * @blocker: The suspend blocker to initialize.
-> >> + * @name: =A0 =A0The name of the suspend blocker to show in
-> >> + * =A0 =A0 =A0 =A0 =A0 /proc/suspend_blockers
-> >
-> > I don't think suspend_blockers should go to /proc. They are not process=
--related.
-> =
-
-> I moved that comment to the stats patch. It is still in procfs though,
-> as it is most similar to other procfs entries. It is not allowed under
-> the sysfs rules, and we do not want to enable debugfs on a production
-> system since it exposes some unsafe interfaces.
-
-You have to sort this out somehow. It does not belong to /proc.
-
-									Pavel
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -646,13 +646,6 @@ static int software_resume(void)
+ 		return 0;
+ 
+ 	/*
+-	 * We can't depend on SCSI devices being available after loading one of
+-	 * their modules if scsi_complete_async_scans() is not called and the
+-	 * resume device usually is a SCSI one.
+-	 */
+-	scsi_complete_async_scans();
+-
+-	/*
+ 	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
+ 	 * is configured into the kernel. Since the regular hibernate
+ 	 * trigger path is via sysfs which takes a buffer mutex before
+@@ -663,32 +656,42 @@ static int software_resume(void)
+ 	 * here to avoid lockdep complaining.
+ 	 */
+ 	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
++
++	if (swsusp_resume_device)
++		goto Check_image;
++
++	if (!strlen(resume_file)) {
++		error = -ENOENT;
++		goto Unlock;
++	}
++
++	pr_debug("PM: Checking image partition %s\n", resume_file);
++
++	/* Check if the device is there */
++	swsusp_resume_device = name_to_dev_t(resume_file);
+ 	if (!swsusp_resume_device) {
+-		if (!strlen(resume_file)) {
+-			mutex_unlock(&pm_mutex);
+-			return -ENOENT;
+-		}
+ 		/*
+ 		 * Some device discovery might still be in progress; we need
+ 		 * to wait for this to finish.
+ 		 */
+ 		wait_for_device_probe();
++		/*
++		 * We can't depend on SCSI devices being available after loading
++		 * one of their modules until scsi_complete_async_scans() is
++		 * called and the resume device usually is a SCSI one.
++		 */
++		scsi_complete_async_scans();
++
+ 		swsusp_resume_device = name_to_dev_t(resume_file);
+-		pr_debug("PM: Resume from partition %s\n", resume_file);
+-	} else {
+-		pr_debug("PM: Resume from partition %d:%d\n",
+-				MAJOR(swsusp_resume_device),
+-				MINOR(swsusp_resume_device));
++		if (!swsusp_resume_device) {
++			error = -ENODEV;
++			goto Unlock;
++		}
+ 	}
+ 
+-	if (noresume) {
+-		/**
+-		 * FIXME: If noresume is specified, we need to find the
+-		 * partition and reset it back to normal swap space.
+-		 */
+-		mutex_unlock(&pm_mutex);
+-		return 0;
+-	}
++ Check_image:
++	pr_debug("PM: Resume from partition %d:%d\n",
++		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
+ 
+ 	pr_debug("PM: Checking hibernation image.\n");
+ 	error = swsusp_check();
