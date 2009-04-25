@@ -1,8 +1,8 @@
 From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
 Subject: Re: [RFC Add no_suspend attribute V2] Let the
  driver	know if it's in use
-Date: Sat, 25 Apr 2009 10:21:30 +0200
-Message-ID: <49F2C80A.7070500@gandalf.sssup.it>
+Date: Sat, 25 Apr 2009 11:07:19 +0200
+Message-ID: <49F2D2C7.3020705@gandalf.sssup.it>
 References: <20090424172435.GA18448@gandalf.sssup.it>
 	<49F1FD2B.5020906@gandalf.sssup.it>
 	<20090424225501.GC3343@kroah.com>
@@ -24,7 +24,6 @@ To: Greg KH <greg@kroah.com>
 Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi
 Greg KH wrote:
 > On Fri, Apr 24, 2009 at 07:55:55PM +0200, Michael Trimarchi wrote:
 >   
@@ -38,8 +37,7 @@ Greg KH wrote:
 >
 > And "no_suspend_enable" is ackward, drop the "enable" part?
 >
->   
-Ok
+>
 >   
 >>> +void device_set_no_suspend_enable(struct device *dev, bool enable)
 >>> +{
@@ -117,15 +115,9 @@ Ok
 > This seems like you are adding stuff now in backwards order, why make
 > this change?
 >   
-The import thing is that a child is before the parent. This is put all 
-the child before the
-parent and just next to it. So
-
-A3A2A1AB3B3B2B1
-
-It is correct? This give the possiblity to dump the graph better and it 
-doesn't change anything
-in the correctness of the list
+Sorry you are right the children must be discovere after and not  before 
+parent.
+I was convinced that children go to suspend before parent.
 Michael
 > confused,
 >
