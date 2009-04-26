@@ -1,14 +1,19 @@
-From: Kalle Valo <kalle.valo@nokia.com>
-Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
-Date: Fri, 24 Apr 2009 16:44:22 +0300
-Message-ID: <87ljpqqi89.fsf__24482.7072056525$1240856855$gmane$org@nokia.com>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+From: "Almer S. Tigelaar" <almer@gnome.org>
+Subject: Re: [Regression] sony-laptop breaks resume from S2RAM
+ (was: Re: Resume after suspend-to-ram broken for Vaio SR19VN in 30rc2)
+Date: Sun, 26 Apr 2009 17:52:04 +0200
+Message-ID: <1240761124.8277.10.camel@rufio.student.utwente.nl>
+References: <31c940650904201152y5f440237rb9c49f1aedfef5a6@mail.gmail.com>
+	<200904212050.25531.rjw@sisk.pl>
+	<31c940650904220555v1c1a6046ifa40b9c81b390731@mail.gmail.com>
+	<200904222202.24271.rjw@sisk.pl>
+	<31c940650904221335v21fbffc2y2e9598b564d65659@mail.gmail.com>
+	<20090423125025.GA6195@kamineko.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> (ext Rafael J. Wysocki's
-	message of "Thu\, 16 Apr 2009 23\:42\:31 +0200")
+In-Reply-To: <20090423125025.GA6195@kamineko.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +23,140 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "ext Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Mattia Dongili <malattia@linux.it>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, fanderay <fanderay4@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi Mattia,
 
-> This message contains a list of some regressions from 2.6.29, for
-> which there are no fixes in the mainline I know of. If any of them
-> have been fixed already, please let me know.
+On Thu, 2009-04-23 at 21:50 +0900, Mattia Dongili wrote:
+> On Wed, Apr 22, 2009 at 09:35:13PM +0100, fanderay wrote:
+> > >> CONFIG_SONY_LAPTOP=y, the hard freeze on resume occurs.  Without this
+> > >> driver in the kernel, resume after s2ram -f -p appears to work
+> > >> correctly.
 >
-> If you know of any other unresolved regressions from 2.6.29, please
-> let me know either and I'll add them to the list. Also, please let
-> me know if any of the entries below are invalid.
->
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
->
+> Almer,
+> you have an SR too, do you see the same problem as fanderay?
 
-[...]
+This problem does not occur with 2.6.30-rc2 for me (when using
+sony-laptop as a module). It comes out of the resume just fine.
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13067
-> Subject         : iwl3945: wlan0: beacon loss from AP - sending probe request
-> Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> Date            : 2009-04-05 9:11 (12 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123892272218266&w=4
+Note that this is with an Sony SR39VN, which is a newer version of the
+SR model than fanderay's. If the same problem persists for him (even
+when loading it as a module): I suspect this might be a firmware / BIOS
+version issue.
 
-The regression here is that I added a printk() to inform about beacon
-loss. The issue has been there a long time, the printk() just exposed
-it.
+Sidenote: I can not see many interesting differences between the DSDT's
+of the two models (see below).
 
-Michael wrote a patch which silences the printk:
+With kind regards,
 
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=16eaea5faa37d552b14e246ca56a436e55ca67b3
+Almer S. Tigelaar
 
-I fixed the beacon loss detection here:
-
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=3b6dc5a431e4fef35717cba53544a95209f49b68
-
-John, I think Michael's patch should be sent to 2.6.30. Any chances
-for that?
-
-Rafael, is it possible to send your regression mails to
-linux-wireless@vger.kernel.org as well? Very few wireless developers
-have time to follow netdev or lkml.
-
--- 
-Kalle Valo
+--- SR19VN.dsl	2009-04-26 17:46:01.000000000 +0200
++++ SR39VN.dsl	2009-04-26 17:46:27.000000000 +0200
+@@ -2,20 +2,20 @@
+  * Intel ACPI Component Architecture
+  * AML Disassembler version 20061109
+  *
+- * Disassembly of dsdt.bin, Thu Apr 23 17:48:38 2009
++ * Disassembly of DSDT.aml, Mon Mar  2 21:06:47 2009
+  *
+  *
+  * Original Table Header:
+  *     Signature        "DSDT"
+- *     Length           0x0000857E (34174)
++ *     Length           0x00008505 (34053)
+  *     Revision         0x01
+  *     OEM ID           "Sony"
+  *     OEM Table ID     "VAIO"
+- *     OEM Revision     0x20081231 (537399857)
++ *     OEM Revision     0x20081113 (537399571)
+  *     Creator ID       "INTL"
+  *     Creator Revision 0x20051117 (537202967)
+  */
+-DefinitionBlock ("dsdt.aml", "DSDT", 1, "Sony", "VAIO", 0x20081231)
++DefinitionBlock ("DSDT.aml", "DSDT", 1, "Sony", "VAIO", 0x20081113)
+ {
+     External (PDC3)
+     External (PDC2)
+@@ -94,7 +94,7 @@
+     Name (PDBR, 0x4D)
+     Name (TPMF, 0x01)
+     Name (SMBL, 0x10)
+-    OperationRegion (GNVS, SystemMemory, 0xBDEEFD90, 0x0100)
++    OperationRegion (GNVS, SystemMemory, 0xBDEEDD90, 0x0100)
+     Field (GNVS, AnyAcc, Lock, Preserve)
+     {
+         OSYS,   16, 
+@@ -219,7 +219,7 @@
+ 
+     Scope (\_SB)
+     {
+-        Name (PR00, Package (0x16)
++        Name (PR00, Package (0x15)
+         {
+             Package (0x04)
+             {
+@@ -311,14 +311,6 @@
+ 
+             Package (0x04)
+             {
+-                0x001AFFFF, 
+-                0x03, 
+-                LNKC, 
+-                0x00
+-            }, 
+-
+-            Package (0x04)
+-            {
+                 0x001BFFFF, 
+                 0x00, 
+                 LNKG, 
+@@ -397,7 +389,7 @@
+                 0x00
+             }
+         })
+-        Name (AR00, Package (0x16)
++        Name (AR00, Package (0x15)
+         {
+             Package (0x04)
+             {
+@@ -489,14 +481,6 @@
+ 
+             Package (0x04)
+             {
+-                0x001AFFFF, 
+-                0x03, 
+-                0x00, 
+-                0x12
+-            }, 
+-
+-            Package (0x04)
+-            {
+                 0x001BFFFF, 
+                 0x00, 
+                 0x00, 
+@@ -6221,7 +6205,7 @@
+         }
+     }
+ 
+-    OperationRegion (SMI0, SystemMemory, 0xBDF04B90, 0x0420)
++    OperationRegion (SMI0, SystemMemory, 0xBDF05B90, 0x0420)
+     Field (SMI0, AnyAcc, NoLock, Preserve)
+     {
+         BCMD,   8, 
+@@ -6673,13 +6657,6 @@
+                         Notify (\_SB.PCI0.LPCB.SNC, 0x93)
+                     }
+ 
+-                    Method (_Q43, 0, NotSerialized)
+-                    {
+-                        P8XH (0x00, 0x43)
+-                        Or (\_SB.PCI0.LPCB.SNC.ESR, 0x08, \_SB.PCI0.LPCB.SNC.ESR)
+-                        Notify (\_SB.PCI0.LPCB.SNC, 0x93)
+-                    }
+-
+                     Name (MB1P, 0x81)
+                     Name (MB1R, 0x01)
+                     Name (MB2P, 0x82)
