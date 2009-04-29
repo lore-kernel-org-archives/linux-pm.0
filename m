@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 900af0d breaks some embedded suspend/resume
-Date: Sun, 26 Apr 2009 11:25:51 +0200
-Message-ID: <20090426092550.GB1354__5834.88636552847$1240950648$gmane$org@ucw.cz>
-References: <20090417231009.GB6900@flint.arm.linux.org.uk>
-	<20090418135323.GA7148@flint.arm.linux.org.uk>
-	<alpine.LFD.2.00.0904181205010.4042@localhost.localdomain>
-	<200904190044.58444.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 29 Apr 2009 23:24:17 +0200
+Message-ID: <200904292324.18459.rjw@sisk.pl>
+References: <1239759692-28617-1-git-send-email-arve@android.com>
+	<d6200be20904202144u4c7d199fq9c0bb20f67c94d38@mail.gmail.com>
+	<20090424205940.GA10735@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090424205940.GA10735@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200904190044.58444.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +20,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Linux Kernel List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2009-04-19 00:44:57, Rafael J. Wysocki wrote:
-> On Saturday 18 April 2009, Linus Torvalds wrote:
-> > 
-> > On Sat, 18 Apr 2009, Russell King wrote:
-> > > 
-> > > What I need to be able to do is to suspend most devices on the host side
-> > > which may involve talking to a separate microcontroller via I2C to shut
-> > > down power to peripherals.
-> > 
-> > I suspect that for cases like this, the simplest thing to do is to just 
-> > add a marker for "don't mess with my power management, I'm doing 
-> > everything through sysdev" for the specified devices.
+On Friday 24 April 2009, Pavel Machek wrote:
+> Hi!
 > 
-> In this particular case, if sysdev was used, there would be no problem, but the
-> platform uses a platform device to suspend-resume the i2c controller.
-> In principle we could convert it to use a sysdev, but that would be more
-> difficult than the last patch I sent IMO (at least to me).
+> > >> @@ -392,6 +393,9 @@ static void suspend_finish(void)
+> > >>
+> > >>
+> > >>  static const char * const pm_states[PM_SUSPEND_MAX] = {
+> > >> +#ifdef CONFIG_SUSPEND_BLOCK
+> > >> +     [PM_SUSPEND_ON]         = "on",
+> > >> +#endif
+> > >>       [PM_SUSPEND_STANDBY]    = "standby",
+> > >>       [PM_SUSPEND_MEM]        = "mem",
+> > >>  };
+> > >
+> > > This allows you to write "on" to the other interfaces where that makes
+> > > no sense.... right?
+> > 
+> > state_store starts iterating at PM_SUSPEND_STANDBY, so don't think so.
 > 
-> Also, apparently it is not the only platform doing it.
+> Good.
+> 
+> 
+> > >> +bool suspend_is_blocked(void)
+> > >> +{
+> > >> +     if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend blockers\n"))
+> > >> +             return 0;
+> > >> +     return !!atomic_read(&suspend_block_count);
+> > >> +}
+> > >
+> > > Yes, if enable_suspend_blockers is one, we are in deep trouble.
+> > 
+> > It just means that you compiled suspend blocker support into the
+> > kernel, but used an old interface to enter suspend. It warns if
+> > enable_suspend_blockers is 0 not 1.
+> 
+> I do not think WARN_ONCE() should be that easy to trigger. WARN is
+> very scary animal; better use normal printk?
 
-OTOH... if the device is needed in late phases of sleep, sysdev *does*
-sound like a way to go. So it would be nice to convert those devices
-to sysdevs one day.....
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, printk() please.
+
+> > >> +/**
+> > >> + * suspend_blocker_init() - Initialize a suspend blocker
+> > >> + * @blocker: The suspend blocker to initialize.
+> > >> + * @name:    The name of the suspend blocker to show in
+> > >> + *           /proc/suspend_blockers
+> > >
+> > > I don't think suspend_blockers should go to /proc. They are not process-related.
+> > 
+> > I moved that comment to the stats patch. It is still in procfs though,
+> > as it is most similar to other procfs entries. It is not allowed under
+> > the sysfs rules, and we do not want to enable debugfs on a production
+> > system since it exposes some unsafe interfaces.
+> 
+> You have to sort this out somehow. It does not belong to /proc.
+
+Agreed.
+
+Thanks,
+Rafael
