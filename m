@@ -1,7 +1,7 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Wed, 29 Apr 2009 16:45:04 -0700
-Message-ID: <d6200be20904291645p22d76371ne960dfb34a23b32d@mail.gmail.com>
+Date: Wed, 29 Apr 2009 17:49:10 -0700
+Message-ID: <d6200be20904291749v55f5e425jcbb570c09a3901d1@mail.gmail.com>
 References: <1239759692-28617-1-git-send-email-arve@android.com>
 	<1239759692-28617-2-git-send-email-arve@android.com>
 	<200904300034.09837.rjw@sisk.pl>
@@ -25,292 +25,664 @@ List-Id: linux-pm@vger.kernel.org
 
 2009/4/29 Rafael J. Wysocki <rjw@sisk.pl>:
 > On Wednesday 15 April 2009, Arve Hj=F8nnev=E5g wrote:
->> diff --git a/Documentation/power/suspend-blockers.txt b/Documentation/po=
-wer/suspend-blockers.txt
->> new file mode 100644
->> index 0000000..743b870
+>> diff --git a/include/linux/suspend_block.h b/include/linux/suspend_block=
+.h
+>> new file mode 100755
+>> index 0000000..7820c60
 >> --- /dev/null
->> +++ b/Documentation/power/suspend-blockers.txt
->> @@ -0,0 +1,76 @@
->> +Suspend blockers
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +A suspend_blocker prevents the system from entering suspend.
+>> +++ b/include/linux/suspend_block.h
 >
-> I'd say "suspend blocker", without the underscore.
->
-> Also, I'd try to provide a general explanation of how this is supposed to
-> work here, as an introduction. =A0Something like:
->
-> "Suspend blockers provide a mechanism allowing device drivers and user
-> space processes to prevent the system from entering a sleep state, such as
-> the ACPI S3 state.
->
-> To use a suspend blocker, a device driver needs a struct suspend_blocker =
-object
-> that has to be initialized with the help of suspend_blocker_init(). =A0Wh=
-en no
-> longer needed, the suspend blocker must be garbage collected with the help
-> of suspend_blocker_destroy().
->
-> A suspend blocker is activated using suspend_block(), which prevents the
-> system from entering any sleep state until the suspend blocker is deactiv=
-ated
-> with suspend_unblock(). =A0Many suspend blockers may be used simultaneous=
-ly
-> and the system is prevented from entering sleep states as long as at leas=
-t one
-> of them is active."
->
+> suspend_blockers.h perhaps?
 
-I added most of this, see new text below.
-
-> BTW, I don't really like the names "suspend_block" and "suspend_unblock".
-> See below for possible alternatives.
->
->> +If the suspend operation has already started when calling suspend_block=
- on a
->> +suspend_blocker, it will abort the suspend operation as long it has not=
- already
->> +reached the sysdev suspend stage. This means that calling suspend_block=
- from an
->> +interrupt handler or a freezeable thread always works, but if you call
->> +block_suspend
->
-> Surely suspend_block() ?
-
-Yes.
+suspend_blocker.h?
 
 >
->> from a sysdev suspend handler you must also return an error from
->> +that handler to abort suspend.
+>> @@ -0,0 +1,61 @@
+>> +/* include/linux/suspend_block.h
+>> + *
+>> + * Copyright (C) 2007-2009 Google, Inc.
+>> + *
+>> + * This software is licensed under the terms of the GNU General Public
+>> + * License version 2, as published by the Free Software Foundation, and
+>> + * may be copied, distributed, and modified under those terms.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. =A0See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#ifndef _LINUX_SUSPEND_BLOCK_H
+>> +#define _LINUX_SUSPEND_BLOCK_H
 >
-> Well, if a sysdev suspend handler returns an error code, suspend will be
-> aborted anyway, so I'm not sure what the point in using suspend blockers =
-from
-> sysdev suspend handlers really is. =A0Perhaps it's better to say "don't u=
-se
-> suspend blockers from withing sysdev suspend handlers"?
+> SUSPEND_BLOCKERS_H ?
+>
+>> +
+>> +/* A suspend_blocker prevents the system from entering suspend when act=
+ive.
+>> + */
+>> +
+>> +struct suspend_blocker {
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>
+> CONFIG_SUSPEND_BLOCKERS ?
 
-You still need the suspend blocker to prevent the system from trying
-to enter suspend again. I changed the text to "to abort a suspend
-sequence that was already started".
+OK.
+
+>
+>> + =A0 =A0 atomic_t =A0 =A0 =A0 =A0 =A0 =A0flags;
+>> + =A0 =A0 const char =A0 =A0 =A0 =A0 *name;
+>> +#endif
+>> +};
+>> +
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> +
+>> +void suspend_blocker_init(struct suspend_blocker *blocker, const char *=
+name);
+>> +void suspend_blocker_destroy(struct suspend_blocker *blocker);
+>> +void suspend_block(struct suspend_blocker *blocker);
+>> +void suspend_unblock(struct suspend_blocker *blocker);
+>> +
+>> +/* is_blocking_suspend returns true if the suspend_blocker is currently=
+ active.
+>> + */
+>> +bool is_blocking_suspend(struct suspend_blocker *blocker);
+>
+> suspend_blocker_is_active() ?
+OK.
+> suspend_blocker_enabled() ?
+>
+>> +
+>> +/* suspend_is_blocked can be used by generic power management code to a=
+bort
+>> + * suspend.
+>> + *
+>> + * To preserve backward compatibility suspend_is_blocked returns 0 unle=
+ss it
+>> + * is called during suspend initiated from the suspend_block code.
+>> + */
+>> +bool suspend_is_blocked(void);
+>> +
+>> +#else
+>> +
+>> +static inline void suspend_blocker_init(struct suspend_blocker *blocker,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 const char *name) {}
+>> +static inline void suspend_blocker_destroy(struct suspend_blocker *bloc=
+ker) {}
+>> +static inline void suspend_block(struct suspend_blocker *blocker) {}
+>> +static inline void suspend_unblock(struct suspend_blocker *blocker) {}
+>> +static inline bool is_blocking_suspend(struct suspend_blocker *bl) { re=
+turn 0; }
+>> +static inline bool suspend_is_blocked(void) { return 0; }
+>> +
+>> +#endif
+>> +
+>> +#endif
+>> +
+>> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+>> index 23bd4da..9d1df13 100644
+>> --- a/kernel/power/Kconfig
+>> +++ b/kernel/power/Kconfig
+>> @@ -116,6 +116,16 @@ config SUSPEND_FREEZER
+>>
+>> =A0 =A0 =A0 =A0 Turning OFF this setting is NOT recommended! If in doubt=
+, say Y.
+>>
+>> +config SUSPEND_BLOCK
+>> + =A0 =A0 bool "Suspend block"
+>> + =A0 =A0 depends on PM
+>> + =A0 =A0 select RTC_LIB
+>
+> depends on RTC_LIB
+>
+> select doesn't really work and I don't think it ever will.
+
+Nothing depends on RTC_LIB, it is only selected.
+
+>
+>> + =A0 =A0 default n
+>> + =A0 =A0 ---help---
+>> + =A0 =A0 =A0 Enable suspend_block.
+>
+> Enable suspend blockers.
+
+OK.
+
+>
+>> When user space requests a sleep state through
+>> + =A0 =A0 =A0 /sys/power/request_state, the requested sleep state will b=
+e entered
+>> + =A0 =A0 =A0 when no suspend_blockers are active.
+>
+> Well, if you don't want suspend blockers to block suspend started via
+> /sys/power/state, it's worth making it crystal clear in the documentation=
+ too.
+
+I added this to the intro.
 
 >
 >> +
+>> =A0config HIBERNATION
+>> =A0 =A0 =A0 bool "Hibernation (aka 'suspend to disk')"
+>> =A0 =A0 =A0 depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+>> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+>> index 720ea4f..29cdc9e 100644
+>> --- a/kernel/power/Makefile
+>> +++ b/kernel/power/Makefile
+>> @@ -6,6 +6,7 @@ endif
+>> =A0obj-$(CONFIG_PM) =A0 =A0 =A0 =A0 =A0 =A0 +=3D main.o
+>> =A0obj-$(CONFIG_PM_SLEEP) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D console.o
+>> =A0obj-$(CONFIG_FREEZER) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D process.o
+>> +obj-$(CONFIG_SUSPEND_BLOCK) =A0+=3D suspend_block.o
+>> =A0obj-$(CONFIG_HIBERNATION) =A0 =A0+=3D swsusp.o disk.o snapshot.o swap=
+.o user.o
+>>
+>> =A0obj-$(CONFIG_MAGIC_SYSRQ) =A0 =A0+=3D poweroff.o
+>> diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> index c9632f8..e4c6b20 100644
+>> --- a/kernel/power/main.c
+>> +++ b/kernel/power/main.c
+>> @@ -22,6 +22,7 @@
+>> =A0#include <linux/freezer.h>
+>> =A0#include <linux/vmstat.h>
+>> =A0#include <linux/syscalls.h>
+>> +#include <linux/suspend_block.h>
+>>
+>> =A0#include "power.h"
+>>
+>> @@ -392,6 +393,9 @@ static void suspend_finish(void)
+>>
+>>
+>> =A0static const char * const pm_states[PM_SUSPEND_MAX] =3D {
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> + =A0 =A0 [PM_SUSPEND_ON] =A0 =A0 =A0 =A0 =3D "on",
+>> +#endif
 >
-> I'd say "For example" here.
+> Why #ifdef?
+
+Removed.
+
 >
->> +Suspend blockers can be used to allow user-space to decide which keys s=
-hould
->> +wake the full system up and turn the screen on. Use set_irq_wake or a p=
-latform
->> +specific api to make sure the keypad interrupt wakes up the cpu. Once t=
-he keypad
->> +driver has resumed, the sequence of events can look like this:
->> +- The Keypad driver gets an interrupt. It then calls suspend_block on t=
-he
->> + =A0keypad-scan suspend_blocker and starts scanning the keypad matrix.
->> +- The keypad-scan code detects a key change and reports it to the input=
--event
->> + =A0driver.
->> +- The input-event driver sees the key change, enqueues an event, and ca=
-lls
->> + =A0suspend_block on the input-event-queue suspend_blocker.
->> +- The keypad-scan code detects that no keys are held and calls suspend_=
-unblock
->> + =A0on the keypad-scan suspend_blocker.
->> +- The user-space input-event thread returns from select/poll, calls
->> + =A0suspend_block on the process-input-events suspend_blocker and then =
-calls read
->> + =A0on the input-event device.
->> +- The input-event driver dequeues the key-event and, since the queue is=
- now
->> + =A0empty, it calls suspend_unblock on the input-event-queue suspend_bl=
-ocker.
->> +- The user-space input-event thread returns from read. It determines th=
-at the
->> + =A0key should not wake up the full system, calls suspend_unblock on the
->> + =A0process-input-events suspend_blocker and calls select or poll.
+>> =A0 =A0 =A0 [PM_SUSPEND_STANDBY] =A0 =A0=3D "standby",
+>> =A0 =A0 =A0 [PM_SUSPEND_MEM] =A0 =A0 =A0 =A0=3D "mem",
+>> =A0};
+>> @@ -540,6 +544,61 @@ static ssize_t state_store(struct kobject *kobj, st=
+ruct kobj_attribute *attr,
+>>
+>> =A0power_attr(state);
+>>
+>> +/**
+>> + * =A0 request_state - control system power state.
+>> + *
+>> + * =A0 This is similar to state, but it does not block until the system
+>> + * =A0 resumes, and it will try to re-enter the state until another sta=
+te is
+>> + * =A0 requested. Suspend blockers are respected and the requested stat=
+e will
+>> + * =A0 only be entered when no suspend blockers are active.
+>> + * =A0 Write "on" to cancel.
+>> + */
 >> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 Key pressed =A0 Key released
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A0 =A0 =A0 =A0 =A0 |
->> +keypad-scan =A0 =A0 =A0 =A0 =A0++++++++++++++++++
->> +input-event-queue =A0 =A0 =A0 =A0+++ =A0 =A0 =A0 =A0 =A0+++
->> +process-input-events =A0 =A0 =A0 +++ =A0 =A0 =A0 =A0 =A0+++
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> +static ssize_t request_state_show(struct kobject *kobj,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct kob=
+j_attribute *attr, char *buf)
+>> +{
+>> + =A0 =A0 char *s =3D buf;
+>> + =A0 =A0 int i;
 >> +
->> +
->> +Driver API
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +A driver can use the suspend block api by adding a suspend_blocker vari=
-able to
->> +its state and calling suspend_blocker_init. For instance:
->> +struct state {
->> + =A0 =A0 struct suspend_blocker suspend_blocker;
+>> + =A0 =A0 for (i =3D 0; i < PM_SUSPEND_MAX; i++) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (pm_states[i] && (i =3D=3D PM_SUSPEND_ON ||=
+ valid_state(i)))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 s +=3D sprintf(s, "%s ", pm_st=
+ates[i]);
+>> + =A0 =A0 }
+>> + =A0 =A0 if (s !=3D buf)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 /* convert the last space to a newline */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 *(s-1) =3D '\n';
+>> + =A0 =A0 return (s - buf);
 >> +}
 >> +
->> +init() {
->> + =A0 =A0 suspend_blocker_init(&state->suspend_blocker, "suspend-blocker=
--name");
+>> +static ssize_t request_state_store(struct kobject *kobj,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct =
+kobj_attribute *attr,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0const c=
+har *buf, size_t n)
+>> +{
+>> + =A0 =A0 suspend_state_t state =3D PM_SUSPEND_ON;
+>> + =A0 =A0 const char * const *s;
+>> + =A0 =A0 char *p;
+>> + =A0 =A0 int len;
+>> + =A0 =A0 int error =3D -EINVAL;
+>> +
+>> + =A0 =A0 p =3D memchr(buf, '\n', n);
+>> + =A0 =A0 len =3D p ? p - buf : n;
+>> +
+>> + =A0 =A0 for (s =3D &pm_states[state]; state < PM_SUSPEND_MAX; s++, sta=
+te++) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (*s && len =3D=3D strlen(*s) && !strncmp(bu=
+f, *s, len))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+>> + =A0 =A0 }
+>> + =A0 =A0 if (state < PM_SUSPEND_MAX && *s)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (state =3D=3D PM_SUSPEND_ON || valid_state(=
+state)) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D 0;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 request_suspend_state(state);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+>> + =A0 =A0 return error ? error : n;
 >> +}
 >> +
->> +Before freeing the memory, suspend_blocker_destroy must be called:
+>> +power_attr(request_state);
+>> +#endif /* CONFIG_SUSPEND_BLOCK */
 >> +
->> +uninit() {
->> + =A0 =A0 suspend_blocker_destroy(&state->suspend_blocker);
+>> =A0#ifdef CONFIG_PM_TRACE
+>> =A0int pm_trace_enabled;
+>>
+>> @@ -567,6 +626,9 @@ power_attr(pm_trace);
+>>
+>> =A0static struct attribute * g[] =3D {
+>> =A0 =A0 =A0 &state_attr.attr,
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> + =A0 =A0 &request_state_attr.attr,
+>> +#endif
+>> =A0#ifdef CONFIG_PM_TRACE
+>> =A0 =A0 =A0 &pm_trace_attr.attr,
+>> =A0#endif
+>> diff --git a/kernel/power/power.h b/kernel/power/power.h
+>> index 46b5ec7..2414a74 100644
+>> --- a/kernel/power/power.h
+>> +++ b/kernel/power/power.h
+>> @@ -223,3 +223,9 @@ static inline void suspend_thaw_processes(void)
+>> =A0{
+>> =A0}
+>> =A0#endif
+>> +
+>> +#ifdef CONFIG_SUSPEND_BLOCK
+>> +/* kernel/power/suspend_block.c */
+>> +void request_suspend_state(suspend_state_t state);
+>> +#endif
+>
+> Is the #ifdef really necessary?
+>
+
+No, but it gives a compile error instead of a link error if you call
+request_suspend_state when it is not available so it is useful.
+
+>> +
+>> diff --git a/kernel/power/suspend_block.c b/kernel/power/suspend_block.c
+>> new file mode 100644
+>> index 0000000..b4f2191
+>> --- /dev/null
+>> +++ b/kernel/power/suspend_block.c
+>> @@ -0,0 +1,257 @@
+>> +/* kernel/power/suspend_block.c
+>> + *
+>> + * Copyright (C) 2005-2008 Google, Inc.
+>> + *
+>> + * This software is licensed under the terms of the GNU General Public
+>> + * License version 2, as published by the Free Software Foundation, and
+>> + * may be copied, distributed, and modified under those terms.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. =A0See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/module.h>
+>> +#include <linux/rtc.h>
+>> +#include <linux/suspend.h>
+>> +#include <linux/suspend_block.h>
+>> +#include <linux/sysdev.h>
+>> +#include "power.h"
+>> +
+>> +enum {
+>> + =A0 =A0 DEBUG_EXIT_SUSPEND =3D 1U << 0,
+>> + =A0 =A0 DEBUG_WAKEUP =3D 1U << 1,
+>> + =A0 =A0 DEBUG_USER_STATE =3D 1U << 2,
+>> + =A0 =A0 DEBUG_SUSPEND =3D 1U << 3,
+>> + =A0 =A0 DEBUG_SUSPEND_BLOCKER =3D 1U << 4,
+>> +};
+>> +static int debug_mask =3D DEBUG_EXIT_SUSPEND | DEBUG_WAKEUP | DEBUG_USE=
+R_STATE;
+>> +module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_I=
+WGRP);
+>> +
+>> +#define SB_INITIALIZED =A0 =A0 =A0 =A0 =A0 =A0(1U << 8)
+>> +#define SB_ACTIVE =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (1U << 9)
+>> +
+>> +static DEFINE_SPINLOCK(state_lock);
+>> +static atomic_t suspend_block_count;
+>> +static atomic_t current_event_num;
+>> +struct workqueue_struct *suspend_work_queue;
+>> +struct suspend_blocker main_suspend_blocker;
+>> +static suspend_state_t requested_suspend_state =3D PM_SUSPEND_MEM;
+>> +static bool enable_suspend_blockers;
+>> +
+>> +bool suspend_is_blocked(void)
+>> +{
+>> + =A0 =A0 if (WARN_ONCE(!enable_suspend_blockers, "ignoring suspend bloc=
+kers\n"))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> + =A0 =A0 return !!atomic_read(&suspend_block_count);
 >> +}
 >> +
->> +When the driver determines that it needs to run (usually in an interrupt
->> +handler) it calls suspend_block:
->> + =A0 =A0 suspend_block(&state->suspend_blocker);
+>> +static void suspend_worker(struct work_struct *work)
+>> +{
+>> + =A0 =A0 int ret;
+>> + =A0 =A0 int entry_event_num;
+>> +
+>> + =A0 =A0 enable_suspend_blockers =3D 1;
 >
-> suspend_blocker_activate() ?
-> suspend_blocker_enable() ?
-> suspend_blocker_start() ?
+> 'true' instead of '1', please.
+
+OK.
+
+>
+>> +
+>> +retry:
+>> + =A0 =A0 if (suspend_is_blocked()) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: abort suspen=
+d\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto abort;
+>
+> If that were in a loop you could just use 'break' here.
+
+do you think this is better:
+while(1) {
+        if (exception1) {
+                ...
+                break;
+        }
+        ...
+        if (exception2) {
+                ...
+                continue;
+        }
+        break;
+}
+>
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 entry_event_num =3D atomic_read(&current_event_num);
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: enter suspend\n");
+>> + =A0 =A0 ret =3D pm_suspend(requested_suspend_state);
+>> + =A0 =A0 if (debug_mask & DEBUG_EXIT_SUSPEND) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct timespec ts;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct rtc_time tm;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 getnstimeofday(&ts);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 rtc_time_to_tm(ts.tv_sec, &tm);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: exit suspend, ret =3D %d "
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "(%d-%02d-%02d %02d:%02d:%02d.=
+%09lu UTC)\n", ret,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_year + 1900, tm.tm_mon +=
+ 1, tm.tm_mday,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_hour, tm.tm_min, tm.tm_s=
+ec, ts.tv_nsec);
+>> + =A0 =A0 }
+>> + =A0 =A0 if (atomic_read(&current_event_num) =3D=3D entry_event_num) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: pm_suspend r=
+eturned with no event\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto retry;
+>
+> Put that into a loop and use 'continue' here? =A0Or use 'break' to go out=
+ of
+> the loop?
+
+The retry is a workaround for the lack of suspend_block_timeout.
+
+>
+>> + =A0 =A0 }
+>> +abort:
+>> + =A0 =A0 enable_suspend_blockers =3D 0;
+>
+> 'false' instead of '0', please.
+
+OK.
+
+>
+>> +}
+>> +static DECLARE_WORK(suspend_work, suspend_worker);
+>> +
+>> +static int suspend_block_suspend(struct sys_device *dev, pm_message_t s=
+tate)
+>> +{
+>> + =A0 =A0 int ret =3D suspend_is_blocked() ? -EAGAIN : 0;
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_block_suspend return %d\n", r=
+et);
+>> + =A0 =A0 return ret;
+>> +}
+>> +
+>> +static struct sysdev_class suspend_block_sysclass =3D {
+>> + =A0 =A0 .name =3D "suspend_block",
+>> + =A0 =A0 .suspend =3D suspend_block_suspend,
+>> +};
+>> +static struct sys_device suspend_block_sysdev =3D {
+>> + =A0 =A0 .cls =3D &suspend_block_sysclass,
+>> +};
+>> +
+>
+> Hmm. =A0Perhaps add the suspend_is_blocked() check at the beginning of
+> sysdev_suspend() instead of this? =A0Surely you don't want to suspend
+> any sysdevs with any suspend blockers active, right?
+
+You could make the same argument for any device. Using a sysdev makes
+the patch easier to apply.
+
+>
+>> +/**
+>> + * suspend_blocker_init() - Initialize a suspend blocker
+>> + * @blocker: The suspend blocker to initialize.
+>> + * @name: =A0 =A0The name of the suspend blocker to show in
+>> + * =A0 =A0 =A0 =A0 =A0 /proc/suspend_blockers
+>> + */
+>> +void suspend_blocker_init(struct suspend_blocker *blocker, const char *=
+name)
+>> +{
+>> + =A0 =A0 if (name)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 blocker->name =3D name;
+>> + =A0 =A0 BUG_ON(!blocker->name);
+>
+> Do you really want to crash the kernel in this case? =A0WARN_ON() might b=
+e better IMO.
+
+OK.
+
+>
+> Also, this assumes that the caller won't release the memory used to store=
+ the
+> 'name' string. =A0it might be a good idea to point that out in the kernel=
+doc
+> comment.
+>
+>> +
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND_BLOCKER)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_blocker_init name=3D%s\n", bl=
+ocker->name);
+>> +
+>> + =A0 =A0 atomic_set(&blocker->flags, SB_INITIALIZED);
+>> +}
+>> +EXPORT_SYMBOL(suspend_blocker_init);
+>> +
+>> +/**
+>> + * suspend_blocker_destroy() - Destroy a suspend blocker
+>> + * @blocker: The suspend blocker to destroy.
+>> + */
+>> +void suspend_blocker_destroy(struct suspend_blocker *blocker)
+>> +{
+>> + =A0 =A0 int flags;
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND_BLOCKER)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_blocker_destroy name=3D%s\n",=
+ blocker->name);
+>> + =A0 =A0 flags =3D atomic_xchg(&blocker->flags, 0);
+>> + =A0 =A0 WARN(!(flags & SB_INITIALIZED), "suspend_blocker_destroy calle=
+d on "
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 "uninitialized suspend_blocker\n");
+>> + =A0 =A0 if (flags =3D=3D (SB_INITIALIZED | SB_ACTIVE))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (atomic_dec_and_test(&suspend_block_count))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_work(suspend_work_queue,=
+ &suspend_work);
+>> +}
+>> +EXPORT_SYMBOL(suspend_blocker_destroy);
+>> +
+>> +/**
+>> + * suspend_block() - Block suspend
+>> + * @blocker: The suspend blocker to use
+>> + */
+>> +void suspend_block(struct suspend_blocker *blocker)
+>> +{
+>> + =A0 =A0 BUG_ON(!(atomic_read(&blocker->flags) & SB_INITIALIZED));
+>
+> WARN_ON() and exit instead? =A0BUG_ON() is a bit drastic IMHO.
+>
+>> +
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND_BLOCKER)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_block: %s\n", blocker->name);
+>> + =A0 =A0 if (atomic_cmpxchg(&blocker->flags, SB_INITIALIZED,
+>> + =A0 =A0 =A0 =A0 SB_INITIALIZED | SB_ACTIVE) =3D=3D SB_INITIALIZED)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_inc(&suspend_block_count);
+>> +
+>> + =A0 =A0 atomic_inc(&current_event_num);
+>> +}
+>> +EXPORT_SYMBOL(suspend_block);
+>> +
+>> +/**
+>> + * suspend_unblock() - Unblock suspend
+>> + * @blocker: The suspend blocker to unblock.
+>> + *
+>> + * If no other suspend blockers block suspend, the system will suspend.
+>> + */
+>> +void suspend_unblock(struct suspend_blocker *blocker)
+>> +{
+>> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND_BLOCKER)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_unblock: %s\n", blocker->name=
+);
+>> +
+>> + =A0 =A0 if (atomic_cmpxchg(&blocker->flags, SB_INITIALIZED | SB_ACTIVE,
+>> + =A0 =A0 =A0 =A0 SB_INITIALIZED) =3D=3D (SB_INITIALIZED | SB_ACTIVE))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (atomic_dec_and_test(&suspend_block_count))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_work(suspend_work_queue,=
+ &suspend_work);
+>> +}
+>> +EXPORT_SYMBOL(suspend_unblock);
+>> +
+>> +/**
+>> + * is_blocking_suspend() - Test if a suspend blocker is blocking suspend
+>> + * @blocker: The suspend blocker to check.
+>> + */
+>> +bool is_blocking_suspend(struct suspend_blocker *blocker)
+>> +{
+>> + =A0 =A0 return !!(atomic_read(&blocker->flags) & SB_ACTIVE);
+>
+> Check SB_INITIALIZED too, perhaps? =A0WARN_ON(!SB_INITIALIZED)?
+
+Added WARN_ON.
+
+>
+>> +}
+>> +EXPORT_SYMBOL(is_blocking_suspend);
+>> +
+>> +void request_suspend_state(suspend_state_t state)
+>> +{
+>> + =A0 =A0 unsigned long irqflags;
+>> + =A0 =A0 spin_lock_irqsave(&state_lock, irqflags);
+>> + =A0 =A0 if (debug_mask & DEBUG_USER_STATE) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct timespec ts;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct rtc_time tm;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 getnstimeofday(&ts);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 rtc_time_to_tm(ts.tv_sec, &tm);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("request_suspend_state: %s (%d->%d) at=
+ %lld "
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "(%d-%02d-%02d %02d:%02d:%02d.=
+%09lu UTC)\n",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 state !=3D PM_SUSPEND_ON ? "sl=
+eep" : "wakeup",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 requested_suspend_state, state,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ktime_to_ns(ktime_get()),
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_year + 1900, tm.tm_mon +=
+ 1, tm.tm_mday,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tm.tm_hour, tm.tm_min, tm.tm_s=
+ec, ts.tv_nsec);
+>> + =A0 =A0 }
+>> + =A0 =A0 requested_suspend_state =3D state;
+>> + =A0 =A0 if (state =3D=3D PM_SUSPEND_ON)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 suspend_block(&main_suspend_blocker);
+>> + =A0 =A0 else
+>> + =A0 =A0 =A0 =A0 =A0 =A0 suspend_unblock(&main_suspend_blocker);
+>> + =A0 =A0 spin_unlock_irqrestore(&state_lock, irqflags);
+>> +}
+>> +
+>> +static int __init suspend_block_init(void)
+>> +{
+>> + =A0 =A0 int ret;
+>> +
+>> + =A0 =A0 suspend_blocker_init(&main_suspend_blocker, "main");
+>> + =A0 =A0 suspend_block(&main_suspend_blocker);
+>> +
+>> + =A0 =A0 ret =3D sysdev_class_register(&suspend_block_sysclass);
+>> + =A0 =A0 if (ret) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_err("suspend_block_init: sysdev_class_regis=
+ter failed\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_sysdev_class_register;
+>> + =A0 =A0 }
+>> + =A0 =A0 ret =3D sysdev_register(&suspend_block_sysdev);
+>> + =A0 =A0 if (ret) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_err("suspend_block_init: suspend_block_sysd=
+ev failed\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_sysdev_register;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 suspend_work_queue =3D create_singlethread_workqueue("suspend"=
+);
+>
+> Do we need a separate workqueue for this purpose?
 >
 
-I don't like any of those better than suspend_block, but if there is
-some agreement on what it should be changed to, I'll change it.
+Yes. Some drivers wait on work that runs on the main workqueue in
+their suspend handler.
 
+>> + =A0 =A0 if (suspend_work_queue =3D=3D NULL) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOMEM;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_suspend_work_queue;
+>> + =A0 =A0 }
 >> +
->> +When it no longer needs to run it calls suspend_unblock:
->> + =A0 =A0 suspend_unblock(&state->suspend_blocker);
+>> + =A0 =A0 return 0;
+>> +
+>> +err_suspend_work_queue:
+>> + =A0 =A0 sysdev_unregister(&suspend_block_sysdev);
+>> +err_sysdev_register:
+>> + =A0 =A0 sysdev_class_unregister(&suspend_block_sysclass);
+>> +err_sysdev_class_register:
+>> + =A0 =A0 suspend_blocker_destroy(&main_suspend_blocker);
+>> + =A0 =A0 return ret;
+>> +}
+>> +
+>> +static void =A0__exit suspend_block_exit(void)
+>> +{
+>> + =A0 =A0 destroy_workqueue(suspend_work_queue);
+>> + =A0 =A0 sysdev_unregister(&suspend_block_sysdev);
+>> + =A0 =A0 sysdev_class_unregister(&suspend_block_sysclass);
+>> + =A0 =A0 suspend_blocker_destroy(&main_suspend_blocker);
+>> +}
+>> +
+>> +core_initcall(suspend_block_init);
+>> +module_exit(suspend_block_exit);
 >
-> suspend_blocker_deactivate() ?
-> suspend_blocker_disable() ?
-> suspend_blocker_finish() ?
+> Thanks,
+> Rafael
 >
->> +
->> +Calling suspend_block when the suspend blocker is active or suspend_unb=
-lock when
->> +it is not active has no effect. This allows drivers to update their sta=
-te and
->> +call suspend suspend_block or suspend_unblock based on the result.
->> +For instance:
->> +
->> +if (list_empty(&state->pending_work))
->> + =A0 =A0 suspend_unblock(&state->suspend_blocker);
->> +else
->> + =A0 =A0 suspend_block(&state->suspend_blocker);
->> +
+
 
 
 -- =
 
 Arve Hj=F8nnev=E5g
-
-
-----
-
-Suspend blockers
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-Suspend blockers provide a mechanism for device drivers and user-space proc=
-esses
-to prevent the system from entering suspend. Only suspend states requested
-through /sys/power/request_state are prevented. Writing to /sys/power/state
-will ignore suspend blockers, and sleep states entered from idle are unaffe=
-cted.
-
-To use a suspend blocker, a device driver needs a struct suspend_blocker ob=
-ject
-that has to be initialized with suspend_blocker_init. When no longer needed,
-the suspend blocker must be destroyed with suspend_blocker_destroy.
-
-A suspend blocker is activated using suspend_block, which prevents the syst=
-em
-from entering suspend until the suspend blocker is deactivated with
-suspend_unblock. Many suspend blockers may be used simultaneously, and the
-system is prevented from entering suspend as long as at least one of them is
-active.
-
-If the suspend operation has already started when calling suspend_block on a
-suspend_blocker, it will abort the suspend operation as long it has not alr=
-eady
-reached the sysdev suspend stage. This means that calling suspend_block fro=
-m an
-interrupt handler or a freezeable thread always works, but if you call
-suspend_block from a sysdev suspend handler you must also return an error f=
-rom
-that handler to abort a suspend sequence that was already started.
-
-In cell phones or other embedded systems where powering the screen is a
-significant drain on the battery, suspend blockers can be used to allow
-user-space to decide whether a keystroke received while the system is suspe=
-nded
-should cause the screen to be turned back on or allow the system to go back=
- into
-suspend. Use set_irq_wake or a platform specific api to make sure the keypad
-interrupt wakes up the cpu. Once the keypad driver has resumed, the sequenc=
-e of
-events can look like this:
-
-- The Keypad driver gets an interrupt. It then calls suspend_block on the
-  keypad-scan suspend_blocker and starts scanning the keypad matrix.
-- The keypad-scan code detects a key change and reports it to the input-eve=
-nt
-  driver.
-- The input-event driver sees the key change, enqueues an event, and calls
-  suspend_block on the input-event-queue suspend_blocker.
-- The keypad-scan code detects that no keys are held and calls suspend_unbl=
-ock
-  on the keypad-scan suspend_blocker.
-- The user-space input-event thread returns from select/poll, calls
-  suspend_block on the process-input-events suspend_blocker and then calls =
-read
-  on the input-event device.
-- The input-event driver dequeues the key-event and, since the queue is now
-  empty, it calls suspend_unblock on the input-event-queue suspend_blocker.
-- The user-space input-event thread returns from read. If it determines that
-  the key should leave the screen off, it calls suspend_unblock on the
-  process_input_events suspend_blocker and then calls select or poll. The
-  system will automatically suspend again, since now no suspend blockers are
-  active.
-
-                 Key pressed   Key released
-                     |             |
-keypad-scan          ++++++++++++++++++
-input-event-queue        +++          +++
-process-input-events       +++          +++
-
-
-Driver API
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-A driver can use the suspend block api by adding a suspend_blocker variable=
- to
-its state and calling suspend_blocker_init. For instance:
-struct state {
-        struct suspend_blocker suspend_blocker;
-}
-
-init() {
-        suspend_blocker_init(&state->suspend_blocker, "suspend-blocker-name=
-");
-}
-
-Before freeing the memory, suspend_blocker_destroy must be called:
-
-uninit() {
-        suspend_blocker_destroy(&state->suspend_blocker);
-}
-
-When the driver determines that it needs to run (usually in an interrupt
-handler) it calls suspend_block:
-        suspend_block(&state->suspend_blocker);
-
-When it no longer needs to run it calls suspend_unblock:
-        suspend_unblock(&state->suspend_blocker);
-
-Calling suspend_block when the suspend blocker is active or suspend_unblock=
- when
-it is not active has no effect. This allows drivers to update their state a=
-nd
-call suspend suspend_block or suspend_unblock based on the result.
-For instance:
-
-if (list_empty(&state->pending_work))
-        suspend_unblock(&state->suspend_blocker);
-else
-        suspend_block(&state->suspend_blocker);
