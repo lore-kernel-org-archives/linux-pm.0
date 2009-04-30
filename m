@@ -1,16 +1,14 @@
-From: Greg KH <gregkh@suse.de>
-Subject: [patch 35/88] sched: do not count frozen tasks toward
-	load
-Date: Thu, 30 Apr 2009 09:56:24 -0700
-Message-ID: <20090430165743.524149922__29132.9515669078$1241111508$gmane$org@mini.kroah.org>
-References: <20090430165549.117010404@mini.kroah.org>
+From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
+ know if it's in use
+Date: Fri, 01 May 2009 01:42:04 +0200
+Message-ID: <49FA374C.8000501@gandalf.sssup.it>
+References: <Pine.LNX.4.44L0.0904251432250.20179-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline;
-	filename=0060-sched-do-not-count-frozen-tasks-toward-load.patch
-In-Reply-To: <20090430170122.GA16015@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.0904251432250.20179-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>, Domenico Andreoli <cavokz@gmail.com>, alan@lxorguk.ukuu.org.uk, Eugene Teo <eteo@redhat.com>, Chris Wedgwood <reviews@ml.cw.f00f.org>, Michael Krufky <mkrufky@linuxtv.org>, Nathan Lynch <ntl@pobox.com>, linux-pm@lists.linux-foundation.org, Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, Chuck Wolber <chuckw@quantumlinux.com>, Zwane Mwaikambo <zwane@arm.linux.org.uk>, Jake Edge <jake@lwn.net>, Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>, Theodore Ts'o <tytso@mit.edu>, containers@lists.linux-foundation.org, Chuck Ebbert <cebbert@redhat.com>, akpm@linux-foundation.org, torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-
-From: Nathan Lynch <ntl@pobox.com>
-
-upstream commit: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
-
-Freezing tasks via the cgroup freezer causes the load average to climb
-because the freezer's current implementation puts frozen tasks in
-uninterruptible sleep (D state).
-
-Some applications which perform job-scheduling functions consult the
-load average when making decisions.  If a cgroup is frozen, the load
-average does not provide a useful measure of the system's utilization
-to such applications.  This is especially inconvenient if the job
-scheduler employs the cgroup freezer as a mechanism for preempting low
-priority jobs.  Contrast this with using SIGSTOP for the same purpose:
-the stopped tasks do not count toward system load.
-
-Change task_contributes_to_load() to return false if the task is
-frozen.  This results in /proc/loadavg behavior that better meets
-users' expectations.
-
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
-Tested-by: Nigel Cunningham <nigel@tuxonice.net>
-Cc: containers@lists.linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Matt Helsley <matthltc@us.ibm.com>
-LKML-Reference: <20090408194512.47a99b95@manatee.lan>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- include/linux/sched.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -201,7 +201,8 @@ extern unsigned long long time_sync_thre
- #define task_is_stopped_or_traced(task)	\
- 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
- #define task_contributes_to_load(task)	\
--				((task->state & TASK_UNINTERRUPTIBLE) != 0)
-+				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-+				 (task->flags & PF_FROZEN) == 0)
- 
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
+Hi,
+Alan Stern wrote:
+> On Sat, 25 Apr 2009, Michael Trimarchi wrote:
+>
+>   
+>> Ok, I understand, so how to know the devices dependences? There is a way 
+>> to express
+>> this relation? Because if it is not possible a single flag can be used
+>>     
+>
+> Nobody knows all the device dependencies.  That's why we're afraid that 
+> if you change the list, something will break.
+>
+>   
+But this happen for broken device? The list is a sufficient condition 
+for correct
+suspend phase but is not necesarry, because all the dependence are not 
+registerd.
+But just to understand: What are the typical situation, because I 
+suppose that
+we are not talking about broken device.
+>>> This will set the dont_suspend flag for all devices in the subtree 
+>>> starting at topdev.
+>>>   
+>>>       
+>> Yes this is possible, but you walk all list twice.
+>>     
+>
+> So what?  Walking the list is very quick, and you're not on a 
+> time-critical path.
+>
+>   
+Yes, you are right, I will submit a new patch with all the necessary fixes
+> Alan Stern
+>
+>
+>   
+Thanks
