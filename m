@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/3] PM: Disable OOM killer during system-wide
-	power transitions
-Date: Sat, 2 May 2009 00:27:30 +0200
-Message-ID: <200905020027.31244.rjw__20254.5549175285$1241218789$gmane$org@sisk.pl>
+Subject: [PATCH 2/3] PM/Hibernate: Move memory shrinking to
+	snapshot.c
+Date: Sat, 2 May 2009 00:28:23 +0200
+Message-ID: <200905020028.24452.rjw__45685.0590919659$1241218790$gmane$org@sisk.pl>
 References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
 	<20090422131943.69288af3.akpm@linux-foundation.org>
 	<200905020026.19027.rjw@sisk.pl>
@@ -27,167 +27,205 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The OOM killer is not particularly useful during system-wide power
-transitions, so do not use it if such a transition is in progress.
+The next patch is going to modify the memory shrinking code so that
+it will make memory allocations to free memory instead of using an
+artificial memory shrinking mechanism for that.  For this purpose it
+is convenient to move swsusp_shrink_memory() from
+kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
+memory-shrinking code is going to use things that are local to
+kernel/power/snapshot.c .
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/suspend.h |    4 ++++
- kernel/power/disk.c     |   13 ++++++++++++-
- kernel/power/main.c     |   13 +++++++++++++
- kernel/power/power.h    |    1 +
- mm/page_alloc.c         |    8 ++++++--
- 5 files changed, 36 insertions(+), 3 deletions(-)
+ kernel/power/snapshot.c |   76 ++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/swsusp.c   |   76 ------------------------------------------------
+ 2 files changed, 76 insertions(+), 76 deletions(-)
 
-Index: linux-2.6/include/linux/suspend.h
+Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -282,6 +282,8 @@ extern int unregister_pm_notifier(struct
- 		{ .notifier_call = fn, .priority = pri };	\
- 	register_pm_notifier(&fn##_nb);			\
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -39,6 +39,14 @@ static int swsusp_page_is_free(struct pa
+ static void swsusp_set_page_forbidden(struct page *);
+ static void swsusp_unset_page_forbidden(struct page *);
+ 
++/*
++ * Preferred image size in bytes (tunable via /sys/power/image_size).
++ * When it is set to N, swsusp will do its best to ensure the image
++ * size will not exceed N bytes, but if that is impossible, it will
++ * try to create the smallest image possible.
++ */
++unsigned long image_size = 500 * 1024 * 1024;
++
+ /* List of PBEs needed for restoring the pages that were allocated before
+  * the suspend and included in the suspend image, but have also been
+  * allocated by the "resume" kernel, so their contents cannot be written
+@@ -569,6 +577,74 @@ static unsigned long memory_bm_next_pfn(
  }
+ 
+ /**
++ *	swsusp_shrink_memory -  Try to free as much memory as needed
++ *
++ *	... but do not OOM-kill anyone
++ *
++ *	Notice: all userland should be stopped before it is called, or
++ *	livelock is possible.
++ */
 +
-+extern bool pm_transition_in_progress(void);
- #else /* !CONFIG_PM_SLEEP */
- 
- static inline int register_pm_notifier(struct notifier_block *nb)
-@@ -295,6 +297,8 @@ static inline int unregister_pm_notifier
- }
- 
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
-+
-+static inline bool pm_transition_in_progress(void) { return false; }
- #endif /* !CONFIG_PM_SLEEP */
- 
- #ifndef CONFIG_HIBERNATION
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1619,8 +1619,12 @@ nofail_alloc:
- 			goto got_pg;
- 		}
- 
--		/* The OOM killer will not help higher order allocs so fail */
--		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-+		/*
-+		 * The OOM killer will not help higher order allocs and it is
-+		 * not useful during system-wide power transitions, so fail.
-+		 */
-+		if (order > PAGE_ALLOC_COSTLY_ORDER
-+		    || pm_transition_in_progress()) {
- 			clear_zonelist_oom(zonelist, gfp_mask);
- 			goto nopage;
- 		}
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -299,9 +299,11 @@ int hibernation_snapshot(int platform_mo
- {
- 	int error;
- 
-+	transition_in_progress = true;
-+
- 	error = platform_begin(platform_mode);
- 	if (error)
--		return error;
-+		goto Out;
- 
- 	/* Free memory before shutting down devices. */
- 	error = swsusp_shrink_memory();
-@@ -325,6 +327,9 @@ int hibernation_snapshot(int platform_mo
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-+
-+ Out:
-+	transition_in_progress = false;
- 	return error;
- 
-  Recover_platform:
-@@ -607,6 +612,7 @@ int hibernate(void)
- 		pr_debug("PM: Image restored successfully.\n");
- 		swsusp_free();
- 	}
-+
-  Thaw:
- 	thaw_processes();
-  Finish:
-@@ -724,6 +730,8 @@ static int software_resume(void)
- 		goto Done;
- 	}
- 
-+	transition_in_progress = true;
-+
- 	pr_debug("PM: Reading hibernation image.\n");
- 
- 	error = swsusp_read(&flags);
-@@ -732,6 +740,9 @@ static int software_resume(void)
- 
- 	printk(KERN_ERR "PM: Restore failed, recovering.\n");
- 	swsusp_free();
-+
-+	transition_in_progress = false;
-+
- 	thaw_processes();
-  Done:
- 	free_basic_memory_bitmaps();
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -32,6 +32,13 @@ EXPORT_SYMBOL(pm_flags);
- 
- #ifdef CONFIG_PM_SLEEP
- 
-+bool transition_in_progress;
-+
-+bool pm_transition_in_progress(void)
++#define SHRINK_BITE	10000
++static inline unsigned long __shrink_memory(long tmp)
 +{
-+	return transition_in_progress;
++	if (tmp > SHRINK_BITE)
++		tmp = SHRINK_BITE;
++	return shrink_all_memory(tmp);
 +}
 +
- /* Routines for PM-transition notifications */
- 
- static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
-@@ -246,6 +253,8 @@ static int suspend_prepare(void)
- 		goto Thaw;
- 	}
- 
-+	transition_in_progress = true;
++int swsusp_shrink_memory(void)
++{
++	long tmp;
++	struct zone *zone;
++	unsigned long pages = 0;
++	unsigned int i = 0;
++	char *p = "-\\|/";
++	struct timeval start, stop;
 +
- 	free_pages = global_page_state(NR_FREE_PAGES);
- 	if (free_pages < FREE_PAGE_NUMBER) {
- 		pr_debug("PM: free some memory\n");
-@@ -258,6 +267,8 @@ static int suspend_prepare(void)
- 	if (!error)
- 		return 0;
- 
-+	transition_in_progress = false;
++	printk(KERN_INFO "PM: Shrinking memory...  ");
++	do_gettimeofday(&start);
++	do {
++		long size, highmem_size;
 +
-  Thaw:
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
-@@ -403,6 +414,8 @@ int suspend_devices_and_enter(suspend_st
++		highmem_size = count_highmem_pages();
++		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
++		tmp = size;
++		size += highmem_size;
++		for_each_populated_zone(zone) {
++			tmp += snapshot_additional_pages(zone);
++			if (is_highmem(zone)) {
++				highmem_size -=
++					zone_page_state(zone, NR_FREE_PAGES);
++			} else {
++				tmp -= zone_page_state(zone, NR_FREE_PAGES);
++				tmp += zone->lowmem_reserve[ZONE_NORMAL];
++			}
++		}
++
++		if (highmem_size < 0)
++			highmem_size = 0;
++
++		tmp += highmem_size;
++		if (tmp > 0) {
++			tmp = __shrink_memory(tmp);
++			if (!tmp)
++				return -ENOMEM;
++			pages += tmp;
++		} else if (size > image_size / PAGE_SIZE) {
++			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
++			pages += tmp;
++		}
++		printk("\b%c", p[i++%4]);
++	} while (tmp > 0);
++	do_gettimeofday(&stop);
++	printk("\bdone (%lu pages freed)\n", pages);
++	swsusp_show_speed(&start, &stop, pages, "Freed");
++
++	return 0;
++}
++
++/**
+  *	This structure represents a range of page frames the contents of which
+  *	should not be saved during the suspend.
   */
- static void suspend_finish(void)
- {
-+	transition_in_progress = false;
-+
- 	suspend_thaw_processes();
- 	usermodehelper_enable();
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
-Index: linux-2.6/kernel/power/power.h
+Index: linux-2.6/kernel/power/swsusp.c
 ===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -173,6 +173,7 @@ static inline int suspend_devices_and_en
- #ifdef CONFIG_PM_SLEEP
- /* kernel/power/main.c */
- extern int pm_notifier_call_chain(unsigned long val);
-+extern bool transition_in_progress;
- #endif
+--- linux-2.6.orig/kernel/power/swsusp.c
++++ linux-2.6/kernel/power/swsusp.c
+@@ -55,14 +55,6 @@
  
- #ifdef CONFIG_HIGHMEM
+ #include "power.h"
+ 
+-/*
+- * Preferred image size in bytes (tunable via /sys/power/image_size).
+- * When it is set to N, swsusp will do its best to ensure the image
+- * size will not exceed N bytes, but if that is impossible, it will
+- * try to create the smallest image possible.
+- */
+-unsigned long image_size = 500 * 1024 * 1024;
+-
+ int in_suspend __nosavedata = 0;
+ 
+ /**
+@@ -195,74 +187,6 @@ void swsusp_show_speed(struct timeval *s
+ 			kps / 1000, (kps % 1000) / 10);
+ }
+ 
+-/**
+- *	swsusp_shrink_memory -  Try to free as much memory as needed
+- *
+- *	... but do not OOM-kill anyone
+- *
+- *	Notice: all userland should be stopped before it is called, or
+- *	livelock is possible.
+- */
+-
+-#define SHRINK_BITE	10000
+-static inline unsigned long __shrink_memory(long tmp)
+-{
+-	if (tmp > SHRINK_BITE)
+-		tmp = SHRINK_BITE;
+-	return shrink_all_memory(tmp);
+-}
+-
+-int swsusp_shrink_memory(void)
+-{
+-	long tmp;
+-	struct zone *zone;
+-	unsigned long pages = 0;
+-	unsigned int i = 0;
+-	char *p = "-\\|/";
+-	struct timeval start, stop;
+-
+-	printk(KERN_INFO "PM: Shrinking memory...  ");
+-	do_gettimeofday(&start);
+-	do {
+-		long size, highmem_size;
+-
+-		highmem_size = count_highmem_pages();
+-		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
+-		tmp = size;
+-		size += highmem_size;
+-		for_each_populated_zone(zone) {
+-			tmp += snapshot_additional_pages(zone);
+-			if (is_highmem(zone)) {
+-				highmem_size -=
+-					zone_page_state(zone, NR_FREE_PAGES);
+-			} else {
+-				tmp -= zone_page_state(zone, NR_FREE_PAGES);
+-				tmp += zone->lowmem_reserve[ZONE_NORMAL];
+-			}
+-		}
+-
+-		if (highmem_size < 0)
+-			highmem_size = 0;
+-
+-		tmp += highmem_size;
+-		if (tmp > 0) {
+-			tmp = __shrink_memory(tmp);
+-			if (!tmp)
+-				return -ENOMEM;
+-			pages += tmp;
+-		} else if (size > image_size / PAGE_SIZE) {
+-			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+-			pages += tmp;
+-		}
+-		printk("\b%c", p[i++%4]);
+-	} while (tmp > 0);
+-	do_gettimeofday(&stop);
+-	printk("\bdone (%lu pages freed)\n", pages);
+-	swsusp_show_speed(&start, &stop, pages, "Freed");
+-
+-	return 0;
+-}
+-
+ /*
+  * Platforms, like ACPI, may want us to save some memory used by them during
+  * hibernation and to restore the contents of this memory during the subsequent
