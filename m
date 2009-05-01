@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
- know if it's in use
-Date: Thu, 30 Apr 2009 22:27:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0904302219040.3409-100000@netrider.rowland.org>
-References: <49FA374C.8000501@gandalf.sssup.it>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/3] PM: Drop shrink_all_memory (was: Re: [Bug
+	#13058] First hibernation attempt fails)
+Date: Sat, 2 May 2009 00:26:18 +0200
+Message-ID: <200905020026.19027.rjw__39843.4355309748$1241218763$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200904222211.18221.rjw@sisk.pl>
+	<20090422131943.69288af3.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49FA374C.8000501@gandalf.sssup.it>
+In-Reply-To: <20090422131943.69288af3.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +20,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, len.brown@intel.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, pm list <linux-pm@lists.linux-foundation.org>, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 May 2009, Michael Trimarchi wrote:
+On Wednesday 22 April 2009, Andrew Morton wrote:
+> On Wed, 22 Apr 2009 22:11:17 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Wednesday 22 April 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > Of course, this will protect the calling task from getting oom-killed. 
+> > > > But it doesn't protect other tasks from getting oom-killed due to the
+> > > > activity of _this_ task.
+> > > > 
+> > > > But I think that problem already exists, and that this proposal doesn't
+> > > > worsen anything, yes?
+> > > > 
+> > > > Or is it the case that all other tasks are safely stuck in the freezer
+> > > > at this time, so they won't be allocating any memory anyway?
+> > > 
+> > > That is the idea, yes. ... but we now have more threads that are not
+> > > freezable... so they may allocate the memory.
+> > > 
+> > > Is it non-feasible to free memory without really going and allocating
+> > > everything?
+> > 
+> > The question is whether there is a point.  In principle we can just go and
+> > allocate as much as we need upfront.  It shouldn't change anything, because
+> > we resume and suspend devices after creating the image anyway.
+> > 
+> > I think we could try to disable the OOM killer before suspend and just
+> > allocate the memory for the image right before devices are suspended for the
+> > first time.
+> > 
+> 
+> It would be nice to do.
+> 
+> shrink_all_memory() is simply trying to do something which page reclaim
+> doesn't expect to do (free memory when there's already lots of memory
+> free).  Consequently it doesn't do it very well, and there's a good
+> risk that changes to core reclaim will accidentally break
+> shrink_all_memory().  
 
-> > Nobody knows all the device dependencies.  That's why we're afraid that 
-> > if you change the list, something will break.
-> >
-> >   
-> But this happen for broken device? The list is a sufficient condition 
-> for correct
-> suspend phase but is not necesarry, because all the dependence are not 
-> registerd.
-> But just to understand: What are the typical situation, because I 
-> suppose that
-> we are not talking about broken device.
+OK, a patchset follows:
 
-No, we're talking about normal, working devices.
+[1/3] - disable the OOM killer during system-wide power transitions (should be
+        done anyway IMO)
+[2/3] - move swsusp_shrink_memory() to kernel/power/snapshot.c so that the
+        next patch is easier to read
+[3/3] - drop shrink_all_memory()
 
-I don't know that any situation is "typical", but here is one example.
-In USB, a high-speed EHCI controller is accompanied by one or more
-full/low-speed companion controllers (UHCI or OHCI).  They are
-implemented as different PCI functions on the same PCI card, so they
-are siblings in the device tree -- neither is a parent or a child of
-the other.  During resume from hibernation, it is important that the
-companion controllers be resumed _before_ the EHCI controller;
-otherwise EHCI port handoffs won't work (you can't hand off a port to a
-companion controller that hasn't been resumed yet).  It does work now,
-because the companion controllers are registered before the EHCI
-controller and so they come earlier in the dpm_list.
+Please have a look and tell me what you think.
 
-Does that give you an idea of the potential problems?  There may be 
-other similar issues that nobody has ever run across and nobody knows 
-about, simply because we have never changed the order of devices on the 
-dpm_list.
-
-Alan Stern
+Thanks,
+Rafael
