@@ -1,14 +1,14 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [PATCH 8/9] PM: suspend_block: Add timeout support.
-Date: Fri, 01 May 2009 01:57:28 +0200
-Message-ID: <49FA3AE8.7060501@gandalf.sssup.it>
-References: <1241061008-31134-1-git-send-email-arve@android.com>	<1241061008-31134-2-git-send-email-arve@android.com>	<1241061008-31134-3-git-send-email-arve@android.com>	<1241061008-31134-4-git-send-email-arve@android.com>	<1241061008-31134-5-git-send-email-arve@android.com>	<1241061008-31134-6-git-send-email-arve@android.com>	<1241061008-31134-7-git-send-email-arve@android.com>	<1241061008-31134-8-git-send-email-arve@android.com>	<1241061008-31134-9-git-send-email-arve@android.com>
-	<49FA39CF.3000007@gandalf.sssup.it>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
+ know if it's in use
+Date: Thu, 30 Apr 2009 22:27:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0904302219040.3409-100000@netrider.rowland.org>
+References: <49FA374C.8000501@gandalf.sssup.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <49FA39CF.3000007@gandalf.sssup.it>
+In-Reply-To: <49FA374C.8000501@gandalf.sssup.it>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-TWljaGFlbCBUcmltYXJjaGkgd3JvdGU6Cj4gSGksCj4KPiBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+Cj4gW3NuaXBdCj4gICAKPj4gQWRkIHN1c3BlbmRfYmxvY2tfdGltZW91dCB0byBibG9jayBz
-dXNwZW5kIGZvciBhIGxpbWl0ZWQgdGltZS4KPj4KPj4gU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4
-bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KPj4gLS0tCj4+ICtzdGF0aWMgREVGSU5FX1RJTUVS
-KGV4cGlyZV90aW1lciwgZXhwaXJlX3N1c3BlbmRfYmxvY2tlcnMsIDAsIDApOwo+PiArCj4+ICtz
-dGF0aWMgdm9pZCB1cGRhdGVfc3VzcGVuZChzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2VyICpibG9ja2Vy
-LCBsb25nIG1heF90aW1lb3V0KQo+PiArewo+PiArCWlmIChtYXhfdGltZW91dCA+IDApIHsKPj4g
-KwkJaWYgKGRlYnVnX21hc2sgJiBERUJVR19FWFBJUkUpCj4+ICsJCQlwcl9pbmZvKCJzdXNwZW5k
-X2Jsb2NrZXI6ICVzLCBzdGFydCBleHBpcmUgdGltZXIsICIKPj4gKwkJCQkiJWxkXG4iLCBibG9j
-a2VyLT5uYW1lLCBtYXhfdGltZW91dCk7Cj4+ICsJCW1vZF90aW1lcigmZXhwaXJlX3RpbWVyLCBq
-aWZmaWVzICsgbWF4X3RpbWVvdXQpOwo+PiArCX0gZWxzZSB7Cj4+ICsJCWlmIChkZWxfdGltZXIo
-JmV4cGlyZV90aW1lcikpCj4+ICsJCQlpZiAoZGVidWdfbWFzayAmIERFQlVHX0VYUElSRSkKPj4g
-KwkJCQlwcl9pbmZvKCJzdXNwZW5kX2Jsb2NrZXI6ICVzLCBzdG9wIGV4cGlyZSAiCj4+ICsJCQkJ
-CSJ0aW1lclxuIiwgYmxvY2tlci0+bmFtZSk7Cj4+ICsJCWlmIChtYXhfdGltZW91dCA9PSAwKQo+
-PiAgIAo+PiAgICAgCj4gU28gdGhlIG1heF90aW1lb3V0IGNhbiBiZSBuZWdhdGl2ZT8KPiAgIAoK
-CXVwZGF0ZV9zbGVlcF93YWl0X3N0YXRzX2xvY2tlZChmYWxzZSk7CisJdXBkYXRlX3N1c3BlbmQo
-YmxvY2tlciwgaGFzX3RpbWVvdXQgPworCQkJbWF4X3N1c3BlbmRfYmxvY2tlcl90aW1lb3V0X2xv
-Y2tlZCgpIDogLTEpOwogCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmxpc3RfbG9jaywgaXJxZmxh
-Z3MpOwoKT2sgc29ycnkgbWF5YmUgaW4gdGhpcyBjYWxsLi4uIEkgd3JpdGUgdG8gZmFzdCB0aGUg
-ZW1haWwgOigKCj4+ICsKPj4gICAgIAo+IE1pY2hhZWwKPiBfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwo+IGxpbnV4LXBtIG1haWxpbmcgbGlzdAo+IGxpbnV4
-LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCj4gaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Fri, 1 May 2009, Michael Trimarchi wrote:
+
+> > Nobody knows all the device dependencies.  That's why we're afraid that 
+> > if you change the list, something will break.
+> >
+> >   
+> But this happen for broken device? The list is a sufficient condition 
+> for correct
+> suspend phase but is not necesarry, because all the dependence are not 
+> registerd.
+> But just to understand: What are the typical situation, because I 
+> suppose that
+> we are not talking about broken device.
+
+No, we're talking about normal, working devices.
+
+I don't know that any situation is "typical", but here is one example.
+In USB, a high-speed EHCI controller is accompanied by one or more
+full/low-speed companion controllers (UHCI or OHCI).  They are
+implemented as different PCI functions on the same PCI card, so they
+are siblings in the device tree -- neither is a parent or a child of
+the other.  During resume from hibernation, it is important that the
+companion controllers be resumed _before_ the EHCI controller;
+otherwise EHCI port handoffs won't work (you can't hand off a port to a
+companion controller that hasn't been resumed yet).  It does work now,
+because the companion controllers are registered before the EHCI
+controller and so they come earlier in the dpm_list.
+
+Does that give you an idea of the potential problems?  There may be 
+other similar issues that nobody has ever run across and nobody knows 
+about, simply because we have never changed the order of devices on the 
+dpm_list.
+
+Alan Stern
