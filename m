@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Sat, 2 May 2009 14:17:52 +0200
-Message-ID: <200905021417.53703.rjw@sisk.pl>
-References: <1239759692-28617-1-git-send-email-arve@android.com>
-	<d6200be20904291749v55f5e425jcbb570c09a3901d1@mail.gmail.com>
-	<20090426094253.GA1376@ucw.cz>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] PM/Hibernate: Use memory allocations to
+	free memory
+Date: Sat, 2 May 2009 10:49:47 -0700
+Message-ID: <20090502104947.2720f173.akpm__48588.241733569$1241287168$gmane$org@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905020029.39181.rjw@sisk.pl>
+	<20090501161423.94b37d5b.akpm@linux-foundation.org>
+	<200905021346.34967.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090426094253.GA1376@ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200905021346.34967.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,37 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, Arve Hj?nnev?g <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 26 April 2009, Pavel Machek wrote:
-> Hi!
+On Sat, 2 May 2009 13:46:34 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> > Do we need the bitmap?  I expect we can just string all these pages
+> > onto a local list via page.lru.  Would need to check that - the
+> > pageframe fields are quite overloaded.
 > 
-> > >> --- a/kernel/power/power.h
-> > >> +++ b/kernel/power/power.h
-> > >> @@ -223,3 +223,9 @@ static inline void suspend_thaw_processes(void)
-> > >>  {
-> > >>  }
-> > >>  #endif
-> > >> +
-> > >> +#ifdef CONFIG_SUSPEND_BLOCK
-> > >> +/* kernel/power/suspend_block.c */
-> > >> +void request_suspend_state(suspend_state_t state);
-> > >> +#endif
-> > >
-> > > Is the #ifdef really necessary?
-> > >
-> > 
-> > No, but it gives a compile error instead of a link error if you call
-> > request_suspend_state when it is not available so it is useful.
-> 
-> I believe #ifdef is too ugly and link error is really good enough.
+> This is the reason why we use the bitmaps for hibernation. :-)
 
-Well, I agree with this FWIW.
+grep the tree for page->lru and you'll see that quite a few page
+consumers are using it.  So you'd be pretty safe doing it this way.
 
-We don't ususally use #ifdefs around function headers, unless they are defined
-conditionally.
-
-Thanks,
-Rafael
+Whether it's _worth_ doing it this way is debatable, given that
+hibernation uses bitmaps elsewhere.  But it would shrink the patch a
+bit I expect?
