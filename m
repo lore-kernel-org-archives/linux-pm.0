@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] PM: Disable OOM killer during
-	system-wide power transitions
-Date: Sat, 2 May 2009 13:34:50 +0200
-Message-ID: <200905021334.51261.rjw__19345.7077177756$1241264332$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905020027.31244.rjw@sisk.pl>
-	<20090501160931.1dbd2abc.akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] PM/Hibernate: Use memory allocations to
+	free memory
+Date: Sat, 2 May 2009 13:46:34 +0200
+Message-ID: <200905021346.34967.rjw__33506.5758474686$1241264930$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905020029.39181.rjw@sisk.pl>
+	<20090501161423.94b37d5b.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090501160931.1dbd2abc.akpm@linux-foundation.org>
+In-Reply-To: <20090501161423.94b37d5b.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,47 +25,67 @@ Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle
 List-Id: linux-pm@vger.kernel.org
 
 On Saturday 02 May 2009, Andrew Morton wrote:
-> On Sat, 2 May 2009 00:27:30 +0200
+> On Sat, 2 May 2009 00:29:38 +0200
 > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > The OOM killer is not particularly useful during system-wide power
-> > transitions, so do not use it if such a transition is in progress.
+> > Modify the hibernation memory shrinking code so that it will make
+> > memory allocations to free memory instead of using an artificial
+> > memory shrinking mechanism for that.  Remove the shrinking of
+> > memory from the suspend-to-RAM code, where it is not really
+> > necessary.  Finally, remove the no longer used memory shrinking
+> > functions from mm/vmscan.c .
 > > 
+> > ...
+> >
+> > +static long alloc_and_mark_pages(struct memory_bitmap *bm, long nr_pages)
+> >  {
+> > -	if (tmp > SHRINK_BITE)
+> > -		tmp = SHRINK_BITE;
+> > -	return shrink_all_memory(tmp);
+> > +	long nr_normal = 0;
+> > +
+> > +	while (nr_pages-- > 0) {
+> > +		struct page *page;
+> > +
+> > +		page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
+> > +		if (!page)
+> > +			return -ENOMEM;
+> > +		memory_bm_set_bit(bm, page_to_pfn(page));
+> > +		if (!PageHighMem(page))
+> > +			nr_normal++;
+> > +	}
+> > +
+> > +	return nr_normal;
+> >  }
 > 
-> so...  I think what you've done here is to arrange for the page
-> allocator to return NULL if we're hibernating rather than oom-killing,
-> yes?
+> Do we need the bitmap?  I expect we can just string all these pages
+> onto a local list via page.lru.  Would need to check that - the
+> pageframe fields are quite overloaded.
 
-Yes.
+This is the reason why we use the bitmaps for hibernation. :-)
 
-> Does the same apply to suspending?  If so, why?
+> > ...
+> >
+> > +#define SHRINK_BITE	10000
+> > +		long size, highmem_size, ret;
+> > +
+> > +		highmem_size = count_highmem_pages() - 2 * alloc_highmem;
+> > +		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES
+> > +			- 2 * alloc_normal;
+> 
+> It'd be nice if this head-spinning arithmetic were spelled out in a
+> comment somewhere.  There are rather a lot of magic-number heuristics
+> in here.
 
-Because I think it doesn't work anyway.  User space processes are frozen and
-effectively in TASK_UNINTERRUPTIBLE, so they won't be killed.
+Well, yeah.  I'll try to write up something. :-)
 
-> I think this is an OK change, as long as the only thing which is
-> allocating memory is hibernation itself.  If random processes are still
-> doing random memory allocations at this time then their failed memory
-> allocation could be just as fatal as an oom-killing.  Moreso if they're
-> s/bin/init or whatever.
+> >  		tmp = size;
+> >  		size += highmem_size;
+> >  		for_each_populated_zone(zone) {
+> > @@ -621,27 +671,39 @@ int swsusp_shrink_memory(void)
+> 
+> All looks pretty sane to me.
 
-At this point all of the user space tasks are frozen.
-
-> So is it the case that pm_transition_in_progress() is only true during
-> the highly-constrained hibernation process?  After everything is frozen?
-
-Yes.
-
-> If so, there are alternatives - the calling process could set
-> PF_DONT_KILL_ANYONE_FOR_ME, or could pass __GFP_DONT_KILL_ANYONE_FOR_ME. 
-> Those might be worse alternatives, dunno - I'm just asking probing
-> questions ;)
-
-Well, the __GFP_DONT_KILL_ANYONE_FOR_ME would be easier to implement.
-
-I don't really think that the freezing of processes plays very well with the
-OOM killer, so disabling it altogether after the processes have been frozen
-seems reasonable to me.  Still, if you prefer to use
-__GFP_DONT_KILL_ANYONE_FOR_ME, it's fine by me.
+Great, thanks for the comments!
