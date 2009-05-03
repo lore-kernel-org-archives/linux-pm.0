@@ -1,18 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to
-	free	memory (rev. 2)
-Date: Sun, 3 May 2009 11:36:59 +0200
-Message-ID: <20090503093659.GA10278__1532.06674517623$1241343376$gmane$org@elf.ucw.cz>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<20090502104947.2720f173.akpm@linux-foundation.org>
-	<200905030220.57933.rjw@sisk.pl> <200905030224.21471.rjw@sisk.pl>
-	<alpine.LFD.2.01.0905021958480.4983@localhost.localdomain>
+Subject: Re: [PATCH 1/3] PM: Disable OOM killer during
+	system-wide power	transitions
+Date: Sun, 3 May 2009 11:47:18 +0200
+Message-ID: <20090503094718.GB10278__33077.4229173132$1241343979$gmane$org@elf.ucw.cz>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905020027.31244.rjw@sisk.pl>
+	<20090501160931.1dbd2abc.akpm@linux-foundation.org>
+	<200905021334.51261.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0905021958480.4983@localhost.localdomain>
+In-Reply-To: <200905021334.51261.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,74 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > Remove the shrinking of memory from the suspend-to-RAM code, where it is 
-> > not really necessary.
+> > Does the same apply to suspending?  If so, why?
 > 
-> Hmm. Shouldn't we do this _regardless_?
+> Because I think it doesn't work anyway.  User space processes are frozen and
+> effectively in TASK_UNINTERRUPTIBLE, so they won't be killed.
 > 
-> IOW, shouldn't this be a totally separate patch? It seems to be left-over 
-> from when we shared the same code-paths, and before the split of the STR 
-> and hibernate code?
+> > I think this is an OK change, as long as the only thing which is
+> > allocating memory is hibernation itself.  If random processes are still
+> > doing random memory allocations at this time then their failed memory
+> > allocation could be just as fatal as an oom-killing.  Moreso if they're
+> > s/bin/init or whatever.
 > 
-> IOW, shouldn't the very _first_ patch just be this part? That code doesn't 
-> make any sense anyway (that FREE_PAGE_NUMBER really _is_ totally 
-> arbitrary).
-> 
-> This part seems to be totally independent of all the other parts in your 
-> patch-series. No?
+> At this point all of the user space tasks are frozen.
 
-I'm not sure this one is a good idea: drivers will need to allocate
-memory during suspend/resume, and when processes are frozen/disk
-driver is suspended, normal memory management will no longer work.
+Well, many kernel threads still remain active. But it is true that OOM
+killer is unlikely to help.
 
-So, freeing 4M of memory before starting suspend seems like a good
-idea. That way those small alocations will not fail.
-								Pavel
-
-
-> @@ -188,9 +188,6 @@ static void suspend_test_finish(const char *label)
->  
->  #endif
->  
-> -/* This is just an arbitrary number */
-> -#define FREE_PAGE_NUMBER (100)
-> -
->  static struct platform_suspend_ops *suspend_ops;
->  
->  /**
-> @@ -241,24 +238,10 @@ static int suspend_prepare(void)
->  	if (error)
->  		goto Finish;
->  
-> -	if (suspend_freeze_processes()) {
-> -		error = -EAGAIN;
-> -		goto Thaw;
-> -	}
-> -
-> -	free_pages = global_page_state(NR_FREE_PAGES);
-> -	if (free_pages < FREE_PAGE_NUMBER) {
-> -		pr_debug("PM: free some memory\n");
-> -		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
-> -		if (nr_free_pages() < FREE_PAGE_NUMBER) {
-> -			error = -ENOMEM;
-> -			printk(KERN_ERR "PM: No enough memory\n");
-> -		}
-> -	}
-> +	error = suspend_freeze_processes();
->  	if (!error)
->  		return 0;
->  
-> - Thaw:
->  	suspend_thaw_processes();
->  	usermodehelper_enable();
->   Finish:
-
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
