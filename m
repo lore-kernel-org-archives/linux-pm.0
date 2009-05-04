@@ -1,7 +1,7 @@
-From: David Rientjes <rientjes@google.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Mon, 4 May 2009 09:44:46 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.0905040939400.10707__16280.0116035671$1241457664$gmane$org@chino.kir.corp.google.com>
+Date: Mon, 4 May 2009 12:01:03 -0700
+Message-ID: <20090504120103.c516ad18.akpm__22651.3476147831$1241464131$gmane$org@linux-foundation.org>
 References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040210.10153.rjw@sisk.pl>
 	<alpine.DEB.2.00.0905031734190.24114@chino.kir.corp.google.com>
 	<200905041702.23291.rjw@sisk.pl>
@@ -20,11 +20,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 4 May 2009, Rafael J. Wysocki wrote:
+On Mon, 4 May 2009 17:02:22 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
+> On Monday 04 May 2009, David Rientjes wrote:
+> > On Mon, 4 May 2009, Rafael J. Wysocki wrote:
+> > 
 > > > Index: linux-2.6/mm/page_alloc.c
 > > > ===================================================================
 > > > --- linux-2.6.orig/mm/page_alloc.c
@@ -47,18 +51,5 @@ On Mon, 4 May 2009, Rafael J. Wysocki wrote:
 > Well, what would you suggest?
 > 
 
-A couple things:
-
- - rebase this on mmotm so that it doesn't conflict with Mel Gorman's page
-   allocator speedup changes, and
-
- - avoid the final call to get_page_from_freelist() for 
-   !(gfp_mask & __GFP_NO_OOM_KILL) by adding a check for it alongside 
-   (gfp_mask & __GFP_FS) and !(gfp_mask & __GFP_NORETRY) because it should
-   really only catch parallel oom killings which won't happen in your 
-   suspend case since it uses ALLOC_WMARK_HIGH.
-
-The latter is important to avoid unnecessary dependencies among low-level 
-__GFP_* flags (although all __GFP_NO_OOM_KILL allocations should really 
-all be passing __GFP_NORETRY too to avoid relying too heavily on direct 
-reclaim).
+Did you check whether the existing __GFP_NORETRY will work as-is for
+this requirement?
