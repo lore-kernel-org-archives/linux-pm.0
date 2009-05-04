@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to
-	free memory (rev. 2)
-Date: Mon, 4 May 2009 21:52:14 +0200
-Message-ID: <200905042152.15564.rjw__32582.4762498543$1241467046$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031822.55260.rjw@sisk.pl>
-	<20090504093121.GB30306@elf.ucw.cz>
+Subject: Re: [PATCH 0/4] PM: Drop shrink_all_memory (rev. 2)
+	(was: Re: [PATCH 3/3] PM/Hibernate: Use memory allocations to
+	free memory)
+Date: Mon, 4 May 2009 21:53:36 +0200
+Message-ID: <200905042153.37069.rjw__10108.9212731042$1241467152$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl>
+	<20090504093310.GC30306@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090504093121.GB30306@elf.ucw.cz>
+In-Reply-To: <20090504093310.GC30306@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,64 +26,23 @@ Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@t
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 04 May 2009, Pavel Machek wrote:
-> On Sun 2009-05-03 18:22:54, Rafael J. Wysocki wrote:
-> > On Sunday 03 May 2009, Wu Fengguang wrote:
-> > > On Sun, May 03, 2009 at 02:24:20AM +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Modify the hibernation memory shrinking code so that it will make
-> > > > memory allocations to free memory instead of using an artificial
-> > > > memory shrinking mechanism for that.  Remove the shrinking of
-> > > > memory from the suspend-to-RAM code, where it is not really
-> > > > necessary.  Finally, remove the no longer used memory shrinking
-> > > > functions from mm/vmscan.c .
-> > > > 
-> > > > [rev. 2: Use the existing memory bitmaps for marking preallocated
-> > > >  image pages and use swsusp_free() from releasing them, introduce
-> > > >  GFP_IMAGE, add comments describing the memory shrinking strategy.]
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > ---
-> > > >  kernel/power/main.c     |   20 ------
-> > > >  kernel/power/snapshot.c |  132 +++++++++++++++++++++++++++++++++-----------
-> > > >  mm/vmscan.c             |  142 ------------------------------------------------
-> > > >  3 files changed, 101 insertions(+), 193 deletions(-)
-> > > > 
-> > > > Index: linux-2.6/kernel/power/snapshot.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/kernel/power/snapshot.c
-> > > > +++ linux-2.6/kernel/power/snapshot.c
-> > > > @@ -1066,41 +1066,97 @@ void swsusp_free(void)
-> > > >  	buffer = NULL;
-> > > >  }
-> > > >  
-> > > > +/* Helper functions used for the shrinking of memory. */
-> > > > +
-> > > > +#ifdef CONFIG_HIGHMEM
-> > > > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_HIGHMEM | __GFP_NO_OOM_KILL)
-> > > > +#else
-> > > > +#define GFP_IMAGE	(GFP_KERNEL | __GFP_NO_OOM_KILL)
-> > > > +#endif
-> > > 
-> > > The CONFIG_HIGHMEM test is not necessary: __GFP_HIGHMEM is always defined.
-> > > 
-> > > > +#define SHRINK_BITE	10000
-> > > 
-> > > This is ~40MB. A full scan of (for example) 8G pages will be time
-> > > consuming, not to mention we have to do it 2*(8G-500M)/40M = 384 times!
-> > > 
-> > > Can we make it a LONG_MAX? 
-> > 
-> > No, I don't think so.  The problem is the number of pages we'll need to copy
-> > is generally shrinking  as we allocate memory, so we can't do that in one shot.
-> > 
-> > We can make it a greater number, but I don't really think it would be a good
-> > idea to make it greater than 100 MB.
+> Hi!
 > 
-> Well, even 100MB is quite big: on 128MB machine, that will probably
-> mean freeing all the memory (instead of "as much as needed"). And that
-> memory needs to go to disk, so it will be slow.
+> > I know that swsusp_shrink_memory() has problems, that's why I'd like to get rid
+> > of it.
+> > 
+> > > I wonder if it's possible to free up the memory within 1s at all.
+> > 
+> > I'm not sure.
+> > 
+> > Apparently, the counting of saveable pages takes substantial time (0.5 s each
+> > iteration on my 64-bit test box), so we can improve that by limiting the number
+> > of iterations.
+> 
+> We could increase step size after each step. Free in 40MB step, then
+> 80MB step, then 160MB step, ...
 
-But we're going to free it anyway?
+Why not just one step?  It doesn't seem to hurt performance AFAICS.
 
+Thanks,
 Rafael
