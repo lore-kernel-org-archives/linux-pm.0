@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/5] PM: Drop shrink_all_memory (rev. 3)
-Date: Mon, 4 May 2009 02:08:41 +0200
-Message-ID: <200905040208.43040.rjw__28573.1626594954$1241396873$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<20090503130818.GC9661@localhost> <200905031830.49690.rjw@sisk.pl>
+Subject: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Mon, 4 May 2009 02:10:09 +0200
+Message-ID: <200905040210.10153.rjw__6166.4777611897$1241396890$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl>
+	<200905040208.43040.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905031830.49690.rjw@sisk.pl>
+In-Reply-To: <200905040208.43040.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,69 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Wu Fengguang <fengguang.wu@intel.com>, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 03 May 2009, Rafael J. Wysocki wrote:
-> On Sunday 03 May 2009, Wu Fengguang wrote:
-> > 
-> > Hi Rafael,
-> 
-> Hi,
-> 
-> > I happened to be doing some benchmarks on the older shrink_all_memory(),
-> > Hopefully it can be a useful reference point for the new design.
-> > 
-> > The current swsusp_shrink_memory()/shrink_all_memory() are terribly
-> > inefficient: it takes 7-9s to free up 1.4G memory:
-> 
-> One reason may be that it takes too many steps to do it,
-> 
-> > [  131.899389] PM: Freed 1413380 kbytes in 7.03 seconds (201.04 MB/s)
-> > [  732.757916] PM: Freed 1490116 kbytes in 9.37 seconds (159.03 MB/s)
-> 
-> because the new way doesn't seem to do any better.
-> 
-> > Below are the logs I collected by injecting printks. There are
-> > basically two major problems:
-> > - swsusp_shrink_memory() scans the whole 2G memory again and again;
-> > - shrink_all_memory() is slow. It won't reclaim pages at all with
-> >   small priority values, because it's batching size is 10000 pages.
-> 
-> I know that swsusp_shrink_memory() has problems, that's why I'd like to get rid
-> of it.
-> 
-> > I wonder if it's possible to free up the memory within 1s at all.
-> 
-> I'm not sure.
-> 
-> Apparently, the counting of saveable pages takes substantial time (0.5 s each
-> iteration on my 64-bit test box), so we can improve that by limiting the number
-> of iterations.
-> 
-> Well, perhaps we can do it all in one shot after all, I'll think how to do that.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-I've changed swsusp_shrink_memory() to preallocate all of the pages in one
-iteration.  Although it doesn't seem to improve the speed of memory shrinking,
-the function is simpler in this form.
+> > Remind me: why can't we just allocate N pages at suspend-time?
+> 
+> We need half of memory free. The reason we can't "just allocate" is
+> probably OOM killer; but my memories are quite weak :-(.
 
-Anyway, updated patch series follows:
+hm.  You'd think that with our splendid range of __GFP_foo falgs, there
+would be some combo which would suit this requirement but I can't
+immediately spot one.
 
-[1/5] - the Andrew's patch introducing __GFP_NO_OOM_KILL (I decided it would be
-        better do it this way in this particular case.  The fact that the OOM
-        killer is not going to work after tasks have been frozen is a different
-        issue.)
+We can always add another I guess.  Something like...
 
-[2/5] - move swsusp_shrink_memory to snapshot.c, no major changes
+[rjw: fixed white space]
 
-[3/5] - remove the shrinking of memory from suspend code (in a separate patch
-         as requested by Linus)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/gfp.h |    3 ++-
+ mm/page_alloc.c     |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-[4/5] - use memory allocations to for making the room for the image
-
-[5/5] - do not release all memory allocated by [4/5] and use it for
-        creating the image directly (some allocated memory is released).
-
-Thanks,
-Rafael
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1620,7 +1620,8 @@ nofail_alloc:
+ 		}
+ 
+ 		/* The OOM killer will not help higher order allocs so fail */
+-		if (order > PAGE_ALLOC_COSTLY_ORDER) {
++		if (order > PAGE_ALLOC_COSTLY_ORDER ||
++				(gfp_mask & __GFP_NO_OOM_KILL)) {
+ 			clear_zonelist_oom(zonelist, gfp_mask);
+ 			goto nopage;
+ 		}
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -51,8 +51,9 @@ struct vm_area_struct;
+ #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+ #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
++#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
+ 
+-#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
++#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+ 
+ /* This equals 0, but use constants in case they ever change */
