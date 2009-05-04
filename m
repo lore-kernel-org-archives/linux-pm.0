@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/4] PM/Hibernate: Use memory allocations to
-	free memory (rev. 2)
-Date: Sun, 3 May 2009 18:35:06 +0200
-Message-ID: <200905031835.06928.rjw__40752.1403897137$1241368663$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<alpine.LFD.2.01.0905021958480.4983@localhost.localdomain>
-	<20090503093659.GA10278@elf.ucw.cz>
+Subject: [PATCH 3/5] PM/Suspend: Do not shrink memory before
+	suspend
+Date: Mon, 4 May 2009 02:12:01 +0200
+Message-ID: <200905040212.02280.rjw__6169.74722729555$1241396849$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl>
+	<200905040208.43040.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090503093659.GA10278@elf.ucw.cz>
+In-Reply-To: <200905040208.43040.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,43 +20,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, kernel-testers@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, kernel-testers@vger.kernel.org, torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 03 May 2009, Pavel Machek wrote:
-> Hi!
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Hi,
+Remove the shrinking of memory from the suspend-to-RAM code, where
+it is not really necessary.
 
-> > > Remove the shrinking of memory from the suspend-to-RAM code, where it is 
-> > > not really necessary.
-> > 
-> > Hmm. Shouldn't we do this _regardless_?
-> > 
-> > IOW, shouldn't this be a totally separate patch? It seems to be left-over 
-> > from when we shared the same code-paths, and before the split of the STR 
-> > and hibernate code?
-> > 
-> > IOW, shouldn't the very _first_ patch just be this part? That code doesn't 
-> > make any sense anyway (that FREE_PAGE_NUMBER really _is_ totally 
-> > arbitrary).
-> > 
-> > This part seems to be totally independent of all the other parts in your 
-> > patch-series. No?
-> 
-> I'm not sure this one is a good idea: drivers will need to allocate
-> memory during suspend/resume, and when processes are frozen/disk
-> driver is suspended, normal memory management will no longer work.
-> 
-> So, freeing 4M of memory before starting suspend seems like a good
-> idea. That way those small alocations will not fail.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c |   20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
 
-I don't think we've ever had problems with the drivers having too little
-memory to suspend.
-
-I'm opting for removing this code and seeing if that leads to any regressions.
-If it does, we can still get some free memory by allocating and releasing it.
-
-Thanks,
-Rafael
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -188,9 +188,6 @@ static void suspend_test_finish(const ch
+ 
+ #endif
+ 
+-/* This is just an arbitrary number */
+-#define FREE_PAGE_NUMBER (100)
+-
+ static struct platform_suspend_ops *suspend_ops;
+ 
+ /**
+@@ -226,7 +223,6 @@ int suspend_valid_only_mem(suspend_state
+ static int suspend_prepare(void)
+ {
+ 	int error;
+-	unsigned int free_pages;
+ 
+ 	if (!suspend_ops || !suspend_ops->enter)
+ 		return -EPERM;
+@@ -241,24 +237,10 @@ static int suspend_prepare(void)
+ 	if (error)
+ 		goto Finish;
+ 
+-	if (suspend_freeze_processes()) {
+-		error = -EAGAIN;
+-		goto Thaw;
+-	}
+-
+-	free_pages = global_page_state(NR_FREE_PAGES);
+-	if (free_pages < FREE_PAGE_NUMBER) {
+-		pr_debug("PM: free some memory\n");
+-		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
+-		if (nr_free_pages() < FREE_PAGE_NUMBER) {
+-			error = -ENOMEM;
+-			printk(KERN_ERR "PM: No enough memory\n");
+-		}
+-	}
++	error = suspend_freeze_processes();
+ 	if (!error)
+ 		return 0;
+ 
+- Thaw:
+ 	suspend_thaw_processes();
+ 	usermodehelper_enable();
+  Finish:
