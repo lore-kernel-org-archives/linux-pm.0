@@ -1,19 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Tue, 05 May 2009 16:15:37 -0700
-Message-ID: <87eiv35eg6.fsf__36428.7020326175$1241565517$gmane$org@deeprootsystems.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<20090504235405.647772ed.akpm@linux-foundation.org>
-	<87ocu7a6ng.fsf@deeprootsystems.com>
-	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Wed, 6 May 2009 01:20:34 +0200
+Message-ID: <200905060120.35698.rjw__27427.5953801864$1241565845$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060019.36542.rjw@sisk.pl>
+	<20090505153739.2cc9d244.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
-	("Arve =?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Tue\, 5 May 2009
-	13\:58\:36 -0700")
+In-Reply-To: <20090505153739.2cc9d244.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,71 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Arve Hj=F8nnev=E5g <arve@android.com> writes:
+On Wednesday 06 May 2009, Andrew Morton wrote:
+> On Wed, 6 May 2009 00:19:35 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > > > +			&& !processes_are_frozen()) {
+> > > >  		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+> > > >  			schedule_timeout_uninterruptible(1);
+> > > >  			goto restart;
+> > > 
+> > > Cool, that looks like the semantics of __GFP_NO_OOM_KILL without requiring 
+> > > a new gfp flag.  Thanks.
+> > 
+> > Well, you're welcome.
+> > 
+> > BTW, I think that Andrew was actually right when he asked if I checked whether
+> > the existing __GFP_NORETRY would work as-is for __GFP_FS set and
+> > __GFP_NORETRY unset.  Namely, in that case we never reach the code before
+> > nopage: that checks __GFP_NORETRY, do we?
+> > 
+> > So I think we shouldn't modify the 'else if' condition above and check for
+> > !processes_are_frozen() at the beginning of the block below.
+> 
+> Confused.
+> 
+> I'm suspecting that hibernation can allocate its pages with
+> __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
+> will dtrt: no oom-killings.
+> 
+> In which case, processes_are_frozen() is not needed at all?
 
-> On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->> Andrew Morton <akpm@linux-foundation.org> writes:
->>
->>> On Mon, =A04 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsyst=
-ems.com> wrote:
->>>
->>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->>>> should not be disabled for suspend.
->>>>
->>>
->>> Why not?
->>>
->>
->> If an interrupt is a wakeup source, and it is disabled at the chip
->> level, it will no longer generate interrupts, and thus no longer wake
->> up the system.
->>
->> I'd be interested in hearing why wakeup interrupts should be disabled
->> during suspend.
->>
+__GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
+the combination.
 
-[...]
-
->>>
->>> If this fixes some bug then please provide a description of that bug?
->>
->> The bug is that on TI OMAP, interrupts that are used for wakeup events
->> are disabled by this code causing the system to no longer wake up.
->
-> What do you do if the interrupt triggers right after your driver has
-> returned from its late suspend hook?  =
-
-
-If it's a wakeup IRQ, I assume you want it to prevent suspend.
-
-But I don't see how that can happen in the current code. IIUC, by the
-time your late suspend hook is run, your device IRQ is already
-disabled, so it won't trigger an interrupt that will be caught by
-check_wakeup_irqs() anyways.
-
-> By leaving the interrupt enabled you prevent check_wakeup_irqs from
-> aborting suspend.
-
-Yes, but it doesn't prevent platform-specific code from aborting
-suspend.  On OMAP, the platform-specific suspend enter hook does a
-last check for pending enabled interrupts very late in the sequence.
-It seems to me that the platform specific code is the best place to do
-this.
-
-On a related note, what happens if your device triggers an interrupt
-between check_wakeup_irqs() and the actual suspend?  Since it is a
-wakeup IRQ, wouldn't you want it to abort the suspend too?
-
-But all this discussion still leaves the bigger question unanswered:
-
-Without my patch, how do we expect wakeup-enabled device IRQs to:
-
-1) abort a suspend between suspend_device_irqs() and actual HW suspend, and
-2) wake up the system *after it is suspended*
-
-Kevin
+Anyway, even if the hibernation code itself doesn't trigger the OOM killer,
+but anyone else allocates memory in parallel or after we've preallocated the
+image memory, that may still trigger it.  So it seems processes_are_frozen()
+may still be useful?
