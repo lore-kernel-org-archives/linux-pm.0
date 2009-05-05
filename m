@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Wed, 6 May 2009 01:27:23 +0200
-Message-ID: <200905060127.24777.rjw__22426.6910845929$1241566206$gmane$org@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
-	<87eiv35eg6.fsf@deeprootsystems.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory	unnecessarily (rev. 2)
+Date: Wed, 6 May 2009 07:40:56 +0800
+Message-ID: <20090505234056.GA6778__42100.869122851$1241567095$gmane$org@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
+	<20090505022427.GA10880@localhost>
+	<20090505024646.GA14621@localhost> <200905060107.45345.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87eiv35eg6.fsf@deeprootsystems.com>
 Content-Disposition: inline
+In-Reply-To: <200905060107.45345.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,65 +21,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 06 May 2009, Kevin Hilman wrote:
-> Arve Hj=F8nnev=E5g <arve@android.com> writes:
-> =
+On Wed, May 06, 2009 at 07:07:44AM +0800, Rafael J. Wysocki wrote:
+> On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > On Tue, May 05, 2009 at 10:24:27AM +0800, Wu Fengguang wrote:
+> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Since the hibernation code is now going to use allocations of memory
+> > > > to create enough room for the image, it can also use the page frames
+> > > > allocated at this stage as image page frames.  The low-level
+> > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > allows us to avoid freeing a great number of pages and allocating
+> > > > these same pages once again later, so it generally is worth doing.
+> > > > 
+> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > >  many pages as needed to get the right image size in one shot (the
+> > > >  excessive allocated pages are released afterwards).]
+> > > 
+> > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > > 
+> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> >  
+> > > For you reference, here is the free memory before/after
+> > > hibernate_preallocate_memory():
+> > > 
+> > >         # free
+> > >                      total       used       free     shared    buffers     cached
+> > >         Mem:          1933       1917         15          0          0       1845
+> > >         -/+ buffers/cache:         72       1861
+> > >         Swap:            0          0          0
+> > > 
+> > >         # free
+> > >                      total       used       free     shared    buffers     cached
+> > >         Mem:          1933        920       1012          0          0        356
+> > >         -/+ buffers/cache:        563       1369
+> > >         Swap:            0          0          0
+> > > 
+> > > It seems that the preallocated memory is not freed on -ENOMEM.
+> > 
+> > Ah, this was my fault.
+> > 
+> > I used to do this debugging trick:
+> > 
+> >         @@ -1207,7 +1207,7 @@ int hibernate_preallocate_memory(void)
+> >                         pages, size);
+> >                 swsusp_show_speed(&start, &stop, pages, "Allocated");
+> > 
+> >         -       return 0;
+> >         +       return -ENOMEM;
+> > 
+> >           err_out:
+> >                 printk(KERN_CONT "\n");
+> > 
+> > That "return -ENOMEM" should be "error = -ENOMEM" :-)
+> > 
+> > Here is one more run:
+> > 
+> > [  194.016991] PM: Preallocating image memory ... done (allocated 383897 pages, 128000 image pages kept)
+> > [  196.505999] PM: Allocated 1535588 kbytes in 2.47 seconds (621.69 MB/s)
+> > 
+> > Now the free report is back to normal:
+> > 
+> > # free
+> >              total       used       free     shared    buffers     cached
+> > Mem:          1933         74       1858          0          0         15
 
-> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-> > <khilman@deeprootsystems.com> wrote:
-> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >>
-> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsyst=
-ems.com> wrote:
-> >>>
-> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
-> >>>> should not be disabled for suspend.
-> >>>>
-> >>>
-> >>> Why not?
-> >>>
-> >>
-> >> If an interrupt is a wakeup source, and it is disabled at the chip
-> >> level, it will no longer generate interrupts, and thus no longer wake
-> >> up the system.
-> >>
-> >> I'd be interested in hearing why wakeup interrupts should be disabled
-> >> during suspend.
-
-That depends on whether or not they are used for anything else than wake-up.
-
-> =
-
-> [...]
-> =
-
-> >>>
-> >>> If this fixes some bug then please provide a description of that bug?
-> >>
-> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
-> >> are disabled by this code causing the system to no longer wake up.
-> >
-> > What do you do if the interrupt triggers right after your driver has
-> > returned from its late suspend hook?  =
-
-> =
-
-> If it's a wakeup IRQ, I assume you want it to prevent suspend.
-> =
-
-> But I don't see how that can happen in the current code. IIUC, by the
-> time your late suspend hook is run, your device IRQ is already
-> disabled, so it won't trigger an interrupt that will be caught by
-> check_wakeup_irqs() anyways.
-
-My understanding of __disable_irq() was that it didn't actually disable the
-IRQ at the hardware level, allowing the CPU to actually receive the interru=
-pt
-and acknowledge it, but preventing the device driver for receiving it.  Does
-it work differently on the affected systems?
-
-Rafael
+The above 'free' still exposed something wrong: only 74M memory are left,
+instead of image_size=500M memory. I'm prepared to test your updated patches :-)
