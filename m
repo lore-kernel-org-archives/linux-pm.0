@@ -1,17 +1,19 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
-	suspend	blockers from user-space
-Date: Tue, 5 May 2009 22:16:24 +0200
-Message-ID: <20090505201624.GH1379@ucw.cz>
+Subject: Re: [PATCH 4/9] Input: Block suspend while event queue
+	is not	empty.
+Date: Tue, 5 May 2009 22:02:30 +0200
+Message-ID: <20090505200230.GF1379@ucw.cz>
 References: <1241583529-5092-1-git-send-email-arve@android.com>
 	<1241583529-5092-2-git-send-email-arve@android.com>
 	<1241583529-5092-3-git-send-email-arve@android.com>
+	<1241583529-5092-4-git-send-email-arve@android.com>
+	<1241583529-5092-5-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1241583529-5092-3-git-send-email-arve@android.com>
+In-Reply-To: <1241583529-5092-5-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,38 +27,36 @@ To: Arve Hj??nnev??g <arve@android.com>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-05-05 21:18:42, Arve Hj??nnev??g wrote:
-> Add a misc device, "suspend_blocker", that allows user-space processes
-> to block auto suspend. The device has ioctls to create a suspend_blocker,
-> and to block and unblock suspend. To delete the suspend_blocker, close
-> the device.
+
+> Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker that will block
+> suspend while the event queue is not empty. This allows userspace code to
+> process input events while the device appears to be asleep.
 > 
+> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
 
-> +static int create_user_suspend_blocker(struct file *file, void __user *name,
-> +				 size_t name_len)
-> +{
-> +	struct user_suspend_blocker *bl;
-> +	if (file->private_data)
-> +		return -EBUSY;
-> +	bl = kzalloc(sizeof(*bl) + name_len + 1, GFP_KERNEL);
-...
-> +static long user_suspend_blocker_ioctl(struct file *file, unsigned int cmd,
-> +				unsigned long _arg)
-> +{
-> +	void __user *arg = (void __user *)_arg;
-> +	struct user_suspend_blocker *bl;
-> +	long ret;
+Looks ok to  me, but I guess you should cc input maintainers.
+
+> @@ -582,6 +591,19 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
+>  		else
+>  			return evdev_ungrab(evdev, client);
+>  
+> +	case EVIOCGSUSPENDBLOCK:
+> +		return put_user(client->use_suspend_blocker, ip);
 > +
-> +	mutex_lock(&ioctl_lock);
-> +	if ((cmd & ~IOCSIZE_MASK) == SUSPEND_BLOCKER_IOCTL_INIT(0)) {
-> +		ret = create_user_suspend_blocker(file, arg, _IOC_SIZE(cmd));
-> +		goto done;
-> +	}
+> +	case EVIOCSSUSPENDBLOCK:
+> +		spin_lock_irq(&client->buffer_lock);
+> +		if (!client->use_suspend_blocker && p)
+> +			suspend_blocker_init(&client->suspend_blocker, "evdev");
+> +		else if (client->use_suspend_blocker && !p)
+> +			suspend_blocker_destroy(&client->suspend_blocker);
+> +		client->use_suspend_blocker = !!p;
+> +		spin_unlock_irq(&client->buffer_lock);
+> +		return 0;
 
-Wait a moment, wtf is this? Not one ioctl but one ioctl per length of
-string?!
+This returns 0 even when you destroy already destroyed blocker
+(etc). Is that ok?
 
-								Pavel
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
