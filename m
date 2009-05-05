@@ -1,8 +1,8 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
 	suspend	blockers from user-space
-Date: Tue, 5 May 2009 22:12:25 +0200
-Message-ID: <20090505201225.GG1379@ucw.cz>
+Date: Tue, 5 May 2009 22:16:24 +0200
+Message-ID: <20090505201624.GH1379@ucw.cz>
 References: <1241583529-5092-1-git-send-email-arve@android.com>
 	<1241583529-5092-2-git-send-email-arve@android.com>
 	<1241583529-5092-3-git-send-email-arve@android.com>
@@ -25,15 +25,12 @@ To: Arve Hj??nnev??g <arve@android.com>
 Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
+On Tue 2009-05-05 21:18:42, Arve Hj??nnev??g wrote:
 > Add a misc device, "suspend_blocker", that allows user-space processes
 > to block auto suspend. The device has ioctls to create a suspend_blocker,
 > and to block and unblock suspend. To delete the suspend_blocker, close
 > the device.
-
-Rafael proposed write() interface. I don't think you answered that.
-
+> 
 
 > +static int create_user_suspend_blocker(struct file *file, void __user *name,
 > +				 size_t name_len)
@@ -42,33 +39,24 @@ Rafael proposed write() interface. I don't think you answered that.
 > +	if (file->private_data)
 > +		return -EBUSY;
 > +	bl = kzalloc(sizeof(*bl) + name_len + 1, GFP_KERNEL);
-> +	if (!bl)
-> +		return -ENOMEM;
-> +	if (copy_from_user(bl->name, name, name_len))
-> +		goto err_fault;
-> +	suspend_blocker_init(&bl->blocker, bl->name);
-> +	file->private_data = bl;
-> +	return 0;
-
-kzalloc on user-supplied argument. Sounds like bad idea.
-
-Aha. And probably integer overflow in the same line. Ouch.
-
-Plus you actually 'trust' the string from userspace. Someone passes
-"evdev" there and can masquerade as a part of kernel.
-
-> +static int user_suspend_blocker_release(struct inode *inode, struct file *file)
+...
+> +static long user_suspend_blocker_ioctl(struct file *file, unsigned int cmd,
+> +				unsigned long _arg)
 > +{
-> +	struct user_suspend_blocker *bl = file->private_data;
-> +	if (!bl)
-> +		return 0;
-> +	suspend_blocker_destroy(&bl->blocker);
-> +	kfree(bl);
-> +	return 0;
-> +}
+> +	void __user *arg = (void __user *)_arg;
+> +	struct user_suspend_blocker *bl;
+> +	long ret;
+> +
+> +	mutex_lock(&ioctl_lock);
+> +	if ((cmd & ~IOCSIZE_MASK) == SUSPEND_BLOCKER_IOCTL_INIT(0)) {
+> +		ret = create_user_suspend_blocker(file, arg, _IOC_SIZE(cmd));
+> +		goto done;
+> +	}
 
-What happens if someone does dup() on such file descriptor? 
+Wait a moment, wtf is this? Not one ioctl but one ioctl per length of
+string?!
 
+								Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
