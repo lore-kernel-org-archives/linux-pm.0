@@ -1,16 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Tue, 5 May 2009 13:58:36 -0700
-Message-ID: <d6200be20905051358m34c2be02ped84ad4158cd9865__35076.6994212337$1241557368$gmane$org@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<20090504235405.647772ed.akpm@linux-foundation.org>
-	<87ocu7a6ng.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Wed, 6 May 2009 00:19:35 +0200
+Message-ID: <200905060019.36542.rjw__45323.6567708247$1241562178$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905050023.38064.rjw@sisk.pl>
+	<alpine.DEB.2.00.0905041735590.24101@chino.kir.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87ocu7a6ng.fsf@deeprootsystems.com>
+In-Reply-To: <alpine.DEB.2.00.0905041735590.24101@chino.kir.corp.google.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,56 +19,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: David Rientjes <rientjes@google.com>
+Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
->
->> On Mon, =A04 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsyste=
-ms.com> wrote:
->>
->>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->>> should not be disabled for suspend.
->>>
->>
->> Why not?
->>
->
-> If an interrupt is a wakeup source, and it is disabled at the chip
-> level, it will no longer generate interrupts, and thus no longer wake
-> up the system.
->
-> I'd be interested in hearing why wakeup interrupts should be disabled
-> during suspend.
->
->>>
->>> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
->>> index 638d8be..99113bd 100644
->>> --- a/kernel/irq/pm.c
->>> +++ b/kernel/irq/pm.c
->>> @@ -28,6 +28,9 @@ void suspend_device_irqs(void)
->>> =A0 =A0 =A0for_each_irq_desc(irq, desc) {
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned long flags;
->>>
->>> + =A0 =A0 =A0 =A0 =A0 =A0if (desc->status & IRQ_WAKEUP)
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0continue;
->>> +
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0spin_lock_irqsave(&desc->lock, flags);
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0__disable_irq(desc, irq, true);
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0spin_unlock_irqrestore(&desc->lock, flags);
->>
->> If this fixes some bug then please provide a description of that bug?
->
-> The bug is that on TI OMAP, interrupts that are used for wakeup events
-> are disabled by this code causing the system to no longer wake up.
+On Tuesday 05 May 2009, David Rientjes wrote:
+> On Tue, 5 May 2009, Rafael J. Wysocki wrote:
+> 
+> > Index: linux-2.6/kernel/power/process.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/process.c
+> > +++ linux-2.6/kernel/power/process.c
+> > @@ -19,6 +19,8 @@
+> >   */
+> >  #define TIMEOUT	(20 * HZ)
+> >  
+> > +static bool tasks_frozen;
+> > +
+> >  static inline int freezeable(struct task_struct * p)
+> >  {
+> >  	if ((p == current) ||
+> > @@ -120,6 +122,10 @@ int freeze_processes(void)
+> >   Exit:
+> >  	BUG_ON(in_atomic());
+> >  	printk("\n");
+> > +
+> > +	if (!error)
+> > +		tasks_frozen = true;
+> > +
+> >  	return error;
+> >  }
+> >  
+> > @@ -145,6 +151,8 @@ static void thaw_tasks(bool nosig_only)
+> >  
+> >  void thaw_processes(void)
+> >  {
+> > +	tasks_frozen = false;
+> > +
+> >  	printk("Restarting tasks ... ");
+> >  	thaw_tasks(true);
+> >  	thaw_tasks(false);
+> > @@ -152,3 +160,7 @@ void thaw_processes(void)
+> >  	printk("done.\n");
+> >  }
+> >  
+> > +bool processes_are_frozen(void)
+> > +{
+> > +	return tasks_frozen;
+> > +}
+> > Index: linux-2.6/include/linux/freezer.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/freezer.h
+> > +++ linux-2.6/include/linux/freezer.h
+> > @@ -50,6 +50,7 @@ extern int thaw_process(struct task_stru
+> >  extern void refrigerator(void);
+> >  extern int freeze_processes(void);
+> >  extern void thaw_processes(void);
+> > +extern bool processes_are_frozen(void);
+> >  
+> >  static inline int try_to_freeze(void)
+> >  {
+> > @@ -170,6 +171,7 @@ static inline int thaw_process(struct ta
+> >  static inline void refrigerator(void) {}
+> >  static inline int freeze_processes(void) { BUG(); return 0; }
+> >  static inline void thaw_processes(void) {}
+> > +static inline bool processes_are_frozen(void) { return false; }
+> >  
+> >  static inline int try_to_freeze(void) { return 0; }
+> >  
+> > Index: linux-2.6/mm/page_alloc.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/page_alloc.c
+> > +++ linux-2.6/mm/page_alloc.c
+> > @@ -46,6 +46,7 @@
+> >  #include <linux/page-isolation.h>
+> >  #include <linux/page_cgroup.h>
+> >  #include <linux/debugobjects.h>
+> > +#include <linux/freezer.h>
+> >  
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/div64.h>
+> > @@ -1599,7 +1600,8 @@ nofail_alloc:
+> >  					zonelist, high_zoneidx, alloc_flags);
+> >  		if (page)
+> >  			goto got_pg;
+> > -	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+> > +	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)
+> > +			&& !processes_are_frozen()) {
+> >  		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+> >  			schedule_timeout_uninterruptible(1);
+> >  			goto restart;
+> 
+> Cool, that looks like the semantics of __GFP_NO_OOM_KILL without requiring 
+> a new gfp flag.  Thanks.
 
-What do you do if the interrupt triggers right after your driver has
-returned from its late suspend hook? By leaving the interrupt enabled
-you prevent check_wakeup_irqs from aborting suspend.
+Well, you're welcome.
 
--- =
+BTW, I think that Andrew was actually right when he asked if I checked whether
+the existing __GFP_NORETRY would work as-is for __GFP_FS set and
+__GFP_NORETRY unset.  Namely, in that case we never reach the code before
+nopage: that checks __GFP_NORETRY, do we?
 
-Arve Hj=F8nnev=E5g
+So I think we shouldn't modify the 'else if' condition above and check for
+!processes_are_frozen() at the beginning of the block below.
+
+Thanks,
+Rafael
