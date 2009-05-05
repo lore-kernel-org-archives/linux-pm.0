@@ -1,17 +1,16 @@
-From: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
-	preallocated memory	unnecessarily (rev. 2)
-Date: Tue, 5 May 2009 10:46:46 +0800
-Message-ID: <20090505024646.GA14621__25546.8652620495$1241491747$gmane$org@localhost>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl>
-	<200905040208.43040.rjw@sisk.pl> <200905040222.39062.rjw@sisk.pl>
-	<20090505022427.GA10880@localhost>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Mon, 4 May 2009 20:48:09 -0700
+Message-ID: <d6200be20905042048h4582e155sb2640e741a67eab6@mail.gmail.com>
+References: <1239759692-28617-1-git-send-email-arve@android.com>
+	<200904300034.09837.rjw@sisk.pl>
+	<d6200be20904291749v55f5e425jcbb570c09a3901d1@mail.gmail.com>
+	<200905021414.32565.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090505022427.GA10880@localhost>
+In-Reply-To: <200905021414.32565.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,73 +21,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 05, 2009 at 10:24:27AM +0800, Wu Fengguang wrote:
-> On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Since the hibernation code is now going to use allocations of memory
-> > to create enough room for the image, it can also use the page frames
-> > allocated at this stage as image page frames.  The low-level
-> > hibernation code needs to be rearranged for this purpose, but it
-> > allows us to avoid freeing a great number of pages and allocating
-> > these same pages once again later, so it generally is worth doing.
-> > 
-> > [rev. 2: Change the strategy of preallocating memory to allocate as
-> >  many pages as needed to get the right image size in one shot (the
-> >  excessive allocated pages are released afterwards).]
-> 
-> Rafael, I tried out your patches and found doubled memory shrink speed!
-> 
-> [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
- 
-> For you reference, here is the free memory before/after
-> hibernate_preallocate_memory():
-> 
->         # free
->                      total       used       free     shared    buffers     cached
->         Mem:          1933       1917         15          0          0       1845
->         -/+ buffers/cache:         72       1861
->         Swap:            0          0          0
-> 
->         # free
->                      total       used       free     shared    buffers     cached
->         Mem:          1933        920       1012          0          0        356
->         -/+ buffers/cache:        563       1369
->         Swap:            0          0          0
-> 
-> It seems that the preallocated memory is not freed on -ENOMEM.
+2009/5/2 Rafael J. Wysocki <rjw@sisk.pl>:
+> [--snip--]
+>> >
+>> >> +
+>> >> +retry:
+>> >> + =A0 =A0 if (suspend_is_blocked()) {
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: abort sus=
+pend\n");
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 goto abort;
+>> >
+>> > If that were in a loop you could just use 'break' here.
+>>
+>> do you think this is better:
+>> while(1) {
+>> =A0 =A0 =A0 =A0 if (exception1) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+>> =A0 =A0 =A0 =A0 }
+>> =A0 =A0 =A0 =A0 ...
+>> =A0 =A0 =A0 =A0 if (exception2) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+>> =A0 =A0 =A0 =A0 }
+>> =A0 =A0 =A0 =A0 break;
+>> }
+>
+> I rather thought of
+>
+> for (;;) {
+> =A0 =A0 =A0 =A0 if (exception1) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> =A0 =A0 =A0 =A0 }
+> =A0 =A0 =A0 =A0 ...
+> =A0 =A0 =A0 =A0 if (!exception2)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> =A0 =A0 =A0 =A0 ...
+> }
 
-Ah, this was my fault.
+I don't think that is much better, but I changed the first patch to
+use a loop anyway. The loop is then removed (as before) in the patch
+that adds the stats.
 
-I used to do this debugging trick:
+>
+> [--snip--]
+>> >> +static int suspend_block_suspend(struct sys_device *dev, pm_message_=
+t state)
+>> >> +{
+>> >> + =A0 =A0 int ret =3D suspend_is_blocked() ? -EAGAIN : 0;
+>> >> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_block_suspend return %d\n"=
+, ret);
+>> >> + =A0 =A0 return ret;
+>> >> +}
+>> >> +
+>> >> +static struct sysdev_class suspend_block_sysclass =3D {
+>> >> + =A0 =A0 .name =3D "suspend_block",
+>> >> + =A0 =A0 .suspend =3D suspend_block_suspend,
+>> >> +};
+>> >> +static struct sys_device suspend_block_sysdev =3D {
+>> >> + =A0 =A0 .cls =3D &suspend_block_sysclass,
+>> >> +};
+>> >> +
+>> >
+>> > Hmm. =A0Perhaps add the suspend_is_blocked() check at the beginning of
+>> > sysdev_suspend() instead of this? =A0Surely you don't want to suspend
+>> > any sysdevs with any suspend blockers active, right?
+>>
+>> You could make the same argument for any device. Using a sysdev makes
+>> the patch easier to apply.
+>
+> You've lost me here. :-)
 
-        @@ -1207,7 +1207,7 @@ int hibernate_preallocate_memory(void)
-                        pages, size);
-                swsusp_show_speed(&start, &stop, pages, "Allocated");
+You have been making other changes to those files which made it a moving ta=
+rget.
 
-        -       return 0;
-        +       return -ENOMEM;
+> AFAICT, the only purpose of the sysdev class above is to abort suspend if
+> suspend_is_blocked() returns 'true'. =A0If that is correct, then IMO you =
+could
+> achieve the same goal by calling suspend_is_blocked() directly from
+> sysdev_suspend(), right before check_wakeup_irqs(). =A0Or am I missing an=
+ything?
 
-          err_out:
-                printk(KERN_CONT "\n");
+The stats patch also used it to track wakeup events, but I have added
+another call for this to get rid of the sysdev.
 
-That "return -ENOMEM" should be "error = -ENOMEM" :-)
+-- =
 
-Here is one more run:
-
-[  194.016991] PM: Preallocating image memory ... done (allocated 383897 pages, 128000 image pages kept)
-[  196.505999] PM: Allocated 1535588 kbytes in 2.47 seconds (621.69 MB/s)
-
-Now the free report is back to normal:
-
-# free
-             total       used       free     shared    buffers     cached
-Mem:          1933         74       1858          0          0         15
-
-
-Thanks,
-Fengguang
+Arve Hj=F8nnev=E5g
