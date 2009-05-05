@@ -1,16 +1,14 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Mon, 4 May 2009 20:48:09 -0700
-Message-ID: <d6200be20905042048h4582e155sb2640e741a67eab6@mail.gmail.com>
-References: <1239759692-28617-1-git-send-email-arve@android.com>
-	<200904300034.09837.rjw@sisk.pl>
-	<d6200be20904291749v55f5e425jcbb570c09a3901d1@mail.gmail.com>
-	<200905021414.32565.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Mon, 4 May 2009 23:54:05 -0700
+Message-ID: <20090504235405.647772ed.akpm__403.793695341115$1241506642$gmane$org@linux-foundation.org>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905021414.32565.rjw@sisk.pl>
+In-Reply-To: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,97 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2009/5/2 Rafael J. Wysocki <rjw@sisk.pl>:
-> [--snip--]
->> >
->> >> +
->> >> +retry:
->> >> + =A0 =A0 if (suspend_is_blocked()) {
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend: abort sus=
-pend\n");
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 goto abort;
->> >
->> > If that were in a loop you could just use 'break' here.
->>
->> do you think this is better:
->> while(1) {
->> =A0 =A0 =A0 =A0 if (exception1) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
->> =A0 =A0 =A0 =A0 }
->> =A0 =A0 =A0 =A0 ...
->> =A0 =A0 =A0 =A0 if (exception2) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> =A0 =A0 =A0 =A0 }
->> =A0 =A0 =A0 =A0 break;
->> }
->
-> I rather thought of
->
-> for (;;) {
-> =A0 =A0 =A0 =A0 if (exception1) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
-> =A0 =A0 =A0 =A0 }
-> =A0 =A0 =A0 =A0 ...
-> =A0 =A0 =A0 =A0 if (!exception2)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
-> =A0 =A0 =A0 =A0 ...
-> }
+On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
 
-I don't think that is much better, but I changed the first patch to
-use a loop anyway. The loop is then removed (as before) in the patch
-that adds the stats.
+> Interrupts that are flagged as wakeup sources via set_irq_wake()
+> should not be disabled for suspend.
+> 
 
->
-> [--snip--]
->> >> +static int suspend_block_suspend(struct sys_device *dev, pm_message_=
-t state)
->> >> +{
->> >> + =A0 =A0 int ret =3D suspend_is_blocked() ? -EAGAIN : 0;
->> >> + =A0 =A0 if (debug_mask & DEBUG_SUSPEND)
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 pr_info("suspend_block_suspend return %d\n"=
-, ret);
->> >> + =A0 =A0 return ret;
->> >> +}
->> >> +
->> >> +static struct sysdev_class suspend_block_sysclass =3D {
->> >> + =A0 =A0 .name =3D "suspend_block",
->> >> + =A0 =A0 .suspend =3D suspend_block_suspend,
->> >> +};
->> >> +static struct sys_device suspend_block_sysdev =3D {
->> >> + =A0 =A0 .cls =3D &suspend_block_sysclass,
->> >> +};
->> >> +
->> >
->> > Hmm. =A0Perhaps add the suspend_is_blocked() check at the beginning of
->> > sysdev_suspend() instead of this? =A0Surely you don't want to suspend
->> > any sysdevs with any suspend blockers active, right?
->>
->> You could make the same argument for any device. Using a sysdev makes
->> the patch easier to apply.
->
-> You've lost me here. :-)
+Why not?
 
-You have been making other changes to those files which made it a moving ta=
-rget.
+> 
+> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+> index 638d8be..99113bd 100644
+> --- a/kernel/irq/pm.c
+> +++ b/kernel/irq/pm.c
+> @@ -28,6 +28,9 @@ void suspend_device_irqs(void)
+>  	for_each_irq_desc(irq, desc) {
+>  		unsigned long flags;
+>  
+> +		if (desc->status & IRQ_WAKEUP)
+> +			continue;
+> +
+>  		spin_lock_irqsave(&desc->lock, flags);
+>  		__disable_irq(desc, irq, true);
+>  		spin_unlock_irqrestore(&desc->lock, flags);
 
-> AFAICT, the only purpose of the sysdev class above is to abort suspend if
-> suspend_is_blocked() returns 'true'. =A0If that is correct, then IMO you =
-could
-> achieve the same goal by calling suspend_is_blocked() directly from
-> sysdev_suspend(), right before check_wakeup_irqs(). =A0Or am I missing an=
-ything?
-
-The stats patch also used it to track wakeup events, but I have added
-another call for this to get rid of the sysdev.
-
--- =
-
-Arve Hj=F8nnev=E5g
+If this fixes some bug then please provide a description of that bug?
