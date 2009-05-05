@@ -1,15 +1,16 @@
-From: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Mon, 4 May 2009 17:37:34 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.0905041735590.24101__45592.0456712649$1241484068$gmane$org@chino.kir.corp.google.com>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905042151.07953.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905041253380.23036@chino.kir.corp.google.com>
-	<200905050023.38064.rjw@sisk.pl>
+From: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory	unnecessarily (rev. 2)
+Date: Tue, 5 May 2009 10:24:27 +0800
+Message-ID: <20090505022427.GA10880__17252.9568350457$1241490563$gmane$org@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905031830.49690.rjw@sisk.pl>
+	<200905040208.43040.rjw@sisk.pl> <200905040222.39062.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905050023.38064.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200905040222.39062.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,94 +21,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 5 May 2009, Rafael J. Wysocki wrote:
+On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Since the hibernation code is now going to use allocations of memory
+> to create enough room for the image, it can also use the page frames
+> allocated at this stage as image page frames.  The low-level
+> hibernation code needs to be rearranged for this purpose, but it
+> allows us to avoid freeing a great number of pages and allocating
+> these same pages once again later, so it generally is worth doing.
+> 
+> [rev. 2: Change the strategy of preallocating memory to allocate as
+>  many pages as needed to get the right image size in one shot (the
+>  excessive allocated pages are released afterwards).]
 
-> Index: linux-2.6/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/process.c
-> +++ linux-2.6/kernel/power/process.c
-> @@ -19,6 +19,8 @@
->   */
->  #define TIMEOUT	(20 * HZ)
->  
-> +static bool tasks_frozen;
-> +
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -120,6 +122,10 @@ int freeze_processes(void)
->   Exit:
->  	BUG_ON(in_atomic());
->  	printk("\n");
-> +
-> +	if (!error)
-> +		tasks_frozen = true;
-> +
->  	return error;
->  }
->  
-> @@ -145,6 +151,8 @@ static void thaw_tasks(bool nosig_only)
->  
->  void thaw_processes(void)
->  {
-> +	tasks_frozen = false;
-> +
->  	printk("Restarting tasks ... ");
->  	thaw_tasks(true);
->  	thaw_tasks(false);
-> @@ -152,3 +160,7 @@ void thaw_processes(void)
->  	printk("done.\n");
->  }
->  
-> +bool processes_are_frozen(void)
-> +{
-> +	return tasks_frozen;
-> +}
-> Index: linux-2.6/include/linux/freezer.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/freezer.h
-> +++ linux-2.6/include/linux/freezer.h
-> @@ -50,6 +50,7 @@ extern int thaw_process(struct task_stru
->  extern void refrigerator(void);
->  extern int freeze_processes(void);
->  extern void thaw_processes(void);
-> +extern bool processes_are_frozen(void);
->  
->  static inline int try_to_freeze(void)
->  {
-> @@ -170,6 +171,7 @@ static inline int thaw_process(struct ta
->  static inline void refrigerator(void) {}
->  static inline int freeze_processes(void) { BUG(); return 0; }
->  static inline void thaw_processes(void) {}
-> +static inline bool processes_are_frozen(void) { return false; }
->  
->  static inline int try_to_freeze(void) { return 0; }
->  
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -46,6 +46,7 @@
->  #include <linux/page-isolation.h>
->  #include <linux/page_cgroup.h>
->  #include <linux/debugobjects.h>
-> +#include <linux/freezer.h>
->  
->  #include <asm/tlbflush.h>
->  #include <asm/div64.h>
-> @@ -1599,7 +1600,8 @@ nofail_alloc:
->  					zonelist, high_zoneidx, alloc_flags);
->  		if (page)
->  			goto got_pg;
-> -	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
-> +	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)
-> +			&& !processes_are_frozen()) {
->  		if (!try_set_zone_oom(zonelist, gfp_mask)) {
->  			schedule_timeout_uninterruptible(1);
->  			goto restart;
+Rafael, I tried out your patches and found doubled memory shrink speed!
 
-Cool, that looks like the semantics of __GFP_NO_OOM_KILL without requiring 
-a new gfp flag.  Thanks.
+[  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+[  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+
+For you reference, here is the free memory before/after
+hibernate_preallocate_memory():
+
+        # free
+                     total       used       free     shared    buffers     cached
+        Mem:          1933       1917         15          0          0       1845
+        -/+ buffers/cache:         72       1861
+        Swap:            0          0          0
+
+        # free
+                     total       used       free     shared    buffers     cached
+        Mem:          1933        920       1012          0          0        356
+        -/+ buffers/cache:        563       1369
+        Swap:            0          0          0
+
+It seems that the preallocated memory is not freed on -ENOMEM.
+
++       error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
++       if (error)
++               goto err_out;
++
++       error = memory_bm_create(&copy_bm, GFP_IMAGE, PG_ANY);
++       if (error)
++               goto err_out;
+
+memory_bm_create() is called a number of times, each time it will
+call create_mem_extents()/memory_bm_free(). Can they be optimized to
+be called only once?
+
+A side note: there are somehow duplicated *_extent_*() logics in the
+filesystems, is it possible that we abstract out some of the common code?
+
++       for_each_populated_zone(zone) {
++               size += snapshot_additional_pages(zone);
++               count += zone_page_state(zone, NR_FREE_PAGES);
++               if (!is_highmem(zone))
++                       count -= zone->lowmem_reserve[ZONE_NORMAL];
++       }
+
+Why [ZONE_NORMAL] instead of [zone]? ZONE_NORMAL may not always be the largest zone,
+for example, My 4GB laptop has a tiny ZONE_NORMAL and a large ZONE_DMA32.
+
++       /* If size < max_size, preallocating enough memory may be impossible. */
++       if (count > 0 && size == max_size)
++               error = -ENOMEM;
++       if (error)
++               goto err_out;
+
+The two if()s can be merged.
+
+At last, I'd express my major concern about the transition to preallocate
+based memory shrinking: will it lead to more random swapping IOs?
+
+Thanks,
+Fengguang
