@@ -1,8 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 4/19] TuxOnIce: Add support for just thawing
-	kernel threads.
-Date: Thu,  7 May 2009 00:39:00 +1000
-Message-ID: <1241620755-22133-5-git-send-email-nigel__13107.578297104$1241621183$gmane$org@tuxonice.net>
+Subject: [PATCH 3/19] TuxOnIce: Make drop_pagecache non-static
+	and declared in mm.h
+Date: Thu,  7 May 2009 00:38:59 +1000
+Message-ID: <1241620755-22133-4-git-send-email-nigel__27532.7650284909$1241621187$gmane$org@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,51 +21,40 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-Create a function that just thaws kernel threads (not userspace), so
-that TuxOnIce can use it when allocating storage to bmap the space
-obtained, without having the potential for significant changes in the
-characteristics of an image (which would make preparing an image even
-more of an iterative process than it can be now). We also
-thaw_kernel_threads when seeking to free memory.
+Make the drop_pagecache function non-static, so that TuxOnIce can
+provide users with the option to drop caches and save whatever is left
+over.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- include/linux/freezer.h |    3 +++
- kernel/power/process.c  |    4 ++++
- 2 files changed, 7 insertions(+), 0 deletions(-)
+ fs/drop_caches.c   |    2 +-
+ include/linux/mm.h |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 5a361f8..4f50655 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -121,6 +121,8 @@ static inline void set_freezable(void)
- 	current->flags &= ~PF_NOFREEZE;
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index b6a719a..e2f2799 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -33,7 +33,7 @@ static void drop_pagecache_sb(struct super_block *sb)
+ 	iput(toput_inode);
  }
  
-+extern void thaw_kernel_threads(void);
-+
- /*
-  * Tell the freezer that the current task should be frozen by it and that it
-  * should send a fake signal to the task to freeze it.
-@@ -172,6 +174,7 @@ static inline int freeze_processes(void) { BUG(); return 0; }
- static inline void thaw_processes(void) {}
+-static void drop_pagecache(void)
++void drop_pagecache(void)
+ {
+ 	struct super_block *sb;
  
- static inline int try_to_freeze(void) { return 0; }
-+static inline void thaw_kernel_threads(void) { }
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 3daeccb..c4199cd 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1298,6 +1298,7 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
+ 					void __user *, size_t *, loff_t *);
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+ 			unsigned long lru_pages);
++void drop_pagecache(void);
  
- static inline void freezer_do_not_count(void) {}
- static inline void freezer_count(void) {}
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index ca63401..d464ef7 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -152,3 +152,7 @@ void thaw_processes(void)
- 	printk("done.\n");
- }
- 
-+void thaw_kernel_threads(void)
-+{
-+	thaw_tasks(true);
-+}
+ #ifndef CONFIG_MMU
+ #define randomize_va_space 0
 -- 
 1.5.6.3
