@@ -1,8 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 16/19] TuxOnIce: Warn user if an initrd doesn't
-	include an attempt at resuming.
-Date: Thu,  7 May 2009 00:39:12 +1000
-Message-ID: <1241620755-22133-17-git-send-email-nigel__25808.9339863092$1241621459$gmane$org@tuxonice.net>
+Subject: [PATCH 18/19] TuxOnIce: Provide a means of determining
+	the freezer state.
+Date: Thu,  7 May 2009 00:39:14 +1000
+Message-ID: <1241620755-22133-19-git-send-email-nigel__30433.2765321762$1241621546$gmane$org@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,111 +21,102 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-Provide the user with a warning (in logs) if they're using an initrd and
-no attempt is made at resuming.
+Provide a means for processes to determine whether the freezer is
+currently on, so that they can act differently without necessarily being
+frozen.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- include/linux/suspend.h           |   14 ++++++++++++++
- init/do_mounts.c                  |    2 ++
- init/do_mounts_initrd.c           |    6 ++++++
- kernel/power/snapshot.c           |    1 +
- kernel/power/tuxonice_highlevel.c |    3 +++
- 5 files changed, 26 insertions(+), 0 deletions(-)
+ include/linux/freezer.h |   16 ++++++++++++++++
+ include/linux/fs.h      |    3 +++
+ kernel/power/process.c  |   12 ++++++++++++
+ 3 files changed, 31 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 8faa15c..1f52617 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -359,5 +359,19 @@ extern void try_tuxonice_resume(void);
- #else
- #define try_tuxonice_resume() do { } while (0)
- #endif
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 4f50655..c775cd1 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -121,6 +121,21 @@ static inline void set_freezable(void)
+ 	current->flags &= ~PF_NOFREEZE;
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++extern int freezer_state;
++#define FREEZER_OFF 0
++#define FREEZER_FILESYSTEMS_FROZEN 1
++#define FREEZER_USERSPACE_FROZEN 2
++#define FREEZER_FULLY_ON 3
 +
-+extern int resume_attempted;
-+extern int software_resume(void);
-+
-+static inline void check_resume_attempted(void)
++static inline int freezer_is_on(void)
 +{
-+	if (resume_attempted)
-+		return;
-+
-+	software_resume();
++	return freezer_state == FREEZER_FULLY_ON;
 +}
 +#else
-+#define check_resume_attempted() do { } while (0)
-+#define resume_attempted (0)
- #endif
- #endif /* _LINUX_SUSPEND_H */
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index dd7ee5f..605adc5 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -412,6 +412,8 @@ void __init prepare_namespace(void)
- 	if (is_floppy && rd_doload && rd_load_disk(0))
- 		ROOT_DEV = Root_RAM0;
- 
-+	check_resume_attempted();
++static inline int freezer_is_on(void) { return 0; }
++#endif
 +
- 	mount_root();
- out:
- 	sys_mount(".", "/", NULL, MS_MOVE, NULL);
-diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-index 614241b..f3ea292 100644
---- a/init/do_mounts_initrd.c
-+++ b/init/do_mounts_initrd.c
-@@ -6,6 +6,7 @@
- #include <linux/romfs_fs.h>
- #include <linux/initrd.h>
- #include <linux/sched.h>
-+#include <linux/suspend.h>
+ extern void thaw_kernel_threads(void);
+ 
+ /*
+@@ -174,6 +189,7 @@ static inline int freeze_processes(void) { BUG(); return 0; }
+ static inline void thaw_processes(void) {}
+ 
+ static inline int try_to_freeze(void) { return 0; }
++static inline int freezer_is_on(void) { return 0; }
+ static inline void thaw_kernel_threads(void) { }
+ 
+ static inline void freezer_do_not_count(void) {}
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 344b1ca..a11406d 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1950,6 +1950,9 @@ extern int thaw_bdev(struct block_device *bdev, struct super_block *sb);
+ extern int fsync_bdev(struct block_device *);
+ extern int fsync_super(struct super_block *);
+ extern int fsync_no_super(struct block_device *);
++#define FS_FREEZER_FUSE 1
++#define FS_FREEZER_NORMAL 2
++#define FS_FREEZER_ALL (FS_FREEZER_FUSE | FS_FREEZER_NORMAL)
+ #else
+ static inline void bd_forget(struct inode *inode) {}
+ static inline int sync_blockdev(struct block_device *bdev) { return 0; }
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index d464ef7..b2c7fe1 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -14,6 +14,8 @@
+ #include <linux/syscalls.h>
  #include <linux/freezer.h>
  
- #include "do_mounts.h"
-@@ -68,6 +69,11 @@ static void __init handle_initrd(void)
- 
- 	current->flags &= ~PF_FREEZER_SKIP;
- 
-+	if (!resume_attempted)
-+		printk(KERN_ERR "TuxOnIce: No attempt was made to resume from "
-+				"any image that might exist.\n");
-+	clear_toi_state(TOI_BOOT_TIME);
++int freezer_state;
 +
- 	/* move initrd to rootfs' /old */
- 	sys_fchdir(old_fd);
- 	sys_mount("/", ".", NULL, MS_MOVE, NULL);
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index df70aff..bae4278 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -47,6 +47,7 @@ static void swsusp_unset_page_forbidden(struct page *);
-  * directly to their "original" page frames.
+ /* 
+  * Timeout for stopping processes
   */
- struct pbe *restore_pblist;
-+int resume_attempted;
+@@ -145,8 +147,17 @@ static void thaw_tasks(bool nosig_only)
  
- /* Pointer to an auxiliary buffer (1 page) */
- static void *buffer;
-diff --git a/kernel/power/tuxonice_highlevel.c b/kernel/power/tuxonice_highlevel.c
-index f2ba0bb..06f97e7 100644
---- a/kernel/power/tuxonice_highlevel.c
-+++ b/kernel/power/tuxonice_highlevel.c
-@@ -970,6 +970,7 @@ out:
- void toi_try_resume(void)
+ void thaw_processes(void)
  {
- 	set_toi_state(TOI_TRYING_TO_RESUME);
-+	resume_attempted = 1;
- 
- 	current->flags |= PF_MEMALLOC;
- 
-@@ -994,6 +995,8 @@ void toi_try_resume(void)
-  **/
- static void toi_sys_power_disk_try_resume(void)
- {
-+	resume_attempted = 1;
++	int old_state = freezer_state;
 +
- 	/*
- 	 * There's a comment in kernel/power/disk.c that indicates
- 	 * we should be able to use mutex_lock_nested below. That
++	if (old_state == FREEZER_OFF)
++		return;
++
+ 	printk("Restarting tasks ... ");
+ 	thaw_tasks(true);
++	freezer_state = FREEZER_OFF;
++
++	if (old_state == FREEZER_FULLY_ON)
++		thaw_tasks(true);
+ 	thaw_tasks(false);
+ 	schedule();
+ 	printk("done.\n");
+@@ -154,5 +165,6 @@ void thaw_processes(void)
+ 
+ void thaw_kernel_threads(void)
+ {
++	freezer_state = FREEZER_USERSPACE_FROZEN;
+ 	thaw_tasks(true);
+ }
 -- 
 1.5.6.3
