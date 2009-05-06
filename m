@@ -1,15 +1,16 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
-Date: Wed, 6 May 2009 23:03:30 +0200
-Message-ID: <20090506210330.GA29496__49482.2526620284$1241643984$gmane$org@uranus.ravnborg.org>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<1241620755-22133-10-git-send-email-nigel@tuxonice.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory unnecessarily (rev. 2)
+Date: Wed, 6 May 2009 22:54:09 +0200
+Message-ID: <200905062254.10227.rjw__17591.7032211602$1241645147$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl>
+	<20090506135659.GB26233@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090506135659.GB26233@localhost>
 Content-Disposition: inline
-In-Reply-To: <1241620755-22133-10-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Cc: "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
-> This patch adds support for communicating with a userspace helper via a
-> netlink socket. It is used by the userspace user interface support and
-> by the storage manager support.
+On Wednesday 06 May 2009, Wu Fengguang wrote:
+> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Since the hibernation code is now going to use allocations of memory
+> > > > to create enough room for the image, it can also use the page frames
+> > > > allocated at this stage as image page frames.  The low-level
+> > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > allows us to avoid freeing a great number of pages and allocating
+> > > > these same pages once again later, so it generally is worth doing.
+> > > > 
+> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > >  many pages as needed to get the right image size in one shot (the
+> > > >  excessive allocated pages are released afterwards).]
+> > > 
+> > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > >
+> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > 
+> > Unfortunately, I'm observing a regression and a huge one.
+> > 
+> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > and that takes ~2 s with the old code and ~15 s with the new one.
+> > 
+> > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > before the preallocation.
+> [snip]
+> > > At last, I'd express my major concern about the transition to preallocate
+> > > based memory shrinking: will it lead to more random swapping IOs?
+> > 
+> > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> > is related to that ...
 > 
-> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> ---
->  kernel/power/Makefile           |    4 +
->  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
->  2 files changed, 343 insertions(+), 0 deletions(-)
->  create mode 100644 kernel/power/tuxonice_netlink.c
-> 
-> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> index 07efc8a..180b89a 100644
-> --- a/kernel/power/Makefile
-> +++ b/kernel/power/Makefile
-> @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
->  
->  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
->  
-> +ifdef CONFIG_NET
-> +tuxonice_core-objs		+= tuxonice_netlink.o
-> +endif
+> So you do have swap file enabled? hibernate_preallocate_memory() will
+> firstly try to allocate as much pages as possible(savable+free), and
+> then to free up (allocated-image_size) pages.
 
-If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
-above can be simplified to:
-tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
+No.  It's going to allocate (total RAM - anticipated image size) and then free
+up (allocated-image_size) pages.
 
-(On the assumption that CONFIG_NET is a bool)
+If we consider maximum image sizes, that means allocating slightly more than
+50% of RAM, so it really shouldn't regress that much IMO.
 
-	Sam
+Thanks,
+Rafael
