@@ -1,16 +1,15 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
-Date: Thu, 07 May 2009 07:35:38 +1000
-Message-ID: <1241645738.19600.97.camel__46272.3626675599$1241645922$gmane$org@nigel-laptop>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<1241620755-22133-10-git-send-email-nigel@tuxonice.net>
-	<20090506210330.GA29496@uranus.ravnborg.org>
-Reply-To: nigel@tuxonice.net
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 1/5] PM/Freezer: Disable OOM killer when
+	tasks are frozen
+Date: Thu, 7 May 2009 00:41:04 +0200
+Message-ID: <200905070041.04787.rjw__35356.6631828018$1241650558$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090506210330.GA29496@uranus.ravnborg.org>
+In-Reply-To: <200905070040.08561.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,50 +19,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sam.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Wed, 2009-05-06 at 23:03 +0200, Sam Ravnborg wrote:
-> On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
-> > This patch adds support for communicating with a userspace helper via a
-> > netlink socket. It is used by the userspace user interface support and
-> > by the storage manager support.
-> > 
-> > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> > ---
-> >  kernel/power/Makefile           |    4 +
-> >  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 343 insertions(+), 0 deletions(-)
-> >  create mode 100644 kernel/power/tuxonice_netlink.c
-> > 
-> > diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> > index 07efc8a..180b89a 100644
-> > --- a/kernel/power/Makefile
-> > +++ b/kernel/power/Makefile
-> > @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
-> >  
-> >  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
-> >  
-> > +ifdef CONFIG_NET
-> > +tuxonice_core-objs		+= tuxonice_netlink.o
-> > +endif
-> 
-> If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
-> above can be simplified to:
-> tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
-> 
-> (On the assumption that CONFIG_NET is a bool)
+The OOM killer is not really going to work while tasks are frozen, so
+we can just give up calling it in that case.
 
-Thanks for the review.
+This will allow us to safely use memory allocations for decreasing
+the number of saveable pages in the hibernation core code instead of
+using any artificial memory shriking mechanisms for this purpose.
 
-I have support for building tuxonice as modules that I'm not asking to
-be merged (at least not yet - it adds too many symbol exports at the
-moment). As a result, I did the simplification but left the
-tuxonice_core_objs definition. Is that what you'd do?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/freezer.h |    2 ++
+ kernel/power/process.c  |   12 ++++++++++++
+ mm/page_alloc.c         |    5 +++++
+ 3 files changed, 19 insertions(+)
 
-Regards,
-
-Nigel
+Index: linux-2.6/kernel/power/process.c
+===================================================================
+--- linux-2.6.orig/kernel/power/process.c
++++ linux-2.6/kernel/power/process.c
+@@ -19,6 +19,8 @@
+  */
+ #define TIMEOUT	(20 * HZ)
+ 
++static bool tasks_frozen;
++
+ static inline int freezeable(struct task_struct * p)
+ {
+ 	if ((p == current) ||
+@@ -120,6 +122,10 @@ int freeze_processes(void)
+  Exit:
+ 	BUG_ON(in_atomic());
+ 	printk("\n");
++
++	if (!error)
++		tasks_frozen = true;
++
+ 	return error;
+ }
+ 
+@@ -145,6 +151,8 @@ static void thaw_tasks(bool nosig_only)
+ 
+ void thaw_processes(void)
+ {
++	tasks_frozen = false;
++
+ 	printk("Restarting tasks ... ");
+ 	thaw_tasks(true);
+ 	thaw_tasks(false);
+@@ -152,3 +160,7 @@ void thaw_processes(void)
+ 	printk("done.\n");
+ }
+ 
++bool processes_are_frozen(void)
++{
++	return tasks_frozen;
++}
+Index: linux-2.6/include/linux/freezer.h
+===================================================================
+--- linux-2.6.orig/include/linux/freezer.h
++++ linux-2.6/include/linux/freezer.h
+@@ -50,6 +50,7 @@ extern int thaw_process(struct task_stru
+ extern void refrigerator(void);
+ extern int freeze_processes(void);
+ extern void thaw_processes(void);
++extern bool processes_are_frozen(void);
+ 
+ static inline int try_to_freeze(void)
+ {
+@@ -170,6 +171,7 @@ static inline int thaw_process(struct ta
+ static inline void refrigerator(void) {}
+ static inline int freeze_processes(void) { BUG(); return 0; }
+ static inline void thaw_processes(void) {}
++static inline bool processes_are_frozen(void) { return false; }
+ 
+ static inline int try_to_freeze(void) { return 0; }
+ 
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -46,6 +46,7 @@
+ #include <linux/page-isolation.h>
+ #include <linux/page_cgroup.h>
+ #include <linux/debugobjects.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -1600,6 +1601,10 @@ nofail_alloc:
+ 		if (page)
+ 			goto got_pg;
+ 	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
++		/* The OOM killer won't work if processes are frozen. */
++		if (processes_are_frozen())
++			goto nopage;
++
+ 		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+ 			schedule_timeout_uninterruptible(1);
+ 			goto restart;
