@@ -1,15 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [RFC][PATCH 0/9] Suspend block api (version 3)
-Date: Wed, 06 May 2009 10:17:21 -0700
-Message-ID: <873abixiam.fsf@deeprootsystems.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
+Date: Wed, 6 May 2009 23:03:30 +0200
+Message-ID: <20090506210330.GA29496__49482.2526620284$1241643984$gmane$org@uranus.ravnborg.org>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<1241620755-22133-10-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241583529-5092-1-git-send-email-arve@android.com> ("Arve
-	=?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Tue\,  5 May 2009
-	21\:18\:40 -0700")
+Content-Disposition: inline
+In-Reply-To: <1241620755-22133-10-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Arve Hj=F8nnev=E5g <arve@android.com> writes:
+On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
+> This patch adds support for communicating with a userspace helper via a
+> netlink socket. It is used by the userspace user interface support and
+> by the storage manager support.
+> 
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> ---
+>  kernel/power/Makefile           |    4 +
+>  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 343 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/power/tuxonice_netlink.c
+> 
+> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+> index 07efc8a..180b89a 100644
+> --- a/kernel/power/Makefile
+> +++ b/kernel/power/Makefile
+> @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
+>  
+>  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
+>  
+> +ifdef CONFIG_NET
+> +tuxonice_core-objs		+= tuxonice_netlink.o
+> +endif
 
-> This patch series adds a suspend-block api that provides the same
-> functionality as the android wakelock api. This patch series removes
-> the sysdev that was used to abort suspend and adds a direct check in
-> suspend_enter instead. It also has some other code style changes.
+If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
+above can be simplified to:
+tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
 
-Sorry for joining the wakelock/suspend-block discussion a bit late,
-but I have a very basic, and possibly stupid question on the need for
-such a feature.
+(On the assumption that CONFIG_NET is a bool)
 
-My basic question: is why not use idle (dynamic PM) instead of suspend
-(static PM) for this?  =
-
-
-IOW, why not use CPUidle + PM QoS to achieve the same goal?  It seems
-to me that you're trying to add some dynamic PM features onto a static
-PM subsystem.  I could see PM QoS possibly needing some extending but
-the basic abilities to constrain the low-power states are there.
-
-The one reason I can think of is that you can always have broken
-drivers or apps that prevent you from hitting idle.  But with tools
-like powertop, it's pretty easy to find these problems and fix them.
-
-If that is the primary concern, it seems to me that we're introducing
-a new kernel API to work around broken drivers and apps that should be
-fixed instead.
-
-What am I missing?
-
-Kevin
+	Sam
