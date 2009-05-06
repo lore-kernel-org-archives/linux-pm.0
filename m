@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
-	preallocated memory unnecessarily (rev. 2)
-Date: Wed, 6 May 2009 22:54:09 +0200
-Message-ID: <200905062254.10227.rjw__17591.7032211602$1241645147$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl>
-	<20090506135659.GB26233@localhost>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Wed, 6 May 2009 23:18:22 +0200
+Message-ID: <200905062318.23572.rjw__27549.9190124266$1241645244$gmane$org@sisk.pl>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<87y6tb3x6r.fsf@deeprootsystems.com>
+	<871vr22upr.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090506135659.GB26233@localhost>
+In-Reply-To: <871vr22upr.fsf@deeprootsystems.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,56 +21,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Wu Fengguang <fengguang.wu@gmail.com>
-Cc: "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 06 May 2009, Wu Fengguang wrote:
-> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
-> > On Tuesday 05 May 2009, Wu Fengguang wrote:
-> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Since the hibernation code is now going to use allocations of memory
-> > > > to create enough room for the image, it can also use the page frames
-> > > > allocated at this stage as image page frames.  The low-level
-> > > > hibernation code needs to be rearranged for this purpose, but it
-> > > > allows us to avoid freeing a great number of pages and allocating
-> > > > these same pages once again later, so it generally is worth doing.
-> > > > 
-> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
-> > > >  many pages as needed to get the right image size in one shot (the
-> > > >  excessive allocated pages are released afterwards).]
-> > > 
-> > > Rafael, I tried out your patches and found doubled memory shrink speed!
-> > >
-> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
-> > 
-> > Unfortunately, I'm observing a regression and a huge one.
-> > 
-> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
-> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
-> > and that takes ~2 s with the old code and ~15 s with the new one.
-> > 
-> > It helps to call shrink_all_memory() once with a sufficiently large argument
-> > before the preallocation.
-> [snip]
-> > > At last, I'd express my major concern about the transition to preallocate
-> > > based memory shrinking: will it lead to more random swapping IOs?
-> > 
-> > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
-> > is related to that ...
+On Wednesday 06 May 2009, Kevin Hilman wrote:
+> Kevin Hilman <khilman@deeprootsystems.com> writes:
 > 
-> So you do have swap file enabled? hibernate_preallocate_memory() will
-> firstly try to allocate as much pages as possible(savable+free), and
-> then to free up (allocated-image_size) pages.
+> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >
+> >> On Wednesday 06 May 2009, Kevin Hilman wrote:
+> 
+> [...]
+> 
+> >>> 
+> >>> [...]
+> >>> 
+> >>> >>>
+> >>> >>> If this fixes some bug then please provide a description of that bug?
+> >>> >>
+> >>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
+> >>> >> are disabled by this code causing the system to no longer wake up.
+> >>> >
+> >>> > What do you do if the interrupt triggers right after your driver has
+> >>> > returned from its late suspend hook?  
+> >>> 
+> >>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
+> >>> 
+> >>> But I don't see how that can happen in the current code. IIUC, by the
+> >>> time your late suspend hook is run, your device IRQ is already
+> >>> disabled, so it won't trigger an interrupt that will be caught by
+> >>> check_wakeup_irqs() anyways.
+> >>
+> >> My understanding of __disable_irq() was that it didn't actually disable the
+> >> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
+> >> and acknowledge it, but preventing the device driver for receiving it.  
+> >
+> >> Does it work differently on the affected systems?
+> >
+> > Yes.
+> >
+> > __disable_irq() calls the irq_chip's disable method which is platform
+> > specific.  On OMAP, this masks the IRQ at the hardware level
+> > preventing the CPU from seeing the interrupt.
+> 
+> Looking at x86, the i8259 disable hook also seems to mask the IRQ at
+> the PIC level.
+> 
+> The various IO-APIC irq_chips do not have a disable hook so the
+> __disable_irq() here is a NOP.
 
-No.  It's going to allocate (total RAM - anticipated image size) and then free
-up (allocated-image_size) pages.
+Except that it sets IRQ_DISABLED.
 
-If we consider maximum image sizes, that means allocating slightly more than
-50% of RAM, so it really shouldn't regress that much IMO.
+All right there.
 
-Thanks,
+We can either avoid disabling wake-up interrupts, in which case we should
+drop check_wakeup_irqs() IMO, or rework things so that check_wakeup_irqs() will
+catch them.  Doing both doesn't seem to make sense to me.
+
+Which one would be the right approach, then?
+
 Rafael
