@@ -1,18 +1,18 @@
-From: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 6/9] PM: suspend_block: Add debugfs file
-Date: Tue,  5 May 2009 21:18:46 -0700
-Message-ID: <1241583529-5092-7-git-send-email-arve@android.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<1241583529-5092-2-git-send-email-arve@android.com>
-	<1241583529-5092-3-git-send-email-arve@android.com>
-	<1241583529-5092-4-git-send-email-arve@android.com>
-	<1241583529-5092-5-git-send-email-arve@android.com>
-	<1241583529-5092-6-git-send-email-arve@android.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Wed, 06 May 2009 07:04:48 -0700
+Message-ID: <871vr22upr.fsf__38070.0090121993$1241618830$gmane$org@deeprootsystems.com>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
+	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl>
+	<87y6tb3x6r.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241583529-5092-6-git-send-email-arve@android.com>
+In-Reply-To: <87y6tb3x6r.fsf@deeprootsystems.com> (Kevin Hilman's message of
+	"Tue\, 05 May 2009 17\:13\:48 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,65 +22,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-UmVwb3J0IGFjdGl2ZSBhbmQgaW5hY3RpdmUgc3VzcGVuZCBibG9ja2VycyBpbgovc3lzL2tlcm5l
-bC9kZWJ1Zy9zdXNwZW5kX2Jsb2NrZXJzLgoKU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOl
-ZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KLS0tCiBrZXJuZWwvcG93ZXIvc3VzcGVuZF9ibG9ja2VyLmMg
-fCAgIDQ0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLQogMSBmaWxlcyBj
-aGFuZ2VkLCA0MiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2tl
-cm5lbC9wb3dlci9zdXNwZW5kX2Jsb2NrZXIuYyBiL2tlcm5lbC9wb3dlci9zdXNwZW5kX2Jsb2Nr
-ZXIuYwppbmRleCBjYWI5ZTlhLi5jZTg3YzY1IDEwMDY0NAotLS0gYS9rZXJuZWwvcG93ZXIvc3Vz
-cGVuZF9ibG9ja2VyLmMKKysrIGIva2VybmVsL3Bvd2VyL3N1c3BlbmRfYmxvY2tlci5jCkBAIC0x
-Nyw2ICsxNyw3IEBACiAjaW5jbHVkZSA8bGludXgvcnRjLmg+CiAjaW5jbHVkZSA8bGludXgvc3Vz
-cGVuZC5oPgogI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmRfYmxvY2tlci5oPgorI2luY2x1ZGUgPGxp
-bnV4L2RlYnVnZnMuaD4KICNpbmNsdWRlICJwb3dlci5oIgogCiBlbnVtIHsKQEAgLTQxLDYgKzQy
-LDcgQEAgc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKnN1c3BlbmRfd29ya19xdWV1ZTsKIHN0cnVj
-dCBzdXNwZW5kX2Jsb2NrZXIgbWFpbl9zdXNwZW5kX2Jsb2NrZXI7CiBzdGF0aWMgc3VzcGVuZF9z
-dGF0ZV90IHJlcXVlc3RlZF9zdXNwZW5kX3N0YXRlID0gUE1fU1VTUEVORF9NRU07CiBzdGF0aWMg
-Ym9vbCBlbmFibGVfc3VzcGVuZF9ibG9ja2VyczsKK3N0YXRpYyBzdHJ1Y3QgZGVudHJ5ICpzdXNw
-ZW5kX2Jsb2NrZXJfc3RhdHNfZGVudHJ5OwogCiAjZGVmaW5lIHByX2luZm9fdGltZShmbXQsIGFy
-Z3MuLi4pIFwKIAlkbyB7IFwKQEAgLTU0LDYgKzU2LDIxIEBAIHN0YXRpYyBib29sIGVuYWJsZV9z
-dXNwZW5kX2Jsb2NrZXJzOwogCQkJdG0udG1faG91ciwgdG0udG1fbWluLCB0bS50bV9zZWMsIHRz
-LnR2X25zZWMpOyBcCiAJfSB3aGlsZSAoMCk7CiAKK3N0YXRpYyBpbnQgc3VzcGVuZF9ibG9ja2Vy
-X3N0YXRzX3Nob3coc3RydWN0IHNlcV9maWxlICptLCB2b2lkICp1bnVzZWQpCit7CisJdW5zaWdu
-ZWQgbG9uZyBpcnFmbGFnczsKKwlzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2VyICpibG9ja2VyOworCisJ
-c2VxX3B1dHMobSwgIm5hbWVcdGFjdGl2ZVxuIik7CisJc3Bpbl9sb2NrX2lycXNhdmUoJmxpc3Rf
-bG9jaywgaXJxZmxhZ3MpOworCWxpc3RfZm9yX2VhY2hfZW50cnkoYmxvY2tlciwgJmluYWN0aXZl
-X2Jsb2NrZXJzLCBsaW5rKQorCQlzZXFfcHJpbnRmKG0sICJcIiVzXCJcdDBcbiIsIGJsb2NrZXIt
-Pm5hbWUpOworCWxpc3RfZm9yX2VhY2hfZW50cnkoYmxvY2tlciwgJmFjdGl2ZV9ibG9ja2Vycywg
-bGluaykKKwkJc2VxX3ByaW50ZihtLCAiXCIlc1wiXHQxXG4iLCBibG9ja2VyLT5uYW1lKTsKKwlz
-cGluX3VubG9ja19pcnFyZXN0b3JlKCZsaXN0X2xvY2ssIGlycWZsYWdzKTsKKwlyZXR1cm4gMDsK
-K30KKwogc3RhdGljIHZvaWQgcHJpbnRfYWN0aXZlX2Jsb2NrZXJzX2xvY2tlZCh2b2lkKQogewog
-CXN0cnVjdCBzdXNwZW5kX2Jsb2NrZXIgKmJsb2NrZXI7CkBAIC0xMDEsOCArMTE4LDggQEAgc3Rh
-dGljIERFQ0xBUkVfV09SSyhzdXNwZW5kX3dvcmssIHN1c3BlbmRfd29ya2VyKTsKIC8qKgogICog
-c3VzcGVuZF9ibG9ja2VyX2luaXQoKSAtIEluaXRpYWxpemUgYSBzdXNwZW5kIGJsb2NrZXIKICAq
-IEBibG9ja2VyOglUaGUgc3VzcGVuZCBibG9ja2VyIHRvIGluaXRpYWxpemUuCi0gKiBAbmFtZToJ
-VGhlIG5hbWUgb2YgdGhlIHN1c3BlbmQgYmxvY2tlciB0byBzaG93IGluIGRlYnVnIG1lc3NhZ2Vz
-LgotICoKKyAqIEBuYW1lOglUaGUgbmFtZSBvZiB0aGUgc3VzcGVuZCBibG9ja2VyIHRvIHNob3cg
-aW4gZGVidWcgbWVzc2FnZXMgYW5kCisgKgkJL3N5cy9rZXJuZWwvZGVidWcvc3VzcGVuZF9ibG9j
-a2Vycy4KICAqIFRoZSBzdXNwZW5kIGJsb2NrZXIgc3RydWN0IGFuZCBuYW1lIG11c3Qgbm90IGJl
-IGZyZWVkIGJlZm9yZSBjYWxsaW5nCiAgKiBzdXNwZW5kX2Jsb2NrZXJfZGVzdHJveS4KICAqLwpA
-QCAtMjMwLDYgKzI0NywxOSBAQCB2b2lkIHJlcXVlc3Rfc3VzcGVuZF9zdGF0ZShzdXNwZW5kX3N0
-YXRlX3Qgc3RhdGUpCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmc3RhdGVfbG9jaywgaXJxZmxh
-Z3MpOwogfQogCitzdGF0aWMgaW50IHN1c3BlbmRfYmxvY2tlcl9zdGF0c19vcGVuKHN0cnVjdCBp
-bm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlICpmaWxlKQoreworCXJldHVybiBzaW5nbGVfb3Blbihm
-aWxlLCBzdXNwZW5kX2Jsb2NrZXJfc3RhdHNfc2hvdywgTlVMTCk7Cit9CisKK3N0YXRpYyBjb25z
-dCBzdHJ1Y3QgZmlsZV9vcGVyYXRpb25zIHN1c3BlbmRfYmxvY2tlcl9zdGF0c19mb3BzID0gewor
-CS5vd25lciA9IFRISVNfTU9EVUxFLAorCS5vcGVuID0gc3VzcGVuZF9ibG9ja2VyX3N0YXRzX29w
-ZW4sCisJLnJlYWQgPSBzZXFfcmVhZCwKKwkubGxzZWVrID0gc2VxX2xzZWVrLAorCS5yZWxlYXNl
-ID0gc2luZ2xlX3JlbGVhc2UsCit9OworCiBzdGF0aWMgaW50IF9faW5pdCBzdXNwZW5kX2Jsb2Nr
-X2luaXQodm9pZCkKIHsKIAlzdXNwZW5kX3dvcmtfcXVldWUgPSBjcmVhdGVfc2luZ2xldGhyZWFk
-X3dvcmtxdWV1ZSgic3VzcGVuZCIpOwpAQCAtMjQxLDQgKzI3MSwxNCBAQCBzdGF0aWMgaW50IF9f
-aW5pdCBzdXNwZW5kX2Jsb2NrX2luaXQodm9pZCkKIAlyZXR1cm4gMDsKIH0KIAorc3RhdGljIGlu
-dCBfX2luaXQgc3VzcGVuZF9ibG9ja19wb3N0Y29yZV9pbml0KHZvaWQpCit7CisJaWYgKCFzdXNw
-ZW5kX3dvcmtfcXVldWUpCisJCXJldHVybiAwOworCXN1c3BlbmRfYmxvY2tlcl9zdGF0c19kZW50
-cnkgPSBkZWJ1Z2ZzX2NyZWF0ZV9maWxlKCJzdXNwZW5kX2Jsb2NrZXJzIiwKKwkJCVNfSVJVR08s
-IE5VTEwsIE5VTEwsICZzdXNwZW5kX2Jsb2NrZXJfc3RhdHNfZm9wcyk7CisJcmV0dXJuIDA7Cit9
-CisKIGNvcmVfaW5pdGNhbGwoc3VzcGVuZF9ibG9ja19pbml0KTsKK3Bvc3Rjb3JlX2luaXRjYWxs
-KHN1c3BlbmRfYmxvY2tfcG9zdGNvcmVfaW5pdCk7Ci0tIAoxLjYuMQoKX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0Cmxp
-bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Kevin Hilman <khilman@deeprootsystems.com> writes:
+
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> On Wednesday 06 May 2009, Kevin Hilman wrote:
+
+[...]
+
+>>> 
+>>> [...]
+>>> 
+>>> >>>
+>>> >>> If this fixes some bug then please provide a description of that bug?
+>>> >>
+>>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
+>>> >> are disabled by this code causing the system to no longer wake up.
+>>> >
+>>> > What do you do if the interrupt triggers right after your driver has
+>>> > returned from its late suspend hook?  
+>>> 
+>>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
+>>> 
+>>> But I don't see how that can happen in the current code. IIUC, by the
+>>> time your late suspend hook is run, your device IRQ is already
+>>> disabled, so it won't trigger an interrupt that will be caught by
+>>> check_wakeup_irqs() anyways.
+>>
+>> My understanding of __disable_irq() was that it didn't actually disable the
+>> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
+>> and acknowledge it, but preventing the device driver for receiving it.  
+>
+>> Does it work differently on the affected systems?
+>
+> Yes.
+>
+> __disable_irq() calls the irq_chip's disable method which is platform
+> specific.  On OMAP, this masks the IRQ at the hardware level
+> preventing the CPU from seeing the interrupt.
+
+Looking at x86, the i8259 disable hook also seems to mask the IRQ at
+the PIC level.
+
+The various IO-APIC irq_chips do not have a disable hook so the
+__disable_irq() here is a NOP.
+
+Kevin
