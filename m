@@ -1,7 +1,7 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: David Rientjes <rientjes@google.com>
 Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 13:56:15 -0700
-Message-ID: <20090507135615.e7db550d.akpm__22086.8122684353$1241730244$gmane$org@linux-foundation.org>
+Date: Thu, 7 May 2009 13:42:39 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.0905071340470.6598__45065.7223155305$1241731044$gmane$org@chino.kir.corp.google.com>
 References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072218.50782.rjw@sisk.pl>
 	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
 	<200905072238.14558.rjw@sisk.pl>
@@ -20,19 +20,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 May 2009 22:38:13 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thu, 7 May 2009, Rafael J. Wysocki wrote:
 
-> On Thursday 07 May 2009, David Rientjes wrote:
-> > On Thu, 7 May 2009, Rafael J. Wysocki wrote:
-> > 
-> > > OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
-> > > I'll use the freezer-based approach instead.
-> > > 
-> > 
 > > Third time I'm going to suggest this, and I'd like a response on why it's 
 > > not possible instead of being ignored.
 > > 
@@ -57,8 +49,8 @@ On Thu, 7 May 2009 22:38:13 +0200
 > Well, it might work too, but why are you insisting?  How's it better than
 > __GFP_NO_OOM_KILL, actually?
 > 
-> Andrew, what do you think about this?
 
-I don't think I understand the proposal.  Is it to provide a means by
-which PM can go in and set a state bit against each and every zone?  If
-so, that's still a global boolean, only messier.
+Because I agree with Christoph's concerns about needlessly adding 
+additional gfp flags; he was responding to the proposed addition of 
+__GFP_PANIC which could be handled in other much simpler ways just like 
+this flag can as I've shown.
