@@ -1,19 +1,20 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 7 May 2009 16:43:34 -0700
-Message-ID: <20090507164334.0d3890ef__42860.8222552159$1241739965$gmane$org@jbarnes-g45>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905072022.15202.rjw@sisk.pl>
-	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
-	<200905072127.11995.rjw@sisk.pl>
-	<1241728860.19600.207.camel@nigel-laptop>
-	<20090507161406.35d953df@jbarnes-g45>
-	<1241739155.19600.233.camel@nigel-laptop>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+	if a suspend_blocker is active.
+Date: Thu, 7 May 2009 16:49:27 -0700
+Message-ID: <d6200be20905071649h2d3a57c8h1c1cd72d4bea4d31@mail.gmail.com>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<1241583529-5092-2-git-send-email-arve@android.com>
+	<1241583529-5092-3-git-send-email-arve@android.com>
+	<1241583529-5092-4-git-send-email-arve@android.com>
+	<20090505195753.GE1379@ucw.cz>
+	<d6200be20905061851y12b07d59t11b43d74a07aad3b@mail.gmail.com>
+	<20090507104143.GB6132@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241739155.19600.233.camel@nigel-laptop>
+In-Reply-To: <20090507104143.GB6132@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,70 +24,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: linux-kernel@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 08 May 2009 09:32:34 +1000
-Nigel Cunningham <nigel@tuxonice.net> wrote:
+On Thu, May 7, 2009 at 3:41 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2009-05-06 18:51:11, Arve Hj?nnev?g wrote:
+>> On Tue, May 5, 2009 at 12:57 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> > Hi!
+>> >
+>> >> If a suspend_blocker is active, suspend will fail anyway. Since
+>> >> try_to_freeze_tasks can take up to 20 seconds to complete or fail, ab=
+orting
+>> >
+>> > Please fix try_to_freeze not to take significant time rather than
+>> > this...
+>>
+>> I though we covered this already. Most of the 20 second delays we saw
+>> on earlier kernel version have been fixed, but this code can run for
+>> 20 seconds which is an unacceptable wakeup delay. Any
+>> uninterruptible
+>
+> If the code runs for 20 seconds, it is a bug to be fixed.
 
-> Hi.
-> 
-> On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
-> > On Fri, 08 May 2009 06:41:00 +1000
-> > Nigel Cunningham <nigel@tuxonice.net> wrote:
-> > 
-> > > Hi.
-> > > 
-> > > On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
-> > > > In fact I agree, but there's a catch.  The way in which TuxOnIce
-> > > > operates LRU pages is based on some assumptions that may or may
-> > > > not be satisfied in future, so if we decide to merge it, then
-> > > > we'll have to make sure these assumptions will be satisfied.
-> > > > That in turn is going to require quite some discussion I guess.
-> > > 
-> > > Agreed. That's why I've got that GEMS patch - it's putting pages
-> > > on the LRU that don't satisfy the former assumptions: they are
-> > > used during hibernating and need to be atomically copied. If
-> > > there are further developments in that area, I would hope we
-> > > could just extend what's been done with GEMS.
-> > 
-> > Another option here would be to suspend all DRM operations earlier.
-> > The suspend hook for i915 already does this, but maybe it needs to
-> > happen sooner?  We'll probably want a generic DRM suspend hook soon
-> > too (as the radeon memory manager lands) to shut down GPU activity
-> > in the suspend and hibernate cases.
-> > 
-> > All that assumes I understand what's going on here though. :)  It
-> > appears you delay saving the GEM (just GEM by the way, for
-> > Graphics/GPU Execution Manager) backing store until late to avoid
-> > having the pages move around out from under you?
-> 
-> Yeah. TuxOnIce saves some pages without doing an atomic copy of them.
-> Up 'til now, the algorithm has been LRU pages - pages used for
-> TuxOnIce's userspace helpers. With GEM, we also need to make sure GEM
-> pages are atomically copied and so also 'subtract' them from the list
-> of pages that aren't atomically copied.
-> 
-> It's no great problem to do this, so I wouldn't ask you to change GEM
-> to suspend DRM operations earlier. It's more important that GEM
-> doesn't allocate extra pages unexpectedly - and I don't think that's
-> likely anyway since we've switched away from X. This is important
-> because TuxOnIce depends (for reliability) on having memory usage
-> being predictable much more than swsusp and uswsusp do. (Larger
-> images, less free RAM to begin with).
+The code gives up after 20 seconds, it does not normally run for 20
+seconds. It is arguably a bug that it gives up after 20 seconds since
+the time required to freeze all the threads grows with the number of
+threads that are running. It could still be making progress after 20
+seconds. Since the time required to freeze all tasks is the number of
+tasks times the time it takes to interrupt each task there is no way
+to ensure that the time required is insignificant. If we do not abort
+task freezing when there is a wakeup event, then the worst case wakeup
+latency is guarantied to be worse than the worst case latency for any
+other uninterruptible kernel call.
 
-Yeah X is typically the one causing GEM allocations and performing
-execution, but there are other possibilities too.  E.g. Wayland is a
-non-X based display system that may be running instead, or maybe
-there's an EGL or GPGPU program running in the background.
+>
+> IOW the patch should not be needed when the bugs are fixed. You should
+> not need it now.
+>
+> Can you drop it for now (or keep it in private tree or something). If
+> you have scenario where it takes significant time and that can't be
+> fixed, please present the scenario and we can reconsider it.
+>
 
-So I think it's best if we suspend DRM fairly early, otherwise you
-*may* get extra allocations and will probably see all sorts of GPU
-memory mapping activity and execution while you're trying to hibernate
-things.  On the plus side I don't think this is a radical redesign or
-anything, and mostly something we can do in our suspend and hibernate
-callbacks.
+It can take a significant amount of time. It has to wait for every
+thread it signalled to freeze which seems to be every user-space
+thread. On my device, with 200 threads, this took less than 10ms half
+the time, up to 460ms in the worst case.
 
-Thanks,
-Jesse
+> For now, it just makes stuff harder to review.
+
+I think this patch is needed whether there are bugs or not, to ensure
+low latency wakeup.
+
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
+>
+
+
+-- =
+
+Arve Hj=F8nnev=E5g
