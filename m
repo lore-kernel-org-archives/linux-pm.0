@@ -1,14 +1,22 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] TuxOnIce
-Date: Thu, 7 May 2009 14:09:49 +0200
-Message-ID: <20090507120948.GA1531__35941.5820370943$1241701033$gmane$org@ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Thu, 07 May 2009 07:13:55 -0700
+Message-ID: <87ws8trof0.fsf__20794.7484138005$1241706144$gmane$org@deeprootsystems.com>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<87y6tb3x6r.fsf@deeprootsystems.com>
+	<871vr22upr.fsf@deeprootsystems.com> <200905062318.23572.rjw@sisk.pl>
+	<87zldpu5rt.fsf@deeprootsystems.com>
+	<d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
+	<4d34a0a70905061828l3e35a954k76967b30c1a241ab@mail.gmail.com>
+	<d6200be20905061844q8a4945y83daa86b336dc49a@mail.gmail.com>
+	<4d34a0a70905061904w338457efna8a3cbb80537e0c9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <4d34a0a70905061904w338457efna8a3cbb80537e0c9@mail.gmail.com>
+	(Kim Kyuwon's message of "Thu\, 7 May 2009 11\:04\:06 +0900")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +26,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Kim Kyuwon <chammoru@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, OMAP <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Kim Kyuwon <chammoru@gmail.com> writes:
 
-> I'd like to submit TuxOnIce for review, with a view to seeking to get it
-> merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
-> it can be merged) and the willingness of those who matter.
-> 
-> To briefly summarise the advantages to merging TuxOnIce:
-> 
-> - Support for multiple swap devices
-> - Support for non-swap (an ordinary file can be used)
-> - Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
-> - Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
->   possible with your hardware.
-> - Userspace user interface that lets you abort hibernating and abort
->   resuming, get nice progress display etc.
+> 2009/5/7 Arve Hj=F8nnev=E5g <arve@android.com>:
+>> 2009/5/6 Kim Kyuwon <chammoru@gmail.com>:
+>>> 2009/5/7 Arve Hj=F8nnev=E5g <arve@android.com>:
+>>>> On Wed, May 6, 2009 at 5:16 PM, Kevin Hilman
+>>>> <khilman@deeprootsystems.com> wrote:
+>>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>>>>>
+>>>>>> On Wednesday 06 May 2009, Kevin Hilman wrote:
+>>>>>>> Kevin Hilman <khilman@deeprootsystems.com> writes:
+>>>>
+>>>>> There is at least one problem with that which is why Kyuwon Kim added
+>>>>> the ->disable hook to OMAP's irq_chip.  The problem is with drivers
+>>>>> that call disable_irq() in their suspend hook, usually done to prevent
+>>>>> the device from waking the system since on OMAP, any IRQ can be
+>>>>> configured to wake the system.
+>>>>>
+>>>>
+>>>> This does not sound correct. disable_irq_wake should be used for this.
+>>>> A driver may need to mask its interrupt before suspending but this
+>>>> should not also disable it as a wakeup source.
+>>>
+>>> I wish I could use disable_irq_wake(), but it doesn't work in OMAP.
+>>
+>> This does not sound like a hardware problem.
+>
+> We may need advices of TI engineers.
+> However, as far as I know, It is impossible to disable 'interrupt
+> wake-up' with interrupt enabled. Because an interrupt itself generate
+> a system wake-up event in OMAP3430 (Hardware level).
 
-All these are either done by uswsusp already, or could be done w/o
-modifying kernel code.
+Interrupt wakeups can be disabled at the PRCM level.  Or more simply
+we can keep a mask of wakeup-enable interrupts and use that.
 
-> - 8 years of testing and improvement.
+I will experiment with getting disable_irq_wake() working.
 
-Yeah, 8 years of out of tree testing; while current code is used by
-basically every distro out there.
-
-> - Full image of memory (LRU pages that don't need to be atomically
->   copied are saved prior to the atomic copy, then used as the
->   destination of the atomic copy).
-
-Yeah, that was the patch that did not go in
-
-> - Support for resuming a different image after writing an image - makes
->   powering down a UPS after writing an image doable.
-
-
-This can  be done w/o kernel code. Someone had a patch...
-
-> - Simple to set up (works without any userspace binaries, uses existing
->   resume= and noresume commandline parameters).
-
-Given that distros ship uswsusp already... is that really an advantage.
-
-To summarise disadvantages:
-
-- only core has 8000 LoC
-- it does stuff that can be easily done in userspace
-     (and that todays distros _do_ in userspace).
-- it duplicates uswsusp functionality.
-- compared to [u]swsusp, it received little testing
-
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kevin
