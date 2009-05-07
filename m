@@ -1,14 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC][PATCH 0/9] Suspend block api (version 3)
-Date: Thu, 7 May 2009 15:42:27 -0700
-Message-ID: <d6200be20905071542k6810b817idf2a07dc55665324@mail.gmail.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<873abixiam.fsf@deeprootsystems.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Thu, 7 May 2009 15:38:24 -0700
+Message-ID: <20090507153824.df54658c.akpm__15141.0373430283$1241736557$gmane$org@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
+	<alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
+	<20090507145041.9b59f4eb.akpm@linux-foundation.org>
+	<200905080014.49426.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <873abixiam.fsf@deeprootsystems.com>
+In-Reply-To: <200905080014.49426.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +20,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-2009/5/6 Kevin Hilman <khilman@deeprootsystems.com>:
-> Arve Hj=F8nnev=E5g <arve@android.com> writes:
->
->> This patch series adds a suspend-block api that provides the same
->> functionality as the android wakelock api. This patch series removes
->> the sysdev that was used to abort suspend and adds a direct check in
->> suspend_enter instead. It also has some other code style changes.
->
-> Sorry for joining the wakelock/suspend-block discussion a bit late,
-> but I have a very basic, and possibly stupid question on the need for
-> such a feature.
->
-> My basic question: is why not use idle (dynamic PM) instead of suspend
-> (static PM) for this?
->
+On Fri, 8 May 2009 00:14:48 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-We use suspend in addition to idle, not instead of. On some systems
-(msm) we can enter the same power state from idle as from suspend.
-This reduces the importance of suspend, but entering suspend still has
-benefits. The monotonic clock stops and all the periodic timers
-(user-space and kernel) that are based on it stop with it. It also
-reduces the amount of energy an untrusted application can waste since
-it will not be allowed to run when the system is suspended.
+> IOW, you need to freeze the user space totally before trying to disable the
+> OOM killer.
 
-> IOW, why not use CPUidle + PM QoS to achieve the same goal? =A0It seems
-> to me that you're trying to add some dynamic PM features onto a static
-> PM subsystem. =A0I could see PM QoS possibly needing some extending but
-> the basic abilities to constrain the low-power states are there.
+Not necessarily.  We only need to take action if a task is about to
+start oom-killing - presumably by taking a nap.
 
-suspend blockers have no impact on this.
-
-> The one reason I can think of is that you can always have broken
-> drivers or apps that prevent you from hitting idle. =A0But with tools
-> like powertop, it's pretty easy to find these problems and fix them.
->
-Tools allow you to find apps that waste power, but they do not fix them.
-
-> If that is the primary concern, it seems to me that we're introducing
-> a new kernel API to work around broken drivers and apps that should be
-> fixed instead.
->
-> What am I missing?
-
-Suspend blockers allow you to use suspend. On platforms that cannot
-enter the same power state from idle this is essential. On platforms
-can enter the same power state from idle as suspend, suspend reduce
-the time spent running which in turn reduces the overall power draw.
-It also offers some protection against bad apps which is important on
-an open device.
-
--- =
-
-Arve Hj=F8nnev=E5g
+If a process is sitting there happily computing pi then we can leave it
+running.
