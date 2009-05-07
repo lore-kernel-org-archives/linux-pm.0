@@ -1,17 +1,19 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
-Date: Thu, 7 May 2009 06:34:29 +0200
-Message-ID: <20090507043429.GA32391__17171.9564743855$1241670961$gmane$org@uranus.ravnborg.org>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<1241620755-22133-10-git-send-email-nigel@tuxonice.net>
-	<20090506210330.GA29496@uranus.ravnborg.org>
-	<1241645738.19600.97.camel@nigel-laptop>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+	suspend	blockers from user-space
+Date: Thu, 7 May 2009 12:32:50 +0200
+Message-ID: <20090507103249.GA6132@elf.ucw.cz>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<1241583529-5092-2-git-send-email-arve@android.com>
+	<1241583529-5092-3-git-send-email-arve@android.com>
+	<20090505201225.GG1379@ucw.cz>
+	<d6200be20905061842l64e71797r11807dff47f335ed@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1241645738.19600.97.camel@nigel-laptop>
+In-Reply-To: <d6200be20905061842l64e71797r11807dff47f335ed@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,55 +23,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 07, 2009 at 07:35:38AM +1000, Nigel Cunningham wrote:
-> Hi Sam.
+On Wed 2009-05-06 18:42:59, Arve Hj?nnev?g wrote:
+> On Tue, May 5, 2009 at 1:12 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >> Add a misc device, "suspend_blocker", that allows user-space processes
+> >> to block auto suspend. The device has ioctls to create a suspend_blocker,
+> >> and to block and unblock suspend. To delete the suspend_blocker, close
+> >> the device.
+> >
+> > Rafael proposed write() interface. I don't think you answered that.
+> >
 > 
-> On Wed, 2009-05-06 at 23:03 +0200, Sam Ravnborg wrote:
-> > On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
-> > > This patch adds support for communicating with a userspace helper via a
-> > > netlink socket. It is used by the userspace user interface support and
-> > > by the storage manager support.
-> > > 
-> > > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> > > ---
-> > >  kernel/power/Makefile           |    4 +
-> > >  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
-> > >  2 files changed, 343 insertions(+), 0 deletions(-)
-> > >  create mode 100644 kernel/power/tuxonice_netlink.c
-> > > 
-> > > diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> > > index 07efc8a..180b89a 100644
-> > > --- a/kernel/power/Makefile
-> > > +++ b/kernel/power/Makefile
-> > > @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
-> > >  
-> > >  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
-> > >  
-> > > +ifdef CONFIG_NET
-> > > +tuxonice_core-objs		+= tuxonice_netlink.o
-> > > +endif
-> > 
-> > If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
-> > above can be simplified to:
-> > tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
-> > 
-> > (On the assumption that CONFIG_NET is a bool)
-> 
-> Thanks for the review.
-> 
-> I have support for building tuxonice as modules that I'm not asking to
-> be merged (at least not yet - it adds too many symbol exports at the
-> moment). As a result, I did the simplification but left the
-> tuxonice_core_objs definition. Is that what you'd do?
+> I think an ioctl interface makes more sense. With a write interface
+> you either have to do string parsing, or invent some other protocol
+> between the driver and user-space.
 
-tuxonice_core-objs and tuxonice_core-y ahve equal semantics.
-kbuild will recognize all .o files specified using tuxonice_core-y
-as modules to be part of the tuxonice_core module.
-So there is no need to define tuxonice_core-objs - that can
-be replaced by tuxonice_core-y.
+Or perhaps just use "userspace/%d" % pid as a name?
 
-	Sam
+1) can't be faked that trivially
+
+2) small / mostly fixed size
+
+3) can use nicer write protocol?
+
+> > kzalloc on user-supplied argument. Sounds like bad idea.
+> >
+> > Aha. And probably integer overflow in the same line. Ouch.
+> >
+> 
+> The size is limited to _IOC_SIZEMASK with is 13 or 14 bits depending
+> on the architecture. Do you want a lower limit on the name length?
+
+16K of unswappable kernel memory for name is a bit too much, yes.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
