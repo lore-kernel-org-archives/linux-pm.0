@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 4/5] PM/Hibernate: Rework shrinking of
-	memory
-Date: Thu, 7 May 2009 14:18:04 +0200
-Message-ID: <200905071418.05035.rjw__37654.6012507335$1241698892$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905070044.13857.rjw@sisk.pl>
-	<1241652436.19600.176.camel@nigel-laptop>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory unnecessarily (rev. 2)
+Date: Thu, 7 May 2009 14:20:42 +0200
+Message-ID: <200905071420.43491.rjw__30528.6453491592$1241698957$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905062254.10227.rjw@sisk.pl>
+	<20090507015803.GA12281@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241652436.19600.176.camel@nigel-laptop>
+In-Reply-To: <20090507015803.GA12281@localhost>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,247 +20,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Nigel Cunningham wrote:
-> Hi.
-
-Hi,
-
-> On Thu, 2009-05-07 at 00:44 +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thursday 07 May 2009, Wu Fengguang wrote:
+> On Thu, May 07, 2009 at 04:54:09AM +0800, Rafael J. Wysocki wrote:
+> > On Wednesday 06 May 2009, Wu Fengguang wrote:
+> > > On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > > > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > 
+> > > > > > Since the hibernation code is now going to use allocations of memory
+> > > > > > to create enough room for the image, it can also use the page frames
+> > > > > > allocated at this stage as image page frames.  The low-level
+> > > > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > > > allows us to avoid freeing a great number of pages and allocating
+> > > > > > these same pages once again later, so it generally is worth doing.
+> > > > > > 
+> > > > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > > > >  many pages as needed to get the right image size in one shot (the
+> > > > > >  excessive allocated pages are released afterwards).]
+> > > > > 
+> > > > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > > > >
+> > > > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > > > 
+> > > > Unfortunately, I'm observing a regression and a huge one.
+> > > > 
+> > > > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > > > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > > > and that takes ~2 s with the old code and ~15 s with the new one.
+> > > > 
+> > > > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > > > before the preallocation.
+> > > [snip]
+> > > > > At last, I'd express my major concern about the transition to preallocate
+> > > > > based memory shrinking: will it lead to more random swapping IOs?
+> > > > 
+> > > > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> > > > is related to that ...
+> > > 
+> > > So you do have swap file enabled? hibernate_preallocate_memory() will
+> > > firstly try to allocate as much pages as possible(savable+free), and
+> > > then to free up (allocated-image_size) pages.
 > > 
-> > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> > just once to make some room for the image and then allocates memory
-> > to apply more pressure to the memory management subsystem, if
-> > necessary.
-> > 
-> > Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> > entirely just yet, because that would lead to huge performance
-> > regressions in some test cases.
+> > No.  It's going to allocate (total RAM - anticipated image size) and then free
+> > up (allocated-image_size) pages.
 > 
-> I know it doesn't fit with your current way of doing things, but have
-> you considered trying larger order allocations as a means of getting
-> memory freed?
-
-Actually, I was thinking about that.  What's your experience with this
-approach?
-
-> I have code in tuxonice_prepare_image.c (look for extra_pages_allocated) that
-> might be helpful for this purpose.
-
-OK, thanks.  I'll have a look at it.
-
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/snapshot.c |  145 ++++++++++++++++++++++++++++++++----------------
-> >  1 file changed, 98 insertions(+), 47 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/power/snapshot.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/snapshot.c
-> > +++ linux-2.6/kernel/power/snapshot.c
-> > @@ -1066,69 +1066,120 @@ void swsusp_free(void)
-> >  	buffer = NULL;
-> >  }
-> >  
-> > +/* Helper functions used for the shrinking of memory. */
-> > +
-> >  /**
-> > - *	swsusp_shrink_memory -  Try to free as much memory as needed
-> > - *
-> > - *	... but do not OOM-kill anyone
-> > + * preallocate_image_memory - Allocate given number of page frames
-> > + * @nr_pages: Number of page frames to allocate
-> >   *
-> > - *	Notice: all userland should be stopped before it is called, or
-> > - *	livelock is possible.
-> > + * Return value: Number of page frames actually allocated
-> >   */
-> > -
-> > -#define SHRINK_BITE	10000
-> > -static inline unsigned long __shrink_memory(long tmp)
-> > +static unsigned long preallocate_image_memory(unsigned long nr_pages)
-> >  {
-> > -	if (tmp > SHRINK_BITE)
-> > -		tmp = SHRINK_BITE;
-> > -	return shrink_all_memory(tmp);
-> > +	unsigned long nr_alloc = 0;
-> > +
-> > +	while (nr_pages-- > 0) {
-> > +		struct page *page;
-> > +
-> > +		page = alloc_image_page(GFP_KERNEL | __GFP_NOWARN);
+> Ah yes - I didn't notice that count was subtracted here:
 > 
-> Ah... now I see you're using __GFP_NOWARN already :)
+>         for (count -= size; count > 0; count--) {
 > 
-> > +		if (!page)
-> > +			break;
-> > +		nr_alloc++;
-> > +	}
-> > +
-> > +	return nr_alloc;
-> >  }
-> >  
-> > +/**
-> > + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-> > + *
-> > + * To create a hibernation image it is necessary to make a copy of every page
-> > + * frame in use.  We also need a number of page frames to be free during
-> > + * hibernation for allocations made while saving the image and for device
-> > + * drivers, in case they need to allocate memory from their hibernation
-> > + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-> > + * respectively, both of which are rough estimates).  To make this happen, we
-> > + * compute the total number of available page frames and allocate at least
-> > + *
-> > + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-> > + *
-> > + * of them, which corresponds to the maximum size of a hibernation image.
-> > + *
-> > + * If image_size is set below the number following from the above formula,
-> > + * the preallocation of memory is continued until the total number of page
-> > + * frames in use is below the requested image size or it is impossible to
-> > + * allocate more memory, whichever happens first.
-> > + */
-> 
-> You should also be taking into account how much storage is available
-> here - that would make things more reliable. If compression is begin
-> used, you could also apply an 'expected compression ratio' so that you
-> don't unnecessarily free memory that will fit once compressed.
+> Make "count -= size" a standalone line to make that more obvious?
 
-Currently compression is only done in user space so I don't know in advance
-whether or not it's going to be used.
+That should be clear in the new patches:
+http://patchwork.kernel.org/patch/22193/
+http://patchwork.kernel.org/patch/22191/
 
-> >  int swsusp_shrink_memory(void)
-> >  {
-> > -	long tmp;
-> >  	struct zone *zone;
-> > -	unsigned long pages = 0;
-> > -	unsigned int i = 0;
-> > -	char *p = "-\\|/";
-> > +	unsigned long saveable, size, max_size, count, pages = 0;
-> >  	struct timeval start, stop;
-> > +	int error = 0;
-> >  
-> > -	printk(KERN_INFO "PM: Shrinking memory...  ");
-> > +	printk(KERN_INFO "PM: Shrinking memory ... ");
-> 
-> Without the space is normal, at least to my mind.
-
-OK
-
-> >  	do_gettimeofday(&start);
-> > -	do {
-> > -		long size, highmem_size;
-> >  
-> > -		highmem_size = count_highmem_pages();
-> > -		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
-> > -		tmp = size;
-> > -		size += highmem_size;
-> > -		for_each_populated_zone(zone) {
-> > -			tmp += snapshot_additional_pages(zone);
-> > -			if (is_highmem(zone)) {
-> > -				highmem_size -=
-> > -					zone_page_state(zone, NR_FREE_PAGES);
-> > -			} else {
-> > -				tmp -= zone_page_state(zone, NR_FREE_PAGES);
-> > -				tmp += zone->lowmem_reserve[ZONE_NORMAL];
-> > -			}
-> > -		}
-> > +	/* Count the number of saveable data pages. */
-> > +	saveable = count_data_pages() + count_highmem_pages();
-> > +
-> > +	/*
-> > +	 * Compute the total number of page frames we can use (count) and the
-> > +	 * number of pages needed for image metadata (size).
-> > +	 */
-> > +	count = saveable;
-> > +	size = 0;
-> > +	for_each_populated_zone(zone) {
-> > +		size += snapshot_additional_pages(zone);
-> > +		count += zone_page_state(zone, NR_FREE_PAGES);
-> > +		if (!is_highmem(zone))
-> > +			count -= zone->lowmem_reserve[ZONE_NORMAL];
-> > +	}
-> >  
-> > -		if (highmem_size < 0)
-> > -			highmem_size = 0;
-> 
-> You're not taking watermarks into account here - that isn't a problem
-> with shrink_all_memory because it usually frees more than you ask for
-> (or has done in the past), but if you're getting exactly what you ask
-> for, you might run into trouble if more than half of memory is in use to
-> start with.
-
-Hmm, why exactly?
-
-> > +	/* Compute the maximum number of saveable pages to leave in memory. */
-> > +	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
-> > +	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
-> > +	if (size > max_size)
-> > +		size = max_size;
-> > +	/*
-> > +	 * If the maximum is not lesser than the current number of saveable
-> 
-> s/lesser/less/
-
-Right, thanks.
-
-> > +	 * pages in memory, we don't need to do anything more.
-> > +	 */
-> > +	if (size >= saveable)
-> > +		goto out;
-> >  
-> > -		tmp += highmem_size;
-> > -		if (tmp > 0) {
-> > -			tmp = __shrink_memory(tmp);
-> > -			if (!tmp)
-> > -				return -ENOMEM;
-> > -			pages += tmp;
-> > -		} else if (size > image_size / PAGE_SIZE) {
-> > -			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
-> > -			pages += tmp;
-> > -		}
-> > -		printk("\b%c", p[i++%4]);
-> > -	} while (tmp > 0);
-> > +	/*
-> > +	 * Let the memory management subsystem know that we're going to need a
-> > +	 * large number of page frames to allocate and make it free some memory.
-> > +	 * NOTE: If this is not done, performance is heavily affected in some
-> > +	 * test cases.
-> > +	 */
-> > +	shrink_all_memory(saveable - size);
-> > +
-> > +	/*
-> > +	 * The number of saveable pages in memory was too high, so apply some
-> > +	 * pressure to decrease it.  First, make room for the largest possible
-> > +	 * image and fail if that doesn't work.  Next, try to decrease the size
-> > +	 * of the image as much as indicated by image_size.
-> > +	 */
-> > +	count -= max_size;
-> > +	pages = preallocate_image_memory(count);
-> > +	if (pages < count)
-> > +		error = -ENOMEM;
-> > +	else
-> > +		pages += preallocate_image_memory(max_size - size);
-> > +
-> > +	/* Release all of the preallocated page frames. */
-> > +	swsusp_free();
-> > +
-> > +	if (error) {
-> > +		printk(KERN_CONT "\n");
-> > +		return error;
-> > +	}
-> > +
-> > + out:
-> >  	do_gettimeofday(&stop);
-> > -	printk("\bdone (%lu pages freed)\n", pages);
-> > +	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
-> >  	swsusp_show_speed(&start, &stop, pages, "Freed");
-> >  
-> >  	return 0;
-
-Best,
+Thanks,
 Rafael
