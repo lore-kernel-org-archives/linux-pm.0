@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 21:33:47 +0200
-Message-ID: <200905072133.48917.rjw__24735.5258827612$1241724944$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072009.53406.rjw@sisk.pl>
-	<20090507114807.d7c6d26a.akpm@linux-foundation.org>
+From: Matt Price <moptop99@gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 13:52:28 -0400
+Message-ID: <f22f52180905071052o68e3999co8e353d46aa60b47c__26180.884979158$1241725655$gmane$org@mail.gmail.com>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
+	<200905071945.45928.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090507114807.d7c6d26a.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200905071945.45928.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, U Kuehn <ukuehn@acm.org>, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Andrew Morton wrote:
-> On Thu, 7 May 2009 20:09:52 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > > > > I'm suspecting that hibernation can allocate its pages with
-> > > > > __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
-> > > > > will dtrt: no oom-killings.
-> > > > > 
-> > > > > In which case, processes_are_frozen() is not needed at all?
-> > > > 
-> > > > __GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
-> > > > the combination.
-> > > 
-> > > OK.  __GFP_WAIT is the big hammer.
-> > 
-> > Unfortunately it fails too quickly with the combination as well, so it looks
-> > like we can't use __GFP_NORETRY during hibernation.
-> 
-> hm.
-> 
-> So where do we stand now?
-> 
-> I'm not a big fan of the global application-specific state change
-> thing.  Something like __GFP_NO_OOM_KILL has a better chance of being
-> reused by other subsystems in the future, which is a good indicator.
+On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday 07 May 2009, U Kuehn wrote:
+>> Pavel Machek wrote:
+>> >> T
+> Also, as you can see from my previous message, I'm not a big fan of fight=
+ing
+> over this once again. =A0Lets try to work together to do something produc=
+tive
+> instead, shall we?
+>
 
-I'm not against __GFP_NO_OOM_KILL, but there's been some strong resistance to
-adding new _GPF _FOO flags recently.  Is there any likelihood anyone else we'll
-really need it any time soon?
+thank you rafael.  i would really like to see the fighting stop, too.
+Perhaps the best palce to start would be to look directly at the
+patches and, if there are weaknesses, discuss how to improve them?
 
-The advantage of the freezer-based approach is that it disables the OOM killer
-when it's not going to work anyway, so it looks like a reasonable thing to do
-regardless.  IMHO.
+m
+
+> Best,
+> Rafael
