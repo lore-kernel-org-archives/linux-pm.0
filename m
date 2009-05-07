@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: David Rientjes <rientjes@google.com>
 Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 22:18:49 +0200
-Message-ID: <200905072218.50782.rjw__15195.7290982411$1241727750$gmane$org@sisk.pl>
+Date: Thu, 7 May 2009 13:25:06 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.0905071321440.646__38776.3065089986$1241728128$gmane$org@chino.kir.corp.google.com>
 References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072133.48917.rjw@sisk.pl>
 	<20090507130202.34cbe37a.akpm@linux-foundation.org>
+	<200905072218.50782.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090507130202.34cbe37a.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200905072218.50782.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Andrew Morton wrote:
-> On Thu, 7 May 2009 21:33:47 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Thursday 07 May 2009, Andrew Morton wrote:
-> > > On Thu, 7 May 2009 20:09:52 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > > > > I'm suspecting that hibernation can allocate its pages with
-> > > > > > > __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
-> > > > > > > will dtrt: no oom-killings.
-> > > > > > > 
-> > > > > > > In which case, processes_are_frozen() is not needed at all?
-> > > > > > 
-> > > > > > __GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
-> > > > > > the combination.
-> > > > > 
-> > > > > OK.  __GFP_WAIT is the big hammer.
-> > > > 
-> > > > Unfortunately it fails too quickly with the combination as well, so it looks
-> > > > like we can't use __GFP_NORETRY during hibernation.
-> > > 
-> > > hm.
-> > > 
-> > > So where do we stand now?
-> > > 
-> > > I'm not a big fan of the global application-specific state change
-> > > thing.  Something like __GFP_NO_OOM_KILL has a better chance of being
-> > > reused by other subsystems in the future, which is a good indicator.
-> > 
-> > I'm not against __GFP_NO_OOM_KILL, but there's been some strong resistance to
-> > adding new _GPF _FOO flags recently.
-> 
-> We have six or seven left - hardly a crisis.
-> 
-> >  Is there any likelihood anyone else we'll
-> > really need it any time soon?
-> 
-> Dunno - people do all sorts of crazy things.  But it's more likely to
-> be reused than a PM-specific global!
-> 
-> I have no strong feelings really, but slotting into the existing
-> technique with something which might be reusable is quite a bit tidier.
+On Thu, 7 May 2009, Rafael J. Wysocki wrote:
 
-OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
-I'll use the freezer-based approach instead.
+> OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
+> I'll use the freezer-based approach instead.
+> 
+
+Third time I'm going to suggest this, and I'd like a response on why it's 
+not possible instead of being ignored.
+
+All of your tasks are in D state other than kthreads, right?  That means 
+they won't be in the oom killer (thus no zones are oom locked), so you can 
+easily do this
+
+	struct zone *z;
+	for_each_populated_zone(z)
+		zone_set_flag(z, ZONE_OOM_LOCKED);
+
+and then
+
+	for_each_populated_zone(z)
+		zone_clear_flag(z, ZONE_OOM_LOCKED);
+
+The serialization is done with trylocks so this will never invoke the oom 
+killer because all zones in the allocator's zonelist will be oom locked.
+
+Why does this not work for you?
