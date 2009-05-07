@@ -1,14 +1,12 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH] genirq: ensure IRQs are lazy disabled before
-	suspend
-Date: Wed,  6 May 2009 17:17:48 -0700
-Message-ID: <1241655468-5750-2-git-send-email-khilman__39399.7674379081$1241655749$gmane$org@deeprootsystems.com>
-References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+Subject: [PATCH] genirq: update irq_chip struct comment for
+	irq_chip->disable hook
+Date: Wed,  6 May 2009 17:17:47 -0700
+Message-ID: <1241655468-5750-1-git-send-email-khilman__22247.2623260275$1241655942$gmane$org@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,47 +20,25 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
-behavior of disable_irq() was changed to delay the disable until it is
-next handled.
-
-However, this leaves open the possibility that the system can go into
-suspend with an interrupt enabled.  For example, if a driver calls
-disable_irq() in its suspend_hook (for example, to prevent that device
-IRQ from causing a system wakeup) there's now a possibility that the
-system is suspended before the lazy disable happens.
-
-The result is an unwanted wakeup from suspend if the IRQ is capable of
-waking the system (common on embedded SoCs.)
-
-This patch ensures that the lazy disable is done, and masked by
-the irq_chip before the system goes into suspend.
-
-Note that even though __disable_irq() also calls irq_chip->disable, it
-is quite common for the irq_chip not to provide a disable hook in
-which case the IRQ is never masked/disabled in hardware before going
-into suspend.
+The irq_chip disable hook no longer defaults to a irq_chip->unmask.
 
 Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 ---
- kernel/irq/manage.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ include/linux/irq.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 2734eca..5d2cc1c 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -190,6 +190,11 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- 		if (!desc->action || (desc->action->flags & IRQF_TIMER))
- 			return;
- 		desc->status |= IRQ_SUSPENDED;
-+
-+		/* Lazy disable: handles case where lazy disable in
-+		 * handler doesn't happen before suspend. */
-+		if (desc->status & IRQ_DISABLED)
-+			desc->chip->mask(irq);
- 	}
- 
- 	if (!desc->depth++) {
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index b7cbeed..3674046 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -88,7 +88,7 @@ struct msi_desc;
+  * @startup:		start up the interrupt (defaults to ->enable if NULL)
+  * @shutdown:		shut down the interrupt (defaults to ->disable if NULL)
+  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
+- * @disable:		disable the interrupt (defaults to chip->mask if NULL)
++ * @disable:		disable the interrupt
+  * @ack:		start of a new interrupt
+  * @mask:		mask an interrupt source
+  * @mask_ack:		ack and mask an interrupt source
 -- 
 1.6.2.2
