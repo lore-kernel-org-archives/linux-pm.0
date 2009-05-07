@@ -1,16 +1,17 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before
-	suspend
-Date: Thu, 7 May 2009 14:52:03 -0700
-Message-ID: <d6200be20905071452t3efb67gffd4de5332e83e73__28704.3253229514$1241733403$gmane$org@mail.gmail.com>
-References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
-	<1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
-	<20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Thu, 7 May 2009 14:50:41 -0700
+Message-ID: <20090507145041.9b59f4eb.akpm__6037.81073955378$1241733656$gmane$org@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072218.50782.rjw@sisk.pl>
+	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
+	<200905072238.14558.rjw@sisk.pl>
+	<20090507135615.e7db550d.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87k54ssx65.fsf@deeprootsystems.com>
+In-Reply-To: <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,88 +21,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: David Rientjes <rientjes@google.com>
+Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 7, 2009 at 9:19 AM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
-> From: Kevin Hilman <khilman@deeprootsystems.com>
-> Date: Wed, 6 May 2009 16:00:07 -0700
-> Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
->
-> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
-> behavior of disable_irq() was changed to delay the disable until it is
-> next handled.
->
-> However, this leaves open the possibility that the system can go into
-> suspend with an interrupt enabled. =A0For example, if a driver calls
-> disable_irq() in its suspend_hook there's now a possibility that the
-> system is suspended before the lazy disable happens.
->
-> The result is an unwanted wakeup from suspend if the IRQ is capable of
-> waking the system (common on embedded SoCs.)
+On Thu, 7 May 2009 14:25:23 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-If the interrupt contoller uses the same enable register for wakeup
-and interrupts, I think it is the responsibility of the platform code,
-not individual drivers, to disable the interrupts that are not marked
-for wakeup before entering suspend.
+> On Thu, 7 May 2009, Andrew Morton wrote:
+> 
+> > > > All of your tasks are in D state other than kthreads, right?  That means 
+> > > > they won't be in the oom killer (thus no zones are oom locked), so you can 
+> > > > easily do this
+> > > > 
+> > > > 	struct zone *z;
+> > > > 	for_each_populated_zone(z)
+> > > > 		zone_set_flag(z, ZONE_OOM_LOCKED);
+> > > > 
+> > > > and then
+> > > > 
+> > > > 	for_each_populated_zone(z)
+> > > > 		zone_clear_flag(z, ZONE_OOM_LOCKED);
+> > > > 
+> > > > The serialization is done with trylocks so this will never invoke the oom 
+> > > > killer because all zones in the allocator's zonelist will be oom locked.
+> > > > 
+> > > > Why does this not work for you?
+> > > 
+> > > Well, it might work too, but why are you insisting?  How's it better than
+> > > __GFP_NO_OOM_KILL, actually?
+> > > 
+> > > Andrew, what do you think about this?
+> > 
+> > I don't think I understand the proposal.  Is it to provide a means by
+> > which PM can go in and set a state bit against each and every zone?  If
+> > so, that's still a global boolean, only messier.
+> > 
+> 
+> Why can't it be global while preallocating memory for hibernation since 
+> nothing but kthreads could allocate at this point and if the system is oom 
+> then the oom killer wouldn't be able to do anything anyway since it can't 
+> kill them?
 
-> This patch ensures that the lazy disable is done, and masked by
-> the irq_chip before the system goes into suspend.
+- globals are bad
 
-This will create a window where wakeup interrupts can be lost if the
-driver has masked the interrupt (by calling disable_irq). If the
-hardware does not allow edge detection on disabled interrupts (the msm
-platform has this limitation) then this change will turn off the edge
-detection. If suspend_ops->enter does not turn the interrupt (and edge
-detection) back on (without this change it may never need to turn on
-any interrupt) it will not wakeup at all.
+- the standard way of controlling memory allocator behaviour is via
+  the gfp_t.  Bypassing that is an unusual step and needs a higher
+  level of justification, which I'm not seeing here.
 
-> Note that even though __disable_irq() also calls irq_chip->disable, it
-> is quite common for the irq_chip not to provide a disable hook in
-> which case the IRQ is never masked/disabled in hardware before going
-> into suspend.
->
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> ---
-> =A0kernel/irq/manage.c | =A0 =A07 +++++++
-> =A01 files changed, 7 insertions(+), 0 deletions(-)
->
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 2734eca..c786820 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -190,6 +190,13 @@ void __disable_irq(struct irq_desc *desc, unsigned i=
-nt irq, bool suspend)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!desc->action || (desc->action->flags =
-& IRQF_TIMER))
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0desc->status |=3D IRQ_SUSPENDED;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Lazy disable: handles case where lazy =
-disable in
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* handler doesn't happen before suspend.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (desc->status & IRQ_DISABLED)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 desc->chip->mask(irq);
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0if (!desc->depth++) {
-> --
-> 1.6.2.2
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+- if we do this via an unusual global, we reduce the chances that
+  another subsytem could use the new feature.
+
+  I don't know what subsytem that might be, but I bet they're out
+  there.  checkpoint-restart, virtual machines, ballooning memory
+  drivers, kexec loading, etc.
+
+> The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
+> whether it specifies it or not since the oom killer would simply kill a 
+> task in D state which can't exit or free memory and subsequent allocations 
+> would make the oom killer a no-op because there's an eligible task with 
+> TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
+> calling the oom killer in a first place and killing an unresponsive task 
+> but that would have to happen anyway when thawed since the system is oom 
+> (or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
+
+All the above is specific to the PM application only, when userspace
+tasks are stopped.
 
 
-
--- =
-
-Arve Hj=F8nnev=E5g
+It might well end up that stopping userspace (beforehand or before
+oom-killing) is a hard requirement for reliably disabling the
+oom-killer.  Because the __GFP_NO_OOM_KILL user will be safe, but
+random other allocations from other tasks will not be.  So perhaps we
+_do_ need a global, and random userspace processes should test and
+sleep upon that global if they're heading in the direction of the
+oom-killer.
