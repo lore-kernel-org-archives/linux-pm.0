@@ -1,15 +1,16 @@
-From: Matt Price <moptop99@gmail.com>
+From: Fabio Comolli <fabio.comolli@gmail.com>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 7 May 2009 13:52:28 -0400
-Message-ID: <f22f52180905071052o68e3999co8e353d46aa60b47c__26180.884979158$1241725655$gmane$org@mail.gmail.com>
+Date: Thu, 7 May 2009 20:54:02 +0200
+Message-ID: <b637ec0b0905071154oe19e42ei6807dfcd2ad1f243__43353.7595825785$1241725665$gmane$org@mail.gmail.com>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 	<20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
 	<200905071945.45928.rjw@sisk.pl>
+	<Pine.LNX.4.64.0905071148570.8967@hp9800.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905071945.45928.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0905071148570.8967@hp9800.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, U Kuehn <ukuehn@acm.org>, tuxonice-devel@lists.tuxonice.net
+To: Kenneth Crudup <kenny@panix.com>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday 07 May 2009, U Kuehn wrote:
->> Pavel Machek wrote:
->> >> T
-> Also, as you can see from my previous message, I'm not a big fan of fight=
-ing
-> over this once again. =A0Lets try to work together to do something produc=
-tive
-> instead, shall we?
->
-
-thank you rafael.  i would really like to see the fighting stop, too.
-Perhaps the best palce to start would be to look directly at the
-patches and, if there are weaknesses, discuss how to improve them?
-
-m
-
-> Best,
-> Rafael
+T24gVGh1LCBNYXkgNywgMjAwOSBhdCA3OjQ5IFBNLCBLZW5uZXRoIENydWR1cCA8a2VubnlAcGFu
+aXguY29tPiB3cm90ZToKPgo+IE9uIFRodSwgNyBNYXkgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kg
+d3JvdGU6Cj4KPj4gTGV0cyB0cnkgdG8gd29yayB0b2dldGhlciB0byBkbyBzb21ldGhpbmcgcHJv
+ZHVjdGl2ZSBpbnN0ZWFkLCBzaGFsbCB3ZT8KPgo+IFdIUy4KPgoKRm9yIG5vdCBBbWVyaWNhbiBw
+ZW9wbGUgdGhpcyBleHBhbmRzIHRvIC4uLi4gPwoKCgo+IMKgIMKgIMKgIMKgLUtlbm55Cj4KPiAt
+LQo+IEtlbm5ldGggUi4gQ3J1ZHVwIMKgU3IuIFNXIEVuZ2luZWVyLCBTY290dCBDb3VudHkgQ29u
+c3VsdGluZywgTG9zIEFuZ2VsZXMKPiBPOiAzNjMwIFMuIFNlcHVsdmVkYSBCbHZkLiAjMTM4LCBM
+LkEuLCBDQSA5MDAzNC02ODA5IMKgIMKgIMKgKDg4OCkgNDU0LTgxODEKPiBfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IFR1eE9uSWNlLWRldmVsIG1haWxp
+bmcgbGlzdAo+IFR1eE9uSWNlLWRldmVsQGxpc3RzLnR1eG9uaWNlLm5ldAo+IGh0dHA6Ly9saXN0
+cy50dXhvbmljZS5uZXQvbWFpbG1hbi9saXN0aW5mby90dXhvbmljZS1kZXZlbAo+Cl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
