@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 20:09:52 +0200
-Message-ID: <200905072009.53406.rjw__5733.79398924789$1241720052$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060120.35698.rjw@sisk.pl>
-	<20090505164028.e9d807a1.akpm@linux-foundation.org>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 20:22:14 +0200
+Message-ID: <200905072022.15202.rjw__33240.5979781926$1241720671$gmane$org@sisk.pl>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905071945.45928.rjw@sisk.pl>
+	<f22f52180905071052o68e3999co8e353d46aa60b47c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090505164028.e9d807a1.akpm@linux-foundation.org>
+In-Reply-To: <f22f52180905071052o68e3999co8e353d46aa60b47c@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,48 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+To: Matt Price <moptop99@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, U Kuehn <ukuehn@acm.org>, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 06 May 2009, Andrew Morton wrote:
-> On Wed, 6 May 2009 01:20:34 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thursday 07 May 2009, Matt Price wrote:
+> On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday 07 May 2009, U Kuehn wrote:
+> >> Pavel Machek wrote:
+> >> >> T
+> > Also, as you can see from my previous message, I'm not a big fan of fighting
+> > over this once again.  Lets try to work together to do something productive
+> > instead, shall we?
+> >
 > 
-> > On Wednesday 06 May 2009, Andrew Morton wrote:
-> > > On Wed, 6 May 2009 00:19:35 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > > > +			&& !processes_are_frozen()) {
-> > > > > >  		if (!try_set_zone_oom(zonelist, gfp_mask)) {
-> > > > > >  			schedule_timeout_uninterruptible(1);
-> > > > > >  			goto restart;
-> > > > > 
-> > > > > Cool, that looks like the semantics of __GFP_NO_OOM_KILL without requiring 
-> > > > > a new gfp flag.  Thanks.
-> > > > 
-> > > > Well, you're welcome.
-> > > > 
-> > > > BTW, I think that Andrew was actually right when he asked if I checked whether
-> > > > the existing __GFP_NORETRY would work as-is for __GFP_FS set and
-> > > > __GFP_NORETRY unset.  Namely, in that case we never reach the code before
-> > > > nopage: that checks __GFP_NORETRY, do we?
-> > > > 
-> > > > So I think we shouldn't modify the 'else if' condition above and check for
-> > > > !processes_are_frozen() at the beginning of the block below.
-> > > 
-> > > Confused.
-> > > 
-> > > I'm suspecting that hibernation can allocate its pages with
-> > > __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
-> > > will dtrt: no oom-killings.
-> > > 
-> > > In which case, processes_are_frozen() is not needed at all?
-> > 
-> > __GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
-> > the combination.
-> 
-> OK.  __GFP_WAIT is the big hammer.
+> thank you rafael.  i would really like to see the fighting stop, too.
+> Perhaps the best palce to start would be to look directly at the
+> patches and, if there are weaknesses, discuss how to improve them?
 
-Unfortunately it fails too quickly with the combination as well, so it looks
-like we can't use __GFP_NORETRY during hibernation.
+Yes, I've talked about that already with Nigel and there's a kind of a plan.
+
+Thanks,
+Rafael
