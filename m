@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 4/5] PM/Hibernate: Rework shrinking of
-	memory
-Date: Thu, 7 May 2009 22:00:29 +0200
-Message-ID: <200905072200.30777.rjw__8940.64529934457$1241726602$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl>
-	<1241652436.19600.176.camel@nigel-laptop>
-	<200905071418.05035.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Thu, 7 May 2009 13:02:02 -0700
+Message-ID: <20090507130202.34cbe37a.akpm__3928.28737753934$1241727006$gmane$org@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072009.53406.rjw@sisk.pl>
+	<20090507114807.d7c6d26a.akpm@linux-foundation.org>
+	<200905072133.48917.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905071418.05035.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200905072133.48917.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> On Thursday 07 May 2009, Nigel Cunningham wrote:
-> > Hi.
-> 
-> Hi,
-> 
-> > On Thu, 2009-05-07 at 00:44 +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> > > just once to make some room for the image and then allocates memory
-> > > to apply more pressure to the memory management subsystem, if
-> > > necessary.
-> > > 
-> > > Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> > > entirely just yet, because that would lead to huge performance
-> > > regressions in some test cases.
+On Thu, 7 May 2009 21:33:47 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday 07 May 2009, Andrew Morton wrote:
+> > On Thu, 7 May 2009 20:09:52 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > 
-> > I know it doesn't fit with your current way of doing things, but have
-> > you considered trying larger order allocations as a means of getting
-> > memory freed?
+> > > > > > I'm suspecting that hibernation can allocate its pages with
+> > > > > > __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
+> > > > > > will dtrt: no oom-killings.
+> > > > > > 
+> > > > > > In which case, processes_are_frozen() is not needed at all?
+> > > > > 
+> > > > > __GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
+> > > > > the combination.
+> > > > 
+> > > > OK.  __GFP_WAIT is the big hammer.
+> > > 
+> > > Unfortunately it fails too quickly with the combination as well, so it looks
+> > > like we can't use __GFP_NORETRY during hibernation.
+> > 
+> > hm.
+> > 
+> > So where do we stand now?
+> > 
+> > I'm not a big fan of the global application-specific state change
+> > thing.  Something like __GFP_NO_OOM_KILL has a better chance of being
+> > reused by other subsystems in the future, which is a good indicator.
 > 
-> Actually, I was thinking about that.  What's your experience with this
-> approach?
-> 
-> > I have code in tuxonice_prepare_image.c (look for extra_pages_allocated) that
-> > might be helpful for this purpose.
-> 
-> OK, thanks.  I'll have a look at it.
+> I'm not against __GFP_NO_OOM_KILL, but there's been some strong resistance to
+> adding new _GPF _FOO flags recently.
 
-I have tried it, but the results are even worse than with 0-order allocations
-only.
+We have six or seven left - hardly a crisis.
 
-So far, I have got the best results with shrink_all_memory() called once and
-followed by allocating as much memory as we want to be free using 0-order
-allocations.  Like in this patch. :-)
+>  Is there any likelihood anyone else we'll
+> really need it any time soon?
 
-Thanks,
-Rafael
+Dunno - people do all sorts of crazy things.  But it's more likely to
+be reused than a PM-specific global!
+
+I have no strong feelings really, but slotting into the existing
+technique with something which might be reusable is quite a bit tidier.
