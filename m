@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 22:35:18 +0200
-Message-ID: <20090507203518.GA1652__35534.9690923051$1241728682$gmane$org@ucw.cz>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072133.48917.rjw@sisk.pl>
-	<20090507130202.34cbe37a.akpm@linux-foundation.org>
-	<200905072218.50782.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [RFC] TuxOnIce
+Date: Fri, 08 May 2009 06:37:39 +1000
+Message-ID: <1241728659.19600.204.camel__19935.6555626311$1241728824$gmane$org@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz>  <200905071942.54936.rjw@sisk.pl>
+Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
+In-Reply-To: <200905071942.54936.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,28 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Rientjes <rientjes@google.com>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-05-07 13:25:06, David Rientjes wrote:
-> On Thu, 7 May 2009, Rafael J. Wysocki wrote:
-> 
-> > OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
-> > I'll use the freezer-based approach instead.
-> > 
-> 
-> Third time I'm going to suggest this, and I'd like a response on why it's 
-> not possible instead of being ignored.
-> 
-> All of your tasks are in D state other than kthreads, right?  That means 
-> they won't be in the oom killer (thus no zones are oom locked), so you can 
-> easily do this
+Hi.
 
-Well, OOM killer may be running on behalf of some kthread at that
-point....? Quite unlikely, but possible AFAICT.
-									Pavel
+On Thu, 2009-05-07 at 19:42 +0200, Rafael J. Wysocki wrote:
+> Actually, I see advantages of working together versus fighting flame wars.
+> Please stop that, I'm not going to take part in it this time.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And neither am I.
+
+Regards,
+
+Nigel
