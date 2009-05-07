@@ -1,17 +1,18 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Kim Kyuwon <chammoru@gmail.com>
 Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
 	wakeup IRQs
-Date: Wed, 6 May 2009 18:18:23 -0700
-Message-ID: <d6200be20905061818h58145d5fie5c55ceaf900a196__25710.7571386316$1241659234$gmane$org@mail.gmail.com>
+Date: Thu, 7 May 2009 10:28:16 +0900
+Message-ID: <4d34a0a70905061828l3e35a954k76967b30c1a241ab__44529.3422243141$1241659844$gmane$org@mail.gmail.com>
 References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
 	<87y6tb3x6r.fsf@deeprootsystems.com>
 	<871vr22upr.fsf@deeprootsystems.com> <200905062318.23572.rjw@sisk.pl>
 	<87zldpu5rt.fsf@deeprootsystems.com>
+	<d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87zldpu5rt.fsf@deeprootsystems.com>
+In-Reply-To: <d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 6, 2009 at 5:16 PM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->
->> On Wednesday 06 May 2009, Kevin Hilman wrote:
->>> Kevin Hilman <khilman@deeprootsystems.com> writes:
-
-> There is at least one problem with that which is why Kyuwon Kim added
-> the ->disable hook to OMAP's irq_chip. =A0The problem is with drivers
-> that call disable_irq() in their suspend hook, usually done to prevent
-> the device from waking the system since on OMAP, any IRQ can be
-> configured to wake the system.
->
-
-This does not sound correct. disable_irq_wake should be used for this.
-A driver may need to mask its interrupt before suspending but this
-should not also disable it as a wakeup source.
-
-> If a driver's suspend hook calls disable_irq() and the system is
-> suspended before the lazy disable happens in the next handler, then
-> the system will be suspended with that device's IRQ still enabled.
-> Without an irq_chip->disable hook, that will result in that device IRQ
-> waking up the system if it fires.
-
-The platform suspend code needs to write the wakeup mask into
-interrupt controller the before entering suspend.
-
-
--- =
-
-Arve Hj=F8nnev=E5g
+MjAwOS81LzcgQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT46Cj4gT24gV2VkLCBN
+YXkgNiwgMjAwOSBhdCA1OjE2IFBNLCBLZXZpbiBIaWxtYW4KPiA8a2hpbG1hbkBkZWVwcm9vdHN5
+c3RlbXMuY29tPiB3cm90ZToKPj4gIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+IHdy
+aXRlczoKPj4KPj4+IE9uIFdlZG5lc2RheSAwNiBNYXkgMjAwOSwgS2V2aW4gSGlsbWFuIHdyb3Rl
+Ogo+Pj4+IEtldmluIEhpbG1hbiA8a2hpbG1hbkBkZWVwcm9vdHN5c3RlbXMuY29tPiB3cml0ZXM6
+Cj4KPj4gVGhlcmUgaXMgYXQgbGVhc3Qgb25lIHByb2JsZW0gd2l0aCB0aGF0IHdoaWNoIGlzIHdo
+eSBLeXV3b24gS2ltIGFkZGVkCj4+IHRoZSAtPmRpc2FibGUgaG9vayB0byBPTUFQJ3MgaXJxX2No
+aXAuIMKgVGhlIHByb2JsZW0gaXMgd2l0aCBkcml2ZXJzCj4+IHRoYXQgY2FsbCBkaXNhYmxlX2ly
+cSgpIGluIHRoZWlyIHN1c3BlbmQgaG9vaywgdXN1YWxseSBkb25lIHRvIHByZXZlbnQKPj4gdGhl
+IGRldmljZSBmcm9tIHdha2luZyB0aGUgc3lzdGVtIHNpbmNlIG9uIE9NQVAsIGFueSBJUlEgY2Fu
+IGJlCj4+IGNvbmZpZ3VyZWQgdG8gd2FrZSB0aGUgc3lzdGVtLgo+Pgo+Cj4gVGhpcyBkb2VzIG5v
+dCBzb3VuZCBjb3JyZWN0LiBkaXNhYmxlX2lycV93YWtlIHNob3VsZCBiZSB1c2VkIGZvciB0aGlz
+Lgo+IEEgZHJpdmVyIG1heSBuZWVkIHRvIG1hc2sgaXRzIGludGVycnVwdCBiZWZvcmUgc3VzcGVu
+ZGluZyBidXQgdGhpcwo+IHNob3VsZCBub3QgYWxzbyBkaXNhYmxlIGl0IGFzIGEgd2FrZXVwIHNv
+dXJjZS4KCkkgd2lzaCBJIGNvdWxkIHVzZSBkaXNhYmxlX2lycV93YWtlKCksIGJ1dCBpdCBkb2Vz
+bid0IHdvcmsgaW4gT01BUC4KCj4+IElmIGEgZHJpdmVyJ3Mgc3VzcGVuZCBob29rIGNhbGxzIGRp
+c2FibGVfaXJxKCkgYW5kIHRoZSBzeXN0ZW0gaXMKPj4gc3VzcGVuZGVkIGJlZm9yZSB0aGUgbGF6
+eSBkaXNhYmxlIGhhcHBlbnMgaW4gdGhlIG5leHQgaGFuZGxlciwgdGhlbgo+PiB0aGUgc3lzdGVt
+IHdpbGwgYmUgc3VzcGVuZGVkIHdpdGggdGhhdCBkZXZpY2UncyBJUlEgc3RpbGwgZW5hYmxlZC4K
+Pj4gV2l0aG91dCBhbiBpcnFfY2hpcC0+ZGlzYWJsZSBob29rLCB0aGF0IHdpbGwgcmVzdWx0IGlu
+IHRoYXQgZGV2aWNlIElSUQo+PiB3YWtpbmcgdXAgdGhlIHN5c3RlbSBpZiBpdCBmaXJlcy4KPgo+
+IFRoZSBwbGF0Zm9ybSBzdXNwZW5kIGNvZGUgbmVlZHMgdG8gd3JpdGUgdGhlIHdha2V1cCBtYXNr
+IGludG8KPiBpbnRlcnJ1cHQgY29udHJvbGxlciB0aGUgYmVmb3JlIGVudGVyaW5nIHN1c3BlbmQu
+Cj4KCmRpdHRvCgo+IC0tCj4gQXJ2ZSBIasO4bm5ldsOlZwo+IC0tCj4gVG8gdW5zdWJzY3JpYmUg
+ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWtlcm5lbCIg
+aW4KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwo+
+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgwqBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9t
+by1pbmZvLmh0bWwKPiBQbGVhc2UgcmVhZCB0aGUgRkFRIGF0IMKgaHR0cDovL3d3dy50dXgub3Jn
+L2xrbWwvCj4KCgoKLS0gCkt5dXdvbiAo6rec7JuQKQpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlz
+dHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
+Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
