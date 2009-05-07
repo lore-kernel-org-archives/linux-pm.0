@@ -1,16 +1,15 @@
-From: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 14:25:23 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.0905071417160.24417__7302.95007019794$1241731660$gmane$org@chino.kir.corp.google.com>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072218.50782.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
-	<200905072238.14558.rjw@sisk.pl>
-	<20090507135615.e7db550d.akpm@linux-foundation.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 23:42:55 +0200
+Message-ID: <20090507214255.GA14611__23253.4712100916$1241732849$gmane$org@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090507135615.e7db550d.akpm@linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <4A03129A.90105@acm.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,50 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+To: U Kuehn <ukuehn@acm.org>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 May 2009, Andrew Morton wrote:
+Hi!
 
-> > > All of your tasks are in D state other than kthreads, right?  That means 
-> > > they won't be in the oom killer (thus no zones are oom locked), so you can 
-> > > easily do this
-> > > 
-> > > 	struct zone *z;
-> > > 	for_each_populated_zone(z)
-> > > 		zone_set_flag(z, ZONE_OOM_LOCKED);
-> > > 
-> > > and then
-> > > 
-> > > 	for_each_populated_zone(z)
-> > > 		zone_clear_flag(z, ZONE_OOM_LOCKED);
-> > > 
-> > > The serialization is done with trylocks so this will never invoke the oom 
-> > > killer because all zones in the allocator's zonelist will be oom locked.
-> > > 
-> > > Why does this not work for you?
+> >> - Support for multiple swap devices
+> >> - Support for non-swap (an ordinary file can be used)
+> >> - Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
+> >> - Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
+> >>   possible with your hardware.
+> >> - Userspace user interface that lets you abort hibernating and abort
+> >>   resuming, get nice progress display etc.
 > > 
-> > Well, it might work too, but why are you insisting?  How's it better than
-> > __GFP_NO_OOM_KILL, actually?
-> > 
-> > Andrew, what do you think about this?
+> > All these are either done by uswsusp already, or could be done w/o
+> > modifying kernel code.
 > 
-> I don't think I understand the proposal.  Is it to provide a means by
-> which PM can go in and set a state bit against each and every zone?  If
-> so, that's still a global boolean, only messier.
-> 
+> Given that tuxonice DOES work reliably with dm-crypt encrypted swap
+> partitions, does uswsusp offer this functionality? Looking into the docs
+> on the sourceforge site does not give any information about this
+> - point.
 
-Why can't it be global while preallocating memory for hibernation since 
-nothing but kthreads could allocate at this point and if the system is oom 
-then the oom killer wouldn't be able to do anything anyway since it can't 
-kill them?
+uswsusp does not care what kind of device it writes on, so yes,
+dm-crypt works. IIRC seife was working on some YaST scripts so that
+setting it up was easy for users.
 
-The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
-whether it specifies it or not since the oom killer would simply kill a 
-task in D state which can't exit or free memory and subsequent allocations 
-would make the oom killer a no-op because there's an eligible task with 
-TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
-calling the oom killer in a first place and killing an unresponsive task 
-but that would have to happen anyway when thawed since the system is oom 
-(or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
+> Further, being someone with a crypto background, the userland suspend
+> helper does have some issues with the password/key handling:
+> 1) no support for keys containing a 0 byte. (cryptsetup can handle
+> this)
+
+"passwords containing 0 byte" ? Is that a big deal? How would user
+enter such password?
+
+> 2) the rsa functionality seems to use the unsound practice to encrypt
+> the symmetric key directly without any padding (aka encoding in libgcrypt).
+
+If this is easy to fix, can you tell me what to do?
+
+Otherwise, can you write a short note to bugtraq? Having bad crypto in
+uswsusp would indeed be very very bad.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
