@@ -1,18 +1,17 @@
-From: Kim Kyuwon <chammoru@gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Thu, 7 May 2009 10:28:16 +0900
-Message-ID: <4d34a0a70905061828l3e35a954k76967b30c1a241ab__44529.3422243141$1241659844$gmane$org@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<87y6tb3x6r.fsf@deeprootsystems.com>
-	<871vr22upr.fsf@deeprootsystems.com> <200905062318.23572.rjw@sisk.pl>
-	<87zldpu5rt.fsf@deeprootsystems.com>
-	<d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+	suspend blockers from user-space
+Date: Wed, 6 May 2009 18:31:36 -0700
+Message-ID: <d6200be20905061831o43df8558pdbc0b5284f8a8f20@mail.gmail.com>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<1241583529-5092-2-git-send-email-arve@android.com>
+	<1241583529-5092-3-git-send-email-arve@android.com>
+	<20090505201624.GH1379@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
+In-Reply-To: <20090505201624.GH1379@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +21,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-MjAwOS81LzcgQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT46Cj4gT24gV2VkLCBN
-YXkgNiwgMjAwOSBhdCA1OjE2IFBNLCBLZXZpbiBIaWxtYW4KPiA8a2hpbG1hbkBkZWVwcm9vdHN5
-c3RlbXMuY29tPiB3cm90ZToKPj4gIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+IHdy
-aXRlczoKPj4KPj4+IE9uIFdlZG5lc2RheSAwNiBNYXkgMjAwOSwgS2V2aW4gSGlsbWFuIHdyb3Rl
-Ogo+Pj4+IEtldmluIEhpbG1hbiA8a2hpbG1hbkBkZWVwcm9vdHN5c3RlbXMuY29tPiB3cml0ZXM6
-Cj4KPj4gVGhlcmUgaXMgYXQgbGVhc3Qgb25lIHByb2JsZW0gd2l0aCB0aGF0IHdoaWNoIGlzIHdo
-eSBLeXV3b24gS2ltIGFkZGVkCj4+IHRoZSAtPmRpc2FibGUgaG9vayB0byBPTUFQJ3MgaXJxX2No
-aXAuIMKgVGhlIHByb2JsZW0gaXMgd2l0aCBkcml2ZXJzCj4+IHRoYXQgY2FsbCBkaXNhYmxlX2ly
-cSgpIGluIHRoZWlyIHN1c3BlbmQgaG9vaywgdXN1YWxseSBkb25lIHRvIHByZXZlbnQKPj4gdGhl
-IGRldmljZSBmcm9tIHdha2luZyB0aGUgc3lzdGVtIHNpbmNlIG9uIE9NQVAsIGFueSBJUlEgY2Fu
-IGJlCj4+IGNvbmZpZ3VyZWQgdG8gd2FrZSB0aGUgc3lzdGVtLgo+Pgo+Cj4gVGhpcyBkb2VzIG5v
-dCBzb3VuZCBjb3JyZWN0LiBkaXNhYmxlX2lycV93YWtlIHNob3VsZCBiZSB1c2VkIGZvciB0aGlz
-Lgo+IEEgZHJpdmVyIG1heSBuZWVkIHRvIG1hc2sgaXRzIGludGVycnVwdCBiZWZvcmUgc3VzcGVu
-ZGluZyBidXQgdGhpcwo+IHNob3VsZCBub3QgYWxzbyBkaXNhYmxlIGl0IGFzIGEgd2FrZXVwIHNv
-dXJjZS4KCkkgd2lzaCBJIGNvdWxkIHVzZSBkaXNhYmxlX2lycV93YWtlKCksIGJ1dCBpdCBkb2Vz
-bid0IHdvcmsgaW4gT01BUC4KCj4+IElmIGEgZHJpdmVyJ3Mgc3VzcGVuZCBob29rIGNhbGxzIGRp
-c2FibGVfaXJxKCkgYW5kIHRoZSBzeXN0ZW0gaXMKPj4gc3VzcGVuZGVkIGJlZm9yZSB0aGUgbGF6
-eSBkaXNhYmxlIGhhcHBlbnMgaW4gdGhlIG5leHQgaGFuZGxlciwgdGhlbgo+PiB0aGUgc3lzdGVt
-IHdpbGwgYmUgc3VzcGVuZGVkIHdpdGggdGhhdCBkZXZpY2UncyBJUlEgc3RpbGwgZW5hYmxlZC4K
-Pj4gV2l0aG91dCBhbiBpcnFfY2hpcC0+ZGlzYWJsZSBob29rLCB0aGF0IHdpbGwgcmVzdWx0IGlu
-IHRoYXQgZGV2aWNlIElSUQo+PiB3YWtpbmcgdXAgdGhlIHN5c3RlbSBpZiBpdCBmaXJlcy4KPgo+
-IFRoZSBwbGF0Zm9ybSBzdXNwZW5kIGNvZGUgbmVlZHMgdG8gd3JpdGUgdGhlIHdha2V1cCBtYXNr
-IGludG8KPiBpbnRlcnJ1cHQgY29udHJvbGxlciB0aGUgYmVmb3JlIGVudGVyaW5nIHN1c3BlbmQu
-Cj4KCmRpdHRvCgo+IC0tCj4gQXJ2ZSBIasO4bm5ldsOlZwo+IC0tCj4gVG8gdW5zdWJzY3JpYmUg
-ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWtlcm5lbCIg
-aW4KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwo+
-IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgwqBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9t
-by1pbmZvLmh0bWwKPiBQbGVhc2UgcmVhZCB0aGUgRkFRIGF0IMKgaHR0cDovL3d3dy50dXgub3Jn
-L2xrbWwvCj4KCgoKLS0gCkt5dXdvbiAo6rec7JuQKQpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Tue, May 5, 2009 at 1:16 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Tue 2009-05-05 21:18:42, Arve Hj??nnev??g wrote:
+>> Add a misc device, "suspend_blocker", that allows user-space processes
+>> to block auto suspend. The device has ioctls to create a suspend_blocker,
+>> and to block and unblock suspend. To delete the suspend_blocker, close
+>> the device.
+>>
+>
+>> +static int create_user_suspend_blocker(struct file *file, void __user *=
+name,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0size_t name=
+_len)
+>> +{
+>> + =A0 =A0 struct user_suspend_blocker *bl;
+>> + =A0 =A0 if (file->private_data)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return -EBUSY;
+>> + =A0 =A0 bl =3D kzalloc(sizeof(*bl) + name_len + 1, GFP_KERNEL);
+> ...
+>> +static long user_suspend_blocker_ioctl(struct file *file, unsigned int =
+cmd,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsigned long =
+_arg)
+>> +{
+>> + =A0 =A0 void __user *arg =3D (void __user *)_arg;
+>> + =A0 =A0 struct user_suspend_blocker *bl;
+>> + =A0 =A0 long ret;
+>> +
+>> + =A0 =A0 mutex_lock(&ioctl_lock);
+>> + =A0 =A0 if ((cmd & ~IOCSIZE_MASK) =3D=3D SUSPEND_BLOCKER_IOCTL_INIT(0)=
+) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 ret =3D create_user_suspend_blocker(file, arg,=
+ _IOC_SIZE(cmd));
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto done;
+>> + =A0 =A0 }
+>
+> Wait a moment, wtf is this? Not one ioctl but one ioctl per length of
+> string?!
+
+This is not uncommon. _IOC encodes the size of the argument, and if
+this is not a fixed size, then the raw ioctl number change based on
+the size passed in. Look at input.h is you want other examples of
+this.
+
+-- =
+
+Arve Hj=F8nnev=E5g
