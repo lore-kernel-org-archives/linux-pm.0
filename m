@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 7 May 2009 21:27:11 +0200
-Message-ID: <200905072127.11995.rjw__30637.0865706869$1241724673$gmane$org@sisk.pl>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905072022.15202.rjw@sisk.pl>
-	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Thu, 7 May 2009 21:33:47 +0200
+Message-ID: <200905072133.48917.rjw__24735.5258827612$1241724944$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072009.53406.rjw@sisk.pl>
+	<20090507114807.d7c6d26a.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+In-Reply-To: <20090507114807.d7c6d26a.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,40 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Matt Price <moptop99@gmail.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel-testers@vger.kernel.org, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Fabio Comolli wrote:
-> On Thu, May 7, 2009 at 8:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday 07 May 2009, Matt Price wrote:
-> >> On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Thursday 07 May 2009, U Kuehn wrote:
-> >> >> Pavel Machek wrote:
-> >> >> >> T
-> >> > Also, as you can see from my previous message, I'm not a big fan of fighting
-> >> > over this once again.  Lets try to work together to do something productive
-> >> > instead, shall we?
-> >> >
-> >>
-> >> thank you rafael.  i would really like to see the fighting stop, too.
-> >> Perhaps the best palce to start would be to look directly at the
-> >> patches and, if there are weaknesses, discuss how to improve them?
-> >
-> > Yes, I've talked about that already with Nigel and there's a kind of a plan.
-> >
+On Thursday 07 May 2009, Andrew Morton wrote:
+> On Thu, 7 May 2009 20:09:52 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Well, if I may jump in I suggest you start with the full-memory image
-> functionality. This is in my opinion the biggest advantage in tuxonice
-> vs. uswsusp.
+> > > > > I'm suspecting that hibernation can allocate its pages with
+> > > > > __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN, and the page allocator
+> > > > > will dtrt: no oom-killings.
+> > > > > 
+> > > > > In which case, processes_are_frozen() is not needed at all?
+> > > > 
+> > > > __GFP_NORETRY alone causes it to fail relatively quickly, but I'll try with
+> > > > the combination.
+> > > 
+> > > OK.  __GFP_WAIT is the big hammer.
+> > 
+> > Unfortunately it fails too quickly with the combination as well, so it looks
+> > like we can't use __GFP_NORETRY during hibernation.
+> 
+> hm.
+> 
+> So where do we stand now?
+> 
+> I'm not a big fan of the global application-specific state change
+> thing.  Something like __GFP_NO_OOM_KILL has a better chance of being
+> reused by other subsystems in the future, which is a good indicator.
 
-In fact I agree, but there's a catch.  The way in which TuxOnIce operates LRU
-pages is based on some assumptions that may or may not be satisfied in future,
-so if we decide to merge it, then we'll have to make sure these assumptions
-will be satisfied.  That in turn is going to require quite some discussion I
-guess.
+I'm not against __GFP_NO_OOM_KILL, but there's been some strong resistance to
+adding new _GPF _FOO flags recently.  Is there any likelihood anyone else we'll
+really need it any time soon?
 
-We'll see how the things work out.
-
-Thanks,
-Rafael
+The advantage of the freezer-based approach is that it disables the OOM killer
+when it's not going to work anyway, so it looks like a reasonable thing to do
+regardless.  IMHO.
