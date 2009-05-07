@@ -1,12 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH] genirq: update irq_chip struct comment for
-	irq_chip->disable hook
-Date: Wed,  6 May 2009 17:17:47 -0700
-Message-ID: <1241655468-5750-1-git-send-email-khilman__22247.2623260275$1241655942$gmane$org@deeprootsystems.com>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [RFC][PATCH 1/5] PM/Freezer: Disable OOM
+	killer	whentasks are frozen
+Date: Wed, 6 May 2009 17:36:03 -0700
+Message-ID: <20090507003603.GD17680__45401.8730357804$1241658123$gmane$org@us.ibm.com>
+References: <200905070040.08561.rjw@sisk.pl> <200905070041.04787.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200905070041.04787.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,29 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The irq_chip disable hook no longer defaults to a irq_chip->unmask.
+On Thu, May 07, 2009 at 12:41:04AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The OOM killer is not really going to work while tasks are frozen, so
+> we can just give up calling it in that case.
+> 
+> This will allow us to safely use memory allocations for decreasing
+> the number of saveable pages in the hibernation core code instead of
+> using any artificial memory shriking mechanisms for this purpose.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- include/linux/irq.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b7cbeed..3674046 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -88,7 +88,7 @@ struct msi_desc;
-  * @startup:		start up the interrupt (defaults to ->enable if NULL)
-  * @shutdown:		shut down the interrupt (defaults to ->disable if NULL)
-  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
-- * @disable:		disable the interrupt (defaults to chip->mask if NULL)
-+ * @disable:		disable the interrupt
-  * @ack:		start of a new interrupt
-  * @mask:		mask an interrupt source
-  * @mask_ack:		ack and mask an interrupt source
--- 
-1.6.2.2
+> ---
+>  include/linux/freezer.h |    2 ++
+>  kernel/power/process.c  |   12 ++++++++++++
+>  mm/page_alloc.c         |    5 +++++
+>  3 files changed, 19 insertions(+)
+> 
+> Index: linux-2.6/kernel/power/process.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/process.c
+> +++ linux-2.6/kernel/power/process.c
+> @@ -19,6 +19,8 @@
+>   */
+>  #define TIMEOUT	(20 * HZ)
+> 
+> +static bool tasks_frozen;
+> +
+>  static inline int freezeable(struct task_struct * p)
+>  {
+>  	if ((p == current) ||
+> @@ -120,6 +122,10 @@ int freeze_processes(void)
+>   Exit:
+>  	BUG_ON(in_atomic());
+>  	printk("\n");
+> +
+> +	if (!error)
+> +		tasks_frozen = true;
+> +
+
+It's not really about whether some tasks are frozen -- that can 
+happen using the cgroup freezer too. The flag really indicates if
+all killable tasks are frozen. That can't happen using the cgroup
+freezer since the root cgroup can't be frozen. So I think some name changes 
+are in order but otherwise the patch looks fine.
+
+Cheers,
+	-Matt Helsley
