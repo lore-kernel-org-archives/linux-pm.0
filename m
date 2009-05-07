@@ -1,15 +1,17 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [RFC][PATCH 1/5] PM/Freezer: Disable OOM
-	killer	whentasks are frozen
-Date: Wed, 6 May 2009 17:36:03 -0700
-Message-ID: <20090507003603.GD17680__45401.8730357804$1241658123$gmane$org@us.ibm.com>
-References: <200905070040.08561.rjw@sisk.pl> <200905070041.04787.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Wed, 6 May 2009 18:18:23 -0700
+Message-ID: <d6200be20905061818h58145d5fie5c55ceaf900a196__25710.7571386316$1241659234$gmane$org@mail.gmail.com>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<87y6tb3x6r.fsf@deeprootsystems.com>
+	<871vr22upr.fsf@deeprootsystems.com> <200905062318.23572.rjw@sisk.pl>
+	<87zldpu5rt.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200905070041.04787.rjw@sisk.pl>
+In-Reply-To: <87zldpu5rt.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,56 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 07, 2009 at 12:41:04AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The OOM killer is not really going to work while tasks are frozen, so
-> we can just give up calling it in that case.
-> 
-> This will allow us to safely use memory allocations for decreasing
-> the number of saveable pages in the hibernation core code instead of
-> using any artificial memory shriking mechanisms for this purpose.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, May 6, 2009 at 5:16 PM, Kevin Hilman
+<khilman@deeprootsystems.com> wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> On Wednesday 06 May 2009, Kevin Hilman wrote:
+>>> Kevin Hilman <khilman@deeprootsystems.com> writes:
+
+> There is at least one problem with that which is why Kyuwon Kim added
+> the ->disable hook to OMAP's irq_chip. =A0The problem is with drivers
+> that call disable_irq() in their suspend hook, usually done to prevent
+> the device from waking the system since on OMAP, any IRQ can be
+> configured to wake the system.
+>
+
+This does not sound correct. disable_irq_wake should be used for this.
+A driver may need to mask its interrupt before suspending but this
+should not also disable it as a wakeup source.
+
+> If a driver's suspend hook calls disable_irq() and the system is
+> suspended before the lazy disable happens in the next handler, then
+> the system will be suspended with that device's IRQ still enabled.
+> Without an irq_chip->disable hook, that will result in that device IRQ
+> waking up the system if it fires.
+
+The platform suspend code needs to write the wakeup mask into
+interrupt controller the before entering suspend.
 
 
-> ---
->  include/linux/freezer.h |    2 ++
->  kernel/power/process.c  |   12 ++++++++++++
->  mm/page_alloc.c         |    5 +++++
->  3 files changed, 19 insertions(+)
-> 
-> Index: linux-2.6/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/process.c
-> +++ linux-2.6/kernel/power/process.c
-> @@ -19,6 +19,8 @@
->   */
->  #define TIMEOUT	(20 * HZ)
-> 
-> +static bool tasks_frozen;
-> +
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -120,6 +122,10 @@ int freeze_processes(void)
->   Exit:
->  	BUG_ON(in_atomic());
->  	printk("\n");
-> +
-> +	if (!error)
-> +		tasks_frozen = true;
-> +
+-- =
 
-It's not really about whether some tasks are frozen -- that can 
-happen using the cgroup freezer too. The flag really indicates if
-all killable tasks are frozen. That can't happen using the cgroup
-freezer since the root cgroup can't be frozen. So I think some name changes 
-are in order but otherwise the patch looks fine.
-
-Cheers,
-	-Matt Helsley
+Arve Hj=F8nnev=E5g
