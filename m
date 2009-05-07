@@ -1,19 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 4/9] Input: Block suspend while event queue
-	is not empty.
-Date: Wed, 6 May 2009 18:57:59 -0700
-Message-ID: <d6200be20905061857i750e3d1dp136eec2c67a1a79c@mail.gmail.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<1241583529-5092-2-git-send-email-arve@android.com>
-	<1241583529-5092-3-git-send-email-arve@android.com>
-	<1241583529-5092-4-git-send-email-arve@android.com>
-	<1241583529-5092-5-git-send-email-arve@android.com>
-	<20090505200230.GF1379@ucw.cz>
+From: Wu Fengguang <fengguang.wu@gmail.com>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory	unnecessarily (rev. 2)
+Date: Thu, 7 May 2009 09:58:03 +0800
+Message-ID: <20090507015803.GA12281__14614.4879902296$1241661613$gmane$org@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl>
+	<20090506135659.GB26233@localhost> <200905062254.10227.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090505200230.GF1379@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <200905062254.10227.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,52 +20,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, dmitry.torokhov@gmail.com, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 5, 2009 at 1:02 PM, Pavel Machek <pavel@ucw.cz> wrote:
->
->> Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker that will =
-block
->> suspend while the event queue is not empty. This allows userspace code to
->> process input events while the device appears to be asleep.
->>
->> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
->
-> Looks ok to =A0me, but I guess you should cc input maintainers.
+On Thu, May 07, 2009 at 04:54:09AM +0800, Rafael J. Wysocki wrote:
+> On Wednesday 06 May 2009, Wu Fengguang wrote:
+> > On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > 
+> > > > > Since the hibernation code is now going to use allocations of memory
+> > > > > to create enough room for the image, it can also use the page frames
+> > > > > allocated at this stage as image page frames.  The low-level
+> > > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > > allows us to avoid freeing a great number of pages and allocating
+> > > > > these same pages once again later, so it generally is worth doing.
+> > > > > 
+> > > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > > >  many pages as needed to get the right image size in one shot (the
+> > > > >  excessive allocated pages are released afterwards).]
+> > > > 
+> > > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > > >
+> > > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > > 
+> > > Unfortunately, I'm observing a regression and a huge one.
+> > > 
+> > > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > > and that takes ~2 s with the old code and ~15 s with the new one.
+> > > 
+> > > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > > before the preallocation.
+> > [snip]
+> > > > At last, I'd express my major concern about the transition to preallocate
+> > > > based memory shrinking: will it lead to more random swapping IOs?
+> > > 
+> > > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> > > is related to that ...
+> > 
+> > So you do have swap file enabled? hibernate_preallocate_memory() will
+> > firstly try to allocate as much pages as possible(savable+free), and
+> > then to free up (allocated-image_size) pages.
+> 
+> No.  It's going to allocate (total RAM - anticipated image size) and then free
+> up (allocated-image_size) pages.
 
-OK.
+Ah yes - I didn't notice that count was subtracted here:
 
->
->> @@ -582,6 +591,19 @@ static long evdev_do_ioctl(struct file *file, unsig=
-ned int cmd,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return evdev_ungrab(evdev, c=
-lient);
->>
->> + =A0 =A0 case EVIOCGSUSPENDBLOCK:
->> + =A0 =A0 =A0 =A0 =A0 =A0 return put_user(client->use_suspend_blocker, i=
-p);
->> +
->> + =A0 =A0 case EVIOCSSUSPENDBLOCK:
->> + =A0 =A0 =A0 =A0 =A0 =A0 spin_lock_irq(&client->buffer_lock);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!client->use_suspend_blocker && p)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_blocker_init(&client->=
-suspend_blocker, "evdev");
->> + =A0 =A0 =A0 =A0 =A0 =A0 else if (client->use_suspend_blocker && !p)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_blocker_destroy(&clien=
-t->suspend_blocker);
->> + =A0 =A0 =A0 =A0 =A0 =A0 client->use_suspend_blocker =3D !!p;
->> + =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock_irq(&client->buffer_lock);
->> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->
-> This returns 0 even when you destroy already destroyed blocker
-> (etc). Is that ok?
+        for (count -= size; count > 0; count--) {
 
-Yes. If events did not block suspend before the call, they still do
-not block suspend after the call, so the requested state was reached.
+Make "count -= size" a standalone line to make that more obvious?
 
--- =
+> If we consider maximum image sizes, that means allocating slightly more than
+> 50% of RAM, so it really shouldn't regress that much IMO.
 
-Arve Hj=F8nnev=E5g
+Right, that would be a less problem.
