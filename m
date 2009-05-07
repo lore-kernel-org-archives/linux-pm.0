@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH] PM/Freezer: Disable OOM killer when tasks
-	are frozen (was: Re: [RFC][PATCH 1/5] mm: Introduce
-	__GFP_NO_OOM_KILL)
-Date: Fri, 8 May 2009 00:24:24 +0200
-Message-ID: <200905080024.25039.rjw__8191.32414549149$1241735424$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
-	<200905072350.07105.rjw@sisk.pl>
+Subject: [RFC][PATCH 0/5] PM/Hibernate: Rework memory shrinking
+	(rev. 2)
+Date: Thu, 7 May 2009 23:48:58 +0200
+Message-ID: <200905072348.59856.rjw__13888.2415173159$1241735824$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905072350.07105.rjw@sisk.pl>
+In-Reply-To: <200905070040.08561.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -26,135 +24,34 @@ Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.or
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> From: Andrew Morton <akpm@linux-foundation.org>
+> Hi,
 > 
-> > > Remind me: why can't we just allocate N pages at suspend-time?
-> > 
-> > We need half of memory free. The reason we can't "just allocate" is
-> > probably OOM killer; but my memories are quite weak :-(.
+> The following patchset is an attempt to rework the memory shrinking mechanism
+> used during hibernation to make room for the image.  It is a work in progress
+> and most likely it's going to be modified, but it has been discussed recently
+> and I'd like to get comments on the current version.
 > 
-> hm.  You'd think that with our splendid range of __GFP_foo falgs, there
-> would be some combo which would suit this requirement but I can't
-> immediately spot one.
+> [1/5] - disable the OOM kernel after freezing tasks (this will be dropped if
+>         it's verified that we can avoid the OOM killing by using
+>         __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN
+>         in the next patches).
 > 
-> We can always add another I guess.  Something like...
+> [2/5] - drop memory shrinking from the suspend (to RAM) code path
 > 
-> [rjw: fixed white space, added comment in page_alloc.c]
+> [3/5] - move swsusp_shrink_memory() to snapshot.c
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> [4/5] - rework swsusp_shrink_memory() (to use memory allocations for applying
+>         memory pressure)
+> 
+> [5/5] - allocate image pages along with the shrinking.
 
-An alternative to this one is the appended patch.
+Updated patchset follows.
 
-The idea here is that after freezing the user space totally, there's no point
-in letting the OOM killer run, because that won't result in any memory being
-freed anyway until the tasks are thawed.
+Most importantly, the first patch has been replaced by the one adding
+__GFP_NO_OOM_KILL, following the Andrew's advice.  The other patches are
+slightly changed to address some comments I've received since yesterday.
 
-Thanks,
+Please tell me what you think.
+
+Best,
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM/Freezer: Disable OOM killer when tasks are frozen
-
-The OOM killer is not really going to work while tasks are frozen, so
-we can just give up calling it in that case.
-
-This will allow us to safely use memory allocations for decreasing
-the number of saveable pages in the hibernation core code instead of
-using any artificial memory shriking mechanisms for this purpose.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |    2 ++
- kernel/power/process.c  |   16 ++++++++++++++++
- mm/page_alloc.c         |    5 +++++
- 3 files changed, 23 insertions(+)
-
-Index: linux-2.6/kernel/power/process.c
-===================================================================
---- linux-2.6.orig/kernel/power/process.c
-+++ linux-2.6/kernel/power/process.c
-@@ -19,6 +19,12 @@
-  */
- #define TIMEOUT	(20 * HZ)
- 
-+/*
-+ * Set after freeze_processes() has successfully run and reset at the beginning
-+ * of thaw_processes().
-+ */
-+static bool all_tasks_frozen;
-+
- static inline int freezeable(struct task_struct * p)
- {
- 	if ((p == current) ||
-@@ -120,6 +126,10 @@ int freeze_processes(void)
-  Exit:
- 	BUG_ON(in_atomic());
- 	printk("\n");
-+
-+	if (!error)
-+		all_tasks_frozen = true;
-+
- 	return error;
- }
- 
-@@ -145,6 +155,8 @@ static void thaw_tasks(bool nosig_only)
- 
- void thaw_processes(void)
- {
-+	all_tasks_frozen = false;
-+
- 	printk("Restarting tasks ... ");
- 	thaw_tasks(true);
- 	thaw_tasks(false);
-@@ -152,3 +164,7 @@ void thaw_processes(void)
- 	printk("done.\n");
- }
- 
-+bool killable_tasks_are_frozen(void)
-+{
-+	return all_tasks_frozen;
-+}
-Index: linux-2.6/include/linux/freezer.h
-===================================================================
---- linux-2.6.orig/include/linux/freezer.h
-+++ linux-2.6/include/linux/freezer.h
-@@ -50,6 +50,7 @@ extern int thaw_process(struct task_stru
- extern void refrigerator(void);
- extern int freeze_processes(void);
- extern void thaw_processes(void);
-+extern bool killable_tasks_are_frozen(void);
- 
- static inline int try_to_freeze(void)
- {
-@@ -170,6 +171,7 @@ static inline int thaw_process(struct ta
- static inline void refrigerator(void) {}
- static inline int freeze_processes(void) { BUG(); return 0; }
- static inline void thaw_processes(void) {}
-+static inline bool killable_tasks_are_frozen(void) { return false; }
- 
- static inline int try_to_freeze(void) { return 0; }
- 
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -46,6 +46,7 @@
- #include <linux/page-isolation.h>
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
-+#include <linux/freezer.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -1600,6 +1601,10 @@ nofail_alloc:
- 		if (page)
- 			goto got_pg;
- 	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
-+		/* The OOM killer won't work if processes are frozen. */
-+		if (killable_tasks_are_frozen())
-+			goto nopage;
-+
- 		if (!try_set_zone_oom(zonelist, gfp_mask)) {
- 			schedule_timeout_uninterruptible(1);
- 			goto restart;
