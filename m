@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Fri, 8 May 2009 00:05:43 +0200
-Message-ID: <200905080005.44589.rjw__47389.2145710581$1241735838$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072336.11383.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905071439370.24404@chino.kir.corp.google.com>
+Subject: [RFC][PATCH 4/5] PM/Hibernate: Rework shrinking of memory
+Date: Thu, 7 May 2009 23:53:47 +0200
+Message-ID: <200905072353.48515.rjw__13015.1228084744$1241735856$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905071439370.24404@chino.kir.corp.google.com>
+In-Reply-To: <200905072348.59856.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,59 +18,194 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Rientjes <rientjes@google.com>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, David Rientjes wrote:
-> On Thu, 7 May 2009, Rafael J. Wysocki wrote:
-> 
-> > > The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
-> > > whether it specifies it or not since the oom killer would simply kill a 
-> > > task in D state which can't exit or free memory and subsequent allocations 
-> > > would make the oom killer a no-op because there's an eligible task with 
-> > > TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
-> > > calling the oom killer in a first place and killing an unresponsive task 
-> > 
-> > That's exactly what we're trying to do.  We don't want tasks to get killed just
-> > because we're freeing memory for hibernation image.
-> > 
-> 
-> Then, again, why can't you just lock out the oom killer as I suggested if 
-> __GFP_NO_OOM_KILL is actually implied for all allocations when 
-> preallocating?  It prevents adding an unnecessary gfp flag, sprinkling it 
-> around in the hibernation code,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-In one place really.
+Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+just once to make some room for the image and then allocates memory
+to apply more pressure to the memory management subsystem, if
+necessary.
 
-> and a comment would actually explain why it's the right thing to do (i.e. no
-> other threads other than kthreads could possibly be executing the oom killer
-> and if they are oom then we'll have to kill a userspace task anyway when
-> thawed).
+Unfortunately, we don't seem to be able to drop shrink_all_memory()
+entirely just yet, because that would lead to huge performance
+regressions in some test cases.
 
-Quite frankly, I prefer my freezer-based patch to this.  I'm not really
-inclined to fiddle with the mm internals from within snapshot.c .
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |  144 ++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 97 insertions(+), 47 deletions(-)
 
-Still, I trust the Andrew's experience and that's why I'm going to try the
-__GFP_NO_OOM_KILL first, as I already said.  If there is a problem with it,
-I'm going to use the freezer-based approach.
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1066,69 +1066,119 @@ void swsusp_free(void)
+ 	buffer = NULL;
+ }
  
-> > > but that would have to happen anyway when thawed since the system is oom 
-> > > (or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
-> > 
-> > Are you sure?  The image memory is freed before thawing tasks.
-> > 
-> 
-> If you try to allocate any non-__GFP_NORETRY memory such as GFP_KERNEL 
-> with order < PAGE_ALLOC_COSTLY_ORDER and direct reclaim cannot free memory 
-> (and the oom killer is implicitly a no-op whether you specify 
-> __GFP_NO_OOM_KILL or not), then you could loop endlessly in the page 
-> allocator.  When allocating GFP_IMAGE you need to ensure that can't happen 
-> and __GFP_NORETRY may not be your best option because it could fail 
-> unnecessarily when reclaim could have helped.
-
-I'm really unsure what you mean and how that is related to your previous remark
-about what's going to happen after the thawing of tasks.
-
-Thanks,
-Rafael
++/* Helper functions used for the shrinking of memory. */
++
++#define GFP_IMAGE	(GFP_KERNEL | __GFP_NOWARN | __GFP_NO_OOM_KILL)
++
+ /**
+- *	swsusp_shrink_memory -  Try to free as much memory as needed
+- *
+- *	... but do not OOM-kill anyone
++ * preallocate_image_memory - Allocate given number of page frames
++ * @nr_pages: Number of page frames to allocate
+  *
+- *	Notice: all userland should be stopped before it is called, or
+- *	livelock is possible.
++ * Return value: Number of page frames actually allocated
+  */
+-
+-#define SHRINK_BITE	10000
+-static inline unsigned long __shrink_memory(long tmp)
++static unsigned long preallocate_image_memory(unsigned long nr_pages)
+ {
+-	if (tmp > SHRINK_BITE)
+-		tmp = SHRINK_BITE;
+-	return shrink_all_memory(tmp);
++	unsigned long nr_alloc = 0;
++
++	while (nr_pages > 0) {
++		if (!alloc_image_page(GFP_IMAGE))
++			break;
++		nr_pages--;
++		nr_alloc++;
++	}
++
++	return nr_alloc;
+ }
+ 
++/**
++ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
++ *
++ * To create a hibernation image it is necessary to make a copy of every page
++ * frame in use.  We also need a number of page frames to be free during
++ * hibernation for allocations made while saving the image and for device
++ * drivers, in case they need to allocate memory from their hibernation
++ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
++ * respectively, both of which are rough estimates).  To make this happen, we
++ * compute the total number of available page frames and allocate at least
++ *
++ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
++ *
++ * of them, which corresponds to the maximum size of a hibernation image.
++ *
++ * If image_size is set below the number following from the above formula,
++ * the preallocation of memory is continued until the total number of page
++ * frames in use is below the requested image size or it is impossible to
++ * allocate more memory, whichever happens first.
++ */
+ int swsusp_shrink_memory(void)
+ {
+-	long tmp;
+ 	struct zone *zone;
+-	unsigned long pages = 0;
+-	unsigned int i = 0;
+-	char *p = "-\\|/";
++	unsigned long saveable, size, max_size, count, pages = 0;
+ 	struct timeval start, stop;
++	int error = 0;
+ 
+-	printk(KERN_INFO "PM: Shrinking memory...  ");
++	printk(KERN_INFO "PM: Shrinking memory ... ");
+ 	do_gettimeofday(&start);
+-	do {
+-		long size, highmem_size;
+ 
+-		highmem_size = count_highmem_pages();
+-		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
+-		tmp = size;
+-		size += highmem_size;
+-		for_each_populated_zone(zone) {
+-			tmp += snapshot_additional_pages(zone);
+-			if (is_highmem(zone)) {
+-				highmem_size -=
+-					zone_page_state(zone, NR_FREE_PAGES);
+-			} else {
+-				tmp -= zone_page_state(zone, NR_FREE_PAGES);
+-				tmp += zone->lowmem_reserve[ZONE_NORMAL];
+-			}
+-		}
++	/* Count the number of saveable data pages. */
++	saveable = count_data_pages() + count_highmem_pages();
+ 
+-		if (highmem_size < 0)
+-			highmem_size = 0;
++	/*
++	 * Compute the total number of page frames we can use (count) and the
++	 * number of pages needed for image metadata (size).
++	 */
++	count = saveable;
++	size = 0;
++	for_each_populated_zone(zone) {
++		size += snapshot_additional_pages(zone);
++		count += zone_page_state(zone, NR_FREE_PAGES);
++		count -= zone->pages_min;
++	}
+ 
+-		tmp += highmem_size;
+-		if (tmp > 0) {
+-			tmp = __shrink_memory(tmp);
+-			if (!tmp)
+-				return -ENOMEM;
+-			pages += tmp;
+-		} else if (size > image_size / PAGE_SIZE) {
+-			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+-			pages += tmp;
+-		}
+-		printk("\b%c", p[i++%4]);
+-	} while (tmp > 0);
++	/* Compute the maximum number of saveable pages to leave in memory. */
++	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
++	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
++	if (size > max_size)
++		size = max_size;
++	/*
++	 * If the maximum is not lesser than the current number of saveable
++	 * pages in memory, we don't need to do anything more.
++	 */
++	if (size >= saveable)
++		goto out;
++
++	/*
++	 * Let the memory management subsystem know that we're going to need a
++	 * large number of page frames to allocate and make it free some memory.
++	 * NOTE: If this is not done, performance is heavily affected in some
++	 * test cases.
++	 */
++	shrink_all_memory(saveable - size);
++
++	/*
++	 * The number of saveable pages in memory was too high, so apply some
++	 * pressure to decrease it.  First, make room for the largest possible
++	 * image and fail if that doesn't work.  Next, try to decrease the size
++	 * of the image as much as indicated by image_size.
++	 */
++	count -= max_size;
++	pages = preallocate_image_memory(count);
++	if (pages < count)
++		error = -ENOMEM;
++	else
++		pages += preallocate_image_memory(max_size - size);
++
++	/* Release all of the preallocated page frames. */
++	swsusp_free();
++
++	if (error) {
++		printk(KERN_CONT "\n");
++		return error;
++	}
++
++ out:
+ 	do_gettimeofday(&stop);
+-	printk("\bdone (%lu pages freed)\n", pages);
++	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
+ 	swsusp_show_speed(&start, &stop, pages, "Freed");
+ 
+ 	return 0;
