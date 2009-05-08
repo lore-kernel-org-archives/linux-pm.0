@@ -1,17 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
- if a suspend_blocker is active.
-Date: Sat, 09 May 2009 08:27:06 +1000
-Message-ID: <1241821626.19600.325.camel@nigel-laptop>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<d6200be20905071822y377d0f10t3adad66d6c49acc1@mail.gmail.com>
-	<1241746532.19600.247.camel@nigel-laptop>
-	<200905081640.44894.rjw@sisk.pl>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Sat, 09 May 2009 08:37:18 +1000
+Message-ID: <1241822238.19600.336.camel__6829.29377439923$1241822387$gmane$org@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<1241746459.19600.246.camel@nigel-laptop>
+	<200905082144.57955.bzolnier@gmail.com>
+	<200905082303.02677.rjw@sisk.pl>
+Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905081640.44894.rjw@sisk.pl>
+In-Reply-To: <200905082303.02677.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +22,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
-> The timeout is actually a workaround for the problem that we don't
-> really
-> know if tasks are going to react to our freeze requests and how much time it is
-> going to take.  The current value of 20 s was chosen after a number of
-> experiments showing that in some cases the freezing _was_ going to take so
-> much time.  Of course the question is whether it makes sense to give up earlier
-> even if tasks would eventually freeze, but that's a different issue.
+On Fri, 2009-05-08 at 23:03 +0200, Rafael J. Wysocki wrote:
+> Also, I think we should aim at targets that are possible to achieve.
+> Namely,
+> it is clear to me that various parts of TuxOnIce will have to be reviewed and
+> commented by the memory management people, the file systems people, the
+> architecture-dependent code maintainers and so on, and it is much easier to
+> get someone to have a look at a relatively short series of patches doing one
+> specific thing at a time than to have him review an entire subsystem.
 
-What were the circumstances in which freezing could take 20s?
+Seeking review is why I've posted the code.
 
-> Now, I think the Arve's approach is reasonable.  If we know in advace that
-> we're not going to suspend, it's better to stop the freezing as soon as
-> possible.
+I'm not sure what file systems people have to review in what I've
+posted.
 
-Agreed.
+I guess the memory management part would be the separate saving of LRU
+pages and the means by which GEM pages are tracked.
+
+Re architecture dependent code maintainers: I don't know what they'd
+have to do. Nothing in arch/ is touched by the patches I posted.
 
 Regards,
 
