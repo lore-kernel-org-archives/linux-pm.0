@@ -1,17 +1,19 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 09 May 2009 09:30:08 +1000
-Message-ID: <1241825408.19600.384.camel__3087.74473746798$1241825913$gmane$org@nigel-laptop>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905081611.41865.rjw@sisk.pl>
-	<1241819569.19600.281.camel@nigel-laptop>
-	<200905090046.21282.rjw@sisk.pl>
-Reply-To: nigel@tuxonice.net
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before
+	suspend
+Date: Fri, 08 May 2009 16:33:25 -0700
+Message-ID: <8763gbmapm.fsf__26039.8852210075$1241826136$gmane$org@deeprootsystems.com>
+References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+	<1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
+	<20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
+	<d6200be20905071452t3efb67gffd4de5332e83e73@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905090046.21282.rjw@sisk.pl>
+In-Reply-To: <d6200be20905071452t3efb67gffd4de5332e83e73@mail.gmail.com>
+	("Arve =?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Thu\, 7 May 2009
+	14\:52\:03 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,193 +23,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Arve Hj=F8nnev=E5g <arve@android.com> writes:
 
-On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
-> On Friday 08 May 2009, Nigel Cunningham wrote:
-> > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
-> > > > > On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
-> > > > > > On Thursday 07 May 2009, Pavel Machek wrote:
-> > > > > > > Hi!
-> > > > > > > 
-> > > > > > > > I'd like to submit TuxOnIce for review, with a view to seeking to get it
-> > > > > > > > merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
-> > > > > > > > it can be merged) and the willingness of those who matter.
-> > > > > ...
-> > > > > > > To summarise disadvantages:
-> > > > > > > 
-> > > > > > > - only core has 8000 LoC
-> > > > > > > - it does stuff that can be easily done in userspace
-> > > > > > >      (and that todays distros _do_ in userspace).
-> > > > > > > - it duplicates uswsusp functionality.
-> > > > > > > - compared to [u]swsusp, it received little testing
-> > > > > > 
-> > > > > > Actually, I see advantages of working together versus fighting flame wars.
-> > > > > > Please stop that, I'm not going to take part in it this time.
-> > > > > 
-> > > > > Ok, so what do you propose? Merging tuxonice into 2.6.32, resulting in
-> > > > > having swsusp,uswsusp *and* tuxonice to maintain? I hope not.
-> > > > > 
-> > > > > If we are talking about improving mainline to allow tuxonice
-> > > > > functionality... then yes, that sounds reasonable.
-> > > > 
-> > > > I'd like to see use have all three for one or two releases of vanilla,
-> > > > just to give time to work out any issues that haven't been foreseen.
-> > > > Once we're all that there are confident there are no regressions with
-> > > > TuxOnIce, I'd remove swsusp. That's my ideal plan of attack.
-> > > 
-> > > So this is an idea to replace our current hibernation implementation with
-> > > TuxOnIce.
-> > 
-> > That's my ideal. I know you and Pavel don't want to see us go down that
-> > path, but I was asked "What do you propose?" and I answered that
-> > question.
-> 
-> So you could also easily anticipate my reaction. :-)
-> 
-> Quite frankly, I don't really think this is realistic.
-> 
-> First, because it is technically too difficult to have all of the code reviewed
-> and _agreed_ _upon_ by everyone at once.  And if it's not agreed upon, you'll
-> have to modify it and it won't be the same thing any more once you've done
-> that.  Which I'd say is guaranteed, having had a quick look at the code.
+> On Thu, May 7, 2009 at 9:19 AM, Kevin Hilman
+> <khilman@deeprootsystems.com> wrote:
+>> From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
+>> From: Kevin Hilman <khilman@deeprootsystems.com>
+>> Date: Wed, 6 May 2009 16:00:07 -0700
+>> Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+>>
+>> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
+>> behavior of disable_irq() was changed to delay the disable until it is
+>> next handled.
+>>
+>> However, this leaves open the possibility that the system can go into
+>> suspend with an interrupt enabled. =A0For example, if a driver calls
+>> disable_irq() in its suspend_hook there's now a possibility that the
+>> system is suspended before the lazy disable happens.
+>>
+>> The result is an unwanted wakeup from suspend if the IRQ is capable of
+>> waking the system (common on embedded SoCs.)
+>
+> If the interrupt contoller uses the same enable register for wakeup
+> and interrupts, I think it is the responsibility of the platform code,
+> not individual drivers, to disable the interrupts that are not marked
+> for wakeup before entering suspend.
 
-I think you're putting unrealistic barriers in the way. Does all code
-that goes into the kernel get "reviewed and agreed upon by everyone at
-once"? No! That's why bugs get in that have to be fixed and why things
-go in despite the disagreement of some people. If there are good,
-technical reasons why TuxOnIce shouldn't be merged, that's valid. But I
-haven't seen one technical argument against merging TuxOnIce yet. It's
-all just a preference for doing things gradually; a preference that's
-unrealistic (there are too many differences) and will lead to it being
-another 8 years of development before there's a really good,
-user-friendly and feature complete hibernation implementation in the
-kernel.
+I agree, for wakeup interrupts, drivers should use
+[set|disable]_irq_wake() and the platform code should handle this.
 
-> Second, because realistically you shouldn't expect _anyone_ (be it me or Pavel
-> or just about anybody else) to throw away his own code and replace it with
-> yours just because *you* think your code is better.  You really should have
-> listened to the HPA's talk at the OLS last year (here's a link to the paper
-> http://ols.fedoraproject.org/OLS/Reprints-2008/anvin-reprint.pdf, please see
-> Section 10) which was about merging open source projects, among other things. :-)
+I used wakeup interrupts in this description as an example which
+turned out to be a bad example.  The 2nd version of this patch I
+posted, I removed the reference to wakeup interrupts in favor of just
+talking about the delayed disable piece.
 
-<frustration>
+But ignoring wakup interrupts, would you agree that the delayed
+disable of an interrupt should not wait until after resume?
 
-This is going to sound arrogant, but please don't take it that way: I
-can't see any other way of putting it. I don't *think* my code is
-better. It is better. swsusp has essentially stood still since Pavel
-first forked the code and got it merged. Yes, you have done some great
-work on improving the code too and yes, you've done your work on the
-version that was already merged. But your changes been more in the area
-of fixing/improving what's already there than adding new and useful
-features. On the other side, I've continued to improve the code, adding
-new features (support for multiple swap partitions & files, for writing
-to ordinary files, for mulithreaded I/O etc etc) making it more useful
-and more reliable. There are some new features that have been put in
-swsusp, but in just about every case (I think there might be an
-exception or two), they're things TuxOnIce had for ages before. eg: SMP
-support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
-support in 2.4.
+>> This patch ensures that the lazy disable is done, and masked by
+>> the irq_chip before the system goes into suspend.
+>
+> This will create a window where wakeup interrupts can be lost if the
+> driver has masked the interrupt (by calling disable_irq). If the
+> hardware does not allow edge detection on disabled interrupts (the msm
+> platform has this limitation) then this change will turn off the edge
+> detection. If suspend_ops->enter does not turn the interrupt (and edge
+> detection) back on (without this change it may never need to turn on
+> any interrupt) it will not wakeup at all.
 
-</frustration>
+Not sure I follow you here...
 
-> > > Which unfortunately I don't agree with.
-> > > 
-> > > I think we can get _one_ implementation out of the three, presumably keeping
-> > > the user space interface that will keep the current s2disk binaries happy, by
-> > > merging TuxOnIce code _gradually_.  No "all at once" approach, please.
-> > > 
-> > > And by "merging" I mean _exactly_ that.  Not adding new code and throwing
-> > > away the old one.
-> > > 
-> > > While I can work on creating one hibernation implementation by taking the
-> > > best ideas from all of the implementation we have at hand, I surely won't be
-> > > working on replacing our current code with TuxOnIce.  If that disappoints you,
-> > > then I'm sorry.
-> > 
-> > But who is going to do that, and how and when. You're clearly too busy
-> > working on enhancements to the driver model - enhancements that are good
-> > and necessary (I'm not at all meaning this is bad). I'm only doing this
-> > in a little bit of spare time. Pavel doesn't seem to be doing it at all.
-> 
-> I think I can find some time to work on that.  I've spent a lot of time
-> recently on improving the allocation of memory for hibernation images and I
-> think I can work on the other hibernation-related things either.  The most
-> important thing to me is whether or not to put that into my todo list.  If I
-> decide to do it, I'll find the time too.
+It seems like you're relying on the delayed disable to wait until
+after resume so that disabled interrupts can wake the system.  How
+did this work before the delayed disable patch?
 
-Okay.
+If the interrupt is being used as a wakeup, why would anyone be
+calling disable_irq()?
 
-> > And we have different ideas about how things should be done. Userspace
-> > vs kernel space. Providing tuning knobs vs not. And so on.
-> 
-> This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
-> solution, as there are some clear benefits of doing it this way.  We only
-> need to be careful enough not to break the existing setups.
-
-Agreed.
-
-> > And the code includes some fundamental differences. I freeze processes
-> > and prepare the whole image before saving anything or doing an atomic
-> > copy whereas you just free memory before doing the atomic copy. You save
-> > everything in one part whereas I save the image in two parts.
-> 
-> IMO the differences are not that fundamental.  The whole problem boils down
-> to using the same data structures for memory management and I think we can
-> reach an agreement here.
-
-I think we might be able to agree on using the same data structures, but
-I'm not so sure about algorithms - I think you're underestimating the
-differences here.
-
-> > I take a modular approach and you have everything hardwired.
-> 
-> That's because using modules woudn't really make sense for us. :-)
-
-I'm not saying modules but modular. TuxOnIce has support for compression
-neatly abstracted into one file, for swap in another and so on.
-[u]swsusp doesn't.
-
-Regarding building as modules, though, it does make sense - especially
-in the embedded case. Hibernation code isn't needed 99% of the time. Why
-have it taking up memory that could be used for other things?
-
-> > Even if we did try to merge the three implementations, there'd come a
-> > point where we either threw away core parts of TuxOnIce or dropped the
-> > whole of [u]swsusp and started again - or both.
-> 
-> I would be for starting again, really, using the experience we've collected so
-> far.  How we technically do it is another matter.  I personally would prefer
-> adding new code in such a way that it's useable from the start, so that it gets
-> tested and integrated with all of the subsystems we're touching.
-
-If we have to go down that path, then I'd agree that would make sense.
-
-> > It doesn't disappoint me that you don't won't to replace [u]swsusp with
-> > TuxOnIce. I never thought you or Pavel would want to do that.
-> > 
-> > I did hold out a little hope that you at least might be supportive
-> > anyway of getting TuxOnIce added into vanilla - 
-> 
-> That would take lot of work and we'd also have to ask many other busy people
-> to do a lot of work for us.  I think it's better to just avoid it at this point.
-
-I just don't see why you think that. As I said in another reply, there's
-no work for arch maintainers, very little for mm people and nothing for
-filesystem maintainers in what I've sent.
-
-> > if only so that users can get a better hibernation experience while we work
-> > through merging the three into one. I'd far rather get along well with you
-> > than have some sort of competitive relationship.
-> 
-> Great, let's do our best to be productive.
-
-Yes.
-
-Nigel
+Kevin
