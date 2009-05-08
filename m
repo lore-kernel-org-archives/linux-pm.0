@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
-	if a suspend_blocker is active.
-Date: Sat, 9 May 2009 01:01:01 +0200
-Message-ID: <200905090101.02390.rjw@sisk.pl>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<200905081640.44894.rjw@sisk.pl>
-	<1241821626.19600.325.camel@nigel-laptop>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Sat, 9 May 2009 01:05:57 +0200
+Message-ID: <200905090105.58243.bzolnier__21650.6865727299$1241824045$gmane$org@gmail.com>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905082144.57955.bzolnier@gmail.com>
+	<1241819971.19600.288.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241821626.19600.325.camel@nigel-laptop>
+In-Reply-To: <1241819971.19600.288.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,33 +20,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: nigel@tuxonice.net
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 09 May 2009, Nigel Cunningham wrote:
+On Friday 08 May 2009 23:59:31 Nigel Cunningham wrote:
 > Hi.
 > 
-> On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
-> > The timeout is actually a workaround for the problem that we don't
-> > really
-> > know if tasks are going to react to our freeze requests and how much time it is
-> > going to take.  The current value of 20 s was chosen after a number of
-> > experiments showing that in some cases the freezing _was_ going to take so
-> > much time.  Of course the question is whether it makes sense to give up earlier
-> > even if tasks would eventually freeze, but that's a different issue.
+> On Fri, 2009-05-08 at 21:44 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Please proceed to Plan B then.
+> > 
+> > Adding third core code framework to do the same thing is out of question
+> > (probably same should have been said about adding second one in the past).
 > 
-> What were the circumstances in which freezing could take 20s?
+> Why? We have plenty of history of having multiple implementations of
+> things (slub, slab and slob...).
 
-Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
+With all respect to sl*b developers but things such as sl*b etc. are on
+whole different level when it comes to complexity because their interactions
+with weird hardware configurations are quite limited.
 
-Generally, the situation in which there are many runnable tasks and new tasks
-come and go etc.  I haven't repeated this benchmark recently, though, so it's
-probably worth doing again.
+> > Moreover you will for sure hit much more regressions than you expect
+> > (I "love" seeing over and over again when people/companies get trapped
+> > into fallacy of superiority of their _own_ solution).
+> 
+> That's just wrong. TuxOnIce deliberately doesn't remove any of swsusp or
+> uswsusp so that there's no chance of users having regressions. It
+> provides the _option_ of being a drop in replacement for swsusp, but it
+> doesn't force users to take that option.
 
-Which has a little to do with the $subject patch IMO, because I think that
-it's reasonable to stop freezing tasks as soon as we know that it won't be
-necessary anyway.
+OK.  What is exactly your plan for transition and for swsusp removal then?
+
+> Regressions happen at the moment because TuxOnIce isn't included in
+> vanilla. Users update from one version of stable to the next or from one
+> version of head to the next and expect TuxOnIce to keep working, and it
+> doesn't always do that because of changes to the vanilla code that
+> require an updated patch.
+
+I mean [u]swsusp -> TuxOnIce regressions.
+
+> > I really wouldn't consider teaming with Rafael to work on "swsuspOnTux"
+> > (evolving the in-kernel code while re-using chunks of TuxOnIce code) as
+> > a bad Plan B.  It has the potential of resulting in a solution clearly
+> > superior to all existing ones (TuxOnIce included).
+> 
+> If there are features in swsusp that TuxOnIce is lacking, or features to
+> uswsusp that TuxOnIce is lacking, please tell me what they are and I'll
+> implement them. In saying this, I don't deny that TuxOnIce code can
+> still be improved - there's a lot I'd still like to do.
+
+Instead of new features I would rather see more effort being put into making
+the _core_ TuxOnIce (I mean patch #8 here) smaller (8 KLOC is still a lot,
+just to put things into the right perspective the current in-kernel content
+of kernel/power/ is 5.5 KLOC) and with more documentation inside the code.
 
 Thanks,
-Rafael
+Bart
