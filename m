@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
-	if a suspend_blocker is active.
-Date: Fri, 8 May 2009 16:40:43 +0200
-Message-ID: <200905081640.44894.rjw@sisk.pl>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<d6200be20905071822y377d0f10t3adad66d6c49acc1@mail.gmail.com>
-	<1241746532.19600.247.camel@nigel-laptop>
+From: Alex Goebel <alex.goebel@gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 17:11:05 -0700
+Message-ID: <faa09fad0905071711v788e847dr33cf5a2eb688c1cc__25450.4280085259$1241797167$gmane$org@mail.gmail.com>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241746532.19600.247.camel@nigel-laptop>
-Content-Disposition: inline
+In-Reply-To: <4A03129A.90105@acm.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,56 +18,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: U Kuehn <ukuehn@acm.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5IDA4IE1heSAyMDA5LCBOaWdlbCBDdW5uaW5naGFtIHdyb3RlOgo+IEhpLgo+IAo+
-IE9uIFRodSwgMjAwOS0wNS0wNyBhdCAxODoyMiAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90
-ZToKPiA+IDIwMDkvNS83IE5pZ2VsIEN1bm5pbmdoYW0gPG5jdW5uaW5naGFtQGNyY2Eub3JnLmF1
-PjoKPiA+ID4gSGkuCj4gPiA+Cj4gPiA+IE9uIFRodSwgMjAwOS0wNS0wNyBhdCAxNjo0OSAtMDcw
-MCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+ID4+IE9uIFRodSwgTWF5IDcsIDIwMDkgYXQg
-Mzo0MSBBTSwgUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+IHdyb3RlOgo+ID4gPj4gPiBJZiB0
-aGUgY29kZSBydW5zIGZvciAyMCBzZWNvbmRzLCBpdCBpcyBhIGJ1ZyB0byBiZSBmaXhlZC4KPiA+
-ID4+Cj4gPiA+PiBUaGUgY29kZSBnaXZlcyB1cCBhZnRlciAyMCBzZWNvbmRzLCBpdCBkb2VzIG5v
-dCBub3JtYWxseSBydW4gZm9yIDIwCj4gPiA+PiBzZWNvbmRzLiBJdCBpcyBhcmd1YWJseSBhIGJ1
-ZyB0aGF0IGl0IGdpdmVzIHVwIGFmdGVyIDIwIHNlY29uZHMgc2luY2UKPiA+ID4+IHRoZSB0aW1l
-IHJlcXVpcmVkIHRvIGZyZWV6ZSBhbGwgdGhlIHRocmVhZHMgZ3Jvd3Mgd2l0aCB0aGUgbnVtYmVy
-IG9mCj4gPiA+PiB0aHJlYWRzIHRoYXQgYXJlIHJ1bm5pbmcuIEl0IGNvdWxkIHN0aWxsIGJlIG1h
-a2luZyBwcm9ncmVzcyBhZnRlciAyMAo+ID4gPj4gc2Vjb25kcy4gU2luY2UgdGhlIHRpbWUgcmVx
-dWlyZWQgdG8gZnJlZXplIGFsbCB0YXNrcyBpcyB0aGUgbnVtYmVyIG9mCj4gPiA+PiB0YXNrcyB0
-aW1lcyB0aGUgdGltZSBpdCB0YWtlcyB0byBpbnRlcnJ1cHQgZWFjaCB0YXNrIHRoZXJlIGlzIG5v
-IHdheQo+ID4gPj4gdG8gZW5zdXJlIHRoYXQgdGhlIHRpbWUgcmVxdWlyZWQgaXMgaW5zaWduaWZp
-Y2FudC4gSWYgd2UgZG8gbm90IGFib3J0Cj4gPiA+PiB0YXNrIGZyZWV6aW5nIHdoZW4gdGhlcmUg
-aXMgYSB3YWtldXAgZXZlbnQsIHRoZW4gdGhlIHdvcnN0IGNhc2Ugd2FrZXVwCj4gPiA+PiBsYXRl
-bmN5IGlzIGd1YXJhbnRpZWQgdG8gYmUgd29yc2UgdGhhbiB0aGUgd29yc3QgY2FzZSBsYXRlbmN5
-IGZvciBhbnkKPiA+ID4+IG90aGVyIHVuaW50ZXJydXB0aWJsZSBrZXJuZWwgY2FsbC4KPiA+ID4K
-PiA+ID4gSSBhZ3JlZSB3aXRoIFBhdmVsIGhlcmUuIElmIGZyZWV6aW5nIHRha2VzIDIwIHNlY29u
-ZHMsIHNvbWV0aGluZyBpcwo+ID4gPiB3cm9uZy4gKFJlbWVtYmVyIHRoYXQgbW9zdCB0YXNrcyB3
-aWxsIG5vdCBiZSBydW5uaW5nLCBhbmQgd2lsbCB0aGVyZWZvcmUKPiA+ID4gcmVzcG9uZCB0byB0
-aGUgcHNldWRvLXNpZ25hbCBhbmQgZnJlZXplIGltbWVkaWF0ZWx5KS4KPiA+ID4KPiA+ID4gSW4g
-ZmFjdCwgSSdkIGdvIGZ1cnRoZXIuIEluIHRoZSB0aG91c2FuZHMgb2YgdGltZXMgSSd2ZSBydW4g
-dGhlIGZyZWV6ZXIKPiA+ID4gb3ZlciB0aGUgeWVhcnMsIGl0IGhhcyBuZXZlciB0YWtlbiBtb3Jl
-IHRoYW4gMSBzZWNvbmQgLSBsZXQgYWxvbmUgMjAgLQo+ID4gCj4gPiBPbmUgc2Vjb25kIGlzIHRv
-IGxvbmcuCj4gCj4gSSBhZ3JlZS4gQnV0IGEgb25lIHNlY29uZCB0aW1lb3V0IGlzIHN0aWxsIGJl
-dHRlciB0aGFuIGEgMjBzIHRpbWVvdXQuCj4gCj4gPiA+IHdoZW4gZnJlZXppbmcgaGFzIGJlZW4g
-c3VjY2Vzc2Z1bC4gQSBkZWxheSBvZiAyMCBzZWNvbmRzIHdhcyBtb3JlCj4gPiA+IHJlbGV2YW50
-IHdoZW4gdGhlIHZhbHVlIGluY2x1ZGVkIHRoZSB0aW1lIGZvciBzeW5jaW5nIGRhdGEgdG8gZGlz
-ay4KPiA+IAo+ID4gVGhpcyBwYXRjaCBkb2VzIG5vdGhpbmcgd2l0aCB0aGUgMjAgc2Vjb25kIHRp
-bWVvdXQuCj4gCj4gSSBrbm93LiBQZXJoYXBzIHdlIHNob3VsZCBkbyBzb21ldGhpbmcgd2l0aCBp
-dCwgdGhvdWdoLgoKSSB0cmllZCBzb21lIHRpbWUgYWdvLCBidXQgaXQgZGlkbid0IHJlYWxseSB3
-b3JrIHdlbGwuCgpUaGUgdGltZW91dCBpcyBhY3R1YWxseSBhIHdvcmthcm91bmQgZm9yIHRoZSBw
-cm9ibGVtIHRoYXQgd2UgZG9uJ3QgcmVhbGx5Cmtub3cgaWYgdGFza3MgYXJlIGdvaW5nIHRvIHJl
-YWN0IHRvIG91ciBmcmVlemUgcmVxdWVzdHMgYW5kIGhvdyBtdWNoIHRpbWUgaXQgaXMKZ29pbmcg
-dG8gdGFrZS4gIFRoZSBjdXJyZW50IHZhbHVlIG9mIDIwIHMgd2FzIGNob3NlbiBhZnRlciBhIG51
-bWJlciBvZgpleHBlcmltZW50cyBzaG93aW5nIHRoYXQgaW4gc29tZSBjYXNlcyB0aGUgZnJlZXpp
-bmcgX3dhc18gZ29pbmcgdG8gdGFrZSBzbwptdWNoIHRpbWUuICBPZiBjb3Vyc2UgdGhlIHF1ZXN0
-aW9uIGlzIHdoZXRoZXIgaXQgbWFrZXMgc2Vuc2UgdG8gZ2l2ZSB1cCBlYXJsaWVyCmV2ZW4gaWYg
-dGFza3Mgd291bGQgZXZlbnR1YWxseSBmcmVlemUsIGJ1dCB0aGF0J3MgYSBkaWZmZXJlbnQgaXNz
-dWUuCgpOb3csIEkgdGhpbmsgdGhlIEFydmUncyBhcHByb2FjaCBpcyByZWFzb25hYmxlLiAgSWYg
-d2Uga25vdyBpbiBhZHZhY2UgdGhhdAp3ZSdyZSBub3QgZ29pbmcgdG8gc3VzcGVuZCwgaXQncyBi
-ZXR0ZXIgdG8gc3RvcCB0aGUgZnJlZXppbmcgYXMgc29vbiBhcwpwb3NzaWJsZS4KClRoYW5rcywK
-UmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
-dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
-cG0=
+> Given that tuxonice DOES work reliably with dm-crypt encrypted swap
+> partitions, does uswsusp offer this functionality? Looking into the docs
+> on the sourceforge site does not give any information about this point.
+
+Works here. Just tried (s2disk, vanilla 2.6.29). It also claims you
+can hit "Del" to abort and to that it compressed the image.
+
+Alex
