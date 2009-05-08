@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Fri, 8 May 2009 16:22:43 +0200
-Message-ID: <200905081622.44205.rjw@sisk.pl>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+	if a suspend_blocker is active.
+Date: Fri, 8 May 2009 16:40:43 +0200
+Message-ID: <200905081640.44894.rjw@sisk.pl>
 References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<20090507103249.GA6132@elf.ucw.cz>
-	<d6200be20905071743r72d94e26na4a945be88a2e366@mail.gmail.com>
+	<d6200be20905071822y377d0f10t3adad66d6c49acc1@mail.gmail.com>
+	<1241746532.19600.247.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d6200be20905071743r72d94e26na4a945be88a2e366@mail.gmail.com>
+In-Reply-To: <1241746532.19600.247.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,93 +21,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 08 May 2009, Arve Hj=F8nnev=E5g wrote:
-> On Thu, May 7, 2009 at 3:32 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Wed 2009-05-06 18:42:59, Arve Hj?nnev?g wrote:
-> >> On Tue, May 5, 2009 at 1:12 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >> > Hi!
-> >> >
-> >> >> Add a misc device, "suspend_blocker", that allows user-space proces=
-ses
-> >> >> to block auto suspend. The device has ioctls to create a suspend_bl=
-ocker,
-> >> >> and to block and unblock suspend. To delete the suspend_blocker, cl=
-ose
-> >> >> the device.
-> >> >
-> >> > Rafael proposed write() interface. I don't think you answered that.
-> >> >
-> >>
-> >> I think an ioctl interface makes more sense. With a write interface
-> >> you either have to do string parsing, or invent some other protocol
-> >> between the driver and user-space.
-> >
-> > Or perhaps just use "userspace/%d" % pid as a name?
-> =
-
-> This would not be as useful. The point of naming the suspend blockers
-> is to that we can easily identify them in the stats and kernel logs.
-> Using the pid has two problems. First, the pid gives no hint about
-> what it is used for, you have to look up the process somewhere else.
-> Second, we use more than one suspend blocker from the same process.
-> =
-
-> >
-> > 1) can't be faked that trivially
-> =
-
-> I don't think this is a big problem. If you don't trust the apps that
-> you give suspend blocker access to use unique names, we can add a
-> prefix. This can be added in a later patch though.
-> =
-
-> >
-> > 2) small / mostly fixed size
-> >
-> > 3) can use nicer write protocol?
-> >
-> I don't think a write protocol is nicer. "ioctl(suspend_block_fd,
-> SUSPEND_BLOCKER_IOCTL_BLOCK);" seems less error prone and more
-> readable to me than "write(suspend_block_fd, "1", 1);",
-> "write(suspend_block_fd, "1", 2);" or "suspend_block_val =3D 1;
-> write(suspend_block_fd, &suspend_block_val,
-> sizeof(suspend_block_val));".
-> =
-
-> >> > kzalloc on user-supplied argument. Sounds like bad idea.
-> >> >
-> >> > Aha. And probably integer overflow in the same line. Ouch.
-> >> >
-> >>
-> >> The size is limited to _IOC_SIZEMASK with is 13 or 14 bits depending
-> >> on the architecture. Do you want a lower limit on the name length?
-> >
-> > 16K of unswappable kernel memory for name is a bit too much, yes.
-> =
-
-> What if I just truncate it to NAME_MAX.
-
-My main concern with the ioctl() interface is that you're adding a device
-file just in order to have the ioctl()s available.  Usually, however, a dev=
-ice
-file's purpose is to implement file operations (open, close, read, write),
-while ioctl()s are used for doing things that the file operations are not
-suitable for.
-
-So, if your device only implements open(), close() and ioctl(), this is an
-indication that there's something wrong with the interface, because it does=
-n't
-do what one would generally expect it to do (ie. smells like an abuse).  Th=
-at's
-why I think it would be better to use read() and write() instead of ioctl().
-
-Of course, there also is a problem that people generally don't like adding =
-new
-ioctl()s without a _really_ good reason.
-
-Thanks,
-Rafael
+T24gRnJpZGF5IDA4IE1heSAyMDA5LCBOaWdlbCBDdW5uaW5naGFtIHdyb3RlOgo+IEhpLgo+IAo+
+IE9uIFRodSwgMjAwOS0wNS0wNyBhdCAxODoyMiAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90
+ZToKPiA+IDIwMDkvNS83IE5pZ2VsIEN1bm5pbmdoYW0gPG5jdW5uaW5naGFtQGNyY2Eub3JnLmF1
+PjoKPiA+ID4gSGkuCj4gPiA+Cj4gPiA+IE9uIFRodSwgMjAwOS0wNS0wNyBhdCAxNjo0OSAtMDcw
+MCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+ID4+IE9uIFRodSwgTWF5IDcsIDIwMDkgYXQg
+Mzo0MSBBTSwgUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+IHdyb3RlOgo+ID4gPj4gPiBJZiB0
+aGUgY29kZSBydW5zIGZvciAyMCBzZWNvbmRzLCBpdCBpcyBhIGJ1ZyB0byBiZSBmaXhlZC4KPiA+
+ID4+Cj4gPiA+PiBUaGUgY29kZSBnaXZlcyB1cCBhZnRlciAyMCBzZWNvbmRzLCBpdCBkb2VzIG5v
+dCBub3JtYWxseSBydW4gZm9yIDIwCj4gPiA+PiBzZWNvbmRzLiBJdCBpcyBhcmd1YWJseSBhIGJ1
+ZyB0aGF0IGl0IGdpdmVzIHVwIGFmdGVyIDIwIHNlY29uZHMgc2luY2UKPiA+ID4+IHRoZSB0aW1l
+IHJlcXVpcmVkIHRvIGZyZWV6ZSBhbGwgdGhlIHRocmVhZHMgZ3Jvd3Mgd2l0aCB0aGUgbnVtYmVy
+IG9mCj4gPiA+PiB0aHJlYWRzIHRoYXQgYXJlIHJ1bm5pbmcuIEl0IGNvdWxkIHN0aWxsIGJlIG1h
+a2luZyBwcm9ncmVzcyBhZnRlciAyMAo+ID4gPj4gc2Vjb25kcy4gU2luY2UgdGhlIHRpbWUgcmVx
+dWlyZWQgdG8gZnJlZXplIGFsbCB0YXNrcyBpcyB0aGUgbnVtYmVyIG9mCj4gPiA+PiB0YXNrcyB0
+aW1lcyB0aGUgdGltZSBpdCB0YWtlcyB0byBpbnRlcnJ1cHQgZWFjaCB0YXNrIHRoZXJlIGlzIG5v
+IHdheQo+ID4gPj4gdG8gZW5zdXJlIHRoYXQgdGhlIHRpbWUgcmVxdWlyZWQgaXMgaW5zaWduaWZp
+Y2FudC4gSWYgd2UgZG8gbm90IGFib3J0Cj4gPiA+PiB0YXNrIGZyZWV6aW5nIHdoZW4gdGhlcmUg
+aXMgYSB3YWtldXAgZXZlbnQsIHRoZW4gdGhlIHdvcnN0IGNhc2Ugd2FrZXVwCj4gPiA+PiBsYXRl
+bmN5IGlzIGd1YXJhbnRpZWQgdG8gYmUgd29yc2UgdGhhbiB0aGUgd29yc3QgY2FzZSBsYXRlbmN5
+IGZvciBhbnkKPiA+ID4+IG90aGVyIHVuaW50ZXJydXB0aWJsZSBrZXJuZWwgY2FsbC4KPiA+ID4K
+PiA+ID4gSSBhZ3JlZSB3aXRoIFBhdmVsIGhlcmUuIElmIGZyZWV6aW5nIHRha2VzIDIwIHNlY29u
+ZHMsIHNvbWV0aGluZyBpcwo+ID4gPiB3cm9uZy4gKFJlbWVtYmVyIHRoYXQgbW9zdCB0YXNrcyB3
+aWxsIG5vdCBiZSBydW5uaW5nLCBhbmQgd2lsbCB0aGVyZWZvcmUKPiA+ID4gcmVzcG9uZCB0byB0
+aGUgcHNldWRvLXNpZ25hbCBhbmQgZnJlZXplIGltbWVkaWF0ZWx5KS4KPiA+ID4KPiA+ID4gSW4g
+ZmFjdCwgSSdkIGdvIGZ1cnRoZXIuIEluIHRoZSB0aG91c2FuZHMgb2YgdGltZXMgSSd2ZSBydW4g
+dGhlIGZyZWV6ZXIKPiA+ID4gb3ZlciB0aGUgeWVhcnMsIGl0IGhhcyBuZXZlciB0YWtlbiBtb3Jl
+IHRoYW4gMSBzZWNvbmQgLSBsZXQgYWxvbmUgMjAgLQo+ID4gCj4gPiBPbmUgc2Vjb25kIGlzIHRv
+IGxvbmcuCj4gCj4gSSBhZ3JlZS4gQnV0IGEgb25lIHNlY29uZCB0aW1lb3V0IGlzIHN0aWxsIGJl
+dHRlciB0aGFuIGEgMjBzIHRpbWVvdXQuCj4gCj4gPiA+IHdoZW4gZnJlZXppbmcgaGFzIGJlZW4g
+c3VjY2Vzc2Z1bC4gQSBkZWxheSBvZiAyMCBzZWNvbmRzIHdhcyBtb3JlCj4gPiA+IHJlbGV2YW50
+IHdoZW4gdGhlIHZhbHVlIGluY2x1ZGVkIHRoZSB0aW1lIGZvciBzeW5jaW5nIGRhdGEgdG8gZGlz
+ay4KPiA+IAo+ID4gVGhpcyBwYXRjaCBkb2VzIG5vdGhpbmcgd2l0aCB0aGUgMjAgc2Vjb25kIHRp
+bWVvdXQuCj4gCj4gSSBrbm93LiBQZXJoYXBzIHdlIHNob3VsZCBkbyBzb21ldGhpbmcgd2l0aCBp
+dCwgdGhvdWdoLgoKSSB0cmllZCBzb21lIHRpbWUgYWdvLCBidXQgaXQgZGlkbid0IHJlYWxseSB3
+b3JrIHdlbGwuCgpUaGUgdGltZW91dCBpcyBhY3R1YWxseSBhIHdvcmthcm91bmQgZm9yIHRoZSBw
+cm9ibGVtIHRoYXQgd2UgZG9uJ3QgcmVhbGx5Cmtub3cgaWYgdGFza3MgYXJlIGdvaW5nIHRvIHJl
+YWN0IHRvIG91ciBmcmVlemUgcmVxdWVzdHMgYW5kIGhvdyBtdWNoIHRpbWUgaXQgaXMKZ29pbmcg
+dG8gdGFrZS4gIFRoZSBjdXJyZW50IHZhbHVlIG9mIDIwIHMgd2FzIGNob3NlbiBhZnRlciBhIG51
+bWJlciBvZgpleHBlcmltZW50cyBzaG93aW5nIHRoYXQgaW4gc29tZSBjYXNlcyB0aGUgZnJlZXpp
+bmcgX3dhc18gZ29pbmcgdG8gdGFrZSBzbwptdWNoIHRpbWUuICBPZiBjb3Vyc2UgdGhlIHF1ZXN0
+aW9uIGlzIHdoZXRoZXIgaXQgbWFrZXMgc2Vuc2UgdG8gZ2l2ZSB1cCBlYXJsaWVyCmV2ZW4gaWYg
+dGFza3Mgd291bGQgZXZlbnR1YWxseSBmcmVlemUsIGJ1dCB0aGF0J3MgYSBkaWZmZXJlbnQgaXNz
+dWUuCgpOb3csIEkgdGhpbmsgdGhlIEFydmUncyBhcHByb2FjaCBpcyByZWFzb25hYmxlLiAgSWYg
+d2Uga25vdyBpbiBhZHZhY2UgdGhhdAp3ZSdyZSBub3QgZ29pbmcgdG8gc3VzcGVuZCwgaXQncyBi
+ZXR0ZXIgdG8gc3RvcCB0aGUgZnJlZXppbmcgYXMgc29vbiBhcwpwb3NzaWJsZS4KClRoYW5rcywK
+UmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
+bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
+dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
+cG0=
