@@ -1,7 +1,7 @@
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
 Date: Thu, 7 May 2009 17:39:38 -0700
-Message-ID: <20090507173938.48145f52__32804.737360175$1241743303$gmane$org@jbarnes-g45>
+Message-ID: <20090507173938.48145f52__1808.01060419089$1241743402$gmane$org@jbarnes-g45>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 	<200905072022.15202.rjw@sisk.pl>
 	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
