@@ -1,22 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
-	if a suspend_blocker is active.
-Date: Thu, 7 May 2009 18:22:40 -0700
-Message-ID: <d6200be20905071822y377d0f10t3adad66d6c49acc1@mail.gmail.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<1241583529-5092-2-git-send-email-arve@android.com>
-	<1241583529-5092-3-git-send-email-arve@android.com>
-	<1241583529-5092-4-git-send-email-arve@android.com>
-	<20090505195753.GE1379@ucw.cz>
-	<d6200be20905061851y12b07d59t11b43d74a07aad3b@mail.gmail.com>
-	<20090507104143.GB6132@elf.ucw.cz>
-	<d6200be20905071649h2d3a57c8h1c1cd72d4bea4d31@mail.gmail.com>
-	<1241744802.19600.244.camel@nigel-laptop>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Fri, 08 May 2009 11:34:19 +1000
+Message-ID: <1241746459.19600.246.camel__19169.6913367652$1241746517$gmane$org@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <200905071942.54936.rjw@sisk.pl>
+	<20090507215112.GC14611@elf.ucw.cz>
+Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241744802.19600.244.camel@nigel-laptop>
+In-Reply-To: <20090507215112.GC14611@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,42 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2009/5/7 Nigel Cunningham <ncunningham@crca.org.au>:
-> Hi.
->
-> On Thu, 2009-05-07 at 16:49 -0700, Arve Hj=F8nnev=E5g wrote:
->> On Thu, May 7, 2009 at 3:41 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> > If the code runs for 20 seconds, it is a bug to be fixed.
->>
->> The code gives up after 20 seconds, it does not normally run for 20
->> seconds. It is arguably a bug that it gives up after 20 seconds since
->> the time required to freeze all the threads grows with the number of
->> threads that are running. It could still be making progress after 20
->> seconds. Since the time required to freeze all tasks is the number of
->> tasks times the time it takes to interrupt each task there is no way
->> to ensure that the time required is insignificant. If we do not abort
->> task freezing when there is a wakeup event, then the worst case wakeup
->> latency is guarantied to be worse than the worst case latency for any
->> other uninterruptible kernel call.
->
-> I agree with Pavel here. If freezing takes 20 seconds, something is
-> wrong. (Remember that most tasks will not be running, and will therefore
-> respond to the pseudo-signal and freeze immediately).
->
-> In fact, I'd go further. In the thousands of times I've run the freezer
-> over the years, it has never taken more than 1 second - let alone 20 -
+Hi.
 
-One second is to long.
+On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
+> On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
+> > On Thursday 07 May 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > I'd like to submit TuxOnIce for review, with a view to seeking to get it
+> > > > merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
+> > > > it can be merged) and the willingness of those who matter.
+> ...
+> > > To summarise disadvantages:
+> > > 
+> > > - only core has 8000 LoC
+> > > - it does stuff that can be easily done in userspace
+> > >      (and that todays distros _do_ in userspace).
+> > > - it duplicates uswsusp functionality.
+> > > - compared to [u]swsusp, it received little testing
+> > 
+> > Actually, I see advantages of working together versus fighting flame wars.
+> > Please stop that, I'm not going to take part in it this time.
+> 
+> Ok, so what do you propose? Merging tuxonice into 2.6.32, resulting in
+> having swsusp,uswsusp *and* tuxonice to maintain? I hope not.
+> 
+> If we are talking about improving mainline to allow tuxonice
+> functionality... then yes, that sounds reasonable.
 
-> when freezing has been successful. A delay of 20 seconds was more
-> relevant when the value included the time for syncing data to disk.
+I'd like to see use have all three for one or two releases of vanilla,
+just to give time to work out any issues that haven't been foreseen.
+Once we're all that there are confident there are no regressions with
+TuxOnIce, I'd remove swsusp. That's my ideal plan of attack.
 
-This patch does nothing with the 20 second timeout.
+Regards,
 
--- =
-
-Arve Hj=F8nnev=E5g
+Nigel
