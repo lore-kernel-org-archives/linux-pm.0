@@ -1,19 +1,23 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Thu, 7 May 2009 17:43:30 -0700
-Message-ID: <d6200be20905071743r72d94e26na4a945be88a2e366@mail.gmail.com>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<1241583529-5092-2-git-send-email-arve@android.com>
-	<1241583529-5092-3-git-send-email-arve@android.com>
-	<20090505201225.GG1379@ucw.cz>
-	<d6200be20905061842l64e71797r11807dff47f335ed@mail.gmail.com>
-	<20090507103249.GA6132@elf.ucw.cz>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Fri, 08 May 2009 10:49:09 +1000
+Message-ID: <1241743749.19600.238.camel__30433.3523069092$1241743811$gmane$org@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905072022.15202.rjw@sisk.pl>
+	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+	<200905072127.11995.rjw@sisk.pl>
+	<1241728860.19600.207.camel@nigel-laptop>
+	<20090507161406.35d953df@jbarnes-g45>
+	<1241739155.19600.233.camel@nigel-laptop>
+	<20090507164334.0d3890ef@jbarnes-g45>
+	<1241741618.19600.236.camel@nigel-laptop>
+	<20090507173938.48145f52@jbarnes-g45>
+Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090507103249.GA6132@elf.ucw.cz>
+In-Reply-To: <20090507173938.48145f52@jbarnes-g45>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,67 +27,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: ncunningham@crca.org.au, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 7, 2009 at 3:32 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2009-05-06 18:42:59, Arve Hj?nnev?g wrote:
->> On Tue, May 5, 2009 at 1:12 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > Hi!
->> >
->> >> Add a misc device, "suspend_blocker", that allows user-space processes
->> >> to block auto suspend. The device has ioctls to create a suspend_bloc=
-ker,
->> >> and to block and unblock suspend. To delete the suspend_blocker, close
->> >> the device.
->> >
->> > Rafael proposed write() interface. I don't think you answered that.
->> >
->>
->> I think an ioctl interface makes more sense. With a write interface
->> you either have to do string parsing, or invent some other protocol
->> between the driver and user-space.
->
-> Or perhaps just use "userspace/%d" % pid as a name?
+Hi.
 
-This would not be as useful. The point of naming the suspend blockers
-is to that we can easily identify them in the stats and kernel logs.
-Using the pid has two problems. First, the pid gives no hint about
-what it is used for, you have to look up the process somewhere else.
-Second, we use more than one suspend blocker from the same process.
+On Thu, 2009-05-07 at 17:39 -0700, Jesse Barnes wrote:
+> On Fri, 08 May 2009 10:13:38 +1000
+> Nigel Cunningham <nigel@tuxonice.net> wrote:
+> > On Thu, 2009-05-07 at 16:43 -0700, Jesse Barnes wrote:
+> > > On Fri, 08 May 2009 09:32:34 +1000
+> > > Nigel Cunningham <nigel@tuxonice.net> wrote:
+> > > > On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
+> > > > > On Fri, 08 May 2009 06:41:00 +1000
+> > > > > Nigel Cunningham <nigel@tuxonice.net> wrote:
+> > > > > 
+> > > > > > Hi.
+> > > > > > 
+> > > > > > On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
+> > > > > > > In fact I agree, but there's a catch.  The way in which
+> > > > > > > TuxOnIce operates LRU pages is based on some assumptions
+> > > > > > > that may or may not be satisfied in future, so if we decide
+> > > > > > > to merge it, then we'll have to make sure these assumptions
+> > > > > > > will be satisfied. That in turn is going to require quite
+> > > > > > > some discussion I guess.
+> > > > > > 
+> > > > > > Agreed. That's why I've got that GEMS patch - it's putting
+> > > > > > pages on the LRU that don't satisfy the former assumptions:
+> > > > > > they are used during hibernating and need to be atomically
+> > > > > > copied. If there are further developments in that area, I
+> > > > > > would hope we could just extend what's been done with GEMS.
+> > > > > 
+> > > > > Another option here would be to suspend all DRM operations
+> > > > > earlier. The suspend hook for i915 already does this, but maybe
+> > > > > it needs to happen sooner?  We'll probably want a generic DRM
+> > > > > suspend hook soon too (as the radeon memory manager lands) to
+> > > > > shut down GPU activity in the suspend and hibernate cases.
+> > > > > 
+> > > > > All that assumes I understand what's going on here though. :)
+> > > > > It appears you delay saving the GEM (just GEM by the way, for
+> > > > > Graphics/GPU Execution Manager) backing store until late to
+> > > > > avoid having the pages move around out from under you?
+> > > > 
+> > > > Yeah. TuxOnIce saves some pages without doing an atomic copy of
+> > > > them. Up 'til now, the algorithm has been LRU pages - pages used
+> > > > for TuxOnIce's userspace helpers. With GEM, we also need to make
+> > > > sure GEM pages are atomically copied and so also 'subtract' them
+> > > > from the list of pages that aren't atomically copied.
+> > > > 
+> > > > It's no great problem to do this, so I wouldn't ask you to change
+> > > > GEM to suspend DRM operations earlier. It's more important that
+> > > > GEM doesn't allocate extra pages unexpectedly - and I don't think
+> > > > that's likely anyway since we've switched away from X. This is
+> > > > important because TuxOnIce depends (for reliability) on having
+> > > > memory usage being predictable much more than swsusp and uswsusp
+> > > > do. (Larger images, less free RAM to begin with).
+> > > 
+> > > Yeah X is typically the one causing GEM allocations and performing
+> > > execution, but there are other possibilities too.  E.g. Wayland is a
+> > > non-X based display system that may be running instead, or maybe
+> > > there's an EGL or GPGPU program running in the background.
+> > > 
+> > > So I think it's best if we suspend DRM fairly early, otherwise you
+> > > *may* get extra allocations and will probably see all sorts of GPU
+> > > memory mapping activity and execution while you're trying to
+> > > hibernate things.  On the plus side I don't think this is a radical
+> > > redesign or anything, and mostly something we can do in our suspend
+> > > and hibernate callbacks.
+> > 
+> > That won't stop updates to the framebuffer?
+> 
+> No you can still have the framebuffer mapped and write to it (as long
+> as we don't invalidate such mappings at DRM suspend time that is, but
+> there's no reason to do that).
+> 
+> Does that mean tuxonice writes directly to framebuffer memory when
+> suspending?  Or does it just rely on a userspace program that does
+> that?  I'm just curious, either way should work fine, drm-wise.
 
->
-> 1) can't be faked that trivially
+It doesn't write directly to the framebuffer memory. It may (or may not)
+have a userspace program running that uses the framebuffer to display
+progress.
 
-I don't think this is a big problem. If you don't trust the apps that
-you give suspend blocker access to use unique names, we can add a
-prefix. This can be added in a later patch though.
+Regards,
 
->
-> 2) small / mostly fixed size
->
-> 3) can use nicer write protocol?
->
-I don't think a write protocol is nicer. "ioctl(suspend_block_fd,
-SUSPEND_BLOCKER_IOCTL_BLOCK);" seems less error prone and more
-readable to me than "write(suspend_block_fd, "1", 1);",
-"write(suspend_block_fd, "1", 2);" or "suspend_block_val =3D 1;
-write(suspend_block_fd, &suspend_block_val,
-sizeof(suspend_block_val));".
-
->> > kzalloc on user-supplied argument. Sounds like bad idea.
->> >
->> > Aha. And probably integer overflow in the same line. Ouch.
->> >
->>
->> The size is limited to _IOC_SIZEMASK with is 13 or 14 bits depending
->> on the architecture. Do you want a lower limit on the name length?
->
-> 16K of unswappable kernel memory for name is a bit too much, yes.
-
-What if I just truncate it to NAME_MAX.
-
--- =
-
-Arve Hj=F8nnev=E5g
+Nigel
