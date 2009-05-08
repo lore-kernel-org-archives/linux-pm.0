@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Ray Lee <ray-lk@madrabbit.org>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 9 May 2009 01:43:10 +0200
-Message-ID: <200905090143.10980.rjw__28037.725602235$1241826487$gmane$org@sisk.pl>
+Date: Fri, 8 May 2009 16:44:22 -0700
+Message-ID: <2c0942db0905081644l73a7a4f5i8af4677046797df__43964.3773869195$1241826822$gmane$org@mail.gmail.com>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905081611.41865.rjw@sisk.pl>
+	<1241819569.19600.281.camel@nigel-laptop>
 	<200905090046.21282.rjw@sisk.pl>
 	<1241825408.19600.384.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1241825408.19600.384.camel@nigel-laptop>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,30 +25,58 @@ To: nigel@tuxonice.net
 Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 09 May 2009, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
-> > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > > On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
-> > > > > > On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
-> > > > > > > On Thursday 07 May 2009, Pavel Machek wrote:
-[--snip--]
-> > > And the code includes some fundamental differences. I freeze processes
-> > > and prepare the whole image before saving anything or doing an atomic
-> > > copy whereas you just free memory before doing the atomic copy. You save
-> > > everything in one part whereas I save the image in two parts.
-> > 
-> > IMO the differences are not that fundamental.  The whole problem boils down
-> > to using the same data structures for memory management and I think we can
-> > reach an agreement here.
-> 
-> I think we might be able to agree on using the same data structures, but
-> I'm not so sure about algorithms - I think you're underestimating the
-> differences here.
-
-Well, which algorithms do you have in mind in particular?
-
-Rafael
+T24gRnJpLCBNYXkgOCwgMjAwOSBhdCA0OjMwIFBNLCBOaWdlbCBDdW5uaW5naGFtIDxuaWdlbEB0
+dXhvbmljZS5uZXQ+IHdyb3RlOgo+ID4gRmlyc3QsIGJlY2F1c2UgaXQgaXMgdGVjaG5pY2FsbHkg
+dG9vIGRpZmZpY3VsdCB0byBoYXZlIGFsbCBvZiB0aGUgY29kZSByZXZpZXdlZAo+ID4gYW5kIF9h
+Z3JlZWRfIF91cG9uXyBieSBldmVyeW9uZSBhdCBvbmNlLiDCoEFuZCBpZiBpdCdzIG5vdCBhZ3Jl
+ZWQgdXBvbiwgeW91J2xsCj4gPiBoYXZlIHRvIG1vZGlmeSBpdCBhbmQgaXQgd29uJ3QgYmUgdGhl
+IHNhbWUgdGhpbmcgYW55IG1vcmUgb25jZSB5b3UndmUgZG9uZQo+ID4gdGhhdC4gwqBXaGljaCBJ
+J2Qgc2F5IGlzIGd1YXJhbnRlZWQsIGhhdmluZyBoYWQgYSBxdWljayBsb29rIGF0IHRoZSBjb2Rl
+Lgo+Cj4gSSB0aGluayB5b3UncmUgcHV0dGluZyB1bnJlYWxpc3RpYyBiYXJyaWVycyBpbiB0aGUg
+d2F5LiBEb2VzIGFsbCBjb2RlCj4gdGhhdCBnb2VzIGludG8gdGhlIGtlcm5lbCBnZXQgInJldmll
+d2VkIGFuZCBhZ3JlZWQgdXBvbiBieSBldmVyeW9uZSBhdAo+IG9uY2UiPyBObyEKCkFjdHVhbGx5
+LCB5ZXMuIEFueSBjb2RlIHRoYXQgdG91Y2hlcyBhIHN1YnN5c3RlbSBoYXMgdG8gZ2V0IHNpZ25l
+ZCBvZmYKYnkgdGhhdCBzdWJzeXN0ZW0ncyBtYWludGFpbmVycy4gV2l0bmVzcyBhbnkgb2YgdGhl
+IGxvbmcgc2VyaWVzIG9mCnBhdGNoZXMgdGhhdCB0b3VjaCBhbGwgYXJjaGVzLCBvciBjaGFuZ2Ug
+b3V0IGFsbCBkcml2ZXJzIGZyb20gb25lCm1ldGhvZCB0byBhbm90aGVyLiBFdmVuIEFuZHJldyBN
+b3J0b24sIHRoZSBndXkgd2hvJ3MgdGhlIGRlY2xhcmVkIDIuNgprZXJuZWwgbWFpbnRhaW5lciwg
+aGFzIHRvIHNwbGl0IGhpcyBwYXRjaGVzIHVwIGJ5IHN1YnN5c3RlbSBvcgpsaWV1dGVuYW50IGFu
+ZCBwdXNoIHRoZW0gZm9yd2FyZCB2aWEgdGhlbSBhbmQgdGhlaXIgdHJlZXMuCgpZb3UgYXJlIGJl
+aW5nIHRyZWF0ZWQgbm8gZGlmZmVyZW50bHkgdGhhbiBhbnlvbmUgZWxzZSBvbiBoZXJlLCBvdGhl
+cgp0aGFuIExpbnVzIGhpbXNlbGYgd2hvIGhhcyB0aGUgcG93ZXIgdG8gbWVyZ2UgaW50byBoaXMg
+dHJlZSBhdCBhIHdoaW0sCmJ1dCBldmVuIGhlIGRvZXMgc28gdmVyeSByZWx1Y3RhbnRseSB3aXRo
+b3V0IGEgc2lnbm9mZiBmcm9tIHRoZQphZmZlY3RlZCBzdWJzeXN0ZW0gcGVvcGxlLgoKVHV4T25J
+Y2UgaXMgaW4gYSBoYXJkZXIgcG9zaXRpb24gdGhhbiBtb3N0IHBhdGNoZXMsIGFzIGZvciBpdCB0
+byB3b3JrCml0IG5lZWRzIHRvIHRvdWNoIHNvIG1hbnkgc3Vic3lzdGVtcy4KCklzIHRoaXMgYW5u
+b3lpbmc/IEknbSBzdXJlLiBCdXQgdGhhdCdzIHdoeSBSYWZhZWwgaXMgb2ZmZXJpbmcgdG8gZG8K
+dGhlIGFubm95aW5nIHBhcnQgZm9yIHlvdSwgdGhlIHBhcnQgdGhhdCBoYXMgbmV2ZXIgd29ya2Vk
+IGluIHRoZSBwYXN0CndoZW4geW91ciBwYXRjaGVzIGhhdmUgYmVlbiBwb3N0ZWQgZm9yIGNvbW1l
+bnQgYW5kIGhvcGVmdWwgbWVyZ2luZzoKSGUncyBvZmZlcmluZyB0byBiZSB0aGUgc29jaWFsIGds
+dWUgYmV0d2VlbiB5b3VyIGNvZGUgYW5kIHRoZSBmb3Jtcwp0aGF0IGFyZSBhY2NlcHRlZCBhbmQg
+Zm9sbG93ZWQgaGVyZSBvbiBMS01MLiBUYWtpbmcgdGhpbmdzIGFwYXJ0IGZyb20KdGhlIHdob2xl
+LCBmaW5kaW5nIHRoZSBwaWVjZXMgdGhhdCBhcmUgbm9uLWNvbnRyb3ZlcnNpYWwgb3IgZWFzaWx5
+CmFyZ3VlZCBmb3IsIGdldHRpbmcgdGhlbSBtZXJnZWQgdXBzdHJlYW0gd2l0aCBhIHVzZXIsIGFu
+ZCB0aGVuIG1vdmluZwpvbiB0byB0aGUgcmVzdC4KClRoaXMgd2F5LCB0aGUgZXh0ZXJuYWwgVHV4
+T25JY2UgcGF0Y2ggc2V0IHNocmlua3MgYW5kIHNocmlua3MsIHVudGlsCml0J3MgZXZlbnR1YWxs
+eSBnb25lLCB3aXRoIGFsbCBmdW5jdGlvbmFsaXR5IG1lcmdlZCBpbnRvIHRoZSBrZXJuZWwgaW4K
+b25lIGZvcm0gb3IgYW5vdGhlci4KCklzIHlvdXIgY29kZSBiZXR0ZXIgdGhhbiB1c3dzdXNwPyBB
+bG1vc3QgY2VydGFpbmx5LiBUaGlzIGlzbid0IGFib3V0CnRoYXQuIFRoaXMgaXMgYWJvdXQgbWFr
+aW5nIHlvdXIgY29kZSBiZXR0ZXIgdGhhbiB3aGF0IGl0IGlzIHRvZGF5LCBieQpnb2luZyB0aHJv
+dWdoIHRoZSBleGlzdGluZyByZXZpZXctYW5kLW1lcmdlIHByb2Nlc3MuCgpJQk0gaGFkIHRvIGRv
+IGl0IHdpdGggdGhlaXIgRGV2aWNlIE1hcHBlciBmZWF0dXJlIHNldCB0aGV5IHRyaWVkIHRvCmRy
+b3AgaW50byB0aGUga2VybmVsLCBhbmQgdGhlIGNvbW11bml0eSBzYWlkICJXaG9hIiB0aGUgc2Ft
+ZSB3YXkKdGhleSdyZSByZWFjdGluZyB0byBUdXhPbkluY2UgKE5vdGU6IE5vdCB5b3UsIHRoZSBj
+b2RlLikgSUJNIHdlbnQgb2ZmLAp3cm90ZSB0aGluZ3MgdGhhdCBpbnRlcmdyYXRlZCBpbiB3aXRo
+IHRoZSBleGlzdGluZyBjb2RlYmFzZSwgYW5kIGdvdAppdCBtZXJnZWQgd2l0aCB0aGUgc2lnbm9m
+ZnMgb2YgdGhlIHN1YnN5c3RlbXMgYWZmZWN0ZWQuIFRoZXkncmUgYSBiaWcKY29ycCwgYW5kIGV2
+ZW4gdGhleSBoYWQgdG8gcGxheSBieSB0aGUgZXhpc3RpbmcgcnVsZXMuCgpFdmVyeWJvZHkgZG9l
+cyB0aGlzIGhlcmUsIGl0J3MgdGhlIHdheSB0aGluZ3Mgd29yaywgYmVjYXVzZSB0aGUgcHJvY2Vz
+cyAqd29ya3MqLgoKSSBwZXJzb25hbGx5IHdhbnQgdG8gc2VlIGEgYmV0dGVyIGhpYmVybmF0aW9u
+IHN5c3RlbSBpbiB0aGUga2VybmVsLAphbmQgSSBwZXJzb25hbGx5IHRoaW5rIGl0J3MgZ29pbmcg
+dG8gYmUgc3Vic3RhbnRpYWxseSBzaW1pbGFyIHRvIHdoYXQKeW91IGhhdmUgdG9kYXkuIEkgYWxz
+byBwZXJzb25hbGx5IGhhdmUgbm8gY29udHJvbCBvdmVyIHdoYXQgZ2V0cwptZXJnZWQsIHNvIGhv
+cGVmdWxseSB5b3UnbGwgcmVhZCB0aGUgYWJvdmUgd2l0aCBzb21lIGNhcmUgYW5kIHRob3VnaHQu
+CgpQbGVhc2Ugc3RpY2sgYXQgdGhpcy4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
+LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eC1wbQ==
