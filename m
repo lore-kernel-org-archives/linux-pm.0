@@ -1,21 +1,16 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Fri, 08 May 2009 10:13:38 +1000
-Message-ID: <1241741618.19600.236.camel__35397.4298494451$1241741683$gmane$org@nigel-laptop>
+Date: Fri, 8 May 2009 02:18:52 +0200
+Message-ID: <200905080218.53142.rjw__44196.3390484036$1241742146$gmane$org@sisk.pl>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905072022.15202.rjw@sisk.pl>
-	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
-	<200905072127.11995.rjw@sisk.pl>
-	<1241728860.19600.207.camel@nigel-laptop>
-	<20090507161406.35d953df@jbarnes-g45>
 	<1241739155.19600.233.camel@nigel-laptop>
 	<20090507164334.0d3890ef@jbarnes-g45>
-Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <20090507164334.0d3890ef@jbarnes-g45>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,11 +24,12 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: linux-kernel@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On Thu, 2009-05-07 at 16:43 -0700, Jesse Barnes wrote:
+On Friday 08 May 2009, Jesse Barnes wrote:
 > On Fri, 08 May 2009 09:32:34 +1000
 > Nigel Cunningham <nigel@tuxonice.net> wrote:
+> 
+> > Hi.
+> > 
 > > On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
 > > > On Fri, 08 May 2009 06:41:00 +1000
 > > > Nigel Cunningham <nigel@tuxonice.net> wrote:
@@ -90,10 +86,10 @@ On Thu, 2009-05-07 at 16:43 -0700, Jesse Barnes wrote:
 > anything, and mostly something we can do in our suspend and hibernate
 > callbacks.
 
-That won't stop updates to the framebuffer?
+I think hibernate callbacks are too late for that.  PM notifiers, OTOH, are
+probably too early.
 
-> Thanks,
+So, I really think we'll need to do something special about it.
 
-Thank _you_!
-
-Nigel
+Thanks,
+Rafael
