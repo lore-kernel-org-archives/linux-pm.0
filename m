@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sat, 9 May 2009 01:55:43 +0200
-Message-ID: <200905090155.44635.rjw__41572.2405109138$1241827185$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072218.50782.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before
+	suspend
+Date: Fri, 8 May 2009 16:58:59 -0700
+Message-ID: <d6200be20905081658l65a1b37fs28739881267786d7@mail.gmail.com>
+References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+	<1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
+	<20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
+	<d6200be20905071452t3efb67gffd4de5332e83e73@mail.gmail.com>
+	<8763gbmapm.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
-Content-Disposition: inline
+In-Reply-To: <8763gbmapm.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +22,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Rientjes <rientjes@google.com>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, David Rientjes wrote:
-> On Thu, 7 May 2009, Rafael J. Wysocki wrote:
-> 
-> > OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
-> > I'll use the freezer-based approach instead.
-> > 
-> 
-> Third time I'm going to suggest this, and I'd like a response on why it's 
-> not possible instead of being ignored.
-> 
-> All of your tasks are in D state other than kthreads, right?  That means 
-> they won't be in the oom killer (thus no zones are oom locked), so you can 
-> easily do this
-> 
-> 	struct zone *z;
-> 	for_each_populated_zone(z)
-> 		zone_set_flag(z, ZONE_OOM_LOCKED);
-> 
-> and then
-> 
-> 	for_each_populated_zone(z)
-> 		zone_clear_flag(z, ZONE_OOM_LOCKED);
-> 
-> The serialization is done with trylocks so this will never invoke the oom 
-> killer because all zones in the allocator's zonelist will be oom locked.
+2009/5/8 Kevin Hilman <khilman@deeprootsystems.com>:
+> Arve Hj=F8nnev=E5g <arve@android.com> writes:
+>
+>> On Thu, May 7, 2009 at 9:19 AM, Kevin Hilman
+>> <khilman@deeprootsystems.com> wrote:
+>>> From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
+>>> From: Kevin Hilman <khilman@deeprootsystems.com>
+>>> Date: Wed, 6 May 2009 16:00:07 -0700
+>>> Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+>>>
+>>> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
+>>> behavior of disable_irq() was changed to delay the disable until it is
+>>> next handled.
+>>>
+>>> However, this leaves open the possibility that the system can go into
+>>> suspend with an interrupt enabled. =A0For example, if a driver calls
+>>> disable_irq() in its suspend_hook there's now a possibility that the
+>>> system is suspended before the lazy disable happens.
+>>>
+>>> The result is an unwanted wakeup from suspend if the IRQ is capable of
+>>> waking the system (common on embedded SoCs.)
+>>
+>> If the interrupt contoller uses the same enable register for wakeup
+>> and interrupts, I think it is the responsibility of the platform code,
+>> not individual drivers, to disable the interrupts that are not marked
+>> for wakeup before entering suspend.
+>
+> I agree, for wakeup interrupts, drivers should use
+> [set|disable]_irq_wake() and the platform code should handle this.
+>
+> I used wakeup interrupts in this description as an example which
+> turned out to be a bad example. =A0The 2nd version of this patch I
+> posted, I removed the reference to wakeup interrupts in favor of just
+> talking about the delayed disable piece.
+>
+> But ignoring wakup interrupts, would you agree that the delayed
+> disable of an interrupt should not wait until after resume?
+>
 
-Well, that might have been a good idea if it actually had worked. :-(
+No. The platform code needs to turn off interrupts that are not wakeup
+interrupts anyway, so there is not much point in disabling some
+interrupts early. Also, if the interrupt in question is not a wakeup
+interrupt you leave it in a state where it does not detect an edge. A
+driver that enables its hardware in resume, then unmasks the interrupt
+would loose an interrupt that triggered between enabling the hardware
+and unmasking the interrupt.
 
-> Why does this not work for you?
+>>> This patch ensures that the lazy disable is done, and masked by
+>>> the irq_chip before the system goes into suspend.
+>>
+>> This will create a window where wakeup interrupts can be lost if the
+>> driver has masked the interrupt (by calling disable_irq). If the
+>> hardware does not allow edge detection on disabled interrupts (the msm
+>> platform has this limitation) then this change will turn off the edge
+>> detection. If suspend_ops->enter does not turn the interrupt (and edge
+>> detection) back on (without this change it may never need to turn on
+>> any interrupt) it will not wakeup at all.
+>
+> Not sure I follow you here...
+>
+> It seems like you're relying on the delayed disable to wait until
+> after resume so that disabled interrupts can wake the system. =A0How
+> did this work before the delayed disable patch?
+>
 
-If I set image_size to something below "hard core working set" +
-totalreserve_pages, preallocate_image_memory() hangs the
-box (please refer to the last patch I sent,
-http://patchwork.kernel.org/patch/22423/).
+It did not.
 
-However, with the freezer-based disabling of the OOM killer it doesn't hang
-under the same test conditions.
+> If the interrupt is being used as a wakeup, why would anyone be
+> calling disable_irq()?
+>
 
-The difference appears to be that using your approach makes
-__alloc_pages_internal() loop forever between the !try_set_zone_oom() test and
-restart:, while it should go to nopage: in that situation.
+Drivers call disable_irq to make sure their interrupt handler does not
+get called. A driver may not be able take interrupts after its suspend
+hook has been called. If it calls disable_irq on a wakeup interrupt
+then this interrupt should abort suspend or wake up from suspend. The
+driver will then see the interrupt when it call enable_irq in its
+resume handler.
 
-So, I think I'll stick to the Andrew's approach with using __GFP_NO_OOM_KILL.
+-- =
 
-Thanks,
-Rafael
+Arve Hj=F8nnev=E5g
