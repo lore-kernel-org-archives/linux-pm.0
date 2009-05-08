@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 9 May 2009 00:46:20 +0200
-Message-ID: <200905090046.21282.rjw__39768.3149822571$1241822972$gmane$org@sisk.pl>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905081611.41865.rjw@sisk.pl>
-	<1241819569.19600.281.camel@nigel-laptop>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+	if a suspend_blocker is active.
+Date: Sat, 9 May 2009 01:01:01 +0200
+Message-ID: <200905090101.02390.rjw@sisk.pl>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<200905081640.44894.rjw@sisk.pl>
+	<1241821626.19600.325.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1241819569.19600.281.camel@nigel-laptop>
+In-Reply-To: <1241821626.19600.325.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,139 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 08 May 2009, Nigel Cunningham wrote:
-> Hi Rafael.
-
-Hi,
-
-> On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
-> > > > On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
-> > > > > On Thursday 07 May 2009, Pavel Machek wrote:
-> > > > > > Hi!
-> > > > > > 
-> > > > > > > I'd like to submit TuxOnIce for review, with a view to seeking to get it
-> > > > > > > merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
-> > > > > > > it can be merged) and the willingness of those who matter.
-> > > > ...
-> > > > > > To summarise disadvantages:
-> > > > > > 
-> > > > > > - only core has 8000 LoC
-> > > > > > - it does stuff that can be easily done in userspace
-> > > > > >      (and that todays distros _do_ in userspace).
-> > > > > > - it duplicates uswsusp functionality.
-> > > > > > - compared to [u]swsusp, it received little testing
-> > > > > 
-> > > > > Actually, I see advantages of working together versus fighting flame wars.
-> > > > > Please stop that, I'm not going to take part in it this time.
-> > > > 
-> > > > Ok, so what do you propose? Merging tuxonice into 2.6.32, resulting in
-> > > > having swsusp,uswsusp *and* tuxonice to maintain? I hope not.
-> > > > 
-> > > > If we are talking about improving mainline to allow tuxonice
-> > > > functionality... then yes, that sounds reasonable.
-> > > 
-> > > I'd like to see use have all three for one or two releases of vanilla,
-> > > just to give time to work out any issues that haven't been foreseen.
-> > > Once we're all that there are confident there are no regressions with
-> > > TuxOnIce, I'd remove swsusp. That's my ideal plan of attack.
-> > 
-> > So this is an idea to replace our current hibernation implementation with
-> > TuxOnIce.
+On Saturday 09 May 2009, Nigel Cunningham wrote:
+> Hi.
 > 
-> That's my ideal. I know you and Pavel don't want to see us go down that
-> path, but I was asked "What do you propose?" and I answered that
-> question.
-
-So you could also easily anticipate my reaction. :-)
-
-Quite frankly, I don't really think this is realistic.
-
-First, because it is technically too difficult to have all of the code reviewed
-and _agreed_ _upon_ by everyone at once.  And if it's not agreed upon, you'll
-have to modify it and it won't be the same thing any more once you've done
-that.  Which I'd say is guaranteed, having had a quick look at the code.
-
-Second, because realistically you shouldn't expect _anyone_ (be it me or Pavel
-or just about anybody else) to throw away his own code and replace it with
-yours just because *you* think your code is better.  You really should have
-listened to the HPA's talk at the OLS last year (here's a link to the paper
-http://ols.fedoraproject.org/OLS/Reprints-2008/anvin-reprint.pdf, please see
-Section 10) which was about merging open source projects, among other things. :-)
-
-> > Which unfortunately I don't agree with.
-> > 
-> > I think we can get _one_ implementation out of the three, presumably keeping
-> > the user space interface that will keep the current s2disk binaries happy, by
-> > merging TuxOnIce code _gradually_.  No "all at once" approach, please.
-> > 
-> > And by "merging" I mean _exactly_ that.  Not adding new code and throwing
-> > away the old one.
-> > 
-> > While I can work on creating one hibernation implementation by taking the
-> > best ideas from all of the implementation we have at hand, I surely won't be
-> > working on replacing our current code with TuxOnIce.  If that disappoints you,
-> > then I'm sorry.
+> On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
+> > The timeout is actually a workaround for the problem that we don't
+> > really
+> > know if tasks are going to react to our freeze requests and how much time it is
+> > going to take.  The current value of 20 s was chosen after a number of
+> > experiments showing that in some cases the freezing _was_ going to take so
+> > much time.  Of course the question is whether it makes sense to give up earlier
+> > even if tasks would eventually freeze, but that's a different issue.
 > 
-> But who is going to do that, and how and when. You're clearly too busy
-> working on enhancements to the driver model - enhancements that are good
-> and necessary (I'm not at all meaning this is bad). I'm only doing this
-> in a little bit of spare time. Pavel doesn't seem to be doing it at all.
+> What were the circumstances in which freezing could take 20s?
 
-I think I can find some time to work on that.  I've spent a lot of time
-recently on improving the allocation of memory for hibernation images and I
-think I can work on the other hibernation-related things either.  The most
-important thing to me is whether or not to put that into my todo list.  If I
-decide to do it, I'll find the time too.
+Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
 
-> And we have different ideas about how things should be done. Userspace
-> vs kernel space. Providing tuning knobs vs not. And so on.
+Generally, the situation in which there are many runnable tasks and new tasks
+come and go etc.  I haven't repeated this benchmark recently, though, so it's
+probably worth doing again.
 
-This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
-solution, as there are some clear benefits of doing it this way.  We only
-need to be careful enough not to break the existing setups.
+Which has a little to do with the $subject patch IMO, because I think that
+it's reasonable to stop freezing tasks as soon as we know that it won't be
+necessary anyway.
 
-> And the code includes some fundamental differences. I freeze processes
-> and prepare the whole image before saving anything or doing an atomic
-> copy whereas you just free memory before doing the atomic copy. You save
-> everything in one part whereas I save the image in two parts.
-
-IMO the differences are not that fundamental.  The whole problem boils down
-to using the same data structures for memory management and I think we can
-reach an agreement here.
-
-> I take a modular approach and you have everything hardwired.
-
-That's because using modules woudn't really make sense for us. :-)
-
-> Even if we did try to merge the three implementations, there'd come a
-> point where we either threw away core parts of TuxOnIce or dropped the
-> whole of [u]swsusp and started again - or both.
-
-I would be for starting again, really, using the experience we've collected so
-far.  How we technically do it is another matter.  I personally would prefer
-adding new code in such a way that it's useable from the start, so that it gets
-tested and integrated with all of the subsystems we're touching.
-
-> It doesn't disappoint me that you don't won't to replace [u]swsusp with
-> TuxOnIce. I never thought you or Pavel would want to do that.
-> 
-> I did hold out a little hope that you at least might be supportive
-> anyway of getting TuxOnIce added into vanilla - 
-
-That would take lot of work and we'd also have to ask many other busy people
-to do a lot of work for us.  I think it's better to just avoid it at this point.
-
-> if only so that users can get a better hibernation experience while we work
-> through merging the three into one. I'd far rather get along well with you
-> than have some sort of competitive relationship.
-
-Great, let's do our best to be productive.
-
-Best,
+Thanks,
 Rafael
