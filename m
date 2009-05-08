@@ -1,17 +1,17 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 09 May 2009 07:59:31 +1000
-Message-ID: <1241819971.19600.288.camel__42752.7993022979$1241820034$gmane$org@nigel-laptop>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<20090507215112.GC14611@elf.ucw.cz>
-	<1241746459.19600.246.camel@nigel-laptop>
-	<200905082144.57955.bzolnier@gmail.com>
-Reply-To: nigel@tuxonice.net
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+ if a suspend_blocker is active.
+Date: Sat, 09 May 2009 08:27:06 +1000
+Message-ID: <1241821626.19600.325.camel@nigel-laptop>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<d6200be20905071822y377d0f10t3adad66d6c49acc1@mail.gmail.com>
+	<1241746532.19600.247.camel@nigel-laptop>
+	<200905081640.44894.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905082144.57955.bzolnier@gmail.com>
+In-Reply-To: <200905081640.44894.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Fri, 2009-05-08 at 21:44 +0200, Bartlomiej Zolnierkiewicz wrote:
-> Please proceed to Plan B then.
-> 
-> Adding third core code framework to do the same thing is out of question
-> (probably same should have been said about adding second one in the past).
+On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
+> The timeout is actually a workaround for the problem that we don't
+> really
+> know if tasks are going to react to our freeze requests and how much time it is
+> going to take.  The current value of 20 s was chosen after a number of
+> experiments showing that in some cases the freezing _was_ going to take so
+> much time.  Of course the question is whether it makes sense to give up earlier
+> even if tasks would eventually freeze, but that's a different issue.
 
-Why? We have plenty of history of having multiple implementations of
-things (slub, slab and slob...).
+What were the circumstances in which freezing could take 20s?
 
-> Moreover you will for sure hit much more regressions than you expect
-> (I "love" seeing over and over again when people/companies get trapped
-> into fallacy of superiority of their _own_ solution).
+> Now, I think the Arve's approach is reasonable.  If we know in advace that
+> we're not going to suspend, it's better to stop the freezing as soon as
+> possible.
 
-That's just wrong. TuxOnIce deliberately doesn't remove any of swsusp or
-uswsusp so that there's no chance of users having regressions. It
-provides the _option_ of being a drop in replacement for swsusp, but it
-doesn't force users to take that option.
-
-Regressions happen at the moment because TuxOnIce isn't included in
-vanilla. Users update from one version of stable to the next or from one
-version of head to the next and expect TuxOnIce to keep working, and it
-doesn't always do that because of changes to the vanilla code that
-require an updated patch.
-
-> I really wouldn't consider teaming with Rafael to work on "swsuspOnTux"
-> (evolving the in-kernel code while re-using chunks of TuxOnIce code) as
-> a bad Plan B.  It has the potential of resulting in a solution clearly
-> superior to all existing ones (TuxOnIce included).
-
-If there are features in swsusp that TuxOnIce is lacking, or features to
-uswsusp that TuxOnIce is lacking, please tell me what they are and I'll
-implement them. In saying this, I don't deny that TuxOnIce code can
-still be improved - there's a lot I'd still like to do.
+Agreed.
 
 Regards,
 
