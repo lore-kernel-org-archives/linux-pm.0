@@ -1,14 +1,16 @@
-From: U Kuehn <ukuehn@acm.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 07 May 2009 18:55:54 +0200
-Message-ID: <4A03129A.90105__35615.359087433$1241856234$gmane$org@acm.org>
+Date: Sat, 09 May 2009 11:10:28 +0200
+Message-ID: <4A054884.3060503__44281.1158056886$1241860458$gmane$org@s5r6.in-berlin.de>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 	<20090507120948.GA1531@ucw.cz>
+	<Pine.LNX.4.64.0905070925500.8967@hp9800.localdomain>
+	<Pine.LNX.4.64.0905071101000.8967@hp9800.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090507120948.GA1531@ucw.cz>
+In-Reply-To: <Pine.LNX.4.64.0905071101000.8967@hp9800.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Kenneth Crudup <kenny@panix.com>
 Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
->> To briefly summarise the advantages to merging TuxOnIce:
->>
->> - Support for multiple swap devices
->> - Support for non-swap (an ordinary file can be used)
->> - Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
->> - Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
->>   possible with your hardware.
->> - Userspace user interface that lets you abort hibernating and abort
->>   resuming, get nice progress display etc.
+Kenneth Crudup wrote:
+> Oh, and I can hit "ESC" in the middle of suspending with TuxOnIce and
+> back out of it if I'd changed my mind for whatever reason.
 > 
-> All these are either done by uswsusp already, or could be done w/o
-> modifying kernel code.
-> 
+> There are(/were) competing ieee1394 OHCI drivers and competing Bluetooth
+> USB HCI drivers, and that's just off the top of my head- so having
+> competing suspend/resume methods won't be anything new. Let the market
+> decide which is best.
 
-Given that tuxonice DOES work reliably with dm-crypt encrypted swap
-partitions, does uswsusp offer this functionality? Looking into the docs
-on the sourceforge site does not give any information about this point.
+The case of two 1394 driver stacks isn't fully comparable.  I supported 
+the addition of the second stack with the intent to replace the existing 
+one after a transition period, and in the hope that the ratio of 
+available maintainer manpower : size and complexity of the codebase 
+would improve considerably.  Because that was/is the single fundamental 
+problem in Linux 1394 driver land.
 
-Further, being someone with a crypto background, the userland suspend
-helper does have some issues with the password/key handling:
-1) no support for keys containing a 0 byte. (cryptsetup can handle this)
-2) the rsa functionality seems to use the unsound practice to encrypt
-the symmetric key directly without any padding (aka encoding in libgcrypt).
-
-This is, unfortunately, something really fundamenta...
-
-Just to add my 2 cents...
-
-Ulrich
+(Besides, how well is infrastructure like the suspend--resume framework 
+comparable to drivers?)
+-- 
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
