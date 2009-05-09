@@ -1,18 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 9 May 2009 15:58:20 +0200
-Message-ID: <20090509135820.GF10859__44493.2982478805$1241877710$gmane$org@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905082144.57955.bzolnier@gmail.com>
-	<1241819971.19600.288.camel@nigel-laptop>
-	<200905090105.58243.bzolnier@gmail.com>
-	<1241824525.19600.369.camel@nigel-laptop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Date: Sat, 9 May 2009 09:24:51 -0700 (PDT)
+Message-ID: <alpine.LFD.2.01.0905090923370.3586@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	<200904202208.23899.laurent.pinchart@skynet.be>
+	<d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
+	<200904220121.12002.laurent.pinchart@skynet.be>
+	<20090509112819.759594d5@linux-lm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1241824525.19600.369.camel@nigel-laptop>
+In-Reply-To: <20090509112819.759594d5@linux-lm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,23 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, mchehab@infradead.org, Linux ACPI <linux-acpi@vger.kernel.org>, video4linux-list@redhat.com, Laurent Pinchart <laurent.pinchart@skynet.be>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > Instead of new features I would rather see more effort being put into making
-> > the _core_ TuxOnIce (I mean patch #8 here) smaller (8 KLOC is still a lot,
-> > just to put things into the right perspective the current in-kernel content
-> > of kernel/power/ is 5.5 KLOC) and with more documentation inside the code.
+
+On Sat, 9 May 2009, Ming Lei wrote:
 > 
-> Yeah, but those 2.5k extra lines get you more reliability and extra
-> functionality. They're not fat.
+> Rc5 has been released today, why isn't this patch accepted by upstream
+> now?  It is really a bug fix.
 
-If you know about reliability problems in swsusp, please fix them in
-separate patch. Hiding the fixes in 8KLOC patch is not nice.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I can take it directly, but was hoping to get it through the regular DVB 
+tree. Haven't had a DVB update request yet (or maybe it got lost?)
+
+		Linus
