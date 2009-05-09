@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sat, 9 May 2009 02:08:43 +0200
-Message-ID: <200905090208.44381.rjw@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<20090508095010.GA26398@localhost> <200905081551.56577.rjw@sisk.pl>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+ if a suspend_blocker is active.
+Date: Sat, 09 May 2009 10:12:23 +1000
+Message-ID: <1241827943.19600.386.camel@nigel-laptop>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<200905081640.44894.rjw@sisk.pl>
+	<1241821626.19600.325.camel@nigel-laptop>
+	<200905090101.02390.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905081551.56577.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200905090101.02390.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: David Rientjes <rientjes@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 08 May 2009, Rafael J. Wysocki wrote:
-> On Friday 08 May 2009, Wu Fengguang wrote:
-[--snip--]
-> > But hey, that 'count' counts "savable+free" memory.
-> > We don't have a counter for an estimation of "free+freeable" memory,
-> > ie. we are sure we cannot preallocate above that threshold. 
+Hi.
+
+On Sat, 2009-05-09 at 01:01 +0200, Rafael J. Wysocki wrote:
+> On Saturday 09 May 2009, Nigel Cunningham wrote:
+> > Hi.
 > > 
-> > One applicable situation is, when there are 800M anonymous memory,
-> > but only 500M image_size and no swap space.
+> > On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
+> > > The timeout is actually a workaround for the problem that we don't
+> > > really
+> > > know if tasks are going to react to our freeze requests and how much time it is
+> > > going to take.  The current value of 20 s was chosen after a number of
+> > > experiments showing that in some cases the freezing _was_ going to take so
+> > > much time.  Of course the question is whether it makes sense to give up earlier
+> > > even if tasks would eventually freeze, but that's a different issue.
 > > 
-> > In that case we will otherwise goto the oom code path. Sure oom is
-> > (and shall be) reliably disabled in hibernation, but still we shall be
-> > cautious enough not to create a low memory situation, which will hurt:
-> > - hibernation speed
-> >   (vmscan goes mad trying to squeeze the last free page)
-> > - user experiences after resume
-> >   (all *active* file data and metadata have to reloaded)
+> > What were the circumstances in which freezing could take 20s?
 > 
-> Strangely enough, my recent testing with this patch doesn't confirm the
-> theory. :-)  Namely, I set image_size too low on purpose and it only caused
-> preallocate_image_memory() to return NULL at one point and that was it.
+> Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
 > 
-> It didn't even took too much time.
+> Generally, the situation in which there are many runnable tasks and new tasks
+> come and go etc.  I haven't repeated this benchmark recently, though, so it's
+> probably worth doing again.
 > 
-> I'll carry out more testing to verify this observation.
+> Which has a little to do with the $subject patch IMO, because I think that
+> it's reasonable to stop freezing tasks as soon as we know that it won't be
+> necessary anyway.
 
-I can confirm that even if image_size is below the minimum we can get,
-the second preallocate_image_memory() just returns after allocating fewer pages
-that it's been asked for (that's with the original __GFP_NO_OOM_KILL-based
-approach, as I wrote in the previous message in this thread) and nothing bad
-happens.
+Yes, but it's still good to know.
 
-That may be because we freeze the mm kernel threads, but I've also tested
-without freezing them and it's still worked the same way.
+Regards,
 
-> > The current code simply tries *too hard* to meet image_size.
-> > I'd rather take that as a mild advice, and to only free
-> > "free+freeable-margin" pages when image_size is not approachable.
-> > 
-> > The safety margin can be totalreserve_pages, plus enough pages for
-> > retaining the "hard core working set".
-> 
-> How to compute the size of the "hard core working set", then?
-
-Well, I'm still interested in the answer here. ;-)
-
-Best,
-Rafael
+Nigel
