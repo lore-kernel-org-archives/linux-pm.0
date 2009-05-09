@@ -1,17 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 9 May 2009 15:03:38 +0200
-Message-ID: <20090509130338.GB10859__43469.1235925586$1241874361$gmane$org@elf.ucw.cz>
+Date: Sat, 9 May 2009 15:27:11 +0200
+Message-ID: <20090509132711.GD10859__5529.40819548002$1241875776$gmane$org@elf.ucw.cz>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<20090507215112.GC14611@elf.ucw.cz>
-	<1241746459.19600.246.camel@nigel-laptop>
 	<200905081611.41865.rjw@sisk.pl>
+	<1241819569.19600.281.camel@nigel-laptop>
+	<200905090046.21282.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200905081611.41865.rjw@sisk.pl>
+In-Reply-To: <200905090046.21282.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,40 +27,19 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > > Actually, I see advantages of working together versus fighting flame wars.
-> > > > Please stop that, I'm not going to take part in it this time.
-> > > 
-> > > Ok, so what do you propose? Merging tuxonice into 2.6.32, resulting in
-> > > having swsusp,uswsusp *and* tuxonice to maintain? I hope not.
-> > > 
-> > > If we are talking about improving mainline to allow tuxonice
-> > > functionality... then yes, that sounds reasonable.
-> > 
-> > I'd like to see use have all three for one or two releases of vanilla,
-> > just to give time to work out any issues that haven't been foreseen.
-> > Once we're all that there are confident there are no regressions with
-> > TuxOnIce, I'd remove swsusp. That's my ideal plan of attack.
+> > And we have different ideas about how things should be done. Userspace
+> > vs kernel space. Providing tuning knobs vs not. And so on.
 > 
-> So this is an idea to replace our current hibernation implementation with
-> TuxOnIce.
-> 
-> Which unfortunately I don't agree with.
-> 
-> I think we can get _one_ implementation out of the three, presumably keeping
-> the user space interface that will keep the current s2disk binaries happy, by
-> merging TuxOnIce code _gradually_.  No "all at once" approach, please.
-> 
-> And by "merging" I mean _exactly_ that.  Not adding new code and throwing
-> away the old one.
-> 
-> While I can work on creating one hibernation implementation by taking the
-> best ideas from all of the implementation we have at hand, I surely won't be
-> working on replacing our current code with TuxOnIce.  If that disappoints you,
-> then I'm sorry.
+> This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
+> solution, as there are some clear benefits of doing it this way.  We only
+> need to be careful enough not to break the existing setups.
 
-FWIW, I agree with Rafael here. Improving the current code in
-reasonable steps is the way to go.
-									Pavel
+Would you elaborate?
+
+I would really hate to put progressbar painting into kernel; and if
+that's in userspace, we can do compression/encryption there too as
+well....
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
