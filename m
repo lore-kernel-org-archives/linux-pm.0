@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
-Date: Sun, 10 May 2009 15:50:08 +0200
-Message-ID: <200905101550.09671.rjw__20754.0935873569$1241964937$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 2/6] PM/Suspend: Do not shrink memory before
+	suspend
+Date: Sun, 10 May 2009 15:50:58 +0200
+Message-ID: <200905101550.59677.rjw@sisk.pl>
 References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
 	<200905101548.57557.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -23,58 +24,86 @@ To: Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> > Remind me: why can't we just allocate N pages at suspend-time?
-> 
-> We need half of memory free. The reason we can't "just allocate" is
-> probably OOM killer; but my memories are quite weak :-(.
-
-hm.  You'd think that with our splendid range of __GFP_foo falgs, there
-would be some combo which would suit this requirement but I can't
-immediately spot one.
-
-We can always add another I guess.  Something like...
-
-[rjw: fixed white space, added comment in page_alloc.c]
+Remove the shrinking of memory from the suspend-to-RAM code, where
+it is not really necessary.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/gfp.h |    3 ++-
- mm/page_alloc.c     |    8 ++++++--
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ kernel/power/main.c |   20 +-------------------
+ mm/vmscan.c         |    4 ++--
+ 2 files changed, 3 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/kernel/power/main.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1619,8 +1619,12 @@ nofail_alloc:
- 			goto got_pg;
- 		}
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -188,9 +188,6 @@ static void suspend_test_finish(const ch
  
--		/* The OOM killer will not help higher order allocs so fail */
--		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-+		/*
-+		 * The OOM killer will not help higher order allocs so fail.
-+		 * Also fail if the caller doesn't want the OOM killer to run.
-+		 */
-+		if (order > PAGE_ALLOC_COSTLY_ORDER
-+				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
- 			clear_zonelist_oom(zonelist, gfp_mask);
- 			goto nopage;
- 		}
-Index: linux-2.6/include/linux/gfp.h
+ #endif
+ 
+-/* This is just an arbitrary number */
+-#define FREE_PAGE_NUMBER (100)
+-
+ static struct platform_suspend_ops *suspend_ops;
+ 
+ /**
+@@ -226,7 +223,6 @@ int suspend_valid_only_mem(suspend_state
+ static int suspend_prepare(void)
+ {
+ 	int error;
+-	unsigned int free_pages;
+ 
+ 	if (!suspend_ops || !suspend_ops->enter)
+ 		return -EPERM;
+@@ -241,24 +237,10 @@ static int suspend_prepare(void)
+ 	if (error)
+ 		goto Finish;
+ 
+-	if (suspend_freeze_processes()) {
+-		error = -EAGAIN;
+-		goto Thaw;
+-	}
+-
+-	free_pages = global_page_state(NR_FREE_PAGES);
+-	if (free_pages < FREE_PAGE_NUMBER) {
+-		pr_debug("PM: free some memory\n");
+-		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
+-		if (nr_free_pages() < FREE_PAGE_NUMBER) {
+-			error = -ENOMEM;
+-			printk(KERN_ERR "PM: No enough memory\n");
+-		}
+-	}
++	error = suspend_freeze_processes();
+ 	if (!error)
+ 		return 0;
+ 
+- Thaw:
+ 	suspend_thaw_processes();
+ 	usermodehelper_enable();
+  Finish:
+Index: linux-2.6/mm/vmscan.c
 ===================================================================
---- linux-2.6.orig/include/linux/gfp.h
-+++ linux-2.6/include/linux/gfp.h
-@@ -51,8 +51,9 @@ struct vm_area_struct;
- #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
- #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-+#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
+--- linux-2.6.orig/mm/vmscan.c
++++ linux-2.6/mm/vmscan.c
+@@ -2054,7 +2054,7 @@ unsigned long global_lru_pages(void)
+ 		+ global_page_state(NR_INACTIVE_FILE);
+ }
  
--#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-+#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+-#ifdef CONFIG_PM
++#ifdef CONFIG_HIBERNATION
+ /*
+  * Helper function for shrink_all_memory().  Tries to reclaim 'nr_pages' pages
+  * from LRU lists system-wide, for given pass and priority.
+@@ -2194,7 +2194,7 @@ out:
  
- /* This equals 0, but use constants in case they ever change */
+ 	return sc.nr_reclaimed;
+ }
+-#endif
++#endif /* CONFIG_HIBERNATION */
+ 
+ /* It's optimal to keep kswapds on the same CPUs as their memory, but
+    not required for correctness.  So if the last cpu in a node goes
