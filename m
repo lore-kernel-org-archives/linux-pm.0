@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sun, 10 May 2009 01:03:22 +0200
-Message-ID: <200905100103.23815.rjw__1204.43033888495$1241911908$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905092337.39906.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905091536250.6272@chino.kir.corp.google.com>
+From: Michael Brooks <firealwaysworks@gmail.com>
+Subject: gnome's black light control for LCD displays
+Date: Sat, 9 May 2009 19:34:10 -0700
+Message-ID: <eaf6248e0905091934u1aac7feene587cfc12abc8acc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905091536250.6272@chino.kir.corp.google.com>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +15,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Rientjes <rientjes@google.com>
-Cc: kernel-testers@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 10 May 2009, David Rientjes wrote:
-> On Sat, 9 May 2009, Rafael J. Wysocki wrote:
-> 
-> > > This has been changed in the latest mmotm with Mel's page alloactor 
-> > > patches (and I think yours should be based on mmotm).  Specifically, 
-> > > page-allocator-break-up-the-allocator-entry-point-into-fast-and-slow-paths.patch.
-> > > 
-> > > Before his patchset, zonelists that had ZONE_OOM_LOCKED set for at least 
-> > > one of their zones would unconditionally goto restart.  Now, if
-> > > order > PAGE_ALLOC_COSTLY_ORDER, it gives up and returns NULL.  Otherwise, 
-> > > it does goto restart.
-> > > 
-> > > So if your allocation has order > PAGE_ALLOC_COSTLY_ORDER,
-> > 
-> > It doesn't.  All of my allocations are of order 0.
-> > 
-> 
-> All order 0 allocations are implicitly __GFP_NOFAIL and will loop 
-> endlessly unless they can't block.  So if you want to simply prohibit the 
-> oom killer from being invoked and not change the retry behavior, setting 
-> ZONE_OOM_LOCKED for all zones will do that.  If your machine hangs, it 
-> means nothing can be reclaimed and you can't free memory via oom killing, 
-> so there's nothing else the page allocator can do.
+Hi everyone,
 
-But I want it to give up in this case instead of looping forever.
+This is my first post and I really love Linux and the environment.  I
+am glad there are people that are working on both!
 
-Look.  I have a specific problem at hand that I want to solve and the approach
-you suggested _clearly_ _doesn't_ _work_.  I have also tried to explain to you
-why it doesn't work, but you're ingnoring it, so I really don't know what else
-I can say.
+I know of a way to reduce power consumption on my Ubuntu laptop
+running Gnome.     The default screen saver is a "blank screen",
+however when the blank screen is displayed the back light is still on.
+   The way to test for this is by putting the machine in a very dark
+room  and you will be able to see the "Blank Screen"  glowing from the
+back light.
 
-OTOH, the approach suggested by Andrew _does_ _work_ regardless of your
-opinion about it.  It's been tested and it's done the job 100% of the time.  Go
-figure.  And please stop beating the dead horse.
+The easy fix would be to turn off the back light when the "Blank
+Screen" screen saver is activated by gnome.  A more difficult fix
+would be to detect if the screen is displaying only black and then to
+turn off the back light.  The 2nd is a more general purpose fix that
+could be handled by X and affect many different situations and all
+window manger's "Blank Screen" screen savers.   Every calorie of
+energy counts,  and every pound of CO2 that can be saved should be
+considered.
 
-Thanks,
-Rafael
+Thanks for the Green Linux effort!
+--Michael Brooks
