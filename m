@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/6] PM/Hibernate: Rework memory shrinking
-	(rev. 3)
-Date: Sun, 10 May 2009 15:48:56 +0200
-Message-ID: <200905101548.57557.rjw__35481.8467902534$1241964923$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
+Date: Sun, 10 May 2009 15:50:08 +0200
+Message-ID: <200905101550.09671.rjw__20754.0935873569$1241964937$gmane$org@sisk.pl>
 References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
+	<200905101548.57557.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905072348.59856.rjw@sisk.pl>
+In-Reply-To: <200905101548.57557.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,55 +23,58 @@ To: Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > The following patchset is an attempt to rework the memory shrinking mechanism
-> > used during hibernation to make room for the image.  It is a work in progress
-> > and most likely it's going to be modified, but it has been discussed recently
-> > and I'd like to get comments on the current version.
-> > 
-> > [1/5] - disable the OOM kernel after freezing tasks (this will be dropped if
-> >         it's verified that we can avoid the OOM killing by using
-> >         __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN
-> >         in the next patches).
-> > 
-> > [2/5] - drop memory shrinking from the suspend (to RAM) code path
-> > 
-> > [3/5] - move swsusp_shrink_memory() to snapshot.c
-> > 
-> > [4/5] - rework swsusp_shrink_memory() (to use memory allocations for applying
-> >         memory pressure)
-> > 
-> > [5/5] - allocate image pages along with the shrinking.
+From: Andrew Morton <akpm@linux-foundation.org>
+
+> > Remind me: why can't we just allocate N pages at suspend-time?
 > 
-> Updated patchset follows.
+> We need half of memory free. The reason we can't "just allocate" is
+> probably OOM killer; but my memories are quite weak :-(.
 
-I the meantime I added a patch that attempts to computer the size of the hard
-core working set.  I also had to rework the patch reworking
-swsusp_shrink_memory() so that it takes highmem into account.
+hm.  You'd think that with our splendid range of __GFP_foo falgs, there
+would be some combo which would suit this requirement but I can't
+immediately spot one.
 
-Currently, the patchset consists of the following patches:
+We can always add another I guess.  Something like...
 
-[1/6] - disable the OOM kernel after freezing tasks (this will be dropped if
-        it's verified that we can avoid the OOM killing by using
-        __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN
-        in the next patches).
+[rjw: fixed white space, added comment in page_alloc.c]
 
-[2/6] - drop memory shrinking from the suspend (to RAM) code path
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/gfp.h |    3 ++-
+ mm/page_alloc.c     |    8 ++++++--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-[3/6] - move swsusp_shrink_memory() to snapshot.c
-
-[4/6] - rework swsusp_shrink_memory() (to use memory allocations for applying
-        memory pressure)
-
-[5/6] - allocate image pages along with the shrinking
-
-[6/6] - estimate the size of the hard core working set and use it as the lower
-        limit of the image size.
-
-Comments welcome.
-
-Thanks,
-Rafael
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1619,8 +1619,12 @@ nofail_alloc:
+ 			goto got_pg;
+ 		}
+ 
+-		/* The OOM killer will not help higher order allocs so fail */
+-		if (order > PAGE_ALLOC_COSTLY_ORDER) {
++		/*
++		 * The OOM killer will not help higher order allocs so fail.
++		 * Also fail if the caller doesn't want the OOM killer to run.
++		 */
++		if (order > PAGE_ALLOC_COSTLY_ORDER
++				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
+ 			clear_zonelist_oom(zonelist, gfp_mask);
+ 			goto nopage;
+ 		}
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -51,8 +51,9 @@ struct vm_area_struct;
+ #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+ #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
++#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
+ 
+-#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
++#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+ 
+ /* This equals 0, but use constants in case they ever change */
