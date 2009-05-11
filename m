@@ -1,14 +1,15 @@
-From: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
-Date: Mon, 11 May 2009 13:12:57 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.0905111312140.27577__37158.9249735281$1242072992$gmane$org@chino.kir.corp.google.com>
-References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
-	<200905101548.57557.rjw@sisk.pl> <200905101550.09671.rjw@sisk.pl>
+From: <trekker.dk@centrum.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Mon, 11 May 2009 23:19:54 +0200
+Message-ID: <200905112319.8749__32009.823251474$1242076937$gmane$org@centrum.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz>
+	<20090510053840.GG1363@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905101550.09671.rjw@sisk.pl>
+In-Reply-To: <20090510053840.GG1363@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: pavel@ucw.cz
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 10 May 2009, Rafael J. Wysocki wrote:
-
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -1619,8 +1619,12 @@ nofail_alloc:
->  			goto got_pg;
->  		}
->  
-> -		/* The OOM killer will not help higher order allocs so fail */
-> -		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> +		/*
-> +		 * The OOM killer will not help higher order allocs so fail.
-> +		 * Also fail if the caller doesn't want the OOM killer to run.
-> +		 */
-> +		if (order > PAGE_ALLOC_COSTLY_ORDER
-> +				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
->  			clear_zonelist_oom(zonelist, gfp_mask);
->  			goto nopage;
->  		}
-> Index: linux-2.6/include/linux/gfp.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/gfp.h
-> +++ linux-2.6/include/linux/gfp.h
-> @@ -51,8 +51,9 @@ struct vm_area_struct;
->  #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
->  #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
->  #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-> +#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
->  
-> -#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-> +#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
->  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
->  
->  /* This equals 0, but use constants in case they ever change */
-> 
-
-Nack, unnecessary in mmotm and my patch series from 
-http://lkml.org/lkml/2009/5/10/118.
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KPiBPZDogcGF2ZWxAdWN3LmN6Cj4gS29tdTogdHJla2tlci5ka0BjZW50cnVtLmN6Cj4g
+Q0M6ICwgbGludXgtcG1AbGlzdHN0dXhvbmljZS1kZXZlbEBsaXN0cy50dXhvbmljZS5uZXQubGlu
+dXgtZm91bmRhdGlvbi5vcmcsbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwo+IERhdHVtOiAx
+MS4wNS4yMDA5IDE0OjE3Cj4gUMWZZWRtxJt0OiBSZTogW1R1eE9uSWNlLWRldmVsXSBbUkZDXSBU
+dXhPbkljZQo+Cj5PbiBGcmkgMjAwOS0wNS0wOCAwMDozNzozOSwgdHJla2tlci5ka0BjZW50cnVt
+LmN6IHdyb3RlOgo+PiBXZWxsLi4uCj4+IAo+PiA+Cj4+ID4KPj4gPlRvIHN1bW1hcmlzZSBkaXNh
+ZHZhbnRhZ2VzOgo+PiA+Cj4+ID4tIG9ubHkgY29yZSBoYXMgODAwMCBMb0MKPj4gPi0gaXQgZG9l
+cyBzdHVmZiB0aGF0IGNhbiBiZSBlYXNpbHkgZG9uZSBpbiB1c2Vyc3BhY2UKPj4gPiAgICAgKGFu
+ZCB0aGF0IHRvZGF5cyBkaXN0cm9zIF9kb18gaW4gdXNlcnNwYWNlKS4KPj4gPi0gaXQgZHVwbGlj
+YXRlcyB1c3dzdXNwIGZ1bmN0aW9uYWxpdHkuCj4+ID4tIGNvbXBhcmVkIHRvIFt1XXN3c3VzcCwg
+aXQgcmVjZWl2ZWQgbGl0dGxlIHRlc3RpbmcKPj4gPgo+PiAKPj4gVG8gc3VtbWFyaXNlIGFkdmF0
+YWdlcyAtIGZvciBtZSB0dXhvbmljZSBpcyB0aGUgb25seSBoaWJlcm5hdGlvbiBtZXRob2QgdGhh
+dCB3b3Jrcy4KPj4gKFRpbGwgbm93IEkndmUgaGFkIDMgbWFjaGluZXMgLSBubyBvbmUgb2YgdGhl
+bSBhYmxlIHRvIHJlc3VtZSB3aXRoIGluLWtlcm5lbCBzd3N1c3AuKQo+PiAKPgo+V2hpY2gga2Vy
+bmVscyB5b3UgdHJpZWQsIHdoYXQgaHcgaXQgaXM/IENhbiB5b3UgZG8gczJyYW0/Cj4JCQkJCQkJ
+CQlQYXZlbAoKUmVnYXJkaW5nIGhhcmR3YXJlIC0gCgoxLiBBTUQgQXRobG9uIDE3MDArLCBWSUEg
+S1QzMzMgY2hpcHNldCBiYXNlZCBNQiwgblZpZGlhIEdlRm9yY2UgMgoyLiBBTUQgWDIgQXRobG9u
+LCBBTUQ2OTBWIGNoaXBzZXQgYmFzZWQgTUIsIG5WaWRpYSA3NjAwR1QKMy4gKGN1cnJlbnQpIEFN
+RCBYNCBQaGVub20gSUksICBBTUQ3ODBHIGNoaXBzZXQgYW5kIG5WaWRpYSA5NjAwR1QgCihiaW5h
+cnkgZHJpdmVyIGZvciB2aWRlbyBjYXJkIGV2ZXJ5IHRpbWUpCgpSZWNlbnRseSBJIHRyaWVkIGtl
+cm5lbHMgMi42LjI2LCAyLjYuMjcgYW5kIG5vdyAyLjYuMjkuIEtlcm5lbCAyLjYuMjYgaGliZXJu
+YXRlZCwgYnV0IGJvb3RlZAp1cCB3aXRob3V0IHJlY29nbml6aW5nIGltYWdlLCBzbyBubyBhdHRl
+bXB0IHRvIHJlc3VtZSB3YXMgbWFkZS4KCktlcm5lbHMgMi42LjI3IGFuZCAyLjYuMjkgYXJlIGFi
+bGUgdG8gcmVzdW1lLCBidXQgdGhhdHMgYWJvdXQgaXQgLSBhZnRlciByZXN1bWluZyB0aGUgYm94
+IApkb2Vzbid0IHJlc3BvbmQgdG8ga2V5Ym9hcmQgYW5kIEkgaGF2ZSB0byByZXNldCBpdC4KCnMy
+cmFtIGRvZXNuJ3Qgd29yayBhcyB3ZWxsLiBTbyBmYXIgbXkgYmVzdCByZXN1bHQgaXMgb25lIHN1
+Y2Nlc2Z1bCBzdXNwZW5kL3Jlc3VtZSBjeWNsZTsgCnNlY29uZCBhdHRlbXB0IHRvIGRvIHRoZSBz
+YW1lIGVuZGVkIGluIGJsYWNrIHNjcmVlbiBhbmQgdGhlIGNvbXB1dGVyIGJlY2FtZSAiY29uZnVz
+ZWQiIC0KcmVzZXQgKGFuZCBJIG1lYW4gaGFyZHdhcmUgcmVzZXQgd2l0aCBidXR0b24gb24gdGhl
+IGNhc2UpIGRpZG4ndCB3b3JrIC0gSSBoYWQgdG8gdHVybiBpdCBvZmYKY29tcGxldGVseS4KCkkg
+aGF2ZSBiZWVuIHVzaW5nIGhpYmVybmF0aW9uIGZvciBxdWl0ZSBzb21lIHRpbWUgKHN0YXJ0aW5n
+IHdpdGgga2VybmVsIDIuNi4xNCBvciBzbykgCmFuZCBuZXZlciBtYW5hZ2VkIHRvIGdldCBzd3N1
+c3Agd29ya2luZy4gT24gdGhlIG90aGVyIGhhbmQgdHV4b25pY2UgKGFuZCBzd3N1c3AyCmJlZm9y
+ZSB0aGUgcmVuYW1pbmcpIGlzIC0gZXhjZXB0IGZvciBzb21lIGdsaXRjaGVzIC0gd29ya2luZyBh
+bGwgdGhhdCB0aW1lLgoKSSBhZG1pdCB0aGlzIGlzIGNvbXBsZXRlbHkgdXNlcidzIHBvaW50IG9m
+IHZpZXcsIGJ1dCBJIHdhbnRlZCB0byBwb2ludCBvdXQsIHRoYXQgZm9yIHNvbWUgb2YgdXMgCnR1
+eG9uaWNlIGlzIGN1cnJlbnR5IHdheSB0byBnby4KClJlZ2FyZHMKSkIKCj4KPi0tIAo+KGVuZ2xp
+c2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJuYWwuY29tL35wYXZlbG1hY2hlawo+KGNlc2t5LCBwaWN0
+dXJlcykgaHR0cDovL2F0cmV5Lmthcmxpbi5tZmYuY3VuaS5jei9+cGF2ZWwvcGljdHVyZS9ob3Jz
+ZXMvYmxvZy5odG1sCj4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcG0=
