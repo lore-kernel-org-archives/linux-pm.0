@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
-Date: Tue, 12 May 2009 01:04:35 +0200
-Message-ID: <200905120104.36313.rjw__48628.6022504375$1242083351$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905120014.24751.rjw@sisk.pl>
-	<20090511153323.518c146a.akpm@linux-foundation.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Mon, 11 May 2009 16:07:04 -0700
+Message-ID: <20090511160704.e1fa2512.akpm__3325.29299562356$1242083662$gmane$org@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905100103.23815.rjw@sisk.pl>
+	<alpine.DEB.2.00.0905111249170.23739@chino.kir.corp.google.com>
+	<200905120044.37342.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090511153323.518c146a.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200905120044.37342.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, mel@csn.ul.ie, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 12 May 2009, Andrew Morton wrote:
-> On Tue, 12 May 2009 00:14:23 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Monday 11 May 2009, David Rientjes wrote:
-> > > On Sun, 10 May 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > Index: linux-2.6/mm/page_alloc.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/mm/page_alloc.c
-> > > > +++ linux-2.6/mm/page_alloc.c
-> > > > @@ -1619,8 +1619,12 @@ nofail_alloc:
-> > > >  			goto got_pg;
-> > > >  		}
-> > > >  
-> > > > -		/* The OOM killer will not help higher order allocs so fail */
-> > > > -		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> > > > +		/*
-> > > > +		 * The OOM killer will not help higher order allocs so fail.
-> > > > +		 * Also fail if the caller doesn't want the OOM killer to run.
-> > > > +		 */
-> > > > +		if (order > PAGE_ALLOC_COSTLY_ORDER
-> > > > +				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
-> > > >  			clear_zonelist_oom(zonelist, gfp_mask);
-> > > >  			goto nopage;
-> > > >  		}
-> > > > Index: linux-2.6/include/linux/gfp.h
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/include/linux/gfp.h
-> > > > +++ linux-2.6/include/linux/gfp.h
-> > > > @@ -51,8 +51,9 @@ struct vm_area_struct;
-> > > >  #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
-> > > >  #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
-> > > >  #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-> > > > +#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
-> > > >  
-> > > > -#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-> > > > +#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
-> > > >  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
-> > > >  
-> > > >  /* This equals 0, but use constants in case they ever change */
-> > > > 
-> > > 
-> > > Nack, unnecessary in mmotm and my patch series from 
-> > > http://lkml.org/lkml/2009/5/10/118.
-> > 
-> > Andrew, what's your opinion, please?
-> 
-> I don't understand which part of David's patch series is supposed to
-> address your requirement.  If it's "don't kill tasks which are in D
-> state" then that's a problem because right now I think that patch is
-> wrong.  It's still being discussed.
+On Tue, 12 May 2009 00:44:36 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Yeah.
+> Which means this patch:
+> http://marc.info/?l=linux-kernel&m=124165031723627 (it also is my favourite
+> one).
 
-> > I can wait with these patches until the dust settles in the mm land.
-> 
-> Yes, it is pretty dusty at present.  I'd suggest that finding something
-> else to do for a few days would be a wise step ;)
+ho hum, I could live with that ;)
 
-Well, in fact I have finished the other parts of my patchset and the only
-missing piece is how to prevent the OOM killer from triggering while
-hibernation memory is being allocated, but in principle that can be done in a
-couple of different ways.
+Would it make sense to turn it into something more general?  Instead of
+"tasks_frozen/processes_are_frozen()", present it as
+"oom_killer_disabled/oom_killer_is_disabled()"?
 
-So, I think I'll post an update shortly and I'll wait for mm to settle down.
+That would invite other subsystems to use it, if they want to.  Which
+might well be a bad thing on their behalf, hard to say..
