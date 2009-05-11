@@ -1,8 +1,8 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before
 	suspend
-Date: Mon, 11 May 2009 14:46:49 -0700
-Message-ID: <87ws8nfh2u.fsf__48105.7153003805$1242078546$gmane$org@deeprootsystems.com>
+Date: Mon, 11 May 2009 14:47:26 -0700
+Message-ID: <87vdo7fh1t.fsf__27656.9536109038$1242078573$gmane$org@deeprootsystems.com>
 References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
 	<1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
 	<20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
