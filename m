@@ -1,15 +1,16 @@
-From: <trekker.dk@centrum.cz>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 11 May 2009 23:19:54 +0200
-Message-ID: <200905112319.8749__32009.823251474$1242076937$gmane$org@centrum.cz>
+Date: Mon, 11 May 2009 23:23:50 +0200
+Message-ID: <20090511212350.GA3397__35984.1060395867$1242077246$gmane$org@elf.ucw.cz>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 	<20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz>
-	<20090510053840.GG1363@ucw.cz>
+	<20090510053840.GG1363@ucw.cz> <200905112319.8749@centrum.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090510053840.GG1363@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <200905112319.8749@centrum.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,51 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
+To: trekker.dk@centrum.cz
 Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KPiBPZDogcGF2ZWxAdWN3LmN6Cj4gS29tdTogdHJla2tlci5ka0BjZW50cnVtLmN6Cj4g
-Q0M6ICwgbGludXgtcG1AbGlzdHN0dXhvbmljZS1kZXZlbEBsaXN0cy50dXhvbmljZS5uZXQubGlu
-dXgtZm91bmRhdGlvbi5vcmcsbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwo+IERhdHVtOiAx
-MS4wNS4yMDA5IDE0OjE3Cj4gUMWZZWRtxJt0OiBSZTogW1R1eE9uSWNlLWRldmVsXSBbUkZDXSBU
-dXhPbkljZQo+Cj5PbiBGcmkgMjAwOS0wNS0wOCAwMDozNzozOSwgdHJla2tlci5ka0BjZW50cnVt
-LmN6IHdyb3RlOgo+PiBXZWxsLi4uCj4+IAo+PiA+Cj4+ID4KPj4gPlRvIHN1bW1hcmlzZSBkaXNh
-ZHZhbnRhZ2VzOgo+PiA+Cj4+ID4tIG9ubHkgY29yZSBoYXMgODAwMCBMb0MKPj4gPi0gaXQgZG9l
-cyBzdHVmZiB0aGF0IGNhbiBiZSBlYXNpbHkgZG9uZSBpbiB1c2Vyc3BhY2UKPj4gPiAgICAgKGFu
-ZCB0aGF0IHRvZGF5cyBkaXN0cm9zIF9kb18gaW4gdXNlcnNwYWNlKS4KPj4gPi0gaXQgZHVwbGlj
-YXRlcyB1c3dzdXNwIGZ1bmN0aW9uYWxpdHkuCj4+ID4tIGNvbXBhcmVkIHRvIFt1XXN3c3VzcCwg
-aXQgcmVjZWl2ZWQgbGl0dGxlIHRlc3RpbmcKPj4gPgo+PiAKPj4gVG8gc3VtbWFyaXNlIGFkdmF0
-YWdlcyAtIGZvciBtZSB0dXhvbmljZSBpcyB0aGUgb25seSBoaWJlcm5hdGlvbiBtZXRob2QgdGhh
-dCB3b3Jrcy4KPj4gKFRpbGwgbm93IEkndmUgaGFkIDMgbWFjaGluZXMgLSBubyBvbmUgb2YgdGhl
-bSBhYmxlIHRvIHJlc3VtZSB3aXRoIGluLWtlcm5lbCBzd3N1c3AuKQo+PiAKPgo+V2hpY2gga2Vy
-bmVscyB5b3UgdHJpZWQsIHdoYXQgaHcgaXQgaXM/IENhbiB5b3UgZG8gczJyYW0/Cj4JCQkJCQkJ
-CQlQYXZlbAoKUmVnYXJkaW5nIGhhcmR3YXJlIC0gCgoxLiBBTUQgQXRobG9uIDE3MDArLCBWSUEg
-S1QzMzMgY2hpcHNldCBiYXNlZCBNQiwgblZpZGlhIEdlRm9yY2UgMgoyLiBBTUQgWDIgQXRobG9u
-LCBBTUQ2OTBWIGNoaXBzZXQgYmFzZWQgTUIsIG5WaWRpYSA3NjAwR1QKMy4gKGN1cnJlbnQpIEFN
-RCBYNCBQaGVub20gSUksICBBTUQ3ODBHIGNoaXBzZXQgYW5kIG5WaWRpYSA5NjAwR1QgCihiaW5h
-cnkgZHJpdmVyIGZvciB2aWRlbyBjYXJkIGV2ZXJ5IHRpbWUpCgpSZWNlbnRseSBJIHRyaWVkIGtl
-cm5lbHMgMi42LjI2LCAyLjYuMjcgYW5kIG5vdyAyLjYuMjkuIEtlcm5lbCAyLjYuMjYgaGliZXJu
-YXRlZCwgYnV0IGJvb3RlZAp1cCB3aXRob3V0IHJlY29nbml6aW5nIGltYWdlLCBzbyBubyBhdHRl
-bXB0IHRvIHJlc3VtZSB3YXMgbWFkZS4KCktlcm5lbHMgMi42LjI3IGFuZCAyLjYuMjkgYXJlIGFi
-bGUgdG8gcmVzdW1lLCBidXQgdGhhdHMgYWJvdXQgaXQgLSBhZnRlciByZXN1bWluZyB0aGUgYm94
-IApkb2Vzbid0IHJlc3BvbmQgdG8ga2V5Ym9hcmQgYW5kIEkgaGF2ZSB0byByZXNldCBpdC4KCnMy
-cmFtIGRvZXNuJ3Qgd29yayBhcyB3ZWxsLiBTbyBmYXIgbXkgYmVzdCByZXN1bHQgaXMgb25lIHN1
-Y2Nlc2Z1bCBzdXNwZW5kL3Jlc3VtZSBjeWNsZTsgCnNlY29uZCBhdHRlbXB0IHRvIGRvIHRoZSBz
-YW1lIGVuZGVkIGluIGJsYWNrIHNjcmVlbiBhbmQgdGhlIGNvbXB1dGVyIGJlY2FtZSAiY29uZnVz
-ZWQiIC0KcmVzZXQgKGFuZCBJIG1lYW4gaGFyZHdhcmUgcmVzZXQgd2l0aCBidXR0b24gb24gdGhl
-IGNhc2UpIGRpZG4ndCB3b3JrIC0gSSBoYWQgdG8gdHVybiBpdCBvZmYKY29tcGxldGVseS4KCkkg
-aGF2ZSBiZWVuIHVzaW5nIGhpYmVybmF0aW9uIGZvciBxdWl0ZSBzb21lIHRpbWUgKHN0YXJ0aW5n
-IHdpdGgga2VybmVsIDIuNi4xNCBvciBzbykgCmFuZCBuZXZlciBtYW5hZ2VkIHRvIGdldCBzd3N1
-c3Agd29ya2luZy4gT24gdGhlIG90aGVyIGhhbmQgdHV4b25pY2UgKGFuZCBzd3N1c3AyCmJlZm9y
-ZSB0aGUgcmVuYW1pbmcpIGlzIC0gZXhjZXB0IGZvciBzb21lIGdsaXRjaGVzIC0gd29ya2luZyBh
-bGwgdGhhdCB0aW1lLgoKSSBhZG1pdCB0aGlzIGlzIGNvbXBsZXRlbHkgdXNlcidzIHBvaW50IG9m
-IHZpZXcsIGJ1dCBJIHdhbnRlZCB0byBwb2ludCBvdXQsIHRoYXQgZm9yIHNvbWUgb2YgdXMgCnR1
-eG9uaWNlIGlzIGN1cnJlbnR5IHdheSB0byBnby4KClJlZ2FyZHMKSkIKCj4KPi0tIAo+KGVuZ2xp
-c2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJuYWwuY29tL35wYXZlbG1hY2hlawo+KGNlc2t5LCBwaWN0
-dXJlcykgaHR0cDovL2F0cmV5Lmthcmxpbi5tZmYuY3VuaS5jei9+cGF2ZWwvcGljdHVyZS9ob3Jz
-ZXMvYmxvZy5odG1sCj4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtcG0=
+Hi!
+
+> >> >To summarise disadvantages:
+> >> >
+> >> >- only core has 8000 LoC
+> >> >- it does stuff that can be easily done in userspace
+> >> >     (and that todays distros _do_ in userspace).
+> >> >- it duplicates uswsusp functionality.
+> >> >- compared to [u]swsusp, it received little testing
+> >> >
+> >> 
+> >> To summarise advatages - for me tuxonice is the only hibernation method that works.
+> >> (Till now I've had 3 machines - no one of them able to resume with in-kernel swsusp.)
+> >> 
+> >
+> >Which kernels you tried, what hw it is? Can you do s2ram?
+> 
+> Regarding hardware - 
+> 
+> 1. AMD Athlon 1700+, VIA KT333 chipset based MB, nVidia GeForce 2
+> 2. AMD X2 Athlon, AMD690V chipset based MB, nVidia 7600GT
+> 3. (current) AMD X4 Phenom II,  AMD780G chipset and nVidia 9600GT 
+> (binary driver for video card every time)
+
+Ok, binary drivers may be a problem. Will it work without that? Should
+be easy to test with init=/bin/bash.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
