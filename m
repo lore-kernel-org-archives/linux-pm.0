@@ -1,15 +1,15 @@
-From: Alex Goebel <alex.goebel@gmail.com>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 11 May 2009 16:23:24 -0700
-Message-ID: <faa09fad0905111623t24c3e421t8923c015788e2c56__19131.6672288396$1242084328$gmane$org@mail.gmail.com>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz>
-	<20090510053840.GG1363@ucw.cz> <200905112319.8749@centrum.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Tue, 12 May 2009 01:28:15 +0200
+Message-ID: <200905120128.16780.rjw__531.842819373374$1242084649$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905120044.37342.rjw@sisk.pl>
+	<20090511160704.e1fa2512.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905112319.8749@centrum.cz>
+In-Reply-To: <20090511160704.e1fa2512.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: trekker.dk@centrum.cz
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel-testers@vger.kernel.org, mel@csn.ul.ie, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 5/11/09, trekker.dk@centrum.cz <trekker.dk@centrum.cz> wrote:
+On Tuesday 12 May 2009, Andrew Morton wrote:
+> On Tue, 12 May 2009 00:44:36 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Which means this patch:
+> > http://marc.info/?l=linux-kernel&m=124165031723627 (it also is my favourite
+> > one).
+> 
+> ho hum, I could live with that ;)
+> 
+> Would it make sense to turn it into something more general?  Instead of
+> "tasks_frozen/processes_are_frozen()", present it as
+> "oom_killer_disabled/oom_killer_is_disabled()"?
+> 
+> That would invite other subsystems to use it, if they want to.  Which
+> might well be a bad thing on their behalf, hard to say..
 
-> 1. AMD Athlon 1700+, VIA KT333 chipset based MB, nVidia GeForce 2
-> 2. AMD X2 Athlon, AMD690V chipset based MB, nVidia 7600GT
-> 3. (current) AMD X4 Phenom II,  AMD780G chipset and nVidia 9600GT
-> (binary driver for video card every time)
+I chose the names this way because the variable is defined in the freezer code.
 
-The nvidia binary driver should generally both s2ram and s2disk with
-unpatched kernels for quite some time now. You might have a problem in
-userspace (/distribution) with some of the magic options not set
-properly for your specific hardware.
-Also, if the machine appears dead after resume, you might have to wait
-up to ~2 minutes for the GPU to come alive due to a bug in the binary
-driver (was only very recently fixed by nvidia).
-
-Alex
+Alternatively, I can define one in page_alloc.c, add [disable|enable]_oom_killer()
+for manipulating it and call them from the freezer code.  Do you think that
+would be better?
