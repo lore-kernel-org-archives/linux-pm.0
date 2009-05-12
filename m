@@ -1,14 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] pm: remove unused asm/suspend.h
-Date: Tue, 12 May 2009 21:32:00 +0200
-Message-ID: <20090512193200.GA22728@elf.ucw.cz>
-References: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
+	if a	suspend_blocker is active.
+Date: Tue, 12 May 2009 21:33:59 +0200
+Message-ID: <20090512193359.GB22728@elf.ucw.cz>
+References: <1241583529-5092-1-git-send-email-arve@android.com>
+	<200905090101.02390.rjw@sisk.pl>
+	<20090512100554.GE14217@elf.ucw.cz>
+	<200905121855.37585.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
+In-Reply-To: <200905121855.37585.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +22,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-05-12 22:16:06, Magnus Damm wrote:
+On Tue 2009-05-12 18:55:36, Rafael J. Wysocki wrote:
+> On Tuesday 12 May 2009, Pavel Machek wrote:
+> > On Sat 2009-05-09 01:01:01, Rafael J. Wysocki wrote:
+> > > On Saturday 09 May 2009, Nigel Cunningham wrote:
+> > > > Hi.
+> > > > 
+> > > > On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
+> > > > > The timeout is actually a workaround for the problem that we don't
+> > > > > really
+> > > > > know if tasks are going to react to our freeze requests and how much time it is
+> > > > > going to take.  The current value of 20 s was chosen after a number of
+> > > > > experiments showing that in some cases the freezing _was_ going to take so
+> > > > > much time.  Of course the question is whether it makes sense to give up earlier
+> > > > > even if tasks would eventually freeze, but that's a different issue.
+> > > > 
+> > > > What were the circumstances in which freezing could take 20s?
+> > > 
+> > > Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
+> > 
+> > IIRC the number happened because I saw up to 5sec under some heavy
+> > overload, and added some "safety margin".
 > 
-> From: Magnus Damm <damm@igel.co.jp>
-> 
-> This patch removes unused asm/suspend.h files for
-> the following architectures:
-> 
->  alpha, arm, ia64, m68k, mips, s390, um
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> No, it appeared after a number of experiments I carried out a couple of years
+> ago. :-)
 
-Are you sure? arm does support suspend...
-							Pavel
-
-> --- 0001/arch/arm/include/asm/suspend.h
-> +++ /dev/null	2009-05-12 09:34:44.497006305 +0900
-> @@ -1,4 +0,0 @@
-> -#ifndef _ASMARM_SUSPEND_H
-> -#define _ASMARM_SUSPEND_H
-> -
-> -#endif
-
+Ok, that was the "IIRC" part :-).
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
