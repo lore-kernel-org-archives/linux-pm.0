@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
-	if a suspend_blocker is active.
-Date: Tue, 12 May 2009 18:55:36 +0200
-Message-ID: <200905121855.37585.rjw@sisk.pl>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<200905090101.02390.rjw@sisk.pl>
-	<20090512100554.GE14217@elf.ucw.cz>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Date: Tue, 12 May 2009 10:50:59 -0700
+Message-ID: <20090512105059.30fb93c2.akpm@linux-foundation.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905120128.16780.rjw@sisk.pl>
+	<20090511171111.9d74e4c0.akpm@linux-foundation.org>
+	<200905121852.37224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090512100554.GE14217@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200905121852.37224.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-testers@vger.kernel.org, mel@csn.ul.ie, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 12 May 2009, Pavel Machek wrote:
-> On Sat 2009-05-09 01:01:01, Rafael J. Wysocki wrote:
-> > On Saturday 09 May 2009, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
-> > > > The timeout is actually a workaround for the problem that we don't
-> > > > really
-> > > > know if tasks are going to react to our freeze requests and how much time it is
-> > > > going to take.  The current value of 20 s was chosen after a number of
-> > > > experiments showing that in some cases the freezing _was_ going to take so
-> > > > much time.  Of course the question is whether it makes sense to give up earlier
-> > > > even if tasks would eventually freeze, but that's a different issue.
-> > > 
-> > > What were the circumstances in which freezing could take 20s?
-> > 
-> > Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
-> 
-> IIRC the number happened because I saw up to 5sec under some heavy
-> overload, and added some "safety margin".
+On Tue, 12 May 2009 18:52:36 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-No, it appeared after a number of experiments I carried out a couple of years
-ago. :-)
+> Well, what about the following?
 
-Best,
-Rafael
+It has the virtue of simplicity.
+
+> +static inline void disable_oom_killer(void)
+> +{
+> +	oom_killer_disabled = true;
+> +}
+> +
+> +static inline void enable_oom_killer(void)
+> +{
+> +	oom_killer_disabled = false;
+> +}
+
+I'll change these to oom_killer_disable() and oom_killer_enable(), OK?
