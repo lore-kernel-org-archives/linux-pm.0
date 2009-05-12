@@ -1,18 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/9] PM: suspend_block: Abort task freezing
-	if a	suspend_blocker is active.
-Date: Tue, 12 May 2009 12:05:54 +0200
-Message-ID: <20090512100554.GE14217@elf.ucw.cz>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<200905081640.44894.rjw@sisk.pl>
-	<1241821626.19600.325.camel@nigel-laptop>
-	<200905090101.02390.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH] pm: remove unused asm/suspend.h
+Date: Tue, 12 May 2009 22:16:06 +0900
+Message-ID: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200905090101.02390.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,30 +15,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, u.luckas@road.de, swetland@google.com, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2009-05-09 01:01:01, Rafael J. Wysocki wrote:
-> On Saturday 09 May 2009, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Fri, 2009-05-08 at 16:40 +0200, Rafael J. Wysocki wrote:
-> > > The timeout is actually a workaround for the problem that we don't
-> > > really
-> > > know if tasks are going to react to our freeze requests and how much time it is
-> > > going to take.  The current value of 20 s was chosen after a number of
-> > > experiments showing that in some cases the freezing _was_ going to take so
-> > > much time.  Of course the question is whether it makes sense to give up earlier
-> > > even if tasks would eventually freeze, but that's a different issue.
-> > 
-> > What were the circumstances in which freezing could take 20s?
-> 
-> Compiling the kernel with "make -j<big number>" on a dual core system IIRC.
 
-IIRC the number happened because I saw up to 5sec under some heavy
-overload, and added some "safety margin".
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+From: Magnus Damm <damm@igel.co.jp>
+
+This patch removes unused asm/suspend.h files for
+the following architectures:
+
+ alpha, arm, ia64, m68k, mips, s390, um
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
+
+ arch/alpha/include/asm/suspend.h |    6 ------
+ arch/arm/include/asm/suspend.h   |    4 ----
+ arch/ia64/include/asm/suspend.h  |    1 -
+ arch/m68k/include/asm/suspend.h  |    6 ------
+ arch/mips/include/asm/suspend.h  |    6 ------
+ arch/s390/include/asm/suspend.h  |    5 -----
+ arch/um/include/asm/suspend.h    |    4 ----
+ 7 files changed, 32 deletions(-)
+
+--- 0001/arch/alpha/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,6 +0,0 @@
+-#ifndef __ALPHA_SUSPEND_H
+-#define __ALPHA_SUSPEND_H
+-
+-/* Dummy include. */
+-
+-#endif  /* __ALPHA_SUSPEND_H */
+--- 0001/arch/arm/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,4 +0,0 @@
+-#ifndef _ASMARM_SUSPEND_H
+-#define _ASMARM_SUSPEND_H
+-
+-#endif
+--- 0001/arch/ia64/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1 +0,0 @@
+-/* dummy (must be non-empty to prevent prejudicial removal...) */
+--- 0001/arch/m68k/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,6 +0,0 @@
+-#ifndef _M68K_SUSPEND_H
+-#define _M68K_SUSPEND_H
+-
+-/* Dummy include. */
+-
+-#endif  /* _M68K_SUSPEND_H */
+--- 0001/arch/mips/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,6 +0,0 @@
+-#ifndef __ASM_SUSPEND_H
+-#define __ASM_SUSPEND_H
+-
+-/* Somewhen...  Maybe :-)  */
+-
+-#endif /* __ASM_SUSPEND_H */
+--- 0001/arch/s390/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,5 +0,0 @@
+-#ifndef __ASM_S390_SUSPEND_H
+-#define __ASM_S390_SUSPEND_H
+-
+-#endif
+-
+--- 0001/arch/um/include/asm/suspend.h
++++ /dev/null	2009-05-12 09:34:44.497006305 +0900
+@@ -1,4 +0,0 @@
+-#ifndef __UM_SUSPEND_H
+-#define __UM_SUSPEND_H
+-
+-#endif
