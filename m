@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] pm: remove unused asm/suspend.h
-Date: Wed, 13 May 2009 15:24:05 +0200
-Message-ID: <200905131524.06055.rjw@sisk.pl>
-References: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
-	<20090512193200.GA22728@elf.ucw.cz>
-	<aec7e5c30905130304r38796bf4if741f53435bb5cb3@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] why do we need run disk sync before entering S3
+Date: Wed, 13 May 2009 10:06:17 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0905131000360.3004-100000__44890.7928927385$1242223784$gmane$org@iolanthe.rowland.org>
+References: <200905131053.39271.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905130304r38796bf4if741f53435bb5cb3@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200905131053.39271.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +17,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 13 May 2009, Magnus Damm wrote:
-> Hi Pavel,
-> 
-> On Wed, May 13, 2009 at 4:32 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Tue 2009-05-12 22:16:06, Magnus Damm wrote:
-> >>
-> >> From: Magnus Damm <damm@igel.co.jp>
-> >>
-> >> This patch removes unused asm/suspend.h files for
-> >> the following architectures:
-> >>
-> >>  alpha, arm, ia64, m68k, mips, s390, um
-> >>
-> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> >
-> > Are you sure? arm does support suspend...
-> 
-> Not sure, but these days <asm/suspend.h> is only included from
-> kernel/power/disk.c. And that file is only built if CONFIG_HIBERNATION
-> is set. I've grepped for arch_prepare_suspend and
-> ARCH_HIBERNATION_POSSIBLE but I don't get any matches under
-> arch/arm...
-> 
-> Or am I misunderstanding? =)
+On Wed, 13 May 2009, Rafael J. Wysocki wrote:
 
-Sounds reasonable, but have you actually tested compilation on the
-architectures you're changing?
+> > > I generally agree, but I think we may also leave the syncing to the user space,
+> > > in both cases.
+> > 
+> > Well...
+> > 
+> > Normally kernel writes dirty data to disk each 30
+> > seconds. s2ram/s2disk breaks that promise, so it seems fair to add
+> > explicit sync to keep the "promise".
+> > 
+> > OTOH, I agree it would be more flexible if we left sync to
+> > userspace. In uswsusp case, it actually makes sense. In s2ram
+> > case... if we can do it while keeping compatibility with old
+> > behaviour... why not.
+> 
+> That really depends on the distrubution.  (open)SUSE always syncs before
+> suspend/hibernation AFAICS, but I don't know about the other distros.
 
-Rafael
+This doesn't address the real question: Should the system be allowed to 
+go into S3 without doing a sync first?
+
+Whether the sync is initiated by userspace or by the kernel doesn't 
+make any difference.  Likewise, it doesn't matter if there are two 
+syncs (because the second will be very fast, as Pavel said).
+
+If you really wanted to speed up the suspend transition then you would
+leave out the sync entirely.  But IMO this would be a mistake; the risk
+of data loss is too great.  Which means the time overhead is necessary,
+one way or another.  If userspace does a sync first then the suspend
+transition will be faster, but this is just an accounting artifact (do
+you count the time required for the sync toward the time required for
+the suspend or not).
+
+Alan Stern
