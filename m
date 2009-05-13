@@ -1,14 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Wed, 13 May 2009 12:34:09 -0700
-Message-ID: <20090513123409.302f4307.akpm__23228.8408246406$1242243722$gmane$org@linux-foundation.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl>
-	<200905131032.53624.rjw@sisk.pl> <200905131039.26778.rjw@sisk.pl>
+From: <trekker.dk@centrum.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 13 May 2009 22:19:25 +0200
+Message-ID: <200905132219.19216__37286.8016864688$1242246058$gmane$org@centrum.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz>
+	<20090510053840.GG1363@ucw.cz> <200905112319.8749@centrum.cz>
+	<20090511212350.GA3397@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905131039.26778.rjw@sisk.pl>
+In-Reply-To: <20090511212350.GA3397@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,128 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com
+To: pavel@ucw.cz
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 May 2009 10:39:25 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> just once to make some room for the image and then allocates memory
-> to apply more pressure to the memory management subsystem, if
-> necessary.
-> 
-> Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> entirely just yet, because that would lead to huge performance
-> regressions in some test cases.
-> 
-
-Isn't this a somewhat large problem?  The main point (I thought) was
-to remove shrink_all_memory().  Instead, we're retaining it and adding
-even more stuff?
-
-> +/**
-> + * compute_fraction - Compute approximate fraction x * (a/b)
-> + * @x: Number to multiply.
-> + * @numerator: Numerator of the fraction (a).
-> + * @denominator: Denominator of the fraction (b).
->   *
-> - *	Notice: all userland should be stopped before it is called, or
-> - *	livelock is possible.
-> + * Compute an approximate value of the expression x * (a/b), where a is less
-> + * than b, all x, a, b are unsigned longs and x * a may be greater than the
-> + * maximum unsigned long.
->   */
-> +static unsigned long compute_fraction(
-> +	unsigned long x, unsigned long numerator, unsigned long denominator)
-
-I can't say I'm a great fan of the code layout here.
-
-static unsigned long compute_fraction(unsigned long x, unsigned long numerator, unsigned long denominator)
-
-or
-
-static unsigned long compute_fraction(unsigned long x, unsigned long numerator,
-					unsigned long denominator)
-
-would be more typical.
-
-
-> +{
-> +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
->  
-> -#define SHRINK_BITE	10000
-> -static inline unsigned long __shrink_memory(long tmp)
-> +	x *= ratio;
-> +	return x >> FRACTION_SHIFT;
-> +}
-
-Strange function.  Would it not be simpler/clearer to do it with 64-bit
-scalars, multiplication and do_div()?
-
-> +static unsigned long highmem_size(
-> +	unsigned long size, unsigned long highmem, unsigned long count)
-> +{
-> +	return highmem > count / 2 ?
-> +			compute_fraction(size, highmem, count) :
-> +			size - compute_fraction(size, count - highmem, count);
-> +}
-
-This would be considerably easier to follow if we know what the three
-arguments represent.  Amount of memory?  In what units?  `count' of
-what?
-
-The `count/2' thing there is quite mysterious.
-
-<does some reverse-engineering>
-
-OK, `count' is "the number of pageframes we can use".  (I don't think I
-helped myself a lot there).  But what's up with that divde-by-two?
-
-<considers poking at callers to work out what `size' is>
-
-<gives up>
-
-Is this code as clear as we can possibly make it??
-
-> +#else
-> +static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline unsigned long highmem_size(
-> +	unsigned long size, unsigned long highmem, unsigned long count)
->  {
-> -	if (tmp > SHRINK_BITE)
-> -		tmp = SHRINK_BITE;
-> -	return shrink_all_memory(tmp);
-> +	return 0;
->  }
-> +#endif /* CONFIG_HIGHMEM */
->  
-> +/**
-> + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-> + *
-> + * To create a hibernation image it is necessary to make a copy of every page
-> + * frame in use.  We also need a number of page frames to be free during
-> + * hibernation for allocations made while saving the image and for device
-> + * drivers, in case they need to allocate memory from their hibernation
-> + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-> + * respectively, both of which are rough estimates).  To make this happen, we
-> + * compute the total number of available page frames and allocate at least
-> + *
-> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-> + *
-> + * of them, which corresponds to the maximum size of a hibernation image.
-> + *
-> + * If image_size is set below the number following from the above formula,
-> + * the preallocation of memory is continued until the total number of saveable
-> + * pages in the system is below the requested image size or it is impossible to
-> + * allocate more memory, whichever happens first.
-> + */
-
-OK, that helps.
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KPiBPZDogcGF2ZWxAdWN3LmN6Cj4gS29tdTogdHJla2tlci5ka0BjZW50cnVtLmN6Cj4g
+Q0M6IHR1eG9uaWNlLWRldmVsQGxpc3RzLnR1eG9uaWNlLm5ldCwgbGludXgtcG1AbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcsbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwo+IERhdHVtOiAx
+MS4wNS4yMDA5IDIzOjI0Cj4gUMWZZWRtxJt0OiBSZTogW1R1eE9uSWNlLWRldmVsXSBbUkZDXSBU
+dXhPbkljZQo+Cj5IaSEKPgo+PiA+PiA+VG8gc3VtbWFyaXNlIGRpc2FkdmFudGFnZXM6Cj4+ID4+
+ID4KPj4gPj4gPi0gb25seSBjb3JlIGhhcyA4MDAwIExvQwo+PiA+PiA+LSBpdCBkb2VzIHN0dWZm
+IHRoYXQgY2FuIGJlIGVhc2lseSBkb25lIGluIHVzZXJzcGFjZQo+PiA+PiA+ICAgICAoYW5kIHRo
+YXQgdG9kYXlzIGRpc3Ryb3MgX2RvXyBpbiB1c2Vyc3BhY2UpLgo+PiA+PiA+LSBpdCBkdXBsaWNh
+dGVzIHVzd3N1c3AgZnVuY3Rpb25hbGl0eS4KPj4gPj4gPi0gY29tcGFyZWQgdG8gW3Vdc3dzdXNw
+LCBpdCByZWNlaXZlZCBsaXR0bGUgdGVzdGluZwo+PiA+PiA+Cj4+ID4+IAo+PiA+PiBUbyBzdW1t
+YXJpc2UgYWR2YXRhZ2VzIC0gZm9yIG1lIHR1eG9uaWNlIGlzIHRoZSBvbmx5IGhpYmVybmF0aW9u
+IG1ldGhvZCB0aGF0IHdvcmtzLgo+PiA+PiAoVGlsbCBub3cgSSd2ZSBoYWQgMyBtYWNoaW5lcyAt
+IG5vIG9uZSBvZiB0aGVtIGFibGUgdG8gcmVzdW1lIHdpdGggaW4ta2VybmVsIHN3c3VzcC4pCj4+
+ID4+IAo+PiA+Cj4+ID5XaGljaCBrZXJuZWxzIHlvdSB0cmllZCwgd2hhdCBodyBpdCBpcz8gQ2Fu
+IHlvdSBkbyBzMnJhbT8KPj4gCj4+IFJlZ2FyZGluZyBoYXJkd2FyZSAtIAo+PiAKPj4gMS4gQU1E
+IEF0aGxvbiAxNzAwKywgVklBIEtUMzMzIGNoaXBzZXQgYmFzZWQgTUIsIG5WaWRpYSBHZUZvcmNl
+IDIKPj4gMi4gQU1EIFgyIEF0aGxvbiwgQU1ENjkwViBjaGlwc2V0IGJhc2VkIE1CLCBuVmlkaWEg
+NzYwMEdUCj4+IDMuIChjdXJyZW50KSBBTUQgWDQgUGhlbm9tIElJLCAgQU1ENzgwRyBjaGlwc2V0
+IGFuZCBuVmlkaWEgOTYwMEdUIAo+PiAoYmluYXJ5IGRyaXZlciBmb3IgdmlkZW8gY2FyZCBldmVy
+eSB0aW1lKQo+Cj5PaywgYmluYXJ5IGRyaXZlcnMgbWF5IGJlIGEgcHJvYmxlbS4gV2lsbCBpdCB3
+b3JrIHdpdGhvdXQgdGhhdD8gU2hvdWxkCj5iZSBlYXN5IHRvIHRlc3Qgd2l0aCBpbml0PS9iaW4v
+YmFzaC4KPgkJCQkJCQkJCVBhdmVsCgpZZXMsIHRoYXQgd29ya3MgLSBhbmQgYWZ0ZXIgY29tcGxl
+dGUgYm9vdCB3L28gbG9hZGluZyBiaW5hcnkgZHJpdmVyIHJlc3VtZSB3b3JrcyB0b28uCgoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
+bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
+dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
