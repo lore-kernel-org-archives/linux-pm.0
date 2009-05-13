@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Tue, 12 May 2009 22:40:32 +0200
-Message-ID: <200905122240.33384.rjw__11912.8748694949$1242161101$gmane$org@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905121852.37224.rjw@sisk.pl>
-	<20090512105059.30fb93c2.akpm@linux-foundation.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [RFC] why do we need run disk sync before entering S3
+Date: Wed, 13 May 2009 09:20:51 +0800
+Message-ID: <1242177651.16529.26.camel__31332.7290503823$1242177766$gmane$org@rzhang-dt>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090512105059.30fb93c2.akpm@linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +15,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kernel-testers@vger.kernel.org, mel@csn.ul.ie, rientjes@google.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, jens.axboe@oracle.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com, torvalds@linux-foundation.org
+To: linux-pm <linux-pm@lists.linux-foundation.org>, linux-acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 12 May 2009, Andrew Morton wrote:
-> On Tue, 12 May 2009 18:52:36 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Well, what about the following?
-> 
-> It has the virtue of simplicity.
-> 
-> > +static inline void disable_oom_killer(void)
-> > +{
-> > +	oom_killer_disabled = true;
-> > +}
-> > +
-> > +static inline void enable_oom_killer(void)
-> > +{
-> > +	oom_killer_disabled = false;
-> > +}
-> 
-> I'll change these to oom_killer_disable() and oom_killer_enable(), OK?
+Hi, all,
 
-Works for me, thanks!
+I did some S3 tests on an eeepc901, the total suspend time(from issue
+the suspend command to power down) is about 2.5s~3s.
+something interesting is that kernel runs disk sync before entering S3
+state, and this takes about 0.7~1.2s.
+my question is that, why do we need this for s2ram?
+can we remove this and run sys_sync for S4 only?
+
+thanks,
+rui
