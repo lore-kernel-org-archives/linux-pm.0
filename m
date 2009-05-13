@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/6] PM/Hibernate: Rework memory shrinking
-	(rev. 4)
-Date: Wed, 13 May 2009 10:32:52 +0200
-Message-ID: <200905131032.53624.rjw__38288.0888217644$1242204922$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl>
-	<200905101548.57557.rjw@sisk.pl>
+Subject: [PATCH 3/6] mm,
+	PM/Freezer: Disable OOM killer when tasks are frozen
+Date: Wed, 13 May 2009 10:37:49 +0200
+Message-ID: <200905131037.50011.rjw__4992.73763639412$1242204974$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl>
+	<200905131032.53624.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905101548.57557.rjw@sisk.pl>
+In-Reply-To: <200905131032.53624.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,85 +24,110 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 10 May 2009, Rafael J. Wysocki wrote:
-> On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> > On Thursday 07 May 2009, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > The following patchset is an attempt to rework the memory shrinking mechanism
-> > > used during hibernation to make room for the image.  It is a work in progress
-> > > and most likely it's going to be modified, but it has been discussed recently
-> > > and I'd like to get comments on the current version.
-> > > 
-> > > [1/5] - disable the OOM kernel after freezing tasks (this will be dropped if
-> > >         it's verified that we can avoid the OOM killing by using
-> > >         __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN
-> > >         in the next patches).
-> > > 
-> > > [2/5] - drop memory shrinking from the suspend (to RAM) code path
-> > > 
-> > > [3/5] - move swsusp_shrink_memory() to snapshot.c
-> > > 
-> > > [4/5] - rework swsusp_shrink_memory() (to use memory allocations for applying
-> > >         memory pressure)
-> > > 
-> > > [5/5] - allocate image pages along with the shrinking.
-> > 
-> > Updated patchset follows.
-> 
-> I the meantime I added a patch that attempts to computer the size of the hard
-> core working set.  I also had to rework the patch reworking
-> swsusp_shrink_memory() so that it takes highmem into account.
-> 
-> Currently, the patchset consists of the following patches:
-> 
-> [1/6] - disable the OOM kernel after freezing tasks (this will be dropped if
->         it's verified that we can avoid the OOM killing by using
->         __GFP_FS|__GFP_WAIT|__GFP_NORETRY|__GFP_NOWARN
->         in the next patches).
-> 
-> [2/6] - drop memory shrinking from the suspend (to RAM) code path
-> 
-> [3/6] - move swsusp_shrink_memory() to snapshot.c
-> 
-> [4/6] - rework swsusp_shrink_memory() (to use memory allocations for applying
->         memory pressure)
-> 
-> [5/6] - allocate image pages along with the shrinking
-> 
-> [6/6] - estimate the size of the hard core working set and use it as the lower
->         limit of the image size.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This is the 4th (and hopefully final) version of the patchset reworking
-hibernation memory shrinking.  The patches have been rearranged and some of
-them were modified to fix bugs etc.
+Currently, the following scenario appears to be possible in theory:
 
-[1/6] - drop memory shrinking from the suspend (to RAM) code path
+* Tasks are frozen for hibernation or suspend.
+* Free pages are almost exhausted.
+* Certain piece of code in the suspend code path attempts to allocate
+  some memory using GFP_KERNEL and allocation order less than or
+  equal to PAGE_ALLOC_COSTLY_ORDER.
+* __alloc_pages_internal() cannot find a free page so it invokes the
+  OOM killer.
+* The OOM killer attempts to kill a task, but the task is frozen, so
+  it doesn't die immediately.
+* __alloc_pages_internal() jumps to 'restart', unsuccessfully tries
+  to find a free page and invokes the OOM killer.
+* No progress can be made.
 
-[2/6] - move swsusp_shrink_memory() to snapshot.c
+Although it is now hard to trigger during hibernation due to the
+memory shrinking carried out by the hibernation code, it is
+theoretically possible to trigger during suspend after the memory
+shrinking has been removed from that code path.  Moreover, since
+memory allocations are going to be used for the hibernation memory
+shrinking, it will be even more likely to happen during hibernation.
 
-[3/6] - disable the OOM killer after freezing tasks (now it is done it a
-        simpler way)
+To prevent it from happening, introduce the oom_killer_disabled
+switch that will cause __alloc_pages_internal() to fail in the
+situations in which the OOM killer would have been called and make
+the freezer set this switch after tasks have been successfully
+frozen.
 
-[4/6] - rework swsusp_shrink_memory() to use memory allocations for applying
-        memory pressure)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/gfp.h    |   12 ++++++++++++
+ kernel/power/process.c |    5 +++++
+ mm/page_alloc.c        |    5 +++++
+ 3 files changed, 22 insertions(+)
 
-[5/6] - do not release the preallocated image pages
-
-[6/6] - estimate the minimum image size and use it to avoid attempting to free
-        too much memory too hard
-
-IMO patches [1/6] and [2/6] are ready to go, so I'm going to add them to the
-linux-next branch of the suspend tree.
-
-Patch [3/6] in in mm, but it would be easier to handle [4/6] - [6/6] having
-this patch in the suspend tree.  Dunno.  Andrew, what would you prefer to do
-with it?
-
-Patches [4/6] - [6/6] have been tested on a couple of boxes in different
-configuration and no major problems have been found.
-
-Comments welcome.
-
-Thanks,
-Rafael
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -175,6 +175,8 @@ static void set_pageblock_migratetype(st
+ 					PB_migrate, PB_migrate_end);
+ }
+ 
++bool oom_killer_disabled __read_mostly;
++
+ #ifdef CONFIG_DEBUG_VM
+ static int page_outside_zone_boundaries(struct zone *zone, struct page *page)
+ {
+@@ -1600,6 +1602,9 @@ nofail_alloc:
+ 		if (page)
+ 			goto got_pg;
+ 	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
++		if (oom_killer_disabled)
++			goto nopage;
++
+ 		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+ 			schedule_timeout_uninterruptible(1);
+ 			goto restart;
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -245,4 +245,16 @@ void drain_zone_pages(struct zone *zone,
+ void drain_all_pages(void);
+ void drain_local_pages(void *dummy);
+ 
++extern bool oom_killer_disabled;
++
++static inline void oom_killer_disable(void)
++{
++	oom_killer_disabled = true;
++}
++
++static inline void oom_killer_enable(void)
++{
++	oom_killer_disabled = false;
++}
++
+ #endif /* __LINUX_GFP_H */
+Index: linux-2.6/kernel/power/process.c
+===================================================================
+--- linux-2.6.orig/kernel/power/process.c
++++ linux-2.6/kernel/power/process.c
+@@ -117,9 +117,12 @@ int freeze_processes(void)
+ 	if (error)
+ 		goto Exit;
+ 	printk("done.");
++
++	oom_killer_disable();
+  Exit:
+ 	BUG_ON(in_atomic());
+ 	printk("\n");
++
+ 	return error;
+ }
+ 
+@@ -145,6 +148,8 @@ static void thaw_tasks(bool nosig_only)
+ 
+ void thaw_processes(void)
+ {
++	oom_killer_enable();
++
+ 	printk("Restarting tasks ... ");
+ 	thaw_tasks(true);
+ 	thaw_tasks(false);
