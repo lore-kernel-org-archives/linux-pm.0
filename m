@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] why do we need run disk sync before entering S3
-Date: Wed, 13 May 2009 16:16:26 +0200
-Message-ID: <200905131616.27334.rjw__26227.4910034195$1242224456$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
+Date: Wed, 13 May 2009 12:34:09 -0700
+Message-ID: <20090513123409.302f4307.akpm__23228.8408246406$1242243722$gmane$org@linux-foundation.org>
+References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl>
+	<200905131032.53624.rjw@sisk.pl> <200905131039.26778.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200905131039.26778.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +18,128 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com, linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 13 May 2009, Alan Stern wrote:
-> On Wed, 13 May 2009, Rafael J. Wysocki wrote:
-> 
-> > > > I generally agree, but I think we may also leave the syncing to the user space,
-> > > > in both cases.
-> > > 
-> > > Well...
-> > > 
-> > > Normally kernel writes dirty data to disk each 30
-> > > seconds. s2ram/s2disk breaks that promise, so it seems fair to add
-> > > explicit sync to keep the "promise".
-> > > 
-> > > OTOH, I agree it would be more flexible if we left sync to
-> > > userspace. In uswsusp case, it actually makes sense. In s2ram
-> > > case... if we can do it while keeping compatibility with old
-> > > behaviour... why not.
-> > 
-> > That really depends on the distrubution.  (open)SUSE always syncs before
-> > suspend/hibernation AFAICS, but I don't know about the other distros.
-> 
-> This doesn't address the real question: Should the system be allowed to 
-> go into S3 without doing a sync first?
-> 
-> Whether the sync is initiated by userspace or by the kernel doesn't 
-> make any difference.  Likewise, it doesn't matter if there are two 
-> syncs (because the second will be very fast, as Pavel said).
-> 
-> If you really wanted to speed up the suspend transition then you would
-> leave out the sync entirely.  But IMO this would be a mistake; the risk
-> of data loss is too great.  Which means the time overhead is necessary,
-> one way or another.  If userspace does a sync first then the suspend
-> transition will be faster, but this is just an accounting artifact (do
-> you count the time required for the sync toward the time required for
-> the suspend or not).
+On Wed, 13 May 2009 10:39:25 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-My point was in fact that if we left the syncing to the user space, then the
-user would be able to decide not to sync risking data loss.  At the moment the
-user has no choice. :-)
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+> just once to make some room for the image and then allocates memory
+> to apply more pressure to the memory management subsystem, if
+> necessary.
+> 
+> Unfortunately, we don't seem to be able to drop shrink_all_memory()
+> entirely just yet, because that would lead to huge performance
+> regressions in some test cases.
+> 
 
-Thanks,
-Rafael
+Isn't this a somewhat large problem?  The main point (I thought) was
+to remove shrink_all_memory().  Instead, we're retaining it and adding
+even more stuff?
+
+> +/**
+> + * compute_fraction - Compute approximate fraction x * (a/b)
+> + * @x: Number to multiply.
+> + * @numerator: Numerator of the fraction (a).
+> + * @denominator: Denominator of the fraction (b).
+>   *
+> - *	Notice: all userland should be stopped before it is called, or
+> - *	livelock is possible.
+> + * Compute an approximate value of the expression x * (a/b), where a is less
+> + * than b, all x, a, b are unsigned longs and x * a may be greater than the
+> + * maximum unsigned long.
+>   */
+> +static unsigned long compute_fraction(
+> +	unsigned long x, unsigned long numerator, unsigned long denominator)
+
+I can't say I'm a great fan of the code layout here.
+
+static unsigned long compute_fraction(unsigned long x, unsigned long numerator, unsigned long denominator)
+
+or
+
+static unsigned long compute_fraction(unsigned long x, unsigned long numerator,
+					unsigned long denominator)
+
+would be more typical.
+
+
+> +{
+> +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
+>  
+> -#define SHRINK_BITE	10000
+> -static inline unsigned long __shrink_memory(long tmp)
+> +	x *= ratio;
+> +	return x >> FRACTION_SHIFT;
+> +}
+
+Strange function.  Would it not be simpler/clearer to do it with 64-bit
+scalars, multiplication and do_div()?
+
+> +static unsigned long highmem_size(
+> +	unsigned long size, unsigned long highmem, unsigned long count)
+> +{
+> +	return highmem > count / 2 ?
+> +			compute_fraction(size, highmem, count) :
+> +			size - compute_fraction(size, count - highmem, count);
+> +}
+
+This would be considerably easier to follow if we know what the three
+arguments represent.  Amount of memory?  In what units?  `count' of
+what?
+
+The `count/2' thing there is quite mysterious.
+
+<does some reverse-engineering>
+
+OK, `count' is "the number of pageframes we can use".  (I don't think I
+helped myself a lot there).  But what's up with that divde-by-two?
+
+<considers poking at callers to work out what `size' is>
+
+<gives up>
+
+Is this code as clear as we can possibly make it??
+
+> +#else
+> +static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline unsigned long highmem_size(
+> +	unsigned long size, unsigned long highmem, unsigned long count)
+>  {
+> -	if (tmp > SHRINK_BITE)
+> -		tmp = SHRINK_BITE;
+> -	return shrink_all_memory(tmp);
+> +	return 0;
+>  }
+> +#endif /* CONFIG_HIGHMEM */
+>  
+> +/**
+> + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
+> + *
+> + * To create a hibernation image it is necessary to make a copy of every page
+> + * frame in use.  We also need a number of page frames to be free during
+> + * hibernation for allocations made while saving the image and for device
+> + * drivers, in case they need to allocate memory from their hibernation
+> + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
+> + * respectively, both of which are rough estimates).  To make this happen, we
+> + * compute the total number of available page frames and allocate at least
+> + *
+> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
+> + *
+> + * of them, which corresponds to the maximum size of a hibernation image.
+> + *
+> + * If image_size is set below the number following from the above formula,
+> + * the preallocation of memory is continued until the total number of saveable
+> + * pages in the system is below the requested image size or it is impossible to
+> + * allocate more memory, whichever happens first.
+> + */
+
+OK, that helps.
