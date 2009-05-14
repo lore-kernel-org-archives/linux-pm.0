@@ -1,14 +1,17 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: dev->status.power and future of DPM_
-Date: Thu, 14 May 2009 13:29:54 +0900
-Message-ID: <aec7e5c30905132129v2abb7c72r20fa8b748d42deb6@mail.gmail.com>
-References: <aec7e5c30905130329t5610c8d1x925d554b833dedcc@mail.gmail.com>
-	<Pine.LNX.4.44L0.0905131007450.3004-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 14 May 2009 11:16:17 +0200
+Message-ID: <20090514091616.GB6417__28425.21076459$1242292793$gmane$org@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905090046.21282.rjw@sisk.pl>
+	<20090509132711.GD10859@elf.ucw.cz>
+	<200905092132.11138.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905131007450.3004-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <200905092132.11138.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,77 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+Hi!
 
-[Re-adding Kevin]
+> > > > And we have different ideas about how things should be done. Userspace
+> > > > vs kernel space. Providing tuning knobs vs not. And so on.
+> > > 
+> > > This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
+> > > solution, as there are some clear benefits of doing it this way.  We only
+> > > need to be careful enough not to break the existing setups.
+> > 
+> > Would you elaborate?
+> 
+> One benefit is that we need not anything in the initrd for hibernation to work.
+> Another one is that we can get superior performance, for obvious reasons
+> (less copying of data, faster I/O).   Yet another is simpler configuration and
+> no need to maintain a separate set of user space tools.  I probably could
+> find more.
+>  
+> > I would really hate to put progressbar painting into kernel; and if
+> > that's in userspace, we can do compression/encryption there too as
+> > well....
+> 
+> That's correct, we can.  But since we have LZO in the kernel now, we can use
+> it for compression just as well, can't we?
 
-On Wed, May 13, 2009 at 11:12 PM, Alan Stern <stern@rowland.harvard.edu> wr=
-ote:
-> On Wed, 13 May 2009, Magnus Damm wrote:
->
->> Hi everyone,
->>
->> What is the future plan for dev->status.power? Right now it seems to
->> reflect the upcoming internal software state of each device when
->> performing suspend and resume. The attached picture may clarify things
->> if it makes it to the list.
->>
->> I'm a bit interested in modifying dev->status.power to reflect the
->> current device power state. Basically getting rid of DPM_PREPARING,
->> DPM_RESUMING, DPM_SUSPENDING and DPM_OFF_NOIRQ (they seem to be fairly
->> unused anyway),
->
-> "Fairly unused" is very different from "completely unused". =A0Please
-> don't get rid of them.
+Yes, but we do not have progressbar painting in the kernel -- yet --
+so users will still need initrd etc.
 
-I understand that USB is using dev->power.status for power management.
-USB power management very is good to have, so I have no intention in
-breaking that. =3D)
-
->> and instead using the following states:
->>
->> DPM_ON - default operational state
->> DPM_FROZEN - set after PMSG_FREEZE
->> DPM_OFF - set after PMSG_HIBERNATE
->> DPM_SUSPENDED - set after PMSG_SUSPEND
->
-> Is there any reason for making this change?
->
->> On top of this I'd like to allow device drivers to mark devices as
->> idle. And if a device is marked idle then I'd like to allow power
->> management code to perform freeze() on a single device. After that
->> marking the device frozen using DPM_FROZEN. poweroff() may also be
->> called to perform some partial system suspend. It gets more
->> complicated of course, but I guess we need a way to know the state of
->> each device regardless.
->>
->> Any comments?
->
-> It sounds like you're trying to resuscitate the proposals for
-> centralized device power management from several years ago. =A0The idea
-> was abandoned because there was no way to make it work. =A0And there's no
-> reason to think the situation is any different now.
-
-So let's look at it from a different angle then. Today there are many
-SoCs on the market from multiple vendors, and they all need to be
-power managed somehow. Upstream linux is not very good at it, some
-vendors have many out-of-tree patches for these things. For SuperH we
-have no power management code out-of-tree so _now_ we have a good
-chance of implementing something upstream that multiple architectures
-can make use of.
-
-Paul Walmsley, Kevin Hilman and I discussed this during last Embedded
-Linux Conference last month. From architecture perspective both Arm
-and SuperH need to be able enter deep sleep states. For this to happen
-we need the ability to save and restore device context during run
-time.
-
-Do you have any recommendation for us?
-
-Thank you!
-
-/ magnus
+Yes, we can move LZO into kernel pretty cheaply, and it will have
+minor benefit of slightly faster reguler swsusp, but...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
