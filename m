@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Thu, 14 May 2009 11:40:46 +0200
-Message-ID: <20090514094046.GF6417__29304.6563434929$1242294188$gmane$org@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905132255.04681.rjw@sisk.pl>
-	<20090513141647.076b67f0.akpm@linux-foundation.org>
-	<200905132356.39481.rjw@sisk.pl>
+Subject: Re: [RFC] why do we need run disk sync before entering	S3
+Date: Thu, 14 May 2009 11:42:49 +0200
+Message-ID: <20090514094249.GG6417__18352.329839445$1242294246$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<200905131616.27334.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200905132356.39481.rjw@sisk.pl>
+In-Reply-To: <200905131616.27334.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, linux-pm@lists.linux-foundation.org
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
-> > > > The main point (I thought) was to remove shrink_all_memory().  Instead,
-> > > > we're retaining it and adding even more stuff?
-> > > 
-> > > The idea is that afterwards we can drop shrink_all_memory() once the
-> > > performance problem has been resolved.  Also, we now allocate memory for the
-> > > image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
-> > > devices.  I'd think that's an improvement?
+> > > That really depends on the distrubution.  (open)SUSE always syncs before
+> > > suspend/hibernation AFAICS, but I don't know about the other distros.
 > > 
-> > Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
-> > could be embarrassing if the devices are frozen.
+> > This doesn't address the real question: Should the system be allowed to 
+> > go into S3 without doing a sync first?
+> > 
+> > Whether the sync is initiated by userspace or by the kernel doesn't 
+> > make any difference.  Likewise, it doesn't matter if there are two 
+> > syncs (because the second will be very fast, as Pavel said).
+> > 
+> > If you really wanted to speed up the suspend transition then you would
+> > leave out the sync entirely.  But IMO this would be a mistake; the risk
+> > of data loss is too great.  Which means the time overhead is necessary,
+> > one way or another.  If userspace does a sync first then the suspend
+> > transition will be faster, but this is just an accounting artifact (do
+> > you count the time required for the sync toward the time required for
+> > the suspend or not).
 > 
-> They aren't, because the preallocation is done upfront, so once the OOM killer
-> has been taken care of, it's totally safe. :-)
+> My point was in fact that if we left the syncing to the user space, then the
+> user would be able to decide not to sync risking data loss.  At the moment the
+> user has no choice. :-)
 
-As is GFP_ATOMIC. Except that GFP_KERNEL will cause catastrophic
-consequences when accounting goes wrong. (New kernel's idea of what is
-on disk will differ from what is _really_ on disk.)
+Well, if you can add the choice, without adding anything ugly and with
+staying back-compatible, why not. (sync has to stay by default). I
+believe ioctls() on /dev/snapshot may already enable you to do s2ram
+without sync; if not they could be extended.
 
-If accounting is right, GFP_ATOMIC and GFP_KERNEL is equivalent.
+But remember there are even in-kernel s2ram triggers, for example on
+zaurus when battery goes critical.
 
-If accounting is wrong, GFP_ATOMIC will fail with NULL, while
-GFP_KERNEL will do something bad.
-
-I'd keep GFP_ATOMIC (or GFP_NOIO or similar). 
-
-								Pavel
+(And s2ram without sync _is_ "wrong": writeback timeouts are not
+honored).
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
