@@ -1,17 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 14 May 2009 11:16:17 +0200
-Message-ID: <20090514091616.GB6417__28425.21076459$1242292793$gmane$org@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905090046.21282.rjw@sisk.pl>
-	<20090509132711.GD10859@elf.ucw.cz>
-	<200905092132.11138.rjw@sisk.pl>
+Subject: Re: [PATCH] pm: remove unused asm/suspend.h
+Date: Thu, 14 May 2009 11:31:47 +0200
+Message-ID: <20090514093147.GE6417@elf.ucw.cz>
+References: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
+	<20090512193200.GA22728@elf.ucw.cz>
+	<aec7e5c30905130304r38796bf4if741f53435bb5cb3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200905092132.11138.rjw@sisk.pl>
+In-Reply-To: <aec7e5c30905130304r38796bf4if741f53435bb5cb3@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed 2009-05-13 19:04:14, Magnus Damm wrote:
+> Hi Pavel,
+> =
 
-> > > > And we have different ideas about how things should be done. Userspace
-> > > > vs kernel space. Providing tuning knobs vs not. And so on.
-> > > 
-> > > This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
-> > > solution, as there are some clear benefits of doing it this way.  We only
-> > > need to be careful enough not to break the existing setups.
-> > 
-> > Would you elaborate?
-> 
-> One benefit is that we need not anything in the initrd for hibernation to work.
-> Another one is that we can get superior performance, for obvious reasons
-> (less copying of data, faster I/O).   Yet another is simpler configuration and
-> no need to maintain a separate set of user space tools.  I probably could
-> find more.
->  
-> > I would really hate to put progressbar painting into kernel; and if
-> > that's in userspace, we can do compression/encryption there too as
-> > well....
-> 
-> That's correct, we can.  But since we have LZO in the kernel now, we can use
-> it for compression just as well, can't we?
+> On Wed, May 13, 2009 at 4:32 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Tue 2009-05-12 22:16:06, Magnus Damm wrote:
+> >>
+> >> From: Magnus Damm <damm@igel.co.jp>
+> >>
+> >> This patch removes unused asm/suspend.h files for
+> >> the following architectures:
+> >>
+> >> =A0alpha, arm, ia64, m68k, mips, s390, um
+> >>
+> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> >
+> > Are you sure? arm does support suspend...
+> =
 
-Yes, but we do not have progressbar painting in the kernel -- yet --
-so users will still need initrd etc.
+> Not sure, but these days <asm/suspend.h> is only included from
+> kernel/power/disk.c. And that file is only built if CONFIG_HIBERNATION
+> is set. I've grepped for arch_prepare_suspend and
+> ARCH_HIBERNATION_POSSIBLE but I don't get any matches under
+> arch/arm...
+> =
 
-Yes, we can move LZO into kernel pretty cheaply, and it will have
-minor benefit of slightly faster reguler swsusp, but...
+> Or am I misunderstanding? =3D)
+
+I did rm arch/arm/include/asm/suspend.h and ran test compile on
+zaurus; it seems ok. Because no other architectures are close to
+supporting suspend/hibernation, I think I can
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
 									Pavel
--- 
+-- =
+
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
