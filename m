@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: dev->status.power and future of DPM_
-Date: Thu, 14 May 2009 17:36:55 +0200
-Message-ID: <200905141736.56215.rjw@sisk.pl>
-References: <aec7e5c30905130329t5610c8d1x925d554b833dedcc@mail.gmail.com>
-	<200905131522.31882.rjw@sisk.pl>
-	<aec7e5c30905132118m265245f4u9d9581b3fde788f6@mail.gmail.com>
+Subject: Re: [PATCH] pm: rename device_power_down/up()
+Date: Thu, 14 May 2009 19:43:52 +0200
+Message-ID: <200905141943.53151.rjw@sisk.pl>
+References: <20090514122356.19418.31612.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905132118m265245f4u9d9581b3fde788f6@mail.gmail.com>
+In-Reply-To: <20090514122356.19418.31612.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,177 +18,379 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
+To: pavel@ucw.cz, Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 14 May 2009, Magnus Damm wrote:
-> Hi Rafael,
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> 2009/5/13 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday 13 May 2009, Magnus Damm wrote:
-> >> I'm a bit interested in modifying dev->status.power to reflect the
-> >> current device power state. Basically getting rid of DPM_PREPARING,
-> >> DPM_RESUMING, DPM_SUSPENDING and DPM_OFF_NOIRQ (they seem to be fairly
-> >> unused anyway),
-> >
-> > Please read drivers/base/power/main.c once again _carefully_ and rethink
-> > your observation above.
+> Rename the functions performing "_noirq" dev_pm_ops
+> operations from device_power_down() and device_power_up()
+> to device_suspend_noirq() and device_resume_noirq().
 > 
-> Sorry about typos above, it shold be dev->power.status and DPM_OFF_IRQ.
-
-Ah.  That still doesn't sound good, though.  The reason is, on error in
-dpm_power_down() the devices that had their callbacks executed go to
-OFF_IRQ, while the others stay at OFF, so when device_power_up() is called
-to clean up things, it won't touch them.
-
-> So I read through the code again. How about this matrix:
+> The new function names are chosen to show that the functions
+> are responsible for calling the _noirq() versions to finalize
+> the suspend/resume operation. The current function names do
+> not perform power down/up anymore so the names may be misleading.
 > 
-> (function, in-function-change-DPM_, after-DPM_ [error-DPM_])
+> Global function renames:
+> - device_power_down() -> device_suspend_noirq()
+> - device_power_up() -> device_resume_noirq()
 > 
-> device_suspend(), PREPARING/SUSPENDING/OFF/ON, OFF [ON]
+> Static function renames:
+> - suspend_device_noirq() -> __device_suspend_noirq()
+> - resume_device_noirq() -> __device_resume_noirq() 
 
-You can transition from PREPARING to either SUSPENDING or ON, depending on
-whether or not there's an error.  Next, you can either go from SUSPENDING to
-OFF, or stay at SUSPENDING (on error), So, the after-DPM is always OFF I'd say.
- Also, the error DPM may be ON or SUSPENDING.
+Pavel, Alan, Greg, any objections?
 
-> device_power_down(), OFF_IRQ/OFF, OFF_IRQ, [OFF/unchanged]
-
-Here we go from OFF to OFF_IRQ (you have the other way around).
-
-> device_power_up(), OFF, OFF/unchanged
-
-Here we go from OFF_IRQ to OFF or stay at whatever was set before.
-
-> device_resume(), RESUMING/ON, ON/unchanged
-
-This is more complicated, depending on the situation it is called in.  If that
-is during resume, we go from OFF (or OFF_IRQ) to RESUMING and next to ON.
-In turn, if that is during _suspend_ on error condition, we go from SUSPENDING
-to RESUMING and then to ON.  The final state is always ON.
-
-> Basically, dev->power.status seems to represent the soon to be state
-> of each device. For instance, before calling prepare() PREPARING is
-> set. Have a look at the JPG that I attached in the previous email.
-
-The meaning of the DPM_ constants is explained in a comment in
-include/linux/pm.h .  They are related to device driver callbacks rather than
-to the core functions above.
-
-> Am I misunderstanding?
-
-Well, I tried to explain that in detail above. :-)
- 
-> I'd like to keep the state of each device somewhere.
-> 
-> >> and instead using the following states:
-> >>
-> >> DPM_ON - default operational state
-> >> DPM_FROZEN - set after PMSG_FREEZE
-> >> DPM_OFF - set after PMSG_HIBERNATE
-> >> DPM_SUSPENDED - set after PMSG_SUSPEND
-> >
-> > The PMSG_* things are only used to pass information between the
-> > suspend/hibernation core and the functions in drivers/base/power/main.c .
-> > They are also used by the legacy suspend callbacks of device drivers, but
-> > drivers are encouraged to use struct dev_pm_ops objects instead.
-> > And struct dev_pm_ops contains also  the .prepare()/.complete() callbacks that
-> > you don't seem to be taking into consideration.
-> 
-> Thanks for your explanation. I think I understand the PMSG_ stuff. I'm
-> aware of dev_pm_ops, they are used in sme of my upstream drivers. As
-> for prepare()/complete() - I am taking them into consideration. Please
-> check the JPG again.
-
-Yes, sorry.
-
-> > What exactly is the purpose of the changes you're suggesting?
-> 
-> Earlier this year I've focused on adding power management to the
-> SuperH architecture. So in upstream 2.6.30 we now have suspend to disk
-> and suspend to ram working for most sleep modes. Currently I'm
-> focusing on run time power management (cpu idle, clock framework) and
-> deeper sleep modes. This is all upstream activity.
-
-OK
-
-> Entering deeper sleep modes will result in that parts of the SoC get
-> powered off. This is true for SuperH Mobile and SoCs from other
-> vendors as well. Before turning off power to a certain part of the SoC
-> we have to save the state of all the devices located there. And after
-> powering up we need to restore the state of each device.
-> dev_pm_ops->freeze() and ->restore() seem like good candidates for
-> doing that.
-
-OK there, but you need to take the bus type level into consideration.  Namely,
-on suspend we have, for example:
-
-dpm_suspend(PMSG_FREEZE) -> bus type freeze() -> driver freeze()
-
-Now, the bus type freeze() need not be suitable for your run-time PM, so you'd
-probably call the driver freeze() directly.  However, the DPM_* flags tell the
-core which _bus_ _type_ callback has been called last, so I don't think you can
-generally reuse them for the run-time case.  Thus I think there should be a
-separate flag for the run-time PM.
-
-Of course, there's the question how to make the run-time PM and
-suspend/hibernation play well together and I think it may be done by teaching
-the bus type freeze() and friends about the runtime PM flag.
-
-I agree that it might make sense to introduce the run-time PM flag at the core
-level so that various bus types don't reinvent the wheel each time they decide
-to implement run-time PM.
-
-> So I'd like to be able to freeze individual devices independently of
-> each other. And then there's lots of architecture specific work that
-> needs to be done. =)
-
-Yes, there is.
-
-> >> On top of this I'd like to allow device drivers to mark devices as
-> >> idle. And if a device is marked idle then I'd like to allow power
-> >> management code to perform freeze() on a single device. After that
-> >> marking the device frozen using DPM_FROZEN. poweroff() may also be
-> >> called to perform some partial system suspend. It gets more
-> >> complicated of course, but I guess we need a way to know the state of
-> >> each device regardless.
-> >
-> > We have discussed that for several times already IIRC and the conclusion has
-> > always been that such things should better be done at the bus type level, not
-> > at the core level.
-> 
-> Doing things at the bus type level sounds fine with me. I'm mainly
-> interested in platform devices.
-
-Fine.
-
-> > If you look at the PCI power management code, you'll notice that the drivers'
-> > PM callbacks are not called directly by the core, but they are called by the
-> > PCI bus type PM callbacks which in turn carry out some bus-specific operations
-> > before or after executing the drivers' callbacks.  However, these bus-specific
-> > operations generally need not be suitable for run-time power management of
-> > devices (they are designed with system-wide power transitions in mind).
-> > Also, such things as PM events signalling (eg. a device has been suspended
-> > at run time, but there's activity on the device which causes it to notify the
-> > kernel and the device signals the event somehow) tend to be bus-specific or
-> > platform-specific.
-> 
-> Right. Seems like a good design to me.
-> 
-> Most things seem to be driven from system wide suspend/resume though.
-> I'm more interested in performing partial system suspend during
-> runtime. From for instance cpuidle.
-
-That, IMO, may be done by applying the run-time PM handling to each of the
-devices in question.
-
-> > USB, where run-time power management has already been
-> > implemented, is a good example too.
-> 
-> That's great, but it doesn't help us entering deep sleep states on our SoCs. =)
-
-Well, you still can have a look at it and see how it's done. :-)
-
-Thanks,
 Rafael
+
+
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Please excuse the cosmetic nature of this patch.
+>  Feel free to pick up the patch if you find the new names better.
+>  If not please just ignore it, I have no interest in discussing names.
+> 
+>  Compile tested with -next on x86 using i386_defconfig and
+>  x86_64_defconfig and on SuperH with sh7724_generic_defconfig.
+> 
+>  Thanks for your help.
+> 
+>  arch/x86/kernel/apm_32.c  |    8 ++++----
+>  drivers/base/power/main.c |   26 +++++++++++++-------------
+>  drivers/xen/manage.c      |   10 +++++-----
+>  include/linux/pm.h        |    4 ++--
+>  kernel/kexec.c            |    8 ++++----
+>  kernel/power/disk.c       |   16 ++++++++--------
+>  kernel/power/main.c       |    4 ++--
+>  7 files changed, 38 insertions(+), 38 deletions(-)
+> 
+> --- 0001/arch/x86/kernel/apm_32.c
+> +++ work/arch/x86/kernel/apm_32.c	2009-05-13 18:27:32.000000000 +0900
+> @@ -1235,7 +1235,7 @@ static int suspend(int vetoable)
+>  
+>  	device_suspend(PMSG_SUSPEND);
+>  
+> -	device_power_down(PMSG_SUSPEND);
+> +	device_suspend_noirq(PMSG_SUSPEND);
+>  
+>  	local_irq_disable();
+>  	sysdev_suspend(PMSG_SUSPEND);
+> @@ -1259,7 +1259,7 @@ static int suspend(int vetoable)
+>  	sysdev_resume();
+>  	local_irq_enable();
+>  
+> -	device_power_up(PMSG_RESUME);
+> +	device_resume_noirq(PMSG_RESUME);
+>  
+>  	device_resume(PMSG_RESUME);
+>  	queue_event(APM_NORMAL_RESUME, NULL);
+> @@ -1277,7 +1277,7 @@ static void standby(void)
+>  {
+>  	int err;
+>  
+> -	device_power_down(PMSG_SUSPEND);
+> +	device_suspend_noirq(PMSG_SUSPEND);
+>  
+>  	local_irq_disable();
+>  	sysdev_suspend(PMSG_SUSPEND);
+> @@ -1291,7 +1291,7 @@ static void standby(void)
+>  	sysdev_resume();
+>  	local_irq_enable();
+>  
+> -	device_power_up(PMSG_RESUME);
+> +	device_resume_noirq(PMSG_RESUME);
+>  }
+>  
+>  static apm_event_t get_event(void)
+> --- 0001/drivers/base/power/main.c
+> +++ work/drivers/base/power/main.c	2009-05-13 18:32:44.000000000 +0900
+> @@ -315,13 +315,13 @@ static void pm_dev_err(struct device *de
+>  /*------------------------- Resume routines -------------------------*/
+>  
+>  /**
+> - *	resume_device_noirq - Power on one device (early resume).
+> + *	__device_resume_noirq - Power on one device (early resume).
+>   *	@dev:	Device.
+>   *	@state: PM transition of the system being carried out.
+>   *
+>   *	Must be called with interrupts disabled.
+>   */
+> -static int resume_device_noirq(struct device *dev, pm_message_t state)
+> +static int __device_resume_noirq(struct device *dev, pm_message_t state)
+>  {
+>  	int error = 0;
+>  
+> @@ -362,25 +362,25 @@ static void dpm_power_up(pm_message_t st
+>  			int error;
+>  
+>  			dev->power.status = DPM_OFF;
+> -			error = resume_device_noirq(dev, state);
+> +			error = __device_resume_noirq(dev, state);
+>  			if (error)
+>  				pm_dev_err(dev, state, " early", error);
+>  		}
+>  }
+>  
+>  /**
+> - *	device_power_up - Turn on all devices that need special attention.
+> + *	device_resume_noirq - Turn on all devices that need special attention.
+>   *	@state: PM transition of the system being carried out.
+>   *
+>   *	Call the "early" resume handlers and enable device drivers to receive
+>   *	interrupts.
+>   */
+> -void device_power_up(pm_message_t state)
+> +void device_resume_noirq(pm_message_t state)
+>  {
+>  	dpm_power_up(state);
+>  	resume_device_irqs();
+>  }
+> -EXPORT_SYMBOL_GPL(device_power_up);
+> +EXPORT_SYMBOL_GPL(device_resume_noirq);
+>  
+>  /**
+>   *	resume_device - Restore state for one device.
+> @@ -575,13 +575,13 @@ static pm_message_t resume_event(pm_mess
+>  }
+>  
+>  /**
+> - *	suspend_device_noirq - Shut down one device (late suspend).
+> + *	__device_suspend_noirq - Shut down one device (late suspend).
+>   *	@dev:	Device.
+>   *	@state: PM transition of the system being carried out.
+>   *
+>   *	This is called with interrupts off and only a single CPU running.
+>   */
+> -static int suspend_device_noirq(struct device *dev, pm_message_t state)
+> +static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+>  {
+>  	int error = 0;
+>  
+> @@ -600,7 +600,7 @@ static int suspend_device_noirq(struct d
+>  }
+>  
+>  /**
+> - *	device_power_down - Shut down special devices.
+> + *	device_suspend_noirq - Shut down special devices.
+>   *	@state: PM transition of the system being carried out.
+>   *
+>   *	Prevent device drivers from receiving interrupts and call the "late"
+> @@ -608,14 +608,14 @@ static int suspend_device_noirq(struct d
+>   *
+>   *	Must be called under dpm_list_mtx.
+>   */
+> -int device_power_down(pm_message_t state)
+> +int device_suspend_noirq(pm_message_t state)
+>  {
+>  	struct device *dev;
+>  	int error = 0;
+>  
+>  	suspend_device_irqs();
+>  	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
+> -		error = suspend_device_noirq(dev, state);
+> +		error = __device_suspend_noirq(dev, state);
+>  		if (error) {
+>  			pm_dev_err(dev, state, " late", error);
+>  			break;
+> @@ -623,10 +623,10 @@ int device_power_down(pm_message_t state
+>  		dev->power.status = DPM_OFF_IRQ;
+>  	}
+>  	if (error)
+> -		device_power_up(resume_event(state));
+> +		device_resume_noirq(resume_event(state));
+>  	return error;
+>  }
+> -EXPORT_SYMBOL_GPL(device_power_down);
+> +EXPORT_SYMBOL_GPL(device_suspend_noirq);
+>  
+>  /**
+>   *	suspend_device - Save state of one device.
+> --- 0001/drivers/xen/manage.c
+> +++ work/drivers/xen/manage.c	2009-05-13 18:28:47.000000000 +0900
+> @@ -43,7 +43,7 @@ static int xen_suspend(void *data)
+>  	if (err) {
+>  		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
+>  			err);
+> -		device_power_up(PMSG_RESUME);
+> +		device_resume_noirq(PMSG_RESUME);
+>  		return err;
+>  	}
+>  
+> @@ -69,7 +69,7 @@ static int xen_suspend(void *data)
+>  	}
+>  
+>  	sysdev_resume();
+> -	device_power_up(PMSG_RESUME);
+> +	device_resume_noirq(PMSG_RESUME);
+>  
+>  	return 0;
+>  }
+> @@ -102,9 +102,9 @@ static void do_suspend(void)
+>  	/* XXX use normal device tree? */
+>  	xenbus_suspend();
+>  
+> -	err = device_power_down(PMSG_SUSPEND);
+> +	err = device_suspend_noirq(PMSG_SUSPEND);
+>  	if (err) {
+> -		printk(KERN_ERR "device_power_down failed: %d\n", err);
+> +		printk(KERN_ERR "device_suspend_noirq failed: %d\n", err);
+>  		goto resume_devices;
+>  	}
+>  
+> @@ -120,7 +120,7 @@ static void do_suspend(void)
+>  	} else
+>  		xenbus_suspend_cancel();
+>  
+> -	device_power_up(PMSG_RESUME);
+> +	device_resume_noirq(PMSG_RESUME);
+>  
+>  resume_devices:
+>  	device_resume(PMSG_RESUME);
+> --- 0001/include/linux/pm.h
+> +++ work/include/linux/pm.h	2009-05-13 18:23:04.000000000 +0900
+> @@ -382,12 +382,12 @@ struct dev_pm_info {
+>  #ifdef CONFIG_PM_SLEEP
+>  extern void device_pm_lock(void);
+>  extern int sysdev_resume(void);
+> -extern void device_power_up(pm_message_t state);
+> +extern void device_resume_noirq(pm_message_t state);
+>  extern void device_resume(pm_message_t state);
+>  
+>  extern void device_pm_unlock(void);
+>  extern int sysdev_suspend(pm_message_t state);
+> -extern int device_power_down(pm_message_t state);
+> +extern int device_suspend_noirq(pm_message_t state);
+>  extern int device_suspend(pm_message_t state);
+>  extern int device_prepare_suspend(pm_message_t state);
+>  
+> --- 0001/kernel/kexec.c
+> +++ work/kernel/kexec.c	2009-05-13 18:22:14.000000000 +0900
+> @@ -1453,13 +1453,13 @@ int kernel_kexec(void)
+>  			goto Resume_console;
+>  		device_pm_lock();
+>  		/* At this point, device_suspend() has been called,
+> -		 * but *not* device_power_down(). We *must*
+> -		 * device_power_down() now.  Otherwise, drivers for
+> +		 * but *not* device_suspend_noirq(). We *must* call
+> +		 * device_suspend_noirq() now.  Otherwise, drivers for
+>  		 * some devices (e.g. interrupt controllers) become
+>  		 * desynchronized with the actual state of the
+>  		 * hardware at resume time, and evil weirdness ensues.
+>  		 */
+> -		error = device_power_down(PMSG_FREEZE);
+> +		error = device_suspend_noirq(PMSG_FREEZE);
+>  		if (error)
+>  			goto Resume_devices;
+>  		error = disable_nonboot_cpus();
+> @@ -1487,7 +1487,7 @@ int kernel_kexec(void)
+>  		local_irq_enable();
+>   Enable_cpus:
+>  		enable_nonboot_cpus();
+> -		device_power_up(PMSG_RESTORE);
+> +		device_resume_noirq(PMSG_RESTORE);
+>   Resume_devices:
+>  		device_pm_unlock();
+>  		device_resume(PMSG_RESTORE);
+> --- 0001/kernel/power/disk.c
+> +++ work/kernel/power/disk.c	2009-05-13 18:26:33.000000000 +0900
+> @@ -218,12 +218,12 @@ static int create_image(int platform_mod
+>  	device_pm_lock();
+>  
+>  	/* At this point, device_suspend() has been called, but *not*
+> -	 * device_power_down(). We *must* call device_power_down() now.
+> +	 * device_suspend_noirq(). We *must* call device_suspend_noirq() now.
+>  	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+>  	 * become desynchronized with the actual state of the hardware
+>  	 * at resume time, and evil weirdness ensues.
+>  	 */
+> -	error = device_power_down(PMSG_FREEZE);
+> +	error = device_suspend_noirq(PMSG_FREEZE);
+>  	if (error) {
+>  		printk(KERN_ERR "PM: Some devices failed to power down, "
+>  			"aborting hibernation\n");
+> @@ -264,7 +264,7 @@ static int create_image(int platform_mod
+>  
+>   Power_up:
+>  	sysdev_resume();
+> -	/* NOTE:  device_power_up() is just a resume() for devices
+> +	/* NOTE:  device_resume_noirq() is just a resume() for devices
+>  	 * that suspended with irqs off ... no overall powerup.
+>  	 */
+>  
+> @@ -277,7 +277,7 @@ static int create_image(int platform_mod
+>   Platform_finish:
+>  	platform_finish(platform_mode);
+>  
+> -	device_power_up(in_suspend ?
+> +	device_resume_noirq(in_suspend ?
+>  		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+>  
+>   Unlock:
+> @@ -346,7 +346,7 @@ static int resume_target_kernel(bool pla
+>  
+>  	device_pm_lock();
+>  
+> -	error = device_power_down(PMSG_QUIESCE);
+> +	error = device_suspend_noirq(PMSG_QUIESCE);
+>  	if (error) {
+>  		printk(KERN_ERR "PM: Some devices failed to power down, "
+>  			"aborting resume\n");
+> @@ -401,7 +401,7 @@ static int resume_target_kernel(bool pla
+>   Cleanup:
+>  	platform_restore_cleanup(platform_mode);
+>  
+> -	device_power_up(PMSG_RECOVER);
+> +	device_resume_noirq(PMSG_RECOVER);
+>  
+>   Unlock:
+>  	device_pm_unlock();
+> @@ -466,7 +466,7 @@ int hibernation_platform_enter(void)
+>  
+>  	device_pm_lock();
+>  
+> -	error = device_power_down(PMSG_HIBERNATE);
+> +	error = device_suspend_noirq(PMSG_HIBERNATE);
+>  	if (error)
+>  		goto Unlock;
+>  
+> @@ -491,7 +491,7 @@ int hibernation_platform_enter(void)
+>   Platofrm_finish:
+>  	hibernation_ops->finish();
+>  
+> -	device_power_up(PMSG_RESTORE);
+> +	device_suspend_noirq(PMSG_RESTORE);
+>  
+>   Unlock:
+>  	device_pm_unlock();
+> --- 0001/kernel/power/main.c
+> +++ work/kernel/power/main.c	2009-05-13 18:29:45.000000000 +0900
+> @@ -297,7 +297,7 @@ static int suspend_enter(suspend_state_t
+>  			goto Done;
+>  	}
+>  
+> -	error = device_power_down(PMSG_SUSPEND);
+> +	error = device_suspend_noirq(PMSG_SUSPEND);
+>  	if (error) {
+>  		printk(KERN_ERR "PM: Some devices failed to power down\n");
+>  		goto Platfrom_finish;
+> @@ -337,7 +337,7 @@ static int suspend_enter(suspend_state_t
+>  		suspend_ops->wake();
+>  
+>   Power_up_devices:
+> -	device_power_up(PMSG_RESUME);
+> +	device_resume_noirq(PMSG_RESUME);
+>  
+>   Platfrom_finish:
+>  	if (suspend_ops->finish)
+> 
+> 
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
