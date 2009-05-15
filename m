@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: check sysdev_suspend(PMSG_FREEZE) return
 	value
-Date: Fri, 15 May 2009 23:00:08 +0200
-Message-ID: <20090515210008.GB6730@elf.ucw.cz>
+Date: Fri, 15 May 2009 23:07:08 +0200
+Message-ID: <200905152307.08977.rjw@sisk.pl>
 References: <20090515113349.3659.20040.stgit@bob.kio>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20090515113349.3659.20040.stgit@bob.kio>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,16 +23,22 @@ To: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2009-05-15 05:33:49, Bjorn Helgaas wrote:
+On Friday 15 May 2009, Bjorn Helgaas wrote:
 > Check the return value of sysdev_suspend().  I think this was a typo.
+
+Yes, it was, good catch!
+
+I'm going to push that to Linus for .30.
+
 > Without this change, the following "if" check is always false.
 > I also changed the error message so it's distinguishable from the
 > similar message a few lines above.
-> 
+
+Thanks,
+Rafael
+
+ 
 > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
 > ---
 >  kernel/power/disk.c |    4 ++--
 >  1 files changed, 2 insertions(+), 2 deletions(-)
@@ -53,7 +59,4 @@ Acked-by: Pavel Machek <pavel@ucw.cz>
 >  			"aborting hibernation\n");
 >  		goto Enable_irqs;
 >  	}
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
