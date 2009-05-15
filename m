@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 5/6] PM/Hibernate: Do not release
-	preallocated memory unnecessarily (rev. 2)
-Date: Fri, 15 May 2009 16:52:16 +0200
-Message-ID: <200905151652.17418.rjw__48100.7608854727$1242399341$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905141952.21267.rjw@sisk.pl>
-	<20090515131115.GC1976@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: dev->status.power and future of DPM_
+Date: Fri, 15 May 2009 10:59:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
+References: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090515131115.GC1976@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +17,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 15 May 2009, Pavel Machek wrote:
-> On Thu 2009-05-14 19:52:20, Rafael J. Wysocki wrote:
-> > On Thursday 14 May 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > Since the hibernation code is now going to use allocations of memory
-> > > > to make enough room for the image, it can also use the page frames
-> > > > allocated at this stage as image page frames.  The low-level
-> > > > hibernation code needs to be rearranged for this purpose, but it
-> > > > allows us to avoid freeing a great number of pages and allocating
-> > > > these same pages once again later, so it generally is worth doing.
-> > > > 
-> > > > [rev. 2: Take highmem into account correctly.]
-> > > 
-> > > I don't get it. What is advantage of this patch? It makes the code
-> > > more complex... Is it supposed to be faster?
-> > 
-> > Yes, in some test cases it is reported to be faster (along with [4/6],
-> > actually).
-> > 
-> > Besides, we'd like to get rid of shrink_all_memory() eventually and it is a
-> > step in this direction.
+On Fri, 15 May 2009, Magnus Damm wrote:
+
+> Ok. But these messages are only show what is happening during one
+> "run". There is no information of what has happened what I can tell.
+> So for suspend-to-disk we may end up with one round of PMSG_FREEZE and
+> another of PMSG_HIBERNATE.
+
+You mean that you'd like to know when the system is in the middle of a
+power transition, such as during the time while the memory image is
+being assembled (PMSG_FREEZE has been sent but not PMSG_HIBERNATE).  
+Right?
+
+AFAIK that information isn't stored explicitly anywhere, but it could 
+be added easily enough.
+
+>  I'd like the driver core to know which
+> callbacks that have been called for each device.
+
+Once you know what part of the hibernation sequence (i.e., which round)  
+you've gotten to, the information about callbacks can be obtained from
+dev->power.status.  That's what it's meant for.
+
+> >> I'd like to keep the state of each device somewhere.
+> >
+> > You can't, or at least, you can't keep it anywhere under dev->power.
+> > That's because the "state" is very device-specific or bus-specific.
+> > It's not possible to come up with any sort of general indicator that
+> > applies to all devices.
 > 
-> Ok, but maybe we should wait with applying this until we have patches
-> that actually get us rid of shrink_all_memory?
+> Not even information like SUSPENDED, FROZEN or OFF? That's pure
+> software state IMO.
 
-Well, the $subject patch is only an optimization of top of [4/6] that you've
-just acked. ;-)
+Let's put it this way: Yes, SUSPENDED/FROZEN/OFF is software state.  
+In other words, it's really the state of the _driver_ (since the driver
+is software).  It isn't the device state; that is, it's not a hardware
+state.  So yes, you can keep that information -- but it's not what you
+said you wanted; above you said you wanted to keep the state of each
+_device_ somewhere.
 
-In fact [4/6] changes the approach to the memory shrinking and the $subject
-one is only to avoid freeing all of the memory we've allocated and allocating
-it once again later.
+> I mean "frozen". For the SuperH Mobile SoCs we enter sleep modes
+> through the sleep instruction. Since we need run time power management
+> we don't control the power of each device though suspend callbacks.
+> Actually, there is not much to control except clocks and they are
+> handled through the clock framework already. What we want to do is to
+> mark the device as idle, and at the time of entering cpuidle we check
+> if all devices are idle, and if so we freeze the devices and enter the
+> deep sleep mode.
 
-> Maybe it will not be feasible for speed reasons after all, or something...
+I don't understand what you mean by "we freeze the devices".
 
-At least it allows us to drop shrink_all_memory() easily for the sake of
-experimentation (it's sufficient to comment out just one line of code for this
-purpose).
-
-Besides, after this patchset shrink_all_memory() is _only_ needed for
-performance, so it should be possible to get rid of it relatively quckly.
-
-Thanks,
-Rafael
+Alan Stern
