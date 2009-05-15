@@ -1,12 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH][RFC] pm: remove bus_type
-	suspend_late()/resume_early()
-Date: Fri, 15 May 2009 23:14:04 +0900
-Message-ID: <20090515141404.9189.51590.sendpatchset@rx1.opensource.se>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] why do we need run disk sync before entering S3
+Date: Fri, 15 May 2009 16:36:00 +0200
+Message-ID: <200905151636.01318.rjw__45557.7445486144$1242398294$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090514094249.GG6417@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,59 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: akpm@linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Thursday 14 May 2009, Pavel Machek wrote:
+> 
+> > > > That really depends on the distrubution.  (open)SUSE always syncs before
+> > > > suspend/hibernation AFAICS, but I don't know about the other distros.
+> > > 
+> > > This doesn't address the real question: Should the system be allowed to 
+> > > go into S3 without doing a sync first?
+> > > 
+> > > Whether the sync is initiated by userspace or by the kernel doesn't 
+> > > make any difference.  Likewise, it doesn't matter if there are two 
+> > > syncs (because the second will be very fast, as Pavel said).
+> > > 
+> > > If you really wanted to speed up the suspend transition then you would
+> > > leave out the sync entirely.  But IMO this would be a mistake; the risk
+> > > of data loss is too great.  Which means the time overhead is necessary,
+> > > one way or another.  If userspace does a sync first then the suspend
+> > > transition will be faster, but this is just an accounting artifact (do
+> > > you count the time required for the sync toward the time required for
+> > > the suspend or not).
+> > 
+> > My point was in fact that if we left the syncing to the user space, then the
+> > user would be able to decide not to sync risking data loss.  At the moment the
+> > user has no choice. :-)
+> 
+> Well, if you can add the choice, without adding anything ugly and with
+> staying back-compatible, why not. (sync has to stay by default). I
+> believe ioctls() on /dev/snapshot may already enable you to do s2ram
+> without sync; if not they could be extended.
+> 
+> But remember there are even in-kernel s2ram triggers, for example on
+> zaurus when battery goes critical.
+> 
+> (And s2ram without sync _is_ "wrong": writeback timeouts are not
+> honored).
 
-Remove the ->suspend_late() and ->resume_early() callbacks
-from struct bus_type. These callbacks are legacy stuff at
-this point and since there seem to be no in-tree users we
-may as well remove them. New users should use dev_pm_ops.
+OK, so I think the answer is we need the sync() as long as our filesystems
+don't support suspend-resume directly.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- This patch is almost too good to be true so there must be
- something wrong. I did however spend quite some time grepping
- and I could not find any in-tree users.
-
- drivers/base/power/main.c |    7 -------
- include/linux/device.h    |    2 --
- 2 files changed, 9 deletions(-)
-
---- 0001/include/linux/device.h
-+++ work/include/linux/device.h	2009-05-15 13:11:46.000000000 +0900
-@@ -62,8 +62,6 @@ struct bus_type {
- 	void (*shutdown)(struct device *dev);
- 
- 	int (*suspend)(struct device *dev, pm_message_t state);
--	int (*suspend_late)(struct device *dev, pm_message_t state);
--	int (*resume_early)(struct device *dev);
- 	int (*resume)(struct device *dev);
- 
- 	struct dev_pm_ops *pm;
---- 0001/drivers/base/power/main.c
-+++ work/drivers/base/power/main.c	2009-05-15 13:15:29.000000000 +0900
-@@ -334,9 +334,6 @@ static int resume_device_noirq(struct de
- 	if (dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "EARLY ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
--	} else if (dev->bus->resume_early) {
--		pm_dev_dbg(dev, state, "legacy EARLY ");
--		error = dev->bus->resume_early(dev);
- 	}
-  End:
- 	TRACE_RESUME(error);
-@@ -591,10 +588,6 @@ static int suspend_device_noirq(struct d
- 	if (dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "LATE ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
--	} else if (dev->bus->suspend_late) {
--		pm_dev_dbg(dev, state, "legacy LATE ");
--		error = dev->bus->suspend_late(dev, state);
--		suspend_report_result(dev->bus->suspend_late, error);
- 	}
- 	return error;
- }
+Thanks,
+Rafael
