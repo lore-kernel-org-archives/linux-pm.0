@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: suspending machine from kernel (was Re: [RFC] why do
-	we	need run disk sync before entering S3)
-Date: Fri, 15 May 2009 11:08:44 +0200
-Message-ID: <20090515090843.GC32740__34817.1845580966$1242378697$gmane$org@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
-	<20090515010055.GB21718@khazad-dum.debian.net>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: dev->status.power and future of DPM_
+Date: Fri, 15 May 2009 18:46:44 +0900
+Message-ID: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
+References: <aec7e5c30905132118m265245f4u9d9581b3fde788f6@mail.gmail.com>
+	<Pine.LNX.4.44L0.0905141101220.3004-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090515010055.GB21718@khazad-dum.debian.net>
+In-Reply-To: <Pine.LNX.4.44L0.0905141101220.3004-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,55 +18,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-05-14 22:00:56, Henrique de Moraes Holschuh wrote:
-> On Thu, 14 May 2009, Pavel Machek wrote:
-> > But remember there are even in-kernel s2ram triggers, for example on
-> > zaurus when battery goes critical.
-> 
-> Are there?  I am quite interested on this!
+Hi Alan,
 
-Yes.
+On Fri, May 15, 2009 at 12:14 AM, Alan Stern <stern@rowland.harvard.edu> wr=
+ote:
+> On Thu, 14 May 2009, Magnus Damm wrote:
+>> Basically, dev->power.status seems to represent the soon to be state
+>> of each device.
+>
+> No, that's wrong. =A0It doesn't represent the state of the device at all,
+> in spite of its name. =A0Rather, it is a record of which messages have
+> been sent (or are about to be sent) from the PM core to the device's
+> driver.
 
-It is a bit of mess, but see
+Ok. But these messages are only show what is happening during one
+"run". There is no information of what has happened what I can tell.
+So for suspend-to-disk we may end up with one round of PMSG_FREEZE and
+another of PMSG_HIBERNATE. I'd like the driver core to know which
+callbacks that have been called for each device.
 
-common/sharpsl_pm.c:
+>> I'd like to keep the state of each device somewhere.
+>
+> You can't, or at least, you can't keep it anywhere under dev->power.
+> That's because the "state" is very device-specific or bus-specific.
+> It's not possible to come up with any sort of general indicator that
+> applies to all devices.
 
-   /* Suspend if critical battery level */
-        if ((sharpsl_pm.battstat.ac_status != APM_AC_ONLINE)
-                        && (sharpsl_pm.battstat.mainbat_status ==
-APM_BATTERY_STATUS_CRITICAL)
-                        && !(sharpsl_pm.flags & SHARPSL_APM_QUEUED)) {
-                sharpsl_pm.flags |= SHARPSL_APM_QUEUED;
-                dev_err(sharpsl_pm.dev, "Fatal Off\n");
-                apm_queue_event(APM_CRITICAL_SUSPEND);
-        }
+Not even information like SUSPENDED, FROZEN or OFF? That's pure
+software state IMO.
 
-it eventually triggers regular s2ram paths.
+> dev_pm_ops->freeze() and ->restore() are meant to be used by the PM
+> core. =A0It's not up to the PM core to keep track of the device state;
+> that job belongs to the device's driver.
 
-Older versions did suspend on power button press. (You can't really
-turn zaurus _off_, AFAICT.)
+Hm.
 
-> Are they safe on x86?
+>> So I'd like to be able to freeze individual devices independently of
+>> each other. And then there's lots of architecture specific work that
+>> needs to be done. =3D)
+>
+> Be careful of your choice of words. =A0Do you really mean "freeze"?
+> That's very different from going to a low-power state. =A0In fact, a
+> "frozen" device generally should remain at full power. =A0Being "frozen"
+> simply means that the device isn't doing I/O or DMA.
 
-Well, probably safe but definitely would need some cleanup.
+I mean "frozen". For the SuperH Mobile SoCs we enter sleep modes
+through the sleep instruction. Since we need run time power management
+we don't control the power of each device though suspend callbacks.
+Actually, there is not much to control except clocks and they are
+handled through the clock framework already. What we want to do is to
+mark the device as idle, and at the time of entering cpuidle we check
+if all devices are idle, and if so we freeze the devices and enter the
+deep sleep mode.
 
-> thinkpad-acpi receives some critical alarms from the firmware, for which the
-> recommended action by the vendor is to go into S3 immediately.  There is
-> also one which requires S4 as the recommended damage control measure.
+>> Doing things at the bus type level sounds fine with me. I'm mainly
+>> interested in platform devices.
+>
+> Sure, that's fine. =A0But it means you can't use the fields in
+> dev->power. =A0You have to add new fields to the bus-specific or
+> platform-specific data structures.
 
-While s2ram should always work on hardware that supports it (zaurus),
-S4 is more tricky. It needs swap to be configured, and userspace
-cooperation in uswsusp case.
+Good plan!
 
-I guess sending signal to init would be right solution in that
-case. (ACPI already does that on overheat.)
+>> > USB, where run-time power management has already been
+>> > implemented, is a good example too.
+>>
+>> That's great, but it doesn't help us entering deep sleep states on our S=
+oCs. =3D)
+>
+> It should, because it provides an example of how your code ought to be
+> structured.
 
-								Pavel
-(Sorry about breaking Ccs)
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ok, examples are always welcome. =3D)
+
+/ magnus
