@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 5/6] PM/Hibernate: Do not release
-	preallocated memory	unnecessarily (rev. 2)
-Date: Fri, 15 May 2009 15:11:16 +0200
-Message-ID: <20090515131115.GC1976__3300.27363165772$1242393150$gmane$org@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905131040.37831.rjw@sisk.pl>
-	<20090514110958.GA8871@elf.ucw.cz> <200905141952.21267.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
+	allocate too much	memory too hard
+Date: Fri, 15 May 2009 15:14:22 +0200
+Message-ID: <20090515131421.GD1976__27850.7692543373$1242393427$gmane$org@elf.ucw.cz>
+References: <200905070040.08561.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl>
+	<20090514111413.GB8871@elf.ucw.cz> <200905141959.53810.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200905141952.21267.rjw@sisk.pl>
+In-Reply-To: <200905141959.53810.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,31 +24,68 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-05-14 19:52:20, Rafael J. Wysocki wrote:
-> On Thursday 14 May 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Since the hibernation code is now going to use allocations of memory
-> > > to make enough room for the image, it can also use the page frames
-> > > allocated at this stage as image page frames.  The low-level
-> > > hibernation code needs to be rearranged for this purpose, but it
-> > > allows us to avoid freeing a great number of pages and allocating
-> > > these same pages once again later, so it generally is worth doing.
-> > > 
-> > > [rev. 2: Take highmem into account correctly.]
-> > 
-> > I don't get it. What is advantage of this patch? It makes the code
-> > more complex... Is it supposed to be faster?
-> 
-> Yes, in some test cases it is reported to be faster (along with [4/6],
-> actually).
-> 
-> Besides, we'd like to get rid of shrink_all_memory() eventually and it is a
-> step in this direction.
+Hi!
 
-Ok, but maybe we should wait with applying this until we have patches
-that actually get us rid of shrink_all_memory? Maybe it will not be
-feasible for speed reasons after all, or something...
+> > > We want to avoid attempting to free too much memory too hard during
+> > > hibernation, so estimate the minimum size of the image to use as the
+> > > lower limit for preallocating memory.
+> > 
+> > Why? Is freeing memory too slow?
+> > 
+> > It used to be that user controlled image size, so he was able to
+> > balance "time to save image" vs. "responsiveness of system after
+> > resume".
+> > 
+> > Does this just override user's preference when he chooses too small
+> > image size?
+> > 
+> > > The approach here is based on the (experimental) observation that we
+> > > can't free more page frames than the sum of:
+> > > 
+> > > * global_page_state(NR_SLAB_RECLAIMABLE)
+> > > * global_page_state(NR_ACTIVE_ANON)
+> > > * global_page_state(NR_INACTIVE_ANON)
+> > > * global_page_state(NR_ACTIVE_FILE)
+> > > * global_page_state(NR_INACTIVE_FILE)
+> > > 
+> > > and even that is usually impossible to free in practice, because some
+> > > of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
+> > > in fact be freed.  It turns out, however, that if the sum of the
+> > > above numbers is subtracted from the number of saveable pages in the
+> > > system and the result is multiplied by 1.25, we get a suitable
+> > > estimate of the minimum size of the image.
+...
+> > >  /**
+> > > + * minimum_image_size - Estimate the minimum acceptable size of an image
+> > > + * @saveable: The total number of saveable pages in the system.
+> > > + *
+> > > + * We want to avoid attempting to free too much memory too hard, so estimate the
+> > > + * minimum acceptable size of a hibernation image to use as the lower limit for
+> > > + * preallocating memory.
+> > 
+> > I don't get it. If user sets image size as 0, we should free as much
+> > memory as we can. I just don't see why "we want to avoid... it".
+> 
+> The "as much memory as we can" is not well defined.
+
+Well, while (1) kmalloc(1024, GFP_KERNEL | GFP_NO_OOMKILL); is
+basically "as much memory as we can". I believe it is pretty well defined.
+
+> Patches [4/6] and [5/6] make hibernation use memory allocations to force some
+> memory to be freed.  However, it is not really reasonable to try to allocate
+> until the allocation fails, because that stresses the memory management
+> subsystem too much.  It is better to predict when it fails and stop allocating
+> at that point, which is what the patch does.
+
+Why is it wrong to stress memory management? It is a computer; it can
+handle it. Does it take too long? Should the user just set image_size
+higher in such case?
+
+> The prediction is not very precise, but I think it need not be.  Even if it
+> leaves a few pages more in memory, that won't be a disaster.
+
+Well, on 128MB machine, you'll fail suspend even if it would fit if
+code tried little harder...?
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
