@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] why do we need run disk sync before entering S3
-Date: Fri, 15 May 2009 16:36:00 +0200
-Message-ID: <200905151636.01318.rjw__45557.7445486144$1242398294$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
+	allocate too much memory too hard
+Date: Fri, 15 May 2009 16:40:01 +0200
+Message-ID: <200905151640.01954.rjw__15204.8550000929$1242398466$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl> <200905141959.53810.rjw@sisk.pl>
+	<20090515131421.GD1976@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090514094249.GG6417@elf.ucw.cz>
+In-Reply-To: <20090515131421.GD1976@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,46 +21,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 14 May 2009, Pavel Machek wrote:
+On Friday 15 May 2009, Pavel Machek wrote:
+> Hi!
 > 
-> > > > That really depends on the distrubution.  (open)SUSE always syncs before
-> > > > suspend/hibernation AFAICS, but I don't know about the other distros.
+> > > > We want to avoid attempting to free too much memory too hard during
+> > > > hibernation, so estimate the minimum size of the image to use as the
+> > > > lower limit for preallocating memory.
 > > > 
-> > > This doesn't address the real question: Should the system be allowed to 
-> > > go into S3 without doing a sync first?
+> > > Why? Is freeing memory too slow?
 > > > 
-> > > Whether the sync is initiated by userspace or by the kernel doesn't 
-> > > make any difference.  Likewise, it doesn't matter if there are two 
-> > > syncs (because the second will be very fast, as Pavel said).
+> > > It used to be that user controlled image size, so he was able to
+> > > balance "time to save image" vs. "responsiveness of system after
+> > > resume".
 > > > 
-> > > If you really wanted to speed up the suspend transition then you would
-> > > leave out the sync entirely.  But IMO this would be a mistake; the risk
-> > > of data loss is too great.  Which means the time overhead is necessary,
-> > > one way or another.  If userspace does a sync first then the suspend
-> > > transition will be faster, but this is just an accounting artifact (do
-> > > you count the time required for the sync toward the time required for
-> > > the suspend or not).
+> > > Does this just override user's preference when he chooses too small
+> > > image size?
+> > > 
+> > > > The approach here is based on the (experimental) observation that we
+> > > > can't free more page frames than the sum of:
+> > > > 
+> > > > * global_page_state(NR_SLAB_RECLAIMABLE)
+> > > > * global_page_state(NR_ACTIVE_ANON)
+> > > > * global_page_state(NR_INACTIVE_ANON)
+> > > > * global_page_state(NR_ACTIVE_FILE)
+> > > > * global_page_state(NR_INACTIVE_FILE)
+> > > > 
+> > > > and even that is usually impossible to free in practice, because some
+> > > > of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
+> > > > in fact be freed.  It turns out, however, that if the sum of the
+> > > > above numbers is subtracted from the number of saveable pages in the
+> > > > system and the result is multiplied by 1.25, we get a suitable
+> > > > estimate of the minimum size of the image.
+> ...
+> > > >  /**
+> > > > + * minimum_image_size - Estimate the minimum acceptable size of an image
+> > > > + * @saveable: The total number of saveable pages in the system.
+> > > > + *
+> > > > + * We want to avoid attempting to free too much memory too hard, so estimate the
+> > > > + * minimum acceptable size of a hibernation image to use as the lower limit for
+> > > > + * preallocating memory.
+> > > 
+> > > I don't get it. If user sets image size as 0, we should free as much
+> > > memory as we can. I just don't see why "we want to avoid... it".
 > > 
-> > My point was in fact that if we left the syncing to the user space, then the
-> > user would be able to decide not to sync risking data loss.  At the moment the
-> > user has no choice. :-)
+> > The "as much memory as we can" is not well defined.
 > 
-> Well, if you can add the choice, without adding anything ugly and with
-> staying back-compatible, why not. (sync has to stay by default). I
-> believe ioctls() on /dev/snapshot may already enable you to do s2ram
-> without sync; if not they could be extended.
+> Well, while (1) kmalloc(1024, GFP_KERNEL | GFP_NO_OOMKILL); is
+> basically "as much memory as we can". I believe it is pretty well defined.
 > 
-> But remember there are even in-kernel s2ram triggers, for example on
-> zaurus when battery goes critical.
+> > Patches [4/6] and [5/6] make hibernation use memory allocations to force some
+> > memory to be freed.  However, it is not really reasonable to try to allocate
+> > until the allocation fails, because that stresses the memory management
+> > subsystem too much.  It is better to predict when it fails and stop allocating
+> > at that point, which is what the patch does.
 > 
-> (And s2ram without sync _is_ "wrong": writeback timeouts are not
-> honored).
+> Why is it wrong to stress memory management? It is a computer; it can
+> handle it. Does it take too long?
 
-OK, so I think the answer is we need the sync() as long as our filesystems
-don't support suspend-resume directly.
+Yes.
+
+> Should the user just set image_size higher in such case?
+
+Yes, he should.
+
+> > The prediction is not very precise, but I think it need not be.  Even if it
+> > leaves a few pages more in memory, that won't be a disaster.
+> 
+> Well, on 128MB machine, you'll fail suspend even if it would fit if
+> code tried little harder...?
+
+No.  Did you notice the min_t(unsigned long, pages, max_size) in the patch?
+It's there exactly for this purpose (although I don't think it's really going
+to trigger in practice). :-)
 
 Thanks,
 Rafael
