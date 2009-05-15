@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Fri, 15 May 2009 15:09:31 +0200
-Message-ID: <20090515130930.GB1976__4586.91212484172$1242393056$gmane$org@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905132356.39481.rjw@sisk.pl>
-	<20090514094046.GF6417@elf.ucw.cz> <200905141949.53108.rjw@sisk.pl>
+Subject: Re: [PATCH 5/6] PM/Hibernate: Do not release
+	preallocated memory	unnecessarily (rev. 2)
+Date: Fri, 15 May 2009 15:11:16 +0200
+Message-ID: <20090515131115.GC1976__3300.27363165772$1242393150$gmane$org@elf.ucw.cz>
+References: <200905070040.08561.rjw@sisk.pl> <200905131040.37831.rjw@sisk.pl>
+	<20090514110958.GA8871@elf.ucw.cz> <200905141952.21267.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200905141949.53108.rjw@sisk.pl>
+In-Reply-To: <200905141952.21267.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com, Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com, linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-05-14 19:49:52, Rafael J. Wysocki wrote:
+On Thu 2009-05-14 19:52:20, Rafael J. Wysocki wrote:
 > On Thursday 14 May 2009, Pavel Machek wrote:
+> > Hi!
 > > 
-> > > > > > The main point (I thought) was to remove shrink_all_memory().  Instead,
-> > > > > > we're retaining it and adding even more stuff?
-> > > > > 
-> > > > > The idea is that afterwards we can drop shrink_all_memory() once the
-> > > > > performance problem has been resolved.  Also, we now allocate memory for the
-> > > > > image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
-> > > > > devices.  I'd think that's an improvement?
-> > > > 
-> > > > Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
-> > > > could be embarrassing if the devices are frozen.
+> > > Since the hibernation code is now going to use allocations of memory
+> > > to make enough room for the image, it can also use the page frames
+> > > allocated at this stage as image page frames.  The low-level
+> > > hibernation code needs to be rearranged for this purpose, but it
+> > > allows us to avoid freeing a great number of pages and allocating
+> > > these same pages once again later, so it generally is worth doing.
 > > > 
-> > > They aren't, because the preallocation is done upfront, so once the OOM killer
-> > > has been taken care of, it's totally safe. :-)
+> > > [rev. 2: Take highmem into account correctly.]
 > > 
-> > As is GFP_ATOMIC. Except that GFP_KERNEL will cause catastrophic
-> > consequences when accounting goes wrong. (New kernel's idea of what is
-> > on disk will differ from what is _really_ on disk.)
-> > 
-> > If accounting is right, GFP_ATOMIC and GFP_KERNEL is equivalent.
-> > 
-> > If accounting is wrong, GFP_ATOMIC will fail with NULL, while
-> > GFP_KERNEL will do something bad.
-> > 
-> > I'd keep GFP_ATOMIC (or GFP_NOIO or similar). 
+> > I don't get it. What is advantage of this patch? It makes the code
+> > more complex... Is it supposed to be faster?
 > 
-> Repeating myself: with this and the next patch applied, we preallocate memory
-> for the image _before_ freezing devices and therefore it is safe to use
-> GFP_KERNEL, because the OOM killer has been taken care of by [3/6].
+> Yes, in some test cases it is reported to be faster (along with [4/6],
+> actually).
+> 
+> Besides, we'd like to get rid of shrink_all_memory() eventually and it is a
+> step in this direction.
 
-Aha, I misparsed the sentecnes above.
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Ok, but maybe we should wait with applying this until we have patches
+that actually get us rid of shrink_all_memory? Maybe it will not be
+feasible for speed reasons after all, or something...
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
