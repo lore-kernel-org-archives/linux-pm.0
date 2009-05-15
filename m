@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: dev->status.power and future of DPM_
-Date: Fri, 15 May 2009 10:59:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
-References: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH][RFC] pm: remove bus_type
+	suspend_late()/resume_early()
+Date: Fri, 15 May 2009 16:29:18 +0200
+Message-ID: <200905151629.19337.rjw@sisk.pl>
+References: <20090515141404.9189.51590.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
+In-Reply-To: <20090515141404.9189.51590.sendpatchset@rx1.opensource.se>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +20,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 15 May 2009, Magnus Damm wrote:
-
-> Ok. But these messages are only show what is happening during one
-> "run". There is no information of what has happened what I can tell.
-> So for suspend-to-disk we may end up with one round of PMSG_FREEZE and
-> another of PMSG_HIBERNATE.
-
-You mean that you'd like to know when the system is in the middle of a
-power transition, such as during the time while the memory image is
-being assembled (PMSG_FREEZE has been sent but not PMSG_HIBERNATE).  
-Right?
-
-AFAIK that information isn't stored explicitly anywhere, but it could 
-be added easily enough.
-
->  I'd like the driver core to know which
-> callbacks that have been called for each device.
-
-Once you know what part of the hibernation sequence (i.e., which round)  
-you've gotten to, the information about callbacks can be obtained from
-dev->power.status.  That's what it's meant for.
-
-> >> I'd like to keep the state of each device somewhere.
-> >
-> > You can't, or at least, you can't keep it anywhere under dev->power.
-> > That's because the "state" is very device-specific or bus-specific.
-> > It's not possible to come up with any sort of general indicator that
-> > applies to all devices.
+On Friday 15 May 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> Not even information like SUSPENDED, FROZEN or OFF? That's pure
-> software state IMO.
+> Remove the ->suspend_late() and ->resume_early() callbacks
+> from struct bus_type. These callbacks are legacy stuff at
+> this point and since there seem to be no in-tree users we
+> may as well remove them. New users should use dev_pm_ops.
 
-Let's put it this way: Yes, SUSPENDED/FROZEN/OFF is software state.  
-In other words, it's really the state of the _driver_ (since the driver
-is software).  It isn't the device state; that is, it's not a hardware
-state.  So yes, you can keep that information -- but it's not what you
-said you wanted; above you said you wanted to keep the state of each
-_device_ somewhere.
+OK
 
-> I mean "frozen". For the SuperH Mobile SoCs we enter sleep modes
-> through the sleep instruction. Since we need run time power management
-> we don't control the power of each device though suspend callbacks.
-> Actually, there is not much to control except clocks and they are
-> handled through the clock framework already. What we want to do is to
-> mark the device as idle, and at the time of entering cpuidle we check
-> if all devices are idle, and if so we freeze the devices and enter the
-> deep sleep mode.
+But please also have a look if they are not mentioned somewhere under
+Documentation .
 
-I don't understand what you mean by "we freeze the devices".
-
-Alan Stern
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  This patch is almost too good to be true so there must be
+>  something wrong. I did however spend quite some time grepping
+>  and I could not find any in-tree users.
+> 
+>  drivers/base/power/main.c |    7 -------
+>  include/linux/device.h    |    2 --
+>  2 files changed, 9 deletions(-)
+> 
+> --- 0001/include/linux/device.h
+> +++ work/include/linux/device.h	2009-05-15 13:11:46.000000000 +0900
+> @@ -62,8 +62,6 @@ struct bus_type {
+>  	void (*shutdown)(struct device *dev);
+>  
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+> -	int (*suspend_late)(struct device *dev, pm_message_t state);
+> -	int (*resume_early)(struct device *dev);
+>  	int (*resume)(struct device *dev);
+>  
+>  	struct dev_pm_ops *pm;
+> --- 0001/drivers/base/power/main.c
+> +++ work/drivers/base/power/main.c	2009-05-15 13:15:29.000000000 +0900
+> @@ -334,9 +334,6 @@ static int resume_device_noirq(struct de
+>  	if (dev->bus->pm) {
+>  		pm_dev_dbg(dev, state, "EARLY ");
+>  		error = pm_noirq_op(dev, dev->bus->pm, state);
+> -	} else if (dev->bus->resume_early) {
+> -		pm_dev_dbg(dev, state, "legacy EARLY ");
+> -		error = dev->bus->resume_early(dev);
+>  	}
+>   End:
+>  	TRACE_RESUME(error);
+> @@ -591,10 +588,6 @@ static int suspend_device_noirq(struct d
+>  	if (dev->bus->pm) {
+>  		pm_dev_dbg(dev, state, "LATE ");
+>  		error = pm_noirq_op(dev, dev->bus->pm, state);
+> -	} else if (dev->bus->suspend_late) {
+> -		pm_dev_dbg(dev, state, "legacy LATE ");
+> -		error = dev->bus->suspend_late(dev, state);
+> -		suspend_report_result(dev->bus->suspend_late, error);
+>  	}
+>  	return error;
+>  }
+> 
+> 
