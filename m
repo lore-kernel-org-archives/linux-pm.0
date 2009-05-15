@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] pm: remove unused asm/suspend.h
-Date: Fri, 15 May 2009 01:11:54 +0200
-Message-ID: <200905150111.55510.rjw@sisk.pl>
-References: <20090512131606.7984.69575.sendpatchset@rx1.opensource.se>
-	<aec7e5c30905130304r38796bf4if741f53435bb5cb3@mail.gmail.com>
-	<20090514093147.GE6417@elf.ucw.cz>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [RFC] why do we need run disk sync before entering	S3
+Date: Thu, 14 May 2009 22:00:56 -0300
+Message-ID: <20090515010055.GB21718__36945.3940810219$1242349346$gmane$org@khazad-dum.debian.net>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090514093147.GE6417@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <20090514094249.GG6417@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 14 May 2009, Pavel Machek wrote:
-> On Wed 2009-05-13 19:04:14, Magnus Damm wrote:
-> > Hi Pavel,
-> > 
-> > On Wed, May 13, 2009 at 4:32 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > > On Tue 2009-05-12 22:16:06, Magnus Damm wrote:
-> > >>
-> > >> From: Magnus Damm <damm@igel.co.jp>
-> > >>
-> > >> This patch removes unused asm/suspend.h files for
-> > >> the following architectures:
-> > >>
-> > >>  alpha, arm, ia64, m68k, mips, s390, um
-> > >>
-> > >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> > >
-> > > Are you sure? arm does support suspend...
-> > 
-> > Not sure, but these days <asm/suspend.h> is only included from
-> > kernel/power/disk.c. And that file is only built if CONFIG_HIBERNATION
-> > is set. I've grepped for arch_prepare_suspend and
-> > ARCH_HIBERNATION_POSSIBLE but I don't get any matches under
-> > arch/arm...
-> > 
-> > Or am I misunderstanding? =)
-> 
-> I did rm arch/arm/include/asm/suspend.h and ran test compile on
-> zaurus; it seems ok. Because no other architectures are close to
-> supporting suspend/hibernation, I think I can
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+On Thu, 14 May 2009, Pavel Machek wrote:
+> But remember there are even in-kernel s2ram triggers, for example on
+> zaurus when battery goes critical.
 
-Applied to the suspend tree.
+Are there?  I am quite interested on this!
 
-Thanks,
-Rafael
+Are they safe on x86?
+
+thinkpad-acpi receives some critical alarms from the firmware, for which the
+recommended action by the vendor is to go into S3 immediately.  There is
+also one which requires S4 as the recommended damage control measure.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
