@@ -1,16 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
-	allocate too much	memory too hard
-Date: Fri, 15 May 2009 15:14:22 +0200
-Message-ID: <20090515131421.GD1976__27850.7692543373$1242393427$gmane$org@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl>
-	<20090514111413.GB8871@elf.ucw.cz> <200905141959.53810.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH][RFC] pm: remove bus_type
+	suspend_late()/resume_early()
+Date: Fri, 15 May 2009 23:14:04 +0900
+Message-ID: <20090515141404.9189.51590.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200905141959.53810.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,73 +16,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+From: Magnus Damm <damm@igel.co.jp>
 
-> > > We want to avoid attempting to free too much memory too hard during
-> > > hibernation, so estimate the minimum size of the image to use as the
-> > > lower limit for preallocating memory.
-> > 
-> > Why? Is freeing memory too slow?
-> > 
-> > It used to be that user controlled image size, so he was able to
-> > balance "time to save image" vs. "responsiveness of system after
-> > resume".
-> > 
-> > Does this just override user's preference when he chooses too small
-> > image size?
-> > 
-> > > The approach here is based on the (experimental) observation that we
-> > > can't free more page frames than the sum of:
-> > > 
-> > > * global_page_state(NR_SLAB_RECLAIMABLE)
-> > > * global_page_state(NR_ACTIVE_ANON)
-> > > * global_page_state(NR_INACTIVE_ANON)
-> > > * global_page_state(NR_ACTIVE_FILE)
-> > > * global_page_state(NR_INACTIVE_FILE)
-> > > 
-> > > and even that is usually impossible to free in practice, because some
-> > > of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
-> > > in fact be freed.  It turns out, however, that if the sum of the
-> > > above numbers is subtracted from the number of saveable pages in the
-> > > system and the result is multiplied by 1.25, we get a suitable
-> > > estimate of the minimum size of the image.
-...
-> > >  /**
-> > > + * minimum_image_size - Estimate the minimum acceptable size of an image
-> > > + * @saveable: The total number of saveable pages in the system.
-> > > + *
-> > > + * We want to avoid attempting to free too much memory too hard, so estimate the
-> > > + * minimum acceptable size of a hibernation image to use as the lower limit for
-> > > + * preallocating memory.
-> > 
-> > I don't get it. If user sets image size as 0, we should free as much
-> > memory as we can. I just don't see why "we want to avoid... it".
-> 
-> The "as much memory as we can" is not well defined.
+Remove the ->suspend_late() and ->resume_early() callbacks
+from struct bus_type. These callbacks are legacy stuff at
+this point and since there seem to be no in-tree users we
+may as well remove them. New users should use dev_pm_ops.
 
-Well, while (1) kmalloc(1024, GFP_KERNEL | GFP_NO_OOMKILL); is
-basically "as much memory as we can". I believe it is pretty well defined.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-> Patches [4/6] and [5/6] make hibernation use memory allocations to force some
-> memory to be freed.  However, it is not really reasonable to try to allocate
-> until the allocation fails, because that stresses the memory management
-> subsystem too much.  It is better to predict when it fails and stop allocating
-> at that point, which is what the patch does.
+ This patch is almost too good to be true so there must be
+ something wrong. I did however spend quite some time grepping
+ and I could not find any in-tree users.
 
-Why is it wrong to stress memory management? It is a computer; it can
-handle it. Does it take too long? Should the user just set image_size
-higher in such case?
+ drivers/base/power/main.c |    7 -------
+ include/linux/device.h    |    2 --
+ 2 files changed, 9 deletions(-)
 
-> The prediction is not very precise, but I think it need not be.  Even if it
-> leaves a few pages more in memory, that won't be a disaster.
-
-Well, on 128MB machine, you'll fail suspend even if it would fit if
-code tried little harder...?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--- 0001/include/linux/device.h
++++ work/include/linux/device.h	2009-05-15 13:11:46.000000000 +0900
+@@ -62,8 +62,6 @@ struct bus_type {
+ 	void (*shutdown)(struct device *dev);
+ 
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+-	int (*suspend_late)(struct device *dev, pm_message_t state);
+-	int (*resume_early)(struct device *dev);
+ 	int (*resume)(struct device *dev);
+ 
+ 	struct dev_pm_ops *pm;
+--- 0001/drivers/base/power/main.c
++++ work/drivers/base/power/main.c	2009-05-15 13:15:29.000000000 +0900
+@@ -334,9 +334,6 @@ static int resume_device_noirq(struct de
+ 	if (dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "EARLY ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+-	} else if (dev->bus->resume_early) {
+-		pm_dev_dbg(dev, state, "legacy EARLY ");
+-		error = dev->bus->resume_early(dev);
+ 	}
+  End:
+ 	TRACE_RESUME(error);
+@@ -591,10 +588,6 @@ static int suspend_device_noirq(struct d
+ 	if (dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "LATE ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+-	} else if (dev->bus->suspend_late) {
+-		pm_dev_dbg(dev, state, "legacy LATE ");
+-		error = dev->bus->suspend_late(dev, state);
+-		suspend_report_result(dev->bus->suspend_late, error);
+ 	}
+ 	return error;
+ }
