@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: [PATCH] pm: rename device_power_down/up()
-Date: Thu, 14 May 2009 22:00:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0905142159250.25076-100000@netrider.rowland.org>
-References: <200905150111.01896.rjw@sisk.pl>
+Date: Fri, 15 May 2009 12:04:17 +0900
+Message-ID: <aec7e5c30905142004v5f5277e2h470ed0af9d4580db@mail.gmail.com>
+References: <200905141943.53151.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0905141421130.4344-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905150111.01896.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0905141421130.4344-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm@lists.linux-foundation.org, Greg KH <gregkh@suse.de>, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 15 May 2009, Rafael J. Wysocki wrote:
+On Fri, May 15, 2009 at 3:39 AM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+> So I suggest even more renaming on top of these changes:
+>
+> =A0 =A0 =A0 =A0resume_device -> device_resume
+> =A0 =A0 =A0 =A0complete_device -> device_complete
+> =A0 =A0 =A0 =A0device_resume - > dpm_resume_all
+>
+> =A0 =A0 =A0 =A0suspend_device -> device_suspend
+> =A0 =A0 =A0 =A0prepare_device -> device_prepare
+> =A0 =A0 =A0 =A0device_suspend -> dpm_suspend_all
+>
+> How does that sound?
 
-> On Thursday 14 May 2009, Len Brown wrote:
-> > I agree with Alan,
-> > 
-> > ACK on the 1st patch,
-> 
-> Applied to the suspend tree.
-> 
-> > and lets follow it up so we're not in the funky state where we have
-> > both device_resume() and resume_device() etc. at the same time.
-> 
-> Works for me. :-)
+Renaming more sounds good!
 
-And as the instigator, I get to write the second patch, eh?  :-)
-Okay...  I'll work on it tomorrow.
+I did however name the _noirq functions to follow device_suspend() and
+device_resume(). So feel free to rename the _norirq functions again if
+you rename device_suspend() and device_resume() according to the list
+above.
 
-Alan Stern
+Thanks!
+
+/ magnus
