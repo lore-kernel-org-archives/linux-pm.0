@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-Date: Sun, 17 May 2009 12:34:21 +0200
-Message-ID: <200905171234.23436.rjw__47492.3370326453$1242556682$gmane$org@sisk.pl>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517073327.GC1583@elte.hu>
+From: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
+	allocate too much	memory too hard
+Date: Sun, 17 May 2009 20:06:13 +0800
+Message-ID: <20090517120613.GB3254__15920.6776916564$1242562128$gmane$org@localhost>
+References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl>
+	<200905131032.53624.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090517073327.GC1583@elte.hu>
 Content-Disposition: inline
+In-Reply-To: <200905131042.18137.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,197 +20,151 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephen Hemminger <shemminger@vyatta.com>, Jeff Mahoney <jeffm@suse.com>, Linux Wireless List <linux-wireless@vger.kernel.org>, Kumar Gala <galak@kernel.crashing.org>, Natalie Protasevich <protasnb@gmail.com>, Martin Bammer <mrb74@gmx.at>, Linus Torvalds <torvalds@linux-foundation.org>, Network Development <netdev@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Linux PM List <linux-p>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 17 May 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13325
-> > Subject		: 2.6.30-rc kills my box hard - and lockdep chains
-> > Submitter	: Jonathan Corbet <corbet@lwn.net>
-> > Date		: 2009-05-14 15:49 (3 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124231630701394&w=4
-> 
-> Jonathan, there's a side-issue reported there, us running out of 
-> lockdep space. Could you try this commit from -tip:
-> 
-> d80c19d: lockdep: increase MAX_LOCKDEP_ENTRIES and MAX_LOCKDEP_CHAINS
-> 
-> (which i'll get to Linus in the next ~24 hours.) Maybe that allows 
-> lockdep to report the reason for the deadlock.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13321
-> > Subject		: kernel crash with NULL pointer when boot
-> > Submitter	: Martin Bammer <mrb74@gmx.at>
-> > Date		: 2009-05-16 12:37 (1 days old)
-> > References	: http://lkml.org/lkml/2009/5/16/100
-> 
-> that crash is in reiserfs_for_each_xattr(), during sys_unlink()'s 
-> xattr teardown.
-> 
-> There's been a good deal of reiserfs changes in this cycle - some 
-> touch the xattr code as well. Some of them fairly late in the cycle, 
-> in the last two weeks:
-> 
->  earth4:~/tip> gll v2.6.29..linus --since=two-weeks-ago fs/reiserfs/
->  2a32ceb: Fix races around the access to ->s_options
->  677c9b2: reiserfs: remove privroot hiding in lookup
->  b82bb72: reiserfs: dont associate security.* with xattr files
->  ab17c4f: reiserfs: fixup xattr_root caching
->  edcc37a: Always lookup priv_root on reiserfs mount and keep it
->  5a6059c: reiserfs: Expand i_mutex to enclose lookup_one_len
-> 
-> Martin, you could try a blind revert of say ... ab17c4f, which looks 
-> the most suspect and which is also a rather large commit.
-> 
-> Or/and you could try a bisect - perhaps accelerated via:
-> 
->    git bisect start fs/reiserfs/
+Hi Rafael,
 
-I think there's a fix already for this in the works, but it hasn't been merged
-yet.  It looks like Jeff has just posted some reiserfs fixes. :-)
+Sorry for being late.
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13297
-> > Subject		: kernel panic -  not syncing : fatel exception in interupt
-> > Submitter	: rob <rob1@housetosell.net>
-> > Date		: 2009-05-12 19:34 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124216126903309&w=4
+On Wed, May 13, 2009 at 04:42:17PM +0800, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> tainted crash, but probably legit. It does show some badness in an 
-> old-IDE legacy codepath:
+> We want to avoid attempting to free too much memory too hard during
+> hibernation, so estimate the minimum size of the image to use as the
+> lower limit for preallocating memory.
 > 
-> [<c0371865>] error_code+0x65/0x6c
-> [<c0110155>] do_page_fault+0x0/0x1e0
-> [<c027dafc>] ide_complete_rq+0xf/0x3b
-> [<c02870a0>] cdrom_newpc_intr+0x64d/0x6cd
-> [<c0286a53>] cdrom_newpc_intr+0x0/0x6cd
-> [<c027dcc2>] ide_intr+0x109/0x161
-> [<c0132298>] handle_IRQ_event+0x54/0xc7
-> [<c013354a>] handle_level_irq+0x4f/0x85
-> [<c0103df7>] handle_irq+0x17/0x20
-> [<c0103da5>] do_IRQ+0x2b/0x66
-> [<c0102be9>] common_interupt+0x29/0x30
-> [<c0480000>] cmd40x_init+0x2ac/0x38d
-> [<c0106db3>] default_idle+0x25/0x38
-> [<c01019be>] cpu_idle+0x19/0x2d
-> [<c0468907>] start_kernel+0x23f/0x242
+> The approach here is based on the (experimental) observation that we
+> can't free more page frames than the sum of:
 > 
-> report subject line is too unspecific, it should be changed to 
-> something like:
-> 
->   legacy IDE cmd40x related bootup crash
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13296
-> > Subject		: Lockdep violation at cleanup_workqueue_thread during suspend
-> > Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-> > Date		: 2009-05-12 7:59 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124211522525625&w=4
-> 
-> looks like wireless related - the dependency that connects the 
-> locks in a wrong way appears to be:
-> 
->  -> #2 (cfg80211_mutex){+.+.+.}:
->         [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->         [<ffffffff80271f38>] lock_acquire+0x98/0x140
->         [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->         [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->         [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
->         [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
->         [<ffffffff8025dc3a>] kthread+0x5a/0xa0
->         [<ffffffff8020d23a>] child_rip+0xa/0x20
-> 
-> (havent checked deeper)
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13245
-> > Subject		: possible circular locking dependency detected
-> > Submitter	: Miles Lane <miles.lane@gmail.com>
-> > Date		: 2009-05-04 16:56 (13 days old)
-> 
-> same as #13296 above. (The one above should be merged into this one 
-> i guess)
+> * global_page_state(NR_SLAB_RECLAIMABLE)
+> * global_page_state(NR_ACTIVE_ANON)
+> * global_page_state(NR_INACTIVE_ANON)
+> * global_page_state(NR_ACTIVE_FILE)
+> * global_page_state(NR_INACTIVE_FILE)
 
-Yes, I've merged the two.
+It's a very good idea to count the numbers in a reverse way.
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13126
-> > Subject		: BUG: MAX_LOCKDEP_ENTRIES too low! when mounting rootfs
-> > Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-> > Date		: 2009-04-15 12:43 (32 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123979949820538&w=4
-> 
-> should be resolved via the lockdep space extension fix.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13118
-> > Subject		: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-> > Submitter	: Jeff Chua <jeff.chua.linux@gmail.com>
-> > Date		: 2009-04-10 16:05 (37 days old)
-> > References	: http://lkml.org/lkml/2009/4/10/111
-> > 		  http://lkml.org/lkml/2009/4/25/83
-> > Handled-By	: Eric Dumazet <dada1@cosmosbay.com>
-> 
-> solved by:
-> 
->  commit 942e4a2bd680c606af0211e64eb216be2e19bf61
->  Author: Stephen Hemminger <shemminger@vyatta.com>
->  Date:   Tue Apr 28 22:36:33 2009 -0700
-> 
->     netfilter: revised locking for x_tables
+> and even that is usually impossible to free in practice, because some
+> of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
+> in fact be freed.  It turns out, however, that if the sum of the
+> above numbers is subtracted from the number of saveable pages in the
+> system and the result is multiplied by 1.25, we get a suitable
+> estimate of the minimum size of the image.
 
-Already closed.
+However, the "*1.25" looks like a hack. We should really apply more
+constraints to the individual components.
 
-> commit log does not credit reporters and testers and does not 
-> mention bugzilla id.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/snapshot.c |   56 ++++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 52 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -1213,6 +1213,49 @@ static void free_unnecessary_pages(void)
+>  }
+>  
+>  /**
+> + * minimum_image_size - Estimate the minimum acceptable size of an image
+> + * @saveable: The total number of saveable pages in the system.
+> + *
+> + * We want to avoid attempting to free too much memory too hard, so estimate the
+> + * minimum acceptable size of a hibernation image to use as the lower limit for
+> + * preallocating memory.
+> + *
+> + * The minimum size of the image is computed as
+> + *
+> + * ([number of saveable pages] - [number of pages we can free]) * 1.25
+> + *
+> + * where the second term is the sum of reclaimable slab, anonymouns pages and
+> + * active/inactive file pages.
+> + *
+> + * NOTE: It usually turns out that we can't really free all pages reported as
+> + * reclaimable slab, so the number resulting from the subtraction alone is too
+> + * low.  Still, it seems reasonable to assume that this number is proportional
+> + * to the total number of pages that cannot be freed, which leads to the
+> + * formula above.  The coefficient of proportinality in this formula, 1.25, has
+> + * been determined experimentally.
+> + */
+> +static unsigned long minimum_image_size(unsigned long saveable)
+> +{
+> +	unsigned long size;
+> +
+> +	/* Compute the number of saveable pages we can free. */
+> +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> +		+ global_page_state(NR_ACTIVE_ANON)
+> +		+ global_page_state(NR_INACTIVE_ANON)
+> +		+ global_page_state(NR_ACTIVE_FILE)
+> +		+ global_page_state(NR_INACTIVE_FILE);
 
-Sigh.
+For example, we could drop the 1.25 ratio and calculate the above
+reclaimable size with more meaningful constraints:
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13116
-> > Subject		: Can't boot with nosmp
-> > Submitter	: Stephen Hemminger <shemminger@vyatta.com>
-> > Date		: 2009-04-15 4:18 (32 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123976917817920&w=4
-> > Handled-By	: Dan Williams <dan.j.williams@intel.com>
-> 
-> I think this might be fixed by:
-> 
->  d6de2c8: async: Fix module loading async-work regression
+        /* slabs are not easy to reclaim */
+	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
 
-That would be good to verify.  Stephen?
+        /* keep NR_ACTIVE_ANON */
+	size += global_page_state(NR_INACTIVE_ANON);
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13107
-> > Subject		: LTP 20080131 causes defunct processes w/2.6.30-rc1
-> > Submitter	: Kumar Gala <galak@kernel.crashing.org>
-> > Date		: 2009-04-09 15:43 (38 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b3bfa0cba867f23365b81658b47efd906830879b
-> > References	: http://marc.info/?l=linux-kernel&m=123929187208953&w=4
-> > 		  http://lkml.org/lkml/2009/4/10/193
-> > Handled-By	: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> 
-> Oleg says in that thread that it's as-designed, and followup 
-> questions were not replied to (yet).
-> 
-> But ... a relevant seeming commit has been bisected to so this 
-> shouldnt be ignored that easily.
-> 
-> Andrew, you merged the commit that was bisected to:
-> 
->   From b3bfa0cba867f23365b81658b47efd906830879b Mon Sep 17 00:00:00 2001
->   From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->   Date: Thu, 2 Apr 2009 16:58:08 -0700
->   Subject: [PATCH] signals: protect cinit from blocked fatal signals
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13068
-> > Subject		: Lockdep warining in inotify_dev_queue_event
-> > Submitter	: Sachin Sant <sachinp@in.ibm.com>
-> > Date		: 2009-04-05 12:37 (42 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123893439229272&w=4
-> 
-> should be fixed by:
-> 
-> 381a80e: inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
+        /* keep mapped files */
+	size += global_page_state(NR_ACTIVE_FILE);
+	size += global_page_state(NR_INACTIVE_FILE);
+        size -= global_page_state(NR_FILE_MAPPED);
 
-Closed.
+That restores the hard core working set logic in the reverse way ;)
 
-Thanks a lot,
-Rafael
+Thanks,
+Fengguang
+
+> +	if (saveable <= size)
+> +		return saveable;
+> +
+> +	size = saveable - size;
+> +	size += (size >> 2);
+> +
+> +	return size;
+> +}
+> +
+> +
+> +/**
+>   * hibernate_preallocate_memory - Preallocate memory for hibernation image
+>   *
+>   * To create a hibernation image it is necessary to make a copy of every page
+> @@ -1229,8 +1272,8 @@ static void free_unnecessary_pages(void)
+>   *
+>   * If image_size is set below the number following from the above formula,
+>   * the preallocation of memory is continued until the total number of saveable
+> - * pages in the system is below the requested image size or it is impossible to
+> - * allocate more memory, whichever happens first.
+> + * pages in the system is below the requested image size or the minimum
+> + * acceptable image size returned by minimum_image_size(), whichever is greater.
+>   */
+>  int hibernate_preallocate_memory(void)
+>  {
+> @@ -1291,6 +1334,11 @@ int hibernate_preallocate_memory(void)
+>  		goto out;
+>  	}
+>  
+> +	/* Estimate the minimum size of the image. */
+> +	pages = minimum_image_size(saveable);
+> +	if (size < pages)
+> +		size = min_t(unsigned long, pages, max_size);
+> +
+>  	/*
+>  	 * Let the memory management subsystem know that we're going to need a
+>  	 * large number of page frames to allocate and make it free some memory.
+> @@ -1303,8 +1351,8 @@ int hibernate_preallocate_memory(void)
+>  	 * The number of saveable pages in memory was too high, so apply some
+>  	 * pressure to decrease it.  First, make room for the largest possible
+>  	 * image and fail if that doesn't work.  Next, try to decrease the size
+> -	 * of the image as much as indicated by image_size using allocations
+> -	 * from highmem and non-highmem zones separately.
+> +	 * of the image as much as indicated by 'size' using allocations from
+> +	 * highmem and non-highmem zones separately.
+>  	 */
+>  	pages_highmem = preallocate_image_highmem(highmem / 2);
+>  	max_size += pages_highmem;
