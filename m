@@ -1,16 +1,13 @@
-From: Matt Price <moptop99@gmail.com>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Sat, 16 May 2009 23:24:01 -0400
-Message-ID: <f22f52180905162024s4d946c31j47e237f3ce007f6a__45730.0826129087$1242530720$gmane$org@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC] TuxOnIce
+Date: Sun, 17 May 2009 13:57:13 +1000
+Message-ID: <1242532633.9691.11.camel__10268.3946992785$1242532706$gmane$org@pasglop>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905162107.58677.Martin@lichtvoll.de>
-	<f22f52180905161953t6248e60fg3f6732a04d59b406@mail.gmail.com>
-	<1242529603.10835.2.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1242529603.10835.2.camel@nigel-laptop>
+In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +17,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: Martin Steigerwald <Martin@lichtvoll.de>, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 16, 2009 at 11:06 PM, Nigel Cunningham <nigel@tuxonice.net> wro=
-te:
-> Hi Matt et al.
->
-> On Sat, 2009-05-16 at 22:53 -0400, Matt Price wrote:
->> one of the real frustrations i've had watching this process from the
->> sidelines is that those with the authority to make decisions have
->> never taken either of these very important concerns seriously. =A0And
->> until they do, I do think it's quite likely that suspend-to-disk will
->> continue in its largely-broken state for quite some time to come.
->
-> I just want to talk a little in defence of Rafael - I've found him
-> really good to deal with. Yes, he has been headed in a different
-> direction, but he's not unreasonable and he is responsive to bug reports
-> and suggestions. Please don't think less of him than you ought.
->
+On Thu, 2009-05-07 at 00:38 +1000, Nigel Cunningham wrote:
+> I'd like to submit TuxOnIce for review, with a view to seeking to get it
+> merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
+> it can be merged) and the willingness of those who matter.
 
-didn't really mean to personalize my comments, which on rereading it
-appears i may have done.  all i meant to say was that these other
-concerns are real issues that make a real difference to the usability
-of the code.  and i think it's a shame they aren't (perhaps can't be)
-taken into account in these code reviews.
+Might have been nicer if your RFC message actually quickly described
+what TuxOnIce actually is :-)
 
-though, echoing martin again, at least in these public threads i've
-seen very little specific review of the patches themselves.  i only
-hope this is happening on other channels.
-
-matt
+Cheers,
+Ben.
