@@ -1,12 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI PM: Fix initialization and kexec breakage
-	for some devices
-Date: Sun, 17 May 2009 20:17:06 +0200
-Message-ID: <200905172017.08207.rjw__30516.4046389566$1242586012$gmane$org@sisk.pl>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
+	allocate too much memory too hard
+Date: Sun, 17 May 2009 23:14:29 +0200
+Message-ID: <200905172314.29850.rjw__42598.4622365378$1242595001$gmane$org@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl>
+	<20090517140712.GE3254@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090517140712.GE3254@localhost>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,55 +20,182 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sunday 17 May 2009, Wu Fengguang wrote:
+> On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
+> > On Sunday 17 May 2009, Wu Fengguang wrote:
+> 
+> > > > +static unsigned long minimum_image_size(unsigned long saveable)
+> > > > +{
+> > > > +	unsigned long size;
+> > > > +
+> > > > +	/* Compute the number of saveable pages we can free. */
+> > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> > > > +		+ global_page_state(NR_ACTIVE_ANON)
+> > > > +		+ global_page_state(NR_INACTIVE_ANON)
+> > > > +		+ global_page_state(NR_ACTIVE_FILE)
+> > > > +		+ global_page_state(NR_INACTIVE_FILE);
+> > > 
+> > > For example, we could drop the 1.25 ratio and calculate the above
+> > > reclaimable size with more meaningful constraints:
+> > > 
+> > >         /* slabs are not easy to reclaim */
+> > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
+> > 
+> > Why 1/2?
+> 
+> Also a very coarse value:
+> - we don't want to stress icache/dcache too much
+>   (unless they grow too large)
+> - my experience was that the icache/dcache are scanned in a slower
+>   pace than lru pages.
+> - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
+>   of the pages are actually *in use* and cannot be freed:
+>         % cat /proc/sys/fs/inode-nr     
+>         30450   16605
+>         % cat /proc/sys/fs/dentry-state 
+>         41598   35731   45      0       0       0
+>   See? More than half entries are in-use. Sure many of them will actually
+>   become unused when dentries are freed, but in the mean time the internal
+>   fragmentations in the slabs can go up.
+> 
+> > >         /* keep NR_ACTIVE_ANON */
+> > > 	size += global_page_state(NR_INACTIVE_ANON);
+> > 
+> > Why exactly did you omit ACTIVE_ANON?
+> 
+> To keep the "core working set" :)
+>   	
+> > >         /* keep mapped files */
+> > > 	size += global_page_state(NR_ACTIVE_FILE);
+> > > 	size += global_page_state(NR_INACTIVE_FILE);
+> > >         size -= global_page_state(NR_FILE_MAPPED);
+> > > 
+> > > That restores the hard core working set logic in the reverse way ;)
+> > 
+> > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
+> > but I'm going to check that.
+> 
+> Yes, after updatedb. In that case simple magics numbers may not help.
+> In that case we should really first call shrink_slab() in a loop to
+> cut down the slab pages to a sane number.
+
+I have verified that the appended patch works reasonably well.
+
+The value returned as the minimum image size is usually too high, but not very
+much (on x86_64 usually about 20%) and there are no "magic" coefficients
+involved any more and the computation of the minimum image size is carried out
+before calling shrink_all_memory() (so it's still going to be useful after
+we've dropped shrink_all_memory() at one point).
+
+Thanks,
+Rafael
+
+---
 From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
 
-Recent PCI PM changes introduced a bug that causes some devices to be
-mishandled after kexec and during early initialization.  The failure
-scenario in the kexec case is the following:
+We want to avoid attempting to free too much memory too hard during
+hibernation, so estimate the minimum size of the image to use as the
+lower limit for preallocating memory.
 
-* Assume a PCI device is not power-manageable by the platform and has
-  PCI_PM_CTRL_NO_SOFT_RESET set in PMCSR.
-* The device is put into D3 before kexec (using the native PCI PM).
-* After kexec, pci_setup_device() sets the device's power state to
-  PCI_UNKNOWN.
-* pci_set_power_state(dev, PCI_D0) is called by the device's driver.
-* __pci_start_power_transition(dev, PCI_D0) is called and since the
-  device is not power-manageable by the platform, it causes
-  pci_update_current_state(dev, PCI_D0) to be called.  As a result
-  the device's current_state field is updated to PCI_D3, in
-  accordance with the contents of its PCI PM registers.
-* pci_raw_set_power_state() is called and it changes the device power
-  state to D0.  *However*, it should also call pci_restore_bars() to
-  reinitialize the device, but it doesn't, because the device's
-  current_state field has been modified earlier.
+The approach here is based on the (experimental) observation that we
+can't free more page frames than the sum of:
 
-To prevent this from happening, modify
-pci_platform_power_transition() so that it doesn't use
-pci_update_current_state() to update the current_state field for
-devices that aren't power-manageable by the platform.  Instead, this
-field should be updated directly for devices that don't support the
-native PCI PM.
+* global_page_state(NR_SLAB_RECLAIMABLE)
+* global_page_state(NR_ACTIVE_ANON)
+* global_page_state(NR_INACTIVE_ANON)
+* global_page_state(NR_ACTIVE_FILE)
+* global_page_state(NR_INACTIVE_FILE)
+
+minus
+
+* global_page_state(NR_FILE_MAPPED)
+
+Namely, if this number is subtracted from the number of saveable
+pages in the system, we get a good estimate of the minimum reasonable
+size of a hibernation image.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.c
+Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -557,7 +557,8 @@ static int pci_platform_power_transition
- 	} else {
- 		error = -ENODEV;
- 		/* Fall back to PCI_D0 if native PM is not supported */
--		pci_update_current_state(dev, PCI_D0);
-+		if (!dev->pm_cap)
-+			dev->current_state = PCI_D0;
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
+ }
+ 
+ /**
++ * minimum_image_size - Estimate the minimum acceptable size of an image
++ * @saveable: Number of saveable pages in the system.
++ *
++ * We want to avoid attempting to free too much memory too hard, so estimate the
++ * minimum acceptable size of a hibernation image to use as the lower limit for
++ * preallocating memory.
++ *
++ * We assume that the minimum image size should be proportional to
++ *
++ * [number of saveable pages] - [number of pages that can be freed in theory]
++ *
++ * where the second term is the sum of (1) reclaimable slab pages, (2) active
++ * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
++ * minus mapped file pages.
++ */
++static unsigned long minimum_image_size(unsigned long saveable)
++{
++	unsigned long size;
++
++	size = global_page_state(NR_SLAB_RECLAIMABLE)
++		+ global_page_state(NR_ACTIVE_ANON)
++		+ global_page_state(NR_INACTIVE_ANON)
++		+ global_page_state(NR_ACTIVE_FILE)
++		+ global_page_state(NR_INACTIVE_FILE)
++		- global_page_state(NR_FILE_MAPPED);
++
++	return saveable <= size ? 0 : saveable - size;
++}
++
++/**
+  * hibernate_preallocate_memory - Preallocate memory for hibernation image
+  *
+  * To create a hibernation image it is necessary to make a copy of every page
+@@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
+  *
+  * If image_size is set below the number following from the above formula,
+  * the preallocation of memory is continued until the total number of saveable
+- * pages in the system is below the requested image size or it is impossible to
+- * allocate more memory, whichever happens first.
++ * pages in the system is below the requested image size or the minimum
++ * acceptable image size returned by minimum_image_size(), whichever is greater.
+  */
+ int hibernate_preallocate_memory(void)
+ {
+@@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
+ 		goto out;
  	}
  
- 	return error;
++	/* Estimate the minimum size of the image. */
++	pages = minimum_image_size(saveable);
++	if (size < pages)
++		size = min_t(unsigned long, pages, max_size);
++
+ 	/*
+ 	 * Let the memory management subsystem know that we're going to need a
+ 	 * large number of page frames to allocate and make it free some memory.
+@@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
+ 	 * The number of saveable pages in memory was too high, so apply some
+ 	 * pressure to decrease it.  First, make room for the largest possible
+ 	 * image and fail if that doesn't work.  Next, try to decrease the size
+-	 * of the image as much as indicated by image_size using allocations
+-	 * from highmem and non-highmem zones separately.
++	 * of the image as much as indicated by 'size' using allocations from
++	 * highmem and non-highmem zones separately.
+ 	 */
+ 	pages_highmem = preallocate_image_highmem(highmem / 2);
+ 	max_size += pages_highmem;
