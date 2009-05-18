@@ -1,15 +1,16 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC] why do we need run disk sync before entering	S3
-Date: Mon, 18 May 2009 15:25:07 +0800
-Message-ID: <1242631507.16529.107.camel__27142.9108143368$1242631593$gmane$org@rzhang-dt>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
-	<200905151636.01318.rjw@sisk.pl>
+From: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
+	allocate too much	memory too hard
+Date: Mon, 18 May 2009 16:32:46 +0800
+Message-ID: <20090518083246.GA10033__27920.1612611816$1242635761$gmane$org@localhost>
+References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl>
+	<20090517140712.GE3254@localhost> <200905171853.38028.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905151636.01318.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200905171853.38028.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +21,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2009-05-15 at 22:36 +0800, Rafael J. Wysocki wrote:
-> On Thursday 14 May 2009, Pavel Machek wrote:
+On Mon, May 18, 2009 at 12:53:37AM +0800, Rafael J. Wysocki wrote:
+> On Sunday 17 May 2009, Wu Fengguang wrote:
+> > On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
+> > > On Sunday 17 May 2009, Wu Fengguang wrote:
 > > 
-> > > > > That really depends on the distrubution.  (open)SUSE always syncs before
-> > > > > suspend/hibernation AFAICS, but I don't know about the other distros.
+> > > > > +static unsigned long minimum_image_size(unsigned long saveable)
+> > > > > +{
+> > > > > +	unsigned long size;
+> > > > > +
+> > > > > +	/* Compute the number of saveable pages we can free. */
+> > > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> > > > > +		+ global_page_state(NR_ACTIVE_ANON)
+> > > > > +		+ global_page_state(NR_INACTIVE_ANON)
+> > > > > +		+ global_page_state(NR_ACTIVE_FILE)
+> > > > > +		+ global_page_state(NR_INACTIVE_FILE);
 > > > > 
-> > > > This doesn't address the real question: Should the system be allowed to 
-> > > > go into S3 without doing a sync first?
+> > > > For example, we could drop the 1.25 ratio and calculate the above
+> > > > reclaimable size with more meaningful constraints:
 > > > > 
-> > > > Whether the sync is initiated by userspace or by the kernel doesn't 
-> > > > make any difference.  Likewise, it doesn't matter if there are two 
-> > > > syncs (because the second will be very fast, as Pavel said).
-> > > > 
-> > > > If you really wanted to speed up the suspend transition then you would
-> > > > leave out the sync entirely.  But IMO this would be a mistake; the risk
-> > > > of data loss is too great.  Which means the time overhead is necessary,
-> > > > one way or another.  If userspace does a sync first then the suspend
-> > > > transition will be faster, but this is just an accounting artifact (do
-> > > > you count the time required for the sync toward the time required for
-> > > > the suspend or not).
+> > > >         /* slabs are not easy to reclaim */
+> > > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
 > > > 
-> > > My point was in fact that if we left the syncing to the user space, then the
-> > > user would be able to decide not to sync risking data loss.  At the moment the
-> > > user has no choice. :-)
+> > > Why 1/2?
 > > 
-agree, and this is the purpose of my original post.
-
-> > Well, if you can add the choice, without adding anything ugly and with
-> > staying back-compatible, why not. (sync has to stay by default). I
-> > believe ioctls() on /dev/snapshot may already enable you to do s2ram
-> > without sync; if not they could be extended.
-> > 
-> > But remember there are even in-kernel s2ram triggers, for example on
-> > zaurus when battery goes critical.
-> > 
-
-Take ACPI for example, ACPI defines two ACPI battery states, one is
-"low" and another is "critical".
-OS enters S3/S4 when battery is low, while it performs an emergency
-shutdown when battery is in critical state. (ACPI spec 3.0b 3.9.4)
-So I'm wondering if it's right to enter S3 when we know that the system
-may lost power at anytime.
-
-> > (And s2ram without sync _is_ "wrong": writeback timeouts are not
-> > honored).
+> > Also a very coarse value:
+> > - we don't want to stress icache/dcache too much
+> >   (unless they grow too large)
+> > - my experience was that the icache/dcache are scanned in a slower
+> >   pace than lru pages.
 > 
-any kind of suspend can't meet this requirement. Even sys_sync is
-called, there is a small window that some pages are dirtied, but are not
-synced to disk in max expire interval, right?
+> That doesn't really matter, we're talking about the minimum image size.
 
-thanks,
-rui
+Have you dropped to goal to keep the minimal working set?
 
-> OK, so I think the answer is we need the sync() as long as our filesystems
-> don't support suspend-resume directly.
+OK, even we only care about the success of page allocation,
+NR_SLAB_RECLAIMABLE is not really all reclaimable, not even close.
+In my desktop, 34MB pages are actually unreclaimable:
+
+        echo 2 > /proc/sys/vm/drop_caches
+
+        Slab:              69864 kB
+        SReclaimable:      34052 kB
+
+But on the other hand, updatedb can make it really huge:
+
+        Slab:            1700852 kB
+        SReclaimable:    1664456 kB
+
+> > - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
+> >   of the pages are actually *in use* and cannot be freed:
+> >         % cat /proc/sys/fs/inode-nr     
+> >         30450   16605
+> >         % cat /proc/sys/fs/dentry-state 
+> >         41598   35731   45      0       0       0
+> >   See? More than half entries are in-use. Sure many of them will actually
+> >   become unused when dentries are freed, but in the mean time the internal
+> >   fragmentations in the slabs can go up.
+> > 
+> > > >         /* keep NR_ACTIVE_ANON */
+> > > > 	size += global_page_state(NR_INACTIVE_ANON);
+> > > 
+> > > Why exactly did you omit ACTIVE_ANON?
+> > 
+> > To keep the "core working set" :)
+>
+> > > >         /* keep mapped files */
+> > > > 	size += global_page_state(NR_ACTIVE_FILE);
+> > > > 	size += global_page_state(NR_INACTIVE_FILE);
+> > > >         size -= global_page_state(NR_FILE_MAPPED);
+> > > > 
+> > > > That restores the hard core working set logic in the reverse way ;)
+> > > 
+> > > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
+> > > but I'm going to check that.
+> > 
+> > Yes, after updatedb. In that case simple magics numbers may not help.
+> > In that case we should really first call shrink_slab() in a loop to
+> > cut down the slab pages to a sane number.
 > 
-> Thanks,
-> Rafael
+> Unfortunately your formula above doesn't also work after running
+> shrink_all_memory(<all saveable pages>), because the number given by it is
+> still too high in that case.  The resulting minimum image size is then too low.
+
+That means more items should be preserved, hehe.
+
+> OTOH, the number computed in accordance with my original 1.25 * (<sum>) formula
+> is fine in all cases I have checked (it actuall would be sufficient to take
+> 1.2 * <sum>, but the difference is not really significant).
+> 
+> I don't think we can derive everything directly from the statistics collected
+> by the mm subsystem.
+
+I agree that the numbers only reflects a coarse outline of the lru cache
+contents and can grow large in abnormal situations. We shall not be
+too dependent on them.
