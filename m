@@ -1,16 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 0/9] Suspend block api (version 3)
-Date: Fri, 15 May 2009 21:58:00 +0200
-Message-ID: <20090515195759.GB1353@ucw.cz>
-References: <1241583529-5092-1-git-send-email-arve@android.com>
-	<873abixiam.fsf@deeprootsystems.com>
-	<d6200be20905071542k6810b817idf2a07dc55665324@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: dev->status.power and future of DPM_
+Date: Mon, 18 May 2009 10:54:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0905181052050.2981-100000@iolanthe.rowland.org>
+References: <aec7e5c30905171927r7f1fca36l491fd09d3e446be6@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <d6200be20905071542k6810b817idf2a07dc55665324@mail.gmail.com>
+In-Reply-To: <aec7e5c30905171927r7f1fca36l491fd09d3e446be6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,71 +17,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: swetland@google.com, linux-pm@lists.linux-foundation.org, u.luckas@road.de, ncunningham@crca.org.au
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-05-07 15:42:27, Arve Hj?nnev?g wrote:
-> 2009/5/6 Kevin Hilman <khilman@deeprootsystems.com>:
-> > Arve Hj?nnev?g <arve@android.com> writes:
-> >
-> >> This patch series adds a suspend-block api that provides the same
-> >> functionality as the android wakelock api. This patch series removes
-> >> the sysdev that was used to abort suspend and adds a direct check in
-> >> suspend_enter instead. It also has some other code style changes.
-> >
-> > Sorry for joining the wakelock/suspend-block discussion a bit late,
-> > but I have a very basic, and possibly stupid question on the need for
-> > such a feature.
-> >
-> > My basic question: is why not use idle (dynamic PM) instead of suspend
-> > (static PM) for this?
-> >
+On Mon, 18 May 2009, Magnus Damm wrote:
+
+> > Let's put it this way: Yes, SUSPENDED/FROZEN/OFF is software state.
+> > In other words, it's really the state of the _driver_ (since the driver
+> > is software). =A0It isn't the device state; that is, it's not a hardware
+> > state. =A0So yes, you can keep that information -- but it's not what you
+> > said you wanted; above you said you wanted to keep the state of each
+> > _device_ somewhere.
 > =
 
-> We use suspend in addition to idle, not instead of. On some systems
-> (msm) we can enter the same power state from idle as from suspend.
-> This reduces the importance of suspend, but entering suspend still has
-> benefits. The monotonic clock stops and all the periodic timers
-> (user-space and kernel) that are based on it stop with it. It also
-> reduces the amount of energy an untrusted application can waste since
-> it will not be allowed to run when the system is suspended.
+> I'd like to keep the state of the driver _instance_. Basically what
+> struct device represents. Not struct device_driver. Sorry for being
+> unclear, I mean struct device when I use the word device. Driver and
+> hardware specific state and information should be kept out of common
+> data structures. But that's just common sense, no? Same as keeping bus
+> specific information together with the bus data structures.
 > =
 
-> > IOW, why not use CPUidle + PM QoS to achieve the same goal? =A0It seems
-> > to me that you're trying to add some dynamic PM features onto a static
-> > PM subsystem. =A0I could see PM QoS possibly needing some extending but
-> > the basic abilities to constrain the low-power states are there.
-> =
+> So to clarify, we have many drivers with multiple driver instances on
+> SuperH. A good example is the CEU platform driver, each driver
+> instance (video capture) is hooked up to a hardware block located
+> somewhere in io memory space. We have one struct device_driver but may
+> have multiple struct devices. I'm interested in the state of struct
+> device.
 
-> suspend blockers have no impact on this.
-> =
+That's fine.  My only nit is to point out that the state of the struct =
 
-> > The one reason I can think of is that you can always have broken
-> > drivers or apps that prevent you from hitting idle. =A0But with tools
-> > like powertop, it's pretty easy to find these problems and fix them.
-> >
-> Tools allow you to find apps that waste power, but they do not fix them.
-> =
+device isn't the same thing as the state of the device itself.  So long =
 
-> > If that is the primary concern, it seems to me that we're introducing
-> > a new kernel API to work around broken drivers and apps that should be
-> > fixed instead.
-> >
-> > What am I missing?
-> =
+as we're clear on that, there's no problem.
 
-> Suspend blockers allow you to use suspend. On platforms that cannot
-> enter the same power state from idle this is essential. On platforms
-> can enter the same power state from idle as suspend, suspend reduce
-> the time spent running which in turn reduces the overall power draw.
-> It also offers some protection against bad apps which is important on
-> an open device.
-> =
+> How about this: "execute some struct device ->freeze() callbacks and
+> take a note of this by putting driver instances in FROZEN state". Does
+> it make more sense?
 
+Yes, but you do have to be careful.  If there's a possibility that a =
 
--- =
+user process might be running and might try to send I/O to your frozen =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+driver then you wouldn't want to do this.
+
+Alan Stern
