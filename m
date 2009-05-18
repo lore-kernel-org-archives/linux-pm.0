@@ -1,14 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: dev->status.power and future of DPM_
-Date: Mon, 18 May 2009 11:27:29 +0900
-Message-ID: <aec7e5c30905171927r7f1fca36l491fd09d3e446be6@mail.gmail.com>
-References: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
-	<Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC] why do we need run disk sync before entering	S3
+Date: Mon, 18 May 2009 15:25:07 +0800
+Message-ID: <1242631507.16529.107.camel__27142.9108143368$1242631593$gmane$org@rzhang-dt>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
+	<200905151636.01318.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
+In-Reply-To: <200905151636.01318.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,75 +19,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 15, 2009 at 11:59 PM, Alan Stern <stern@rowland.harvard.edu> wr=
-ote:
-> On Fri, 15 May 2009, Magnus Damm wrote:
->
->> Ok. But these messages are only show what is happening during one
->> "run". There is no information of what has happened what I can tell.
->> So for suspend-to-disk we may end up with one round of PMSG_FREEZE and
->> another of PMSG_HIBERNATE.
->
-> You mean that you'd like to know when the system is in the middle of a
-> power transition, such as during the time while the memory image is
-> being assembled (PMSG_FREEZE has been sent but not PMSG_HIBERNATE).
-> Right?
->
-> AFAIK that information isn't stored explicitly anywhere, but it could
-> be added easily enough.
+On Fri, 2009-05-15 at 22:36 +0800, Rafael J. Wysocki wrote:
+> On Thursday 14 May 2009, Pavel Machek wrote:
+> > 
+> > > > > That really depends on the distrubution.  (open)SUSE always syncs before
+> > > > > suspend/hibernation AFAICS, but I don't know about the other distros.
+> > > > 
+> > > > This doesn't address the real question: Should the system be allowed to 
+> > > > go into S3 without doing a sync first?
+> > > > 
+> > > > Whether the sync is initiated by userspace or by the kernel doesn't 
+> > > > make any difference.  Likewise, it doesn't matter if there are two 
+> > > > syncs (because the second will be very fast, as Pavel said).
+> > > > 
+> > > > If you really wanted to speed up the suspend transition then you would
+> > > > leave out the sync entirely.  But IMO this would be a mistake; the risk
+> > > > of data loss is too great.  Which means the time overhead is necessary,
+> > > > one way or another.  If userspace does a sync first then the suspend
+> > > > transition will be faster, but this is just an accounting artifact (do
+> > > > you count the time required for the sync toward the time required for
+> > > > the suspend or not).
+> > > 
+> > > My point was in fact that if we left the syncing to the user space, then the
+> > > user would be able to decide not to sync risking data loss.  At the moment the
+> > > user has no choice. :-)
+> > 
+agree, and this is the purpose of my original post.
 
-Good!
+> > Well, if you can add the choice, without adding anything ugly and with
+> > staying back-compatible, why not. (sync has to stay by default). I
+> > believe ioctls() on /dev/snapshot may already enable you to do s2ram
+> > without sync; if not they could be extended.
+> > 
+> > But remember there are even in-kernel s2ram triggers, for example on
+> > zaurus when battery goes critical.
+> > 
 
->> >> I'd like to keep the state of each device somewhere.
->> >
->> > You can't, or at least, you can't keep it anywhere under dev->power.
->> > That's because the "state" is very device-specific or bus-specific.
->> > It's not possible to come up with any sort of general indicator that
->> > applies to all devices.
->>
->> Not even information like SUSPENDED, FROZEN or OFF? That's pure
->> software state IMO.
->
-> Let's put it this way: Yes, SUSPENDED/FROZEN/OFF is software state.
-> In other words, it's really the state of the _driver_ (since the driver
-> is software). =A0It isn't the device state; that is, it's not a hardware
-> state. =A0So yes, you can keep that information -- but it's not what you
-> said you wanted; above you said you wanted to keep the state of each
-> _device_ somewhere.
+Take ACPI for example, ACPI defines two ACPI battery states, one is
+"low" and another is "critical".
+OS enters S3/S4 when battery is low, while it performs an emergency
+shutdown when battery is in critical state. (ACPI spec 3.0b 3.9.4)
+So I'm wondering if it's right to enter S3 when we know that the system
+may lost power at anytime.
 
-I'd like to keep the state of the driver _instance_. Basically what
-struct device represents. Not struct device_driver. Sorry for being
-unclear, I mean struct device when I use the word device. Driver and
-hardware specific state and information should be kept out of common
-data structures. But that's just common sense, no? Same as keeping bus
-specific information together with the bus data structures.
+> > (And s2ram without sync _is_ "wrong": writeback timeouts are not
+> > honored).
+> 
+any kind of suspend can't meet this requirement. Even sys_sync is
+called, there is a small window that some pages are dirtied, but are not
+synced to disk in max expire interval, right?
 
-So to clarify, we have many drivers with multiple driver instances on
-SuperH. A good example is the CEU platform driver, each driver
-instance (video capture) is hooked up to a hardware block located
-somewhere in io memory space. We have one struct device_driver but may
-have multiple struct devices. I'm interested in the state of struct
-device.
+thanks,
+rui
 
->> I mean "frozen". For the SuperH Mobile SoCs we enter sleep modes
->> through the sleep instruction. Since we need run time power management
->> we don't control the power of each device though suspend callbacks.
->> Actually, there is not much to control except clocks and they are
->> handled through the clock framework already. What we want to do is to
->> mark the device as idle, and at the time of entering cpuidle we check
->> if all devices are idle, and if so we freeze the devices and enter the
->> deep sleep mode.
->
-> I don't understand what you mean by "we freeze the devices".
-
-How about this: "execute some struct device ->freeze() callbacks and
-take a note of this by putting driver instances in FROZEN state". Does
-it make more sense?
-
-Thanks,
-
-/ magnus
+> OK, so I think the answer is we need the sync() as long as our filesystems
+> don't support suspend-resume directly.
+> 
+> Thanks,
+> Rafael
