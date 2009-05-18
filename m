@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to
-	allocate too much memory too hard
-Date: Sun, 17 May 2009 23:14:29 +0200
-Message-ID: <200905172314.29850.rjw__42598.4622365378$1242595001$gmane$org@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl>
-	<20090517140712.GE3254@localhost>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: dev->status.power and future of DPM_
+Date: Mon, 18 May 2009 11:27:29 +0900
+Message-ID: <aec7e5c30905171927r7f1fca36l491fd09d3e446be6@mail.gmail.com>
+References: <aec7e5c30905150246t52c5626er2e537a96aaeab4e@mail.gmail.com>
+	<Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090517140712.GE3254@localhost>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905151045030.3065-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,182 +18,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, David Rientjes <rientjes@google.com>, pm list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 17 May 2009, Wu Fengguang wrote:
-> On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
-> > On Sunday 17 May 2009, Wu Fengguang wrote:
-> 
-> > > > +static unsigned long minimum_image_size(unsigned long saveable)
-> > > > +{
-> > > > +	unsigned long size;
-> > > > +
-> > > > +	/* Compute the number of saveable pages we can free. */
-> > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> > > > +		+ global_page_state(NR_ACTIVE_ANON)
-> > > > +		+ global_page_state(NR_INACTIVE_ANON)
-> > > > +		+ global_page_state(NR_ACTIVE_FILE)
-> > > > +		+ global_page_state(NR_INACTIVE_FILE);
-> > > 
-> > > For example, we could drop the 1.25 ratio and calculate the above
-> > > reclaimable size with more meaningful constraints:
-> > > 
-> > >         /* slabs are not easy to reclaim */
-> > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
-> > 
-> > Why 1/2?
-> 
-> Also a very coarse value:
-> - we don't want to stress icache/dcache too much
->   (unless they grow too large)
-> - my experience was that the icache/dcache are scanned in a slower
->   pace than lru pages.
-> - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
->   of the pages are actually *in use* and cannot be freed:
->         % cat /proc/sys/fs/inode-nr     
->         30450   16605
->         % cat /proc/sys/fs/dentry-state 
->         41598   35731   45      0       0       0
->   See? More than half entries are in-use. Sure many of them will actually
->   become unused when dentries are freed, but in the mean time the internal
->   fragmentations in the slabs can go up.
-> 
-> > >         /* keep NR_ACTIVE_ANON */
-> > > 	size += global_page_state(NR_INACTIVE_ANON);
-> > 
-> > Why exactly did you omit ACTIVE_ANON?
-> 
-> To keep the "core working set" :)
->   	
-> > >         /* keep mapped files */
-> > > 	size += global_page_state(NR_ACTIVE_FILE);
-> > > 	size += global_page_state(NR_INACTIVE_FILE);
-> > >         size -= global_page_state(NR_FILE_MAPPED);
-> > > 
-> > > That restores the hard core working set logic in the reverse way ;)
-> > 
-> > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
-> > but I'm going to check that.
-> 
-> Yes, after updatedb. In that case simple magics numbers may not help.
-> In that case we should really first call shrink_slab() in a loop to
-> cut down the slab pages to a sane number.
+On Fri, May 15, 2009 at 11:59 PM, Alan Stern <stern@rowland.harvard.edu> wr=
+ote:
+> On Fri, 15 May 2009, Magnus Damm wrote:
+>
+>> Ok. But these messages are only show what is happening during one
+>> "run". There is no information of what has happened what I can tell.
+>> So for suspend-to-disk we may end up with one round of PMSG_FREEZE and
+>> another of PMSG_HIBERNATE.
+>
+> You mean that you'd like to know when the system is in the middle of a
+> power transition, such as during the time while the memory image is
+> being assembled (PMSG_FREEZE has been sent but not PMSG_HIBERNATE).
+> Right?
+>
+> AFAIK that information isn't stored explicitly anywhere, but it could
+> be added easily enough.
 
-I have verified that the appended patch works reasonably well.
+Good!
 
-The value returned as the minimum image size is usually too high, but not very
-much (on x86_64 usually about 20%) and there are no "magic" coefficients
-involved any more and the computation of the minimum image size is carried out
-before calling shrink_all_memory() (so it's still going to be useful after
-we've dropped shrink_all_memory() at one point).
+>> >> I'd like to keep the state of each device somewhere.
+>> >
+>> > You can't, or at least, you can't keep it anywhere under dev->power.
+>> > That's because the "state" is very device-specific or bus-specific.
+>> > It's not possible to come up with any sort of general indicator that
+>> > applies to all devices.
+>>
+>> Not even information like SUSPENDED, FROZEN or OFF? That's pure
+>> software state IMO.
+>
+> Let's put it this way: Yes, SUSPENDED/FROZEN/OFF is software state.
+> In other words, it's really the state of the _driver_ (since the driver
+> is software). =A0It isn't the device state; that is, it's not a hardware
+> state. =A0So yes, you can keep that information -- but it's not what you
+> said you wanted; above you said you wanted to keep the state of each
+> _device_ somewhere.
+
+I'd like to keep the state of the driver _instance_. Basically what
+struct device represents. Not struct device_driver. Sorry for being
+unclear, I mean struct device when I use the word device. Driver and
+hardware specific state and information should be kept out of common
+data structures. But that's just common sense, no? Same as keeping bus
+specific information together with the bus data structures.
+
+So to clarify, we have many drivers with multiple driver instances on
+SuperH. A good example is the CEU platform driver, each driver
+instance (video capture) is hooked up to a hardware block located
+somewhere in io memory space. We have one struct device_driver but may
+have multiple struct devices. I'm interested in the state of struct
+device.
+
+>> I mean "frozen". For the SuperH Mobile SoCs we enter sleep modes
+>> through the sleep instruction. Since we need run time power management
+>> we don't control the power of each device though suspend callbacks.
+>> Actually, there is not much to control except clocks and they are
+>> handled through the clock framework already. What we want to do is to
+>> mark the device as idle, and at the time of entering cpuidle we check
+>> if all devices are idle, and if so we freeze the devices and enter the
+>> deep sleep mode.
+>
+> I don't understand what you mean by "we freeze the devices".
+
+How about this: "execute some struct device ->freeze() callbacks and
+take a note of this by putting driver instances in FROZEN state". Does
+it make more sense?
 
 Thanks,
-Rafael
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
-
-We want to avoid attempting to free too much memory too hard during
-hibernation, so estimate the minimum size of the image to use as the
-lower limit for preallocating memory.
-
-The approach here is based on the (experimental) observation that we
-can't free more page frames than the sum of:
-
-* global_page_state(NR_SLAB_RECLAIMABLE)
-* global_page_state(NR_ACTIVE_ANON)
-* global_page_state(NR_INACTIVE_ANON)
-* global_page_state(NR_ACTIVE_FILE)
-* global_page_state(NR_INACTIVE_FILE)
-
-minus
-
-* global_page_state(NR_FILE_MAPPED)
-
-Namely, if this number is subtracted from the number of saveable
-pages in the system, we get a good estimate of the minimum reasonable
-size of a hibernation image.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 39 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
- }
- 
- /**
-+ * minimum_image_size - Estimate the minimum acceptable size of an image
-+ * @saveable: Number of saveable pages in the system.
-+ *
-+ * We want to avoid attempting to free too much memory too hard, so estimate the
-+ * minimum acceptable size of a hibernation image to use as the lower limit for
-+ * preallocating memory.
-+ *
-+ * We assume that the minimum image size should be proportional to
-+ *
-+ * [number of saveable pages] - [number of pages that can be freed in theory]
-+ *
-+ * where the second term is the sum of (1) reclaimable slab pages, (2) active
-+ * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
-+ * minus mapped file pages.
-+ */
-+static unsigned long minimum_image_size(unsigned long saveable)
-+{
-+	unsigned long size;
-+
-+	size = global_page_state(NR_SLAB_RECLAIMABLE)
-+		+ global_page_state(NR_ACTIVE_ANON)
-+		+ global_page_state(NR_INACTIVE_ANON)
-+		+ global_page_state(NR_ACTIVE_FILE)
-+		+ global_page_state(NR_INACTIVE_FILE)
-+		- global_page_state(NR_FILE_MAPPED);
-+
-+	return saveable <= size ? 0 : saveable - size;
-+}
-+
-+/**
-  * hibernate_preallocate_memory - Preallocate memory for hibernation image
-  *
-  * To create a hibernation image it is necessary to make a copy of every page
-@@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
-  *
-  * If image_size is set below the number following from the above formula,
-  * the preallocation of memory is continued until the total number of saveable
-- * pages in the system is below the requested image size or it is impossible to
-- * allocate more memory, whichever happens first.
-+ * pages in the system is below the requested image size or the minimum
-+ * acceptable image size returned by minimum_image_size(), whichever is greater.
-  */
- int hibernate_preallocate_memory(void)
- {
-@@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
- 		goto out;
- 	}
- 
-+	/* Estimate the minimum size of the image. */
-+	pages = minimum_image_size(saveable);
-+	if (size < pages)
-+		size = min_t(unsigned long, pages, max_size);
-+
- 	/*
- 	 * Let the memory management subsystem know that we're going to need a
- 	 * large number of page frames to allocate and make it free some memory.
-@@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
- 	 * The number of saveable pages in memory was too high, so apply some
- 	 * pressure to decrease it.  First, make room for the largest possible
- 	 * image and fail if that doesn't work.  Next, try to decrease the size
--	 * of the image as much as indicated by image_size using allocations
--	 * from highmem and non-highmem zones separately.
-+	 * of the image as much as indicated by 'size' using allocations from
-+	 * highmem and non-highmem zones separately.
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
- 	max_size += pages_highmem;
+/ magnus
