@@ -1,12 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] pm: remove bus_type
-	suspend_late()/resume_early() V2
-Date: Thu, 21 May 2009 17:27:54 +0900
-Message-ID: <20090521082754.1020.73349.sendpatchset@rx1.opensource.se>
+From: Aneesh Bhasin <contact.aneesh@gmail.com>
+Subject: Re: cpuidle C-state accounting
+Date: Thu, 21 May 2009 22:55:53 +0530
+Message-ID: <f662f0210905211025h1910590fi54b2d4e269c6ad6a@mail.gmail.com>
+References: <20090519162504.GA26660@linux-foundation.org>
+	<13B9B4C6EF24D648824FF11BE8967162038BED6777@dlee02.ent.ti.com>
+	<f2235a630905200236v29f407dfne77c55165ed94249@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <f2235a630905200236v29f407dfne77c55165ed94249@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,117 +19,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: akpm@linux-foundation.org
+To: Surinder P Singh <srplsnh@gmail.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+Hi Surinder,
 
-Remove the ->suspend_late() and ->resume_early() callbacks
-from struct bus_type V2. These callbacks are legacy stuff
-at this point and since there seem to be no in-tree users
-we may as well remove them. New users should use dev_pm_ops.
+On Wed, May 20, 2009 at 3:06 PM, Surinder P Singh <srplsnh@gmail.com> wrote:
+>> In code I've used I don't demote other states. =A0But there are state ab=
+orts. =A0In those cases residency is low or 0.
+>
+> Indeed, its the residency=3D0 cases that the patch I sent in my last
+> mail attempts to fix. The idea being, not to increment
+> target_state->usage if dev->last_residency was 0, i.e. the state
+> (whether it was the governor recommended state or =A0safe_state or any
+> other state) was =A0not entered or used.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+That being the case , perhaps it will be useful to then have an extra
+'usage' stat which shows such scenarios too for analysis purpose.
+Patch below :
 
- Changes since V1:
- - Documentation/power/devices.txt changes
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 9ab50be..a835bc2 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -57,7 +57,10 @@ static void cpuidle_idle_call(void)
+        dev->last_residency =3D target_state->enter(dev, target_state);
+        dev->last_state =3D target_state;
+        target_state->time +=3D dev->last_residency;
+-       target_state->usage++;
++  if(dev->last_residency)
++    target_state->usage++;
++  else
++    target_state->usage_nosuccess++;
 
- Documentation/power/devices.txt |   34 +++++-----------------------------
- drivers/base/power/main.c       |    7 -------
- include/linux/device.h          |    2 --
- 3 files changed, 5 insertions(+), 38 deletions(-)
+        /* give the governor an opportunity to reflect on the outcome */
+        if (cpuidle_curr_governor->reflect)
+@@ -137,6 +140,7 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
 
---- 0001/Documentation/power/devices.txt
-+++ work/Documentation/power/devices.txt	2009-05-21 17:19:48.000000000 +0900
-@@ -75,9 +75,6 @@ may need to apply in domain-specific way
- struct bus_type {
- 	...
- 	int  (*suspend)(struct device *dev, pm_message_t state);
--	int  (*suspend_late)(struct device *dev, pm_message_t state);
--
--	int  (*resume_early)(struct device *dev);
- 	int  (*resume)(struct device *dev);
- };
- 
-@@ -226,20 +223,7 @@ The phases are seen by driver notificati
- 
- 	This call should handle parts of device suspend logic that require
- 	sleeping.  It probably does work to quiesce the device which hasn't
--	been abstracted into class.suspend() or bus.suspend_late().
--
--   3	bus.suspend_late(dev, message) is called with IRQs disabled, and
--	with only one CPU active.  Until the bus.resume_early() phase
--	completes (see later), IRQs are not enabled again.  This method
--	won't be exposed by all busses; for message based busses like USB,
--	I2C, or SPI, device interactions normally require IRQs.  This bus
--	call may be morphed into a driver call with bus-specific parameters.
--
--	This call might save low level hardware state that might otherwise
--	be lost in the upcoming low power state, and actually put the
--	device into a low power state ... so that in some cases the device
--	may stay partly usable until this late.  This "late" call may also
--	help when coping with hardware that behaves badly.
-+	been abstracted into class.suspend().
- 
- The pm_message_t parameter is currently used to refine those semantics
- (described later).
-@@ -351,19 +335,11 @@ devices processing each phase's calls be
- 
- The phases are seen by driver notifications issued in this order:
- 
--   1	bus.resume_early(dev) is called with IRQs disabled, and with
--   	only one CPU active.  As with bus.suspend_late(), this method
--	won't be supported on busses that require IRQs in order to
--	interact with devices.
--
--	This reverses the effects of bus.suspend_late().
--
--   2	bus.resume(dev) is called next.  This may be morphed into a device
--   	driver call with bus-specific parameters; implementations may sleep.
--
--	This reverses the effects of bus.suspend().
-+   1	bus.resume(dev) reverses the effects of bus.suspend().  This may
-+	be morphed into a device driver call with bus-specific parameters;
-+	implementations may sleep.
- 
--   3	class.resume(dev) is called for devices associated with a class
-+   2	class.resume(dev) is called for devices associated with a class
- 	that has such a method.  Implementations may sleep.
- 
- 	This reverses the effects of class.suspend(), and would usually
---- 0001/drivers/base/power/main.c
-+++ work/drivers/base/power/main.c	2009-05-21 17:19:42.000000000 +0900
-@@ -334,9 +334,6 @@ static int __device_resume_noirq(struct 
- 	if (dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "EARLY ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
--	} else if (dev->bus->resume_early) {
--		pm_dev_dbg(dev, state, "legacy EARLY ");
--		error = dev->bus->resume_early(dev);
- 	}
-  End:
- 	TRACE_RESUME(error);
-@@ -591,10 +588,6 @@ static int __device_suspend_noirq(struct
- 	if (dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "LATE ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
--	} else if (dev->bus->suspend_late) {
--		pm_dev_dbg(dev, state, "legacy LATE ");
--		error = dev->bus->suspend_late(dev, state);
--		suspend_report_result(dev->bus->suspend_late, error);
- 	}
- 	return error;
- }
---- 0001/include/linux/device.h
-+++ work/include/linux/device.h	2009-05-21 17:19:42.000000000 +0900
-@@ -62,8 +62,6 @@ struct bus_type {
- 	void (*shutdown)(struct device *dev);
- 
- 	int (*suspend)(struct device *dev, pm_message_t state);
--	int (*suspend_late)(struct device *dev, pm_message_t state);
--	int (*resume_early)(struct device *dev);
- 	int (*resume)(struct device *dev);
- 
- 	struct dev_pm_ops *pm;
+        for (i =3D 0; i < dev->state_count; i++) {
+                dev->states[i].usage =3D 0;
++               dev->states[i].usage_nosuccess =3D 0;
+                dev->states[i].time =3D 0;
+        }
+        dev->last_residency =3D 0;
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 0f3515e..eaf21a1 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -226,6 +226,7 @@ static ssize_t show_state_name(struct
+cpuidle_state *state, char *buf)
+ define_show_state_function(exit_latency)
+ define_show_state_function(power_usage)
+ define_show_state_function(usage)
++define_show_state_function(usage_nosuccess)
+ define_show_state_function(time)
+ define_one_state_ro(name, show_state_name);
+ define_one_state_ro(latency, show_state_exit_latency);
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index c4e0016..71fe0ac 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -37,6 +37,7 @@ struct cpuidle_state {
+        unsigned int    target_residency; /* in US */
+
+        unsigned int    usage;
++       unsigned int    usage_nosuccess;
+        unsigned int    time; /* in US */
+
+        int (*enter)    (struct cpuidle_device *dev,
+
+Regards,
+Aneesh
