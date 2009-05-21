@@ -1,49 +1,48 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Montreal Linux Power Management Mini-Summit -- July 13, 2009
-Date: Thu, 21 May 2009 15:12:53 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+From: Frans Pop <elendil@planet.nl>
+Subject: Re: [2.6.30] e1000e: pci_enable_pcie_error_reporting
+	failed 0xfffffffb
+Date: Thu, 21 May 2009 22:00:13 +0200
+Message-ID: <200905212200.14375.elendil__25535.1118547425$1242936098$gmane$org@planet.nl>
+References: <200905141312.35945.elendil@planet.nl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200905141312.35945.elendil@planet.nl>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Netdev <netdev@vger.kernel.org>
+Cc: e1000-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, linux-kernel@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-We will hold a Linux Power Management Mini-Summit in Montreal
-on Monday, July 13, 2009 -- concurrent with day-1 of the
-tutorials at the at the Linux Symposium.
+On Thursday 14 May 2009, Frans Pop wrote:
+> With 2.6.30-rc[45] I'm always seeing this error while resuming from STR
+> on my HP 2510p notebook:
+>
+>   e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+> ! e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+>   e1000e 0000:00:19.0: setting latency timer to 64 
+>   e1000e 0000:00:19.0: wake-up capability disabled by ACPI
+>   e1000e 0000:00:19.0: PME# disabled
+>   e1000e 0000:00:19.0: wake-up capability disabled by ACPI
+>   e1000e 0000:00:19.0: PME# disabled
+>   e1000e 0000:00:19.0: irq 26 for MSI/MSI-X
+>
+> The error only shows up during resume, not during normal boot.
+>
+> With 2.6.29 the error is not present. Is this something that should be
+> looked into? Networking still comes up normally.
 
-http://www.linuxsymposium.org/2009/schedule.php
+I'm still seeing this with 2.6.30-rc6. Should I just ignore it or is it an
+indication of a problem/regression?
 
-This is an opportunity for members of the Linux Power Management
-development community to meet face-to-face to discuss the future.
-
-Suggestions for agenda topics should be sent to: 
-linux-pm@lists.linux-foundation.org
-
-The final agenda will be formed by consensus of the attendees.
-
-As in previous years, attendance is open to those
-registered as Linux Symposium attendees.
-
-However, we will try to cap attendance at 20 to support the single 
-discussion.  So requests to attend should be sent to: lenb@kernel.org
-cc: linux-pm@lists.linux-foundation.org -- please summarize
-what you bring to the meeting, and what you'd like to discuss.
-
-Presentations are allowed to guide discussion, but not required.
-There will be no recording or audio bridge, however written minutes will 
-be published on lwn.net.
-
-2007: http://lwn.net/Articles/249019
-2008: http://lwn.net/Articles/292447
-
-If you have feedback on last year's meeting that
-we can use to improve this year's, please speak up.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-ps. If you are interested in sponsoring food or
-    other forum needs, please let me know.
+Cheers,
+FJP
