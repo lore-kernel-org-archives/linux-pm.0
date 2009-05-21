@@ -1,16 +1,12 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: dev->status.power and future of DPM_
-Date: Thu, 21 May 2009 17:10:07 +0900
-Message-ID: <aec7e5c30905210110p6aa4d162t93fded5d36887511@mail.gmail.com>
-References: <aec7e5c30905130329t5610c8d1x925d554b833dedcc@mail.gmail.com>
-	<200905141736.56215.rjw@sisk.pl>
-	<aec7e5c30905150341y3d81bf0dv325fbf2d60e4bd80@mail.gmail.com>
-	<200905151757.10758.rjw@sisk.pl>
+Subject: [PATCH] pm: remove bus_type
+	suspend_late()/resume_early() V2
+Date: Thu, 21 May 2009 17:27:54 +0900
+Message-ID: <20090521082754.1020.73349.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905151757.10758.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,115 +16,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Paul Walmsley <paul@pwsan.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 16, 2009 at 12:57 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday 15 May 2009, Magnus Damm wrote:
->> Right. I guess drivers are not supposed to look at these DPM_ values.
->
-> No, they aren't. =A0Why would they need to do that anyway?
+From: Magnus Damm <damm@igel.co.jp>
 
-No, not exposing that to drivers sounds like a good plan.
+Remove the ->suspend_late() and ->resume_early() callbacks
+from struct bus_type V2. These callbacks are legacy stuff
+at this point and since there seem to be no in-tree users
+we may as well remove them. New users should use dev_pm_ops.
 
->> The current DPM_ values cover one round of
->> device_suspend()+device_power_down() or
->> device_power_up()+device_resume(). In the case of two rounds
->> (suspend-to-disk) then the DPM_ values are interated over again, but
->> the current "big picture" state is not stored anywhere, right? Or is
->> it?
->
-> If by "big picture state" you mean "what stage of the transition we curre=
-ntly
-> are at", then no, it's not. =A0It follows from what code is being execute=
-d at the
-> moment (ie. if line 233 of kernel/power/disk.c is currently being execute=
-d,
-> we're going to create a hibernation image and we've just executed the dev=
-ice
-> drivers' ->freeze_noirq() callbacks).
->
-> What would you need such information for?
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-Avoiding executing dev_pm_ops callbacks more than once. For instance,
-if the run-time PM code has called ->freeze() on a certain struct
-device and the device is kept like that for a while. During this time
-the system is suspended. We don't want the driver to get a second
-->freeze() call. This can be filtered on a bus level though.
+ Changes since V1:
+ - Documentation/power/devices.txt changes
 
->> > I agree that it might make sense to introduce the run-time PM flag at =
-the core
->> > level so that various bus types don't reinvent the wheel each time the=
-y decide
->> > to implement run-time PM.
->>
->> Avoiding re-implementing the wheel _and_ remembering the software
->> state, ie not calling the same bus_type callbacks twice.
->
-> That really depends. =A0There may be bus types that won't use the dev_pm_=
-ops
-> callbacks for run-time PM at all, in which case the dev_pm_ops bus type
-> suspend() callback, for example, will need to know that the device has be=
-en put
-> into a low power state at run time and therefore there's no need to call =
-its
-> driver's ->suspend() callback (when the system is going to suspend to RAM=
-).
-> However, this information appears to be bus type-specific.
->
-> So, remembering at the core level that the device has been power-managed =
-at
-> run time is reasonable IMO, but I'm not sure about anything else.
+ Documentation/power/devices.txt |   34 +++++-----------------------------
+ drivers/base/power/main.c       |    7 -------
+ include/linux/device.h          |    2 --
+ 3 files changed, 5 insertions(+), 38 deletions(-)
 
-I agree most of this seems to be bus specific.
-
->> >> Most things seem to be driven from system wide suspend/resume though.
->> >> I'm more interested in performing partial system suspend during
->> >> runtime. From for instance cpuidle.
->> >
->> > That, IMO, may be done by applying the run-time PM handling to each of=
- the
->> > devices in question.
->>
->> Yeah. Our problem is the granularity of various PM parameters. So
->> multiple devices share the same clock or are located in the same power
->> domain. So the devices can't really handle themselves.
->
-> In that case it might make sense to introduce a "device" representing the
-> control logic of the power domain and make it the parent of the devices
-> depending on it.
-
-Yeah, mapping the power domain topology to the bus topology is one
-way. We also have clock framework topology, so we may need multiple
-views. =3D)
-
-> On a PCI bus the power and clock bus resources are controlled through the
-> PM registers of the bridge. =A0Although it principle devices can be power
-> managed individually, still to remove the clock and power from the entire
-> bus segment you have to power manage the bridge. =A0Even if there are no
-> such bridges physically on your system, you can always pretend there is o=
-ne
-> and represent it as a software device through which you can control the p=
-ower
-> resources.
-
-Right. So there are somewhat similar dependencies there as well.
-
->> Also, it's not uncommon that a certain hardware block sits in multiple
->> different SoCs. The driver can be shared, but the power management topol=
-ogy
->> needs to be adjusted to each SoC.
->
-> Well, that would be a child depending on multiple parents. =A0I don't know
-> how to represent that in our device tree. =A0Hmm.
->
-> Perhaps I'd introduce a parent "device" consisting of all of the SoCs' po=
-wer
-> control registers and a add PM support for that. =A0The other devices on =
-the
-> SoCs may also depend on that one common parent.
-
-We'll figure something out. Thanks for your comments!
-
-/ magnus
+--- 0001/Documentation/power/devices.txt
++++ work/Documentation/power/devices.txt	2009-05-21 17:19:48.000000000 +0900
+@@ -75,9 +75,6 @@ may need to apply in domain-specific way
+ struct bus_type {
+ 	...
+ 	int  (*suspend)(struct device *dev, pm_message_t state);
+-	int  (*suspend_late)(struct device *dev, pm_message_t state);
+-
+-	int  (*resume_early)(struct device *dev);
+ 	int  (*resume)(struct device *dev);
+ };
+ 
+@@ -226,20 +223,7 @@ The phases are seen by driver notificati
+ 
+ 	This call should handle parts of device suspend logic that require
+ 	sleeping.  It probably does work to quiesce the device which hasn't
+-	been abstracted into class.suspend() or bus.suspend_late().
+-
+-   3	bus.suspend_late(dev, message) is called with IRQs disabled, and
+-	with only one CPU active.  Until the bus.resume_early() phase
+-	completes (see later), IRQs are not enabled again.  This method
+-	won't be exposed by all busses; for message based busses like USB,
+-	I2C, or SPI, device interactions normally require IRQs.  This bus
+-	call may be morphed into a driver call with bus-specific parameters.
+-
+-	This call might save low level hardware state that might otherwise
+-	be lost in the upcoming low power state, and actually put the
+-	device into a low power state ... so that in some cases the device
+-	may stay partly usable until this late.  This "late" call may also
+-	help when coping with hardware that behaves badly.
++	been abstracted into class.suspend().
+ 
+ The pm_message_t parameter is currently used to refine those semantics
+ (described later).
+@@ -351,19 +335,11 @@ devices processing each phase's calls be
+ 
+ The phases are seen by driver notifications issued in this order:
+ 
+-   1	bus.resume_early(dev) is called with IRQs disabled, and with
+-   	only one CPU active.  As with bus.suspend_late(), this method
+-	won't be supported on busses that require IRQs in order to
+-	interact with devices.
+-
+-	This reverses the effects of bus.suspend_late().
+-
+-   2	bus.resume(dev) is called next.  This may be morphed into a device
+-   	driver call with bus-specific parameters; implementations may sleep.
+-
+-	This reverses the effects of bus.suspend().
++   1	bus.resume(dev) reverses the effects of bus.suspend().  This may
++	be morphed into a device driver call with bus-specific parameters;
++	implementations may sleep.
+ 
+-   3	class.resume(dev) is called for devices associated with a class
++   2	class.resume(dev) is called for devices associated with a class
+ 	that has such a method.  Implementations may sleep.
+ 
+ 	This reverses the effects of class.suspend(), and would usually
+--- 0001/drivers/base/power/main.c
++++ work/drivers/base/power/main.c	2009-05-21 17:19:42.000000000 +0900
+@@ -334,9 +334,6 @@ static int __device_resume_noirq(struct 
+ 	if (dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "EARLY ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+-	} else if (dev->bus->resume_early) {
+-		pm_dev_dbg(dev, state, "legacy EARLY ");
+-		error = dev->bus->resume_early(dev);
+ 	}
+  End:
+ 	TRACE_RESUME(error);
+@@ -591,10 +588,6 @@ static int __device_suspend_noirq(struct
+ 	if (dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "LATE ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+-	} else if (dev->bus->suspend_late) {
+-		pm_dev_dbg(dev, state, "legacy LATE ");
+-		error = dev->bus->suspend_late(dev, state);
+-		suspend_report_result(dev->bus->suspend_late, error);
+ 	}
+ 	return error;
+ }
+--- 0001/include/linux/device.h
++++ work/include/linux/device.h	2009-05-21 17:19:42.000000000 +0900
+@@ -62,8 +62,6 @@ struct bus_type {
+ 	void (*shutdown)(struct device *dev);
+ 
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+-	int (*suspend_late)(struct device *dev, pm_message_t state);
+-	int (*resume_early)(struct device *dev);
+ 	int (*resume)(struct device *dev);
+ 
+ 	struct dev_pm_ops *pm;
