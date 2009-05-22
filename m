@@ -1,17 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] why do we need run disk sync before entering	S3
-Date: Fri, 22 May 2009 17:33:57 +0200
-Message-ID: <20090522153356.GB27655__13880.0362161875$1243006542$gmane$org@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
-	<200905151636.01318.rjw@sisk.pl>
-	<1242631507.16529.107.camel@rzhang-dt>
+From: Kim Kyuwon <chammoru@gmail.com>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
+	wakeup IRQs
+Date: Sat, 23 May 2009 01:04:12 +0900
+Message-ID: <4d34a0a70905220904h6734a8f1y2b2cffe08b6afa8b__44287.070251494$1243008461$gmane$org@mail.gmail.com>
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
+	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl>
+	<4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1242631507.16529.107.camel@rzhang-dt>
+In-Reply-To: <4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +21,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > But remember there are even in-kernel s2ram triggers, for example on
-> > > zaurus when battery goes critical.
-> > > 
-> 
-> Take ACPI for example, ACPI defines two ACPI battery states, one is
-> "low" and another is "critical".
-> OS enters S3/S4 when battery is low, while it performs an emergency
-> shutdown when battery is in critical state. (ACPI spec 3.0b 3.9.4)
-> So I'm wondering if it's right to enter S3 when we know that the system
-> may lost power at anytime.
-
-Well, battery only lasts like 30 hours in S3. So if you leave your
-notebook unattended for 30 hours, you'll loose recent changes.
-
-> > > (And s2ram without sync _is_ "wrong": writeback timeouts are not
-> > > honored).
-
-> any kind of suspend can't meet this requirement. Even sys_sync is
-> called, there is a small window that some pages are dirtied, but are not
-> synced to disk in max expire interval, right?
-
-Not if you do sys_sync() after freeze of userspace. (I'm not 100% sure
-there's no race in there somewhere, but I'd prefer not to make the
-race bigger.)
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+T24gRnJpLCBNYXkgMjIsIDIwMDkgYXQgMTE6NTMgQU0sIEtpbSBLeXV3b24gPGNoYW1tb3J1QGdt
+YWlsLmNvbT4gd3JvdGU6Cj4gT24gV2VkLCBNYXkgNiwgMjAwOSBhdCA4OjI3IEFNLCBSYWZhZWwg
+Si4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdyb3RlOgo+PiBPbiBXZWRuZXNkYXkgMDYgTWF5IDIw
+MDksIEtldmluIEhpbG1hbiB3cm90ZToKPj4+IEFydmUgSGrDuG5uZXbDpWcgPGFydmVAYW5kcm9p
+ZC5jb20+IHdyaXRlczoKPj4+Cj4+PiA+IE9uIFR1ZSwgTWF5IDUsIDIwMDkgYXQgODo1MiBBTSwg
+S2V2aW4gSGlsbWFuCj4+PiA+IDxraGlsbWFuQGRlZXByb290c3lzdGVtcy5jb20+IHdyb3RlOgo+
+Pj4gPj4gQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4gd3JpdGVzOgo+
+Pj4gPj4KPj4+ID4+PiBPbiBNb24sIMKgNCBNYXkgMjAwOSAxNzoyNzowNCAtMDcwMCBLZXZpbiBI
+aWxtYW4gPGtoaWxtYW5AZGVlcHJvb3RzeXN0ZW1zLmNvbT4gd3JvdGU6Cj4+PiA+Pj4KPj4+ID4+
+Pj4gSW50ZXJydXB0cyB0aGF0IGFyZSBmbGFnZ2VkIGFzIHdha2V1cCBzb3VyY2VzIHZpYSBzZXRf
+aXJxX3dha2UoKQo+Pj4gPj4+PiBzaG91bGQgbm90IGJlIGRpc2FibGVkIGZvciBzdXNwZW5kLgo+
+Pj4gPj4+Pgo+Pj4gPj4+Cj4+PiA+Pj4gV2h5IG5vdD8KPj4+ID4+Pgo+Pj4gPj4KPj4+ID4+IElm
+IGFuIGludGVycnVwdCBpcyBhIHdha2V1cCBzb3VyY2UsIGFuZCBpdCBpcyBkaXNhYmxlZCBhdCB0
+aGUgY2hpcAo+Pj4gPj4gbGV2ZWwsIGl0IHdpbGwgbm8gbG9uZ2VyIGdlbmVyYXRlIGludGVycnVw
+dHMsIGFuZCB0aHVzIG5vIGxvbmdlciB3YWtlCj4+PiA+PiB1cCB0aGUgc3lzdGVtLgo+Pj4gPj4K
+Pj4+ID4+IEknZCBiZSBpbnRlcmVzdGVkIGluIGhlYXJpbmcgd2h5IHdha2V1cCBpbnRlcnJ1cHRz
+IHNob3VsZCBiZSBkaXNhYmxlZAo+Pj4gPj4gZHVyaW5nIHN1c3BlbmQuCj4+Cj4+IFRoYXQgZGVw
+ZW5kcyBvbiB3aGV0aGVyIG9yIG5vdCB0aGV5IGFyZSB1c2VkIGZvciBhbnl0aGluZyBlbHNlIHRo
+YW4gd2FrZS11cC4KPj4KPj4+Cj4+PiBbLi4uXQo+Pj4KPj4+ID4+Pgo+Pj4gPj4+IElmIHRoaXMg
+Zml4ZXMgc29tZSBidWcgdGhlbiBwbGVhc2UgcHJvdmlkZSBhIGRlc2NyaXB0aW9uIG9mIHRoYXQg
+YnVnPwo+Pj4gPj4KPj4+ID4+IFRoZSBidWcgaXMgdGhhdCBvbiBUSSBPTUFQLCBpbnRlcnJ1cHRz
+IHRoYXQgYXJlIHVzZWQgZm9yIHdha2V1cCBldmVudHMKPj4+ID4+IGFyZSBkaXNhYmxlZCBieSB0
+aGlzIGNvZGUgY2F1c2luZyB0aGUgc3lzdGVtIHRvIG5vIGxvbmdlciB3YWtlIHVwLgo+Pj4gPgo+
+Pj4gPiBXaGF0IGRvIHlvdSBkbyBpZiB0aGUgaW50ZXJydXB0IHRyaWdnZXJzIHJpZ2h0IGFmdGVy
+IHlvdXIgZHJpdmVyIGhhcwo+Pj4gPiByZXR1cm5lZCBmcm9tIGl0cyBsYXRlIHN1c3BlbmQgaG9v
+az8KPj4+Cj4+PiBJZiBpdCdzIGEgd2FrZXVwIElSUSwgSSBhc3N1bWUgeW91IHdhbnQgaXQgdG8g
+cHJldmVudCBzdXNwZW5kLgo+Pj4KPj4+IEJ1dCBJIGRvbid0IHNlZSBob3cgdGhhdCBjYW4gaGFw
+cGVuIGluIHRoZSBjdXJyZW50IGNvZGUuIElJVUMsIGJ5IHRoZQo+Pj4gdGltZSB5b3VyIGxhdGUg
+c3VzcGVuZCBob29rIGlzIHJ1biwgeW91ciBkZXZpY2UgSVJRIGlzIGFscmVhZHkKPj4+IGRpc2Fi
+bGVkLCBzbyBpdCB3b24ndCB0cmlnZ2VyIGFuIGludGVycnVwdCB0aGF0IHdpbGwgYmUgY2F1Z2h0
+IGJ5Cj4+PiBjaGVja193YWtldXBfaXJxcygpIGFueXdheXMuCj4+Cj4+IE15IHVuZGVyc3RhbmRp
+bmcgb2YgX19kaXNhYmxlX2lycSgpIHdhcyB0aGF0IGl0IGRpZG4ndCBhY3R1YWxseSBkaXNhYmxl
+IHRoZQo+PiBJUlEgYXQgdGhlIGhhcmR3YXJlIGxldmVsLCBhbGxvd2luZyB0aGUgQ1BVIHRvIGFj
+dHVhbGx5IHJlY2VpdmUgdGhlIGludGVycnVwdAo+PiBhbmQgYWNrbm93bGVkZ2UgaXQsIGJ1dCBw
+cmV2ZW50aW5nIHRoZSBkZXZpY2UgZHJpdmVyIGZvciByZWNlaXZpbmcgaXQuIMKgRG9lcwo+PiBp
+dCB3b3JrIGRpZmZlcmVudGx5IG9uIHRoZSBhZmZlY3RlZCBzeXN0ZW1zPwo+Cj4gSGksIFJhZmFl
+bC4KPiBTb3JyeSBmb3IgYnJpbmcgdGhlIG9sZCBpc3N1ZSBidXQgcGxlYXNlIGxldCBtZSBhc2sg
+eW91IGFib3V0Cj4gc3VzcGVuZF9kZXZpY2VfaXJxcygpIGZ1bmN0aW9uLgo+Cj4gX19kaXNhYmxl
+X2lycSgpIGRpc2FibGVzIHRoZSBJUlEgYXQgdGhlIGhhcmR3YXJlIGxldmVsIGluIHRoZQo+IGZv
+bGxvd2luZyBpcnFfY2hpcHMKPgo+IGk4MjU5QV9jaGlwCj4gaTgyNTlfcGljCj4gaTgyNTlBX2No
+aXAKPiBiZmluX2ludGVybmFsX2lycWNoaXAKPiBjcmlzdjEwX2lycV90eXBlCj4gY3Jpc3YzMl9p
+cnFfdHlwZQo+IGg4MzAwaXJxX2NoaXAKPiBtX2lycV9jaGlwCj4gbW4xMDMwMF9jcHVfcGljX2xl
+dmVsCj4geHRlbnNhX2lycV9jaGlwCj4gaW9wMTN4eF9tc2lfY2hpcAo+IG1zaV9pcnEKPgo+IEJl
+Y2F1c2UgdGhlc2UgaXJxX2NoaXBzIG1hc2sgaW50ZXJydXB0cyBpbiAnZGlzYWJsZScgaG9vay4K
+Pgo+IFRodXMsIHlvdXIgc3VzcGVuZF9kZXZpY2VfaXJxcygpIGZ1bmN0aW9uIGRpc2FibGVzIGFs
+bCBJUlFzIGF0IHRoZQo+IGhhcmR3YXJlIGxldmVsIG9uIGFsbCBhcmNoaXRlY3R1cmVzIHdoaWNo
+IHVzZSBpcnFfY2hpcHMgbGlzdGVkIGFib3ZlCj4gaW4gc3VzcGVuZCBzdGF0ZS4KPiBJcyB0aGlz
+IHJlYWxseSB3aGF0IHlvdSB3YW50ZWQ/Cj4KPiBJZiBpbnRlcnJ1cHQgY2FuIHdha2UgdXAgdGhl
+IHN5c3RlbSBmcm9tIHN1c3BlbmQgaW4gc29tZSBhcmNoaXRlY3R1cmVzCj4gYW5kIGlmIGRpc2Fi
+bGVfaXJxX3dha2UgaXMgbm90IHN1cHBvcnRlZCBpbiB0aGVzZSBhcmNoaXRlY3R1cmVzLCBJCj4g
+d29uZGVyIGlmIHN1c3BlbmRfZGV2aWNlX2lycXMoKSBkb24ndCBhbGxvdyB3YWtpbmcgdXAgYnkg
+aW50ZXJydXB0Lgo+Cj4gUmVnYXJkcywKPiBLeXV3b24KPgoKSSBzYXcgcmVzdW1lX2RldmljZV9p
+cnFzKCkgaXMgaW52b2tlZCBhZnRlciBhcmNoX3N1c3BlbmRfZW5hYmxlX2lycXMoKQppbiB5b3Vy
+IHJlc3VtZSBjb2RlLgpTbyBpbiB0aGlzIGdhcCBiZXR3ZWVuIHJlc3VtZV9kZXZpY2VfaXJxcygp
+IGFuZAphcmNoX3N1c3BlbmRfZW5hYmxlX2lycXMoKSwgYSBmZXcgaW50ZXJydXB0cyB3b3VsZCBi
+ZSBkaXNjYXJkZWQuCmkuZSwgYSBmZXcgZGF0YSB3b3VsZCBiZSBsb3N0LgoKSWYga2V5cGFkIHdh
+a2UgdXAgdGhlIHN5c3RlbSwgZmlyc3Qga2V5IHByZXNzZWQgaW5mb3JtYXRpb24gd291bGQgYmUg
+bG9zdC4KSWYgSTJDLCBVU0IsIFNQSSwgVUFSVCB3YWtlIHVwIHRoZSBzeXN0ZW0sIGZpcnN0IGEg
+ZmV3IGRhdGEgd291bGQgYmUgbG9zdC4KCkRpZCB5b3UgYWxzbyBjb25zaWRlciB0aGlzIGlzc3Vl
+PwoKLS0gCkt5dXdvbiAo6rec7JuQKQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXBt
