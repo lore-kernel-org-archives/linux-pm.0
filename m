@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
 	wakeup IRQs
-Date: Fri, 22 May 2009 23:23:21 +0200
-Message-ID: <200905222323.22390.rjw__3379.25830758667$1243027534$gmane$org@sisk.pl>
+Date: Fri, 22 May 2009 23:25:27 +0200
+Message-ID: <200905222325.27950.rjw__15716.8687358082$1243027658$gmane$org@sisk.pl>
 References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<200905060127.24777.rjw@sisk.pl>
 	<4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
+	<4d34a0a70905220904h6734a8f1y2b2cffe08b6afa8b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
+In-Reply-To: <4d34a0a70905220904h6734a8f1y2b2cffe08b6afa8b@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,132 +22,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kim Kyuwon <chammoru@gmail.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 22 May 2009, Kim Kyuwon wrote:
-> On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday 06 May 2009, Kevin Hilman wrote:
-> >> Arve Hj=F8nnev=E5g <arve@android.com> writes:
-> >>
-> >> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-> >> > <khilman@deeprootsystems.com> wrote:
-> >> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >> >>
-> >> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeproots=
-ystems.com> wrote:
-> >> >>>
-> >> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
-> >> >>>> should not be disabled for suspend.
-> >> >>>>
-> >> >>>
-> >> >>> Why not?
-> >> >>>
-> >> >>
-> >> >> If an interrupt is a wakeup source, and it is disabled at the chip
-> >> >> level, it will no longer generate interrupts, and thus no longer wa=
-ke
-> >> >> up the system.
-> >> >>
-> >> >> I'd be interested in hearing why wakeup interrupts should be disabl=
-ed
-> >> >> during suspend.
-> >
-> > That depends on whether or not they are used for anything else than wak=
-e-up.
-> >
-> >>
-> >> [...]
-> >>
-> >> >>>
-> >> >>> If this fixes some bug then please provide a description of that b=
-ug?
-> >> >>
-> >> >> The bug is that on TI OMAP, interrupts that are used for wakeup eve=
-nts
-> >> >> are disabled by this code causing the system to no longer wake up.
-> >> >
-> >> > What do you do if the interrupt triggers right after your driver has
-> >> > returned from its late suspend hook?
-> >>
-> >> If it's a wakeup IRQ, I assume you want it to prevent suspend.
-> >>
-> >> But I don't see how that can happen in the current code. IIUC, by the
-> >> time your late suspend hook is run, your device IRQ is already
-> >> disabled, so it won't trigger an interrupt that will be caught by
-> >> check_wakeup_irqs() anyways.
-> >
-> > My understanding of __disable_irq() was that it didn't actually disable=
- the
-> > IRQ at the hardware level, allowing the CPU to actually receive the int=
-errupt
-> > and acknowledge it, but preventing the device driver for receiving it. =
- Does
-> > it work differently on the affected systems?
-> =
-
-> Hi, Rafael.
-> Sorry for bring the old issue but please let me ask you about
-> suspend_device_irqs() function.
-> =
-
-> __disable_irq() disables the IRQ at the hardware level in the
-> following irq_chips
-> =
-
-> i8259A_chip
-> i8259_pic
-> i8259A_chip
-> bfin_internal_irqchip
-> crisv10_irq_type
-> crisv32_irq_type
-> h8300irq_chip
-> m_irq_chip
-> mn10300_cpu_pic_level
-> xtensa_irq_chip
-> iop13xx_msi_chip
-> msi_irq
-> =
-
-> Because these irq_chips mask interrupts in 'disable' hook.
-> =
-
-> Thus, your suspend_device_irqs() function disables all IRQs at the
-> hardware level on all architectures which use irq_chips listed above
-> in suspend state.
-> Is this really what you wanted?
-
-What we wanted was to resolve specific issue related to the handling of
-interrupts during suspend and resume which caused observable breakage and
-from the point of view of fixing this issue it doesn't really matter whethe=
-r or
-not interrupts are masked in the disable hook.
-
-> If interrupt can wake up the system from suspend in some architectures
-> and if disable_irq_wake is not supported in these architectures, I
-> wonder if suspend_device_irqs() don't allow waking up by interrupt.
-
-I think that the platforms that may be affected by this issue will have to =
-take
-care of it.
-
-Thanks,
-Rafael
- =
-
-
-> =
-
-> Regards,
-> Kyuwon
-> =
-
-> =
-
-
-
--- =
-
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+T24gRnJpZGF5IDIyIE1heSAyMDA5LCBLaW0gS3l1d29uIHdyb3RlOgo+IE9uIEZyaSwgTWF5IDIy
+LCAyMDA5IGF0IDExOjUzIEFNLCBLaW0gS3l1d29uIDxjaGFtbW9ydUBnbWFpbC5jb20+IHdyb3Rl
+Ogo+ID4gT24gV2VkLCBNYXkgNiwgMjAwOSBhdCA4OjI3IEFNLCBSYWZhZWwgSi4gV3lzb2NraSA8
+cmp3QHNpc2sucGw+IHdyb3RlOgo+ID4+IE9uIFdlZG5lc2RheSAwNiBNYXkgMjAwOSwgS2V2aW4g
+SGlsbWFuIHdyb3RlOgo+ID4+PiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPiB3
+cml0ZXM6Cj4gPj4+Cj4gPj4+ID4gT24gVHVlLCBNYXkgNSwgMjAwOSBhdCA4OjUyIEFNLCBLZXZp
+biBIaWxtYW4KPiA+Pj4gPiA8a2hpbG1hbkBkZWVwcm9vdHN5c3RlbXMuY29tPiB3cm90ZToKPiA+
+Pj4gPj4gQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4gd3JpdGVzOgo+
+ID4+PiA+Pgo+ID4+PiA+Pj4gT24gTW9uLCAgNCBNYXkgMjAwOSAxNzoyNzowNCAtMDcwMCBLZXZp
+biBIaWxtYW4gPGtoaWxtYW5AZGVlcHJvb3RzeXN0ZW1zLmNvbT4gd3JvdGU6Cj4gPj4+ID4+Pgo+
+ID4+PiA+Pj4+IEludGVycnVwdHMgdGhhdCBhcmUgZmxhZ2dlZCBhcyB3YWtldXAgc291cmNlcyB2
+aWEgc2V0X2lycV93YWtlKCkKPiA+Pj4gPj4+PiBzaG91bGQgbm90IGJlIGRpc2FibGVkIGZvciBz
+dXNwZW5kLgo+ID4+PiA+Pj4+Cj4gPj4+ID4+Pgo+ID4+PiA+Pj4gV2h5IG5vdD8KPiA+Pj4gPj4+
+Cj4gPj4+ID4+Cj4gPj4+ID4+IElmIGFuIGludGVycnVwdCBpcyBhIHdha2V1cCBzb3VyY2UsIGFu
+ZCBpdCBpcyBkaXNhYmxlZCBhdCB0aGUgY2hpcAo+ID4+PiA+PiBsZXZlbCwgaXQgd2lsbCBubyBs
+b25nZXIgZ2VuZXJhdGUgaW50ZXJydXB0cywgYW5kIHRodXMgbm8gbG9uZ2VyIHdha2UKPiA+Pj4g
+Pj4gdXAgdGhlIHN5c3RlbS4KPiA+Pj4gPj4KPiA+Pj4gPj4gSSdkIGJlIGludGVyZXN0ZWQgaW4g
+aGVhcmluZyB3aHkgd2FrZXVwIGludGVycnVwdHMgc2hvdWxkIGJlIGRpc2FibGVkCj4gPj4+ID4+
+IGR1cmluZyBzdXNwZW5kLgo+ID4+Cj4gPj4gVGhhdCBkZXBlbmRzIG9uIHdoZXRoZXIgb3Igbm90
+IHRoZXkgYXJlIHVzZWQgZm9yIGFueXRoaW5nIGVsc2UgdGhhbiB3YWtlLXVwLgo+ID4+Cj4gPj4+
+Cj4gPj4+IFsuLi5dCj4gPj4+Cj4gPj4+ID4+Pgo+ID4+PiA+Pj4gSWYgdGhpcyBmaXhlcyBzb21l
+IGJ1ZyB0aGVuIHBsZWFzZSBwcm92aWRlIGEgZGVzY3JpcHRpb24gb2YgdGhhdCBidWc/Cj4gPj4+
+ID4+Cj4gPj4+ID4+IFRoZSBidWcgaXMgdGhhdCBvbiBUSSBPTUFQLCBpbnRlcnJ1cHRzIHRoYXQg
+YXJlIHVzZWQgZm9yIHdha2V1cCBldmVudHMKPiA+Pj4gPj4gYXJlIGRpc2FibGVkIGJ5IHRoaXMg
+Y29kZSBjYXVzaW5nIHRoZSBzeXN0ZW0gdG8gbm8gbG9uZ2VyIHdha2UgdXAuCj4gPj4+ID4KPiA+
+Pj4gPiBXaGF0IGRvIHlvdSBkbyBpZiB0aGUgaW50ZXJydXB0IHRyaWdnZXJzIHJpZ2h0IGFmdGVy
+IHlvdXIgZHJpdmVyIGhhcwo+ID4+PiA+IHJldHVybmVkIGZyb20gaXRzIGxhdGUgc3VzcGVuZCBo
+b29rPwo+ID4+Pgo+ID4+PiBJZiBpdCdzIGEgd2FrZXVwIElSUSwgSSBhc3N1bWUgeW91IHdhbnQg
+aXQgdG8gcHJldmVudCBzdXNwZW5kLgo+ID4+Pgo+ID4+PiBCdXQgSSBkb24ndCBzZWUgaG93IHRo
+YXQgY2FuIGhhcHBlbiBpbiB0aGUgY3VycmVudCBjb2RlLiBJSVVDLCBieSB0aGUKPiA+Pj4gdGlt
+ZSB5b3VyIGxhdGUgc3VzcGVuZCBob29rIGlzIHJ1biwgeW91ciBkZXZpY2UgSVJRIGlzIGFscmVh
+ZHkKPiA+Pj4gZGlzYWJsZWQsIHNvIGl0IHdvbid0IHRyaWdnZXIgYW4gaW50ZXJydXB0IHRoYXQg
+d2lsbCBiZSBjYXVnaHQgYnkKPiA+Pj4gY2hlY2tfd2FrZXVwX2lycXMoKSBhbnl3YXlzLgo+ID4+
+Cj4gPj4gTXkgdW5kZXJzdGFuZGluZyBvZiBfX2Rpc2FibGVfaXJxKCkgd2FzIHRoYXQgaXQgZGlk
+bid0IGFjdHVhbGx5IGRpc2FibGUgdGhlCj4gPj4gSVJRIGF0IHRoZSBoYXJkd2FyZSBsZXZlbCwg
+YWxsb3dpbmcgdGhlIENQVSB0byBhY3R1YWxseSByZWNlaXZlIHRoZSBpbnRlcnJ1cHQKPiA+PiBh
+bmQgYWNrbm93bGVkZ2UgaXQsIGJ1dCBwcmV2ZW50aW5nIHRoZSBkZXZpY2UgZHJpdmVyIGZvciBy
+ZWNlaXZpbmcgaXQuICBEb2VzCj4gPj4gaXQgd29yayBkaWZmZXJlbnRseSBvbiB0aGUgYWZmZWN0
+ZWQgc3lzdGVtcz8KPiA+Cj4gPiBIaSwgUmFmYWVsLgo+ID4gU29ycnkgZm9yIGJyaW5nIHRoZSBv
+bGQgaXNzdWUgYnV0IHBsZWFzZSBsZXQgbWUgYXNrIHlvdSBhYm91dAo+ID4gc3VzcGVuZF9kZXZp
+Y2VfaXJxcygpIGZ1bmN0aW9uLgo+ID4KPiA+IF9fZGlzYWJsZV9pcnEoKSBkaXNhYmxlcyB0aGUg
+SVJRIGF0IHRoZSBoYXJkd2FyZSBsZXZlbCBpbiB0aGUKPiA+IGZvbGxvd2luZyBpcnFfY2hpcHMK
+PiA+Cj4gPiBpODI1OUFfY2hpcAo+ID4gaTgyNTlfcGljCj4gPiBpODI1OUFfY2hpcAo+ID4gYmZp
+bl9pbnRlcm5hbF9pcnFjaGlwCj4gPiBjcmlzdjEwX2lycV90eXBlCj4gPiBjcmlzdjMyX2lycV90
+eXBlCj4gPiBoODMwMGlycV9jaGlwCj4gPiBtX2lycV9jaGlwCj4gPiBtbjEwMzAwX2NwdV9waWNf
+bGV2ZWwKPiA+IHh0ZW5zYV9pcnFfY2hpcAo+ID4gaW9wMTN4eF9tc2lfY2hpcAo+ID4gbXNpX2ly
+cQo+ID4KPiA+IEJlY2F1c2UgdGhlc2UgaXJxX2NoaXBzIG1hc2sgaW50ZXJydXB0cyBpbiAnZGlz
+YWJsZScgaG9vay4KPiA+Cj4gPiBUaHVzLCB5b3VyIHN1c3BlbmRfZGV2aWNlX2lycXMoKSBmdW5j
+dGlvbiBkaXNhYmxlcyBhbGwgSVJRcyBhdCB0aGUKPiA+IGhhcmR3YXJlIGxldmVsIG9uIGFsbCBh
+cmNoaXRlY3R1cmVzIHdoaWNoIHVzZSBpcnFfY2hpcHMgbGlzdGVkIGFib3ZlCj4gPiBpbiBzdXNw
+ZW5kIHN0YXRlLgo+ID4gSXMgdGhpcyByZWFsbHkgd2hhdCB5b3Ugd2FudGVkPwo+ID4KPiA+IElm
+IGludGVycnVwdCBjYW4gd2FrZSB1cCB0aGUgc3lzdGVtIGZyb20gc3VzcGVuZCBpbiBzb21lIGFy
+Y2hpdGVjdHVyZXMKPiA+IGFuZCBpZiBkaXNhYmxlX2lycV93YWtlIGlzIG5vdCBzdXBwb3J0ZWQg
+aW4gdGhlc2UgYXJjaGl0ZWN0dXJlcywgSQo+ID4gd29uZGVyIGlmIHN1c3BlbmRfZGV2aWNlX2ly
+cXMoKSBkb24ndCBhbGxvdyB3YWtpbmcgdXAgYnkgaW50ZXJydXB0Lgo+ID4KPiA+IFJlZ2FyZHMs
+Cj4gPiBLeXV3b24KPiA+Cj4gCj4gSSBzYXcgcmVzdW1lX2RldmljZV9pcnFzKCkgaXMgaW52b2tl
+ZCBhZnRlciBhcmNoX3N1c3BlbmRfZW5hYmxlX2lycXMoKQo+IGluIHlvdXIgcmVzdW1lIGNvZGUu
+Cj4gU28gaW4gdGhpcyBnYXAgYmV0d2VlbiByZXN1bWVfZGV2aWNlX2lycXMoKSBhbmQKPiBhcmNo
+X3N1c3BlbmRfZW5hYmxlX2lycXMoKSwgYSBmZXcgaW50ZXJydXB0cyB3b3VsZCBiZSBkaXNjYXJk
+ZWQuCj4gaS5lLCBhIGZldyBkYXRhIHdvdWxkIGJlIGxvc3QuCj4gCj4gSWYga2V5cGFkIHdha2Ug
+dXAgdGhlIHN5c3RlbSwgZmlyc3Qga2V5IHByZXNzZWQgaW5mb3JtYXRpb24gd291bGQgYmUgbG9z
+dC4KPiBJZiBJMkMsIFVTQiwgU1BJLCBVQVJUIHdha2UgdXAgdGhlIHN5c3RlbSwgZmlyc3QgYSBm
+ZXcgZGF0YSB3b3VsZCBiZSBsb3N0Lgo+IAo+IERpZCB5b3UgYWxzbyBjb25zaWRlciB0aGlzIGlz
+c3VlPwoKSSB0aGluayBpdCB3b3VsZCBoYXBwZW4gYW55d2F5IHdpdGggdGhlIG9sZCBjb2RlLCB3
+b3VsZG4ndCBpdD8KCkJlc3QsClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL2xpbnV4LXBt
