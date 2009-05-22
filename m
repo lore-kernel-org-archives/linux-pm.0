@@ -1,16 +1,17 @@
-From: Kim Kyuwon <chammoru@gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Fri, 22 May 2009 11:53:07 +0900
-Message-ID: <4d34a0a70905211953r1138a554w3b7aa99770ba15e2@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
-	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] why do we need run disk sync before entering	S3
+Date: Fri, 22 May 2009 17:33:57 +0200
+Message-ID: <20090522153356.GB27655__13880.0362161875$1243006542$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz>
+	<200905151636.01318.rjw@sisk.pl>
+	<1242631507.16529.107.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905060127.24777.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <1242631507.16529.107.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,95 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday 06 May 2009, Kevin Hilman wrote:
->> Arve Hj=F8nnev=E5g <arve@android.com> writes:
->>
->> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
->> > <khilman@deeprootsystems.com> wrote:
->> >> Andrew Morton <akpm@linux-foundation.org> writes:
->> >>
->> >>> On Mon, =A04 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeproots=
-ystems.com> wrote:
->> >>>
->> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->> >>>> should not be disabled for suspend.
->> >>>>
->> >>>
->> >>> Why not?
->> >>>
->> >>
->> >> If an interrupt is a wakeup source, and it is disabled at the chip
->> >> level, it will no longer generate interrupts, and thus no longer wake
->> >> up the system.
->> >>
->> >> I'd be interested in hearing why wakeup interrupts should be disabled
->> >> during suspend.
->
-> That depends on whether or not they are used for anything else than wake-=
-up.
->
->>
->> [...]
->>
->> >>>
->> >>> If this fixes some bug then please provide a description of that bug?
->> >>
->> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
->> >> are disabled by this code causing the system to no longer wake up.
->> >
->> > What do you do if the interrupt triggers right after your driver has
->> > returned from its late suspend hook?
->>
->> If it's a wakeup IRQ, I assume you want it to prevent suspend.
->>
->> But I don't see how that can happen in the current code. IIUC, by the
->> time your late suspend hook is run, your device IRQ is already
->> disabled, so it won't trigger an interrupt that will be caught by
->> check_wakeup_irqs() anyways.
->
-> My understanding of __disable_irq() was that it didn't actually disable t=
-he
-> IRQ at the hardware level, allowing the CPU to actually receive the inter=
-rupt
-> and acknowledge it, but preventing the device driver for receiving it. =
-=A0Does
-> it work differently on the affected systems?
+Hi!
 
-Hi, Rafael.
-Sorry for bring the old issue but please let me ask you about
-suspend_device_irqs() function.
+> > > But remember there are even in-kernel s2ram triggers, for example on
+> > > zaurus when battery goes critical.
+> > > 
+> 
+> Take ACPI for example, ACPI defines two ACPI battery states, one is
+> "low" and another is "critical".
+> OS enters S3/S4 when battery is low, while it performs an emergency
+> shutdown when battery is in critical state. (ACPI spec 3.0b 3.9.4)
+> So I'm wondering if it's right to enter S3 when we know that the system
+> may lost power at anytime.
 
-__disable_irq() disables the IRQ at the hardware level in the
-following irq_chips
+Well, battery only lasts like 30 hours in S3. So if you leave your
+notebook unattended for 30 hours, you'll loose recent changes.
 
-i8259A_chip
-i8259_pic
-i8259A_chip
-bfin_internal_irqchip
-crisv10_irq_type
-crisv32_irq_type
-h8300irq_chip
-m_irq_chip
-mn10300_cpu_pic_level
-xtensa_irq_chip
-iop13xx_msi_chip
-msi_irq
+> > > (And s2ram without sync _is_ "wrong": writeback timeouts are not
+> > > honored).
 
-Because these irq_chips mask interrupts in 'disable' hook.
+> any kind of suspend can't meet this requirement. Even sys_sync is
+> called, there is a small window that some pages are dirtied, but are not
+> synced to disk in max expire interval, right?
 
-Thus, your suspend_device_irqs() function disables all IRQs at the
-hardware level on all architectures which use irq_chips listed above
-in suspend state.
-Is this really what you wanted?
+Not if you do sys_sync() after freeze of userspace. (I'm not 100% sure
+there's no race in there somewhere, but I'd prefer not to make the
+race bigger.)
+								Pavel
 
-If interrupt can wake up the system from suspend in some architectures
-and if disable_irq_wake is not supported in these architectures, I
-wonder if suspend_device_irqs() don't allow waking up by interrupt.
-
-Regards,
-Kyuwon
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
