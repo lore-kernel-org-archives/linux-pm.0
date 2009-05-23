@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Sat, 23 May 2009 01:47:15 +0200
-Message-ID: <200905230147.16037.rjw__40437.0661628947$1243036205$gmane$org@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<200905222325.27950.rjw@sisk.pl>
-	<4d34a0a70905221532l772d03b6gb6436f0b8eb10274@mail.gmail.com>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+Date: Sat, 23 May 2009 02:10:33 +0200
+Message-ID: <200905230210.34531.rjw__1878.57837086103$1243037476$gmane$org@sisk.pl>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
+	<alpine.LFD.2.01.0905220926150.3555@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4d34a0a70905221532l772d03b6gb6436f0b8eb10274@mail.gmail.com>
+In-Reply-To: <alpine.LFD.2.01.0905220926150.3555@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,151 +19,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kim Kyuwon <chammoru@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 23 May 2009, Kim Kyuwon wrote:
-> On Sat, May 23, 2009 at 6:25 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday 22 May 2009, Kim Kyuwon wrote:
-> >> On Fri, May 22, 2009 at 11:53 AM, Kim Kyuwon <chammoru@gmail.com> wrot=
-e:
-> >> > On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
-e:
-> >> >> On Wednesday 06 May 2009, Kevin Hilman wrote:
-> >> >>> Arve Hj=F8nnev=E5g <arve@android.com> writes:
-> >> >>>
-> >> >>> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
-> >> >>> > <khilman@deeprootsystems.com> wrote:
-> >> >>> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >> >>> >>
-> >> >>> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deepr=
-ootsystems.com> wrote:
-> >> >>> >>>
-> >> >>> >>>> Interrupts that are flagged as wakeup sources via set_irq_wak=
-e()
-> >> >>> >>>> should not be disabled for suspend.
-> >> >>> >>>>
-> >> >>> >>>
-> >> >>> >>> Why not?
-> >> >>> >>>
-> >> >>> >>
-> >> >>> >> If an interrupt is a wakeup source, and it is disabled at the c=
-hip
-> >> >>> >> level, it will no longer generate interrupts, and thus no longe=
-r wake
-> >> >>> >> up the system.
-> >> >>> >>
-> >> >>> >> I'd be interested in hearing why wakeup interrupts should be di=
-sabled
-> >> >>> >> during suspend.
-> >> >>
-> >> >> That depends on whether or not they are used for anything else than=
- wake-up.
-> >> >>
-> >> >>>
-> >> >>> [...]
-> >> >>>
-> >> >>> >>>
-> >> >>> >>> If this fixes some bug then please provide a description of th=
-at bug?
-> >> >>> >>
-> >> >>> >> The bug is that on TI OMAP, interrupts that are used for wakeup=
- events
-> >> >>> >> are disabled by this code causing the system to no longer wake =
-up.
-> >> >>> >
-> >> >>> > What do you do if the interrupt triggers right after your driver=
- has
-> >> >>> > returned from its late suspend hook?
-> >> >>>
-> >> >>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
-> >> >>>
-> >> >>> But I don't see how that can happen in the current code. IIUC, by =
-the
-> >> >>> time your late suspend hook is run, your device IRQ is already
-> >> >>> disabled, so it won't trigger an interrupt that will be caught by
-> >> >>> check_wakeup_irqs() anyways.
-> >> >>
-> >> >> My understanding of __disable_irq() was that it didn't actually dis=
-able the
-> >> >> IRQ at the hardware level, allowing the CPU to actually receive the=
- interrupt
-> >> >> and acknowledge it, but preventing the device driver for receiving =
-it.  Does
-> >> >> it work differently on the affected systems?
-> >> >
-> >> > Hi, Rafael.
-> >> > Sorry for bring the old issue but please let me ask you about
-> >> > suspend_device_irqs() function.
-> >> >
-> >> > __disable_irq() disables the IRQ at the hardware level in the
-> >> > following irq_chips
-> >> >
-> >> > i8259A_chip
-> >> > i8259_pic
-> >> > i8259A_chip
-> >> > bfin_internal_irqchip
-> >> > crisv10_irq_type
-> >> > crisv32_irq_type
-> >> > h8300irq_chip
-> >> > m_irq_chip
-> >> > mn10300_cpu_pic_level
-> >> > xtensa_irq_chip
-> >> > iop13xx_msi_chip
-> >> > msi_irq
-> >> >
-> >> > Because these irq_chips mask interrupts in 'disable' hook.
-> >> >
-> >> > Thus, your suspend_device_irqs() function disables all IRQs at the
-> >> > hardware level on all architectures which use irq_chips listed above
-> >> > in suspend state.
-> >> > Is this really what you wanted?
-> >> >
-> >> > If interrupt can wake up the system from suspend in some architectur=
-es
-> >> > and if disable_irq_wake is not supported in these architectures, I
-> >> > wonder if suspend_device_irqs() don't allow waking up by interrupt.
-> >> >
-> >> > Regards,
-> >> > Kyuwon
-> >> >
-> >>
-> >> I saw resume_device_irqs() is invoked after arch_suspend_enable_irqs()
-> >> in your resume code.
-> >> So in this gap between resume_device_irqs() and
-> >> arch_suspend_enable_irqs(), a few interrupts would be discarded.
-> >> i.e, a few data would be lost.
-> >>
-> >> If keypad wake up the system, first key pressed information would be l=
-ost.
-> >> If I2C, USB, SPI, UART wake up the system, first a few data would be l=
-ost.
-> >>
-> >> Did you also consider this issue?
-> >
-> > I think it would happen anyway with the old code, wouldn't it?
-> =
+On Friday 22 May 2009, Linus Torvalds wrote:
+> 
+> On Sat, 16 May 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13329
+> > Subject		: cifs_close: NULL pointer dereference
+> > Submitter	: Luca Tettamanti <kronos.it@gmail.com>
+> > Date		: 2009-05-16 16:28 (1 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124249133701702&w=4
+> 
+> Fixed by 703a3b8e5c01cf6fb33c6d8dc99905f889a4e992.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13298
+> > Subject		: modprobe ipmi_si hangs under 2.6.30-rc5
+> > Submitter	: Ferenc Wagner <wferi@niif.hu>
+> > Date		: 2009-05-12 21:28 (5 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124216379407177&w=4
+> 
+> Fixed by 9a2845c453d170e4e9b1437fa671dbf39b0e7bd8.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13297
+> > Subject		: kernel panic -  not syncing : fatel exception in interupt
+> > Submitter	: rob <rob1@housetosell.net>
+> > Date		: 2009-05-12 19:34 (5 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124216126903309&w=4
+> 
+> This should be fixed by e3b29f05124b07303088795396ff858811d2acb8.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13177
+> > Subject		: 2.6.30-rc2-git7 build problem
+> > Submitter	: Martin Knoblauch <spamtrap@knobisoft.de>
+> > Date		: 2009-04-21 13:39 (26 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124032163602132&w=4
+> > 		  http://lkml.org/lkml/2009/4/27/56
+> 
+> This one really looks like a compiler bug (the undefined symbol is an 
+> internal gcc one: ".L192"). And the driver that gets it (kl5kusb105) has 
+> not actually had any changes since 2.6.29 - although header files that it 
+> includes obviously do have some, so it's entirely possible that some 
+> infrastructure change causes it to trigger.
+> 
+> Martin hit another bug with his compiler (an ICE in gcc, fixed by commit 
+> 26a9a418237c0b06528941bca693c49c8d97edbe), which is why I'm so willing to 
+> blame that.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13107
+> > Subject		: LTP 20080131 causes defunct processes w/2.6.30-rc1
+> > Submitter	: Kumar Gala <galak@kernel.crashing.org>
+> > Date		: 2009-04-09 15:43 (38 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b3bfa0cba867f23365b81658b47efd906830879b
+> > References	: http://marc.info/?l=linux-kernel&m=123929187208953&w=4
+> > 		  http://lkml.org/lkml/2009/4/10/193
+> > Handled-By	: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> 
+> This one seems to have become "not-a-bug". Yes, LTP used to check that you 
+> cannot send SIGSTP to init, but people do want to send signals to init 
+> (especially when they are inside pid-namespace containers), and as long as 
+> it's only a LTP test that already got modified (and not some actual 
+> real-life usage), I'm considering this a "test failed because it was 
+> testing for behavior that we want to change" at least for now.
 
-> That's not quite right.
-> =
+Thanks a lot, this really helps! :-)
 
-> For example, let's assume a keypad device is alive in suspend/resume
-> state to wake up the system. Before arch_suspend_enable_irqs(), none
-> of keypad irqs is dropped. It is just pending.
->
-> But in your code, a few irqs are discarded due to your resume_device_irqs=
-().
+I've closed all of the bugs above.
 
-You can't say for sure they are discarded, but there's a small window in wh=
-ich
-they can be discarded.  The question is whether it does cause problems in
-practice.
-
-Anyway, IMO the device that caused a wake-up event should be deactivated be=
-fore
-arch_suspend_enable_irqs() and remain inactive until its driver is actually
-ready to handle interrupts generated by it.
-
-Thanks,
+Best,
 Rafael
