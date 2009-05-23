@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Sat, 23 May 2009 22:14:56 +0200
-Message-ID: <200905232214.57186.rjw__4908.83451789177$1243109896$gmane$org@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<200905230029.18279.rjw@sisk.pl>
-	<4d34a0a70905221603g785f5b78h330249ff258dbfdd@mail.gmail.com>
+Subject: Re: [PATCH] pm: remove bus_type
+	suspend_late()/resume_early() V2
+Date: Sat, 23 May 2009 22:58:26 +0200
+Message-ID: <200905232258.27407.rjw__3714.40779786116$1243112481$gmane$org@sisk.pl>
+References: <20090521082754.1020.73349.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4d34a0a70905221603g785f5b78h330249ff258dbfdd@mail.gmail.com>
+In-Reply-To: <20090521082754.1020.73349.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,38 +19,126 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kim Kyuwon <chammoru@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 23 May 2009, Kim Kyuwon wrote:
-> On Sat, May 23, 2009 at 7:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 23 May 2009, Kim Kyuwon wrote:
-[--snip--]
-> >> You changed the really important part of Linux, which may affect most
-> >> processor architectures. I think you should be careful. If some of
-> >> architectures can't take care of it (they can implement
-> >> disable_irq_wake correctly in H/W level, will you revert your changes?
-> >
-> > No, the changes are not going to be reverted.  In fact things should have been
-> > done like this already much earlier.
-> >
-> > Now, do you have any particular example of a problem related to these changes
-> > or is it only a theoretical issue?
+On Thursday 21 May 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> I'd CCing you when I'm sending a mail for this particular example of a example.
-> http://markmail.org/thread/fvt7d62arofon5xx
+> Remove the ->suspend_late() and ->resume_early() callbacks
+> from struct bus_type V2. These callbacks are legacy stuff
+> at this point and since there seem to be no in-tree users
+> we may as well remove them. New users should use dev_pm_ops.
 
-Well, as I said above, reverting the changes that introduced
-[suspend|resume]_device_irqs() is not an option, becuase it was the only sane
-way to achieve the goal they were added for.  So, we need to fix the wake-up
-problem on your platform with the assumption that
-[suspend|resume]_device_irqs() are going to stay.
+I'd like to apply this patch as is.
 
-For starters, would it be possible to teach the 'disable' hook of your
-platform's interrupt controller not to mask the IRQs that have both
-IRQ_WAKEUP and IRQ_SUSPENDED set?  That apparently would work around the
-wake-up interrupts problem.
+Greg, is it fine with you?
 
 Best,
 Rafael
+
+
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Changes since V1:
+>  - Documentation/power/devices.txt changes
+> 
+>  Documentation/power/devices.txt |   34 +++++-----------------------------
+>  drivers/base/power/main.c       |    7 -------
+>  include/linux/device.h          |    2 --
+>  3 files changed, 5 insertions(+), 38 deletions(-)
+> 
+> --- 0001/Documentation/power/devices.txt
+> +++ work/Documentation/power/devices.txt	2009-05-21 17:19:48.000000000 +0900
+> @@ -75,9 +75,6 @@ may need to apply in domain-specific way
+>  struct bus_type {
+>  	...
+>  	int  (*suspend)(struct device *dev, pm_message_t state);
+> -	int  (*suspend_late)(struct device *dev, pm_message_t state);
+> -
+> -	int  (*resume_early)(struct device *dev);
+>  	int  (*resume)(struct device *dev);
+>  };
+>  
+> @@ -226,20 +223,7 @@ The phases are seen by driver notificati
+>  
+>  	This call should handle parts of device suspend logic that require
+>  	sleeping.  It probably does work to quiesce the device which hasn't
+> -	been abstracted into class.suspend() or bus.suspend_late().
+> -
+> -   3	bus.suspend_late(dev, message) is called with IRQs disabled, and
+> -	with only one CPU active.  Until the bus.resume_early() phase
+> -	completes (see later), IRQs are not enabled again.  This method
+> -	won't be exposed by all busses; for message based busses like USB,
+> -	I2C, or SPI, device interactions normally require IRQs.  This bus
+> -	call may be morphed into a driver call with bus-specific parameters.
+> -
+> -	This call might save low level hardware state that might otherwise
+> -	be lost in the upcoming low power state, and actually put the
+> -	device into a low power state ... so that in some cases the device
+> -	may stay partly usable until this late.  This "late" call may also
+> -	help when coping with hardware that behaves badly.
+> +	been abstracted into class.suspend().
+>  
+>  The pm_message_t parameter is currently used to refine those semantics
+>  (described later).
+> @@ -351,19 +335,11 @@ devices processing each phase's calls be
+>  
+>  The phases are seen by driver notifications issued in this order:
+>  
+> -   1	bus.resume_early(dev) is called with IRQs disabled, and with
+> -   	only one CPU active.  As with bus.suspend_late(), this method
+> -	won't be supported on busses that require IRQs in order to
+> -	interact with devices.
+> -
+> -	This reverses the effects of bus.suspend_late().
+> -
+> -   2	bus.resume(dev) is called next.  This may be morphed into a device
+> -   	driver call with bus-specific parameters; implementations may sleep.
+> -
+> -	This reverses the effects of bus.suspend().
+> +   1	bus.resume(dev) reverses the effects of bus.suspend().  This may
+> +	be morphed into a device driver call with bus-specific parameters;
+> +	implementations may sleep.
+>  
+> -   3	class.resume(dev) is called for devices associated with a class
+> +   2	class.resume(dev) is called for devices associated with a class
+>  	that has such a method.  Implementations may sleep.
+>  
+>  	This reverses the effects of class.suspend(), and would usually
+> --- 0001/drivers/base/power/main.c
+> +++ work/drivers/base/power/main.c	2009-05-21 17:19:42.000000000 +0900
+> @@ -334,9 +334,6 @@ static int __device_resume_noirq(struct 
+>  	if (dev->bus->pm) {
+>  		pm_dev_dbg(dev, state, "EARLY ");
+>  		error = pm_noirq_op(dev, dev->bus->pm, state);
+> -	} else if (dev->bus->resume_early) {
+> -		pm_dev_dbg(dev, state, "legacy EARLY ");
+> -		error = dev->bus->resume_early(dev);
+>  	}
+>   End:
+>  	TRACE_RESUME(error);
+> @@ -591,10 +588,6 @@ static int __device_suspend_noirq(struct
+>  	if (dev->bus->pm) {
+>  		pm_dev_dbg(dev, state, "LATE ");
+>  		error = pm_noirq_op(dev, dev->bus->pm, state);
+> -	} else if (dev->bus->suspend_late) {
+> -		pm_dev_dbg(dev, state, "legacy LATE ");
+> -		error = dev->bus->suspend_late(dev, state);
+> -		suspend_report_result(dev->bus->suspend_late, error);
+>  	}
+>  	return error;
+>  }
+> --- 0001/include/linux/device.h
+> +++ work/include/linux/device.h	2009-05-21 17:19:42.000000000 +0900
+> @@ -62,8 +62,6 @@ struct bus_type {
+>  	void (*shutdown)(struct device *dev);
+>  
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+> -	int (*suspend_late)(struct device *dev, pm_message_t state);
+> -	int (*resume_early)(struct device *dev);
+>  	int (*resume)(struct device *dev);
+>  
+>  	struct dev_pm_ops *pm;
