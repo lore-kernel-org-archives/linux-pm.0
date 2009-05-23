@@ -1,17 +1,18 @@
-From: Kim Kyuwon <chammoru@gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Sat, 23 May 2009 09:42:49 +0900
-Message-ID: <4d34a0a70905221742rd2456f7tbef5bf01f7797e8f__31892.3685387292$1243039553$gmane$org@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<200905222325.27950.rjw@sisk.pl>
-	<4d34a0a70905221532l772d03b6gb6436f0b8eb10274@mail.gmail.com>
-	<200905230147.16037.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re:
+ =?iso-8859-1?q?=5BRFC=5D_why_do_we_need_run_disk_sync_?=
+ =?iso-8859-1?q?before_entering=09S3?=
+Date: Sat, 23 May 2009 09:59:22 +0200
+Message-ID: <200905230959.23018.oliver__21305.7547146038$1243066551$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
+	<1242631507.16529.107.camel@rzhang-dt>
+	<20090522153356.GB27655@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905230147.16037.rjw@sisk.pl>
+In-Reply-To: <20090522153356.GB27655@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,110 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 23, 2009 at 8:47 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >>> > What do you do if the interrupt triggers right after your drive=
-r has
->> >> >>> > returned from its late suspend hook?
->> >> >>>
->> >> >>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
->> >> >>>
->> >> >>> But I don't see how that can happen in the current code. IIUC, by=
- the
->> >> >>> time your late suspend hook is run, your device IRQ is already
->> >> >>> disabled, so it won't trigger an interrupt that will be caught by
->> >> >>> check_wakeup_irqs() anyways.
->> >> >>
->> >> >> My understanding of __disable_irq() was that it didn't actually di=
-sable the
->> >> >> IRQ at the hardware level, allowing the CPU to actually receive th=
-e interrupt
->> >> >> and acknowledge it, but preventing the device driver for receiving=
- it. =A0Does
->> >> >> it work differently on the affected systems?
->> >> >
->> >> > Hi, Rafael.
->> >> > Sorry for bring the old issue but please let me ask you about
->> >> > suspend_device_irqs() function.
->> >> >
->> >> > __disable_irq() disables the IRQ at the hardware level in the
->> >> > following irq_chips
->> >> >
->> >> > i8259A_chip
->> >> > i8259_pic
->> >> > i8259A_chip
->> >> > bfin_internal_irqchip
->> >> > crisv10_irq_type
->> >> > crisv32_irq_type
->> >> > h8300irq_chip
->> >> > m_irq_chip
->> >> > mn10300_cpu_pic_level
->> >> > xtensa_irq_chip
->> >> > iop13xx_msi_chip
->> >> > msi_irq
->> >> >
->> >> > Because these irq_chips mask interrupts in 'disable' hook.
->> >> >
->> >> > Thus, your suspend_device_irqs() function disables all IRQs at the
->> >> > hardware level on all architectures which use irq_chips listed above
->> >> > in suspend state.
->> >> > Is this really what you wanted?
->> >> >
->> >> > If interrupt can wake up the system from suspend in some architectu=
-res
->> >> > and if disable_irq_wake is not supported in these architectures, I
->> >> > wonder if suspend_device_irqs() don't allow waking up by interrupt.
->> >> >
->> >> > Regards,
->> >> > Kyuwon
->> >> >
->> >>
->> >> I saw resume_device_irqs() is invoked after arch_suspend_enable_irqs()
->> >> in your resume code.
->> >> So in this gap between resume_device_irqs() and
->> >> arch_suspend_enable_irqs(), a few interrupts would be discarded.
->> >> i.e, a few data would be lost.
->> >>
->> >> If keypad wake up the system, first key pressed information would be =
-lost.
->> >> If I2C, USB, SPI, UART wake up the system, first a few data would be =
-lost.
->> >>
->> >> Did you also consider this issue?
->> >
->> > I think it would happen anyway with the old code, wouldn't it?
->>
->> That's not quite right.
->>
->> For example, let's assume a keypad device is alive in suspend/resume
->> state to wake up the system. Before arch_suspend_enable_irqs(), none
->> of keypad irqs is dropped. It is just pending.
->>
->> But in your code, a few irqs are discarded due to your resume_device_irq=
-s().
+Am Freitag, 22. Mai 2009 17:33:57 schrieb Pavel Machek:
+> > Take ACPI for example, ACPI defines two ACPI battery states, one is
+> > "low" and another is "critical".
+> > OS enters S3/S4 when battery is low, while it performs an emergency
+> > shutdown when battery is in critical state. (ACPI spec 3.0b 3.9.4)
+> > So I'm wondering if it's right to enter S3 when we know that the system
+> > may lost power at anytime.
 >
-> You can't say for sure they are discarded, but there's a small window in =
-which
-> they can be discarded. =A0The question is whether it does cause problems =
-in
-> practice.
+> Well, battery only lasts like 30 hours in S3. So if you leave your
+> notebook unattended for 30 hours, you'll loose recent changes.
 
-I tested it on my S3C6410(NCP) Board with MAX7359 keypad which is in
-the Dmitry's Input repo.
+Even if the battery is very low you get 30 hours?
 
-> Anyway, IMO the device that caused a wake-up event should be deactivated =
-before
-> arch_suspend_enable_irqs() and remain inactive until its driver is actual=
-ly
-> ready to handle interrupts generated by it.
-
-Some devices such as Bluetooth chip, keypad(including gpio-key),
-Modem(Telephony, Wlan) chip and etc, should be activated while the
-system suspend/resume state. Because these devices may communicate
-other systems and should receive external wake-up events.
-
-Thanks
-Kyuwon
+	Regards
+		Oliver
