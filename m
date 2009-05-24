@@ -1,15 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] why do we need run disk sync before entering?S3
-Date: Sun, 24 May 2009 23:02:55 +0200
-Message-ID: <200905242302.55640.oliver__25098.7410582185$1243199014$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org>
-	<200905231105.03828.oliver@neukum.org>
-	<20090523094518.GB8782@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] pm: remove bus_type
+	suspend_late()/resume_early() V2
+Date: Sun, 24 May 2009 23:05:34 +0200
+Message-ID: <200905242305.35106.rjw__46065.5536539436$1243199238$gmane$org@sisk.pl>
+References: <20090521082754.1020.73349.sendpatchset@rx1.opensource.se>
+	<20090523212550.GA23127@suse.de> <200905240024.46567.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090523094518.GB8782@elf.ucw.cz>
+In-Reply-To: <200905240024.46567.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,15 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag, 23. Mai 2009 11:45:18 schrieb Pavel Machek:
-> suspend.sf.net, program s2both :-).
+On Sunday 24 May 2009, Rafael J. Wysocki wrote:
+> On Saturday 23 May 2009, Greg KH wrote:
+> > On Sat, May 23, 2009 at 10:58:26PM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday 21 May 2009, Magnus Damm wrote:
+> > > > From: Magnus Damm <damm@igel.co.jp>
+> > > > 
+> > > > Remove the ->suspend_late() and ->resume_early() callbacks
+> > > > from struct bus_type V2. These callbacks are legacy stuff
+> > > > at this point and since there seem to be no in-tree users
+> > > > we may as well remove them. New users should use dev_pm_ops.
+> > > 
+> > > I'd like to apply this patch as is.
+> > > 
+> > > Greg, is it fine with you?
+> > 
+> > Yes, please feel free to apply this to your tree:
+> > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > or do you want me to take it in mine?  If so, no problem, just let me
+> > know, and resend it.
+> 
+> I'll handle it, thanks!
 
-Cool. What happens if you crash after unfreezing user space but before you
-declare the image invalid?
+Patch applied to the suspend-2.6 tree (linux-next branch).
 
-	Regards
-		Oliver
+Thanks,
+Rafael
