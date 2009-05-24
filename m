@@ -1,10 +1,13 @@
-From: "aki" <yu.jingcho@msa.hinet.net>
-Subject: STD (suspend to disk) for ARM
-Date: Tue, 26 May 2009 21:13:25 +0800
-Message-ID: <0137E6B5D7EF4619BEBD1F615E82108B@homeuser>
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+Subject: Re: 2.6.30-rc7: Reported regressions from 2.6.29
+Date: Mon, 25 May 2009 01:07:25 +0300
+Message-ID: <4A19C51D.7020609__5891.21320886097$1243351497$gmane$org@pardus.org.tr>
+References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6158130536241831197=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,139 +15,23 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
-
---===============6158130536241831197==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0000_01C9DE46.D5B27850"
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0000_01C9DE46.D5B27850
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Deal All,
-
-I wanted to implement STD (suspend to disk) on ARM926EJS.
-
-Would you shared any experience for me?
-
- 
-
-Thanks very much
-
-aki
-
-
-------=_NextPart_000_0000_01C9DE46.D5B27850
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:&#26032;&#32048;&#26126;&#39636;;
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:"\@&#26032;&#32048;&#26126;&#39636;";
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
- /* Page Definitions */
- @page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	layout-grid:18.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
-
-<div class=3DSection1 style=3D'layout-grid:18.0pt'>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Deal All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>I wanted to implement STD (suspend to disk) on
-ARM926EJS.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Would you shared any experience for =
-me?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Thanks very much<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>aki<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0000_01C9DE46.D5B27850--
-
-
---===============6158130536241831197==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6158130536241831197==--
+UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
+cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzI2Cj4gU3ViamVjdAkJOiBbUEFUQ0hdTnVsbCBw
+b2ludGVyIGRlcmVmZXJlbmNlIGluIHJ0Yy1jbW9zIGRyaXZlcgo+IFN1Ym1pdHRlcgk6IE96YW4g
+w4dhxJ9sYXlhbiA8b3phbkBwYXJkdXMub3JnLnRyPgo+IERhdGUJCTogMjAwOS0wNS0xNCAxNjox
+NiAoMTEgZGF5cyBvbGQpCj4gUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
+a2VybmVsJm09MTI0MjMxNzgzNzA0Njk2Jnc9NAo+ICAgCgpKdXN0IHRvIG5vdGljZSB0aGF0IHRo
+ZSBwYXRjaCBmb3IgdGhpcyBpcyBhdDoKCmh0dHA6Ly93d3cua2VybmVsLm9yZy9wdWIvbGludXgv
+a2VybmVsL3Blb3BsZS9ncmVna2gvZ3JlZ2toLTIuNi9wYXRjaGVzL2RyaXZlci1jb3JlLmN1cnJl
+bnQvZHJpdmVyLWNvcmUtZG8tbm90LW9vcHMtd2hlbi1kcml2ZXJfdW5yZWdpc3Rlci1pcy1jYWxs
+ZWQtZm9yLXVucmVnaXN0ZXJlZC1kcml2ZXJzLnBhdGNoCgpDYW4gYXQgbGVhc3QgYmUgbWFya2Vk
+IGFzICJoYXMgYSBwYXRjaCIuCgpUaGFua3MsCk96YW4gQ2FnbGF5YW4KX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0Cmxp
+bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
