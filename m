@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Ming Lei <tom.leiming@gmail.com>
 Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Date: Sun, 24 May 2009 01:20:29 +0200
-Message-ID: <200905240120.30336.rjw__49531.7545407035$1243120898$gmane$org@sisk.pl>
+ cleanup_workqueue_thread
+Date: Sun, 24 May 2009 11:29:43 +0800
+Message-ID: <20090524112943.041935da@linux-lm>
 References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
 	<200905230023.16377.rjw@sisk.pl>
 	<1243066902.4606.42.camel@johannes.local>
+	<200905240120.30336.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1243066902.4606.42.camel@johannes.local>
-Content-Disposition: inline
+In-Reply-To: <200905240120.30336.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,243 +21,165 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 23 May 2009, Johannes Berg wrote:
-> On Sat, 2009-05-23 at 00:23 +0200, Rafael J. Wysocki wrote:
-> 
-> > > I just arrived at the same conclusion, heh. I can't say I understand
-> > > these changes though, the part about calling the platform differently
-> > > may make sense, but calling why disable non-boot CPUs at a different
-> > > place?
-> > 
-> > Because the ordering of platform callbacks and cpu[_up()|_down()] is also
-> > important, at least on resume.
-> > 
-> > In principle we can call device_pm_unlock() right before calling
-> > disable_nonboot_cpus() and take the lock again right after calling
-> > enable_nonboot_cpus(), if that helps.
-> 
-> Probably, unless the cpu_add_remove_lock wasn't a red herring after all.
-> I'd test, but I don't have much time today, will be travelling tomorrow
-> and be at UDS all week next week so I don't know when I'll get to it --
-> could you provide a patch and also attach it to
-> http://bugzilla.kernel.org/show_bug.cgi?id=13245 please? Miles (the
-> reporter of that bug) has been very helpful in testing before.
-
-OK
-
-The patch is appended for reference (Alan, please have a look; I can't recall
-why exactly we have called device_pm_lock() from the core suspend/hibernation
-code instead of acquiring the lock locally in drivers/base/power/main.c) and
-I'll attach it to the bug entry too.
-
-Thanks,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Do not hold dpm_list_mtx while disabling/enabling nonboot CPUs
-
-We shouldn't hold dpm_list_mtx while executing
-[disable|enable]_nonboot_cpus(), because theoretically this may lead
-to a deadlock as shown by the following example (provided by Johannes
-Berg):
-
-CPU 3       CPU 2                     CPU 1
-                                      suspend/hibernate
-            something:
-            rtnl_lock()               device_pm_lock()
-                                       -> mutex_lock(&dpm_list_mtx)
-
-            mutex_lock(&dpm_list_mtx)
-
-linkwatch_work
- -> rtnl_lock()
-                                      disable_nonboot_cpus()
-                                       -> flush CPU 3 workqueue
-
-Fortunately, device drivers are supposed to stop any activities that
-might lead to the registration of new device objects and/or to the
-removal of the existing ones way before disable_nonboot_cpus() is
-called, so it shouldn't be necessary to hold dpm_list_mtx over the
-entire late part of device suspend and early part of device resume.
-
-Thus, during the late suspend and the early resume of devices acquire
-dpm_list_mtx only when dpm_list is going to be traversed and release
-it right after that.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |    4 ++++
- kernel/kexec.c            |    2 --
- kernel/power/disk.c       |   21 +++------------------
- kernel/power/main.c       |    7 +------
- 4 files changed, 8 insertions(+), 26 deletions(-)
-
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -215,8 +215,6 @@ static int create_image(int platform_mod
- 	if (error)
- 		return error;
- 
--	device_pm_lock();
--
- 	/* At this point, device_suspend() has been called, but *not*
- 	 * device_power_down(). We *must* call device_power_down() now.
- 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-@@ -227,7 +225,7 @@ static int create_image(int platform_mod
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting hibernation\n");
--		goto Unlock;
-+		return error;
- 	}
- 
- 	error = platform_pre_snapshot(platform_mode);
-@@ -280,9 +278,6 @@ static int create_image(int platform_mod
- 	device_power_up(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
- 
-- Unlock:
--	device_pm_unlock();
--
- 	return error;
- }
- 
-@@ -348,13 +343,11 @@ static int resume_target_kernel(bool pla
- {
- 	int error;
- 
--	device_pm_lock();
--
- 	error = device_power_down(PMSG_QUIESCE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting resume\n");
--		goto Unlock;
-+		return error;
- 	}
- 
- 	error = platform_pre_restore(platform_mode);
-@@ -407,9 +400,6 @@ static int resume_target_kernel(bool pla
- 
- 	device_power_up(PMSG_RECOVER);
- 
-- Unlock:
--	device_pm_unlock();
--
- 	return error;
- }
- 
-@@ -468,11 +458,9 @@ int hibernation_platform_enter(void)
- 		goto Resume_devices;
- 	}
- 
--	device_pm_lock();
--
- 	error = device_power_down(PMSG_HIBERNATE);
- 	if (error)
--		goto Unlock;
-+		goto Resume_devices;
- 
- 	error = hibernation_ops->prepare();
- 	if (error)
-@@ -497,9 +485,6 @@ int hibernation_platform_enter(void)
- 
- 	device_power_up(PMSG_RESTORE);
- 
-- Unlock:
--	device_pm_unlock();
--
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	device_resume(PMSG_RESTORE);
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -271,12 +271,10 @@ static int suspend_enter(suspend_state_t
- {
- 	int error;
- 
--	device_pm_lock();
--
- 	if (suspend_ops->prepare) {
- 		error = suspend_ops->prepare();
- 		if (error)
--			goto Done;
-+			return error;
- 	}
- 
- 	error = device_power_down(PMSG_SUSPEND);
-@@ -325,9 +323,6 @@ static int suspend_enter(suspend_state_t
- 	if (suspend_ops->finish)
- 		suspend_ops->finish();
- 
-- Done:
--	device_pm_unlock();
--
- 	return error;
- }
- 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -357,6 +357,7 @@ static void dpm_power_up(pm_message_t st
- {
- 	struct device *dev;
- 
-+	mutex_lock(&dpm_list_mtx);
- 	list_for_each_entry(dev, &dpm_list, power.entry)
- 		if (dev->power.status > DPM_OFF) {
- 			int error;
-@@ -366,6 +367,7 @@ static void dpm_power_up(pm_message_t st
- 			if (error)
- 				pm_dev_err(dev, state, " early", error);
- 		}
-+	mutex_unlock(&dpm_list_mtx);
- }
- 
- /**
-@@ -614,6 +616,7 @@ int device_power_down(pm_message_t state
- 	int error = 0;
- 
- 	suspend_device_irqs();
-+	mutex_lock(&dpm_list_mtx);
- 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
- 		error = suspend_device_noirq(dev, state);
- 		if (error) {
-@@ -622,6 +625,7 @@ int device_power_down(pm_message_t state
- 		}
- 		dev->power.status = DPM_OFF_IRQ;
- 	}
-+	mutex_unlock(&dpm_list_mtx);
- 	if (error)
- 		device_power_up(resume_event(state));
- 	return error;
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -1451,7 +1451,6 @@ int kernel_kexec(void)
- 		error = device_suspend(PMSG_FREEZE);
- 		if (error)
- 			goto Resume_console;
--		device_pm_lock();
- 		/* At this point, device_suspend() has been called,
- 		 * but *not* device_power_down(). We *must*
- 		 * device_power_down() now.  Otherwise, drivers for
-@@ -1489,7 +1488,6 @@ int kernel_kexec(void)
- 		enable_nonboot_cpus();
- 		device_power_up(PMSG_RESTORE);
-  Resume_devices:
--		device_pm_unlock();
- 		device_resume(PMSG_RESTORE);
-  Resume_console:
- 		resume_console();
+09ogU3VuLCAyNCBNYXkgMjAwOSAwMToyMDoyOSArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
+andAc2lzay5wbD4g0LS1wDoKCj4gT24gU2F0dXJkYXkgMjMgTWF5IDIwMDksIEpvaGFubmVzIEJl
+cmcgd3JvdGU6Cj4gPiBPbiBTYXQsIDIwMDktMDUtMjMgYXQgMDA6MjMgKzAyMDAsIFJhZmFlbCBK
+LiBXeXNvY2tpIHdyb3RlOgo+ID4gCj4gPiA+ID4gSSBqdXN0IGFycml2ZWQgYXQgdGhlIHNhbWUg
+Y29uY2x1c2lvbiwgaGVoLiBJIGNhbid0IHNheSBJCj4gPiA+ID4gdW5kZXJzdGFuZCB0aGVzZSBj
+aGFuZ2VzIHRob3VnaCwgdGhlIHBhcnQgYWJvdXQgY2FsbGluZyB0aGUKPiA+ID4gPiBwbGF0Zm9y
+bSBkaWZmZXJlbnRseSBtYXkgbWFrZSBzZW5zZSwgYnV0IGNhbGxpbmcgd2h5IGRpc2FibGUKPiA+
+ID4gPiBub24tYm9vdCBDUFVzIGF0IGEgZGlmZmVyZW50IHBsYWNlPwo+ID4gPiAKPiA+ID4gQmVj
+YXVzZSB0aGUgb3JkZXJpbmcgb2YgcGxhdGZvcm0gY2FsbGJhY2tzIGFuZCBjcHVbX3VwKCl8X2Rv
+d24oKV0KPiA+ID4gaXMgYWxzbyBpbXBvcnRhbnQsIGF0IGxlYXN0IG9uIHJlc3VtZS4KPiA+ID4g
+Cj4gPiA+IEluIHByaW5jaXBsZSB3ZSBjYW4gY2FsbCBkZXZpY2VfcG1fdW5sb2NrKCkgcmlnaHQg
+YmVmb3JlIGNhbGxpbmcKPiA+ID4gZGlzYWJsZV9ub25ib290X2NwdXMoKSBhbmQgdGFrZSB0aGUg
+bG9jayBhZ2FpbiByaWdodCBhZnRlciBjYWxsaW5nCj4gPiA+IGVuYWJsZV9ub25ib290X2NwdXMo
+KSwgaWYgdGhhdCBoZWxwcy4KPiA+IAo+ID4gUHJvYmFibHksIHVubGVzcyB0aGUgY3B1X2FkZF9y
+ZW1vdmVfbG9jayB3YXNuJ3QgYSByZWQgaGVycmluZyBhZnRlcgo+ID4gYWxsLiBJJ2QgdGVzdCwg
+YnV0IEkgZG9uJ3QgaGF2ZSBtdWNoIHRpbWUgdG9kYXksIHdpbGwgYmUgdHJhdmVsbGluZwo+ID4g
+dG9tb3Jyb3cgYW5kIGJlIGF0IFVEUyBhbGwgd2VlayBuZXh0IHdlZWsgc28gSSBkb24ndCBrbm93
+IHdoZW4gSSdsbAo+ID4gZ2V0IHRvIGl0IC0tIGNvdWxkIHlvdSBwcm92aWRlIGEgcGF0Y2ggYW5k
+IGFsc28gYXR0YWNoIGl0IHRvCj4gPiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
+Zy5jZ2k/aWQ9MTMyNDUgcGxlYXNlPyBNaWxlcyAodGhlCj4gPiByZXBvcnRlciBvZiB0aGF0IGJ1
+ZykgaGFzIGJlZW4gdmVyeSBoZWxwZnVsIGluIHRlc3RpbmcgYmVmb3JlLgo+IAo+IE9LCj4gCj4g
+VGhlIHBhdGNoIGlzIGFwcGVuZGVkIGZvciByZWZlcmVuY2UgKEFsYW4sIHBsZWFzZSBoYXZlIGEg
+bG9vazsgSQo+IGNhbid0IHJlY2FsbCB3aHkgZXhhY3RseSB3ZSBoYXZlIGNhbGxlZCBkZXZpY2Vf
+cG1fbG9jaygpIGZyb20gdGhlCj4gY29yZSBzdXNwZW5kL2hpYmVybmF0aW9uIGNvZGUgaW5zdGVh
+ZCBvZiBhY3F1aXJpbmcgdGhlIGxvY2sgbG9jYWxseQo+IGluIGRyaXZlcnMvYmFzZS9wb3dlci9t
+YWluLmMpIGFuZCBJJ2xsIGF0dGFjaCBpdCB0byB0aGUgYnVnIGVudHJ5IHRvby4KPiAKPiBUaGFu
+a3MsCj4gUmFmYWVsCj4gCj4gLS0tCj4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNr
+LnBsPgo+IFN1YmplY3Q6IFBNOiBEbyBub3QgaG9sZCBkcG1fbGlzdF9tdHggd2hpbGUgZGlzYWJs
+aW5nL2VuYWJsaW5nCj4gbm9uYm9vdCBDUFVzCj4gCj4gV2Ugc2hvdWxkbid0IGhvbGQgZHBtX2xp
+c3RfbXR4IHdoaWxlIGV4ZWN1dGluZwo+IFtkaXNhYmxlfGVuYWJsZV1fbm9uYm9vdF9jcHVzKCks
+IGJlY2F1c2UgdGhlb3JldGljYWxseSB0aGlzIG1heSBsZWFkCj4gdG8gYSBkZWFkbG9jayBhcyBz
+aG93biBieSB0aGUgZm9sbG93aW5nIGV4YW1wbGUgKHByb3ZpZGVkIGJ5IEpvaGFubmVzCj4gQmVy
+Zyk6Cj4gCj4gQ1BVIDMgICAgICAgQ1BVIDIgICAgICAgICAgICAgICAgICAgICBDUFUgMQo+ICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3VzcGVuZC9oaWJlcm5hdGUKPiAg
+ICAgICAgICAgICBzb21ldGhpbmc6Cj4gICAgICAgICAgICAgcnRubF9sb2NrKCkgICAgICAgICAg
+ICAgICBkZXZpY2VfcG1fbG9jaygpCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgLT4gbXV0ZXhfbG9jaygmZHBtX2xpc3RfbXR4KQo+IAo+ICAgICAgICAgICAgIG11dGV4
+X2xvY2soJmRwbV9saXN0X210eCkKPiAKPiBsaW5rd2F0Y2hfd29yawo+ICAtPiBydG5sX2xvY2so
+KQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGlzYWJsZV9ub25ib290
+X2NwdXMoKQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC0+IGZsdXNo
+IENQVSAzIHdvcmtxdWV1ZQo+IAo+IEZvcnR1bmF0ZWx5LCBkZXZpY2UgZHJpdmVycyBhcmUgc3Vw
+cG9zZWQgdG8gc3RvcCBhbnkgYWN0aXZpdGllcyB0aGF0Cj4gbWlnaHQgbGVhZCB0byB0aGUgcmVn
+aXN0cmF0aW9uIG9mIG5ldyBkZXZpY2Ugb2JqZWN0cyBhbmQvb3IgdG8gdGhlCj4gcmVtb3ZhbCBv
+ZiB0aGUgZXhpc3Rpbmcgb25lcyB3YXkgYmVmb3JlIGRpc2FibGVfbm9uYm9vdF9jcHVzKCkgaXMK
+PiBjYWxsZWQsIHNvIGl0IHNob3VsZG4ndCBiZSBuZWNlc3NhcnkgdG8gaG9sZCBkcG1fbGlzdF9t
+dHggb3ZlciB0aGUKPiBlbnRpcmUgbGF0ZSBwYXJ0IG9mIGRldmljZSBzdXNwZW5kIGFuZCBlYXJs
+eSBwYXJ0IG9mIGRldmljZSByZXN1bWUuCj4gCj4gVGh1cywgZHVyaW5nIHRoZSBsYXRlIHN1c3Bl
+bmQgYW5kIHRoZSBlYXJseSByZXN1bWUgb2YgZGV2aWNlcyBhY3F1aXJlCj4gZHBtX2xpc3RfbXR4
+IG9ubHkgd2hlbiBkcG1fbGlzdCBpcyBnb2luZyB0byBiZSB0cmF2ZXJzZWQgYW5kIHJlbGVhc2UK
+PiBpdCByaWdodCBhZnRlciB0aGF0Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNv
+Y2tpIDxyandAc2lzay5wbD4KPiAtLS0KPiAgZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYyB8ICAg
+IDQgKysrKwo+ICBrZXJuZWwva2V4ZWMuYyAgICAgICAgICAgIHwgICAgMiAtLQo+ICBrZXJuZWwv
+cG93ZXIvZGlzay5jICAgICAgIHwgICAyMSArKystLS0tLS0tLS0tLS0tLS0tLS0KPiAga2VybmVs
+L3Bvd2VyL21haW4uYyAgICAgICB8ICAgIDcgKy0tLS0tLQo+ICA0IGZpbGVzIGNoYW5nZWQsIDgg
+aW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRpb25zKC0pCj4gCgpJIHRyeSB0byBhcHBseSB0aGUgcGF0
+Y2ggYWdhaW5zdCBsYXN0ZXN0IG5leHQgdHJlZSgyMDA5LTA1LTIyKSwgYnV0CiJwYXRjaCAtcDEi
+IGlzIGZhaWx1cmVkOgoKCltsbUBsaW51eC1sbSBsaW51eC0yLjZdJCBwYXRjaCAtcDEgPCAgLi4v
+cGF0Y2hfcngvSU5GT19wb3NzaWJsZV9jaXJjdWxhcl9sb2NraW5nX2RlcGVuZGVuY3lfYXRfY2xl
+YW51cF93b3JrcXVldWVfdGhyZWFkLnBhdGNoIApwYXRjaGluZyBmaWxlIGtlcm5lbC9wb3dlci9k
+aXNrLmMKSHVuayAjMSBzdWNjZWVkZWQgYXQgMjE1IHdpdGggZnV6eiAyLgpIdW5rICMzIHN1Y2Nl
+ZWRlZCBhdCAyNzggd2l0aCBmdXp6IDEuCkh1bmsgIzQgRkFJTEVEIGF0IDM0My4KSHVuayAjNSBz
+dWNjZWVkZWQgYXQgMzk2IHdpdGggZnV6eiAyIChvZmZzZXQgLTQgbGluZXMpLgpIdW5rICM2IEZB
+SUxFRCBhdCA0NTQuCkh1bmsgIzcgc3VjY2VlZGVkIGF0IDQ4NSB3aXRoIGZ1enogMi4KMiBvdXQg
+b2YgNyBodW5rcyBGQUlMRUQgLS0gc2F2aW5nIHJlamVjdHMgdG8gZmlsZSBrZXJuZWwvcG93ZXIv
+ZGlzay5jLnJlagpwYXRjaGluZyBmaWxlIGtlcm5lbC9wb3dlci9tYWluLmMKSHVuayAjMSBzdWNj
+ZWVkZWQgYXQgMjg5IHdpdGggZnV6eiAxIChvZmZzZXQgMTggbGluZXMpLgpwYXRjaGluZyBmaWxl
+IGRyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMKSHVuayAjMyBzdWNjZWVkZWQgYXQgNjE2IHdpdGgg
+ZnV6eiAyLgpIdW5rICM0IHN1Y2NlZWRlZCBhdCA2MjUgd2l0aCBmdXp6IDIuCnBhdGNoaW5nIGZp
+bGUga2VybmVsL2tleGVjLmMKSHVuayAjMSBzdWNjZWVkZWQgYXQgMTQ1MSB3aXRoIGZ1enogMi4K
+SHVuayAjMiBzdWNjZWVkZWQgYXQgMTQ4OCB3aXRoIGZ1enogMi4KCgoKPiBJbmRleDogbGludXgt
+Mi42L2tlcm5lbC9wb3dlci9kaXNrLmMKPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gLS0tIGxpbnV4LTIuNi5vcmln
+L2tlcm5lbC9wb3dlci9kaXNrLmMKPiArKysgbGludXgtMi42L2tlcm5lbC9wb3dlci9kaXNrLmMK
+PiBAQCAtMjE1LDggKzIxNSw2IEBAIHN0YXRpYyBpbnQgY3JlYXRlX2ltYWdlKGludCBwbGF0Zm9y
+bV9tb2QKPiAgCWlmIChlcnJvcikKPiAgCQlyZXR1cm4gZXJyb3I7Cj4gIAo+IC0JZGV2aWNlX3Bt
+X2xvY2soKTsKPiAtCj4gIAkvKiBBdCB0aGlzIHBvaW50LCBkZXZpY2Vfc3VzcGVuZCgpIGhhcyBi
+ZWVuIGNhbGxlZCwgYnV0ICpub3QqCj4gIAkgKiBkZXZpY2VfcG93ZXJfZG93bigpLiBXZSAqbXVz
+dCogY2FsbCBkZXZpY2VfcG93ZXJfZG93bigpCj4gbm93Lgo+ICAJICogT3RoZXJ3aXNlLCBkcml2
+ZXJzIGZvciBzb21lIGRldmljZXMgKGUuZy4gaW50ZXJydXB0Cj4gY29udHJvbGxlcnMpIEBAIC0y
+MjcsNyArMjI1LDcgQEAgc3RhdGljIGludCBjcmVhdGVfaW1hZ2UoaW50Cj4gcGxhdGZvcm1fbW9k
+IGlmIChlcnJvcikgewo+ICAJCXByaW50ayhLRVJOX0VSUiAiUE06IFNvbWUgZGV2aWNlcyBmYWls
+ZWQgdG8gcG93ZXIKPiBkb3duLCAiICJhYm9ydGluZyBoaWJlcm5hdGlvblxuIik7Cj4gLQkJZ290
+byBVbmxvY2s7Cj4gKwkJcmV0dXJuIGVycm9yOwo+ICAJfQo+ICAKPiAgCWVycm9yID0gcGxhdGZv
+cm1fcHJlX3NuYXBzaG90KHBsYXRmb3JtX21vZGUpOwo+IEBAIC0yODAsOSArMjc4LDYgQEAgc3Rh
+dGljIGludCBjcmVhdGVfaW1hZ2UoaW50IHBsYXRmb3JtX21vZAo+ICAJZGV2aWNlX3Bvd2VyX3Vw
+KGluX3N1c3BlbmQgPwo+ICAJCShlcnJvciA/IFBNU0dfUkVDT1ZFUiA6IFBNU0dfVEhBVykgOiBQ
+TVNHX1JFU1RPUkUpOwo+ICAKPiAtIFVubG9jazoKPiAtCWRldmljZV9wbV91bmxvY2soKTsKPiAt
+Cj4gIAlyZXR1cm4gZXJyb3I7Cj4gIH0KPiAgCj4gQEAgLTM0OCwxMyArMzQzLDExIEBAIHN0YXRp
+YyBpbnQgcmVzdW1lX3RhcmdldF9rZXJuZWwoYm9vbCBwbGEKPiAgewo+ICAJaW50IGVycm9yOwo+
+ICAKPiAtCWRldmljZV9wbV9sb2NrKCk7Cj4gLQo+ICAJZXJyb3IgPSBkZXZpY2VfcG93ZXJfZG93
+bihQTVNHX1FVSUVTQ0UpOwo+ICAJaWYgKGVycm9yKSB7Cj4gIAkJcHJpbnRrKEtFUk5fRVJSICJQ
+TTogU29tZSBkZXZpY2VzIGZhaWxlZCB0byBwb3dlcgo+IGRvd24sICIgImFib3J0aW5nIHJlc3Vt
+ZVxuIik7Cj4gLQkJZ290byBVbmxvY2s7Cj4gKwkJcmV0dXJuIGVycm9yOwo+ICAJfQo+ICAKPiAg
+CWVycm9yID0gcGxhdGZvcm1fcHJlX3Jlc3RvcmUocGxhdGZvcm1fbW9kZSk7Cj4gQEAgLTQwNyw5
+ICs0MDAsNiBAQCBzdGF0aWMgaW50IHJlc3VtZV90YXJnZXRfa2VybmVsKGJvb2wgcGxhCj4gIAo+
+ICAJZGV2aWNlX3Bvd2VyX3VwKFBNU0dfUkVDT1ZFUik7Cj4gIAo+IC0gVW5sb2NrOgo+IC0JZGV2
+aWNlX3BtX3VubG9jaygpOwo+IC0KPiAgCXJldHVybiBlcnJvcjsKPiAgfQo+ICAKPiBAQCAtNDY4
+LDExICs0NTgsOSBAQCBpbnQgaGliZXJuYXRpb25fcGxhdGZvcm1fZW50ZXIodm9pZCkKPiAgCQln
+b3RvIFJlc3VtZV9kZXZpY2VzOwo+ICAJfQo+ICAKPiAtCWRldmljZV9wbV9sb2NrKCk7Cj4gLQo+
+ICAJZXJyb3IgPSBkZXZpY2VfcG93ZXJfZG93bihQTVNHX0hJQkVSTkFURSk7Cj4gIAlpZiAoZXJy
+b3IpCj4gLQkJZ290byBVbmxvY2s7Cj4gKwkJZ290byBSZXN1bWVfZGV2aWNlczsKPiAgCj4gIAll
+cnJvciA9IGhpYmVybmF0aW9uX29wcy0+cHJlcGFyZSgpOwo+ICAJaWYgKGVycm9yKQo+IEBAIC00
+OTcsOSArNDg1LDYgQEAgaW50IGhpYmVybmF0aW9uX3BsYXRmb3JtX2VudGVyKHZvaWQpCj4gIAo+
+ICAJZGV2aWNlX3Bvd2VyX3VwKFBNU0dfUkVTVE9SRSk7Cj4gIAo+IC0gVW5sb2NrOgo+IC0JZGV2
+aWNlX3BtX3VubG9jaygpOwo+IC0KPiAgIFJlc3VtZV9kZXZpY2VzOgo+ICAJZW50ZXJpbmdfcGxh
+dGZvcm1faGliZXJuYXRpb24gPSBmYWxzZTsKPiAgCWRldmljZV9yZXN1bWUoUE1TR19SRVNUT1JF
+KTsKPiBJbmRleDogbGludXgtMi42L2tlcm5lbC9wb3dlci9tYWluLmMKPiA9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4g
+LS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9wb3dlci9tYWluLmMKPiArKysgbGludXgtMi42L2tl
+cm5lbC9wb3dlci9tYWluLmMKPiBAQCAtMjcxLDEyICsyNzEsMTAgQEAgc3RhdGljIGludCBzdXNw
+ZW5kX2VudGVyKHN1c3BlbmRfc3RhdGVfdAo+ICB7Cj4gIAlpbnQgZXJyb3I7Cj4gIAo+IC0JZGV2
+aWNlX3BtX2xvY2soKTsKPiAtCj4gIAlpZiAoc3VzcGVuZF9vcHMtPnByZXBhcmUpIHsKPiAgCQll
+cnJvciA9IHN1c3BlbmRfb3BzLT5wcmVwYXJlKCk7Cj4gIAkJaWYgKGVycm9yKQo+IC0JCQlnb3Rv
+IERvbmU7Cj4gKwkJCXJldHVybiBlcnJvcjsKPiAgCX0KPiAgCj4gIAllcnJvciA9IGRldmljZV9w
+b3dlcl9kb3duKFBNU0dfU1VTUEVORCk7Cj4gQEAgLTMyNSw5ICszMjMsNiBAQCBzdGF0aWMgaW50
+IHN1c3BlbmRfZW50ZXIoc3VzcGVuZF9zdGF0ZV90Cj4gIAlpZiAoc3VzcGVuZF9vcHMtPmZpbmlz
+aCkKPiAgCQlzdXNwZW5kX29wcy0+ZmluaXNoKCk7Cj4gIAo+IC0gRG9uZToKPiAtCWRldmljZV9w
+bV91bmxvY2soKTsKPiAtCj4gIAlyZXR1cm4gZXJyb3I7Cj4gIH0KPiAgCj4gSW5kZXg6IGxpbnV4
+LTIuNi9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51eC0y
+LjYub3JpZy9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jCj4gKysrIGxpbnV4LTIuNi9kcml2ZXJz
+L2Jhc2UvcG93ZXIvbWFpbi5jCj4gQEAgLTM1Nyw2ICszNTcsNyBAQCBzdGF0aWMgdm9pZCBkcG1f
+cG93ZXJfdXAocG1fbWVzc2FnZV90IHN0Cj4gIHsKPiAgCXN0cnVjdCBkZXZpY2UgKmRldjsKPiAg
+Cj4gKwltdXRleF9sb2NrKCZkcG1fbGlzdF9tdHgpOwo+ICAJbGlzdF9mb3JfZWFjaF9lbnRyeShk
+ZXYsICZkcG1fbGlzdCwgcG93ZXIuZW50cnkpCj4gIAkJaWYgKGRldi0+cG93ZXIuc3RhdHVzID4g
+RFBNX09GRikgewo+ICAJCQlpbnQgZXJyb3I7Cj4gQEAgLTM2Niw2ICszNjcsNyBAQCBzdGF0aWMg
+dm9pZCBkcG1fcG93ZXJfdXAocG1fbWVzc2FnZV90IHN0Cj4gIAkJCWlmIChlcnJvcikKPiAgCQkJ
+CXBtX2Rldl9lcnIoZGV2LCBzdGF0ZSwgIiBlYXJseSIsCj4gZXJyb3IpOyB9Cj4gKwltdXRleF91
+bmxvY2soJmRwbV9saXN0X210eCk7Cj4gIH0KPiAgCj4gIC8qKgo+IEBAIC02MTQsNiArNjE2LDcg
+QEAgaW50IGRldmljZV9wb3dlcl9kb3duKHBtX21lc3NhZ2VfdCBzdGF0ZQo+ICAJaW50IGVycm9y
+ID0gMDsKPiAgCj4gIAlzdXNwZW5kX2RldmljZV9pcnFzKCk7Cj4gKwltdXRleF9sb2NrKCZkcG1f
+bGlzdF9tdHgpOwo+ICAJbGlzdF9mb3JfZWFjaF9lbnRyeV9yZXZlcnNlKGRldiwgJmRwbV9saXN0
+LCBwb3dlci5lbnRyeSkgewo+ICAJCWVycm9yID0gc3VzcGVuZF9kZXZpY2Vfbm9pcnEoZGV2LCBz
+dGF0ZSk7Cj4gIAkJaWYgKGVycm9yKSB7Cj4gQEAgLTYyMiw2ICs2MjUsNyBAQCBpbnQgZGV2aWNl
+X3Bvd2VyX2Rvd24ocG1fbWVzc2FnZV90IHN0YXRlCj4gIAkJfQo+ICAJCWRldi0+cG93ZXIuc3Rh
+dHVzID0gRFBNX09GRl9JUlE7Cj4gIAl9Cj4gKwltdXRleF91bmxvY2soJmRwbV9saXN0X210eCk7
+Cj4gIAlpZiAoZXJyb3IpCj4gIAkJZGV2aWNlX3Bvd2VyX3VwKHJlc3VtZV9ldmVudChzdGF0ZSkp
+Owo+ICAJcmV0dXJuIGVycm9yOwo+IEluZGV4OiBsaW51eC0yLjYva2VybmVsL2tleGVjLmMKPiA9
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09Cj4gLS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9rZXhlYy5jCj4gKysrIGxpbnV4
+LTIuNi9rZXJuZWwva2V4ZWMuYwo+IEBAIC0xNDUxLDcgKzE0NTEsNiBAQCBpbnQga2VybmVsX2tl
+eGVjKHZvaWQpCj4gIAkJZXJyb3IgPSBkZXZpY2Vfc3VzcGVuZChQTVNHX0ZSRUVaRSk7Cj4gIAkJ
+aWYgKGVycm9yKQo+ICAJCQlnb3RvIFJlc3VtZV9jb25zb2xlOwo+IC0JCWRldmljZV9wbV9sb2Nr
+KCk7Cj4gIAkJLyogQXQgdGhpcyBwb2ludCwgZGV2aWNlX3N1c3BlbmQoKSBoYXMgYmVlbiBjYWxs
+ZWQsCj4gIAkJICogYnV0ICpub3QqIGRldmljZV9wb3dlcl9kb3duKCkuIFdlICptdXN0Kgo+ICAJ
+CSAqIGRldmljZV9wb3dlcl9kb3duKCkgbm93LiAgT3RoZXJ3aXNlLCBkcml2ZXJzIGZvcgo+IEBA
+IC0xNDg5LDcgKzE0ODgsNiBAQCBpbnQga2VybmVsX2tleGVjKHZvaWQpCj4gIAkJZW5hYmxlX25v
+bmJvb3RfY3B1cygpOwo+ICAJCWRldmljZV9wb3dlcl91cChQTVNHX1JFU1RPUkUpOwo+ICAgUmVz
+dW1lX2RldmljZXM6Cj4gLQkJZGV2aWNlX3BtX3VubG9jaygpOwo+ICAJCWRldmljZV9yZXN1bWUo
+UE1TR19SRVNUT1JFKTsKPiAgIFJlc3VtZV9jb25zb2xlOgo+ICAJCXJlc3VtZV9jb25zb2xlKCk7
+Cj4gLS0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
+dWJzY3JpYmUKPiBsaW51eC1rZXJuZWwiIGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpv
+cmRvbW9Admdlci5rZXJuZWwub3JnCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3Zn
+ZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sCj4gUGxlYXNlIHJlYWQgdGhlIEZBUSBh
+dCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvCgoKCi0tIApMZWkgTWluZwpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QK
+bGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
