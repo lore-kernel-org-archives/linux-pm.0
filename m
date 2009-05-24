@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Date: Sun, 24 May 2009 21:09:30 +0200
-Message-ID: <200905242109.31265.rjw__18541.4627347656$1243192216$gmane$org@sisk.pl>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	<200905241309.14253.rjw@sisk.pl> <20090524204810.0b70a205@linux-lm>
+Subject: Re: 2 bugs related to suspend to disk
+Date: Sun, 24 May 2009 21:58:14 +0200
+Message-ID: <200905242158.15093.rjw__39203.7749560133$1243195199$gmane$org@sisk.pl>
+References: <4A199A7A.3010705@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090524204810.0b70a205@linux-lm>
+In-Reply-To: <4A199A7A.3010705@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,45 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5IDI0IE1heSAyMDA5LCBNaW5nIExlaSB3cm90ZToKPiBPbiBTdW4sIDI0IE1heSAy
-MDA5IDEzOjA5OjEzICswMjAwCj4gIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+IHdy
-b3RlOgo+IAo+ID4gT24gU3VuZGF5IDI0IE1heSAyMDA5LCBNaW5nIExlaSB3cm90ZToKPiA+ID4g
-5LqOIFN1biwgMjQgTWF5IDIwMDkgMDE6MjA6MjkgKzAyMDAKPiA+ID4gIlJhZmFlbCBKLiBXeXNv
-Y2tpIiA8cmp3QHNpc2sucGw+IHdyb3RlOgo+IAo+ID4gPiBbbG1AbGludXgtbG0gbGludXgtMi42
-XSQgcGF0Y2ggLXAxCj4gPiA+IDwgIC4uL3BhdGNoX3J4L0lORk9fcG9zc2libGVfY2lyY3VsYXJf
-bG9ja2luZ19kZXBlbmRlbmN5X2F0X2NsZWFudXBfd29ya3F1ZXVlX3RocmVhZC5wYXRjaAo+ID4g
-PiBwYXRjaGluZyBmaWxlIGtlcm5lbC9wb3dlci9kaXNrLmMgSHVuayAjMSBzdWNjZWVkZWQgYXQg
-MjE1IHdpdGgKPiA+ID4gZnV6eiAyLiBIdW5rICMzIHN1Y2NlZWRlZCBhdCAyNzggd2l0aCBmdXp6
-IDEuCj4gPiA+IEh1bmsgIzQgRkFJTEVEIGF0IDM0My4KPiA+ID4gSHVuayAjNSBzdWNjZWVkZWQg
-YXQgMzk2IHdpdGggZnV6eiAyIChvZmZzZXQgLTQgbGluZXMpLgo+ID4gPiBIdW5rICM2IEZBSUxF
-RCBhdCA0NTQuCj4gPiA+IEh1bmsgIzcgc3VjY2VlZGVkIGF0IDQ4NSB3aXRoIGZ1enogMi4KPiA+
-ID4gMiBvdXQgb2YgNyBodW5rcyBGQUlMRUQgLS0gc2F2aW5nIHJlamVjdHMgdG8gZmlsZQo+ID4g
-PiBrZXJuZWwvcG93ZXIvZGlzay5jLnJlaiBwYXRjaGluZyBmaWxlIGtlcm5lbC9wb3dlci9tYWlu
-LmMKPiA+ID4gSHVuayAjMSBzdWNjZWVkZWQgYXQgMjg5IHdpdGggZnV6eiAxIChvZmZzZXQgMTgg
-bGluZXMpLgo+ID4gPiBwYXRjaGluZyBmaWxlIGRyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMKPiA+
-ID4gSHVuayAjMyBzdWNjZWVkZWQgYXQgNjE2IHdpdGggZnV6eiAyLgo+ID4gPiBIdW5rICM0IHN1
-Y2NlZWRlZCBhdCA2MjUgd2l0aCBmdXp6IDIuCj4gPiA+IHBhdGNoaW5nIGZpbGUga2VybmVsL2tl
-eGVjLmMKPiA+ID4gSHVuayAjMSBzdWNjZWVkZWQgYXQgMTQ1MSB3aXRoIGZ1enogMi4KPiA+ID4g
-SHVuayAjMiBzdWNjZWVkZWQgYXQgMTQ4OCB3aXRoIGZ1enogMi4KPiA+IAo+ID4gVGhlIHBhdGNo
-IGFwcGxpZXMgdG8gdGhlIG1haW5saW5lLCBzaW5jZSBpdCdsbCBiZSBhIDIuNi4zMCBjYW5kaWRh
-dGUKPiA+IGlmIGl0J3MgY29uZmlybWVkIHRvIGZpeCB0aGUgcHJvYmxlbS4KPiAKPiBBZnRlciBh
-cHBseWluZyB0aGUgcGF0Y2ggYWdhaW5zdCAyLjYuMzAtcmM3LCBteSBkZWxsIGQ2MzAgYm94IGNh
-biByZXN1bWUKPiBmcm9tIHN1c3BlbmQoczJyYW0pIG9yIGhpYmVybmF0aW9uIHN1Y2Nlc3NmdWxs
-eSwgYW5kIGxvY2tkZXAgZG9lcyBub3QgCj4gY29tcGxhaW4gd2l0aCB0aGUga2luZCBvZiBtZXNz
-YWdlIGluCj4gCj4gCWh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MzI0NS4KCk9LLCBncmVhdC4gIEknbSBnb2luZyB0byBwdXNoIHRoZSBwYXRjaCB0byBMaW51cy4K
-Cj4gQW5vdGhlciB0aGluZywgZHVyaW5nIHJlc3VtZSBmcm9tIGhpYmVybmF0aW9uLCBJIGNhbiBm
-aW5kIHRoZSBmb2xsb3dpbmcKPiBtZXNzYWdlczoKPiAKPiAJWyAgICAxLjg0OTU4NF0gZGV2aWNl
-OiAnbmV0d29ya190aHJvdWdocHV0JzogZGV2aWNlX2FkZAo+IAlbICAgIDEuODQ5NjMwXSBQTTog
-QWRkaW5nIGluZm8gZm9yIE5vIEJ1czpuZXR3b3JrX3Rocm91Z2hwdXQKPiAJWyAgICAxLjg0OTc4
-OF0gUE06IFJlc3VtZSBmcm9tIGRpc2sgZmFpbGVkLgo+ICAKPiBJIGRvIG5vdCBrbm93biBpZiB0
-aGVyZSBpcyByZWFsbHkgc29tZXRoaW5nIHdyb25nIGluIFBNLAoKTm8sIHRoaXMgb25seSBtZWFu
-cyB0aGF0IHRoZXJlIHdhcyBubyBoaWJlcm5hdGlvbiBpbWFnZSBwcmVzZW50IG9uIHRoZSByZXN1
-bWUKcGFydGl0aW9uIHdoaWxlIHRoZSBrZXJuZWwgd2FzIHN0YXJ0aW5nLgoKVGhhbmtzLApSYWZh
-ZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
-cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
-Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Sunday 24 May 2009, Marcin Slusarz wrote:
+> 1) echo platform > /sys/power/disk; echo disk > /sys/power/state
+> 
+> works but prints:
+> 
+> BUG: sleeping function called from invalid context at include/linux/writeback.h:87
+> in_atomic(): 1, irqs_disabled(): 0, pid: 6509, name: sh
+> 3 locks held by sh/6509:
+>  #0:  (&buffer->mutex){+.+.+.}, at: [<>] sysfs_write_file+0x38/0x119
+>  #1:  (pm_mutex){+.+.+.}, at: [<>] hibernate+0x17/0x169
+>  #2:  (swap_lock){+.+...}, at: [<>] swap_type_of+0x2e/0xed
+> Pid: 6509, comm: sh Not tainted 2.6.30-rc7-mod #124
+> Call Trace:
+>  ? __debug_show_held_locks
+>  ? bdev_test
+>  __might_sleep
+>  ifind
+>  ? bdev_test
+>  iget5_locked
+>  ? bdev_set
+>  bdget
+>  swap_type_of
+>  swsusp_write
+>  ? acpi_sleep_tts_switch
+>  hibernate
+>  state_store
+>  kobj_attr_store
+>  sysfs_write_file
+>  vfs_write
+>  sys_write
+>  system_call_fastpath
+> 
+> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+> 
+> It's not a regression, because I never tried to STD (STR worked).
+
+Both look strange, at least the first one does.
+
+Thanks for the report, I'll do my best to take care of this as soon as I can.
+
+Best,
+Rafael
