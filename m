@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Date: Sun, 24 May 2009 13:09:13 +0200
-Message-ID: <200905241309.14253.rjw__19802.560695871$1243163520$gmane$org@sisk.pl>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	<200905240120.30336.rjw@sisk.pl> <20090524112943.041935da@linux-lm>
+Subject: Re: Montreal Linux Power Management Mini-Summit -- July
+	13, 2009
+Date: Sun, 24 May 2009 13:35:32 +0200
+Message-ID: <200905241335.32613.rjw__28601.5590456829$1243164991$gmane$org@sisk.pl>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090524112943.041935da@linux-lm>
+In-Reply-To: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,86 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Zdenek Kabelac <zdenek.kabelac@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuZGF5IDI0IE1heSAyMDA5LCBNaW5nIExlaSB3cm90ZToKPiDT2iBTdW4sIDI0IE1heSAy
-MDA5IDAxOjIwOjI5ICswMjAwCj4gIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+INC0
-tcA6Cj4gCj4gPiBPbiBTYXR1cmRheSAyMyBNYXkgMjAwOSwgSm9oYW5uZXMgQmVyZyB3cm90ZToK
-PiA+ID4gT24gU2F0LCAyMDA5LTA1LTIzIGF0IDAwOjIzICswMjAwLCBSYWZhZWwgSi4gV3lzb2Nr
-aSB3cm90ZToKPiA+ID4gCj4gPiA+ID4gPiBJIGp1c3QgYXJyaXZlZCBhdCB0aGUgc2FtZSBjb25j
-bHVzaW9uLCBoZWguIEkgY2FuJ3Qgc2F5IEkKPiA+ID4gPiA+IHVuZGVyc3RhbmQgdGhlc2UgY2hh
-bmdlcyB0aG91Z2gsIHRoZSBwYXJ0IGFib3V0IGNhbGxpbmcgdGhlCj4gPiA+ID4gPiBwbGF0Zm9y
-bSBkaWZmZXJlbnRseSBtYXkgbWFrZSBzZW5zZSwgYnV0IGNhbGxpbmcgd2h5IGRpc2FibGUKPiA+
-ID4gPiA+IG5vbi1ib290IENQVXMgYXQgYSBkaWZmZXJlbnQgcGxhY2U/Cj4gPiA+ID4gCj4gPiA+
-ID4gQmVjYXVzZSB0aGUgb3JkZXJpbmcgb2YgcGxhdGZvcm0gY2FsbGJhY2tzIGFuZCBjcHVbX3Vw
-KCl8X2Rvd24oKV0KPiA+ID4gPiBpcyBhbHNvIGltcG9ydGFudCwgYXQgbGVhc3Qgb24gcmVzdW1l
-Lgo+ID4gPiA+IAo+ID4gPiA+IEluIHByaW5jaXBsZSB3ZSBjYW4gY2FsbCBkZXZpY2VfcG1fdW5s
-b2NrKCkgcmlnaHQgYmVmb3JlIGNhbGxpbmcKPiA+ID4gPiBkaXNhYmxlX25vbmJvb3RfY3B1cygp
-IGFuZCB0YWtlIHRoZSBsb2NrIGFnYWluIHJpZ2h0IGFmdGVyIGNhbGxpbmcKPiA+ID4gPiBlbmFi
-bGVfbm9uYm9vdF9jcHVzKCksIGlmIHRoYXQgaGVscHMuCj4gPiA+IAo+ID4gPiBQcm9iYWJseSwg
-dW5sZXNzIHRoZSBjcHVfYWRkX3JlbW92ZV9sb2NrIHdhc24ndCBhIHJlZCBoZXJyaW5nIGFmdGVy
-Cj4gPiA+IGFsbC4gSSdkIHRlc3QsIGJ1dCBJIGRvbid0IGhhdmUgbXVjaCB0aW1lIHRvZGF5LCB3
-aWxsIGJlIHRyYXZlbGxpbmcKPiA+ID4gdG9tb3Jyb3cgYW5kIGJlIGF0IFVEUyBhbGwgd2VlayBu
-ZXh0IHdlZWsgc28gSSBkb24ndCBrbm93IHdoZW4gSSdsbAo+ID4gPiBnZXQgdG8gaXQgLS0gY291
-bGQgeW91IHByb3ZpZGUgYSBwYXRjaCBhbmQgYWxzbyBhdHRhY2ggaXQgdG8KPiA+ID4gaHR0cDov
-L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMjQ1IHBsZWFzZT8gTWlsZXMg
-KHRoZQo+ID4gPiByZXBvcnRlciBvZiB0aGF0IGJ1ZykgaGFzIGJlZW4gdmVyeSBoZWxwZnVsIGlu
-IHRlc3RpbmcgYmVmb3JlLgo+ID4gCj4gPiBPSwo+ID4gCj4gPiBUaGUgcGF0Y2ggaXMgYXBwZW5k
-ZWQgZm9yIHJlZmVyZW5jZSAoQWxhbiwgcGxlYXNlIGhhdmUgYSBsb29rOyBJCj4gPiBjYW4ndCBy
-ZWNhbGwgd2h5IGV4YWN0bHkgd2UgaGF2ZSBjYWxsZWQgZGV2aWNlX3BtX2xvY2soKSBmcm9tIHRo
-ZQo+ID4gY29yZSBzdXNwZW5kL2hpYmVybmF0aW9uIGNvZGUgaW5zdGVhZCBvZiBhY3F1aXJpbmcg
-dGhlIGxvY2sgbG9jYWxseQo+ID4gaW4gZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYykgYW5kIEkn
-bGwgYXR0YWNoIGl0IHRvIHRoZSBidWcgZW50cnkgdG9vLgo+ID4gCj4gPiBUaGFua3MsCj4gPiBS
-YWZhZWwKPiA+IAo+ID4gLS0tCj4gPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2su
-cGw+Cj4gPiBTdWJqZWN0OiBQTTogRG8gbm90IGhvbGQgZHBtX2xpc3RfbXR4IHdoaWxlIGRpc2Fi
-bGluZy9lbmFibGluZwo+ID4gbm9uYm9vdCBDUFVzCj4gPiAKPiA+IFdlIHNob3VsZG4ndCBob2xk
-IGRwbV9saXN0X210eCB3aGlsZSBleGVjdXRpbmcKPiA+IFtkaXNhYmxlfGVuYWJsZV1fbm9uYm9v
-dF9jcHVzKCksIGJlY2F1c2UgdGhlb3JldGljYWxseSB0aGlzIG1heSBsZWFkCj4gPiB0byBhIGRl
-YWRsb2NrIGFzIHNob3duIGJ5IHRoZSBmb2xsb3dpbmcgZXhhbXBsZSAocHJvdmlkZWQgYnkgSm9o
-YW5uZXMKPiA+IEJlcmcpOgo+ID4gCj4gPiBDUFUgMyAgICAgICBDUFUgMiAgICAgICAgICAgICAg
-ICAgICAgIENQVSAxCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN1
-c3BlbmQvaGliZXJuYXRlCj4gPiAgICAgICAgICAgICBzb21ldGhpbmc6Cj4gPiAgICAgICAgICAg
-ICBydG5sX2xvY2soKSAgICAgICAgICAgICAgIGRldmljZV9wbV9sb2NrKCkKPiA+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC0+IG11dGV4X2xvY2soJmRwbV9saXN0X210
-eCkKPiA+IAo+ID4gICAgICAgICAgICAgbXV0ZXhfbG9jaygmZHBtX2xpc3RfbXR4KQo+ID4gCj4g
-PiBsaW5rd2F0Y2hfd29yawo+ID4gIC0+IHJ0bmxfbG9jaygpCj4gPiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIGRpc2FibGVfbm9uYm9vdF9jcHVzKCkKPiA+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC0+IGZsdXNoIENQVSAzIHdvcmtxdWV1ZQo+
-ID4gCj4gPiBGb3J0dW5hdGVseSwgZGV2aWNlIGRyaXZlcnMgYXJlIHN1cHBvc2VkIHRvIHN0b3Ag
-YW55IGFjdGl2aXRpZXMgdGhhdAo+ID4gbWlnaHQgbGVhZCB0byB0aGUgcmVnaXN0cmF0aW9uIG9m
-IG5ldyBkZXZpY2Ugb2JqZWN0cyBhbmQvb3IgdG8gdGhlCj4gPiByZW1vdmFsIG9mIHRoZSBleGlz
-dGluZyBvbmVzIHdheSBiZWZvcmUgZGlzYWJsZV9ub25ib290X2NwdXMoKSBpcwo+ID4gY2FsbGVk
-LCBzbyBpdCBzaG91bGRuJ3QgYmUgbmVjZXNzYXJ5IHRvIGhvbGQgZHBtX2xpc3RfbXR4IG92ZXIg
-dGhlCj4gPiBlbnRpcmUgbGF0ZSBwYXJ0IG9mIGRldmljZSBzdXNwZW5kIGFuZCBlYXJseSBwYXJ0
-IG9mIGRldmljZSByZXN1bWUuCj4gPiAKPiA+IFRodXMsIGR1cmluZyB0aGUgbGF0ZSBzdXNwZW5k
-IGFuZCB0aGUgZWFybHkgcmVzdW1lIG9mIGRldmljZXMgYWNxdWlyZQo+ID4gZHBtX2xpc3RfbXR4
-IG9ubHkgd2hlbiBkcG1fbGlzdCBpcyBnb2luZyB0byBiZSB0cmF2ZXJzZWQgYW5kIHJlbGVhc2UK
-PiA+IGl0IHJpZ2h0IGFmdGVyIHRoYXQuCj4gPiAKPiA+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBK
-LiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiA+IC0tLQo+ID4gIGRyaXZlcnMvYmFzZS9wb3dlci9t
-YWluLmMgfCAgICA0ICsrKysKPiA+ICBrZXJuZWwva2V4ZWMuYyAgICAgICAgICAgIHwgICAgMiAt
-LQo+ID4gIGtlcm5lbC9wb3dlci9kaXNrLmMgICAgICAgfCAgIDIxICsrKy0tLS0tLS0tLS0tLS0t
-LS0tLQo+ID4gIGtlcm5lbC9wb3dlci9tYWluLmMgICAgICAgfCAgICA3ICstLS0tLS0KPiA+ICA0
-IGZpbGVzIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRpb25zKC0pCj4gPiAKPiAK
-PiBJIHRyeSB0byBhcHBseSB0aGUgcGF0Y2ggYWdhaW5zdCBsYXN0ZXN0IG5leHQgdHJlZSgyMDA5
-LTA1LTIyKSwgYnV0Cj4gInBhdGNoIC1wMSIgaXMgZmFpbHVyZWQ6Cj4gCj4gCj4gW2xtQGxpbnV4
-LWxtIGxpbnV4LTIuNl0kIHBhdGNoIC1wMSA8ICAuLi9wYXRjaF9yeC9JTkZPX3Bvc3NpYmxlX2Np
-cmN1bGFyX2xvY2tpbmdfZGVwZW5kZW5jeV9hdF9jbGVhbnVwX3dvcmtxdWV1ZV90aHJlYWQucGF0
-Y2ggCj4gcGF0Y2hpbmcgZmlsZSBrZXJuZWwvcG93ZXIvZGlzay5jCj4gSHVuayAjMSBzdWNjZWVk
-ZWQgYXQgMjE1IHdpdGggZnV6eiAyLgo+IEh1bmsgIzMgc3VjY2VlZGVkIGF0IDI3OCB3aXRoIGZ1
-enogMS4KPiBIdW5rICM0IEZBSUxFRCBhdCAzNDMuCj4gSHVuayAjNSBzdWNjZWVkZWQgYXQgMzk2
-IHdpdGggZnV6eiAyIChvZmZzZXQgLTQgbGluZXMpLgo+IEh1bmsgIzYgRkFJTEVEIGF0IDQ1NC4K
-PiBIdW5rICM3IHN1Y2NlZWRlZCBhdCA0ODUgd2l0aCBmdXp6IDIuCj4gMiBvdXQgb2YgNyBodW5r
-cyBGQUlMRUQgLS0gc2F2aW5nIHJlamVjdHMgdG8gZmlsZSBrZXJuZWwvcG93ZXIvZGlzay5jLnJl
-ago+IHBhdGNoaW5nIGZpbGUga2VybmVsL3Bvd2VyL21haW4uYwo+IEh1bmsgIzEgc3VjY2VlZGVk
-IGF0IDI4OSB3aXRoIGZ1enogMSAob2Zmc2V0IDE4IGxpbmVzKS4KPiBwYXRjaGluZyBmaWxlIGRy
-aXZlcnMvYmFzZS9wb3dlci9tYWluLmMKPiBIdW5rICMzIHN1Y2NlZWRlZCBhdCA2MTYgd2l0aCBm
-dXp6IDIuCj4gSHVuayAjNCBzdWNjZWVkZWQgYXQgNjI1IHdpdGggZnV6eiAyLgo+IHBhdGNoaW5n
-IGZpbGUga2VybmVsL2tleGVjLmMKPiBIdW5rICMxIHN1Y2NlZWRlZCBhdCAxNDUxIHdpdGggZnV6
-eiAyLgo+IEh1bmsgIzIgc3VjY2VlZGVkIGF0IDE0ODggd2l0aCBmdXp6IDIuCgpUaGUgcGF0Y2gg
-YXBwbGllcyB0byB0aGUgbWFpbmxpbmUsIHNpbmNlIGl0J2xsIGJlIGEgMi42LjMwIGNhbmRpZGF0
-ZSBpZiBpdCdzCmNvbmZpcm1lZCB0byBmaXggdGhlIHByb2JsZW0uCgpUaGFua3MsClJhZmFlbApf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
-YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hi,
+
+On Thursday 21 May 2009, Len Brown wrote:
+> We will hold a Linux Power Management Mini-Summit in Montreal
+> on Monday, July 13, 2009 -- concurrent with day-1 of the
+> tutorials at the at the Linux Symposium.
+> 
+> http://www.linuxsymposium.org/2009/schedule.php
+> 
+> This is an opportunity for members of the Linux Power Management
+> development community to meet face-to-face to discuss the future.
+> 
+> Suggestions for agenda topics should be sent to: 
+> linux-pm@lists.linux-foundation.org
+> 
+> The final agenda will be formed by consensus of the attendees.
+> 
+> As in previous years, attendance is open to those
+> registered as Linux Symposium attendees.
+> 
+> However, we will try to cap attendance at 20 to support the single 
+> discussion.  So requests to attend should be sent to: lenb@kernel.org
+> cc: linux-pm@lists.linux-foundation.org -- please summarize
+> what you bring to the meeting, and what you'd like to discuss.
+
+I'd like to addend and I'd like to discuss the following topics:
+
+* PM-related changes in the Linux kernel since the last PM Mini-Summit
+* Future plans for the PM development, kernel side
+* Run-time PM of I/O devices, from the PCI POV mostly
+
+Thanks,
+Rafael
