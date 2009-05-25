@@ -1,17 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 25 May 2009 15:26:13 +0200
-Message-ID: <20090525132613.GA14096__42543.7072561637$1243258135$gmane$org@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<1243243666.16743.64.camel@nigel-laptop>
-	<20090525123228.GA13446@elf.ucw.cz>
-	<200905251522.26852.oliver@neukum.org>
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: 2 bugs related to suspend to disk
+Date: Mon, 25 May 2009 16:56:10 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.0905251614160.4048__20003.4795016565$1243263532$gmane$org@localhost.localdomain>
+References: <4A199A7A.3010705@gmail.com> <200905242158.15093.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200905251522.26852.oliver@neukum.org>
+In-Reply-To: <200905242158.15093.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +17,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, Marcin Slusarz <marcin.slusarz@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2009-05-25 15:22:26, Oliver Neukum wrote:
-> Am Montag, 25. Mai 2009 14:32:28 schrieb Pavel Machek:
-> > > I'm going to try to. Unfortunately, they'll require what's basically a
-> > > group-up redesign of the basic algorithm, because to get maximum
-> > > reliability, you need to carefully account for the amount of storage
-> > > you're going to need and the amount of memory you have available, and
-> > > 'prepare' the image prior to doing the atomic copy.
-> >
-> > I don't quite get it; why is that needed?
-> >
-> > If there's not enough swap available, swsusp should freeze, realize
-> > there's no swap, unfreeze and continue. I do not see reliability
-> > problem there.
+hi,
+
+On Sun, 24 May 2009, Rafael J. Wysocki wrote:
+
+> On Sunday 24 May 2009, Marcin Slusarz wrote:
+> > 1) echo platform > /sys/power/disk; echo disk > /sys/power/state
+> > 
+> > works but prints:
+> > 
+> > BUG: sleeping function called from invalid context at include/linux/writeback.h:87
+> > in_atomic(): 1, irqs_disabled(): 0, pid: 6509, name: sh
+> > 3 locks held by sh/6509:
+> >  #0:  (&buffer->mutex){+.+.+.}, at: [<>] sysfs_write_file+0x38/0x119
+> >  #1:  (pm_mutex){+.+.+.}, at: [<>] hibernate+0x17/0x169
+> >  #2:  (swap_lock){+.+...}, at: [<>] swap_type_of+0x2e/0xed
+> > Pid: 6509, comm: sh Not tainted 2.6.30-rc7-mod #124
+> > Call Trace:
+> >  ? __debug_show_held_locks
+> >  ? bdev_test
+> >  __might_sleep
+> >  ifind
+> >  ? bdev_test
+> >  iget5_locked
+> >  ? bdev_set
+> >  bdget
+> >  swap_type_of
+> >  swsusp_write
+> >  ? acpi_sleep_tts_switch
+> >  hibernate
+> >  state_store
+> >  kobj_attr_store
+> >  sysfs_write_file
+> >  vfs_write
+> >  sys_write
+> >  system_call_fastpath
+> > 
+> > 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+> > 
+> > It's not a regression, because I never tried to STD (STR worked).
 > 
-> The software suspend may be a part of your response to an imminent
-> power failure (UPS near empty). The number of retries available is possibly
-> limited.
+> Both look strange, at least the first one does.
+> 
+> Thanks for the report, I'll do my best to take care of this as soon as I can.
+> 
 
-If there's no swap (and no hibernation partition), s2disk just will
-not work.
+i've seen a similar warning, the problem seems to be that swap_type_of 
+calls bdget with the swap_lock held.
 
-> I'd feel safer if hibernation by default wrote to a dedicated partition,
-> especially as modern practice is to make swap space smaller than RAM.
+with the attached patch i don't see this warning any more - but i'm not 
+sure if this is the correct way to fix this
 
-It would be easy to have dedicated partition. But why waste space on
-it?
+regards, sebastian
+---
 
-Anyway, this debate here is "in what order should we do the swsusp
-actions". Dedicated partition/etc is for separate thread (please).
+don't call bdget with swap_lock held
+
+Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
+---
+ mm/swapfile.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.5/mm/swapfile.c
+===================================================================
+--- linux-2.5.orig/mm/swapfile.c	2009-03-24 13:51:00.000000000 +0100
++++ linux-2.5/mm/swapfile.c	2009-05-25 15:33:34.000000000 +0200
+@@ -634,10 +634,10 @@ int swap_type_of(dev_t device, sector_t 
+ 			continue;
  
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ 		if (!bdev) {
++			spin_unlock(&swap_lock);
+ 			if (bdev_p)
+ 				*bdev_p = bdget(sis->bdev->bd_dev);
+ 
+-			spin_unlock(&swap_lock);
+ 			return i;
+ 		}
+ 		if (bdev == sis->bdev) {
+@@ -646,10 +646,10 @@ int swap_type_of(dev_t device, sector_t 
+ 			se = list_entry(sis->extent_list.next,
+ 					struct swap_extent, list);
+ 			if (se->start_block == offset) {
++				spin_unlock(&swap_lock);
+ 				if (bdev_p)
+ 					*bdev_p = bdget(sis->bdev->bd_dev);
+ 
+-				spin_unlock(&swap_lock);
+ 				bdput(bdev);
+ 				return i;
+ 			}
