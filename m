@@ -1,19 +1,19 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 25 May 2009 19:27:46 +1000
-Message-ID: <1243243666.16743.64.camel__26909.3210380108$1243243638$gmane$org@nigel-laptop>
+Date: Mon, 25 May 2009 19:53:34 +1000
+Message-ID: <1243245214.16743.90.camel__26006.0383858674$1243245235$gmane$org@nigel-laptop>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905082144.57955.bzolnier@gmail.com>
-	<1241819971.19600.288.camel@nigel-laptop>
-	<200905090105.58243.bzolnier@gmail.com>
-	<1241824525.19600.369.camel@nigel-laptop>
-	<20090509135820.GF10859@elf.ucw.cz>
+	<200905081611.41865.rjw@sisk.pl>
+	<1241819569.19600.281.camel@nigel-laptop>
+	<200905090046.21282.rjw@sisk.pl>
+	<1241825408.19600.384.camel@nigel-laptop>
+	<20090509135452.GE10859@elf.ucw.cz>
 Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090509135820.GF10859@elf.ucw.cz>
+In-Reply-To: <20090509135452.GE10859@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,30 +24,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Sat, 2009-05-09 at 15:58 +0200, Pavel Machek wrote:
-> Hi!
+On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
+> > This is going to sound arrogant, but please don't take it that way: I
+> > can't see any other way of putting it. I don't *think* my code is
+> > better. It is better. swsusp has essentially stood still since Pavel
+> > first forked the code and got it merged. Yes, you have done some
+> > great
 > 
-> > > Instead of new features I would rather see more effort being put into making
-> > > the _core_ TuxOnIce (I mean patch #8 here) smaller (8 KLOC is still a lot,
-> > > just to put things into the right perspective the current in-kernel content
-> > > of kernel/power/ is 5.5 KLOC) and with more documentation inside the code.
-> > 
-> > Yeah, but those 2.5k extra lines get you more reliability and extra
-> > functionality. They're not fat.
-> 
-> If you know about reliability problems in swsusp, please fix them in
-> separate patch. Hiding the fixes in 8KLOC patch is not nice.
+> I don't think _I_ forked anything.
 
-I'm going to try to. Unfortunately, they'll require what's basically a
-group-up redesign of the basic algorithm, because to get maximum
-reliability, you need to carefully account for the amount of storage
-you're going to need and the amount of memory you have available, and
-'prepare' the image prior to doing the atomic copy.
+The conversation for May 2002 (around when you got it merged into
+vanilla) is here:
+
+https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
+
+Not sure why Sourceforge wants you to log in to get at it.
+
+> > work on improving the code too and yes, you've done your work on the
+> > version that was already merged. But your changes been more in the area
+> > of fixing/improving what's already there than adding new and useful
+> > features. On the other side, I've continued to improve the code,
+> 
+> Yes, that's fair. We kept incremental fixing, improving. On the other
+> hand, you added new features.
+> 
+> > new features (support for multiple swap partitions & files, for writing
+> > to ordinary files, for mulithreaded I/O etc etc) making it more useful
+> > and more reliable. There are some new features that have been put in
+> > swsusp, but in just about every case (I think there might be an
+> > exception or two), they're things TuxOnIce had for ages before. eg: SMP
+> > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
+> > support in 2.4.
+> 
+> You were moving faster because you did not have to move in small
+> incremental steps, and you were allowed to add temporary hacks into
+> the code. Is that surprising? Not to me.
+
+No, I moved in small incremental steps too - and the odd big rework.
+
+> [Please update http://www.tuxonice.net/features pages. They are
+> misleading; yes, uswsusp supports threaded writes, can be reconfigured
+> without rebooting and yes we did test failure paths, it can be
+> scripted, and it supports checksums. I don't know what you mean by
+> kexec support, but kexec/kjump could be used as whole another method
+> of hibernating a machine, basically adding fourth row to your table.]
+
+uswsusp supports multithreaded I/O? Wow. When did that happen?
+
+Okay. How do you reconfigure it without rebooting (I mean tell it to
+write the image to a different location)? (So I can put the instructions
+on the page).
+
+Regarding kexec, I'm thinking about making TuxOnice able to do a kexec
+jump and then continue with writing the image (after preparing it in the
+original kernel).
+
+(Note to self for later - look above for other things Pavel says uswsusp
+can do when updating the page).
+
+> > > > I take a modular approach and you have everything hardwired.
+> > > 
+> > > That's because using modules woudn't really make sense for us. :-)
+> > 
+> > I'm not saying modules but modular. TuxOnIce has support for compression
+> > neatly abstracted into one file, for swap in another and so on.
+> > [u]swsusp doesn't.
+> 
+> uswsusp has compression neatly abstracted into userland. I still
+> believe that's superior to kernel module.
+
+Okay, but what about swap support? Modifying swsusp or uswsusp to write
+to ordinary files would require a huge change in multiple places - where
+you store the image isn't currently abstracted at all from the issue of
+what you're storing, and I dare say a person with a slow computer who
+gets no advantage out of compression will have to recompile uswsusp to
+turn it off (if that's allowed for).
+
+> > > > It doesn't disappoint me that you don't won't to replace [u]swsusp with
+> > > > TuxOnIce. I never thought you or Pavel would want to do that.
+> > > > 
+> > > > I did hold out a little hope that you at least might be supportive
+> > > > anyway of getting TuxOnIce added into vanilla - 
+> > > 
+> > > That would take lot of work and we'd also have to ask many other busy people
+> > > to do a lot of work for us.  I think it's better to just avoid it at this point.
+> > 
+> > I just don't see why you think that. As I said in another reply, there's
+> > no work for arch maintainers, very little for mm people and nothing for
+> > filesystem maintainers in what I've sent.
+> 
+> Mainline [u]swsusp does not have ability to save all the memory,
+> because that code was deemed too hard to review by mm people. At that
+> time, that piece of code was nicely separated 300 line diff.
+
+Okay. That will be a nicely separated diff later too (assuming I get
+that far), but the groundwork will be laid well before that little diff
+goes in.
 
 Regards,
 
