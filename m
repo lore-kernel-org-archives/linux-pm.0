@@ -1,14 +1,15 @@
-From: yakui_zhao <yakui.zhao@intel.com>
+From: Shaohua Li <shaohua.li@intel.com>
 Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot
 	on battery
-Date: Mon, 25 May 2009 08:49:48 +0800
-Message-ID: <1243212588.8523.192.camel__3501.46494242853$1243212592$gmane$org@localhost.localdomain>
+Date: Mon, 25 May 2009 09:18:19 +0800
+Message-ID: <20090525011819.GA9805__44875.9990431883$1243214380$gmane$org@sli10-desk.sh.intel.com>
 References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
-	<200905242236.22715.rjw@sisk.pl>  <4A19BA09.4050502@zytor.com>
+	<200905242236.22715.rjw@sisk.pl> <4A19BA09.4050502@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <4A19BA09.4050502@zytor.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,7 +24,7 @@ To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Chris Howie <cdhowie@gmail.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2009-05-25 at 05:20 +0800, H. Peter Anvin wrote:
+On Mon, May 25, 2009 at 05:20:09AM +0800, H. Peter Anvin wrote:
 > Rafael J. Wysocki wrote:
 > > On Monday 18 May 2009, Chris Howie wrote:
 > >> Folks:
@@ -57,16 +58,4 @@ On Mon, 2009-05-25 at 05:20 +0800, H. Peter Anvin wrote:
 > > 
 > 
 > I presume it boots with "acpi=off"?
-How about using the following boot option?
-   a. idle=poll
-   b. nolapic_timer
-   c. processor.max_cstate=1
-
-If the box can be booted with the above option, please open a new bug at
-http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI and attach the
-output of acpidump, lspci -xxx.
-
-Thanks.
-> 
-> 	-hpa
-> 
+if this is a AMD CPU, please check http://bugzilla.kernel.org/show_bug.cgi?id=13233
