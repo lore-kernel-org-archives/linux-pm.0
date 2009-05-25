@@ -1,19 +1,17 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Mon, 25 May 2009 19:53:34 +1000
-Message-ID: <1243245214.16743.90.camel__26006.0383858674$1243245235$gmane$org@nigel-laptop>
+Date: Mon, 25 May 2009 20:05:07 +1000
+Message-ID: <1243245907.16743.101.camel__40781.7747713581$1243245872$gmane$org@nigel-laptop>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905081611.41865.rjw@sisk.pl>
-	<1241819569.19600.281.camel@nigel-laptop>
 	<200905090046.21282.rjw@sisk.pl>
 	<1241825408.19600.384.camel@nigel-laptop>
-	<20090509135452.GE10859@elf.ucw.cz>
+	<200905090143.10980.rjw@sisk.pl>
 Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090509135452.GE10859@elf.ucw.cz>
+In-Reply-To: <200905090143.10980.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,108 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
-> > This is going to sound arrogant, but please don't take it that way: I
-> > can't see any other way of putting it. I don't *think* my code is
-> > better. It is better. swsusp has essentially stood still since Pavel
-> > first forked the code and got it merged. Yes, you have done some
-> > great
-> 
-> I don't think _I_ forked anything.
-
-The conversation for May 2002 (around when you got it merged into
-vanilla) is here:
-
-https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
-
-Not sure why Sourceforge wants you to log in to get at it.
-
-> > work on improving the code too and yes, you've done your work on the
-> > version that was already merged. But your changes been more in the area
-> > of fixing/improving what's already there than adding new and useful
-> > features. On the other side, I've continued to improve the code,
-> 
-> Yes, that's fair. We kept incremental fixing, improving. On the other
-> hand, you added new features.
-> 
-> > new features (support for multiple swap partitions & files, for writing
-> > to ordinary files, for mulithreaded I/O etc etc) making it more useful
-> > and more reliable. There are some new features that have been put in
-> > swsusp, but in just about every case (I think there might be an
-> > exception or two), they're things TuxOnIce had for ages before. eg: SMP
-> > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
-> > support in 2.4.
-> 
-> You were moving faster because you did not have to move in small
-> incremental steps, and you were allowed to add temporary hacks into
-> the code. Is that surprising? Not to me.
-
-No, I moved in small incremental steps too - and the odd big rework.
-
-> [Please update http://www.tuxonice.net/features pages. They are
-> misleading; yes, uswsusp supports threaded writes, can be reconfigured
-> without rebooting and yes we did test failure paths, it can be
-> scripted, and it supports checksums. I don't know what you mean by
-> kexec support, but kexec/kjump could be used as whole another method
-> of hibernating a machine, basically adding fourth row to your table.]
-
-uswsusp supports multithreaded I/O? Wow. When did that happen?
-
-Okay. How do you reconfigure it without rebooting (I mean tell it to
-write the image to a different location)? (So I can put the instructions
-on the page).
-
-Regarding kexec, I'm thinking about making TuxOnice able to do a kexec
-jump and then continue with writing the image (after preparing it in the
-original kernel).
-
-(Note to self for later - look above for other things Pavel says uswsusp
-can do when updating the page).
-
-> > > > I take a modular approach and you have everything hardwired.
+On Sat, 2009-05-09 at 01:43 +0200, Rafael J. Wysocki wrote:
+> > On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
+> > > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
+> > > > > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > > And the code includes some fundamental differences. I freeze processes
+> > > > and prepare the whole image before saving anything or doing an atomic
+> > > > copy whereas you just free memory before doing the atomic copy. You save
+> > > > everything in one part whereas I save the image in two parts.
 > > > 
-> > > That's because using modules woudn't really make sense for us. :-)
+> > > IMO the differences are not that fundamental.  The whole problem boils down
+> > > to using the same data structures for memory management and I think we can
+> > > reach an agreement here.
 > > 
-> > I'm not saying modules but modular. TuxOnIce has support for compression
-> > neatly abstracted into one file, for swap in another and so on.
-> > [u]swsusp doesn't.
+> > I think we might be able to agree on using the same data structures, but
+> > I'm not so sure about algorithms - I think you're underestimating the
+> > differences here.
 > 
-> uswsusp has compression neatly abstracted into userland. I still
-> believe that's superior to kernel module.
+> Well, which algorithms do you have in mind in particular?
 
-Okay, but what about swap support? Modifying swsusp or uswsusp to write
-to ordinary files would require a huge change in multiple places - where
-you store the image isn't currently abstracted at all from the issue of
-what you're storing, and I dare say a person with a slow computer who
-gets no advantage out of compression will have to recompile uswsusp to
-turn it off (if that's allowed for).
+Sorry for the slow reply - just starting to catch up after time away.
 
-> > > > It doesn't disappoint me that you don't won't to replace [u]swsusp with
-> > > > TuxOnIce. I never thought you or Pavel would want to do that.
-> > > > 
-> > > > I did hold out a little hope that you at least might be supportive
-> > > > anyway of getting TuxOnIce added into vanilla - 
-> > > 
-> > > That would take lot of work and we'd also have to ask many other busy people
-> > > to do a lot of work for us.  I think it's better to just avoid it at this point.
-> > 
-> > I just don't see why you think that. As I said in another reply, there's
-> > no work for arch maintainers, very little for mm people and nothing for
-> > filesystem maintainers in what I've sent.
-> 
-> Mainline [u]swsusp does not have ability to save all the memory,
-> because that code was deemed too hard to review by mm people. At that
-> time, that piece of code was nicely separated 300 line diff.
+The main difference is the order of doing things. TuxOnIce prepares the
+image after freezing processes and before the atomic copy. It doesn't
+just do that so that it can store a complete image of memory. It also
+does it because once processes are frozen, the only thing that's going
+to allocate storage is TuxOnIce, and the only things that are going to
+allocate RAM are TuxOnIce and the drivers' suspend routines. The
+drivers' routines are pretty consistent - once you've seen how much is
+used for one invocation, you can add a small margin and call that the
+allowance to use for all future invocations. The amount of memory used
+by the hibernation code is also entirely predictable - once you know the
+characteristics of the system as it stands (ie with processes frozen),
+you know how much you're going to need for the atomic copy and for doing
+I/O. If you find that something is too big, all you need to do is thaw
+kernel threads and free some memory until you fit within constraints or
+(heaven forbid!) find that you're not getting anyway and so want to give
+up on hibernating all together.
 
-Okay. That will be a nicely separated diff later too (assuming I get
-that far), but the groundwork will be laid well before that little diff
-goes in.
+If, on the other hand, you do the drivers suspend etc and then look to
+see what state you're in, well you might need to thaw drivers etc in
+order to free memory before trying again. It's more expensive. Right now
+you're just giving up in that case - yes, you could retry too instead of
+giving up completely, but it's better IMHO to seek to get things right
+before suspending drivers.
+
+Oh, before I forget to mention and you ask - how to know what allowance
+for the drivers? I use a sysfs entry - the user then just needs to see
+what's needed on their first attempt, set up a means of putting that
+value in the sysfs file in future (eg /etc/hibernate/tuxonice.conf) and
+then forget about it.
 
 Regards,
 
