@@ -1,13 +1,16 @@
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-Subject: Re: 2.6.30-rc7: Reported regressions from 2.6.29
-Date: Mon, 25 May 2009 01:07:25 +0300
-Message-ID: <4A19C51D.7020609__5891.21320886097$1243351497$gmane$org@pardus.org.tr>
-References: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
+From: Chris Howie <cdhowie@gmail.com>
+Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot
+	on battery
+Date: Sun, 24 May 2009 21:53:32 -0400
+Message-ID: <3d2f29dc0905241853h594aa2a9ta21dee45979c567e__19506.3542029404$1243351591$gmane$org@mail.gmail.com>
+References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
+	<200905242236.22715.rjw@sisk.pl> <4A19BA09.4050502@zytor.com>
+	<20090525011819.GA9805@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <ZPPBiNHr1LC.A.9ZH.K9bGKB@chimera>
+In-Reply-To: <20090525011819.GA9805@sli10-desk.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzI2Cj4gU3ViamVjdAkJOiBbUEFUQ0hdTnVsbCBw
-b2ludGVyIGRlcmVmZXJlbmNlIGluIHJ0Yy1jbW9zIGRyaXZlcgo+IFN1Ym1pdHRlcgk6IE96YW4g
-w4dhxJ9sYXlhbiA8b3phbkBwYXJkdXMub3JnLnRyPgo+IERhdGUJCTogMjAwOS0wNS0xNCAxNjox
-NiAoMTEgZGF5cyBvbGQpCj4gUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTI0MjMxNzgzNzA0Njk2Jnc9NAo+ICAgCgpKdXN0IHRvIG5vdGljZSB0aGF0IHRo
-ZSBwYXRjaCBmb3IgdGhpcyBpcyBhdDoKCmh0dHA6Ly93d3cua2VybmVsLm9yZy9wdWIvbGludXgv
-a2VybmVsL3Blb3BsZS9ncmVna2gvZ3JlZ2toLTIuNi9wYXRjaGVzL2RyaXZlci1jb3JlLmN1cnJl
-bnQvZHJpdmVyLWNvcmUtZG8tbm90LW9vcHMtd2hlbi1kcml2ZXJfdW5yZWdpc3Rlci1pcy1jYWxs
-ZWQtZm9yLXVucmVnaXN0ZXJlZC1kcml2ZXJzLnBhdGNoCgpDYW4gYXQgbGVhc3QgYmUgbWFya2Vk
-IGFzICJoYXMgYSBwYXRjaCIuCgpUaGFua3MsCk96YW4gQ2FnbGF5YW4KX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0Cmxp
-bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Sun, May 24, 2009 at 9:18 PM, Shaohua Li <shaohua.li@intel.com> wrote:
+> if this is a AMD CPU, please check http://bugzilla.kernel.org/show_bug.cgi?id=13233
+
+Ahh, that sounds like it.  I first noticed the problem in 2.6.28 after
+switching from 2.6.26 (but never tried 2.6.27).  So the information
+about versions is indeed consistent.  I'm on an amd64 cpu.
+
+Thanks everyone for the suggestions, I will try to take a look within
+the next couple of days and report my findings.
+
+-- 
+Chris Howie
+http://www.chrishowie.com
+http://en.wikipedia.org/wiki/User:Crazycomputers
