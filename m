@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Wed, 27 May 2009 00:27:41 +0200
-Message-ID: <200905270027.41898.rjw__9127.89223152704$1243376996$gmane$org@sisk.pl>
+Date: Wed, 27 May 2009 00:37:43 +0200
+Message-ID: <200905270037.43991.rjw__3350.26167235828$1243377553$gmane$org@sisk.pl>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905260039.43626.rjw@sisk.pl>
-	<1243298374.16743.161.camel@nigel-laptop>
+	<200905260002.55500.rjw@sisk.pl>
+	<1243297196.16743.137.camel@nigel-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1243298374.16743.161.camel@nigel-laptop>
+In-Reply-To: <1243297196.16743.137.camel@nigel-laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,161 +27,128 @@ List-Id: linux-pm@vger.kernel.org
 On Tuesday 26 May 2009, Nigel Cunningham wrote:
 > Hi.
 > 
-> On Tue, 2009-05-26 at 00:39 +0200, Rafael J. Wysocki wrote:
-> > [Restored CCs.]
-> 
-> Oh, sorry.
-> 
+> On Tue, 2009-05-26 at 00:02 +0200, Rafael J. Wysocki wrote:
 > > On Monday 25 May 2009, Nigel Cunningham wrote:
-> > > Hi.
+> > > On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
+> > > > > This is going to sound arrogant, but please don't take it that way: I
+> > > > > can't see any other way of putting it. I don't *think* my code is
+> > > > > better. It is better. swsusp has essentially stood still since Pavel
+> > > > > first forked the code and got it merged. Yes, you have done some
+> > > > > great
+> > > > 
+> > > > I don't think _I_ forked anything.
 > > > 
-> > > On Mon, 2009-05-25 at 23:43 +0200, Rafael J. Wysocki wrote:
-> > > > On Monday 25 May 2009, Nigel Cunningham wrote:
-> > > > > On Sat, 2009-05-09 at 01:43 +0200, Rafael J. Wysocki wrote:
-> > > > > > > On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > > > > > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > On Friday 08 May 2009, Nigel Cunningham wrote:
-> > > > > > > > > And the code includes some fundamental differences. I freeze processes
-> > > > > > > > > and prepare the whole image before saving anything or doing an atomic
-> > > > > > > > > copy whereas you just free memory before doing the atomic copy. You save
-> > > > > > > > > everything in one part whereas I save the image in two parts.
-> > > > > > > > 
-> > > > > > > > IMO the differences are not that fundamental.  The whole problem boils down
-> > > > > > > > to using the same data structures for memory management and I think we can
-> > > > > > > > reach an agreement here.
-> > > > > > > 
-> > > > > > > I think we might be able to agree on using the same data structures, but
-> > > > > > > I'm not so sure about algorithms - I think you're underestimating the
-> > > > > > > differences here.
+> > > The conversation for May 2002 (around when you got it merged into
+> > > vanilla) is here:
+> > > 
+> > > https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
+> > > 
+> > > Not sure why Sourceforge wants you to log in to get at it.
+> > > 
+> > > > > work on improving the code too and yes, you've done your work on the
+> > > > > version that was already merged. But your changes been more in the area
+> > > > > of fixing/improving what's already there than adding new and useful
+> > > > > features. On the other side, I've continued to improve the code,
+> > > > 
+> > > > Yes, that's fair. We kept incremental fixing, improving. On the other
+> > > > hand, you added new features.
+> > > > 
+> > > > > new features (support for multiple swap partitions & files, for writing
+> > > > > to ordinary files, for mulithreaded I/O etc etc) making it more useful
+> > > > > and more reliable. There are some new features that have been put in
+> > > > > swsusp, but in just about every case (I think there might be an
+> > > > > exception or two), they're things TuxOnIce had for ages before. eg: SMP
+> > > > > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
+> > > > > support in 2.4.
+> > > > 
+> > > > You were moving faster because you did not have to move in small
+> > > > incremental steps, and you were allowed to add temporary hacks into
+> > > > the code. Is that surprising? Not to me.
+> > > 
+> > > No, I moved in small incremental steps too - and the odd big rework.
+> > > 
+> > > > [Please update http://www.tuxonice.net/features pages. They are
+> > > > misleading; yes, uswsusp supports threaded writes, can be reconfigured
+> > > > without rebooting and yes we did test failure paths, it can be
+> > > > scripted, and it supports checksums. I don't know what you mean by
+> > > > kexec support, but kexec/kjump could be used as whole another method
+> > > > of hibernating a machine, basically adding fourth row to your table.]
+> > > 
+> > > uswsusp supports multithreaded I/O? Wow. When did that happen?
+> > > 
+> > > Okay. How do you reconfigure it without rebooting (I mean tell it to
+> > > write the image to a different location)? (So I can put the instructions
+> > > on the page).
+> > > 
+> > > Regarding kexec, I'm thinking about making TuxOnice able to do a kexec
+> > > jump and then continue with writing the image (after preparing it in the
+> > > original kernel).
+> > > 
+> > > (Note to self for later - look above for other things Pavel says uswsusp
+> > > can do when updating the page).
+> > > 
+> > > > > > > I take a modular approach and you have everything hardwired.
 > > > > > > 
-> > > > > > Well, which algorithms do you have in mind in particular?
+> > > > > > That's because using modules woudn't really make sense for us. :-)
 > > > > > 
-> > > > > Sorry for the slow reply - just starting to catch up after time away.
+> > > > > I'm not saying modules but modular. TuxOnIce has support for compression
+> > > > > neatly abstracted into one file, for swap in another and so on.
+> > > > > [u]swsusp doesn't.
 > > > > 
-> > > > NP
-> > > > 
-> > > > > The main difference is the order of doing things. TuxOnIce prepares the
-> > > > > image after freezing processes and before the atomic copy. It doesn't
-> > > > > just do that so that it can store a complete image of memory. It also
-> > > > > does it because once processes are frozen, the only thing that's going
-> > > > > to allocate storage is TuxOnIce,
-> > > > 
-> > > > This is quite strong statement.  Is it provable?
+> > > > uswsusp has compression neatly abstracted into userland. I still
+> > > > believe that's superior to kernel module.
 > > > 
-> > > Yes - just account for memory carefully. Check that everything that gets
-> > > allocated by hibernation code (or code it calls) gets freed and compare
-> > > the amount of memory free at the start of a cycle with the amount at the
-> > > end. I haven't done it for a while, but it was perfectly doable.
+> > > Okay, but what about swap support? Modifying swsusp or uswsusp to write
+> > > to ordinary files would require a huge change in multiple places -
 > > 
-> > Well, this really doesn't answer my question.
+> > Not at all, it acutally works in uswsusp (I still hate this name) as is.
 > > 
-> > What you're saying is basically "we can verify experimentally that in the
-> > majority of cases the statement holds", but I doesn't really mean "it always
-> > holds", which I'd like to be sure of.
+> > > where you store the image isn't currently abstracted at all from the issue of
+> > > what you're storing, and I dare say a person with a slow computer who
+> > > gets no advantage out of compression will have to recompile uswsusp to
+> > > turn it off (if that's allowed for).
+> > 
+> > Again, not at all, there's a configuration option allowing you to switch
+> > compression on/off (just like encryption, multithreaded I/O and a few other
+> > things).
+> > 
+> > But that's just for the record, because I'm really far away from saying that
+> > uswsusp (who gave this name to it?) is "the ultimate hibernation solution" for
+> > Linux.  In fact, I think it is suboptimal for a few good reasons and I'd like
+> > to improve Linux hibernation.  One way to achieve this goal is to join forces
+> > with your project.
 > 
-> Well, we can never be sure that it always holds or will always hold,
-> because we're playing on a constantly changing pitch.
+> Re the features, okay. I don't claim to have looked at your code
+> recently or in great detail when I did look at it.
+> 
+> Re the name, I think from memory that I had some input there - made a
+> joke or something - and Pavel took me seriously. Sorry!
+> 
+> Re joining forces, yes please. I have precious little time, too many
+> other commitments and would frankly be just as happy to chuck the whole
+> thing in - except that I want better hibernation than is in the kernel
+> at the moment and am not going to stop using Linux.
+> 
+> By the way, do you really have multithreaded I/O in uswsusp? If so, what
+> sort of throughput are you achieving combined with compression (please
+> also quote hdparm -t's speed of the swap partition for comparison).
 
-Exactly.
+Well, first, our multithreaded I/O is probably not the same thing as you think
+of, because we have an option to use multiple user space threads that process
+image data (compress, encrypt and feed them to the kernel).
 
-> > So, in fact, we'll need to think about safeguards that may be necessary in case
-> > it doesn't hold in some strange, presumably very rare and very improbable
-> > situation.
-> > 
-> > Assume for a while that there is a situation in which something other than
-> > us is allocating storage during hibernation.  How can we protect ourselves from
-> > that?
-> 
-> The possibilities I see are:
-> 
-> 1) Assume we can't know exactly how much but can allow a ball-park
-> figure (current method)
-> 2) Implement a means by which components that might allocate memory can
-> tell us how much they might allocate (currently used internally by
-> tuxonice - part of the modular design). I'd love to see this for the
-> drivers' suspend code.
+Now, we found that it only improves performance substantially if both
+compression and encryption are used.
 
-The drivers' suspend code is too late, we need to know that before the drivers'
-suspend callbacks are run.
+As far as the numbers are concerned, I don't have the raw hdparm numbers
+handy, but image writing speed with compression alone usually is in the
+60 MB/s - 100 MB/s range, sometimes more than 100 MB/s, but that really depends
+on the system.  If encryption is added, it drops substantially and multiple
+threads allow us to restore the previous performance (not 100%, but close
+enough to be worth the additional complexity IMO).
 
-> > > > > and the only things that are going to allocate RAM are TuxOnIce and the
-> > > > > drivers' suspend routines.
-> > > > 
-> > > > Hmm.  What about kernel threads that are not frozen?
-> > > 
-> > > As I said above, I haven't done it for a while, but when I did, they did
-> > > not seem to allocate any memory - at least not for any significant
-> > > period of time. Even if they do, small amounts can also be covered by
-> > > the allowance for memory for drivers' suspend routines.
-> > 
-> > I don't think experimental verification is really sufficient in this case too.
-> > 
-> > Either we're sure that something is impossible, in which case we need to know
-> > exactly why it is impossible, or we aren't, in which case we should do
-> > something to protect ourselves in case it _does_ happen after all.
-> 
-> I agree - that's the extra pages allowance. We need to think also about
-> the consequences if our assumptions aren't met: retry / abort etc (not
-> oops!)
-> 
-> > > > > The drivers' routines are pretty consistent - once you've seen how much is
-> > > > > used for one invocation, you can add a small margin and call that the
-> > > > > allowance to use for all future invocations. The amount of memory used
-> > > > > by the hibernation code is also entirely predictable - once you know the
-> > > > > characteristics of the system as it stands (ie with processes frozen),
-> > > > > you know how much you're going to need for the atomic copy and for doing
-> > > > > I/O. If you find that something is too big, all you need to do is thaw
-> > > > > kernel threads and free some memory until you fit within constraints or
-> > > > > (heaven forbid!) find that you're not getting anyway and so want to give
-> > > > > up on hibernating all together.
-> > > > > 
-> > > > > If, on the other hand, you do the drivers suspend etc and then look to
-> > > > > see what state you're in, well you might need to thaw drivers etc in
-> > > > > order to free memory before trying again. It's more expensive. Right now
-> > > > > you're just giving up in that case - yes, you could retry too instead of
-> > > > > giving up completely, but it's better IMHO to seek to get things right
-> > > > > before suspending drivers.
-> > > > > 
-> > > > > Oh, before I forget to mention and you ask - how to know what allowance
-> > > > > for the drivers? I use a sysfs entry - the user then just needs to see
-> > > > > what's needed on their first attempt, set up a means of putting that
-> > > > > value in the sysfs file in future (eg /etc/hibernate/tuxonice.conf) and
-> > > > > then forget about it.
-> > > > 
-> > > > OK, this is reasonable.
-> > > > 
-> > > > Still, I think your approach is based on some assumptions that need to be
-> > > > verified, so that either we are 100% sure they are satisfied, or we have some
-> > > > safeguards in place in case they aren't.
-> > > 
-> > > Well, the 'extra pages allowance' as I call the memory for drivers'
-> > > suspend routines is the safeguard. I'll see if I can find some time to
-> > > get some real-life numbers to prove my argument.
-> > 
-> > I don't really think it's a good idea to focus on testing in this case, because
-> > our testing will only cover several specific configurations.
-> > 
-> > Instead, I'd like to design things so that the assumptions are verified as we
-> > progress and something special is done if they happen to be not satisfied.
-> > If you think they are almost surely satisfied in all practically relevant
-> > situations, that "something" may be to fail hibernation and roll back to the
-> > working state.  If it never happens in practice, that's just fine.  Still, IMO
-> > we can't just say "this never happens" without saying why _exactly_ this is the
-> > case.
-> 
-> I certainly agree with trying to make things as predictable and
-> verifiable as possible, but we're not going to achieve that aim
-> perfectly here - there are too many other factors in play.
-> 
-> The best I can say is that using an extra pages allowance has worked for
-> myself and TuxOnIce users for at least a few years. Once you've done a
-> cycle or two, you know what to expect. I know this isn't absolute
-> certainty, but as I said above, we're interacting with other kernel
-> components that are blackboxes - at least at the moment.
-
-Short term, I agree.  Long term we need something more reliable and not
-requiring the user input.
+Still, one should always take the total length of hibernate-resume cycle into
+accout and the image writing/reading time need not be the greatest part of it.
 
 Best,
 Rafael
