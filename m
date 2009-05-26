@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] PCI PM: Read device power state from
-	register after updating it
-Date: Tue, 26 May 2009 21:52:29 +0200
-Message-ID: <200905262152.29489.rjw@sisk.pl>
-References: <200905182246.41129.rjw@sisk.pl> <200905182252.21478.rjw@sisk.pl>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 27 May 2009 07:29:20 +1000
+Message-ID: <1243373360.13930.57.camel__22238.8519476683$1243373353$gmane$org@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905252343.23744.rjw@sisk.pl> <200905260045.33902.oliver@neukum.org>
+	<200905260058.54482.rjw@sisk.pl>  <20090526091940.GA29867@elf.ucw.cz>
+Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905182252.21478.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <20090526091940.GA29867@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,100 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 18 May 2009, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi.
+
+On Tue, 2009-05-26 at 11:19 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> After attempting to change the power state of a PCI device
-> pci_raw_set_power_state() doesn't check if the value it wrote into
-> the device's PCI_PM_CTRL register has been stored in there.  Still,
-> it modifies the device's current_state field as though that's the
-> case.  This may cause the driver of the device to think that its
-> power state has been changed while in fact it hasn't.
+> > > If you really have drivers that have exceptionally large memory requirements
+> > > (eg. you need to copy video ram), you should tell the system through struct
+> > > driver and do accounting at probe and removal of devices.
+> > 
+> > Or perhaps the drivers should allocate memory from a PM notifier (which is
+> > called before the freezing of tasks) to avoid the problem?
 > 
-> To prevent such situations from happening modify
-> pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
-> register after writing into it and uses the value read from the
-> register to update the device's current_state field.  Also make it
-> return -EIO if the new state of the device is not equal to the state
-> requested by the called.
+> Yes, that's how it should work for big allocations.
 > 
-> To distinguish this error condition from the other ones make
-> pci_raw_set_power_state() return -ENOSYS instead of -EIO when it is
-> impossible to change the power state of the device, because it
-> doesn't support the native PCI PM at all or the requested target
-> state is not supported by it.
+> For small allocations... I still believe we should free a bit of
+> memory for s2ram so that small allocations can be done without
+> problems.
 
-Having reconsidered it I think that -ENODEV is probably better than -ENOSYS for
-this purpose.  Updated patch follows.
+Big vs small shouldn't matter. One simple, clear method of doing things.
+Otherwise we won't get the predictability we're seeking.
 
-Thanks,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI PM: Read device power state from register after updating it
-
-After attempting to change the power state of a PCI device
-pci_raw_set_power_state() doesn't check if the value it wrote into
-the device's PCI_PM_CTRL register has been stored in there.  Still,
-it modifies the device's current_state field as though that's the
-case.  This may cause the driver of the device to think that its
-power state has been changed while in fact it hasn't.
-
-To prevent such situations from happening modify
-pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
-register after writing into it and uses the value read from the
-register to update the device's current_state field.  Also make it
-return -EIO if the new state of the device is not equal to the state
-requested by the called.
-
-To distinguish this error condition from the other ones make
-pci_raw_set_power_state() return -ENODEV instead of -EIO when it is
-impossible to change the power state of the device, because it
-doesn't support the native PCI PM at all or the requested target
-state is not supported by it.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -446,7 +446,7 @@ static int pci_raw_set_power_state(struc
- 		return 0;
- 
- 	if (!dev->pm_cap)
--		return -EIO;
-+		return -ENODEV;
- 
- 	if (state < PCI_D0 || state > PCI_D3hot)
- 		return -EINVAL;
-@@ -465,7 +465,7 @@ static int pci_raw_set_power_state(struc
- 	/* check if this device supports the desired state */
- 	if ((state == PCI_D1 && !dev->d1_support)
- 	   || (state == PCI_D2 && !dev->d2_support))
--		return -EIO;
-+		return -ENODEV;
- 
- 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
- 
-@@ -502,7 +502,11 @@ static int pci_raw_set_power_state(struc
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
- 
--	dev->current_state = state;
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-+	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-+	/* Return error code if we have failed to change the state */
-+	if (dev->current_state != state)
-+		return -EIO;
- 
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
+Nigel
