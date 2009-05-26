@@ -1,17 +1,15 @@
-From: Chris Howie <cdhowie@gmail.com>
-Subject: Re: Boot problems with 2.6.29.1 - cannot smoothly boot
-	on battery
-Date: Tue, 26 May 2009 15:51:28 -0400
-Message-ID: <3d2f29dc0905261251h701aeb03w3ec6269b04d5e333__30247.3673051738$1243367547$gmane$org@mail.gmail.com>
-References: <3d2f29dc0905180125x5e7ef51dqf10955a3d44336e2@mail.gmail.com>
-	<200905242236.22715.rjw@sisk.pl> <4A19BA09.4050502@zytor.com>
-	<20090525011819.GA9805@sli10-desk.sh.intel.com>
-	<3d2f29dc0905241853h594aa2a9ta21dee45979c567e@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] PCI PM: Read device power state from
+	register after updating it
+Date: Tue, 26 May 2009 21:52:29 +0200
+Message-ID: <200905262152.29489.rjw@sisk.pl>
+References: <200905182246.41129.rjw@sisk.pl> <200905182252.21478.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <3d2f29dc0905241853h594aa2a9ta21dee45979c567e@mail.gmail.com>
+In-Reply-To: <200905182252.21478.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,28 +19,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBNYXkgMjQsIDIwMDkgYXQgOTo1MyBQTSwgQ2hyaXMgSG93aWUgPGNkaG93aWVAZ21h
-aWwuY29tPiB3cm90ZToKPiBPbiBTdW4sIE1heSAyNCwgMjAwOSBhdCA5OjE4IFBNLCBTaGFvaHVh
-IExpIDxzaGFvaHVhLmxpQGludGVsLmNvbT4gd3JvdGU6Cj4+IGlmIHRoaXMgaXMgYSBBTUQgQ1BV
-LCBwbGVhc2UgY2hlY2sgaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTEzMjMzCj4KPiBBaGgsIHRoYXQgc291bmRzIGxpa2UgaXQuIMKgSSBmaXJzdCBub3RpY2VkIHRo
-ZSBwcm9ibGVtIGluIDIuNi4yOCBhZnRlcgo+IHN3aXRjaGluZyBmcm9tIDIuNi4yNiAoYnV0IG5l
-dmVyIHRyaWVkIDIuNi4yNykuIMKgU28gdGhlIGluZm9ybWF0aW9uCj4gYWJvdXQgdmVyc2lvbnMg
-aXMgaW5kZWVkIGNvbnNpc3RlbnQuIMKgSSdtIG9uIGFuIGFtZDY0IGNwdS4KPgo+IFRoYW5rcyBl
-dmVyeW9uZSBmb3IgdGhlIHN1Z2dlc3Rpb25zLCBJIHdpbGwgdHJ5IHRvIHRha2UgYSBsb29rIHdp
-dGhpbgo+IHRoZSBuZXh0IGNvdXBsZSBvZiBkYXlzIGFuZCByZXBvcnQgbXkgZmluZGluZ3MuCgpU
-aGUgYnVnIGxpbmtlZCB3YXMgaW4gZmFjdCBteSBwcm9ibGVtLCBhbmQgYWZ0ZXIgZm9yd2FyZC1w
-b3J0aW5nIHRoZQpwYXRjaCB0byAyLjYuMjkuNCAod2hpY2ggcmVxdWlyZWQgbWFudWFsIHBhdGNo
-aW5nIGZvciBvbmUgaHVuayAtLQpsdWNraWx5IHRoaXMgd2FzIHN0cmFpZ2h0Zm9yd2FyZCkgbXkg
-c3lzdGVtIGJvb3RzIHBlcmZlY3RseSBvbiBiYXR0ZXJ5CmFuZCBBQy4KCk1hbnkgdGhhbmtzIGFs
-bCwgdGhpcyB3YXMgdGhlIG9ubHkgaXNzdWUgSSd2ZSBoYWQgd2l0aCB0aGUgbGF0ZXN0Cmtlcm5l
-bHMuICBJJ20gdmVyeSBoYXBweSB0aGF0IGl0J3Mgb3V0IG9mIHRoZSB3YXkhCgpDaGVlcnMsCi0t
-IApDaHJpcyBIb3dpZQpodHRwOi8vd3d3LmNocmlzaG93aWUuY29tCmh0dHA6Ly9lbi53aWtpcGVk
-aWEub3JnL3dpa2kvVXNlcjpDcmF6eWNvbXB1dGVycwpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Monday 18 May 2009, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> After attempting to change the power state of a PCI device
+> pci_raw_set_power_state() doesn't check if the value it wrote into
+> the device's PCI_PM_CTRL register has been stored in there.  Still,
+> it modifies the device's current_state field as though that's the
+> case.  This may cause the driver of the device to think that its
+> power state has been changed while in fact it hasn't.
+> 
+> To prevent such situations from happening modify
+> pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+> register after writing into it and uses the value read from the
+> register to update the device's current_state field.  Also make it
+> return -EIO if the new state of the device is not equal to the state
+> requested by the called.
+> 
+> To distinguish this error condition from the other ones make
+> pci_raw_set_power_state() return -ENOSYS instead of -EIO when it is
+> impossible to change the power state of the device, because it
+> doesn't support the native PCI PM at all or the requested target
+> state is not supported by it.
+
+Having reconsidered it I think that -ENODEV is probably better than -ENOSYS for
+this purpose.  Updated patch follows.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI PM: Read device power state from register after updating it
+
+After attempting to change the power state of a PCI device
+pci_raw_set_power_state() doesn't check if the value it wrote into
+the device's PCI_PM_CTRL register has been stored in there.  Still,
+it modifies the device's current_state field as though that's the
+case.  This may cause the driver of the device to think that its
+power state has been changed while in fact it hasn't.
+
+To prevent such situations from happening modify
+pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+register after writing into it and uses the value read from the
+register to update the device's current_state field.  Also make it
+return -EIO if the new state of the device is not equal to the state
+requested by the called.
+
+To distinguish this error condition from the other ones make
+pci_raw_set_power_state() return -ENODEV instead of -EIO when it is
+impossible to change the power state of the device, because it
+doesn't support the native PCI PM at all or the requested target
+state is not supported by it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -446,7 +446,7 @@ static int pci_raw_set_power_state(struc
+ 		return 0;
+ 
+ 	if (!dev->pm_cap)
+-		return -EIO;
++		return -ENODEV;
+ 
+ 	if (state < PCI_D0 || state > PCI_D3hot)
+ 		return -EINVAL;
+@@ -465,7 +465,7 @@ static int pci_raw_set_power_state(struc
+ 	/* check if this device supports the desired state */
+ 	if ((state == PCI_D1 && !dev->d1_support)
+ 	   || (state == PCI_D2 && !dev->d2_support))
+-		return -EIO;
++		return -ENODEV;
+ 
+ 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+ 
+@@ -502,7 +502,11 @@ static int pci_raw_set_power_state(struc
+ 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
+ 		udelay(PCI_PM_D2_DELAY);
+ 
+-	dev->current_state = state;
++	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
++	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
++	/* Return error code if we have failed to change the state */
++	if (dev->current_state != state)
++		return -EIO;
+ 
+ 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
+ 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
