@@ -1,15 +1,15 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Tue, 26 May 2009 12:56:21 +0200
-Message-ID: <200905261256.21469.oliver__36630.5833952085$1243335522$gmane$org@neukum.org>
+Date: Tue, 26 May 2009 13:07:22 +0200
+Message-ID: <200905261307.22664.oliver__2050.05568354881$1243336071$gmane$org@neukum.org>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905260029.25847.oliver@neukum.org>
-	<20090526084313.GB29563@elf.ucw.cz>
+	<200905260058.54482.rjw@sisk.pl>
+	<20090526091940.GA29867@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090526084313.GB29563@elf.ucw.cz>
+In-Reply-To: <20090526091940.GA29867@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,18 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 26. Mai 2009 10:43:13 schrieb Pavel Machek:
-> > The typical system today has three orders of magnitude more disk
-> > than ram. Do you really have a sytem you want to hibernate that has
-> > less than 2two orders of magnitude more disk than ram?
->
-> My x60 has 60GB disk and 2GB ram. And yes, I'd prefer not to waste 2GB
-> of disk space...
+Am Dienstag, 26. Mai 2009 11:19:40 schrieb Pavel Machek:
 
-OK, I see that requirements are more diverse than I thought.
+Hello,
+
+> For small allocations... I still believe we should free a bit of
+> memory for s2ram so that small allocations can be done without
+> problems.
+> 									Pavel
+
+it is essential that this work. Some subsystems, ie. USB, need to allocate
+memory to do IO. For them to work, small allocations must be possible.
+
+Now, is this a real issue? Can most devices really save a device state?
+This capability seems to me to be limited to memory mapped IO at best.
+USB devices generally don't save and restore state but bring the device
+into the state it ought to be in, not the state it was in during resumption.
 
 	Regards
 		Oliver
