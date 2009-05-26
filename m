@@ -1,17 +1,17 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Tue, 26 May 2009 10:19:56 +1000
-Message-ID: <1243297196.16743.137.camel__13611.6342888728$1243297153$gmane$org@nigel-laptop>
+Date: Tue, 26 May 2009 10:28:28 +1000
+Message-ID: <1243297708.16743.149.camel__29088.1217144944$1243297673$gmane$org@nigel-laptop>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<20090509135452.GE10859@elf.ucw.cz>
-	<1243245214.16743.90.camel@nigel-laptop>
-	<200905260002.55500.rjw@sisk.pl>
+	<20090525123228.GA13446@elf.ucw.cz>
+	<1243287557.16743.114.camel@nigel-laptop>
+	<200905260029.25847.oliver@neukum.org>
 Reply-To: nigel@tuxonice.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905260002.55500.rjw@sisk.pl>
+In-Reply-To: <200905260029.25847.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,117 +21,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Tue, 2009-05-26 at 00:02 +0200, Rafael J. Wysocki wrote:
-> On Monday 25 May 2009, Nigel Cunningham wrote:
-> > On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
-> > > > This is going to sound arrogant, but please don't take it that way: I
-> > > > can't see any other way of putting it. I don't *think* my code is
-> > > > better. It is better. swsusp has essentially stood still since Pavel
-> > > > first forked the code and got it merged. Yes, you have done some
-> > > > great
-> > > 
-> > > I don't think _I_ forked anything.
-> > 
-> > The conversation for May 2002 (around when you got it merged into
-> > vanilla) is here:
-> > 
-> > https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
-> > 
-> > Not sure why Sourceforge wants you to log in to get at it.
-> > 
-> > > > work on improving the code too and yes, you've done your work on the
-> > > > version that was already merged. But your changes been more in the area
-> > > > of fixing/improving what's already there than adding new and useful
-> > > > features. On the other side, I've continued to improve the code,
-> > > 
-> > > Yes, that's fair. We kept incremental fixing, improving. On the other
-> > > hand, you added new features.
-> > > 
-> > > > new features (support for multiple swap partitions & files, for writing
-> > > > to ordinary files, for mulithreaded I/O etc etc) making it more useful
-> > > > and more reliable. There are some new features that have been put in
-> > > > swsusp, but in just about every case (I think there might be an
-> > > > exception or two), they're things TuxOnIce had for ages before. eg: SMP
-> > > > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
-> > > > support in 2.4.
-> > > 
-> > > You were moving faster because you did not have to move in small
-> > > incremental steps, and you were allowed to add temporary hacks into
-> > > the code. Is that surprising? Not to me.
-> > 
-> > No, I moved in small incremental steps too - and the odd big rework.
-> > 
-> > > [Please update http://www.tuxonice.net/features pages. They are
-> > > misleading; yes, uswsusp supports threaded writes, can be reconfigured
-> > > without rebooting and yes we did test failure paths, it can be
-> > > scripted, and it supports checksums. I don't know what you mean by
-> > > kexec support, but kexec/kjump could be used as whole another method
-> > > of hibernating a machine, basically adding fourth row to your table.]
-> > 
-> > uswsusp supports multithreaded I/O? Wow. When did that happen?
-> > 
-> > Okay. How do you reconfigure it without rebooting (I mean tell it to
-> > write the image to a different location)? (So I can put the instructions
-> > on the page).
-> > 
-> > Regarding kexec, I'm thinking about making TuxOnice able to do a kexec
-> > jump and then continue with writing the image (after preparing it in the
-> > original kernel).
-> > 
-> > (Note to self for later - look above for other things Pavel says uswsusp
-> > can do when updating the page).
-> > 
-> > > > > > I take a modular approach and you have everything hardwired.
-> > > > > 
-> > > > > That's because using modules woudn't really make sense for us. :-)
-> > > > 
-> > > > I'm not saying modules but modular. TuxOnIce has support for compression
-> > > > neatly abstracted into one file, for swap in another and so on.
-> > > > [u]swsusp doesn't.
-> > > 
-> > > uswsusp has compression neatly abstracted into userland. I still
-> > > believe that's superior to kernel module.
-> > 
-> > Okay, but what about swap support? Modifying swsusp or uswsusp to write
-> > to ordinary files would require a huge change in multiple places -
+On Tue, 2009-05-26 at 00:29 +0200, Oliver Neukum wrote:
+> Am Montag, 25. Mai 2009 23:39:17 schrieb Nigel Cunningham:
+> > > If there's not enough swap available, swsusp should freeze, realize
+> > > there's no swap, unfreeze and continue. I do not see reliability
+> > > problem there.
+> >
+> > If there's not enough storage available (I'm also thinking of the file
+> > allocator Oliver wants), freeing some memory may get you in a position
 > 
-> Not at all, it acutally works in uswsusp (I still hate this name) as is.
+> No, I do want a dedicated partition. Going to a filesystem is just hiding
+> the problem. Filesystems can return -ENOSPC.
+> I also want my sytem to reliably hibernate if the filesystem to hold
+> the image happens to be remounted ro or to be undergoing a filesystem
+> check.
 > 
-> > where you store the image isn't currently abstracted at all from the issue of
-> > what you're storing, and I dare say a person with a slow computer who
-> > gets no advantage out of compression will have to recompile uswsusp to
-> > turn it off (if that's allowed for).
-> 
-> Again, not at all, there's a configuration option allowing you to switch
-> compression on/off (just like encryption, multithreaded I/O and a few other
-> things).
-> 
-> But that's just for the record, because I'm really far away from saying that
-> uswsusp (who gave this name to it?) is "the ultimate hibernation solution" for
-> Linux.  In fact, I think it is suboptimal for a few good reasons and I'd like
-> to improve Linux hibernation.  One way to achieve this goal is to join forces
-> with your project.
+> For full reliability you simply need a reservation. In addition that's
+> the fastest solution, too. A simple linear write to an unfragmented
+> area.
+> The typical system today has three orders of magnitude more disk
+> than ram. Do you really have a sytem you want to hibernate that has
+> less than 2two orders of magnitude more disk than ram?
 
-Re the features, okay. I don't claim to have looked at your code
-recently or in great detail when I did look at it.
+I agree that a dedicated non-swap partition has advantages. The only
+disadvantage I can think of is resizing it if you buy more RAM (and
+since that's not going to happen often, it's not a biggie).
 
-Re the name, I think from memory that I had some input there - made a
-joke or something - and Pavel took me seriously. Sorry!
+I'm not sure that going to a filesystem is hiding the problem though -
+whatever solution you adopt, there can be situations in which space
+available < space needed. Dedicated non-swap certainly has the least
+difficulties, but least != none.
 
-Re joining forces, yes please. I have precious little time, too many
-other commitments and would frankly be just as happy to chuck the whole
-thing in - except that I want better hibernation than is in the kernel
-at the moment and am not going to stop using Linux.
+I want flexibility, because different people have different situations
+and needs. You might care about a dedicated partition. Another person
+might be putting their toe in the Linux water, dual booting with 80% of
+the HDD in M$ and having insufficient space to shuffle Linux data around
+to make the partition.
 
-By the way, do you really have multithreaded I/O in uswsusp? If so, what
-sort of throughput are you achieving combined with compression (please
-also quote hdparm -t's speed of the swap partition for comparison).
+Read only filesystems aren't a problem, by the way. So long as you can
+bmap the file, that's enough for TuxOnIce - it doesn't currently expand
+files - just bmaps and writes directly to the blocks (not via the fs
+layer). That's simpler because you _have_ to do the same approach in
+reverse at resume time.
 
 Regards,
 
