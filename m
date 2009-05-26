@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Tue, 26 May 2009 11:19:40 +0200
-Message-ID: <20090526091940.GA29867__38306.0807981112$1243329707$gmane$org@elf.ucw.cz>
+Date: Tue, 26 May 2009 12:56:21 +0200
+Message-ID: <200905261256.21469.oliver__36630.5833952085$1243335522$gmane$org@neukum.org>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905252343.23744.rjw@sisk.pl>
-	<200905260045.33902.oliver@neukum.org>
-	<200905260058.54482.rjw@sisk.pl>
+	<200905260029.25847.oliver@neukum.org>
+	<20090526084313.GB29563@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090526084313.GB29563@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200905260058.54482.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +20,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Am Dienstag, 26. Mai 2009 10:43:13 schrieb Pavel Machek:
+> > The typical system today has three orders of magnitude more disk
+> > than ram. Do you really have a sytem you want to hibernate that has
+> > less than 2two orders of magnitude more disk than ram?
+>
+> My x60 has 60GB disk and 2GB ram. And yes, I'd prefer not to waste 2GB
+> of disk space...
 
-> > If you really have drivers that have exceptionally large memory requirements
-> > (eg. you need to copy video ram), you should tell the system through struct
-> > driver and do accounting at probe and removal of devices.
-> 
-> Or perhaps the drivers should allocate memory from a PM notifier (which is
-> called before the freezing of tasks) to avoid the problem?
+OK, I see that requirements are more diverse than I thought.
 
-Yes, that's how it should work for big allocations.
-
-For small allocations... I still believe we should free a bit of
-memory for s2ram so that small allocations can be done without
-problems.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Regards
+		Oliver
