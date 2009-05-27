@@ -1,17 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Wed, 27 May 2009 14:26:37 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905271411570.4277__27503.2487967566$1243452560$gmane$org@localhost.localdomain>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905260039.43626.rjw@sisk.pl>
-	<1243298374.16743.161.camel@nigel-laptop>
-	<200905270027.41898.rjw@sisk.pl>
-	<1243382551.13930.109.camel@nigel-laptop>
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: 2 bugs related to suspend to disk
+Date: Wed, 27 May 2009 21:53:48 +0200
+Message-ID: <4A1D9A4C.4000600__43070.8856591538$1243454385$gmane$org@gmail.com>
+References: <4A199A7A.3010705@gmail.com> <200905250004.11927.rjw@sisk.pl>
+	<4A1AD3D1.2010806@gmail.com> <200905252331.02488.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1243382551.13930.109.camel@nigel-laptop>
+In-Reply-To: <200905252331.02488.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,35 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > > The possibilities I see are:
-> > > 
-> > > 1) Assume we can't know exactly how much but can allow a ball-park
-> > > figure (current method)
-> > > 2) Implement a means by which components that might allocate memory can
-> > > tell us how much they might allocate (currently used internally by
-> > > tuxonice - part of the modular design). I'd love to see this for the
-> > > drivers' suspend code.
-> > 
-> > The drivers' suspend code is too late, we need to know that before the drivers'
-> > suspend callbacks are run.
+Rafael J. Wysocki wrote
+> On Monday 25 May 2009, Marcin Slusarz wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Sunday 24 May 2009, Marcin Slusarz wrote:
+>>>> Pavel Machek wrote:
+>>>>> Hi!
+>>>>>
+>>>>>
+>>>>>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+>>>>>>
+>>>>> I'm afraid we need more details here. Is "resume" binary being ran?
+>>>> Excellent question ;) - I didn't know it has to. I'll try to setup
+>>>> initramfs tomorrow.
+>>>>
+>>>> Thanks and sorry for the noise!
+>>> However, the issue reported as 1) is not really a noise IMO. :-)
+>>>
+>>> Can you please attach a full dmesg output containing these messages?
+>> I've uploaded .config, dmesg (BUG was not saved) and 2 pictures of
+>> screen just before power loss to http://www.kadu.net/~joi/kernel/2009.05.25/
+>> (Please ignore first suspend failure (3681.078646 - 3685.514358) - I forgot
+>> to restore swap)
 > 
-> Yeah, sorry for not being clear enough. I meant I'd like to see a new
-> function in the API that lets us enquire early on as to how much memory
-> will be needed. That said, I like the idea of just asking them to
-> allocate memory earlier better.
+> Thanks.
+> 
+> Can you please test the patch sent by Sebastian Ott in this thread?
 
-The more we require of driver writers, the more likely it is that
-they'll get it wrong and we will fail.
+BUG disappeared with this patch. Is this a final fix?
 
-I believe it must remain a fundamental design goal that
-the correctness burden on driver writers be as small as possible.
-
-Of couse if optional hooks are availalble for an unusual driver that has
-special requirements, that is fine, as long as unusual really is unusual.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Marcin
