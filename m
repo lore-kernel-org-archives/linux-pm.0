@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Thu, 28 May 2009 11:33:56 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0905281129090.3037-100000__29900.4183886156$1243524887$gmane$org@iolanthe.rowland.org>
-References: <aec7e5c30905272314s54364f00u9bf5ecf48081dcda@mail.gmail.com>
+From: Martin Steigerwald <ms@teamix.de>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Wed, 27 May 2009 16:38:44 +0200
+Message-ID: <200905271638.50097.ms__37620.506124995$1243525048$gmane$org@teamix.de>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905260058.54482.rjw@sisk.pl>
+	<200905260113.46440.oliver@neukum.org>
+	(sfid-20090526_021237_792985_629AEF36)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4932886927508638109=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905272314s54364f00u9bf5ecf48081dcda@mail.gmail.com>
+In-Reply-To: <200905260113.46440.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,33 +17,77 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+To: tuxonice-devel@lists.tuxonice.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 28 May 2009, Magnus Damm wrote:
+--===============4932886927508638109==
+Content-Type: multipart/signed;
+  boundary="nextPart4710087.X9GrhZ40pD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> On Wed, May 27, 2009 at 11:30 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Wed, 27 May 2009, Magnus Damm wrote:
-> >> PM: Runtime platform device power management
-> 
-> > Have you given any thought as to whether the platform_device_wakeup and
-> > platform_device_idle calls should be restricted to process context?
-> 
-> Good question. The first thing that pops into my mind is to have same
-> restrictions as clk_enable() and clk_disable(). To keep things simple
-> I'd say that it's unlikely that any embedded platform driver would
-> need to sleep during the dev_pm_ops callbacks. Maybe it makes sense to
-> only allow _noirq variants of dev_pm_ops, not sure. Any ideas?
+--nextPart4710087.X9GrhZ40pD
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I don't know what would be appropriate for you.  USB power transitions
-cannot be made in an atomic context, but the situation could well be
-different for platform devices.  It's just something to be aware of.
+Am Dienstag, 26. Mai 2009 schrieb Oliver Neukum:
+> Am Dienstag, 26. Mai 2009 00:58:53 schrieb Rafael J. Wysocki:
+> > On Tuesday 26 May 2009, Oliver Neukum wrote:
+> > > No, I am afraid it is not. The average user has no clue. Even if that
+> > > is not the problem, the user never knows for sure he has encountered
+> > > the worst case.
+> >
+> > OK there, but surely it's better to have a sysfs attribute than a fixed
+> > value?
+>
+> Why? The driver knows best. Tunables are generally the worst solution.
 
-(And by the way, the _noirq ops don't run in atomic context.  They run 
-in process context with most interrupt deliveries disabled.  It's not 
-the same thing -- they are allowed to sleep.)
+I agree, but what about the not so ideal real-world? What about closed sour=
+ce=20
+drivers? Who is going to educate closed source driver writers to inform the=
+=20
+kernel about their memory requirements early enough? And how long will this=
+=20
+take?
 
-Alan Stern
+I think at least as an interim measure it makes sense to have a sysfs value=
+=2E=20
+Or discourage closed-source drivers even more.
+
+I prefer open-source gfx drivers and don't need extra pages allowance, but=
+=20
+that might not hold true for everyone.
+
+=2D-=20
+Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
+gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
+
+--nextPart4710087.X9GrhZ40pD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkodUHUACgkQHhDFkwOZrpDmlgCfV1MuUTij216v9Sf7c6Fw4HwB
+2oQAn02qnn09In43E/RCtqQcYFvF1FhV
+=gzej
+-----END PGP SIGNATURE-----
+
+--nextPart4710087.X9GrhZ40pD--
+
+--===============4932886927508638109==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4932886927508638109==--
