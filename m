@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
 Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
 Date: Wed, 27 May 2009 15:10:05 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905271437530.4277__10162.6577358276$1243455607$gmane$org@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905271437530.4277__34270.3308364891$1243455907$gmane$org@localhost.localdomain>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 	<200905081611.41865.rjw@sisk.pl>
 	<1241819569.19600.281.camel@nigel-laptop>
