@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 01/04] Driver Core: Add platform device arch data
-Date: Wed, 27 May 2009 19:06:33 +0900
-Message-ID: <20090527100633.29671.83531.sendpatchset__43285.701951436$1243419058$gmane$org@rx1.opensource.se>
+Subject: [PATCH 02/04] Driver Core: Add idle and wakeup functions
+Date: Wed, 27 May 2009 19:06:42 +0900
+Message-ID: <20090527100642.29671.52231.sendpatchset__15103.2845992178$1243419065$gmane$org@rx1.opensource.se>
 References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,44 +23,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-Allow architecture specific data in struct platform_device.
-Platform device data is needed by the runtime pm code. A similar
-struct already exists for struct device.
-
-The architecture specific asm/device.h file needs to provide
-struct pdev_archdata if CONFIG_HAVE_PLATFORM_DEVICE_DATA is set.
+Add platform_device_idle() and platform_device_wakeup()
+and allow architectures to implement their own versions
+of these if CONFIG_HAVE_PLATFORM_IDLE_WAKEUP is set.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Optionally we can make use of struct device archdata instead,
- but since the runtime device pm is limited to platform devices
- it makes sense to make this data platform device specific imo.
+ Yes, this needs documentation. See [00/04] for now.
 
  arch/Kconfig                    |    3 +++
- include/linux/platform_device.h |    5 +++++
- 2 files changed, 8 insertions(+)
+ include/linux/platform_device.h |    8 ++++++++
+ 2 files changed, 11 insertions(+)
 
---- 0001/arch/Kconfig
-+++ work/arch/Kconfig	2009-05-15 14:51:35.000000000 +0900
-@@ -112,3 +112,6 @@ config HAVE_DMA_API_DEBUG
+--- 0002/arch/Kconfig
++++ work/arch/Kconfig	2009-05-26 12:31:06.000000000 +0900
+@@ -115,3 +115,6 @@ config HAVE_DEFAULT_NO_SPIN_MUTEXES
  
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
+ config HAVE_PLATFORM_DEVICE_ARCHDATA
  	bool
 +
-+config HAVE_PLATFORM_DEVICE_ARCHDATA
++config HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
 +	bool
---- 0001/include/linux/platform_device.h
-+++ work/include/linux/platform_device.h	2009-05-15 16:59:01.000000000 +0900
-@@ -23,6 +23,11 @@ struct platform_device {
- 	void		*platform_data;
+--- 0002/include/linux/platform_device.h
++++ work/include/linux/platform_device.h	2009-05-26 12:32:40.000000000 +0900
+@@ -57,6 +57,14 @@ extern int platform_device_add(struct pl
+ extern void platform_device_del(struct platform_device *pdev);
+ extern void platform_device_put(struct platform_device *pdev);
  
- 	struct platform_device_id	*id_entry;
-+
-+#ifdef CONFIG_HAVE_PLATFORM_DEVICE_ARCHDATA
-+	/* arch specific additions */
-+	struct pdev_archdata	archdata;
++#ifdef CONFIG_HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
++void platform_device_idle(struct platform_device *pdev);
++void platform_device_wakeup(struct platform_device *pdev);
++#else
++static inline void platform_device_idle(struct platform_device *pdev) {}
++static inline void platform_device_wakeup(struct platform_device *pdev) {}
 +#endif
- };
- 
- #define platform_get_device_id(pdev)	((pdev)->id_entry)
++
+ struct platform_driver {
+ 	int (*probe)(struct platform_device *);
+ 	int (*remove)(struct platform_device *);
