@@ -1,18 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Wed, 27 May 2009 15:10:05 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905271437530.4277__34270.3308364891$1243455907$gmane$org@localhost.localdomain>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905081611.41865.rjw@sisk.pl>
-	<1241819569.19600.281.camel@nigel-laptop>
-	<200905090046.21282.rjw@sisk.pl>
-	<1241825408.19600.384.camel@nigel-laptop>
-	<2c0942db0905081644l73a7a4f5i8af4677046797df@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 13351] 2.6.30 corrupts my system after suspend
+	resume with readonly mounted hard disk
+Date: Wed, 27 May 2009 22:45:02 +0200
+Message-ID: <200905272245.03779.rjw__4295.95086393437$1243457207$gmane$org@sisk.pl>
+References: <bug-13351-10028@http.bugzilla.kernel.org/>
+	<200905272017.n4RKHN7J004784@demeter.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <2c0942db0905081644l73a7a4f5i8af4677046797df@mail.gmail.com>
+In-Reply-To: <200905272017.n4RKHN7J004784@demeter.kernel.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,64 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>, bugzilla-daemon@bugzilla.kernel.org, unggnu@googlemail.com, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Fri, May 8, 2009 at 4:30 PM, Nigel Cunningham <nigel@tuxonice.net> wrote:
-> > I think you're putting unrealistic barriers in the way. Does all code
-> > that goes into the kernel get "reviewed and agreed upon by everyone at
-> > once"? No!
+On Wednesday 27 May 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=13351
 > 
-> Actually, yes...
-...
-> Please stick at this.
+> --- Comment #23 from unggnu@googlemail.com  2009-05-27 20:17:22 ---
+> According to bisect it is either 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742 or
+> 6d7942dc2a70a7e74c352107b150265602671588
+> The last version doesn't boot so I couldn't nail it down further.
+> 
+> I have bisect the commits between 2.6.29-rc8 and 2.6.30-rc1 .
+> 
+> I hope that this helps.
 
-I agree with Ray, and could not have said it better.
+Thanks for bisecting.
 
-I will, however, reference prior art...
+We have a serious regression here which appears to have been caused by x86
+patches.  Please help!
 
-Greg KH said the exact same thing in 2005
-when he met with Nigel and Pavel in Ottawa.
-
->From Patrick Mochel's minutes, available here:
-http://lwn.net/Articles/144193/
-
-"Suspend2 and Software Suspend
-
-There was agreement among the attendees that Nigel Cunningham's 
-suspend-to-disk patches ("Suspend2") are stable and worthwhile to many 
-users. It was suggested that he begin the process of merging his patches 
-with Pavel Machek's in-kernel software suspend implementation. A lengthy 
-discussion followed about strategies for doing so and the philosophy of 
-gradual kernel development.
-
-To briefly recap: Suspend2 is very robust and feature rich. Not only does 
-it include a reliable process freezer, it has the ability to compress and 
-encrypt the suspended image and includes a graphical status bar. Although 
-it apparently does receive positive reviews from users, most kernel 
-developers do not care about such eye candy. It was suggested and agreed 
-that Nigel will split the patches (all 69 of them so far) into functional 
-groups, and push them separately. We agreed that the process freezer 
-patches would come first, which should also benefit the existing suspend 
-implementation as well. Next will most likely be the new algorithmic core 
-and eventually the plugin architecture and graphical features. It was 
-heavily stressed that Nigel and Pavel must work together and that the more 
-effort that is put in to making the patches smaller and simpler, the 
-easier it will be to merge this work. "
-
-While "suspend2" is now called "tux-on-ice", the same message
-about how to merge upstream applies in 2009
-just as much as it did in 2005.
-
-Rafael's reference to ch10 in HPA's articulate 2008 OLS paper is apt
-http://ols.fedoraproject.org/OLS/Reprints-2008/anvin-reprint.pdf
-The involved parties must have common motivation to make forward progress.
-
-The process should be to cherry-pick the out-of-tree implementation
-to gradually improve the in-tree-implementation.  If we had started
-that 4 years ago, we'd be done by now.  If we don't start it now,
-we'll be having this same conversation again in 2013.
-
-thanks,
-Len Brown, Intel Open Source Technolgy Center
+Best,
+Rafael
