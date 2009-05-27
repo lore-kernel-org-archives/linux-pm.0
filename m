@@ -1,17 +1,11 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Wed, 27 May 2009 10:06:03 +1000
-Message-ID: <1243382763.13930.112.camel__11613.6343720884$1243382899$gmane$org@nigel-laptop>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905260002.55500.rjw@sisk.pl>
-	<1243297196.16743.137.camel@nigel-laptop>
-	<200905270037.43991.rjw@sisk.pl>
-Reply-To: nigel@tuxonice.net
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH 00/04][RFC] PM: Runtime platform device PM
+Date: Wed, 27 May 2009 19:06:25 +0900
+Message-ID: <20090527100625.29671.43166.sendpatchset__27130.4494621747$1243419035$gmane$org@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905270037.43991.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +15,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+PM: Runtime platform device power management
 
-On Wed, 2009-05-27 at 00:37 +0200, Rafael J. Wysocki wrote:
-> Well, first, our multithreaded I/O is probably not the same thing as you think
-> of, because we have an option to use multiple user space threads that process
-> image data (compress, encrypt and feed them to the kernel).
+[PATCH 01/04] Driver Core: Add platform device arch data
+[PATCH 02/04] Driver Core: Add idle and wakeup functions
+[PATCH 03/04] PM: Add platform bus runtime dev_pm_ops
+[PATCH 04/04] sh: Runtime platform device PM mockup
 
-Well, I'm using multiple kernel threads, so it's probably not that
-different, but okay.
+These patches extend platform device and driver interfaces to
+allow architectures to implement platform device runtime pm.
 
-> Now, we found that it only improves performance substantially if both
-> compression and encryption are used.
-> 
-> As far as the numbers are concerned, I don't have the raw hdparm numbers
-> handy, but image writing speed with compression alone usually is in the
-> 60 MB/s - 100 MB/s range, sometimes more than 100 MB/s, but that really depends
-> on the system.  If encryption is added, it drops substantially and multiple
-> threads allow us to restore the previous performance (not 100%, but close
-> enough to be worth the additional complexity IMO).
+Upstream runtime power management needs to be improved to fully
+make use of hardware power saving features found on embedded
+platforms and in common SoCs.
 
-Okay. That's still a significant improvement over 20 or 30 MB/s. It
-depends, of course, also on the compression ratio that's achieved.
+For runtime power management we today have cpuidle, the clock
+framework and qos. This allows the cpu core to enter various
+forms of deep sleep, and for devices we may stop clocks to save
+power. Modern SoCs however allow disabling of power to parts of
+the chip, and we have no upstream interface to handle that today.
 
-> Still, one should always take the total length of hibernate-resume cycle into
-> accout and the image writing/reading time need not be the greatest part of it.
+I propose adding the following simple platform device functions:
+ - platform_device_wakeup()
+ - platform_device_idle()
 
-Yes, the total time is what matters. I'm focussing on the I/O speed
-because - especially with larger images - it tends to be the biggest
-portion.
+The idle function is used by the platform driver to let the 
+architecture power management code know that from now on the
+device is in idle state. When the device is marked as idle
+the architecture specific runtime power management may decide
+to do various levels of device power management, ranging from
+stopping clocks to turning off power. The dev_pm_ops callbacks
+may be invoked by the runtime pm code to save and restore state
+whenever the device is marked as idle.
 
-Regards,
+The wakeup function is used by the platform driver to notify the
+architecture code that the driver wants to make use of the hardware
+device. If the device has been put in sleep then it needs to be
+woken up. This wakeup call may invoke dev_pm_ops callbacks.
 
-Nigel
+Have a look at the last patch for a SuperH mockup that shows how
+it all fits together. We need this or a similar interface to be able
+to enter deep sleep states on SuperH. I believe other architectures
+have similar requirements.
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
+
+ arch/Kconfig                               |    9 +
+ arch/sh/Kconfig                            |    3 
+ arch/sh/boards/mach-migor/setup.c          |    9 +
+ arch/sh/include/asm/device.h               |    6 
+ arch/sh/include/cpu-sh4/cpu/sh7722.h       |   14 ++
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c     |   31 ++++
+ arch/sh/kernel/cpu/shmobile/pm.c           |  118 +++++++++++++++++
+ drivers/base/platform.c                    |  193 +++++++++++++++++++++++++++-
+ drivers/clocksource/sh_cmt.c               |    2 
+ drivers/clocksource/sh_tmu.c               |    2 
+ drivers/i2c/busses/i2c-sh_mobile.c         |    2 
+ drivers/media/video/sh_mobile_ceu_camera.c |    2 
+ drivers/video/sh_mobile_lcdcfb.c           |    4 
+ include/linux/platform_device.h            |   21 +++
+ 14 files changed, 415 insertions(+), 1 deletion(-)
