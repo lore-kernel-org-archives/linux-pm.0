@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/04] Driver Core: Add platform device arch
-	data
-Date: Thu, 28 May 2009 23:26:56 +0200
-Message-ID: <200905282326.57431.rjw__28468.4607213878$1243546186$gmane$org@sisk.pl>
+Subject: Re: [PATCH 02/04] Driver Core: Add idle and wakeup
+	functions
+Date: Thu, 28 May 2009 23:29:08 +0200
+Message-ID: <200905282329.09804.rjw__16362.0069194168$1243546449$gmane$org@sisk.pl>
 References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	<20090527100633.29671.83531.sendpatchset@rx1.opensource.se>
+	<20090527100642.29671.52231.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090527100633.29671.83531.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090527100642.29671.52231.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,47 +27,45 @@ List-Id: linux-pm@vger.kernel.org
 On Wednesday 27 May 2009, Magnus Damm wrote:
 > From: Magnus Damm <damm@igel.co.jp>
 > 
-> Allow architecture specific data in struct platform_device.
-> Platform device data is needed by the runtime pm code. A similar
-> struct already exists for struct device.
-> 
-> The architecture specific asm/device.h file needs to provide
-> struct pdev_archdata if CONFIG_HAVE_PLATFORM_DEVICE_DATA is set.
+> Add platform_device_idle() and platform_device_wakeup()
+> and allow architectures to implement their own versions
+> of these if CONFIG_HAVE_PLATFORM_IDLE_WAKEUP is set.
 > 
 > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > ---
 > 
->  Optionally we can make use of struct device archdata instead,
->  but since the runtime device pm is limited to platform devices
->  it makes sense to make this data platform device specific imo.
+>  Yes, this needs documentation. See [00/04] for now.
 > 
 >  arch/Kconfig                    |    3 +++
->  include/linux/platform_device.h |    5 +++++
->  2 files changed, 8 insertions(+)
+>  include/linux/platform_device.h |    8 ++++++++
+>  2 files changed, 11 insertions(+)
 > 
-> --- 0001/arch/Kconfig
-> +++ work/arch/Kconfig	2009-05-15 14:51:35.000000000 +0900
-> @@ -112,3 +112,6 @@ config HAVE_DMA_API_DEBUG
+> --- 0002/arch/Kconfig
+> +++ work/arch/Kconfig	2009-05-26 12:31:06.000000000 +0900
+> @@ -115,3 +115,6 @@ config HAVE_DEFAULT_NO_SPIN_MUTEXES
 >  
->  config HAVE_DEFAULT_NO_SPIN_MUTEXES
+>  config HAVE_PLATFORM_DEVICE_ARCHDATA
 >  	bool
 > +
-> +config HAVE_PLATFORM_DEVICE_ARCHDATA
+> +config HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
 
-Hmm.  Do we really need yet another CONFIG_ option for that?
+Again, I'm not sure if the new CONFIG_ option is really necessary.
 
 > +	bool
-> --- 0001/include/linux/platform_device.h
-> +++ work/include/linux/platform_device.h	2009-05-15 16:59:01.000000000 +0900
-> @@ -23,6 +23,11 @@ struct platform_device {
->  	void		*platform_data;
+> --- 0002/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-05-26 12:32:40.000000000 +0900
+> @@ -57,6 +57,14 @@ extern int platform_device_add(struct pl
+>  extern void platform_device_del(struct platform_device *pdev);
+>  extern void platform_device_put(struct platform_device *pdev);
 >  
->  	struct platform_device_id	*id_entry;
-> +
-> +#ifdef CONFIG_HAVE_PLATFORM_DEVICE_ARCHDATA
-> +	/* arch specific additions */
-> +	struct pdev_archdata	archdata;
+> +#ifdef CONFIG_HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
+> +void platform_device_idle(struct platform_device *pdev);
+> +void platform_device_wakeup(struct platform_device *pdev);
+> +#else
+> +static inline void platform_device_idle(struct platform_device *pdev) {}
+> +static inline void platform_device_wakeup(struct platform_device *pdev) {}
 > +#endif
->  };
->  
->  #define platform_get_device_id(pdev)	((pdev)->id_entry)
+> +
+>  struct platform_driver {
+>  	int (*probe)(struct platform_device *);
+>  	int (*remove)(struct platform_device *);
