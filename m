@@ -1,20 +1,14 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Date: Thu, 28 May 2009 09:43:45 +1000
-Message-ID: <1243467825.13930.134.camel__4315.74486797235$1243467949$gmane$org@nigel-laptop>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	<200905081611.41865.rjw@sisk.pl>
-	<1241819569.19600.281.camel@nigel-laptop>
-	<200905090046.21282.rjw@sisk.pl>
-	<1241825408.19600.384.camel@nigel-laptop>
-	<2c0942db0905081644l73a7a4f5i8af4677046797df@mail.gmail.com>
-	<alpine.LFD.2.00.0905271437530.4277@localhost.localdomain>
-Reply-To: nigel@tuxonice.net
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
+Date: Wed, 27 May 2009 17:32:17 -0700
+Message-ID: <87prdut6cu.fsf__49593.5552324683$1243470790$gmane$org@deeprootsystems.com>
+References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0905271437530.4277@localhost.localdomain>
+In-Reply-To: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	(Magnus Damm's message of "Wed\, 27 May 2009 19\:06\:25 +0900")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,66 +18,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len.
+Magnus Damm <magnus.damm@gmail.com> writes:
 
-On Wed, 2009-05-27 at 15:10 -0400, Len Brown wrote:
-> > Please stick at this.
-> 
-> I agree with Ray, and could not have said it better.
-> 
-> I will, however, reference prior art...
-> 
-> Greg KH said the exact same thing in 2005
-> when he met with Nigel and Pavel in Ottawa.
-> 
-> >From Patrick Mochel's minutes, available here:
-> http://lwn.net/Articles/144193/
-> 
-> "Suspend2 and Software Suspend
-> 
-> There was agreement among the attendees that Nigel Cunningham's 
-> suspend-to-disk patches ("Suspend2") are stable and worthwhile to many 
-> users. It was suggested that he begin the process of merging his patches 
-> with Pavel Machek's in-kernel software suspend implementation. A lengthy 
-> discussion followed about strategies for doing so and the philosophy of 
-> gradual kernel development.
-> 
-> To briefly recap: Suspend2 is very robust and feature rich. Not only does 
-> it include a reliable process freezer, it has the ability to compress and 
-> encrypt the suspended image and includes a graphical status bar. Although 
-> it apparently does receive positive reviews from users, most kernel 
-> developers do not care about such eye candy. It was suggested and agreed 
-> that Nigel will split the patches (all 69 of them so far) into functional 
-> groups, and push them separately. We agreed that the process freezer 
-> patches would come first, which should also benefit the existing suspend 
-> implementation as well. Next will most likely be the new algorithmic core 
-> and eventually the plugin architecture and graphical features. It was 
-> heavily stressed that Nigel and Pavel must work together and that the more 
-> effort that is put in to making the patches smaller and simpler, the 
-> easier it will be to merge this work. "
-> 
-> While "suspend2" is now called "tux-on-ice", the same message
-> about how to merge upstream applies in 2009
-> just as much as it did in 2005.
-> 
-> Rafael's reference to ch10 in HPA's articulate 2008 OLS paper is apt
-> http://ols.fedoraproject.org/OLS/Reprints-2008/anvin-reprint.pdf
-> The involved parties must have common motivation to make forward progress.
-> 
-> The process should be to cherry-pick the out-of-tree implementation
-> to gradually improve the in-tree-implementation.  If we had started
-> that 4 years ago, we'd be done by now.  If we don't start it now,
-> we'll be having this same conversation again in 2013.
+> PM: Runtime platform device power management
+>
+> [PATCH 01/04] Driver Core: Add platform device arch data
+> [PATCH 02/04] Driver Core: Add idle and wakeup functions
+> [PATCH 03/04] PM: Add platform bus runtime dev_pm_ops
+> [PATCH 04/04] sh: Runtime platform device PM mockup
+>
+> These patches extend platform device and driver interfaces to
+> allow architectures to implement platform device runtime pm.
+>
+> Upstream runtime power management needs to be improved to fully
+> make use of hardware power saving features found on embedded
+> platforms and in common SoCs.
+>
+> For runtime power management we today have cpuidle, the clock
+> framework and qos. This allows the cpu core to enter various
+> forms of deep sleep, and for devices we may stop clocks to save
+> power. Modern SoCs however allow disabling of power to parts of
+> the chip, and we have no upstream interface to handle that today.
+>
+> I propose adding the following simple platform device functions:
+>  - platform_device_wakeup()
+>  - platform_device_idle()
+>
+> The idle function is used by the platform driver to let the 
+> architecture power management code know that from now on the
+> device is in idle state. When the device is marked as idle
+> the architecture specific runtime power management may decide
+> to do various levels of device power management, ranging from
+> stopping clocks to turning off power. The dev_pm_ops callbacks
+> may be invoked by the runtime pm code to save and restore state
+> whenever the device is marked as idle.
+>
+> The wakeup function is used by the platform driver to notify the
+> architecture code that the driver wants to make use of the hardware
+> device. If the device has been put in sleep then it needs to be
+> woken up. This wakeup call may invoke dev_pm_ops callbacks.
+>
+> Have a look at the last patch for a SuperH mockup that shows how
+> it all fits together. We need this or a similar interface to be able
+> to enter deep sleep states on SuperH. I believe other architectures
+> have similar requirements.
+>
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-Thanks for the encouragement.
+Speaking on behalf of OMAP PM developers, and as maintainer of the
+current OMAP PM infrastructure, this is a major step towards a generic
+runtime PM that we would use on OMAP as well.
 
-I'm seeking to do this with Rafael, and he's being really good to deal
-with.
+In the PM branch of the linux-omap tree, we currently have an ad-hoc
+but working infrastructure for all of this, including device-specific
+save/restore hooks for supporting some or all of the on-chip
+powerdomains to go off during idle.
 
-Regards,
+However, our current approach hides most of the details behind the
+clock framework, custom save/restore hooks and in some cases custom
+platform hooks passed using platform_data.
 
-Nigel
+I like this proposed approach much better as it generalizes the
+approach and allows us to share the infrastructure across arches
+as well as decouple device idleness from clock management.
+
+Kevin
