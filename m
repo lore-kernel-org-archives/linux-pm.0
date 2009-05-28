@@ -1,104 +1,35 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] i7300_idle: allow testing on i5000-series
- hardware w/o re-compile
-Date: Thu, 28 May 2009 01:24:46 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: Montreal Linux Power Management Mini-Summit -- July 13, 2009
+Date: Thu, 28 May 2009 14:36:44 +0900
+Message-ID: <aec7e5c30905272236r57336212u30e0d697ded83ee@mail.gmail.com>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: andrew.d.henroid@intel.com, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi Len,
 
-Testing the i7300_idle driver on i5000-series hardware required
-an edit to i7300_idle.h to "#define SUPPORT_I5000 1" and a re-build.
+On Fri, May 22, 2009 at 4:12 AM, Len Brown <lenb@kernel.org> wrote:
+> We will hold a Linux Power Management Mini-Summit in Montreal
+> on Monday, July 13, 2009 -- concurrent with day-1 of the
+> tutorials at the at the Linux Symposium.
+>
+> http://www.linuxsymposium.org/2009/schedule.php
+>
+> This is an opportunity for members of the Linux Power Management
+> development community to meet face-to-face to discuss the future.
+>
+> Suggestions for agenda topics should be sent to:
+> linux-pm@lists.linux-foundation.org
 
-Replace that build-time scheme with a load-time module parameter:
-"7300_idle.forceload=1" to make it easier to test the driver
-on hardware that is not officially supported.
+I'd like to attend and discuss the following:
+ - Runtime PM for Platform Devices.
+ - User space interface for clock configuration.
 
-The default is unchanged -- without this parameter,
-the driver will continue to load only on the i7300-series.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/idle/i7300_idle.c  |    3 +++
- include/linux/i7300_idle.h |   15 +++++++--------
- 2 files changed, 10 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
-index bf74039..98b82c7 100644
---- a/drivers/idle/i7300_idle.c
-+++ b/drivers/idle/i7300_idle.c
-@@ -41,6 +41,9 @@ static int debug;
- module_param_named(debug, debug, uint, 0644);
- MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
- 
-+module_param_named(forceload, forceload, uint, 0644);
-+MODULE_PARM_DESC(debug, "Enable driver testing on unsupported i5000");
-+
- #define dprintk(fmt, arg...) \
- 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
- 
-diff --git a/include/linux/i7300_idle.h b/include/linux/i7300_idle.h
-index 05a80c4..46bae33 100644
---- a/include/linux/i7300_idle.h
-+++ b/include/linux/i7300_idle.h
-@@ -16,6 +16,7 @@
- struct fbd_ioat {
- 	unsigned int vendor;
- 	unsigned int ioat_dev;
-+	unsigned int enabled;
- };
- 
- /*
-@@ -23,22 +24,18 @@ struct fbd_ioat {
-  * but support is disabled by default because this driver
-  * has not been validated on that platform.
-  */
--#define SUPPORT_I5000 0
-+static unsigned int forceload;
- 
--static const struct fbd_ioat fbd_ioat_list[] = {
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
--#if SUPPORT_I5000
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
--#endif
-+static struct fbd_ioat fbd_ioat_list[] = {
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB, 1},
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT, 0},
- 	{0, 0}
- };
- 
- /* table of devices that work with this driver */
- static const struct pci_device_id pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
--#if SUPPORT_I5000
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
--#endif
- 	{ } /* Terminating entry */
- };
- 
-@@ -69,6 +66,8 @@ static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
- 	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
- 		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
- 		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
-+			if (!(fbd_ioat_list[i].enabled || forceload))
-+				continue;
- 			if (fbd_dev)
- 				*fbd_dev = memdev;
- 			if (ioat_dev)
--- 
-1.6.3.1.169.g33fd
+/ magnus
