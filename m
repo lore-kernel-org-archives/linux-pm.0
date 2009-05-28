@@ -1,41 +1,73 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [linux-pm] Montreal Linux Power Management Mini-Summit -- July 13, 2009
-Date: Thu, 28 May 2009 18:32:50 +0900
-Message-ID: <20090528093250.GB27545@linux-sh.org>
-References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 28 May 2009 13:50:41 +0200
+Message-ID: <20090528115041.GB2159__28438.3613885895$1243511502$gmane$org@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905081611.41865.rjw@sisk.pl>
+	<1241819569.19600.281.camel@nigel-laptop>
+	<200905090046.21282.rjw@sisk.pl>
+	<1241825408.19600.384.camel@nigel-laptop>
+	<20090509135452.GE10859@elf.ucw.cz>
+	<1243245214.16743.90.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1243245214.16743.90.camel@nigel-laptop>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 21, 2009 at 03:12:53PM -0400, Len Brown wrote:
-> We will hold a Linux Power Management Mini-Summit in Montreal
-> on Monday, July 13, 2009 -- concurrent with day-1 of the
-> tutorials at the at the Linux Symposium.
+On Mon 2009-05-25 19:53:34, Nigel Cunningham wrote:
+> Hi.
 > 
-> http://www.linuxsymposium.org/2009/schedule.php
+> On Sat, 2009-05-09 at 15:54 +0200, Pavel Machek wrote:
+> > > This is going to sound arrogant, but please don't take it that way: I
+> > > can't see any other way of putting it. I don't *think* my code is
+> > > better. It is better. swsusp has essentially stood still since Pavel
+> > > first forked the code and got it merged. Yes, you have done some
+> > > great
+> > 
+> > I don't think _I_ forked anything.
 > 
-> This is an opportunity for members of the Linux Power Management
-> development community to meet face-to-face to discuss the future.
+> The conversation for May 2002 (around when you got it merged into
+> vanilla) is here:
 > 
-> Suggestions for agenda topics should be sent to: 
-> linux-pm@lists.linux-foundation.org
+> https://sourceforge.net/mailarchive/forum.php?forum_name=swsusp-devel&max_rows=100&style=flat&viewmonth=200205
 > 
-> The final agenda will be formed by consensus of the attendees.
+> Not sure why Sourceforge wants you to log in to get at it.
+
+Not sure what to search for in 90+ emails.
+
+> > > new features (support for multiple swap partitions & files, for writing
+> > > to ordinary files, for mulithreaded I/O etc etc) making it more useful
+> > > and more reliable. There are some new features that have been put in
+> > > swsusp, but in just about every case (I think there might be an
+> > > exception or two), they're things TuxOnIce had for ages before. eg: SMP
+> > > support came with cpu hotplugging in 2.6.12 or so. TuxOnIce had SMP
+> > > support in 2.4.
+> > 
+> > You were moving faster because you did not have to move in small
+> > incremental steps, and you were allowed to add temporary hacks into
+> > the code. Is that surprising? Not to me.
 > 
-> As in previous years, attendance is open to those
-> registered as Linux Symposium attendees.
-> 
-> However, we will try to cap attendance at 20 to support the single 
-> discussion.  So requests to attend should be sent to: lenb@kernel.org
-> cc: linux-pm@lists.linux-foundation.org -- please summarize
-> what you bring to the meeting, and what you'd like to discuss.
-> 
-I'd also like to attend. Areas of interest this year are run-time PM,
-moving to clock framework notifiers, and tying in pm qos for transition
-latencies.
+> No, I moved in small incremental steps too - and the odd big rework.
+
+...and sometimes you just added code that would not be acceptable in
+the mainline (graphical progress bar), only to fix that in few
+years. That allowed you to go faster, and that would not be allowed in
+the mainline.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
