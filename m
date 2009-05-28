@@ -1,14 +1,12 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Wed, 27 May 2009 17:32:17 -0700
-Message-ID: <87prdut6cu.fsf__49593.5552324683$1243470790$gmane$org@deeprootsystems.com>
-References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH] i7300_idle: allow testing on i5000-series
+ hardware w/o re-compile
+Date: Thu, 28 May 2009 01:24:46 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	(Magnus Damm's message of "Wed\, 27 May 2009 19\:06\:25 +0900")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,72 +16,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+To: andrew.d.henroid@intel.com, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Magnus Damm <magnus.damm@gmail.com> writes:
+From: Len Brown <len.brown@intel.com>
 
-> PM: Runtime platform device power management
->
-> [PATCH 01/04] Driver Core: Add platform device arch data
-> [PATCH 02/04] Driver Core: Add idle and wakeup functions
-> [PATCH 03/04] PM: Add platform bus runtime dev_pm_ops
-> [PATCH 04/04] sh: Runtime platform device PM mockup
->
-> These patches extend platform device and driver interfaces to
-> allow architectures to implement platform device runtime pm.
->
-> Upstream runtime power management needs to be improved to fully
-> make use of hardware power saving features found on embedded
-> platforms and in common SoCs.
->
-> For runtime power management we today have cpuidle, the clock
-> framework and qos. This allows the cpu core to enter various
-> forms of deep sleep, and for devices we may stop clocks to save
-> power. Modern SoCs however allow disabling of power to parts of
-> the chip, and we have no upstream interface to handle that today.
->
-> I propose adding the following simple platform device functions:
->  - platform_device_wakeup()
->  - platform_device_idle()
->
-> The idle function is used by the platform driver to let the 
-> architecture power management code know that from now on the
-> device is in idle state. When the device is marked as idle
-> the architecture specific runtime power management may decide
-> to do various levels of device power management, ranging from
-> stopping clocks to turning off power. The dev_pm_ops callbacks
-> may be invoked by the runtime pm code to save and restore state
-> whenever the device is marked as idle.
->
-> The wakeup function is used by the platform driver to notify the
-> architecture code that the driver wants to make use of the hardware
-> device. If the device has been put in sleep then it needs to be
-> woken up. This wakeup call may invoke dev_pm_ops callbacks.
->
-> Have a look at the last patch for a SuperH mockup that shows how
-> it all fits together. We need this or a similar interface to be able
-> to enter deep sleep states on SuperH. I believe other architectures
-> have similar requirements.
->
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Testing the i7300_idle driver on i5000-series hardware required
+an edit to i7300_idle.h to "#define SUPPORT_I5000 1" and a re-build.
 
-Speaking on behalf of OMAP PM developers, and as maintainer of the
-current OMAP PM infrastructure, this is a major step towards a generic
-runtime PM that we would use on OMAP as well.
+Replace that build-time scheme with a load-time module parameter:
+"7300_idle.forceload=1" to make it easier to test the driver
+on hardware that is not officially supported.
 
-In the PM branch of the linux-omap tree, we currently have an ad-hoc
-but working infrastructure for all of this, including device-specific
-save/restore hooks for supporting some or all of the on-chip
-powerdomains to go off during idle.
+The default is unchanged -- without this parameter,
+the driver will continue to load only on the i7300-series.
 
-However, our current approach hides most of the details behind the
-clock framework, custom save/restore hooks and in some cases custom
-platform hooks passed using platform_data.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/idle/i7300_idle.c  |    3 +++
+ include/linux/i7300_idle.h |   15 +++++++--------
+ 2 files changed, 10 insertions(+), 8 deletions(-)
 
-I like this proposed approach much better as it generalizes the
-approach and allows us to share the infrastructure across arches
-as well as decouple device idleness from clock management.
-
-Kevin
+diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
+index bf74039..98b82c7 100644
+--- a/drivers/idle/i7300_idle.c
++++ b/drivers/idle/i7300_idle.c
+@@ -41,6 +41,9 @@ static int debug;
+ module_param_named(debug, debug, uint, 0644);
+ MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
+ 
++module_param_named(forceload, forceload, uint, 0644);
++MODULE_PARM_DESC(debug, "Enable driver testing on unsupported i5000");
++
+ #define dprintk(fmt, arg...) \
+ 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
+ 
+diff --git a/include/linux/i7300_idle.h b/include/linux/i7300_idle.h
+index 05a80c4..46bae33 100644
+--- a/include/linux/i7300_idle.h
++++ b/include/linux/i7300_idle.h
+@@ -16,6 +16,7 @@
+ struct fbd_ioat {
+ 	unsigned int vendor;
+ 	unsigned int ioat_dev;
++	unsigned int enabled;
+ };
+ 
+ /*
+@@ -23,22 +24,18 @@ struct fbd_ioat {
+  * but support is disabled by default because this driver
+  * has not been validated on that platform.
+  */
+-#define SUPPORT_I5000 0
++static unsigned int forceload;
+ 
+-static const struct fbd_ioat fbd_ioat_list[] = {
+-	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
+-#if SUPPORT_I5000
+-	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
+-#endif
++static struct fbd_ioat fbd_ioat_list[] = {
++	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB, 1},
++	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT, 0},
+ 	{0, 0}
+ };
+ 
+ /* table of devices that work with this driver */
+ static const struct pci_device_id pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
+-#if SUPPORT_I5000
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
+-#endif
+ 	{ } /* Terminating entry */
+ };
+ 
+@@ -69,6 +66,8 @@ static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
+ 	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
+ 		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
+ 		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
++			if (!(fbd_ioat_list[i].enabled || forceload))
++				continue;
+ 			if (fbd_dev)
+ 				*fbd_dev = memdev;
+ 			if (ioat_dev)
+-- 
+1.6.3.1.169.g33fd
