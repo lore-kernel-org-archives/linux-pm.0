@@ -1,14 +1,16 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Thu, 28 May 2009 10:14:43 -0700
-Message-ID: <877i01p2t8.fsf__19175.9986374111$1243530943$gmane$org@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 01/04] Driver Core: Add platform device arch
+	data
+Date: Thu, 28 May 2009 23:26:56 +0200
+Message-ID: <200905282326.57431.rjw__28468.4607213878$1243546186$gmane$org@sisk.pl>
 References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	<20090527100633.29671.83531.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	(Magnus Damm's message of "Wed\, 27 May 2009 19\:06\:25 +0900")
+In-Reply-To: <20090527100633.29671.83531.sendpatchset@rx1.opensource.se>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,52 +24,50 @@ To: Magnus Damm <magnus.damm@gmail.com>
 Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Magnus Damm <magnus.damm@gmail.com> writes:
+On Wednesday 27 May 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> 
+> Allow architecture specific data in struct platform_device.
+> Platform device data is needed by the runtime pm code. A similar
+> struct already exists for struct device.
+> 
+> The architecture specific asm/device.h file needs to provide
+> struct pdev_archdata if CONFIG_HAVE_PLATFORM_DEVICE_DATA is set.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Optionally we can make use of struct device archdata instead,
+>  but since the runtime device pm is limited to platform devices
+>  it makes sense to make this data platform device specific imo.
+> 
+>  arch/Kconfig                    |    3 +++
+>  include/linux/platform_device.h |    5 +++++
+>  2 files changed, 8 insertions(+)
+> 
+> --- 0001/arch/Kconfig
+> +++ work/arch/Kconfig	2009-05-15 14:51:35.000000000 +0900
+> @@ -112,3 +112,6 @@ config HAVE_DMA_API_DEBUG
+>  
+>  config HAVE_DEFAULT_NO_SPIN_MUTEXES
+>  	bool
+> +
+> +config HAVE_PLATFORM_DEVICE_ARCHDATA
 
-> For runtime power management we today have cpuidle, the clock
-> framework and qos. This allows the cpu core to enter various
-> forms of deep sleep, and for devices we may stop clocks to save
-> power. Modern SoCs however allow disabling of power to parts of
-> the chip, and we have no upstream interface to handle that today.
->
-> I propose adding the following simple platform device functions:
->  - platform_device_wakeup()
->  - platform_device_idle()
->
-> The idle function is used by the platform driver to let the 
-> architecture power management code know that from now on the
-> device is in idle state. When the device is marked as idle
-> the architecture specific runtime power management may decide
-> to do various levels of device power management, ranging from
-> stopping clocks to turning off power. The dev_pm_ops callbacks
-> may be invoked by the runtime pm code to save and restore state
-> whenever the device is marked as idle.
->
-> The wakeup function is used by the platform driver to notify the
-> architecture code that the driver wants to make use of the hardware
-> device. If the device has been put in sleep then it needs to be
-> woken up. This wakeup call may invoke dev_pm_ops callbacks.
+Hmm.  Do we really need yet another CONFIG_ option for that?
 
-A couple comments/questions:
-
-Wouldn't the 'wakeup' hook be better named platform_device_enable().
-The _wakeup name seems to imply that the call will perform some sort
-of wakeup, but all it's really doing is enabling it by turning it on
-or taking it out of idle.
-
-In the process of discussing a similar interface for OMAP, we dicussed
-that having 3 states would be more useful.  Specifically, and
-_enable(), _idle() and _disable() hook.  The _enable() and _idle()
-hooks being exactly what you proposed above, but with the addition of
-a _disable() hook which says not only can the device go idle, but that
-the driver is really finished with the device.  In this case, more
-aggresive PM measures could be taken, such as turning of regulators
-that may have long latencies that may not be appropriate to turn off
-in idle.
-
-I'm interested in any thoughts there because the line between _idle()
-and _disable() remains a little fuzzy to me still.  For exmaple, maybe
-the _idle() call in combination with latency constraints in PM QoS
-could do effectively the same thing as _disable().
-
-Kevin
+> +	bool
+> --- 0001/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-05-15 16:59:01.000000000 +0900
+> @@ -23,6 +23,11 @@ struct platform_device {
+>  	void		*platform_data;
+>  
+>  	struct platform_device_id	*id_entry;
+> +
+> +#ifdef CONFIG_HAVE_PLATFORM_DEVICE_ARCHDATA
+> +	/* arch specific additions */
+> +	struct pdev_archdata	archdata;
+> +#endif
+>  };
+>  
+>  #define platform_get_device_id(pdev)	((pdev)->id_entry)
