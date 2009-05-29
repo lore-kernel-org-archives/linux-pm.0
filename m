@@ -1,16 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [regression,
- bisected] adb trackpad disappears after suspend to ram
-Date: Fri, 29 May 2009 08:23:42 +1000
-Message-ID: <1243549422.17903.10.camel__21440.7266736545$1243552231$gmane$org@pasglop>
-References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
-	<87prdt3bgb.fsf@scholz.fias.uni-frankfurt.de>
-	<200905281858.37729.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH v2] i7300_idle: allow testing on i5000-series
+ hardware w/o re-compile
+Date: Thu, 28 May 2009 20:52:29 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.0905282048490.9493@localhost.localdomain>
+References: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200905281858.37729.rjw@sisk.pl>
+In-reply-to: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,114 +18,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Jan Scholz <scholz@fias.uni-frankfurt.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: andrew.d.henroid@intel.com
+Cc: maciej.sosnowski@intel.com, linux-pm@lists.linux-foundation.org, dan.j.williams@intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Len Brown <len.brown@intel.com>
 
-> We are too late in the cycle to revert this commit and it really is needed to
-> fix a more serious issue.  Nevertheless knowing that it caused the problem to
-> appear on your system is also important.
-> 
-> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
-> the interrupt on this platform?
+Testing the i7300_idle driver on i5000-series hardware required
+an edit to i7300_idle.h to "#define SUPPORT_I5000 1" and a re-build
+of both i7300_idle and ioat_dma.
 
-I suppose so :-) I'll have to check what's going on, it's not
-immediately clear to me.
+Replace that build-time scheme with a load-time module parameter:
+"7300_idle.forceload=1" to make it easier to test the driver
+on hardware that while not officially validated, works fine
+and is much more commonly available.
 
-Cheers,
-Ben.
+By default (no modparam) the driver will continue to load
+only on the i7300.
 
-> > To those of you I cc'ed: sorry for the noise, but you were the ones that
-> > get_maintainers.pl spit out when asking for *adb*-files.
-> > 
-> > In addition to the diff of the lshal output I posted before, here is the
-> > diff in the output of lsadb:
-> > 
-> > --- lsadb-ok.out	2009-05-28 08:53:09.000000000 +0200
-> > +++ lsadb-notouchpad.out	2009-05-28 08:55:59.000000000 +0200
-> > @@ -1,35 +1,24 @@
-> >  
-> >  Devices connected to the ADB-Bus: (PMU: 12)
-> >  
-> >    D R  raw data                  decoded data
-> >  -------------------------------------------------------------------------------------
-> >    2.3: [62 c4]                   Encode Device
-> >                                   Apple Macintosh PowerBook G3 Keyboard (ISO layout)
-> >                                   Exceptional Event enabled
-> >                                   Service Request enabled
-> >      2: [ff ff]                   Qualifier: (not all must be supported)
-> >                                    Fn-key   Delete   Caps-Lock   Reset      Control 
-> >                                    Shift    Option   Apple       Num-Lock   Scroll-Lock 
-> >                                    Scroll-Lock-LED   Caps-Lock-LED   Num-Lock-LED 
-> >      1: [05 01]                   Special keys need Fn Key
-> >      0: 
-> >  
-> > -  3.3: [23 04]                   Relative-Position Device
-> > -                                 Extended Mouse Protokoll 
-> > -                                 Exceptional Event disabled
-> > -                                 Service Request enabled
-> > -    2: [08 48 03 00 00 00 00 00]
-> > -    1: [74 70 61 64 01 90 03 04] Mouse type:   tpad
-> > -                                 resolution:   400 dpi
-> > -                                 Device class: Trackpad
-> > -                                 buttons:      4
-> > -    0: 
-> > -
-> >    7.3: [67 1f]                   Misc. Device
-> >                                   Powerbook G3 (Pismo) Button Device 
-> >                                   Exceptional Event enabled
-> >                                   Service Request enabled
-> >      2: 
-> >      1: 
-> >      0:  
-> > 
-> > >
-> > > Here is a diff of the output of lshal before and after the trackpad vanished:
-> > >
-> > > --- lshal-ok.out	2009-05-25 17:00:28.000000000 +0200
-> > > +++ lshal-notouchpad.out	2009-05-25 17:04:42.000000000 +0200
-> > > @@ -1,5 +1,5 @@
-> > >  
-> > > -Dumping 81 device(s) from the Global Device List:
-> > > +Dumping 80 device(s) from the Global Device List:
-> > >  -------------------------------------------------
-> > >  udi = '/org/freedesktop/Hal/devices/computer'
-> > >    info.addons = {'hald-addon-cpufreq'} (string list)
-> > > @@ -95,21 +95,6 @@
-> > >    linux.subsystem = 'input'  (string)
-> > >    linux.sysfs_path = '/sys/devices/virtual/input/input4/event4'  (string)
-> > >  
-> > > -udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'
-> > > -  info.capabilities = {'input', 'input.mouse'} (string list)
-> > > -  info.category = 'input'  (string)
-> > > -  info.parent = '/org/freedesktop/Hal/devices/computer'  (string)
-> > > -  info.product = 'ADB mouse'  (string)
-> > > -  info.subsystem = 'input'  (string)
-> > > -  info.udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_2'  (string)
-> > > -  input.device = '/dev/input/event3'  (string)
-> > > -  input.product = 'ADB mouse'  (string)
-> > > -  input.x11_driver = 'evdev'  (string)
-> > > -  linux.device_file = '/dev/input/event3'  (string)
-> > > -  linux.hotplug_type = 2  (0x2)  (int)
-> > > -  linux.subsystem = 'input'  (string)
-> > > -  linux.sysfs_path = '/sys/devices/virtual/input/input3/event3'  (string)
-> > > -
-> > >  udi = '/org/freedesktop/Hal/devices/computer_logicaldev_input_1'
-> > >    info.addons.singleton = {'hald-addon-input'} (string list)
-> > >    info.capabilities = {'input', 'input.keys', 'button'} (string list)
-> > > @@ -1820,6 +1805,6 @@
-> > >    pci.vendor_id = 4203  (0x106b)  (int)
-> > >  
-> > >  
-> > > -Dumped 81 device(s) from the Global Device List.
-> > > +Dumped 80 device(s) from the Global Device List.
-> > >  ------------------------------------------------
-> > >
-> > > Please let me know if you need more info.
-> 
-> I'd like to see a boot log, preferably containing a suspend-resume in which
-> the problem was reproduced.
-> 
-> Best,
-> Rafael
+Note that ioat_dma runs a copy of i7300_idle's probe routine
+to know to reserve an IOAT channel for i7300_idle.
+This change makes ioat_dma do that always on the i5000,
+just like it does on the i7300.
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+v2: make sure ioat_dma_enumerate_channels() reserves a channel
+    on i5000 as it does on i7300.
+
+ drivers/dma/ioat_dma.c     |    2 +-
+ drivers/idle/i7300_idle.c  |    6 +++++-
+ include/linux/i7300_idle.h |   20 ++++++++++----------
+ 3 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 1955ee8..a600fc0 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -173,7 +173,7 @@ static int ioat_dma_enumerate_channels(struct ioatdma_device *device)
+ 	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
+ 
+ #ifdef  CONFIG_I7300_IDLE_IOAT_CHANNEL
+-	if (i7300_idle_platform_probe(NULL, NULL) == 0) {
++	if (i7300_idle_platform_probe(NULL, NULL, 1) == 0) {
+ 		device->common.chancnt--;
+ 	}
+ #endif
+diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
+index bf74039..949c97f 100644
+--- a/drivers/idle/i7300_idle.c
++++ b/drivers/idle/i7300_idle.c
+@@ -41,6 +41,10 @@ static int debug;
+ module_param_named(debug, debug, uint, 0644);
+ MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
+ 
++static int forceload;
++module_param_named(forceload, forceload, uint, 0644);
++MODULE_PARM_DESC(debug, "Enable driver testing on unvalidated i5000");
++
+ #define dprintk(fmt, arg...) \
+ 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
+ 
+@@ -552,7 +556,7 @@ static int __init i7300_idle_init(void)
+ 	cpus_clear(idle_cpumask);
+ 	total_us = 0;
+ 
+-	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
++	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev, forceload))
+ 		return -ENODEV;
+ 
+ 	if (i7300_idle_thrt_save())
+diff --git a/include/linux/i7300_idle.h b/include/linux/i7300_idle.h
+index 05a80c4..1587b7d 100644
+--- a/include/linux/i7300_idle.h
++++ b/include/linux/i7300_idle.h
+@@ -16,35 +16,33 @@
+ struct fbd_ioat {
+ 	unsigned int vendor;
+ 	unsigned int ioat_dev;
++	unsigned int enabled;
+ };
+ 
+ /*
+  * The i5000 chip-set has the same hooks as the i7300
+- * but support is disabled by default because this driver
+- * has not been validated on that platform.
++ * but it is not enabled by default and must be manually
++ * manually enabled with "forceload=1" because it is
++ * only lightly validated.
+  */
+-#define SUPPORT_I5000 0
+ 
+ static const struct fbd_ioat fbd_ioat_list[] = {
+-	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
+-#if SUPPORT_I5000
+-	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
+-#endif
++	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB, 1},
++	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT, 0},
+ 	{0, 0}
+ };
+ 
+ /* table of devices that work with this driver */
+ static const struct pci_device_id pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
+-#if SUPPORT_I5000
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
+-#endif
+ 	{ } /* Terminating entry */
+ };
+ 
+ /* Check for known platforms with I/O-AT */
+ static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
+-						struct pci_dev **ioat_dev)
++						struct pci_dev **ioat_dev,
++						int enable_all)
+ {
+ 	int i;
+ 	struct pci_dev *memdev, *dmadev;
+@@ -69,6 +67,8 @@ static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
+ 	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
+ 		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
+ 		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
++			if (!(fbd_ioat_list[i].enabled || enable_all))
++				continue;
+ 			if (fbd_dev)
+ 				*fbd_dev = memdev;
+ 			if (ioat_dev)
+-- 
+1.6.3.1.169.g33fd
