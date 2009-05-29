@@ -1,14 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH v2] i7300_idle: allow testing on i5000-series
- hardware w/o re-compile
-Date: Thu, 28 May 2009 20:52:29 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.0905282048490.9493@localhost.localdomain>
-References: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 01/04] Driver Core: Add platform device arch
+	data
+Date: Fri, 29 May 2009 14:07:35 +0900
+Message-ID: <aec7e5c30905282207v5fe17e6aj5a6382aa30d1774f__43902.4083469578$1243573728$gmane$org@mail.gmail.com>
+References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	<20090527100633.29671.83531.sendpatchset@rx1.opensource.se>
+	<200905282326.57431.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.00.0905280024310.25587@localhost.localdomain>
+In-Reply-To: <200905282326.57431.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,132 +20,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: andrew.d.henroid@intel.com
-Cc: maciej.sosnowski@intel.com, linux-pm@lists.linux-foundation.org, dan.j.williams@intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Wednesday 27 May 2009, Magnus Damm wrote:
+>> From: Magnus Damm <damm@igel.co.jp>
+>>
+>> Allow architecture specific data in struct platform_device.
+>> Platform device data is needed by the runtime pm code. A similar
+>> struct already exists for struct device.
+>>
+>> The architecture specific asm/device.h file needs to provide
+>> struct pdev_archdata if CONFIG_HAVE_PLATFORM_DEVICE_DATA is set.
+>>
+>> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+>> ---
+>>
+>> =A0Optionally we can make use of struct device archdata instead,
+>> =A0but since the runtime device pm is limited to platform devices
+>> =A0it makes sense to make this data platform device specific imo.
+>>
+>> =A0arch/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A03 +++
+>> =A0include/linux/platform_device.h | =A0 =A05 +++++
+>> =A02 files changed, 8 insertions(+)
+>>
+>> --- 0001/arch/Kconfig
+>> +++ work/arch/Kconfig 2009-05-15 14:51:35.000000000 +0900
+>> @@ -112,3 +112,6 @@ config HAVE_DMA_API_DEBUG
+>>
+>> =A0config HAVE_DEFAULT_NO_SPIN_MUTEXES
+>> =A0 =A0 =A0 bool
+>> +
+>> +config HAVE_PLATFORM_DEVICE_ARCHDATA
+>
+> Hmm. =A0Do we really need yet another CONFIG_ option for that?
 
-Testing the i7300_idle driver on i5000-series hardware required
-an edit to i7300_idle.h to "#define SUPPORT_I5000 1" and a re-build
-of both i7300_idle and ioat_dma.
+I don't think we need a total of 3 different config options for the
+platform device pm stuff, but I do think it makes sense to handle the
+platform archdata separately. Not sure which is the best way though,
+the #ifdefery is not very pretty. Maybe the best solution is just to
+drop the Kconfig stuff and add empty structures to all architecture
+versions of asm/device.h.
 
-Replace that build-time scheme with a load-time module parameter:
-"7300_idle.forceload=1" to make it easier to test the driver
-on hardware that while not officially validated, works fine
-and is much more commonly available.
+Any suggestions?
 
-By default (no modparam) the driver will continue to load
-only on the i7300.
+Thanks!
 
-Note that ioat_dma runs a copy of i7300_idle's probe routine
-to know to reserve an IOAT channel for i7300_idle.
-This change makes ioat_dma do that always on the i5000,
-just like it does on the i7300.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
-v2: make sure ioat_dma_enumerate_channels() reserves a channel
-    on i5000 as it does on i7300.
-
- drivers/dma/ioat_dma.c     |    2 +-
- drivers/idle/i7300_idle.c  |    6 +++++-
- include/linux/i7300_idle.h |   20 ++++++++++----------
- 3 files changed, 16 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 1955ee8..a600fc0 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -173,7 +173,7 @@ static int ioat_dma_enumerate_channels(struct ioatdma_device *device)
- 	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
- 
- #ifdef  CONFIG_I7300_IDLE_IOAT_CHANNEL
--	if (i7300_idle_platform_probe(NULL, NULL) == 0) {
-+	if (i7300_idle_platform_probe(NULL, NULL, 1) == 0) {
- 		device->common.chancnt--;
- 	}
- #endif
-diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
-index bf74039..949c97f 100644
---- a/drivers/idle/i7300_idle.c
-+++ b/drivers/idle/i7300_idle.c
-@@ -41,6 +41,10 @@ static int debug;
- module_param_named(debug, debug, uint, 0644);
- MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
- 
-+static int forceload;
-+module_param_named(forceload, forceload, uint, 0644);
-+MODULE_PARM_DESC(debug, "Enable driver testing on unvalidated i5000");
-+
- #define dprintk(fmt, arg...) \
- 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
- 
-@@ -552,7 +556,7 @@ static int __init i7300_idle_init(void)
- 	cpus_clear(idle_cpumask);
- 	total_us = 0;
- 
--	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
-+	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev, forceload))
- 		return -ENODEV;
- 
- 	if (i7300_idle_thrt_save())
-diff --git a/include/linux/i7300_idle.h b/include/linux/i7300_idle.h
-index 05a80c4..1587b7d 100644
---- a/include/linux/i7300_idle.h
-+++ b/include/linux/i7300_idle.h
-@@ -16,35 +16,33 @@
- struct fbd_ioat {
- 	unsigned int vendor;
- 	unsigned int ioat_dev;
-+	unsigned int enabled;
- };
- 
- /*
-  * The i5000 chip-set has the same hooks as the i7300
-- * but support is disabled by default because this driver
-- * has not been validated on that platform.
-+ * but it is not enabled by default and must be manually
-+ * manually enabled with "forceload=1" because it is
-+ * only lightly validated.
-  */
--#define SUPPORT_I5000 0
- 
- static const struct fbd_ioat fbd_ioat_list[] = {
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
--#if SUPPORT_I5000
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
--#endif
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB, 1},
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT, 0},
- 	{0, 0}
- };
- 
- /* table of devices that work with this driver */
- static const struct pci_device_id pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
--#if SUPPORT_I5000
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
--#endif
- 	{ } /* Terminating entry */
- };
- 
- /* Check for known platforms with I/O-AT */
- static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
--						struct pci_dev **ioat_dev)
-+						struct pci_dev **ioat_dev,
-+						int enable_all)
- {
- 	int i;
- 	struct pci_dev *memdev, *dmadev;
-@@ -69,6 +67,8 @@ static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
- 	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
- 		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
- 		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
-+			if (!(fbd_ioat_list[i].enabled || enable_all))
-+				continue;
- 			if (fbd_dev)
- 				*fbd_dev = memdev;
- 			if (ioat_dev)
--- 
-1.6.3.1.169.g33fd
+/ magnus
