@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Fri, 29 May 2009 09:45:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0905290942150.2882-100000@iolanthe.rowland.org>
-References: <aec7e5c30905290041p13cc3e48k3527640fb52c3730@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [regression,
+	bisected] adb trackpad disappears after suspend to ram
+Date: Fri, 29 May 2009 20:10:09 +0200
+Message-ID: <200905292010.10615.rjw__9552.77291727743$1243620741$gmane$org@sisk.pl>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<1243549422.17903.10.camel@pasglop>
+	<87tz34n97p.fsf@scholz.fias.uni-frankfurt.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905290041p13cc3e48k3527640fb52c3730@mail.gmail.com>
+In-Reply-To: <87tz34n97p.fsf@scholz.fias.uni-frankfurt.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 29 May 2009, Magnus Damm wrote:
+On Friday 29 May 2009, Jan Scholz wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> >> We are too late in the cycle to revert this commit and it really is needed to
+> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
+> >> appear on your system is also important.
+> >> 
+> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
+> >> the interrupt on this platform?
+> >
+> > I suppose so :-) I'll have to check what's going on, it's not
+> > immediately clear to me.
+> >
+> > Cheers,
+> > Ben.
+> >
+> >> 
+> >> I'd like to see a boot log, preferably containing a suspend-resume in which
+> >> the problem was reproduced.
+> 
+> Here is a log from booting, through several suspend cycles, until the
+> trackpad disappeared. The first few suspends were done while X was
+> running but from the console. As you can tell from lines like
+>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> the trackpad was still present. The last suspend was done from within X,
+> here the trackpad did not make it.
+>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
+> However, there have been cases, although not in this log, were the
+> trackpad has been alive even when suspending from within X.
 
-> > (And by the way, the _noirq ops don't run in atomic context. =A0They run
-> > in process context with most interrupt deliveries disabled. =A0It's not
-> > the same thing -- they are allowed to sleep.)
-> =
+This means the problem is probably timing-related.
 
-> Huh, so if they are allowed to sleep then clock events are still
-> running. And probably some clocksource as well. I guess that's why you
-> say "most" interrupts disabled instead of all. Sharing the timer IRQ
-> is not allowed then?
+Can you please try to comment out suspend_device_irqs() and
+resume_device_irqs()  in drivers/base/power/main.c and see if that changes
+anything?  It's not entirely safe (well, that's why the calls are there after
+all), but hopefully the box won't hang during this test.
 
-Rafael can tell you.  But notice I didn't say the interrupts were
-disabled -- I said that interrupt _delivery_ was disabled.  In general
-the interrupts themselves _are_ enabled; the kernel fields them but
-then does not call the drivers' interrupt handler routines.  (Except
-perhaps for IRQs which are explicitly marked as wakeup sources...)
-
-> I wonder if the PM code assumes that the clock event is a sys device?
-> We use platform drivers for clock events on SuperH...
-
-Ask Rafael.
-
-Alan Stern
+Best,
+Rafael
