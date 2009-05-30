@@ -1,17 +1,14 @@
-From: Kim Kyuwon <chammoru@gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable
-	wakeup IRQs
-Date: Sat, 30 May 2009 16:40:31 +0900
-Message-ID: <4d34a0a70905300040w49deb457rc4eb1122db8eed62__3610.25318638912$1243669323$gmane$org@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	<200905232214.57186.rjw@sisk.pl> <4A1A4297.50809@samsung.com>
-	<200905300135.07103.rjw@sisk.pl>
-	<4d34a0a70905300034q1dee8febl60b5213082e3a5d1@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: STD (suspend to disk) for ARM
+Date: Sat, 30 May 2009 13:23:06 +0200
+Message-ID: <20090530112306.GC1395@ucw.cz>
+References: <0137E6B5D7EF4619BEBD1F615E82108B@homeuser>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4d34a0a70905300034q1dee8febl60b5213082e3a5d1@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <0137E6B5D7EF4619BEBD1F615E82108B@homeuser>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,74 +18,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Kim Kyuwon <q1.kim@samsung.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: aki <yu.jingcho@msa.hinet.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBNYXkgMzAsIDIwMDkgYXQgNDozNCBQTSwgS2ltIEt5dXdvbiA8Y2hhbW1vcnVAZ21h
-aWwuY29tPiB3cm90ZToKPiBPbiBTYXQsIE1heSAzMCwgMjAwOSBhdCA4OjM1IEFNLCBSYWZhZWwg
-Si4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdyb3RlOgo+PiBPbiBNb25kYXkgMjUgTWF5IDIwMDks
-IEtpbSBLeXV3b24gd3JvdGU6Cj4+PiBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPj4+ID4gT24g
-U2F0dXJkYXkgMjMgTWF5IDIwMDksIEtpbSBLeXV3b24gd3JvdGU6Cj4+PiA+PiBPbiBTYXQsIE1h
-eSAyMywgMjAwOSBhdCA3OjI5IEFNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdy
-b3RlOgo+Pj4gPj4+IE9uIFNhdHVyZGF5IDIzIE1heSAyMDA5LCBLaW0gS3l1d29uIHdyb3RlOgo+
-Pj4gPiBbLS1zbmlwLS1dCj4+PiA+Pj4+IFlvdSBjaGFuZ2VkIHRoZSByZWFsbHkgaW1wb3J0YW50
-IHBhcnQgb2YgTGludXgsIHdoaWNoIG1heSBhZmZlY3QgbW9zdAo+Pj4gPj4+PiBwcm9jZXNzb3Ig
-YXJjaGl0ZWN0dXJlcy4gSSB0aGluayB5b3Ugc2hvdWxkIGJlIGNhcmVmdWwuIElmIHNvbWUgb2YK
-Pj4+ID4+Pj4gYXJjaGl0ZWN0dXJlcyBjYW4ndCB0YWtlIGNhcmUgb2YgaXQgKHRoZXkgY2FuIGlt
-cGxlbWVudAo+Pj4gPj4+PiBkaXNhYmxlX2lycV93YWtlIGNvcnJlY3RseSBpbiBIL1cgbGV2ZWws
-IHdpbGwgeW91IHJldmVydCB5b3VyIGNoYW5nZXM/Cj4+PiA+Pj4gTm8sIHRoZSBjaGFuZ2VzIGFy
-ZSBub3QgZ29pbmcgdG8gYmUgcmV2ZXJ0ZWQuICBJbiBmYWN0IHRoaW5ncyBzaG91bGQgaGF2ZSBi
-ZWVuCj4+PiA+Pj4gZG9uZSBsaWtlIHRoaXMgYWxyZWFkeSBtdWNoIGVhcmxpZXIuCj4+PiA+Pj4K
-Pj4+ID4+PiBOb3csIGRvIHlvdSBoYXZlIGFueSBwYXJ0aWN1bGFyIGV4YW1wbGUgb2YgYSBwcm9i
-bGVtIHJlbGF0ZWQgdG8gdGhlc2UgY2hhbmdlcwo+Pj4gPj4+IG9yIGlzIGl0IG9ubHkgYSB0aGVv
-cmV0aWNhbCBpc3N1ZT8KPj4+ID4+IEknZCBDQ2luZyB5b3Ugd2hlbiBJJ20gc2VuZGluZyBhIG1h
-aWwgZm9yIHRoaXMgcGFydGljdWxhciBleGFtcGxlIG9mIGEgZXhhbXBsZS4KPj4+ID4+IGh0dHA6
-Ly9tYXJrbWFpbC5vcmcvdGhyZWFkL2Z2dDdkNjJhcm9mb241eHgKPj4+ID4KPj4+ID4gV2VsbCwg
-YXMgSSBzYWlkIGFib3ZlLCByZXZlcnRpbmcgdGhlIGNoYW5nZXMgdGhhdCBpbnRyb2R1Y2VkCj4+
-PiA+IFtzdXNwZW5kfHJlc3VtZV1fZGV2aWNlX2lycXMoKSBpcyBub3QgYW4gb3B0aW9uLCBiZWN1
-YXNlIGl0IHdhcyB0aGUgb25seSBzYW5lCj4+PiA+IHdheSB0byBhY2hpZXZlIHRoZSBnb2FsIHRo
-ZXkgd2VyZSBhZGRlZCBmb3IuICBTbywgd2UgbmVlZCB0byBmaXggdGhlIHdha2UtdXAKPj4+ID4g
-cHJvYmxlbSBvbiB5b3VyIHBsYXRmb3JtIHdpdGggdGhlIGFzc3VtcHRpb24gdGhhdAo+Pj4gPiBb
-c3VzcGVuZHxyZXN1bWVdX2RldmljZV9pcnFzKCkgYXJlIGdvaW5nIHRvIHN0YXkuCj4+PiA+Cj4+
-PiA+IEZvciBzdGFydGVycywgd291bGQgaXQgYmUgcG9zc2libGUgdG8gdGVhY2ggdGhlICdkaXNh
-YmxlJyBob29rIG9mIHlvdXIKPj4+ID4gcGxhdGZvcm0ncyBpbnRlcnJ1cHQgY29udHJvbGxlciBu
-b3QgdG8gbWFzayB0aGUgSVJRcyB0aGF0IGhhdmUgYm90aAo+Pj4gPiBJUlFfV0FLRVVQIGFuZCBJ
-UlFfU1VTUEVOREVEIHNldD8gIFRoYXQgYXBwYXJlbnRseSB3b3VsZCB3b3JrIGFyb3VuZCB0aGUK
-Pj4+ID4gd2FrZS11cCBpbnRlcnJ1cHRzIHByb2JsZW0uCj4+Pgo+Pj4gVGhhbmsgeW91IGZvciBj
-b25zaWRlcmluZyB0aGlzIGlzc3VlIGFuZCBzcGVuZGluZyB5b3VyIHRpbWUuIEluIG9yZGVyIHRv
-Cj4+PiBtYWtlIHlvdXIgaWRlYSB3b3JrLCB3ZSBuZWVkIHRvIGFkZCBhIGR1bW15ICdzZXRfd2Fr
-ZScgaG9vayB3aGljaAo+Pj4gcmV0dXJucyBhbHdheXMgemVyby4gQW55d2F5LCBJTU8sIEkgdGhp
-bmsgeW91ciBpZGVhIGlzIGdvb2QgdG8gd29yawo+Pj4gYXJvdW5kIHRoaXMgcHJvYmxlbS4gQnV0
-IEtldmluIEhpbG1hbihPTUFQIFBNIE1haW50YWluZXIpIHdvdWxkIG1ha2UKPj4+IGZpbmFsIGRl
-Y2lzaW9uLgo+Pj4KPj4+IEJ1eSB0aGUgd2F5LCBob3cgY2FuIHlvdSBoYW5kbGUgdGhlIHByb2Js
-ZW0gdGhhdCBhIGZldyBpbnRlcnJ1cHQgYXJlCj4+PiBkaXNjYXJkZWQgaW4gYSBzbWFsbCB3aW5k
-b3c/IEkgY2FuIGJlIHN1cmUgdGhleSBhcmUgZGlzY2FyZGVkLCBiZWNhdXNlIEkKPj4+IGhhdmUg
-ZGVidWdnZWQgZGVmZWN0cyB3aGljaCBnZW5lcmF0ZSBpbiBzbGVlcC9yZXN1bWUgc3RhdGUgaHVu
-ZHJlZHMgb2YKPj4+IHRpbWVzIG9uIEFSTSBQcm9jZXNzb3JzKFBYQTMxMCwgUzNDNjQxMCwgT01B
-UDM0MzApLiBXYWtlLXVwIGludGVycnVwdHMKPj4+IGFyZSBnZW5lcmF0ZWQgYXMgc29vbiBhcyBh
-cmNoX3N1c3BlbmRfZW5hYmxlX2lycXMoKSBpbnZva2VkLgo+Pgo+PiBTb3JyeSBmb3IgdGhlIGRl
-bGF5ZWQgcmVzcG9uc2UuCj4+Cj4+IElmIHRoZSB3YWtlLXVwIGludGVycnVwdHMgYXJlIG5vdCBt
-YXNrZWQsIHRoZXkgd2lsbCBiZSBkZWxpdmVyZWQgdG8gdGhlIGRyaXZlcnMKPj4gYXMgc29vbiBh
-cyBhcmNoX3N1c3BlbmRfZW5hYmxlX2lycXMoKSBoYXMgcnVuLiAgU28sIGlmIHRoZSBkcml2ZXJz
-IGFyZSBhYmxlIHRvCj4+IGhhbmRsZSB0aGVtIGF0IHRoaXMgcG9pbnQgKGllLiBiZWZvcmUgcmVz
-dW1lX2RldmljZV9pcnFzKCkgaXMgY2FsbGVkKSwgdGhleQo+PiB3b24ndCBiZSBsb3N0Lgo+Cj4g
-VGhhbmsgeW91IGZvciB5b3VyIHJlc3BvbnNlIQo+Cj4gWW91ciBzdXNwZW5kX2RldmljZV9pcnFz
-KCkgZGlzYWJsZXMgYWxsIElSUXMoZXhjZXB0IHRpbWVyIElSUSkgd2hpbGUKPiBlbnRlcmluZyBz
-dXNwZW5kLiBpLmUuIEJlZm9yZSBpbnZva2luZyByZXN1bWVfZGV2aWNlX2lycXMoKSBvcgo+IHJl
-c3VtZV9ub2lycSBjYWxsYmFjaywgYWxsIElSUXMoZXhjZXB0IHRpbWVyIElSUSkgaXMgaW4gSVJR
-X0RJU0FCTEVECj4gc3RhdHVzLiBSaWdodD8KPiBCdXQgaWYgYW4gSVJRIGlzIGluICBJUlFfRElT
-QUJMRUQgc3RhdHVzLCBpdHMgaW50ZXJydXB0IGhhbmRsZXIgY2FuIGJlCgpTb3JyeTogKkNhbid0
-IGJlKgoKPiBpbnZva2VkLiAoQXMgeW91IGtub3csIGFsbCBJUlFzIHdpdGggSVJRX0RJU0FCTEUg
-YXJlIG5vdCBoYW5kbGVkIGluCj4gaGFuZGxlX2xldmVsX2lycSBmdW5jdGlvbikuIFRodXMsIGV2
-ZW4gaWYgdGhlIHdha2UtdXAgaW50ZXJydXB0cyBhcmUKPiBub3QgbWFza2VkLCB0aGUgZHJpdmVy
-cyBhcmUgbm90IGFibGUgdG8gaGFuZGxlIGludGVycnVwdHMsIGJlY2F1c2UgdGhlCj4gaW50ZXJy
-dXB0IGhhbmRsZXIgY2FuJ3QgYmUgaW52b2tlZCBkdWUgdG8gSVJRX0RJU0FCTEVEIHNldCBieQo+
-IHN1c3BlbmRfZGV2aWNlX2lycXMoKS4KPgo+PiBUaGUgb25seSBwcm9ibGVtIEkgc2VlIGlzIHRo
-YXQgdGhlIGRyaXZlcnMgbWF5IGV4cGVjdCB0aGVpcgo+PiAtPnJlc3VtZV9ub2lycSgpIGNhbGxi
-YWNrcyB0byBiZSBleGVjdXRlZCBmaXJzdC4KPgo+IHJlc3VtZV9ub2lycSgpIGNhbGxiYWNrcyBh
-cmUgYWxzbyBpbnZva2VkIGFmdGVyIGFyY2hfc3VzcGVuZF9lbmFibGVfaXJxcygpLgo+Cj4gUmVn
-YXJkcywKPiBLeXV3b24KPgoKCgotLSAKS3l1d29uICix1L/4KQpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Tue 2009-05-26 21:13:25, aki wrote:
+>    Deal All,
+> 
+>    I wanted to implement STD (suspend to disk) on ARM926EJS.
+
+Yes, it would be nice. Look how x86 does it, then modify it to save
+arm's registers....
+
+								Pavel
+				         (having zaurus with flakey ram)
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
