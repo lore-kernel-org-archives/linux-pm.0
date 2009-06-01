@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH][RFC] Driver Core: Rework platform
-	suspend/resume, print warning
-Date: Mon, 1 Jun 2009 20:44:27 +0200
-Message-ID: <200906012044.27631.rjw@sisk.pl>
-References: <20090601102044.10780.12920.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
+Date: Mon, 1 Jun 2009 20:47:58 +0200
+Message-ID: <200906012047.59726.rjw__2143.61505718461$1243882203$gmane$org@sisk.pl>
+References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090601102044.10780.12920.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,102 +18,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>, gregkh@suse.de
-Cc: linux-pm@lists.linux-foundation.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Monday 01 June 2009, Magnus Damm wrote:
 > From: Magnus Damm <damm@igel.co.jp>
 > 
-> This patch reworks the platform driver code for legacy
-> suspend and resume to avoid installing callbacks in
-> struct device_driver. A warning is also added telling
-> users to update the platform driver to use dev_pm_ops.
+> Allow architecture specific data in struct platform_device V2.
+> The structure pdev_archdata is added to struct platform_device,
+> similar to struct dev_archdata in struct device.
 > 
-> The functions platform_legacy_suspend()/resume() directly
-> call suspend and resume callbacks in struct platform_driver
-> instead of wrapping things in platform_drv_suspend()/resume().
+> Useful for architecture code that needs to keep extra data
+> associated with each platform device. This data shall not
+> be accessed by platform drivers, only architecture code.
 > 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> Needed for platform device runtime PM.
 
-Greg, is this patch fine with you?
+What exactly do you need this data for?
 
 Rafael
 
 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > ---
 > 
->  Compiles fine, but not runtime tested.
+>  Applies to next-20090529.
 > 
->  drivers/base/platform.c |   36 ++++++++++++------------------------
->  1 file changed, 12 insertions(+), 24 deletions(-)
+>  Changes since V1:
+>  - post to lkml, keep linux-pm cc:ed
+>  - add struct pdev_archdata to asm-generic
+>  - add struct pdev_archdata to non-generic architectures
+>  - drop Kconfig bits
 > 
-> --- 0009/drivers/base/platform.c
-> +++ work/drivers/base/platform.c	2009-06-01 18:12:34.000000000 +0900
-> @@ -470,22 +470,6 @@ static void platform_drv_shutdown(struct
->  	drv->shutdown(dev);
->  }
+>  arch/arm/include/asm/device.h        |    3 +++
+>  arch/ia64/include/asm/device.h       |    3 +++
+>  arch/microblaze/include/asm/device.h |    3 +++
+>  arch/powerpc/include/asm/device.h    |    3 +++
+>  arch/sparc/include/asm/device.h      |    3 +++
+>  arch/x86/include/asm/device.h        |    3 +++
+>  include/asm-generic/device.h         |    3 +++
+>  include/linux/platform_device.h      |    3 +++
+>  8 files changed, 24 insertions(+)
+> 
+> --- 0001/arch/arm/include/asm/device.h
+> +++ work/arch/arm/include/asm/device.h	2009-06-01 12:19:51.000000000 +0900
+> @@ -12,4 +12,7 @@ struct dev_archdata {
+>  #endif
+>  };
 >  
-> -static int platform_drv_suspend(struct device *_dev, pm_message_t state)
-> -{
-> -	struct platform_driver *drv = to_platform_driver(_dev->driver);
-> -	struct platform_device *dev = to_platform_device(_dev);
-> -
-> -	return drv->suspend(dev, state);
-> -}
-> -
-> -static int platform_drv_resume(struct device *_dev)
-> -{
-> -	struct platform_driver *drv = to_platform_driver(_dev->driver);
-> -	struct platform_device *dev = to_platform_device(_dev);
-> -
-> -	return drv->resume(dev);
-> -}
-> -
->  /**
->   * platform_driver_register
->   * @drv: platform driver structure
-> @@ -499,10 +483,10 @@ int platform_driver_register(struct plat
->  		drv->driver.remove = platform_drv_remove;
->  	if (drv->shutdown)
->  		drv->driver.shutdown = platform_drv_shutdown;
-> -	if (drv->suspend)
-> -		drv->driver.suspend = platform_drv_suspend;
-> -	if (drv->resume)
-> -		drv->driver.resume = platform_drv_resume;
-> +	if (drv->suspend || drv->resume)
-> +		pr_warning("Platform driver '%s' needs updating - please use "
-> +			"dev_pm_ops\n", drv->driver.name);
+> +struct pdev_archdata {
+> +};
 > +
->  	return driver_register(&drv->driver);
+>  #endif
+> --- 0001/arch/ia64/include/asm/device.h
+> +++ work/arch/ia64/include/asm/device.h	2009-06-01 12:18:11.000000000 +0900
+> @@ -15,4 +15,7 @@ struct dev_archdata {
+>  #endif
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_IA64_DEVICE_H */
+> --- 0001/arch/microblaze/include/asm/device.h
+> +++ work/arch/microblaze/include/asm/device.h	2009-06-01 12:19:32.000000000 +0900
+> @@ -16,6 +16,9 @@ struct dev_archdata {
+>  	struct device_node	*of_node;
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_MICROBLAZE_DEVICE_H */
+>  
+>  
+> --- 0001/arch/powerpc/include/asm/device.h
+> +++ work/arch/powerpc/include/asm/device.h	2009-06-01 12:16:28.000000000 +0900
+> @@ -30,4 +30,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->of_node;
 >  }
->  EXPORT_SYMBOL_GPL(platform_driver_register);
-> @@ -634,20 +618,24 @@ static int platform_match(struct device 
 >  
->  static int platform_legacy_suspend(struct device *dev, pm_message_t mesg)
->  {
-> +	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-> +	struct platform_device *pdev = to_platform_device(dev);
->  	int ret = 0;
->  
-> -	if (dev->driver && dev->driver->suspend)
-> -		ret = dev->driver->suspend(dev, mesg);
-> +	if (dev->driver && pdrv->suspend)
-> +		ret = pdrv->suspend(pdev, mesg);
->  
->  	return ret;
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_POWERPC_DEVICE_H */
+> --- 0001/arch/sparc/include/asm/device.h
+> +++ work/arch/sparc/include/asm/device.h	2009-06-01 12:18:57.000000000 +0900
+> @@ -32,4 +32,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->prom_node;
 >  }
 >  
->  static int platform_legacy_resume(struct device *dev)
->  {
-> +	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-> +	struct platform_device *pdev = to_platform_device(dev);
->  	int ret = 0;
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_SPARC_DEVICE_H */
+> --- 0001/arch/x86/include/asm/device.h
+> +++ work/arch/x86/include/asm/device.h	2009-06-01 12:17:28.000000000 +0900
+> @@ -13,4 +13,7 @@ struct dma_map_ops *dma_ops;
+>  #endif
+>  };
 >  
-> -	if (dev->driver && dev->driver->resume)
-> -		ret = dev->driver->resume(dev);
-> +	if (dev->driver && pdrv->resume)
-> +		ret = pdrv->resume(pdev);
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_X86_DEVICE_H */
+> --- 0001/include/asm-generic/device.h
+> +++ work/include/asm-generic/device.h	2009-06-01 12:16:20.000000000 +0900
+> @@ -9,4 +9,7 @@
+>  struct dev_archdata {
+>  };
 >  
->  	return ret;
->  }
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_GENERIC_DEVICE_H */
+> --- 0001/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-06-01 12:14:43.000000000 +0900
+> @@ -22,6 +22,9 @@ struct platform_device {
+>  	struct resource	* resource;
+>  
+>  	struct platform_device_id	*id_entry;
+> +
+> +	/* arch specific additions */
+> +	struct pdev_archdata	archdata;
+>  };
+>  
+>  #define platform_get_device_id(pdev)	((pdev)->id_entry)
+> 
+> 
