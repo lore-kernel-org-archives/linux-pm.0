@@ -1,8 +1,8 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Greg KH <gregkh@suse.de>
 Subject: Re: [PATCH][RFC] pm: remove device_type
 	suspend()/resume()
-Date: Mon, 1 Jun 2009 21:59:14 +0200
-Message-ID: <20090601195913.GA5412@elf.ucw.cz>
+Date: Mon, 1 Jun 2009 14:02:24 -0700
+Message-ID: <20090601210224.GA2236@suse.de>
 References: <20090601103836.10959.43392.sendpatchset@rx1.opensource.se>
 	<200906012040.58290.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -21,10 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2009-06-01 20:40:57, Rafael J. Wysocki wrote:
+On Mon, Jun 01, 2009 at 08:40:57PM +0200, Rafael J. Wysocki wrote:
 > On Monday 01 June 2009, Magnus Damm wrote:
 > > From: Magnus Damm <damm@igel.co.jp>
 > > 
@@ -39,8 +39,5 @@ On Mon 2009-06-01 20:40:57, Rafael J. Wysocki wrote:
 > 
 > Greg, Pavel, Alan, any objections?
 
-Ok with me.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Nope:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
