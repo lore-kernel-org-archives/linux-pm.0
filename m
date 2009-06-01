@@ -1,8 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH][RFC] Driver Core: Rework platform suspend/resume,
-	print warning
-Date: Mon, 01 Jun 2009 19:20:44 +0900
-Message-ID: <20090601102044.10780.12920.sendpatchset@rx1.opensource.se>
+Subject: [PATCH][RFC] pm: remove device_type suspend()/resume()
+Date: Mon, 01 Jun 2009 19:38:36 +0900
+Message-ID: <20090601103836.10959.43392.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,89 +21,53 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch reworks the platform driver code for legacy
-suspend and resume to avoid installing callbacks in
-struct device_driver. A warning is also added telling
-users to update the platform driver to use dev_pm_ops.
-
-The functions platform_legacy_suspend()/resume() directly
-call suspend and resume callbacks in struct platform_driver
-instead of wrapping things in platform_drv_suspend()/resume().
+This patch removes the legacy callbacks ->suspend() and
+->resume() from struct device_type. These callbacks seem
+unused, and new code should instead make use of struct
+dev_pm_ops.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Compiles fine, but not runtime tested.
+ Only lightly compile tested on my laptop, could use some
+ multi-arch build farm verification.
 
- drivers/base/platform.c |   36 ++++++++++++------------------------
- 1 file changed, 12 insertions(+), 24 deletions(-)
+ drivers/base/power/main.c |    7 -------
+ include/linux/device.h    |    3 ---
+ 2 files changed, 10 deletions(-)
 
---- 0009/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2009-06-01 18:12:34.000000000 +0900
-@@ -470,22 +470,6 @@ static void platform_drv_shutdown(struct
- 	drv->shutdown(dev);
- }
+--- 0001/drivers/base/power/main.c
++++ work/drivers/base/power/main.c	2009-06-01 17:07:23.000000000 +0900
+@@ -399,9 +399,6 @@ static int device_resume(struct device *
+ 		if (dev->type->pm) {
+ 			pm_dev_dbg(dev, state, "type ");
+ 			error = pm_op(dev, dev->type->pm, state);
+-		} else if (dev->type->resume) {
+-			pm_dev_dbg(dev, state, "legacy type ");
+-			error = dev->type->resume(dev);
+ 		}
+ 		if (error)
+ 			goto End;
+@@ -641,10 +638,6 @@ static int device_suspend(struct device 
+ 		if (dev->type->pm) {
+ 			pm_dev_dbg(dev, state, "type ");
+ 			error = pm_op(dev, dev->type->pm, state);
+-		} else if (dev->type->suspend) {
+-			pm_dev_dbg(dev, state, "legacy type ");
+-			error = dev->type->suspend(dev, state);
+-			suspend_report_result(dev->type->suspend, error);
+ 		}
+ 		if (error)
+ 			goto End;
+--- 0001/include/linux/device.h
++++ work/include/linux/device.h	2009-06-01 17:00:20.000000000 +0900
+@@ -293,9 +293,6 @@ struct device_type {
+ 	char *(*nodename)(struct device *dev);
+ 	void (*release)(struct device *dev);
  
--static int platform_drv_suspend(struct device *_dev, pm_message_t state)
--{
--	struct platform_driver *drv = to_platform_driver(_dev->driver);
--	struct platform_device *dev = to_platform_device(_dev);
+-	int (*suspend)(struct device *dev, pm_message_t state);
+-	int (*resume)(struct device *dev);
 -
--	return drv->suspend(dev, state);
--}
--
--static int platform_drv_resume(struct device *_dev)
--{
--	struct platform_driver *drv = to_platform_driver(_dev->driver);
--	struct platform_device *dev = to_platform_device(_dev);
--
--	return drv->resume(dev);
--}
--
- /**
-  * platform_driver_register
-  * @drv: platform driver structure
-@@ -499,10 +483,10 @@ int platform_driver_register(struct plat
- 		drv->driver.remove = platform_drv_remove;
- 	if (drv->shutdown)
- 		drv->driver.shutdown = platform_drv_shutdown;
--	if (drv->suspend)
--		drv->driver.suspend = platform_drv_suspend;
--	if (drv->resume)
--		drv->driver.resume = platform_drv_resume;
-+	if (drv->suspend || drv->resume)
-+		pr_warning("Platform driver '%s' needs updating - please use "
-+			"dev_pm_ops\n", drv->driver.name);
-+
- 	return driver_register(&drv->driver);
- }
- EXPORT_SYMBOL_GPL(platform_driver_register);
-@@ -634,20 +618,24 @@ static int platform_match(struct device 
+ 	struct dev_pm_ops *pm;
+ };
  
- static int platform_legacy_suspend(struct device *dev, pm_message_t mesg)
- {
-+	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	int ret = 0;
- 
--	if (dev->driver && dev->driver->suspend)
--		ret = dev->driver->suspend(dev, mesg);
-+	if (dev->driver && pdrv->suspend)
-+		ret = pdrv->suspend(pdev, mesg);
- 
- 	return ret;
- }
- 
- static int platform_legacy_resume(struct device *dev)
- {
-+	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-+	struct platform_device *pdev = to_platform_device(dev);
- 	int ret = 0;
- 
--	if (dev->driver && dev->driver->resume)
--		ret = dev->driver->resume(dev);
-+	if (dev->driver && pdrv->resume)
-+		ret = pdrv->resume(pdev);
- 
- 	return ret;
- }
