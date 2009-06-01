@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH][RFC] pm: remove device_type
-	suspend()/resume()
-Date: Mon, 1 Jun 2009 14:56:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906011453171.3972-100000@iolanthe.rowland.org>
-References: <200906012040.58290.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
+Date: Mon, 1 Jun 2009 21:04:48 +0200
+Message-ID: <200906012104.49890.rjw__17252.3823254325$1243883122$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0905281124490.3037-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906012040.58290.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0905281124490.3037-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,26 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 1 Jun 2009, Rafael J. Wysocki wrote:
-
-> On Monday 01 June 2009, Magnus Damm wrote:
-> > From: Magnus Damm <damm@igel.co.jp>
-> > 
-> > This patch removes the legacy callbacks ->suspend() and
-> > ->resume() from struct device_type. These callbacks seem
-> > unused, and new code should instead make use of struct
-> > dev_pm_ops.
-> > 
-> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+On Thursday 28 May 2009, Alan Stern wrote:
+> On Thu, 28 May 2009, Rafael J. Wysocki wrote:
 > 
-> This is fine by me.
+> > I think we'll need one separate workqueue for run-time PM in general, so that
+> > bus types don't introduce their own workqueues for this purpose.  IMO one
+> > system-wide run-time PM workqueue should be sufficient (it could also be
+> > used for the suspend blockers BTW).
+> > 
+> > So, perhaps it makes sense to implement such a workqueue at the core level?
+> > Thoughts?
 > 
-> Greg, Pavel, Alan, any objections?
+> That's fine with me.  This new workqueue can take over the job of the 
+> "ksuspend_usbd" workqueue.  But it would have to be marked as 
+> freezable.
 
-No objections from me.
+Having considered it for a while I'm not sure if freezing is the right approach
+here.  Namely, the work items put into the workqueue need not be useful after
+the resume any more, so perhaps we should deqeue them during suspend?
 
-Alan Stern
+Best,
+Rafael
