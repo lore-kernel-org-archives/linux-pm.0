@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH][RFC] Driver Core: Rework platform
-	suspend/resume, print warning
-Date: Tue, 2 Jun 2009 00:48:09 +0200
-Message-ID: <200906020048.10046.rjw@sisk.pl>
-References: <20090601102044.10780.12920.sendpatchset@rx1.opensource.se>
-	<200906012044.27631.rjw@sisk.pl> <20090601210255.GB2236@suse.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [regression,
+ bisected] adb trackpad disappears after suspend to ram
+Date: Tue, 02 Jun 2009 08:52:23 +1000
+Message-ID: <1243896743.591.13.camel__35365.6967905865$1243897026$gmane$org@pasglop>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<200906011836.15507.rjw@sisk.pl>
+	<877hzv8txp.fsf@scholz.fias.uni-frankfurt.de>
+	<200906020042.37036.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090601210255.GB2236@suse.de>
-Content-Disposition: inline
+In-Reply-To: <200906020042.37036.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Jan Scholz <scholz@fias.uni-frankfurt.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 01 June 2009, Greg KH wrote:
-> On Mon, Jun 01, 2009 at 08:44:27PM +0200, Rafael J. Wysocki wrote:
-> > On Monday 01 June 2009, Magnus Damm wrote:
-> > > From: Magnus Damm <damm@igel.co.jp>
-> > > 
-> > > This patch reworks the platform driver code for legacy
-> > > suspend and resume to avoid installing callbacks in
-> > > struct device_driver. A warning is also added telling
-> > > users to update the platform driver to use dev_pm_ops.
-> > > 
-> > > The functions platform_legacy_suspend()/resume() directly
-> > > call suspend and resume callbacks in struct platform_driver
-> > > instead of wrapping things in platform_drv_suspend()/resume().
-> > > 
-> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+
+> > Tried this, but it does not help.
 > > 
-> > Greg, is this patch fine with you?
+> > What I haven't noticed before is, that even if the trackpad already
+> > disappeared, an additional suspend-resume cycle from the console brought
+> > it back to life every time. Sometimes this worked from within X as well,
+> > just not with such a high probability as from the console.
+> > However, this is independent from 'sleepy_trackpad = 1'. 
 > 
-> Fine with me.  If you want to take it in your tree, feel free to add:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> OK, thanks for testing.  I think I know what to do, but I need some time to
+> prepare a patch.
 
-I will, thanks!
+I wonder if the trakpad is timing out at some stage, we don't drain it
+properly before suspend or something like that. Those ADB things are
+a bit strange.
 
-Best,
-Rafael
+Ben.
