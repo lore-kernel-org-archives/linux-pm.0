@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume
-	if a device was disconnected
-Date: Tue, 2 Jun 2009 23:26:33 +0200
-Message-ID: <200906022326.34491.rjw__16098.6159382903$1243978066$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
+Date: Tue, 2 Jun 2009 23:37:22 +0200
+Message-ID: <20090602213722.GA1972__29911.3988563933$1243978705$gmane$org@ucw.cz>
+References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	<877i01p2t8.fsf@deeprootsystems.com>
+	<aec7e5c30905290217s651e5785s2ceaebbe1856d120@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <aec7e5c30905290217s651e5785s2ceaebbe1856d120@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,69 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, Frans Pop <elendil@planet.nl>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-pm@lists.linux-foundation.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-First, sorry for the delayed response.  Frans has just reminded me about this
-thread.
+Hi!
 
-On Tuesday 24 March 2009, Alan Stern wrote:
-> On Mon, 23 Mar 2009, Frans Pop wrote:
-> 
-> > > Or do you think maybe it would be better to move this test up into the
-> > > PM core?  After all, other subsystems will face the same issue.  I
-> > > think that would be the best approach.  Yes?
-> > 
-> > I did look at that option, but implementing it in the USB subsystem seemed
-> > more logical to me, for example as other subsystems possibly would want to
-> > display an info message.
-> 
-> They still can...
-> 
-> > And is -ENODEV safe to ignore in all cases? Would there be other errors that
-> > should be ignored too?
-> 
-> In general, the PM core ignores _all_ errors during resume -- in the
-> sense that it doesn't try to recover from them or do anything to handle
-> them.  All it does is put a message in the log.
-> 
-> So your question becomes: For which errors should a message be added to 
-> the system log?  The most logical answer seems to be that we want an 
-> error message whenever something bad or unexpected occurs.
-> 
-> Removal of a hot-unpluggable device isn't really bad or unexpected.  
-> Removal of a non-hot-unpluggable device might be bad, but on the other
-> hand the system isn't really "hot" while it is suspended.  Besides, the
-> appropriate subsystem can print an error message.  Furthermore the
-> kernel can't easily tell which devices are hot-unpluggable and which
-> aren't.
-> 
-> Anything else amounts to failure resuming a device that still exists.  
-> As such, it probably deserves an error message.
 
-Returning 0 from usb_external_resume_device() if the device is not present
-any more doesn't seem wrong.  It's not really an error condition, IMO, because
-it's rather normal that the devices may be removed while suspended.
+> > In the process of discussing a similar interface for OMAP, we dicussed
+> > that having 3 states would be more useful. =A0Specifically, and
+> > _enable(), _idle() and _disable() hook. =A0The _enable() and _idle()
+> > hooks being exactly what you proposed above, but with the addition of
+> > a _disable() hook which says not only can the device go idle, but that
+> > the driver is really finished with the device. =A0In this case, more
+> > aggresive PM measures could be taken, such as turning of regulators
+> > that may have long latencies that may not be appropriate to turn off
+> > in idle.
+> =
 
-OTOH, I don't think we can ignore -ENODEV universally in the core, because
-its meaning may depend on the bus type.  For example, for PCI it sometimes
-means a hardware problem has occured (other than the device being not present
-any more).
+> Hm.. I wonder when the driver is really finished with the device
+> though. Only when the module is unloaded? If so then we could deal
+> with the hard disable using platform bus notifiers (like in [04/04]).
 
-> > if Rafael would be happy with a generic test for -ENODEV, it could be done.
-> > If not, maybe some other special error code would need to be used but then
-> > you'd still need to test in the subsystem to set that error.
-> > Disadvantage is also that it would make resume_device() and related PM
-> > driver core functions quite a bit less clean than they currently are.
-> > 
-> > Implementing the test in USB was quite a bit simpler (for me at least ;-)
-> 
-> We should get Rafael's opinion.
+I'd guess that they call disable() when /dev node is closed... and
+idle() when device is opened but inactive.
 
-I'd vote in favor of the Frans' patch, at least for now.
+-- =
 
-So, Frans, please resubmit with the changelog modified as requested by Alan.
-
-Best,
-Rafael
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
