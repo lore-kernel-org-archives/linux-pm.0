@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Tue, 2 Jun 2009 10:51:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906020954110.3074-100000__15809.6832842149$1243954449$gmane$org@iolanthe.rowland.org>
-References: <200906020121.38946.rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
+Date: Tue, 02 Jun 2009 08:30:54 -0700
+Message-ID: <87d49mk5zl.fsf@deeprootsystems.com>
+References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
+	<200906012047.59726.rjw@sisk.pl> <200906012133.32074.rjw@sisk.pl>
+	<aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906020121.38946.rjw@sisk.pl>
+In-Reply-To: <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
+	(Magnus Damm's message of "Tue\, 2 Jun 2009 13\:33\:08 +0900")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,174 +20,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2 Jun 2009, Rafael J. Wysocki wrote:
+Magnus Damm <magnus.damm@gmail.com> writes:
 
-> > It's partly a question of avoiding unnecessary activity.  Is there any
-> > reason to resume a device if it's just going to be autosuspended again
-> > a few seconds later?
-> 
-> Well, I'm not sure if we know in advance what's going to happen to the device
-> right after a system-wide resume.  It may be a totally different situation from
-> the device activity point of view.
+> 2009/6/2 Rafael J. Wysocki <rjw@sisk.pl>:
+>> On Monday 01 June 2009, Rafael J. Wysocki wrote:
+>>> On Monday 01 June 2009, Magnus Damm wrote:
+>>> > From: Magnus Damm <damm@igel.co.jp>
+>>> >
+>>> > Allow architecture specific data in struct platform_device V2.
+>>> > The structure pdev_archdata is added to struct platform_device,
+>>> > similar to struct dev_archdata in struct device.
+>>> >
+>>> > Useful for architecture code that needs to keep extra data
+>>> > associated with each platform device. This data shall not
+>>> > be accessed by platform drivers, only architecture code.
+>>> >
+>>> > Needed for platform device runtime PM.
+>>>
+>>> What exactly do you need this data for?
+>
+> I'd like to keep a hardware block id associated with each platform
+> device on our SoC.
+> Please have a look at "PATCH [04/04] sh: Runtime platform device PM mocku=
+p",
+> http://patchwork.kernel.org/patch/26421/
 
-We _never_ know in advance what's going to happen.  An autosuspended
-device may have to wake up at any time in order to carry out some work
--- that's true whether or not a system sleep has taken place.  IMO it
-doesn't make sense to wake up an autosuspended device for no reason
-other than that it _may_ need to do something; we should let it stay in
-a low-power mode until we _know_ it has to wake up.
+And in OMAP, we will keep a pointer to an SoC-specific struct of
+HW specific data to be used in idle/wakeup decision making.
 
-> > It's also a matter of principle.  A system sleep should be as
-> > transparent as possible (except for the passage of time, of course).  
-> > When the sleep is over, devices should be in the same state as before
-> > it began.
-> 
-> As a matter of fact, this need not be true at all.  For example, consider a
-> wireless network adapter that was assosicated with specific access point
-> before a system-wide suspend, but this access point is not present any more
-> after the subsequent system-wide resume.
+>> Anyway, I think you can introduce something like:
+>>
+>> struct <your arch>_platform_device {
+>> =A0 =A0struct platform_device dev;
+>> =A0 =A0<some type> <your arch data>;
+>> =A0 =A0...
+>> };
+>>
+>> define your platform devices using the struct above and pass its dev mem=
+ber to
+>> the functions that need 'struct platform_device' as an argument.
+>>
+>> Then you won't need to add arch members to 'struct platform_device' itse=
+lf.
+>
+> Thanks for your suggestion. I'm usually a friend of wrapping
+> structures and using offsetof(), but in this case I don't think it
+> will work very well.
 
-This example doesn't prove your point.  Sure, conditions may have
-changed while the system was asleep.  They might also change while the
-system is awake.  In general, whether or not the system was asleep
-shouldn't make any difference -- to as great an extent as possible we
-should strive to pretend that the entire sleep took no time at all (or
-simply didn't happen).
+Neither do I in this case...
 
-So: Suppose the system had been awake when the access point
-disappeared.  What would the wireless adapter driver do then?  It
-should try to do exactly the same thing if the access point disappears
-while the system is asleep.
+> I'd like to keep a SoC specific hardware block id in this architecture
+> specific struct. Then let the arch specific functions
+> platform_device_idle() and platform_device_wakeup() use this hardware
+> block id to locate which clocks to stop and which power domains to
+> fiddle with within the SoC. If we only consider this on-SoC case then
+> wrapping and offsetof() works well.
+>
+> However, a typical embedded system has a wide range of platform
+> devices. Some are for the SoC itself and some are for external
+> devices, like on board ethernet controlllers (not on chip like the SoC
+> platform devices). And since idle() and wakeup() work with struct
+> platform device, with a wrapped data structure we need some way to
+> check if the platform data is actually wrapped and offsetof() is
+> valid. I guess we could use some platform device specific flag for
+> this, but that seems overly complicated in my opinion. And modifying
+> idle() and wakup() to take arch specific structures is not so good
+> since we want to use the same platform driver on multiple
+> architectures.
 
-You see?  The sleep should be transparent.
+Also, there many cases where platform_devices are not declared
+statically and using the wrapper method doesn't work well if you are
+using platform_device_alloc().  In addition to not being able to use
+container_of() etc.  the memory allocated potentially lasts longer than
+the existence of the platform_device.
 
-> I really don't think we can predict what's going to happen to a device after
-> a system-wide resume, so IMO we should assume that the device will be necessary
-> immediately after the resume and we should resume it.  It still can autosuspend
-> normally afterwards if it's not needed after all.
+I have a patch lying around that extended platform_device_alloc() to
+take an extra size arg for platform-specific extentions (like
+netdev_alloc() and some others like it) but I never got ambitious
+enough to change all the users of platform_device_alloc().
 
-This is highly debatable.  I'd like to hear some thoughts from other 
-people.
-
-
-> > >  Also, what happens if the platform firmware
-> > > resumes the autosuspended devices before passing control to the kernel during
-> > > system-wide resume?  How do we handle that?
-> > 
-> > In the case of USB, it's not possible to resume a suspended device
-> > without first resuming and using a host controller.  The host
-> > controller driver will realize that the firmware has taken over the
-> > controller and will reset the controller.
-...
-
-> I'm not sure if this is doable so easily for PCI devices, for one example.
-> Most probably, they will come up in D0 after the system-wide suspend and
-> the PCI resume code will have to suspend them directly so that they remain
-> "autosuspended" after the resume.
-
-Clearly the behavior will need to vary among buses.  What's appropriate
-for USB won't be appropriate for PCI.  Furthermore, the overhead of
-waking a PCI device unnecessarily might be a lot lower than the
-overhead of waking a USB device, so it might make sense always to
-resume autosuspended PCI devices during a system resume.
-
-
-> > So the work routine would somehow be aware when a system sleep is in
-> > progress, at which point it would return immediately without doing
-> > anything?  That seems racey.  Isn't it easier just to freeze the
-> > workqueue?
-> 
-> Well, yes and no.  Namely, if we freeze the workqueue, all of the bus types
-> using it will have to check the vaildity of operations carried out by it,
-> because of the possibility that system-wide power transition took place in the
-> meantime and changed the state of the device.  Also, please take the PCI
-> example into consideration.
-
-Freezability doesn't matter; you can prevent items from being added to
-the workqueue during a power transition just as easily regardless of
-whether it is freezable or not.  In fact, it's easier if the workqueue
-is freezable.  You don't have to prevent anything from being added; you
-just have to cancel everything on the workqueue before unfreezing it.
-
-One solution would be to have the bus types cancel their own pending
-work items explicitly.  Another is to have two freezable PM workqueues,
-one with automatic cancellation and the other without.
+Kevin
 
 
-> > For autoresume requests coming from an interrupt handler, I'm not so 
-> > sure.  I don't know of any good examples -- in fact there don't seem to 
-> > be any examples at the moment.  (The USB core supports autoresume 
-> > requests in interrupt context, AFAICS no driver uses them.)  So maybe 
-> > it's premature to worry about this case.
-> 
-> Hmm.  Can you please describe a theoretical situation in which this kind
-> of autoresume request will appear?  I'm not really sure what you mean here. :-)
-
-Well, here's something people discussed but which hasn't been
-implemented (and may never be implemented).  A suspended USB keyboard
-doesn't have enough power to turn on any LEDs.  So suppose a system has
-two keyboards, and kbd-A is autosuspended when the user engages
-CapsLock on kbd-B.  The input layer wants to turn on the CapsLock LED
-on all the keyboards, which means it has to autoresume kbd-A.  But all
-this action takes place in interrupt context, so an autoresume request
-would have to be queued.
-
-
-> > Lastly, we have resume requests coming from a device -- i.e., remote
-> > wakeup requests.  This is a little tricky.  Suppose you have remote
-> > wakeup enabled, and you press a key on your USB keyboard just as the
-> > computer is going to sleep.  Should this cause the sleep to be aborted?  
-> > Should it cause the computer to wake back up again right away?  Should
-> > the keystroke be ignored?
-> 
-> This is a difficult problem in general.  I _think_ we should ignore such
-> autoresume requests for devices that are not marked as wake-up ones
-> and we should abort the suspend if there's a request from a wake-up device.
-
-It _is_ difficult.  Right now USB ignores such requests, because the
-threads that handle them are all freezable.  But the information isn't
-lost; it is stored in the hardware and when the system wakes up the
-requests will be seen.
-
-Except for wakeup requests from root hubs.  If they arrive at just the 
-right time then they are not stored in the hardware -- instead they are 
-stored as work items on the ksuspend_usbd workqueue!  In essence, the 
-workqueue serves as a software mechanism for saving IRQs which were 
-delivered but couldn't be acted on.
-
-That's why I don't want to erase the work items; it would be logically 
-equivalent to dropping interrupts.
-
-
-> Anyway, below is a prototype implementation of a generic runtime PM workqueue,
-> just for discussion.
-> 
-> pm_schedule_suspend() and pm_schedule_resume() are to be called by bus types
-> that are requesting the autosuspend or autoresume, respectively, of a device.
-> The supposed control flow is like this:
-> * bus type calls pm_schedule_suspend() to schedule autosuspend of a device
-> * at the right time the PM workqueue executes the bus type's ->autosuspend()
->   callback which is responsible for calling the device driver to suspend the
->   device (the way in which this is done is totally bus type-specific)
-> * if there's a resume event for the device, it's delivered to the bus type
->   driver (in a bus type-specific way) and the bus type schedules autoresume of
->   the device by calling pm_schedule_resume()
-> * the PM workqueue executes the bus type's ->autoresume() as soon as it can
->   and this callback is responsible for calling the device driver to resume the
->   device (the way in which this is done is totally bus type-specific).
-
-It looks like the only benefits provided by this patch are the
-workqueue itself and the embedded delayed_work structure.  The ability
-to cancel the work items (or prevent them from being added) during a
-system sleep is questionable, as discussed above.  There isn't any
-value added by the new functions or methods.
-
-In short, it would be just as useful simply to add the delayed_work 
-structure and export two PM workqueues, both freezable, with automatic
-cancellation for one of them.
-
-Alan Stern
+> My mockup code that keeps keeps the hardware block id in the platform
+> device arch specific data works well since the hardware block id with
+> value zero is a special case. The value zero means "external non-soc
+> device", so a "regular" board specific struct platform_device that do
+> not setup arch specific data can just be skipped in idle()/wakeup().
+>
+> If you guys dislike adding arch specific data to struct platform
+> device then for SuperH we can just (mis)use the arch specific data in
+> struct device instead. I'm afraid that solution wastes memory since
+> the data will only be used for platform devices anyway. So I prefer
+> adding arch specific data to struct platform_device instead of struct
+> device if possible.
+>
+> Maybe there are better ways to solve this? I think arch specific data
+> in struct platform_device is pretty straight forward though.
