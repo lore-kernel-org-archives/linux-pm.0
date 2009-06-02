@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Tue, 2 Jun 2009 23:37:22 +0200
-Message-ID: <20090602213722.GA1972__29911.3988563933$1243978705$gmane$org@ucw.cz>
-References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	<877i01p2t8.fsf@deeprootsystems.com>
-	<aec7e5c30905290217s651e5785s2ceaebbe1856d120@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] usb: avoid PM error messages during resume
+ if a device was disconnected
+Date: Tue, 2 Jun 2009 17:48:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906021745380.3960-100000__47193.3850356892$1243979451$gmane$org@iolanthe.rowland.org>
+References: <200906022326.34491.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <aec7e5c30905290217s651e5785s2ceaebbe1856d120@mail.gmail.com>
+In-Reply-To: <200906022326.34491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,33 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, gregkh@suse.de, linux-pm@lists.linux-foundation.org, linux-sh@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, linux-usb@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 2 Jun 2009, Rafael J. Wysocki wrote:
 
+> Returning 0 from usb_external_resume_device() if the device is not present
+> any more doesn't seem wrong.  It's not really an error condition, IMO, because
+> it's rather normal that the devices may be removed while suspended.
+> 
+> OTOH, I don't think we can ignore -ENODEV universally in the core, because
+> its meaning may depend on the bus type.  For example, for PCI it sometimes
+> means a hardware problem has occured (other than the device being not present
+> any more).
 
-> > In the process of discussing a similar interface for OMAP, we dicussed
-> > that having 3 states would be more useful. =A0Specifically, and
-> > _enable(), _idle() and _disable() hook. =A0The _enable() and _idle()
-> > hooks being exactly what you proposed above, but with the addition of
-> > a _disable() hook which says not only can the device go idle, but that
-> > the driver is really finished with the device. =A0In this case, more
-> > aggresive PM measures could be taken, such as turning of regulators
-> > that may have long latencies that may not be appropriate to turn off
-> > in idle.
-> =
+> I'd vote in favor of the Frans' patch, at least for now.
+> 
+> So, Frans, please resubmit with the changelog modified as requested by Alan.
 
-> Hm.. I wonder when the driver is really finished with the device
-> though. Only when the module is unloaded? If so then we could deal
-> with the hard disable using platform bus notifiers (like in [04/04]).
+If we change -ENODEV to 0, the change should be made in usb_resume()
+rather than usb_external_resume_device().
 
-I'd guess that they call disable() when /dev node is closed... and
-idle() when device is opened but inactive.
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Alan Stern
