@@ -1,16 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
-Date: Tue, 02 Jun 2009 08:30:54 -0700
-Message-ID: <87d49mk5zl.fsf@deeprootsystems.com>
-References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
-	<200906012047.59726.rjw@sisk.pl> <200906012133.32074.rjw@sisk.pl>
-	<aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] usb: avoid PM error messages during resume
+	if a device was disconnected
+Date: Tue, 2 Jun 2009 23:26:33 +0200
+Message-ID: <200906022326.34491.rjw__16098.6159382903$1243978066$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
-	(Magnus Damm's message of "Tue\, 2 Jun 2009 13\:33\:08 +0900")
+In-Reply-To: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,104 +19,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>, Frans Pop <elendil@planet.nl>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Magnus Damm <magnus.damm@gmail.com> writes:
+First, sorry for the delayed response.  Frans has just reminded me about this
+thread.
 
-> 2009/6/2 Rafael J. Wysocki <rjw@sisk.pl>:
->> On Monday 01 June 2009, Rafael J. Wysocki wrote:
->>> On Monday 01 June 2009, Magnus Damm wrote:
->>> > From: Magnus Damm <damm@igel.co.jp>
->>> >
->>> > Allow architecture specific data in struct platform_device V2.
->>> > The structure pdev_archdata is added to struct platform_device,
->>> > similar to struct dev_archdata in struct device.
->>> >
->>> > Useful for architecture code that needs to keep extra data
->>> > associated with each platform device. This data shall not
->>> > be accessed by platform drivers, only architecture code.
->>> >
->>> > Needed for platform device runtime PM.
->>>
->>> What exactly do you need this data for?
->
-> I'd like to keep a hardware block id associated with each platform
-> device on our SoC.
-> Please have a look at "PATCH [04/04] sh: Runtime platform device PM mocku=
-p",
-> http://patchwork.kernel.org/patch/26421/
+On Tuesday 24 March 2009, Alan Stern wrote:
+> On Mon, 23 Mar 2009, Frans Pop wrote:
+> 
+> > > Or do you think maybe it would be better to move this test up into the
+> > > PM core?  After all, other subsystems will face the same issue.  I
+> > > think that would be the best approach.  Yes?
+> > 
+> > I did look at that option, but implementing it in the USB subsystem seemed
+> > more logical to me, for example as other subsystems possibly would want to
+> > display an info message.
+> 
+> They still can...
+> 
+> > And is -ENODEV safe to ignore in all cases? Would there be other errors that
+> > should be ignored too?
+> 
+> In general, the PM core ignores _all_ errors during resume -- in the
+> sense that it doesn't try to recover from them or do anything to handle
+> them.  All it does is put a message in the log.
+> 
+> So your question becomes: For which errors should a message be added to 
+> the system log?  The most logical answer seems to be that we want an 
+> error message whenever something bad or unexpected occurs.
+> 
+> Removal of a hot-unpluggable device isn't really bad or unexpected.  
+> Removal of a non-hot-unpluggable device might be bad, but on the other
+> hand the system isn't really "hot" while it is suspended.  Besides, the
+> appropriate subsystem can print an error message.  Furthermore the
+> kernel can't easily tell which devices are hot-unpluggable and which
+> aren't.
+> 
+> Anything else amounts to failure resuming a device that still exists.  
+> As such, it probably deserves an error message.
 
-And in OMAP, we will keep a pointer to an SoC-specific struct of
-HW specific data to be used in idle/wakeup decision making.
+Returning 0 from usb_external_resume_device() if the device is not present
+any more doesn't seem wrong.  It's not really an error condition, IMO, because
+it's rather normal that the devices may be removed while suspended.
 
->> Anyway, I think you can introduce something like:
->>
->> struct <your arch>_platform_device {
->> =A0 =A0struct platform_device dev;
->> =A0 =A0<some type> <your arch data>;
->> =A0 =A0...
->> };
->>
->> define your platform devices using the struct above and pass its dev mem=
-ber to
->> the functions that need 'struct platform_device' as an argument.
->>
->> Then you won't need to add arch members to 'struct platform_device' itse=
-lf.
->
-> Thanks for your suggestion. I'm usually a friend of wrapping
-> structures and using offsetof(), but in this case I don't think it
-> will work very well.
+OTOH, I don't think we can ignore -ENODEV universally in the core, because
+its meaning may depend on the bus type.  For example, for PCI it sometimes
+means a hardware problem has occured (other than the device being not present
+any more).
 
-Neither do I in this case...
+> > if Rafael would be happy with a generic test for -ENODEV, it could be done.
+> > If not, maybe some other special error code would need to be used but then
+> > you'd still need to test in the subsystem to set that error.
+> > Disadvantage is also that it would make resume_device() and related PM
+> > driver core functions quite a bit less clean than they currently are.
+> > 
+> > Implementing the test in USB was quite a bit simpler (for me at least ;-)
+> 
+> We should get Rafael's opinion.
 
-> I'd like to keep a SoC specific hardware block id in this architecture
-> specific struct. Then let the arch specific functions
-> platform_device_idle() and platform_device_wakeup() use this hardware
-> block id to locate which clocks to stop and which power domains to
-> fiddle with within the SoC. If we only consider this on-SoC case then
-> wrapping and offsetof() works well.
->
-> However, a typical embedded system has a wide range of platform
-> devices. Some are for the SoC itself and some are for external
-> devices, like on board ethernet controlllers (not on chip like the SoC
-> platform devices). And since idle() and wakeup() work with struct
-> platform device, with a wrapped data structure we need some way to
-> check if the platform data is actually wrapped and offsetof() is
-> valid. I guess we could use some platform device specific flag for
-> this, but that seems overly complicated in my opinion. And modifying
-> idle() and wakup() to take arch specific structures is not so good
-> since we want to use the same platform driver on multiple
-> architectures.
+I'd vote in favor of the Frans' patch, at least for now.
 
-Also, there many cases where platform_devices are not declared
-statically and using the wrapper method doesn't work well if you are
-using platform_device_alloc().  In addition to not being able to use
-container_of() etc.  the memory allocated potentially lasts longer than
-the existence of the platform_device.
+So, Frans, please resubmit with the changelog modified as requested by Alan.
 
-I have a patch lying around that extended platform_device_alloc() to
-take an extra size arg for platform-specific extentions (like
-netdev_alloc() and some others like it) but I never got ambitious
-enough to change all the users of platform_device_alloc().
-
-Kevin
-
-
-> My mockup code that keeps keeps the hardware block id in the platform
-> device arch specific data works well since the hardware block id with
-> value zero is a special case. The value zero means "external non-soc
-> device", so a "regular" board specific struct platform_device that do
-> not setup arch specific data can just be skipped in idle()/wakeup().
->
-> If you guys dislike adding arch specific data to struct platform
-> device then for SuperH we can just (mis)use the arch specific data in
-> struct device instead. I'm afraid that solution wastes memory since
-> the data will only be used for platform devices anyway. So I prefer
-> adding arch specific data to struct platform_device instead of struct
-> device if possible.
->
-> Maybe there are better ways to solve this? I think arch specific data
-> in struct platform_device is pretty straight forward though.
+Best,
+Rafael
