@@ -1,16 +1,12 @@
 From: Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH 1/4] cgroup freezer: Fix buggy resume test for
-	tasks frozen with cgroup freezer
-Date: Wed,  3 Jun 2009 02:31:18 -0700
-Message-ID: <91260d5797bcf233ca54c7b41da8278e99b4ca66.1244019829.git.matthltc__8987.04962241954$1244021877$gmane$org@us.ibm.com>
-References: <cover.1244019829.git.matthltc@us.ibm.com>
+Subject: [PATCH 0/4] cgroup freezer: Fixes and CHECKPOINTING
+	support
+Date: Wed,  3 Jun 2009 02:31:17 -0700
+Message-ID: <cover.1244019829.git.matthltc__22538.7440216311$1244022150$gmane$org@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <cover.1244019829.git.matthltc@us.ibm.com>
-In-Reply-To: <cover.1244019829.git.matthltc@us.ibm.com>
-References: <cover.1244019829.git.matthltc@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,108 +19,41 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 Cc: Cedric Le Goater <legoater@free.fr>, Oren Laadan <orenl@cs.columbia.edu>, Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Pavel Machek <pavel@suse.cz>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-When the cgroup freezer is used to freeze tasks we do not want to thaw
-those tasks during resume. Currently we test the cgroup freezer
-state of the resuming tasks to see if the cgroup is FROZEN.  If so
-then we don't thaw the task. However, the FREEZING state also indicates
-that the task should remain frozen.
 
-This also avoids a problem pointed out by Oren Ladaan: the freezer state
-transition from FREEZING to FROZEN is updated lazily when userspace reads
-or writes the freezer.state file in the cgroup filesystem. This means that
-resume will thaw tasks in cgroups which should be in the FROZEN state if
-there is no read/write of the freezer.state file to trigger this
-transition before suspend.
+This series fixes a bug with the mainline cgroup freezer code and
+cleans up the cgroup freezer before introducing the new
+CHECKPOINTING state in the last patch. All but this last patch are
+independent of checkpoint/restart and hence should be suitable for
+mainline.
 
-NOTE: Another "simple" solution would be to always update the cgroup
-freezer state during resume. However it's a bad choice for several reasons:
-Updating the cgroup freezer state is somewhat expensive because it requires
-walking all the tasks in the cgroup and checking if they are each frozen.
-Worse, this could easily make resume run in N^2 time where N is the number
-of tasks in the cgroup. Finally, updating the freezer state from this code
-path requires trickier locking because of the way locks must be ordered.
+The bug was noticed by Oren Ladaan and allows tasks frozen via the
+cgroup freezer to be thawed during resume when they should remain
+frozen. In Oren's checkpoint/restart tree is means that
+sys_checkpoint() sometimes returns EBUSY even when the cgroup is, 
+in fact, fully frozen. (Workaround: cat /cgroup/foo/freezer.state
+before doing checkpoint..)
 
-Instead of updating the freezer state we rely on the fact that lazy
-updates only manage the transition from FREEZING to FROZEN. We know that
-a cgroup with the FREEZING state may actually be FROZEN so test for that
-state too. This makes sense in the resume path even for partially-frozen
-cgroups -- those that really are FREEZING but not FROZEN.
+The final patch, which adds the CHECKPOINTING state, incorporates
+Oren's comments and should fix the lockdep bug he posted too. I 
+haven't tested this latest version yet myself and I have a few things to 
+attend to before I can get to it so I'm posting this for initial review
+now. I believe this resolves all the pending comments I've seen about
+the CHECKPOINTING state.
 
-Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Cedric Le Goater <legoater@free.fr>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org
+Cheers,
+	-Matt Helsley
 
-Seems like a candidate for -stable.
----
- include/linux/freezer.h |    7 +++++--
- kernel/cgroup_freezer.c |    9 ++++++---
- kernel/power/process.c  |    2 +-
- 3 files changed, 12 insertions(+), 6 deletions(-)
+Matt Helsley (4):
+  cgroup freezer: Fix buggy resume test for tasks frozen with cgroup
+    freezer
+  cgroup freezer: Avoid lazy state changes when convenient
+  cgroup freezer: Update stale locking comments
+  cgroup freezer: Add CHECKPOINTING state to safeguard container
+    checkpoint
 
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 5a361f8..da7e52b 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -64,9 +64,12 @@ extern bool freeze_task(struct task_struct *p, bool sig_only);
- extern void cancel_freezing(struct task_struct *p);
- 
- #ifdef CONFIG_CGROUP_FREEZER
--extern int cgroup_frozen(struct task_struct *task);
-+extern int cgroup_freezing_or_frozen(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
--static inline int cgroup_frozen(struct task_struct *task) { return 0; }
-+static inline int cgroup_freezing_or_frozen(struct task_struct *task)
-+{
-+	return 0;
-+}
- #endif /* !CONFIG_CGROUP_FREEZER */
- 
- /*
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index fb249e2..765e2c1 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -47,17 +47,20 @@ static inline struct freezer *task_freezer(struct task_struct *task)
- 			    struct freezer, css);
- }
- 
--int cgroup_frozen(struct task_struct *task)
-+int cgroup_freezing_or_frozen(struct task_struct *task)
- {
- 	struct freezer *freezer;
- 	enum freezer_state state;
- 
- 	task_lock(task);
- 	freezer = task_freezer(task);
--	state = freezer->state;
-+	if (!freezer->css.cgroup->parent)
-+		state = CGROUP_THAWED; /* root cgroup can't be frozen */
-+	else
-+		state = freezer->state;
- 	task_unlock(task);
- 
--	return state == CGROUP_FROZEN;
-+	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
- }
- 
- /*
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index ca63401..2c64932 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -135,7 +135,7 @@ static void thaw_tasks(bool nosig_only)
- 		if (nosig_only && should_send_signal(p))
- 			continue;
- 
--		if (cgroup_frozen(p))
-+		if (cgroup_freezing_or_frozen(p))
- 			continue;
- 
- 		thaw_process(p);
--- 
-1.5.6.3
+ Documentation/cgroups/freezer-subsystem.txt |   10 ++
+ checkpoint/checkpoint.c                     |    8 +-
+ include/linux/freezer.h                     |   15 ++-
+ kernel/cgroup_freezer.c                     |  163 +++++++++++++++++++--------
+ kernel/power/process.c                      |    2 +-
+ 5 files changed, 146 insertions(+), 52 deletions(-)
