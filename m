@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 03/04] PM: Add platform bus runtime dev_pm_ops
-Date: Wed, 3 Jun 2009 11:47:19 +0200
-Message-ID: <200906031147.20265.rjw@sisk.pl>
-References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	<200905300123.18367.rjw@sisk.pl>
-	<aec7e5c30906020637i3fc67d10w23e21b035620798f@mail.gmail.com>
+Subject: Re: [regression,
+	bisected] adb trackpad disappears after suspend to ram
+Date: Wed, 3 Jun 2009 12:02:27 +0200
+Message-ID: <200906031202.28916.rjw@sisk.pl>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<200906011836.15507.rjw@sisk.pl>
+	<877hzv8txp.fsf@scholz.fias.uni-frankfurt.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5132405030438232600=="
+Content-Type: multipart/mixed; boundary="===============4052088718061590868=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30906020637i3fc67d10w23e21b035620798f@mail.gmail.com>
+In-Reply-To: <877hzv8txp.fsf@scholz.fias.uni-frankfurt.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,503 +20,248 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============5132405030438232600==
+--===============4052088718061590868==
 Content-Type: multipart/alternative;
-  boundary="Boundary-00=_oakJK/Dtt/KqS4+"
+  boundary="Boundary-00=_0okJKc/9VHWl7sL"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
---Boundary-00=_oakJK/Dtt/KqS4+
+--Boundary-00=_0okJKc/9VHWl7sL
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 
-On Tuesday 02 June 2009, Magnus Damm wrote:
-> Hi Rafael,
+On Tuesday 02 June 2009, Jan Scholz wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Thanks for your feedback!
-> 
-> 2009/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday 27 May 2009, Magnus Damm wrote:
-> >> From: Magnus Damm <damm@igel.co.jp>
-> >>
-> >> Wrap the platform device bus dev_pm_ops to allow runtime
-> >> pm and regular suspend and resume to coexist.
-> >>
-> >> Platform device data is extended with flags that allow
-> >> us to keep track of which dev_pm_ops that has been called.
-> >>
-> >> Basically, if a device has been frozen by the runtime pm
-> >> code, don't call ->freeze() again when hibernating.
-> >>
-> >> Architecture code can use platform_runtime_dev_pm_ops to
-> >> call driver dev_pm_ops associated with a certain device.
-> >>
-> >> Enable with CONFIG_HAVE_PLATFORM_DEVICE_RUNTIME_PM.
-> >>
-> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> >> ---
-> >>
-> >>  This is a bit of a hack, any better way to wrap dev_pm_ops?
+> > On Monday 01 June 2009, Jan Scholz wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >> > On Friday 29 May 2009, Jan Scholz wrote:
+> >> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> >> >> 
+> >> >> >> We are too late in the cycle to revert this commit and it really is needed to
+> >> >> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
+> >> >> >> appear on your system is also important.
+> >> >> >> 
+> >> >> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
+> >> >> >> the interrupt on this platform?
+> >> >> >
+> >> >> > I suppose so :-) I'll have to check what's going on, it's not
+> >> >> > immediately clear to me.
+> >> >> >
+> >> >> > Cheers,
+> >> >> > Ben.
+> >> >> >
+> >> >> >> 
+> >> >> >> I'd like to see a boot log, preferably containing a suspend-resume in which
+> >> >> >> the problem was reproduced.
+> >> >> 
+> >> >> Here is a log from booting, through several suspend cycles, until the
+> >> >> trackpad disappeared. The first few suspends were done while X was
+> >> >> running but from the console. As you can tell from lines like
+> >> >>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> >> >> the trackpad was still present. The last suspend was done from within X,
+> >> >> here the trackpad did not make it.
+> >> >>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
+> >> >> However, there have been cases, although not in this log, were the
+> >> >> trackpad has been alive even when suspending from within X.
+> >> >
+> >> > This means the problem is probably timing-related.
+> >> >
+> >> > Can you please try to comment out suspend_device_irqs() and
+> >> > resume_device_irqs()  in drivers/base/power/main.c and see if that changes
+> >> > anything?  It's not entirely safe (well, that's why the calls are there after
+> >> > all), but hopefully the box won't hang during this test.
+> >> >
+> >> 
+> >> Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10
+> >> suspend-resume cycles from the console (which worked just like before)
+> >> and ~20 cycles from within X and the trackpad is still alive.
 > >
-> > I'm not really sure you need to wrap them at all.
+> > So, it seems we lose and interrupt during resume and that confuses the
+> > ADB controller driver or something like this.  Do you use the keyboard or
+> > the trackpad as a wake-up device?
 > 
-> I realize that I didn't explain very well why I decided to wrap
-> dev_pm_ops. Sorry about that. Basically there are two reasons:
-> 1) Wrap to always have the runtime dev_pm_ops functions regardless of kconfig.
-
-Well, I'm not sure if this is the right approach (see below).
-
-> 2) Wrap to make sure runtime and system-wide dev_pm_ops can coexist.
-
-That's if you want to have a separate dev_pm_ops object for run-time PM, which
-I don't think is necessary.
-
-> > There are a few choices:
-> >
-> > (1) You can use the platform_pm_* functions directly for run-time PM, but
-> > in that case you'll need to make sure that the "suspend" ones return 0
-> > immediately when called during system-wide suspend or hibernation (there's the
-> > question whether the "resume" ones should still put the device into the full
-> > power state in that case).  For this purpose you can add a single flag to
-> > struct platform_device and set it for devices that have already been
-> > "suspended" (this flag, when set, will make all of the "suspend" callbacks
-> > return 0 without doing anything until the device is "resumed").
+> I do the wakeup by pressing keys on the keyboard. I'd try wakeup via the
+> trackpad's button, but I have no idea how to activate that.
 > 
-> I have to make sure that the right Kconfig bits are enabled though,
-> otherwise some platform_pm_* functions will be missing. So one merit
-> for the wrapped functions is in this patch is that they are always
-> there regardless of CONFIG_SUSPEND and CONFIG_HIBERNATION.
-
-Make them depend on CONFIG_PM, then.  They are not _that_ much code anyway,
-we can easily afford building them even on platforms that really don't use them,
-but I expect them to be used by more and more platforms over time anyway.
-
-> Is one flag really enough?
-
-Not necessarily, although I think we'll end up using one flag only.
-
-> Isn't it a bit strange from the driver point of view to always get their
-> ->prepare() callback executed, but ->suspend() gets filtered?
-
-In fact, from the run-time PM POV, ->prepare() and ->suspend() should
-always be executed together and ->suspend_noirq() shouldn't be executed
-at all.  Now, it may be necessary to execute some code from ->suspend_noirq()
-for run-time PM too, but not by using this callback directly.
-
-> The bitmap in this patch is more fine-grained, so struct
-> platform_device remember which of each dev_pm_ops callback that have
-> been called. It may be overly complex though. Also, please note that
-> both runtime dev_pm_ops and system-wide dev_pm_ops go through the same
-> dev_pm_ops that keep track of which callbacks that have been called.
+> > Please additionally try to go back to the original code, put
+> > 'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in
+> > drivers/macintosh/adb.c and see if the problem is reproducible with that.
 > 
-> Using some kind of flag(s) for coexisting with system-wide
-> suspend-to-ram/disk sounds good.
-
-Of course we should be avoiding double suspend, so some kind of sychronization
-between the "sleep" suspend and run-time suspend is necessary and I agree that
-it's probably most convenient to use some flags for this purpose.  The
-questions are how many flags we're going to need and how exactly we're going
-to use them.
-
-> > (2) You can add separate platform callbacks for run-time PM that will execute
-> > the drivers' dev_pm_ops callbacks and presumably do something else (I don't
-> > know what that may be for platform devices, though).  In that case, again,
-> > adding a flag to struct platform_device and making platform_pm_* check it
-> > should be sufficient to prevent devices from being suspended twice in a row.
+> Tried this, but it does not help.
 > 
-> We may need to do other things as well - not sure - but regardless we
-> still need flag(s) to avoid double suspend.
+> What I haven't noticed before is, that even if the trackpad already
+> disappeared, an additional suspend-resume cycle from the console brought
+> it back to life every time. Sometimes this worked from within X as well,
+> just not with such a high probability as from the console.
+> However, this is independent from 'sleepy_trackpad = 1'. 
 
-Agreed.
+OK, the patch is below, but I haven't had the opportunity to test it yet.
 
-> > (3) You can add separate platform callbacks for run-time PM for both the
-> > bus type and the drivers, in which dev_pm_ops will be totally separate from
-> > these new callbacks, although of course you'll need provide some kind of
-> > synchronization bettween them all.  That also may be done through a flag
-> > in struct platform_device IMO.
-> 
-> Yeah, that's also one way. I wonder if that helps us though, I feel
-> that we already have a pretty wide range of callbacks in dev_pm_ops.
-> I'm not sure if they cover all cases we need though, I guess future
-> experiments will tell.
-
-Yes.  Still, we can anticipate that the run-time PM operations may be slightly
-different from the 'sleep state' PM ones, in which case it makes sens to
-introduce new callbacks, because that makes it clear(er) what the code is
-supposed to do.
-
-> > Now, since other bus types will most probably also need a flag in their
-> > _device structures, it may be worth putting it into struct device (we've
-> > discsussed that already).
-> 
-> Yeah, I wonder if a single flag is enough though? Aren't we coexisting
-> with CONFIG_SUSPEND, CONFIG_HIBERNATION and CONFIG_KEXEC_JUMP?
-> 
-> > I'm not sure which of (1) - (3) are the most suitable for the platform bus
-> > type.  For PCI I'd probably choose (2), because the current PCI bus type's
-> > dev_pm_ops callbacks are tailored to system-wide power transitions.
-> > Moreover, PCI devices can generally be put first into D1, then into D2 and
-> > finally into D3, which only makes sense at run time, and some of them may
-> > have to be put back into the full power state before a system-wide transition
-> > (apparently, we'll need a separate flag to mark such devices).
-> 
-> If I understand (1)-(3) correctly, then I think (1) is probably the
-> best choice for our platform devices.
-
-OK, for _your_ platform devices it may be the best choice, but what about
-the other platforms' platform devices?  Do you think (1) will be suitable for
-them all and if so then why?
-
-> I guess (2) is not very far from (1), so if we go with (1) to begin with
-> then we can deal with SoC specific things in our arch code to come closer to
-> (2) over time if needed.
-> 
-> > Of course, if you decide to add separate run-time PM callbacks for the
-> > platform bus type, you won't need to wrap its dev_pm_ops callbacks any more,
-> > but you'll need to modify them to check the appropriate flag(s).  For example,
-> > you may choose to use a two-bit pm_suspend_level field such that
-> >
-> > * if pm_suspend_level = 1, platform_pm_prepare() will return immediately
-> > * if pm_suspend_level = 2, platform_pm_prepare() and platform_pm_suspend()
-> >  will return immediately
-> > * if pm_suspend_level = 3, platform_pm_prepare(), platform_pm_suspend()
-> >  and platform_pm_suspend_noirq() will return immediately
-> >
-> > (and analogously for the hibernation callbacks) and make your run-time PM
-> > callbacks set this field appropriately.
-> 
-> That is true, but this checking is not needed for systems where
-> runtime PM is disabled.
-
-No, it is not, but it won't hurt really.  Also, if we do it intelligently, we
-can make the compiler optimize out the checks.  I'm not really sure it's worth
-the effort, however.
-
-> Or am I misunderstanding?
->
-> Maybe it's worth to discuss how to integrate this. I suspect that this
-> will only affect some selected architectures to begin with, and the
-> rest of the code base should be unaffected by this change as long as
-> the runtime kconfig is disabled.
-> 
-> So I decided to wrap dev_pm_ops to make the impact for non runtime PM
-> systems as small as possible. This while giving the runtime PM case
-> access to all dev_pm_ops regardless of suspend/hibernation kconfig.
-> 
-> Does it make sense?
-
-Well, as I said above, I don't really think that run-time PM is going to need
-all of the callbacks from dev_pm_ops.  Moreover, I'm not sure if it makes
-sense to have more than two (call it 'autosuspend' and 'autoresume' using the
-already existing USB terminology) callbacks for run-time PM, at least at
-the driver level.
+Can you please check if it helps, on top of 2.6.30-rc8?
 
 Best,
 Rafael
 
---Boundary-00=_oakJK/Dtt/KqS4+
+---
+ kernel/irq/manage.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/kernel/irq/manage.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/manage.c
++++ linux-2.6/kernel/irq/manage.c
+@@ -187,9 +187,9 @@ static inline int setup_affinity(unsigne
+ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+ {
+ 	if (suspend) {
+-		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+-			return;
+-		desc->status |= IRQ_SUSPENDED;
++		if (desc->action && !(desc->action->flags & IRQF_TIMER))
++			desc->status |= IRQ_SUSPENDED | IRQ_DISABLED;
++		return;
+ 	}
+ 
+ 	if (!desc->depth++) {
+@@ -250,8 +250,12 @@ EXPORT_SYMBOL(disable_irq);
+ 
+ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
+ {
+-	if (resume)
++	if (resume) {
+ 		desc->status &= ~IRQ_SUSPENDED;
++		if (!desc->depth)
++			desc->status &= ~IRQ_DISABLED;
++		return;
++	}
+ 
+ 	switch (desc->depth) {
+ 	case 0:
+
+--Boundary-00=_0okJKc/9VHWl7sL
 Content-Type: text/html;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-=
-html40/strict.dtd"><html><head><meta name=3D"qrichtext" content=3D"1" /><st=
-yle type=3D"text/css">p, li { white-space: pre-wrap; }</style></head><body =
-style=3D" font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-s=
-tyle:normal;"><table style=3D"-qt-table-type: root; margin-top:2px; margin-=
-bottom:2px; margin-left:4px; margin-right:4px;"><tr><td style=3D"border: no=
-ne;">On Tuesday 02 June 2009, Magnus Damm wrote:<br>
-&gt; Hi Rafael,<br>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd"><html><head><meta name="qrichtext" content="1" /><style type="text/css">p, li { white-space: pre-wrap; }</style></head><body style=" font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-style:normal;"><table style="-qt-table-type: root; margin-top:2px; margin-bottom:2px; margin-left:4px; margin-right:4px;"><tr><td style="border: none;">On Tuesday 02 June 2009, Jan Scholz wrote:<br>
+&gt; "Rafael J. Wysocki" &lt;rjw@sisk.pl&gt; writes:<br>
 &gt; <br>
-&gt; Thanks for your feedback!<br>
-&gt; <br>
-&gt; 2009/5/30 Rafael J. Wysocki &lt;rjw@sisk.pl&gt;:<br>
-&gt; &gt; On Wednesday 27 May 2009, Magnus Damm wrote:<br>
-&gt; &gt;&gt; From: Magnus Damm &lt;damm@igel.co.jp&gt;<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Wrap the platform device bus dev_pm_ops to allow runtime<br>
-&gt; &gt;&gt; pm and regular suspend and resume to coexist.<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Platform device data is extended with flags that allow<br>
-&gt; &gt;&gt; us to keep track of which dev_pm_ops that has been called.<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Basically, if a device has been frozen by the runtime pm<br>
-&gt; &gt;&gt; code, don't call -&gt;freeze() again when hibernating.<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Architecture code can use platform_runtime_dev_pm_ops to<br>
-&gt; &gt;&gt; call driver dev_pm_ops associated with a certain device.<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Enable with CONFIG_HAVE_PLATFORM_DEVICE_RUNTIME_PM.<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Signed-off-by: Magnus Damm &lt;damm@igel.co.jp&gt;<br>
-&gt; &gt;&gt; ---<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; =A0This is a bit of a hack, any better way to wrap dev_pm_ops=
-?<br>
+&gt; &gt; On Monday 01 June 2009, Jan Scholz wrote:<br>
+&gt; &gt;&gt; "Rafael J. Wysocki" &lt;rjw@sisk.pl&gt; writes:<br>
+&gt; &gt;&gt; <br>
+&gt; &gt;&gt; &gt; On Friday 29 May 2009, Jan Scholz wrote:<br>
+&gt; &gt;&gt; &gt;&gt; Benjamin Herrenschmidt &lt;benh@kernel.crashing.org&gt; writes:<br>
+&gt; &gt;&gt; &gt;&gt; <br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; We are too late in the cycle to revert this commit and it really is needed to<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; fix a more serious issue.  Nevertheless knowing that it caused the problem to<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; appear on your system is also important.<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; <br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; Ben, do you have an idea what may be going on here?  Does __disable_irq() mask<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; the interrupt on this platform?<br>
+&gt; &gt;&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; &gt;&gt; &gt; I suppose so :-) I'll have to check what's going on, it's not<br>
+&gt; &gt;&gt; &gt;&gt; &gt; immediately clear to me.<br>
+&gt; &gt;&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; &gt;&gt; &gt; Cheers,<br>
+&gt; &gt;&gt; &gt;&gt; &gt; Ben.<br>
+&gt; &gt;&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; <br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; I'd like to see a boot log, preferably containing a suspend-resume in which<br>
+&gt; &gt;&gt; &gt;&gt; &gt;&gt; the problem was reproduced.<br>
+&gt; &gt;&gt; &gt;&gt; <br>
+&gt; &gt;&gt; &gt;&gt; Here is a log from booting, through several suspend cycles, until the<br>
+&gt; &gt;&gt; &gt;&gt; trackpad disappeared. The first few suspends were done while X was<br>
+&gt; &gt;&gt; &gt;&gt; running but from the console. As you can tell from lines like<br>
+&gt; &gt;&gt; &gt;&gt;    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f<br>
+&gt; &gt;&gt; &gt;&gt; the trackpad was still present. The last suspend was done from within X,<br>
+&gt; &gt;&gt; &gt;&gt; here the trackpad did not make it.<br>
+&gt; &gt;&gt; &gt;&gt;    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f<br>
+&gt; &gt;&gt; &gt;&gt; However, there have been cases, although not in this log, were the<br>
+&gt; &gt;&gt; &gt;&gt; trackpad has been alive even when suspending from within X.<br>
+&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; &gt; This means the problem is probably timing-related.<br>
+&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; &gt; Can you please try to comment out suspend_device_irqs() and<br>
+&gt; &gt;&gt; &gt; resume_device_irqs()  in drivers/base/power/main.c and see if that changes<br>
+&gt; &gt;&gt; &gt; anything?  It's not entirely safe (well, that's why the calls are there after<br>
+&gt; &gt;&gt; &gt; all), but hopefully the box won't hang during this test.<br>
+&gt; &gt;&gt; &gt;<br>
+&gt; &gt;&gt; <br>
+&gt; &gt;&gt; Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10<br>
+&gt; &gt;&gt; suspend-resume cycles from the console (which worked just like before)<br>
+&gt; &gt;&gt; and ~20 cycles from within X and the trackpad is still alive.<br>
 &gt; &gt;<br>
-&gt; &gt; I'm not really sure you need to wrap them at all.<br>
+&gt; &gt; So, it seems we lose and interrupt during resume and that confuses the<br>
+&gt; &gt; ADB controller driver or something like this.  Do you use the keyboard or<br>
+&gt; &gt; the trackpad as a wake-up device?<br>
 &gt; <br>
-&gt; I realize that I didn't explain very well why I decided to wrap<br>
-&gt; dev_pm_ops. Sorry about that. Basically there are two reasons:<br>
-&gt; 1) Wrap to always have the runtime dev_pm_ops functions regardless of =
-kconfig.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Well, I'm not sure if this is the right approach (see=
- below).<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; 2) Wrap to make sure runtime and system-wide dev=
-_pm_ops can coexist.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>That's if you want to have a separate dev_pm_ops obje=
-ct for run-time PM, which<br>
-I don't think is necessary.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; &gt; There are a few choices:<br>
-&gt; &gt;<br>
-&gt; &gt; (1) You can use the platform_pm_* functions directly for run-time=
- PM, but<br>
-&gt; &gt; in that case you'll need to make sure that the "suspend" ones ret=
-urn 0<br>
-&gt; &gt; immediately when called during system-wide suspend or hibernation=
- (there's the<br>
-&gt; &gt; question whether the "resume" ones should still put the device in=
-to the full<br>
-&gt; &gt; power state in that case). =A0For this purpose you can add a sing=
-le flag to<br>
-&gt; &gt; struct platform_device and set it for devices that have already b=
-een<br>
-&gt; &gt; "suspended" (this flag, when set, will make all of the "suspend" =
-callbacks<br>
-&gt; &gt; return 0 without doing anything until the device is "resumed").<b=
-r>
+&gt; I do the wakeup by pressing keys on the keyboard. I'd try wakeup via the<br>
+&gt; trackpad's button, but I have no idea how to activate that.<br>
 &gt; <br>
-&gt; I have to make sure that the right Kconfig bits are enabled though,<br>
-&gt; otherwise some platform_pm_* functions will be missing. So one merit<b=
-r>
-&gt; for the wrapped functions is in this patch is that they are always<br>
-&gt; there regardless of CONFIG_SUSPEND and CONFIG_HIBERNATION.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Make them depend on CONFIG_PM, then.  They are not _t=
-hat_ much code anyway,<br>
-we can easily afford building them even on platforms that really don't use =
-them,<br>
-but I expect them to be used by more and more platforms over time anyway.<b=
-r>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; Is one flag really enough?<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Not necessarily, although I think we'll end up using =
-one flag only.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; Isn't it a bit strange from the driver point of =
-view to always get their<br>
-&gt; -&gt;prepare() callback executed, but -&gt;suspend() gets filtered?<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>In fact, from the run-time PM POV, -&gt;prepare() and=
- -&gt;suspend() should<br>
-always be executed together and -&gt;suspend_noirq() shouldn't be executed<=
-br>
-at all.  Now, it may be necessary to execute some code from -&gt;suspend_no=
-irq()<br>
-for run-time PM too, but not by using this callback directly.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; The bitmap in this patch is more fine-grained, s=
-o struct<br>
-&gt; platform_device remember which of each dev_pm_ops callback that have<b=
-r>
-&gt; been called. It may be overly complex though. Also, please note that<b=
-r>
-&gt; both runtime dev_pm_ops and system-wide dev_pm_ops go through the same=
-<br>
-&gt; dev_pm_ops that keep track of which callbacks that have been called.<b=
-r>
+&gt; &gt; Please additionally try to go back to the original code, put<br>
+&gt; &gt; 'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in<br>
+&gt; &gt; drivers/macintosh/adb.c and see if the problem is reproducible with that.<br>
 &gt; <br>
-&gt; Using some kind of flag(s) for coexisting with system-wide<br>
-&gt; suspend-to-ram/disk sounds good.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Of course we should be avoiding double suspend, so so=
-me kind of sychronization<br>
-between the "sleep" suspend and run-time suspend is necessary and I agree t=
-hat<br>
-it's probably most convenient to use some flags for this purpose.  The<br>
-questions are how many flags we're going to need and how exactly we're goin=
-g<br>
-to use them.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; &gt; (2) You can add separate platform callbacks=
- for run-time PM that will execute<br>
-&gt; &gt; the drivers' dev_pm_ops callbacks and presumably do something els=
-e (I don't<br>
-&gt; &gt; know what that may be for platform devices, though). =A0In that c=
-ase, again,<br>
-&gt; &gt; adding a flag to struct platform_device and making platform_pm_* =
-check it<br>
-&gt; &gt; should be sufficient to prevent devices from being suspended twic=
-e in a row.<br>
+&gt; Tried this, but it does not help.<br>
 &gt; <br>
-&gt; We may need to do other things as well - not sure - but regardless we<=
-br>
-&gt; still need flag(s) to avoid double suspend.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Agreed.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; &gt; (3) You can add separate platform callbacks=
- for run-time PM for both the<br>
-&gt; &gt; bus type and the drivers, in which dev_pm_ops will be totally sep=
-arate from<br>
-&gt; &gt; these new callbacks, although of course you'll need provide some =
-kind of<br>
-&gt; &gt; synchronization bettween them all. =A0That also may be done throu=
-gh a flag<br>
-&gt; &gt; in struct platform_device IMO.<br>
-&gt; <br>
-&gt; Yeah, that's also one way. I wonder if that helps us though, I feel<br>
-&gt; that we already have a pretty wide range of callbacks in dev_pm_ops.<b=
-r>
-&gt; I'm not sure if they cover all cases we need though, I guess future<br>
-&gt; experiments will tell.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Yes.  Still, we can anticipate that the run-time PM o=
-perations may be slightly<br>
-different from the 'sleep state' PM ones, in which case it makes sens to<br>
-introduce new callbacks, because that makes it clear(er) what the code is<b=
-r>
-supposed to do.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; &gt; Now, since other bus types will most probab=
-ly also need a flag in their<br>
-&gt; &gt; _device structures, it may be worth putting it into struct device=
- (we've<br>
-&gt; &gt; discsussed that already).<br>
-&gt; <br>
-&gt; Yeah, I wonder if a single flag is enough though? Aren't we coexisting=
-<br>
-&gt; with CONFIG_SUSPEND, CONFIG_HIBERNATION and CONFIG_KEXEC_JUMP?<br>
-&gt; <br>
-&gt; &gt; I'm not sure which of (1) - (3) are the most suitable for the pla=
-tform bus<br>
-&gt; &gt; type. =A0For PCI I'd probably choose (2), because the current PCI=
- bus type's<br>
-&gt; &gt; dev_pm_ops callbacks are tailored to system-wide power transition=
-s.<br>
-&gt; &gt; Moreover, PCI devices can generally be put first into D1, then in=
-to D2 and<br>
-&gt; &gt; finally into D3, which only makes sense at run time, and some of =
-them may<br>
-&gt; &gt; have to be put back into the full power state before a system-wid=
-e transition<br>
-&gt; &gt; (apparently, we'll need a separate flag to mark such devices).<br>
-&gt; <br>
-&gt; If I understand (1)-(3) correctly, then I think (1) is probably the<br>
-&gt; best choice for our platform devices.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>OK, for _your_ platform devices it may be the best ch=
-oice, but what about<br>
-the other platforms' platform devices?  Do you think (1) will be suitable f=
-or<br>
-them all and if so then why?<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; I guess (2) is not very far from (1), so if we g=
-o with (1) to begin with<br>
-&gt; then we can deal with SoC specific things in our arch code to come clo=
-ser to<br>
-&gt; (2) over time if needed.<br>
-&gt; <br>
-&gt; &gt; Of course, if you decide to add separate run-time PM callbacks fo=
-r the<br>
-&gt; &gt; platform bus type, you won't need to wrap its dev_pm_ops callback=
-s any more,<br>
-&gt; &gt; but you'll need to modify them to check the appropriate flag(s). =
-=A0For example,<br>
-&gt; &gt; you may choose to use a two-bit pm_suspend_level field such that<=
-br>
-&gt; &gt;<br>
-&gt; &gt; * if pm_suspend_level =3D 1, platform_pm_prepare() will return im=
-mediately<br>
-&gt; &gt; * if pm_suspend_level =3D 2, platform_pm_prepare() and platform_p=
-m_suspend()<br>
-&gt; &gt; =A0will return immediately<br>
-&gt; &gt; * if pm_suspend_level =3D 3, platform_pm_prepare(), platform_pm_s=
-uspend()<br>
-&gt; &gt; =A0and platform_pm_suspend_noirq() will return immediately<br>
-&gt; &gt;<br>
-&gt; &gt; (and analogously for the hibernation callbacks) and make your run=
-=2Dtime PM<br>
-&gt; &gt; callbacks set this field appropriately.<br>
-&gt; <br>
-&gt; That is true, but this checking is not needed for systems where<br>
-&gt; runtime PM is disabled.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>No, it is not, but it won't hurt really.  Also, if we=
- do it intelligently, we<br>
-can make the compiler optimize out the checks.  I'm not really sure it's wo=
-rth<br>
-the effort, however.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>&gt; Or am I misunderstanding?<br>
-&gt;<br>
-&gt; Maybe it's worth to discuss how to integrate this. I suspect that this=
-<br>
-&gt; will only affect some selected architectures to begin with, and the<br>
-&gt; rest of the code base should be unaffected by this change as long as<b=
-r>
-&gt; the runtime kconfig is disabled.<br>
-&gt; <br>
-&gt; So I decided to wrap dev_pm_ops to make the impact for non runtime PM<=
-br>
-&gt; systems as small as possible. This while giving the runtime PM case<br>
-&gt; access to all dev_pm_ops regardless of suspend/hibernation kconfig.<br>
-&gt; <br>
-&gt; Does it make sense?<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Well, as I said above, I don't really think that run-=
-time PM is going to need<br>
-all of the callbacks from dev_pm_ops.  Moreover, I'm not sure if it makes<b=
-r>
-sense to have more than two (call it 'autosuspend' and 'autoresume' using t=
-he<br>
-already existing USB terminology) callbacks for run-time PM, at least at<br>
-the driver level.<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p>Best,<br>
+&gt; What I haven't noticed before is, that even if the trackpad already<br>
+&gt; disappeared, an additional suspend-resume cycle from the console brought<br>
+&gt; it back to life every time. Sometimes this worked from within X as well,<br>
+&gt; just not with such a high probability as from the console.<br>
+&gt; However, this is independent from 'sleepy_trackpad = 1'. <br>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p>OK, the patch is below, but I haven't had the opportunity to test it yet.<br>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p>Can you please check if it helps, on top of 2.6.30-rc8?<br>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p>Best,<br>
 Rafael<br>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"><br></p></td></tr></table></body></html>
---Boundary-00=_oakJK/Dtt/KqS4+--
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p>---<br>
+ kernel/irq/manage.c |   12 ++++++++----<br>
+ 1 file changed, 8 insertions(+), 4 deletions(-)<br>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p>Index: linux-2.6/kernel/irq/manage.c<br>
+===================================================================<br>
+--- linux-2.6.orig/kernel/irq/manage.c<br>
++++ linux-2.6/kernel/irq/manage.c<br>
+@@ -187,9 +187,9 @@ static inline int setup_affinity(unsigne<br>
+ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)<br>
+ {<br>
+ 	if (suspend) {<br>
+-		if (!desc-&gt;action || (desc-&gt;action-&gt;flags &amp; IRQF_TIMER))<br>
+-			return;<br>
+-		desc-&gt;status |= IRQ_SUSPENDED;<br>
++		if (desc-&gt;action &amp;&amp; !(desc-&gt;action-&gt;flags &amp; IRQF_TIMER))<br>
++			desc-&gt;status |= IRQ_SUSPENDED | IRQ_DISABLED;<br>
++		return;<br>
+ 	}<br>
+ <br>
+ 	if (!desc-&gt;depth++) {<br>
+@@ -250,8 +250,12 @@ EXPORT_SYMBOL(disable_irq);<br>
+ <br>
+ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)<br>
+ {<br>
+-	if (resume)<br>
++	if (resume) {<br>
+ 		desc-&gt;status &amp;= ~IRQ_SUSPENDED;<br>
++		if (!desc-&gt;depth)<br>
++			desc-&gt;status &amp;= ~IRQ_DISABLED;<br>
++		return;<br>
++	}<br>
+ <br>
+ 	switch (desc-&gt;depth) {<br>
+ 	case 0:<br>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br></p></td></tr></table></body></html>
+--Boundary-00=_0okJKc/9VHWl7sL--
 
---===============5132405030438232600==
+--===============4052088718061590868==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============5132405030438232600==--
+--===============4052088718061590868==--
