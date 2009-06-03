@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/04] Driver Core: Add idle and wakeup
-	functions
-Date: Wed, 3 Jun 2009 11:05:21 +0200
-Message-ID: <200906031105.21977.rjw__25634.9550946199$1244019979$gmane$org@sisk.pl>
-References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
-	<200905282329.09804.rjw@sisk.pl>
-	<aec7e5c30905282210h23f0edc0vad4e29dd52c2e99c@mail.gmail.com>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: [PATCH 1/4] cgroup freezer: Fix buggy resume test for
+	tasks frozen with cgroup freezer
+Date: Wed,  3 Jun 2009 02:31:18 -0700
+Message-ID: <91260d5797bcf233ca54c7b41da8278e99b4ca66.1244019829.git.matthltc__8987.04962241954$1244021877$gmane$org@us.ibm.com>
+References: <cover.1244019829.git.matthltc@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30905282210h23f0edc0vad4e29dd52c2e99c@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <cover.1244019829.git.matthltc@us.ibm.com>
+In-Reply-To: <cover.1244019829.git.matthltc@us.ibm.com>
+References: <cover.1244019829.git.matthltc@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,52 +20,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+Cc: Cedric Le Goater <legoater@free.fr>, Oren Laadan <orenl@cs.columbia.edu>, Containers <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, Pavel Machek <pavel@suse.cz>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 29 May 2009, Magnus Damm wrote:
-> 2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday 27 May 2009, Magnus Damm wrote:
-> >> From: Magnus Damm <damm@igel.co.jp>
-> >>
-> >> Add platform_device_idle() and platform_device_wakeup()
-> >> and allow architectures to implement their own versions
-> >> of these if CONFIG_HAVE_PLATFORM_IDLE_WAKEUP is set.
-> >>
-> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> >> ---
-> >>
-> >>  Yes, this needs documentation. See [00/04] for now.
-> >>
-> >>  arch/Kconfig                    |    3 +++
-> >>  include/linux/platform_device.h |    8 ++++++++
-> >>  2 files changed, 11 insertions(+)
-> >>
-> >> --- 0002/arch/Kconfig
-> >> +++ work/arch/Kconfig 2009-05-26 12:31:06.000000000 +0900
-> >> @@ -115,3 +115,6 @@ config HAVE_DEFAULT_NO_SPIN_MUTEXES
-> >>
-> >>  config HAVE_PLATFORM_DEVICE_ARCHDATA
-> >>       bool
-> >> +
-> >> +config HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
-> >
-> > Again, I'm not sure if the new CONFIG_ option is really necessary.
-> 
-> At least it could be combined into a single option for platform device
-> runtime pm. So no need to have separate kconfig options for [02/04]
-> and [03/04].
-> 
-> We could also drop the #ifdef stuff and go for weak symbols that can
-> be overriden by architecture code.
+When the cgroup freezer is used to freeze tasks we do not want to thaw
+those tasks during resume. Currently we test the cgroup freezer
+state of the resuming tasks to see if the cgroup is FROZEN.  If so
+then we don't thaw the task. However, the FREEZING state also indicates
+that the task should remain frozen.
 
-The weak symbols don't work really AFAICS.  People have been replacing them
-with alternative things recently.
+This also avoids a problem pointed out by Oren Ladaan: the freezer state
+transition from FREEZING to FROZEN is updated lazily when userspace reads
+or writes the freezer.state file in the cgroup filesystem. This means that
+resume will thaw tasks in cgroups which should be in the FROZEN state if
+there is no read/write of the freezer.state file to trigger this
+transition before suspend.
 
-> I'm open to suggestions. =)
+NOTE: Another "simple" solution would be to always update the cgroup
+freezer state during resume. However it's a bad choice for several reasons:
+Updating the cgroup freezer state is somewhat expensive because it requires
+walking all the tasks in the cgroup and checking if they are each frozen.
+Worse, this could easily make resume run in N^2 time where N is the number
+of tasks in the cgroup. Finally, updating the freezer state from this code
+path requires trickier locking because of the way locks must be ordered.
 
-Well, that depends on what exactly you want to achieve. :-)
+Instead of updating the freezer state we rely on the fact that lazy
+updates only manage the transition from FREEZING to FROZEN. We know that
+a cgroup with the FREEZING state may actually be FROZEN so test for that
+state too. This makes sense in the resume path even for partially-frozen
+cgroups -- those that really are FREEZING but not FROZEN.
 
-Best,
-Rafael
+Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+Cc: Cedric Le Goater <legoater@free.fr>
+Cc: Paul Menage <menage@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org
+
+Seems like a candidate for -stable.
+---
+ include/linux/freezer.h |    7 +++++--
+ kernel/cgroup_freezer.c |    9 ++++++---
+ kernel/power/process.c  |    2 +-
+ 3 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 5a361f8..da7e52b 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -64,9 +64,12 @@ extern bool freeze_task(struct task_struct *p, bool sig_only);
+ extern void cancel_freezing(struct task_struct *p);
+ 
+ #ifdef CONFIG_CGROUP_FREEZER
+-extern int cgroup_frozen(struct task_struct *task);
++extern int cgroup_freezing_or_frozen(struct task_struct *task);
+ #else /* !CONFIG_CGROUP_FREEZER */
+-static inline int cgroup_frozen(struct task_struct *task) { return 0; }
++static inline int cgroup_freezing_or_frozen(struct task_struct *task)
++{
++	return 0;
++}
+ #endif /* !CONFIG_CGROUP_FREEZER */
+ 
+ /*
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index fb249e2..765e2c1 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -47,17 +47,20 @@ static inline struct freezer *task_freezer(struct task_struct *task)
+ 			    struct freezer, css);
+ }
+ 
+-int cgroup_frozen(struct task_struct *task)
++int cgroup_freezing_or_frozen(struct task_struct *task)
+ {
+ 	struct freezer *freezer;
+ 	enum freezer_state state;
+ 
+ 	task_lock(task);
+ 	freezer = task_freezer(task);
+-	state = freezer->state;
++	if (!freezer->css.cgroup->parent)
++		state = CGROUP_THAWED; /* root cgroup can't be frozen */
++	else
++		state = freezer->state;
+ 	task_unlock(task);
+ 
+-	return state == CGROUP_FROZEN;
++	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
+ }
+ 
+ /*
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index ca63401..2c64932 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -135,7 +135,7 @@ static void thaw_tasks(bool nosig_only)
+ 		if (nosig_only && should_send_signal(p))
+ 			continue;
+ 
+-		if (cgroup_frozen(p))
++		if (cgroup_freezing_or_frozen(p))
+ 			continue;
+ 
+ 		thaw_process(p);
+-- 
+1.5.6.3
