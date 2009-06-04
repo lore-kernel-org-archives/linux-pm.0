@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 25/38] pm: tape power management callbacks
-Date: Thu, 04 Jun 2009 18:19:12 +0200
-Message-ID: <20090604161905.585166832__26622.6615327925$1244140449$gmane$org@de.ibm.com>
+Subject: [patch 28/38] pm: iucv power management callbacks.
+Date: Thu, 04 Jun 2009 18:19:15 +0200
+Message-ID: <20090604161906.308867517__9011.34595410458$1244140650$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_tape.patch
+Content-Disposition: inline; filename=pm_iucv.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,160 +18,258 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Frank Munzert <munzert@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Ursula Braun <ursula.braun@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frank Munzert <munzert@de.ibm.com>
+From: Ursula Braun <ursula.braun@de.ibm.com>
 
-Signed-off-by: Frank Munzert <munzert@de.ibm.com>
+Patch calls the PM callback functions of iucv-bus devices, which are
+responsible for removal of their established iucv pathes.
+
+The PM freeze callback for the first iucv-bus device disables all iucv 
+interrupts except the connection severed interrupt.
+The PM freeze callback for the last iucv-bus device shuts down iucv.
+
+The PM thaw callback for the first iucv-bus device re-enables iucv
+if it has been shut down during freeze. If freezing has been interrupted,
+it re-enables iucv interrupts according to the needs of iucv-exploiters.
+
+The PM restore callback for the first iucv-bus device re-enables iucv.
+
+Signed-off-by: Ursula Braun <ursula.braun@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/char/tape.h      |    3 +-
- drivers/s390/char/tape_34xx.c |    3 +-
- drivers/s390/char/tape_3590.c |    3 +-
- drivers/s390/char/tape_core.c |   52 +++++++++++++++++++++++++++++++++++++++++-
- 4 files changed, 57 insertions(+), 4 deletions(-)
+ net/iucv/iucv.c |  179 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 179 insertions(+)
 
-Index: linux-2.6/drivers/s390/char/tape.h
+Index: linux-2.6/net/iucv/iucv.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/char/tape.h
-+++ linux-2.6/drivers/s390/char/tape.h
-@@ -3,7 +3,7 @@
-  *    tape device driver for 3480/3490E/3590 tapes.
+--- linux-2.6.orig/net/iucv/iucv.c
++++ linux-2.6/net/iucv/iucv.c
+@@ -11,6 +11,8 @@
+  *	Fritz Elfert (elfert@de.ibm.com, felfert@millenux.com)
+  *    Rewritten for af_iucv:
+  *	Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *    PM functions:
++ *	Ursula Braun (ursula.braun@de.ibm.com)
   *
-  *  S390 and zSeries version
-- *    Copyright IBM Corp. 2001,2006
-+ *    Copyright IBM Corp. 2001, 2009
-  *    Author(s): Carsten Otte <cotte@de.ibm.com>
-  *		 Tuan Ngo-Anh <ngoanh@de.ibm.com>
-  *		 Martin Schwidefsky <schwidefsky@de.ibm.com>
-@@ -286,6 +286,7 @@ extern void tape_state_set(struct tape_d
- 
- extern int tape_generic_online(struct tape_device *, struct tape_discipline *);
- extern int tape_generic_offline(struct ccw_device *);
-+extern int tape_generic_pm_suspend(struct ccw_device *);
- 
- /* Externals from tape_devmap.c */
- extern int tape_generic_probe(struct ccw_device *);
-Index: linux-2.6/drivers/s390/char/tape_34xx.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/tape_34xx.c
-+++ linux-2.6/drivers/s390/char/tape_34xx.c
-@@ -2,7 +2,7 @@
-  *  drivers/s390/char/tape_34xx.c
-  *    tape device discipline for 3480/3490 tapes.
-  *
-- *    Copyright (C) IBM Corp. 2001,2006
-+ *    Copyright IBM Corp. 2001, 2009
-  *    Author(s): Carsten Otte <cotte@de.ibm.com>
-  *		 Tuan Ngo-Anh <ngoanh@de.ibm.com>
-  *		 Martin Schwidefsky <schwidefsky@de.ibm.com>
-@@ -1302,6 +1302,7 @@ static struct ccw_driver tape_34xx_drive
- 	.remove = tape_generic_remove,
- 	.set_online = tape_34xx_online,
- 	.set_offline = tape_generic_offline,
-+	.freeze = tape_generic_pm_suspend,
- };
- 
- static int
-Index: linux-2.6/drivers/s390/char/tape_3590.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/tape_3590.c
-+++ linux-2.6/drivers/s390/char/tape_3590.c
-@@ -2,7 +2,7 @@
-  *  drivers/s390/char/tape_3590.c
-  *    tape device discipline for 3590 tapes.
-  *
-- *    Copyright IBM Corp. 2001,2006
-+ *    Copyright IBM Corp. 2001, 2009
-  *    Author(s): Stefan Bader <shbader@de.ibm.com>
-  *		 Michael Holzheu <holzheu@de.ibm.com>
-  *		 Martin Schwidefsky <schwidefsky@de.ibm.com>
-@@ -1715,6 +1715,7 @@ static struct ccw_driver tape_3590_drive
- 	.remove = tape_generic_remove,
- 	.set_offline = tape_generic_offline,
- 	.set_online = tape_3590_online,
-+	.freeze = tape_generic_pm_suspend,
- };
- 
- /*
-Index: linux-2.6/drivers/s390/char/tape_core.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/tape_core.c
-+++ linux-2.6/drivers/s390/char/tape_core.c
-@@ -3,7 +3,7 @@
-  *    basic function of the tape device driver
-  *
-  *  S390 and zSeries version
-- *    Copyright IBM Corp. 2001,2006
-+ *    Copyright IBM Corp. 2001, 2009
-  *    Author(s): Carsten Otte <cotte@de.ibm.com>
-  *		 Michael Holzheu <holzheu@de.ibm.com>
-  *		 Tuan Ngo-Anh <ngoanh@de.ibm.com>
-@@ -380,6 +380,55 @@ tape_cleanup_device(struct tape_device *
+  * Documentation used:
+  *    The original source
+@@ -77,9 +79,24 @@ static int iucv_bus_match(struct device 
+ 	return 0;
  }
  
++static int iucv_pm_prepare(struct device *);
++static void iucv_pm_complete(struct device *);
++static int iucv_pm_freeze(struct device *);
++static int iucv_pm_thaw(struct device *);
++static int iucv_pm_restore(struct device *);
++
++static struct dev_pm_ops iucv_pm_ops = {
++	.prepare = iucv_pm_prepare,
++	.complete = iucv_pm_complete,
++	.freeze = iucv_pm_freeze,
++	.thaw = iucv_pm_thaw,
++	.restore = iucv_pm_restore,
++};
++
+ struct bus_type iucv_bus = {
+ 	.name = "iucv",
+ 	.match = iucv_bus_match,
++	.pm = &iucv_pm_ops,
+ };
+ EXPORT_SYMBOL(iucv_bus);
+ 
+@@ -149,6 +166,7 @@ enum iucv_command_codes {
+ 	IUCV_RESUME = 14,
+ 	IUCV_SEVER = 15,
+ 	IUCV_SETMASK = 16,
++	IUCV_SETCONTROLMASK = 17,
+ };
+ 
  /*
-+ * Suspend device.
+@@ -366,6 +384,18 @@ static void iucv_allow_cpu(void *data)
+ 	parm->set_mask.ipmask = 0xf8;
+ 	iucv_call_b2f0(IUCV_SETMASK, parm);
+ 
++	/*
++	 * Enable all iucv control interrupts.
++	 * ipmask contains bits for the different interrupts
++	 *	0x80 - Flag to allow pending connections interrupts
++	 *	0x40 - Flag to allow connection complete interrupts
++	 *	0x20 - Flag to allow connection severed interrupts
++	 *	0x10 - Flag to allow connection quiesced interrupts
++	 *	0x08 - Flag to allow connection resumed interrupts
++	 */
++	memset(parm, 0, sizeof(union iucv_param));
++	parm->set_mask.ipmask = 0xf8;
++	iucv_call_b2f0(IUCV_SETCONTROLMASK, parm);
+ 	/* Set indication that iucv interrupts are allowed for this cpu. */
+ 	cpu_set(cpu, iucv_irq_cpumask);
+ }
+@@ -391,6 +421,31 @@ static void iucv_block_cpu(void *data)
+ }
+ 
+ /**
++ * iucv_block_cpu_almost
++ * @data: unused
 + *
-+ * Called by the common I/O layer if the drive should be suspended on user
-+ * request. We refuse to suspend if the device is loaded or in use for the
-+ * following reason:
-+ * While the Linux guest is suspended, it might be logged off which causes
-+ * devices to be detached. Tape devices are automatically rewound and unloaded
-+ * during DETACH processing (unless the tape device was attached with the
-+ * NOASSIGN or MULTIUSER option). After rewind/unload, there is no way to
-+ * resume the original state of the tape device, since we would need to
-+ * manually re-load the cartridge which was active at suspend time.
++ * Allow connection-severed interrupts only on this cpu.
 + */
-+int tape_generic_pm_suspend(struct ccw_device *cdev)
++static void iucv_block_cpu_almost(void *data)
 +{
-+	struct tape_device *device;
++	int cpu = smp_processor_id();
++	union iucv_param *parm;
 +
-+	device = cdev->dev.driver_data;
-+	if (!device) {
-+		return -ENODEV;
-+	}
++	/* Allow iucv control interrupts only */
++	parm = iucv_param_irq[cpu];
++	memset(parm, 0, sizeof(union iucv_param));
++	parm->set_mask.ipmask = 0x08;
++	iucv_call_b2f0(IUCV_SETMASK, parm);
++	/* Allow iucv-severed interrupt only */
++	memset(parm, 0, sizeof(union iucv_param));
++	parm->set_mask.ipmask = 0x20;
++	iucv_call_b2f0(IUCV_SETCONTROLMASK, parm);
 +
-+	DBF_LH(3, "(%08x): tape_generic_pm_suspend(%p)\n",
-+		device->cdev_id, device);
-+
-+	if (device->medium_state != MS_UNLOADED) {
-+		pr_err("A cartridge is loaded in tape device %s, "
-+		       "refusing to suspend\n", dev_name(&cdev->dev));
-+		return -EBUSY;
-+	}
-+
-+	spin_lock_irq(get_ccwdev_lock(device->cdev));
-+	switch (device->tape_state) {
-+		case TS_INIT:
-+		case TS_NOT_OPER:
-+		case TS_UNUSED:
-+			spin_unlock_irq(get_ccwdev_lock(device->cdev));
-+			break;
-+		default:
-+			pr_err("Tape device %s is busy, refusing to "
-+			       "suspend\n", dev_name(&cdev->dev));
-+			spin_unlock_irq(get_ccwdev_lock(device->cdev));
-+			return -EBUSY;
-+	}
-+
-+	DBF_LH(3, "(%08x): Drive suspended.\n", device->cdev_id);
-+	return 0;
++	/* Clear indication that iucv interrupts are allowed for this cpu. */
++	cpu_clear(cpu, iucv_irq_cpumask);
 +}
 +
-+/*
-  * Set device offline.
++/**
+  * iucv_declare_cpu
+  * @data: unused
   *
-  * Called by the common I/O layer if the drive should set offline on user
-@@ -1273,6 +1322,7 @@ EXPORT_SYMBOL(tape_generic_remove);
- EXPORT_SYMBOL(tape_generic_probe);
- EXPORT_SYMBOL(tape_generic_online);
- EXPORT_SYMBOL(tape_generic_offline);
-+EXPORT_SYMBOL(tape_generic_pm_suspend);
- EXPORT_SYMBOL(tape_put_device);
- EXPORT_SYMBOL(tape_get_device_reference);
- EXPORT_SYMBOL(tape_state_verbose);
+@@ -1764,6 +1819,130 @@ static void iucv_external_interrupt(u16 
+ 	spin_unlock(&iucv_queue_lock);
+ }
+ 
++static int iucv_pm_prepare(struct device *dev)
++{
++	int rc = 0;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_INFO "iucv_pm_prepare\n");
++#endif
++	if (dev->driver && dev->driver->pm && dev->driver->pm->prepare)
++		rc = dev->driver->pm->prepare(dev);
++	return rc;
++}
++
++static void iucv_pm_complete(struct device *dev)
++{
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_INFO "iucv_pm_complete\n");
++#endif
++	if (dev->driver && dev->driver->pm && dev->driver->pm->complete)
++		dev->driver->pm->complete(dev);
++}
++
++/**
++ * iucv_path_table_empty() - determine if iucv path table is empty
++ *
++ * Returns 0 if there are still iucv pathes defined
++ *         1 if there are no iucv pathes defined
++ */
++int iucv_path_table_empty(void)
++{
++	int i;
++
++	for (i = 0; i < iucv_max_pathid; i++) {
++		if (iucv_path_table[i])
++			return 0;
++	}
++	return 1;
++}
++
++/**
++ * iucv_pm_freeze() - Freeze PM callback
++ * @dev:	iucv-based device
++ *
++ * disable iucv interrupts
++ * invoke callback function of the iucv-based driver
++ * shut down iucv, if no iucv-pathes are established anymore
++ */
++static int iucv_pm_freeze(struct device *dev)
++{
++	int cpu;
++	int rc = 0;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "iucv_pm_freeze\n");
++#endif
++	for_each_cpu_mask_nr(cpu, iucv_irq_cpumask)
++		smp_call_function_single(cpu, iucv_block_cpu_almost, NULL, 1);
++	if (dev->driver && dev->driver->pm && dev->driver->pm->freeze)
++		rc = dev->driver->pm->freeze(dev);
++	if (iucv_path_table_empty())
++		iucv_disable();
++	return rc;
++}
++
++/**
++ * iucv_pm_thaw() - Thaw PM callback
++ * @dev:	iucv-based device
++ *
++ * make iucv ready for use again: allocate path table, declare interrupt buffers
++ *				  and enable iucv interrupts
++ * invoke callback function of the iucv-based driver
++ */
++static int iucv_pm_thaw(struct device *dev)
++{
++	int rc = 0;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "iucv_pm_thaw\n");
++#endif
++	if (!iucv_path_table) {
++		rc = iucv_enable();
++		if (rc)
++			goto out;
++	}
++	if (cpus_empty(iucv_irq_cpumask)) {
++		if (iucv_nonsmp_handler)
++			/* enable interrupts on one cpu */
++			iucv_allow_cpu(NULL);
++		else
++			/* enable interrupts on all cpus */
++			iucv_setmask_mp();
++	}
++	if (dev->driver && dev->driver->pm && dev->driver->pm->thaw)
++		rc = dev->driver->pm->thaw(dev);
++out:
++	return rc;
++}
++
++/**
++ * iucv_pm_restore() - Restore PM callback
++ * @dev:	iucv-based device
++ *
++ * make iucv ready for use again: allocate path table, declare interrupt buffers
++ *				  and enable iucv interrupts
++ * invoke callback function of the iucv-based driver
++ */
++static int iucv_pm_restore(struct device *dev)
++{
++	int rc = 0;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "iucv_pm_restore %p\n", iucv_path_table);
++#endif
++	if (cpus_empty(iucv_irq_cpumask)) {
++		rc = iucv_query_maxconn();
++		rc = iucv_enable();
++		if (rc)
++			goto out;
++	}
++	if (dev->driver && dev->driver->pm && dev->driver->pm->restore)
++		rc = dev->driver->pm->restore(dev);
++out:
++	return rc;
++}
++
+ /**
+  * iucv_init
+  *
 
 -- 
 blue skies,
