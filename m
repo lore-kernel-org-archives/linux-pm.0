@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 17/38] pm: qeth driver power management callbacks
-Date: Thu, 04 Jun 2009 18:19:04 +0200
-Message-ID: <20090604161903.508924779__9413.15723252973$1244141385$gmane$org@de.ibm.com>
+Subject: [patch 36/38] pm: monreader power management callbacks.
+Date: Thu, 04 Jun 2009 18:19:23 +0200
+Message-ID: <20090604161908.288290620__34770.9269183271$1244141524$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_qeth.patch
+Content-Disposition: inline; filename=pm_monreader.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,247 +18,243 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Frank Blaschka <frank.blaschka@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frank Blaschka <frank.blaschka@de.ibm.com>
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-Signed-off-by: Frank Blaschka <frank.blaschka@de.ibm.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/net/qeth_core_main.c |   51 ++++++++++++++++++++++++++++++++++++-
- drivers/s390/net/qeth_l2_main.c   |   52 +++++++++++++++++++++++++++++++++++++-
- drivers/s390/net/qeth_l3_main.c   |   52 +++++++++++++++++++++++++++++++++++++-
- 3 files changed, 152 insertions(+), 3 deletions(-)
+ drivers/s390/char/monreader.c |  140 ++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 128 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/drivers/s390/net/qeth_core_main.c
+Index: linux-2.6/drivers/s390/char/monreader.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/net/qeth_core_main.c
-+++ linux-2.6/drivers/s390/net/qeth_core_main.c
-@@ -1,7 +1,7 @@
+--- linux-2.6.orig/drivers/s390/char/monreader.c
++++ linux-2.6/drivers/s390/char/monreader.c
+@@ -1,10 +1,9 @@
  /*
-  *  drivers/s390/net/qeth_core_main.c
+- * drivers/s390/char/monreader.c
+- *
+  * Character device driver for reading z/VM *MONITOR service records.
   *
-- *    Copyright IBM Corp. 2007
-+ *    Copyright IBM Corp. 2007, 2009
-  *    Author(s): Utz Bacher <utz.bacher@de.ibm.com>,
-  *		 Frank Pavlic <fpavlic@de.ibm.com>,
-  *		 Thomas Spatzier <tspat@de.ibm.com>,
-@@ -4192,6 +4192,50 @@ static void qeth_core_shutdown(struct cc
- 		card->discipline.ccwgdriver->shutdown(gdev);
- }
+- *   Copyright IBM Corp. 2004, 2008
+- *   Author: Gerald Schaefer <gerald.schaefer@de.ibm.com>
++ * Copyright IBM Corp. 2004, 2009
++ *
++ * Author: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+  */
  
-+static int qeth_core_prepare(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	if (card->discipline.ccwgdriver &&
-+	    card->discipline.ccwgdriver->prepare)
-+		return card->discipline.ccwgdriver->prepare(gdev);
-+	return 0;
-+}
-+
-+static void qeth_core_complete(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	if (card->discipline.ccwgdriver &&
-+	    card->discipline.ccwgdriver->complete)
-+		card->discipline.ccwgdriver->complete(gdev);
-+}
-+
-+static int qeth_core_freeze(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	if (card->discipline.ccwgdriver &&
-+	    card->discipline.ccwgdriver->freeze)
-+		return card->discipline.ccwgdriver->freeze(gdev);
-+	return 0;
-+}
-+
-+static int qeth_core_thaw(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	if (card->discipline.ccwgdriver &&
-+	    card->discipline.ccwgdriver->thaw)
-+		return card->discipline.ccwgdriver->thaw(gdev);
-+	return 0;
-+}
-+
-+static int qeth_core_restore(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	if (card->discipline.ccwgdriver &&
-+	    card->discipline.ccwgdriver->restore)
-+		return card->discipline.ccwgdriver->restore(gdev);
-+	return 0;
-+}
-+
- static struct ccwgroup_driver qeth_core_ccwgroup_driver = {
- 	.owner = THIS_MODULE,
- 	.name = "qeth",
-@@ -4201,6 +4245,11 @@ static struct ccwgroup_driver qeth_core_
- 	.set_online = qeth_core_set_online,
- 	.set_offline = qeth_core_set_offline,
- 	.shutdown = qeth_core_shutdown,
-+	.prepare = qeth_core_prepare,
-+	.complete = qeth_core_complete,
-+	.freeze = qeth_core_freeze,
-+	.thaw = qeth_core_thaw,
-+	.restore = qeth_core_restore,
+ #define KMSG_COMPONENT "monreader"
+@@ -22,6 +21,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+ #include <linux/poll.h>
++#include <linux/device.h>
+ #include <net/iucv/iucv.h>
+ #include <asm/uaccess.h>
+ #include <asm/ebcdic.h>
+@@ -78,6 +78,7 @@ static u8 user_data_sever[16] = {
+ 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
  };
  
- static ssize_t
-Index: linux-2.6/drivers/s390/net/qeth_l3_main.c
-===================================================================
---- linux-2.6.orig/drivers/s390/net/qeth_l3_main.c
-+++ linux-2.6/drivers/s390/net/qeth_l3_main.c
-@@ -1,7 +1,7 @@
- /*
-  *  drivers/s390/net/qeth_l3_main.c
-  *
-- *    Copyright IBM Corp. 2007
-+ *    Copyright IBM Corp. 2007, 2009
-  *    Author(s): Utz Bacher <utz.bacher@de.ibm.com>,
-  *		 Frank Pavlic <fpavlic@de.ibm.com>,
-  *		 Thomas Spatzier <tspat@de.ibm.com>,
-@@ -3274,12 +3274,62 @@ static void qeth_l3_shutdown(struct ccwg
- 	qeth_clear_qdio_buffers(card);
- }
++static struct device *monreader_device;
  
-+static int qeth_l3_pm_suspend(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
+ /******************************************************************************
+  *                             helper functions                               *
+@@ -319,11 +320,12 @@ static int mon_open(struct inode *inode,
+ 		goto out_path;
+ 	}
+ 	filp->private_data = monpriv;
++	monreader_device->driver_data = monpriv;
+ 	unlock_kernel();
+ 	return nonseekable_open(inode, filp);
+ 
+ out_path:
+-	kfree(monpriv->path);
++	iucv_path_free(monpriv->path);
+ out_priv:
+ 	mon_free_mem(monpriv);
+ out_use:
+@@ -341,10 +343,13 @@ static int mon_close(struct inode *inode
+ 	/*
+ 	 * Close IUCV connection and unregister
+ 	 */
+-	rc = iucv_path_sever(monpriv->path, user_data_sever);
+-	if (rc)
+-		pr_warning("Disconnecting the z/VM *MONITOR system service "
+-			   "failed with rc=%i\n", rc);
++	if (monpriv->path) {
++		rc = iucv_path_sever(monpriv->path, user_data_sever);
++		if (rc)
++			pr_warning("Disconnecting the z/VM *MONITOR system "
++				   "service failed with rc=%i\n", rc);
++		iucv_path_free(monpriv->path);
++	}
+ 
+ 	atomic_set(&monpriv->iucv_severed, 0);
+ 	atomic_set(&monpriv->iucv_connected, 0);
+@@ -452,6 +457,94 @@ static struct miscdevice mon_dev = {
+ 	.minor      = MISC_DYNAMIC_MINOR,
+ };
+ 
 +
-+	if (card->dev)
-+		netif_device_detach(card->dev);
-+	qeth_set_allowed_threads(card, 0, 1);
-+	wait_event(card->wait_q, qeth_threads_running(card, 0xffffffff) == 0);
-+	if (gdev->state == CCWGROUP_OFFLINE)
++/******************************************************************************
++ *                              suspend / resume                              *
++ *****************************************************************************/
++static int monreader_freeze(struct device *dev)
++{
++	struct mon_private *monpriv = dev->driver_data;
++	int rc;
++
++	if (!monpriv)
 +		return 0;
-+	if (card->state == CARD_STATE_UP) {
-+		card->use_hard_stop = 1;
-+		__qeth_l3_set_offline(card->gdev, 1);
-+	} else
-+		__qeth_l3_set_offline(card->gdev, 0);
++	if (monpriv->path) {
++		rc = iucv_path_sever(monpriv->path, user_data_sever);
++		if (rc)
++			pr_warning("Disconnecting the z/VM *MONITOR system "
++				   "service failed with rc=%i\n", rc);
++		iucv_path_free(monpriv->path);
++	}
++	atomic_set(&monpriv->iucv_severed, 0);
++	atomic_set(&monpriv->iucv_connected, 0);
++	atomic_set(&monpriv->read_ready, 0);
++	atomic_set(&monpriv->msglim_count, 0);
++	monpriv->write_index  = 0;
++	monpriv->read_index   = 0;
++	monpriv->path = NULL;
 +	return 0;
 +}
 +
-+static int qeth_l3_pm_resume(struct ccwgroup_device *gdev)
++static int monreader_thaw(struct device *dev)
 +{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	int rc = 0;
++	struct mon_private *monpriv = dev->driver_data;
++	int rc;
 +
-+	if (gdev->state == CCWGROUP_OFFLINE)
++	if (!monpriv)
++		return 0;
++	rc = -ENOMEM;
++	monpriv->path = iucv_path_alloc(MON_MSGLIM, IUCV_IPRMDATA, GFP_KERNEL);
++	if (!monpriv->path)
 +		goto out;
-+
-+	if (card->state == CARD_STATE_RECOVER) {
-+		rc = __qeth_l3_set_online(card->gdev, 1);
-+		if (rc) {
-+			if (card->dev) {
-+				rtnl_lock();
-+				dev_close(card->dev);
-+				rtnl_unlock();
-+			}
-+		}
-+	} else
-+		rc = __qeth_l3_set_online(card->gdev, 0);
++	rc = iucv_path_connect(monpriv->path, &monreader_iucv_handler,
++			       MON_SERVICE, NULL, user_data_connect, monpriv);
++	if (rc) {
++		pr_err("Connecting to the z/VM *MONITOR system service "
++		       "failed with rc=%i\n", rc);
++		goto out_path;
++	}
++	wait_event(mon_conn_wait_queue,
++		   atomic_read(&monpriv->iucv_connected) ||
++		   atomic_read(&monpriv->iucv_severed));
++	if (atomic_read(&monpriv->iucv_severed))
++		goto out_path;
++	return 0;
++out_path:
++	rc = -EIO;
++	iucv_path_free(monpriv->path);
++	monpriv->path = NULL;
 +out:
-+	qeth_set_allowed_threads(card, 0xffffffff, 0);
-+	if (card->dev)
-+		netif_device_attach(card->dev);
-+	if (rc)
-+		dev_warn(&card->gdev->dev, "The qeth device driver "
-+			"failed to recover an error on the device\n");
++	atomic_set(&monpriv->iucv_severed, 1);
 +	return rc;
 +}
 +
- struct ccwgroup_driver qeth_l3_ccwgroup_driver = {
- 	.probe = qeth_l3_probe_device,
- 	.remove = qeth_l3_remove_device,
- 	.set_online = qeth_l3_set_online,
- 	.set_offline = qeth_l3_set_offline,
- 	.shutdown = qeth_l3_shutdown,
-+	.freeze = qeth_l3_pm_suspend,
-+	.thaw = qeth_l3_pm_resume,
-+	.restore = qeth_l3_pm_resume,
- };
- EXPORT_SYMBOL_GPL(qeth_l3_ccwgroup_driver);
- 
-Index: linux-2.6/drivers/s390/net/qeth_l2_main.c
-===================================================================
---- linux-2.6.orig/drivers/s390/net/qeth_l2_main.c
-+++ linux-2.6/drivers/s390/net/qeth_l2_main.c
-@@ -1,7 +1,7 @@
- /*
-  *  drivers/s390/net/qeth_l2_main.c
-  *
-- *    Copyright IBM Corp. 2007
-+ *    Copyright IBM Corp. 2007, 2009
-  *    Author(s): Utz Bacher <utz.bacher@de.ibm.com>,
-  *		 Frank Pavlic <fpavlic@de.ibm.com>,
-  *		 Thomas Spatzier <tspat@de.ibm.com>,
-@@ -1113,12 +1113,62 @@ static void qeth_l2_shutdown(struct ccwg
- 	qeth_clear_qdio_buffers(card);
- }
- 
-+static int qeth_l2_pm_suspend(struct ccwgroup_device *gdev)
++static int monreader_restore(struct device *dev)
 +{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
++	int rc;
 +
-+	if (card->dev)
-+		netif_device_detach(card->dev);
-+	qeth_set_allowed_threads(card, 0, 1);
-+	wait_event(card->wait_q, qeth_threads_running(card, 0xffffffff) == 0);
-+	if (gdev->state == CCWGROUP_OFFLINE)
-+		return 0;
-+	if (card->state == CARD_STATE_UP) {
-+		card->use_hard_stop = 1;
-+		__qeth_l2_set_offline(card->gdev, 1);
-+	} else
-+		__qeth_l2_set_offline(card->gdev, 0);
-+	return 0;
++	segment_unload(mon_dcss_name);
++	rc = segment_load(mon_dcss_name, SEGMENT_SHARED,
++			  &mon_dcss_start, &mon_dcss_end);
++	if (rc < 0) {
++		segment_warning(rc, mon_dcss_name);
++		panic("fatal monreader resume error: no monitor dcss\n");
++	}
++	return monreader_thaw(dev);
 +}
 +
-+static int qeth_l2_pm_resume(struct ccwgroup_device *gdev)
-+{
-+	struct qeth_card *card = dev_get_drvdata(&gdev->dev);
-+	int rc = 0;
++static struct dev_pm_ops monreader_pm_ops = {
++	.freeze  = monreader_freeze,
++	.thaw    = monreader_thaw,
++	.restore = monreader_restore,
++};
 +
-+	if (gdev->state == CCWGROUP_OFFLINE)
-+		goto out;
++static struct device_driver monreader_driver = {
++	.name = "monreader",
++	.bus  = &iucv_bus,
++	.pm   = &monreader_pm_ops,
++};
 +
-+	if (card->state == CARD_STATE_RECOVER) {
-+		rc = __qeth_l2_set_online(card->gdev, 1);
-+		if (rc) {
-+			if (card->dev) {
-+				rtnl_lock();
-+				dev_close(card->dev);
-+				rtnl_unlock();
-+			}
-+		}
-+	} else
-+		rc = __qeth_l2_set_online(card->gdev, 0);
-+out:
-+	qeth_set_allowed_threads(card, 0xffffffff, 0);
-+	if (card->dev)
-+		netif_device_attach(card->dev);
++
+ /******************************************************************************
+  *                              module init/exit                              *
+  *****************************************************************************/
+@@ -475,16 +568,33 @@ static int __init mon_init(void)
+ 		return rc;
+ 	}
+ 
++	rc = driver_register(&monreader_driver);
 +	if (rc)
-+		dev_warn(&card->gdev->dev, "The qeth device driver "
-+			"failed to recover an error on the device\n");
-+	return rc;
-+}
++		goto out_iucv;
++	monreader_device = kzalloc(sizeof(struct device), GFP_KERNEL);
++	if (!monreader_device)
++		goto out_driver;
++	dev_set_name(monreader_device, "monreader-dev");
++	monreader_device->bus = &iucv_bus;
++	monreader_device->parent = iucv_root;
++	monreader_device->driver = &monreader_driver;
++	monreader_device->release = (void (*)(struct device *))kfree;
++	rc = device_register(monreader_device);
++	if (rc) {
++		kfree(monreader_device);
++		goto out_driver;
++	}
 +
- struct ccwgroup_driver qeth_l2_ccwgroup_driver = {
- 	.probe = qeth_l2_probe_device,
- 	.remove = qeth_l2_remove_device,
- 	.set_online = qeth_l2_set_online,
- 	.set_offline = qeth_l2_set_offline,
- 	.shutdown = qeth_l2_shutdown,
-+	.freeze = qeth_l2_pm_suspend,
-+	.thaw = qeth_l2_pm_resume,
-+	.restore = qeth_l2_pm_resume,
- };
- EXPORT_SYMBOL_GPL(qeth_l2_ccwgroup_driver);
+ 	rc = segment_type(mon_dcss_name);
+ 	if (rc < 0) {
+ 		segment_warning(rc, mon_dcss_name);
+-		goto out_iucv;
++		goto out_device;
+ 	}
+ 	if (rc != SEG_TYPE_SC) {
+ 		pr_err("The specified *MONITOR DCSS %s does not have the "
+ 		       "required type SC\n", mon_dcss_name);
+ 		rc = -EINVAL;
+-		goto out_iucv;
++		goto out_device;
+ 	}
  
+ 	rc = segment_load(mon_dcss_name, SEGMENT_SHARED,
+@@ -492,7 +602,7 @@ static int __init mon_init(void)
+ 	if (rc < 0) {
+ 		segment_warning(rc, mon_dcss_name);
+ 		rc = -EINVAL;
+-		goto out_iucv;
++		goto out_device;
+ 	}
+ 	dcss_mkname(mon_dcss_name, &user_data_connect[8]);
+ 
+@@ -503,6 +613,10 @@ static int __init mon_init(void)
+ 
+ out:
+ 	segment_unload(mon_dcss_name);
++out_device:
++	device_unregister(monreader_device);
++out_driver:
++	driver_unregister(&monreader_driver);
+ out_iucv:
+ 	iucv_unregister(&monreader_iucv_handler, 1);
+ 	return rc;
+@@ -512,6 +626,8 @@ static void __exit mon_exit(void)
+ {
+ 	segment_unload(mon_dcss_name);
+ 	WARN_ON(misc_deregister(&mon_dev) != 0);
++	device_unregister(monreader_device);
++	driver_unregister(&monreader_driver);
+ 	iucv_unregister(&monreader_iucv_handler, 1);
+ 	return;
+ }
 
 -- 
 blue skies,
