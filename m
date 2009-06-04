@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 37/38] pm: dcssblk power management callbacks.
-Date: Thu, 04 Jun 2009 18:19:24 +0200
-Message-ID: <20090604161908.529698385__1237.04228685728$1244140806$gmane$org@de.ibm.com>
+Subject: [patch 21/38] pm: vmwatchdog power management callbacks.
+Date: Thu, 04 Jun 2009 18:19:08 +0200
+Message-ID: <20090604161904.626534361__33179.5326354497$1244140820$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_dcssblk.patch
+Content-Disposition: inline; filename=pm_vmwatchdog.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,190 +18,187 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Christian Borntraeger <borntraeger@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+This patch implements suspend/hibernation for the vmwatchdog driver. The 
+pm_notifier_callchain is used to get control on PM events. Since watchdog
+operation and suspend cannot work together in a reliable fashion, the open
+flag is also used to prevent suspend and open from happening at the same
+time.
+The watchdog can also be active with no open file descriptor. This patch
+adds another flag which is only changed in vmwdt_keep_alive and
+vmwdt_disable.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/block/dcssblk.c |  132 +++++++++++++++++++++++++++++++++++++------
- 1 file changed, 115 insertions(+), 17 deletions(-)
+ drivers/s390/char/vmwatchdog.c |   81 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 76 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/drivers/s390/block/dcssblk.c
+Index: linux-2.6/drivers/s390/char/vmwatchdog.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/block/dcssblk.c
-+++ linux-2.6/drivers/s390/block/dcssblk.c
-@@ -14,10 +14,11 @@
+--- linux-2.6.orig/drivers/s390/char/vmwatchdog.c
++++ linux-2.6/drivers/s390/char/vmwatchdog.c
+@@ -1,17 +1,23 @@
+ /*
+  * Watchdog implementation based on z/VM Watchdog Timer API
+  *
++ * Copyright IBM Corp. 2004,2009
++ *
+  * The user space watchdog daemon can use this driver as
+  * /dev/vmwatchdog to have z/VM execute the specified CP
+  * command when the timeout expires. The default command is
+  * "IPL", which which cause an immediate reboot.
+  */
++#define KMSG_COMPONENT "vmwatchdog"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
  #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/blkdev.h>
--#include <asm/extmem.h>
--#include <asm/io.h>
- #include <linux/completion.h>
- #include <linux/interrupt.h>
-+#include <linux/platform_device.h>
-+#include <asm/extmem.h>
-+#include <asm/io.h>
+ #include <linux/fs.h>
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/suspend.h>
+ #include <linux/watchdog.h>
+ #include <linux/smp_lock.h>
  
- #define DCSSBLK_NAME "dcssblk"
- #define DCSSBLK_MINORS_PER_DISK 1
-@@ -940,11 +941,94 @@ dcssblk_check_params(void)
+@@ -43,6 +49,9 @@ static unsigned int vmwdt_interval = 60;
+ static unsigned long vmwdt_is_open;
+ static int vmwdt_expect_close;
+ 
++#define VMWDT_OPEN	0	/* devnode is open or suspend in progress */
++#define VMWDT_RUNNING	1	/* The watchdog is armed */
++
+ enum vmwdt_func {
+ 	/* function codes */
+ 	wdt_init   = 0,
+@@ -92,6 +101,7 @@ static int vmwdt_keepalive(void)
+ 	EBC_TOUPPER(ebc_cmd, MAX_CMDLEN);
+ 
+ 	func = vmwdt_conceal ? (wdt_init | wdt_conceal) : wdt_init;
++	set_bit(VMWDT_RUNNING, &vmwdt_is_open);
+ 	ret = __diag288(func, vmwdt_interval, ebc_cmd, len);
+ 	WARN_ON(ret != 0);
+ 	kfree(ebc_cmd);
+@@ -102,6 +112,7 @@ static int vmwdt_disable(void)
+ {
+ 	int ret = __diag288(wdt_cancel, 0, "", 0);
+ 	WARN_ON(ret != 0);
++	clear_bit(VMWDT_RUNNING, &vmwdt_is_open);
+ 	return ret;
  }
  
- /*
-+ * Suspend / Resume
-+ */
-+static int dcssblk_freeze(struct device *dev)
+@@ -123,13 +134,13 @@ static int vmwdt_open(struct inode *i, s
+ {
+ 	int ret;
+ 	lock_kernel();
+-	if (test_and_set_bit(0, &vmwdt_is_open)) {
++	if (test_and_set_bit(VMWDT_OPEN, &vmwdt_is_open)) {
+ 		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 	ret = vmwdt_keepalive();
+ 	if (ret)
+-		clear_bit(0, &vmwdt_is_open);
++		clear_bit(VMWDT_OPEN, &vmwdt_is_open);
+ 	unlock_kernel();
+ 	return ret ? ret : nonseekable_open(i, f);
+ }
+@@ -139,7 +150,7 @@ static int vmwdt_close(struct inode *i, 
+ 	if (vmwdt_expect_close == 42)
+ 		vmwdt_disable();
+ 	vmwdt_expect_close = 0;
+-	clear_bit(0, &vmwdt_is_open);
++	clear_bit(VMWDT_OPEN, &vmwdt_is_open);
+ 	return 0;
+ }
+ 
+@@ -223,6 +234,57 @@ static ssize_t vmwdt_write(struct file *
+ 	return count;
+ }
+ 
++static int vmwdt_resume(void)
 +{
-+	struct dcssblk_dev_info *dev_info;
-+	int rc = 0;
-+
-+	list_for_each_entry(dev_info, &dcssblk_devices, lh) {
-+		switch (dev_info->segment_type) {
-+			case SEG_TYPE_SR:
-+			case SEG_TYPE_ER:
-+			case SEG_TYPE_SC:
-+				if (!dev_info->is_shared)
-+					rc = -EINVAL;
-+				break;
-+			default:
-+				rc = -EINVAL;
-+				break;
-+		}
-+		if (rc)
-+			break;
-+	}
-+	if (rc)
-+		pr_err("Suspend failed because device %s is writeable.\n",
-+		       dev_info->segment_name);
-+	return rc;
++	clear_bit(VMWDT_OPEN, &vmwdt_is_open);
++	return NOTIFY_DONE;
 +}
-+
-+static int dcssblk_restore(struct device *dev)
-+{
-+	struct dcssblk_dev_info *dev_info;
-+	struct segment_info *entry;
-+	unsigned long start, end;
-+	int rc = 0;
-+
-+	list_for_each_entry(dev_info, &dcssblk_devices, lh) {
-+		list_for_each_entry(entry, &dev_info->seg_list, lh) {
-+			segment_unload(entry->segment_name);
-+			rc = segment_load(entry->segment_name, SEGMENT_SHARED,
-+					  &start, &end);
-+			if (rc < 0) {
-+// TODO in_use check ?
-+				segment_warning(rc, entry->segment_name);
-+				goto out_panic;
-+			}
-+			if (start != entry->start || end != entry->end) {
-+				pr_err("Mismatch of start / end address after "
-+				       "resuming device %s\n",
-+				       entry->segment_name);
-+				goto out_panic;
-+			}
-+		}
-+	}
-+	return 0;
-+out_panic:
-+	panic("fatal dcssblk resume error\n");
-+}
-+
-+static int dcssblk_thaw(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static struct dev_pm_ops dcssblk_pm_ops = {
-+	.freeze		= dcssblk_freeze,
-+	.thaw		= dcssblk_thaw,
-+	.restore	= dcssblk_restore,
-+};
-+
-+static struct platform_driver dcssblk_pdrv = {
-+	.driver = {
-+		.name	= "dcssblk",
-+		.owner	= THIS_MODULE,
-+		.pm	= &dcssblk_pm_ops,
-+	},
-+};
-+
-+static struct platform_device *dcssblk_pdev;
-+
 +
 +/*
-  * The init/exit functions.
-  */
- static void __exit
- dcssblk_exit(void)
- {
-+	platform_device_unregister(dcssblk_pdev);
-+	platform_driver_unregister(&dcssblk_pdrv);
- 	root_device_unregister(dcssblk_root_dev);
- 	unregister_blkdev(dcssblk_major, DCSSBLK_NAME);
++ * It makes no sense to go into suspend while the watchdog is running.
++ * Depending on the memory size, the watchdog might trigger, while we
++ * are still saving the memory.
++ * We reuse the open flag to ensure that suspend and watchdog open are
++ * exclusive operations
++ */
++static int vmwdt_suspend(void)
++{
++	if (test_and_set_bit(VMWDT_OPEN, &vmwdt_is_open)) {
++		pr_err("The watchdog is in use. "
++			"This prevents hibernation or suspend.\n");
++		return NOTIFY_BAD;
++	}
++	if (test_bit(VMWDT_RUNNING, &vmwdt_is_open)) {
++		clear_bit(VMWDT_OPEN, &vmwdt_is_open);
++		pr_err("The watchdog is running. "
++			"This prevents hibernation or suspend.\n");
++		return NOTIFY_BAD;
++	}
++	return NOTIFY_DONE;
++}
++
++/*
++ * This function is called for suspend and resume.
++ */
++static int vmwdt_power_event(struct notifier_block *this, unsigned long event,
++			     void *ptr)
++{
++	switch (event) {
++	case PM_POST_HIBERNATION:
++	case PM_POST_SUSPEND:
++		return vmwdt_resume();
++	case PM_HIBERNATION_PREPARE:
++	case PM_SUSPEND_PREPARE:
++		return vmwdt_suspend();
++	default:
++		return NOTIFY_DONE;
++	}
++}
++
++static struct notifier_block vmwdt_power_notifier = {
++	.notifier_call = vmwdt_power_event,
++};
++
+ static const struct file_operations vmwdt_fops = {
+ 	.open    = &vmwdt_open,
+ 	.release = &vmwdt_close,
+@@ -244,12 +306,21 @@ static int __init vmwdt_init(void)
+ 	ret = vmwdt_probe();
+ 	if (ret)
+ 		return ret;
+-	return misc_register(&vmwdt_dev);
++	ret = register_pm_notifier(&vmwdt_power_notifier);
++	if (ret)
++		return ret;
++	ret = misc_register(&vmwdt_dev);
++	if (ret) {
++		unregister_pm_notifier(&vmwdt_power_notifier);
++		return ret;
++	}
++	return 0;
  }
-@@ -954,30 +1038,44 @@ dcssblk_init(void)
+ module_init(vmwdt_init);
+ 
+ static void __exit vmwdt_exit(void)
  {
- 	int rc;
- 
--	dcssblk_root_dev = root_device_register("dcssblk");
--	if (IS_ERR(dcssblk_root_dev))
--		return PTR_ERR(dcssblk_root_dev);
--	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
--	if (rc) {
--		root_device_unregister(dcssblk_root_dev);
-+	rc = platform_driver_register(&dcssblk_pdrv);
-+	if (rc)
- 		return rc;
-+
-+	dcssblk_pdev = platform_device_register_simple("dcssblk", -1, NULL,
-+							0);
-+	if (IS_ERR(dcssblk_pdev)) {
-+		rc = PTR_ERR(dcssblk_pdev);
-+		goto out_pdrv;
- 	}
--	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
--	if (rc) {
--		root_device_unregister(dcssblk_root_dev);
--		return rc;
-+
-+	dcssblk_root_dev = root_device_register("dcssblk");
-+	if (IS_ERR(dcssblk_root_dev)) {
-+		rc = PTR_ERR(dcssblk_root_dev);
-+		goto out_pdev;
- 	}
-+	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
-+	if (rc)
-+		goto out_root;
-+	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
-+	if (rc)
-+		goto out_root;
- 	rc = register_blkdev(0, DCSSBLK_NAME);
--	if (rc < 0) {
--		root_device_unregister(dcssblk_root_dev);
--		return rc;
--	}
-+	if (rc < 0)
-+		goto out_root;
- 	dcssblk_major = rc;
- 	init_rwsem(&dcssblk_devices_sem);
- 
- 	dcssblk_check_params();
--
- 	return 0;
-+
-+out_root:
-+	root_device_unregister(dcssblk_root_dev);
-+out_pdev:
-+	platform_device_unregister(dcssblk_pdev);
-+out_pdrv:
-+	platform_driver_unregister(&dcssblk_pdrv);
-+	return rc;
+-	WARN_ON(misc_deregister(&vmwdt_dev) != 0);
++	unregister_pm_notifier(&vmwdt_power_notifier);
++	misc_deregister(&vmwdt_dev);
  }
- 
- module_init(dcssblk_init);
+ module_exit(vmwdt_exit);
 
 -- 
 blue skies,
