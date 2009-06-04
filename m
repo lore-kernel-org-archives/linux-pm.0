@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Thu, 4 Jun 2009 18:30:53 +0200
-Message-ID: <200906041830.54897.rjw__5448.30953372202$1244133855$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906020954110.3074-100000@iolanthe.rowland.org>
+From: Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH v2] add MAX17040 Fuel Gauge driver
+Date: Thu, 4 Jun 2009 14:46:45 +0530
+Message-ID: <5d5443650906040216h2314b7bbt1ae2e89c709b566e__1137.64639613709$1244138279$gmane$org@mail.gmail.com>
+References: <4A278C08.5000206@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906020954110.3074-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <4A278C08.5000206@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,236 +17,442 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Minkyu Kang <mk7.kang@samsung.com>
+Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>, kyungmin.park@samsung.com, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 02 June 2009, Alan Stern wrote:
-> On Tue, 2 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > > It's partly a question of avoiding unnecessary activity.  Is there any
-> > > reason to resume a device if it's just going to be autosuspended again
-> > > a few seconds later?
-> > 
-> > Well, I'm not sure if we know in advance what's going to happen to the device
-> > right after a system-wide resume.  It may be a totally different situation from
-> > the device activity point of view.
-> 
-> We _never_ know in advance what's going to happen.  An autosuspended
-> device may have to wake up at any time in order to carry out some work
-> -- that's true whether or not a system sleep has taken place.  IMO it
-> doesn't make sense to wake up an autosuspended device for no reason
-> other than that it _may_ need to do something; we should let it stay in
-> a low-power mode until we _know_ it has to wake up.
+Hi Minkyu Kang,
 
-OK, that's a valid point.
+Adding linux-i2c mailing list, so not deleting any code.
 
-I also think that if the BIOS has already woke up the device during system-wide
-resume, we shouldn't try to put it to a low power state again unless we know
-that this is desirable.
+On Thu, Jun 4, 2009 at 2:25 PM, Minkyu Kang <mk7.kang@samsung.com> wrote:
+> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batte=
+ries
+> This patch adds support the MAX17040 Fuel Gauge
+>
+> Cc: Anton Vorontsov <cbou@mail.ru>
+> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
+> ---
+> =A0drivers/power/Kconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A08 +
+> =A0drivers/power/Makefile =A0 =A0 =A0 =A0 =A0 | =A0 =A03 +-
+> =A0drivers/power/max17040_battery.c | =A0306 ++++++++++++++++++++++++++++=
+++++++++++
+> =A0include/linux/max17040_battery.h | =A0 19 +++
+> =A04 files changed, 335 insertions(+), 1 deletions(-)
+> =A0create mode 100644 drivers/power/max17040_battery.c
+> =A0create mode 100644 include/linux/max17040_battery.h
+>
+> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> index 33da112..6af5798 100644
+> --- a/drivers/power/Kconfig
+> +++ b/drivers/power/Kconfig
+> @@ -88,4 +88,12 @@ config CHARGER_PCF50633
+> =A0 =A0 =A0 =A0help
+> =A0 =A0 =A0 =A0 Say Y to include support for NXP PCF50633 Main Battery Ch=
+arger.
+>
+> +config BATTERY_MAX17040
+> + =A0 =A0 =A0 tristate "Maxim MAX17040 Fuel Gauge"
+> + =A0 =A0 =A0 depends on I2C
+> + =A0 =A0 =A0 help
+> + =A0 =A0 =A0 =A0 MAX17040 is fuel-gauge systems for lithium-ion (Li+) ba=
+tteries
+> + =A0 =A0 =A0 =A0 in handheld and portable equipment. The MAX17040 is con=
+figured
+> + =A0 =A0 =A0 =A0 to operate with a single lithium cell
+> +
+> =A0endif # POWER_SUPPLY
+> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+> index 2fcf41d..9c48995 100644
+> --- a/drivers/power/Makefile
+> +++ b/drivers/power/Makefile
+> @@ -25,4 +25,5 @@ obj-$(CONFIG_BATTERY_TOSA) =A0 =A0+=3D tosa_battery.o
+> =A0obj-$(CONFIG_BATTERY_WM97XX) =A0 +=3D wm97xx_battery.o
+> =A0obj-$(CONFIG_BATTERY_BQ27x00) =A0+=3D bq27x00_battery.o
+> =A0obj-$(CONFIG_BATTERY_DA9030) =A0 +=3D da9030_battery.o
+> -obj-$(CONFIG_CHARGER_PCF50633) +=3D pcf50633-charger.o
+> \ No newline at end of file
+> +obj-$(CONFIG_BATTERY_MAX17040)) =A0 =A0 =A0 =A0+=3D max17040_battery.o
+> +obj-$(CONFIG_CHARGER_PCF50633) +=3D pcf50633-charger.o
+> diff --git a/drivers/power/max17040_battery.c b/drivers/power/max17040_ba=
+ttery.c
+> new file mode 100644
+> index 0000000..25303ba
+> --- /dev/null
+> +++ b/drivers/power/max17040_battery.c
+> @@ -0,0 +1,306 @@
+> +/*
+> + * =A0max17040_battery.c
+> + * =A0fuel-gauge systems for lithium-ion (Li+) batteries
+> + *
+> + * =A0Copyright (C) 2009 Samsung Electronics
+> + * =A0Minkyu Kang <mk7.kang@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mutex.h>
+> +#include <linux/err.h>
+> +#include <linux/i2c.h>
+> +#include <linux/delay.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/max17040_battery.h>
+> +
+> +#define MAX17040_VCELL_MSB =A0 =A0 0x02
+> +#define MAX17040_VCELL_LSB =A0 =A0 0x03
+> +#define MAX17040_SOC_MSB =A0 =A0 =A0 0x04
+> +#define MAX17040_SOC_LSB =A0 =A0 =A0 0x05
+> +#define MAX17040_MODE_MSB =A0 =A0 =A00x06
+> +#define MAX17040_MODE_LSB =A0 =A0 =A00x07
+> +#define MAX17040_VER_MSB =A0 =A0 =A0 0x08
+> +#define MAX17040_VER_LSB =A0 =A0 =A0 0x09
+> +#define MAX17040_RCOMP_MSB =A0 =A0 0x0C
+> +#define MAX17040_RCOMP_LSB =A0 =A0 0x0D
+> +#define MAX17040_CMD_MSB =A0 =A0 =A0 0xFE
+> +#define MAX17040_CMD_LSB =A0 =A0 =A0 0xFF
+> +
+> +#define MAX17040_DELAY =A0 =A0 =A0 =A0 1000
+> +#define MAX17040_BATTERY_FULL =A095
+> +
+> +struct max17040_chip {
+> + =A0 =A0 =A0 struct i2c_client =A0 =A0 =A0 *client;
+> + =A0 =A0 =A0 struct delayed_work =A0 =A0 work;
+> +
+> + =A0 =A0 =A0 /* State Of Connect */
+> + =A0 =A0 =A0 int online;
+> + =A0 =A0 =A0 /* battery voltage */
+> + =A0 =A0 =A0 int vcell;
+> + =A0 =A0 =A0 /* battery capacity */
+> + =A0 =A0 =A0 int soc;
+> + =A0 =A0 =A0 /* State Of Charge */
+> + =A0 =A0 =A0 int status;
+> +};
+> +
+> +static struct max17040_chip *max17040;
+> +static struct max17040_platform_data *pdata;
 
-> > > It's also a matter of principle.  A system sleep should be as
-> > > transparent as possible (except for the passage of time, of course).  
-> > > When the sleep is over, devices should be in the same state as before
-> > > it began.
-> > 
-> > As a matter of fact, this need not be true at all.  For example, consider a
-> > wireless network adapter that was assosicated with specific access point
-> > before a system-wide suspend, but this access point is not present any more
-> > after the subsequent system-wide resume.
-> 
-> This example doesn't prove your point.
+May be you want to move this pdata under chip structure.
 
-No, it doesn't.  Still, it illustrates the problem I had in mind, that it may
-not be desirable to restore the pre-suspend settings in all cases.
+> +
+> +static int max17040_get_property(struct power_supply *bat_ps,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 enum power_supply_p=
+roperty psp,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 union power_supply_=
+propval *val)
+> +{
+> + =A0 =A0 =A0 switch (psp) {
+> + =A0 =A0 =A0 case POWER_SUPPLY_PROP_STATUS:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 val->intval =3D max17040->status;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 case POWER_SUPPLY_PROP_ONLINE:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 val->intval =3D max17040->online;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 val->intval =3D max17040->vcell;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 case POWER_SUPPLY_PROP_CAPACITY:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 val->intval =3D max17040->soc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 default:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static struct power_supply bat_ps =3D {
+> + =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "battery",
+> + =A0 =A0 =A0 .type =A0 =A0 =A0 =A0 =A0 =3D POWER_SUPPLY_TYPE_BATTERY,
+> + =A0 =A0 =A0 .get_property =A0 =3D max17040_get_property,
+> +};
+> +
+> +static int max17040_write_reg(int reg, u8 value)
+> +{
+> + =A0 =A0 =A0 int ret;
+> +
+> + =A0 =A0 =A0 ret =3D i2c_smbus_write_byte_data(max17040->client, reg, va=
+lue);
+> +
+> + =A0 =A0 =A0 if (ret < 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&max17040->client->dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "%s: reg 0x=
+%x, val 0x%x, err %d\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, r=
+eg, value, ret);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static u8 max17040_read_reg(int reg)
+> +{
+> + =A0 =A0 =A0 int ret;
+> +
+> + =A0 =A0 =A0 ret =3D i2c_smbus_read_byte_data(max17040->client, reg);
+> +
+> + =A0 =A0 =A0 if (ret < 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&max17040->client->dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "%s: reg 0x=
+%x, err %d\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, r=
+eg, ret);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static void max17040_reset(void)
+> +{
+> + =A0 =A0 =A0 max17040_write_reg(MAX17040_CMD_MSB, 0x54);
+> + =A0 =A0 =A0 max17040_write_reg(MAX17040_CMD_LSB, 0x00);
+> +}
+> +
+> +static void max17040_set_rcomp(u16 val)
+> +{
+> + =A0 =A0 =A0 max17040_write_reg(MAX17040_RCOMP_MSB, val >> 8);
+> + =A0 =A0 =A0 max17040_write_reg(MAX17040_RCOMP_LSB, (val << 8) >> 8);
+> +}
+> +
+> +static void max17040_get_vcell(void)
+> +{
+> + =A0 =A0 =A0 u8 msb;
+> + =A0 =A0 =A0 u8 lsb;
+> +
+> + =A0 =A0 =A0 msb =3D max17040_read_reg(MAX17040_VCELL_MSB);
+> + =A0 =A0 =A0 lsb =3D max17040_read_reg(MAX17040_VCELL_LSB);
+> +
+> + =A0 =A0 =A0 max17040->vcell =3D (msb << 4) + (lsb >> 4);
+> +}
+> +
+> +static void max17040_get_soc(void)
+> +{
+> + =A0 =A0 =A0 u8 msb;
+> + =A0 =A0 =A0 u8 lsb;
+> +
+> + =A0 =A0 =A0 msb =3D max17040_read_reg(MAX17040_SOC_MSB);
+> + =A0 =A0 =A0 lsb =3D max17040_read_reg(MAX17040_SOC_LSB);
+> +
+> + =A0 =A0 =A0 max17040->soc =3D msb;
+> +}
+> +
+> +static void max17040_get_version(void)
+> +{
+> + =A0 =A0 =A0 u8 msb;
+> + =A0 =A0 =A0 u8 lsb;
+> +
+> + =A0 =A0 =A0 msb =3D max17040_read_reg(MAX17040_VER_MSB);
+> + =A0 =A0 =A0 lsb =3D max17040_read_reg(MAX17040_VER_LSB);
+> +
+> + =A0 =A0 =A0 dev_info(&max17040->client->dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "MAX17040 Fuel-Gauge Ver %d=
+%d\n", msb, lsb);
+> +}
+> +
+> +static void max17040_get_online(void)
+> +{
+> + =A0 =A0 =A0 if (pdata->battery_online)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->online =3D pdata->battery_online(=
+);
+> + =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->online =3D 1;
+> +}
+> +
+> +static void max17040_get_status(void)
+> +{
+> + =A0 =A0 =A0 if (!pdata->charger_online || !pdata->charger_enable) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->status =3D POWER_SUPPLY_STATUS_UN=
+KNOWN;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 if (pdata->charger_online()) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pdata->charger_enable())
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->status =3D POWER_=
+SUPPLY_STATUS_CHARGING;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->status =3D POWER_=
+SUPPLY_STATUS_NOT_CHARGING;
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->status =3D POWER_SUPPLY_STATUS_DI=
+SCHARGING;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 if (max17040->soc > MAX17040_BATTERY_FULL)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040->status =3D POWER_SUPPLY_STATUS_FU=
+LL;
+> +}
+> +
+> +static void max17040_work(struct work_struct *work)
+> +{
+> + =A0 =A0 =A0 max17040_get_vcell();
+> + =A0 =A0 =A0 max17040_get_soc();
+> + =A0 =A0 =A0 max17040_get_online();
+> + =A0 =A0 =A0 max17040_get_status();
+> +
+> + =A0 =A0 =A0 schedule_delayed_work(&max17040->work, MAX17040_DELAY);
+> +}
+> +
+> +static enum power_supply_property max17040_battery_props[] =3D {
+> + =A0 =A0 =A0 POWER_SUPPLY_PROP_STATUS,
+> + =A0 =A0 =A0 POWER_SUPPLY_PROP_ONLINE,
+> + =A0 =A0 =A0 POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> + =A0 =A0 =A0 POWER_SUPPLY_PROP_CAPACITY,
+> +};
+> +
+> +static int __devinit max17040_probe(struct i2c_client *client,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 const struct i2c_device_id =
+*id)
+> +{
+> + =A0 =A0 =A0 struct max17040_chip *chip;
+> + =A0 =A0 =A0 int ret;
+> +
+> + =A0 =A0 =A0 chip =3D kzalloc(sizeof(struct max17040_chip), GFP_KERNEL);
+> + =A0 =A0 =A0 if (!chip)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+> +
+> + =A0 =A0 =A0 chip->client =3D client;
+> + =A0 =A0 =A0 pdata =3D client->dev.platform_data;
+> +
+> + =A0 =A0 =A0 i2c_set_clientdata(client, chip);
 
-> Sure, conditions may have changed while the system was asleep.  They might
-> also change while the system is awake.  In general, whether or not the system
-> was asleep shouldn't make any difference -- to as great an extent as possible
-> we should strive to pretend that the entire sleep took no time at all (or
-> simply didn't happen).
-> 
-> So: Suppose the system had been awake when the access point
-> disappeared.  What would the wireless adapter driver do then?  It
-> should try to do exactly the same thing if the access point disappears
-> while the system is asleep.
+Please add i2c_check_functionality check before doing any smbus
+read/write operations.
 
-Not really.  Namely, when the access point _vanishes_ at run time, this is an
-error condition from which we have to recover, while if it's _not_ _present_
-after a resume, it's a normal situation and we shouldn't be recovering from
-that (the user might have changed the physical location while suspended).
+> + =A0 =A0 =A0 max17040 =3D chip;
 
-On my system the wireless always remembers the network it was associated with
-before suspend and it tries to reassociate with it after the subsequent resume,
-even if the network is not there any more, so it fails and I have to choose
-another one manually.  This isn't a desirable behavior and I'd even say it's
-not correct, because after a fresh boot it always scans for networks and
-associates with one that's actually present.  I'd like it to do the same after
-the resume.
+This means that we support only one instance of this chip, right?
 
-> You see?  The sleep should be transparent.
+> +
+> + =A0 =A0 =A0 max17040_reset();
+> +
+> + =A0 =A0 =A0 max17040_get_version();
+> +
+> + =A0 =A0 =A0 INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
+> + =A0 =A0 =A0 schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +
+> + =A0 =A0 =A0 bat_ps.properties =3D max17040_battery_props;
+> + =A0 =A0 =A0 bat_ps.num_properties =3D ARRAY_SIZE(max17040_battery_props=
+);
+> +
+> + =A0 =A0 =A0 ret =3D power_supply_register(&client->dev, &bat_ps);
+> + =A0 =A0 =A0 if (ret) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&max17040->client->dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed: po=
+wer supply register\n");
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cancel_delayed_work(&chip->work);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 i2c_set_clientdata(client, NULL);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(chip);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 max17040 =3D NULL;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static int __devexit max17040_remove(struct i2c_client *client)
+> +{
+> + =A0 =A0 =A0 struct max17040_chip *chip =3D i2c_get_clientdata(client);
+> +
+> + =A0 =A0 =A0 power_supply_unregister(&bat_ps);
+> + =A0 =A0 =A0 cancel_delayed_work(&chip->work);
+> + =A0 =A0 =A0 i2c_set_clientdata(client, NULL);
+> + =A0 =A0 =A0 kfree(chip);
+> + =A0 =A0 =A0 max17040 =3D NULL;
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static int max17040_suspend(struct i2c_client *client,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_message_t state)
+> +{
+> + =A0 =A0 =A0 struct max17040_chip *chip =3D i2c_get_clientdata(client);
+> +
+> + =A0 =A0 =A0 cancel_delayed_work(&chip->work);
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static int max17040_resume(struct i2c_client *client)
+> +{
+> + =A0 =A0 =A0 struct max17040_chip *chip =3D i2c_get_clientdata(client);
+> +
+> + =A0 =A0 =A0 schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static const struct i2c_device_id max17040_id[] =3D {
+> + =A0 =A0 =A0 { "max17040", 0 },
+> + =A0 =A0 =A0 { }
+> +};
+> +MODULE_DEVICE_TABLE(i2c, max17040_id);
+> +
+> +static struct i2c_driver max17040_i2c_driver =3D {
+> + =A0 =A0 =A0 .driver =3D {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =3D "max17040",
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0=3D max17040_probe,
+> + =A0 =A0 =A0 .remove =A0 =A0 =A0 =A0 =3D __devexit_p(max17040_remove),
+> + =A0 =A0 =A0 .suspend =A0 =A0 =A0 =A0=3D max17040_suspend,
+> + =A0 =A0 =A0 .resume =A0 =A0 =A0 =A0 =3D max17040_resume,
+> + =A0 =A0 =A0 .id_table =A0 =A0 =A0 =3D max17040_id,
+> +};
+> +
+> +static int __init max17040_init(void)
+> +{
+> + =A0 =A0 =A0 return i2c_add_driver(&max17040_i2c_driver);
+> +}
+> +module_init(max17040_init);
+> +
+> +static void __exit max17040_exit(void)
+> +{
+> + =A0 =A0 =A0 i2c_del_driver(&max17040_i2c_driver);
+> +}
+> +module_exit(max17040_exit);
+> +
+> +MODULE_AUTHOR("Minkyu Kang <mk7.kang@samsung.com>");
+> +MODULE_DESCRIPTION("MAX17040 Fuel Gauge");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/max17040_battery.h b/include/linux/max17040_ba=
+ttery.h
+> new file mode 100644
+> index 0000000..ad97b06
+> --- /dev/null
+> +++ b/include/linux/max17040_battery.h
+> @@ -0,0 +1,19 @@
+> +/*
+> + * =A0Copyright (C) 2009 Samsung Electronics
+> + * =A0Minkyu Kang <mk7.kang@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __MAX17040_BATTERY_H_
+> +#define __MAX17040_BATTERY_H_
+> +
+> +struct max17040_platform_data {
+> + =A0 =A0 =A0 int (*battery_online)(void);
+> + =A0 =A0 =A0 int (*charger_online)(void);
+> + =A0 =A0 =A0 int (*charger_enable)(void);
+> +};
+> +
+> +#endif
+> --
+> 1.5.4.3
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at =A0http://www.tux.org/lkml/
+>
 
-In some cases it won't be, because the hardware state changes while sleeping.
-For example, a laptop battery may be depleted while suspended, so that after
-resume it's in the 'low' condition, while it was in the 'good' condition before
-the preceding suspend.  Arguably, you can't drain a battery from 90% to 10%,
-for example, momentarily.  Also, a CPU fan might be 100% on before suspend,
-because the CPU was hot at that time, but that doesn't mean the fan should be
-100% on after the subsequent resume, because it's likely that the CPU will be
-cold (on some systems trying to make the fan spin too fast may lead to
-general problems with thermal management afterwards).
 
-> > I really don't think we can predict what's going to happen to a device after
-> > a system-wide resume, so IMO we should assume that the device will be necessary
-> > immediately after the resume and we should resume it.  It still can autosuspend
-> > normally afterwards if it's not needed after all.
-> 
-> This is highly debatable.  I'd like to hear some thoughts from other 
-> people.
 
-Agreed, but no one has spoken so far. :-)
+-- =
 
-> > > >  Also, what happens if the platform firmware
-> > > > resumes the autosuspended devices before passing control to the kernel during
-> > > > system-wide resume?  How do we handle that?
-> > > 
-> > > In the case of USB, it's not possible to resume a suspended device
-> > > without first resuming and using a host controller.  The host
-> > > controller driver will realize that the firmware has taken over the
-> > > controller and will reset the controller.
-> ...
-> 
-> > I'm not sure if this is doable so easily for PCI devices, for one example.
-> > Most probably, they will come up in D0 after the system-wide suspend and
-> > the PCI resume code will have to suspend them directly so that they remain
-> > "autosuspended" after the resume.
-> 
-> Clearly the behavior will need to vary among buses.
-
-Agreed.
-
-> What's appropriate for USB won't be appropriate for PCI.  Furthermore, the
-> overhead of waking a PCI device unnecessarily might be a lot lower than the
-> overhead of waking a USB device, so it might make sense always to
-> resume autosuspended PCI devices during a system resume.
-
-Sure.  Also, as I said earlier, the BIOS usually wakes up PCI devices (in fact
-a bus reset causes them to wake up and the buses are ususally reset during
-resume by the BIOS) and it doesn't really make sense to put them into low
-power states just because they were in low power states before the suspend.
-
-> > > So the work routine would somehow be aware when a system sleep is in
-> > > progress, at which point it would return immediately without doing
-> > > anything?  That seems racey.  Isn't it easier just to freeze the
-> > > workqueue?
-> > 
-> > Well, yes and no.  Namely, if we freeze the workqueue, all of the bus types
-> > using it will have to check the vaildity of operations carried out by it,
-> > because of the possibility that system-wide power transition took place in the
-> > meantime and changed the state of the device.  Also, please take the PCI
-> > example into consideration.
-> 
-> Freezability doesn't matter; you can prevent items from being added to
-> the workqueue during a power transition just as easily regardless of
-> whether it is freezable or not.  In fact, it's easier if the workqueue
-> is freezable.  You don't have to prevent anything from being added; you
-> just have to cancel everything on the workqueue before unfreezing it.
-
-Good idea.
-
-> One solution would be to have the bus types cancel their own pending
-> work items explicitly.  Another is to have two freezable PM workqueues,
-> one with automatic cancellation and the other without.
-
-What about having a flag in struct dev_pm_info (along with the delayed
-work structure) indicating whether or not the work should be automatically
-cancelled before unfreezing the queue?  [It seems, in that case we'd need
-another flag to indicate what is to cancel, the delayed work or just the work.]
-
-> > > For autoresume requests coming from an interrupt handler, I'm not so 
-> > > sure.  I don't know of any good examples -- in fact there don't seem to 
-> > > be any examples at the moment.  (The USB core supports autoresume 
-> > > requests in interrupt context, AFAICS no driver uses them.)  So maybe 
-> > > it's premature to worry about this case.
-> > 
-> > Hmm.  Can you please describe a theoretical situation in which this kind
-> > of autoresume request will appear?  I'm not really sure what you mean here. :-)
-> 
-> Well, here's something people discussed but which hasn't been
-> implemented (and may never be implemented).  A suspended USB keyboard
-> doesn't have enough power to turn on any LEDs.  So suppose a system has
-> two keyboards, and kbd-A is autosuspended when the user engages
-> CapsLock on kbd-B.  The input layer wants to turn on the CapsLock LED
-> on all the keyboards, which means it has to autoresume kbd-A.  But all
-> this action takes place in interrupt context, so an autoresume request
-> would have to be queued.
-
-I see, but this is similar to the remote wake-up in that we have to queue
-the autoresume request.
-
-> > > Lastly, we have resume requests coming from a device -- i.e., remote
-> > > wakeup requests.  This is a little tricky.  Suppose you have remote
-> > > wakeup enabled, and you press a key on your USB keyboard just as the
-> > > computer is going to sleep.  Should this cause the sleep to be aborted?  
-> > > Should it cause the computer to wake back up again right away?  Should
-> > > the keystroke be ignored?
-> > 
-> > This is a difficult problem in general.  I _think_ we should ignore such
-> > autoresume requests for devices that are not marked as wake-up ones
-> > and we should abort the suspend if there's a request from a wake-up device.
-> 
-> It _is_ difficult.  Right now USB ignores such requests, because the
-> threads that handle them are all freezable.  But the information isn't
-> lost; it is stored in the hardware and when the system wakes up the
-> requests will be seen.
-> 
-> Except for wakeup requests from root hubs.  If they arrive at just the 
-> right time then they are not stored in the hardware -- instead they are 
-> stored as work items on the ksuspend_usbd workqueue!  In essence, the 
-> workqueue serves as a software mechanism for saving IRQs which were 
-> delivered but couldn't be acted on.
-> 
-> That's why I don't want to erase the work items; it would be logically 
-> equivalent to dropping interrupts.
-
-I see.
-
-Still, we'll need to think about a mechanism allowing us to abort suspend
-if there's a wake-up request from a wake-up device.
-
-> > Anyway, below is a prototype implementation of a generic runtime PM workqueue,
-> > just for discussion.
-> > 
-> > pm_schedule_suspend() and pm_schedule_resume() are to be called by bus types
-> > that are requesting the autosuspend or autoresume, respectively, of a device.
-> > The supposed control flow is like this:
-> > * bus type calls pm_schedule_suspend() to schedule autosuspend of a device
-> > * at the right time the PM workqueue executes the bus type's ->autosuspend()
-> >   callback which is responsible for calling the device driver to suspend the
-> >   device (the way in which this is done is totally bus type-specific)
-> > * if there's a resume event for the device, it's delivered to the bus type
-> >   driver (in a bus type-specific way) and the bus type schedules autoresume of
-> >   the device by calling pm_schedule_resume()
-> > * the PM workqueue executes the bus type's ->autoresume() as soon as it can
-> >   and this callback is responsible for calling the device driver to resume the
-> >   device (the way in which this is done is totally bus type-specific).
-> 
-> It looks like the only benefits provided by this patch are the
-> workqueue itself and the embedded delayed_work structure.  The ability
-> to cancel the work items (or prevent them from being added) during a
-> system sleep is questionable, as discussed above.  There isn't any
-> value added by the new functions or methods.
-
-The value added is that since the delayed work member is to be used for
-queueing work, each bus type will have to do the same casting from
-'struct work_struct' to 'struct delayed_work' and next to 'struct device'
-to get to the device object, which means quite a bit of code duplication. 
-
-Also, IMO, if there's a set of functions for doing that, the probability
-that someone gets things wrong is smaller (slightly).  Moreover, we can
-add variants for the works that will be automatically cancelled during
-system-wide resume, so that bus types don't have to worry about the details
-related to that.
-
-Thanks,
-Rafael
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
