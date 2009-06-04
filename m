@@ -1,13 +1,14 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 23/38] pm: vmur driver power management callbacks
-Date: Thu, 04 Jun 2009 18:19:10 +0200
-Message-ID: <20090604161905.120654825__41280.157704796$1244139144$gmane$org@de.ibm.com>
+Subject: [patch 02/38] dasd: forward internal errors to
+	dasd_sleep_on caller
+Date: Thu, 04 Jun 2009 18:18:49 +0200
+Message-ID: <20090604161859.951154288__49925.2137764872$1244139156$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_vmur.patch
+Content-Disposition: inline; filename=dasd-forward-startio-errors.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,75 +19,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Frank Munzert <munzert@de.ibm.com>
+Cc: Stefan Weinhuber <wein@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frank Munzert <munzert@de.ibm.com>
+From: Stefan Weinhuber <wein@de.ibm.com>
 
-Signed-off-by: Frank Munzert <munzert@de.ibm.com>
+If a DASD requests is started with dasd_sleep_on and fails, then the
+calling function may need to know the reason for the failure.
+In cases of hardware errors it can inspect the sense data in the irb,
+but when the reason is internal (e.g. start_IO failed) then it needs
+a meaningfull return code.
+
+Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/char/vmur.c |   26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ drivers/s390/block/dasd.c      |   30 ++++++++++++++++++++++++------
+ drivers/s390/block/dasd_diag.c |    1 +
+ drivers/s390/block/dasd_eckd.c |    8 +++++---
+ drivers/s390/block/dasd_int.h  |    1 +
+ 4 files changed, 31 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/drivers/s390/char/vmur.c
+Index: linux-2.6/drivers/s390/block/dasd.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/char/vmur.c
-+++ linux-2.6/drivers/s390/char/vmur.c
-@@ -2,7 +2,7 @@
-  * Linux driver for System z and s390 unit record devices
-  * (z/VM virtual punch, reader, printer)
-  *
-- * Copyright IBM Corp. 2001, 2007
-+ * Copyright IBM Corp. 2001, 2009
-  * Authors: Malcolm Beattie <beattiem@uk.ibm.com>
-  *	    Michael Holzheu <holzheu@de.ibm.com>
-  *	    Frank Munzert <munzert@de.ibm.com>
-@@ -60,6 +60,7 @@ static int ur_probe(struct ccw_device *c
- static void ur_remove(struct ccw_device *cdev);
- static int ur_set_online(struct ccw_device *cdev);
- static int ur_set_offline(struct ccw_device *cdev);
-+static int ur_pm_suspend(struct ccw_device *cdev);
+--- linux-2.6.orig/drivers/s390/block/dasd.c
++++ linux-2.6/drivers/s390/block/dasd.c
+@@ -851,8 +851,10 @@ int dasd_start_IO(struct dasd_ccw_req *c
  
- static struct ccw_driver ur_driver = {
- 	.name		= "vmur",
-@@ -69,6 +70,7 @@ static struct ccw_driver ur_driver = {
- 	.remove		= ur_remove,
- 	.set_online	= ur_set_online,
- 	.set_offline	= ur_set_offline,
-+	.freeze		= ur_pm_suspend,
- };
- 
- static DEFINE_MUTEX(vmur_mutex);
-@@ -158,6 +160,28 @@ static void urdev_put(struct urdev *urd)
+ 	/* Check the cqr */
+ 	rc = dasd_check_cqr(cqr);
+-	if (rc)
++	if (rc) {
++		cqr->intrc = rc;
+ 		return rc;
++	}
+ 	device = (struct dasd_device *) cqr->startdev;
+ 	if (cqr->retries < 0) {
+ 		/* internal error 14 - start_IO run out of retries */
+@@ -915,6 +917,7 @@ int dasd_start_IO(struct dasd_ccw_req *c
+ 		BUG();
+ 		break;
+ 	}
++	cqr->intrc = rc;
+ 	return rc;
  }
  
- /*
-+ * State and contents of ur devices can be changed by class D users issuing
-+ * CP commands such as PURGE or TRANSFER, while the Linux guest is suspended.
-+ * Also the Linux guest might be logged off, which causes all active spool
-+ * files to be closed.
-+ * So we cannot guarantee that spool files are still the same when the Linux
-+ * guest is resumed. In order to avoid unpredictable results at resume time
-+ * we simply refuse to suspend if a ur device node is open.
-+ */
-+static int ur_pm_suspend(struct ccw_device *cdev)
-+{
-+	struct urdev *urd = cdev->dev.driver_data;
+@@ -1454,8 +1457,12 @@ int dasd_sleep_on(struct dasd_ccw_req *c
+ 	dasd_add_request_tail(cqr);
+ 	wait_event(generic_waitq, _wait_for_wakeup(cqr));
+ 
+-	/* Request status is either done or failed. */
+-	rc = (cqr->status == DASD_CQR_DONE) ? 0 : -EIO;
++	if (cqr->status == DASD_CQR_DONE)
++		rc = 0;
++	else if (cqr->intrc)
++		rc = cqr->intrc;
++	else
++		rc = -EIO;
+ 	return rc;
+ }
+ 
+@@ -1477,8 +1484,15 @@ int dasd_sleep_on_interruptible(struct d
+ 		dasd_cancel_req(cqr);
+ 		/* wait (non-interruptible) for final status */
+ 		wait_event(generic_waitq, _wait_for_wakeup(cqr));
++		cqr->intrc = rc;
+ 	}
+-	rc = (cqr->status == DASD_CQR_DONE) ? 0 : -EIO;
 +
-+	TRACE("ur_pm_suspend: cdev=%p\n", cdev);
-+	if (urd->open_flag) {
-+		pr_err("Unit record device %s is busy, %s refusing to "
-+		       "suspend.\n", dev_name(&cdev->dev), ur_banner);
-+		return -EBUSY;
-+	}
-+	return 0;
-+}
-+
-+/*
-  * Low-level functions to do I/O to a ur device.
-  *     alloc_chan_prog
-  *     free_chan_prog
++	if (cqr->status == DASD_CQR_DONE)
++		rc = 0;
++	else if (cqr->intrc)
++		rc = cqr->intrc;
++	else
++		rc = -EIO;
+ 	return rc;
+ }
+ 
+@@ -1523,8 +1537,12 @@ int dasd_sleep_on_immediatly(struct dasd
+ 
+ 	wait_event(generic_waitq, _wait_for_wakeup(cqr));
+ 
+-	/* Request status is either done or failed. */
+-	rc = (cqr->status == DASD_CQR_DONE) ? 0 : -EIO;
++	if (cqr->status == DASD_CQR_DONE)
++		rc = 0;
++	else if (cqr->intrc)
++		rc = cqr->intrc;
++	else
++		rc = -EIO;
+ 	return rc;
+ }
+ 
+Index: linux-2.6/drivers/s390/block/dasd_diag.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/block/dasd_diag.c
++++ linux-2.6/drivers/s390/block/dasd_diag.c
+@@ -202,6 +202,7 @@ dasd_start_diag(struct dasd_ccw_req * cq
+ 		rc = -EIO;
+ 		break;
+ 	}
++	cqr->intrc = rc;
+ 	return rc;
+ }
+ 
+Index: linux-2.6/drivers/s390/block/dasd_int.h
+===================================================================
+--- linux-2.6.orig/drivers/s390/block/dasd_int.h
++++ linux-2.6/drivers/s390/block/dasd_int.h
+@@ -173,6 +173,7 @@ struct dasd_ccw_req {
+ 	void *data;			/* pointer to data area */
+ 
+ 	/* these are important for recovering erroneous requests          */
++	int intrc;			/* internal error, e.g. from start_IO */
+ 	struct irb irb;			/* device status in case of an error */
+ 	struct dasd_ccw_req *refers;	/* ERP-chain queueing. */
+ 	void *function; 		/* originating ERP action */
+Index: linux-2.6/drivers/s390/block/dasd_eckd.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/block/dasd_eckd.c
++++ linux-2.6/drivers/s390/block/dasd_eckd.c
+@@ -3017,8 +3017,9 @@ static void dasd_eckd_dump_sense_ccw(str
+ 		      " I/O status report for device %s:\n",
+ 		      dev_name(&device->cdev->dev));
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+-		       " in req: %p CS: 0x%02X DS: 0x%02X\n", req,
+-		       scsw_cstat(&irb->scsw), scsw_dstat(&irb->scsw));
++		       " in req: %p CS: 0x%02X DS: 0x%02X CC: 0x%02X RC: %d\n",
++		       req, scsw_cstat(&irb->scsw), scsw_dstat(&irb->scsw),
++		       scsw_cc(&irb->scsw), req->intrc);
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+ 		       " device %s: Failing CCW: %p\n",
+ 		       dev_name(&device->cdev->dev),
+@@ -3119,9 +3120,10 @@ static void dasd_eckd_dump_sense_tcw(str
+ 		      " I/O status report for device %s:\n",
+ 		      dev_name(&device->cdev->dev));
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+-		       " in req: %p CS: 0x%02X DS: 0x%02X "
++		       " in req: %p CS: 0x%02X DS: 0x%02X CC: 0x%02X RC: %d "
+ 		       "fcxs: 0x%02X schxs: 0x%02X\n", req,
+ 		       scsw_cstat(&irb->scsw), scsw_dstat(&irb->scsw),
++		       scsw_cc(&irb->scsw), req->intrc,
+ 		       irb->scsw.tm.fcxs, irb->scsw.tm.schxs);
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+ 		       " device %s: Failing TCW: %p\n",
 
 -- 
 blue skies,
