@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 01/38] pm: Move nvs routines into a seperate file.
-Date: Thu, 04 Jun 2009 18:18:48 +0200
-Message-ID: <20090604161859.713228968__41978.7385654219$1244142057$gmane$org@de.ibm.com>
+Subject: [patch 33/38] pm: con3270 power management callbacks.
+Date: Thu, 04 Jun 2009 18:19:20 +0200
+Message-ID: <20090604161907.542105279__8468.04554244063$1244142202$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=swsusp_split_out_nvs.patch
+Content-Disposition: inline; filename=pm_3270.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,362 +21,272 @@ To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.lin
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-The *_nvs_* routines in swsusp.c make use of the io*map()
-functions, which are only provided for HAS_IOMEM, thus
-breaking compilation if HAS_IOMEM is not set. Fix this
-by moving the *_nvs_* routines into nvs.c, which is only
-compiled if HAS_IOMEM is set.
+Introduce the power management callbacks to the 3270 driver. On suspend
+the current 3270 view is deactivated and for non-console 3270 device
+the release callback is done. This disconnects the current tty /
+fullscreen application from the 3270 device. On resume the current
+view is reactivated, on the tty you get a fresh login.
+If the system panics before the 3270 device has been resumed, the ccw
+device for the 3270 console is reactivated with ccw_device_force_console.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- include/linux/suspend.h |   18 ++++--
- kernel/power/Kconfig    |    4 +
- kernel/power/Makefile   |    1 
- kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/swsusp.c   |  122 --------------------------------------------
- 5 files changed, 147 insertions(+), 129 deletions(-)
+ drivers/s390/char/con3270.c |   12 +++---
+ drivers/s390/char/fs3270.c  |   16 +++++---
+ drivers/s390/char/raw3270.c |   84 ++++++++++++++++++++++++++++++++++++++------
+ drivers/s390/char/raw3270.h |   12 +++---
+ 4 files changed, 95 insertions(+), 29 deletions(-)
 
-Index: linux-2.6/kernel/power/nvs.c
+Index: linux-2.6/drivers/s390/char/raw3270.c
 ===================================================================
---- /dev/null
-+++ linux-2.6/kernel/power/nvs.c
-@@ -0,0 +1,131 @@
-+/*
-+ * Routines for NVS memory handling
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/mm.h>
-+#include <linux/suspend.h>
-+
-+/*
-+ * Platforms, like ACPI, may want us to save some memory used by them during
-+ * hibernation and to restore the contents of this memory during the subsequent
-+ * resume.  The code below implements a mechanism allowing us to do that.
-+ */
-+
-+struct nvs_page {
-+	unsigned long phys_start;
-+	unsigned int size;
-+	void *kaddr;
-+	void *data;
-+	struct list_head node;
-+};
-+
-+static LIST_HEAD(nvs_list);
-+
-+/**
-+ *	hibernate_nvs_register - register platform NVS memory region to save
-+ *	@start - physical address of the region
-+ *	@size - size of the region
-+ *
-+ *	The NVS region need not be page-aligned (both ends) and we arrange
-+ *	things so that the data from page-aligned addresses in this region will
-+ *	be copied into separate RAM pages.
-+ */
-+int hibernate_nvs_register(unsigned long start, unsigned long size)
-+{
-+	struct nvs_page *entry, *next;
-+
-+	while (size > 0) {
-+		unsigned int nr_bytes;
-+
-+		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
-+		if (!entry)
-+			goto Error;
-+
-+		list_add_tail(&entry->node, &nvs_list);
-+		entry->phys_start = start;
-+		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
-+		entry->size = (size < nr_bytes) ? size : nr_bytes;
-+
-+		start += entry->size;
-+		size -= entry->size;
-+	}
-+	return 0;
-+
-+ Error:
-+	list_for_each_entry_safe(entry, next, &nvs_list, node) {
-+		list_del(&entry->node);
-+		kfree(entry);
-+	}
-+	return -ENOMEM;
-+}
-+
-+/**
-+ *	hibernate_nvs_free - free data pages allocated for saving NVS regions
-+ */
-+void hibernate_nvs_free(void)
-+{
-+	struct nvs_page *entry;
-+
-+	list_for_each_entry(entry, &nvs_list, node)
-+		if (entry->data) {
-+			free_page((unsigned long)entry->data);
-+			entry->data = NULL;
-+			if (entry->kaddr) {
-+				iounmap(entry->kaddr);
-+				entry->kaddr = NULL;
-+			}
-+		}
-+}
-+
-+/**
-+ *	hibernate_nvs_alloc - allocate memory necessary for saving NVS regions
-+ */
-+int hibernate_nvs_alloc(void)
-+{
-+	struct nvs_page *entry;
-+
-+	list_for_each_entry(entry, &nvs_list, node) {
-+		entry->data = (void *)__get_free_page(GFP_KERNEL);
-+		if (!entry->data) {
-+			hibernate_nvs_free();
-+			return -ENOMEM;
-+		}
-+	}
-+	return 0;
-+}
-+
-+/**
-+ *	hibernate_nvs_save - save NVS memory regions
-+ */
-+void hibernate_nvs_save(void)
-+{
-+	struct nvs_page *entry;
-+
-+	printk(KERN_INFO "PM: Saving platform NVS memory\n");
-+
-+	list_for_each_entry(entry, &nvs_list, node)
-+		if (entry->data) {
-+			entry->kaddr = ioremap(entry->phys_start, entry->size);
-+			memcpy(entry->data, entry->kaddr, entry->size);
-+		}
-+}
-+
-+/**
-+ *	hibernate_nvs_restore - restore NVS memory regions
-+ *
-+ *	This function is going to be called with interrupts disabled, so it
-+ *	cannot iounmap the virtual addresses used to access the NVS region.
-+ */
-+void hibernate_nvs_restore(void)
-+{
-+	struct nvs_page *entry;
-+
-+	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
-+
-+	list_for_each_entry(entry, &nvs_list, node)
-+		if (entry->data)
-+			memcpy(entry->kaddr, entry->data, entry->size);
-+}
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -262,125 +262,3 @@ int swsusp_shrink_memory(void)
+--- linux-2.6.orig/drivers/s390/char/raw3270.c
++++ linux-2.6/drivers/s390/char/raw3270.c
+@@ -1,11 +1,10 @@
+ /*
+- *  drivers/s390/char/raw3270.c
+- *    IBM/3270 Driver - core functions.
++ * IBM/3270 Driver - core functions.
+  *
+- *  Author(s):
+- *    Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
+- *    Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
+- *	-- Copyright (C) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ * Author(s):
++ *   Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
++ *   Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *     Copyright IBM Corp. 2003, 2009
+  */
  
+ #include <linux/bootmem.h>
+@@ -61,6 +60,7 @@ struct raw3270 {
+ #define RAW3270_FLAGS_ATTN	2	/* Device sent an ATTN interrupt */
+ #define RAW3270_FLAGS_READY	4	/* Device is useable by views */
+ #define RAW3270_FLAGS_CONSOLE	8	/* Device is the console. */
++#define RAW3270_FLAGS_FROZEN	16      /* set if 3270 is frozen for suspend */
+ 
+ /* Semaphore to protect global data of raw3270 (devices, views, etc). */
+ static DEFINE_MUTEX(raw3270_mutex);
+@@ -306,7 +306,8 @@ raw3270_start(struct raw3270_view *view,
+ 
+ 	spin_lock_irqsave(get_ccwdev_lock(view->dev->cdev), flags);
+ 	rp = view->dev;
+-	if (!rp || rp->view != view)
++	if (!rp || rp->view != view ||
++	    test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
+ 		rc = -EACCES;
+ 	else if (!test_bit(RAW3270_FLAGS_READY, &rp->flags))
+ 		rc = -ENODEV;
+@@ -323,7 +324,8 @@ raw3270_start_locked(struct raw3270_view
+ 	int rc;
+ 
+ 	rp = view->dev;
+-	if (!rp || rp->view != view)
++	if (!rp || rp->view != view ||
++	    test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
+ 		rc = -EACCES;
+ 	else if (!test_bit(RAW3270_FLAGS_READY, &rp->flags))
+ 		rc = -ENODEV;
+@@ -764,7 +766,8 @@ raw3270_reset(struct raw3270_view *view)
+ 	int rc;
+ 
+ 	rp = view->dev;
+-	if (!rp || rp->view != view)
++	if (!rp || rp->view != view ||
++	    test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
+ 		rc = -EACCES;
+ 	else if (!test_bit(RAW3270_FLAGS_READY, &rp->flags))
+ 		rc = -ENODEV;
+@@ -922,6 +925,8 @@ raw3270_activate_view(struct raw3270_vie
+ 		rc = 0;
+ 	else if (!test_bit(RAW3270_FLAGS_READY, &rp->flags))
+ 		rc = -ENODEV;
++	else if (test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
++		rc = -EACCES;
+ 	else {
+ 		oldview = NULL;
+ 		if (rp->view) {
+@@ -969,7 +974,8 @@ raw3270_deactivate_view(struct raw3270_v
+ 		list_del_init(&view->list);
+ 		list_add_tail(&view->list, &rp->view_list);
+ 		/* Try to activate another view. */
+-		if (test_bit(RAW3270_FLAGS_READY, &rp->flags)) {
++		if (test_bit(RAW3270_FLAGS_READY, &rp->flags) &&
++		    !test_bit(RAW3270_FLAGS_FROZEN, &rp->flags)) {
+ 			list_for_each_entry(view, &rp->view_list, list) {
+ 				rp->view = view;
+ 				if (view->fn->activate(view) == 0)
+@@ -1068,7 +1074,8 @@ raw3270_del_view(struct raw3270_view *vi
+ 		rp->view = NULL;
+ 	}
+ 	list_del_init(&view->list);
+-	if (!rp->view && test_bit(RAW3270_FLAGS_READY, &rp->flags)) {
++	if (!rp->view && test_bit(RAW3270_FLAGS_READY, &rp->flags) &&
++	    !test_bit(RAW3270_FLAGS_FROZEN, &rp->flags)) {
+ 		/* Try to activate another view. */
+ 		list_for_each_entry(nv, &rp->view_list, list) {
+ 			if (nv->fn->activate(nv) == 0) {
+@@ -1337,6 +1344,58 @@ raw3270_set_offline (struct ccw_device *
  	return 0;
  }
--
--/*
-- * Platforms, like ACPI, may want us to save some memory used by them during
-- * hibernation and to restore the contents of this memory during the subsequent
-- * resume.  The code below implements a mechanism allowing us to do that.
-- */
--
--struct nvs_page {
--	unsigned long phys_start;
--	unsigned int size;
--	void *kaddr;
--	void *data;
--	struct list_head node;
--};
--
--static LIST_HEAD(nvs_list);
--
--/**
-- *	hibernate_nvs_register - register platform NVS memory region to save
-- *	@start - physical address of the region
-- *	@size - size of the region
-- *
-- *	The NVS region need not be page-aligned (both ends) and we arrange
-- *	things so that the data from page-aligned addresses in this region will
-- *	be copied into separate RAM pages.
-- */
--int hibernate_nvs_register(unsigned long start, unsigned long size)
--{
--	struct nvs_page *entry, *next;
--
--	while (size > 0) {
--		unsigned int nr_bytes;
--
--		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
--		if (!entry)
--			goto Error;
--
--		list_add_tail(&entry->node, &nvs_list);
--		entry->phys_start = start;
--		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
--		entry->size = (size < nr_bytes) ? size : nr_bytes;
--
--		start += entry->size;
--		size -= entry->size;
--	}
--	return 0;
--
-- Error:
--	list_for_each_entry_safe(entry, next, &nvs_list, node) {
--		list_del(&entry->node);
--		kfree(entry);
--	}
--	return -ENOMEM;
--}
--
--/**
-- *	hibernate_nvs_free - free data pages allocated for saving NVS regions
-- */
--void hibernate_nvs_free(void)
--{
--	struct nvs_page *entry;
--
--	list_for_each_entry(entry, &nvs_list, node)
--		if (entry->data) {
--			free_page((unsigned long)entry->data);
--			entry->data = NULL;
--			if (entry->kaddr) {
--				iounmap(entry->kaddr);
--				entry->kaddr = NULL;
--			}
--		}
--}
--
--/**
-- *	hibernate_nvs_alloc - allocate memory necessary for saving NVS regions
-- */
--int hibernate_nvs_alloc(void)
--{
--	struct nvs_page *entry;
--
--	list_for_each_entry(entry, &nvs_list, node) {
--		entry->data = (void *)__get_free_page(GFP_KERNEL);
--		if (!entry->data) {
--			hibernate_nvs_free();
--			return -ENOMEM;
--		}
--	}
--	return 0;
--}
--
--/**
-- *	hibernate_nvs_save - save NVS memory regions
-- */
--void hibernate_nvs_save(void)
--{
--	struct nvs_page *entry;
--
--	printk(KERN_INFO "PM: Saving platform NVS memory\n");
--
--	list_for_each_entry(entry, &nvs_list, node)
--		if (entry->data) {
--			entry->kaddr = ioremap(entry->phys_start, entry->size);
--			memcpy(entry->data, entry->kaddr, entry->size);
--		}
--}
--
--/**
-- *	hibernate_nvs_restore - restore NVS memory regions
-- *
-- *	This function is going to be called with interrupts disabled, so it
-- *	cannot iounmap the virtual addresses used to access the NVS region.
-- */
--void hibernate_nvs_restore(void)
--{
--	struct nvs_page *entry;
--
--	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
--
--	list_for_each_entry(entry, &nvs_list, node)
--		if (entry->data)
--			memcpy(entry->kaddr, entry->data, entry->size);
--}
-Index: linux-2.6/kernel/power/Kconfig
-===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -116,9 +116,13 @@ config SUSPEND_FREEZER
  
- 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
- 
-+config NVS
-+	bool
++static int raw3270_pm_stop(struct ccw_device *cdev)
++{
++	struct raw3270 *rp;
++	struct raw3270_view *view;
++	unsigned long flags;
 +
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
- 	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-+	select NVS if HAS_IOMEM
- 	---help---
- 	  Enable the suspend to disk (STD) functionality, which is usually
- 	  called "hibernation" in user interfaces.  STD checkpoints the
-Index: linux-2.6/kernel/power/Makefile
-===================================================================
---- linux-2.6.orig/kernel/power/Makefile
-+++ linux-2.6/kernel/power/Makefile
-@@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
- obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
-+obj-$(CONFIG_NVS)		+= nvs.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-Index: linux-2.6/include/linux/suspend.h
-===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -245,11 +245,6 @@ extern unsigned long get_safe_page(gfp_t
- 
- extern void hibernation_set_ops(struct platform_hibernation_ops *ops);
- extern int hibernate(void);
--extern int hibernate_nvs_register(unsigned long start, unsigned long size);
--extern int hibernate_nvs_alloc(void);
--extern void hibernate_nvs_free(void);
--extern void hibernate_nvs_save(void);
--extern void hibernate_nvs_restore(void);
- extern bool system_entering_hibernation(void);
- #else /* CONFIG_HIBERNATION */
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
-@@ -258,6 +253,16 @@ static inline void swsusp_unset_page_fre
- 
- static inline void hibernation_set_ops(struct platform_hibernation_ops *ops) {}
- static inline int hibernate(void) { return -ENOSYS; }
-+static inline bool system_entering_hibernation(void) { return false; }
-+#endif /* CONFIG_HIBERNATION */
++	rp = cdev->dev.driver_data;
++	if (!rp)
++		return 0;
++	spin_lock_irqsave(get_ccwdev_lock(rp->cdev), flags);
++	if (rp->view)
++		rp->view->fn->deactivate(rp->view);
++	if (!test_bit(RAW3270_FLAGS_CONSOLE, &rp->flags)) {
++		/*
++		 * Release tty and fullscreen for all non-console
++		 * devices.
++		 */
++		list_for_each_entry(view, &rp->view_list, list) {
++			if (view->fn->release)
++				view->fn->release(view);
++		}
++	}
++	set_bit(RAW3270_FLAGS_FROZEN, &rp->flags);
++	spin_unlock_irqrestore(get_ccwdev_lock(rp->cdev), flags);
++	return 0;
++}
 +
-+#ifdef CONFIG_NVS
-+extern int hibernate_nvs_register(unsigned long start, unsigned long size);
-+extern int hibernate_nvs_alloc(void);
-+extern void hibernate_nvs_free(void);
-+extern void hibernate_nvs_save(void);
-+extern void hibernate_nvs_restore(void);
-+#else /* CONFIG_NVS */
- static inline int hibernate_nvs_register(unsigned long a, unsigned long b)
++static int raw3270_pm_start(struct ccw_device *cdev)
++{
++	struct raw3270 *rp;
++	unsigned long flags;
++
++	rp = cdev->dev.driver_data;
++	if (!rp)
++		return 0;
++	spin_lock_irqsave(get_ccwdev_lock(rp->cdev), flags);
++	clear_bit(RAW3270_FLAGS_FROZEN, &rp->flags);
++	if (rp->view)
++		rp->view->fn->activate(rp->view);
++	spin_unlock_irqrestore(get_ccwdev_lock(rp->cdev), flags);
++	return 0;
++}
++
++void raw3270_pm_unfreeze(struct raw3270_view *view)
++{
++	struct raw3270 *rp;
++
++	rp = view->dev;
++	if (rp && test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
++		ccw_device_force_console();
++}
++
+ static struct ccw_device_id raw3270_id[] = {
+ 	{ CCW_DEVICE(0x3270, 0) },
+ 	{ CCW_DEVICE(0x3271, 0) },
+@@ -1360,6 +1419,9 @@ static struct ccw_driver raw3270_ccw_dri
+ 	.remove		= &raw3270_remove,
+ 	.set_online	= &raw3270_set_online,
+ 	.set_offline	= &raw3270_set_offline,
++	.freeze		= &raw3270_pm_stop,
++	.thaw		= &raw3270_pm_start,
++	.restore	= &raw3270_pm_start,
+ };
+ 
+ static int
+Index: linux-2.6/drivers/s390/char/con3270.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/char/con3270.c
++++ linux-2.6/drivers/s390/char/con3270.c
+@@ -1,11 +1,10 @@
+ /*
+- *  drivers/s390/char/con3270.c
+- *    IBM/3270 Driver - console view.
++ * IBM/3270 Driver - console view.
+  *
+- *  Author(s):
+- *    Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
+- *    Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
+- *	-- Copyright (C) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ * Author(s):
++ *   Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
++ *   Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *     Copyright IBM Corp. 2003, 2009
+  */
+ 
+ #include <linux/bootmem.h>
+@@ -530,6 +529,7 @@ con3270_flush(void)
+ 	cp = condev;
+ 	if (!cp->view.dev)
+ 		return;
++	raw3270_pm_unfreeze(&cp->view);
+ 	spin_lock_irqsave(&cp->view.lock, flags);
+ 	con3270_wait_write(cp);
+ 	cp->nr_up = 0;
+Index: linux-2.6/drivers/s390/char/fs3270.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/char/fs3270.c
++++ linux-2.6/drivers/s390/char/fs3270.c
+@@ -1,11 +1,10 @@
+ /*
+- *  drivers/s390/char/fs3270.c
+- *    IBM/3270 Driver - fullscreen driver.
++ * IBM/3270 Driver - fullscreen driver.
+  *
+- *  Author(s):
+- *    Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
+- *    Rewritten for 2.5/2.6 by Martin Schwidefsky <schwidefsky@de.ibm.com>
+- *	-- Copyright (C) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ * Author(s):
++ *   Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
++ *   Rewritten for 2.5/2.6 by Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *     Copyright IBM Corp. 2003, 2009
+  */
+ 
+ #include <linux/bootmem.h>
+@@ -399,6 +398,11 @@ fs3270_free_view(struct raw3270_view *vi
+ static void
+ fs3270_release(struct raw3270_view *view)
  {
- 	return 0;
-@@ -266,8 +271,7 @@ static inline int hibernate_nvs_alloc(vo
- static inline void hibernate_nvs_free(void) {}
- static inline void hibernate_nvs_save(void) {}
- static inline void hibernate_nvs_restore(void) {}
--static inline bool system_entering_hibernation(void) { return false; }
--#endif /* CONFIG_HIBERNATION */
-+#endif /* CONFIG_NVS */
++	struct fs3270 *fp;
++
++	fp = (struct fs3270 *) view;
++	if (fp->fs_pid)
++		kill_pid(fp->fs_pid, SIGHUP, 1);
+ }
  
- #ifdef CONFIG_PM_SLEEP
- void save_processor_state(void);
+ /* View to a 3270 device. Can be console, tty or fullscreen. */
+Index: linux-2.6/drivers/s390/char/raw3270.h
+===================================================================
+--- linux-2.6.orig/drivers/s390/char/raw3270.h
++++ linux-2.6/drivers/s390/char/raw3270.h
+@@ -1,11 +1,10 @@
+ /*
+- *  drivers/s390/char/raw3270.h
+- *    IBM/3270 Driver
++ * IBM/3270 Driver
+  *
+- *  Author(s):
+- *    Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
+- *    Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
+- *	-- Copyright (C) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ * Author(s):
++ *   Original 3270 Code for 2.4 written by Richard Hitt (UTS Global)
++ *   Rewritten for 2.5 by Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *     Copyright IBM Corp. 2003, 2009
+  */
+ 
+ #include <asm/idals.h>
+@@ -195,6 +194,7 @@ void raw3270_wait_cons_dev(struct raw327
+ /* Notifier for device addition/removal */
+ int raw3270_register_notifier(void (*notifier)(int, int));
+ void raw3270_unregister_notifier(void (*notifier)(int, int));
++void raw3270_pm_unfreeze(struct raw3270_view *);
+ 
+ /*
+  * Little memory allocator for string objects. 
 
 -- 
 blue skies,
