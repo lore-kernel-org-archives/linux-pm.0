@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 36/38] pm: monreader power management callbacks.
-Date: Thu, 04 Jun 2009 18:19:23 +0200
-Message-ID: <20090604161908.288290620__34770.9269183271$1244141524$gmane$org@de.ibm.com>
+Subject: [patch 16/38] pm: lcs driver power management callbacks
+Date: Thu, 04 Jun 2009 18:19:03 +0200
+Message-ID: <20090604161903.277373455__3593.06008690528$1244141685$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_monreader.patch
+Content-Disposition: inline; filename=pm_lcs.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,243 +18,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Klaus-Dieter Wacker <kdwacker@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+From: Klaus-Dieter Wacket <kdwacker@de.ibm.com>
 
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Signed-off-by: Klaus-Dieter Wacker <kdwacker@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/char/monreader.c |  140 ++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 128 insertions(+), 12 deletions(-)
+ drivers/s390/net/lcs.c |   74 +++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 65 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/drivers/s390/char/monreader.c
+Index: linux-2.6/drivers/s390/net/lcs.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/char/monreader.c
-+++ linux-2.6/drivers/s390/char/monreader.c
-@@ -1,10 +1,9 @@
+--- linux-2.6.orig/drivers/s390/net/lcs.c
++++ linux-2.6/drivers/s390/net/lcs.c
+@@ -1,15 +1,12 @@
  /*
-- * drivers/s390/char/monreader.c
+- *  linux/drivers/s390/net/lcs.c
 - *
-  * Character device driver for reading z/VM *MONITOR service records.
+  *  Linux for S/390 Lan Channel Station Network Driver
   *
-- *   Copyright IBM Corp. 2004, 2008
-- *   Author: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-+ * Copyright IBM Corp. 2004, 2009
-+ *
-+ * Author: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-  */
+- *  Copyright (C)  1999-2001 IBM Deutschland Entwicklung GmbH,
+- *			     IBM Corporation
+- *    Author(s): Original Code written by
+- *			  DJ Barrow (djbarrow@de.ibm.com,barrow_dj@yahoo.com)
+- *		 Rewritten by
+- *			  Frank Pavlic (fpavlic@de.ibm.com) and
+- *		 	  Martin Schwidefsky <schwidefsky@de.ibm.com>
++ *  Copyright IBM Corp. 1999, 2009
++ *  Author(s): Original Code written by
++ *			DJ Barrow <djbarrow@de.ibm.com,barrow_dj@yahoo.com>
++ *	       Rewritten by
++ *			Frank Pavlic <fpavlic@de.ibm.com> and
++ *		 	Martin Schwidefsky <schwidefsky@de.ibm.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -2313,6 +2310,60 @@ lcs_remove_device(struct ccwgroup_device
+ 	put_device(&ccwgdev->dev);
+ }
  
- #define KMSG_COMPONENT "monreader"
-@@ -22,6 +21,7 @@
- #include <linux/spinlock.h>
- #include <linux/interrupt.h>
- #include <linux/poll.h>
-+#include <linux/device.h>
- #include <net/iucv/iucv.h>
- #include <asm/uaccess.h>
- #include <asm/ebcdic.h>
-@@ -78,6 +78,7 @@ static u8 user_data_sever[16] = {
- 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
- };
- 
-+static struct device *monreader_device;
- 
- /******************************************************************************
-  *                             helper functions                               *
-@@ -319,11 +320,12 @@ static int mon_open(struct inode *inode,
- 		goto out_path;
- 	}
- 	filp->private_data = monpriv;
-+	monreader_device->driver_data = monpriv;
- 	unlock_kernel();
- 	return nonseekable_open(inode, filp);
- 
- out_path:
--	kfree(monpriv->path);
-+	iucv_path_free(monpriv->path);
- out_priv:
- 	mon_free_mem(monpriv);
- out_use:
-@@ -341,10 +343,13 @@ static int mon_close(struct inode *inode
- 	/*
- 	 * Close IUCV connection and unregister
- 	 */
--	rc = iucv_path_sever(monpriv->path, user_data_sever);
--	if (rc)
--		pr_warning("Disconnecting the z/VM *MONITOR system service "
--			   "failed with rc=%i\n", rc);
-+	if (monpriv->path) {
-+		rc = iucv_path_sever(monpriv->path, user_data_sever);
-+		if (rc)
-+			pr_warning("Disconnecting the z/VM *MONITOR system "
-+				   "service failed with rc=%i\n", rc);
-+		iucv_path_free(monpriv->path);
-+	}
- 
- 	atomic_set(&monpriv->iucv_severed, 0);
- 	atomic_set(&monpriv->iucv_connected, 0);
-@@ -452,6 +457,94 @@ static struct miscdevice mon_dev = {
- 	.minor      = MISC_DYNAMIC_MINOR,
- };
- 
-+
-+/******************************************************************************
-+ *                              suspend / resume                              *
-+ *****************************************************************************/
-+static int monreader_freeze(struct device *dev)
++static int lcs_pm_suspend(struct lcs_card *card)
 +{
-+	struct mon_private *monpriv = dev->driver_data;
-+	int rc;
-+
-+	if (!monpriv)
-+		return 0;
-+	if (monpriv->path) {
-+		rc = iucv_path_sever(monpriv->path, user_data_sever);
-+		if (rc)
-+			pr_warning("Disconnecting the z/VM *MONITOR system "
-+				   "service failed with rc=%i\n", rc);
-+		iucv_path_free(monpriv->path);
-+	}
-+	atomic_set(&monpriv->iucv_severed, 0);
-+	atomic_set(&monpriv->iucv_connected, 0);
-+	atomic_set(&monpriv->read_ready, 0);
-+	atomic_set(&monpriv->msglim_count, 0);
-+	monpriv->write_index  = 0;
-+	monpriv->read_index   = 0;
-+	monpriv->path = NULL;
++	if (card->dev)
++		netif_device_detach(card->dev);
++	lcs_set_allowed_threads(card, 0);
++	lcs_wait_for_threads(card, 0xffffffff);
++	if (card->state != DEV_STATE_DOWN)
++		__lcs_shutdown_device(card->gdev, 1);
 +	return 0;
 +}
 +
-+static int monreader_thaw(struct device *dev)
++static int lcs_pm_resume(struct lcs_card *card)
 +{
-+	struct mon_private *monpriv = dev->driver_data;
-+	int rc;
++	int rc = 0;
 +
-+	if (!monpriv)
-+		return 0;
-+	rc = -ENOMEM;
-+	monpriv->path = iucv_path_alloc(MON_MSGLIM, IUCV_IPRMDATA, GFP_KERNEL);
-+	if (!monpriv->path)
-+		goto out;
-+	rc = iucv_path_connect(monpriv->path, &monreader_iucv_handler,
-+			       MON_SERVICE, NULL, user_data_connect, monpriv);
++	if (card->state == DEV_STATE_RECOVER)
++		rc = lcs_new_device(card->gdev);
++	if (card->dev)
++		netif_device_attach(card->dev);
 +	if (rc) {
-+		pr_err("Connecting to the z/VM *MONITOR system service "
-+		       "failed with rc=%i\n", rc);
-+		goto out_path;
++		dev_warn(&card->gdev->dev, "The lcs device driver "
++			"failed to recover the device\n");
 +	}
-+	wait_event(mon_conn_wait_queue,
-+		   atomic_read(&monpriv->iucv_connected) ||
-+		   atomic_read(&monpriv->iucv_severed));
-+	if (atomic_read(&monpriv->iucv_severed))
-+		goto out_path;
-+	return 0;
-+out_path:
-+	rc = -EIO;
-+	iucv_path_free(monpriv->path);
-+	monpriv->path = NULL;
-+out:
-+	atomic_set(&monpriv->iucv_severed, 1);
 +	return rc;
 +}
 +
-+static int monreader_restore(struct device *dev)
++static int lcs_prepare(struct ccwgroup_device *gdev)
 +{
-+	int rc;
-+
-+	segment_unload(mon_dcss_name);
-+	rc = segment_load(mon_dcss_name, SEGMENT_SHARED,
-+			  &mon_dcss_start, &mon_dcss_end);
-+	if (rc < 0) {
-+		segment_warning(rc, mon_dcss_name);
-+		panic("fatal monreader resume error: no monitor dcss\n");
-+	}
-+	return monreader_thaw(dev);
++	return 0;
 +}
 +
-+static struct dev_pm_ops monreader_pm_ops = {
-+	.freeze  = monreader_freeze,
-+	.thaw    = monreader_thaw,
-+	.restore = monreader_restore,
-+};
++static void lcs_complete(struct ccwgroup_device *gdev)
++{
++	return;
++}
 +
-+static struct device_driver monreader_driver = {
-+	.name = "monreader",
-+	.bus  = &iucv_bus,
-+	.pm   = &monreader_pm_ops,
-+};
++static int lcs_freeze(struct ccwgroup_device *gdev)
++{
++	struct lcs_card *card = dev_get_drvdata(&gdev->dev);
++	return lcs_pm_suspend(card);
++}
 +
++static int lcs_thaw(struct ccwgroup_device *gdev)
++{
++	struct lcs_card *card = dev_get_drvdata(&gdev->dev);
++	return lcs_pm_resume(card);
++}
 +
- /******************************************************************************
-  *                              module init/exit                              *
-  *****************************************************************************/
-@@ -475,16 +568,33 @@ static int __init mon_init(void)
- 		return rc;
- 	}
- 
-+	rc = driver_register(&monreader_driver);
-+	if (rc)
-+		goto out_iucv;
-+	monreader_device = kzalloc(sizeof(struct device), GFP_KERNEL);
-+	if (!monreader_device)
-+		goto out_driver;
-+	dev_set_name(monreader_device, "monreader-dev");
-+	monreader_device->bus = &iucv_bus;
-+	monreader_device->parent = iucv_root;
-+	monreader_device->driver = &monreader_driver;
-+	monreader_device->release = (void (*)(struct device *))kfree;
-+	rc = device_register(monreader_device);
-+	if (rc) {
-+		kfree(monreader_device);
-+		goto out_driver;
-+	}
++static int lcs_restore(struct ccwgroup_device *gdev)
++{
++	struct lcs_card *card = dev_get_drvdata(&gdev->dev);
++	return lcs_pm_resume(card);
++}
 +
- 	rc = segment_type(mon_dcss_name);
- 	if (rc < 0) {
- 		segment_warning(rc, mon_dcss_name);
--		goto out_iucv;
-+		goto out_device;
- 	}
- 	if (rc != SEG_TYPE_SC) {
- 		pr_err("The specified *MONITOR DCSS %s does not have the "
- 		       "required type SC\n", mon_dcss_name);
- 		rc = -EINVAL;
--		goto out_iucv;
-+		goto out_device;
- 	}
+ /**
+  * LCS ccwgroup driver registration
+  */
+@@ -2325,6 +2376,11 @@ static struct ccwgroup_driver lcs_group_
+ 	.remove      = lcs_remove_device,
+ 	.set_online  = lcs_new_device,
+ 	.set_offline = lcs_shutdown_device,
++	.prepare     = lcs_prepare,
++	.complete    = lcs_complete,
++	.freeze	     = lcs_freeze,
++	.thaw	     = lcs_thaw,
++	.restore     = lcs_restore,
+ };
  
- 	rc = segment_load(mon_dcss_name, SEGMENT_SHARED,
-@@ -492,7 +602,7 @@ static int __init mon_init(void)
- 	if (rc < 0) {
- 		segment_warning(rc, mon_dcss_name);
- 		rc = -EINVAL;
--		goto out_iucv;
-+		goto out_device;
- 	}
- 	dcss_mkname(mon_dcss_name, &user_data_connect[8]);
- 
-@@ -503,6 +613,10 @@ static int __init mon_init(void)
- 
- out:
- 	segment_unload(mon_dcss_name);
-+out_device:
-+	device_unregister(monreader_device);
-+out_driver:
-+	driver_unregister(&monreader_driver);
- out_iucv:
- 	iucv_unregister(&monreader_iucv_handler, 1);
- 	return rc;
-@@ -512,6 +626,8 @@ static void __exit mon_exit(void)
- {
- 	segment_unload(mon_dcss_name);
- 	WARN_ON(misc_deregister(&mon_dev) != 0);
-+	device_unregister(monreader_device);
-+	driver_unregister(&monreader_driver);
- 	iucv_unregister(&monreader_iucv_handler, 1);
- 	return;
- }
+ /**
 
 -- 
 blue skies,
