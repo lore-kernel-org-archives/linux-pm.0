@@ -1,15 +1,13 @@
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/4] cgroup freezer: Fix buggy resume test
- for tasks	frozen with cgroup freezer
-Date: Thu, 04 Jun 2009 08:55:17 +0800
-Message-ID: <4A271B75.7090607__20871.1160616533$1244076901$gmane$org@cn.fujitsu.com>
-References: <cover.1244019829.git.matthltc@us.ibm.com>	<91260d5797bcf233ca54c7b41da8278e99b4ca66.1244019829.git.matthltc@us.ibm.com>
-	<20090603160551.GB7848@us.ibm.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] add MAX17040 Fuel Gauge driver
+Date: Thu, 4 Jun 2009 00:37:17 -0700
+Message-ID: <20090604003717.b6941159.akpm__36613.2273724817$1244101098$gmane$org@linux-foundation.org>
+References: <4A25DB40.6010904@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090603160551.GB7848@us.ibm.com>
+In-Reply-To: <4A25DB40.6010904@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +17,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Containers <containers@lists.linux-foundation.org>, Pavel Machek <pavel@suse.cz>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
+To: Minkyu Kang <mk7.kang@samsung.com>
+Cc: kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Matt Helsley (matthltc@us.ibm.com):
->> -int cgroup_frozen(struct task_struct *task)
->> +int cgroup_freezing_or_frozen(struct task_struct *task)
->>  {
->>  	struct freezer *freezer;
->>  	enum freezer_state state;
->>
->>  	task_lock(task);
->>  	freezer = task_freezer(task);
->> -	state = freezer->state;
->> +	if (!freezer->css.cgroup->parent)
->> +		state = CGROUP_THAWED; /* root cgroup can't be frozen */
->> +	else
->> +		state = freezer->state;
-> 
-> Why do you have to add this special-casing now?  I thought
-> we were already preventing freezing the root cgroup, so
-> freezer->state should be sane in that case anyway?
-> 
+On Wed, 03 Jun 2009 11:09:04 +0900 Minkyu Kang <mk7.kang@samsung.com> wrote:
 
-Yeah, IIRC top_freezer->state is alwasy CGROUP_THAWED, so this
-check is redundant.
+> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
+> This patch adds support the MAX17040 Fuel Gauge
+> 
+> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
+> ---
+>  drivers/power/Kconfig            |    8 +
+>  drivers/power/Makefile           |    3 +-
+>  drivers/power/max17040_battery.c |  304 ++++++++++++++++++++++++++++++++++++++
+>  include/linux/max17040_battery.h |   19 +++
 
->>  	task_unlock(task);
->>
->> -	return state == CGROUP_FROZEN;
->> +	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
->>  }
+Please Cc Anton Vorontsov <cbou@mail.ru> on drivers/power patches.
+
+>
+> ...
+>
+> +static int __devinit max17040_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	struct max17040_chip *chip;
+> +	int ret;
+> +
+> +	chip = kzalloc(sizeof(struct max17040_chip), GFP_KERNEL);
+> +	if (!chip)
+> +		return -ENOMEM;
+> +
+> +	chip->client = client;
+> +	pdata = client->dev.platform_data;
+> +
+> +	i2c_set_clientdata(client, chip);
+> +	max17040 = chip;
+> +
+> +	max17040_reset();
+> +
+> +	max17040_get_version();
+> +
+> +	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
+> +	schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +
+> +	bat_ps.properties = max17040_battery_props;
+> +	bat_ps.num_properties = ARRAY_SIZE(max17040_battery_props);
+> +
+> +	ret = power_supply_register(&client->dev, &bat_ps);
+> +	if (ret) {
+> +		dev_err(&max17040->client->dev,
+> +				"failed: power supply register\n");
+> +		kfree(chip);
+> +		max17040 = NULL;
+> +		i2c_set_clientdata(client, NULL);
+> +		return -1;
+
+This leaves the delayed work still pending.
+
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __devexit max17040_remove(struct i2c_client *client)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	kfree(chip);
+> +	max17040 = NULL;
+> +	i2c_set_clientdata(client, NULL);
+> +	power_supply_unregister(&bat_ps);
+> +	return 0;
+> +}
+
+Shouldn't max17040_remove() also cancel the delayed_work?
+
+> +static int max17040_suspend(struct i2c_client *client,
+> +		pm_message_t state)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	cancel_delayed_work(&chip->work);
+> +	return 0;
+> +}
+> +
+> +static int max17040_resume(struct i2c_client *client)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +	return 0;
+> +}
