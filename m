@@ -1,13 +1,14 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 38/38] pm: ap bus power management callbacks
-Date: Thu, 04 Jun 2009 18:19:25 +0200
-Message-ID: <20090604161908.768328886__18864.9281081327$1244138895$gmane$org@de.ibm.com>
+Subject: [patch 34/38] pm: memory hotplug power management
+	callbacks
+Date: Thu, 04 Jun 2009 18:19:21 +0200
+Message-ID: <20090604161907.773749056__9990.24736597693$1244139024$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_ap_bus.patch
+Content-Disposition: inline; filename=pm_sclp_mem.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,152 +19,138 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Felix Beck <felix.beck@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Felix Beck <felix.beck@de.ibm.com>
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-Signed-off-by: Felix Beck <felix.beck@de.ibm.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/crypto/ap_bus.c |   85 +++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 83 insertions(+), 2 deletions(-)
+ drivers/s390/char/sclp_cmd.c |   42 ++++++++++++++++++++++++++++++++++++++----
+ mm/Kconfig                   |    4 ++--
+ 2 files changed, 40 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/s390/crypto/ap_bus.c
+Index: linux-2.6/mm/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/s390/crypto/ap_bus.c
-+++ linux-2.6/drivers/s390/crypto/ap_bus.c
-@@ -54,6 +54,12 @@ static int ap_poll_thread_start(void);
- static void ap_poll_thread_stop(void);
- static void ap_request_timeout(unsigned long);
- static inline void ap_schedule_poll_timer(void);
-+static int __ap_poll_device(struct ap_device *ap_dev, unsigned long *flags);
-+static int ap_device_remove(struct device *dev);
-+static int ap_device_probe(struct device *dev);
-+static void ap_interrupt_handler(void *unused1, void *unused2);
-+static void ap_reset(struct ap_device *ap_dev);
-+static void ap_config_timeout(unsigned long ptr);
+--- linux-2.6.orig/mm/Kconfig
++++ linux-2.6/mm/Kconfig
+@@ -128,11 +128,11 @@ config SPARSEMEM_VMEMMAP
+ config MEMORY_HOTPLUG
+ 	bool "Allow for memory hot-add"
+ 	depends on SPARSEMEM || X86_64_ACPI_NUMA
+-	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
++	depends on HOTPLUG && !(HIBERNATION && !S390) && ARCH_ENABLE_MEMORY_HOTPLUG
+ 	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
  
+ comment "Memory hotplug is currently incompatible with Software Suspend"
+-	depends on SPARSEMEM && HOTPLUG && HIBERNATION
++	depends on SPARSEMEM && HOTPLUG && HIBERNATION && !S390
+ 
+ config MEMORY_HOTPLUG_SPARSE
+ 	def_bool y
+Index: linux-2.6/drivers/s390/char/sclp_cmd.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/char/sclp_cmd.c
++++ linux-2.6/drivers/s390/char/sclp_cmd.c
+@@ -1,9 +1,8 @@
  /*
-  * Module description.
-@@ -101,6 +107,10 @@ static struct hrtimer ap_poll_timer;
-  * If z/VM change to 1500000 nanoseconds to adjust to z/VM polling.*/
- static unsigned long long poll_timeout = 250000;
+- *  drivers/s390/char/sclp_cmd.c
++ * Copyright IBM Corp. 2007, 2009
+  *
+- *    Copyright IBM Corp. 2007
+- *    Author(s): Heiko Carstens <heiko.carstens@de.ibm.com>,
+- *		 Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
++ * Author(s): Heiko Carstens <heiko.carstens@de.ibm.com>,
++ *	      Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+  */
  
-+/* Suspend flag */
-+static int ap_suspend_flag;
-+static struct bus_type ap_bus_type;
-+
- /**
-  * ap_using_interrupts() - Returns non-zero if interrupt support is
-  * available.
-@@ -617,10 +627,79 @@ static int ap_uevent (struct device *dev
- 	return retval;
+ #define KMSG_COMPONENT "sclp_cmd"
+@@ -12,11 +11,13 @@
+ #include <linux/completion.h>
+ #include <linux/init.h>
+ #include <linux/errno.h>
++#include <linux/err.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+ #include <linux/mmzone.h>
+ #include <linux/memory.h>
++#include <linux/platform_device.h>
+ #include <asm/chpid.h>
+ #include <asm/sclp.h>
+ #include <asm/setup.h>
+@@ -292,6 +293,7 @@ static DEFINE_MUTEX(sclp_mem_mutex);
+ static LIST_HEAD(sclp_mem_list);
+ static u8 sclp_max_storage_id;
+ static unsigned long sclp_storage_ids[256 / BITS_PER_LONG];
++static int sclp_mem_state_changed;
+ 
+ struct memory_increment {
+ 	struct list_head list;
+@@ -450,6 +452,8 @@ static int sclp_mem_notifier(struct noti
+ 		rc = -EINVAL;
+ 		break;
+ 	}
++	if (!rc)
++		sclp_mem_state_changed = 1;
+ 	mutex_unlock(&sclp_mem_mutex);
+ 	return rc ? NOTIFY_BAD : NOTIFY_OK;
+ }
+@@ -525,6 +529,14 @@ static void __init insert_increment(u16 
+ 	list_add(&new_incr->list, prev);
  }
  
-+static int ap_bus_suspend(struct device *dev, pm_message_t state)
++static int sclp_mem_freeze(struct device *dev)
 +{
-+	struct ap_device *ap_dev = to_ap_dev(dev);
-+	unsigned long flags;
-+
-+	if (!ap_suspend_flag) {
-+		ap_suspend_flag = 1;
-+
-+		/* Disable scanning for devices, thus we do not want to scan
-+		 * for them after removing.
-+		 */
-+		del_timer_sync(&ap_config_timer);
-+		if (ap_work_queue != NULL) {
-+			destroy_workqueue(ap_work_queue);
-+			ap_work_queue = NULL;
-+		}
-+		tasklet_disable(&ap_tasklet);
-+	}
-+	/* Poll on the device until all requests are finished. */
-+	do {
-+		flags = 0;
-+		__ap_poll_device(ap_dev, &flags);
-+	} while ((flags & 1) || (flags & 2));
-+
-+	ap_device_remove(dev);
-+	return 0;
++	if (!sclp_mem_state_changed)
++		return 0;
++	pr_err("Memory hotplug state changed, suspend refused.\n");
++	return -EPERM;
 +}
 +
-+static int ap_bus_resume(struct device *dev)
-+{
-+	int rc = 0;
-+	struct ap_device *ap_dev = to_ap_dev(dev);
-+
-+	if (ap_suspend_flag) {
-+		ap_suspend_flag = 0;
-+		if (!ap_interrupts_available())
-+			ap_interrupt_indicator = NULL;
-+		ap_device_probe(dev);
-+		ap_reset(ap_dev);
-+		setup_timer(&ap_dev->timeout, ap_request_timeout,
-+			    (unsigned long) ap_dev);
-+		ap_scan_bus(NULL);
-+		init_timer(&ap_config_timer);
-+		ap_config_timer.function = ap_config_timeout;
-+		ap_config_timer.data = 0;
-+		ap_config_timer.expires = jiffies + ap_config_time * HZ;
-+		add_timer(&ap_config_timer);
-+		ap_work_queue = create_singlethread_workqueue("kapwork");
-+		if (!ap_work_queue)
-+			return -ENOMEM;
-+		tasklet_enable(&ap_tasklet);
-+		if (!ap_using_interrupts())
-+			ap_schedule_poll_timer();
-+		else
-+			tasklet_schedule(&ap_tasklet);
-+		if (ap_thread_flag)
-+			rc = ap_poll_thread_start();
-+	} else {
-+		ap_device_probe(dev);
-+		ap_reset(ap_dev);
-+		setup_timer(&ap_dev->timeout, ap_request_timeout,
-+			    (unsigned long) ap_dev);
-+	}
-+
-+	return rc;
-+}
-+
- static struct bus_type ap_bus_type = {
- 	.name = "ap",
- 	.match = &ap_bus_match,
- 	.uevent = &ap_uevent,
-+	.suspend = ap_bus_suspend,
-+	.resume = ap_bus_resume
- };
+ struct read_storage_sccb {
+ 	struct sccb_header header;
+ 	u16 max_id;
+@@ -534,8 +546,20 @@ struct read_storage_sccb {
+ 	u32 entries[0];
+ } __packed;
  
- static int ap_device_probe(struct device *dev)
-@@ -1066,7 +1145,7 @@ ap_config_timeout(unsigned long ptr)
-  */
- static inline void ap_schedule_poll_timer(void)
++static struct dev_pm_ops sclp_mem_pm_ops = {
++	.freeze		= sclp_mem_freeze,
++};
++
++static struct platform_driver sclp_mem_pdrv = {
++	.driver = {
++		.name	= "sclp_mem",
++		.pm	= &sclp_mem_pm_ops,
++	},
++};
++
+ static int __init sclp_detect_standby_memory(void)
  {
--	if (ap_using_interrupts())
-+	if (ap_using_interrupts() || ap_suspend_flag)
- 		return;
- 	if (hrtimer_is_queued(&ap_poll_timer))
- 		return;
-@@ -1384,6 +1463,8 @@ static int ap_poll_thread(void *data)
++	struct platform_device *sclp_pdev;
+ 	struct read_storage_sccb *sccb;
+ 	int i, id, assigned, rc;
  
- 	set_user_nice(current, 19);
- 	while (1) {
-+		if (ap_suspend_flag)
-+			return 0;
- 		if (need_resched()) {
- 			schedule();
- 			continue;
-@@ -1414,7 +1495,7 @@ static int ap_poll_thread_start(void)
- {
- 	int rc;
- 
--	if (ap_using_interrupts())
-+	if (ap_using_interrupts() || ap_suspend_flag)
- 		return 0;
- 	mutex_lock(&ap_poll_thread_mutex);
- 	if (!ap_poll_kthread) {
+@@ -588,7 +612,17 @@ static int __init sclp_detect_standby_me
+ 	rc = register_memory_notifier(&sclp_mem_nb);
+ 	if (rc)
+ 		goto out;
++	rc = platform_driver_register(&sclp_mem_pdrv);
++	if (rc)
++		goto out;
++	sclp_pdev = platform_device_register_simple("sclp_mem", -1, NULL, 0);
++	rc = IS_ERR(sclp_pdev) ? PTR_ERR(sclp_pdev) : 0;
++	if (rc)
++		goto out_driver;
+ 	sclp_add_standby_memory();
++	goto out;
++out_driver:
++	platform_driver_unregister(&sclp_mem_pdrv);
+ out:
+ 	free_page((unsigned long) sccb);
+ 	return rc;
 
 -- 
 blue skies,
