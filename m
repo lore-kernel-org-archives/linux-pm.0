@@ -1,13 +1,13 @@
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 24/38] pm: vmlogrdr power management callbacks
-Date: Thu, 04 Jun 2009 18:19:11 +0200
-Message-ID: <20090604161905.355196091__46864.7433016033$1244140096$gmane$org@de.ibm.com>
+Subject: [patch 30/38] PM: af_iucv power management callbacks.
+Date: Thu, 04 Jun 2009 18:19:17 +0200
+Message-ID: <20090604161906.803008077__46112.9462383271$1244140173$gmane$org@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=pm_vmlogrdr.patch
+Content-Disposition: inline; filename=pm_afiucv.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +18,207 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Stefan Weinhuber <wein@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Ursula Braun <ursula.braun@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Stefan Weinhuber <wein@de.ibm.com>
+From: Ursula Braun <ursula.braun@de.ibm.com>
 
-Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
+Patch establishes a dummy afiucv-device to make sure af_iucv is
+notified as iucv-bus device about suspend/resume.
+
+The PM freeze callback severs all iucv pathes of connected af_iucv sockets.
+The PM thaw/restore callback switches the state of all previously connected
+sockets to IUCV_DISCONN.
+
+Signed-off-by: Ursula Braun <ursula.braun@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- drivers/s390/char/vmlogrdr.c |   27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ net/iucv/af_iucv.c |  147 +++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 144 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/s390/char/vmlogrdr.c
+Index: linux-2.6/net/iucv/af_iucv.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/char/vmlogrdr.c
-+++ linux-2.6/drivers/s390/char/vmlogrdr.c
-@@ -3,7 +3,7 @@
-  *	character device driver for reading z/VM system service records
+--- linux-2.6.orig/net/iucv/af_iucv.c
++++ linux-2.6/net/iucv/af_iucv.c
+@@ -1,11 +1,12 @@
+ /*
+- *  linux/net/iucv/af_iucv.c
+- *
+  *  IUCV protocol stack for Linux on zSeries
   *
+- *  Copyright 2006 IBM Corporation
++ *  Copyright IBM Corp. 2006, 2009
   *
-- *	Copyright 2004 IBM Corporation
-+ *	Copyright IBM Corp. 2004, 2009
-  *	character device driver for reading z/VM system service records,
-  *	Version 1.0
-  *	Author(s): Xenia Tkatschow <xenia@us.ibm.com>
-@@ -660,6 +660,29 @@ static struct attribute *vmlogrdr_attrs[
- 	NULL,
- };
+  *  Author(s):	Jennifer Hunt <jenhunt@us.ibm.com>
++ *		Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
++ *  PM functions:
++ *		Ursula Braun <ursula.braun@de.ibm.com>
+  */
  
-+static int vmlogrdr_pm_prepare(struct device *dev)
+ #define KMSG_COMPONENT "af_iucv"
+@@ -78,6 +79,122 @@ static inline void low_nmcpy(unsigned ch
+        memcpy(&dst[8], src, 8);
+ }
+ 
++static int afiucv_pm_prepare(struct device *dev)
 +{
-+	int rc;
-+	struct vmlogrdr_priv_t *priv = dev->driver_data;
-+
-+	rc = 0;
-+	if (priv) {
-+		spin_lock_bh(&priv->priv_lock);
-+		if (priv->dev_in_use)
-+			rc = -EBUSY;
-+		spin_unlock_bh(&priv->priv_lock);
-+	}
-+	if (rc)
-+		pr_err("vmlogrdr: device %s is busy. Refuse to suspend.\n",
-+		       dev_name(dev));
-+	return rc;
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "afiucv_pm_prepare\n");
++#endif
++	return 0;
 +}
 +
++static void afiucv_pm_complete(struct device *dev)
++{
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "afiucv_pm_complete\n");
++#endif
++	return;
++}
 +
-+static struct dev_pm_ops vmlogrdr_pm_ops = {
-+	.prepare = vmlogrdr_pm_prepare,
++/**
++ * afiucv_pm_freeze() - Freeze PM callback
++ * @dev:	AFIUCV dummy device
++ *
++ * Sever all established IUCV communication pathes
++ */
++static int afiucv_pm_freeze(struct device *dev)
++{
++	struct iucv_sock *iucv;
++	struct sock *sk;
++	struct hlist_node *node;
++	int err = 0;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "afiucv_pm_freeze\n");
++#endif
++	read_lock(&iucv_sk_list.lock);
++	sk_for_each(sk, node, &iucv_sk_list.head) {
++		iucv = iucv_sk(sk);
++		skb_queue_purge(&iucv->send_skb_q);
++		skb_queue_purge(&iucv->backlog_skb_q);
++		switch (sk->sk_state) {
++		case IUCV_SEVERED:
++		case IUCV_DISCONN:
++		case IUCV_CLOSING:
++		case IUCV_CONNECTED:
++			if (iucv->path) {
++				err = iucv_path_sever(iucv->path, NULL);
++				iucv_path_free(iucv->path);
++				iucv->path = NULL;
++			}
++			break;
++		case IUCV_OPEN:
++		case IUCV_BOUND:
++		case IUCV_LISTEN:
++		case IUCV_CLOSED:
++		default:
++			break;
++		}
++	}
++	read_unlock(&iucv_sk_list.lock);
++	return err;
++}
++
++/**
++ * afiucv_pm_restore_thaw() - Thaw and restore PM callback
++ * @dev:	AFIUCV dummy device
++ *
++ * socket clean up after freeze
++ */
++static int afiucv_pm_restore_thaw(struct device *dev)
++{
++	struct iucv_sock *iucv;
++	struct sock *sk;
++	struct hlist_node *node;
++
++#ifdef CONFIG_PM_DEBUG
++	printk(KERN_WARNING "afiucv_pm_restore_thaw\n");
++#endif
++	read_lock(&iucv_sk_list.lock);
++	sk_for_each(sk, node, &iucv_sk_list.head) {
++		iucv = iucv_sk(sk);
++		switch (sk->sk_state) {
++		case IUCV_CONNECTED:
++			sk->sk_err = EPIPE;
++			sk->sk_state = IUCV_DISCONN;
++			sk->sk_state_change(sk);
++			break;
++		case IUCV_DISCONN:
++		case IUCV_SEVERED:
++		case IUCV_CLOSING:
++		case IUCV_LISTEN:
++		case IUCV_BOUND:
++		case IUCV_OPEN:
++		default:
++			break;
++		}
++	}
++	read_unlock(&iucv_sk_list.lock);
++	return 0;
++}
++
++static struct dev_pm_ops afiucv_pm_ops = {
++	.prepare = afiucv_pm_prepare,
++	.complete = afiucv_pm_complete,
++	.freeze = afiucv_pm_freeze,
++	.thaw = afiucv_pm_restore_thaw,
++	.restore = afiucv_pm_restore_thaw,
 +};
 +
- static struct attribute_group vmlogrdr_attr_group = {
- 	.attrs = vmlogrdr_attrs,
- };
-@@ -668,6 +691,7 @@ static struct class *vmlogrdr_class;
- static struct device_driver vmlogrdr_driver = {
- 	.name = "vmlogrdr",
- 	.bus  = &iucv_bus,
-+	.pm = &vmlogrdr_pm_ops,
- };
++static struct device_driver af_iucv_driver = {
++	.owner = THIS_MODULE,
++	.name = "afiucv",
++	.bus  = &iucv_bus,
++	.pm   = &afiucv_pm_ops,
++};
++
++/* dummy device used as trigger for PM functions */
++static struct device *af_iucv_dev;
++
+ /* Timers */
+ static void iucv_sock_timeout(unsigned long arg)
+ {
+@@ -1258,8 +1375,30 @@ static int __init afiucv_init(void)
+ 	err = sock_register(&iucv_sock_family_ops);
+ 	if (err)
+ 		goto out_proto;
++	/* establish dummy device */
++	err = driver_register(&af_iucv_driver);
++	if (err)
++		goto out_sock;
++	af_iucv_dev = kzalloc(sizeof(struct device), GFP_KERNEL);
++	if (!af_iucv_dev) {
++		err = -ENOMEM;
++		goto out_driver;
++	}
++	dev_set_name(af_iucv_dev, "af_iucv");
++	af_iucv_dev->bus = &iucv_bus;
++	af_iucv_dev->parent = iucv_root;
++	af_iucv_dev->release = (void (*)(struct device *))kfree;
++	af_iucv_dev->driver = &af_iucv_driver;
++	err = device_register(af_iucv_dev);
++	if (err)
++		goto out_driver;
++
+ 	return 0;
  
++out_driver:
++	driver_unregister(&af_iucv_driver);
++out_sock:
++	sock_unregister(PF_IUCV);
+ out_proto:
+ 	proto_unregister(&iucv_proto);
+ out_iucv:
+@@ -1270,6 +1409,8 @@ out:
  
-@@ -729,6 +753,7 @@ static int vmlogrdr_register_device(stru
- 		dev->bus = &iucv_bus;
- 		dev->parent = iucv_root;
- 		dev->driver = &vmlogrdr_driver;
-+		dev->driver_data = priv;
- 		/*
- 		 * The release function could be called after the
- 		 * module has been unloaded. It's _only_ task is to
+ static void __exit afiucv_exit(void)
+ {
++	device_unregister(af_iucv_dev);
++	driver_unregister(&af_iucv_driver);
+ 	sock_unregister(PF_IUCV);
+ 	proto_unregister(&iucv_proto);
+ 	iucv_unregister(&af_iucv_handler, 0);
 
 -- 
 blue skies,
