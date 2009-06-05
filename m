@@ -1,8 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 05/07] i2c: rework i2c-s3c2410
-	suspend_late()/resume()
-Date: Fri, 05 Jun 2009 16:55:24 +0900
-Message-ID: <20090605075524.14756.96881.sendpatchset__34728.7095654339$1244189431$gmane$org@rx1.opensource.se>
+Subject: [PATCH 06/07] usb: rework musb suspend()/resume_early()
+Date: Fri, 05 Jun 2009 16:55:33 +0900
+Message-ID: <20090605075533.14756.69837.sendpatchset__9790.76350708983$1244189504$gmane$org@rx1.opensource.se>
 References: <20090605075436.14756.80501.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,93 +18,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, gregkh@suse.de, ben-linux@fluff.org, felipe.balbi@nokia.com, linux-omap@vger.kernel.org
+Cc: ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, gregkh@suse.de, felipe.balbi@nokia.com, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
 This patch reworks platform driver power management code
-for i2c-s3c2410 from legacy callbacks to dev_pm_ops.
+for musb from legacy callbacks to dev_pm_ops.
 
 The callbacks are converted for CONFIG_SUSPEND like this:
-  suspend_late() -> suspend_noirq()
-  resume() -> resume()
+  suspend() -> suspend()
+  resume_early() -> resume_noirq()
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
  Untested but compiles fine.
 
- drivers/i2c/busses/i2c-s3c2410.c |   28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+ drivers/i2c/busses/i2c-pxa.c |   25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
---- 0001/drivers/i2c/busses/i2c-s3c2410.c
-+++ work/drivers/i2c/busses/i2c-s3c2410.c	2009-06-01 15:26:38.000000000 +0900
-@@ -944,17 +944,20 @@ static int s3c24xx_i2c_remove(struct pla
- }
+--- 0001/drivers/usb/musb/musb_core.c
++++ work/drivers/usb/musb/musb_core.c	2009-06-01 15:27:12.000000000 +0900
+@@ -2168,8 +2168,9 @@ static int __devexit musb_remove(struct 
  
- #ifdef CONFIG_PM
--static int s3c24xx_i2c_suspend_late(struct platform_device *dev,
--				    pm_message_t msg)
-+static int s3c24xx_i2c_suspend_noirq(struct device *dev)
+ #ifdef	CONFIG_PM
+ 
+-static int musb_suspend(struct platform_device *pdev, pm_message_t message)
++static int musb_suspend(struct device *dev)
  {
--	struct s3c24xx_i2c *i2c = platform_get_drvdata(dev);
 +	struct platform_device *pdev = to_platform_device(dev);
-+	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
-+
- 	i2c->suspended = 1;
-+
+ 	unsigned long	flags;
+ 	struct musb	*musb = dev_to_musb(&pdev->dev);
+ 
+@@ -2196,8 +2197,9 @@ static int musb_suspend(struct platform_
  	return 0;
  }
  
--static int s3c24xx_i2c_resume(struct platform_device *dev)
-+static int s3c24xx_i2c_resume(struct device *dev)
+-static int musb_resume_early(struct platform_device *pdev)
++static int musb_resume_noirq(struct device *dev)
  {
--	struct s3c24xx_i2c *i2c = platform_get_drvdata(dev);
 +	struct platform_device *pdev = to_platform_device(dev);
-+	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
+ 	struct musb	*musb = dev_to_musb(&pdev->dev);
  
- 	i2c->suspended = 0;
- 	s3c24xx_i2c_init(i2c);
-@@ -962,9 +965,14 @@ static int s3c24xx_i2c_resume(struct pla
+ 	if (!musb->clock)
+@@ -2215,9 +2217,14 @@ static int musb_resume_early(struct plat
  	return 0;
  }
  
-+static struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
-+	.suspend_noirq = s3c24xx_i2c_suspend_noirq,
-+	.resume = s3c24xx_i2c_resume,
++static struct dev_pm_ops musb_dev_pm_ops = {
++	.suspend	= musb_suspend,
++	.resume_noirq	= musb_resume_noirq,
 +};
 +
-+#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
++#define MUSB_DEV_PM_OPS (&musb_dev_pm_ops)
  #else
--#define s3c24xx_i2c_suspend_late NULL
--#define s3c24xx_i2c_resume NULL
-+#define S3C24XX_DEV_PM_OPS NULL
+-#define	musb_suspend	NULL
+-#define	musb_resume_early	NULL
++#define	MUSB_DEV_PM_OPS	NULL
  #endif
  
- /* device driver for platform bus bits */
-@@ -972,22 +980,20 @@ static int s3c24xx_i2c_resume(struct pla
- static struct platform_driver s3c2410_i2c_driver = {
- 	.probe		= s3c24xx_i2c_probe,
- 	.remove		= s3c24xx_i2c_remove,
--	.suspend_late	= s3c24xx_i2c_suspend_late,
--	.resume		= s3c24xx_i2c_resume,
- 	.driver		= {
- 		.owner	= THIS_MODULE,
- 		.name	= "s3c2410-i2c",
-+		.pm	= S3C24XX_DEV_PM_OPS,
+ static struct platform_driver musb_driver = {
+@@ -2225,11 +2232,10 @@ static struct platform_driver musb_drive
+ 		.name		= (char *)musb_driver_name,
+ 		.bus		= &platform_bus_type,
+ 		.owner		= THIS_MODULE,
++		.pm		= MUSB_DEV_PM_OPS,
  	},
+ 	.remove		= __devexit_p(musb_remove),
+ 	.shutdown	= musb_shutdown,
+-	.suspend	= musb_suspend,
+-	.resume_early	= musb_resume_early,
  };
  
- static struct platform_driver s3c2440_i2c_driver = {
- 	.probe		= s3c24xx_i2c_probe,
- 	.remove		= s3c24xx_i2c_remove,
--	.suspend_late	= s3c24xx_i2c_suspend_late,
--	.resume		= s3c24xx_i2c_resume,
- 	.driver		= {
- 		.owner	= THIS_MODULE,
- 		.name	= "s3c2440-i2c",
-+		.pm	= S3C24XX_DEV_PM_OPS,
- 	},
- };
- 
+ /*-------------------------------------------------------------------------*/
