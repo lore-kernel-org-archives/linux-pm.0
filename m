@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
-Date: Fri, 5 Jun 2009 21:54:15 +0200
-Message-ID: <200906052154.16563.rjw__11663.7078616352$1244231687$gmane$org@sisk.pl>
-References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
-	<200906031101.56577.rjw@sisk.pl>
-	<aec7e5c30906042007t26915c05rd8ef375b8d4a353c@mail.gmail.com>
+Subject: Re: [PATCH 02/04] Driver Core: Add idle and wakeup
+	functions
+Date: Fri, 5 Jun 2009 22:42:07 +0200
+Message-ID: <200906052242.08266.rjw__24427.8943552219$1244234573$gmane$org@sisk.pl>
+References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	<200906031105.21977.rjw@sisk.pl>
+	<aec7e5c30906042026u73f6d03dy9357a1527dabccc4@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30906042007t26915c05rd8ef375b8d4a353c@mail.gmail.com>
+In-Reply-To: <aec7e5c30906042026u73f6d03dy9357a1527dabccc4@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,40 +22,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Friday 05 June 2009, Magnus Damm wrote:
-> On Wed, Jun 3, 2009 at 6:01 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > On Tuesday 02 June 2009, Magnus Damm wrote:
-> >> If you guys dislike adding arch specific data to struct platform
-> >> device then for SuperH we can just (mis)use the arch specific data in
-> >> struct device instead. I'm afraid that solution wastes memory since
-> >> the data will only be used for platform devices anyway. So I prefer
-> >> adding arch specific data to struct platform_device instead of struct
-> >> device if possible.
+> On Wed, Jun 3, 2009 at 6:05 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > On Friday 29 May 2009, Magnus Damm wrote:
+> >> 2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> > On Wednesday 27 May 2009, Magnus Damm wrote:
+> >> >> From: Magnus Damm <damm@igel.co.jp>
+> >> >>
+> >> >> Add platform_device_idle() and platform_device_wakeup()
+> >> >> and allow architectures to implement their own versions
+> >> >> of these if CONFIG_HAVE_PLATFORM_IDLE_WAKEUP is set.
+> >> >>
+> >> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> >> >> ---
+> >> >>
+> >> >>  Yes, this needs documentation. See [00/04] for now.
+> >> >>
+> >> >>  arch/Kconfig                    |    3 +++
+> >> >>  include/linux/platform_device.h |    8 ++++++++
+> >> >>  2 files changed, 11 insertions(+)
+> >> >>
+> >> >> --- 0002/arch/Kconfig
+> >> >> +++ work/arch/Kconfig 2009-05-26 12:31:06.000000000 +0900
+> >> >> @@ -115,3 +115,6 @@ config HAVE_DEFAULT_NO_SPIN_MUTEXES
+> >> >>
+> >> >>  config HAVE_PLATFORM_DEVICE_ARCHDATA
+> >> >>       bool
+> >> >> +
+> >> >> +config HAVE_PLATFORM_DEVICE_IDLE_WAKEUP
+> >> >
+> >> > Again, I'm not sure if the new CONFIG_ option is really necessary.
+> >>
+> >> At least it could be combined into a single option for platform device
+> >> runtime pm. So no need to have separate kconfig options for [02/04]
+> >> and [03/04].
+> >>
+> >> We could also drop the #ifdef stuff and go for weak symbols that can
+> >> be overriden by architecture code.
 > >
-> > BTW, what is the difference really?  You can always put
-> > dev.platform_data = NULL for devices that don't have any platform data,
-> > can't you?
+> > The weak symbols don't work really AFAICS.  People have been replacing them
+> > with alternative things recently.
+> >
+> >> I'm open to suggestions. =)
+> >
+> > Well, that depends on what exactly you want to achieve. :-)
 > 
-> So the convention is that dev.platform_data points to driver-specific
-> data. It may or may not be required by the driver. The format of this
-> data is driver specific and should be the same across architectures.
+> =)
 > 
-> What I'm trying to add with struct pdev_archdata is a place for
-> architecture specific data. This data is needed by architecture
-> specific code (for example runtime PM), and since it's architecture
-> specific it should _never_ be touched by device driver code. Exactly
-> like struct dev_archdata but for platform devices.
+> I'd like an architecture independent interface upstream that makes it
+> possible for device drivers to notify the architecture code that they
+> are idle() and that need wakeup().
 > 
-> Like I said, we _could_ use struct device for this purpose, but it
-> sounds like suboptimal software design to me. Using struct device
-> means that we put data where it doesn't belong. I'd like to add
-> _platform_ _device_ _specific_ data, not data that should be present
-> in all struct devices in the system but only used in some cases.
+> In the long term I hope we can share a great deal of runtime PM code
+> between architectures, but for now we just need some architecture
+> specific hooks to get started.
+> 
+> The wakeup()/idle() code in this patch is one way to solve it on a
+> platform device level. Another more generic way would be to add
+> ->enable() and ->disable() callbacks to struct bus_type and introduce
+> device_enable() and device_disable() that takes struct device and
+> invokes the bus callbacks if set.
 
-OK, that explains the idea.  Perhaps it's woth putting into the changelog?
+So, you need a generic mechanism that drivers can use to notify the bus type
+code that a device is idle and therefore it should schedule an autosuspend
+request for the device.  Also, you want a mechanism by which drivers can notify
+the platform code that there is a need to wake-up an autosuspended device.
+Is that correct?
 
-Best,
 Rafael
