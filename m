@@ -1,10 +1,10 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.30-rc8-git4: Reported regressions from 2.6.29
-Date: Sun,  7 Jun 2009 11:47:31 +0200 (CEST)
-Message-ID: <bCxQpon4SCJ.A.RrF.yY7KKB__1355.61937136135$1244378930$gmane$org@chimera>
+Subject: 2.6.30-rc8-git4: Reported regressions 2.6.28 -> 2.6.29
+Date: Sun,  7 Jun 2009 12:02:54 +0200 (CEST)
+Message-ID: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -17,220 +17,252 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
-LjI5LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
-b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
-ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
-ZnJvbSAyLjYuMjksIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
-dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
-aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
-c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
-aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
-dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
-ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQogIDIwMDktMDYtMDcgICAgICAxMTAgICAgICAgMzUgICAgICAgICAg
-MzEKICAyMDA5LTA1LTMxICAgICAgMTAwICAgICAgIDMyICAgICAgICAgIDI3CiAgMjAwOS0wNS0y
-NCAgICAgICA5MiAgICAgICAzNCAgICAgICAgICAyNwogIDIwMDktMDUtMTYgICAgICAgODEgICAg
-ICAgMzYgICAgICAgICAgMzMKICAyMDA5LTA0LTI1ICAgICAgIDU1ICAgICAgIDM2ICAgICAgICAg
-IDI2CiAgMjAwOS0wNC0xNyAgICAgICAzNyAgICAgICAzNSAgICAgICAgICAyOAoKClVucmVzb2x2
-ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDov
-L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDc1ClN1YmplY3QJCTogc3Vz
-cGVuZC9oaWJlcm5hdGUgbG9ja2RlcCB3YXJuaW5nClN1Ym1pdHRlcgk6IERhdmUgWW91bmcgPGhp
-ZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNi0wMiAxMDowMCAoNiBkYXlz
-IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0
-MzkzNzIzMzIxMjQxJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L3Nob3dfYnVnLmNnaT9pZD0xMzQ3NApTdWJqZWN0CQk6IE9vcHMgd2hpbHN0IGJvb3RpbmcKU3Vi
-bWl0dGVyCTogQ2hyaXMgQ2xheXRvbiA8Y2hyaXMyNTUzQGdvb2dsZW1haWwuY29tPgpEYXRlCQk6
-IDIwMDktMDYtMDYgMTg6NTkgKDIgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5p
-bmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNDQzMTQ4NzkyNDI1NCZ3PTQKCgpCdWctRW50cnkJOiBo
-dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM0NzMKU3ViamVjdAkJ
-OiBCdWcgd2hpbGUgdHJ5aW5nIHRvIGxhdW5jaCBhIEtWTSBndWVzdApTdWJtaXR0ZXIJOiBTYWNo
-aW4gU2FudCA8c2FjaGlucEBpbi5pYm0uY29tPgpEYXRlCQk6IDIwMDktMDYtMDUgMTc6MjAgKDMg
-ZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZt
-PTEyNDQyMjE3MzEyOTA0NyZ3PTQKSGFuZGxlZC1CeQk6IE1pbWkgWm9oYXIgPHpvaGFyQHVzLmli
-bS5jb20+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTEzNDcyClN1YmplY3QJCTogT29wcyB3aXRoIG1pbmljb20gYW5kIFVTQiBzZXJpYWwK
-U3VibWl0dGVyCTogUGV0ZXIgQ2h1YmIgPHBldGVyY0BnZWxhdG8udW5zdy5lZHUuYXU+CkRhdGUJ
-CTogMjAwOS0wNi0wNSAxOjM3ICgzIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMu
-aW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQ0MTY5MDEwMjY3MDAmdz00CkhhbmRsZWQtQnkJOiBB
-bGFuIFN0ZXJuIDxzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1PgoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ3MQpTdWJqZWN0CQk6IExv
-YWRpbmcgcGFycG9ydF9wYyBraWxscyB0aGUga2V5Ym9hcmQgaWYgQUNQSSBpcyBlbmFibGVkClN1
-Ym1pdHRlcgk6IE96YW4gw4dhxJ9sYXlhbiA8b3phbkBwYXJkdXMub3JnLnRyPgpEYXRlCQk6IDIw
-MDktMDYtMDQgOToxMiAoNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
-P2w9bGludXgta2VybmVsJm09MTI0NDEwNjY3NTMyNTU4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ0NgpTdWJqZWN0CQk6IHJl
-c3VtZSBhZnRlciBzdXNwZW5kLXRvLXJhbSBicm9rZW4gb24gVG9zaGliYSBTYXRlbGxpdGUgQTEw
-MCB3aXRoIDIuNi4zMC1yYzggKHdvcmtzIGluIDIuNi4yOCkKU3VibWl0dGVyCTogQW5kcmVhIElv
-YiA8YW5kcmVhX2lvYkB5YWhvby5pdD4KRGF0ZQkJOiAyMDA5LTA2LTAzIDIxOjQyICg1IGRheXMg
-b2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0xMzQyNApTdWJqZWN0CQk6IHBvc3NpYmxlIGRlYWRsb2NrIHdoZW4gZG9pbmcgZ292ZXJu
-b3Igc3dpdGNoaW5nClN1Ym1pdHRlcgk6IFNoYW9odWEgTGkgPHNoYW9odWEubGlAaW50ZWwuY29t
-PgpEYXRlCQk6IDIwMDktMDUtMzEgMTY6MzYgKDggZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRw
-Oi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2NwdWZyZXEvbXNnMDA3MTEuaHRtbApIYW5kbGVkLUJ5
-CTogTWF0aGlldSBEZXNub3llcnMgPG1hdGhpZXUuZGVzbm95ZXJzQHBvbHltdGwuY2E+CgoKQnVn
-LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDA4
-ClN1YmplY3QJCTogUGVyZm9ybWFuY2UgcmVncmVzc2lvbiBpbiAyLjYuMzAtcmM3ClN1Ym1pdHRl
-cgk6IERpZWdvIENhbGxlamEgPGRpZWdvY2dAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDUtMzAg
-MTg6NTEgKDkgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA5
-LzUvMzAvMTQ2CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTEzNDA3ClN1YmplY3QJCTogYWRiIHRyYWNrcGFkIGRpc2FwcGVhcnMgYWZ0ZXIg
-c3VzcGVuZCB0byByYW0KU3VibWl0dGVyCTogSmFuIFNjaG9seiA8c2Nob2x6QGZpYXMudW5pLWZy
-YW5rZnVydC5kZT4KRGF0ZQkJOiAyMDA5LTA1LTI4IDc6NTkgKDExIGRheXMgb2xkKQpGaXJzdC1C
-YWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2
-YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9MmVkOGQyYjNhODFiZGJiMDQxODMwMTYyOGNj
-ZGIwMDhhYzlmNDBiNwpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
-ZWwmbT0xMjQzNDk3NjIzMTQ5NzYmdz00CkhhbmRsZWQtQnkJOiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmp3QHNpc2sucGw+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
-d19idWcuY2dpP2lkPTEzNDAxClN1YmplY3QJCTogcGt0Y2R2ZCB3cml0aW5nIGlzIHJlYWxseSBz
-bG93IHdpdGggQ0ZRIHNjaGVkdWxlciAoYmlzZWN0ZWQpClN1Ym1pdHRlcgk6IExhdXJlbnQgUmlm
-ZmFyZCA8bGF1cmVudC5yaWZmYXJkQGZyZWUuZnI+CkRhdGUJCTogMjAwOS0wNS0yOCAxODo0MyAo
-MTEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
-d19idWcuY2dpP2lkPTEzMzkxClN1YmplY3QJCTogS2VybmVsIGJvb3QgaGFuZ3MgYXQgYWJvdXQg
-ZXZlcnkgc2Vjb25kIHN0YXJ0IHdoZW4ga21zIGlzIGFjdGl2YXRlZApTdWJtaXR0ZXIJOiBNYXJ0
-aW4gQmFtbWVyIDxtcmI3NEBnbXguYXQ+CkRhdGUJCTogMjAwOS0wNS0yNiAyMTo0NyAoMTMgZGF5
-cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTEzMzc0ClN1YmplY3QJCTogcmVpc2VyZnMgYmxvY2tlZCBmb3IgbW9yZSB0aGFuIDEy
-MHNlY3MKU3VibWl0dGVyCTogSGFyYWxkIER1bmtlbCA8aGFyYWxkLmR1bmtlbEB0LW9ubGluZS5k
-ZT4KRGF0ZQkJOiAyMDA5LTA1LTIzIDg6NTIgKDE2IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0
-cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQzMDY4ODA0MTA4MTEmdz00CgkJICBo
-dHRwOi8vbGttbC5vcmcvbGttbC8yMDA5LzUvMjkvMzg5CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzczClN1YmplY3QJCTogZmJjb24s
-IGludGVsZmIsIGk5MTU6IElORk86IHBvc3NpYmxlIGNpcmN1bGFyIGxvY2tpbmcgZGVwZW5kZW5j
-eSBkZXRlY3RlZApTdWJtaXR0ZXIJOiBNaWxlcyBMYW5lIDxtaWxlcy5sYW5lQGdtYWlsLmNvbT4K
-RGF0ZQkJOiAyMDA5LTA1LTIzIDU6MDggKDE2IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDov
-L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQzMDU1MzgxMzA3MDImdz00CgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzY2ClN1
-YmplY3QJCTogQWJvdXQgODAlIG9mIHNodXRkb3ducyBmYWlsIChibG9ja2luZykKU3VibWl0dGVy
-CTogTWFydGluIEJhbW1lciA8bXJiNzRAZ214LmF0PgpEYXRlCQk6IDIwMDktMDUtMjMgMDA6NTgg
-KDE2IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xMzM2MgpTdWJqZWN0CQk6IHJ0MngwMDogc2xvdyB3aWZpIHdpdGggY29y
-cmVjdCBiYXNpYyByYXRlIGJpdG1hcApTdWJtaXR0ZXIJOiBBbGVqYW5kcm8gUml2ZWlyYSA8YXJp
-dmVpcmFAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDUtMjIgMTM6MzIgKDE3IGRheXMgb2xkKQoK
-CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MzM1MQpTdWJqZWN0CQk6IDIuNi4zMCBjb3JydXB0cyBteSBzeXN0ZW0gYWZ0ZXIgc3VzcGVuZCBy
-ZXN1bWUgd2l0aCByZWFkb25seSBtb3VudGVkIGhhcmQgZGlzawpTdWJtaXR0ZXIJOiAgPHVuZ2du
-dUBnb29nbGVtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA1LTIwIDE0OjA5ICgxOSBkYXlzIG9sZCkK
-Rmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9n
-aXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPTc4YThiMzViYzdhYmY4YjgzMzNk
-NmY2MjVlMDhjMGY3Y2MxYzM3NDIKSGFuZGxlZC1CeQk6IFlpbmdoYWkgTHUgPHlpbmdoYWlAa2Vy
-bmVsLm9yZz4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9MTMzNDEKU3ViamVjdAkJOiBSYW5kb20gT29wcyBhdCBib290IGF0IGxvYWRpbmcg
-aXA2dGFibGVzIHJ1bGVzClN1Ym1pdHRlcgk6ICA8cGF0cmlja0Bvc3RlbmJlcmcuZGU+CkRhdGUJ
-CTogMjAwOS0wNS0xOSAwOTowOCAoMjAgZGF5cyBvbGQpCkhhbmRsZWQtQnkJOiBSdXN0eSBSdXNz
-ZWxsIDxydXN0eUBydXN0Y29ycC5jb20uYXU+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
-Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzM3ClN1YmplY3QJCTogW3Bvc3QgMi42LjI5
-IHJlZ3Jlc3Npb25dIGhhbmcgZHVyaW5nIHN1c3BlbmQgb2YgYjQ0L2I0MyBtb2R1bGVzClN1Ym1p
-dHRlcgk6IFRvbWFzIEphbm91c2VrIDx0b21pQG5vbWkuY3o+CkRhdGUJCTogMjAwOS0wNS0xOCAx
-MDo1OSAoMjEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5v
-cmcvc2hvd19idWcuY2dpP2lkPTEzMzMwClN1YmplY3QJCTogbmZzNCBOVUxMIHBvaW50ZXIgZGVy
-ZWZlcmVuY2UgaW4gX25mczRfZG9fc2V0bGsKU3VibWl0dGVyCTogUmljaCBFcmNvbGFuaSA8cmVy
-Y29sYUBhY20uamh1LmVkdT4KRGF0ZQkJOiAyMDA5LTA1LTE3IDA0OjQ0ICgyMiBkYXlzIG9sZCkK
-SGFuZGxlZC1CeQk6IFRyb25kIE15a2xlYnVzdCA8dHJvbmQubXlrbGVidXN0QGZ5cy51aW8ubm8+
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTEzMzI4ClN1YmplY3QJCTogYjQ0OiBldGgwOiBCVUchIFRpbWVvdXQgd2FpdGluZyBmb3IgYml0
-IDAwMDAwMDAyIG9mIHJlZ2lzdGVyIDQyYyB0byBjbGVhci4KU3VibWl0dGVyCTogRnJhbmNpcyBN
-b3JlYXUgPGZyYW5jaXMubW9yb0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNS0wMyAxNjoyMiAo
-MzYgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
-bCZtPTEyNDEzNjc3ODAxMjI4MCZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMzMTkKU3ViamVjdAkJOiBQYWdlIGFsbG9jYXRpb24g
-ZmFpbHVyZXMgd2l0aCBiNDMgYW5kIHA1NHVzYgpTdWJtaXR0ZXIJOiBMYXJyeSBGaW5nZXIgPExh
-cnJ5LkZpbmdlckBsd2Zpbmdlci5uZXQ+CkRhdGUJCTogMjAwOS0wNC0yOSAyMTowMSAoNDAgZGF5
-cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEy
-NDEwMzg5NzEwMTA4OCZ3PTQKSGFuZGxlZC1CeQk6IEpvaGFubmVzIEJlcmcgPGpvaGFubmVzQHNp
-cHNvbHV0aW9ucy5uZXQ+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTEzMzE4ClN1YmplY3QJCTogQUdQIGRvZXNuJ3Qgd29yayBhbnltb3Jl
-IG9uIG5mb3JjZTIKU3VibWl0dGVyCTogS2Fyc3RlbiBNZWhyaG9mZiA8a2F3aW1lQGdteC5kZT4K
-RGF0ZQkJOiAyMDA5LTA0LTMwIDg6NTEgKDM5IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBo
-dHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0y
-LjYuZ2l0O2E9Y29tbWl0O2g9NTlkZTJiZWJhYmM1MDI3ZjkzZGY5OTlkNTljYzY1ZGY1OTFjM2U2
-ZQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQxMDgx
-NTY0MTc1NjAmdz00CkhhbmRsZWQtQnkJOiBTaGFvaHVhIExpIDxzaGFvaHVhLmxpQGludGVsLmNv
-bT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
-aWQ9MTMzMTMKU3ViamVjdAkJOiB2bTg2b2xkIG9vcHMKU3VibWl0dGVyCTogU2VyZ2V5IFNlbm96
-aGF0c2t5IDxzZXJnZXkuc2Vub3poYXRza3lAbWFpbC5ieT4KRGF0ZQkJOiAyMDA5LTA1LTE0IDIx
-OjUzICgyNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9y
-Zy9zaG93X2J1Zy5jZ2k/aWQ9MTMzMDYKU3ViamVjdAkJOiBoaWJlcm5hdGUgc2xvdyBvbiBfc2Vj
-b25kXyBydW4KU3VibWl0dGVyCTogSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25z
-Lm5ldD4KRGF0ZQkJOiAyMDA5LTA1LTE0IDA5OjM0ICgyNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
-OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMyNzcKU3ViamVj
-dAkJOiAyLjYuMzAgcmVncmVzc2lvbiAtIHVucmVsaWFibGUgcmVzdW1lIC0gYmlzZWN0ZWQgLSBU
-aGlua3BhZCBYNDAKU3VibWl0dGVyCTogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPgpE
-YXRlCQk6IDIwMDktMDUtMTEgMTA6MDggKDI4IGRheXMgb2xkKQpIYW5kbGVkLUJ5CTogTGVuIEJy
-b3duIDxsZW4uYnJvd25AaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzIxOQpTdWJqZWN0CQk6IFNpbmNlIGtlcm5lbCAy
-LjYuMzAtcmMxLCBjb21wdXRlcnMgaGFuZ3MgcmFuZG9tbHkgLi4KU3VibWl0dGVyCTogRGF2aWQg
-SGlsbCA8aGlsbGRAYmluYXJ5c3Rvcm0ubmV0PgpEYXRlCQk6IDIwMDktMDUtMDEgMTY6NTcgKDM4
-IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMzE4MApTdWJqZWN0CQk6IDIuNi4zMC1yYzI6IFdBUk5JTkcgYXQgaTkxNV9n
-ZW0uYyBmb3IgaTkxNV9nZW1faWRsZQpTdWJtaXR0ZXIJOiBOaWVsIExhbWJyZWNodHMgPG5pZWwu
-bGFtYnJlY2h0c0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNC0yMSAyMTozNSAoNDggZGF5cyBv
-bGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNDAz
-NDk4MDgxOTEwMiZ3PTQKCQkgIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNC8yNy8yOTAKCgpC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMx
-NzkKU3ViamVjdAkJOiBDRC1SOiB3b2RpbSBpbnRlcm1pdHRlbnQgZmFpbHVyZXMKU3VibWl0dGVy
-CTogQW5keSBJc2FhY3NvbiA8YWRpQGhleGFwb2RpYS5vcmc+CkRhdGUJCTogMjAwOS0wNC0yMSAx
-OjUyICg0OCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTI0MDI3ODc5MjE0MjMxJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzExOQpTdWJqZWN0CQk6IFRyb3VibGUgd2l0
-aCBtYWtlLWluc3RhbGwgZnJvbSBhIE5GUyBtb3VudApTdWJtaXR0ZXIJOiBHcmVnb3J5IEhhc2tp
-bnMgPGdoYXNraW5zQG5vdmVsbC5jb20+CkRhdGUJCTogMjAwOS0wNC0xNCAyMTozMiAoNTUgZGF5
-cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEy
-Mzk3NDQ4MjMyNzA0NCZ3PTQKSGFuZGxlZC1CeQk6IEguIFBldGVyIEFudmluIDxocGFAenl0b3Iu
-Y29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0xMzExNgpTdWJqZWN0CQk6IENhbid0IGJvb3Qgd2l0aCBub3NtcApTdWJtaXR0ZXIJOiBT
-dGVwaGVuIEhlbW1pbmdlciA8c2hlbW1pbmdlckB2eWF0dGEuY29tPgpEYXRlCQk6IDIwMDktMDQt
-MTUgNDoxOCAoNTQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
-bnV4LWtlcm5lbCZtPTEyMzk3NjkxNzgxNzkyMCZ3PTQKSGFuZGxlZC1CeQk6IERhbiBXaWxsaWFt
-cyA8ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzEwOQpTdWJqZWN0CQk6IEhpZ2ggbGF0ZW5j
-eSBvbiAvc3lzL2NsYXNzL3RoZXJtYWwKU3VibWl0dGVyCTogVGlhZ28gU2ltw7VlcyBCYXRpc3Rh
-IDx0aWFnb3NiYXRpc3RhQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA0LTExIDE0OjU2ICg1OCBk
-YXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09
-MTIzOTQ2MTgyMzAxMjQ4Jnc9NApIYW5kbGVkLUJ5CTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50
-ZWwuY29tPgoJCSAgQWxleGV5IFN0YXJpa292c2tpeSA8YXN0YXJpa292c2tpeUBzdXNlLmRlPgoK
-ClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1F
-bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ3MApT
-dWJqZWN0CQk6IE1hY2hpbmUgZG9lc24ndCBib290IGR1ZSB0byBtbWNvbmZpZyBkZXRlY3Rpb24g
-cHJvYmxlbQpTdWJtaXR0ZXIJOiBQYXNjYWwgVGVyamFuIDxwdGVyamFuQG1hbmRyaXZhLmNvbT4K
-RGF0ZQkJOiAyMDA5LTA1LTI5IDE5OjM1ICgxMCBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDog
-aHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgt
-Mi42LmdpdDthPWNvbW1pdDtoPTA0NGNkODA5NDJlNDdiOWRlMDkxNWI2Mjc5MDJhZGYwNWM1MjM3
-N2YKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0Mzg4
-NzkyMTE4NDgxJnc9NApIYW5kbGVkLUJ5CTogWWluZ2hhaSBMdSA8eWluZ2hhaUBrZXJuZWwub3Jn
-PgpQYXRjaAkJOiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMjc2MTMvCgoKQnVn
-LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDYy
-ClN1YmplY3QJCTogVW51c2VkIGJhbmRzIGluIGludGVmYiBjb25zb2xlIGFuZCBzbWFsbGVyIDE4
-MHg1NiAtPiAxMjh4NDgKU3VibWl0dGVyCTogU2FudGkgPHNhbnRpQGFnb2xpbmEubmV0PgpEYXRl
-CQk6IDIwMDktMDYtMDUgMTY6MzAgKDMgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6
-Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5n
-aXQ7YT1jb21taXQ7aD1jOWZiMTVmNjBlYjUxN2M5NThkZWM2NGRjYTkzNTdiZjYyYmYyMjAxCkhh
-bmRsZWQtQnkJOiBLZWl0aCBQYWNrYXJkIDxrZWl0aHBAa2VpdGhwLmNvbT4KUGF0Y2gJCTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDYyI2MyCgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDIzClN1
-YmplY3QJCTogSk1pY3JvbiBTQVRBIGNvbnRyb2xsZXIgbm90IGF2YWlsYWJsZQpTdWJtaXR0ZXIJ
-OiBNYXJjIERpb25uZSA8bWFyYy5jLmRpb25uZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNS0y
-NiAyMjo1NiAoMTMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbGttbC5vcmcvbGttbC8y
-MDA5LzUvMjYvNjg3CkhhbmRsZWQtQnkJOiBZdSBaaGFvIDx5dS56aGFvQGludGVsLmNvbT4KUGF0
-Y2gJCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS81LzI3LzQwMgoKCkJ1Zy1FbnRyeQk6IGh0
-dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzM4OQpTdWJqZWN0CQk6
-IFdhcm5pbmcgJ0ludmFsaWQgdGhyb3R0bGluZyBzdGF0ZSwgcmVzZXQnIGdldHMgZGlzcGxheWVk
-IHdoZW4gaXQgc2hvdWxkIG5vdCBiZQpTdWJtaXR0ZXIJOiBGcmFucyBQb3AgPGVsZW5kaWxAcGxh
-bmV0Lm5sPgpEYXRlCQk6IDIwMDktMDUtMjYgMTU6MjQgKDEzIGRheXMgb2xkKQpIYW5kbGVkLUJ5
-CTogRnJhbnMgUG9wIDxlbGVuZGlsQHBsYW5ldC5ubD4KUGF0Y2gJCTogaHR0cDovL2J1Z3ppbGxh
-Lmtlcm5lbC5vcmcvYXR0YWNobWVudC5jZ2k/aWQ9MjE2NzEKCQkgIGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTIxNjcyCgoKRm9yIGRldGFpbHMsIHBsZWFzZSB2
-aXNpdCB0aGUgYnVnIGVudHJpZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4gaW4KcmVmZXJl
-bmNlcy4KCkFzIHlvdSBjYW4gc2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5IGZvciBlYWNo
-IG9mIHRoZSBsaXN0ZWQgcmVncmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6aWxsYSBlbnRy
-eSB1c2VkIGZvciB0cmFja2luZyB0aGUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMjksCnVucmVzb2x2
-ZWQgYXMgd2VsbCBhcyByZXNvbHZlZCwgYXQ6CgpodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTMwNzAKClBsZWFzZSBsZXQgbWUga25vdyBpZiB0aGVyZSBhcmUgYW55
-IEJ1Z3ppbGxhIGVudHJpZXMgdGhhdCBzaG91bGQgYmUgYWRkZWQgdG8KdGhlIGxpc3QgaW4gdGhl
-cmUuCgpUaGFua3MsClJhZmFlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1wbQ==
+This message contains a list of some regressions introduced between 2.6.28 and
+2.6.29, for which there are no fixes in the mainline I know of.  If any of them
+have been fixed already, please let me know.
+
+If you know of any other unresolved regressions introduced between 2.6.28
+and 2.6.29, please let me know either and I'll add them to the list.
+Also, please let me know if any of the entries below are invalid.
+
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
+
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2009-06-07      169       27          25
+  2009-05-31      167       27          26
+  2009-05-25      165       27          25
+  2009-05-17      162       27          25
+  2009-04-26      160       29          27
+  2009-04-06      142       37          31
+  2009-03-21      128       29          26
+  2009-03-14      124       36          32
+  2009-03-03      108       33          28
+  2009-02-24       95       32          24
+  2009-02-14       85       33          27
+  2009-02-08       82       45          36
+  2009-02-04       66       51          39
+  2009-01-20       38       35          27
+  2009-01-11       13       13          10
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13463
+Subject		: Poor SSD performance
+Submitter	: Jake <ellowitz@uchicago.edu>
+Date		: 2009-06-05 17:37 (3 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13411
+Subject		: Barscanner (USB HID Keyboard) stopped functioning in kernels >= 2.6.28
+Submitter	: Guido <bugzilla.kernel.org@starbase12.cjb.net>
+Date		: 2009-05-31 12:21 (8 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13375
+Subject		: Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Submitter	: Alex Samad <alex@samad.com.au>
+Date		: 2009-05-20 0:37 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=124278675503699&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13371
+Subject		: s2disk hangs with e100, kernel 2.6.29 and later
+Submitter	: Richard Atterer <richard@2009.atterer.net>
+Date		: 2009-05-16 22:51 (23 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=Unknown
+References	: http://marc.info/?l=linux-kernel&m=124251446428166&w=4
+		  http://lkml.org/lkml/2009/5/25/253
+Handled-By	: Jeffrey Kirsher <jeffrey.t.kirsher@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13339
+Subject		: rtable leak in ipv4/route.c
+Submitter	: Alexander V. Lukyanov <lav@yar.ru>
+Date		: 2009-05-18 14:10 (21 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13294
+Subject		: i915: drm: xorg leaks drm objects massively
+Submitter	: Sergei Trofimovich <slyich@gmail.com>
+Date		: 2009-05-10 19:56 (29 days old)
+References	: http://marc.info/?l=linux-kernel&m=124198547027903&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13269
+Subject		: WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x3c/0x48() when resuming
+Submitter	: cedric <cedric@belbone.be>
+Date		: 2009-05-08 08:48 (31 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13232
+Subject		: ext3/4 with synchronous writes gets wedged by Postfix
+Submitter	: David Watson <kernel-nospam@dbwatson.ukfsn.org>
+Date		: 2009-05-03 19:46 (36 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13225
+Subject		: [2.6.29 regression] Software suspend no longer works
+Submitter	: Artem S. Tashkinov <t.artem@mailcity.com>
+Date		: 2009-05-02 21:41 (37 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13178
+Subject		: Booting very slow
+Submitter	: Martin Knoblauch <spamtrap@knobisoft.de>
+Date		: 2009-04-24 12:45 (45 days old)
+References	: http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13148
+Subject		: resume after suspend-to-ram broken on Sony Vaio VGN-SR19VN when sony-laptop driver present
+Submitter	: fanderay <fanderay4@googlemail.com>
+Date		: 2009-04-22 14:39 (47 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13144
+Subject		: resume from suspend fails using video card i915
+Submitter	: C Sights <csights@fastmail.fm>
+Date		: 2009-04-21 17:03 (48 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13100
+Subject		: can't anymore even do a s2ram-s2disk-s2ram cycle on acer aspire 5720G
+Submitter	: Maxim Levitsky <maximlevitsky@gmail.com>
+Date		: 2009-04-06 23:52 (63 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+References	: http://marc.info/?l=linux-kernel&m=123906202829074&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13074
+Subject		: gspca_stv06xx doesn't work with Logitech QuickCam Express (046d:0840)
+Submitter	: Paulo Matias <matias@archlinux-br.org>
+Date		: 2009-04-12 14:10 (57 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13072
+Subject		: forcedeth seems to switch off eth on shutdown
+Submitter	: Daniel Bierstedt <daniel.bierstedt@gmx.de>
+Date		: 2009-04-12 07:00 (57 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13025
+Subject		: After upgrading to kernel 2.6.29, pulseaudio stopped with some strange error
+Submitter	: Yaroslav Isakov <yaroslav.isakov@gmail.com>
+Date		: 2009-04-06 19:47 (63 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13024
+Subject		: nozomi: pppd fails on kernel 2.6.29
+Submitter	: Mark Karpeles <mark@hell.ne.jp>
+Date		: 2009-04-06 19:12 (63 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13017
+Subject		: ATA bus errors on resume
+Submitter	: Niel Lambrechts <niel.lambrechts@gmail.com>
+Date		: 2009-03-25 5:19 (75 days old)
+References	: http://marc.info/?l=linux-kernel&m=123795841615989&w=4
+Handled-By	: Tejun Heo <htejun@gmail.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13001
+Subject		: PCI-DMA: Out of IOMMU space
+Submitter	:  <optimusgd@gmail.com>
+Date		: 2009-04-03 09:30 (66 days old)
+References	: http://lkml.org/lkml/2009/4/28/133
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12980
+Subject		: lockup in X.org
+Submitter	: Marcus Better <marcus@better.se>
+Date		: 2009-03-31 08:58 (69 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12971
+Subject		: "tg3 transmit timed out" when transmitting at high bitrate
+Submitter	: Nikolay <dobrev666@gmail.com>
+Date		: 2009-03-29 18:02 (71 days old)
+Handled-By	: Matt Carlson <mcarlson@broadcom.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12909
+Subject		: boot/kernel init duration regression from 2.6.28
+Submitter	: CaT <cat@zip.com.au>
+Date		: 2009-03-16 10:25 (84 days old)
+References	: http://marc.info/?l=linux-kernel&m=123720083515950&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12899
+Subject		: Crash in i915.ko: i915_driver_irq_handler
+Submitter	: Helge Bahmann <helge.bahmann@secunet.com>
+Date		: 2009-03-20 07:13 (80 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12705
+Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
+Date		: 2009-02-13 9:33 (115 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e806b4957412bf472d826bd8cc571da041248799
+References	: http://marc.info/?l=linux-kernel&m=123451768406825&w=4
+		  http://marc.info/?l=linux-kernel&m=123479975503827&w=2
+Handled-By	: Eric Anholt <eric@anholt.net>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12681
+Subject		: s2ram: fails to wake up on Acer Extensa 4220 (SMP disabled)
+Submitter	: Orivej Desh <smpuj@bk.ru>
+Date		: 2009-02-09 13:01 (119 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cfe62c8010ac56e1bd3827e30386a87cc2f3594
+Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+Subject		: i915 VT switch with AIGLX causes X lock up
+Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+Date		: 2009-02-21 15:38 (107 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+		  http://lkml.org/lkml/2009/4/27/317
+Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+Patch		: http://patchwork.kernel.org/patch/20197/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12490
+Subject		: ath5k related kernel panic in 2.6.29-rc1
+Submitter	: Sergey S. Kostyliov <rathamahata@gmail.com>
+Date		: 2009-01-12 7:38 (147 days old)
+References	: http://marc.info/?l=linux-kernel&m=123174591509586&w=4
+		  http://lkml.org/lkml/2009/4/6/527
+Handled-By	: Bob Copeland <me@bobcopeland.com>
+Patch		: http://patchwork.kernel.org/patch/28210/
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions introduced
+between 2.6.28 and 2.6.29, unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=12398
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
