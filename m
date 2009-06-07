@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 2/2] PM/Hibernate: Rename disk.c to
-	hibernate.c
-Date: Sun, 7 Jun 2009 00:56:54 +0200
-Message-ID: <200906070056.55418.rjw__5007.04707014865$1244329395$gmane$org@sisk.pl>
-References: <200906070054.19207.rjw@sisk.pl>
+Subject: 2.6.30-rc8-git4: Reported regressions from 2.6.29
+Date: Sun,  7 Jun 2009 11:47:31 +0200 (CEST)
+Message-ID: <bCxQpon4SCJ.A.RrF.yY7KKB__1355.61937136135$1244378930$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906070054.19207.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,1976 +16,221 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Change the name of kernel/power/disk.c to kernel/power/hibernate.c
-in analogy with the file names introduced by the changes that
-separated the suspend to RAM and standby funtionality from the
-common PM functions.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/Makefile    |    2 
- kernel/power/disk.c      |  955 -----------------------------------------------
- kernel/power/hibernate.c |  955 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/power.h     |    4 
- 4 files changed, 958 insertions(+), 958 deletions(-)
-
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -45,7 +45,7 @@ static inline char *check_image_kernel(s
-  */
- #define SPARE_PAGES	((1024 * 1024) >> PAGE_SHIFT)
- 
--/* kernel/power/disk.c */
-+/* kernel/power/hibernate.c */
- extern int hibernation_snapshot(int platform_mode);
- extern int hibernation_restore(int platform_mode);
- extern int hibernation_platform_enter(void);
-@@ -147,7 +147,7 @@ extern int swsusp_swap_in_use(void);
-  */
- #define SF_PLATFORM_MODE	1
- 
--/* kernel/power/disk.c */
-+/* kernel/power/hibernate.c */
- extern int swsusp_check(void);
- extern void swsusp_free(void);
- extern int swsusp_read(unsigned int *flags_p);
-Index: linux-2.6/kernel/power/Makefile
-===================================================================
---- linux-2.6.orig/kernel/power/Makefile
-+++ linux-2.6/kernel/power/Makefile
-@@ -8,6 +8,6 @@ obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend-test.o
--obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
-+obj-$(CONFIG_HIBERNATION)	+= swsusp.o hibernate.o snapshot.o swap.o user.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ /dev/null
-@@ -1,955 +0,0 @@
--/*
-- * kernel/power/disk.c - Suspend-to-disk support.
-- *
-- * Copyright (c) 2003 Patrick Mochel
-- * Copyright (c) 2003 Open Source Development Lab
-- * Copyright (c) 2004 Pavel Machek <pavel@suse.cz>
-- *
-- * This file is released under the GPLv2.
-- *
-- */
--
--#include <linux/suspend.h>
--#include <linux/syscalls.h>
--#include <linux/reboot.h>
--#include <linux/string.h>
--#include <linux/device.h>
--#include <linux/kmod.h>
--#include <linux/delay.h>
--#include <linux/fs.h>
--#include <linux/mount.h>
--#include <linux/pm.h>
--#include <linux/console.h>
--#include <linux/cpu.h>
--#include <linux/freezer.h>
--#include <scsi/scsi_scan.h>
--#include <asm/suspend.h>
--
--#include "power.h"
--
--
--static int noresume = 0;
--static char resume_file[256] = CONFIG_PM_STD_PARTITION;
--dev_t swsusp_resume_device;
--sector_t swsusp_resume_block;
--
--enum {
--	HIBERNATION_INVALID,
--	HIBERNATION_PLATFORM,
--	HIBERNATION_TEST,
--	HIBERNATION_TESTPROC,
--	HIBERNATION_SHUTDOWN,
--	HIBERNATION_REBOOT,
--	/* keep last */
--	__HIBERNATION_AFTER_LAST
--};
--#define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
--#define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
--
--static int hibernation_mode = HIBERNATION_SHUTDOWN;
--
--static struct platform_hibernation_ops *hibernation_ops;
--
--/**
-- * hibernation_set_ops - set the global hibernate operations
-- * @ops: the hibernation operations to use in subsequent hibernation transitions
-- */
--
--void hibernation_set_ops(struct platform_hibernation_ops *ops)
--{
--	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
--	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
--	    && ops->restore_cleanup)) {
--		WARN_ON(1);
--		return;
--	}
--	mutex_lock(&pm_mutex);
--	hibernation_ops = ops;
--	if (ops)
--		hibernation_mode = HIBERNATION_PLATFORM;
--	else if (hibernation_mode == HIBERNATION_PLATFORM)
--		hibernation_mode = HIBERNATION_SHUTDOWN;
--
--	mutex_unlock(&pm_mutex);
--}
--
--static bool entering_platform_hibernation;
--
--bool system_entering_hibernation(void)
--{
--	return entering_platform_hibernation;
--}
--EXPORT_SYMBOL(system_entering_hibernation);
--
--#ifdef CONFIG_PM_DEBUG
--static void hibernation_debug_sleep(void)
--{
--	printk(KERN_INFO "hibernation debug: Waiting for 5 seconds.\n");
--	mdelay(5000);
--}
--
--static int hibernation_testmode(int mode)
--{
--	if (hibernation_mode == mode) {
--		hibernation_debug_sleep();
--		return 1;
--	}
--	return 0;
--}
--
--static int hibernation_test(int level)
--{
--	if (pm_test_level == level) {
--		hibernation_debug_sleep();
--		return 1;
--	}
--	return 0;
--}
--#else /* !CONFIG_PM_DEBUG */
--static int hibernation_testmode(int mode) { return 0; }
--static int hibernation_test(int level) { return 0; }
--#endif /* !CONFIG_PM_DEBUG */
--
--/**
-- *	platform_begin - tell the platform driver that we're starting
-- *	hibernation
-- */
--
--static int platform_begin(int platform_mode)
--{
--	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->begin() : 0;
--}
--
--/**
-- *	platform_end - tell the platform driver that we've entered the
-- *	working state
-- */
--
--static void platform_end(int platform_mode)
--{
--	if (platform_mode && hibernation_ops)
--		hibernation_ops->end();
--}
--
--/**
-- *	platform_pre_snapshot - prepare the machine for hibernation using the
-- *	platform driver if so configured and return an error code if it fails
-- */
--
--static int platform_pre_snapshot(int platform_mode)
--{
--	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->pre_snapshot() : 0;
--}
--
--/**
-- *	platform_leave - prepare the machine for switching to the normal mode
-- *	of operation using the platform driver (called with interrupts disabled)
-- */
--
--static void platform_leave(int platform_mode)
--{
--	if (platform_mode && hibernation_ops)
--		hibernation_ops->leave();
--}
--
--/**
-- *	platform_finish - switch the machine to the normal mode of operation
-- *	using the platform driver (must be called after platform_prepare())
-- */
--
--static void platform_finish(int platform_mode)
--{
--	if (platform_mode && hibernation_ops)
--		hibernation_ops->finish();
--}
--
--/**
-- *	platform_pre_restore - prepare the platform for the restoration from a
-- *	hibernation image.  If the restore fails after this function has been
-- *	called, platform_restore_cleanup() must be called.
-- */
--
--static int platform_pre_restore(int platform_mode)
--{
--	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->pre_restore() : 0;
--}
--
--/**
-- *	platform_restore_cleanup - switch the platform to the normal mode of
-- *	operation after a failing restore.  If platform_pre_restore() has been
-- *	called before the failing restore, this function must be called too,
-- *	regardless of the result of platform_pre_restore().
-- */
--
--static void platform_restore_cleanup(int platform_mode)
--{
--	if (platform_mode && hibernation_ops)
--		hibernation_ops->restore_cleanup();
--}
--
--/**
-- *	platform_recover - recover the platform from a failure to suspend
-- *	devices.
-- */
--
--static void platform_recover(int platform_mode)
--{
--	if (platform_mode && hibernation_ops && hibernation_ops->recover)
--		hibernation_ops->recover();
--}
--
--/**
-- *	create_image - freeze devices that need to be frozen with interrupts
-- *	off, create the hibernation image and thaw those devices.  Control
-- *	reappears in this routine after a restore.
-- */
--
--static int create_image(int platform_mode)
--{
--	int error;
--
--	error = arch_prepare_suspend();
--	if (error)
--		return error;
--
--	/* At this point, dpm_suspend_start() has been called, but *not*
--	 * dpm_suspend_noirq(). We *must* call dpm_suspend_noirq() now.
--	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
--	 * become desynchronized with the actual state of the hardware
--	 * at resume time, and evil weirdness ensues.
--	 */
--	error = dpm_suspend_noirq(PMSG_FREEZE);
--	if (error) {
--		printk(KERN_ERR "PM: Some devices failed to power down, "
--			"aborting hibernation\n");
--		return error;
--	}
--
--	error = platform_pre_snapshot(platform_mode);
--	if (error || hibernation_test(TEST_PLATFORM))
--		goto Platform_finish;
--
--	error = disable_nonboot_cpus();
--	if (error || hibernation_test(TEST_CPUS)
--	    || hibernation_testmode(HIBERNATION_TEST))
--		goto Enable_cpus;
--
--	local_irq_disable();
--
--	error = sysdev_suspend(PMSG_FREEZE);
--	if (error) {
--		printk(KERN_ERR "PM: Some system devices failed to power down, "
--			"aborting hibernation\n");
--		goto Enable_irqs;
--	}
--
--	if (hibernation_test(TEST_CORE))
--		goto Power_up;
--
--	in_suspend = 1;
--	save_processor_state();
--	error = swsusp_arch_suspend();
--	if (error)
--		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
--			error);
--	/* Restore control flow magically appears here */
--	restore_processor_state();
--	if (!in_suspend)
--		platform_leave(platform_mode);
--
-- Power_up:
--	sysdev_resume();
--	/* NOTE:  dpm_resume_noirq() is just a resume() for devices
--	 * that suspended with irqs off ... no overall powerup.
--	 */
--
-- Enable_irqs:
--	local_irq_enable();
--
-- Enable_cpus:
--	enable_nonboot_cpus();
--
-- Platform_finish:
--	platform_finish(platform_mode);
--
--	dpm_resume_noirq(in_suspend ?
--		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
--
--	return error;
--}
--
--/**
-- *	hibernation_snapshot - quiesce devices and create the hibernation
-- *	snapshot image.
-- *	@platform_mode - if set, use the platform driver, if available, to
-- *			 prepare the platform firmware for the power transition.
-- *
-- *	Must be called with pm_mutex held
-- */
--
--int hibernation_snapshot(int platform_mode)
--{
--	int error;
--
--	error = platform_begin(platform_mode);
--	if (error)
--		return error;
--
--	/* Free memory before shutting down devices. */
--	error = swsusp_shrink_memory();
--	if (error)
--		goto Close;
--
--	suspend_console();
--	error = dpm_suspend_start(PMSG_FREEZE);
--	if (error)
--		goto Recover_platform;
--
--	if (hibernation_test(TEST_DEVICES))
--		goto Recover_platform;
--
--	error = create_image(platform_mode);
--	/* Control returns here after successful restore */
--
-- Resume_devices:
--	dpm_resume_end(in_suspend ?
--		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
--	resume_console();
-- Close:
--	platform_end(platform_mode);
--	return error;
--
-- Recover_platform:
--	platform_recover(platform_mode);
--	goto Resume_devices;
--}
--
--/**
-- *	resume_target_kernel - prepare devices that need to be suspended with
-- *	interrupts off, restore the contents of highmem that have not been
-- *	restored yet from the image and run the low level code that will restore
-- *	the remaining contents of memory and switch to the just restored target
-- *	kernel.
-- */
--
--static int resume_target_kernel(bool platform_mode)
--{
--	int error;
--
--	error = dpm_suspend_noirq(PMSG_QUIESCE);
--	if (error) {
--		printk(KERN_ERR "PM: Some devices failed to power down, "
--			"aborting resume\n");
--		return error;
--	}
--
--	error = platform_pre_restore(platform_mode);
--	if (error)
--		goto Cleanup;
--
--	error = disable_nonboot_cpus();
--	if (error)
--		goto Enable_cpus;
--
--	local_irq_disable();
--
--	error = sysdev_suspend(PMSG_QUIESCE);
--	if (error)
--		goto Enable_irqs;
--
--	/* We'll ignore saved state, but this gets preempt count (etc) right */
--	save_processor_state();
--	error = restore_highmem();
--	if (!error) {
--		error = swsusp_arch_resume();
--		/*
--		 * The code below is only ever reached in case of a failure.
--		 * Otherwise execution continues at place where
--		 * swsusp_arch_suspend() was called
--		 */
--		BUG_ON(!error);
--		/* This call to restore_highmem() undos the previous one */
--		restore_highmem();
--	}
--	/*
--	 * The only reason why swsusp_arch_resume() can fail is memory being
--	 * very tight, so we have to free it as soon as we can to avoid
--	 * subsequent failures
--	 */
--	swsusp_free();
--	restore_processor_state();
--	touch_softlockup_watchdog();
--
--	sysdev_resume();
--
-- Enable_irqs:
--	local_irq_enable();
--
-- Enable_cpus:
--	enable_nonboot_cpus();
--
-- Cleanup:
--	platform_restore_cleanup(platform_mode);
--
--	dpm_resume_noirq(PMSG_RECOVER);
--
--	return error;
--}
--
--/**
-- *	hibernation_restore - quiesce devices and restore the hibernation
-- *	snapshot image.  If successful, control returns in hibernation_snaphot()
-- *	@platform_mode - if set, use the platform driver, if available, to
-- *			 prepare the platform firmware for the transition.
-- *
-- *	Must be called with pm_mutex held
-- */
--
--int hibernation_restore(int platform_mode)
--{
--	int error;
--
--	pm_prepare_console();
--	suspend_console();
--	error = dpm_suspend_start(PMSG_QUIESCE);
--	if (!error) {
--		error = resume_target_kernel(platform_mode);
--		dpm_resume_end(PMSG_RECOVER);
--	}
--	resume_console();
--	pm_restore_console();
--	return error;
--}
--
--/**
-- *	hibernation_platform_enter - enter the hibernation state using the
-- *	platform driver (if available)
-- */
--
--int hibernation_platform_enter(void)
--{
--	int error;
--
--	if (!hibernation_ops)
--		return -ENOSYS;
--
--	/*
--	 * We have cancelled the power transition by running
--	 * hibernation_ops->finish() before saving the image, so we should let
--	 * the firmware know that we're going to enter the sleep state after all
--	 */
--	error = hibernation_ops->begin();
--	if (error)
--		goto Close;
--
--	entering_platform_hibernation = true;
--	suspend_console();
--	error = dpm_suspend_start(PMSG_HIBERNATE);
--	if (error) {
--		if (hibernation_ops->recover)
--			hibernation_ops->recover();
--		goto Resume_devices;
--	}
--
--	error = dpm_suspend_noirq(PMSG_HIBERNATE);
--	if (error)
--		goto Resume_devices;
--
--	error = hibernation_ops->prepare();
--	if (error)
--		goto Platofrm_finish;
--
--	error = disable_nonboot_cpus();
--	if (error)
--		goto Platofrm_finish;
--
--	local_irq_disable();
--	sysdev_suspend(PMSG_HIBERNATE);
--	hibernation_ops->enter();
--	/* We should never get here */
--	while (1);
--
--	/*
--	 * We don't need to reenable the nonboot CPUs or resume consoles, since
--	 * the system is going to be halted anyway.
--	 */
-- Platofrm_finish:
--	hibernation_ops->finish();
--
--	dpm_suspend_noirq(PMSG_RESTORE);
--
-- Resume_devices:
--	entering_platform_hibernation = false;
--	dpm_resume_end(PMSG_RESTORE);
--	resume_console();
--
-- Close:
--	hibernation_ops->end();
--
--	return error;
--}
--
--/**
-- *	power_down - Shut the machine down for hibernation.
-- *
-- *	Use the platform driver, if configured so; otherwise try
-- *	to power off or reboot.
-- */
--
--static void power_down(void)
--{
--	switch (hibernation_mode) {
--	case HIBERNATION_TEST:
--	case HIBERNATION_TESTPROC:
--		break;
--	case HIBERNATION_REBOOT:
--		kernel_restart(NULL);
--		break;
--	case HIBERNATION_PLATFORM:
--		hibernation_platform_enter();
--	case HIBERNATION_SHUTDOWN:
--		kernel_power_off();
--		break;
--	}
--	kernel_halt();
--	/*
--	 * Valid image is on the disk, if we continue we risk serious data
--	 * corruption after resume.
--	 */
--	printk(KERN_CRIT "PM: Please power down manually\n");
--	while(1);
--}
--
--static int prepare_processes(void)
--{
--	int error = 0;
--
--	if (freeze_processes()) {
--		error = -EBUSY;
--		thaw_processes();
--	}
--	return error;
--}
--
--/**
-- *	hibernate - The granpappy of the built-in hibernation management
-- */
--
--int hibernate(void)
--{
--	int error;
--
--	mutex_lock(&pm_mutex);
--	/* The snapshot device should not be opened while we're running */
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
--		error = -EBUSY;
--		goto Unlock;
--	}
--
--	pm_prepare_console();
--	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
--	if (error)
--		goto Exit;
--
--	error = usermodehelper_disable();
--	if (error)
--		goto Exit;
--
--	/* Allocate memory management structures */
--	error = create_basic_memory_bitmaps();
--	if (error)
--		goto Exit;
--
--	printk(KERN_INFO "PM: Syncing filesystems ... ");
--	sys_sync();
--	printk("done.\n");
--
--	error = prepare_processes();
--	if (error)
--		goto Finish;
--
--	if (hibernation_test(TEST_FREEZER))
--		goto Thaw;
--
--	if (hibernation_testmode(HIBERNATION_TESTPROC))
--		goto Thaw;
--
--	error = hibernation_snapshot(hibernation_mode == HIBERNATION_PLATFORM);
--	if (in_suspend && !error) {
--		unsigned int flags = 0;
--
--		if (hibernation_mode == HIBERNATION_PLATFORM)
--			flags |= SF_PLATFORM_MODE;
--		pr_debug("PM: writing image.\n");
--		error = swsusp_write(flags);
--		swsusp_free();
--		if (!error)
--			power_down();
--	} else {
--		pr_debug("PM: Image restored successfully.\n");
--		swsusp_free();
--	}
-- Thaw:
--	thaw_processes();
-- Finish:
--	free_basic_memory_bitmaps();
--	usermodehelper_enable();
-- Exit:
--	pm_notifier_call_chain(PM_POST_HIBERNATION);
--	pm_restore_console();
--	atomic_inc(&snapshot_device_available);
-- Unlock:
--	mutex_unlock(&pm_mutex);
--	return error;
--}
--
--
--/**
-- *	software_resume - Resume from a saved image.
-- *
-- *	Called as a late_initcall (so all devices are discovered and
-- *	initialized), we call swsusp to see if we have a saved image or not.
-- *	If so, we quiesce devices, the restore the saved image. We will
-- *	return above (in hibernate() ) if everything goes well.
-- *	Otherwise, we fail gracefully and return to the normally
-- *	scheduled program.
-- *
-- */
--
--static int software_resume(void)
--{
--	int error;
--	unsigned int flags;
--
--	/*
--	 * If the user said "noresume".. bail out early.
--	 */
--	if (noresume)
--		return 0;
--
--	/*
--	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
--	 * is configured into the kernel. Since the regular hibernate
--	 * trigger path is via sysfs which takes a buffer mutex before
--	 * calling hibernate functions (which take pm_mutex) this can
--	 * cause lockdep to complain about a possible ABBA deadlock
--	 * which cannot happen since we're in the boot code here and
--	 * sysfs can't be invoked yet. Therefore, we use a subclass
--	 * here to avoid lockdep complaining.
--	 */
--	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
--
--	if (swsusp_resume_device)
--		goto Check_image;
--
--	if (!strlen(resume_file)) {
--		error = -ENOENT;
--		goto Unlock;
--	}
--
--	pr_debug("PM: Checking image partition %s\n", resume_file);
--
--	/* Check if the device is there */
--	swsusp_resume_device = name_to_dev_t(resume_file);
--	if (!swsusp_resume_device) {
--		/*
--		 * Some device discovery might still be in progress; we need
--		 * to wait for this to finish.
--		 */
--		wait_for_device_probe();
--		/*
--		 * We can't depend on SCSI devices being available after loading
--		 * one of their modules until scsi_complete_async_scans() is
--		 * called and the resume device usually is a SCSI one.
--		 */
--		scsi_complete_async_scans();
--
--		swsusp_resume_device = name_to_dev_t(resume_file);
--		if (!swsusp_resume_device) {
--			error = -ENODEV;
--			goto Unlock;
--		}
--	}
--
-- Check_image:
--	pr_debug("PM: Resume from partition %d:%d\n",
--		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
--
--	pr_debug("PM: Checking hibernation image.\n");
--	error = swsusp_check();
--	if (error)
--		goto Unlock;
--
--	/* The snapshot device should not be opened while we're running */
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
--		error = -EBUSY;
--		goto Unlock;
--	}
--
--	pm_prepare_console();
--	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
--	if (error)
--		goto Finish;
--
--	error = usermodehelper_disable();
--	if (error)
--		goto Finish;
--
--	error = create_basic_memory_bitmaps();
--	if (error)
--		goto Finish;
--
--	pr_debug("PM: Preparing processes for restore.\n");
--	error = prepare_processes();
--	if (error) {
--		swsusp_close(FMODE_READ);
--		goto Done;
--	}
--
--	pr_debug("PM: Reading hibernation image.\n");
--
--	error = swsusp_read(&flags);
--	if (!error)
--		hibernation_restore(flags & SF_PLATFORM_MODE);
--
--	printk(KERN_ERR "PM: Restore failed, recovering.\n");
--	swsusp_free();
--	thaw_processes();
-- Done:
--	free_basic_memory_bitmaps();
--	usermodehelper_enable();
-- Finish:
--	pm_notifier_call_chain(PM_POST_RESTORE);
--	pm_restore_console();
--	atomic_inc(&snapshot_device_available);
--	/* For success case, the suspend path will release the lock */
-- Unlock:
--	mutex_unlock(&pm_mutex);
--	pr_debug("PM: Resume from disk failed.\n");
--	return error;
--}
--
--late_initcall(software_resume);
--
--
--static const char * const hibernation_modes[] = {
--	[HIBERNATION_PLATFORM]	= "platform",
--	[HIBERNATION_SHUTDOWN]	= "shutdown",
--	[HIBERNATION_REBOOT]	= "reboot",
--	[HIBERNATION_TEST]	= "test",
--	[HIBERNATION_TESTPROC]	= "testproc",
--};
--
--/**
-- *	disk - Control hibernation mode
-- *
-- *	Suspend-to-disk can be handled in several ways. We have a few options
-- *	for putting the system to sleep - using the platform driver (e.g. ACPI
-- *	or other hibernation_ops), powering off the system or rebooting the
-- *	system (for testing) as well as the two test modes.
-- *
-- *	The system can support 'platform', and that is known a priori (and
-- *	encoded by the presence of hibernation_ops). However, the user may
-- *	choose 'shutdown' or 'reboot' as alternatives, as well as one fo the
-- *	test modes, 'test' or 'testproc'.
-- *
-- *	show() will display what the mode is currently set to.
-- *	store() will accept one of
-- *
-- *	'platform'
-- *	'shutdown'
-- *	'reboot'
-- *	'test'
-- *	'testproc'
-- *
-- *	It will only change to 'platform' if the system
-- *	supports it (as determined by having hibernation_ops).
-- */
--
--static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
--			 char *buf)
--{
--	int i;
--	char *start = buf;
--
--	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
--		if (!hibernation_modes[i])
--			continue;
--		switch (i) {
--		case HIBERNATION_SHUTDOWN:
--		case HIBERNATION_REBOOT:
--		case HIBERNATION_TEST:
--		case HIBERNATION_TESTPROC:
--			break;
--		case HIBERNATION_PLATFORM:
--			if (hibernation_ops)
--				break;
--			/* not a valid mode, continue with loop */
--			continue;
--		}
--		if (i == hibernation_mode)
--			buf += sprintf(buf, "[%s] ", hibernation_modes[i]);
--		else
--			buf += sprintf(buf, "%s ", hibernation_modes[i]);
--	}
--	buf += sprintf(buf, "\n");
--	return buf-start;
--}
--
--
--static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
--			  const char *buf, size_t n)
--{
--	int error = 0;
--	int i;
--	int len;
--	char *p;
--	int mode = HIBERNATION_INVALID;
--
--	p = memchr(buf, '\n', n);
--	len = p ? p - buf : n;
--
--	mutex_lock(&pm_mutex);
--	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
--		if (len == strlen(hibernation_modes[i])
--		    && !strncmp(buf, hibernation_modes[i], len)) {
--			mode = i;
--			break;
--		}
--	}
--	if (mode != HIBERNATION_INVALID) {
--		switch (mode) {
--		case HIBERNATION_SHUTDOWN:
--		case HIBERNATION_REBOOT:
--		case HIBERNATION_TEST:
--		case HIBERNATION_TESTPROC:
--			hibernation_mode = mode;
--			break;
--		case HIBERNATION_PLATFORM:
--			if (hibernation_ops)
--				hibernation_mode = mode;
--			else
--				error = -EINVAL;
--		}
--	} else
--		error = -EINVAL;
--
--	if (!error)
--		pr_debug("PM: Hibernation mode set to '%s'\n",
--			 hibernation_modes[mode]);
--	mutex_unlock(&pm_mutex);
--	return error ? error : n;
--}
--
--power_attr(disk);
--
--static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
--			   char *buf)
--{
--	return sprintf(buf,"%d:%d\n", MAJOR(swsusp_resume_device),
--		       MINOR(swsusp_resume_device));
--}
--
--static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
--			    const char *buf, size_t n)
--{
--	unsigned int maj, min;
--	dev_t res;
--	int ret = -EINVAL;
--
--	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
--		goto out;
--
--	res = MKDEV(maj,min);
--	if (maj != MAJOR(res) || min != MINOR(res))
--		goto out;
--
--	mutex_lock(&pm_mutex);
--	swsusp_resume_device = res;
--	mutex_unlock(&pm_mutex);
--	printk(KERN_INFO "PM: Starting manual resume from disk\n");
--	noresume = 0;
--	software_resume();
--	ret = n;
-- out:
--	return ret;
--}
--
--power_attr(resume);
--
--static ssize_t image_size_show(struct kobject *kobj, struct kobj_attribute *attr,
--			       char *buf)
--{
--	return sprintf(buf, "%lu\n", image_size);
--}
--
--static ssize_t image_size_store(struct kobject *kobj, struct kobj_attribute *attr,
--				const char *buf, size_t n)
--{
--	unsigned long size;
--
--	if (sscanf(buf, "%lu", &size) == 1) {
--		image_size = size;
--		return n;
--	}
--
--	return -EINVAL;
--}
--
--power_attr(image_size);
--
--static struct attribute * g[] = {
--	&disk_attr.attr,
--	&resume_attr.attr,
--	&image_size_attr.attr,
--	NULL,
--};
--
--
--static struct attribute_group attr_group = {
--	.attrs = g,
--};
--
--
--static int __init pm_disk_init(void)
--{
--	return sysfs_create_group(power_kobj, &attr_group);
--}
--
--core_initcall(pm_disk_init);
--
--
--static int __init resume_setup(char *str)
--{
--	if (noresume)
--		return 1;
--
--	strncpy( resume_file, str, 255 );
--	return 1;
--}
--
--static int __init resume_offset_setup(char *str)
--{
--	unsigned long long offset;
--
--	if (noresume)
--		return 1;
--
--	if (sscanf(str, "%llu", &offset) == 1)
--		swsusp_resume_block = offset;
--
--	return 1;
--}
--
--static int __init noresume_setup(char *str)
--{
--	noresume = 1;
--	return 1;
--}
--
--__setup("noresume", noresume_setup);
--__setup("resume_offset=", resume_offset_setup);
--__setup("resume=", resume_setup);
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- /dev/null
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -0,0 +1,955 @@
-+/*
-+ * kernel/power/hibernate.c - Hibernation (a.k.a suspend-to-disk) support.
-+ *
-+ * Copyright (c) 2003 Patrick Mochel
-+ * Copyright (c) 2003 Open Source Development Lab
-+ * Copyright (c) 2004 Pavel Machek <pavel@suse.cz>
-+ * Copyright (c) 2009 Rafael J. Wysocki, Novell Inc.
-+ *
-+ * This file is released under the GPLv2.
-+ */
-+
-+#include <linux/suspend.h>
-+#include <linux/syscalls.h>
-+#include <linux/reboot.h>
-+#include <linux/string.h>
-+#include <linux/device.h>
-+#include <linux/kmod.h>
-+#include <linux/delay.h>
-+#include <linux/fs.h>
-+#include <linux/mount.h>
-+#include <linux/pm.h>
-+#include <linux/console.h>
-+#include <linux/cpu.h>
-+#include <linux/freezer.h>
-+#include <scsi/scsi_scan.h>
-+#include <asm/suspend.h>
-+
-+#include "power.h"
-+
-+
-+static int noresume = 0;
-+static char resume_file[256] = CONFIG_PM_STD_PARTITION;
-+dev_t swsusp_resume_device;
-+sector_t swsusp_resume_block;
-+
-+enum {
-+	HIBERNATION_INVALID,
-+	HIBERNATION_PLATFORM,
-+	HIBERNATION_TEST,
-+	HIBERNATION_TESTPROC,
-+	HIBERNATION_SHUTDOWN,
-+	HIBERNATION_REBOOT,
-+	/* keep last */
-+	__HIBERNATION_AFTER_LAST
-+};
-+#define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
-+#define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
-+
-+static int hibernation_mode = HIBERNATION_SHUTDOWN;
-+
-+static struct platform_hibernation_ops *hibernation_ops;
-+
-+/**
-+ * hibernation_set_ops - set the global hibernate operations
-+ * @ops: the hibernation operations to use in subsequent hibernation transitions
-+ */
-+
-+void hibernation_set_ops(struct platform_hibernation_ops *ops)
-+{
-+	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
-+	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
-+	    && ops->restore_cleanup)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+	mutex_lock(&pm_mutex);
-+	hibernation_ops = ops;
-+	if (ops)
-+		hibernation_mode = HIBERNATION_PLATFORM;
-+	else if (hibernation_mode == HIBERNATION_PLATFORM)
-+		hibernation_mode = HIBERNATION_SHUTDOWN;
-+
-+	mutex_unlock(&pm_mutex);
-+}
-+
-+static bool entering_platform_hibernation;
-+
-+bool system_entering_hibernation(void)
-+{
-+	return entering_platform_hibernation;
-+}
-+EXPORT_SYMBOL(system_entering_hibernation);
-+
-+#ifdef CONFIG_PM_DEBUG
-+static void hibernation_debug_sleep(void)
-+{
-+	printk(KERN_INFO "hibernation debug: Waiting for 5 seconds.\n");
-+	mdelay(5000);
-+}
-+
-+static int hibernation_testmode(int mode)
-+{
-+	if (hibernation_mode == mode) {
-+		hibernation_debug_sleep();
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int hibernation_test(int level)
-+{
-+	if (pm_test_level == level) {
-+		hibernation_debug_sleep();
-+		return 1;
-+	}
-+	return 0;
-+}
-+#else /* !CONFIG_PM_DEBUG */
-+static int hibernation_testmode(int mode) { return 0; }
-+static int hibernation_test(int level) { return 0; }
-+#endif /* !CONFIG_PM_DEBUG */
-+
-+/**
-+ *	platform_begin - tell the platform driver that we're starting
-+ *	hibernation
-+ */
-+
-+static int platform_begin(int platform_mode)
-+{
-+	return (platform_mode && hibernation_ops) ?
-+		hibernation_ops->begin() : 0;
-+}
-+
-+/**
-+ *	platform_end - tell the platform driver that we've entered the
-+ *	working state
-+ */
-+
-+static void platform_end(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->end();
-+}
-+
-+/**
-+ *	platform_pre_snapshot - prepare the machine for hibernation using the
-+ *	platform driver if so configured and return an error code if it fails
-+ */
-+
-+static int platform_pre_snapshot(int platform_mode)
-+{
-+	return (platform_mode && hibernation_ops) ?
-+		hibernation_ops->pre_snapshot() : 0;
-+}
-+
-+/**
-+ *	platform_leave - prepare the machine for switching to the normal mode
-+ *	of operation using the platform driver (called with interrupts disabled)
-+ */
-+
-+static void platform_leave(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->leave();
-+}
-+
-+/**
-+ *	platform_finish - switch the machine to the normal mode of operation
-+ *	using the platform driver (must be called after platform_prepare())
-+ */
-+
-+static void platform_finish(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->finish();
-+}
-+
-+/**
-+ *	platform_pre_restore - prepare the platform for the restoration from a
-+ *	hibernation image.  If the restore fails after this function has been
-+ *	called, platform_restore_cleanup() must be called.
-+ */
-+
-+static int platform_pre_restore(int platform_mode)
-+{
-+	return (platform_mode && hibernation_ops) ?
-+		hibernation_ops->pre_restore() : 0;
-+}
-+
-+/**
-+ *	platform_restore_cleanup - switch the platform to the normal mode of
-+ *	operation after a failing restore.  If platform_pre_restore() has been
-+ *	called before the failing restore, this function must be called too,
-+ *	regardless of the result of platform_pre_restore().
-+ */
-+
-+static void platform_restore_cleanup(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->restore_cleanup();
-+}
-+
-+/**
-+ *	platform_recover - recover the platform from a failure to suspend
-+ *	devices.
-+ */
-+
-+static void platform_recover(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops && hibernation_ops->recover)
-+		hibernation_ops->recover();
-+}
-+
-+/**
-+ *	create_image - freeze devices that need to be frozen with interrupts
-+ *	off, create the hibernation image and thaw those devices.  Control
-+ *	reappears in this routine after a restore.
-+ */
-+
-+static int create_image(int platform_mode)
-+{
-+	int error;
-+
-+	error = arch_prepare_suspend();
-+	if (error)
-+		return error;
-+
-+	/* At this point, dpm_suspend_start() has been called, but *not*
-+	 * dpm_suspend_noirq(). We *must* call dpm_suspend_noirq() now.
-+	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-+	 * become desynchronized with the actual state of the hardware
-+	 * at resume time, and evil weirdness ensues.
-+	 */
-+	error = dpm_suspend_noirq(PMSG_FREEZE);
-+	if (error) {
-+		printk(KERN_ERR "PM: Some devices failed to power down, "
-+			"aborting hibernation\n");
-+		return error;
-+	}
-+
-+	error = platform_pre_snapshot(platform_mode);
-+	if (error || hibernation_test(TEST_PLATFORM))
-+		goto Platform_finish;
-+
-+	error = disable_nonboot_cpus();
-+	if (error || hibernation_test(TEST_CPUS)
-+	    || hibernation_testmode(HIBERNATION_TEST))
-+		goto Enable_cpus;
-+
-+	local_irq_disable();
-+
-+	error = sysdev_suspend(PMSG_FREEZE);
-+	if (error) {
-+		printk(KERN_ERR "PM: Some system devices failed to power down, "
-+			"aborting hibernation\n");
-+		goto Enable_irqs;
-+	}
-+
-+	if (hibernation_test(TEST_CORE))
-+		goto Power_up;
-+
-+	in_suspend = 1;
-+	save_processor_state();
-+	error = swsusp_arch_suspend();
-+	if (error)
-+		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
-+			error);
-+	/* Restore control flow magically appears here */
-+	restore_processor_state();
-+	if (!in_suspend)
-+		platform_leave(platform_mode);
-+
-+ Power_up:
-+	sysdev_resume();
-+	/* NOTE:  dpm_resume_noirq() is just a resume() for devices
-+	 * that suspended with irqs off ... no overall powerup.
-+	 */
-+
-+ Enable_irqs:
-+	local_irq_enable();
-+
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Platform_finish:
-+	platform_finish(platform_mode);
-+
-+	dpm_resume_noirq(in_suspend ?
-+		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+
-+	return error;
-+}
-+
-+/**
-+ *	hibernation_snapshot - quiesce devices and create the hibernation
-+ *	snapshot image.
-+ *	@platform_mode - if set, use the platform driver, if available, to
-+ *			 prepare the platform firmware for the power transition.
-+ *
-+ *	Must be called with pm_mutex held
-+ */
-+
-+int hibernation_snapshot(int platform_mode)
-+{
-+	int error;
-+
-+	error = platform_begin(platform_mode);
-+	if (error)
-+		return error;
-+
-+	/* Free memory before shutting down devices. */
-+	error = swsusp_shrink_memory();
-+	if (error)
-+		goto Close;
-+
-+	suspend_console();
-+	error = dpm_suspend_start(PMSG_FREEZE);
-+	if (error)
-+		goto Recover_platform;
-+
-+	if (hibernation_test(TEST_DEVICES))
-+		goto Recover_platform;
-+
-+	error = create_image(platform_mode);
-+	/* Control returns here after successful restore */
-+
-+ Resume_devices:
-+	dpm_resume_end(in_suspend ?
-+		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	resume_console();
-+ Close:
-+	platform_end(platform_mode);
-+	return error;
-+
-+ Recover_platform:
-+	platform_recover(platform_mode);
-+	goto Resume_devices;
-+}
-+
-+/**
-+ *	resume_target_kernel - prepare devices that need to be suspended with
-+ *	interrupts off, restore the contents of highmem that have not been
-+ *	restored yet from the image and run the low level code that will restore
-+ *	the remaining contents of memory and switch to the just restored target
-+ *	kernel.
-+ */
-+
-+static int resume_target_kernel(bool platform_mode)
-+{
-+	int error;
-+
-+	error = dpm_suspend_noirq(PMSG_QUIESCE);
-+	if (error) {
-+		printk(KERN_ERR "PM: Some devices failed to power down, "
-+			"aborting resume\n");
-+		return error;
-+	}
-+
-+	error = platform_pre_restore(platform_mode);
-+	if (error)
-+		goto Cleanup;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Enable_cpus;
-+
-+	local_irq_disable();
-+
-+	error = sysdev_suspend(PMSG_QUIESCE);
-+	if (error)
-+		goto Enable_irqs;
-+
-+	/* We'll ignore saved state, but this gets preempt count (etc) right */
-+	save_processor_state();
-+	error = restore_highmem();
-+	if (!error) {
-+		error = swsusp_arch_resume();
-+		/*
-+		 * The code below is only ever reached in case of a failure.
-+		 * Otherwise execution continues at place where
-+		 * swsusp_arch_suspend() was called
-+		 */
-+		BUG_ON(!error);
-+		/* This call to restore_highmem() undos the previous one */
-+		restore_highmem();
-+	}
-+	/*
-+	 * The only reason why swsusp_arch_resume() can fail is memory being
-+	 * very tight, so we have to free it as soon as we can to avoid
-+	 * subsequent failures
-+	 */
-+	swsusp_free();
-+	restore_processor_state();
-+	touch_softlockup_watchdog();
-+
-+	sysdev_resume();
-+
-+ Enable_irqs:
-+	local_irq_enable();
-+
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Cleanup:
-+	platform_restore_cleanup(platform_mode);
-+
-+	dpm_resume_noirq(PMSG_RECOVER);
-+
-+	return error;
-+}
-+
-+/**
-+ *	hibernation_restore - quiesce devices and restore the hibernation
-+ *	snapshot image.  If successful, control returns in hibernation_snaphot()
-+ *	@platform_mode - if set, use the platform driver, if available, to
-+ *			 prepare the platform firmware for the transition.
-+ *
-+ *	Must be called with pm_mutex held
-+ */
-+
-+int hibernation_restore(int platform_mode)
-+{
-+	int error;
-+
-+	pm_prepare_console();
-+	suspend_console();
-+	error = dpm_suspend_start(PMSG_QUIESCE);
-+	if (!error) {
-+		error = resume_target_kernel(platform_mode);
-+		dpm_resume_end(PMSG_RECOVER);
-+	}
-+	resume_console();
-+	pm_restore_console();
-+	return error;
-+}
-+
-+/**
-+ *	hibernation_platform_enter - enter the hibernation state using the
-+ *	platform driver (if available)
-+ */
-+
-+int hibernation_platform_enter(void)
-+{
-+	int error;
-+
-+	if (!hibernation_ops)
-+		return -ENOSYS;
-+
-+	/*
-+	 * We have cancelled the power transition by running
-+	 * hibernation_ops->finish() before saving the image, so we should let
-+	 * the firmware know that we're going to enter the sleep state after all
-+	 */
-+	error = hibernation_ops->begin();
-+	if (error)
-+		goto Close;
-+
-+	entering_platform_hibernation = true;
-+	suspend_console();
-+	error = dpm_suspend_start(PMSG_HIBERNATE);
-+	if (error) {
-+		if (hibernation_ops->recover)
-+			hibernation_ops->recover();
-+		goto Resume_devices;
-+	}
-+
-+	error = dpm_suspend_noirq(PMSG_HIBERNATE);
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = hibernation_ops->prepare();
-+	if (error)
-+		goto Platofrm_finish;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Platofrm_finish;
-+
-+	local_irq_disable();
-+	sysdev_suspend(PMSG_HIBERNATE);
-+	hibernation_ops->enter();
-+	/* We should never get here */
-+	while (1);
-+
-+	/*
-+	 * We don't need to reenable the nonboot CPUs or resume consoles, since
-+	 * the system is going to be halted anyway.
-+	 */
-+ Platofrm_finish:
-+	hibernation_ops->finish();
-+
-+	dpm_suspend_noirq(PMSG_RESTORE);
-+
-+ Resume_devices:
-+	entering_platform_hibernation = false;
-+	dpm_resume_end(PMSG_RESTORE);
-+	resume_console();
-+
-+ Close:
-+	hibernation_ops->end();
-+
-+	return error;
-+}
-+
-+/**
-+ *	power_down - Shut the machine down for hibernation.
-+ *
-+ *	Use the platform driver, if configured so; otherwise try
-+ *	to power off or reboot.
-+ */
-+
-+static void power_down(void)
-+{
-+	switch (hibernation_mode) {
-+	case HIBERNATION_TEST:
-+	case HIBERNATION_TESTPROC:
-+		break;
-+	case HIBERNATION_REBOOT:
-+		kernel_restart(NULL);
-+		break;
-+	case HIBERNATION_PLATFORM:
-+		hibernation_platform_enter();
-+	case HIBERNATION_SHUTDOWN:
-+		kernel_power_off();
-+		break;
-+	}
-+	kernel_halt();
-+	/*
-+	 * Valid image is on the disk, if we continue we risk serious data
-+	 * corruption after resume.
-+	 */
-+	printk(KERN_CRIT "PM: Please power down manually\n");
-+	while(1);
-+}
-+
-+static int prepare_processes(void)
-+{
-+	int error = 0;
-+
-+	if (freeze_processes()) {
-+		error = -EBUSY;
-+		thaw_processes();
-+	}
-+	return error;
-+}
-+
-+/**
-+ *	hibernate - The granpappy of the built-in hibernation management
-+ */
-+
-+int hibernate(void)
-+{
-+	int error;
-+
-+	mutex_lock(&pm_mutex);
-+	/* The snapshot device should not be opened while we're running */
-+	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+		error = -EBUSY;
-+		goto Unlock;
-+	}
-+
-+	pm_prepare_console();
-+	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-+	if (error)
-+		goto Exit;
-+
-+	error = usermodehelper_disable();
-+	if (error)
-+		goto Exit;
-+
-+	/* Allocate memory management structures */
-+	error = create_basic_memory_bitmaps();
-+	if (error)
-+		goto Exit;
-+
-+	printk(KERN_INFO "PM: Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
-+
-+	error = prepare_processes();
-+	if (error)
-+		goto Finish;
-+
-+	if (hibernation_test(TEST_FREEZER))
-+		goto Thaw;
-+
-+	if (hibernation_testmode(HIBERNATION_TESTPROC))
-+		goto Thaw;
-+
-+	error = hibernation_snapshot(hibernation_mode == HIBERNATION_PLATFORM);
-+	if (in_suspend && !error) {
-+		unsigned int flags = 0;
-+
-+		if (hibernation_mode == HIBERNATION_PLATFORM)
-+			flags |= SF_PLATFORM_MODE;
-+		pr_debug("PM: writing image.\n");
-+		error = swsusp_write(flags);
-+		swsusp_free();
-+		if (!error)
-+			power_down();
-+	} else {
-+		pr_debug("PM: Image restored successfully.\n");
-+		swsusp_free();
-+	}
-+ Thaw:
-+	thaw_processes();
-+ Finish:
-+	free_basic_memory_bitmaps();
-+	usermodehelper_enable();
-+ Exit:
-+	pm_notifier_call_chain(PM_POST_HIBERNATION);
-+	pm_restore_console();
-+	atomic_inc(&snapshot_device_available);
-+ Unlock:
-+	mutex_unlock(&pm_mutex);
-+	return error;
-+}
-+
-+
-+/**
-+ *	software_resume - Resume from a saved image.
-+ *
-+ *	Called as a late_initcall (so all devices are discovered and
-+ *	initialized), we call swsusp to see if we have a saved image or not.
-+ *	If so, we quiesce devices, the restore the saved image. We will
-+ *	return above (in hibernate() ) if everything goes well.
-+ *	Otherwise, we fail gracefully and return to the normally
-+ *	scheduled program.
-+ *
-+ */
-+
-+static int software_resume(void)
-+{
-+	int error;
-+	unsigned int flags;
-+
-+	/*
-+	 * If the user said "noresume".. bail out early.
-+	 */
-+	if (noresume)
-+		return 0;
-+
-+	/*
-+	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
-+	 * is configured into the kernel. Since the regular hibernate
-+	 * trigger path is via sysfs which takes a buffer mutex before
-+	 * calling hibernate functions (which take pm_mutex) this can
-+	 * cause lockdep to complain about a possible ABBA deadlock
-+	 * which cannot happen since we're in the boot code here and
-+	 * sysfs can't be invoked yet. Therefore, we use a subclass
-+	 * here to avoid lockdep complaining.
-+	 */
-+	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
-+
-+	if (swsusp_resume_device)
-+		goto Check_image;
-+
-+	if (!strlen(resume_file)) {
-+		error = -ENOENT;
-+		goto Unlock;
-+	}
-+
-+	pr_debug("PM: Checking image partition %s\n", resume_file);
-+
-+	/* Check if the device is there */
-+	swsusp_resume_device = name_to_dev_t(resume_file);
-+	if (!swsusp_resume_device) {
-+		/*
-+		 * Some device discovery might still be in progress; we need
-+		 * to wait for this to finish.
-+		 */
-+		wait_for_device_probe();
-+		/*
-+		 * We can't depend on SCSI devices being available after loading
-+		 * one of their modules until scsi_complete_async_scans() is
-+		 * called and the resume device usually is a SCSI one.
-+		 */
-+		scsi_complete_async_scans();
-+
-+		swsusp_resume_device = name_to_dev_t(resume_file);
-+		if (!swsusp_resume_device) {
-+			error = -ENODEV;
-+			goto Unlock;
-+		}
-+	}
-+
-+ Check_image:
-+	pr_debug("PM: Resume from partition %d:%d\n",
-+		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
-+
-+	pr_debug("PM: Checking hibernation image.\n");
-+	error = swsusp_check();
-+	if (error)
-+		goto Unlock;
-+
-+	/* The snapshot device should not be opened while we're running */
-+	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+		error = -EBUSY;
-+		goto Unlock;
-+	}
-+
-+	pm_prepare_console();
-+	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-+	if (error)
-+		goto Finish;
-+
-+	error = usermodehelper_disable();
-+	if (error)
-+		goto Finish;
-+
-+	error = create_basic_memory_bitmaps();
-+	if (error)
-+		goto Finish;
-+
-+	pr_debug("PM: Preparing processes for restore.\n");
-+	error = prepare_processes();
-+	if (error) {
-+		swsusp_close(FMODE_READ);
-+		goto Done;
-+	}
-+
-+	pr_debug("PM: Reading hibernation image.\n");
-+
-+	error = swsusp_read(&flags);
-+	if (!error)
-+		hibernation_restore(flags & SF_PLATFORM_MODE);
-+
-+	printk(KERN_ERR "PM: Restore failed, recovering.\n");
-+	swsusp_free();
-+	thaw_processes();
-+ Done:
-+	free_basic_memory_bitmaps();
-+	usermodehelper_enable();
-+ Finish:
-+	pm_notifier_call_chain(PM_POST_RESTORE);
-+	pm_restore_console();
-+	atomic_inc(&snapshot_device_available);
-+	/* For success case, the suspend path will release the lock */
-+ Unlock:
-+	mutex_unlock(&pm_mutex);
-+	pr_debug("PM: Resume from disk failed.\n");
-+	return error;
-+}
-+
-+late_initcall(software_resume);
-+
-+
-+static const char * const hibernation_modes[] = {
-+	[HIBERNATION_PLATFORM]	= "platform",
-+	[HIBERNATION_SHUTDOWN]	= "shutdown",
-+	[HIBERNATION_REBOOT]	= "reboot",
-+	[HIBERNATION_TEST]	= "test",
-+	[HIBERNATION_TESTPROC]	= "testproc",
-+};
-+
-+/**
-+ *	disk - Control hibernation mode
-+ *
-+ *	Suspend-to-disk can be handled in several ways. We have a few options
-+ *	for putting the system to sleep - using the platform driver (e.g. ACPI
-+ *	or other hibernation_ops), powering off the system or rebooting the
-+ *	system (for testing) as well as the two test modes.
-+ *
-+ *	The system can support 'platform', and that is known a priori (and
-+ *	encoded by the presence of hibernation_ops). However, the user may
-+ *	choose 'shutdown' or 'reboot' as alternatives, as well as one fo the
-+ *	test modes, 'test' or 'testproc'.
-+ *
-+ *	show() will display what the mode is currently set to.
-+ *	store() will accept one of
-+ *
-+ *	'platform'
-+ *	'shutdown'
-+ *	'reboot'
-+ *	'test'
-+ *	'testproc'
-+ *
-+ *	It will only change to 'platform' if the system
-+ *	supports it (as determined by having hibernation_ops).
-+ */
-+
-+static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			 char *buf)
-+{
-+	int i;
-+	char *start = buf;
-+
-+	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
-+		if (!hibernation_modes[i])
-+			continue;
-+		switch (i) {
-+		case HIBERNATION_SHUTDOWN:
-+		case HIBERNATION_REBOOT:
-+		case HIBERNATION_TEST:
-+		case HIBERNATION_TESTPROC:
-+			break;
-+		case HIBERNATION_PLATFORM:
-+			if (hibernation_ops)
-+				break;
-+			/* not a valid mode, continue with loop */
-+			continue;
-+		}
-+		if (i == hibernation_mode)
-+			buf += sprintf(buf, "[%s] ", hibernation_modes[i]);
-+		else
-+			buf += sprintf(buf, "%s ", hibernation_modes[i]);
-+	}
-+	buf += sprintf(buf, "\n");
-+	return buf-start;
-+}
-+
-+
-+static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			  const char *buf, size_t n)
-+{
-+	int error = 0;
-+	int i;
-+	int len;
-+	char *p;
-+	int mode = HIBERNATION_INVALID;
-+
-+	p = memchr(buf, '\n', n);
-+	len = p ? p - buf : n;
-+
-+	mutex_lock(&pm_mutex);
-+	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
-+		if (len == strlen(hibernation_modes[i])
-+		    && !strncmp(buf, hibernation_modes[i], len)) {
-+			mode = i;
-+			break;
-+		}
-+	}
-+	if (mode != HIBERNATION_INVALID) {
-+		switch (mode) {
-+		case HIBERNATION_SHUTDOWN:
-+		case HIBERNATION_REBOOT:
-+		case HIBERNATION_TEST:
-+		case HIBERNATION_TESTPROC:
-+			hibernation_mode = mode;
-+			break;
-+		case HIBERNATION_PLATFORM:
-+			if (hibernation_ops)
-+				hibernation_mode = mode;
-+			else
-+				error = -EINVAL;
-+		}
-+	} else
-+		error = -EINVAL;
-+
-+	if (!error)
-+		pr_debug("PM: Hibernation mode set to '%s'\n",
-+			 hibernation_modes[mode]);
-+	mutex_unlock(&pm_mutex);
-+	return error ? error : n;
-+}
-+
-+power_attr(disk);
-+
-+static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			   char *buf)
-+{
-+	return sprintf(buf,"%d:%d\n", MAJOR(swsusp_resume_device),
-+		       MINOR(swsusp_resume_device));
-+}
-+
-+static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			    const char *buf, size_t n)
-+{
-+	unsigned int maj, min;
-+	dev_t res;
-+	int ret = -EINVAL;
-+
-+	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
-+		goto out;
-+
-+	res = MKDEV(maj,min);
-+	if (maj != MAJOR(res) || min != MINOR(res))
-+		goto out;
-+
-+	mutex_lock(&pm_mutex);
-+	swsusp_resume_device = res;
-+	mutex_unlock(&pm_mutex);
-+	printk(KERN_INFO "PM: Starting manual resume from disk\n");
-+	noresume = 0;
-+	software_resume();
-+	ret = n;
-+ out:
-+	return ret;
-+}
-+
-+power_attr(resume);
-+
-+static ssize_t image_size_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			       char *buf)
-+{
-+	return sprintf(buf, "%lu\n", image_size);
-+}
-+
-+static ssize_t image_size_store(struct kobject *kobj, struct kobj_attribute *attr,
-+				const char *buf, size_t n)
-+{
-+	unsigned long size;
-+
-+	if (sscanf(buf, "%lu", &size) == 1) {
-+		image_size = size;
-+		return n;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+power_attr(image_size);
-+
-+static struct attribute * g[] = {
-+	&disk_attr.attr,
-+	&resume_attr.attr,
-+	&image_size_attr.attr,
-+	NULL,
-+};
-+
-+
-+static struct attribute_group attr_group = {
-+	.attrs = g,
-+};
-+
-+
-+static int __init pm_disk_init(void)
-+{
-+	return sysfs_create_group(power_kobj, &attr_group);
-+}
-+
-+core_initcall(pm_disk_init);
-+
-+
-+static int __init resume_setup(char *str)
-+{
-+	if (noresume)
-+		return 1;
-+
-+	strncpy( resume_file, str, 255 );
-+	return 1;
-+}
-+
-+static int __init resume_offset_setup(char *str)
-+{
-+	unsigned long long offset;
-+
-+	if (noresume)
-+		return 1;
-+
-+	if (sscanf(str, "%llu", &offset) == 1)
-+		swsusp_resume_block = offset;
-+
-+	return 1;
-+}
-+
-+static int __init noresume_setup(char *str)
-+{
-+	noresume = 1;
-+	return 1;
-+}
-+
-+__setup("noresume", noresume_setup);
-+__setup("resume_offset=", resume_offset_setup);
-+__setup("resume=", resume_setup);
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjI5LCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
+b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
+ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
+ZnJvbSAyLjYuMjksIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
+dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
+aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
+c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
+aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
+dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
+ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQogIDIwMDktMDYtMDcgICAgICAxMTAgICAgICAgMzUgICAgICAgICAg
+MzEKICAyMDA5LTA1LTMxICAgICAgMTAwICAgICAgIDMyICAgICAgICAgIDI3CiAgMjAwOS0wNS0y
+NCAgICAgICA5MiAgICAgICAzNCAgICAgICAgICAyNwogIDIwMDktMDUtMTYgICAgICAgODEgICAg
+ICAgMzYgICAgICAgICAgMzMKICAyMDA5LTA0LTI1ICAgICAgIDU1ICAgICAgIDM2ICAgICAgICAg
+IDI2CiAgMjAwOS0wNC0xNyAgICAgICAzNyAgICAgICAzNSAgICAgICAgICAyOAoKClVucmVzb2x2
+ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDov
+L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDc1ClN1YmplY3QJCTogc3Vz
+cGVuZC9oaWJlcm5hdGUgbG9ja2RlcCB3YXJuaW5nClN1Ym1pdHRlcgk6IERhdmUgWW91bmcgPGhp
+ZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNi0wMiAxMDowMCAoNiBkYXlz
+IG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0
+MzkzNzIzMzIxMjQxJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD0xMzQ3NApTdWJqZWN0CQk6IE9vcHMgd2hpbHN0IGJvb3RpbmcKU3Vi
+bWl0dGVyCTogQ2hyaXMgQ2xheXRvbiA8Y2hyaXMyNTUzQGdvb2dsZW1haWwuY29tPgpEYXRlCQk6
+IDIwMDktMDYtMDYgMTg6NTkgKDIgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5p
+bmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNDQzMTQ4NzkyNDI1NCZ3PTQKCgpCdWctRW50cnkJOiBo
+dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM0NzMKU3ViamVjdAkJ
+OiBCdWcgd2hpbGUgdHJ5aW5nIHRvIGxhdW5jaCBhIEtWTSBndWVzdApTdWJtaXR0ZXIJOiBTYWNo
+aW4gU2FudCA8c2FjaGlucEBpbi5pYm0uY29tPgpEYXRlCQk6IDIwMDktMDYtMDUgMTc6MjAgKDMg
+ZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZt
+PTEyNDQyMjE3MzEyOTA0NyZ3PTQKSGFuZGxlZC1CeQk6IE1pbWkgWm9oYXIgPHpvaGFyQHVzLmli
+bS5jb20+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTEzNDcyClN1YmplY3QJCTogT29wcyB3aXRoIG1pbmljb20gYW5kIFVTQiBzZXJpYWwK
+U3VibWl0dGVyCTogUGV0ZXIgQ2h1YmIgPHBldGVyY0BnZWxhdG8udW5zdy5lZHUuYXU+CkRhdGUJ
+CTogMjAwOS0wNi0wNSAxOjM3ICgzIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMu
+aW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQ0MTY5MDEwMjY3MDAmdz00CkhhbmRsZWQtQnkJOiBB
+bGFuIFN0ZXJuIDxzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1PgoKCkJ1Zy1FbnRyeQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ3MQpTdWJqZWN0CQk6IExv
+YWRpbmcgcGFycG9ydF9wYyBraWxscyB0aGUga2V5Ym9hcmQgaWYgQUNQSSBpcyBlbmFibGVkClN1
+Ym1pdHRlcgk6IE96YW4gw4dhxJ9sYXlhbiA8b3phbkBwYXJkdXMub3JnLnRyPgpEYXRlCQk6IDIw
+MDktMDYtMDQgOToxMiAoNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8v
+P2w9bGludXgta2VybmVsJm09MTI0NDEwNjY3NTMyNTU4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ0NgpTdWJqZWN0CQk6IHJl
+c3VtZSBhZnRlciBzdXNwZW5kLXRvLXJhbSBicm9rZW4gb24gVG9zaGliYSBTYXRlbGxpdGUgQTEw
+MCB3aXRoIDIuNi4zMC1yYzggKHdvcmtzIGluIDIuNi4yOCkKU3VibWl0dGVyCTogQW5kcmVhIElv
+YiA8YW5kcmVhX2lvYkB5YWhvby5pdD4KRGF0ZQkJOiAyMDA5LTA2LTAzIDIxOjQyICg1IGRheXMg
+b2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
+aT9pZD0xMzQyNApTdWJqZWN0CQk6IHBvc3NpYmxlIGRlYWRsb2NrIHdoZW4gZG9pbmcgZ292ZXJu
+b3Igc3dpdGNoaW5nClN1Ym1pdHRlcgk6IFNoYW9odWEgTGkgPHNoYW9odWEubGlAaW50ZWwuY29t
+PgpEYXRlCQk6IDIwMDktMDUtMzEgMTY6MzYgKDggZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRw
+Oi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2NwdWZyZXEvbXNnMDA3MTEuaHRtbApIYW5kbGVkLUJ5
+CTogTWF0aGlldSBEZXNub3llcnMgPG1hdGhpZXUuZGVzbm95ZXJzQHBvbHltdGwuY2E+CgoKQnVn
+LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDA4
+ClN1YmplY3QJCTogUGVyZm9ybWFuY2UgcmVncmVzc2lvbiBpbiAyLjYuMzAtcmM3ClN1Ym1pdHRl
+cgk6IERpZWdvIENhbGxlamEgPGRpZWdvY2dAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDUtMzAg
+MTg6NTEgKDkgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA5
+LzUvMzAvMTQ2CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
+dWcuY2dpP2lkPTEzNDA3ClN1YmplY3QJCTogYWRiIHRyYWNrcGFkIGRpc2FwcGVhcnMgYWZ0ZXIg
+c3VzcGVuZCB0byByYW0KU3VibWl0dGVyCTogSmFuIFNjaG9seiA8c2Nob2x6QGZpYXMudW5pLWZy
+YW5rZnVydC5kZT4KRGF0ZQkJOiAyMDA5LTA1LTI4IDc6NTkgKDExIGRheXMgb2xkKQpGaXJzdC1C
+YWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2
+YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9MmVkOGQyYjNhODFiZGJiMDQxODMwMTYyOGNj
+ZGIwMDhhYzlmNDBiNwpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
+ZWwmbT0xMjQzNDk3NjIzMTQ5NzYmdz00CkhhbmRsZWQtQnkJOiBSYWZhZWwgSi4gV3lzb2NraSA8
+cmp3QHNpc2sucGw+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
+d19idWcuY2dpP2lkPTEzNDAxClN1YmplY3QJCTogcGt0Y2R2ZCB3cml0aW5nIGlzIHJlYWxseSBz
+bG93IHdpdGggQ0ZRIHNjaGVkdWxlciAoYmlzZWN0ZWQpClN1Ym1pdHRlcgk6IExhdXJlbnQgUmlm
+ZmFyZCA8bGF1cmVudC5yaWZmYXJkQGZyZWUuZnI+CkRhdGUJCTogMjAwOS0wNS0yOCAxODo0MyAo
+MTEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
+d19idWcuY2dpP2lkPTEzMzkxClN1YmplY3QJCTogS2VybmVsIGJvb3QgaGFuZ3MgYXQgYWJvdXQg
+ZXZlcnkgc2Vjb25kIHN0YXJ0IHdoZW4ga21zIGlzIGFjdGl2YXRlZApTdWJtaXR0ZXIJOiBNYXJ0
+aW4gQmFtbWVyIDxtcmI3NEBnbXguYXQ+CkRhdGUJCTogMjAwOS0wNS0yNiAyMTo0NyAoMTMgZGF5
+cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTEzMzc0ClN1YmplY3QJCTogcmVpc2VyZnMgYmxvY2tlZCBmb3IgbW9yZSB0aGFuIDEy
+MHNlY3MKU3VibWl0dGVyCTogSGFyYWxkIER1bmtlbCA8aGFyYWxkLmR1bmtlbEB0LW9ubGluZS5k
+ZT4KRGF0ZQkJOiAyMDA5LTA1LTIzIDg6NTIgKDE2IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0
+cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQzMDY4ODA0MTA4MTEmdz00CgkJICBo
+dHRwOi8vbGttbC5vcmcvbGttbC8yMDA5LzUvMjkvMzg5CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
+Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzczClN1YmplY3QJCTogZmJjb24s
+IGludGVsZmIsIGk5MTU6IElORk86IHBvc3NpYmxlIGNpcmN1bGFyIGxvY2tpbmcgZGVwZW5kZW5j
+eSBkZXRlY3RlZApTdWJtaXR0ZXIJOiBNaWxlcyBMYW5lIDxtaWxlcy5sYW5lQGdtYWlsLmNvbT4K
+RGF0ZQkJOiAyMDA5LTA1LTIzIDU6MDggKDE2IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDov
+L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQzMDU1MzgxMzA3MDImdz00CgoKQnVnLUVu
+dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzY2ClN1
+YmplY3QJCTogQWJvdXQgODAlIG9mIHNodXRkb3ducyBmYWlsIChibG9ja2luZykKU3VibWl0dGVy
+CTogTWFydGluIEJhbW1lciA8bXJiNzRAZ214LmF0PgpEYXRlCQk6IDIwMDktMDUtMjMgMDA6NTgg
+KDE2IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xMzM2MgpTdWJqZWN0CQk6IHJ0MngwMDogc2xvdyB3aWZpIHdpdGggY29y
+cmVjdCBiYXNpYyByYXRlIGJpdG1hcApTdWJtaXR0ZXIJOiBBbGVqYW5kcm8gUml2ZWlyYSA8YXJp
+dmVpcmFAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDUtMjIgMTM6MzIgKDE3IGRheXMgb2xkKQoK
+CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
+MzM1MQpTdWJqZWN0CQk6IDIuNi4zMCBjb3JydXB0cyBteSBzeXN0ZW0gYWZ0ZXIgc3VzcGVuZCBy
+ZXN1bWUgd2l0aCByZWFkb25seSBtb3VudGVkIGhhcmQgZGlzawpTdWJtaXR0ZXIJOiAgPHVuZ2du
+dUBnb29nbGVtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA1LTIwIDE0OjA5ICgxOSBkYXlzIG9sZCkK
+Rmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9n
+aXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPTc4YThiMzViYzdhYmY4YjgzMzNk
+NmY2MjVlMDhjMGY3Y2MxYzM3NDIKSGFuZGxlZC1CeQk6IFlpbmdoYWkgTHUgPHlpbmdoYWlAa2Vy
+bmVsLm9yZz4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
+Zy5jZ2k/aWQ9MTMzNDEKU3ViamVjdAkJOiBSYW5kb20gT29wcyBhdCBib290IGF0IGxvYWRpbmcg
+aXA2dGFibGVzIHJ1bGVzClN1Ym1pdHRlcgk6ICA8cGF0cmlja0Bvc3RlbmJlcmcuZGU+CkRhdGUJ
+CTogMjAwOS0wNS0xOSAwOTowOCAoMjAgZGF5cyBvbGQpCkhhbmRsZWQtQnkJOiBSdXN0eSBSdXNz
+ZWxsIDxydXN0eUBydXN0Y29ycC5jb20uYXU+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
+Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzMzM3ClN1YmplY3QJCTogW3Bvc3QgMi42LjI5
+IHJlZ3Jlc3Npb25dIGhhbmcgZHVyaW5nIHN1c3BlbmQgb2YgYjQ0L2I0MyBtb2R1bGVzClN1Ym1p
+dHRlcgk6IFRvbWFzIEphbm91c2VrIDx0b21pQG5vbWkuY3o+CkRhdGUJCTogMjAwOS0wNS0xOCAx
+MDo1OSAoMjEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5v
+cmcvc2hvd19idWcuY2dpP2lkPTEzMzMwClN1YmplY3QJCTogbmZzNCBOVUxMIHBvaW50ZXIgZGVy
+ZWZlcmVuY2UgaW4gX25mczRfZG9fc2V0bGsKU3VibWl0dGVyCTogUmljaCBFcmNvbGFuaSA8cmVy
+Y29sYUBhY20uamh1LmVkdT4KRGF0ZQkJOiAyMDA5LTA1LTE3IDA0OjQ0ICgyMiBkYXlzIG9sZCkK
+SGFuZGxlZC1CeQk6IFRyb25kIE15a2xlYnVzdCA8dHJvbmQubXlrbGVidXN0QGZ5cy51aW8ubm8+
+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTEzMzI4ClN1YmplY3QJCTogYjQ0OiBldGgwOiBCVUchIFRpbWVvdXQgd2FpdGluZyBmb3IgYml0
+IDAwMDAwMDAyIG9mIHJlZ2lzdGVyIDQyYyB0byBjbGVhci4KU3VibWl0dGVyCTogRnJhbmNpcyBN
+b3JlYXUgPGZyYW5jaXMubW9yb0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNS0wMyAxNjoyMiAo
+MzYgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
+bCZtPTEyNDEzNjc3ODAxMjI4MCZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMzMTkKU3ViamVjdAkJOiBQYWdlIGFsbG9jYXRpb24g
+ZmFpbHVyZXMgd2l0aCBiNDMgYW5kIHA1NHVzYgpTdWJtaXR0ZXIJOiBMYXJyeSBGaW5nZXIgPExh
+cnJ5LkZpbmdlckBsd2Zpbmdlci5uZXQ+CkRhdGUJCTogMjAwOS0wNC0yOSAyMTowMSAoNDAgZGF5
+cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEy
+NDEwMzg5NzEwMTA4OCZ3PTQKSGFuZGxlZC1CeQk6IEpvaGFubmVzIEJlcmcgPGpvaGFubmVzQHNp
+cHNvbHV0aW9ucy5uZXQ+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTEzMzE4ClN1YmplY3QJCTogQUdQIGRvZXNuJ3Qgd29yayBhbnltb3Jl
+IG9uIG5mb3JjZTIKU3VibWl0dGVyCTogS2Fyc3RlbiBNZWhyaG9mZiA8a2F3aW1lQGdteC5kZT4K
+RGF0ZQkJOiAyMDA5LTA0LTMwIDg6NTEgKDM5IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBo
+dHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0y
+LjYuZ2l0O2E9Y29tbWl0O2g9NTlkZTJiZWJhYmM1MDI3ZjkzZGY5OTlkNTljYzY1ZGY1OTFjM2U2
+ZQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQxMDgx
+NTY0MTc1NjAmdz00CkhhbmRsZWQtQnkJOiBTaGFvaHVhIExpIDxzaGFvaHVhLmxpQGludGVsLmNv
+bT4KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTMzMTMKU3ViamVjdAkJOiB2bTg2b2xkIG9vcHMKU3VibWl0dGVyCTogU2VyZ2V5IFNlbm96
+aGF0c2t5IDxzZXJnZXkuc2Vub3poYXRza3lAbWFpbC5ieT4KRGF0ZQkJOiAyMDA5LTA1LTE0IDIx
+OjUzICgyNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9y
+Zy9zaG93X2J1Zy5jZ2k/aWQ9MTMzMDYKU3ViamVjdAkJOiBoaWJlcm5hdGUgc2xvdyBvbiBfc2Vj
+b25kXyBydW4KU3VibWl0dGVyCTogSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25z
+Lm5ldD4KRGF0ZQkJOiAyMDA5LTA1LTE0IDA5OjM0ICgyNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
+OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMyNzcKU3ViamVj
+dAkJOiAyLjYuMzAgcmVncmVzc2lvbiAtIHVucmVsaWFibGUgcmVzdW1lIC0gYmlzZWN0ZWQgLSBU
+aGlua3BhZCBYNDAKU3VibWl0dGVyCTogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPgpE
+YXRlCQk6IDIwMDktMDUtMTEgMTA6MDggKDI4IGRheXMgb2xkKQpIYW5kbGVkLUJ5CTogTGVuIEJy
+b3duIDxsZW4uYnJvd25AaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzIxOQpTdWJqZWN0CQk6IFNpbmNlIGtlcm5lbCAy
+LjYuMzAtcmMxLCBjb21wdXRlcnMgaGFuZ3MgcmFuZG9tbHkgLi4KU3VibWl0dGVyCTogRGF2aWQg
+SGlsbCA8aGlsbGRAYmluYXJ5c3Rvcm0ubmV0PgpEYXRlCQk6IDIwMDktMDUtMDEgMTY6NTcgKDM4
+IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xMzE4MApTdWJqZWN0CQk6IDIuNi4zMC1yYzI6IFdBUk5JTkcgYXQgaTkxNV9n
+ZW0uYyBmb3IgaTkxNV9nZW1faWRsZQpTdWJtaXR0ZXIJOiBOaWVsIExhbWJyZWNodHMgPG5pZWwu
+bGFtYnJlY2h0c0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNC0yMSAyMTozNSAoNDggZGF5cyBv
+bGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNDAz
+NDk4MDgxOTEwMiZ3PTQKCQkgIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNC8yNy8yOTAKCgpC
+dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMx
+NzkKU3ViamVjdAkJOiBDRC1SOiB3b2RpbSBpbnRlcm1pdHRlbnQgZmFpbHVyZXMKU3VibWl0dGVy
+CTogQW5keSBJc2FhY3NvbiA8YWRpQGhleGFwb2RpYS5vcmc+CkRhdGUJCTogMjAwOS0wNC0yMSAx
+OjUyICg0OCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
+a2VybmVsJm09MTI0MDI3ODc5MjE0MjMxJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
+YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzExOQpTdWJqZWN0CQk6IFRyb3VibGUgd2l0
+aCBtYWtlLWluc3RhbGwgZnJvbSBhIE5GUyBtb3VudApTdWJtaXR0ZXIJOiBHcmVnb3J5IEhhc2tp
+bnMgPGdoYXNraW5zQG5vdmVsbC5jb20+CkRhdGUJCTogMjAwOS0wNC0xNCAyMTozMiAoNTUgZGF5
+cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEy
+Mzk3NDQ4MjMyNzA0NCZ3PTQKSGFuZGxlZC1CeQk6IEguIFBldGVyIEFudmluIDxocGFAenl0b3Iu
+Y29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
+aT9pZD0xMzExNgpTdWJqZWN0CQk6IENhbid0IGJvb3Qgd2l0aCBub3NtcApTdWJtaXR0ZXIJOiBT
+dGVwaGVuIEhlbW1pbmdlciA8c2hlbW1pbmdlckB2eWF0dGEuY29tPgpEYXRlCQk6IDIwMDktMDQt
+MTUgNDoxOCAoNTQgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxp
+bnV4LWtlcm5lbCZtPTEyMzk3NjkxNzgxNzkyMCZ3PTQKSGFuZGxlZC1CeQk6IERhbiBXaWxsaWFt
+cyA8ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
+YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzEwOQpTdWJqZWN0CQk6IEhpZ2ggbGF0ZW5j
+eSBvbiAvc3lzL2NsYXNzL3RoZXJtYWwKU3VibWl0dGVyCTogVGlhZ28gU2ltw7VlcyBCYXRpc3Rh
+IDx0aWFnb3NiYXRpc3RhQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA0LTExIDE0OjU2ICg1OCBk
+YXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09
+MTIzOTQ2MTgyMzAxMjQ4Jnc9NApIYW5kbGVkLUJ5CTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50
+ZWwuY29tPgoJCSAgQWxleGV5IFN0YXJpa292c2tpeSA8YXN0YXJpa292c2tpeUBzdXNlLmRlPgoK
+ClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1F
+bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzQ3MApT
+dWJqZWN0CQk6IE1hY2hpbmUgZG9lc24ndCBib290IGR1ZSB0byBtbWNvbmZpZyBkZXRlY3Rpb24g
+cHJvYmxlbQpTdWJtaXR0ZXIJOiBQYXNjYWwgVGVyamFuIDxwdGVyamFuQG1hbmRyaXZhLmNvbT4K
+RGF0ZQkJOiAyMDA5LTA1LTI5IDE5OjM1ICgxMCBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDog
+aHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgt
+Mi42LmdpdDthPWNvbW1pdDtoPTA0NGNkODA5NDJlNDdiOWRlMDkxNWI2Mjc5MDJhZGYwNWM1MjM3
+N2YKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0Mzg4
+NzkyMTE4NDgxJnc9NApIYW5kbGVkLUJ5CTogWWluZ2hhaSBMdSA8eWluZ2hhaUBrZXJuZWwub3Jn
+PgpQYXRjaAkJOiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMjc2MTMvCgoKQnVn
+LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDYy
+ClN1YmplY3QJCTogVW51c2VkIGJhbmRzIGluIGludGVmYiBjb25zb2xlIGFuZCBzbWFsbGVyIDE4
+MHg1NiAtPiAxMjh4NDgKU3VibWl0dGVyCTogU2FudGkgPHNhbnRpQGFnb2xpbmEubmV0PgpEYXRl
+CQk6IDIwMDktMDYtMDUgMTY6MzAgKDMgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6
+Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5n
+aXQ7YT1jb21taXQ7aD1jOWZiMTVmNjBlYjUxN2M5NThkZWM2NGRjYTkzNTdiZjYyYmYyMjAxCkhh
+bmRsZWQtQnkJOiBLZWl0aCBQYWNrYXJkIDxrZWl0aHBAa2VpdGhwLmNvbT4KUGF0Y2gJCTogaHR0
+cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDYyI2MyCgoKQnVnLUVu
+dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNDIzClN1
+YmplY3QJCTogSk1pY3JvbiBTQVRBIGNvbnRyb2xsZXIgbm90IGF2YWlsYWJsZQpTdWJtaXR0ZXIJ
+OiBNYXJjIERpb25uZSA8bWFyYy5jLmRpb25uZUBnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wNS0y
+NiAyMjo1NiAoMTMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbGttbC5vcmcvbGttbC8y
+MDA5LzUvMjYvNjg3CkhhbmRsZWQtQnkJOiBZdSBaaGFvIDx5dS56aGFvQGludGVsLmNvbT4KUGF0
+Y2gJCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS81LzI3LzQwMgoKCkJ1Zy1FbnRyeQk6IGh0
+dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzM4OQpTdWJqZWN0CQk6
+IFdhcm5pbmcgJ0ludmFsaWQgdGhyb3R0bGluZyBzdGF0ZSwgcmVzZXQnIGdldHMgZGlzcGxheWVk
+IHdoZW4gaXQgc2hvdWxkIG5vdCBiZQpTdWJtaXR0ZXIJOiBGcmFucyBQb3AgPGVsZW5kaWxAcGxh
+bmV0Lm5sPgpEYXRlCQk6IDIwMDktMDUtMjYgMTU6MjQgKDEzIGRheXMgb2xkKQpIYW5kbGVkLUJ5
+CTogRnJhbnMgUG9wIDxlbGVuZGlsQHBsYW5ldC5ubD4KUGF0Y2gJCTogaHR0cDovL2J1Z3ppbGxh
+Lmtlcm5lbC5vcmcvYXR0YWNobWVudC5jZ2k/aWQ9MjE2NzEKCQkgIGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTIxNjcyCgoKRm9yIGRldGFpbHMsIHBsZWFzZSB2
+aXNpdCB0aGUgYnVnIGVudHJpZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4gaW4KcmVmZXJl
+bmNlcy4KCkFzIHlvdSBjYW4gc2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5IGZvciBlYWNo
+IG9mIHRoZSBsaXN0ZWQgcmVncmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6aWxsYSBlbnRy
+eSB1c2VkIGZvciB0cmFja2luZyB0aGUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMjksCnVucmVzb2x2
+ZWQgYXMgd2VsbCBhcyByZXNvbHZlZCwgYXQ6CgpodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9MTMwNzAKClBsZWFzZSBsZXQgbWUga25vdyBpZiB0aGVyZSBhcmUgYW55
+IEJ1Z3ppbGxhIGVudHJpZXMgdGhhdCBzaG91bGQgYmUgYWRkZWQgdG8KdGhlIGxpc3QgaW4gdGhl
+cmUuCgpUaGFua3MsClJhZmFlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9saW51eC1wbQ==
