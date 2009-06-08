@@ -1,22 +1,19 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2]
 	PM:	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 16:24:50 +0200
-Message-ID: <20090608142450.GE14234__34812.1465104215$1244471162$gmane$org@elte.hu>
+Date: Mon, 8 Jun 2009 15:30:23 +0100
+Message-ID: <20090608143023.GA16752__22924.0168155686$1244471480$gmane$org@srcf.ucam.org>
 References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
-	<200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu>
-	<200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu>
 	<20090608131159.GA15100@srcf.ucam.org>
 	<20090608132235.GC13214@elte.hu>
-	<20090608133215.GA15482@srcf.ucam.org>
-	<20090608134647.GA14234@elte.hu>
-	<20090608135431.GA16052@srcf.ucam.org>
+	<200906081539.20459.oliver@neukum.org>
+	<20090608142154.GD14234@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090608135431.GA16052@srcf.ucam.org>
+In-Reply-To: <20090608142154.GD14234@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,98 +23,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Jun 08, 2009 at 04:21:54PM +0200, Ingo Molnar wrote:
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> The kernel _needs_ to have precise information about whether a piece 
+> of hardware is in use or not.
 
-> On Mon, Jun 08, 2009 at 03:46:47PM +0200, Ingo Molnar wrote:
-> > 
-> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->
-> > > How does the kernel know whether the user cares about SATA 
-> > > hotplug or not?
-> > 
-> > The typical user probably doesnt know what 'SATA' means, and 
-> > probably has very vague concepts about 'hotplug' as well.
-> 
-> eSATA is pretty common now.
+The kernel can only have that information if userspace tells it. What 
+we're quibbling over is whether the kernel should be explicitly told 
+about the requirement (ie, every time an app makes a key grab in X the 
+kernel gets told about it) or whether it should be implicit (userspace 
+knows that a key grab has been made and so requests that the keyboard 
+not be suspended).
 
-[ And 99% of the CPUs have an IDT still 99.9% of the users dont know 
-  what it is :) ]
+We *can* put all of that complexity in the kernel. The question is 
+whether it buys us anything. We'd have to modify huge chunks of 
+userspace and in the process we'd end up limited to whatever policy 
+happens to exist in the version of the kernel the user is running.
 
-> > The kernel default should be: 'yes, if the kernel feature is 
-> > enabled and if the hardware can support it' (it's not on a 
-> > blacklist of some sort, etc., etc.).
-> 
-> The problem with this kind of default is that you get people who 
-> are confused that their hardware doesn't work.
+I'd like the kernel to expose this functionality but leave the policy 
+decisions to userland.
 
-If the hardware 'doesnt work' that is a kernel bug. Hardware that 
-_cannot be suspended_ safely (physically) should not be 
-auto-suspended, of course.
-
-> If the kernel doesn't have enough information to make a decision 
-> it should err on the side of functionality - we're talking about 
-> fairly low-level power savings, but potentially several years of 
-> aggregate confusion on the part of users.
-
-the difference between a 10W and a 1W footprint is a long series of 
-'low-level power savings'.
-
-If users are getting confused and if hardware gets broken then tha's 
-a plain bug and the wrong path is being walked.
-
-> > What sources of information exactly? Again, the user wont enter 
-> > anything, in 95% of the cases - in the remaining 3% of cases 
-> > what is entered is wrong and only in another 2% of cases is it 
-> > correct ;-)
-> 
-> Users are generally ok at realising correlation between a setting 
-> change and something no longer working, so as long as you provide 
-> that they'll be happy. I agree that this sucks. What we actually 
-> want is some means of reliably identifying whether a port is 
-> hotplug or not, but eSATA makes this very difficult.
-
-Is it impossible?
-
-> > Sure, there might be tradeoffs when a piece of hardware cannot 
-> > be turned off sanely: obviously the monitor might not know it 
-> > (currently) whether someone is watching it, and 
-> > wake-on-packet-for-me is not commonly implemented in wireless 
-> > and wired networking cards so turning off an active networking 
-> > card might not be possible without the user asking allowing that 
-> > imperfect mode of power saving.
-> 
-> These cases can all be handled with sufficiently intelligent 
-> userland, so I'm not worried about them.
-> 
-> > ( Providing a way to _override_ those defaults is of course natural,
-> >   via /sysfs, should the user express an interest in tweaking it, or
-> >   should the kernel get it so wrong that a distro wants to work it
-> >   around. But your argument seems to be "push configuration and
-> >   handling into user-space" which is really backwards. )
-> 
-> My argument is "Hardware should work, and if the kernel default is 
-> for it to be broken then the default is wrong". We went through 
-> this for USB autosuspend. Userspace simply has more available 
-> information than the kernel, and it's not just a matter of static 
-> configuration (though that may be part of it). For instance, 
-> Oliver's example of screensavers and USB keyboards. If nothing's 
-> paying attention to volume keys (or if the keyboard doesn't have 
-> any) then you can enable remote wakeup and suspend the keyboard. 
-> If something /is/ paying attention to volume keys, you can't do 
-> that. That's the kind of case I'm discussing.
-
-See my reply to Oliver. This is really advocating a broken model of 
-device usage. That volume key usage dependency is being hidden from 
-the kernel, and then you want to kludge it around by pushing suspend 
-functionality to user-space? That way lies madness. The proper way 
-is to close the device if it's not used by anything. Then the kernel 
-can auto-suspend it just like it could auto-suspend network 
-interfaces that are not in use, or like it could auto-suspend a 
-dislay port that has no monitor or other output device attached.
-
-	Ingo
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
