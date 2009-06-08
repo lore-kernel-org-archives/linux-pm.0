@@ -1,17 +1,17 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2]
 	PM:	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 15:05:09 +0200
-Message-ID: <20090608130509.GA3272__6921.99005648053$1244466376$gmane$org@elte.hu>
+Date: Mon, 8 Jun 2009 14:11:59 +0100
+Message-ID: <20090608131159.GA15100__27207.9079565176$1244466886$gmane$org@srcf.ucam.org>
 References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
 	<200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu>
-	<200906081330.50045.rjw@sisk.pl>
+	<200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200906081330.50045.rjw@sisk.pl>
+In-Reply-To: <20090608130509.GA3272@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,51 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Monday 08 June 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > +config PM_RUNTIME
-> > > +	bool "Run-time PM core functionality"
-> > > +	depends on PM
-> > > +	---help---
-> > > +	  Enable functionality allowing I/O devices to be put into energy-saving
-> > > +	  (low power) states at run time (or autosuspended) after a specified
-> > > +	  period of inactivity and woken up in response to a hardware-generated
-> > > +	  wake-up event or a driver's request.
-> > > +
-> > > +	  Hardware support is generally required for this functionality to work
-> > > +	  and the bus type drivers of the buses the devices are on are
-> > > +	  responsibile for the actual handling of the autosuspend requests and
-> > > +	  wake-up events.
-> > 
-> > Halleluya! :-)
+On Mon, Jun 08, 2009 at 03:05:09PM +0200, Ingo Molnar wrote:
 > 
-> I guess this means you like the general idea. ;-)
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Well, we've been discussing it for quite a while and since more 
+> > and more people are interested, I'm giving it a high priority.
 > 
-> Well, we've been discussing it for quite a while and since more 
-> and more people are interested, I'm giving it a high priority.
+> Cool. I think that if within a few years we could achieve that every 
+> default distro (both on desktops and on servers) triggers PM 
+> functionality runtime on common hardware, we'd both have lower power 
+> consumption in general, and we'd have more robust suspend-resume 
+> code as well.
 
-Cool. I think that if within a few years we could achieve that every 
-default distro (both on desktops and on servers) triggers PM 
-functionality runtime on common hardware, we'd both have lower power 
-consumption in general, and we'd have more robust suspend-resume 
-code as well.
+The difficulty is in determining when it's viable to autosuspend a given 
+device. There's a limit to how much we can determine purely from kernel 
+state (for instance, we could suspend ahci when there's no pending disk 
+access, but we'd lose hotplug notifications) so there's going to have to 
+be some level of userspace policy determination. Having the 
+infrastructure in the kernel is an important part of this, but there'll 
+be some distance to go after that.
 
-It would also be far more debuggable if the various suspend/resume 
-bits were triggered and used independently and runtime, allowing 
-bugs to be 'spread out'. Right now if they fail they fail in a very 
-hard to debug spot (in the s2ram/s2disk codepaths), which makes 
-their hacking rather challenging. (which i'm sure you are well aware 
-of ;-)
-
-So yes, i like the idea, a lot.
-
-	Ingo
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
