@@ -1,16 +1,18 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [patch 01/38] pm: Move nvs routines into a seperate
-	file.
-Date: Mon, 8 Jun 2009 17:36:11 +0200
-Message-ID: <20090608173611.16238cf9__18301.0006476708$1244475482$gmane$org@gondolin>
-References: <20090604161847.513682672@de.ibm.com>
-	<20090604161859.713228968@de.ibm.com>
-	<20090608063501.GC1444@ucw.cz>
+From: Ray Lee <ray-lk@madrabbit.org>
+Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Date: Mon, 8 Jun 2009 09:29:34 -0700
+Message-ID: <2c0942db0906080929r31e39fe5w673ed877bb5f4966__30732.7788942077$1244481373$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
+	<20090608131159.GA15100@srcf.ucam.org>
+	<20090608132235.GC13214@elte.hu>
+	<200906081539.20459.oliver@neukum.org> <20090608142154.GD14234@elte.hu>
+	<20090608143023.GA16752@srcf.ucam.org> <20090608150603.GB20905@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090608063501.GC1444@ucw.cz>
+In-Reply-To: <20090608150603.GB20905@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 8 Jun 2009 08:35:01 +0200,
-Pavel Machek <pavel@ucw.cz> wrote:
+On Mon, Jun 8, 2009 at 8:06 AM, Ingo Molnar<mingo@elte.hu> wrote:
+>
+> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-> On Thu 2009-06-04 18:18:48, Martin Schwidefsky wrote:
-> > From: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > 
-> > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > functions, which are only provided for HAS_IOMEM, thus
-> > breaking compilation if HAS_IOMEM is not set. Fix this
-> > by moving the *_nvs_* routines into nvs.c, which is only
-> > compiled if HAS_IOMEM is set.
-> > 
-> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > ---
-> >  include/linux/suspend.h |   18 ++++--
-> >  kernel/power/Kconfig    |    4 +
-> >  kernel/power/Makefile   |    1 
-> >  kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
-> >  kernel/power/swsusp.c   |  122 --------------------------------------------
-> >  5 files changed, 147 insertions(+), 129 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/power/nvs.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/kernel/power/nvs.c
-> 
-> Ideally, filename would be a bit more descriptive. 
+>> I'd like the kernel to expose this functionality but leave the
+>> policy decisions to userland.
+>
+> The thing is, suspending something that is being used and relied on
+> by an app is a _bug_. This is rather fundamental: hardware state and
+> usage tracking is _NOT POLICY_.
 
-hibernate_nvs.c?
+Yes. But, actual example time: what about the case where completely
+turning off a laptop's DVD drive saves extra power, but then also
+turns off kernel and userspace notification of a disc being inserted?
 
-> 
-> > @@ -0,0 +1,131 @@
-> > +/*
-> > + * Routines for NVS memory handling
-> > + */
-> 
-> If you copy&pasted code, you need to copy&paste copyright notices, too.
-
-Which ones? Rafael, it seems you wrote the NVS code - which copyright
-should I use?
-
-> 
-> > --- linux-2.6.orig/kernel/power/Makefile
-> > +++ linux-2.6/kernel/power/Makefile
-> > @@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
-> >  obj-$(CONFIG_PM_SLEEP)		+= console.o
-> >  obj-$(CONFIG_FREEZER)		+= process.o
-> >  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
-> > +obj-$(CONFIG_NVS)		+= nvs.o
-> >  
-> >  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-> 
-> CONFIG_NVS is definitely not descriptive enough. C_HIBERNATION_NVS?
-
-It's a hidden config variable - but I can change it to
-CONFIG_HIBERNATION_NVS.
+One of the Other OS's handles this by having a popup when the battery
+gets low, asking if it's okay to turn the drive off. This is part of
+what Matthew is talking about here.
