@@ -1,16 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 00:05:23 +0200
-Message-ID: <200906080005.23304.oliver__49492.4184321009$1244412327$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
-	<200906072347.00580.rjw@sisk.pl>
+From: Minkyu Kang <mk7.kang@samsung.com>
+Subject: Re: [PATCH v3] add MAX17040 Fuel Gauge driver
+Date: Mon, 08 Jun 2009 11:36:01 +0900
+Message-ID: <4A2C7911.80407__6302.94928928397$1244428646$gmane$org@samsung.com>
+References: <4A28BC20.3010307@samsung.com>
+	<5d5443650906060959w678a29acn8200239d35869dca@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906072347.00580.rjw@sisk.pl>
-Content-Disposition: inline
+In-reply-to: <5d5443650906060959w678a29acn8200239d35869dca@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,17 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>, kyungmin.park@samsung.com, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Sonntag, 7. Juni 2009 23:46:59 schrieb Rafael J. Wysocki:
-> It may be necessary to resume a device synchronously, but I'm still
-> thinking how to implement that.
+Dear Trilok Soni,
 
-This will absolutely be the default. You resume a device because you want
-it to do something now. It seems to me that you making your problem worse
-by using a spinlock as a lock. A mutex would make it easier.
+Thanks for review
 
-	Regards
-		Oliver
+> Hi Minkyu Kang,
+> 
+> On Fri, Jun 5, 2009 at 12:03 PM, Minkyu Kang<mk7.kang@samsung.com> wrote:
+>> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
+>> This patch adds support the MAX17040 Fuel Gauge
+>>
+> 
+> Thanks for making change. Some more comments.
+> 
+>>  endif # POWER_SUPPLY
+>> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+>> index 2fcf41d..9c48995 100644
+>> --- a/drivers/power/Makefile
+>> +++ b/drivers/power/Makefile
+>> @@ -25,4 +25,5 @@ obj-$(CONFIG_BATTERY_TOSA)    += tosa_battery.o
+>>  obj-$(CONFIG_BATTERY_WM97XX)   += wm97xx_battery.o
+>>  obj-$(CONFIG_BATTERY_BQ27x00)  += bq27x00_battery.o
+>>  obj-$(CONFIG_BATTERY_DA9030)   += da9030_battery.o
+>> -obj-$(CONFIG_CHARGER_PCF50633) += pcf50633-charger.o
+>> \ No newline at end of file
+>> +obj-$(CONFIG_BATTERY_MAX17040))        += max17040_battery.o
+> 
+> Are we following any alphabetical order in this Makefile?
+> 
+
+I'm not sure either. :(
+I just grouping with batteries.
+
+>> +static int max17040_suspend(struct i2c_client *client,
+>> +               pm_message_t state)
+>> +{
+>> +       struct max17040_chip *chip = i2c_get_clientdata(client);
+>> +
+>> +       cancel_delayed_work(&chip->work);
+>> +       return 0;
+>> +}
+>> +
+>> +static int max17040_resume(struct i2c_client *client)
+>> +{
+>> +       struct max17040_chip *chip = i2c_get_clientdata(client);
+>> +
+>> +       schedule_delayed_work(&chip->work, MAX17040_DELAY);
+>> +       return 0;
+>> +}
+>> +
+> 
+> Please add #ifdef CONFIG_PM around suspend resume functions.
+> 
+
+Ok, I will.
+Thanks
+
+---
+from, prom.
