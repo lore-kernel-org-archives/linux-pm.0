@@ -1,20 +1,21 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2]
 	PM:	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 15:46:47 +0200
-Message-ID: <20090608134647.GA14234__11832.437120802$1244468862$gmane$org@elte.hu>
+Date: Mon, 8 Jun 2009 14:54:31 +0100
+Message-ID: <20090608135431.GA16052__5100.35679112679$1244469333$gmane$org@srcf.ucam.org>
 References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
 	<200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu>
 	<200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu>
 	<20090608131159.GA15100@srcf.ucam.org>
 	<20090608132235.GC13214@elte.hu>
 	<20090608133215.GA15482@srcf.ucam.org>
+	<20090608134647.GA14234@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20090608133215.GA15482@srcf.ucam.org>
+In-Reply-To: <20090608134647.GA14234@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,75 +25,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> On Mon, Jun 08, 2009 at 03:22:35PM +0200, Ingo Molnar wrote:
-> > 
-> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > > The difficulty is in determining when it's viable to autosuspend a 
-> > > given device. There's a limit to how much we can determine purely 
-> > > from kernel state (for instance, we could suspend ahci when 
-> > > there's no pending disk access, but we'd lose hotplug 
-> > > notifications) so there's going to have to be some level of 
-> > > userspace policy determination. Having the infrastructure in the 
-> > > kernel is an important part of this, but there'll be some distance 
-> > > to go after that.
-> > 
-> > What will the 'user space policy' bit do what the kernel cannot?
+On Mon, Jun 08, 2009 at 03:46:47PM +0200, Ingo Molnar wrote:
 > 
-> How does the kernel know whether the user cares about SATA hotplug 
-> or not?
-
-The typical user probably doesnt know what 'SATA' means, and 
-probably has very vague concepts about 'hotplug' as well.
-
-The kernel default should be: 'yes, if the kernel feature is enabled 
-and if the hardware can support it' (it's not on a blacklist of some 
-sort, etc., etc.).
-
-> > If you mean the user has to configure something manually - that 
-> > wont really happen in practice. We are happy if they know where 
-> > to put those USB sticks in ;-)
+> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > How does the kernel know whether the user cares about SATA hotplug 
+> > or not?
 > 
-> It'll be up to the distributions to provide sane defaults and let 
-> them be reconfigured as necessary, depending on the information we 
-> have from the user and maybe platform-specific knowledge. But this 
-> is a difficult problem - we need to be smart about all the 
-> potential sources of information in order to pick an appropriate 
-> policy, and the kernel's not the right layer to do some of this 
-> information collection.
+> The typical user probably doesnt know what 'SATA' means, and 
+> probably has very vague concepts about 'hotplug' as well.
 
-What sources of information exactly? Again, the user wont enter 
-anything, in 95% of the cases - in the remaining 3% of cases what is 
-entered is wrong and only in another 2% of cases is it correct ;-)
+eSATA is pretty common now.
 
-Sane kernel defaults are important and the kernel sure knows what 
-kind of hardware it runs on. This 'let the user decide policy' for 
-something as fundamental (and also as arcane) as power saving mode 
-is really a disease that has caused a lot of unnecessary pain in 
-Linux in the past 15 years.
+> The kernel default should be: 'yes, if the kernel feature is enabled 
+> and if the hardware can support it' (it's not on a blacklist of some 
+> sort, etc., etc.).
 
-Sure, there might be tradeoffs when a piece of hardware cannot be 
-turned off sanely: obviously the monitor might not know it 
-(currently) whether someone is watching it, and 
-wake-on-packet-for-me is not commonly implemented in wireless and 
-wired networking cards so turning off an active networking card 
-might not be possible without the user asking allowing that 
-imperfect mode of power saving.
+The problem with this kind of default is that you get people who are 
+confused that their hardware doesn't work. If the kernel doesn't have 
+enough information to make a decision it should err on the side of 
+functionality - we're talking about fairly low-level power savings, but 
+potentially several years of aggregate confusion on the part of users.
 
-But there are plenty of cases where turning off hardware is fine, 
-and the broken special cases will go away as technology advances, 
-and we should not design based on broken concepts.
+> > It'll be up to the distributions to provide sane defaults and let 
+> > them be reconfigured as necessary, depending on the information we 
+> > have from the user and maybe platform-specific knowledge. But this 
+> > is a difficult problem - we need to be smart about all the 
+> > potential sources of information in order to pick an appropriate 
+> > policy, and the kernel's not the right layer to do some of this 
+> > information collection.
+> 
+> What sources of information exactly? Again, the user wont enter 
+> anything, in 95% of the cases - in the remaining 3% of cases what is 
+> entered is wrong and only in another 2% of cases is it correct ;-)
 
-( Providing a way to _override_ those defaults is of course natural,
-  via /sysfs, should the user express an interest in tweaking it, or
-  should the kernel get it so wrong that a distro wants to work it
-  around. But your argument seems to be "push configuration and
-  handling into user-space" which is really backwards. )
+Users are generally ok at realising correlation between a setting change 
+and something no longer working, so as long as you provide that they'll 
+be happy. I agree that this sucks. What we actually want is some means 
+of reliably identifying whether a port is hotplug or not, but eSATA 
+makes this very difficult.
 
-	Ingo
+> Sure, there might be tradeoffs when a piece of hardware cannot be 
+> turned off sanely: obviously the monitor might not know it 
+> (currently) whether someone is watching it, and 
+> wake-on-packet-for-me is not commonly implemented in wireless and 
+> wired networking cards so turning off an active networking card 
+> might not be possible without the user asking allowing that 
+> imperfect mode of power saving.
+
+These cases can all be handled with sufficiently intelligent userland, 
+so I'm not worried about them.
+
+> ( Providing a way to _override_ those defaults is of course natural,
+>   via /sysfs, should the user express an interest in tweaking it, or
+>   should the kernel get it so wrong that a distro wants to work it
+>   around. But your argument seems to be "push configuration and
+>   handling into user-space" which is really backwards. )
+
+My argument is "Hardware should work, and if the kernel default is for 
+it to be broken then the default is wrong". We went through this for USB 
+autosuspend. Userspace simply has more available information than the 
+kernel, and it's not just a matter of static configuration (though that 
+may be part of it). For instance, Oliver's example of screensavers and 
+USB keyboards. If nothing's paying attention to volume keys (or if the 
+keyboard doesn't have any) then you can enable remote wakeup and suspend 
+the keyboard. If something /is/ paying attention to volume keys, you 
+can't do that. That's the kind of case I'm discussing.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
