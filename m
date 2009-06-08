@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 01/38] pm: Move nvs routines into a seperate
-	file.
-Date: Mon, 8 Jun 2009 20:48:28 +0200
-Message-ID: <200906082048.28779.rjw__13075.3977843144$1244487028$gmane$org@sisk.pl>
-References: <20090604161847.513682672@de.ibm.com>
-	<20090608063501.GC1444@ucw.cz> <20090608173611.16238cf9@gondolin>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
+ Rearrange core suspend code)
+Date: Mon, 8 Jun 2009 16:35:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906081626120.13888-100000__26630.878102924$1244493395$gmane$org@netrider.rowland.org>
+References: <200906081329.27047.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090608173611.16238cf9@gondolin>
-Content-Disposition: inline
+In-Reply-To: <200906081329.27047.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,75 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 June 2009, Cornelia Huck wrote:
-> On Mon, 8 Jun 2009 08:35:01 +0200,
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > On Thu 2009-06-04 18:18:48, Martin Schwidefsky wrote:
-> > > From: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > > 
-> > > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > > functions, which are only provided for HAS_IOMEM, thus
-> > > breaking compilation if HAS_IOMEM is not set. Fix this
-> > > by moving the *_nvs_* routines into nvs.c, which is only
-> > > compiled if HAS_IOMEM is set.
-> > > 
-> > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > > ---
-> > >  include/linux/suspend.h |   18 ++++--
-> > >  kernel/power/Kconfig    |    4 +
-> > >  kernel/power/Makefile   |    1 
-> > >  kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  kernel/power/swsusp.c   |  122 --------------------------------------------
-> > >  5 files changed, 147 insertions(+), 129 deletions(-)
-> > > 
-> > > Index: linux-2.6/kernel/power/nvs.c
-> > > ===================================================================
-> > > --- /dev/null
-> > > +++ linux-2.6/kernel/power/nvs.c
+On Mon, 8 Jun 2009, Rafael J. Wysocki wrote:
+
+> On Monday 08 June 2009, Oliver Neukum wrote:
+> > Am Sonntag, 7. Juni 2009 23:46:59 schrieb Rafael J. Wysocki:
+> > > It may be necessary to resume a device synchronously, but I'm still
+> > > thinking how to implement that.
 > > 
-> > Ideally, filename would be a bit more descriptive. 
+> > This will absolutely be the default. You resume a device because you want
+> > it to do something now. It seems to me that you making your problem worse
+> > by using a spinlock as a lock. A mutex would make it easier.
 > 
-> hibernate_nvs.c?
-
-Yes, please.
-
-> > > @@ -0,0 +1,131 @@
-> > > +/*
-> > > + * Routines for NVS memory handling
-> > > + */
-> > 
-> > If you copy&pasted code, you need to copy&paste copyright notices, too.
+> But I need to be able to call __pm_schedule_resume() (at least) from interrupt
+> context and I can't use a mutex from there.  Otherwise I'd have used a mutex. :-)
 > 
-> Which ones? Rafael, it seems you wrote the NVS code - which copyright
-> should I use?
+> Anyway, below is a version with synchronous resume.
 
-Same as in kernel/irq/pm.c , please.
+There are a few things here which need further thought:
 
-> > > --- linux-2.6.orig/kernel/power/Makefile
-> > > +++ linux-2.6/kernel/power/Makefile
-> > > @@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
-> > >  obj-$(CONFIG_PM_SLEEP)		+= console.o
-> > >  obj-$(CONFIG_FREEZER)		+= process.o
-> > >  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
-> > > +obj-$(CONFIG_NVS)		+= nvs.o
-> > >  
-> > >  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-> > 
-> > CONFIG_NVS is definitely not descriptive enough. C_HIBERNATION_NVS?
-> 
-> It's a hidden config variable - but I can change it to
-> CONFIG_HIBERNATION_NVS.
+The implementation of pm_lock_device() assumes it will never be called 
+with interrupts disabled.  This is a bad assumption.
 
-Please do that too.
+Use of the RPM_UNKNOWN state isn't good.  A bus may have valid reasons 
+of its own for not carrying out an autosuspend.  When this happens the 
+device's state isn't unknown.
 
-When you're done, please send the patch to me and I'll put it into the suspend
-tree for 2.6.31.
+The scheme doesn't include any mechanism for communicating runtime
+power information up the device tree.  When a device is autosuspended,
+its parent's driver should be told so that the driver can consider
+autosuspending the parent.  Likewise, if we want to autoresume a device 
+below an autosuspended parent, the parent should be autoresumed first.  
+Did you want to make the bus subsystem responsible for all of this?  
+What about device's whose parent belongs to a different subsystem?
 
-Best,
-Rafael
+There should be a sysfs interface (like the one in USB) to allow
+userspace to prevent a device from being autosuspended -- and perhaps
+also to force it to be suspended.
+
+What about devices that have more than two runtime power states?  For
+example, you can't squeeze PCI's {D0,D1,D2,D3hot} range into {running,
+suspended}.
+
+That's what I come up with on a first reading.  There may be more later 
+on...  :-)
+
+Alan Stern
