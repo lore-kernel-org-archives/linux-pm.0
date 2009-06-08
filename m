@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 20:34:30 +0200
-Message-ID: <200906082034.31091.rjw__33730.5291126997$1244486207$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
-	<200906081329.27047.rjw@sisk.pl>
-	<200906081404.04118.oliver@neukum.org>
+Subject: Re: [patch 01/38] pm: Move nvs routines into a seperate
+	file.
+Date: Mon, 8 Jun 2009 20:48:28 +0200
+Message-ID: <200906082048.28779.rjw__13075.3977843144$1244487028$gmane$org@sisk.pl>
+References: <20090604161847.513682672@de.ibm.com>
+	<20090608063501.GC1444@ucw.cz> <20090608173611.16238cf9@gondolin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906081404.04118.oliver@neukum.org>
+In-Reply-To: <20090608173611.16238cf9@gondolin>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,95 +20,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 June 2009, Oliver Neukum wrote:
-> Am Montag, 8. Juni 2009 13:29:26 schrieb Rafael J. Wysocki:
+On Monday 08 June 2009, Cornelia Huck wrote:
+> On Mon, 8 Jun 2009 08:35:01 +0200,
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> > But I need to be able to call __pm_schedule_resume() (at least) from
-> > interrupt context and I can't use a mutex from there.  Otherwise I'd have
-> > used a mutex. :-)
+> > On Thu 2009-06-04 18:18:48, Martin Schwidefsky wrote:
+> > > From: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > > 
+> > > The *_nvs_* routines in swsusp.c make use of the io*map()
+> > > functions, which are only provided for HAS_IOMEM, thus
+> > > breaking compilation if HAS_IOMEM is not set. Fix this
+> > > by moving the *_nvs_* routines into nvs.c, which is only
+> > > compiled if HAS_IOMEM is set.
+> > > 
+> > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > ---
+> > >  include/linux/suspend.h |   18 ++++--
+> > >  kernel/power/Kconfig    |    4 +
+> > >  kernel/power/Makefile   |    1 
+> > >  kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  kernel/power/swsusp.c   |  122 --------------------------------------------
+> > >  5 files changed, 147 insertions(+), 129 deletions(-)
+> > > 
+> > > Index: linux-2.6/kernel/power/nvs.c
+> > > ===================================================================
+> > > --- /dev/null
+> > > +++ linux-2.6/kernel/power/nvs.c
+> > 
+> > Ideally, filename would be a bit more descriptive. 
 > 
-> I see.
+> hibernate_nvs.c?
+
+Yes, please.
+
+> > > @@ -0,0 +1,131 @@
+> > > +/*
+> > > + * Routines for NVS memory handling
+> > > + */
+> > 
+> > If you copy&pasted code, you need to copy&paste copyright notices, too.
 > 
-> > Anyway, below is a version with synchronous resume.
+> Which ones? Rafael, it seems you wrote the NVS code - which copyright
+> should I use?
+
+Same as in kernel/irq/pm.c , please.
+
+> > > --- linux-2.6.orig/kernel/power/Makefile
+> > > +++ linux-2.6/kernel/power/Makefile
+> > > @@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
+> > >  obj-$(CONFIG_PM_SLEEP)		+= console.o
+> > >  obj-$(CONFIG_FREEZER)		+= process.o
+> > >  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+> > > +obj-$(CONFIG_NVS)		+= nvs.o
+> > >  
+> > >  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
+> > 
+> > CONFIG_NVS is definitely not descriptive enough. C_HIBERNATION_NVS?
 > 
-> You are assuming autosuspend should always be with a delay. Why?
+> It's a hidden config variable - but I can change it to
+> CONFIG_HIBERNATION_NVS.
 
-I couldn't invent a valid case for doing it without a delay.  Perhaps my
-imagination is constrained too much. ;-)
+Please do that too.
 
-> Secondly, you are not using a counter. Therefore only one driver can
-> control the PM state of a device at a given time. Is that wise?
+When you're done, please send the patch to me and I'll put it into the suspend
+tree for 2.6.31.
 
-I didn't think about it to be honest.  Obviously this patch doesn't cover all
-of the possible cases and I'm not even sure it's worth trying to cover them
-upfront.
-
-> > + * __pm_schedule_suspend - Schedule run-time suspend of given device.
-> > + * @dev: Device to suspend.
-> > + * @delay: Time to wait before attempting to suspend the device.
-> 
-> In which unit of time? If this is to go into kerneldoc that must be specified.
-
-That's in jiifies.  Yes, I should have documented it.
-
-> > + * @autocancel: If set, the request will be cancelled during a resume from
-> > a + *	system-wide sleep state if it happens before @delay elapses.
-> 
-> Why is this needed?
-
-In some subsystems, like PCI, devices will be resumed by the BIOS
-unconditionally in the majority of cases and then it's not worth trying to
-complete run-time PM requests from before the suspend.
-
-> > + */
-> > +void __pm_schedule_suspend(struct device *dev, unsigned long delay,
-> > +			   bool autocancel)
-> 
-> [..]
-> 
-> 
-> > +
-> > +/**
-> > + * __pm_schedule_resume - Schedule run-time resume of given device.
-> > + * @dev: Device to resume.
-> > + * @autocancel: If set, the request will be cancelled during a resume from
-> > a + *	system-wide sleep state if it happens before pm_autoresume() can be
-> > run. + */
-> 
-> Eeek! This is a bad idea. You never want to a resume to be cancelled.
-
-Sometimes I do (see above).
-
-> > +void __pm_schedule_resume(struct device *dev, bool autocancel)
-> 
-> [..]
-> > +int pm_resume_sync(struct device *dev)
-> > +{
-> > +	int error = 0;
-> > +
-> > +	pm_lock_device(dev);
-> > +	if (dev->power.runtime_status == RPM_IDLE) {
-> > +		/* ->autosuspend() hasn't started yet, no need to resume. */
-> > +		pm_cancel_suspend(dev);
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (dev->power.runtime_status == RPM_SUSPENDING) {
-> > +		/*
-> > +		 * The ->autosuspend() callback is being executed right now,
-> > +		 * wait for it to complete.
-> > +		 */
-> > +		pm_unlock_device(dev);
-> > +		cancel_delayed_work_sync(&dev->power.suspend_work);
-> 
-> That is the most glorious abuse of an API I've seen this year :-)
-
-Heh.
-
-OK, what would you do instead?
-
+Best,
 Rafael
