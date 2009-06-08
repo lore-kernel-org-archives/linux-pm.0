@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
 	Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 13:30:49 +0200
-Message-ID: <200906081330.50045.rjw__44055.2027932883$1244460665$gmane$org@sisk.pl>
+Date: Mon, 8 Jun 2009 14:04:03 +0200
+Message-ID: <200906081404.04118.oliver__20967.4651072875$1244462739$gmane$org@neukum.org>
 References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
-	<200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu>
+	<200906080005.23304.oliver@neukum.org>
+	<200906081329.27047.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090608065419.GA13568@elte.hu>
+In-Reply-To: <200906081329.27047.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,34 +21,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 June 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > +config PM_RUNTIME
-> > +	bool "Run-time PM core functionality"
-> > +	depends on PM
-> > +	---help---
-> > +	  Enable functionality allowing I/O devices to be put into energy-saving
-> > +	  (low power) states at run time (or autosuspended) after a specified
-> > +	  period of inactivity and woken up in response to a hardware-generated
-> > +	  wake-up event or a driver's request.
-> > +
-> > +	  Hardware support is generally required for this functionality to work
-> > +	  and the bus type drivers of the buses the devices are on are
-> > +	  responsibile for the actual handling of the autosuspend requests and
-> > +	  wake-up events.
-> 
-> Halleluya! :-)
+Am Montag, 8. Juni 2009 13:29:26 schrieb Rafael J. Wysocki:
 
-I guess this means you like the general idea. ;-)
+> But I need to be able to call __pm_schedule_resume() (at least) from
+> interrupt context and I can't use a mutex from there.  Otherwise I'd have
+> used a mutex. :-)
 
-Well, we've been discussing it for quite a while and since more and more people
-are interested, I'm giving it a high priority.
+I see.
 
-Best,
-Rafael
+> Anyway, below is a version with synchronous resume.
+
+You are assuming autosuspend should always be with a delay. Why?
+
+Secondly, you are not using a counter. Therefore only one driver can
+control the PM state of a device at a given time. Is that wise?
+
+> + * __pm_schedule_suspend - Schedule run-time suspend of given device.
+> + * @dev: Device to suspend.
+> + * @delay: Time to wait before attempting to suspend the device.
+
+In which unit of time? If this is to go into kerneldoc that must be specified.
+
+> + * @autocancel: If set, the request will be cancelled during a resume from
+> a + *	system-wide sleep state if it happens before @delay elapses.
+
+Why is this needed?
+
+> + */
+> +void __pm_schedule_suspend(struct device *dev, unsigned long delay,
+> +			   bool autocancel)
+
+[..]
+
+
+> +
+> +/**
+> + * __pm_schedule_resume - Schedule run-time resume of given device.
+> + * @dev: Device to resume.
+> + * @autocancel: If set, the request will be cancelled during a resume from
+> a + *	system-wide sleep state if it happens before pm_autoresume() can be
+> run. + */
+
+Eeek! This is a bad idea. You never want to a resume to be cancelled.
+
+> +void __pm_schedule_resume(struct device *dev, bool autocancel)
+
+[..]
+> +int pm_resume_sync(struct device *dev)
+> +{
+> +	int error = 0;
+> +
+> +	pm_lock_device(dev);
+> +	if (dev->power.runtime_status == RPM_IDLE) {
+> +		/* ->autosuspend() hasn't started yet, no need to resume. */
+> +		pm_cancel_suspend(dev);
+> +		goto out;
+> +	}
+> +
+> +	if (dev->power.runtime_status == RPM_SUSPENDING) {
+> +		/*
+> +		 * The ->autosuspend() callback is being executed right now,
+> +		 * wait for it to complete.
+> +		 */
+> +		pm_unlock_device(dev);
+> +		cancel_delayed_work_sync(&dev->power.suspend_work);
+
+That is the most glorious abuse of an API I've seen this year :-)
+
+	Regards
+		Oliver
