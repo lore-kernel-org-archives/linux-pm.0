@@ -1,14 +1,16 @@
-From: Minkyu Kang <mk7.kang@samsung.com>
-Subject: Re: [PATCH v3] add MAX17040 Fuel Gauge driver
-Date: Mon, 08 Jun 2009 11:36:01 +0900
-Message-ID: <4A2C7911.80407__6302.94928928397$1244428646$gmane$org@samsung.com>
-References: <4A28BC20.3010307@samsung.com>
-	<5d5443650906060959w678a29acn8200239d35869dca@mail.gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2]
+	PM:	Rearrange core suspend code)
+Date: Mon, 8 Jun 2009 08:54:19 +0200
+Message-ID: <20090608065419.GA13568__24803.5795557827$1244444127$gmane$org@elte.hu>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
+	<200906072347.00580.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <5d5443650906060959w678a29acn8200239d35869dca@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <200906072347.00580.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>, kyungmin.park@samsung.com, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Trilok Soni,
 
-Thanks for review
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> Hi Minkyu Kang,
-> 
-> On Fri, Jun 5, 2009 at 12:03 PM, Minkyu Kang<mk7.kang@samsung.com> wrote:
->> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
->> This patch adds support the MAX17040 Fuel Gauge
->>
-> 
-> Thanks for making change. Some more comments.
-> 
->>  endif # POWER_SUPPLY
->> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
->> index 2fcf41d..9c48995 100644
->> --- a/drivers/power/Makefile
->> +++ b/drivers/power/Makefile
->> @@ -25,4 +25,5 @@ obj-$(CONFIG_BATTERY_TOSA)    += tosa_battery.o
->>  obj-$(CONFIG_BATTERY_WM97XX)   += wm97xx_battery.o
->>  obj-$(CONFIG_BATTERY_BQ27x00)  += bq27x00_battery.o
->>  obj-$(CONFIG_BATTERY_DA9030)   += da9030_battery.o
->> -obj-$(CONFIG_CHARGER_PCF50633) += pcf50633-charger.o
->> \ No newline at end of file
->> +obj-$(CONFIG_BATTERY_MAX17040))        += max17040_battery.o
-> 
-> Are we following any alphabetical order in this Makefile?
-> 
+> +config PM_RUNTIME
+> +	bool "Run-time PM core functionality"
+> +	depends on PM
+> +	---help---
+> +	  Enable functionality allowing I/O devices to be put into energy-saving
+> +	  (low power) states at run time (or autosuspended) after a specified
+> +	  period of inactivity and woken up in response to a hardware-generated
+> +	  wake-up event or a driver's request.
+> +
+> +	  Hardware support is generally required for this functionality to work
+> +	  and the bus type drivers of the buses the devices are on are
+> +	  responsibile for the actual handling of the autosuspend requests and
+> +	  wake-up events.
 
-I'm not sure either. :(
-I just grouping with batteries.
+Halleluya! :-)
 
->> +static int max17040_suspend(struct i2c_client *client,
->> +               pm_message_t state)
->> +{
->> +       struct max17040_chip *chip = i2c_get_clientdata(client);
->> +
->> +       cancel_delayed_work(&chip->work);
->> +       return 0;
->> +}
->> +
->> +static int max17040_resume(struct i2c_client *client)
->> +{
->> +       struct max17040_chip *chip = i2c_get_clientdata(client);
->> +
->> +       schedule_delayed_work(&chip->work, MAX17040_DELAY);
->> +       return 0;
->> +}
->> +
-> 
-> Please add #ifdef CONFIG_PM around suspend resume functions.
-> 
-
-Ok, I will.
-Thanks
-
----
-from, prom.
+	Ingo
