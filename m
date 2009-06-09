@@ -1,17 +1,16 @@
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+From: Minkyu Kang <promsoft@gmail.com>
 Subject: Re: [PATCH v3] add MAX17040 Fuel Gauge driver
-Date: Tue, 9 Jun 2009 01:00:07 +0400
-Message-ID: <20090608210007.GA29332__14473.3033296236$1244500358$gmane$org@oksana.dev.rtsoft.ru>
+Date: Tue, 9 Jun 2009 10:12:58 +0900
+Message-ID: <1f3430fb0906081812j69f35b18tde3d4ab5d80b504__7443.16680725223$1244510039$gmane$org@mail.gmail.com>
 References: <4A28BC20.3010307@samsung.com>
 	<5d5443650906060959w678a29acn8200239d35869dca@mail.gmail.com>
 	<4A2C7911.80407@samsung.com>
-Reply-To: avorontsov@ru.mvista.com
+	<20090608210007.GA29332@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4A2C7911.80407@samsung.com>
+In-Reply-To: <20090608210007.GA29332@oksana.dev.rtsoft.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +20,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Minkyu Kang <mk7.kang@samsung.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>, kyungmin.park@samsung.com, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: avorontsov@ru.mvista.com
+Cc: Trilok Soni <soni.trilok@gmail.com>, Minkyu Kang <mk7.kang@samsung.com>, linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>, kyungmin.park@samsung.com, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBKdW4gMDgsIDIwMDkgYXQgMTE6MzY6MDFBTSArMDkwMCwgTWlua3l1IEthbmcgd3Jv
-dGU6Cj4gRGVhciBUcmlsb2sgU29uaSwKPiAKPiBUaGFua3MgZm9yIHJldmlldwo+IAo+ID4gSGkg
-TWlua3l1IEthbmcsCj4gPiAKPiA+IE9uIEZyaSwgSnVuIDUsIDIwMDkgYXQgMTI6MDMgUE0sIE1p
-bmt5dSBLYW5nPG1rNy5rYW5nQHNhbXN1bmcuY29tPiB3cm90ZToKPiA+PiBUaGUgTUFYMTcwNDAg
-aXMgYSBJMkMgaW50ZXJmYWNlZCBGdWVsIEdhdWdlIHN5c3RlbXMgZm9yIGxpdGhpdW0taW9uIGJh
-dHRlcmllcwo+ID4+IFRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IHRoZSBNQVgxNzA0MCBGdWVsIEdh
-dWdlCj4gPj4KPiA+IAo+ID4gVGhhbmtzIGZvciBtYWtpbmcgY2hhbmdlLiBTb21lIG1vcmUgY29t
-bWVudHMuCj4gPiAKPiA+PiAgZW5kaWYgIyBQT1dFUl9TVVBQTFkKPiA+PiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9wb3dlci9NYWtlZmlsZSBiL2RyaXZlcnMvcG93ZXIvTWFrZWZpbGUKPiA+PiBpbmRl
-eCAyZmNmNDFkLi45YzQ4OTk1IDEwMDY0NAo+ID4+IC0tLSBhL2RyaXZlcnMvcG93ZXIvTWFrZWZp
-bGUKPiA+PiArKysgYi9kcml2ZXJzL3Bvd2VyL01ha2VmaWxlCj4gPj4gQEAgLTI1LDQgKzI1LDUg
-QEAgb2JqLSQoQ09ORklHX0JBVFRFUllfVE9TQSkgICAgKz0gdG9zYV9iYXR0ZXJ5Lm8KPiA+PiAg
-b2JqLSQoQ09ORklHX0JBVFRFUllfV005N1hYKSAgICs9IHdtOTd4eF9iYXR0ZXJ5Lm8KPiA+PiAg
-b2JqLSQoQ09ORklHX0JBVFRFUllfQlEyN3gwMCkgICs9IGJxMjd4MDBfYmF0dGVyeS5vCj4gPj4g
-IG9iai0kKENPTkZJR19CQVRURVJZX0RBOTAzMCkgICArPSBkYTkwMzBfYmF0dGVyeS5vCj4gPj4g
-LW9iai0kKENPTkZJR19DSEFSR0VSX1BDRjUwNjMzKSArPSBwY2Y1MDYzMy1jaGFyZ2VyLm8KPiA+
-PiBcIE5vIG5ld2xpbmUgYXQgZW5kIG9mIGZpbGUKPiA+PiArb2JqLSQoQ09ORklHX0JBVFRFUllf
-TUFYMTcwNDApKSAgICAgICAgKz0gbWF4MTcwNDBfYmF0dGVyeS5vCgpUaGVyZSBpcyBhIHR5cG86
-ICIpKSIgc2hvdWxkIGJlIGp1c3QgIikiLiBJIGZpeGVkIHRoaXMuCgpJIGFsc28gZml4ZWQgIuKA
-mG1heDE3MDQwX3NldF9yY29tcOKAmSBkZWZpbmVkIGJ1dCBub3QgdXNlZCIgd2FybmluZwooanVz
-dCByZW1vdmVkIHRoaXMgZnVuY3Rpb24pLgoKPiA+IEFyZSB3ZSBmb2xsb3dpbmcgYW55IGFscGhh
-YmV0aWNhbCBvcmRlciBpbiB0aGlzIE1ha2VmaWxlPwo+ID4gCj4gCj4gSSdtIG5vdCBzdXJlIGVp
-dGhlci4gOigKPiBJIGp1c3QgZ3JvdXBpbmcgd2l0aCBiYXR0ZXJpZXMuCgpJdCdzIGZpbmUgYXMg
-aXMuIEkgYWx3YXlzIHdvbmRlciB3aGVuIHNvbWVib2R5IHRyeSB0byBzb3J0IHRoaW5ncwphbHBo
-YWJldGljYWxseS4gSHVtYW5zIHNob3VsZCBub3QgYm90aGVyIHdpdGggc29ydGluZywgdGhhdCdz
-IHdoYXQKY29tcHV0ZXJzIGFyZSBmb3IhIDstKQoKPiA+PiArc3RhdGljIGludCBtYXgxNzA0MF9z
-dXNwZW5kKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsCj4gPj4gKyAgICAgICAgICAgICAgIHBt
-X21lc3NhZ2VfdCBzdGF0ZSkKPiA+PiArewo+ID4+ICsgICAgICAgc3RydWN0IG1heDE3MDQwX2No
-aXAgKmNoaXAgPSBpMmNfZ2V0X2NsaWVudGRhdGEoY2xpZW50KTsKPiA+PiArCj4gPj4gKyAgICAg
-ICBjYW5jZWxfZGVsYXllZF93b3JrKCZjaGlwLT53b3JrKTsKPiA+PiArICAgICAgIHJldHVybiAw
-Owo+ID4+ICt9Cj4gPj4gKwo+ID4+ICtzdGF0aWMgaW50IG1heDE3MDQwX3Jlc3VtZShzdHJ1Y3Qg
-aTJjX2NsaWVudCAqY2xpZW50KQo+ID4+ICt7Cj4gPj4gKyAgICAgICBzdHJ1Y3QgbWF4MTcwNDBf
-Y2hpcCAqY2hpcCA9IGkyY19nZXRfY2xpZW50ZGF0YShjbGllbnQpOwo+ID4+ICsKPiA+PiArICAg
-ICAgIHNjaGVkdWxlX2RlbGF5ZWRfd29yaygmY2hpcC0+d29yaywgTUFYMTcwNDBfREVMQVkpOwo+
-ID4+ICsgICAgICAgcmV0dXJuIDA7Cj4gPj4gK30KPiA+PiArCj4gPiAKPiA+IFBsZWFzZSBhZGQg
-I2lmZGVmIENPTkZJR19QTSBhcm91bmQgc3VzcGVuZCByZXN1bWUgZnVuY3Rpb25zLgo+ID4gCj4g
-Cj4gT2ssIEkgd2lsbC4KCkp1c3QgZGlkIGl0IG15c2VsZiwgYW5kIHF1ZXVlZCB0aGlzIHBhdGNo
-IGZvciAyLjYuMzEuCgpUaGFua3MhCgotLSAKQW50b24gVm9yb250c292CmVtYWlsOiBjYm91YXRt
-YWlscnVAZ21haWwuY29tCmlyYzovL2lyYy5mcmVlbm9kZS5uZXQvYmQyCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
-aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+Dear, Anton Vorontsov
+
+2009/6/9 Anton Vorontsov <avorontsov@ru.mvista.com>:
+> On Mon, Jun 08, 2009 at 11:36:01AM +0900, Minkyu Kang wrote:
+>> Dear Trilok Soni,
+>>
+>> Thanks for review
+>>
+>> > Hi Minkyu Kang,
+>> >
+>> > On Fri, Jun 5, 2009 at 12:03 PM, Minkyu Kang<mk7.kang@samsung.com> wro=
+te:
+>> >> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion b=
+atteries
+>> >> This patch adds support the MAX17040 Fuel Gauge
+>> >>
+>> >
+>> > Thanks for making change. Some more comments.
+>> >
+>> >> =A0endif # POWER_SUPPLY
+>> >> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+>> >> index 2fcf41d..9c48995 100644
+>> >> --- a/drivers/power/Makefile
+>> >> +++ b/drivers/power/Makefile
+>> >> @@ -25,4 +25,5 @@ obj-$(CONFIG_BATTERY_TOSA) =A0 =A0+=3D tosa_battery=
+.o
+>> >> =A0obj-$(CONFIG_BATTERY_WM97XX) =A0 +=3D wm97xx_battery.o
+>> >> =A0obj-$(CONFIG_BATTERY_BQ27x00) =A0+=3D bq27x00_battery.o
+>> >> =A0obj-$(CONFIG_BATTERY_DA9030) =A0 +=3D da9030_battery.o
+>> >> -obj-$(CONFIG_CHARGER_PCF50633) +=3D pcf50633-charger.o
+>> >> \ No newline at end of file
+>> >> +obj-$(CONFIG_BATTERY_MAX17040)) =A0 =A0 =A0 =A0+=3D max17040_battery=
+.o
+>
+> There is a typo: "))" should be just ")". I fixed this.
+>
+> I also fixed "=91max17040_set_rcomp=92 defined but not used" warning
+> (just removed this function).
+
+I missed it. thanks.
+
+>> > Are we following any alphabetical order in this Makefile?
+>> >
+>>
+>> I'm not sure either. :(
+>> I just grouping with batteries.
+>
+> It's fine as is. I always wonder when somebody try to sort things
+> alphabetically. Humans should not bother with sorting, that's what
+> computers are for! ;-)
+>
+>> >> +static int max17040_suspend(struct i2c_client *client,
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_message_t state)
+>> >> +{
+>> >> + =A0 =A0 =A0 struct max17040_chip *chip =3D i2c_get_clientdata(clien=
+t);
+>> >> +
+>> >> + =A0 =A0 =A0 cancel_delayed_work(&chip->work);
+>> >> + =A0 =A0 =A0 return 0;
+>> >> +}
+>> >> +
+>> >> +static int max17040_resume(struct i2c_client *client)
+>> >> +{
+>> >> + =A0 =A0 =A0 struct max17040_chip *chip =3D i2c_get_clientdata(clien=
+t);
+>> >> +
+>> >> + =A0 =A0 =A0 schedule_delayed_work(&chip->work, MAX17040_DELAY);
+>> >> + =A0 =A0 =A0 return 0;
+>> >> +}
+>> >> +
+>> >
+>> > Please add #ifdef CONFIG_PM around suspend resume functions.
+>> >
+>>
+>> Ok, I will.
+>
+> Just did it myself, and queued this patch for 2.6.31.
+>
+> Thanks!
+>
+
+Ok, I appreciate your help.
+Many Thanks :)
+
+-- =
+
+from. prom.
+promsoft.net
