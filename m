@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
- Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 22:49:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906082233490.19072-100000__7272.36399329758$1244516465$gmane$org@netrider.rowland.org>
-References: <200906082331.58933.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 02/04] Driver Core: Add idle and wakeup
+	functions
+Date: Tue, 9 Jun 2009 13:22:15 +0900
+Message-ID: <aec7e5c30906082122v456b3e31x367a20f8a46e1b37__26056.6772464246$1244521403$gmane$org@mail.gmail.com>
+References: <20090527100625.29671.43166.sendpatchset@rx1.opensource.se>
+	<200906031105.21977.rjw@sisk.pl>
+	<aec7e5c30906042026u73f6d03dy9357a1527dabccc4@mail.gmail.com>
+	<200906052242.08266.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906082331.58933.rjw@sisk.pl>
+In-Reply-To: <200906052242.08266.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,74 +22,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Cc: paul@pwsan.com, linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 8 Jun 2009, Rafael J. Wysocki wrote:
+On Sat, Jun 6, 2009 at 5:42 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Friday 05 June 2009, Magnus Damm wrote:
+>> On Wed, Jun 3, 2009 at 6:05 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+>> > On Friday 29 May 2009, Magnus Damm wrote:
+>> >> 2009/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Wednesday 27 May 2009, Magnus Damm wrote:
+>> >> >> From: Magnus Damm <damm@igel.co.jp>
+>> >> >>
+>> >> >> Add platform_device_idle() and platform_device_wakeup()
+>> >> >> and allow architectures to implement their own versions
+>> >> >> of these if CONFIG_HAVE_PLATFORM_IDLE_WAKEUP is set.
+>> >> >>
+>> >> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+>> >> >> ---
 
-> > Use of the RPM_UNKNOWN state isn't good.  A bus may have valid reasons 
-> > of its own for not carrying out an autosuspend.  When this happens the 
-> > device's state isn't unknown.
-> 
-> I'm not sure what you mean exactly.
-> 
-> If ->autosuspend() fails, the device power state may be known, but the core
-> can't be sure if the device is active.  This information is available to the
-> driver and/or the bus type, which should change the status to whatever is
-> appropriate.
+>> The wakeup()/idle() code in this patch is one way to solve it on a
+>> platform device level. Another more generic way would be to add
+>> ->enable() and ->disable() callbacks to struct bus_type and introduce
+>> device_enable() and device_disable() that takes struct device and
+>> invokes the bus callbacks if set.
+>
+> So, you need a generic mechanism that drivers can use to notify the bus t=
+ype
+> code that a device is idle and therefore it should schedule an autosuspend
+> request for the device. =A0Also, you want a mechanism by which drivers ca=
+n notify
+> the platform code that there is a need to wake-up an autosuspended device.
+> Is that correct?
 
-But no matter what the driver or bus type sets the state to, your 
-pm_autosuspend() will change it to one of RPM_UNKNOWN or RPM_SUSPENDED.  
-Neither might be right.
+Yes, you are 100% correct that I want drivers to have some way to
+notify the bus type that a certain device is idle or needs to be woken
+up.
 
-> The name of this constant may be confusing, but I didn't have any better ideas.
+Exactly what should happen when the device is marked as idle is a
+different question. I guess this is bus specific. Connecting the idle
+notification directly to autosuspend is not a very good idea IMO since
+the power management comes with latency restrictions.
 
-It's not clear what RPM_ACTIVE, RPM_IDLE, and RPM_SUSPENDED are 
-supposed to mean; this should be documented in the code.  Also, why 
-isn't there RPM_RESUMING?
+If we zoom out a bit then I think that we should have something
+similar to cpuidle but for devices. Maybe the driver should give a
+list of suspend modes, their latencies and power savings. This per
+driver (or per device) latency information is important, but even more
+important IMO is latency information for the bus itself.
 
-By the way, a legitimate reason for aborting an autosuspend is if the
-device's driver requires remote wakeup to be enabled during suspend but
-the user has disabled it.
+So for our on-chip SuperH SoC platform devices I'd like to keep track
+of which devices that are idle, and if all devices within one power
+domain are idle then i'd like to execute autosuspend() for those and
+after that power off the bus/domain. But only if this doesn't break
+any latency requirements.
 
-> > The scheme doesn't include any mechanism for communicating runtime
-> > power information up the device tree.  When a device is autosuspended,
-> > its parent's driver should be told so that the driver can consider
-> > autosuspending the parent.
-> 
-> I thought the bus type's ->autosuspend() callback could take care of this.
+Cheers,
 
-Shouldn't this happen after the device's state has changed to 
-RPM_SUSPENDED?  That's not until after the callback returns.
-
-> > There should be a sysfs interface (like the one in USB) to allow
-> > userspace to prevent a device from being autosuspended -- and perhaps
-> > also to force it to be suspended.
-> 
-> To prevent a device from being suspended - yes.  To force it to stay suspended
-> - I'm not sure.
-
-I'm not sure either.  Oliver Neukum requested it originally and it has
-been useful for debugging, but I haven't seen many places where it
-would come in useful in practice.
-
-> > What about devices that have more than two runtime power states?  For
-> > example, you can't squeeze PCI's {D0,D1,D2,D3hot} range into {running,
-> > suspended}.
-> 
-> That has to be bus type-specific.
-> 
-> In the case of PCI all of the low power states (D1-D3) are in fact substates of
-> "suspended", because we generally need to quiesce the device before putting
-> it into any of these states.
-> 
-> I'm not sure if we can introduce more "levels of suspension", so to speak, at
-> the core level, but in any case we can easily distinguish between "device
-> quiesced and in a low power state" and "device fully active".
-> 
-> So, in this picture the device is "suspended" from the core's point of view
-> once it's bus type's ->autosuspend() callback has been successfully executed. 
-
-This too should be documented in the code.  Or in a Documentation file.
-
-Alan Stern
+/ magnus
