@@ -1,17 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch 05/38] s390: hibernation support for s390
-Date: Tue, 9 Jun 2009 21:59:03 +0200
-Message-ID: <20090609195903.GB1388__41096.2363392629$1244577634$gmane$org@ucw.cz>
-References: <20090604161847.513682672@de.ibm.com>
-	<20090604161900.659762303@de.ibm.com>
-	<20090608064451.GD1444@ucw.cz>
-	<20090609153402.58e6b841@blc4eb509856389.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Date: Wed, 10 Jun 2009 01:02:21 +0200
+Message-ID: <200906100102.22307.rjw__48150.6499847912$1244589015$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906081626120.13888-100000@netrider.rowland.org>
+	<200906082331.58933.rjw@sisk.pl>
+	<200906090931.37626.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200906090931.37626.oliver@neukum.org>
 Content-Disposition: inline
-In-Reply-To: <20090609153402.58e6b841@blc4eb509856389.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,64 +21,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-06-09 15:34:02, Hans-Joachim Picht wrote:
-> On Mon, 8 Jun 2009 08:44:51 +0200
-> Pavel Machek <pavel@ucw.cz> wrote:
+On Tuesday 09 June 2009, Oliver Neukum wrote:
+> Am Montag, 8. Juni 2009 23:31:58 schrieb Rafael J. Wysocki:
+> > If ->autosuspend() fails, the device power state may be known, but the core
+> > can't be sure if the device is active.  This information is available to
+> > the driver and/or the bus type, which should change the status to whatever
+> > is appropriate.
 > 
-> 
-> > > Index: linux-2.6/arch/s390/power/swsusp.c
-> > > ===================================================================
-> > > --- /dev/null
-> > > +++ linux-2.6/arch/s390/power/swsusp.c
-> > > @@ -0,0 +1,31 @@
-> > > +/*
-> > > + * Support for suspend and resume on s390
-> > > + *
-> > > + * Copyright IBM Corp. 2009
-> > > + *
-> > > + * Author(s): Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-> > > + *
-> > > + */
-> > > +
-> > > +#include <linux/suspend.h>
-> > > +#include <linux/gfp.h>
-> > > +#include <linux/cpu.h>
-> > > +#include <linux/smp.h>
-> > > +#include <linux/cpumask.h>
-> > > +#include <asm/ipl.h>
-> > > +#include <asm/processor.h>
-> > 
-> > Empty functions do not need 1000 includes...
-> 
-> Thanks for spotting this. I will remove these.
->  
-> > > +/*
-> > > + * save CPU registers before creating a hibernation image and
-> > > before
-> > > + * restoring the memory state from it
-> > > + */
-> > > +void save_processor_state(void)
-> > > +{
-> > > +}
-> > > +
-> > > +/*
-> > > + * restore the contents of CPU registers
-> > > + */
-> > > +void restore_processor_state(void)
-> > > +{
-> > > +}
-> > 
-> > ...and explaining why the functions can be emmpty would be nice.
-> 
-> I integrated the code for this in the assembly backend in the
-> swsusp_arch_suspend & swsusp_arch_resume functions.
+> That is quite confusing. You'd better define error returns.
 
-I guessed so. Maybe it is worth a comment?
+That might work too, but the information need not be available to the driver
+immediately.  It may need to schedule a reset of the device to recover from
+the error condition, for example.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> One that would mean that the suspension has failed but the device is
+> unaffected, and another one that means that the device is in an
+> undefined state now.
+>
+> > > The scheme doesn't include any mechanism for communicating runtime
+> > > power information up the device tree.  When a device is autosuspended,
+> > > its parent's driver should be told so that the driver can consider
+> > > autosuspending the parent.
+> >
+> > I thought the bus type's ->autosuspend() callback could take care of this.
+> 
+> That can't work because you have to operate between busses.
+
+OK, point taken.
+
+> > > Likewise, if we want to autoresume a device below an autosuspended
+> > > parent, the parent should be autoresumed first.  Did you want to make the
+> > > bus subsystem responsible for all of this?
+> >
+> > Yes, that was the idea.
+> 
+> That is an important point. Can some subsytems operate with a parent still
+> suspended?
+
+OK, I see the value of doing that at the core level.
+
+I tried to address this in the new version of the patch, which has been sent
+in my last reply to Alan.
+
+Thanks,
+Rafael
