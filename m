@@ -1,15 +1,17 @@
-From: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-Subject: Re: [patch 05/38] s390: hibernation support for s390
-Date: Tue, 9 Jun 2009 15:34:02 +0200
-Message-ID: <20090609153402.58e6b841__27181.3490581282$1244559147$gmane$org@blc4eb509856389.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
+	file.
+Date: Tue, 9 Jun 2009 21:58:13 +0200
+Message-ID: <20090609195813.GA1388__31481.4001358629$1244577595$gmane$org@ucw.cz>
 References: <20090604161847.513682672@de.ibm.com>
-	<20090604161900.659762303@de.ibm.com>
-	<20090608064451.GD1444@ucw.cz>
+	<20090608063501.GC1444@ucw.cz> <20090608173611.16238cf9@gondolin>
+	<200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090608064451.GD1444@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <20090609104003.50830165@gondolin>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 8 Jun 2009 08:44:51 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
-
-
-> > Index: linux-2.6/arch/s390/power/swsusp.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/arch/s390/power/swsusp.c
-> > @@ -0,0 +1,31 @@
-> > +/*
-> > + * Support for suspend and resume on s390
-> > + *
-> > + * Copyright IBM Corp. 2009
-> > + *
-> > + * Author(s): Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-> > + *
-> > + */
-> > +
-> > +#include <linux/suspend.h>
-> > +#include <linux/gfp.h>
-> > +#include <linux/cpu.h>
-> > +#include <linux/smp.h>
-> > +#include <linux/cpumask.h>
-> > +#include <asm/ipl.h>
-> > +#include <asm/processor.h>
+On Tue 2009-06-09 10:40:03, Cornelia Huck wrote:
+> The *_nvs_* routines in swsusp.c make use of the io*map()
+> functions, which are only provided for HAS_IOMEM, thus
+> breaking compilation if HAS_IOMEM is not set. Fix this
+> by moving the *_nvs_* routines into hibernation_nvs.c, which
+> is only compiled if HAS_IOMEM is set.
 > 
-> Empty functions do not need 1000 includes...
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Thanks for spotting this. I will remove these.
- 
-> > +/*
-> > + * save CPU registers before creating a hibernation image and
-> > before
-> > + * restoring the memory state from it
-> > + */
-> > +void save_processor_state(void)
-> > +{
-> > +}
-> > +
-> > +/*
-> > + * restore the contents of CPU registers
-> > + */
-> > +void restore_processor_state(void)
-> > +{
-> > +}
-> 
-> ...and explaining why the functions can be emmpty would be nice.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-I integrated the code for this in the assembly backend in the
-swsusp_arch_suspend & swsusp_arch_resume functions.
+> @@ -0,0 +1,135 @@
+> +/*
+> + * linux/kernel/power/hibernation_nvs.c
+> + *
+> + * Copyright (C) 2008,2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+> + *
+> + * Routines for NVS memory handling
+> + */
 
-With best regards,
-
-    --Hans
+Specifying  GPLv2 here would be nice. If it contains copyright, it
+should contain license, too.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
