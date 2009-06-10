@@ -1,16 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 01:15:30 +0200
-Message-ID: <200906110115.30729.oliver__27233.3535286181$1244675734$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
-	<200906102331.14267.rjw@sisk.pl>
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Wed, 10 Jun 2009 19:42:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906101933220.29717-100000__16955.3720312708$1244677404$gmane$org@netrider.rowland.org>
+References: <200906102331.14267.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <200906102331.14267.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,27 +22,51 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 10. Juni 2009 23:31:13 schrieb Rafael J. Wysocki:
-> > > +/**
-> > > + * pm_check_children - Check if all children of a device have been
-> > > suspended. + * @dev: Device to check.
-> > > + *
-> > > + * Returns 0 if all children of the device have been suspended or
-> > > -EBUSY + * otherwise.
-> > > + */
+On Wed, 10 Jun 2009, Rafael J. Wysocki wrote:
+
+> > You know, it doesn't make any sense to have a suspend and a resume 
+> > both pending at the same time.
 > >
+> > So you could add only a delayed_work structure and use its embedded
+> > work_struct for resume requests.
+> 
+> I thought so too, but I was wrong. ;-)
+> 
+> If resume is requested while the suspend hasn't completed yet, we should
+> queue it (it's totally valid to request a suspending device to resume IMO), but
+> the delayed work is still being used by the workqueue code, so we can't modify
+> it.
+
+Where is the delayed work still being used?  There's even a comment in 
+run_workqueue() that says a work_struct can be freed by the function it 
+calls.
+
 > > We might want to do a runtime suspend even if the device's children
-> > aren't already suspended. =A0For example, you could suspend a link while
+> > aren't already suspended.  For example, you could suspend a link while
 > > leaving the device on the other end of the link at full power --
 > > especially if powering down the device is slow but changing the link's
 > > power level is fast.
->
-> Well, this means that the dependencies between devices in the device tree
-> are pretty much useless for the run-time PM as far as the core is
-> concerned. =A0In which case, why did you mention them at all?
+> 
+> Well, this means that the dependencies between devices in the device tree are
+> pretty much useless for the run-time PM as far as the core is concerned.  In
+> which case, why did you mention them at all?
 
-Some bussystems need this constraint others don't or only for some nodes.
-We need a way to communicate this to the core.
+The dependencies aren't totally useless.  It's still true that before
+you resume a device, you have to autoresume its parent.  And it's still
+true that when you suspend a device, the parent should be given a
+chance to autosuspend.
 
-	Regards
-		Oliver
+I guess the real point is that the decision about whether all children
+must be suspended should be made by the driver, not the PM core.
+
+> > I haven't checked the details of the code yet.  More later...
+
+One more thought...  The autosuspend and autoresume callbacks need to 
+be mutually exclusive with probe and remove.  So somehow the driver 
+core will need to block runtime PM calls.
+
+It might also be nice to make sure that the driver core autoresumes a 
+device before probing it and autosuspends a device (after some 
+reasonable delay) after unbinding its driver.
+
+Alan Stern
