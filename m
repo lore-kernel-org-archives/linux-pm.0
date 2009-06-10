@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
 	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 00:01:20 +0200
-Message-ID: <200906110001.20718.rjw__41319.4036031657$1244671305$gmane$org@sisk.pl>
+Date: Thu, 11 Jun 2009 01:07:22 +0200
+Message-ID: <200906110107.23023.oliver__39368.4615301483$1244675335$gmane$org@neukum.org>
 References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
-	<200906102127.57136.rjw@sisk.pl>
 	<200906102338.35183.oliver@neukum.org>
+	<200906110001.20718.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906102338.35183.oliver@neukum.org>
+In-Reply-To: <200906110001.20718.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,46 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 10 June 2009, Oliver Neukum wrote:
-> Am Mittwoch, 10. Juni 2009 21:27:56 schrieb Rafael J. Wysocki:
-> > > What happens if the parent's parent is also suspended? It seems to me
-> > > that you must code this recursively.
-> >
-> > Hmm, I thought I did.
-> >
-> > [Looks]
-> >
-> > pm_request_resume(dev) will call pm_request_resume(dev->parent), if
-> > necessary, and that will call pm_request_resume(dev->parent->parent) and so
-> > on.  Each of them will queue a work item and the one for the topmost parent
-> > will be queued first.  So, the resume requests for all parents will be
-> > executed before the one for the device, due to the fact that the workqueue
-> > is singlethread.
-> 
-> Sneaky, I overlooked that.
-> 
-> > Well, there is a bug related to it, namely pm_autosuspend() may change the
-> > status to RPM_SUSPENDED after pm_request_resume() has changed it to
-> > RPM_WAKE, that needs fixing.
-> 
-> Ok, maybe this is related. You recurse if the parent isn't in RPM_ACTIVE.
-> But that is not enough. You must ensure that all the nodes higher up stay
-> in RPM_ACTIVE. It seems to me that you must go up until you find an
-> active node (or the root) and put it a blocked state.
+Am Donnerstag, 11. Juni 2009 00:01:20 schrieb Rafael J. Wysocki:
+> We have queued up resume requests for the device's parent, its parent etc=
+.,
+> the topmost one goes first. =A0The workqueue is singlethread, so
+> pm_autoresume() is going to be run for all parents before the device
+> itself, so if that were the only resume mechanism, it would be enough to
+> check if the parent is RPM_ACTIVE.
 
-If you're referring to pm_autoresume(), then this again is tricky.
+            A (IDLE)
+    /                                \
+B (SUSPENDED)         C (SUSPENDED)
 
-We have queued up resume requests for the device's parent, its parent etc.,
-the topmost one goes first.  The workqueue is singlethread, so pm_autoresume()
-is going to be run for all parents before the device itself, so if that were the
-only resume mechanism, it would be enough to check if the parent is RPM_ACTIVE.
-*However*, there also is pm_resume_sync(), which can take the device directly
-from RPM_SUSPENDED to RPM_RESUMING and that may be done in parallel with our
-pm_autoresume().  That's why I put the wait_for_completion() in there.
+Suppose C is to be resumed. This means first in case of A the request
+to suspend would be cancelled. Here you drop the locks:
 
-Best,
-Rafael
++           && (dev->parent->power.runtime_status =3D=3D RPM_IDLE
++             || dev->parent->power.runtime_status =3D=3D RPM_SUSPENDING
++             || dev->parent->power.runtime_status =3D=3D RPM_SUSPENDED)) {
++               spin_unlock_irqrestore(&dev->power.lock, flags);
++               spin_unlock_irqrestore(&dev->parent->power.lock, parent_fla=
+gs);
++
++               /* We have to resume the parent first. */
++               pm_request_resume(dev->parent);
+
+But after pm_request_resume() returns there's no means to make sure
+nothing alters it back to RPM_SUSPENDED. The workqueue doesn't help
+you because you've scheduled nothing by that time. The suspension will
+work because C is still in RPM_SUSPENDED.
+
+	Regards
+		Oliver
