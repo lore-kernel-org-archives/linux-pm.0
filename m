@@ -1,16 +1,15 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
 	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 01:07:22 +0200
-Message-ID: <200906110107.23023.oliver__39368.4615301483$1244675335$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
-	<200906102338.35183.oliver@neukum.org>
-	<200906110001.20718.rjw@sisk.pl>
+Date: Thu, 11 Jun 2009 01:15:30 +0200
+Message-ID: <200906110115.30729.oliver__27233.3535286181$1244675734$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
+	<200906102331.14267.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906110001.20718.rjw@sisk.pl>
+In-Reply-To: <200906102331.14267.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,38 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 11. Juni 2009 00:01:20 schrieb Rafael J. Wysocki:
-> We have queued up resume requests for the device's parent, its parent etc=
-.,
-> the topmost one goes first. =A0The workqueue is singlethread, so
-> pm_autoresume() is going to be run for all parents before the device
-> itself, so if that were the only resume mechanism, it would be enough to
-> check if the parent is RPM_ACTIVE.
+Am Mittwoch, 10. Juni 2009 23:31:13 schrieb Rafael J. Wysocki:
+> > > +/**
+> > > + * pm_check_children - Check if all children of a device have been
+> > > suspended. + * @dev: Device to check.
+> > > + *
+> > > + * Returns 0 if all children of the device have been suspended or
+> > > -EBUSY + * otherwise.
+> > > + */
+> >
+> > We might want to do a runtime suspend even if the device's children
+> > aren't already suspended. =A0For example, you could suspend a link while
+> > leaving the device on the other end of the link at full power --
+> > especially if powering down the device is slow but changing the link's
+> > power level is fast.
+>
+> Well, this means that the dependencies between devices in the device tree
+> are pretty much useless for the run-time PM as far as the core is
+> concerned. =A0In which case, why did you mention them at all?
 
-            A (IDLE)
-    /                                \
-B (SUSPENDED)         C (SUSPENDED)
-
-Suppose C is to be resumed. This means first in case of A the request
-to suspend would be cancelled. Here you drop the locks:
-
-+           && (dev->parent->power.runtime_status =3D=3D RPM_IDLE
-+             || dev->parent->power.runtime_status =3D=3D RPM_SUSPENDING
-+             || dev->parent->power.runtime_status =3D=3D RPM_SUSPENDED)) {
-+               spin_unlock_irqrestore(&dev->power.lock, flags);
-+               spin_unlock_irqrestore(&dev->parent->power.lock, parent_fla=
-gs);
-+
-+               /* We have to resume the parent first. */
-+               pm_request_resume(dev->parent);
-
-But after pm_request_resume() returns there's no means to make sure
-nothing alters it back to RPM_SUSPENDED. The workqueue doesn't help
-you because you've scheduled nothing by that time. The suspension will
-work because C is still in RPM_SUSPENDED.
+Some bussystems need this constraint others don't or only for some nodes.
+We need a way to communicate this to the core.
 
 	Regards
 		Oliver
