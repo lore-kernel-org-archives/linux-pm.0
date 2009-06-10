@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Date: Wed, 10 Jun 2009 23:15:26 +0200
-Message-ID: <200906102315.26999.rjw__2554.66719759188$1244668567$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906101636180.2589-100000@iolanthe.rowland.org>
+Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
+	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Wed, 10 Jun 2009 23:31:13 +0200
+Message-ID: <200906102331.14267.rjw__11559.3141563751$1244669577$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906101636180.2589-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,65 +20,134 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday 10 June 2009, Alan Stern wrote:
 > On Wed, 10 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> > > By the way, a legitimate reason for aborting an autosuspend is if the
-> > > device's driver requires remote wakeup to be enabled during suspend but
-> > > the user has disabled it.
-> > 
-> > Do you mean the user has disabled the remote wakeup?
+> > > The idea is that if ->autosuspend() or ->autoresume() returns an error code,
+> > > this is a situation the PM core cannot recover from by itself, so it shouldn't
+> > > pretend it knows what's happened.  Instead, it marks the device as "I don't
+> > > know if it is safe to touch this" and won't handle it until the device driver
+> > > or bus type clears the status.
 > 
-> Yes, by writing to the power/wakeup attribute.
+> I'm still not sure this is a good idea.  When would the device driver 
+> clear the status?  The autosuspend and autoresume methods run 
+> asynchronously, so after they're done the driver doesn't get a chance 
+> to do anything.
+> 
+> It might be best just to set the status to RPM_ACTIVE if a runtime 
+> suspend fails and RPM_SUSPENDED if a runtime resume fails.
+> 
+> > Finally, I decided to follow the Oliver's suggestion that some error codes returned
+> > by ->autosuspend() and ->autoresume() may be regarded as "go back to the
+> > previous state" information.  I chose to use -EAGAIN and -EBUSY for this
+> > purpose.
+> 
+> Maybe...
 > 
 > 
-> > > > > There should be a sysfs interface (like the one in USB) to allow
-> > > > > userspace to prevent a device from being autosuspended -- and perhaps
-> > > > > also to force it to be suspended.
-> > > > 
-> > > > To prevent a device from being suspended - yes.  To force it to stay suspended
-> > > > - I'm not sure.
-> > > 
-> > > I'm not sure either.  Oliver Neukum requested it originally and it has
-> > > been useful for debugging, but I haven't seen many places where it
-> > > would come in useful in practice.
+> >  struct dev_pm_info {
+> >  	pm_message_t		power_state;
+> > -	unsigned		can_wakeup:1;
+> > -	unsigned		should_wakeup:1;
+> > +	unsigned int		can_wakeup:1;
+> > +	unsigned int		should_wakeup:1;
+> >  	enum dpm_state		status;		/* Owned by the PM core */
+> >  #ifdef	CONFIG_PM_SLEEP
+> >  	struct list_head	entry;
+> >  #endif
+> > +#ifdef	CONFIG_PM_RUNTIME
+> > +	struct delayed_work	suspend_work;
+> > +	unsigned int		suspend_aborted:1;
+> > +	struct work_struct	resume_work;
+> > +	struct completion	work_done;
+> > +	enum rpm_state		runtime_status;
+> > +	spinlock_t		lock;
+> > +#endif
+> >  };
 > 
-> I did think of one use for this feature.  It's unique to USB,
-> however...
-> 
-> In Windows, you're not supposed to unplug a hot-unpluggable device
-> without first telling the OS -- there's a "Safely Remove Hardware"  
-> applet.  When you tell the applet you want to remove a USB device, the
-> system disables the device's port and then says it's okay to unplug the
-> device.  Now Linux doesn't have any user API for disabling USB ports,
-> but suspending a port has the same effect (the device can't distinguish
-> a disable from a suspend).
-> 
-> It turns out that some devices (MP3 players, for instance) have
-> incorporated this into their design.  They display a "Safe to unplug"  
-> message when their port is disabled or suspended.  People like to see
-> this message -- it makes them feel good about unplugging the device --
-> and the only way to get it under Linux is by forcing the device to be
-> suspended.  :-)
+> You know, it doesn't make any sense to have a suspend and a resume 
+> both pending at the same time.
+>
+> So you could add only a delayed_work structure and use its embedded
+> work_struct for resume requests.
 
-Well, I'd very much prefer to have a separate mechanism for that.
+I thought so too, but I was wrong. ;-)
 
-> > The problem with it is that the user space may not know if it is safe to keep
-> > a device suspended and if it is not, the kernel will have to ignore the setting
-> > anyway, so I'm not sure what's the point (except for debugging).
-> 
-> This falls into the category of "The user knows better".  If the user
-> specifically tells the kernel to suspend a device (rather than just
-> letting it autosuspend), and this causes a problem, then it's the
-> user's own fault.
-> 
-> After all, who's really the master?  Us or the kernel?
+If resume is requested while the suspend hasn't completed yet, we should
+queue it (it's totally valid to request a suspending device to resume IMO), but
+the delayed work is still being used by the workqueue code, so we can't modify
+it.
 
-Oh, that depends on who the user is.  If I'm the user, I'm the master, but in
-case of a typical Windows user I'm afraid the kernel has to know better. ;-)
+> Also, you might borrow a trick from Dave Brownell.  Define the RPM_*
+> values so that the individual bits have meanings.  Then instead of
+> testing for multiple possible values of runtime_status, you could do a
+> simple bit test.
+
+Yes, I'm seriously considering using this approach.
+
+> > +/**
+> > + * pm_device_suspended - Check if given device has been suspended at run time.
+> > + * @dev: Device to check.
+> > + * @data: Ignored.
+> > + *
+> > + * Returns 0 if the device has been suspended or -EBUSY otherwise.
+> > + */
+> > +static int pm_device_suspended(struct device *dev, void *data)
+> > +{
+> > +	int ret;
+> > +
+> > +	spin_lock(&dev->power.lock);
+> > +
+> > +	ret = dev->power.runtime_status == RPM_SUSPENDED ? 0 : -EBUSY;
+> > +
+> > +	spin_unlock(&dev->power.lock);
+> 
+> How does acquiring the lock help here?
+
+OK, it doesn't.
+
+> > +/**
+> > + * pm_check_children - Check if all children of a device have been suspended.
+> > + * @dev: Device to check.
+> > + *
+> > + * Returns 0 if all children of the device have been suspended or -EBUSY
+> > + * otherwise.
+> > + */
+> 
+> We might want to do a runtime suspend even if the device's children
+> aren't already suspended.  For example, you could suspend a link while
+> leaving the device on the other end of the link at full power --
+> especially if powering down the device is slow but changing the link's
+> power level is fast.
+
+Well, this means that the dependencies between devices in the device tree are
+pretty much useless for the run-time PM as far as the core is concerned.  In
+which case, why did you mention them at all?
+
+> > +/**
+> > + * pm_autosuspend - Run autosuspend callback of given device object's bus type.
+> > + * @work: Work structure used for scheduling the execution of this function.
+> > + *
+> > + * Use @work to get the device object the suspend has been scheduled for,
+> > + * check if the suspend request hasn't been cancelled and run the
+> > + * ->autosuspend() callback from the device's bus type driver.  Update the
+> > + * run-time PM flags in the device object to reflect the current status of the
+> > + * device.
+> > + */
+> > +static void pm_autosuspend(struct work_struct *work)
+> 
+> Can we call this something else?  "Autosuspend" implies that the 
+> suspend originated from within the kernel.  How about "pm_suspend_work" 
+> or "pm_runtime_suspend"?  Likewise for the resume routines.
+
+OK
+
+> I haven't checked the details of the code yet.  More later...
+
+OK, thanks.
 
 Best,
 Rafael
