@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 01/19] PM: Warn if interrupts are enabled during
-	suspend-resume of sysdevs
-Date: Thu, 11 Jun 2009 21:42:35 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB@chimera>
-References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
+	file.
+Date: Thu, 11 Jun 2009 23:46:27 +0200
+Message-ID: <200906112346.28782.rjw__5804.69740457392$1244756804$gmane$org@sisk.pl>
+References: <20090604161847.513682672@de.ibm.com>
+	<20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
+	<20090611211157.GD27376@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Date: Thu Jun 11 23:25:58 CEST 2009
-In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+In-Reply-To: <20090611211157.GD27376@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,81 +21,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM List <linux-pm@lists.linux-foundation.org>
-Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thursday 11 June 2009, Pavel Machek wrote:
+> On Thu 2009-06-11 15:32:18, Heiko Carstens wrote:
+> > On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday 09 June 2009, Cornelia Huck wrote:
+> > > > The *_nvs_* routines in swsusp.c make use of the io*map()
+> > > > functions, which are only provided for HAS_IOMEM, thus
+> > > > breaking compilation if HAS_IOMEM is not set. Fix this
+> > > > by moving the *_nvs_* routines into hibernation_nvs.c, which
+> > > > is only compiled if HAS_IOMEM is set.
+> > > > 
+> > > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > > 
+> > > Thanks, I added the GPLv2 line to the header comment and changed the name
+> > > of the file to hibernate_nvs.c (to match the other changes in the works).
+> > > 
+> > > I'll carry out some compilation testing on it and put it into the tree shortly.
+> > 
+> > Rafael, could you add the patch below as well?
+> > Or should that go in via git390?
+> > 
+> > Subject: [PATCH] PM: add empty suspend/resume device irq functions
+> > 
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > 
+> > git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+> > device interrupts" introduced some helper functions. However these
+> > functions are only available for architectures which support
+> > GENERIC_HARDIRQS.
+> > 
+> > Other architectures will see this build error:
+> > 
+> > drivers/built-in.o: In function `sysdev_suspend':
+> > (.text+0x15138): undefined reference to `check_wakeup_irqs'
+> > drivers/built-in.o: In function `device_power_up':
+> > (.text+0x1cb66): undefined reference to `resume_device_irqs'
+> > drivers/built-in.o: In function `device_power_down':
+> > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
+> > 
+> > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
+> 
+> I don't think that's right fix. If architecture does not use
+> GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+> itself. Before your patch, it could, after your patch, it can not.
+> 
+> Better put those empty functions in arch/s390/include?
 
-Sysdevs have to be suspended and resumed with interrupts disabled and
-things usually break in a way that's difficult to debug if one of
-sysdev drivers enables interrupts by mistake during suspend or
-resume.  Add extra checks that will generate warnings in such cases.
+If any of the affected architectures wants to implement *_device_irqs()
+itself, it can do the appropriate change in future.  For now, let's not break
+compilation on them, shall we?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/sys.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 3236b43..9742a78 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -343,11 +343,15 @@ static void __sysdev_resume(struct sys_device *dev)
- 	/* First, call the class-specific one */
- 	if (cls->resume)
- 		cls->resume(dev);
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled after %pF\n", cls->resume);
- 
- 	/* Call auxillary drivers next. */
- 	list_for_each_entry(drv, &cls->drivers, entry) {
- 		if (drv->resume)
- 			drv->resume(dev);
-+		WARN_ONCE(!irqs_disabled(),
-+			"Interrupts enabled after %pF\n", drv->resume);
- 	}
- }
- 
-@@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)
- 	if (ret)
- 		return ret;
- 
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled while suspending system devices\n");
-+
- 	pr_debug("Suspending System Devices\n");
- 
- 	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
-@@ -393,6 +400,9 @@ int sysdev_suspend(pm_message_t state)
- 					if (ret)
- 						goto aux_driver;
- 				}
-+				WARN_ONCE(!irqs_disabled(),
-+					"Interrupts enabled after %pF\n",
-+					drv->suspend);
- 			}
- 
- 			/* Now call the generic one */
-@@ -400,6 +410,9 @@ int sysdev_suspend(pm_message_t state)
- 				ret = cls->suspend(sysdev, state);
- 				if (ret)
- 					goto cls_driver;
-+				WARN_ONCE(!irqs_disabled(),
-+					"Interrupts enabled after %pF\n",
-+					cls->suspend);
- 			}
- 		}
- 	}
-@@ -452,6 +465,9 @@ int sysdev_resume(void)
- {
- 	struct sysdev_class *cls;
- 
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled while resuming system devices\n");
-+
- 	pr_debug("Resuming System Devices\n");
- 
- 	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
--- 
-1.5.2.4
+Thanks,
+Rafael
