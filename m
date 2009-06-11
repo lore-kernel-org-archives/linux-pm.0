@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 07/19] x86: unify power/cpu_(32|64).c
-Date: Thu, 11 Jun 2009 22:47:13 +0000 (UTC)
-Message-ID: <S4AoGnG.A.DG.2cYMKB@chimera>
+Subject: [PATCH 09/19] PM: Rename device_power_down/up()
+Date: Thu, 11 Jun 2009 22:48:25 +0000 (UTC)
+Message-ID: <S4AoGnG.A.cG.6eYMKB@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,831 +22,372 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sergio Luis <sergio@larces.uece.br>
+From: Magnus Damm <damm@igel.co.jp>
 
-This is the last unification step. Here we do remove one of the files
-and rename the left one as cpu.c, as both are now the same.
-Also update power/Makefile, telling it to build cpu.o, instead of
-cpu_(32|64).o
+Rename the functions performing "_noirq" dev_pm_ops
+operations from device_power_down() and device_power_up()
+to device_suspend_noirq() and device_resume_noirq().
 
-Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
+The new function names are chosen to show that the functions
+are responsible for calling the _noirq() versions to finalize
+the suspend/resume operation. The current function names do
+not perform power down/up anymore so the names may be misleading.
+
+Global function renames:
+- device_power_down() -> device_suspend_noirq()
+- device_power_up() -> device_resume_noirq()
+
+Static function renames:
+- suspend_device_noirq() -> __device_suspend_noirq()
+- resume_device_noirq() -> __device_resume_noirq()
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Acked-by: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86/power/Makefile |    2 +-
- arch/x86/power/cpu.c    |  259 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/power/cpu_32.c |  259 -----------------------------------------------
- arch/x86/power/cpu_64.c |  259 -----------------------------------------------
- 4 files changed, 260 insertions(+), 519 deletions(-)
- create mode 100644 arch/x86/power/cpu.c
- delete mode 100644 arch/x86/power/cpu_32.c
- delete mode 100644 arch/x86/power/cpu_64.c
+ arch/x86/kernel/apm_32.c  |    8 ++++----
+ drivers/base/power/main.c |   26 +++++++++++++-------------
+ drivers/xen/manage.c      |   10 +++++-----
+ include/linux/pm.h        |    4 ++--
+ kernel/kexec.c            |    8 ++++----
+ kernel/power/disk.c       |   16 ++++++++--------
+ kernel/power/main.c       |    4 ++--
+ 7 files changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
-index 58b32db..de2abbd 100644
---- a/arch/x86/power/Makefile
-+++ b/arch/x86/power/Makefile
-@@ -3,5 +3,5 @@
- nostackp := $(call cc-option, -fno-stack-protector)
- CFLAGS_cpu_$(BITS).o	:= $(nostackp)
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 49e0939..31ae547 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -1235,7 +1235,7 @@ static int suspend(int vetoable)
  
--obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
-+obj-$(CONFIG_PM_SLEEP)		+= cpu.o
- obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
-diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-new file mode 100644
-index 0000000..d277ef1
---- /dev/null
-+++ b/arch/x86/power/cpu.c
-@@ -0,0 +1,259 @@
-+/*
-+ * Suspend support specific for i386/x86-64.
-+ *
-+ * Distribute under GPLv2
-+ *
-+ * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
-+ * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
-+ */
-+
-+#include <linux/suspend.h>
-+#include <linux/smp.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/proto.h>
-+#include <asm/mtrr.h>
-+#include <asm/page.h>
-+#include <asm/mce.h>
-+#include <asm/xcr.h>
-+#include <asm/suspend.h>
-+
-+#ifdef CONFIG_X86_32
-+static struct saved_context saved_context;
-+
-+unsigned long saved_context_ebx;
-+unsigned long saved_context_esp, saved_context_ebp;
-+unsigned long saved_context_esi, saved_context_edi;
-+unsigned long saved_context_eflags;
-+#else
-+/* CONFIG_X86_64 */
-+struct saved_context saved_context;
-+#endif
-+
-+/**
-+ *	__save_processor_state - save CPU registers before creating a
-+ *		hibernation image and before restoring the memory state from it
-+ *	@ctxt - structure to store the registers contents in
-+ *
-+ *	NOTE: If there is a CPU register the modification of which by the
-+ *	boot kernel (ie. the kernel used for loading the hibernation image)
-+ *	might affect the operations of the restored target kernel (ie. the one
-+ *	saved in the hibernation image), then its contents must be saved by this
-+ *	function.  In other words, if kernel A is hibernated and different
-+ *	kernel B is used for loading the hibernation image into memory, the
-+ *	kernel A's __save_processor_state() function must save all registers
-+ *	needed by kernel A, so that it can operate correctly after the resume
-+ *	regardless of what kernel B does in the meantime.
-+ */
-+static void __save_processor_state(struct saved_context *ctxt)
-+{
-+#ifdef CONFIG_X86_32
-+	mtrr_save_fixed_ranges(NULL);
-+#endif
-+	kernel_fpu_begin();
-+
-+	/*
-+	 * descriptor tables
-+	 */
-+#ifdef CONFIG_X86_32
-+	store_gdt(&ctxt->gdt);
-+	store_idt(&ctxt->idt);
-+#else
-+/* CONFIG_X86_64 */
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+#endif
-+	store_tr(ctxt->tr);
-+
-+	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
-+	/*
-+	 * segment registers
-+	 */
-+#ifdef CONFIG_X86_32
-+	savesegment(es, ctxt->es);
-+	savesegment(fs, ctxt->fs);
-+	savesegment(gs, ctxt->gs);
-+	savesegment(ss, ctxt->ss);
-+#else
-+/* CONFIG_X86_64 */
-+	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
-+	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
-+	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-+	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
-+	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
-+
-+	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
-+	mtrr_save_fixed_ranges(NULL);
-+
-+	rdmsrl(MSR_EFER, ctxt->efer);
-+#endif
-+
-+	/*
-+	 * control registers
-+	 */
-+	ctxt->cr0 = read_cr0();
-+	ctxt->cr2 = read_cr2();
-+	ctxt->cr3 = read_cr3();
-+#ifdef CONFIG_X86_32
-+	ctxt->cr4 = read_cr4_safe();
-+#else
-+/* CONFIG_X86_64 */
-+	ctxt->cr4 = read_cr4();
-+	ctxt->cr8 = read_cr8();
-+#endif
-+}
-+
-+/* Needed by apm.c */
-+void save_processor_state(void)
-+{
-+	__save_processor_state(&saved_context);
-+}
-+#ifdef CONFIG_X86_32
-+EXPORT_SYMBOL(save_processor_state);
-+#endif
-+
-+static void do_fpu_end(void)
-+{
-+	/*
-+	 * Restore FPU regs if necessary.
-+	 */
-+	kernel_fpu_end();
-+}
-+
-+static void fix_processor_context(void)
-+{
-+	int cpu = smp_processor_id();
-+	struct tss_struct *t = &per_cpu(init_tss, cpu);
-+
-+	set_tss_desc(cpu, t);	/*
-+				 * This just modifies memory; should not be
-+				 * necessary. But... This is necessary, because
-+				 * 386 hardware has concept of busy TSS or some
-+				 * similar stupidity.
-+				 */
-+
-+#ifdef CONFIG_X86_64
-+	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
-+
-+	syscall_init();				/* This sets MSR_*STAR and related */
-+#endif
-+	load_TR_desc();				/* This does ltr */
-+	load_LDT(&current->active_mm->context);	/* This does lldt */
-+
-+	/*
-+	 * Now maybe reload the debug registers
-+	 */
-+	if (current->thread.debugreg7) {
-+#ifdef CONFIG_X86_32
-+		set_debugreg(current->thread.debugreg0, 0);
-+		set_debugreg(current->thread.debugreg1, 1);
-+		set_debugreg(current->thread.debugreg2, 2);
-+		set_debugreg(current->thread.debugreg3, 3);
-+		/* no 4 and 5 */
-+		set_debugreg(current->thread.debugreg6, 6);
-+		set_debugreg(current->thread.debugreg7, 7);
-+#else
-+		/* CONFIG_X86_64 */
-+		loaddebug(&current->thread, 0);
-+		loaddebug(&current->thread, 1);
-+		loaddebug(&current->thread, 2);
-+		loaddebug(&current->thread, 3);
-+		/* no 4 and 5 */
-+		loaddebug(&current->thread, 6);
-+		loaddebug(&current->thread, 7);
-+#endif
-+	}
-+
-+}
-+
-+/**
-+ *	__restore_processor_state - restore the contents of CPU registers saved
-+ *		by __save_processor_state()
-+ *	@ctxt - structure to load the registers contents from
-+ */
-+static void __restore_processor_state(struct saved_context *ctxt)
-+{
-+	/*
-+	 * control registers
-+	 */
-+	/* cr4 was introduced in the Pentium CPU */
-+#ifdef CONFIG_X86_32
-+	if (ctxt->cr4)
-+		write_cr4(ctxt->cr4);
-+#else
-+/* CONFIG X86_64 */
-+	wrmsrl(MSR_EFER, ctxt->efer);
-+	write_cr8(ctxt->cr8);
-+	write_cr4(ctxt->cr4);
-+#endif
-+	write_cr3(ctxt->cr3);
-+	write_cr2(ctxt->cr2);
-+	write_cr0(ctxt->cr0);
-+
-+	/*
-+	 * now restore the descriptor tables to their proper values
-+	 * ltr is done i fix_processor_context().
-+	 */
-+#ifdef CONFIG_X86_32
-+	load_gdt(&ctxt->gdt);
-+	load_idt(&ctxt->idt);
-+#else
-+/* CONFIG_X86_64 */
-+	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
-+	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
-+#endif
-+
-+	/*
-+	 * segment registers
-+	 */
-+#ifdef CONFIG_X86_32
-+	loadsegment(es, ctxt->es);
-+	loadsegment(fs, ctxt->fs);
-+	loadsegment(gs, ctxt->gs);
-+	loadsegment(ss, ctxt->ss);
-+
-+	/*
-+	 * sysenter MSRs
-+	 */
-+	if (boot_cpu_has(X86_FEATURE_SEP))
-+		enable_sep_cpu();
-+#else
-+/* CONFIG_X86_64 */
-+	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
-+	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
-+	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
-+	load_gs_index(ctxt->gs);
-+	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
-+
-+	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
-+#endif
-+
-+	/*
-+	 * restore XCR0 for xsave capable cpu's.
-+	 */
-+	if (cpu_has_xsave)
-+		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
-+
-+	fix_processor_context();
-+
-+	do_fpu_end();
-+	mtrr_ap_init();
-+
-+#ifdef CONFIG_X86_32
-+	mcheck_init(&boot_cpu_data);
-+#endif
-+}
-+
-+/* Needed by apm.c */
-+void restore_processor_state(void)
-+{
-+	__restore_processor_state(&saved_context);
-+}
-+#ifdef CONFIG_X86_32
-+EXPORT_SYMBOL(restore_processor_state);
-+#endif
-diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
-deleted file mode 100644
-index ca0ecae..0000000
---- a/arch/x86/power/cpu_32.c
-+++ /dev/null
-@@ -1,259 +0,0 @@
--/*
-- * Suspend and hibernation support for i386/x86-64.
-- *
-- * Distribute under GPLv2
-- *
-- * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
-- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
-- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
-- */
--
--#include <linux/suspend.h>
--#include <linux/smp.h>
--
--#include <asm/pgtable.h>
--#include <asm/proto.h>
--#include <asm/mtrr.h>
--#include <asm/page.h>
--#include <asm/mce.h>
--#include <asm/xcr.h>
--#include <asm/suspend.h>
--
--#ifdef CONFIG_X86_32
--static struct saved_context saved_context;
--
--unsigned long saved_context_ebx;
--unsigned long saved_context_esp, saved_context_ebp;
--unsigned long saved_context_esi, saved_context_edi;
--unsigned long saved_context_eflags;
--#else
--/* CONFIG_X86_64 */
--struct saved_context saved_context;
--#endif
--
--/**
-- *	__save_processor_state - save CPU registers before creating a
-- *		hibernation image and before restoring the memory state from it
-- *	@ctxt - structure to store the registers contents in
-- *
-- *	NOTE: If there is a CPU register the modification of which by the
-- *	boot kernel (ie. the kernel used for loading the hibernation image)
-- *	might affect the operations of the restored target kernel (ie. the one
-- *	saved in the hibernation image), then its contents must be saved by this
-- *	function.  In other words, if kernel A is hibernated and different
-- *	kernel B is used for loading the hibernation image into memory, the
-- *	kernel A's __save_processor_state() function must save all registers
-- *	needed by kernel A, so that it can operate correctly after the resume
-- *	regardless of what kernel B does in the meantime.
-- */
--static void __save_processor_state(struct saved_context *ctxt)
--{
--#ifdef CONFIG_X86_32
--	mtrr_save_fixed_ranges(NULL);
--#endif
--	kernel_fpu_begin();
--
--	/*
--	 * descriptor tables
--	 */
--#ifdef CONFIG_X86_32
--	store_gdt(&ctxt->gdt);
--	store_idt(&ctxt->idt);
--#else
--/* CONFIG_X86_64 */
--	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
--	store_idt((struct desc_ptr *)&ctxt->idt_limit);
--#endif
--	store_tr(ctxt->tr);
--
--	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
--	/*
--	 * segment registers
--	 */
--#ifdef CONFIG_X86_32
--	savesegment(es, ctxt->es);
--	savesegment(fs, ctxt->fs);
--	savesegment(gs, ctxt->gs);
--	savesegment(ss, ctxt->ss);
--#else
--/* CONFIG_X86_64 */
--	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
--	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
--	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
--	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
--	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
--
--	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
--	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
--	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--	mtrr_save_fixed_ranges(NULL);
--
--	rdmsrl(MSR_EFER, ctxt->efer);
--#endif
--
--	/*
--	 * control registers
--	 */
--	ctxt->cr0 = read_cr0();
--	ctxt->cr2 = read_cr2();
--	ctxt->cr3 = read_cr3();
--#ifdef CONFIG_X86_32
--	ctxt->cr4 = read_cr4_safe();
--#else
--/* CONFIG_X86_64 */
--	ctxt->cr4 = read_cr4();
--	ctxt->cr8 = read_cr8();
--#endif
--}
--
--/* Needed by apm.c */
--void save_processor_state(void)
--{
--	__save_processor_state(&saved_context);
--}
--#ifdef CONFIG_X86_32
--EXPORT_SYMBOL(save_processor_state);
--#endif
--
--static void do_fpu_end(void)
--{
--	/*
--	 * Restore FPU regs if necessary.
--	 */
--	kernel_fpu_end();
--}
--
--static void fix_processor_context(void)
--{
--	int cpu = smp_processor_id();
--	struct tss_struct *t = &per_cpu(init_tss, cpu);
--
--	set_tss_desc(cpu, t);	/*
--				 * This just modifies memory; should not be
--				 * necessary. But... This is necessary, because
--				 * 386 hardware has concept of busy TSS or some
--				 * similar stupidity.
--				 */
--
--#ifdef CONFIG_X86_64
--	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
--
--	syscall_init();				/* This sets MSR_*STAR and related */
--#endif
--	load_TR_desc();				/* This does ltr */
--	load_LDT(&current->active_mm->context);	/* This does lldt */
--
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7) {
--#ifdef CONFIG_X86_32
--		set_debugreg(current->thread.debugreg0, 0);
--		set_debugreg(current->thread.debugreg1, 1);
--		set_debugreg(current->thread.debugreg2, 2);
--		set_debugreg(current->thread.debugreg3, 3);
--		/* no 4 and 5 */
--		set_debugreg(current->thread.debugreg6, 6);
--		set_debugreg(current->thread.debugreg7, 7);
--#else
--		/* CONFIG_X86_64 */
--		loaddebug(&current->thread, 0);
--		loaddebug(&current->thread, 1);
--		loaddebug(&current->thread, 2);
--		loaddebug(&current->thread, 3);
--		/* no 4 and 5 */
--		loaddebug(&current->thread, 6);
--		loaddebug(&current->thread, 7);
--#endif
--	}
--
--}
--
--/**
-- *	__restore_processor_state - restore the contents of CPU registers saved
-- *		by __save_processor_state()
-- *	@ctxt - structure to load the registers contents from
-- */
--static void __restore_processor_state(struct saved_context *ctxt)
--{
--	/*
--	 * control registers
--	 */
--	/* cr4 was introduced in the Pentium CPU */
--#ifdef CONFIG_X86_32
--	if (ctxt->cr4)
--		write_cr4(ctxt->cr4);
--#else
--/* CONFIG X86_64 */
--	wrmsrl(MSR_EFER, ctxt->efer);
--	write_cr8(ctxt->cr8);
--	write_cr4(ctxt->cr4);
--#endif
--	write_cr3(ctxt->cr3);
--	write_cr2(ctxt->cr2);
--	write_cr0(ctxt->cr0);
--
--	/*
--	 * now restore the descriptor tables to their proper values
--	 * ltr is done i fix_processor_context().
--	 */
--#ifdef CONFIG_X86_32
--	load_gdt(&ctxt->gdt);
--	load_idt(&ctxt->idt);
--#else
--/* CONFIG_X86_64 */
--	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
--	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
--#endif
--
--	/*
--	 * segment registers
--	 */
--#ifdef CONFIG_X86_32
--	loadsegment(es, ctxt->es);
--	loadsegment(fs, ctxt->fs);
--	loadsegment(gs, ctxt->gs);
--	loadsegment(ss, ctxt->ss);
--
--	/*
--	 * sysenter MSRs
--	 */
--	if (boot_cpu_has(X86_FEATURE_SEP))
--		enable_sep_cpu();
--#else
--/* CONFIG_X86_64 */
--	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
--	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
--	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
--	load_gs_index(ctxt->gs);
--	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
--
--	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
--	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
--	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--#endif
--
--	/*
--	 * restore XCR0 for xsave capable cpu's.
--	 */
--	if (cpu_has_xsave)
--		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
--
--	fix_processor_context();
--
--	do_fpu_end();
--	mtrr_ap_init();
--
--#ifdef CONFIG_X86_32
--	mcheck_init(&boot_cpu_data);
--#endif
--}
--
--/* Needed by apm.c */
--void restore_processor_state(void)
--{
--	__restore_processor_state(&saved_context);
--}
--#ifdef CONFIG_X86_32
--EXPORT_SYMBOL(restore_processor_state);
--#endif
-diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
-deleted file mode 100644
-index d277ef1..0000000
---- a/arch/x86/power/cpu_64.c
-+++ /dev/null
-@@ -1,259 +0,0 @@
--/*
-- * Suspend support specific for i386/x86-64.
-- *
-- * Distribute under GPLv2
-- *
-- * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
-- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
-- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
-- */
--
--#include <linux/suspend.h>
--#include <linux/smp.h>
--
--#include <asm/pgtable.h>
--#include <asm/proto.h>
--#include <asm/mtrr.h>
--#include <asm/page.h>
--#include <asm/mce.h>
--#include <asm/xcr.h>
--#include <asm/suspend.h>
--
--#ifdef CONFIG_X86_32
--static struct saved_context saved_context;
--
--unsigned long saved_context_ebx;
--unsigned long saved_context_esp, saved_context_ebp;
--unsigned long saved_context_esi, saved_context_edi;
--unsigned long saved_context_eflags;
--#else
--/* CONFIG_X86_64 */
--struct saved_context saved_context;
--#endif
--
--/**
-- *	__save_processor_state - save CPU registers before creating a
-- *		hibernation image and before restoring the memory state from it
-- *	@ctxt - structure to store the registers contents in
-- *
-- *	NOTE: If there is a CPU register the modification of which by the
-- *	boot kernel (ie. the kernel used for loading the hibernation image)
-- *	might affect the operations of the restored target kernel (ie. the one
-- *	saved in the hibernation image), then its contents must be saved by this
-- *	function.  In other words, if kernel A is hibernated and different
-- *	kernel B is used for loading the hibernation image into memory, the
-- *	kernel A's __save_processor_state() function must save all registers
-- *	needed by kernel A, so that it can operate correctly after the resume
-- *	regardless of what kernel B does in the meantime.
-- */
--static void __save_processor_state(struct saved_context *ctxt)
--{
--#ifdef CONFIG_X86_32
--	mtrr_save_fixed_ranges(NULL);
--#endif
--	kernel_fpu_begin();
--
--	/*
--	 * descriptor tables
--	 */
--#ifdef CONFIG_X86_32
--	store_gdt(&ctxt->gdt);
--	store_idt(&ctxt->idt);
--#else
--/* CONFIG_X86_64 */
--	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
--	store_idt((struct desc_ptr *)&ctxt->idt_limit);
--#endif
--	store_tr(ctxt->tr);
--
--	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
--	/*
--	 * segment registers
--	 */
--#ifdef CONFIG_X86_32
--	savesegment(es, ctxt->es);
--	savesegment(fs, ctxt->fs);
--	savesegment(gs, ctxt->gs);
--	savesegment(ss, ctxt->ss);
--#else
--/* CONFIG_X86_64 */
--	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
--	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
--	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
--	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
--	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
--
--	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
--	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
--	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--	mtrr_save_fixed_ranges(NULL);
--
--	rdmsrl(MSR_EFER, ctxt->efer);
--#endif
--
--	/*
--	 * control registers
--	 */
--	ctxt->cr0 = read_cr0();
--	ctxt->cr2 = read_cr2();
--	ctxt->cr3 = read_cr3();
--#ifdef CONFIG_X86_32
--	ctxt->cr4 = read_cr4_safe();
--#else
--/* CONFIG_X86_64 */
--	ctxt->cr4 = read_cr4();
--	ctxt->cr8 = read_cr8();
--#endif
--}
--
--/* Needed by apm.c */
--void save_processor_state(void)
--{
--	__save_processor_state(&saved_context);
--}
--#ifdef CONFIG_X86_32
--EXPORT_SYMBOL(save_processor_state);
--#endif
--
--static void do_fpu_end(void)
--{
--	/*
--	 * Restore FPU regs if necessary.
--	 */
--	kernel_fpu_end();
--}
--
--static void fix_processor_context(void)
--{
--	int cpu = smp_processor_id();
--	struct tss_struct *t = &per_cpu(init_tss, cpu);
--
--	set_tss_desc(cpu, t);	/*
--				 * This just modifies memory; should not be
--				 * necessary. But... This is necessary, because
--				 * 386 hardware has concept of busy TSS or some
--				 * similar stupidity.
--				 */
--
--#ifdef CONFIG_X86_64
--	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
--
--	syscall_init();				/* This sets MSR_*STAR and related */
--#endif
--	load_TR_desc();				/* This does ltr */
--	load_LDT(&current->active_mm->context);	/* This does lldt */
--
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7) {
--#ifdef CONFIG_X86_32
--		set_debugreg(current->thread.debugreg0, 0);
--		set_debugreg(current->thread.debugreg1, 1);
--		set_debugreg(current->thread.debugreg2, 2);
--		set_debugreg(current->thread.debugreg3, 3);
--		/* no 4 and 5 */
--		set_debugreg(current->thread.debugreg6, 6);
--		set_debugreg(current->thread.debugreg7, 7);
--#else
--		/* CONFIG_X86_64 */
--		loaddebug(&current->thread, 0);
--		loaddebug(&current->thread, 1);
--		loaddebug(&current->thread, 2);
--		loaddebug(&current->thread, 3);
--		/* no 4 and 5 */
--		loaddebug(&current->thread, 6);
--		loaddebug(&current->thread, 7);
--#endif
--	}
--
--}
--
--/**
-- *	__restore_processor_state - restore the contents of CPU registers saved
-- *		by __save_processor_state()
-- *	@ctxt - structure to load the registers contents from
-- */
--static void __restore_processor_state(struct saved_context *ctxt)
--{
--	/*
--	 * control registers
--	 */
--	/* cr4 was introduced in the Pentium CPU */
--#ifdef CONFIG_X86_32
--	if (ctxt->cr4)
--		write_cr4(ctxt->cr4);
--#else
--/* CONFIG X86_64 */
--	wrmsrl(MSR_EFER, ctxt->efer);
--	write_cr8(ctxt->cr8);
--	write_cr4(ctxt->cr4);
--#endif
--	write_cr3(ctxt->cr3);
--	write_cr2(ctxt->cr2);
--	write_cr0(ctxt->cr0);
--
--	/*
--	 * now restore the descriptor tables to their proper values
--	 * ltr is done i fix_processor_context().
--	 */
--#ifdef CONFIG_X86_32
--	load_gdt(&ctxt->gdt);
--	load_idt(&ctxt->idt);
--#else
--/* CONFIG_X86_64 */
--	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
--	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
--#endif
--
--	/*
--	 * segment registers
--	 */
--#ifdef CONFIG_X86_32
--	loadsegment(es, ctxt->es);
--	loadsegment(fs, ctxt->fs);
--	loadsegment(gs, ctxt->gs);
--	loadsegment(ss, ctxt->ss);
--
--	/*
--	 * sysenter MSRs
--	 */
--	if (boot_cpu_has(X86_FEATURE_SEP))
--		enable_sep_cpu();
--#else
--/* CONFIG_X86_64 */
--	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
--	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
--	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
--	load_gs_index(ctxt->gs);
--	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
--
--	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
--	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
--	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
--#endif
--
--	/*
--	 * restore XCR0 for xsave capable cpu's.
--	 */
--	if (cpu_has_xsave)
--		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
--
--	fix_processor_context();
--
--	do_fpu_end();
--	mtrr_ap_init();
--
--#ifdef CONFIG_X86_32
--	mcheck_init(&boot_cpu_data);
--#endif
--}
--
--/* Needed by apm.c */
--void restore_processor_state(void)
--{
--	__restore_processor_state(&saved_context);
--}
--#ifdef CONFIG_X86_32
--EXPORT_SYMBOL(restore_processor_state);
--#endif
+ 	device_suspend(PMSG_SUSPEND);
+ 
+-	device_power_down(PMSG_SUSPEND);
++	device_suspend_noirq(PMSG_SUSPEND);
+ 
+ 	local_irq_disable();
+ 	sysdev_suspend(PMSG_SUSPEND);
+@@ -1259,7 +1259,7 @@ static int suspend(int vetoable)
+ 	sysdev_resume();
+ 	local_irq_enable();
+ 
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+ 	device_resume(PMSG_RESUME);
+ 	queue_event(APM_NORMAL_RESUME, NULL);
+@@ -1277,7 +1277,7 @@ static void standby(void)
+ {
+ 	int err;
+ 
+-	device_power_down(PMSG_SUSPEND);
++	device_suspend_noirq(PMSG_SUSPEND);
+ 
+ 	local_irq_disable();
+ 	sysdev_suspend(PMSG_SUSPEND);
+@@ -1291,7 +1291,7 @@ static void standby(void)
+ 	sysdev_resume();
+ 	local_irq_enable();
+ 
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ }
+ 
+ static apm_event_t get_event(void)
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3e4bc69..c5a35bc 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -315,13 +315,13 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+ /*------------------------- Resume routines -------------------------*/
+ 
+ /**
+- *	resume_device_noirq - Power on one device (early resume).
++ *	__device_resume_noirq - Power on one device (early resume).
+  *	@dev:	Device.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Must be called with interrupts disabled.
+  */
+-static int resume_device_noirq(struct device *dev, pm_message_t state)
++static int __device_resume_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+@@ -363,7 +363,7 @@ static void dpm_power_up(pm_message_t state)
+ 			int error;
+ 
+ 			dev->power.status = DPM_OFF;
+-			error = resume_device_noirq(dev, state);
++			error = __device_resume_noirq(dev, state);
+ 			if (error)
+ 				pm_dev_err(dev, state, " early", error);
+ 		}
+@@ -371,18 +371,18 @@ static void dpm_power_up(pm_message_t state)
+ }
+ 
+ /**
+- *	device_power_up - Turn on all devices that need special attention.
++ *	device_resume_noirq - Turn on all devices that need special attention.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Call the "early" resume handlers and enable device drivers to receive
+  *	interrupts.
+  */
+-void device_power_up(pm_message_t state)
++void device_resume_noirq(pm_message_t state)
+ {
+ 	dpm_power_up(state);
+ 	resume_device_irqs();
+ }
+-EXPORT_SYMBOL_GPL(device_power_up);
++EXPORT_SYMBOL_GPL(device_resume_noirq);
+ 
+ /**
+  *	resume_device - Restore state for one device.
+@@ -577,13 +577,13 @@ static pm_message_t resume_event(pm_message_t sleep_state)
+ }
+ 
+ /**
+- *	suspend_device_noirq - Shut down one device (late suspend).
++ *	__device_suspend_noirq - Shut down one device (late suspend).
+  *	@dev:	Device.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	This is called with interrupts off and only a single CPU running.
+  */
+-static int suspend_device_noirq(struct device *dev, pm_message_t state)
++static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+@@ -602,7 +602,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
+ }
+ 
+ /**
+- *	device_power_down - Shut down special devices.
++ *	device_suspend_noirq - Shut down special devices.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Prevent device drivers from receiving interrupts and call the "late"
+@@ -610,7 +610,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
+  *
+  *	Must be called under dpm_list_mtx.
+  */
+-int device_power_down(pm_message_t state)
++int device_suspend_noirq(pm_message_t state)
+ {
+ 	struct device *dev;
+ 	int error = 0;
+@@ -618,7 +618,7 @@ int device_power_down(pm_message_t state)
+ 	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
+-		error = suspend_device_noirq(dev, state);
++		error = __device_suspend_noirq(dev, state);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
+ 			break;
+@@ -627,10 +627,10 @@ int device_power_down(pm_message_t state)
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
+-		device_power_up(resume_event(state));
++		device_resume_noirq(resume_event(state));
+ 	return error;
+ }
+-EXPORT_SYMBOL_GPL(device_power_down);
++EXPORT_SYMBOL_GPL(device_suspend_noirq);
+ 
+ /**
+  *	suspend_device - Save state of one device.
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index fddc202..d5b327a 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -43,7 +43,7 @@ static int xen_suspend(void *data)
+ 	if (err) {
+ 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
+ 			err);
+-		device_power_up(PMSG_RESUME);
++		device_resume_noirq(PMSG_RESUME);
+ 		return err;
+ 	}
+ 
+@@ -69,7 +69,7 @@ static int xen_suspend(void *data)
+ 	}
+ 
+ 	sysdev_resume();
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+ 	return 0;
+ }
+@@ -101,9 +101,9 @@ static void do_suspend(void)
+ 	printk(KERN_DEBUG "suspending xenstore...\n");
+ 	xs_suspend();
+ 
+-	err = device_power_down(PMSG_SUSPEND);
++	err = device_suspend_noirq(PMSG_SUSPEND);
+ 	if (err) {
+-		printk(KERN_ERR "device_power_down failed: %d\n", err);
++		printk(KERN_ERR "device_suspend_noirq failed: %d\n", err);
+ 		goto resume_devices;
+ 	}
+ 
+@@ -119,7 +119,7 @@ static void do_suspend(void)
+ 	} else
+ 		xs_suspend_cancel();
+ 
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+ resume_devices:
+ 	device_resume(PMSG_RESUME);
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 1d4e2d2..2170252 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -382,12 +382,12 @@ struct dev_pm_info {
+ #ifdef CONFIG_PM_SLEEP
+ extern void device_pm_lock(void);
+ extern int sysdev_resume(void);
+-extern void device_power_up(pm_message_t state);
++extern void device_resume_noirq(pm_message_t state);
+ extern void device_resume(pm_message_t state);
+ 
+ extern void device_pm_unlock(void);
+ extern int sysdev_suspend(pm_message_t state);
+-extern int device_power_down(pm_message_t state);
++extern int device_suspend_noirq(pm_message_t state);
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ 
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index e498377..5a3da87 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1452,13 +1452,13 @@ int kernel_kexec(void)
+ 		if (error)
+ 			goto Resume_console;
+ 		/* At this point, device_suspend() has been called,
+-		 * but *not* device_power_down(). We *must*
+-		 * device_power_down() now.  Otherwise, drivers for
++		 * but *not* device_suspend_noirq(). We *must* call
++		 * device_suspend_noirq() now.  Otherwise, drivers for
+ 		 * some devices (e.g. interrupt controllers) become
+ 		 * desynchronized with the actual state of the
+ 		 * hardware at resume time, and evil weirdness ensues.
+ 		 */
+-		error = device_power_down(PMSG_FREEZE);
++		error = device_suspend_noirq(PMSG_FREEZE);
+ 		if (error)
+ 			goto Resume_devices;
+ 		error = disable_nonboot_cpus();
+@@ -1486,7 +1486,7 @@ int kernel_kexec(void)
+ 		local_irq_enable();
+  Enable_cpus:
+ 		enable_nonboot_cpus();
+-		device_power_up(PMSG_RESTORE);
++		device_resume_noirq(PMSG_RESTORE);
+  Resume_devices:
+ 		device_resume(PMSG_RESTORE);
+  Resume_console:
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index 5cb080e..1c18bc8 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -216,12 +216,12 @@ static int create_image(int platform_mode)
+ 		return error;
+ 
+ 	/* At this point, device_suspend() has been called, but *not*
+-	 * device_power_down(). We *must* call device_power_down() now.
++	 * device_suspend_noirq(). We *must* call device_suspend_noirq() now.
+ 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+ 	 * become desynchronized with the actual state of the hardware
+ 	 * at resume time, and evil weirdness ensues.
+ 	 */
+-	error = device_power_down(PMSG_FREEZE);
++	error = device_suspend_noirq(PMSG_FREEZE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting hibernation\n");
+@@ -262,7 +262,7 @@ static int create_image(int platform_mode)
+ 
+  Power_up:
+ 	sysdev_resume();
+-	/* NOTE:  device_power_up() is just a resume() for devices
++	/* NOTE:  device_resume_noirq() is just a resume() for devices
+ 	 * that suspended with irqs off ... no overall powerup.
+ 	 */
+ 
+@@ -275,7 +275,7 @@ static int create_image(int platform_mode)
+  Platform_finish:
+ 	platform_finish(platform_mode);
+ 
+-	device_power_up(in_suspend ?
++	device_resume_noirq(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+ 
+ 	return error;
+@@ -339,7 +339,7 @@ static int resume_target_kernel(bool platform_mode)
+ {
+ 	int error;
+ 
+-	error = device_power_down(PMSG_QUIESCE);
++	error = device_suspend_noirq(PMSG_QUIESCE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting resume\n");
+@@ -394,7 +394,7 @@ static int resume_target_kernel(bool platform_mode)
+  Cleanup:
+ 	platform_restore_cleanup(platform_mode);
+ 
+-	device_power_up(PMSG_RECOVER);
++	device_resume_noirq(PMSG_RECOVER);
+ 
+ 	return error;
+ }
+@@ -454,7 +454,7 @@ int hibernation_platform_enter(void)
+ 		goto Resume_devices;
+ 	}
+ 
+-	error = device_power_down(PMSG_HIBERNATE);
++	error = device_suspend_noirq(PMSG_HIBERNATE);
+ 	if (error)
+ 		goto Resume_devices;
+ 
+@@ -479,7 +479,7 @@ int hibernation_platform_enter(void)
+  Platofrm_finish:
+ 	hibernation_ops->finish();
+ 
+-	device_power_up(PMSG_RESTORE);
++	device_suspend_noirq(PMSG_RESTORE);
+ 
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 8680282..2f6638e 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -295,7 +295,7 @@ static int suspend_enter(suspend_state_t state)
+ 			return error;
+ 	}
+ 
+-	error = device_power_down(PMSG_SUSPEND);
++	error = device_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down\n");
+ 		goto Platfrom_finish;
+@@ -335,7 +335,7 @@ static int suspend_enter(suspend_state_t state)
+ 		suspend_ops->wake();
+ 
+  Power_up_devices:
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+  Platfrom_finish:
+ 	if (suspend_ops->finish)
 -- 
 1.5.2.4
