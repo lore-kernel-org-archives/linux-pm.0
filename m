@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 13/19] PM/Hibernate: Move memory shrinking to
-	snapshot.c (rev. 2)
-Date: Thu, 11 Jun 2009 22:00:56 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__34094.3870171488$1244757656$gmane$org@chimera>
+Subject: [PATCH 09/19] PM: Rename device_power_down/up()
+Date: Thu, 11 Jun 2009 22:01:06 +0000 (UTC)
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__38318.2906349704$1244757666$gmane$org@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,262 +22,372 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Magnus Damm <damm@igel.co.jp>
 
-A future patch is going to modify the memory shrinking code so that
-it will make memory allocations to free memory instead of using an
-artificial memory shrinking mechanism for that.  For this purpose it
-is convenient to move swsusp_shrink_memory() from
-kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
-memory-shrinking code is going to use things that are local to
-kernel/power/snapshot.c .
+Rename the functions performing "_noirq" dev_pm_ops
+operations from device_power_down() and device_power_up()
+to device_suspend_noirq() and device_resume_noirq().
 
-[rev. 2: Make some functions static and remove their headers from
- kernel/power/power.h]
+The new function names are chosen to show that the functions
+are responsible for calling the _noirq() versions to finalize
+the suspend/resume operation. The current function names do
+not perform power down/up anymore so the names may be misleading.
 
+Global function renames:
+- device_power_down() -> device_suspend_noirq()
+- device_power_up() -> device_resume_noirq()
+
+Static function renames:
+- suspend_device_noirq() -> __device_suspend_noirq()
+- resume_device_noirq() -> __device_resume_noirq()
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Acked-by: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- kernel/power/power.h    |    4 +--
- kernel/power/snapshot.c |   80 +++++++++++++++++++++++++++++++++++++++++++++-
- kernel/power/swsusp.c   |   76 --------------------------------------------
- 3 files changed, 79 insertions(+), 81 deletions(-)
+ arch/x86/kernel/apm_32.c  |    8 ++++----
+ drivers/base/power/main.c |   26 +++++++++++++-------------
+ drivers/xen/manage.c      |   10 +++++-----
+ include/linux/pm.h        |    4 ++--
+ kernel/kexec.c            |    8 ++++----
+ kernel/power/disk.c       |   16 ++++++++--------
+ kernel/power/main.c       |    4 ++--
+ 7 files changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 46b5ec7..ec4dbdf 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -74,7 +74,7 @@ extern asmlinkage int swsusp_arch_resume(void);
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 49e0939..31ae547 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -1235,7 +1235,7 @@ static int suspend(int vetoable)
  
- extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
--extern unsigned int count_data_pages(void);
-+extern int swsusp_shrink_memory(void);
+ 	device_suspend(PMSG_SUSPEND);
  
- /**
-  *	Auxiliary structure used for reading the snapshot image data and
-@@ -149,7 +149,6 @@ extern int swsusp_swap_in_use(void);
+-	device_power_down(PMSG_SUSPEND);
++	device_suspend_noirq(PMSG_SUSPEND);
  
- /* kernel/power/disk.c */
- extern int swsusp_check(void);
--extern int swsusp_shrink_memory(void);
- extern void swsusp_free(void);
- extern int swsusp_read(unsigned int *flags_p);
- extern int swsusp_write(unsigned int flags);
-@@ -176,7 +175,6 @@ extern int pm_notifier_call_chain(unsigned long val);
- #endif
+ 	local_irq_disable();
+ 	sysdev_suspend(PMSG_SUSPEND);
+@@ -1259,7 +1259,7 @@ static int suspend(int vetoable)
+ 	sysdev_resume();
+ 	local_irq_enable();
  
- #ifdef CONFIG_HIGHMEM
--unsigned int count_highmem_pages(void);
- int restore_highmem(void);
- #else
- static inline unsigned int count_highmem_pages(void) { return 0; }
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 33e2e4a..523a451 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -39,6 +39,14 @@ static int swsusp_page_is_free(struct page *);
- static void swsusp_set_page_forbidden(struct page *);
- static void swsusp_unset_page_forbidden(struct page *);
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
  
-+/*
-+ * Preferred image size in bytes (tunable via /sys/power/image_size).
-+ * When it is set to N, swsusp will do its best to ensure the image
-+ * size will not exceed N bytes, but if that is impossible, it will
-+ * try to create the smallest image possible.
-+ */
-+unsigned long image_size = 500 * 1024 * 1024;
-+
- /* List of PBEs needed for restoring the pages that were allocated before
-  * the suspend and included in the suspend image, but have also been
-  * allocated by the "resume" kernel, so their contents cannot be written
-@@ -840,7 +848,7 @@ static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
-  *	pages.
-  */
- 
--unsigned int count_highmem_pages(void)
-+static unsigned int count_highmem_pages(void)
+ 	device_resume(PMSG_RESUME);
+ 	queue_event(APM_NORMAL_RESUME, NULL);
+@@ -1277,7 +1277,7 @@ static void standby(void)
  {
- 	struct zone *zone;
- 	unsigned int n = 0;
-@@ -902,7 +910,7 @@ static struct page *saveable_page(struct zone *zone, unsigned long pfn)
-  *	pages.
-  */
+ 	int err;
  
--unsigned int count_data_pages(void)
-+static unsigned int count_data_pages(void)
- {
- 	struct zone *zone;
- 	unsigned long pfn, max_zone_pfn;
-@@ -1058,6 +1066,74 @@ void swsusp_free(void)
- 	buffer = NULL;
+-	device_power_down(PMSG_SUSPEND);
++	device_suspend_noirq(PMSG_SUSPEND);
+ 
+ 	local_irq_disable();
+ 	sysdev_suspend(PMSG_SUSPEND);
+@@ -1291,7 +1291,7 @@ static void standby(void)
+ 	sysdev_resume();
+ 	local_irq_enable();
+ 
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
  }
  
-+/**
-+ *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ *
-+ *	... but do not OOM-kill anyone
-+ *
-+ *	Notice: all userland should be stopped before it is called, or
-+ *	livelock is possible.
-+ */
-+
-+#define SHRINK_BITE	10000
-+static inline unsigned long __shrink_memory(long tmp)
-+{
-+	if (tmp > SHRINK_BITE)
-+		tmp = SHRINK_BITE;
-+	return shrink_all_memory(tmp);
-+}
-+
-+int swsusp_shrink_memory(void)
-+{
-+	long tmp;
-+	struct zone *zone;
-+	unsigned long pages = 0;
-+	unsigned int i = 0;
-+	char *p = "-\\|/";
-+	struct timeval start, stop;
-+
-+	printk(KERN_INFO "PM: Shrinking memory...  ");
-+	do_gettimeofday(&start);
-+	do {
-+		long size, highmem_size;
-+
-+		highmem_size = count_highmem_pages();
-+		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
-+		tmp = size;
-+		size += highmem_size;
-+		for_each_populated_zone(zone) {
-+			tmp += snapshot_additional_pages(zone);
-+			if (is_highmem(zone)) {
-+				highmem_size -=
-+					zone_page_state(zone, NR_FREE_PAGES);
-+			} else {
-+				tmp -= zone_page_state(zone, NR_FREE_PAGES);
-+				tmp += zone->lowmem_reserve[ZONE_NORMAL];
-+			}
-+		}
-+
-+		if (highmem_size < 0)
-+			highmem_size = 0;
-+
-+		tmp += highmem_size;
-+		if (tmp > 0) {
-+			tmp = __shrink_memory(tmp);
-+			if (!tmp)
-+				return -ENOMEM;
-+			pages += tmp;
-+		} else if (size > image_size / PAGE_SIZE) {
-+			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
-+			pages += tmp;
-+		}
-+		printk("\b%c", p[i++%4]);
-+	} while (tmp > 0);
-+	do_gettimeofday(&stop);
-+	printk("\bdone (%lu pages freed)\n", pages);
-+	swsusp_show_speed(&start, &stop, pages, "Freed");
-+
-+	return 0;
-+}
-+
- #ifdef CONFIG_HIGHMEM
- /**
-   *	count_pages_for_highmem - compute the number of non-highmem pages
-diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-index 78c3504..87b901c 100644
---- a/kernel/power/swsusp.c
-+++ b/kernel/power/swsusp.c
-@@ -55,14 +55,6 @@
- 
- #include "power.h"
- 
--/*
-- * Preferred image size in bytes (tunable via /sys/power/image_size).
-- * When it is set to N, swsusp will do its best to ensure the image
-- * size will not exceed N bytes, but if that is impossible, it will
-- * try to create the smallest image possible.
-- */
--unsigned long image_size = 500 * 1024 * 1024;
--
- int in_suspend __nosavedata = 0;
+ static apm_event_t get_event(void)
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3e4bc69..c5a35bc 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -315,13 +315,13 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+ /*------------------------- Resume routines -------------------------*/
  
  /**
-@@ -195,74 +187,6 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			kps / 1000, (kps % 1000) / 10);
+- *	resume_device_noirq - Power on one device (early resume).
++ *	__device_resume_noirq - Power on one device (early resume).
+  *	@dev:	Device.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Must be called with interrupts disabled.
+  */
+-static int resume_device_noirq(struct device *dev, pm_message_t state)
++static int __device_resume_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+@@ -363,7 +363,7 @@ static void dpm_power_up(pm_message_t state)
+ 			int error;
+ 
+ 			dev->power.status = DPM_OFF;
+-			error = resume_device_noirq(dev, state);
++			error = __device_resume_noirq(dev, state);
+ 			if (error)
+ 				pm_dev_err(dev, state, " early", error);
+ 		}
+@@ -371,18 +371,18 @@ static void dpm_power_up(pm_message_t state)
  }
  
--/**
-- *	swsusp_shrink_memory -  Try to free as much memory as needed
-- *
-- *	... but do not OOM-kill anyone
-- *
-- *	Notice: all userland should be stopped before it is called, or
-- *	livelock is possible.
-- */
--
--#define SHRINK_BITE	10000
--static inline unsigned long __shrink_memory(long tmp)
--{
--	if (tmp > SHRINK_BITE)
--		tmp = SHRINK_BITE;
--	return shrink_all_memory(tmp);
--}
--
--int swsusp_shrink_memory(void)
--{
--	long tmp;
--	struct zone *zone;
--	unsigned long pages = 0;
--	unsigned int i = 0;
--	char *p = "-\\|/";
--	struct timeval start, stop;
--
--	printk(KERN_INFO "PM: Shrinking memory...  ");
--	do_gettimeofday(&start);
--	do {
--		long size, highmem_size;
--
--		highmem_size = count_highmem_pages();
--		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
--		tmp = size;
--		size += highmem_size;
--		for_each_populated_zone(zone) {
--			tmp += snapshot_additional_pages(zone);
--			if (is_highmem(zone)) {
--				highmem_size -=
--					zone_page_state(zone, NR_FREE_PAGES);
--			} else {
--				tmp -= zone_page_state(zone, NR_FREE_PAGES);
--				tmp += zone->lowmem_reserve[ZONE_NORMAL];
--			}
--		}
--
--		if (highmem_size < 0)
--			highmem_size = 0;
--
--		tmp += highmem_size;
--		if (tmp > 0) {
--			tmp = __shrink_memory(tmp);
--			if (!tmp)
--				return -ENOMEM;
--			pages += tmp;
--		} else if (size > image_size / PAGE_SIZE) {
--			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
--			pages += tmp;
--		}
--		printk("\b%c", p[i++%4]);
--	} while (tmp > 0);
--	do_gettimeofday(&stop);
--	printk("\bdone (%lu pages freed)\n", pages);
--	swsusp_show_speed(&start, &stop, pages, "Freed");
--
--	return 0;
--}
--
- /*
-  * Platforms, like ACPI, may want us to save some memory used by them during
-  * hibernation and to restore the contents of this memory during the subsequent
+ /**
+- *	device_power_up - Turn on all devices that need special attention.
++ *	device_resume_noirq - Turn on all devices that need special attention.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Call the "early" resume handlers and enable device drivers to receive
+  *	interrupts.
+  */
+-void device_power_up(pm_message_t state)
++void device_resume_noirq(pm_message_t state)
+ {
+ 	dpm_power_up(state);
+ 	resume_device_irqs();
+ }
+-EXPORT_SYMBOL_GPL(device_power_up);
++EXPORT_SYMBOL_GPL(device_resume_noirq);
+ 
+ /**
+  *	resume_device - Restore state for one device.
+@@ -577,13 +577,13 @@ static pm_message_t resume_event(pm_message_t sleep_state)
+ }
+ 
+ /**
+- *	suspend_device_noirq - Shut down one device (late suspend).
++ *	__device_suspend_noirq - Shut down one device (late suspend).
+  *	@dev:	Device.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	This is called with interrupts off and only a single CPU running.
+  */
+-static int suspend_device_noirq(struct device *dev, pm_message_t state)
++static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+@@ -602,7 +602,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
+ }
+ 
+ /**
+- *	device_power_down - Shut down special devices.
++ *	device_suspend_noirq - Shut down special devices.
+  *	@state: PM transition of the system being carried out.
+  *
+  *	Prevent device drivers from receiving interrupts and call the "late"
+@@ -610,7 +610,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
+  *
+  *	Must be called under dpm_list_mtx.
+  */
+-int device_power_down(pm_message_t state)
++int device_suspend_noirq(pm_message_t state)
+ {
+ 	struct device *dev;
+ 	int error = 0;
+@@ -618,7 +618,7 @@ int device_power_down(pm_message_t state)
+ 	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
+-		error = suspend_device_noirq(dev, state);
++		error = __device_suspend_noirq(dev, state);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
+ 			break;
+@@ -627,10 +627,10 @@ int device_power_down(pm_message_t state)
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
+-		device_power_up(resume_event(state));
++		device_resume_noirq(resume_event(state));
+ 	return error;
+ }
+-EXPORT_SYMBOL_GPL(device_power_down);
++EXPORT_SYMBOL_GPL(device_suspend_noirq);
+ 
+ /**
+  *	suspend_device - Save state of one device.
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index fddc202..d5b327a 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -43,7 +43,7 @@ static int xen_suspend(void *data)
+ 	if (err) {
+ 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
+ 			err);
+-		device_power_up(PMSG_RESUME);
++		device_resume_noirq(PMSG_RESUME);
+ 		return err;
+ 	}
+ 
+@@ -69,7 +69,7 @@ static int xen_suspend(void *data)
+ 	}
+ 
+ 	sysdev_resume();
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+ 	return 0;
+ }
+@@ -101,9 +101,9 @@ static void do_suspend(void)
+ 	printk(KERN_DEBUG "suspending xenstore...\n");
+ 	xs_suspend();
+ 
+-	err = device_power_down(PMSG_SUSPEND);
++	err = device_suspend_noirq(PMSG_SUSPEND);
+ 	if (err) {
+-		printk(KERN_ERR "device_power_down failed: %d\n", err);
++		printk(KERN_ERR "device_suspend_noirq failed: %d\n", err);
+ 		goto resume_devices;
+ 	}
+ 
+@@ -119,7 +119,7 @@ static void do_suspend(void)
+ 	} else
+ 		xs_suspend_cancel();
+ 
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+ resume_devices:
+ 	device_resume(PMSG_RESUME);
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 1d4e2d2..2170252 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -382,12 +382,12 @@ struct dev_pm_info {
+ #ifdef CONFIG_PM_SLEEP
+ extern void device_pm_lock(void);
+ extern int sysdev_resume(void);
+-extern void device_power_up(pm_message_t state);
++extern void device_resume_noirq(pm_message_t state);
+ extern void device_resume(pm_message_t state);
+ 
+ extern void device_pm_unlock(void);
+ extern int sysdev_suspend(pm_message_t state);
+-extern int device_power_down(pm_message_t state);
++extern int device_suspend_noirq(pm_message_t state);
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ 
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index e498377..5a3da87 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1452,13 +1452,13 @@ int kernel_kexec(void)
+ 		if (error)
+ 			goto Resume_console;
+ 		/* At this point, device_suspend() has been called,
+-		 * but *not* device_power_down(). We *must*
+-		 * device_power_down() now.  Otherwise, drivers for
++		 * but *not* device_suspend_noirq(). We *must* call
++		 * device_suspend_noirq() now.  Otherwise, drivers for
+ 		 * some devices (e.g. interrupt controllers) become
+ 		 * desynchronized with the actual state of the
+ 		 * hardware at resume time, and evil weirdness ensues.
+ 		 */
+-		error = device_power_down(PMSG_FREEZE);
++		error = device_suspend_noirq(PMSG_FREEZE);
+ 		if (error)
+ 			goto Resume_devices;
+ 		error = disable_nonboot_cpus();
+@@ -1486,7 +1486,7 @@ int kernel_kexec(void)
+ 		local_irq_enable();
+  Enable_cpus:
+ 		enable_nonboot_cpus();
+-		device_power_up(PMSG_RESTORE);
++		device_resume_noirq(PMSG_RESTORE);
+  Resume_devices:
+ 		device_resume(PMSG_RESTORE);
+  Resume_console:
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index 5cb080e..1c18bc8 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -216,12 +216,12 @@ static int create_image(int platform_mode)
+ 		return error;
+ 
+ 	/* At this point, device_suspend() has been called, but *not*
+-	 * device_power_down(). We *must* call device_power_down() now.
++	 * device_suspend_noirq(). We *must* call device_suspend_noirq() now.
+ 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+ 	 * become desynchronized with the actual state of the hardware
+ 	 * at resume time, and evil weirdness ensues.
+ 	 */
+-	error = device_power_down(PMSG_FREEZE);
++	error = device_suspend_noirq(PMSG_FREEZE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting hibernation\n");
+@@ -262,7 +262,7 @@ static int create_image(int platform_mode)
+ 
+  Power_up:
+ 	sysdev_resume();
+-	/* NOTE:  device_power_up() is just a resume() for devices
++	/* NOTE:  device_resume_noirq() is just a resume() for devices
+ 	 * that suspended with irqs off ... no overall powerup.
+ 	 */
+ 
+@@ -275,7 +275,7 @@ static int create_image(int platform_mode)
+  Platform_finish:
+ 	platform_finish(platform_mode);
+ 
+-	device_power_up(in_suspend ?
++	device_resume_noirq(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+ 
+ 	return error;
+@@ -339,7 +339,7 @@ static int resume_target_kernel(bool platform_mode)
+ {
+ 	int error;
+ 
+-	error = device_power_down(PMSG_QUIESCE);
++	error = device_suspend_noirq(PMSG_QUIESCE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+ 			"aborting resume\n");
+@@ -394,7 +394,7 @@ static int resume_target_kernel(bool platform_mode)
+  Cleanup:
+ 	platform_restore_cleanup(platform_mode);
+ 
+-	device_power_up(PMSG_RECOVER);
++	device_resume_noirq(PMSG_RECOVER);
+ 
+ 	return error;
+ }
+@@ -454,7 +454,7 @@ int hibernation_platform_enter(void)
+ 		goto Resume_devices;
+ 	}
+ 
+-	error = device_power_down(PMSG_HIBERNATE);
++	error = device_suspend_noirq(PMSG_HIBERNATE);
+ 	if (error)
+ 		goto Resume_devices;
+ 
+@@ -479,7 +479,7 @@ int hibernation_platform_enter(void)
+  Platofrm_finish:
+ 	hibernation_ops->finish();
+ 
+-	device_power_up(PMSG_RESTORE);
++	device_suspend_noirq(PMSG_RESTORE);
+ 
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 8680282..2f6638e 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -295,7 +295,7 @@ static int suspend_enter(suspend_state_t state)
+ 			return error;
+ 	}
+ 
+-	error = device_power_down(PMSG_SUSPEND);
++	error = device_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down\n");
+ 		goto Platfrom_finish;
+@@ -335,7 +335,7 @@ static int suspend_enter(suspend_state_t state)
+ 		suspend_ops->wake();
+ 
+  Power_up_devices:
+-	device_power_up(PMSG_RESUME);
++	device_resume_noirq(PMSG_RESUME);
+ 
+  Platfrom_finish:
+ 	if (suspend_ops->finish)
 -- 
 1.5.2.4
