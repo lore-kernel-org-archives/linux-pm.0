@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 09/19] PM: Rename device_power_down/up()
-Date: Thu, 11 Jun 2009 22:01:06 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__38318.2906349704$1244757666$gmane$org@chimera>
+Subject: [PATCH 16/19] PM: Separate suspend to RAM functionality
+	from core
+Date: Thu, 11 Jun 2009 22:01:23 +0000 (UTC)
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__6220.31584284759$1244757683$gmane$org@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,372 +23,1116 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rename the functions performing "_noirq" dev_pm_ops
-operations from device_power_down() and device_power_up()
-to device_suspend_noirq() and device_resume_noirq().
+Move the suspend to RAM and standby code from kernel/power/main.c
+to two separate files, kernel/power/suspend.c containing the basic
+functions and kernel/power/suspend_test.c containing the automatic
+suspend test facility based on the RTC clock alarm.
 
-The new function names are chosen to show that the functions
-are responsible for calling the _noirq() versions to finalize
-the suspend/resume operation. The current function names do
-not perform power down/up anymore so the names may be misleading.
+There are no changes in functionality related to these modifications.
 
-Global function renames:
-- device_power_down() -> device_suspend_noirq()
-- device_power_up() -> device_resume_noirq()
-
-Static function renames:
-- suspend_device_noirq() -> __device_suspend_noirq()
-- resume_device_noirq() -> __device_resume_noirq()
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Acked-by: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- arch/x86/kernel/apm_32.c  |    8 ++++----
- drivers/base/power/main.c |   26 +++++++++++++-------------
- drivers/xen/manage.c      |   10 +++++-----
- include/linux/pm.h        |    4 ++--
- kernel/kexec.c            |    8 ++++----
- kernel/power/disk.c       |   16 ++++++++--------
- kernel/power/main.c       |    4 ++--
- 7 files changed, 38 insertions(+), 38 deletions(-)
+ kernel/power/Makefile       |    2 +
+ kernel/power/main.c         |  503 -------------------------------------------
+ kernel/power/power.h        |   17 ++-
+ kernel/power/suspend.c      |  300 ++++++++++++++++++++++++++
+ kernel/power/suspend_test.c |  187 ++++++++++++++++
+ 5 files changed, 505 insertions(+), 504 deletions(-)
+ create mode 100644 kernel/power/suspend.c
+ create mode 100644 kernel/power/suspend_test.c
 
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 49e0939..31ae547 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -1235,7 +1235,7 @@ static int suspend(int vetoable)
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index 720ea4f..c4baf1b 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -6,6 +6,8 @@ endif
+ obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_PM_SLEEP)		+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
++obj-$(CONFIG_SUSPEND)		+= suspend.o
++obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
  
- 	device_suspend(PMSG_SUSPEND);
- 
--	device_power_down(PMSG_SUSPEND);
-+	device_suspend_noirq(PMSG_SUSPEND);
- 
- 	local_irq_disable();
- 	sysdev_suspend(PMSG_SUSPEND);
-@@ -1259,7 +1259,7 @@ static int suspend(int vetoable)
- 	sysdev_resume();
- 	local_irq_enable();
- 
--	device_power_up(PMSG_RESUME);
-+	device_resume_noirq(PMSG_RESUME);
- 
- 	device_resume(PMSG_RESUME);
- 	queue_event(APM_NORMAL_RESUME, NULL);
-@@ -1277,7 +1277,7 @@ static void standby(void)
- {
- 	int err;
- 
--	device_power_down(PMSG_SUSPEND);
-+	device_suspend_noirq(PMSG_SUSPEND);
- 
- 	local_irq_disable();
- 	sysdev_suspend(PMSG_SUSPEND);
-@@ -1291,7 +1291,7 @@ static void standby(void)
- 	sysdev_resume();
- 	local_irq_enable();
- 
--	device_power_up(PMSG_RESUME);
-+	device_resume_noirq(PMSG_RESUME);
- }
- 
- static apm_event_t get_event(void)
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3e4bc69..c5a35bc 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -315,13 +315,13 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-- *	resume_device_noirq - Power on one device (early resume).
-+ *	__device_resume_noirq - Power on one device (early resume).
-  *	@dev:	Device.
-  *	@state: PM transition of the system being carried out.
-  *
-  *	Must be called with interrupts disabled.
-  */
--static int resume_device_noirq(struct device *dev, pm_message_t state)
-+static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
-@@ -363,7 +363,7 @@ static void dpm_power_up(pm_message_t state)
- 			int error;
- 
- 			dev->power.status = DPM_OFF;
--			error = resume_device_noirq(dev, state);
-+			error = __device_resume_noirq(dev, state);
- 			if (error)
- 				pm_dev_err(dev, state, " early", error);
- 		}
-@@ -371,18 +371,18 @@ static void dpm_power_up(pm_message_t state)
- }
- 
- /**
-- *	device_power_up - Turn on all devices that need special attention.
-+ *	device_resume_noirq - Turn on all devices that need special attention.
-  *	@state: PM transition of the system being carried out.
-  *
-  *	Call the "early" resume handlers and enable device drivers to receive
-  *	interrupts.
-  */
--void device_power_up(pm_message_t state)
-+void device_resume_noirq(pm_message_t state)
- {
- 	dpm_power_up(state);
- 	resume_device_irqs();
- }
--EXPORT_SYMBOL_GPL(device_power_up);
-+EXPORT_SYMBOL_GPL(device_resume_noirq);
- 
- /**
-  *	resume_device - Restore state for one device.
-@@ -577,13 +577,13 @@ static pm_message_t resume_event(pm_message_t sleep_state)
- }
- 
- /**
-- *	suspend_device_noirq - Shut down one device (late suspend).
-+ *	__device_suspend_noirq - Shut down one device (late suspend).
-  *	@dev:	Device.
-  *	@state: PM transition of the system being carried out.
-  *
-  *	This is called with interrupts off and only a single CPU running.
-  */
--static int suspend_device_noirq(struct device *dev, pm_message_t state)
-+static int __device_suspend_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
-@@ -602,7 +602,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
- }
- 
- /**
-- *	device_power_down - Shut down special devices.
-+ *	device_suspend_noirq - Shut down special devices.
-  *	@state: PM transition of the system being carried out.
-  *
-  *	Prevent device drivers from receiving interrupts and call the "late"
-@@ -610,7 +610,7 @@ static int suspend_device_noirq(struct device *dev, pm_message_t state)
-  *
-  *	Must be called under dpm_list_mtx.
-  */
--int device_power_down(pm_message_t state)
-+int device_suspend_noirq(pm_message_t state)
- {
- 	struct device *dev;
- 	int error = 0;
-@@ -618,7 +618,7 @@ int device_power_down(pm_message_t state)
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
- 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
--		error = suspend_device_noirq(dev, state);
-+		error = __device_suspend_noirq(dev, state);
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
- 			break;
-@@ -627,10 +627,10 @@ int device_power_down(pm_message_t state)
- 	}
- 	mutex_unlock(&dpm_list_mtx);
- 	if (error)
--		device_power_up(resume_event(state));
-+		device_resume_noirq(resume_event(state));
- 	return error;
- }
--EXPORT_SYMBOL_GPL(device_power_down);
-+EXPORT_SYMBOL_GPL(device_suspend_noirq);
- 
- /**
-  *	suspend_device - Save state of one device.
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-index fddc202..d5b327a 100644
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -43,7 +43,7 @@ static int xen_suspend(void *data)
- 	if (err) {
- 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
- 			err);
--		device_power_up(PMSG_RESUME);
-+		device_resume_noirq(PMSG_RESUME);
- 		return err;
- 	}
- 
-@@ -69,7 +69,7 @@ static int xen_suspend(void *data)
- 	}
- 
- 	sysdev_resume();
--	device_power_up(PMSG_RESUME);
-+	device_resume_noirq(PMSG_RESUME);
- 
- 	return 0;
- }
-@@ -101,9 +101,9 @@ static void do_suspend(void)
- 	printk(KERN_DEBUG "suspending xenstore...\n");
- 	xs_suspend();
- 
--	err = device_power_down(PMSG_SUSPEND);
-+	err = device_suspend_noirq(PMSG_SUSPEND);
- 	if (err) {
--		printk(KERN_ERR "device_power_down failed: %d\n", err);
-+		printk(KERN_ERR "device_suspend_noirq failed: %d\n", err);
- 		goto resume_devices;
- 	}
- 
-@@ -119,7 +119,7 @@ static void do_suspend(void)
- 	} else
- 		xs_suspend_cancel();
- 
--	device_power_up(PMSG_RESUME);
-+	device_resume_noirq(PMSG_RESUME);
- 
- resume_devices:
- 	device_resume(PMSG_RESUME);
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 1d4e2d2..2170252 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -382,12 +382,12 @@ struct dev_pm_info {
- #ifdef CONFIG_PM_SLEEP
- extern void device_pm_lock(void);
- extern int sysdev_resume(void);
--extern void device_power_up(pm_message_t state);
-+extern void device_resume_noirq(pm_message_t state);
- extern void device_resume(pm_message_t state);
- 
- extern void device_pm_unlock(void);
- extern int sysdev_suspend(pm_message_t state);
--extern int device_power_down(pm_message_t state);
-+extern int device_suspend_noirq(pm_message_t state);
- extern int device_suspend(pm_message_t state);
- extern int device_prepare_suspend(pm_message_t state);
- 
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index e498377..5a3da87 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1452,13 +1452,13 @@ int kernel_kexec(void)
- 		if (error)
- 			goto Resume_console;
- 		/* At this point, device_suspend() has been called,
--		 * but *not* device_power_down(). We *must*
--		 * device_power_down() now.  Otherwise, drivers for
-+		 * but *not* device_suspend_noirq(). We *must* call
-+		 * device_suspend_noirq() now.  Otherwise, drivers for
- 		 * some devices (e.g. interrupt controllers) become
- 		 * desynchronized with the actual state of the
- 		 * hardware at resume time, and evil weirdness ensues.
- 		 */
--		error = device_power_down(PMSG_FREEZE);
-+		error = device_suspend_noirq(PMSG_FREEZE);
- 		if (error)
- 			goto Resume_devices;
- 		error = disable_nonboot_cpus();
-@@ -1486,7 +1486,7 @@ int kernel_kexec(void)
- 		local_irq_enable();
-  Enable_cpus:
- 		enable_nonboot_cpus();
--		device_power_up(PMSG_RESTORE);
-+		device_resume_noirq(PMSG_RESTORE);
-  Resume_devices:
- 		device_resume(PMSG_RESTORE);
-  Resume_console:
-diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-index 5cb080e..1c18bc8 100644
---- a/kernel/power/disk.c
-+++ b/kernel/power/disk.c
-@@ -216,12 +216,12 @@ static int create_image(int platform_mode)
- 		return error;
- 
- 	/* At this point, device_suspend() has been called, but *not*
--	 * device_power_down(). We *must* call device_power_down() now.
-+	 * device_suspend_noirq(). We *must* call device_suspend_noirq() now.
- 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
- 	 * become desynchronized with the actual state of the hardware
- 	 * at resume time, and evil weirdness ensues.
- 	 */
--	error = device_power_down(PMSG_FREEZE);
-+	error = device_suspend_noirq(PMSG_FREEZE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting hibernation\n");
-@@ -262,7 +262,7 @@ static int create_image(int platform_mode)
- 
-  Power_up:
- 	sysdev_resume();
--	/* NOTE:  device_power_up() is just a resume() for devices
-+	/* NOTE:  device_resume_noirq() is just a resume() for devices
- 	 * that suspended with irqs off ... no overall powerup.
- 	 */
- 
-@@ -275,7 +275,7 @@ static int create_image(int platform_mode)
-  Platform_finish:
- 	platform_finish(platform_mode);
- 
--	device_power_up(in_suspend ?
-+	device_resume_noirq(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
- 
- 	return error;
-@@ -339,7 +339,7 @@ static int resume_target_kernel(bool platform_mode)
- {
- 	int error;
- 
--	error = device_power_down(PMSG_QUIESCE);
-+	error = device_suspend_noirq(PMSG_QUIESCE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting resume\n");
-@@ -394,7 +394,7 @@ static int resume_target_kernel(bool platform_mode)
-  Cleanup:
- 	platform_restore_cleanup(platform_mode);
- 
--	device_power_up(PMSG_RECOVER);
-+	device_resume_noirq(PMSG_RECOVER);
- 
- 	return error;
- }
-@@ -454,7 +454,7 @@ int hibernation_platform_enter(void)
- 		goto Resume_devices;
- 	}
- 
--	error = device_power_down(PMSG_HIBERNATE);
-+	error = device_suspend_noirq(PMSG_HIBERNATE);
- 	if (error)
- 		goto Resume_devices;
- 
-@@ -479,7 +479,7 @@ int hibernation_platform_enter(void)
-  Platofrm_finish:
- 	hibernation_ops->finish();
- 
--	device_power_up(PMSG_RESTORE);
-+	device_suspend_noirq(PMSG_RESTORE);
- 
-  Resume_devices:
- 	entering_platform_hibernation = false;
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
 diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 8680282..2f6638e 100644
+index 2a19f34..f710e36 100644
 --- a/kernel/power/main.c
 +++ b/kernel/power/main.c
-@@ -295,7 +295,7 @@ static int suspend_enter(suspend_state_t state)
- 			return error;
- 	}
+@@ -8,20 +8,9 @@
+  *
+  */
  
--	error = device_power_down(PMSG_SUSPEND);
-+	error = device_suspend_noirq(PMSG_SUSPEND);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down\n");
- 		goto Platfrom_finish;
-@@ -335,7 +335,7 @@ static int suspend_enter(suspend_state_t state)
- 		suspend_ops->wake();
+-#include <linux/module.h>
+-#include <linux/suspend.h>
+ #include <linux/kobject.h>
+ #include <linux/string.h>
+-#include <linux/delay.h>
+-#include <linux/errno.h>
+-#include <linux/kmod.h>
+-#include <linux/init.h>
+-#include <linux/console.h>
+-#include <linux/cpu.h>
+ #include <linux/resume-trace.h>
+-#include <linux/freezer.h>
+-#include <linux/vmstat.h>
+-#include <linux/syscalls.h>
  
-  Power_up_devices:
--	device_power_up(PMSG_RESUME);
-+	device_resume_noirq(PMSG_RESUME);
+ #include "power.h"
  
-  Platfrom_finish:
- 	if (suspend_ops->finish)
+@@ -119,355 +108,6 @@ power_attr(pm_test);
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-#ifdef CONFIG_SUSPEND
+-
+-static int suspend_test(int level)
+-{
+-#ifdef CONFIG_PM_DEBUG
+-	if (pm_test_level == level) {
+-		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
+-		mdelay(5000);
+-		return 1;
+-	}
+-#endif /* !CONFIG_PM_DEBUG */
+-	return 0;
+-}
+-
+-#ifdef CONFIG_PM_TEST_SUSPEND
+-
+-/*
+- * We test the system suspend code by setting an RTC wakealarm a short
+- * time in the future, then suspending.  Suspending the devices won't
+- * normally take long ... some systems only need a few milliseconds.
+- *
+- * The time it takes is system-specific though, so when we test this
+- * during system bootup we allow a LOT of time.
+- */
+-#define TEST_SUSPEND_SECONDS	5
+-
+-static unsigned long suspend_test_start_time;
+-
+-static void suspend_test_start(void)
+-{
+-	/* FIXME Use better timebase than "jiffies", ideally a clocksource.
+-	 * What we want is a hardware counter that will work correctly even
+-	 * during the irqs-are-off stages of the suspend/resume cycle...
+-	 */
+-	suspend_test_start_time = jiffies;
+-}
+-
+-static void suspend_test_finish(const char *label)
+-{
+-	long nj = jiffies - suspend_test_start_time;
+-	unsigned msec;
+-
+-	msec = jiffies_to_msecs(abs(nj));
+-	pr_info("PM: %s took %d.%03d seconds\n", label,
+-			msec / 1000, msec % 1000);
+-
+-	/* Warning on suspend means the RTC alarm period needs to be
+-	 * larger -- the system was sooo slooowwww to suspend that the
+-	 * alarm (should have) fired before the system went to sleep!
+-	 *
+-	 * Warning on either suspend or resume also means the system
+-	 * has some performance issues.  The stack dump of a WARN_ON
+-	 * is more likely to get the right attention than a printk...
+-	 */
+-	WARN(msec > (TEST_SUSPEND_SECONDS * 1000), "Component: %s\n", label);
+-}
+-
+-#else
+-
+-static void suspend_test_start(void)
+-{
+-}
+-
+-static void suspend_test_finish(const char *label)
+-{
+-}
+-
+-#endif
+-
+-static struct platform_suspend_ops *suspend_ops;
+-
+-/**
+- *	suspend_set_ops - Set the global suspend method table.
+- *	@ops:	Pointer to ops structure.
+- */
+-
+-void suspend_set_ops(struct platform_suspend_ops *ops)
+-{
+-	mutex_lock(&pm_mutex);
+-	suspend_ops = ops;
+-	mutex_unlock(&pm_mutex);
+-}
+-
+-/**
+- * suspend_valid_only_mem - generic memory-only valid callback
+- *
+- * Platform drivers that implement mem suspend only and only need
+- * to check for that in their .valid callback can use this instead
+- * of rolling their own .valid callback.
+- */
+-int suspend_valid_only_mem(suspend_state_t state)
+-{
+-	return state == PM_SUSPEND_MEM;
+-}
+-
+-/**
+- *	suspend_prepare - Do prep work before entering low-power state.
+- *
+- *	This is common code that is called for each state that we're entering.
+- *	Run suspend notifiers, allocate a console and stop all processes.
+- */
+-static int suspend_prepare(void)
+-{
+-	int error;
+-
+-	if (!suspend_ops || !suspend_ops->enter)
+-		return -EPERM;
+-
+-	pm_prepare_console();
+-
+-	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+-	if (error)
+-		goto Finish;
+-
+-	error = usermodehelper_disable();
+-	if (error)
+-		goto Finish;
+-
+-	error = suspend_freeze_processes();
+-	if (!error)
+-		return 0;
+-
+-	suspend_thaw_processes();
+-	usermodehelper_enable();
+- Finish:
+-	pm_notifier_call_chain(PM_POST_SUSPEND);
+-	pm_restore_console();
+-	return error;
+-}
+-
+-/* default implementation */
+-void __attribute__ ((weak)) arch_suspend_disable_irqs(void)
+-{
+-	local_irq_disable();
+-}
+-
+-/* default implementation */
+-void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+-{
+-	local_irq_enable();
+-}
+-
+-/**
+- *	suspend_enter - enter the desired system sleep state.
+- *	@state:		state to enter
+- *
+- *	This function should be called after devices have been suspended.
+- */
+-static int suspend_enter(suspend_state_t state)
+-{
+-	int error;
+-
+-	if (suspend_ops->prepare) {
+-		error = suspend_ops->prepare();
+-		if (error)
+-			return error;
+-	}
+-
+-	error = dpm_suspend_noirq(PMSG_SUSPEND);
+-	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to power down\n");
+-		goto Platfrom_finish;
+-	}
+-
+-	if (suspend_ops->prepare_late) {
+-		error = suspend_ops->prepare_late();
+-		if (error)
+-			goto Power_up_devices;
+-	}
+-
+-	if (suspend_test(TEST_PLATFORM))
+-		goto Platform_wake;
+-
+-	error = disable_nonboot_cpus();
+-	if (error || suspend_test(TEST_CPUS))
+-		goto Enable_cpus;
+-
+-	arch_suspend_disable_irqs();
+-	BUG_ON(!irqs_disabled());
+-
+-	error = sysdev_suspend(PMSG_SUSPEND);
+-	if (!error) {
+-		if (!suspend_test(TEST_CORE))
+-			error = suspend_ops->enter(state);
+-		sysdev_resume();
+-	}
+-
+-	arch_suspend_enable_irqs();
+-	BUG_ON(irqs_disabled());
+-
+- Enable_cpus:
+-	enable_nonboot_cpus();
+-
+- Platform_wake:
+-	if (suspend_ops->wake)
+-		suspend_ops->wake();
+-
+- Power_up_devices:
+-	dpm_resume_noirq(PMSG_RESUME);
+-
+- Platfrom_finish:
+-	if (suspend_ops->finish)
+-		suspend_ops->finish();
+-
+-	return error;
+-}
+-
+-/**
+- *	suspend_devices_and_enter - suspend devices and enter the desired system
+- *				    sleep state.
+- *	@state:		  state to enter
+- */
+-int suspend_devices_and_enter(suspend_state_t state)
+-{
+-	int error;
+-
+-	if (!suspend_ops)
+-		return -ENOSYS;
+-
+-	if (suspend_ops->begin) {
+-		error = suspend_ops->begin(state);
+-		if (error)
+-			goto Close;
+-	}
+-	suspend_console();
+-	suspend_test_start();
+-	error = dpm_suspend_start(PMSG_SUSPEND);
+-	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
+-		goto Recover_platform;
+-	}
+-	suspend_test_finish("suspend devices");
+-	if (suspend_test(TEST_DEVICES))
+-		goto Recover_platform;
+-
+-	suspend_enter(state);
+-
+- Resume_devices:
+-	suspend_test_start();
+-	dpm_resume_end(PMSG_RESUME);
+-	suspend_test_finish("resume devices");
+-	resume_console();
+- Close:
+-	if (suspend_ops->end)
+-		suspend_ops->end();
+-	return error;
+-
+- Recover_platform:
+-	if (suspend_ops->recover)
+-		suspend_ops->recover();
+-	goto Resume_devices;
+-}
+-
+-/**
+- *	suspend_finish - Do final work before exiting suspend sequence.
+- *
+- *	Call platform code to clean up, restart processes, and free the 
+- *	console that we've allocated. This is not called for suspend-to-disk.
+- */
+-static void suspend_finish(void)
+-{
+-	suspend_thaw_processes();
+-	usermodehelper_enable();
+-	pm_notifier_call_chain(PM_POST_SUSPEND);
+-	pm_restore_console();
+-}
+-
+-
+-
+-
+-static const char * const pm_states[PM_SUSPEND_MAX] = {
+-	[PM_SUSPEND_STANDBY]	= "standby",
+-	[PM_SUSPEND_MEM]	= "mem",
+-};
+-
+-static inline int valid_state(suspend_state_t state)
+-{
+-	/* All states need lowlevel support and need to be valid
+-	 * to the lowlevel implementation, no valid callback
+-	 * implies that none are valid. */
+-	if (!suspend_ops || !suspend_ops->valid || !suspend_ops->valid(state))
+-		return 0;
+-	return 1;
+-}
+-
+-
+-/**
+- *	enter_state - Do common work of entering low-power state.
+- *	@state:		pm_state structure for state we're entering.
+- *
+- *	Make sure we're the only ones trying to enter a sleep state. Fail
+- *	if someone has beat us to it, since we don't want anything weird to
+- *	happen when we wake up.
+- *	Then, do the setup for suspend, enter the state, and cleaup (after
+- *	we've woken up).
+- */
+-static int enter_state(suspend_state_t state)
+-{
+-	int error;
+-
+-	if (!valid_state(state))
+-		return -ENODEV;
+-
+-	if (!mutex_trylock(&pm_mutex))
+-		return -EBUSY;
+-
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
+-	sys_sync();
+-	printk("done.\n");
+-
+-	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+-	error = suspend_prepare();
+-	if (error)
+-		goto Unlock;
+-
+-	if (suspend_test(TEST_FREEZER))
+-		goto Finish;
+-
+-	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+-	error = suspend_devices_and_enter(state);
+-
+- Finish:
+-	pr_debug("PM: Finishing wakeup.\n");
+-	suspend_finish();
+- Unlock:
+-	mutex_unlock(&pm_mutex);
+-	return error;
+-}
+-
+-
+-/**
+- *	pm_suspend - Externally visible function for suspending system.
+- *	@state:		Enumerated value of state to enter.
+- *
+- *	Determine whether or not value is within range, get state 
+- *	structure, and enter (above).
+- */
+-
+-int pm_suspend(suspend_state_t state)
+-{
+-	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX)
+-		return enter_state(state);
+-	return -EINVAL;
+-}
+-
+-EXPORT_SYMBOL(pm_suspend);
+-
+-#endif /* CONFIG_SUSPEND */
+-
+ struct kobject *power_kobj;
+ 
+ /**
+@@ -480,7 +120,6 @@ struct kobject *power_kobj;
+  *	store() accepts one of those strings, translates it into the 
+  *	proper enumerated value, and initiates a suspend transition.
+  */
+-
+ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 			  char *buf)
+ {
+@@ -578,7 +217,6 @@ static struct attribute_group attr_group = {
+ 	.attrs = g,
+ };
+ 
+-
+ static int __init pm_init(void)
+ {
+ 	power_kobj = kobject_create_and_add("power", NULL);
+@@ -588,144 +226,3 @@ static int __init pm_init(void)
+ }
+ 
+ core_initcall(pm_init);
+-
+-
+-#ifdef CONFIG_PM_TEST_SUSPEND
+-
+-#include <linux/rtc.h>
+-
+-/*
+- * To test system suspend, we need a hands-off mechanism to resume the
+- * system.  RTCs wake alarms are a common self-contained mechanism.
+- */
+-
+-static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+-{
+-	static char err_readtime[] __initdata =
+-		KERN_ERR "PM: can't read %s time, err %d\n";
+-	static char err_wakealarm [] __initdata =
+-		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
+-	static char err_suspend[] __initdata =
+-		KERN_ERR "PM: suspend test failed, error %d\n";
+-	static char info_test[] __initdata =
+-		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
+-
+-	unsigned long		now;
+-	struct rtc_wkalrm	alm;
+-	int			status;
+-
+-	/* this may fail if the RTC hasn't been initialized */
+-	status = rtc_read_time(rtc, &alm.time);
+-	if (status < 0) {
+-		printk(err_readtime, dev_name(&rtc->dev), status);
+-		return;
+-	}
+-	rtc_tm_to_time(&alm.time, &now);
+-
+-	memset(&alm, 0, sizeof alm);
+-	rtc_time_to_tm(now + TEST_SUSPEND_SECONDS, &alm.time);
+-	alm.enabled = true;
+-
+-	status = rtc_set_alarm(rtc, &alm);
+-	if (status < 0) {
+-		printk(err_wakealarm, dev_name(&rtc->dev), status);
+-		return;
+-	}
+-
+-	if (state == PM_SUSPEND_MEM) {
+-		printk(info_test, pm_states[state]);
+-		status = pm_suspend(state);
+-		if (status == -ENODEV)
+-			state = PM_SUSPEND_STANDBY;
+-	}
+-	if (state == PM_SUSPEND_STANDBY) {
+-		printk(info_test, pm_states[state]);
+-		status = pm_suspend(state);
+-	}
+-	if (status < 0)
+-		printk(err_suspend, status);
+-
+-	/* Some platforms can't detect that the alarm triggered the
+-	 * wakeup, or (accordingly) disable it after it afterwards.
+-	 * It's supposed to give oneshot behavior; cope.
+-	 */
+-	alm.enabled = false;
+-	rtc_set_alarm(rtc, &alm);
+-}
+-
+-static int __init has_wakealarm(struct device *dev, void *name_ptr)
+-{
+-	struct rtc_device *candidate = to_rtc_device(dev);
+-
+-	if (!candidate->ops->set_alarm)
+-		return 0;
+-	if (!device_may_wakeup(candidate->dev.parent))
+-		return 0;
+-
+-	*(const char **)name_ptr = dev_name(dev);
+-	return 1;
+-}
+-
+-/*
+- * Kernel options like "test_suspend=mem" force suspend/resume sanity tests
+- * at startup time.  They're normally disabled, for faster boot and because
+- * we can't know which states really work on this particular system.
+- */
+-static suspend_state_t test_state __initdata = PM_SUSPEND_ON;
+-
+-static char warn_bad_state[] __initdata =
+-	KERN_WARNING "PM: can't test '%s' suspend state\n";
+-
+-static int __init setup_test_suspend(char *value)
+-{
+-	unsigned i;
+-
+-	/* "=mem" ==> "mem" */
+-	value++;
+-	for (i = 0; i < PM_SUSPEND_MAX; i++) {
+-		if (!pm_states[i])
+-			continue;
+-		if (strcmp(pm_states[i], value) != 0)
+-			continue;
+-		test_state = (__force suspend_state_t) i;
+-		return 0;
+-	}
+-	printk(warn_bad_state, value);
+-	return 0;
+-}
+-__setup("test_suspend", setup_test_suspend);
+-
+-static int __init test_suspend(void)
+-{
+-	static char		warn_no_rtc[] __initdata =
+-		KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
+-
+-	char			*pony = NULL;
+-	struct rtc_device	*rtc = NULL;
+-
+-	/* PM is initialized by now; is that state testable? */
+-	if (test_state == PM_SUSPEND_ON)
+-		goto done;
+-	if (!valid_state(test_state)) {
+-		printk(warn_bad_state, pm_states[test_state]);
+-		goto done;
+-	}
+-
+-	/* RTCs have initialized by now too ... can we use one? */
+-	class_find_device(rtc_class, NULL, &pony, has_wakealarm);
+-	if (pony)
+-		rtc = rtc_class_open(pony);
+-	if (!rtc) {
+-		printk(warn_no_rtc);
+-		goto done;
+-	}
+-
+-	/* go for it */
+-	test_wakealarm(rtc, test_state);
+-	rtc_class_close(rtc);
+-done:
+-	return 0;
+-}
+-late_initcall(test_suspend);
+-
+-#endif /* CONFIG_PM_TEST_SUSPEND */
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index ec4dbdf..2bd98d9 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -160,15 +160,30 @@ extern void swsusp_show_speed(struct timeval *, struct timeval *,
+ 				unsigned int, char *);
+ 
+ #ifdef CONFIG_SUSPEND
+-/* kernel/power/main.c */
++/* kernel/power/suspend.c */
++extern const char *const pm_states[];
++
++extern bool valid_state(suspend_state_t state);
+ extern int suspend_devices_and_enter(suspend_state_t state);
++extern int enter_state(suspend_state_t state);
+ #else /* !CONFIG_SUSPEND */
+ static inline int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	return -ENOSYS;
+ }
++static inline int enter_state(suspend_state_t state) { return -ENOSYS; }
++static inline bool valid_state(suspend_state_t state) { return false; }
+ #endif /* !CONFIG_SUSPEND */
+ 
++#ifdef CONFIG_PM_TEST_SUSPEND
++/* kernel/power/suspend_test.c */
++extern void suspend_test_start(void);
++extern void suspend_test_finish(const char *label);
++#else /* !CONFIG_PM_TEST_SUSPEND */
++static inline void suspend_test_start(void) {}
++static inline void suspend_test_finish(const char *label) {}
++#endif /* !CONFIG_PM_TEST_SUSPEND */
++
+ #ifdef CONFIG_PM_SLEEP
+ /* kernel/power/main.c */
+ extern int pm_notifier_call_chain(unsigned long val);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+new file mode 100644
+index 0000000..6f10dfc
+--- /dev/null
++++ b/kernel/power/suspend.c
+@@ -0,0 +1,300 @@
++/*
++ * kernel/power/suspend.c - Suspend to RAM and standby functionality.
++ *
++ * Copyright (c) 2003 Patrick Mochel
++ * Copyright (c) 2003 Open Source Development Lab
++ * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/string.h>
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/console.h>
++#include <linux/cpu.h>
++#include <linux/syscalls.h>
++
++#include "power.h"
++
++const char *const pm_states[PM_SUSPEND_MAX] = {
++	[PM_SUSPEND_STANDBY]	= "standby",
++	[PM_SUSPEND_MEM]	= "mem",
++};
++
++static struct platform_suspend_ops *suspend_ops;
++
++/**
++ *	suspend_set_ops - Set the global suspend method table.
++ *	@ops:	Pointer to ops structure.
++ */
++void suspend_set_ops(struct platform_suspend_ops *ops)
++{
++	mutex_lock(&pm_mutex);
++	suspend_ops = ops;
++	mutex_unlock(&pm_mutex);
++}
++
++bool valid_state(suspend_state_t state)
++{
++	/*
++	 * All states need lowlevel support and need to be valid to the lowlevel
++	 * implementation, no valid callback implies that none are valid.
++	 */
++	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
++}
++
++/**
++ * suspend_valid_only_mem - generic memory-only valid callback
++ *
++ * Platform drivers that implement mem suspend only and only need
++ * to check for that in their .valid callback can use this instead
++ * of rolling their own .valid callback.
++ */
++int suspend_valid_only_mem(suspend_state_t state)
++{
++	return state == PM_SUSPEND_MEM;
++}
++
++static int suspend_test(int level)
++{
++#ifdef CONFIG_PM_DEBUG
++	if (pm_test_level == level) {
++		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
++		mdelay(5000);
++		return 1;
++	}
++#endif /* !CONFIG_PM_DEBUG */
++	return 0;
++}
++
++/**
++ *	suspend_prepare - Do prep work before entering low-power state.
++ *
++ *	This is common code that is called for each state that we're entering.
++ *	Run suspend notifiers, allocate a console and stop all processes.
++ */
++static int suspend_prepare(void)
++{
++	int error;
++
++	if (!suspend_ops || !suspend_ops->enter)
++		return -EPERM;
++
++	pm_prepare_console();
++
++	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
++	if (error)
++		goto Finish;
++
++	error = usermodehelper_disable();
++	if (error)
++		goto Finish;
++
++	error = suspend_freeze_processes();
++	if (!error)
++		return 0;
++
++	suspend_thaw_processes();
++	usermodehelper_enable();
++ Finish:
++	pm_notifier_call_chain(PM_POST_SUSPEND);
++	pm_restore_console();
++	return error;
++}
++
++/* default implementation */
++void __attribute__ ((weak)) arch_suspend_disable_irqs(void)
++{
++	local_irq_disable();
++}
++
++/* default implementation */
++void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
++{
++	local_irq_enable();
++}
++
++/**
++ *	suspend_enter - enter the desired system sleep state.
++ *	@state:		state to enter
++ *
++ *	This function should be called after devices have been suspended.
++ */
++static int suspend_enter(suspend_state_t state)
++{
++	int error;
++
++	if (suspend_ops->prepare) {
++		error = suspend_ops->prepare();
++		if (error)
++			return error;
++	}
++
++	error = dpm_suspend_noirq(PMSG_SUSPEND);
++	if (error) {
++		printk(KERN_ERR "PM: Some devices failed to power down\n");
++		goto Platfrom_finish;
++	}
++
++	if (suspend_ops->prepare_late) {
++		error = suspend_ops->prepare_late();
++		if (error)
++			goto Power_up_devices;
++	}
++
++	if (suspend_test(TEST_PLATFORM))
++		goto Platform_wake;
++
++	error = disable_nonboot_cpus();
++	if (error || suspend_test(TEST_CPUS))
++		goto Enable_cpus;
++
++	arch_suspend_disable_irqs();
++	BUG_ON(!irqs_disabled());
++
++	error = sysdev_suspend(PMSG_SUSPEND);
++	if (!error) {
++		if (!suspend_test(TEST_CORE))
++			error = suspend_ops->enter(state);
++		sysdev_resume();
++	}
++
++	arch_suspend_enable_irqs();
++	BUG_ON(irqs_disabled());
++
++ Enable_cpus:
++	enable_nonboot_cpus();
++
++ Platform_wake:
++	if (suspend_ops->wake)
++		suspend_ops->wake();
++
++ Power_up_devices:
++	dpm_resume_noirq(PMSG_RESUME);
++
++ Platfrom_finish:
++	if (suspend_ops->finish)
++		suspend_ops->finish();
++
++	return error;
++}
++
++/**
++ *	suspend_devices_and_enter - suspend devices and enter the desired system
++ *				    sleep state.
++ *	@state:		  state to enter
++ */
++int suspend_devices_and_enter(suspend_state_t state)
++{
++	int error;
++
++	if (!suspend_ops)
++		return -ENOSYS;
++
++	if (suspend_ops->begin) {
++		error = suspend_ops->begin(state);
++		if (error)
++			goto Close;
++	}
++	suspend_console();
++	suspend_test_start();
++	error = dpm_suspend_start(PMSG_SUSPEND);
++	if (error) {
++		printk(KERN_ERR "PM: Some devices failed to suspend\n");
++		goto Recover_platform;
++	}
++	suspend_test_finish("suspend devices");
++	if (suspend_test(TEST_DEVICES))
++		goto Recover_platform;
++
++	suspend_enter(state);
++
++ Resume_devices:
++	suspend_test_start();
++	dpm_resume_end(PMSG_RESUME);
++	suspend_test_finish("resume devices");
++	resume_console();
++ Close:
++	if (suspend_ops->end)
++		suspend_ops->end();
++	return error;
++
++ Recover_platform:
++	if (suspend_ops->recover)
++		suspend_ops->recover();
++	goto Resume_devices;
++}
++
++/**
++ *	suspend_finish - Do final work before exiting suspend sequence.
++ *
++ *	Call platform code to clean up, restart processes, and free the
++ *	console that we've allocated. This is not called for suspend-to-disk.
++ */
++static void suspend_finish(void)
++{
++	suspend_thaw_processes();
++	usermodehelper_enable();
++	pm_notifier_call_chain(PM_POST_SUSPEND);
++	pm_restore_console();
++}
++
++/**
++ *	enter_state - Do common work of entering low-power state.
++ *	@state:		pm_state structure for state we're entering.
++ *
++ *	Make sure we're the only ones trying to enter a sleep state. Fail
++ *	if someone has beat us to it, since we don't want anything weird to
++ *	happen when we wake up.
++ *	Then, do the setup for suspend, enter the state, and cleaup (after
++ *	we've woken up).
++ */
++int enter_state(suspend_state_t state)
++{
++	int error;
++
++	if (!valid_state(state))
++		return -ENODEV;
++
++	if (!mutex_trylock(&pm_mutex))
++		return -EBUSY;
++
++	printk(KERN_INFO "PM: Syncing filesystems ... ");
++	sys_sync();
++	printk("done.\n");
++
++	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
++	error = suspend_prepare();
++	if (error)
++		goto Unlock;
++
++	if (suspend_test(TEST_FREEZER))
++		goto Finish;
++
++	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
++	error = suspend_devices_and_enter(state);
++
++ Finish:
++	pr_debug("PM: Finishing wakeup.\n");
++	suspend_finish();
++ Unlock:
++	mutex_unlock(&pm_mutex);
++	return error;
++}
++
++/**
++ *	pm_suspend - Externally visible function for suspending system.
++ *	@state:		Enumerated value of state to enter.
++ *
++ *	Determine whether or not value is within range, get state
++ *	structure, and enter (above).
++ */
++int pm_suspend(suspend_state_t state)
++{
++	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX)
++		return enter_state(state);
++	return -EINVAL;
++}
++EXPORT_SYMBOL(pm_suspend);
+diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
+new file mode 100644
+index 0000000..17d8bb1
+--- /dev/null
++++ b/kernel/power/suspend_test.c
+@@ -0,0 +1,187 @@
++/*
++ * kernel/power/suspend_test.c - Suspend to RAM and standby test facility.
++ *
++ * Copyright (c) 2009 Pavel Machek <pavel@ucw.cz>
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/init.h>
++#include <linux/rtc.h>
++
++#include "power.h"
++
++/*
++ * We test the system suspend code by setting an RTC wakealarm a short
++ * time in the future, then suspending.  Suspending the devices won't
++ * normally take long ... some systems only need a few milliseconds.
++ *
++ * The time it takes is system-specific though, so when we test this
++ * during system bootup we allow a LOT of time.
++ */
++#define TEST_SUSPEND_SECONDS	5
++
++static unsigned long suspend_test_start_time;
++
++void suspend_test_start(void)
++{
++	/* FIXME Use better timebase than "jiffies", ideally a clocksource.
++	 * What we want is a hardware counter that will work correctly even
++	 * during the irqs-are-off stages of the suspend/resume cycle...
++	 */
++	suspend_test_start_time = jiffies;
++}
++
++void suspend_test_finish(const char *label)
++{
++	long nj = jiffies - suspend_test_start_time;
++	unsigned msec;
++
++	msec = jiffies_to_msecs(abs(nj));
++	pr_info("PM: %s took %d.%03d seconds\n", label,
++			msec / 1000, msec % 1000);
++
++	/* Warning on suspend means the RTC alarm period needs to be
++	 * larger -- the system was sooo slooowwww to suspend that the
++	 * alarm (should have) fired before the system went to sleep!
++	 *
++	 * Warning on either suspend or resume also means the system
++	 * has some performance issues.  The stack dump of a WARN_ON
++	 * is more likely to get the right attention than a printk...
++	 */
++	WARN(msec > (TEST_SUSPEND_SECONDS * 1000), "Component: %s\n", label);
++}
++
++/*
++ * To test system suspend, we need a hands-off mechanism to resume the
++ * system.  RTCs wake alarms are a common self-contained mechanism.
++ */
++
++static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
++{
++	static char err_readtime[] __initdata =
++		KERN_ERR "PM: can't read %s time, err %d\n";
++	static char err_wakealarm [] __initdata =
++		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
++	static char err_suspend[] __initdata =
++		KERN_ERR "PM: suspend test failed, error %d\n";
++	static char info_test[] __initdata =
++		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
++
++	unsigned long		now;
++	struct rtc_wkalrm	alm;
++	int			status;
++
++	/* this may fail if the RTC hasn't been initialized */
++	status = rtc_read_time(rtc, &alm.time);
++	if (status < 0) {
++		printk(err_readtime, dev_name(&rtc->dev), status);
++		return;
++	}
++	rtc_tm_to_time(&alm.time, &now);
++
++	memset(&alm, 0, sizeof alm);
++	rtc_time_to_tm(now + TEST_SUSPEND_SECONDS, &alm.time);
++	alm.enabled = true;
++
++	status = rtc_set_alarm(rtc, &alm);
++	if (status < 0) {
++		printk(err_wakealarm, dev_name(&rtc->dev), status);
++		return;
++	}
++
++	if (state == PM_SUSPEND_MEM) {
++		printk(info_test, pm_states[state]);
++		status = pm_suspend(state);
++		if (status == -ENODEV)
++			state = PM_SUSPEND_STANDBY;
++	}
++	if (state == PM_SUSPEND_STANDBY) {
++		printk(info_test, pm_states[state]);
++		status = pm_suspend(state);
++	}
++	if (status < 0)
++		printk(err_suspend, status);
++
++	/* Some platforms can't detect that the alarm triggered the
++	 * wakeup, or (accordingly) disable it after it afterwards.
++	 * It's supposed to give oneshot behavior; cope.
++	 */
++	alm.enabled = false;
++	rtc_set_alarm(rtc, &alm);
++}
++
++static int __init has_wakealarm(struct device *dev, void *name_ptr)
++{
++	struct rtc_device *candidate = to_rtc_device(dev);
++
++	if (!candidate->ops->set_alarm)
++		return 0;
++	if (!device_may_wakeup(candidate->dev.parent))
++		return 0;
++
++	*(const char **)name_ptr = dev_name(dev);
++	return 1;
++}
++
++/*
++ * Kernel options like "test_suspend=mem" force suspend/resume sanity tests
++ * at startup time.  They're normally disabled, for faster boot and because
++ * we can't know which states really work on this particular system.
++ */
++static suspend_state_t test_state __initdata = PM_SUSPEND_ON;
++
++static char warn_bad_state[] __initdata =
++	KERN_WARNING "PM: can't test '%s' suspend state\n";
++
++static int __init setup_test_suspend(char *value)
++{
++	unsigned i;
++
++	/* "=mem" ==> "mem" */
++	value++;
++	for (i = 0; i < PM_SUSPEND_MAX; i++) {
++		if (!pm_states[i])
++			continue;
++		if (strcmp(pm_states[i], value) != 0)
++			continue;
++		test_state = (__force suspend_state_t) i;
++		return 0;
++	}
++	printk(warn_bad_state, value);
++	return 0;
++}
++__setup("test_suspend", setup_test_suspend);
++
++static int __init test_suspend(void)
++{
++	static char		warn_no_rtc[] __initdata =
++		KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
++
++	char			*pony = NULL;
++	struct rtc_device	*rtc = NULL;
++
++	/* PM is initialized by now; is that state testable? */
++	if (test_state == PM_SUSPEND_ON)
++		goto done;
++	if (!valid_state(test_state)) {
++		printk(warn_bad_state, pm_states[test_state]);
++		goto done;
++	}
++
++	/* RTCs have initialized by now too ... can we use one? */
++	class_find_device(rtc_class, NULL, &pony, has_wakealarm);
++	if (pony)
++		rtc = rtc_class_open(pony);
++	if (!rtc) {
++		printk(warn_no_rtc);
++		goto done;
++	}
++
++	/* go for it */
++	test_wakealarm(rtc, test_state);
++	rtc_class_close(rtc);
++done:
++	return 0;
++}
++late_initcall(test_suspend);
 -- 
 1.5.2.4
