@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 00/19] What's in the suspend tree for 2.6.31
-Date: Fri, 12 Jun 2009 00:24:33 +0200
-Message-ID: <200906120024.37782.rjw__10832.0989450023$1244759270$gmane$org@sisk.pl>
+Subject: [PATCH 02/19] x86: unify power/cpu_(32|64) headers
+Date: Thu, 11 Jun 2009 22:29:53 +0000 (UTC)
+Message-ID: <S4AoGnG.A.xE.8UYMKB@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
-	<20090611220652.GA18682@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090611220652.GA18682@elf.ucw.cz>
-Content-Disposition: inline
+Date: Thu Jun 11 23:25:58 CEST 2009
+In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jaswinder Singh Rajput <jaswinder@kernel.org>, Magnus Damm <damm@igel.co.jp>, Linux PM List <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
+To: Linux PM List <linux-pm@lists.linux-foundation.org>
+Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 12 June 2009, Pavel Machek wrote:
-> On Thu 2009-06-11 21:41:10, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > The following patches are in the linux-next branch of the
-> > suspend-2.6 tree and they are candidates for merging into
-> > 2.6.31.
-> > 
-> > Please let me know of any urgent PM patches that need to go into
-> > 2.6.31 and are not present in this series.
-> 
-> Something is very wrong with the series. 06/19 is missing subject line
-> (it is not in mail header) and all message-ids are same or something.
+From: Sergio Luis <sergio@larces.uece.br>
 
-Ah, sorry, my bad.  Fix in the works.
+First step towards the unification of cpu_32.c and cpu_64.c.
+This commit unifies the headers of such files, making both
+of them use the same header files. It also remove the uneeded
+<module.h>.
 
-Thanks,
-Rafael
+Signed-off-by: Sergio Luis <sergio@larces.uece.br>
+Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/power/cpu_32.c |    6 +++++-
+ arch/x86/power/cpu_64.c |    8 +++++---
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
+index ce702c5..12a9c87 100644
+--- a/arch/x86/power/cpu_32.c
++++ b/arch/x86/power/cpu_32.c
+@@ -7,9 +7,13 @@
+  * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/suspend.h>
++#include <linux/smp.h>
++
++#include <asm/pgtable.h>
++#include <asm/proto.h>
+ #include <asm/mtrr.h>
++#include <asm/page.h>
+ #include <asm/mce.h>
+ #include <asm/xcr.h>
+ #include <asm/suspend.h>
+diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
+index 5343540..39b27b7 100644
+--- a/arch/x86/power/cpu_64.c
++++ b/arch/x86/power/cpu_64.c
+@@ -8,12 +8,14 @@
+  * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+  */
+ 
+-#include <linux/smp.h>
+ #include <linux/suspend.h>
+-#include <asm/proto.h>
+-#include <asm/page.h>
++#include <linux/smp.h>
++
+ #include <asm/pgtable.h>
++#include <asm/proto.h>
+ #include <asm/mtrr.h>
++#include <asm/page.h>
++#include <asm/mce.h>
+ #include <asm/xcr.h>
+ #include <asm/suspend.h>
+ 
+-- 
+1.5.2.4
