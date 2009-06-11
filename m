@@ -1,15 +1,18 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 23:05:48 +0200
-Message-ID: <200906112305.49232.oliver__6108.13679309121$1244754632$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0906111433110.4875-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
+	file.
+Date: Thu, 11 Jun 2009 23:11:57 +0200
+Message-ID: <20090611211157.GD27376__29379.1706361391$1244754809$gmane$org@elf.ucw.cz>
+References: <20090604161847.513682672@de.ibm.com>
+	<200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin>
+	<200906100109.20470.rjw@sisk.pl>
+	<20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906111433110.4875-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +22,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 11. Juni 2009 20:36:30 schrieb Alan Stern:
-> > Or abstractly any power saving state that does autoresume in hardware.
-> > In these cases you know that you can enter a powersaving state that
-> > will add X latency.
-> >
-> > In terms of user space API we'll probably add a way for user space
-> > to specify how much latency may be added for power management's sake.
-> > If busses are stacked the "latency budget" has to be handled at core
-> > level. If furthermore states that allow IO but with additional latency
-> > are ignored, the budget will be calculated wrongly.
->
-> Okay, fine. =A0What does this have to do with Rafael's work? =A0Why does
-> setting the status to RPM_SUSPENDED even when a device is not in a
-> low-power state preclude handling buses that automatically change their
-> power state?
+On Thu 2009-06-11 15:32:18, Heiko Carstens wrote:
+> On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday 09 June 2009, Cornelia Huck wrote:
+> > > The *_nvs_* routines in swsusp.c make use of the io*map()
+> > > functions, which are only provided for HAS_IOMEM, thus
+> > > breaking compilation if HAS_IOMEM is not set. Fix this
+> > > by moving the *_nvs_* routines into hibernation_nvs.c, which
+> > > is only compiled if HAS_IOMEM is set.
+> > > 
+> > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > 
+> > Thanks, I added the GPLv2 line to the header comment and changed the name
+> > of the file to hibernate_nvs.c (to match the other changes in the works).
+> > 
+> > I'll carry out some compilation testing on it and put it into the tree shortly.
+> 
+> Rafael, could you add the patch below as well?
+> Or should that go in via git390?
+> 
+> Subject: [PATCH] PM: add empty suspend/resume device irq functions
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+> device interrupts" introduced some helper functions. However these
+> functions are only available for architectures which support
+> GENERIC_HARDIRQS.
+> 
+> Other architectures will see this build error:
+> 
+> drivers/built-in.o: In function `sysdev_suspend':
+> (.text+0x15138): undefined reference to `check_wakeup_irqs'
+> drivers/built-in.o: In function `device_power_up':
+> (.text+0x1cb66): undefined reference to `resume_device_irqs'
+> drivers/built-in.o: In function `device_power_down':
+> (.text+0x1cb92): undefined reference to `suspend_device_irqs'
+> 
+> To fix this add some empty inline functions for !GENERIC_HARDIRQS.
 
-For these cases the tree constraint does not apply.
-I think there are devices who can be suspended while children are active
-and devices which can not be. This is an attribute of the device and should
-be evaluated by the core.
+I don't think that's right fix. If architecture does not use
+GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+itself. Before your patch, it could, after your patch, it can not.
 
-	Regards
-		Oliver
+Better put those empty functions in arch/s390/include?
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
