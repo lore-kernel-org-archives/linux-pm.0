@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 02/19] x86: unify power/cpu_(32|64) headers
+Subject: (no subject)
 Date: Thu, 11 Jun 2009 21:48:29 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__40158.2722588957$1244756909$gmane$org@chimera>
-References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__18408.9367081926$1244756909$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Date: Thu Jun 11 23:25:58 CEST 2009
-In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,61 +20,51 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+>From 26008d13d7fb5054634898dab794f8808a93a775 Mon Sep 17 00:00:00 2001
+In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+Subject: [PATCH 06/19] x86: unify power/cpu_(32|64) copyright notes
+
 From: Sergio Luis <sergio@larces.uece.br>
 
-First step towards the unification of cpu_32.c and cpu_64.c.
-This commit unifies the headers of such files, making both
-of them use the same header files. It also remove the uneeded
-<module.h>.
+In this step, we do unify the copyright notes for both files
+cpu_32.c and cpu_64.c, making such files exactly the same.
+It's the last step before the actual unification, that will
+rename one of them to cpu.c and remove the other one.
 
 Signed-off-by: Sergio Luis <sergio@larces.uece.br>
 Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86/power/cpu_32.c |    6 +++++-
- arch/x86/power/cpu_64.c |    8 +++++---
- 2 files changed, 10 insertions(+), 4 deletions(-)
+ arch/x86/power/cpu_32.c |    3 ++-
+ arch/x86/power/cpu_64.c |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
-index ce702c5..12a9c87 100644
+index 29b9c0a..ca0ecae 100644
 --- a/arch/x86/power/cpu_32.c
 +++ b/arch/x86/power/cpu_32.c
-@@ -7,9 +7,13 @@
+@@ -1,8 +1,9 @@
+ /*
+- * Suspend support specific for i386.
++ * Suspend and hibernation support for i386/x86-64.
+  *
+  * Distribute under GPLv2
+  *
++ * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+  * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
   * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
   */
- 
--#include <linux/module.h>
- #include <linux/suspend.h>
-+#include <linux/smp.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/proto.h>
- #include <asm/mtrr.h>
-+#include <asm/page.h>
- #include <asm/mce.h>
- #include <asm/xcr.h>
- #include <asm/suspend.h>
 diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
-index 5343540..39b27b7 100644
+index 5c8bdc0..d277ef1 100644
 --- a/arch/x86/power/cpu_64.c
 +++ b/arch/x86/power/cpu_64.c
-@@ -8,12 +8,14 @@
-  * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
-  */
- 
--#include <linux/smp.h>
- #include <linux/suspend.h>
--#include <asm/proto.h>
--#include <asm/page.h>
-+#include <linux/smp.h>
-+
- #include <asm/pgtable.h>
-+#include <asm/proto.h>
- #include <asm/mtrr.h>
-+#include <asm/page.h>
-+#include <asm/mce.h>
- #include <asm/xcr.h>
- #include <asm/suspend.h>
- 
+@@ -1,5 +1,5 @@
+ /*
+- * Suspend and hibernation support for x86-64
++ * Suspend support specific for i386/x86-64.
+  *
+  * Distribute under GPLv2
+  *
 -- 
 1.5.2.4
