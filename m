@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
 	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 21:38:21 +0200
-Message-ID: <200906112138.22067.rjw__16685.6746342548$1244749233$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906111010360.2939-100000@iolanthe.rowland.org>
+Date: Thu, 11 Jun 2009 21:43:56 +0200
+Message-ID: <200906112143.57361.rjw__36460.0536101081$1244749803$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906111010360.2939-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,56 +20,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 11 June 2009, Alan Stern wrote:
-> On Thu, 11 Jun 2009, Oliver Neukum wrote:
+> On Thu, 11 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> > Am Donnerstag, 11. Juni 2009 15:48:33 schrieb Rafael J. Wysocki:
-> > > > > But after pm_request_resume() returns there's no means to make sure
-> > > > > nothing alters it back to RPM_SUSPENDED. The workqueue doesn't help
-> > > > > you because you've scheduled nothing by that time. The suspension will
-> > > > > work because C is still in RPM_SUSPENDED.
-> > > >
-> > > > This is an example where usage counters come in handy.
-> > >
-> > > Do you mean we can count suspend/resume requests for a device?
+> > The point here is what the core is supposed to do.  Does it need to handle
+> > this at all or leave it to the bus type and driver?
 > > 
-> > No, we count reasons a device cannot be suspended. Drivers are allowed to
-> > add their own reasons. The core uses that mechanism to indicate that an
-> > ongoing resumption lower down is also a reason.
-> > The count going to zero is equivalent to a request to suspend.
+> > After reconsidering it for a while I think that we should define what
+> > "suspended" is supposed to mean from the core point of view.  And my opinion
+> > is that it should mean "device doesn't communicate with the CPUs and RAM due
+> > to power management".  That need not be power management of the device itself,
+> > but such that leads to the device not doing I/O.
+> > 
+> > Under this definition all devices behind an inactive link are suspended,
+> > because they can't do any I/O.  Which appears to makes sense, because their
+> > drivers have to be notified before the link is suspended and the link has to be
+> > turned on for the devices to be able to communicate with the CPU and RAM.
+> > 
+> > If this definition is adopted, then it's quite clear that the device can only
+> > be suspended if all of its children are suspended and it's always necessary
+> > to resume the parent of a device in order to resume the device itself.
 > 
-> Right.
+> Okay, I'll agree to that.  It should be made clear that a device which 
+> is "suspended" according to this definition is not necessarily in a 
+> low-power state.  For example, before powering down the link to a disk 
+> drive you might want the drive's suspend method to flush the drive's 
+> cache, but it wouldn't have to spin the drive down.
 
-Ah.  *That* is what you had in mind.  Yes, we can do that.
- 
-> Here's a related thought.  Change the resume routines as follows:
->
-> void pm_runtime_resume(struct device *dev)
-> {
-> // Do the actual resume ...
-> }
-> EXPORT_SYMBOL_GPL(pm_runtime_resume);
+Exactly.
+
+> (But this example leaves open the question of how we would go about
+> spinning down the disk.  Submitting a 15-minute (or whatever) delayed
+> autosuspend request wouldn't work; the request wouldn't be accepted
+> because the disk is already suspended as far as the PM core is
+> concerned.  The disk's driver would have to implement its own 
+> spin-down delayed_work.)
+
+Yes, it would.
+
+> > > > > I haven't checked the details of the code yet.  More later...
+> > > 
+> > > One more thought...  The autosuspend and autoresume callbacks need to 
+> > > be mutually exclusive with probe and remove.  So somehow the driver 
+> > > core will need to block runtime PM calls.
+> > 
+> > That's correct and I'm going to take care of this.
+> > 
+> > > It might also be nice to make sure that the driver core autoresumes a 
+> > > device before probing it and autosuspends a device (after some 
+> > > reasonable delay) after unbinding its driver.
+> > 
+> > Agreed.
 > 
-> static void pm_runtime_resume_work(struct work_struct *work)
-> {
-> 	pm_runtime_resume(resume_work_to_device(work));
-> }
-> 
-> Then there's no need for a separate pm_resume_sync(); drivers can
-> simply call pm_runtime_resume() directly.  The same trick works for 
-> suspending.
-> 
-> Of course, this means you have to give up the notion that all suspends 
-> and resumes are funnelled through the workqueue.  IMO that notion isn't 
-> worth keeping in any case.
+> This is another case where a usage counter comes in handy.  The driver
+> core resumes the device and increments the counter -- thus preventing
+> any unwanted autosuspends -- before making the probe and remove calls.
 
-That's already not the case for resuming.
+I like this idea.
 
-Well, ISTR a reason why I thought pm_resume_sync() was needed anyway, but the
-idea is actually good.
+BTW, where exactly the counter should be increased in that case?
 
-Thanks,
+I thought of driver_probe_device(), but is it sufficient?  Or is there a better
+place?
+
+Best,
 Rafael
