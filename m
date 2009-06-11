@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: [PATCH 10/19] PM core: rename suspend and resume
 	functions
-Date: Thu, 11 Jun 2009 22:02:47 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__26547.5152213641$1244757767$gmane$org@chimera>
+Date: Thu, 11 Jun 2009 22:03:56 +0000 (UTC)
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__29780.303737107$1244757836$gmane$org@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
