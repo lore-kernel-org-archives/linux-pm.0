@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 21:43:56 +0200
-Message-ID: <200906112143.57361.rjw__36460.0536101081$1244749803$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 2/2] PCI PM: Read device power state from
+	register after updating it
+Date: Thu, 11 Jun 2009 21:53:16 +0200
+Message-ID: <200906112153.16853.rjw__16677.3822544657$1244750013$gmane$org@sisk.pl>
+References: <200905182246.41129.rjw@sisk.pl> <200905262152.29489.rjw@sisk.pl>
+	<20090611115458.66650e04@jbarnes-g45>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
+In-Reply-To: <20090611115458.66650e04@jbarnes-g45>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,72 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 11 June 2009, Alan Stern wrote:
-> On Thu, 11 Jun 2009, Rafael J. Wysocki wrote:
+On Thursday 11 June 2009, Jesse Barnes wrote:
+> On Tue, 26 May 2009 21:52:29 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> > The point here is what the core is supposed to do.  Does it need to handle
-> > this at all or leave it to the bus type and driver?
-> > 
-> > After reconsidering it for a while I think that we should define what
-> > "suspended" is supposed to mean from the core point of view.  And my opinion
-> > is that it should mean "device doesn't communicate with the CPUs and RAM due
-> > to power management".  That need not be power management of the device itself,
-> > but such that leads to the device not doing I/O.
-> > 
-> > Under this definition all devices behind an inactive link are suspended,
-> > because they can't do any I/O.  Which appears to makes sense, because their
-> > drivers have to be notified before the link is suspended and the link has to be
-> > turned on for the devices to be able to communicate with the CPU and RAM.
-> > 
-> > If this definition is adopted, then it's quite clear that the device can only
-> > be suspended if all of its children are suspended and it's always necessary
-> > to resume the parent of a device in order to resume the device itself.
-> 
-> Okay, I'll agree to that.  It should be made clear that a device which 
-> is "suspended" according to this definition is not necessarily in a 
-> low-power state.  For example, before powering down the link to a disk 
-> drive you might want the drive's suspend method to flush the drive's 
-> cache, but it wouldn't have to spin the drive down.
-
-Exactly.
-
-> (But this example leaves open the question of how we would go about
-> spinning down the disk.  Submitting a 15-minute (or whatever) delayed
-> autosuspend request wouldn't work; the request wouldn't be accepted
-> because the disk is already suspended as far as the PM core is
-> concerned.  The disk's driver would have to implement its own 
-> spin-down delayed_work.)
-
-Yes, it would.
-
-> > > > > I haven't checked the details of the code yet.  More later...
+> > On Monday 18 May 2009, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > > 
-> > > One more thought...  The autosuspend and autoresume callbacks need to 
-> > > be mutually exclusive with probe and remove.  So somehow the driver 
-> > > core will need to block runtime PM calls.
+> > > After attempting to change the power state of a PCI device
+> > > pci_raw_set_power_state() doesn't check if the value it wrote into
+> > > the device's PCI_PM_CTRL register has been stored in there.  Still,
+> > > it modifies the device's current_state field as though that's the
+> > > case.  This may cause the driver of the device to think that its
+> > > power state has been changed while in fact it hasn't.
+> > > 
+> > > To prevent such situations from happening modify
+> > > pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+> > > register after writing into it and uses the value read from the
+> > > register to update the device's current_state field.  Also make it
+> > > return -EIO if the new state of the device is not equal to the state
+> > > requested by the called.
+> > > 
+> > > To distinguish this error condition from the other ones make
+> > > pci_raw_set_power_state() return -ENOSYS instead of -EIO when it is
+> > > impossible to change the power state of the device, because it
+> > > doesn't support the native PCI PM at all or the requested target
+> > > state is not supported by it.
 > > 
-> > That's correct and I'm going to take care of this.
-> > 
-> > > It might also be nice to make sure that the driver core autoresumes a 
-> > > device before probing it and autosuspends a device (after some 
-> > > reasonable delay) after unbinding its driver.
-> > 
-> > Agreed.
+> > Having reconsidered it I think that -ENODEV is probably better than
+> > -ENOSYS for this purpose.  Updated patch follows.
 > 
-> This is another case where a usage counter comes in handy.  The driver
-> core resumes the device and increments the counter -- thus preventing
-> any unwanted autosuspends -- before making the probe and remove calls.
+> Applied to linux-next, thanks Rafael.
 
-I like this idea.
-
-BTW, where exactly the counter should be increased in that case?
-
-I thought of driver_probe_device(), but is it sufficient?  Or is there a better
-place?
+Please drop.  It has been reported by Jiri to cause a regression to happen.
 
 Best,
 Rafael
