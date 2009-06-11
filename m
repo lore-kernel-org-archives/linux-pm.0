@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 04/19] x86: unify power/cpu_(32|64) regarding
-	saving processor state
-Date: Thu, 11 Jun 2009 21:48:35 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__8301.64996809817$1244756915$gmane$org@chimera>
+Subject: [PATCH 08/19] PM: Remove unused asm/suspend.h
+Date: Thu, 11 Jun 2009 21:48:44 +0000 (UTC)
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__20622.8702831597$1244756924$gmane$org@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,186 +22,106 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sergio Luis <sergio@larces.uece.br>
+From: Magnus Damm <damm@igel.co.jp>
 
-In this step we do unify cpu_32.c and cpu_64.c functions that
-work on saving the processor state.
+This patch removes unused asm/suspend.h files for
+the following architectures:
 
-Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
+ alpha, arm, ia64, m68k, mips, s390, um
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86/power/cpu_32.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/power/cpu_64.c |   29 +++++++++++++++++++++++++++-
- 2 files changed, 76 insertions(+), 1 deletions(-)
+ arch/alpha/include/asm/suspend.h |    6 ------
+ arch/arm/include/asm/suspend.h   |    4 ----
+ arch/ia64/include/asm/suspend.h  |    1 -
+ arch/m68k/include/asm/suspend.h  |    6 ------
+ arch/mips/include/asm/suspend.h  |    6 ------
+ arch/s390/include/asm/suspend.h  |    5 -----
+ arch/um/include/asm/suspend.h    |    4 ----
+ 7 files changed, 0 insertions(+), 32 deletions(-)
+ delete mode 100644 arch/alpha/include/asm/suspend.h
+ delete mode 100644 arch/arm/include/asm/suspend.h
+ delete mode 100644 arch/ia64/include/asm/suspend.h
+ delete mode 100644 arch/m68k/include/asm/suspend.h
+ delete mode 100644 arch/mips/include/asm/suspend.h
+ delete mode 100644 arch/s390/include/asm/suspend.h
+ delete mode 100644 arch/um/include/asm/suspend.h
 
-diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
-index de1a86b..294e78b 100644
---- a/arch/x86/power/cpu_32.c
-+++ b/arch/x86/power/cpu_32.c
-@@ -32,25 +32,65 @@ static void fix_processor_context(void);
- struct saved_context saved_context;
- #endif
- 
-+/**
-+ *	__save_processor_state - save CPU registers before creating a
-+ *		hibernation image and before restoring the memory state from it
-+ *	@ctxt - structure to store the registers contents in
-+ *
-+ *	NOTE: If there is a CPU register the modification of which by the
-+ *	boot kernel (ie. the kernel used for loading the hibernation image)
-+ *	might affect the operations of the restored target kernel (ie. the one
-+ *	saved in the hibernation image), then its contents must be saved by this
-+ *	function.  In other words, if kernel A is hibernated and different
-+ *	kernel B is used for loading the hibernation image into memory, the
-+ *	kernel A's __save_processor_state() function must save all registers
-+ *	needed by kernel A, so that it can operate correctly after the resume
-+ *	regardless of what kernel B does in the meantime.
-+ */
- static void __save_processor_state(struct saved_context *ctxt)
- {
-+#ifdef CONFIG_X86_32
- 	mtrr_save_fixed_ranges(NULL);
-+#endif
- 	kernel_fpu_begin();
- 
- 	/*
- 	 * descriptor tables
- 	 */
-+#ifdef CONFIG_X86_32
- 	store_gdt(&ctxt->gdt);
- 	store_idt(&ctxt->idt);
-+#else
-+/* CONFIG_X86_64 */
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+#endif
- 	store_tr(ctxt->tr);
- 
-+	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
- 	/*
- 	 * segment registers
- 	 */
-+#ifdef CONFIG_X86_32
- 	savesegment(es, ctxt->es);
- 	savesegment(fs, ctxt->fs);
- 	savesegment(gs, ctxt->gs);
- 	savesegment(ss, ctxt->ss);
-+#else
-+/* CONFIG_X86_64 */
-+	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
-+	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
-+	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-+	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
-+	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
-+
-+	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
-+	mtrr_save_fixed_ranges(NULL);
-+
-+	rdmsrl(MSR_EFER, ctxt->efer);
-+#endif
- 
- 	/*
- 	 * control registers
-@@ -58,7 +98,13 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	ctxt->cr0 = read_cr0();
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
-+#ifdef CONFIG_X86_32
- 	ctxt->cr4 = read_cr4_safe();
-+#else
-+/* CONFIG_X86_64 */
-+	ctxt->cr4 = read_cr4();
-+	ctxt->cr8 = read_cr8();
-+#endif
- }
- 
- /* Needed by apm.c */
-@@ -66,7 +112,9 @@ void save_processor_state(void)
- {
- 	__save_processor_state(&saved_context);
- }
-+#ifdef CONFIG_X86_32
- EXPORT_SYMBOL(save_processor_state);
-+#endif
- 
- static void do_fpu_end(void)
- {
-diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
-index 6ce0eca..11ea7d0 100644
---- a/arch/x86/power/cpu_64.c
-+++ b/arch/x86/power/cpu_64.c
-@@ -50,19 +50,35 @@ struct saved_context saved_context;
-  */
- static void __save_processor_state(struct saved_context *ctxt)
- {
-+#ifdef CONFIG_X86_32
-+	mtrr_save_fixed_ranges(NULL);
-+#endif
- 	kernel_fpu_begin();
- 
- 	/*
- 	 * descriptor tables
- 	 */
-+#ifdef CONFIG_X86_32
-+	store_gdt(&ctxt->gdt);
-+	store_idt(&ctxt->idt);
-+#else
-+/* CONFIG_X86_64 */
- 	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
- 	store_idt((struct desc_ptr *)&ctxt->idt_limit);
-+#endif
- 	store_tr(ctxt->tr);
- 
- 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
- 	/*
- 	 * segment registers
- 	 */
-+#ifdef CONFIG_X86_32
-+	savesegment(es, ctxt->es);
-+	savesegment(fs, ctxt->fs);
-+	savesegment(gs, ctxt->gs);
-+	savesegment(ss, ctxt->ss);
-+#else
-+/* CONFIG_X86_64 */
- 	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
- 	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
- 	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-@@ -74,21 +90,32 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
- 	mtrr_save_fixed_ranges(NULL);
- 
-+	rdmsrl(MSR_EFER, ctxt->efer);
-+#endif
-+
- 	/*
- 	 * control registers
- 	 */
--	rdmsrl(MSR_EFER, ctxt->efer);
- 	ctxt->cr0 = read_cr0();
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
-+#ifdef CONFIG_X86_32
-+	ctxt->cr4 = read_cr4_safe();
-+#else
-+/* CONFIG_X86_64 */
- 	ctxt->cr4 = read_cr4();
- 	ctxt->cr8 = read_cr8();
-+#endif
- }
- 
-+/* Needed by apm.c */
- void save_processor_state(void)
- {
- 	__save_processor_state(&saved_context);
- }
-+#ifdef CONFIG_X86_32
-+EXPORT_SYMBOL(save_processor_state);
-+#endif
- 
- static void do_fpu_end(void)
- {
+diff --git a/arch/alpha/include/asm/suspend.h b/arch/alpha/include/asm/suspend.h
+deleted file mode 100644
+index c7042d5..0000000
+--- a/arch/alpha/include/asm/suspend.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __ALPHA_SUSPEND_H
+-#define __ALPHA_SUSPEND_H
+-
+-/* Dummy include. */
+-
+-#endif  /* __ALPHA_SUSPEND_H */
+diff --git a/arch/arm/include/asm/suspend.h b/arch/arm/include/asm/suspend.h
+deleted file mode 100644
+index cf0d0bd..0000000
+--- a/arch/arm/include/asm/suspend.h
++++ /dev/null
+@@ -1,4 +0,0 @@
+-#ifndef _ASMARM_SUSPEND_H
+-#define _ASMARM_SUSPEND_H
+-
+-#endif
+diff --git a/arch/ia64/include/asm/suspend.h b/arch/ia64/include/asm/suspend.h
+deleted file mode 100644
+index b05bbb6..0000000
+--- a/arch/ia64/include/asm/suspend.h
++++ /dev/null
+@@ -1 +0,0 @@
+-/* dummy (must be non-empty to prevent prejudicial removal...) */
+diff --git a/arch/m68k/include/asm/suspend.h b/arch/m68k/include/asm/suspend.h
+deleted file mode 100644
+index 57b3ddb..0000000
+--- a/arch/m68k/include/asm/suspend.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef _M68K_SUSPEND_H
+-#define _M68K_SUSPEND_H
+-
+-/* Dummy include. */
+-
+-#endif  /* _M68K_SUSPEND_H */
+diff --git a/arch/mips/include/asm/suspend.h b/arch/mips/include/asm/suspend.h
+deleted file mode 100644
+index 2562f8f..0000000
+--- a/arch/mips/include/asm/suspend.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __ASM_SUSPEND_H
+-#define __ASM_SUSPEND_H
+-
+-/* Somewhen...  Maybe :-)  */
+-
+-#endif /* __ASM_SUSPEND_H */
+diff --git a/arch/s390/include/asm/suspend.h b/arch/s390/include/asm/suspend.h
+deleted file mode 100644
+index 1f34580..0000000
+--- a/arch/s390/include/asm/suspend.h
++++ /dev/null
+@@ -1,5 +0,0 @@
+-#ifndef __ASM_S390_SUSPEND_H
+-#define __ASM_S390_SUSPEND_H
+-
+-#endif
+-
+diff --git a/arch/um/include/asm/suspend.h b/arch/um/include/asm/suspend.h
+deleted file mode 100644
+index f4e8e00..0000000
+--- a/arch/um/include/asm/suspend.h
++++ /dev/null
+@@ -1,4 +0,0 @@
+-#ifndef __UM_SUSPEND_H
+-#define __UM_SUSPEND_H
+-
+-#endif
 -- 
 1.5.2.4
