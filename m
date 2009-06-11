@@ -1,16 +1,17 @@
-From: Magnus Damm <magnus.damm@gmail.com>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
 	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 14:27:26 +0900
-Message-ID: <aec7e5c30906102227o18ca40b9w90e889dbdb43464f__21040.4831254438$1244698101$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
-	<200906102331.14267.rjw@sisk.pl>
-	<200906110115.30729.oliver@neukum.org>
+Date: Thu, 11 Jun 2009 11:08:40 +0200
+Message-ID: <200906111108.40785.oliver__45577.6300783784$1244711344$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
+	<200906101029.27529.rjw@sisk.pl>
+	<aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906110115.30729.oliver@neukum.org>
+In-Reply-To: <aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 8:15 AM, Oliver Neukum<oliver@neukum.org> wrote:
-> Am Mittwoch, 10. Juni 2009 23:31:13 schrieb Rafael J. Wysocki:
->> > > +/**
->> > > + * pm_check_children - Check if all children of a device have been
->> > > suspended. + * @dev: Device to check.
->> > > + *
->> > > + * Returns 0 if all children of the device have been suspended or
->> > > -EBUSY + * otherwise.
->> > > + */
->> >
->> > We might want to do a runtime suspend even if the device's children
->> > aren't already suspended. =A0For example, you could suspend a link whi=
-le
->> > leaving the device on the other end of the link at full power --
->> > especially if powering down the device is slow but changing the link's
->> > power level is fast.
->>
->> Well, this means that the dependencies between devices in the device tree
->> are pretty much useless for the run-time PM as far as the core is
->> concerned. =A0In which case, why did you mention them at all?
->
-> Some bussystems need this constraint others don't or only for some nodes.
-> We need a way to communicate this to the core.
+Am Donnerstag, 11. Juni 2009 07:18:46 schrieb Magnus Damm:
+> 3) When all devices in the power domain are suspended the bus code can
+> turn off the power. The reason why I'd like to only autosuspend when
 
-I agree that this depends on the bus.
+So you are saying that you have power dependencies independent
+of the device tree?
 
-Our SuperH on-chip SoC platform devices are arranged in a flat fashion
-so no real problem there, but if there whould be dependencies then I
-think we need to manage it recursively somehow.
+> all devices are idle is simply that we don't get any power savings
+> from the per device autosuspend() callbacks, only from turning off
+> power to the entire per-domain. So bindly autosuspending and
+> autoresuming devices is just pure overhead unless we know we can do it
+> for all devices in the domain.
 
-Compare that to PM of our I2C driver and the I2C bus hanging off from
-that. In that case I'd like to be able to autosuspend the I2C master
-driver regardless of the I2C slave devices and their PM state.
+Why can't you do this within the framework? You simply suspend when
+all a domain's devices have been autosuspended.
+I suppose we could have a helper.
 
-/ magnus
+int pm_autosuspend_in_domain(struct device *dev)
+{
+	int err;
+
+	mutex_lock(dev->power_domain);
+	if (! --dev->power_domain.active_devices)
+		err = dev->power_domain->power_down(dev->power_domain);
+	else
+		err = 0;
+	mutex_unlock(dev->power_domain);
+
+	return err;
+}
+
+	Regards
+		Oliver
