@@ -1,14 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 08/19] PM: Remove unused asm/suspend.h
-Date: Thu, 11 Jun 2009 23:04:18 +0000 (UTC)
-Message-ID: <S4AoGnG.A.SG.beYMKB@chimera>
-References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
+	file.
+Date: Fri, 12 Jun 2009 01:22:25 +0200
+Message-ID: <20090611232224.GB18682__31452.5970876732$1244762608$gmane$org@elf.ucw.cz>
+References: <20090604161847.513682672@de.ibm.com>
+	<200906112346.28782.rjw@sisk.pl>
+	<20090611220517.GF27376@elf.ucw.cz>
+	<200906120030.00425.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Date: Thu Jun 11 23:25:58 CEST 2009
-In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200906120030.00425.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,110 +22,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM List <linux-pm@lists.linux-foundation.org>
-Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+> > > > > Other architectures will see this build error:
+> > > > > 
+> > > > > drivers/built-in.o: In function `sysdev_suspend':
+> > > > > (.text+0x15138): undefined reference to `check_wakeup_irqs'
+> > > > > drivers/built-in.o: In function `device_power_up':
+> > > > > (.text+0x1cb66): undefined reference to `resume_device_irqs'
+> > > > > drivers/built-in.o: In function `device_power_down':
+> > > > > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
+> > > > > 
+> > > > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
+> > > > 
+> > > > I don't think that's right fix. If architecture does not use
+> > > > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+> > > > itself. Before your patch, it could, after your patch, it can not.
+> > > > 
+> > > > Better put those empty functions in arch/s390/include?
+> > > 
+> > > If any of the affected architectures wants to implement *_device_irqs()
+> > > itself, it can do the appropriate change in future.  For now, let's not break
+> > > compilation on them, shall we?
+> > 
+> > Well, if one of those architectures will want to implement
+> > *_device_irqs(), it will have to either modify s390, and all other
+> > !GENERIC_HARDIRQS architectures.
+> 
+> Why will it?  I think it will be sufficient to modify the header changed by
+> this patch and the architecture in question.
 
-This patch removes unused asm/suspend.h files for
-the following architectures:
+Hmm, how? Putting #ifndef MY_ARCH into generic header? Inventing
+CONFIG_NON_GENERIC_HARDIRQS_BUT_I_NEED_DEVICE_IRQS?
+									Pavel
 
- alpha, arm, ia64, m68k, mips, s390, um
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/alpha/include/asm/suspend.h |    6 ------
- arch/arm/include/asm/suspend.h   |    4 ----
- arch/ia64/include/asm/suspend.h  |    1 -
- arch/m68k/include/asm/suspend.h  |    6 ------
- arch/mips/include/asm/suspend.h  |    6 ------
- arch/s390/include/asm/suspend.h  |    5 -----
- arch/um/include/asm/suspend.h    |    4 ----
- 7 files changed, 0 insertions(+), 32 deletions(-)
- delete mode 100644 arch/alpha/include/asm/suspend.h
- delete mode 100644 arch/arm/include/asm/suspend.h
- delete mode 100644 arch/ia64/include/asm/suspend.h
- delete mode 100644 arch/m68k/include/asm/suspend.h
- delete mode 100644 arch/mips/include/asm/suspend.h
- delete mode 100644 arch/s390/include/asm/suspend.h
- delete mode 100644 arch/um/include/asm/suspend.h
-
-diff --git a/arch/alpha/include/asm/suspend.h b/arch/alpha/include/asm/suspend.h
-deleted file mode 100644
-index c7042d5..0000000
---- a/arch/alpha/include/asm/suspend.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef __ALPHA_SUSPEND_H
--#define __ALPHA_SUSPEND_H
--
--/* Dummy include. */
--
--#endif  /* __ALPHA_SUSPEND_H */
-diff --git a/arch/arm/include/asm/suspend.h b/arch/arm/include/asm/suspend.h
-deleted file mode 100644
-index cf0d0bd..0000000
---- a/arch/arm/include/asm/suspend.h
-+++ /dev/null
-@@ -1,4 +0,0 @@
--#ifndef _ASMARM_SUSPEND_H
--#define _ASMARM_SUSPEND_H
--
--#endif
-diff --git a/arch/ia64/include/asm/suspend.h b/arch/ia64/include/asm/suspend.h
-deleted file mode 100644
-index b05bbb6..0000000
---- a/arch/ia64/include/asm/suspend.h
-+++ /dev/null
-@@ -1 +0,0 @@
--/* dummy (must be non-empty to prevent prejudicial removal...) */
-diff --git a/arch/m68k/include/asm/suspend.h b/arch/m68k/include/asm/suspend.h
-deleted file mode 100644
-index 57b3ddb..0000000
---- a/arch/m68k/include/asm/suspend.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef _M68K_SUSPEND_H
--#define _M68K_SUSPEND_H
--
--/* Dummy include. */
--
--#endif  /* _M68K_SUSPEND_H */
-diff --git a/arch/mips/include/asm/suspend.h b/arch/mips/include/asm/suspend.h
-deleted file mode 100644
-index 2562f8f..0000000
---- a/arch/mips/include/asm/suspend.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef __ASM_SUSPEND_H
--#define __ASM_SUSPEND_H
--
--/* Somewhen...  Maybe :-)  */
--
--#endif /* __ASM_SUSPEND_H */
-diff --git a/arch/s390/include/asm/suspend.h b/arch/s390/include/asm/suspend.h
-deleted file mode 100644
-index 1f34580..0000000
---- a/arch/s390/include/asm/suspend.h
-+++ /dev/null
-@@ -1,5 +0,0 @@
--#ifndef __ASM_S390_SUSPEND_H
--#define __ASM_S390_SUSPEND_H
--
--#endif
--
-diff --git a/arch/um/include/asm/suspend.h b/arch/um/include/asm/suspend.h
-deleted file mode 100644
-index f4e8e00..0000000
---- a/arch/um/include/asm/suspend.h
-+++ /dev/null
-@@ -1,4 +0,0 @@
--#ifndef __UM_SUSPEND_H
--#define __UM_SUSPEND_H
--
--#endif
 -- 
-1.5.2.4
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
