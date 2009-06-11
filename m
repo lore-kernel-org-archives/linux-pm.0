@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 08/19] PM: Remove unused asm/suspend.h
-Date: Thu, 11 Jun 2009 21:48:44 +0000 (UTC)
-Message-ID: <S4AoGnG.A.D7H.mZXMKB__20622.8702831597$1244756924$gmane$org@chimera>
+Subject: [PATCH 07/19] x86: unify power/cpu_(32|64).c
+Date: Thu, 11 Jun 2009 21:48:53 +0000 (UTC)
+Message-ID: <S4AoGnG.A.D7H.mZXMKB__14231.3452590772$1244756933$gmane$org@chimera>
 References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,106 +22,831 @@ To: Linux PM List <linux-pm@lists.linux-foundation.org>
 Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>, Jaswinder Singh Rajput <jaswinder@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+From: Sergio Luis <sergio@larces.uece.br>
 
-This patch removes unused asm/suspend.h files for
-the following architectures:
+This is the last unification step. Here we do remove one of the files
+and rename the left one as cpu.c, as both are now the same.
+Also update power/Makefile, telling it to build cpu.o, instead of
+cpu_(32|64).o
 
- alpha, arm, ia64, m68k, mips, s390, um
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Sergio Luis <sergio@larces.uece.br>
+Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/alpha/include/asm/suspend.h |    6 ------
- arch/arm/include/asm/suspend.h   |    4 ----
- arch/ia64/include/asm/suspend.h  |    1 -
- arch/m68k/include/asm/suspend.h  |    6 ------
- arch/mips/include/asm/suspend.h  |    6 ------
- arch/s390/include/asm/suspend.h  |    5 -----
- arch/um/include/asm/suspend.h    |    4 ----
- 7 files changed, 0 insertions(+), 32 deletions(-)
- delete mode 100644 arch/alpha/include/asm/suspend.h
- delete mode 100644 arch/arm/include/asm/suspend.h
- delete mode 100644 arch/ia64/include/asm/suspend.h
- delete mode 100644 arch/m68k/include/asm/suspend.h
- delete mode 100644 arch/mips/include/asm/suspend.h
- delete mode 100644 arch/s390/include/asm/suspend.h
- delete mode 100644 arch/um/include/asm/suspend.h
+ arch/x86/power/Makefile |    2 +-
+ arch/x86/power/cpu.c    |  259 +++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/power/cpu_32.c |  259 -----------------------------------------------
+ arch/x86/power/cpu_64.c |  259 -----------------------------------------------
+ 4 files changed, 260 insertions(+), 519 deletions(-)
+ create mode 100644 arch/x86/power/cpu.c
+ delete mode 100644 arch/x86/power/cpu_32.c
+ delete mode 100644 arch/x86/power/cpu_64.c
 
-diff --git a/arch/alpha/include/asm/suspend.h b/arch/alpha/include/asm/suspend.h
+diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
+index 58b32db..de2abbd 100644
+--- a/arch/x86/power/Makefile
++++ b/arch/x86/power/Makefile
+@@ -3,5 +3,5 @@
+ nostackp := $(call cc-option, -fno-stack-protector)
+ CFLAGS_cpu_$(BITS).o	:= $(nostackp)
+ 
+-obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
++obj-$(CONFIG_PM_SLEEP)		+= cpu.o
+ obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+new file mode 100644
+index 0000000..d277ef1
+--- /dev/null
++++ b/arch/x86/power/cpu.c
+@@ -0,0 +1,259 @@
++/*
++ * Suspend support specific for i386/x86-64.
++ *
++ * Distribute under GPLv2
++ *
++ * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
++ * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
++ * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
++ */
++
++#include <linux/suspend.h>
++#include <linux/smp.h>
++
++#include <asm/pgtable.h>
++#include <asm/proto.h>
++#include <asm/mtrr.h>
++#include <asm/page.h>
++#include <asm/mce.h>
++#include <asm/xcr.h>
++#include <asm/suspend.h>
++
++#ifdef CONFIG_X86_32
++static struct saved_context saved_context;
++
++unsigned long saved_context_ebx;
++unsigned long saved_context_esp, saved_context_ebp;
++unsigned long saved_context_esi, saved_context_edi;
++unsigned long saved_context_eflags;
++#else
++/* CONFIG_X86_64 */
++struct saved_context saved_context;
++#endif
++
++/**
++ *	__save_processor_state - save CPU registers before creating a
++ *		hibernation image and before restoring the memory state from it
++ *	@ctxt - structure to store the registers contents in
++ *
++ *	NOTE: If there is a CPU register the modification of which by the
++ *	boot kernel (ie. the kernel used for loading the hibernation image)
++ *	might affect the operations of the restored target kernel (ie. the one
++ *	saved in the hibernation image), then its contents must be saved by this
++ *	function.  In other words, if kernel A is hibernated and different
++ *	kernel B is used for loading the hibernation image into memory, the
++ *	kernel A's __save_processor_state() function must save all registers
++ *	needed by kernel A, so that it can operate correctly after the resume
++ *	regardless of what kernel B does in the meantime.
++ */
++static void __save_processor_state(struct saved_context *ctxt)
++{
++#ifdef CONFIG_X86_32
++	mtrr_save_fixed_ranges(NULL);
++#endif
++	kernel_fpu_begin();
++
++	/*
++	 * descriptor tables
++	 */
++#ifdef CONFIG_X86_32
++	store_gdt(&ctxt->gdt);
++	store_idt(&ctxt->idt);
++#else
++/* CONFIG_X86_64 */
++	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
++	store_idt((struct desc_ptr *)&ctxt->idt_limit);
++#endif
++	store_tr(ctxt->tr);
++
++	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
++	/*
++	 * segment registers
++	 */
++#ifdef CONFIG_X86_32
++	savesegment(es, ctxt->es);
++	savesegment(fs, ctxt->fs);
++	savesegment(gs, ctxt->gs);
++	savesegment(ss, ctxt->ss);
++#else
++/* CONFIG_X86_64 */
++	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
++	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
++	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
++	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
++	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
++
++	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
++	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
++	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
++	mtrr_save_fixed_ranges(NULL);
++
++	rdmsrl(MSR_EFER, ctxt->efer);
++#endif
++
++	/*
++	 * control registers
++	 */
++	ctxt->cr0 = read_cr0();
++	ctxt->cr2 = read_cr2();
++	ctxt->cr3 = read_cr3();
++#ifdef CONFIG_X86_32
++	ctxt->cr4 = read_cr4_safe();
++#else
++/* CONFIG_X86_64 */
++	ctxt->cr4 = read_cr4();
++	ctxt->cr8 = read_cr8();
++#endif
++}
++
++/* Needed by apm.c */
++void save_processor_state(void)
++{
++	__save_processor_state(&saved_context);
++}
++#ifdef CONFIG_X86_32
++EXPORT_SYMBOL(save_processor_state);
++#endif
++
++static void do_fpu_end(void)
++{
++	/*
++	 * Restore FPU regs if necessary.
++	 */
++	kernel_fpu_end();
++}
++
++static void fix_processor_context(void)
++{
++	int cpu = smp_processor_id();
++	struct tss_struct *t = &per_cpu(init_tss, cpu);
++
++	set_tss_desc(cpu, t);	/*
++				 * This just modifies memory; should not be
++				 * necessary. But... This is necessary, because
++				 * 386 hardware has concept of busy TSS or some
++				 * similar stupidity.
++				 */
++
++#ifdef CONFIG_X86_64
++	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
++
++	syscall_init();				/* This sets MSR_*STAR and related */
++#endif
++	load_TR_desc();				/* This does ltr */
++	load_LDT(&current->active_mm->context);	/* This does lldt */
++
++	/*
++	 * Now maybe reload the debug registers
++	 */
++	if (current->thread.debugreg7) {
++#ifdef CONFIG_X86_32
++		set_debugreg(current->thread.debugreg0, 0);
++		set_debugreg(current->thread.debugreg1, 1);
++		set_debugreg(current->thread.debugreg2, 2);
++		set_debugreg(current->thread.debugreg3, 3);
++		/* no 4 and 5 */
++		set_debugreg(current->thread.debugreg6, 6);
++		set_debugreg(current->thread.debugreg7, 7);
++#else
++		/* CONFIG_X86_64 */
++		loaddebug(&current->thread, 0);
++		loaddebug(&current->thread, 1);
++		loaddebug(&current->thread, 2);
++		loaddebug(&current->thread, 3);
++		/* no 4 and 5 */
++		loaddebug(&current->thread, 6);
++		loaddebug(&current->thread, 7);
++#endif
++	}
++
++}
++
++/**
++ *	__restore_processor_state - restore the contents of CPU registers saved
++ *		by __save_processor_state()
++ *	@ctxt - structure to load the registers contents from
++ */
++static void __restore_processor_state(struct saved_context *ctxt)
++{
++	/*
++	 * control registers
++	 */
++	/* cr4 was introduced in the Pentium CPU */
++#ifdef CONFIG_X86_32
++	if (ctxt->cr4)
++		write_cr4(ctxt->cr4);
++#else
++/* CONFIG X86_64 */
++	wrmsrl(MSR_EFER, ctxt->efer);
++	write_cr8(ctxt->cr8);
++	write_cr4(ctxt->cr4);
++#endif
++	write_cr3(ctxt->cr3);
++	write_cr2(ctxt->cr2);
++	write_cr0(ctxt->cr0);
++
++	/*
++	 * now restore the descriptor tables to their proper values
++	 * ltr is done i fix_processor_context().
++	 */
++#ifdef CONFIG_X86_32
++	load_gdt(&ctxt->gdt);
++	load_idt(&ctxt->idt);
++#else
++/* CONFIG_X86_64 */
++	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
++	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
++#endif
++
++	/*
++	 * segment registers
++	 */
++#ifdef CONFIG_X86_32
++	loadsegment(es, ctxt->es);
++	loadsegment(fs, ctxt->fs);
++	loadsegment(gs, ctxt->gs);
++	loadsegment(ss, ctxt->ss);
++
++	/*
++	 * sysenter MSRs
++	 */
++	if (boot_cpu_has(X86_FEATURE_SEP))
++		enable_sep_cpu();
++#else
++/* CONFIG_X86_64 */
++	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
++	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
++	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
++	load_gs_index(ctxt->gs);
++	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
++
++	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
++	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
++	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
++#endif
++
++	/*
++	 * restore XCR0 for xsave capable cpu's.
++	 */
++	if (cpu_has_xsave)
++		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
++
++	fix_processor_context();
++
++	do_fpu_end();
++	mtrr_ap_init();
++
++#ifdef CONFIG_X86_32
++	mcheck_init(&boot_cpu_data);
++#endif
++}
++
++/* Needed by apm.c */
++void restore_processor_state(void)
++{
++	__restore_processor_state(&saved_context);
++}
++#ifdef CONFIG_X86_32
++EXPORT_SYMBOL(restore_processor_state);
++#endif
+diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
 deleted file mode 100644
-index c7042d5..0000000
---- a/arch/alpha/include/asm/suspend.h
+index ca0ecae..0000000
+--- a/arch/x86/power/cpu_32.c
 +++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef __ALPHA_SUSPEND_H
--#define __ALPHA_SUSPEND_H
+@@ -1,259 +0,0 @@
+-/*
+- * Suspend and hibernation support for i386/x86-64.
+- *
+- * Distribute under GPLv2
+- *
+- * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
+- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+- */
 -
--/* Dummy include. */
+-#include <linux/suspend.h>
+-#include <linux/smp.h>
 -
--#endif  /* __ALPHA_SUSPEND_H */
-diff --git a/arch/arm/include/asm/suspend.h b/arch/arm/include/asm/suspend.h
-deleted file mode 100644
-index cf0d0bd..0000000
---- a/arch/arm/include/asm/suspend.h
-+++ /dev/null
-@@ -1,4 +0,0 @@
--#ifndef _ASMARM_SUSPEND_H
--#define _ASMARM_SUSPEND_H
+-#include <asm/pgtable.h>
+-#include <asm/proto.h>
+-#include <asm/mtrr.h>
+-#include <asm/page.h>
+-#include <asm/mce.h>
+-#include <asm/xcr.h>
+-#include <asm/suspend.h>
 -
+-#ifdef CONFIG_X86_32
+-static struct saved_context saved_context;
+-
+-unsigned long saved_context_ebx;
+-unsigned long saved_context_esp, saved_context_ebp;
+-unsigned long saved_context_esi, saved_context_edi;
+-unsigned long saved_context_eflags;
+-#else
+-/* CONFIG_X86_64 */
+-struct saved_context saved_context;
 -#endif
-diff --git a/arch/ia64/include/asm/suspend.h b/arch/ia64/include/asm/suspend.h
-deleted file mode 100644
-index b05bbb6..0000000
---- a/arch/ia64/include/asm/suspend.h
-+++ /dev/null
-@@ -1 +0,0 @@
--/* dummy (must be non-empty to prevent prejudicial removal...) */
-diff --git a/arch/m68k/include/asm/suspend.h b/arch/m68k/include/asm/suspend.h
-deleted file mode 100644
-index 57b3ddb..0000000
---- a/arch/m68k/include/asm/suspend.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef _M68K_SUSPEND_H
--#define _M68K_SUSPEND_H
 -
--/* Dummy include. */
+-/**
+- *	__save_processor_state - save CPU registers before creating a
+- *		hibernation image and before restoring the memory state from it
+- *	@ctxt - structure to store the registers contents in
+- *
+- *	NOTE: If there is a CPU register the modification of which by the
+- *	boot kernel (ie. the kernel used for loading the hibernation image)
+- *	might affect the operations of the restored target kernel (ie. the one
+- *	saved in the hibernation image), then its contents must be saved by this
+- *	function.  In other words, if kernel A is hibernated and different
+- *	kernel B is used for loading the hibernation image into memory, the
+- *	kernel A's __save_processor_state() function must save all registers
+- *	needed by kernel A, so that it can operate correctly after the resume
+- *	regardless of what kernel B does in the meantime.
+- */
+-static void __save_processor_state(struct saved_context *ctxt)
+-{
+-#ifdef CONFIG_X86_32
+-	mtrr_save_fixed_ranges(NULL);
+-#endif
+-	kernel_fpu_begin();
 -
--#endif  /* _M68K_SUSPEND_H */
-diff --git a/arch/mips/include/asm/suspend.h b/arch/mips/include/asm/suspend.h
-deleted file mode 100644
-index 2562f8f..0000000
---- a/arch/mips/include/asm/suspend.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef __ASM_SUSPEND_H
--#define __ASM_SUSPEND_H
+-	/*
+-	 * descriptor tables
+-	 */
+-#ifdef CONFIG_X86_32
+-	store_gdt(&ctxt->gdt);
+-	store_idt(&ctxt->idt);
+-#else
+-/* CONFIG_X86_64 */
+-	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
+-	store_idt((struct desc_ptr *)&ctxt->idt_limit);
+-#endif
+-	store_tr(ctxt->tr);
 -
--/* Somewhen...  Maybe :-)  */
+-	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
+-	/*
+-	 * segment registers
+-	 */
+-#ifdef CONFIG_X86_32
+-	savesegment(es, ctxt->es);
+-	savesegment(fs, ctxt->fs);
+-	savesegment(gs, ctxt->gs);
+-	savesegment(ss, ctxt->ss);
+-#else
+-/* CONFIG_X86_64 */
+-	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
+-	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
+-	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
+-	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
+-	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
 -
--#endif /* __ASM_SUSPEND_H */
-diff --git a/arch/s390/include/asm/suspend.h b/arch/s390/include/asm/suspend.h
-deleted file mode 100644
-index 1f34580..0000000
---- a/arch/s390/include/asm/suspend.h
-+++ /dev/null
-@@ -1,5 +0,0 @@
--#ifndef __ASM_S390_SUSPEND_H
--#define __ASM_S390_SUSPEND_H
+-	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
+-	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
+-	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+-	mtrr_save_fixed_ranges(NULL);
 -
+-	rdmsrl(MSR_EFER, ctxt->efer);
 -#endif
 -
-diff --git a/arch/um/include/asm/suspend.h b/arch/um/include/asm/suspend.h
-deleted file mode 100644
-index f4e8e00..0000000
---- a/arch/um/include/asm/suspend.h
-+++ /dev/null
-@@ -1,4 +0,0 @@
--#ifndef __UM_SUSPEND_H
--#define __UM_SUSPEND_H
+-	/*
+-	 * control registers
+-	 */
+-	ctxt->cr0 = read_cr0();
+-	ctxt->cr2 = read_cr2();
+-	ctxt->cr3 = read_cr3();
+-#ifdef CONFIG_X86_32
+-	ctxt->cr4 = read_cr4_safe();
+-#else
+-/* CONFIG_X86_64 */
+-	ctxt->cr4 = read_cr4();
+-	ctxt->cr8 = read_cr8();
+-#endif
+-}
 -
+-/* Needed by apm.c */
+-void save_processor_state(void)
+-{
+-	__save_processor_state(&saved_context);
+-}
+-#ifdef CONFIG_X86_32
+-EXPORT_SYMBOL(save_processor_state);
+-#endif
+-
+-static void do_fpu_end(void)
+-{
+-	/*
+-	 * Restore FPU regs if necessary.
+-	 */
+-	kernel_fpu_end();
+-}
+-
+-static void fix_processor_context(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct tss_struct *t = &per_cpu(init_tss, cpu);
+-
+-	set_tss_desc(cpu, t);	/*
+-				 * This just modifies memory; should not be
+-				 * necessary. But... This is necessary, because
+-				 * 386 hardware has concept of busy TSS or some
+-				 * similar stupidity.
+-				 */
+-
+-#ifdef CONFIG_X86_64
+-	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
+-
+-	syscall_init();				/* This sets MSR_*STAR and related */
+-#endif
+-	load_TR_desc();				/* This does ltr */
+-	load_LDT(&current->active_mm->context);	/* This does lldt */
+-
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7) {
+-#ifdef CONFIG_X86_32
+-		set_debugreg(current->thread.debugreg0, 0);
+-		set_debugreg(current->thread.debugreg1, 1);
+-		set_debugreg(current->thread.debugreg2, 2);
+-		set_debugreg(current->thread.debugreg3, 3);
+-		/* no 4 and 5 */
+-		set_debugreg(current->thread.debugreg6, 6);
+-		set_debugreg(current->thread.debugreg7, 7);
+-#else
+-		/* CONFIG_X86_64 */
+-		loaddebug(&current->thread, 0);
+-		loaddebug(&current->thread, 1);
+-		loaddebug(&current->thread, 2);
+-		loaddebug(&current->thread, 3);
+-		/* no 4 and 5 */
+-		loaddebug(&current->thread, 6);
+-		loaddebug(&current->thread, 7);
+-#endif
+-	}
+-
+-}
+-
+-/**
+- *	__restore_processor_state - restore the contents of CPU registers saved
+- *		by __save_processor_state()
+- *	@ctxt - structure to load the registers contents from
+- */
+-static void __restore_processor_state(struct saved_context *ctxt)
+-{
+-	/*
+-	 * control registers
+-	 */
+-	/* cr4 was introduced in the Pentium CPU */
+-#ifdef CONFIG_X86_32
+-	if (ctxt->cr4)
+-		write_cr4(ctxt->cr4);
+-#else
+-/* CONFIG X86_64 */
+-	wrmsrl(MSR_EFER, ctxt->efer);
+-	write_cr8(ctxt->cr8);
+-	write_cr4(ctxt->cr4);
+-#endif
+-	write_cr3(ctxt->cr3);
+-	write_cr2(ctxt->cr2);
+-	write_cr0(ctxt->cr0);
+-
+-	/*
+-	 * now restore the descriptor tables to their proper values
+-	 * ltr is done i fix_processor_context().
+-	 */
+-#ifdef CONFIG_X86_32
+-	load_gdt(&ctxt->gdt);
+-	load_idt(&ctxt->idt);
+-#else
+-/* CONFIG_X86_64 */
+-	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
+-	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
+-#endif
+-
+-	/*
+-	 * segment registers
+-	 */
+-#ifdef CONFIG_X86_32
+-	loadsegment(es, ctxt->es);
+-	loadsegment(fs, ctxt->fs);
+-	loadsegment(gs, ctxt->gs);
+-	loadsegment(ss, ctxt->ss);
+-
+-	/*
+-	 * sysenter MSRs
+-	 */
+-	if (boot_cpu_has(X86_FEATURE_SEP))
+-		enable_sep_cpu();
+-#else
+-/* CONFIG_X86_64 */
+-	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
+-	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
+-	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
+-	load_gs_index(ctxt->gs);
+-	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
+-
+-	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
+-	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
+-	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+-#endif
+-
+-	/*
+-	 * restore XCR0 for xsave capable cpu's.
+-	 */
+-	if (cpu_has_xsave)
+-		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
+-
+-	fix_processor_context();
+-
+-	do_fpu_end();
+-	mtrr_ap_init();
+-
+-#ifdef CONFIG_X86_32
+-	mcheck_init(&boot_cpu_data);
+-#endif
+-}
+-
+-/* Needed by apm.c */
+-void restore_processor_state(void)
+-{
+-	__restore_processor_state(&saved_context);
+-}
+-#ifdef CONFIG_X86_32
+-EXPORT_SYMBOL(restore_processor_state);
+-#endif
+diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
+deleted file mode 100644
+index d277ef1..0000000
+--- a/arch/x86/power/cpu_64.c
++++ /dev/null
+@@ -1,259 +0,0 @@
+-/*
+- * Suspend support specific for i386/x86-64.
+- *
+- * Distribute under GPLv2
+- *
+- * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+- * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
+- * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+- */
+-
+-#include <linux/suspend.h>
+-#include <linux/smp.h>
+-
+-#include <asm/pgtable.h>
+-#include <asm/proto.h>
+-#include <asm/mtrr.h>
+-#include <asm/page.h>
+-#include <asm/mce.h>
+-#include <asm/xcr.h>
+-#include <asm/suspend.h>
+-
+-#ifdef CONFIG_X86_32
+-static struct saved_context saved_context;
+-
+-unsigned long saved_context_ebx;
+-unsigned long saved_context_esp, saved_context_ebp;
+-unsigned long saved_context_esi, saved_context_edi;
+-unsigned long saved_context_eflags;
+-#else
+-/* CONFIG_X86_64 */
+-struct saved_context saved_context;
+-#endif
+-
+-/**
+- *	__save_processor_state - save CPU registers before creating a
+- *		hibernation image and before restoring the memory state from it
+- *	@ctxt - structure to store the registers contents in
+- *
+- *	NOTE: If there is a CPU register the modification of which by the
+- *	boot kernel (ie. the kernel used for loading the hibernation image)
+- *	might affect the operations of the restored target kernel (ie. the one
+- *	saved in the hibernation image), then its contents must be saved by this
+- *	function.  In other words, if kernel A is hibernated and different
+- *	kernel B is used for loading the hibernation image into memory, the
+- *	kernel A's __save_processor_state() function must save all registers
+- *	needed by kernel A, so that it can operate correctly after the resume
+- *	regardless of what kernel B does in the meantime.
+- */
+-static void __save_processor_state(struct saved_context *ctxt)
+-{
+-#ifdef CONFIG_X86_32
+-	mtrr_save_fixed_ranges(NULL);
+-#endif
+-	kernel_fpu_begin();
+-
+-	/*
+-	 * descriptor tables
+-	 */
+-#ifdef CONFIG_X86_32
+-	store_gdt(&ctxt->gdt);
+-	store_idt(&ctxt->idt);
+-#else
+-/* CONFIG_X86_64 */
+-	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
+-	store_idt((struct desc_ptr *)&ctxt->idt_limit);
+-#endif
+-	store_tr(ctxt->tr);
+-
+-	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
+-	/*
+-	 * segment registers
+-	 */
+-#ifdef CONFIG_X86_32
+-	savesegment(es, ctxt->es);
+-	savesegment(fs, ctxt->fs);
+-	savesegment(gs, ctxt->gs);
+-	savesegment(ss, ctxt->ss);
+-#else
+-/* CONFIG_X86_64 */
+-	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
+-	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
+-	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
+-	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
+-	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
+-
+-	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
+-	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
+-	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+-	mtrr_save_fixed_ranges(NULL);
+-
+-	rdmsrl(MSR_EFER, ctxt->efer);
+-#endif
+-
+-	/*
+-	 * control registers
+-	 */
+-	ctxt->cr0 = read_cr0();
+-	ctxt->cr2 = read_cr2();
+-	ctxt->cr3 = read_cr3();
+-#ifdef CONFIG_X86_32
+-	ctxt->cr4 = read_cr4_safe();
+-#else
+-/* CONFIG_X86_64 */
+-	ctxt->cr4 = read_cr4();
+-	ctxt->cr8 = read_cr8();
+-#endif
+-}
+-
+-/* Needed by apm.c */
+-void save_processor_state(void)
+-{
+-	__save_processor_state(&saved_context);
+-}
+-#ifdef CONFIG_X86_32
+-EXPORT_SYMBOL(save_processor_state);
+-#endif
+-
+-static void do_fpu_end(void)
+-{
+-	/*
+-	 * Restore FPU regs if necessary.
+-	 */
+-	kernel_fpu_end();
+-}
+-
+-static void fix_processor_context(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct tss_struct *t = &per_cpu(init_tss, cpu);
+-
+-	set_tss_desc(cpu, t);	/*
+-				 * This just modifies memory; should not be
+-				 * necessary. But... This is necessary, because
+-				 * 386 hardware has concept of busy TSS or some
+-				 * similar stupidity.
+-				 */
+-
+-#ifdef CONFIG_X86_64
+-	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
+-
+-	syscall_init();				/* This sets MSR_*STAR and related */
+-#endif
+-	load_TR_desc();				/* This does ltr */
+-	load_LDT(&current->active_mm->context);	/* This does lldt */
+-
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7) {
+-#ifdef CONFIG_X86_32
+-		set_debugreg(current->thread.debugreg0, 0);
+-		set_debugreg(current->thread.debugreg1, 1);
+-		set_debugreg(current->thread.debugreg2, 2);
+-		set_debugreg(current->thread.debugreg3, 3);
+-		/* no 4 and 5 */
+-		set_debugreg(current->thread.debugreg6, 6);
+-		set_debugreg(current->thread.debugreg7, 7);
+-#else
+-		/* CONFIG_X86_64 */
+-		loaddebug(&current->thread, 0);
+-		loaddebug(&current->thread, 1);
+-		loaddebug(&current->thread, 2);
+-		loaddebug(&current->thread, 3);
+-		/* no 4 and 5 */
+-		loaddebug(&current->thread, 6);
+-		loaddebug(&current->thread, 7);
+-#endif
+-	}
+-
+-}
+-
+-/**
+- *	__restore_processor_state - restore the contents of CPU registers saved
+- *		by __save_processor_state()
+- *	@ctxt - structure to load the registers contents from
+- */
+-static void __restore_processor_state(struct saved_context *ctxt)
+-{
+-	/*
+-	 * control registers
+-	 */
+-	/* cr4 was introduced in the Pentium CPU */
+-#ifdef CONFIG_X86_32
+-	if (ctxt->cr4)
+-		write_cr4(ctxt->cr4);
+-#else
+-/* CONFIG X86_64 */
+-	wrmsrl(MSR_EFER, ctxt->efer);
+-	write_cr8(ctxt->cr8);
+-	write_cr4(ctxt->cr4);
+-#endif
+-	write_cr3(ctxt->cr3);
+-	write_cr2(ctxt->cr2);
+-	write_cr0(ctxt->cr0);
+-
+-	/*
+-	 * now restore the descriptor tables to their proper values
+-	 * ltr is done i fix_processor_context().
+-	 */
+-#ifdef CONFIG_X86_32
+-	load_gdt(&ctxt->gdt);
+-	load_idt(&ctxt->idt);
+-#else
+-/* CONFIG_X86_64 */
+-	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
+-	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
+-#endif
+-
+-	/*
+-	 * segment registers
+-	 */
+-#ifdef CONFIG_X86_32
+-	loadsegment(es, ctxt->es);
+-	loadsegment(fs, ctxt->fs);
+-	loadsegment(gs, ctxt->gs);
+-	loadsegment(ss, ctxt->ss);
+-
+-	/*
+-	 * sysenter MSRs
+-	 */
+-	if (boot_cpu_has(X86_FEATURE_SEP))
+-		enable_sep_cpu();
+-#else
+-/* CONFIG_X86_64 */
+-	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
+-	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
+-	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
+-	load_gs_index(ctxt->gs);
+-	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
+-
+-	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
+-	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
+-	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
+-#endif
+-
+-	/*
+-	 * restore XCR0 for xsave capable cpu's.
+-	 */
+-	if (cpu_has_xsave)
+-		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
+-
+-	fix_processor_context();
+-
+-	do_fpu_end();
+-	mtrr_ap_init();
+-
+-#ifdef CONFIG_X86_32
+-	mcheck_init(&boot_cpu_data);
+-#endif
+-}
+-
+-/* Needed by apm.c */
+-void restore_processor_state(void)
+-{
+-	__restore_processor_state(&saved_context);
+-}
+-#ifdef CONFIG_X86_32
+-EXPORT_SYMBOL(restore_processor_state);
 -#endif
 -- 
 1.5.2.4
