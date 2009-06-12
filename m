@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
- [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 22:16:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906112210340.21931-100000__757.361905607645$1244773035$gmane$org@netrider.rowland.org>
-References: <200906112305.49232.oliver@neukum.org>
+From: Isamar Maia <isamar@gmail.com>
+Subject: Problem "waking-up"
+Date: Fri, 12 Jun 2009 00:08:38 -0300
+Message-ID: <f695d6b80906112008n71dbb675i96da2168ed9aeb15@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906112305.49232.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,55 +15,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 11 Jun 2009, Oliver Neukum wrote:
+Hi Folks,
 
-> Am Donnerstag, 11. Juni 2009 20:36:30 schrieb Alan Stern:
-> > > Or abstractly any power saving state that does autoresume in hardware.
-> > > In these cases you know that you can enter a powersaving state that
-> > > will add X latency.
-> > >
-> > > In terms of user space API we'll probably add a way for user space
-> > > to specify how much latency may be added for power management's sake.
-> > > If busses are stacked the "latency budget" has to be handled at core
-> > > level. If furthermore states that allow IO but with additional latency
-> > > are ignored, the budget will be calculated wrongly.
-> >
-> > Okay, fine. =A0What does this have to do with Rafael's work? =A0Why does
-> > setting the status to RPM_SUSPENDED even when a device is not in a
-> > low-power state preclude handling buses that automatically change their
-> > power state?
-> =
+Hope here is the right place to send this posting.
 
-> For these cases the tree constraint does not apply.
+I am trying to make a notebook working with all its features and I am
+facing a hard
+work with that.
 
-What tree constraint?  You mean that the PM core shouldn't allow =
+It is a SiS based Chipset as the lscpi output says below:
 
-devices to suspend unless all their children are suspended?  Why =
+00:00.0 Host bridge: Silicon Integrated Systems [SiS] 671MX
+00:01.0 PCI bridge: Silicon Integrated Systems [SiS] SiS AGP Port
+(virtual PCI-to-PCI bridge)
+00:02.0 ISA bridge: Silicon Integrated Systems [SiS] SiS968 [MuTIOL
+Media IO] (rev 01)
+00:02.5 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev 01)
+00:03.0 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
+Controller (rev 0f)
+00:03.1 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
+Controller (rev 0f)
+00:03.3 USB Controller: Silicon Integrated Systems [SiS] USB 2.0 Controller
+00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] 191
+Gigabit Ethernet Adapter (rev 02)
+00:05.0 IDE interface: Silicon Integrated Systems [SiS] SATA
+Controller / IDE mode (rev 03)
+00:06.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
+00:07.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
+00:0d.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 05)
+00:0d.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro
+Host Adapter (rev 22)
+00:0d.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+00:0d.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host
+Adapter (rev 12)
+00:0d.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
+00:0f.0 Audio device: Silicon Integrated Systems [SiS] Azalia Audio Controller
+01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
+771/671 PCIE VGA Display Adapter (rev 10)
+02:00.0 Ethernet controller: Atheros Communications Inc. AR242x
+802.11abg Wireless PCI Express Adapter (rev 01)
 
-doesn't it still apply?
 
-Remember, when Rafael and I say "suspend" here, we don't mean "go to a =
+For xorg, I am using VESA video driver. For wifi, I am using ath_pci
+driver. and for audio, I am using
+snd_hda_intel alsa driver.
 
-low-power state".  We mean "the PM core calls the runtime_suspend =
+I can use "suspend" but I cannot "wakeup" back after that. The screen
+stays blank and I can see
+the CDROM led blinking like trying to detect some media inside.
 
-method".  No matter what actions the link hardware may decide to take =
+I am using Fedora 9's kernel 2.6.26.5-45.i686 and, for specific
+reasons, I cannot upgrade the kernel at all, but I can apply
+any patch if necessary.
 
-on its own, the PM core will still want to observe the =
+I appreciate any help.
 
-all-children-suspended restriction when calling runtime_suspend =
-
-methods.
-
-> I think there are devices who can be suspended while children are active
-> and devices which can not be. This is an attribute of the device and shou=
-ld
-> be evaluated by the core.
-
-Clearly it should be decided by the driver.  Should there be a bit for
-it in the dev_pm_info structure?
-
-Alan Stern
+-- 
+Isamar Maia
+Brazil: 55-71-9146-8575
+            55-71-4062-8688
+日本: +81-(0)3-4550-1212
+"In a world without walls. Who needs windows and gates?"
