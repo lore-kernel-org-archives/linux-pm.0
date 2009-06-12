@@ -1,17 +1,16 @@
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
-	file.
-Date: Thu, 11 Jun 2009 15:32:18 +0200
-Message-ID: <20090611133218.GB3146__9298.56088846481$1244829184$gmane$org@osiris.boeblingen.de.ibm.com>
-References: <20090604161847.513682672@de.ibm.com>
-	<200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin>
-	<200906100109.20470.rjw@sisk.pl>
+Subject: Re: [PATCH 19/19] PM: Add empty suspend/resume device
+	irq functions
+Date: Fri, 12 Jun 2009 13:32:18 +0200
+Message-ID: <20090612113218.GB6355__27133.2047450871$1244829490$gmane$org@osiris.boeblingen.de.ibm.com>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
+	<S4AoGnG.A.AI.ZjYMKB@chimera> <20090612111317.GP18682@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200906100109.20470.rjw@sisk.pl>
+In-Reply-To: <20090612111317.GP18682@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,74 +20,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jaswinder Singh Rajput <jaswinder@kernel.org>, Magnus Damm <damm@igel.co.jp>, Linux PM List <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday 09 June 2009, Cornelia Huck wrote:
-> > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > functions, which are only provided for HAS_IOMEM, thus
-> > breaking compilation if HAS_IOMEM is not set. Fix this
-> > by moving the *_nvs_* routines into hibernation_nvs.c, which
-> > is only compiled if HAS_IOMEM is set.
+On Fri, Jun 12, 2009 at 01:13:17PM +0200, Pavel Machek wrote:
+> On Thu 2009-06-11 22:42:09, Rafael J. Wysocki wrote:
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > > 
-> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+> > device interrupts" introduced some helper functions. However these
+> > functions are only available for architectures which support
+> > GENERIC_HARDIRQS.
 > 
-> Thanks, I added the GPLv2 line to the header comment and changed the name
-> of the file to hibernate_nvs.c (to match the other changes in the works).
+> I believe architectures that do not use GENERIC_HARDIRQs should just
+> provide the empty functions themselves.
 > 
-> I'll carry out some compilation testing on it and put it into the tree shortly.
+> If we want to help them, perhaps few attribute((weak)) functions in
+> the core are the way to go...
 
-Rafael, could you add the patch below as well?
-Or should that go in via git390?
-
-Subject: [PATCH] PM: add empty suspend/resume device irq functions
-
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-
-git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
-device interrupts" introduced some helper functions. However these
-functions are only available for architectures which support
-GENERIC_HARDIRQS.
-
-Other architectures will see this build error:
-
-drivers/built-in.o: In function `sysdev_suspend':
-(.text+0x15138): undefined reference to `check_wakeup_irqs'
-drivers/built-in.o: In function `device_power_up':
-(.text+0x1cb66): undefined reference to `resume_device_irqs'
-drivers/built-in.o: In function `device_power_down':
-(.text+0x1cb92): undefined reference to `suspend_device_irqs'
-
-To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
-
- include/linux/interrupt.h |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff -urpN linux-2.6/include/linux/interrupt.h linux-2.6-patched/include/linux/interrupt.h
---- linux-2.6/include/linux/interrupt.h	2009-06-11 13:07:46.000000000 +0200
-+++ linux-2.6-patched/include/linux/interrupt.h	2009-06-11 13:08:31.000000000 +0200
-@@ -183,6 +183,7 @@ extern void disable_irq(unsigned int irq
- extern void enable_irq(unsigned int irq);
- 
- /* The following three functions are for the core kernel use only. */
-+#ifdef CONFIG_GENERIC_HARDIRQS
- extern void suspend_device_irqs(void);
- extern void resume_device_irqs(void);
- #ifdef CONFIG_PM_SLEEP
-@@ -190,6 +191,11 @@ extern int check_wakeup_irqs(void);
- #else
- static inline int check_wakeup_irqs(void) { return 0; }
- #endif
-+#else
-+static inline void suspend_device_irqs(void) { };
-+static inline void resume_device_irqs(void) { };
-+static inline int check_wakeup_irqs(void) { return 0; }
-+#endif
- 
- #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
- 
+We can still do that when there actually is an architecture that doesn't
+support GENERIC_HARDIRQs _and_ needs non-empty functions.
