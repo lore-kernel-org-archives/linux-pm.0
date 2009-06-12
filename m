@@ -1,19 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate
-	file.
-Date: Fri, 12 Jun 2009 01:28:07 +0200
-Message-ID: <20090611232807.GA19752__47460.4191877463$1244762949$gmane$org@elf.ucw.cz>
-References: <20090604161847.513682672@de.ibm.com>
-	<200906112346.28782.rjw@sisk.pl>
-	<20090611220517.GF27376@elf.ucw.cz>
-	<200906120030.00425.rjw@sisk.pl>
-	<20090611232224.GB18682@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Thu, 11 Jun 2009 22:16:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906112210340.21931-100000__757.361905607645$1244773035$gmane$org@netrider.rowland.org>
+References: <200906112305.49232.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090611232224.GB18682@elf.ucw.cz>
+In-Reply-To: <200906112305.49232.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,34 +18,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > > > > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-> > > > > 
-> > > > > I don't think that's right fix. If architecture does not use
-> > > > > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
-> > > > > itself. Before your patch, it could, after your patch, it can not.
-> > > > > 
-> > > > > Better put those empty functions in arch/s390/include?
-> > > > 
-> > > > If any of the affected architectures wants to implement *_device_irqs()
-> > > > itself, it can do the appropriate change in future.  For now, let's not break
-> > > > compilation on them, shall we?
-> > > 
-> > > Well, if one of those architectures will want to implement
-> > > *_device_irqs(), it will have to either modify s390, and all other
-> > > !GENERIC_HARDIRQS architectures.
-> > 
-> > Why will it?  I think it will be sufficient to modify the header changed by
-> > this patch and the architecture in question.
-> 
-> Hmm, how? Putting #ifndef MY_ARCH into generic header? Inventing
-> CONFIG_NON_GENERIC_HARDIRQS_BUT_I_NEED_DEVICE_IRQS?
+On Thu, 11 Jun 2009, Oliver Neukum wrote:
 
-Maybe playing with attribute((weak)) is the cleanest solution?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Am Donnerstag, 11. Juni 2009 20:36:30 schrieb Alan Stern:
+> > > Or abstractly any power saving state that does autoresume in hardware.
+> > > In these cases you know that you can enter a powersaving state that
+> > > will add X latency.
+> > >
+> > > In terms of user space API we'll probably add a way for user space
+> > > to specify how much latency may be added for power management's sake.
+> > > If busses are stacked the "latency budget" has to be handled at core
+> > > level. If furthermore states that allow IO but with additional latency
+> > > are ignored, the budget will be calculated wrongly.
+> >
+> > Okay, fine. =A0What does this have to do with Rafael's work? =A0Why does
+> > setting the status to RPM_SUSPENDED even when a device is not in a
+> > low-power state preclude handling buses that automatically change their
+> > power state?
+> =
+
+> For these cases the tree constraint does not apply.
+
+What tree constraint?  You mean that the PM core shouldn't allow =
+
+devices to suspend unless all their children are suspended?  Why =
+
+doesn't it still apply?
+
+Remember, when Rafael and I say "suspend" here, we don't mean "go to a =
+
+low-power state".  We mean "the PM core calls the runtime_suspend =
+
+method".  No matter what actions the link hardware may decide to take =
+
+on its own, the PM core will still want to observe the =
+
+all-children-suspended restriction when calling runtime_suspend =
+
+methods.
+
+> I think there are devices who can be suspended while children are active
+> and devices which can not be. This is an attribute of the device and shou=
+ld
+> be evaluated by the core.
+
+Clearly it should be decided by the driver.  Should there be a bit for
+it in the dev_pm_info structure?
+
+Alan Stern
