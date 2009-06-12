@@ -1,13 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.31
-Date: Fri, 12 Jun 2009 22:06:33 +0200
-Message-ID: <20090612200633.GB17688__35824.1658461795$1244839593$gmane$org@elf.ucw.cz>
+Date: Fri, 12 Jun 2009 13:19:22 -0700 (PDT)
+Message-ID: <alpine.LFD.2.01.0906121317320.3237__10169.386099051$1244840027$gmane$org@localhost.localdomain>
 References: <200906122202.08345.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <200906122202.08345.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,10 +18,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Jaswinder Singh Rajput <jaswinder@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Jaswinder Singh Rajput <jaswinder@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2009-06-12 22:02:06, Rafael J. Wysocki wrote:
+
+
+On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
+
 > Hi Linus,
 > 
 > Please pull power management updates for 2.6.31 from:
@@ -44,13 +46,29 @@ On Fri 2009-06-12 22:02:06, Rafael J. Wysocki wrote:
 > * Two patches related to the memory shrinking (for the record, Pavel
 >   doesn't like the "PM/Suspend: Do not shrink memory before suspend"
 >   patch, so please let me know if I should drop it)
+> 
+> * A couple of bug fixes
+> 
+> 
+>  arch/x86/power/cpu.c             |  259 +++++++++++
+>  arch/x86/power/cpu_32.c          |  148 ------
+>  arch/x86/power/cpu_64.c          |  174 -------
+>  kernel/power/disk.c              |  955 --------------------------------------
+>  kernel/power/hibernate.c         |  955 ++++++++++++++++++++++++++++++++++++++
+>  kernel/power/hibernate_nvs.c     |  135 ++++++
+>  35 files changed, 2056 insertions(+), 2194 deletions(-)
 
-Thanks.
+Please add rename detection to your pull script (and --summary, for that 
+matter). This _should_ have looked like
 
-For the record, the patch will break suspend if suspend is attempted
-with 0 pages free. (I believe Rafael agrees with this).
+ 33 files changed, 984 insertions(+), 1122 deletions(-)
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+because it would have detected this:
+
+ rename arch/x86/power/{cpu_64.c => cpu.c} (62%)
+ delete mode 100644 arch/x86/power/cpu_32.c
+ rename kernel/power/{disk.c => hibernate.c} (96%)
+
+instead of counting those as some huge patches that add/remove code.
+
+		Linus
