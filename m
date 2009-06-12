@@ -1,11 +1,17 @@
-From: Isamar Maia <isamar@gmail.com>
-Subject: Problem "waking-up"
-Date: Fri, 12 Jun 2009 00:08:38 -0300
-Message-ID: <f695d6b80906112008n71dbb675i96da2168ed9aeb15@mail.gmail.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
+	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Fri, 12 Jun 2009 12:13:12 +0900
+Message-ID: <aec7e5c30906112013q2d2827feh54192d518156f203@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
+	<200906101029.27529.rjw@sisk.pl>
+	<aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
+	<200906111108.40785.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200906111108.40785.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,67 +21,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Folks,
+Hi Oliver,
 
-Hope here is the right place to send this posting.
+On Thu, Jun 11, 2009 at 6:08 PM, Oliver Neukum<oliver@neukum.org> wrote:
+> Am Donnerstag, 11. Juni 2009 07:18:46 schrieb Magnus Damm:
+>> 3) When all devices in the power domain are suspended the bus code can
+>> turn off the power. The reason why I'd like to only autosuspend when
+>
+> So you are saying that you have power dependencies independent
+> of the device tree?
 
-I am trying to make a notebook working with all its features and I am
-facing a hard
-work with that.
+I can think of the following power dependencies:
+- hardware bus topology
+- clocks
+- power domains
 
-It is a SiS based Chipset as the lscpi output says below:
+>> all devices are idle is simply that we don't get any power savings
+>> from the per device autosuspend() callbacks, only from turning off
+>> power to the entire per-domain. So bindly autosuspending and
+>> autoresuming devices is just pure overhead unless we know we can do it
+>> for all devices in the domain.
+>
+> Why can't you do this within the framework? You simply suspend when
+> all a domain's devices have been autosuspended.
 
-00:00.0 Host bridge: Silicon Integrated Systems [SiS] 671MX
-00:01.0 PCI bridge: Silicon Integrated Systems [SiS] SiS AGP Port
-(virtual PCI-to-PCI bridge)
-00:02.0 ISA bridge: Silicon Integrated Systems [SiS] SiS968 [MuTIOL
-Media IO] (rev 01)
-00:02.5 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev 01)
-00:03.0 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
-Controller (rev 0f)
-00:03.1 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
-Controller (rev 0f)
-00:03.3 USB Controller: Silicon Integrated Systems [SiS] USB 2.0 Controller
-00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] 191
-Gigabit Ethernet Adapter (rev 02)
-00:05.0 IDE interface: Silicon Integrated Systems [SiS] SATA
-Controller / IDE mode (rev 03)
-00:06.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
-00:07.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
-00:0d.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 05)
-00:0d.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro
-Host Adapter (rev 22)
-00:0d.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
-00:0d.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host
-Adapter (rev 12)
-00:0d.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
-00:0f.0 Audio device: Silicon Integrated Systems [SiS] Azalia Audio Controller
-01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
-771/671 PCIE VGA Display Adapter (rev 10)
-02:00.0 Ethernet controller: Atheros Communications Inc. AR242x
-802.11abg Wireless PCI Express Adapter (rev 01)
+So you mean I should handle that in my arch/bus specific
+dev->bus->pm->autosuspend() code? So instead of calling
+dev->driver->pm->autosuspend() straight away I keep track of the use
+count of the power domain and when the domain is unused I call
+dev->driver->pm->autosuspend() for all devices in the power domain
+before powering off?
 
+I guess hooking in things in dev->bus->pm->autosuspend() is doable,
+but then dev->power.runtime_status will be set to RPM_SUSPENDED even
+though the actual device isn't suspended at all. And RPM_IDLE state
+will be more or less unused since the drivers should pass a delay of
+zero to make sure the bus code gets notified about the idle state
+straight away.
 
-For xorg, I am using VESA video driver. For wifi, I am using ath_pci
-driver. and for audio, I am using
-snd_hda_intel alsa driver.
+Basically, for my use case it would make more sense to let the
+bus_type directly decide when a device should be suspended instead of
+using a timeout before calling the bus_type code. I rather let the
+bus_type decide if a timeout should be used or not instead of using it
+for all bus_types.
 
-I can use "suspend" but I cannot "wakeup" back after that. The screen
-stays blank and I can see
-the CDROM led blinking like trying to detect some media inside.
+So I guess the plan is that drivers directly should invoke
+pm_request_suspend() to notify the bus that they are idle? (I guess
+similar to my platform_device_idle()?)
 
-I am using Fedora 9's kernel 2.6.26.5-45.i686 and, for specific
-reasons, I cannot upgrade the kernel at all, but I can apply
-any patch if necessary.
+For my use case there is no point in having the delay in
+pm_request_suspend(), we want to notify the bus about the per-device
+idleness straight away. Using a delay in pm_request_suspend() before
+calling the bus type autosuspend will just keep the current per-device
+state away from the bus level and make sure we _cannot_ enter deep
+sleep states. Which I believe will result in worse battery life
+because we spend more time than necessary in not-so-deep sleep states.
 
-I appreciate any help.
+So yes, I'd like to do things in dev->bus->pm->autosuspend(), and the
+code is quite close. I can't figure out why anyone would want the
+suspend delay at the current level though, but I guess other busses
+want to use that?
 
--- 
-Isamar Maia
-Brazil: 55-71-9146-8575
-            55-71-4062-8688
-日本: +81-(0)3-4550-1212
-"In a world without walls. Who needs windows and gates?"
+Thanks for your comments,
+
+/ magnus
