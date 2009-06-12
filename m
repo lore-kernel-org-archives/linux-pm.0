@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Fri, 12 Jun 2009 21:56:14 +0200
-Message-ID: <200906122156.14873.rjw__4065.72834258458$1244839579$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
+Subject: [GIT PULL] PM updates for 2.6.31
+Date: Fri, 12 Jun 2009 22:02:06 +0200
+Message-ID: <200906122202.08345.rjw__21048.3572482646$1244839583$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906121547490.2862-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,25 +16,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sergio Luis <sergio@larces.uece.br>, Lauro Salmito <laurosalmito@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, Jaswinder Singh Rajput <jaswinder@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 12 June 2009, Alan Stern wrote:
-> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > So, are you suggesting that the core should only check the "all children
-> > suspended" condition if special flag is set in dev_pm_info?
-> 
-> Or rather, check it only if the special flag _isn't_ set.
+Hi Linus,
 
-Where the default is unset, I guess?
+Please pull power management updates for 2.6.31 from:
 
-But then, what about the resuming of the parents before the device is resumed?
-Should the parents be resumed regardless of the flag state?  And if so, what's
-the condition for breaking the recurrence?  Surely it's not sufficient to check
-if the parent is active, because its parent need not be active if it has this
-special flag set.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-Best,
-Rafael
+They are cleanups and code rearrangements mostly, in particular:
+
+* arch/x86/power/cpu_(32|64) unification from Sergio Luis (Ingo saw
+  these patches and his opinion was that they should better go
+  through the suspend tree)
+
+* Removal of some unused files and PM callbacks, function renames
+  from Magnus Damm and Alan Stern
+
+* Rearrangements of the code under kernel/power from me and
+  Cornelia Huck
+
+* Two patches related to the memory shrinking (for the record, Pavel
+  doesn't like the "PM/Suspend: Do not shrink memory before suspend"
+  patch, so please let me know if I should drop it)
+
+* A couple of bug fixes
+
+
+ Documentation/power/devices.txt  |   34 +--
+ arch/alpha/include/asm/suspend.h |    6 -
+ arch/arm/include/asm/suspend.h   |    4 -
+ arch/ia64/include/asm/suspend.h  |    1 -
+ arch/m68k/include/asm/suspend.h  |    6 -
+ arch/mips/include/asm/suspend.h  |    6 -
+ arch/s390/include/asm/suspend.h  |    5 -
+ arch/um/include/asm/suspend.h    |    4 -
+ arch/x86/kernel/acpi/sleep.c     |    2 +-
+ arch/x86/kernel/apm_32.c         |   14 +-
+ arch/x86/power/Makefile          |    2 +-
+ arch/x86/power/cpu.c             |  259 +++++++++++
+ arch/x86/power/cpu_32.c          |  148 ------
+ arch/x86/power/cpu_64.c          |  174 -------
+ drivers/base/platform.c          |   36 +-
+ drivers/base/power/main.c        |   94 ++---
+ drivers/base/sys.c               |   16 +
+ drivers/xen/manage.c             |   16 +-
+ include/linux/device.h           |    5 -
+ include/linux/interrupt.h        |    6 +
+ include/linux/pm.h               |   11 +-
+ include/linux/suspend.h          |   18 +-
+ kernel/kexec.c                   |   14 +-
+ kernel/power/Kconfig             |    4 +
+ kernel/power/Makefile            |    5 +-
+ kernel/power/disk.c              |  955 --------------------------------------
+ kernel/power/hibernate.c         |  955 ++++++++++++++++++++++++++++++++++++++
+ kernel/power/hibernate_nvs.c     |  135 ++++++
+ kernel/power/main.c              |  521 ---------------------
+ kernel/power/power.h             |   25 +-
+ kernel/power/snapshot.c          |   80 +++-
+ kernel/power/suspend.c           |  300 ++++++++++++
+ kernel/power/suspend_test.c      |  187 ++++++++
+ kernel/power/swsusp.c            |  198 --------
+ mm/vmscan.c                      |    4 +-
+ 35 files changed, 2056 insertions(+), 2194 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      PM core: rename suspend and resume functions
+
+Cornelia Huck (1):
+      PM/Hibernate: Move NVS routines into a seperate file (v2).
+
+Heiko Carstens (1):
+      PM: Add empty suspend/resume device irq functions
+
+Jaswinder Singh Rajput (1):
+      PM/ACPI/x86: Fix sparse warning in arch/x86/kernel/acpi/sleep.c
+
+Magnus Damm (5):
+      PM: Remove unused asm/suspend.h
+      PM: Rename device_power_down/up()
+      PM: Remove bus_type suspend_late()/resume_early() V2
+      PM: Remove device_type suspend()/resume()
+      Driver Core: Rework platform suspend/resume, print warning
+
+Rafael J. Wysocki (5):
+      PM: Warn if interrupts are enabled during suspend-resume of sysdevs
+      PM/Suspend: Do not shrink memory before suspend
+      PM/Hibernate: Move memory shrinking to snapshot.c (rev. 2)
+      PM: Separate suspend to RAM functionality from core
+      PM/Hibernate: Rename disk.c to hibernate.c
+
+Sergio Luis (6):
+      x86: unify power/cpu_(32|64) headers
+      x86: unify power/cpu_(32|64) global variables
+      x86: unify power/cpu_(32|64) regarding saving processor state
+      x86: unify power/cpu_(32|64) regarding restoring processor state
+      x86: unify power/cpu_(32|64) copyright notes
+      x86: unify power/cpu_(32|64).c
