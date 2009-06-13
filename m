@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update] Re: Run-time PM idea (was: Re:
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Sat, 13 Jun 2009 01:06:57 +0200
-Message-ID: <200906130106.58464.rjw__21919.9449442842$1244848048$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Sat, 13 Jun 2009 14:08:08 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906131404160.25619-100000__9968.97573718361$1244916561$gmane$org@netrider.rowland.org>
+References: <200906130106.58464.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906121706180.5018-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200906130106.58464.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 12 June 2009, Alan Stern wrote:
-> On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > On Friday 12 June 2009, Alan Stern wrote:
-> > > On Fri, 12 Jun 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > So, are you suggesting that the core should only check the "all children
-> > > > suspended" condition if special flag is set in dev_pm_info?
-> > > 
-> > > Or rather, check it only if the special flag _isn't_ set.
-> > 
-> > Where the default is unset, I guess?
-> 
-> Yep.
-> 
-> > But then, what about the resuming of the parents before the device is resumed?
-> > Should the parents be resumed regardless of the flag state?
-> 
-> Yes.  In general you should assume a device's parent (and the device
-> itself!) needs to be resumed whenever the kernel wants to do something
-> with the device.  The special flag arises because sometimes it's safe
-> to suspend the parent without suspending the device _if_ the kernel
-> isn't using the device.
-> 
-> Imagine an idle disk at the end of a link.  We might want to 
-> autosuspend the link without spinning down the disk.  When we have to 
-> communicate with the disk again, we autoresume the link.  (Including 
-> the case where the communication is a "spin-down" command.)
-> 
-> >  And if so, what's
-> > the condition for breaking the recurrence?  Surely it's not sufficient to check
-> > if the parent is active, because its parent need not be active if it has this
-> > special flag set.
-> 
-> That's a good question.  Let's assume that situations like this will be 
-> handled by the drivers.
-> 
-> For example, suppose A is the parent of B is the parent of C, and A is
-> suspended but B isn't and C is.  What happens when somebody wants to
-> use C?
-> 
-> An autoresume request is generated for C.  Since C's parent is already
-> resumed, the runtime_resume method in C's driver is called.  The driver
-> has to do some I/O in order to resume C, so it passes an I/O request up
-> to B's driver.  The request then gets passed up to A's driver.  This
-> driver knows that A is suspended, so it starts an autoresume of A and
-> waits for the autoresume to complete before carrying out the request.
-> 
-> Then the I/O can go through, so C gets resumed and everything works 
-> out.
-> 
-> I don't know how often this sort of pattern will arise.  It certainly
-> could be used in usb-storage; there would be no difficulty starting an
-> autoresume when an I/O request arrives from the SCSI layer below.  In
-> fact, that is exactly how some early runtime-PM patches for usb-storage
-> worked.
+On Sat, 13 Jun 2009, Rafael J. Wysocki wrote:
 
-So, the conclusion seems to be that we should break the recurrence
-at the point we find an already active device or a device with no parent and
-let the driver(s) handle the more complicated cases.  Is this correct?
+> So, the conclusion seems to be that we should break the recurrence
+> at the point we find an already active device or a device with no parent and
+> let the driver(s) handle the more complicated cases.  Is this correct?
 
-BTW, is __device_release_driver() the right place for blocking the run-time PM
-temporarily during remove?
+That's right.
 
-Best,
-Rafael
+> BTW, is __device_release_driver() the right place for blocking the run-time PM
+> temporarily during remove?
+
+It is.  And for submitting a delayed autosuspend request afterward; we
+may as well try to suspend devices that don't have drivers.
+
+Alan Stern
