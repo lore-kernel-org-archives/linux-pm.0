@@ -1,8 +1,8 @@
 From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend
 	to memory
-Date: Sun, 14 Jun 2009 14:43:11 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.0906141440440.2800__26522.58529929$1244983455$gmane$org@localhost.localdomain>
+Date: Sun, 14 Jun 2009 14:46:20 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.0906141444500.2800__9440.05566784671$1244983644$gmane$org@localhost.localdomain>
 References: <20090614120950.116536fa@pluto-lenny.milky.way>
 	<200906141400.27331.rjw@sisk.pl>
 	<alpine.LFD.2.00.0906141405450.2800@localhost.localdomain>
@@ -23,15 +23,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Benjamin S." <sbenni@gmx.de>
-Cc: js@sig21.net, Matthew Wilcox <matthew@wil.cx>, Linux PCI <linux-pci@vger.kernel.org>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: js@sig21.net, Matthew Wilcox <matthew@wil.cx>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Sun, 14 Jun 2009, Benjamin S. wrote:
->  19:          0         17   IO-APIC-fasteoi   ehci_hcd:usb4, HDA Intel
->  24:       4830          0  HPET_MSI-edge      hpet2
 
-This is probably the culprit. Try booting with hpet=disble and check
-whether your resume works.
+This is odd as well:
+>            CPU0       CPU1       
+>   0:         42          1   IO-APIC-edge      timer
+>  24:       4830          0  HPET_MSI-edge      hpet2
+> LOC:         42       5070   Local timer interrupts
+
+So we set up only one hpet channel for CPU0 and CPU1 uses the local
+timer interrupt. Need to look at that as well.
+
+Venki ???
 
 Thanks,
 
