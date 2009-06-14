@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] Suspend Problems
-Date: Sun, 14 Jun 2009 14:12:53 +0200
-Message-ID: <200906141412.54225.rjw@sisk.pl>
-References: <f70484c50906131954s171ad307w297af4f503f1f837@mail.gmail.com>
-	<200906141113.16311.rjw@sisk.pl>
-	<f70484c50906140339i4dfd8d8aob67f7a1789fda58e@mail.gmail.com>
+Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend
+	to memory
+Date: Sun, 14 Jun 2009 14:15:16 +0200
+Message-ID: <200906141415.16949.rjw__24968.6577743434$1244981732$gmane$org@sisk.pl>
+References: <20090614120950.116536fa@pluto-lenny.milky.way>
+	<200906141400.27331.rjw@sisk.pl>
+	<alpine.LFD.2.00.0906141405450.2800@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <f70484c50906140339i4dfd8d8aob67f7a1789fda58e@mail.gmail.com>
+In-Reply-To: <alpine.LFD.2.00.0906141405450.2800@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,23 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Regivan Hugo Nunes Santiago <regivan@dimap.ufrn.br>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>, "Benjamin S." <sbenni@gmx.de>
+Cc: js@sig21.net, Matthew Wilcox <matthew@wil.cx>, Linux PCI <linux-pci@vger.kernel.org>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 14 June 2009, Regivan Hugo Nunes Santiago wrote:
-> The Kernel was 2.6.22-15-generic.
+On Sunday 14 June 2009, Thomas Gleixner wrote:
+> On Sun, 14 Jun 2009, Rafael J. Wysocki wrote:
+> > Evidently, the change of the interrupt handling during suspend-resume,
+> > commit 2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7 (PM: Rework handling of
+> > interrupts during suspend-resume) broke resume (specifically, the enabling of
+> > nonboot CPUs) on the Benjamin's machine, but only if MSI support is enabled.
+> > Also, resume works if suspend_device_irqs() and resume_device_irqs() in
+> > drivers/base/power/main.c are commented out.
+> > 
+> > Is there anything the MSI code does in __enable_irq() and/or __disable_irq()
+> > that might cause this problem to appear?
 > 
-> Thank you again,
-> Regivan
-> 
-> ps. Could you teach me, how will you find the description of my machine in
-> the old kernel?
+> Not that I'm aware of. Which of the devices is using MSI ? Have to
+> tried to skip only the MSI ones in suspend/resume_device_irqs() ?
 
-Well, that depends on what you mean by "the description". :-)
+Good idea.
 
-Can you please try the 2.6.30 kernel from kernel.org booting it with
-acpi_sleep=s4_nohwsig in its command line?
+Benjamin, please send /proc/interrupts from your system.
 
 Best,
 Rafael
