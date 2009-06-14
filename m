@@ -1,24 +1,13 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.30 enabling cpu1 on resume fails after suspend
-	to memory
-Date: Sun, 14 Jun 2009 18:19:39 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.0906141819220.2800__32291.2441836253$1244996527$gmane$org@localhost.localdomain>
-References: <200906141415.16949.rjw@sisk.pl>
-	<20090614143708.32ec250c@pluto-lenny.milky.way>
-	<alpine.LFD.2.00.0906141444500.2800@localhost.localdomain>
-	<7E82351C108FA840AB1866AC776AEC4669244187@orsmsx505.amr.corp.intel.com>
-	<alpine.LFD.2.00.0906141514120.2800@localhost.localdomain>
-	<7E82351C108FA840AB1866AC776AEC466924418A@orsmsx505.amr.corp.intel.com>
-	<alpine.LFD.2.00.0906141548490.2800@localhost.localdomain>
-	<alpine.LFD.2.00.0906141644190.2800@localhost.localdomain>
-	<20090614170334.3fcfb2ee@pluto-lenny.milky.way>
-	<alpine.LFD.2.00.0906141741180.2800@localhost.localdomain>
-	<20090614161257.GB9235@kroah.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PCI PM: Fix handling of devices without PM
+	support by pci_target_state()
+Date: Sun, 14 Jun 2009 21:25:02 +0200
+Message-ID: <200906142125.03418.rjw__34551.3026034043$1245007553$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090614161257.GB9235@kroah.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,25 +17,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: "js@sig21.net" <js@sig21.net>, Matthew Wilcox <matthew@wil.cx>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Benjamin S." <sbenni@gmx.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Andreas Mohr <andim2@users.sourceforge.net>, Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 14 Jun 2009, Greg KH wrote:
-> On Sun, Jun 14, 2009 at 05:41:50PM +0200, Thomas Gleixner wrote:
-> > On Sun, 14 Jun 2009, Benjamin S. wrote:
-> > 
-> > > On Sun, 14 Jun 2009 16:45:10 +0200 (CEST)
-> > > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > 
-> > > > can you please test the patch below.
-> > > 
-> > > It works. 
-> > 
-> > I queue it up. Thanks,
-> 
-> Make sure to add a tag to get it sent to the stable tree too please :)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Already done :)
+If a PCI device is not power-manageable either by the platform, or
+with the help of the native PCI PM interface, pci_target_state() will
+return either PCI_D3hot, or PCI_POWER_ERROR for it, depending on
+whether or not the device is configured to wake up the system.  Alas,
+none of these return values is correct, because each of them causes
+pci_prepare_to_sleep() to return error code, although it should
+complete successfully in such a case.
 
-	tglx
+Fix this problem by making pci_target_state() always return PCI_D0
+for devices that cannot be power managed.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+Hi Jesse,
+
+I think this is 2.6.31 material, probably -stable too.
+
+Best,
+Rafael
+
+---
+ drivers/pci/pci.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1288,15 +1288,14 @@ pci_power_t pci_target_state(struct pci_
+ 		default:
+ 			target_state = state;
+ 		}
++	} else if (!dev->pm_cap) {
++		target_state = PCI_D0;
+ 	} else if (device_may_wakeup(&dev->dev)) {
+ 		/*
+ 		 * Find the deepest state from which the device can generate
+ 		 * wake-up events, make it the target state and enable device
+ 		 * to generate PME#.
+ 		 */
+-		if (!dev->pm_cap)
+-			return PCI_POWER_ERROR;
+-
+ 		if (dev->pme_support) {
+ 			while (target_state
+ 			      && !(dev->pme_support & (1 << target_state)))
