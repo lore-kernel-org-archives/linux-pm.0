@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PCI hotplug v.s. suspend
-Date: Mon, 15 Jun 2009 22:51:50 +0200
-Message-ID: <200906152251.51648.rjw__32201.6672384509$1245099226$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906151630440.2643-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] PM: Introduce core framework for
+ run-time PM of I/O devices
+Date: Mon, 15 Jun 2009 17:08:56 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906151700570.2643-100000__9559.21068457446$1245100264$gmane$org@iolanthe.rowland.org>
+References: <200906150057.32424.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906151630440.2643-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200906150057.32424.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, ath5k-devel@venema.h4ckr.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 15 June 2009, Alan Stern wrote:
-> On Mon, 15 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > > I'm not sure whether the example is trustworthy.  There was some
-> > > discussion quite a while ago regarding whether drivers should free
-> > > their IRQs during suspend, but I don't remember what the outcome was.
-> > 
-> > No, they shouldn't.
-> > 
-> > That's why we do the entire suspend_device_irqs() thing etc.
-> 
-> Looks like the Documentation/power/pci.txt file needs to be updated.  
-> No surprise, it hasn't been touched in well over a year and there 
-> haven't been any meaningful updates in four years.
+On Mon, 15 Jun 2009, Rafael J. Wysocki wrote:
 
-Sure it does, but PCI PM has been a moving target for quite some time.  I hope
-it's going to settle down now.
+> On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > Below is the current version of my "run-time PM for I/O devices" patch.
+> > > 
+> > > I've done my best to address the comments received during the recent
+> > > discussions, but at the same time I've tried to make the patch only contain
+> > > the most essential things.  For this reason, for example, the sysfs interface
+> > > is not there and it's going to be added in a separate patch.
+> > > 
+> > > Please let me know if you want me to change anything in this patch or to add
+> > > anything new to it.  [Magnus, I remember you wanted something like
+> > > ->runtime_wakeup() along with ->runtime_idle(), but I'm not sure it's really
+> > > necessary.  Please let me know if you have any particular usage scenario for
+> > > it.]
+> 
+> Appended is an update of the patch addressing the today's comments from Magnus.
 
-Best,
-Rafael
+This is really looking very good.  I'll do a more detailed review
+later.  (In particular, I have not checked the details of the rather
+intricate state machine transitions.)  For now, a couple of things 
+struck my eye:
+
+Shouldn't the calls to complete() really be complete_all()?  There
+might be more than one thread waiting for a suspend or resume callback
+to finish.
+
+Since pm_runtime_resume() takes care of powering up the parent, there's 
+no need for pm_request_resume() to worry about it also.
+
+The documentation should mention that the runtime_suspend method is 
+supposed to enable remote wakeup if it as available and if 
+device_may_wakeup(dev) is true.
+
+Alan Stern
