@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch update 2] PM: Introduce core framework for
+Subject: [patch update 2 fix] PM: Introduce core framework for
 	run-time PM of I/O devices
-Date: Tue, 16 Jun 2009 23:30:09 +0200
-Message-ID: <200906162330.10694.rjw__24450.8235752166$1245187876$gmane$org@sisk.pl>
+Date: Wed, 17 Jun 2009 00:33:04 +0200
+Message-ID: <200906170033.05662.rjw__48780.0899697051$1245193586$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0906161028480.3740-100000@iolanthe.rowland.org>
+	<200906162330.10694.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906161028480.3740-100000@iolanthe.rowland.org>
+In-Reply-To: <200906162330.10694.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,36 +24,42 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 16 June 2009, Alan Stern wrote:
-> On Tue, 16 Jun 2009, Rafael J. Wysocki wrote:
-> > > Since pm_runtime_resume() takes care of powering up the parent, there's
-> > > no need for pm_request_resume() to worry about it also.
+On Tuesday 16 June 2009, Rafael J. Wysocki wrote:
+> On Tuesday 16 June 2009, Alan Stern wrote:
+> > On Tue, 16 Jun 2009, Rafael J. Wysocki wrote:
+> > > > Since pm_runtime_resume() takes care of powering up the parent, there's
+> > > > no need for pm_request_resume() to worry about it also.
+> > >
+> > > But still it won't hurt to do it IMO, because the parents are then going
+> > > to be resumed before our pm_runtime_resume() is called.
 > >
-> > But still it won't hurt to do it IMO, because the parents are then going
-> > to be resumed before our pm_runtime_resume() is called.
->
-> It's extra code that isn't needed.  In essence, you are trading code
-> space for a shorter runtime stack.
-
-That's correct.  I think the code size increase is small and it's better to 
-keep the stack as small as reasonably possible.
-
-> > > The documentation should mention that the runtime_suspend method is
-> > > supposed to enable remote wakeup if it as available and if
-> > > device_may_wakeup(dev) is true.
+> > It's extra code that isn't needed.  In essence, you are trading code
+> > space for a shorter runtime stack.
+> 
+> That's correct.  I think the code size increase is small and it's better to 
+> keep the stack as small as reasonably possible.
+> 
+> > > > The documentation should mention that the runtime_suspend method is
+> > > > supposed to enable remote wakeup if it as available and if
+> > > > device_may_wakeup(dev) is true.
+> > >
+> > > Well, I thought that was obvious. :-)
 > >
-> > Well, I thought that was obvious. :-)
->
-> Sometimes it doesn't hurt to state the obvious!  :-)
+> > Sometimes it doesn't hurt to state the obvious!  :-)
+> 
+> Sure.
+> 
+> In the meantime I updated the patch once again.  I addressed your last 
+> comments in this version and added the possibility to resume with blocking
+> suspend (ie. after such a resume pm_runtime_suspend() and pm_request_suspend() 
+> will return immediately intil a special function is called).
+> 
+> I also fixed a couple of bugs. :-)
 
-Sure.
+Sorry for the broken patch.  My mailer started to wordwrap messages
+automatically and I didn't notice.
 
-In the meantime I updated the patch once again.  I addressed your last 
-comments in this version and added the possibility to resume with blocking
-suspend (ie. after such a resume pm_runtime_suspend() and pm_request_suspend() 
-will return immediately intil a special function is called).
-
-I also fixed a couple of bugs. :-)
+The correct patch is appended.
 
 Best,
 Rafael
@@ -73,8 +80,7 @@ Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
  drivers/base/dd.c                  |    9 
  drivers/base/power/Makefile        |    1 
  drivers/base/power/main.c          |    5 
- drivers/base/power/runtime.c       |  499 
-+++++++++++++++++++++++++++++++++++++
+ drivers/base/power/runtime.c       |  499 +++++++++++++++++++++++++++++++++++++
  include/linux/pm.h                 |   97 ++++++-
  include/linux/pm_runtime.h         |  112 ++++++++
  kernel/power/Kconfig               |   14 +
@@ -156,12 +162,10 @@ Index: linux-2.6/include/linux/pm.h
   * Callbacks for platform drivers to implement.
 @@ -165,6 +168,26 @@ typedef struct pm_message {
   * It is allowed to unregister devices while the above callbacks are being
-  * executed.  However, it is not allowed to unregister a device from within 
-any
+  * executed.  However, it is not allowed to unregister a device from within any
   * of its own callbacks.
 + *
-+ * There also are the following callbacks related to run-time power 
-management
++ * There also are the following callbacks related to run-time power management
 + * of devices:
 + *
 + * @runtime_suspend: Prepare the device for a condition in which it won't be
@@ -171,14 +175,12 @@ management
 + *	separate device object, that is going to be turned off for power
 + *	management purposes.
 + *
-+ * @runtime_resume: Put the device into the fully active state in response to 
-a
++ * @runtime_resume: Put the device into the fully active state in response to a
 + *	wake-up event generated by hardware or at a request of software.  If
 + *	necessary, put the device into the full power state and restore its
 + *	registers, so that it is fully operational.
 + *
-+ * @runtime_idle: Device appears to be inactive and it might be put into a 
-low
++ * @runtime_idle: Device appears to be inactive and it might be put into a low
 + *	power state if all of the necessary conditions are satisfied.  Check
 + *	these conditions and handle the device as appropriate, possibly queueing
 + *	a suspend request for it.
@@ -202,8 +204,7 @@ low
 +/**
 + * Device run-time power management state.
 + *
-+ * These state labels are used internally by the PM core to indicate the 
-current
++ * These state labels are used internally by the PM core to indicate the current
 + * status of a device with respect to the PM core operations.  They do not
 + * reflect the actual power state of the device or its status as seen by the
 + * driver.
@@ -333,8 +334,7 @@ Index: linux-2.6/drivers/base/power/runtime.c
 +EXPORT_SYMBOL_GPL(__pm_runtime_change_status);
 +
 +/**
-+ * pm_device_suspended - Check if given device has been suspended at run 
-time.
++ * pm_device_suspended - Check if given device has been suspended at run time.
 + * @dev: Device to check.
 + * @data: Ignored.
 + *
@@ -363,8 +363,7 @@ time.
 + * pm_runtime_notify_idle - Run a device bus type's runtime_idle() callback.
 + * @dev: Device to notify.
 + *
-+ * Check if all children of given device are suspended and call the device 
-bus
++ * Check if all children of given device are suspended and call the device bus
 + * type's ->runtime_idle() callback if that's the case.
 + */
 +static void pm_runtime_notify_idle(struct device *dev)
@@ -489,8 +488,7 @@ bus
 +/**
 + * pm_request_suspend - Schedule run-time suspend of given device.
 + * @dev: Device to suspend.
-+ * @msec: Time, in miliseconds, to wait before attempting to suspend the 
-device.
++ * @msec: Time to wait before attempting to suspend the device, in milliseconds.
 + */
 +void pm_request_suspend(struct device *dev, unsigned int msec)
 +{
@@ -533,12 +531,9 @@ device.
 + *
 + * Check if the device is really suspended and run the ->runtime_resume()
 + * callback provided by the device's bus type driver.  Update the run-time PM
-+ * flags in the device object to reflect the current status of the device.  
-If
-+ * runtime suspend is in progress while this function is being run, wait for 
-it
-+ * to finish before resuming the device.  If runtime suspend is scheduled, 
-but
++ * flags in the device object to reflect the current status of the device.  If
++ * runtime suspend is in progress while this function is being run, wait for it
++ * to finish before resuming the device.  If runtime suspend is scheduled, but
 + * it hasn't started yet, cancel it and we're done.
 + */
 +int __pm_runtime_resume(struct device *dev, bool grace)
@@ -653,10 +648,8 @@ but
 + * pm_runtime_resume_work - Run __pm_runtime_resume() for a device.
 + * @work: Work structure used for scheduling the execution of this function.
 + *
-+ * Use @work to get the device object the resume has been scheduled for and 
-run
-+ * __pm_runtime_resume() for it without forcing a grace period after the 
-resume.
++ * Use @work to get the device object the resume has been scheduled for and run
++ * __pm_runtime_resume() for it without forcing a grace period after the resume.
 + */
 +static void pm_runtime_resume_work(struct work_struct *work)
 +{
@@ -720,10 +713,8 @@ resume.
 + * pm_cancel_runtime_suspend - Cancel a pending suspend request for a device.
 + * @dev: Device to handle.
 + *
-+ * This routine is only supposed to be called when the run-time PM workqueue 
-is
-+ * frozen (i.e. during system-wide suspend or hibernation) when it is 
-guaranteed
++ * This routine is only supposed to be called when the run-time PM workqueue is
++ * frozen (i.e. during system-wide suspend or hibernation) when it is guaranteed
 + * that no work items are being executed.
 + */
 +void pm_cancel_runtime_suspend(struct device *dev)
@@ -743,10 +734,8 @@ guaranteed
 + * pm_cancel_runtime_resume - Cancel a pending resume request for a device.
 + * @dev: Device to handle.
 + *
-+ * This routine is only supposed to be called when the run-time PM workqueue 
-is
-+ * frozen (i.e. during system-wide suspend or hibernation) when it is 
-guaranteed
++ * This routine is only supposed to be called when the run-time PM workqueue is
++ * frozen (i.e. during system-wide suspend or hibernation) when it is guaranteed
 + * that no work items are being executed.
 + */
 +void pm_cancel_runtime_resume(struct device *dev)
@@ -830,8 +819,7 @@ Index: linux-2.6/include/linux/pm_runtime.h
 +extern struct workqueue_struct *pm_wq;
 +
 +extern void pm_runtime_init(struct device *dev);
-+extern void __pm_runtime_change_status(struct device *dev, unsigned int 
-status,
++extern void __pm_runtime_change_status(struct device *dev, unsigned int status,
 +				       unsigned int new_status);
 +extern int __pm_runtime_suspend(struct device *dev, bool sync);
 +extern void pm_request_suspend(struct device *dev, unsigned int msec);
@@ -866,8 +854,7 @@ status,
 +{
 +	return -ENOSYS;
 +}
-+static inline void pm_request_suspend(struct device *dev, unsigned int msec) 
-{}
++static inline void pm_request_suspend(struct device *dev, unsigned int msec) {}
 +static inline int __pm_runtime_resume(struct device *dev, bool grace)
 +{
 +	return -ENOSYS;
@@ -1026,28 +1013,22 @@ Index: linux-2.6/Documentation/power/runtime_pm.txt
 +The support for run-time power management (run-time PM) of I/O devices is
 +provided at the power management core (PM core) level by means of:
 +
-+* The power management workqueue pm_wq in which bus types and device drivers 
-can
++* The power management workqueue pm_wq in which bus types and device drivers can
 +  put their PM-related work items.  It is strongly recommended that pm_wq be
 +  used for queuing all work items related to run-time PM, because this allows
-+  them to be synchronized with system-wide power transitions.  pm_wq is 
-declared
++  them to be synchronized with system-wide power transitions.  pm_wq is declared
 +  in include/linux/pm_runtime.h and defined in kernel/power/main.c.
 +
-+* A number of run-time PM fields in the 'power' member of 'struct device' 
-(which
-+  is of the type 'struct dev_pm_info', defined in include/linux/pm.h) that 
-can
++* A number of run-time PM fields in the 'power' member of 'struct device' (which
++  is of the type 'struct dev_pm_info', defined in include/linux/pm.h) that can
 +  be used for synchronizing run-time PM operations with one another.
 +
 +* Three device run-time PM callbacks in 'struct dev_pm_ops' (defined in
 +  include/linux/pm.h).
 +
-+* A set of helper functions defined in drivers/base/power/runtime.c that can 
-be
++* A set of helper functions defined in drivers/base/power/runtime.c that can be
 +  used for carrying out run-time PM operations in such a way that the
-+  synchronization between them is taken care of by the PM core.  Bus types 
-and
++  synchronization between them is taken care of by the PM core.  Bus types and
 +  device drivers are encouraged to use these functions.
 +
 +The device run-time PM fields defined in 'struct dev_pm_info', the helper
@@ -1081,17 +1062,14 @@ and
 +* void pm_runtime_clear_suspended(struct device *dev) {}
 +
 +pm_runtime_init() initializes the run-time PM fields in the 'power' member of
-+the device object.  It is called during the initialization of the device 
-object,
++the device object.  It is called during the initialization of the device object,
 +in drivers/base/power/main.c:device_pm_add().
 +
 +pm_runtime_enable() and pm_runtime_disable() are used to enable and disable,
-+respectively, all of the run-time PM core operations.  They do it by 
-decreasing
++respectively, all of the run-time PM core operations.  They do it by decreasing
 +and increasing, respectively, the 'power.depth' field of 'struct device'.  If
 +the value of this field is greater than 0, pm_runtime_suspend(),
-+pm_request_suspend(), pm_runtime_resume() and so on return immediately 
-without
++pm_request_suspend(), pm_runtime_resume() and so on return immediately without
 +doing anything and -EBUSY is returned by pm_runtime_suspend(),
 +pm_runtime_resume() and pm_runtime_resume_grace().  Therefore, if
 +pm_runtime_disable() is called several times in a row for the same device, it
@@ -1108,190 +1086,139 @@ without
 +pm_runtime_suspend(), pm_request_suspend(), pm_runtime_resume(),
 +pm_runtime_resume_grace(), pm_request_resume(), and pm_request_resume_grace()
 +use the 'power.runtime_status' and 'power.suspend_aborted' fields of
-+'struct device' for mutual synchronization.  The 'power.runtime_status' 
-field,
-+called the device's run-time PM status in what follows, is set to RPM_ACTIVE 
-by
++'struct device' for mutual synchronization.  The 'power.runtime_status' field,
++called the device's run-time PM status in what follows, is set to RPM_ACTIVE by
 +pm_runtime_init().
 +
-+pm_request_suspend() is used to queue up a suspend request for an active 
-device.
++pm_request_suspend() is used to queue up a suspend request for an active device.
 +If the run-time PM status of the device (i.e. the value of the
 +'power.runtime_status' field in 'struct device') is different from RPM_ACTIVE
 +(i.e. the device is not active from the PM core standpoint), it returns
-+immediately.  Otherwise, it changes the device's run-time PM status to 
-RPM_IDLE
++immediately.  Otherwise, it changes the device's run-time PM status to RPM_IDLE
 +and puts a request to suspend the device into pm_wq.  The 'msec' argument is
 +used to specify the time to wait before the request will be completed, in
-+miliseconds.  It is valid to call this function from interrupt context.
++milliseconds.  It is valid to call this function from interrupt context.
 +
 +pm_runtime_suspend() is used to carry out a run-time suspend of an active
-+device.  It is called directly by a bus type or device driver.  An 
-asynchronous
++device.  It is called directly by a bus type or device driver.  An asynchronous
 +version of it is called by the PM core, to complete a request queued up by
 +pm_request_suspend().  The only difference between them is the handling of
-+situations when a queued up suspend request has just been cancelled.  Apart 
-from
++situations when a queued up suspend request has just been cancelled.  Apart from
 +this, they work in the same way.
-+* If the device is suspended (i.e. the RPM_SUSPENDED bit is set in the 
-device's
++* If the device is suspended (i.e. the RPM_SUSPENDED bit is set in the device's
 +  run-time PM status field, 'power.runtime_status'), success is returned.
-+* If the device is about to resume or is in a post-resume grace period (i.e. 
-at
++* If the device is about to resume or is in a post-resume grace period (i.e. at
 +  least one of the RPM_WAKE, RPM_RESUMING, and RPM_GRACE bits are set in the
 +  device's run-time PM status field), -EAGAIN is returned.  -EAGAIN is also
-+  returned if the function has been called via pm_wq as a result of a 
-cancelled
-+  suspend request (the 'power.suspend_aborted' field is used for this 
-purpose).
-+* If the device is suspending (i.e. its run-time PM status is 
-RPM_SUSPENDING),
++  returned if the function has been called via pm_wq as a result of a cancelled
++  suspend request (the 'power.suspend_aborted' field is used for this purpose).
++* If the device is suspending (i.e. its run-time PM status is RPM_SUSPENDING),
 +  which means that another instance of pm_runtime_suspend() is running at the
 +  same time for the same device, the function waits for the other instance to
 +  complete and returns the error code (or success) returned by it.
 +* If the device's children are not suspended and the
-+  'power.suspend_skip_children' flag is not set for it, the device's run-time 
-PM
++  'power.suspend_skip_children' flag is not set for it, the device's run-time PM
 +  status is set to RPM_ACTIVE and -EAGAIN is returned.
 +If none of the above takes place, the device's run-time PM status is set to
 +RPM_SUSPENDING and its bus type's ->runtime_suspend() callback is executed.
 +This callback is responsible for handling the device as appropriate (for
 +example, it may choose to execute the device driver's ->runtime_suspend()
-+callback or to carry out any other suitable action depending on the bus 
-type).
++callback or to carry out any other suitable action depending on the bus type).
 +* If it completes successfully, the RPM_SUSPENDED bit is set and the
-+  RPM_SUSPENDING bit is cleared in the device's run-time PM status field.  
-Once
-+  that has happened, the device is regarded by the PM core as suspended, but 
-it
-+  _need_ _not_ mean that the device has been put into a low power state.  
-What
-+  really occurs to the device at this point totally depends on its bus type 
-(it
++  RPM_SUSPENDING bit is cleared in the device's run-time PM status field.  Once
++  that has happened, the device is regarded by the PM core as suspended, but it
++  _need_ _not_ mean that the device has been put into a low power state.  What
++  really occurs to the device at this point totally depends on its bus type (it
 +  may depend on the device's driver if the bus type chooses to call it).
-+  Additionally, if the device bus type's ->runtime_suspend() callback 
-completes
-+  successfully, the device bus type's ->runtime_idle() callback is executed 
-for
-+  the device's parent, if there is one and if all of its children are 
-suspended
++  Additionally, if the device bus type's ->runtime_suspend() callback completes
++  successfully, the device bus type's ->runtime_idle() callback is executed for
++  the device's parent, if there is one and if all of its children are suspended
 +  (or the 'power.suspend_skip_children' flag is set for it).
 +* If either -EBUSY or -EAGAIN is returned, the device's run-time PM status is
 +  set to RPM_ACTIVE.
-+* If another error code is returned, the device's run-time PM status is set 
-to
-+  RPM_ERROR and the PM core will refuse to carry out any run-time PM 
-operations
-+  for it until the status is cleared by its bus type or driver with the help 
-of
++* If another error code is returned, the device's run-time PM status is set to
++  RPM_ERROR and the PM core will refuse to carry out any run-time PM operations
++  for it until the status is cleared by its bus type or driver with the help of
 +  either pm_runtime_clear_active(), or pm_runtime_clear_suspended().
 +Finally, pm_runtime_suspend() returns the error code (or success) returned by
 +the device bus type's ->runtime_suspend() callback.  If the device's bus type
 +doesn't implement ->runtime_suspend(), -EINVAL is returned and the device's
 +run-time PM status is set to RPM_ERROR.
 +
-+pm_request_resume() and pm_request_resume_grace() are used to queue up a 
-resume
++pm_request_resume() and pm_request_resume_grace() are used to queue up a resume
 +request for a device that is suspended, suspending or has a suspend request
-+pending.  The difference between them is that pm_request_resume_grace() 
-causes
++pending.  The difference between them is that pm_request_resume_grace() causes
 +the RPM_GRACE bit to be set in the device's run-time PM status field, which
-+prevents the PM core from suspending the device or queueing up a suspend 
-request
-+for it until the RPM_GRACE bit is cleared with the help of 
-pm_runtime_release().
++prevents the PM core from suspending the device or queuing up a suspend request
++for it until the RPM_GRACE bit is cleared with the help of pm_runtime_release().
 +Apart from this, they work in the same way.
-+* If a suspend request is pending for the device (i.e. the device's run-time 
-PM
-+  status is RPM_IDLE), it is cancelled, the 'power.suspend_aborted' flag is 
-set
-+  for the device, the RPM_IDLE bit is cleared in the device's run-time PM 
-status
++* If a suspend request is pending for the device (i.e. the device's run-time PM
++  status is RPM_IDLE), it is cancelled, the 'power.suspend_aborted' flag is set
++  for the device, the RPM_IDLE bit is cleared in the device's run-time PM status
 +  field and the function returns (pm_request_resume_grace() additionally sets
 +  the RPM_GRACE bit in the device's run-time PM status field).
-+* If the device is not suspended or suspending (i.e. none of the 
-RPM_SUSPENDED
-+  and RPM_SUSPENDING bits is set in the device's run-time PM status field), 
-the
++* If the device is not suspended or suspending (i.e. none of the RPM_SUSPENDED
++  and RPM_SUSPENDING bits is set in the device's run-time PM status field), the
 +  function returns.
 +* If the device's parent is inactive (i.e. at least one of the RPM_IDLE,
 +  RPM_SUSPENDING, and RPM_SUSPENDED bits is set in its run-time PM status
 +  field), a resume request is (recursively) scheduled for the parent and the
 +  function is restarted.
-+If none of the above happens, the RPM_WAKE bit is set in the device's run-
-time
++If none of the above happens, the RPM_WAKE bit is set in the device's run-time
 +PM status field and the request to execute pm_runtime_resume() is put into
 +pm_wq.
 +
 +pm_runtime_resume() and pm_runtime_resume_grace() are used to carry out a
 +run-time resume of a device that is suspended, suspending or has a suspend
-+request pending.  They are called either by the PM core, to complete a 
-request
++request pending.  They are called either by the PM core, to complete a request
 +queued up by pm_request_resume(), or directly by a bus type or device driver.
 +The difference between them is that pm_request_resume_grace() causes the
-+RPM_GRACE bit to be set in the device's run-time PM status field, which 
-prevents
-+the PM core from suspending the device or queueing up a suspend request for 
-it
-+until the RPM_GRACE bit is cleared with the help of pm_runtime_release().  
-Apart
++RPM_GRACE bit to be set in the device's run-time PM status field, which prevents
++the PM core from suspending the device or queuing up a suspend request for it
++until the RPM_GRACE bit is cleared with the help of pm_runtime_release().  Apart
 +from this, they work in the same way.
 +* If the device is active (i.e. all of the bits in its run-time PM status are
 +  clear, possibly except for RPM_GRACE), success is returned.
 +* If there's a suspend request pending for the device (i.e. the device's
-+  run-time PM status is RPM_IDLE), it is cancelled, the 
-'power.suspend_aborted'
++  run-time PM status is RPM_IDLE), it is cancelled, the 'power.suspend_aborted'
 +  flag is set for the device, the RPM_IDLE bit is cleared in its run-time PM
 +  status field and the function returns success (pm_runtime_resume_grace()
-+  additionally sets the RPM_GRACE bit in the device's run-time PM status 
-field).
++  additionally sets the RPM_GRACE bit in the device's run-time PM status field).
 +* If the device is suspending (i.e. the RPM_SUSPENDING bit is set in its
 +  run-time PM status field), the function waits for the suspend operation to
 +  complete and restarts itself.
-+* If the device is suspended (i.e. the RPM_SUSPENDED bit is set in the 
-device's
-+  run-time PM status field), the device's parent exists and is not active 
-(i.e.
-+  the parent's run-time PM status is not RPM_ACTIVE or RPM_GRACE), the parent 
-is
++* If the device is suspended (i.e. the RPM_SUSPENDED bit is set in the device's
++  run-time PM status field), the device's parent exists and is not active (i.e.
++  the parent's run-time PM status is not RPM_ACTIVE or RPM_GRACE), the parent is
 +  resumed (recursively) and the function restarts itself.
 +* If the device is resuming (i.e. the device's run-time PM status is
 +  RPM_RESUMING), which means that another instance of pm_runtime_resume() is
-+  running at the same time for the same device, the function waits for the 
-other
++  running at the same time for the same device, the function waits for the other
 +  instance to complete and returns the result returned by it.
 +If none of the above happens, the RPM_WAKE and RPM_SUSPENDED bits are cleared
-+and the RPM_RESUMING bit is set in the device's run-time PM status field.  
-Next,
++and the RPM_RESUMING bit is set in the device's run-time PM status field.  Next,
 +the device bus type's ->runtime_resume() callback is executed, which is
-+responsible for handling the device as appropriate (for example, it may 
-choose
-+to execute the device driver's ->runtime_resume() callback or to carry out 
-any
++responsible for handling the device as appropriate (for example, it may choose
++to execute the device driver's ->runtime_resume() callback or to carry out any
 +other suitable action depending on the bus type).
 +* If it completes successfully, the device's run-time PM status is set to
-+  'active' (i.e. the device's run-time PM status field is either RPM_ACTIVE, 
-or
++  'active' (i.e. the device's run-time PM status field is either RPM_ACTIVE, or
 +  RPM_GRACE), which means that the device is fully operational.  Thus, the
 +  device bus type's ->runtime_resume() callback, when it is about to return
 +  success, _must_ _ensure_ that this really is the case (i.e. when it returns
 +  success, the device _must_ be able to carry out I/O operations as needed).
 +* If either -EBUSY or -EAGAIN is returned, the device's run-time PM status is
 +  set to RPM_SUSPENDED.
-+* If another error code is returned, the device's run-time PM status is set 
-to
-+  RPM_ERROR and the PM core will refuse to carry out any run-time PM 
-operations
-+  for it until the status is cleared by its bus type or driver with the help 
-of
++* If another error code is returned, the device's run-time PM status is set to
++  RPM_ERROR and the PM core will refuse to carry out any run-time PM operations
++  for it until the status is cleared by its bus type or driver with the help of
 +  either pm_runtime_clear_active(), or pm_runtime_clear_suspended().
 +Finally, pm_runtime_resume() returns the error code (or success) returned by
 +the device bus type's ->runtime_resume() callback.  If the device's bus type
 +doesn't implement ->runtime_resume(), -EINVAL is returned and the device's
 +run-time PM status is set to RPM_ERROR.
 +
-+pm_runtime_release() is used to clear the RPM_GRACE bit in the device's run-
-time
++pm_runtime_release() is used to clear the RPM_GRACE bit in the device's run-time
 +PM status field.  This bit, if set, causes the PM core to refuse to suspend
 +the device or to queue up a suspend request for it.  In particular, it causes
 +pm_runtime_suspend() to return -EAGAIN without doing anything else.  This may
@@ -1299,28 +1226,24 @@ time
 +suspended until the task is complete, but there are many potential sources of
 +suspend requests that could disturb it.
 +
-+pm_cancel_runtime_suspend() is used to cancel a pending suspend request for 
-an
++pm_cancel_runtime_suspend() is used to cancel a pending suspend request for an
 +active device, but it can only be called when the run-time PM of the device
 +is disabled.  It is supposed to be used during system-wide power transitions.
 +
 +pm_cancel_runtime_resume() is used to cancel a pending suspend request for
 +a suspended device.  It can only be called when the run-time PM of the device
-+is disabled and it is supposed to be used during system-wide power 
-transitions.
++is disabled and it is supposed to be used during system-wide power transitions.
 +
 +pm_suspend_check_children() is used to set or unset the
 +'power.suspend_skip_children' flag in 'struct device'.  If the 'enabled'
-+argument is 'true', the field is set to 0, and if 'enable' is 'false', the 
-field
++argument is 'true', the field is set to 0, and if 'enable' is 'false', the field
 +is set to 1.  The default value of 'power.suspend_skip_children', as set by
 +pm_runtime_init(), is 0.
 +
 +pm_runtime_clear_active() is used to change the device's run-time PM status
 +field from RPM_ERROR to RPM_ACTIVE.
 +
-+pm_runtime_clear_suspended() is used to change the device's run-time PM 
-status
++pm_runtime_clear_suspended() is used to change the device's run-time PM status
 +field from RPM_ERROR to RPM_SUSPENDED.
 +
 +3. Device Run-time PM Callbacks
@@ -1335,69 +1258,52 @@ status
 +	...
 +};
 +
-+The ->runtime_suspend() callback is executed by pm_runtime_suspend() for the 
-bus
++The ->runtime_suspend() callback is executed by pm_runtime_suspend() for the bus
 +type of the device being suspended.  The bus type's callback is then _fully_
 +_responsible_ for handling the device as appropriate, which may, but need not
-+include executing the device driver's ->runtime_suspend() callback (from the 
-PM
++include executing the device driver's ->runtime_suspend() callback (from the PM
 +core's point of view it is not necessary to implement a ->runtime_suspend()
-+callback in a device driver as long as the bus type's ->runtime_suspend() 
-knows
++callback in a device driver as long as the bus type's ->runtime_suspend() knows
 +what to do to handle the device).
 +* Once the bus type's ->runtime_suspend() callback has returned successfully,
 +  the PM core regards the device as suspended, which need not mean that the
-+  device has been put into a low power state.  It is supposed to mean, 
-however,
++  device has been put into a low power state.  It is supposed to mean, however,
 +  that the device will not communicate with the CPU(s) and RAM until the bus
 +  type's ->runtime_resume() callback is executed for it.
-+* If the bus type's ->runtime_suspend() callback returns -EBUSY or -EAGAIN, 
-the
-+  device's run-time PM status is set to RPM_ACTIVE, which means that the 
-device
++* If the bus type's ->runtime_suspend() callback returns -EBUSY or -EAGAIN, the
++  device's run-time PM status is set to RPM_ACTIVE, which means that the device
 +  _must_ be fully operational one this has happened.
-+* If the bus type's ->runtime_suspend() callback returns an error code 
-different
-+  from -EBUSY or -EAGAIN, the PM core regards this as an unrecoverable error 
-and
++* If the bus type's ->runtime_suspend() callback returns an error code different
++  from -EBUSY or -EAGAIN, the PM core regards this as an unrecoverable error and
 +  will refuse to run the helper functions described in Section 1 until the
 +  status is changed to either RPM_SUSPENDED or RPM_ACTIVE by the device's bus
 +  type or driver.
 +In particular, it is recommended that ->runtime_suspend() return -EBUSY or
 +-EAGAIN if device_may_wakeup() returns 'false' for the device.  On the other
-+hand, if device_may_wakeup() returns 'true' for the device and the device is 
-put
++hand, if device_may_wakeup() returns 'true' for the device and the device is put
 +into a low power state during the execution of ->runtime_suspend(), it is
 +expected that remote wake-up (i.e. hardware mechanism allowing the device to
 +request a change of its power state, such as PCI PME) will be enabled for the
-+device.  Generally, remote wake-up should be enabled whenever the device is 
-put
++device.  Generally, remote wake-up should be enabled whenever the device is put
 +into a low power state at run time and is expected to receive input from the
 +outside of the system.
 +
-+The ->runtime_resume() callback is executed by pm_runtime_resume() for the 
-bus
++The ->runtime_resume() callback is executed by pm_runtime_resume() for the bus
 +type of the device being woken up.  The bus type's callback is then _fully_
 +_responsible_ for handling the device as appropriate, which may, but need not
-+include executing the device driver's ->runtime_resume() callback (from the 
-PM
++include executing the device driver's ->runtime_resume() callback (from the PM
 +core's point of view it is not necessary to implement a ->runtime_resume()
-+callback in a device driver as long as the bus type's ->runtime_resume() 
-knows
++callback in a device driver as long as the bus type's ->runtime_resume() knows
 +what to do to handle the device).
 +* Once the bus type's ->runtime_resume() callback has returned successfully,
 +  the PM core regards the device as fully operational, which means that the
 +  device _must_ be able to complete I/O operations as needed.
-+* If the bus type's ->runtime_resume() callback returns -EBUSY or -EAGAIN, 
-the
-+  device's run-time PM status is set to RPM_SUSPENDED, which is supposed to 
-mean
++* If the bus type's ->runtime_resume() callback returns -EBUSY or -EAGAIN, the
++  device's run-time PM status is set to RPM_SUSPENDED, which is supposed to mean
 +  that the device will not communicate with the CPU(s) and RAM until the bus
 +  type's ->runtime_resume() callback is executed for it.
-+* If the bus type's ->runtime_resume() callback returns an error code 
-different
-+  from -EBUSY or -EAGAIN, the PM core regards this as an unrecoverable error 
-and
++* If the bus type's ->runtime_resume() callback returns an error code different
++  from -EBUSY or -EAGAIN, the PM core regards this as an unrecoverable error and
 +  will refuse to run the helper functions described in Section 1 until the
 +  status is changed to either RPM_SUSPENDED or RPM_ACTIVE by the device's bus
 +  type or driver.
@@ -1406,8 +1312,6 @@ and
 +type of a device the children of which are all suspended (or which has the
 +'power.suspend_skip_children' flag set).  The action carried out by this
 +callback is totally dependent on the bus type in question, but the expected
-+action is to check if the device can be suspended (i.e. if all of the 
-conditions
-+necessary for suspending the device are met) and to queue up a suspend 
-request
++action is to check if the device can be suspended (i.e. if all of the conditions
++necessary for suspending the device are met) and to queue up a suspend request
 +for the device if that is the case.
