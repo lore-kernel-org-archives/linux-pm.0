@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of I/O devices
-Date: Tue, 16 Jun 2009 01:21:39 +0200
-Message-ID: <200906160121.40843.rjw__2787.22941079668$1245108257$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906151700570.2643-100000@iolanthe.rowland.org>
+From: Bob Copeland <me@bobcopeland.com>
+Subject: Re: [ath5k-devel]  PCI hotplug v.s. suspend
+Date: Mon, 15 Jun 2009 21:01:01 -0400
+Message-ID: <20090616010101.GA11412__42568.1363711648$1245114190$gmane$org@hash.localnet>
+References: <Pine.LNX.4.44L0.0906151035560.5057-100000@iolanthe.rowland.org>
+	<200906152158.30989.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906151700570.2643-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <200906152158.30989.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, ath5k-devel@venema.h4ckr.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 15 June 2009, Alan Stern wrote:
-> On Mon, 15 Jun 2009, Rafael J. Wysocki wrote:
+On Mon, Jun 15, 2009 at 09:58:30PM +0200, Rafael J. Wysocki wrote:
+> On Monday 15 June 2009, Alan Stern wrote:
+> > I'm not sure whether the example is trustworthy.  There was some
+> > discussion quite a while ago regarding whether drivers should free
+> > their IRQs during suspend, but I don't remember what the outcome was.
 > 
-> > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
-> > > On Sunday 14 June 2009, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > Below is the current version of my "run-time PM for I/O devices" patch.
-> > > > 
-> > > > I've done my best to address the comments received during the recent
-> > > > discussions, but at the same time I've tried to make the patch only contain
-> > > > the most essential things.  For this reason, for example, the sysfs interface
-> > > > is not there and it's going to be added in a separate patch.
-> > > > 
-> > > > Please let me know if you want me to change anything in this patch or to add
-> > > > anything new to it.  [Magnus, I remember you wanted something like
-> > > > ->runtime_wakeup() along with ->runtime_idle(), but I'm not sure it's really
-> > > > necessary.  Please let me know if you have any particular usage scenario for
-> > > > it.]
-> > 
-> > Appended is an update of the patch addressing the today's comments from Magnus.
+> No, they shouldn't.
 > 
-> This is really looking very good.  I'll do a more detailed review
-> later.  (In particular, I have not checked the details of the rather
-> intricate state machine transitions.)  For now, a couple of things 
-> struck my eye:
-> 
-> Shouldn't the calls to complete() really be complete_all()?  There
-> might be more than one thread waiting for a suspend or resume callback
-> to finish.
+> That's why we do the entire suspend_device_irqs() thing etc.
 
-Yes, thanks for pointing that out.
+So, ath5k needs something like the following?
 
-> Since pm_runtime_resume() takes care of powering up the parent, there's 
-> no need for pm_request_resume() to worry about it also.
+diff --git a/drivers/net/wireless/ath/ath5k/base.c b/drivers/net/wireless/ath/ath5k/base.c
+index 55f7de0..0107cd6 100644
+--- a/drivers/net/wireless/ath/ath5k/base.c
++++ b/drivers/net/wireless/ath/ath5k/base.c
+@@ -665,7 +665,6 @@ ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 
+ 	ath5k_led_off(sc);
+ 
+-	free_irq(pdev->irq, sc);
+ 	pci_save_state(pdev);
+ 	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
+@@ -686,18 +685,8 @@ ath5k_pci_resume(struct pci_dev *pdev)
+ 	if (err)
+ 		return err;
+ 
+-	err = request_irq(pdev->irq, ath5k_intr, IRQF_SHARED, "ath", sc);
+-	if (err) {
+-		ATH5K_ERR(sc, "request_irq failed\n");
+-		goto err_no_irq;
+-	}
+-
+ 	ath5k_led_enable(sc);
+ 	return 0;
+-
+-err_no_irq:
+-	pci_disable_device(pdev);
+-	return err;
+ }
+ #endif /* CONFIG_PM */
+ 
 
-But still it won't hurt to do it IMO, because the parents are then going to be
-resumed before our pm_runtime_resume() is called.
-
-> The documentation should mention that the runtime_suspend method is 
-> supposed to enable remote wakeup if it as available and if 
-> device_may_wakeup(dev) is true.
-
-Well, I thought that was obvious. :-)
-
-Best,
-Rafael
+-- 
+Bob Copeland %% www.bobcopeland.com
