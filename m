@@ -1,15 +1,14 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [ath5k-devel]  PCI hotplug v.s. suspend
-Date: Thu, 18 Jun 2009 12:51:26 +0100
-Message-ID: <4A3A2A3E.7090300__28881.1537357562$1245325964$gmane$org@tuffmail.co.uk>
-References: <Pine.LNX.4.44L0.0906151035560.5057-100000@iolanthe.rowland.org>
-	<200906152158.30989.rjw@sisk.pl>
-	<20090616010101.GA11412@hash.localnet>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+Date: Thu, 18 Jun 2009 09:21:19 -0700
+Message-ID: <87r5xhqzr4.fsf@deeprootsystems.com>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090616010101.GA11412@hash.localnet>
+In-Reply-To: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+	(Magnus Damm's message of "Wed\, 10 Jun 2009 21\:16\:59 +0900")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,89 +18,146 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linux-pci@vger.kernel.org, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, linux-pm@lists.linux-foundation.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Bob Copeland wrote:
-> On Mon, Jun 15, 2009 at 09:58:30PM +0200, Rafael J. Wysocki wrote:
->   
->> On Monday 15 June 2009, Alan Stern wrote:
->>     
->>> I'm not sure whether the example is trustworthy.  There was some
->>> discussion quite a while ago regarding whether drivers should free
->>> their IRQs during suspend, but I don't remember what the outcome was.
->>>       
->> No, they shouldn't.
->>
->> That's why we do the entire suspend_device_irqs() thing etc.
->>     
+Magnus Damm <magnus.damm@gmail.com> writes:
+
+> From: Magnus Damm <damm@igel.co.jp>
 >
-> So, ath5k needs something like the following?
+> Allow architecture specific data in struct platform_device V3.
 >
-> diff --git a/drivers/net/wireless/ath/ath5k/base.c b/drivers/net/wireless/ath/ath5k/base.c
-> index 55f7de0..0107cd6 100644
-> --- a/drivers/net/wireless/ath/ath5k/base.c
-> +++ b/drivers/net/wireless/ath/ath5k/base.c
-> @@ -665,7 +665,6 @@ ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+> With this patch struct pdev_archdata is added to struct
+> platform_device, similar to struct dev_archdata in found in
+> struct device. Useful for architecture code that needs to
+> keep extra data associated with each platform device.
+>
+> Struct pdev_archdata is different from dev.platform_data, the
+> convention is that dev.platform_data points to driver-specific
+> data. It may or may not be required by the driver. The format
+> of this depends on driver but is the same across architectures.
+>
+> The structure pdev_archdata is a place for architecture specific
+> data. This data is handled by architecture specific code (for
+> example runtime PM), and since it is architecture specific it
+> should _never_ be touched by device driver code. Exactly like
+> struct dev_archdata but for platform devices.
+>
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+
+Since there is no 'Feature-desired-by:' tag, I'll addd
+
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+
+For PM on ARM in general, and OMAP in particular we definitely need a
+generic way to handle arch-specific data per platform_device.
+
+Kevin
+
+>
+>  Applies to next-20090610.
+>
+>  Changes since V2:
+>  - updated commit message, thanks to Rafael for feedback
+>
+>  Changes since V1:
+>  - post to lkml, keep linux-pm cc:ed
+>  - add struct pdev_archdata to asm-generic
+>  - add struct pdev_archdata to non-generic architectures
+>  - drop Kconfig bits
+>
+>  arch/arm/include/asm/device.h        |    3 +++
+>  arch/ia64/include/asm/device.h       |    3 +++
+>  arch/microblaze/include/asm/device.h |    3 +++
+>  arch/powerpc/include/asm/device.h    |    3 +++
+>  arch/sparc/include/asm/device.h      |    3 +++
+>  arch/x86/include/asm/device.h        |    3 +++
+>  include/asm-generic/device.h         |    3 +++
+>  include/linux/platform_device.h      |    3 +++
+>  8 files changed, 24 insertions(+)
+>
+> --- 0001/arch/arm/include/asm/device.h
+> +++ work/arch/arm/include/asm/device.h	2009-06-01 12:19:51.000000000 +0900
+> @@ -12,4 +12,7 @@ struct dev_archdata {
+>  #endif
+>  };
 >  
->  	ath5k_led_off(sc);
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif
+> --- 0001/arch/ia64/include/asm/device.h
+> +++ work/arch/ia64/include/asm/device.h	2009-06-01 12:18:11.000000000 +0900
+> @@ -15,4 +15,7 @@ struct dev_archdata {
+>  #endif
+>  };
 >  
-> -	free_irq(pdev->irq, sc);
->  	pci_save_state(pdev);
->  	pci_disable_device(pdev);
->  	pci_set_power_state(pdev, PCI_D3hot);
-> @@ -686,18 +685,8 @@ ath5k_pci_resume(struct pci_dev *pdev)
->  	if (err)
->  		return err;
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_IA64_DEVICE_H */
+> --- 0001/arch/microblaze/include/asm/device.h
+> +++ work/arch/microblaze/include/asm/device.h	2009-06-01 12:19:32.000000000 +0900
+> @@ -16,6 +16,9 @@ struct dev_archdata {
+>  	struct device_node	*of_node;
+>  };
 >  
-> -	err = request_irq(pdev->irq, ath5k_intr, IRQF_SHARED, "ath", sc);
-> -	if (err) {
-> -		ATH5K_ERR(sc, "request_irq failed\n");
-> -		goto err_no_irq;
-> -	}
-> -
->  	ath5k_led_enable(sc);
->  	return 0;
-> -
-> -err_no_irq:
-> -	pci_disable_device(pdev);
-> -	return err;
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_MICROBLAZE_DEVICE_H */
+>  
+>  
+> --- 0001/arch/powerpc/include/asm/device.h
+> +++ work/arch/powerpc/include/asm/device.h	2009-06-01 12:16:28.000000000 +0900
+> @@ -30,4 +30,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->of_node;
 >  }
->  #endif /* CONFIG_PM */
 >  
->   
-
-Unfortunately this makes it worse.  My eeepc-laptop hacks are now in
-wireless-testing.  If I apply the above patch to wireless-testing and
-"remove" the device while suspended, I get a soft hang on resume. 
-Suspending without removal works fine.
-
-I can see a BUG if I boot with no_console_suspend
-
-Unable to handle kernel NULL pointer dereference
-IP: klist_put
-Tainted: G W
-Process s2disk
-
-Call trace:
-? klist_del
-? device_del
-? device_unregister
-? pci_stop_dev
-? pci_stop_bus
-? pci_remove_device
-? eeepc_rfkill_hotplug [eeepc_laptop]
-? eeepc_hotk_resume [eeepc_laptop]
-? acpi_device_resume
-? device_resume
-? hibernation_snapshot
-? release_console_sem
-? snapshot_ioctl
-? snapshot_ioctl
-? vfs_ioctl
-? do_vfs_ioctl
-? n_tty_write
-? vfs_write
-? sys_ioctl
-? syscall_call
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_POWERPC_DEVICE_H */
+> --- 0001/arch/sparc/include/asm/device.h
+> +++ work/arch/sparc/include/asm/device.h	2009-06-01 12:18:57.000000000 +0900
+> @@ -32,4 +32,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->prom_node;
+>  }
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_SPARC_DEVICE_H */
+> --- 0001/arch/x86/include/asm/device.h
+> +++ work/arch/x86/include/asm/device.h	2009-06-01 12:17:28.000000000 +0900
+> @@ -13,4 +13,7 @@ struct dma_map_ops *dma_ops;
+>  #endif
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_X86_DEVICE_H */
+> --- 0001/include/asm-generic/device.h
+> +++ work/include/asm-generic/device.h	2009-06-01 12:16:20.000000000 +0900
+> @@ -9,4 +9,7 @@
+>  struct dev_archdata {
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_GENERIC_DEVICE_H */
+> --- 0001/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-06-01 12:14:43.000000000 +0900
+> @@ -22,6 +22,9 @@ struct platform_device {
+>  	struct resource	* resource;
+>  
+>  	struct platform_device_id	*id_entry;
+> +
+> +	/* arch specific additions */
+> +	struct pdev_archdata	archdata;
+>  };
+>  
+>  #define platform_get_device_id(pdev)	((pdev)->id_entry)
