@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch update 2 fix] PM: Introduce core framework
-	for run-time PM of I/O devices
-Date: Thu, 18 Jun 2009 01:07:33 +0200
-Message-ID: <200906180107.34764.rjw__18346.0156702951$1245280103$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906171408280.2820-100000@iolanthe.rowland.org>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [ath5k-devel]  PCI hotplug v.s. suspend
+Date: Thu, 18 Jun 2009 12:51:26 +0100
+Message-ID: <4A3A2A3E.7090300__28881.1537357562$1245325964$gmane$org@tuffmail.co.uk>
+References: <Pine.LNX.4.44L0.0906151035560.5057-100000@iolanthe.rowland.org>
+	<200906152158.30989.rjw@sisk.pl>
+	<20090616010101.GA11412@hash.localnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906171408280.2820-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20090616010101.GA11412@hash.localnet>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,445 +19,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: linux-pci@vger.kernel.org, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
-
-Thanks a lot for the review!
-
-On Wednesday 17 June 2009, Alan Stern wrote:
-> On Wed, 17 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > Sorry for the broken patch.  My mailer started to wordwrap messages
-> > automatically and I didn't notice.
-> > 
-> > The correct patch is appended.
-> 
-> > Index: linux-2.6/include/linux/pm.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/pm.h
-> > +++ linux-2.6/include/linux/pm.h
-> 
-> > + * @runtime_suspend: Prepare the device for a condition in which it won't be
-> > + *	able to communicate with the CPU(s) and RAM due to power management.
-> > + *	This need not mean that the device should be put into a low power state,
-> > + *	like for example when the device is behind a link, represented by a
-> 
-> Suggested rephrasing: For example, if the device is behind a link
-> which is about to be turned off, the device may remain at full power.
-> But if the device does go to low power and if device_may_wakeup(dev)
-> is true, enable remote wakeup.
-
-Done.
-
-> > +/**
-> > + * Device run-time power management state.
-> > + *
-> > + * These state labels are used internally by the PM core to indicate the current
-> > + * status of a device with respect to the PM core operations.  They do not
-> > + * reflect the actual power state of the device or its status as seen by the
-> > + * driver.
-> > + *
-> > + * RPM_ACTIVE		Device is fully operational, no run-time PM requests are
-> > + *			pending for it.
-> > + *
-> > + * RPM_IDLE		It has been requested that the device be suspended.
-> > + *			Suspend request has been put into the run-time PM
-> > + *			workqueue and it's pending execution.
-> > + *
-> > + * RPM_SUSPENDING	Device bus type's ->runtime_suspend() callback is being
-> > + *			executed.
-> > + *
-> > + * RPM_SUSPENDED	Device bus type's ->runtime_suspend() callback has
-> > + *			completed successfully.  The device is regarded as
-> > + *			suspended.
-> > + *
-> > + * RPM_WAKE		It has been requested that the device be woken up.
-> > + *			Resume request has been put into the run-time PM
-> > + *			workqueue and it's pending execution.
-> > + *
-> > + * RPM_RESUMING		Device bus type's ->runtime_resume() callback is being
-> > + *			executed.
-> > + *
-> > + * RPM_ERROR		Represents a condition from which the PM core cannot
-> > + *			recover by itself.  If the device's run-time PM status
-> > + *			field has this value, all of the run-time PM operations
-> > + *			carried out for the device by the core will fail, until
-> > + *			the status field is changed to either RPM_ACTIVE or
-> > + *			RPM_SUSPENDED (it is not valid to use the other values
-> > + *			in such a situation) by the device's driver or bus type.
-> > + *			This happens when the device bus type's
-> > + *			->runtime_suspend() or ->runtime_resume() callback
-> > + *			returns error code different from -EAGAIN or -EBUSY.
-> 
-> What about RPM_GRACE?
-
-Forgotten.
-
-Well, I've already replaced it with a counter (more about it below).
-
-> > + */
-> > +
-> > +#define RPM_ACTIVE	0
-> > +#define RPM_IDLE	0x01
-> > +#define RPM_SUSPENDING	0x02
-> > +#define RPM_SUSPENDED	0x04
-> > +#define RPM_WAKE	0x08
-> > +#define RPM_RESUMING	0x10
-> > +#define RPM_GRACE	0x20
-> > +#define RPM_ERROR	(-1)
-> 
-> This won't work very well when assigned to an unsigned 6-bit field.
-
-OK, I'm changing it to 0x1F (IOW, all bits set).
-
-> > +
-> > +#define RPM_IN_SUSPEND	(RPM_SUSPENDING | RPM_SUSPENDED)
-> > +#define RPM_INACTIVE	(RPM_IDLE | RPM_IN_SUSPEND)
-> > +#define RPM_NO_SUSPEND	(RPM_WAKE | RPM_RESUMING | RPM_GRACE)
-> > +#define RPM_IN_PROGRESS	(RPM_SUSPENDING | RPM_RESUMING)
-> 
-> Since each of these is used only once, it would be better not to
-> define them as macros.  Use the parenthesized expression instead; this
-> will be easier for readers to understand.
-
-OK
-
-> > +/**
-> > + * __pm_runtime_change_status - Change the run-time PM status of a device.
-> > + * @dev: Device to handle.
-> > + * @status: Expected current run-time PM status of the device.
-> > + * @new_status: New value of the device's run-time PM status.
-> > + *
-> > + * Change the run-time PM status of the device to @new_status if its current
-> > + * value is equal to @status.
-> > + */
-> > +void __pm_runtime_change_status(struct device *dev, unsigned int status,
-> 
-> If RPM_ERROR is -1 then status better not be unsigned.
-
-That's fixed by redefining RPM_ERROR (see above).
-
-> > +				unsigned int new_status)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	if (atomic_read(&dev->power.depth) > 0)
-> > +		return;
-> 
-> Return only if new_status == RPM_SUSPENDED.
-
-Not only then.  The dev->power.depth counter was meant to be a "disable
-everything" one, because there are situations in which we don't want even
-resume to run (probe, release, system-wide suspend, hibernation, resume from
-a system sleep state, possibly others).
-
-That said, I overlooked some problems related to it.  So, I think to disable
-the runtime PM of given device, it will be necessary to run a synchronous
-runtime resume with taking a ref to block suspend.
-
-> Is this routine ever called with status equal to anything other than
-> RPM_ERROR?
-
-Not at the moment.  OK, I'll change it.
-
-> +/**
-> + * pm_check_children - Check if all children of a device have been suspended.
-> + * @dev: Device to check.
-> + *
-> + * Returns 0 if all children of the device have been suspended or -EBUSY
-> + * otherwise.
-> + */
-> +static int pm_check_children(struct device *dev)
-> +{
-> +	return dev->power.suspend_skip_children ? 0 :
-> +			device_for_each_child(dev, NULL, pm_device_suspended);
-> +}
-> 
-> Instead of a costly device_for_each_child(), would it be better to
-> maintain a counter with the number of unsuspended children?
-
-Hmm.  How exactly are we going to count them?  The only way I see at the moment
-would be to increase this number by one when running pm_runtime_init() for a
-new child.  Seems doable.
-
-> > +/**
-> > + * __pm_runtime_suspend - Run a device bus type's runtime_suspend() callback.
-> > + * @dev: Device to suspend.
-> > + * @sync: If unset, the funtion has been called via pm_wq.
-> > + *
-> > + * Check if the status of the device is appropriate and run the
-> > + * ->runtime_suspend() callback provided by the device's bus type driver.
-> > + * Update the run-time PM flags in the device object to reflect the current
-> > + * status of the device.
-> > + */
-> > +int __pm_runtime_suspend(struct device *dev, bool sync)
-> > +{
-> > +	int error = -EINVAL;
-> > +
-> > +	if (atomic_read(&dev->power.depth) > 0)
-> > +		return -EBUSY;
-> 
-> Should this test be made inside the scope of the spinlock?
-
-Yes, it should.
-
-> For that matter, should power.depth always be set within the spinlock?
-> If it is then it doesn't need to be an atomic_t.
-
-pm_runtime_[dis|en]able() don't take the lock when changing it, but it's
-going to be dropped anyway.
-
-> > +
-> > +	spin_lock(&dev->power.lock);
-> 
-> Should be spin_lock_irq().  Same in other places.
-
-OK, I wasn't sure about that.
-
-> > +
-> > +	if (dev->power.runtime_status == RPM_ERROR) {
-> > +		goto out;
-> > +	} else if (dev->power.runtime_status & RPM_SUSPENDED) {
-> > +		error = 0;
-> > +		goto out;
-> > +	} else if ((dev->power.runtime_status & RPM_NO_SUSPEND)
-> > +	    || (!sync && dev->power.suspend_aborted)) {
-> > +		/*
-> > +		 * Device is resuming or in a post-resume grace period or
-> > +		 * there's a resume request pending, or a pending suspend
-> > +		 * request has just been cancelled and we're running as a result
-> > +		 * of this request.
-> > +		 */
-> 
-> In the sync case, it might be better to wait until the ongoing resume
-> (or resume grace period) is finished and then do the suspend.
+Bob Copeland wrote:
+> On Mon, Jun 15, 2009 at 09:58:30PM +0200, Rafael J. Wysocki wrote:
+>   
+>> On Monday 15 June 2009, Alan Stern wrote:
+>>     
+>>> I'm not sure whether the example is trustworthy.  There was some
+>>> discussion quite a while ago regarding whether drivers should free
+>>> their IRQs during suspend, but I don't remember what the outcome was.
+>>>       
+>> No, they shouldn't.
+>>
+>> That's why we do the entire suspend_device_irqs() thing etc.
+>>     
 >
-> Of course, this depends on the context in which the synchronous
-> runtime suspend is carried out.  Right now, the only such context I
-> know of is when the user tells the system to force a USB device into a
-> suspended state.
+> So, ath5k needs something like the following?
+>
+> diff --git a/drivers/net/wireless/ath/ath5k/base.c b/drivers/net/wireless/ath/ath5k/base.c
+> index 55f7de0..0107cd6 100644
+> --- a/drivers/net/wireless/ath/ath5k/base.c
+> +++ b/drivers/net/wireless/ath/ath5k/base.c
+> @@ -665,7 +665,6 @@ ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+>  
+>  	ath5k_led_off(sc);
+>  
+> -	free_irq(pdev->irq, sc);
+>  	pci_save_state(pdev);
+>  	pci_disable_device(pdev);
+>  	pci_set_power_state(pdev, PCI_D3hot);
+> @@ -686,18 +685,8 @@ ath5k_pci_resume(struct pci_dev *pdev)
+>  	if (err)
+>  		return err;
+>  
+> -	err = request_irq(pdev->irq, ath5k_intr, IRQF_SHARED, "ath", sc);
+> -	if (err) {
+> -		ATH5K_ERR(sc, "request_irq failed\n");
+> -		goto err_no_irq;
+> -	}
+> -
+>  	ath5k_led_enable(sc);
+>  	return 0;
+> -
+> -err_no_irq:
+> -	pci_disable_device(pdev);
+> -	return err;
+>  }
+>  #endif /* CONFIG_PM */
+>  
+>   
 
->From the functionality point of view, nothing wrong happens if runtime suspend
-fails as long as an error code is returned and the caller has to be prepared
-for a failure anyway.  Moreover, we never know why the resume is carried out,
-so it's not clear whether it will be valid to carry out the suspend after that.
+Unfortunately this makes it worse.  My eeepc-laptop hacks are now in
+wireless-testing.  If I apply the above patch to wireless-testing and
+"remove" the device while suspended, I get a soft hang on resume. 
+Suspending without removal works fine.
 
-> 
-> > +		error = -EAGAIN;
-> > +		goto out;
-> > +	} else if (dev->power.runtime_status == RPM_SUSPENDING) {
-> > +		spin_unlock(&dev->power.lock);
-> > +
-> > +		/*
-> > +		 * Another suspend is running in parallel with us.  Wait for it
-> > +		 * to complete and return.
-> > +		 */
-> > +		wait_for_completion(&dev->power.work_done);
-> > +
-> > +		return dev->power.runtime_error;
-> > +	} else if (pm_check_children(dev)) {
-> > +		/*
-> > +		 * We can only suspend the device if all of its children have
-> > +		 * been suspended.
-> > +		 */
-> > +		dev->power.runtime_status = RPM_ACTIVE;
-> > +		error = -EAGAIN;
-> 
-> -EBUSY would be more appropriate.
+I can see a BUG if I boot with no_console_suspend
 
-OK
+Unable to handle kernel NULL pointer dereference
+IP: klist_put
+Tainted: G W
+Process s2disk
 
-> > +		goto out;
-> > +	}
-> 
-> > +/**
-> > + * pm_cancel_suspend - Cancel a pending suspend request for given device.
-> > + * @dev: Device to cancel the suspend request for.
-> > + */
-> > +static void pm_cancel_suspend(struct device *dev)
-> > +{
-> > +	cancel_delayed_work(&dev->power.runtime_work);
-> > +	dev->power.runtime_status &= RPM_GRACE;
-> 
-> This looks strange.  Aren't we guaranteed at this point that the
-> status is RPM_IDLE?
-
-Yes.
-
-> > +	dev->power.suspend_aborted = true;
-> > +}
-> > +
-> > +/**
-> > + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
-> > + * @dev: Device to resume.
-> > + * @grace: If set, force a post-resume grace period.
-> > + *
-> > + * Check if the device is really suspended and run the ->runtime_resume()
-> > + * callback provided by the device's bus type driver.  Update the run-time PM
-> > + * flags in the device object to reflect the current status of the device.  If
-> > + * runtime suspend is in progress while this function is being run, wait for it
-> > + * to finish before resuming the device.  If runtime suspend is scheduled, but
-> > + * it hasn't started yet, cancel it and we're done.
-> > + */
-> > +int __pm_runtime_resume(struct device *dev, bool grace)
-> > +{
-> > +	int error = -EINVAL;
-> ...
-> > +	} else if (dev->power.runtime_status == RPM_SUSPENDED && dev->parent
-> > +	    && (dev->parent->power.runtime_status & ~RPM_GRACE)) {
-> > +		spin_unlock(&dev->power.lock);
-> 
-> Here's where you want to increment the parent's depth.  Figuring out
-> where to decrement it again isn't easy, given the way this routine is
-> structured.
-
-Hmm.  We can use a local bool variable to store the information that the ref
-has been taken for the parent and dereference it when leaving the function.
-
-> > +		spin_unlock(&dev->parent->power.lock);
-> > +
-> > +		/* The device's parent is not active.  Resume it and repeat. */
-> > +		error = __pm_runtime_resume(dev->parent, false);
-> > +		if (error)
-> > +			return error;
-> 
-> Need to reset error to -EINVAL.
-
-Why -EINVAL?
-
-> > +/**
-> > + * pm_request_resume - Schedule run-time resume of given device.
-> > + * @dev: Device to resume.
-> > + * @grace: If set, force a post-resume grace period.
-> > + */
-> > +void __pm_request_resume(struct device *dev, bool grace)
-> > +{
-> > +	unsigned long parent_flags = 0, flags;
-> > +
-> > + repeat:
-> > +	if (atomic_read(&dev->power.depth) > 0)
-> > +		return;
-> > +
-> > +	if (dev->parent)
-> > +		spin_lock_irqsave(&dev->parent->power.lock, parent_flags);
-> > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > +
-> > +	if (dev->power.runtime_status == RPM_IDLE) {
-> > +		/* Autosuspend request is pending, no need to resume. */
-> > +		pm_cancel_suspend(dev);
-> > +		if (grace)
-> > +			dev->power.runtime_status |= RPM_GRACE;
-> > +		goto out;
-> > +	} else if (!(dev->power.runtime_status & RPM_IN_SUSPEND)) {
-> > +		goto out;
-> > +	} else if (dev->parent
-> > +	    && (dev->parent->power.runtime_status & RPM_INACTIVE)) {
-> > +		spin_unlock_irqrestore(&dev->power.lock, flags);
-> > +		spin_unlock_irqrestore(&dev->parent->power.lock, parent_flags);
-> > +
-> > +		/* The parent is suspending, suspended or idle. Wake it up. */
-> > +		__pm_request_resume(dev->parent, false);
-> > +
-> > +		goto repeat;
-> 
-> What if the parent's state is RPM_SUSPENDING?  Won't this go into a
-> tight loop?  You need to test the parent's WAKEUP bit above.
-
-Right.
-
-> > Index: linux-2.6/Documentation/power/runtime_pm.txt
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/Documentation/power/runtime_pm.txt
-> > @@ -0,0 +1,311 @@
-> > +Run-time Power Management Framework for I/O Devices
-> > +
-> > +(C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-> > +
-> > +1. Introduction
-> > +
-> > +The support for run-time power management (run-time PM) of I/O devices is
-> 
-> s/The support/Support/
-
-OK
-
-> > +provided at the power management core (PM core) level by means of:
-> 
-> > +pm_runtime_enable() and pm_runtime_disable() are used to enable and disable,
-> > +respectively, all of the run-time PM core operations.  They do it by decreasing
-> > +and increasing, respectively, the 'power.depth' field of 'struct device'.  If
-> > +the value of this field is greater than 0, pm_runtime_suspend(),
-> > +pm_request_suspend(), pm_runtime_resume() and so on return immediately without
-> > +doing anything and -EBUSY is returned by pm_runtime_suspend(),
-> > +pm_runtime_resume() and pm_runtime_resume_grace().  Therefore, if
-> 
-> In your code, pm_runtime_disable() doesn't actually do a resume.  So if
-> a driver wants to make sure a device is at full power and stays that
-> way, it has to call:
-> 
-> 	pm_runtime_resume(dev);
-> 	pm_runtime_disable(dev);
-> 
-> This is a race; another thread might suspend the device in between.
-> It would make more sense to have have pm_runtime_resume() function
-> normally even when depth > 0.  Then the calls could be made in the
-> opposite order and there wouldn't be a race.
-> 
-> The equivalent code in USB does this automatically.  The
-> runtime-disable routine does a resume if the depth value was
-> originally 0,
-
-Yes, we should do that in general.
-
-> and the runtime-enable routine queues a delayed autosuspend request if the
-> final depth value is 0.
-
-I don't like this.
-
-> > +pm_runtime_suspend(), pm_request_suspend(), pm_runtime_resume(),
-> > +pm_runtime_resume_grace(), pm_request_resume(), and pm_request_resume_grace()
-> > +use the 'power.runtime_status' and 'power.suspend_aborted' fields of
-> > +'struct device' for mutual synchronization.  The 'power.runtime_status' field,
-> 
-> Strictly speaking, they use those fields for mutual cooperation.  It's
-> the power.lock field which provides synchronization.
-
-OK
-
-> > +pm_runtime_suspend() is used to carry out a run-time suspend of an active
-> > +device.  It is called directly by a bus type or device driver.  An asynchronous
-> > +version of it is called by the PM core, to complete a request queued up by
-> > +pm_request_suspend().  The only difference between them is the handling of
-> > +situations when a queued up suspend request has just been cancelled.  Apart from
-> > +this, they work in the same way.
-> > +* If the device is suspended (i.e. the RPM_SUSPENDED bit is set in the device's
-> > +  run-time PM status field, 'power.runtime_status'), success is returned.
-> 
-> Blank lines surrounding the *-ed paragraphs would make this more
-> readable.
-
-OK
-
-> > +pm_request_resume() and pm_request_resume_grace() are used to queue up a resume
-> > +request for a device that is suspended, suspending or has a suspend request
-> > +pending.  The difference between them is that pm_request_resume_grace() causes
-> > +the RPM_GRACE bit to be set in the device's run-time PM status field, which
-> > +prevents the PM core from suspending the device or queuing up a suspend request
-> > +for it until the RPM_GRACE bit is cleared with the help of pm_runtime_release().
-> > +Apart from this, they work in the same way.
-> 
-> Is RPM_GRACE really needed?  Can't we accomplish more or less the same
-> thing by using the autosuspend delay combined with the depth counter?
-
-No, it's not.  As I said above, I replaced it with a counter and then I
-realized that 'disable' should in fact do 'resume and get', so we can handle
-everything with just one counter.
-
-I'll send a revised patch tomorrow.
-
-Best,
-Rafael
+Call trace:
+? klist_del
+? device_del
+? device_unregister
+? pci_stop_dev
+? pci_stop_bus
+? pci_remove_device
+? eeepc_rfkill_hotplug [eeepc_laptop]
+? eeepc_hotk_resume [eeepc_laptop]
+? acpi_device_resume
+? device_resume
+? hibernation_snapshot
+? release_console_sem
+? snapshot_ioctl
+? snapshot_ioctl
+? vfs_ioctl
+? do_vfs_ioctl
+? n_tty_write
+? vfs_write
+? sys_ioctl
+? syscall_call
