@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch update 2 fix] PM: Introduce core framework
-	for run-time PM of I/O devices
-Date: Sun, 21 Jun 2009 01:48:56 +0200
-Message-ID: <200906210148.57199.rjw__27843.3058913381$1245541748$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update 3] PM: Introduce core framework for
+ run-time PM of I/O devices
+Date: Sat, 20 Jun 2009 22:23:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906202142110.20502-100000__48473.308972507$1245551044$gmane$org@netrider.rowland.org>
+References: <200906210138.53682.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200906210138.53682.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +18,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 20 June 2009, Alan Stern wrote:
-> Some more thoughts...
+On Sun, 21 Jun 2009, Rafael J. Wysocki wrote:
+
+> > 	pm_request_suspend should run very quickly, since it will be
+> > 	called after every I/O operation.  Likewise, pm_request_resume
+> > 	should run very quickly if the status is RPM_ACTIVE or 
+> > 	RPM_IDLE.
 > 
-> Magnus, you might have some insights here.  It occurred to me that some 
-> devices can switch power levels very quickly, and the drivers might 
-> therefore want the runtime suspend and resume methods to be called as 
-> soon as possible, even in interrupt context.
+> Hmm.  pm_request_suspend() is really short, so it should be fast.
+> pm_request_resume() is a bit more complicated, though (it takes two spinlocks,
+> increases an atomic counter, possibly twice, and queues up a work item, also
+> in the RPM_IDLE case).
 
-Then, we'll need special suspend and resume calls for them.
+Hmm, maybe that's a good reason for not trying to handle the parent
+from within pm_request_resume().  :-)
 
-> In terms of the current framework, this probably means holding the
-> runtime PM lock (i.e., not releasing it) across the calls to
-> ->runtime_suspend and ->runtime_resume.  It also means that
-> pm_request_suspend and pm_request_resume should carry out their jobs
-> immediately instead of queuing a work item.  (Unless the current status 
-> is RPM_SUSPENDING or RPM_RESUMING, which should never happen.)
+Or maybe the routine should be optimized for the RPM_ACTIVE and 
+RPM_IDLE cases, where it doesn't have to do much anyway.
+
+
+> > 	In order to prevent autosuspends from occurring while I/O is
+> > 	in progress, the pm_request_resume call should increment the
+> > 	usage counter (if it had to queue the request) and the 
+> > 	pm_request_suspend call should decrement it (maybe after
+> > 	waiting for the delay).
 > 
-> Should there be a flag in dev_pm_info to select this behavior?
+> I don't want like pm_request_suspend() to do that, because it's valid to
+> call it many times in a row. (only the first request will be queued in such a
+> case).
 
-I don't think we should complicate pm_request_suspend() and pm_request_resume()
-further to handle this particular case.  IMO it's better to provide separate
-core calls for that.
+Sorry, what I meant was that in each case the counter should be
+{inc,dec}remented if a new request had to be queued.  If one was
+already queued then the counter should be left alone.
 
-> When a device structure is unregistered and deallocated, we have to
-> insure that there aren't any pending runtime PM workqueue items.  
-> Hence device_del should call a routine that changes the status to an
-> exceptional state (not RPM_ERROR but something else) to prevent new
-> requests from being queued, and then calls cancel_work_sync or
-> cancel_delayed_work_sync as required.
+The reason behind this is that a bunch of pm_request_suspend calls
+which all end up referring to the same workqueue item will result in a
+single async call to the runtime_suspend method.  Therefore they should
+cause a single decrement of the counter.  Likewise for
+pm_request_resume.
 
-This is done in the patch I've just sent.
- 
-> Similarly, we should insure that runtime PM calls made before the
-> device is registered don't do anything.  So when the device structure
-> is first created and the contents are all 0, this should also be
-> interpreted as an exceptional state.  We could call it RPM_UNREGISTERED
-> and use it for both purposes.
+> I'd prefer the caller to do pm_request_resume_get() (please see the patch
+> below) to put a resume request into the queue and then pm_runtime_put_notify()
+> when it's done with the I/O.  That will result in ->runtime_idle() being called
+> automatically if the device may be suspended.
 
-Hmm.  How do you think is possible that the pm_runtime_* functions will be
-called in such a situation?
+If anyone does pm_request_resume or pm_runtime_resume, what is there to 
+prevent the device from being suspended again as soon as the resume is 
+finished (and before anything useful can be accomplished)?
 
-Best,
-Rafael
+     1. The driver's runtime_suspend method might be smart enough to 
+	return -EBUSY until the driver has completed whatever it's 
+	doing.
+
+     2. The usage counter might be > 0.
+
+     3. The number of children might be > 0.
+
+In case 1 there's no reason not to also increment the counter, since
+the driver can decrement it again when it is finished.  In cases 2 and
+3, we can assume the counter or the number of children was previously
+equal to 0, since otherwise the resume call would have been vacuous.  
+This implies that the resume call itself should be responsible for
+incrementing either the counter or the number of children.
+
+What I'm getting at is this: There's no real point to having separate 
+pm_request_resume and pm_request_resume_get calls.  All such calls 
+should increment either the usage counter or the number of children.
+
+(In the USB stack, a single counter is used for both purposes.  It 
+doesn't look like that will work here.)
+
+
+> > All bus types will want to implement _some_ delay; it doesn't make
+> > sense to power down a device immediately after every operation and then
+> > power it back up for the next operation.
+> 
+> Sure.  But you can use the pm_request_resume()'s delay to achieve that
+> without storing the delay in 'struct device'.  It seems.
+
+If you do it that way then the delay has to be hard-coded or stored in
+some non-standardized location.  Which will be more common: devices
+where the delay is fixed by the bus type (or driver), or devices where
+the user should be able to adjust the delay?  If user-adjustable is 
+more common then the delay should be stored in dev_pm_info, so that it 
+can be controlled by a centralized sysfs attribute defined in the 
+driver core.  If not then you are right, the delay doesn't need to be 
+stored in struct device.
+
+Alan Stern
