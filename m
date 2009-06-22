@@ -1,17 +1,17 @@
-From: Magnus Damm <magnus.damm@gmail.com>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [patch update 2 fix] PM: Introduce core framework
 	for run-time PM of I/O devices
-Date: Mon, 22 Jun 2009 16:27:29 +0900
-Message-ID: <aec7e5c30906220027v63c88e8aj32950a8d84558cce@mail.gmail.com>
+Date: Mon, 22 Jun 2009 10:15:41 +0200
+Message-ID: <200906221015.42805.oliver__39636.2940235578$1245658627$gmane$org@neukum.org>
 References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
 	<Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
 	<aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
-	<20090621234324.06fda564@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090621234324.06fda564@infradead.org>
+In-Reply-To: <aec7e5c30906212320v3e3e991fyd028d005675f1e25@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
+To: Magnus Damm <magnus.damm@gmail.com>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 3:43 PM, Arjan van de Ven<arjan@infradead.org> wrot=
-e:
-> On Mon, 22 Jun 2009 15:20:43 +0900
-> Magnus Damm <magnus.damm@gmail.com> wrote:
+Am Montag, 22. Juni 2009 08:20:43 schrieb Magnus Damm:
+> I'd like to call pm_request_suspend() from interrupt context. I don't
+> depend on it, but being able to perform runtime suspend directly from
+> the ISR would be convenient from a device driver POV. I'm not sure if
+> that should result in bus/device ->runtime_suspend() calls from
+> interrupt context though.
 >
->> On Sat, Jun 20, 2009 at 11:30 PM, Alan
->> Stern<stern@rowland.harvard.edu> wrote:
->> > Some more thoughts...
->> >
->> > Magnus, you might have some insights here. =A0It occurred to me that
->> > some devices can switch power levels very quickly, and the drivers
->> > might therefore want the runtime suspend and resume methods to be
->> > called as soon as possible, even in interrupt context.
->>
->> I'd like to call pm_request_suspend() from interrupt context. I don't
->
-> there are some really strong reasons to at least be able to call the
-> resume function from an interrupt handler.... shared interrupts are one
-> of them.
+> In my case the bus specific code for ->runtime_suspend() may just
+> decrease the usage count of the powerdomain but refrain from calling
+> the device ->runtime_suspend() callbacks until all devices in the
+> powerdomain have been suspended. The bus/device runtime suspend
+> callbacks do not need to be executed from interrupt context. Just
+> noting that the device is idle is enough at interrupt time. This could
+> be handled by generic code IMO.
 
-I suppose you mean that you need to resume the hardware device before
-you can check if it has a pending interrupt source? If so then you
-also mean that suspended hardware devices may generate interrupts, no?
+>From practical experience doing USB power management I can tell
+you that requesting suspension from interrupt makes things a lot
+easier for driver writers.
 
-My plan for SuperH SoC is that runtime suspend always stops the clock,
-but register save and power off may happen. Regardless, interrupts are
-not generated from suspended hardware devices.
-
-In the rare case of shared interrupts on SuperH we can just skip over
-the platform devices that have been runtime suspended since they will
-not have generated any interrupt.
-
-But yes, if there is hardware than can generate interrupts from
-suspended state then we need to resume from interrupt context. This
-probably means that the entire bus hierarchy must resume from
-interrupt context as well.
-
-/ magnus
+	Regards
+		Oliver
