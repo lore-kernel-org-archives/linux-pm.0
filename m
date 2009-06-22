@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update 2 fix] PM: Introduce core framework
-	for run-time PM of I/O devices
-Date: Mon, 22 Jun 2009 17:39:34 +0200
-Message-ID: <200906221739.34920.rjw__3641.47923323817$1245685251$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
-	<aec7e5c30906220027v63c88e8aj32950a8d84558cce@mail.gmail.com>
-	<20090622064915.741154a7@infradead.org>
+ for run-time PM of I/O devices
+Date: Mon, 22 Jun 2009 11:39:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906221135360.14561-100000__37006.0788387947$1245685399$gmane$org@iolanthe.rowland.org>
+References: <200906221727.29295.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090622064915.741154a7@infradead.org>
-Content-Disposition: inline
+In-Reply-To: <200906221727.29295.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 22 June 2009, Arjan van de Ven wrote:
-> On Mon, 22 Jun 2009 16:27:29 +0900
-> Magnus Damm <magnus.damm@gmail.com> wrote:
-> 
-> > On Mon, Jun 22, 2009 at 3:43 PM, Arjan van de
-> > Ven<arjan@infradead.org> wrote:
-> > > On Mon, 22 Jun 2009 15:20:43 +0900
-> > > Magnus Damm <magnus.damm@gmail.com> wrote:
-> > >
-> > >> On Sat, Jun 20, 2009 at 11:30 PM, Alan
-> > >> Stern<stern@rowland.harvard.edu> wrote:
-> > >> > Some more thoughts...
-> > >> >
-> > >> > Magnus, you might have some insights here.  It occurred to me
-> > >> > that some devices can switch power levels very quickly, and the
-> > >> > drivers might therefore want the runtime suspend and resume
-> > >> > methods to be called as soon as possible, even in interrupt
-> > >> > context.
-> > >>
-> > >> I'd like to call pm_request_suspend() from interrupt context. I
-> > >> don't
-> > >
-> > > there are some really strong reasons to at least be able to call the
-> > > resume function from an interrupt handler.... shared interrupts are
-> > > one of them.
+On Mon, 22 Jun 2009, Rafael J. Wysocki wrote:
+
+> On Monday 22 June 2009, Alan Stern wrote:
+> > On Sun, 21 Jun 2009, Rafael J. Wysocki wrote:
 > > 
-> > I suppose you mean that you need to resume the hardware device before
-> > you can check if it has a pending interrupt source? If so then you
-> > also mean that suspended hardware devices may generate interrupts, no?
+> > > > Seriously, there _are_ places where drivers get bound to device before
+> > > > those devices are registered.  This happens for example in USB when a
+> > > > bunch of related interfaces are present in the same physical device.  
+> > > > When the first interface is registered, its driver binds itself to all
+> > > > the others even though they haven't been registered yet.
+> > > 
+> > > Well, the suspend functions could be protected against that under the
+> > > assumption that no suspend is possible for resume_counter = 0 (then, the "good
+> > > to go" value would be -1).
+> > > 
+> > > Still, the resume functions start from acquring a spinlock, which is not going
+> > > to work if that spinlock is uninitialized.
+> > 
+> > The initialization needs to be improved.  Most of the code in
+> > pm_runtime_init() should be called from device_pm_init(), and the rest
+> > should be moved into a separate pm_runtime_add() routine to be called
+> > from device_pm_add().
 > 
-> yes and no. For the shared interrupt case.. no.
-> but yes for the hw I have in mind (and on my desk ;-) that can happen
-> as well from the device itself.
+> OK
+> 
+> In that case, I think, the initialization of the spinlock and resume_counter
+> can be put into the thing called by device_pm_init().
 
-If that's PCI hardware (I guess it is ;-)), I'm not really sure if this
-behavior is compliant with the specification.
+Right.
 
-Anyway, if the interrupt is not shared and the device can wake up fast enough,
-we should be able to handle it.
+> > One of the things pm_runtime_add() could do is change the status from 
+> > RPM_UNREGISTERED to RPM_ACTIVE.
+> 
+> If the status is initially (ie. at the device_pm_init() point) RPM_ACTIVE and
+> resume_couter is initially 1, what are we going to need RPM_UNREGISTERED for?
 
-Best,
-Rafael
+Okay, we don't need it then.  I forgot to mention in the previous
+message that there also has to be a pm_runtime_del() routine, which
+should cancel pending workqueue items and set the counter to some high
+value so that no new items are added.
+
+Alan Stern
