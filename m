@@ -1,14 +1,15 @@
-From: Isamar Maia <isamar@gmail.com>
-Subject: Re: Problem "waking-up"
-Date: Sun, 21 Jun 2009 10:30:00 -0300
-Message-ID: <f695d6b80906210630i47012f16hdbd988511a2c9b74@mail.gmail.com>
-References: <f695d6b80906112008n71dbb675i96da2168ed9aeb15@mail.gmail.com>
-	<20090621064929.GA1810@ucw.cz>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [patch update 2 fix] PM: Introduce core framework
+	for run-time PM of I/O devices
+Date: Mon, 22 Jun 2009 15:20:43 +0900
+Message-ID: <aec7e5c30906212320v3e3e991fyd028d005675f1e25__2116.56324468112$1245651713$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0906192141380.4003-100000@netrider.rowland.org>
+	<Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090621064929.GA1810@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0906201010590.12994-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,86 +19,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-OK. Thank you very much. I will try that.
-
-Isamar
-
-
-2009/6/21 Pavel Machek <pavel@ucw.cz>:
-> On Fri 2009-06-12 00:08:38, Isamar Maia wrote:
->> Hi Folks,
->>
->> Hope here is the right place to send this posting.
->>
->> I am trying to make a notebook working with all its features and I am
->> facing a hard
->> work with that.
->>
->> It is a SiS based Chipset as the lscpi output says below:
->>
->> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 671MX
->> 00:01.0 PCI bridge: Silicon Integrated Systems [SiS] SiS AGP Port
->> (virtual PCI-to-PCI bridge)
->> 00:02.0 ISA bridge: Silicon Integrated Systems [SiS] SiS968 [MuTIOL
->> Media IO] (rev 01)
->> 00:02.5 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev 01)
->> 00:03.0 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
->> Controller (rev 0f)
->> 00:03.1 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
->> Controller (rev 0f)
->> 00:03.3 USB Controller: Silicon Integrated Systems [SiS] USB 2.0 Controller
->> 00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] 191
->> Gigabit Ethernet Adapter (rev 02)
->> 00:05.0 IDE interface: Silicon Integrated Systems [SiS] SATA
->> Controller / IDE mode (rev 03)
->> 00:06.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
->> 00:07.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
->> 00:0d.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 05)
->> 00:0d.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro
->> Host Adapter (rev 22)
->> 00:0d.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
->> 00:0d.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host
->> Adapter (rev 12)
->> 00:0d.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
->> 00:0f.0 Audio device: Silicon Integrated Systems [SiS] Azalia Audio Controller
->> 01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
->> 771/671 PCIE VGA Display Adapter (rev 10)
->> 02:00.0 Ethernet controller: Atheros Communications Inc. AR242x
->> 802.11abg Wireless PCI Express Adapter (rev 01)
->>
->>
->> For xorg, I am using VESA video driver. For wifi, I am using ath_pci
->> driver. and for audio, I am using
->> snd_hda_intel alsa driver.
->>
->> I can use "suspend" but I cannot "wakeup" back after that. The screen
->> stays blank and I can see
->> the CDROM led blinking like trying to detect some media inside.
->>
->> I am using Fedora 9's kernel 2.6.26.5-45.i686 and, for specific
->> reasons, I cannot upgrade the kernel at all, but I can apply
->> any patch if necessary.
+On Sat, Jun 20, 2009 at 11:30 PM, Alan Stern<stern@rowland.harvard.edu> wro=
+te:
+> Some more thoughts...
 >
-> Apply diff between 2.6.26 and 2.6.30?
->
-> Ask fedora for help?
->
-> Try again with minimum drivers?
->                                                                Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+> Magnus, you might have some insights here. =A0It occurred to me that some
+> devices can switch power levels very quickly, and the drivers might
+> therefore want the runtime suspend and resume methods to be called as
+> soon as possible, even in interrupt context.
 
+I'd like to call pm_request_suspend() from interrupt context. I don't
+depend on it, but being able to perform runtime suspend directly from
+the ISR would be convenient from a device driver POV. I'm not sure if
+that should result in bus/device ->runtime_suspend() calls from
+interrupt context though.
 
+In my case the bus specific code for ->runtime_suspend() may just
+decrease the usage count of the powerdomain but refrain from calling
+the device ->runtime_suspend() callbacks until all devices in the
+powerdomain have been suspended. The bus/device runtime suspend
+callbacks do not need to be executed from interrupt context. Just
+noting that the device is idle is enough at interrupt time. This could
+be handled by generic code IMO.
 
--- 
-Isamar Maia
-Brazil: 55-71-9146-8575
-            55-71-4062-8688
-日本: +81-(0)3-4550-1212
-"In a world without walls. Who needs windows and gates?"
+Runtime resume needs to block until the hardware is woken up though.
+Just marking the device as resumed and letting the driver access the
+hardware before it is woken up does not seem like a good idea. =3D) For
+my SuperH devices I do not need to resume from interrupt context, at
+least at this point.
+
+>From my perspective it's ok to specificy that the ->runtime_suspend()
+and ->runtime_resume() callbacks are executed from process context
+only and may sleep. Seems like a simple and good interface that can be
+accepted by many bus types. My bus and driver code do not need to
+sleep though, so a direct-from-interrupt-context design is fine as
+well.
+
+> In terms of the current framework, this probably means holding the
+> runtime PM lock (i.e., not releasing it) across the calls to
+> ->runtime_suspend and ->runtime_resume. =A0It also means that
+> pm_request_suspend and pm_request_resume should carry out their jobs
+> immediately instead of queuing a work item. =A0(Unless the current status
+> is RPM_SUSPENDING or RPM_RESUMING, which should never happen.)
+
+No problem holding a per struct device lock. I suspect that executing
+the callbacks from interrupt context is the most efficient design, but
+it may come with interrupt latency side effects.
+
+> Should there be a flag in dev_pm_info to select this behavior?
+
+I'd say that executing the callbacks from process context is enough
+for now. This will probably be a good match together with interrupt
+threads as well.
+
+Maybe the ARM guys have more advanced requriements?
+
+Cheers,
+
+/ magnus
