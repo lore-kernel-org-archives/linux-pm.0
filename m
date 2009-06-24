@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update 3] PM: Introduce core framework for
- run-time PM of I/O devices
-Date: Wed, 24 Jun 2009 16:19:14 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906241604510.22054-100000__11966.3157420748$1245874829$gmane$org@iolanthe.rowland.org>
-References: <200906242114.10530.rjw@sisk.pl>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
+	pm	callbacks V2
+Date: Wed, 24 Jun 2009 13:33:52 -0700
+Message-ID: <20090624203352.GA28516__5928.46267759359$1245877154$gmane$org@suse.de>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+	<200906242048.40956.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906242114.10530.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200906242048.40956.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
-
-> > The difficulty is that some USB interface drivers require remote wakeup
-> > to be enabled while their interfaces are suspended.  But remote wakeup
-> > is a global setting; it doesn't take effect until the entire physical
-> > device is suspended.  (To put it another way, USB has no notion of
-> > suspending interfaces.)  This means we must not allow these interfaces
-> > to be suspended before the whole device is.  But the whole device is
-> > the parent of the interfaces -- if we can't suspend the children before
-> > suspending the parent then we're stuck.
-> 
-> Not if we use the power.ignore_children flag on the parent.
-> 
-> > Clearly this is something the USB stack has to deal with; it shouldn't
-> > affect the general PM framework.  However the only solution I can think
-> > of involves subverting the framework, which isn't very nice.  The idea
-> > is to ignore runtime_suspend callbacks for these interface drivers;
-> > allow them to keep on running even though the PM core thinks they are
-> > suspended.  Then suspend and resume them as part of the callbacks for
-> > the entire device.  (For interface drivers that don't require remote
-> > wakeup there is no problem; it doesn't matter when they get suspended.)
+On Wed, Jun 24, 2009 at 08:48:39PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday 24 June 2009, Magnus Damm wrote:
+> > pm: remove late/early platform driver pm callbacks V2
 > > 
-> > This will work, but it's a hack.  Does anybody have a better idea?
+> > [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> > [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> > [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> > [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> > [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> > [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> > [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> > 
+> > These patches simply remove ->suspend_late() and ->resume_early()
+> > from struct platform_driver. Drivers are converted to dev_pm_ops
+> > with CONFIG_SUSPEND in mind. Untested.
+> > 
+> > All patches except [02/07] are known to compile.
+> > 
+> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > 
-> Well, as I said above, you can set power.ignore_children on the device
-> and then it can be suspended even if the interfaces aren't.
+> If no one objects, I'd like to take this series into the suspend-2.6 tree as
+> 2.6.32 material.  Greg?
 
-Hmm.  The hard part still remains: to make sure that the interfaces 
-don't get suspended without the device also getting suspended.
+Looks good to me, feel free to add an:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+to the whole series.
 
-I suppose we could attack this by making the device do a runtime_get on
-each of the interfaces, which would be released in the device's
-runtime_suspend method.  But then conversely, each interface driver
-would have to do its gets and puts on the _device's_ resume_counter.  
-If they used the interface counters then the values would never go to 0
-and so nothing would ever be suspended.
+thanks,
 
-You've got to admit, this does sound rather bizarre.  :-)  But it ought 
-to work...
-
-Alan Stern
+greg k-h
