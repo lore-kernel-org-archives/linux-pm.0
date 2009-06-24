@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
-	pm	callbacks V2
-Date: Wed, 24 Jun 2009 20:56:02 +0200
-Message-ID: <20090624185602.GA7683__1189.97842441804$1245870051$gmane$org@elf.ucw.cz>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-	<200906242048.40956.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch update 3] PM: Introduce core framework for
+	run-time PM of I/O devices
+Date: Wed, 24 Jun 2009 21:14:09 +0200
+Message-ID: <200906242114.10530.rjw__6322.49926352433$1245870866$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906241014170.3199-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906241014170.3199-100000@iolanthe.rowland.org>
 Content-Disposition: inline
-In-Reply-To: <200906242048.40956.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +19,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: gregkh@suse.de, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, ben-linux@fluff.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2009-06-24 20:48:39, Rafael J. Wysocki wrote:
-> On Wednesday 24 June 2009, Magnus Damm wrote:
-> > pm: remove late/early platform driver pm callbacks V2
-> > 
-> > [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
-> > [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
-> > [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
-> > [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
-> > [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
-> > [PATCH 06/07] usb: rework musb suspend()/resume_early()
-> > [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
-> > 
-> > These patches simply remove ->suspend_late() and ->resume_early()
-> > from struct platform_driver. Drivers are converted to dev_pm_ops
-> > with CONFIG_SUSPEND in mind. Untested.
-> > 
-> > All patches except [02/07] are known to compile.
-> > 
-> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+On Wednesday 24 June 2009, Alan Stern wrote:
+> On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> If no one objects, I'd like to take this series into the suspend-2.6 tree as
-> 2.6.32 material.  Greg?
+> > > One question still remains: If the counter is 0 at the end of a
+> > > successful pm_runtime_resume, should the core then call pm_notify_idle?  
+> > > Or should we make the driver responsible for that too?
+> > 
+> > Good question. :-)
+> > 
+> > I think the core may call pm_notify_idle() in that case, but not necessarily in
+> > the synchronous case.
 > 
-> Pavel, is your ACK for the entire series?
+> I'm not sure; we may want to do it even for synchronous resumes.  
+> Otherwise the callers would be forced to do it.
 
-Well, I don't really understand stuff like dw_dmac.c, but it looks
-basically okay to me. I guess ACK might be okay.
+I have no strong opinion.  We can do it in the sychronous case too.
 
-> >  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
-> >  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
-> >  drivers/base/platform.c          |   36 ------------------------------------
-> >  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
-> >  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
-> >  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
-> >  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
-> >  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
-> >  include/linux/platform_device.h  |    2 --
-> >  9 files changed, 82 insertions(+), 79 deletions(-)
+> There's also the other side of the coin.  What if the counter is 0 at
+> the end of a failed pm_runtime_suspend?
+> 
+> For example, suppose the driver's runtime_suspend method decides that
+> the device hasn't been idle for long enough, so it wants to fail the
+> suspend attempt with -EBUSY and queue a new delayed autosuspend
+> request.  But at this point the status is RPM_SUSPENDING, so new
+> suspend requests won't be accepted (N.B., the test for this in the most
+> recent patch doesn't look right).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In fact it was inversed (fixed now), thanks for spotting this!
+
+> Even with a queued notification, there's no guarantee that the
+> notification won't be sent before the status changes from
+> RPM_SUSPENDING to RPM_ACTIVE.  So we really do need the notification to
+> be sent by pm_runtime_suspend, after it has updated the status and
+> dropped the lock.
+
+OK
+
+> There's another totally separate issue worth discussing here.  This 
+> will affect the USB implementation of the new runtime PM framework.
+> 
+> The difficulty is that some USB interface drivers require remote wakeup
+> to be enabled while their interfaces are suspended.  But remote wakeup
+> is a global setting; it doesn't take effect until the entire physical
+> device is suspended.  (To put it another way, USB has no notion of
+> suspending interfaces.)  This means we must not allow these interfaces
+> to be suspended before the whole device is.  But the whole device is
+> the parent of the interfaces -- if we can't suspend the children before
+> suspending the parent then we're stuck.
+
+Not if we use the power.ignore_children flag on the parent.
+
+> Clearly this is something the USB stack has to deal with; it shouldn't
+> affect the general PM framework.  However the only solution I can think
+> of involves subverting the framework, which isn't very nice.  The idea
+> is to ignore runtime_suspend callbacks for these interface drivers;
+> allow them to keep on running even though the PM core thinks they are
+> suspended.  Then suspend and resume them as part of the callbacks for
+> the entire device.  (For interface drivers that don't require remote
+> wakeup there is no problem; it doesn't matter when they get suspended.)
+> 
+> This will work, but it's a hack.  Does anybody have a better idea?
+
+Well, as I said above, you can set power.ignore_children on the device
+and then it can be suspended even if the interfaces aren't.
+
+Best,
+Rafael
