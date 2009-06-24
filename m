@@ -1,14 +1,14 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 07/07] pm: remove platform device
-	suspend_late()/resume_early() V2
-Date: Wed, 24 Jun 2009 18:24:09 +0900
-Message-ID: <20090624092409.14276.96577.sendpatchset__20867.6485148773$1245836358$gmane$org@rx1.opensource.se>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+Date: Wed, 24 Jun 2009 20:50:18 +0900
+Message-ID: <aec7e5c30906240450w2c204b1bo8e06cdc26eaad753@mail.gmail.com>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+	<87r5xhqzr4.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+In-Reply-To: <87r5xhqzr4.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,124 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, ben-linux@fluff.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, akpm@linux-foundation.org, felipe.balbi@nokia.com
+To: rjw@sisk.pl
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Fri, Jun 19, 2009 at 1:21 AM, Kevin
+Hilman<khilman@deeprootsystems.com> wrote:
+> Magnus Damm <magnus.damm@gmail.com> writes:
+>
+>> From: Magnus Damm <damm@igel.co.jp>
+>>
+>> Allow architecture specific data in struct platform_device V3.
+>>
+>> With this patch struct pdev_archdata is added to struct
+>> platform_device, similar to struct dev_archdata in found in
+>> struct device. Useful for architecture code that needs to
+>> keep extra data associated with each platform device.
+>>
+>> Struct pdev_archdata is different from dev.platform_data, the
+>> convention is that dev.platform_data points to driver-specific
+>> data. It may or may not be required by the driver. The format
+>> of this depends on driver but is the same across architectures.
+>>
+>> The structure pdev_archdata is a place for architecture specific
+>> data. This data is handled by architecture specific code (for
+>> example runtime PM), and since it is architecture specific it
+>> should _never_ be touched by device driver code. Exactly like
+>> struct dev_archdata but for platform devices.
+>>
+>> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+>
+> Since there is no 'Feature-desired-by:' tag, I'll addd
+>
+> Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+>
+> For PM on ARM in general, and OMAP in particular we definitely need a
+> generic way to handle arch-specific data per platform_device.
 
-This is V2 of the platform driver power management late/early
-callback removal patch. The callbacks ->suspend_late() and
-->resume_early() are removed since all in-tree users now have
-been migrated to dev_pm_ops.
+Thanks, Kevin! So ARM in general or at least OMAP wants this, and so
+does SuperH.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+Rafael, you kindly gave feedback on earlier versions, are you ok with
+this version?
 
- Untested but compiles fine.
+Cheers,
 
- Changes since V1:
- - none, just rediff to fit upstream changes
-
- drivers/base/platform.c         |   36 ------------------------------------
- include/linux/platform_device.h |    2 --
- 2 files changed, 38 deletions(-)
-
---- 0001/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2009-06-24 17:27:33.000000000 +0900
-@@ -628,30 +628,6 @@ static int platform_legacy_suspend(struc
- 	return ret;
- }
- 
--static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
--{
--	struct platform_driver *pdrv = to_platform_driver(dev->driver);
--	struct platform_device *pdev = to_platform_device(dev);
--	int ret = 0;
--
--	if (dev->driver && pdrv->suspend_late)
--		ret = pdrv->suspend_late(pdev, mesg);
--
--	return ret;
--}
--
--static int platform_legacy_resume_early(struct device *dev)
--{
--	struct platform_driver *pdrv = to_platform_driver(dev->driver);
--	struct platform_device *pdev = to_platform_device(dev);
--	int ret = 0;
--
--	if (dev->driver && pdrv->resume_early)
--		ret = pdrv->resume_early(pdev);
--
--	return ret;
--}
--
- static int platform_legacy_resume(struct device *dev)
- {
- 	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-@@ -714,8 +690,6 @@ static int platform_pm_suspend_noirq(str
- 	if (drv->pm) {
- 		if (drv->pm->suspend_noirq)
- 			ret = drv->pm->suspend_noirq(dev);
--	} else {
--		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
- 	}
- 
- 	return ret;
-@@ -750,8 +724,6 @@ static int platform_pm_resume_noirq(stru
- 	if (drv->pm) {
- 		if (drv->pm->resume_noirq)
- 			ret = drv->pm->resume_noirq(dev);
--	} else {
--		ret = platform_legacy_resume_early(dev);
- 	}
- 
- 	return ret;
-@@ -797,8 +769,6 @@ static int platform_pm_freeze_noirq(stru
- 	if (drv->pm) {
- 		if (drv->pm->freeze_noirq)
- 			ret = drv->pm->freeze_noirq(dev);
--	} else {
--		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
- 	}
- 
- 	return ret;
-@@ -833,8 +803,6 @@ static int platform_pm_thaw_noirq(struct
- 	if (drv->pm) {
- 		if (drv->pm->thaw_noirq)
- 			ret = drv->pm->thaw_noirq(dev);
--	} else {
--		ret = platform_legacy_resume_early(dev);
- 	}
- 
- 	return ret;
-@@ -869,8 +837,6 @@ static int platform_pm_poweroff_noirq(st
- 	if (drv->pm) {
- 		if (drv->pm->poweroff_noirq)
- 			ret = drv->pm->poweroff_noirq(dev);
--	} else {
--		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
- 	}
- 
- 	return ret;
-@@ -905,8 +871,6 @@ static int platform_pm_restore_noirq(str
- 	if (drv->pm) {
- 		if (drv->pm->restore_noirq)
- 			ret = drv->pm->restore_noirq(dev);
--	} else {
--		ret = platform_legacy_resume_early(dev);
- 	}
- 
- 	return ret;
---- 0001/include/linux/platform_device.h
-+++ work/include/linux/platform_device.h	2009-06-24 17:27:33.000000000 +0900
-@@ -57,8 +57,6 @@ struct platform_driver {
- 	int (*remove)(struct platform_device *);
- 	void (*shutdown)(struct platform_device *);
- 	int (*suspend)(struct platform_device *, pm_message_t state);
--	int (*suspend_late)(struct platform_device *, pm_message_t state);
--	int (*resume_early)(struct platform_device *);
- 	int (*resume)(struct platform_device *);
- 	struct device_driver driver;
- 	struct platform_device_id *id_table;
+/ magnus
