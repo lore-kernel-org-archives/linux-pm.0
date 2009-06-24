@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update 3] PM: Introduce core framework for
- run-time PM of I/O devices
-Date: Tue, 23 Jun 2009 14:26:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906231408370.3209-100000__23291.617880068$1245781646$gmane$org@iolanthe.rowland.org>
-References: <200906231945.35074.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Introduce core framework for run-time PM
+	of I/O devices (rev. 3)
+Date: Wed, 24 Jun 2009 02:08:22 +0200
+Message-ID: <200906240208.23482.rjw__14117.613194003$1245802244$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906231945.35074.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Jun 2009, Rafael J. Wysocki wrote:
+On Tuesday 23 June 2009, Alan Stern wrote:
+> On Tue, 23 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > Hi,
+> > 
+> > Below is a new revision of the patch introducing the run-time PM framework.
+> > 
+> > The most visible changes from the last version:
+> > 
+> > * I realized that if child_count is atomic, we can drop the parent locking from
+> >   all of the functions, so I did that.
+> > 
+> > * Introduced pm_runtime_put() that decrements the resume counter and queues
+> >   up an idle notification if the counter went down to 0 (and wasn't 0 previously).
+> >   Using asynchronous notification makes it possible to call pm_runtime_put()
+> >   from interrupt context, if necessary.
+> > 
+> > * Changed the meaning of the RPM_WAKE bit slightly (it is now also used for
+> >   disabling run-time PM for a device along with the resume counter).
+> > 
+> > Please let me know if I've overlooked anything. :-)
+> 
+> This first thing to strike me was that you moved the idle notifications 
+> into the workqueue.
 
-> In short, I think suspending (or queuing a suspend request) should fail if the
-> usage counter is nonzero, but the resuming (or queuing up a resume request)
-> should be possible regardless of its value.  The reason is that multiple
-> threads may in theory attempt to resume the device at the same time.
+Yes, I did.
+ 
+> Is that really needed?  Would we be better off just make the idle
+> callbacks directly from pm_runtime_put?  They would run in whatever
+> context the driver happened to be in at the time.
+> 
+> It's not clear exactly how much work the idle callbacks will need to 
+> do, but it seems likely that they won't have to do too much more than 
+> call pm_request_suspend.  And of course, that can be done in_interrupt.
 
-Agreed.  Suspends and resumes aren't symmetrical -- a single resume 
-request must outweigh numerous suspend requests.
+I just don't want to put any constraints on the implementation of
+->runtime_idle().  The requirement that it be suitable for calling from
+interrupt context may be quite inconvenient for some drivers and I'm afraid
+they may have problems with meeting it.
 
-> However, I'm not sure if the core should manipulate the usage counter by
-> itself, because it's sort of problematic (there's no good approach to decide
-> when to decrement the counter).
-
-Yes.  The idea behind my previous message was that it's not really so
-easy for the core to decide when to _increment_ the counter either.
-
-> So, I'd let the callers use pm_runtime_get() to increment the counter
-> and pm_runtime_put() to decrement it, possibly queuing up an idle notification
-> if the counter happens to reach 0.  Also, I'm not sure if unbalanced
-> pm_runtime_put() should be regarded as a bug.
-
-It should be.  Once the counter is messed up, runtime PM wouldn't be
-able to work properly.  But maybe you should add a pm_set_counter call
-so that drivers can recover from imbalances.
-
-One question still remains: If the counter is 0 at the end of a
-successful pm_runtime_resume, should the core then call pm_notify_idle?  
-Or should we make the driver responsible for that too?
-
-> At the same time, I'd like the core to use runtime_status and the other
-> fields in dev_pm_info, except for the usage counter, to ensure that all
-> operations are only carried out when it makes sense.
-
-Yes.  In fact, I'd say that when the counter is positive it doesn't
-make sense to allow a runtime suspend -- so you don't need that
-exception in your statement above.  :-)
-
-Alan Stern
+Best,
+Rafael
