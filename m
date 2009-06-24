@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update 3] PM: Introduce core framework for
- run-time PM of I/O devices
-Date: Wed, 24 Jun 2009 10:51:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906241014170.3199-100000__9417.66079417921$1245855150$gmane$org@iolanthe.rowland.org>
-References: <200906240217.39608.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 07/07] pm: remove platform
+	device	suspend_late()/resume_early() V2
+Date: Wed, 24 Jun 2009 18:02:27 +0200
+Message-ID: <20090624160227.GB6977__3839.05023704774$1245859490$gmane$org@elf.ucw.cz>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+	<20090624092409.14276.96577.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906240217.39608.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20090624092409.14276.96577.sendpatchset@rx1.opensource.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,62 +20,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: gregkh@suse.de, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, ben-linux@fluff.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, akpm@linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
-
-> > One question still remains: If the counter is 0 at the end of a
-> > successful pm_runtime_resume, should the core then call pm_notify_idle?  
-> > Or should we make the driver responsible for that too?
+On Wed 2009-06-24 18:24:09, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> Good question. :-)
+> This is V2 of the platform driver power management late/early
+> callback removal patch. The callbacks ->suspend_late() and
+> ->resume_early() are removed since all in-tree users now have
+> been migrated to dev_pm_ops.
 > 
-> I think the core may call pm_notify_idle() in that case, but not necessarily in
-> the synchronous case.
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-I'm not sure; we may want to do it even for synchronous resumes.  
-Otherwise the callers would be forced to do it.
+Looks ok to me. ACK.
 
-There's also the other side of the coin.  What if the counter is 0 at
-the end of a failed pm_runtime_suspend?
+> ---
+> 
+>  Untested but compiles fine.
+> 
+>  Changes since V1:
+>  - none, just rediff to fit upstream changes
+> 
+>  drivers/base/platform.c         |   36 ------------------------------------
+>  include/linux/platform_device.h |    2 --
+>  2 files changed, 38 deletions(-)
+> 
+> --- 0001/drivers/base/platform.c
+> +++ work/drivers/base/platform.c	2009-06-24 17:27:33.000000000 +0900
+> @@ -628,30 +628,6 @@ static int platform_legacy_suspend(struc
+>  	return ret;
+>  }
+>  
+> -static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
+> -{
+> -	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	int ret = 0;
+> -
+> -	if (dev->driver && pdrv->suspend_late)
+> -		ret = pdrv->suspend_late(pdev, mesg);
+> -
+> -	return ret;
+> -}
+> -
+> -static int platform_legacy_resume_early(struct device *dev)
+> -{
+> -	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	int ret = 0;
+> -
+> -	if (dev->driver && pdrv->resume_early)
+> -		ret = pdrv->resume_early(pdev);
+> -
+> -	return ret;
+> -}
+> -
+>  static int platform_legacy_resume(struct device *dev)
+>  {
+>  	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+> @@ -714,8 +690,6 @@ static int platform_pm_suspend_noirq(str
+>  	if (drv->pm) {
+>  		if (drv->pm->suspend_noirq)
+>  			ret = drv->pm->suspend_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
+>  	}
+>  
+>  	return ret;
+> @@ -750,8 +724,6 @@ static int platform_pm_resume_noirq(stru
+>  	if (drv->pm) {
+>  		if (drv->pm->resume_noirq)
+>  			ret = drv->pm->resume_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_resume_early(dev);
+>  	}
+>  
+>  	return ret;
+> @@ -797,8 +769,6 @@ static int platform_pm_freeze_noirq(stru
+>  	if (drv->pm) {
+>  		if (drv->pm->freeze_noirq)
+>  			ret = drv->pm->freeze_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
+>  	}
+>  
+>  	return ret;
+> @@ -833,8 +803,6 @@ static int platform_pm_thaw_noirq(struct
+>  	if (drv->pm) {
+>  		if (drv->pm->thaw_noirq)
+>  			ret = drv->pm->thaw_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_resume_early(dev);
+>  	}
+>  
+>  	return ret;
+> @@ -869,8 +837,6 @@ static int platform_pm_poweroff_noirq(st
+>  	if (drv->pm) {
+>  		if (drv->pm->poweroff_noirq)
+>  			ret = drv->pm->poweroff_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
+>  	}
+>  
+>  	return ret;
+> @@ -905,8 +871,6 @@ static int platform_pm_restore_noirq(str
+>  	if (drv->pm) {
+>  		if (drv->pm->restore_noirq)
+>  			ret = drv->pm->restore_noirq(dev);
+> -	} else {
+> -		ret = platform_legacy_resume_early(dev);
+>  	}
+>  
+>  	return ret;
+> --- 0001/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-06-24 17:27:33.000000000 +0900
+> @@ -57,8 +57,6 @@ struct platform_driver {
+>  	int (*remove)(struct platform_device *);
+>  	void (*shutdown)(struct platform_device *);
+>  	int (*suspend)(struct platform_device *, pm_message_t state);
+> -	int (*suspend_late)(struct platform_device *, pm_message_t state);
+> -	int (*resume_early)(struct platform_device *);
+>  	int (*resume)(struct platform_device *);
+>  	struct device_driver driver;
+>  	struct platform_device_id *id_table;
 
-For example, suppose the driver's runtime_suspend method decides that
-the device hasn't been idle for long enough, so it wants to fail the
-suspend attempt with -EBUSY and queue a new delayed autosuspend
-request.  But at this point the status is RPM_SUSPENDING, so new
-suspend requests won't be accepted (N.B., the test for this in the most
-recent patch doesn't look right).
-
-Even with a queued notification, there's no guarantee that the
-notification won't be sent before the status changes from
-RPM_SUSPENDING to RPM_ACTIVE.  So we really do need the notification to
-be sent by pm_runtime_suspend, after it has updated the status and
-dropped the lock.
-
-
-There's another totally separate issue worth discussing here.  This 
-will affect the USB implementation of the new runtime PM framework.
-
-The difficulty is that some USB interface drivers require remote wakeup
-to be enabled while their interfaces are suspended.  But remote wakeup
-is a global setting; it doesn't take effect until the entire physical
-device is suspended.  (To put it another way, USB has no notion of
-suspending interfaces.)  This means we must not allow these interfaces
-to be suspended before the whole device is.  But the whole device is
-the parent of the interfaces -- if we can't suspend the children before
-suspending the parent then we're stuck.
-
-Clearly this is something the USB stack has to deal with; it shouldn't
-affect the general PM framework.  However the only solution I can think
-of involves subverting the framework, which isn't very nice.  The idea
-is to ignore runtime_suspend callbacks for these interface drivers;
-allow them to keep on running even though the PM core thinks they are
-suspended.  Then suspend and resume them as part of the callbacks for
-the entire device.  (For interface drivers that don't require remote
-wakeup there is no problem; it doesn't matter when they get suspended.)
-
-This will work, but it's a hack.  Does anybody have a better idea?
-
-Alan Stern
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
