@@ -1,7 +1,8 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 06/07] usb: rework musb suspend()/resume_early()
-Date: Wed, 24 Jun 2009 18:24:00 +0900
-Message-ID: <20090624092400.14276.94490.sendpatchset__2587.72030142627$1245836263$gmane$org@rx1.opensource.se>
+Subject: [PATCH 07/07] pm: remove platform device
+	suspend_late()/resume_early() V2
+Date: Wed, 24 Jun 2009 18:24:09 +0900
+Message-ID: <20090624092409.14276.96577.sendpatchset__20867.6485148773$1245836358$gmane$org@rx1.opensource.se>
 References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,77 +19,123 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+Cc: gregkh@suse.de, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, ben-linux@fluff.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, akpm@linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch reworks platform driver power management code
-for musb from legacy callbacks to dev_pm_ops.
-
-The callbacks are converted for CONFIG_SUSPEND like this:
-  suspend() -> suspend()
-  resume_early() -> resume_noirq()
+This is V2 of the platform driver power management late/early
+callback removal patch. The callbacks ->suspend_late() and
+->resume_early() are removed since all in-tree users now have
+been migrated to dev_pm_ops.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
  Untested but compiles fine.
 
- drivers/i2c/busses/i2c-pxa.c |   25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+ Changes since V1:
+ - none, just rediff to fit upstream changes
 
---- 0001/drivers/usb/musb/musb_core.c
-+++ work/drivers/usb/musb/musb_core.c	2009-06-01 15:27:12.000000000 +0900
-@@ -2168,8 +2168,9 @@ static int __devexit musb_remove(struct 
- 
- #ifdef	CONFIG_PM
- 
--static int musb_suspend(struct platform_device *pdev, pm_message_t message)
-+static int musb_suspend(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	unsigned long	flags;
- 	struct musb	*musb = dev_to_musb(&pdev->dev);
- 
-@@ -2196,8 +2197,9 @@ static int musb_suspend(struct platform_
- 	return 0;
+ drivers/base/platform.c         |   36 ------------------------------------
+ include/linux/platform_device.h |    2 --
+ 2 files changed, 38 deletions(-)
+
+--- 0001/drivers/base/platform.c
++++ work/drivers/base/platform.c	2009-06-24 17:27:33.000000000 +0900
+@@ -628,30 +628,6 @@ static int platform_legacy_suspend(struc
+ 	return ret;
  }
  
--static int musb_resume_early(struct platform_device *pdev)
-+static int musb_resume_noirq(struct device *dev)
+-static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
+-{
+-	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+-	struct platform_device *pdev = to_platform_device(dev);
+-	int ret = 0;
+-
+-	if (dev->driver && pdrv->suspend_late)
+-		ret = pdrv->suspend_late(pdev, mesg);
+-
+-	return ret;
+-}
+-
+-static int platform_legacy_resume_early(struct device *dev)
+-{
+-	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+-	struct platform_device *pdev = to_platform_device(dev);
+-	int ret = 0;
+-
+-	if (dev->driver && pdrv->resume_early)
+-		ret = pdrv->resume_early(pdev);
+-
+-	return ret;
+-}
+-
+ static int platform_legacy_resume(struct device *dev)
  {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct musb	*musb = dev_to_musb(&pdev->dev);
+ 	struct platform_driver *pdrv = to_platform_driver(dev->driver);
+@@ -714,8 +690,6 @@ static int platform_pm_suspend_noirq(str
+ 	if (drv->pm) {
+ 		if (drv->pm->suspend_noirq)
+ 			ret = drv->pm->suspend_noirq(dev);
+-	} else {
+-		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
+ 	}
  
- 	if (!musb->clock)
-@@ -2215,9 +2217,14 @@ static int musb_resume_early(struct plat
- 	return 0;
- }
+ 	return ret;
+@@ -750,8 +724,6 @@ static int platform_pm_resume_noirq(stru
+ 	if (drv->pm) {
+ 		if (drv->pm->resume_noirq)
+ 			ret = drv->pm->resume_noirq(dev);
+-	} else {
+-		ret = platform_legacy_resume_early(dev);
+ 	}
  
-+static struct dev_pm_ops musb_dev_pm_ops = {
-+	.suspend	= musb_suspend,
-+	.resume_noirq	= musb_resume_noirq,
-+};
-+
-+#define MUSB_DEV_PM_OPS (&musb_dev_pm_ops)
- #else
--#define	musb_suspend	NULL
--#define	musb_resume_early	NULL
-+#define	MUSB_DEV_PM_OPS	NULL
- #endif
+ 	return ret;
+@@ -797,8 +769,6 @@ static int platform_pm_freeze_noirq(stru
+ 	if (drv->pm) {
+ 		if (drv->pm->freeze_noirq)
+ 			ret = drv->pm->freeze_noirq(dev);
+-	} else {
+-		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
+ 	}
  
- static struct platform_driver musb_driver = {
-@@ -2225,11 +2232,10 @@ static struct platform_driver musb_drive
- 		.name		= (char *)musb_driver_name,
- 		.bus		= &platform_bus_type,
- 		.owner		= THIS_MODULE,
-+		.pm		= MUSB_DEV_PM_OPS,
- 	},
- 	.remove		= __devexit_p(musb_remove),
- 	.shutdown	= musb_shutdown,
--	.suspend	= musb_suspend,
--	.resume_early	= musb_resume_early,
- };
+ 	return ret;
+@@ -833,8 +803,6 @@ static int platform_pm_thaw_noirq(struct
+ 	if (drv->pm) {
+ 		if (drv->pm->thaw_noirq)
+ 			ret = drv->pm->thaw_noirq(dev);
+-	} else {
+-		ret = platform_legacy_resume_early(dev);
+ 	}
  
- /*-------------------------------------------------------------------------*/
+ 	return ret;
+@@ -869,8 +837,6 @@ static int platform_pm_poweroff_noirq(st
+ 	if (drv->pm) {
+ 		if (drv->pm->poweroff_noirq)
+ 			ret = drv->pm->poweroff_noirq(dev);
+-	} else {
+-		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
+ 	}
+ 
+ 	return ret;
+@@ -905,8 +871,6 @@ static int platform_pm_restore_noirq(str
+ 	if (drv->pm) {
+ 		if (drv->pm->restore_noirq)
+ 			ret = drv->pm->restore_noirq(dev);
+-	} else {
+-		ret = platform_legacy_resume_early(dev);
+ 	}
+ 
+ 	return ret;
+--- 0001/include/linux/platform_device.h
++++ work/include/linux/platform_device.h	2009-06-24 17:27:33.000000000 +0900
+@@ -57,8 +57,6 @@ struct platform_driver {
+ 	int (*remove)(struct platform_device *);
+ 	void (*shutdown)(struct platform_device *);
+ 	int (*suspend)(struct platform_device *, pm_message_t state);
+-	int (*suspend_late)(struct platform_device *, pm_message_t state);
+-	int (*resume_early)(struct platform_device *);
+ 	int (*resume)(struct platform_device *);
+ 	struct device_driver driver;
+ 	struct platform_device_id *id_table;
