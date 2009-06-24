@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 07/07] pm: remove platform
-	device	suspend_late()/resume_early() V2
-Date: Wed, 24 Jun 2009 18:02:27 +0200
-Message-ID: <20090624160227.GB6977__3839.05023704774$1245859490$gmane$org@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
+	pm callbacks V2
+Date: Wed, 24 Jun 2009 20:48:39 +0200
+Message-ID: <200906242048.40956.rjw__41043.68129415$1245869463$gmane$org@sisk.pl>
 References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-	<20090624092409.14276.96577.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
-In-Reply-To: <20090624092409.14276.96577.sendpatchset@rx1.opensource.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,132 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: gregkh@suse.de, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, ben-linux@fluff.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, akpm@linux-foundation.org, felipe.balbi@nokia.com
+To: Magnus Damm <magnus.damm@gmail.com>, gregkh@suse.de
+Cc: ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2009-06-24 18:24:09, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+On Wednesday 24 June 2009, Magnus Damm wrote:
+> pm: remove late/early platform driver pm callbacks V2
 > 
-> This is V2 of the platform driver power management late/early
-> callback removal patch. The callbacks ->suspend_late() and
-> ->resume_early() are removed since all in-tree users now have
-> been migrated to dev_pm_ops.
+> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> 
+> These patches simply remove ->suspend_late() and ->resume_early()
+> from struct platform_driver. Drivers are converted to dev_pm_ops
+> with CONFIG_SUSPEND in mind. Untested.
+> 
+> All patches except [02/07] are known to compile.
 > 
 > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-Looks ok to me. ACK.
+If no one objects, I'd like to take this series into the suspend-2.6 tree as
+2.6.32 material.  Greg?
+
+Pavel, is your ACK for the entire series?
+
+Best,
+Rafael
 
 > ---
 > 
->  Untested but compiles fine.
-> 
 >  Changes since V1:
->  - none, just rediff to fit upstream changes
+>  - resolved conflicts in [05/07], rediffed [07/07]
+>  - include lkml, linux-usb and akpm
 > 
->  drivers/base/platform.c         |   36 ------------------------------------
->  include/linux/platform_device.h |    2 --
->  2 files changed, 38 deletions(-)
-> 
-> --- 0001/drivers/base/platform.c
-> +++ work/drivers/base/platform.c	2009-06-24 17:27:33.000000000 +0900
-> @@ -628,30 +628,6 @@ static int platform_legacy_suspend(struc
->  	return ret;
->  }
->  
-> -static int platform_legacy_suspend_late(struct device *dev, pm_message_t mesg)
-> -{
-> -	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	int ret = 0;
-> -
-> -	if (dev->driver && pdrv->suspend_late)
-> -		ret = pdrv->suspend_late(pdev, mesg);
-> -
-> -	return ret;
-> -}
-> -
-> -static int platform_legacy_resume_early(struct device *dev)
-> -{
-> -	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	int ret = 0;
-> -
-> -	if (dev->driver && pdrv->resume_early)
-> -		ret = pdrv->resume_early(pdev);
-> -
-> -	return ret;
-> -}
-> -
->  static int platform_legacy_resume(struct device *dev)
->  {
->  	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-> @@ -714,8 +690,6 @@ static int platform_pm_suspend_noirq(str
->  	if (drv->pm) {
->  		if (drv->pm->suspend_noirq)
->  			ret = drv->pm->suspend_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_suspend_late(dev, PMSG_SUSPEND);
->  	}
->  
->  	return ret;
-> @@ -750,8 +724,6 @@ static int platform_pm_resume_noirq(stru
->  	if (drv->pm) {
->  		if (drv->pm->resume_noirq)
->  			ret = drv->pm->resume_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_resume_early(dev);
->  	}
->  
->  	return ret;
-> @@ -797,8 +769,6 @@ static int platform_pm_freeze_noirq(stru
->  	if (drv->pm) {
->  		if (drv->pm->freeze_noirq)
->  			ret = drv->pm->freeze_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_suspend_late(dev, PMSG_FREEZE);
->  	}
->  
->  	return ret;
-> @@ -833,8 +803,6 @@ static int platform_pm_thaw_noirq(struct
->  	if (drv->pm) {
->  		if (drv->pm->thaw_noirq)
->  			ret = drv->pm->thaw_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_resume_early(dev);
->  	}
->  
->  	return ret;
-> @@ -869,8 +837,6 @@ static int platform_pm_poweroff_noirq(st
->  	if (drv->pm) {
->  		if (drv->pm->poweroff_noirq)
->  			ret = drv->pm->poweroff_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_suspend_late(dev, PMSG_HIBERNATE);
->  	}
->  
->  	return ret;
-> @@ -905,8 +871,6 @@ static int platform_pm_restore_noirq(str
->  	if (drv->pm) {
->  		if (drv->pm->restore_noirq)
->  			ret = drv->pm->restore_noirq(dev);
-> -	} else {
-> -		ret = platform_legacy_resume_early(dev);
->  	}
->  
->  	return ret;
-> --- 0001/include/linux/platform_device.h
-> +++ work/include/linux/platform_device.h	2009-06-24 17:27:33.000000000 +0900
-> @@ -57,8 +57,6 @@ struct platform_driver {
->  	int (*remove)(struct platform_device *);
->  	void (*shutdown)(struct platform_device *);
->  	int (*suspend)(struct platform_device *, pm_message_t state);
-> -	int (*suspend_late)(struct platform_device *, pm_message_t state);
-> -	int (*resume_early)(struct platform_device *);
->  	int (*resume)(struct platform_device *);
->  	struct device_driver driver;
->  	struct platform_device_id *id_table;
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
+>  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
+>  drivers/base/platform.c          |   36 ------------------------------------
+>  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
+>  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
+>  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
+>  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
+>  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
+>  include/linux/platform_device.h  |    2 --
+>  9 files changed, 82 insertions(+), 79 deletions(-)
