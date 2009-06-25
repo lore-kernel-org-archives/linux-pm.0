@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 5)
-Date: Wed, 24 Jun 2009 17:30:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906241724020.22054-100000__49431.7334298559$1245879105$gmane$org@iolanthe.rowland.org>
-References: <200906242124.05511.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+Date: Thu, 25 Jun 2009 11:25:39 +0900
+Message-ID: <aec7e5c30906241925n3eeaee65of0dcf0286f60366d@mail.gmail.com>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+	<87r5xhqzr4.fsf@deeprootsystems.com>
+	<aec7e5c30906240450w2c204b1bo8e06cdc26eaad753@mail.gmail.com>
+	<200906242050.57312.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906242124.05511.rjw@sisk.pl>
+In-Reply-To: <200906242050.57312.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,259 +21,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
+On Thu, Jun 25, 2009 at 3:50 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Wednesday 24 June 2009, Magnus Damm wrote:
+>> On Fri, Jun 19, 2009 at 1:21 AM, Kevin
+>> Hilman<khilman@deeprootsystems.com> wrote:
+>> > Magnus Damm <magnus.damm@gmail.com> writes:
+>> >
+>> >> From: Magnus Damm <damm@igel.co.jp>
+>> >>
+>> >> Allow architecture specific data in struct platform_device V3.
+>> >>
+>> >> With this patch struct pdev_archdata is added to struct
+>> >> platform_device, similar to struct dev_archdata in found in
+>> >> struct device. Useful for architecture code that needs to
+>> >> keep extra data associated with each platform device.
+>> >>
+>> >> Struct pdev_archdata is different from dev.platform_data, the
+>> >> convention is that dev.platform_data points to driver-specific
+>> >> data. It may or may not be required by the driver. The format
+>> >> of this depends on driver but is the same across architectures.
+>> >>
+>> >> The structure pdev_archdata is a place for architecture specific
+>> >> data. This data is handled by architecture specific code (for
+>> >> example runtime PM), and since it is architecture specific it
+>> >> should _never_ be touched by device driver code. Exactly like
+>> >> struct dev_archdata but for platform devices.
+>> >>
+>> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+>> >
+>> > Since there is no 'Feature-desired-by:' tag, I'll addd
+>> >
+>> > Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+>> >
+>> > For PM on ARM in general, and OMAP in particular we definitely need a
+>> > generic way to handle arch-specific data per platform_device.
+>>
+>> Thanks, Kevin! So ARM in general or at least OMAP wants this, and so
+>> does SuperH.
+>>
+>> Rafael, you kindly gave feedback on earlier versions, are you ok with
+>> this version?
+>
+> Yes, I am. =A0I'm planning to include it into my linux-next branch for 2.=
+6.32, if
+> no one objects.
 
-> +config PM_RUNTIME
-> +	bool "Run-time PM core functionality"
-> +	depends on PM
-> +	---help---
-> +	  Enable functionality allowing I/O devices to be put into energy-saving
-> +	  (low power) states at run time (or autosuspended) after a specified
-> +	  period of inactivity and woken up in response to a hardware-generated
-> +	  wake-up event or a driver's request.
-> +
-> +	  Hardware support is generally required for this functionality to work
-> +	  and the bus type drivers of the buses the devices are on are
-> +	  responsibile for the actual handling of the autosuspend requests and
+Do you have any specific reason for not including this one in 2.6.31?
+I guess you were thinking of keeping it together with your Runtime PM
+patches targeted for 2.6.32?
 
-s/ibile/ible/
+IMO, this patch is decoupled from Runtime PM. It will of course be
+used for Runtime PM on SuperH, but it can for instance also be used
+together with the clock framework.  On top of that, the patch is only
+adding code so it's very unlikely to cause any breakage.
 
-> @@ -165,6 +168,28 @@ typedef struct pm_message {
->   * It is allowed to unregister devices while the above callbacks are being
->   * executed.  However, it is not allowed to unregister a device from within any
->   * of its own callbacks.
-> + *
-> + * There also are the following callbacks related to run-time power management
-> + * of devices:
-> + *
-> + * @runtime_suspend: Prepare the device for a condition in which it won't be
-> + *	able to communicate with the CPU(s) and RAM due to power management.
-> + *	This need not mean that the device should be put into a low power state.
-> + *	For example, if the device is behind a link which is about to be turned
-> + *	off, the device may remain at full power.  Still, if the device does go
+If possible, I'd like this to be merged as early as possible since a
+lot of processor specific changes will depend on it. With this
+included in 2.6.31 I can easily build arch specific code for 2.6.32.
+Anything I can do to make that happen?
 
-s/Still, if/If/ -- the word "Still" seems a little odd in this context.
+My top priority is Runtime PM for SuperH on top of your code, and I
+intend to post a prototype for SuperH before the PM Summit. It would
+be great to minimize the dependencies though, and including this in
+2.6.31 would certainly help.
 
-> + *	to low power and if device_may_wakeup(dev) is true, remote wake-up
-> + *	(i.e. hardware mechanism allowing the device to request a change of its
+Thanks!
 
-s/i.e. /i.e., a /
-
-> + *	power state, such as PCI PME) should be enabled for it.
-> + *
-> + * @runtime_resume: Put the device into the fully active state in response to a
-> + *	wake-up event generated by hardware or at a request of software.  If
-
-s/at a request/at the request/
-
-> + *	necessary, put the device into the full power state and restore its
-> + *	registers, so that it is fully operational.
-
-
-> + * RPM_ACTIVE		Device is fully operational, no run-time PM requests are
-> + *			pending for it.
-> + *
-> + * RPM_IDLE		It has been requested that the device be suspended.
-> + *			Suspend request has been put into the run-time PM
-> + *			workqueue and it's pending execution.
-> + *
-> + * RPM_SUSPENDING	Device bus type's ->runtime_suspend() callback is being
-> + *			executed.
-> + *
-> + * RPM_SUSPENDED	Device bus type's ->runtime_suspend() callback has
-> + *			completed successfully.  The device is regarded as
-> + *			suspended.
-> + *
-> + * RPM_WAKE		It has been requested that the device be woken up.
-> + *			Resume request has been put into the run-time PM
-> + *			workqueue and it's pending execution.
-> + *
-> + * RPM_RESUMING		Device bus type's ->runtime_resume() callback is being
-> + *			executed.
-
-Remember to add RPM_NOTIFY.
-
-
-> +/**
-> + * __pm_get_child - Increment the counter of unsuspended children of a device.
-> + * @dev: Device to handle;
-> + */
-> +static void __pm_get_child(struct device *dev)
-> +{
-> +	atomic_inc(&dev->power.child_count);
-> +}
-> +
-> +/**
-> + * __pm_put_child - Decrement the counter of unsuspended children of a device.
-> + * @dev: Device to handle;
-> + */
-> +static void __pm_put_child(struct device *dev)
-> +{
-> +	if (!atomic_add_unless(&dev->power.child_count, -1, 0))
-> +		dev_WARN(dev, "Unbalanced counter decrementation");
-> +}
-
-I think we don't need this dev_WARN.  It should be straightforward to
-verify that the increments and decrements balance correctly, and the
-child_count field isn't manipulated by drivers.
-
-In fact, these don't need to be separate routines at all.  Just call
-atomic_inc or atomic_dec directly.
-
-> +
-> +/**
-> + * __pm_runtime_suspend - Run a device bus type's runtime_suspend() callback.
-> + * @dev: Device to suspend.
-> + * @sync: If unset, the funtion has been called via pm_wq.
-> + *
-> + * Check if the run-time PM status of the device is appropriate and run the
-> + * ->runtime_suspend() callback provided by the device's bus type.  Update the
-> + * run-time PM flags in the device object to reflect the current status of the
-> + * device.
-> + */
-> +int __pm_runtime_suspend(struct device *dev, bool sync)
-> +{
-> +	struct device *parent = NULL;
-> +	unsigned long flags;
-> +	int error = -EINVAL;
-
-Remove the initializer.
-
-> +
-> +	might_sleep();
-> +
-> +	spin_lock_irqsave(&dev->power.lock, flags);
-> +
-> + repeat:
-> +	if (dev->power.runtime_status == RPM_ERROR) {
-
-Insert:		error = -EINVAL;
-
-> +		goto out;
-> +	} else if (dev->power.runtime_status & RPM_SUSPENDED) {
-
-...
-
-
-> +void pm_runtime_put(struct device *dev)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&dev->power.lock, flags);
-> +
-> +	if (!__pm_runtime_put(dev)) {
-> +		dev_WARN(dev, "Unbalanced counter decrementation");
-
-"decrementation" isn't a word -- or if it is, it shouldn't be.  :-)  
-Just use "decrement".  Similarly in other places.
-
-> +/**
-> + * pm_runtime_add - Update run-time PM fields of a device while adding it.
-> + * @dev: Device object being added to device hierarchy.
-> + */
-> +void pm_runtime_add(struct device *dev)
-> +{
-> +	dev->power.runtime_notify = false;
-> +	INIT_DELAYED_WORK(&dev->power.suspend_work, pm_runtime_suspend_work);
-
-Doesn't INIT_DELAYED_WORK belong in pm_runtime_init?
-Do we want the bus subsystem to be responsible for doing:
-
-	dev->power.runtime_disabled = false;
-	pm_runtime_put(dev);
-
-after calling device_add?  Or should device_add do it?
-
-
-> Index: linux-2.6/include/linux/pm_runtime.h
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/include/linux/pm_runtime.h
-
-> +static inline struct device *suspend_work_to_device(struct work_struct *work)
-> +{
-> +	struct delayed_work *dw = to_delayed_work(work);
-> +	struct dev_pm_info *dpi;
-> +
-> +	dpi = container_of(dw, struct dev_pm_info, suspend_work);
-> +	return container_of(dpi, struct device, power);
-> +}
-
-You don't need to iterate container_of like this.  You can do:
-
-	return container_of(dw, struct device, power.suspend_work);
-
-> +
-> +static inline struct device *work_to_device(struct work_struct *work)
-> +{
-> +	struct dev_pm_info *dpi;
-> +
-> +	dpi = container_of(work, struct dev_pm_info, work);
-> +	return container_of(dpi, struct device, power);
-> +}
-
-Similarly here.
-
-These two routines aren't used outside of runtime.c.  They should be
-moved into that file.  The same goes for pm_children_suspended and
-pm_suspend_possible.
-
-> +
-> +static inline void __pm_runtime_get(struct device *dev)
-> +{
-> +	atomic_inc(&dev->power.resume_count);
-> +}
-
-Why introduce __pm_runtime_get?  Just make this pm_runtime_get.
-
-> +static inline void pm_runtime_remove(struct device *dev)
-> +{
-> +	pm_runtime_disable(dev);
-> +}
-
-You forgot to decrement the parent's child_count if dev isn't
-suspended (and then do a idle_notify on the parent).  Because of this 
-additional complexity, don't inline the routine.
-
-> Index: linux-2.6/drivers/base/dd.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/dd.c
-> +++ linux-2.6/drivers/base/dd.c
-> @@ -23,6 +23,7 @@
->  #include <linux/kthread.h>
->  #include <linux/wait.h>
->  #include <linux/async.h>
-> +#include <linux/pm_runtime.h>
->  
->  #include "base.h"
->  #include "power/power.h"
-> @@ -202,8 +203,12 @@ int driver_probe_device(struct device_dr
->  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
->  		 drv->bus->name, __func__, dev_name(dev), drv->name);
->  
-> +	pm_runtime_disable(dev);
-> +
->  	ret = really_probe(dev, drv);
->  
-> +	pm_runtime_enable(dev);
-> +
-
-Shouldn't we guarantee that a device isn't probed while it is in a
-suspended state?  So this should be
-
-	pm_runtime_get(dev);
-	ret = pm_runtime_resume(dev);
-	if (ret == 0)
-		ret = really_probe(dev, drv);
-	pm_runtime_put(dev);	
-
-It might be nice to have a simple combined pm_runtime_get_and_resume
-for this sort of situation.
-
-
-More comments to follow when I get time to review more of the code...
-
-Alan Stern
+/ magnus
