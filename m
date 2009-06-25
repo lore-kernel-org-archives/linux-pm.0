@@ -1,13 +1,17 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
-Date: Thu, 25 Jun 2009 19:16:53 +0200
-Message-ID: <8db1092f0906251016l5ac85bfdpbac841b939cfac2a__38745.0682967485$1245950468$gmane$org@mail.gmail.com>
-References: <4A438BA7.9010800@tuffmail.co.uk>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+Date: Fri, 26 Jun 2009 02:17:28 +0900
+Message-ID: <20090625171728.GA25320__26578.4101364718$1245950605$gmane$org@linux-sh.org>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+	<200906242050.57312.rjw@sisk.pl>
+	<aec7e5c30906241925n3eeaee65of0dcf0286f60366d@mail.gmail.com>
+	<200906251634.12222.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A438BA7.9010800@tuffmail.co.uk>
+Content-Disposition: inline
+In-Reply-To: <200906251634.12222.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,19 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-MjAwOS82LzI1IEFsYW4gSmVua2lucyA8YWxhbi1qZW5raW5zQHR1ZmZtYWlsLmNvLnVrPjoKPiBU
-aGUgc3luYXB0aWNzIHRvdWNocGFkIG9uIG15IEVlZVBDIDcwMSBkaWVzIG9uIGhpYmVybmF0aW9u
-LiDCoDIuNi4zMCB3YXMKPiBmaW5lLCBhbmQgaXQgZG9lc24ndCBoYXBwZW4gb24gc3VzcGVuZCB0
-byByYW0gZWl0aGVyLiDCoFRoZXJlIGFyZSBubwo+IG9idmlvdXMgZXJyb3IgbWVzc2FnZXMsIGJ1
-dCBtYXliZSB0aGlzIGJvb3QgbWVzc2FnZSBpcyByZWxldmFudDoKPgo+IFBsYXRmb3JtIGRyaXZl
-ciAnaTgwNDInIG5lZWRzIHVwZGF0aW5nLCBwbGVhc2UgdXNlIGRldl9wbV9vcHMKPgoKU2ltaWxh
-ciBvbiBzMmRpc2ssIEhQL0NvbXBhcSBub3RlYm9vay4gVHJ5IHJlbG9hZCBwc21vdXNlIG1vZHVs
-ZS4gSQpyZXBvcnRlZCBpdCwgYnV0IG5vYm9keSBhbnN3ZXIuCgotLSAKTWFjaWVqIFJ1dGVja2kK
-aHR0cDovL3d3dy5tYWNpZWsudW5peHkucGwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, Jun 25, 2009 at 04:34:11PM +0200, Rafael J. Wysocki wrote:
+> On Thursday 25 June 2009, Magnus Damm wrote:
+> > If possible, I'd like this to be merged as early as possible since a
+> > lot of processor specific changes will depend on it. With this
+> > included in 2.6.31 I can easily build arch specific code for 2.6.32.
+> > Anything I can do to make that happen?
+> > 
+> > My top priority is Runtime PM for SuperH on top of your code, and I
+> > intend to post a prototype for SuperH before the PM Summit. It would
+> > be great to minimize the dependencies though, and including this in
+> > 2.6.31 would certainly help.
+> 
+> I'm going to add this patch to my linux-next branch shortly and if your 2.6.32
+> development is based on that branch (I'd recommend that anyway), there
+> shouldn't be any problems during the 2.6.32 merge window.
+> 
+Yes, I was already planning on creating a topic branch based off of this
+so that we can start getting things ready in the sh tree, so this is not
+a problem.. as long as you don't rebase ;-)
