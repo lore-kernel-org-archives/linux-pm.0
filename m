@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 5)
-Date: Sat, 27 Jun 2009 00:02:30 +0200
-Message-ID: <200906270002.32030.rjw__27305.9473875493$1246053770$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
-	<200906242124.05511.rjw@sisk.pl>
-	<aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
+	run-time PM of I/O devices (rev. 6)
+Date: Sat, 27 Jun 2009 00:32:44 +0200
+Message-ID: <200906270032.45290.rjw__27165.8677644611$1246055583$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,149 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 25 June 2009, Magnus Damm wrote:
-> On Thu, Jun 25, 2009 at 4:24 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
-> >
-> > Introduce a core framework for run-time power management of I/O
-> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> > a run-time PM workqueue and define some device run-time PM helper
-> > functions at the core level.  Document all these things.
-> >
-> > Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday 26 June 2009, Alan Stern wrote:
+> On Fri, 26 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> Hi Rafael,
+> > > It occurs to me that the problem would be solved if were a cancel_work
+> > > routine.  In the same vein, it ought to be possible for
+> > > cancel_delayed_work to run in interrupt context.  I'll see what can be
+> > > done.
+> > 
+> > Having looked at the workqueue code I'm not sure if there's a way to implement
+> > that in a non-racy way.  Which may be the reason why there are no such
+> > functions already. :-)
 > 
-> Thanks for your work on this. I've built some code for SuperH on top
-> of this today, and with that behind me I have a few questions and a
-> little bit of code feedback.
+> Well, I'll give it a try.
 > 
-> Questions:
+> Speaking of races, have you noticed that the way power.work_done gets 
+> used is racy?
+
+Not really. :-)
+
+> You can't wait for the completion before releasing the 
+> lock, but then anything could happen.
 > 
-> 1) Which functions are device drivers supposed to use?
+> A safer approach would be to use a wait_queue.
+
+I'm not sure what you mean exactly.  What's the race?
+
+> > In the meantime I reworked the patch (below) to use more RPM_* flags and I
+> > removed the runtime_break and runtime_notify bits from it.  Also added some
+> > comments to explain some non-obvious steps (hope that helps).
+> > 
+> > I also added the pm_runtime_put_atomic() and pm_runtime_put() as per the
+> > comment above.
+> > 
+> > It seems to be a bit cleaner this way, but that's my personal view. :-)
 > 
-> I simply added pm_runtime_resume() and pm_runtime_suspend() where
-> clk_enable() and clk_disable() normally are used. In interrupt
-> handlers I used pm_request_suspend() instead of pm_runtime_suspend().
-> 
-> I'm not sure if the v5 patch does the right thing around
-> really_probe() like Alan pointed out.
+> I'll look at it over the weekend.  And I'll try to see if proper 
+> cancel_work and cancel_delayed_work functions can help clean it up.
 
-Yes, Alan was right.  V6 doesn't address that, but V7 will. :-)
-
-> Basically, I'd like to be able to call my bus callback for
-> ->runtime_resume() from the driver probe(), but power.resume_count seems
-> stuck at 1 which leads to pm_runtime_resume() returning -EAGAIN before
-> invoking the bus callback.
-> 
-> This leads to question number two...
-> 
-> 2) What's the default state in probe()?
-
-Currently, it's 'active', but runtime_disabled is set.  I'm open to
-suggestions, though.
-
-> We touched this subject briefly before. I'd like to compare the
-> Runtime PM default state with the clock framework default state. The
-> clock framework requires you to use clk_enable() to enable the clock
-> to a hardware block before it is allowed to access the hardware
-> registers. At least that's how we handle stop bits on SuperH. So
-> clocks come up disabled from boot and should be enabled and disabled
-> by the device driver to save power.
-> 
-> I'd like to change our Module Stop Bits code on SuperH (once again)
-> from being handled by the clock framework to being managed by the
-> Runtime PM framework. Having the clock framework deal with the stop
-> bits works fine today, they are off by default after boot, and the
-> driver often enables the clock with clk_enable() in probe() or
-> hopefully in some more finegrained fashion.
-> 
-> I'm not sure how the Module Stop Bits should fit with the Runtime PM
-> code though. The default state for a device at probe() time seems to
-> be RPM_ACTIVE. Should drivers call pm_runtime_enable() to enable
-> Runtime PM?
-
-That's the idea.
-
-> One part of me likes the idea that Runtime PM-enabled drivers start in
-> RPM_SUSPENDED so they are forced to put pm_runtime_resume() before
-> actually using the hardware. This makes the Runtime PM behaviour
-> pretty close to the clock framework.
-> 
-> If you dislike starting from RPM_SUSPENDED (most likely) then I wonder
-> how I should set the state to RPM_SUSPENDED in the driver. I'd like to
-> make sure that pm_runtime_resume() can invoke the bus callback so the
-> hardware can be turned on for the first time somehow. Should I do a
-> dummy suspend?
-
-Hmm, good question.
-
-While run-time PM is disabled (power.runtime_disabled is set), which is the
-case in the initial state, you can just change power.runtime_status to
-RPM_SUSPENDED and nothing wrong happens as long as that reflects the actual
-status of the device.
-
-I'll add a helper function for that.
-
-> 3) Should drivers use pm_suspend_ignore_children(dev, true)?
-> 
-> It turns out that I can't suspend my I2C master driver out of the box
-> since it becomes the parent of all slaves on the I2C bus. The I2C
-> master driver is just a platform driver, and the children are I2C
-> devices (90% sure). I want to do Runtime PM regardless if the child
-> devices are suspended or not, I guess I should use
-> pm_suspend_ignore_children(dev, true) then?
-
-Yes, that's the idea.
-
-> > +/**
-> > + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
-> > + * @dev: Device to resume.
-> > + * @sync: If unset, the funtion has been called via pm_wq.
-> > + *
-> > + * Check if the device is really suspended and run the ->runtime_resume()
-> > + * callback provided by the device's bus type driver.  Update the run-time PM
-> > + * flags in the device object to reflect the current status of the device.  If
-> > + * runtime suspend is in progress while this function is being run, wait for it
-> > + * to finish before resuming the device.  If runtime suspend is scheduled, but
-> > + * it hasn't started yet, cancel it and we're done.
-> > + */
-> > +int __pm_runtime_resume(struct device *dev, bool sync)
-> > +{
-> [snip]
-> > +}
-> > +EXPORT_SYMBOL_GPL(pm_runtime_resume);
-> 
-> You're missing "__" here unless you're aiming for something very exotic. =)
-
-Ah, thanks!
-
-> > +/**
-> > + * pm_runtime_work - Run __pm_runtime_resume() for a device.
-> > + * @work: Work structure used for scheduling the execution of this function.
-> > + *
-> > + * Use @work to get the device object the resume has been scheduled for and run
-> > + * __pm_runtime_resume() for it.
-> > + */
-> > +static void pm_runtime_work(struct work_struct *work)
-> > +{
-> > +       __pm_runtime_resume(work_to_device(work), false);
-> > +}
-> 
-> Anything wrong with the name pm_runtime_resume_work()?
-
-Not at all. :-)  Just switched to that.
-
-> Looking forward to v6, I'll switch task now, will be back to this late Monday.
-
-Well, V6 was already sent, but unfortunately it didn't address your comments.
-I'll send V7 during the weekend.
+Great, thanks!
 
 Best,
 Rafael
