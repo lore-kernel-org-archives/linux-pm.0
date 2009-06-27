@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 6)
-Date: Sat, 27 Jun 2009 00:32:44 +0200
-Message-ID: <200906270032.45290.rjw__27165.8677644611$1246055583$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
+ run-time PM of I/O devices (rev. 6)
+Date: Fri, 26 Jun 2009 21:25:49 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906262106490.2995-100000__5556.76540029726$1246066017$gmane$org@netrider.rowland.org>
+References: <200906270032.45290.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200906270032.45290.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 26 June 2009, Alan Stern wrote:
-> On Fri, 26 Jun 2009, Rafael J. Wysocki wrote:
+On Sat, 27 Jun 2009, Rafael J. Wysocki wrote:
+
+> > Speaking of races, have you noticed that the way power.work_done gets 
+> > used is racy?
 > 
-> > > It occurs to me that the problem would be solved if were a cancel_work
-> > > routine.  In the same vein, it ought to be possible for
-> > > cancel_delayed_work to run in interrupt context.  I'll see what can be
-> > > done.
+> Not really. :-)
+> 
+> > You can't wait for the completion before releasing the 
+> > lock, but then anything could happen.
 > > 
-> > Having looked at the workqueue code I'm not sure if there's a way to implement
-> > that in a non-racy way.  Which may be the reason why there are no such
-> > functions already. :-)
+> > A safer approach would be to use a wait_queue.
 > 
-> Well, I'll give it a try.
-> 
-> Speaking of races, have you noticed that the way power.work_done gets 
-> used is racy?
+> I'm not sure what you mean exactly.  What's the race?
 
-Not really. :-)
+Somebody calls pm_runtime_suspend when a suspend is already in 
+progress.  The routine sees that the status is RPM_SUSPENDING, so it 
+prepares to wait until the suspend is finished.  It drops the lock and 
+calls wait_for_completion.
 
-> You can't wait for the completion before releasing the 
-> lock, but then anything could happen.
-> 
-> A safer approach would be to use a wait_queue.
+But in between those last two steps, the suspend could finish and 
+a resume could start up.  Then the wait_for_completion wouldn't return 
+until the device was fully resumed!
 
-I'm not sure what you mean exactly.  What's the race?
+Now I admit this isn't as bad as it sounds.  The same sort of thing
+could happen even if there weren't two suspends going on at the same
+time; a resume could occur between when the routine drops the lock and
+when it returns.  So okay, forget I mentioned it.
 
-> > In the meantime I reworked the patch (below) to use more RPM_* flags and I
-> > removed the runtime_break and runtime_notify bits from it.  Also added some
-> > comments to explain some non-obvious steps (hope that helps).
-> > 
-> > I also added the pm_runtime_put_atomic() and pm_runtime_put() as per the
-> > comment above.
-> > 
-> > It seems to be a bit cleaner this way, but that's my personal view. :-)
-> 
-> I'll look at it over the weekend.  And I'll try to see if proper 
-> cancel_work and cancel_delayed_work functions can help clean it up.
-
-Great, thanks!
-
-Best,
-Rafael
+Alan Stern
