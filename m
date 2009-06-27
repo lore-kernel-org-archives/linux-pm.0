@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of	I/O devices
-Date: Wed, 24 Jun 2009 17:04:00 +0200
-Message-ID: <20090624150400.GG1784__15306.440802715$1246102165$gmane$org@ucw.cz>
-References: <200906140023.36147.rjw@sisk.pl> <200906141158.50171.rjw@sisk.pl>
-	<200906150057.32424.rjw@sisk.pl>
+ run-time PM of I/O devices (rev. 6)
+Date: Sat, 27 Jun 2009 10:51:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906271042450.12287-100000__12482.3713129901$1246114361$gmane$org@netrider.rowland.org>
+References: <200906270032.45290.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200906150057.32424.rjw@sisk.pl>
+In-Reply-To: <200906270032.45290.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sat, 27 Jun 2009, Rafael J. Wysocki wrote:
 
+> > Speaking of races, have you noticed that the way power.work_done gets 
+> > used is racy?
+> 
+> Not really. :-)
+> 
+> > You can't wait for the completion before releasing the 
+> > lock, but then anything could happen.
+> > 
+> > A safer approach would be to use a wait_queue.
+> 
+> I'm not sure what you mean exactly.  What's the race?
 
-> +2. Run-time PM Helper Functions and Device Fields
-> +
-> +The following helper functions are defined in drivers/base/power/runtime.c
-> +and include/linux/pm_runtime.h:
-> +
-> +* void pm_runtime_init(struct device *dev);
-> +* void pm_runtime_enable(struct device *dev);
-> +* void pm_runtime_disable(struct device *dev);
-> +* int pm_runtime_suspend(struct device *dev);
-> +* void pm_request_suspend(struct device *dev, unsigned long delay);
-> +* int pm_runtime_resume(struct device *dev);
-> +* void pm_request_resume(struct device *dev);
-> +* void pm_cancel_runtime_suspend(struct device *dev);
-> +* void pm_cancel_runtime_resume(struct device *dev);
-> +* void pm_suspend_check_children(struct device *dev, bool enable);
+Come to think of it, there really is a problem here.  Because the
+wait_for_completion call occurs outside the spinlock, it can race with
+the init_completion call.  It's not good for both of them to run at the
+same time; the completion's internal spinlock and list pointers could 
+get corrupted.
 
-Those *s look confusingly like pointers. Remove them?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Therefore I stand by my original assertion: The struct completion 
+should be replaced with a wait_queue.  Set the runtime_error field to 
+-EINPROGRESS initially, and make other threads wait until the value 
+changes.
+
+Alan Stern
