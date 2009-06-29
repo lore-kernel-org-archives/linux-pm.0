@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 6)
-Date: Mon, 29 Jun 2009 23:04:01 +0200
-Message-ID: <200906292304.02181.rjw__8429.33322205699$1246309608$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0906291504050.17436-100000@iolanthe.rowland.org>
+ run-time PM of I/O devices (rev. 6)
+Date: Mon, 29 Jun 2009 18:00:43 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906291752570.18279-100000@iolanthe.rowland.org>
+References: <200906292304.02181.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906291504050.17436-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200906292304.02181.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,85 +18,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 29 June 2009, Alan Stern wrote:
-> On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > IMO one can think of pm_request_resume() as a top half of pm_runtime_resume().
-> 
-> Normal top halves don't trigger before the circumstances are
-> appropriate.  For example, if you enable remote wakeup on a USB device,
-> it won't send a wakeup signal before it has been powered down.  A
-> driver calling pm_request_resume while the device is still resumed is
-> like a USB device sending a wakeup request while it is still powered
-> up.  So IMO the analogy with top halves isn't a good one.
-> 
-> > Thus, it should either queue up a request to run pm_runtime_resume() or leave
-> > the status as though pm_runtime_resume() ran.  Anything else would be
-> > internally inconsistent.  So, if pm_runtime_resume() cancels pending suspend
-> > requests, pm_request_resume() should do the same or the other way around.
+On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
+
+> > Another possible approach you could take when the call to
+> > cancel_delayed_work fails (which should be rare) is to turn on RPM_WAKE
+> > in addition to RPM_IDLE and leave the suspend request queued.  When
+> > __pm_runtime_suspend sees both flags are set, it should abort and set
+> > the status directly back to RPM_ACTIVE.  At that time the idle
+> > notifications can start up again.
 > > 
-> > Now, arguably, ignoring pending suspend requests is somewhat easier from
-> > the core's point of view, but it may not be so for drivers.
+> > Is this any better?  I can't see how drivers would care, though.
 > 
-> The argument I gave in the previous email demonstrates that it doesn't
-> make any difference to drivers.  Either way, they have to use two I/O
-> pathways, they have to do a pm_runtime_get before pm_request_resume,
-> and they have to do a pm_request_put after the I/O is done.
+> There still is the problem that the suspend request is occupying the
+> work_struct which cannot be used for any other purpose.
+
+What other purpose?  We don't send idle notifications in RPM_IDLE and
+resume requests don't need to be stored since (as described above) they
+just set the RPM_WAKE flag.  Hence nothing else needs to use the
+work_struct.
+
+>  I don't think this
+> is avoidable, though.  This way or another it is possible to have two requests
+> pending at a time.
 > 
-> Of course, this is all somewhat theoretical.  I still don't know of any 
-> actual drivers that do the equivalent of pm_request_resume.
+> Perhaps the simplest thing to do would be to simply ignore pending suspend
+> requests in both pm_request_resume() and pm_runtime_resume() and to allow
+> them to be scheduled at any time.  That shouldn't hurt anything as long as
+> pm_runtime_suspend() is smart enough, but it has to be anyway, because it
+> can be run synchronously at any time.
 > 
-> > My point is that the core should always treat pending suspend requests in the
-> > same way.  If they are canceled by pm_runtime_resume(), then
-> > pm_request_resume() should also cancel them and it shouldn't be possible
-> > to schedule a suspend request when the resume counter is greater than 0.
-> > In turn, if they are ignored by pm_runtime_resume(), then pm_request_resume()
-> > should also ignore them and there's no point to prevent pm_request_suspend()
-> > from scheduling a suspend request if the resume counter is greater than 0.
-> > 
-> > Any other type of behavior has a potential to confuse driver writers.
+> The only question is what pm_runtime_suspend() should do when it sees a pending
+> suspend request and quite frankly I think it can just ignore it as well,
+> leaving the RPM_IDLE bit set.  In which case the name RPM_IDLE will not really
+> be adequate, so perhaps it can be renamed to RPM_REQUEST or something like
+> this.
 > 
-> Another possible approach you could take when the call to
-> cancel_delayed_work fails (which should be rare) is to turn on RPM_WAKE
-> in addition to RPM_IDLE and leave the suspend request queued.  When
-> __pm_runtime_suspend sees both flags are set, it should abort and set
-> the status directly back to RPM_ACTIVE.  At that time the idle
-> notifications can start up again.
-> 
-> Is this any better?  I can't see how drivers would care, though.
+> Then, we'll need a separate work structure for suspend requests, but I have no
+> problem with that.
 
-There still is the problem that the suspend request is occupying the
-work_struct which cannot be used for any other purpose.  I don't think this
-is avoidable, though.  This way or another it is possible to have two requests
-pending at a time.
+You seem to be thinking about these requests in a very different way
+from me.  They don't form a queue or anything like that.  Instead they
+mean "Change the device's power state to this value as soon as
+possible" -- and they are needed only because sometimes (in atomic or
+interrupt contexts) the change can't be made right away.
 
-Perhaps the simplest thing to do would be to simply ignore pending suspend
-requests in both pm_request_resume() and pm_runtime_resume() and to allow
-them to be scheduled at any time.  That shouldn't hurt anything as long as
-pm_runtime_suspend() is smart enough, but it has to be anyway, because it
-can be run synchronously at any time.
+That's why it doesn't make any sense to have both a suspend and a 
+resume request pending at the same time.  It would mean the driver is 
+telling us "Change the device's power state to both low-power and 
+full-power as soon as possible"!
 
-The only question is what pm_runtime_suspend() should do when it sees a pending
-suspend request and quite frankly I think it can just ignore it as well,
-leaving the RPM_IDLE bit set.  In which case the name RPM_IDLE will not really
-be adequate, so perhaps it can be renamed to RPM_REQUEST or something like
-this.
+We should settle on a general policy for how to handle it when a 
+driver makes the mistake of telling us to do contradictory things.  
+There are three natural policies:
 
-Then, we'll need a separate work structure for suspend requests, but I have no
-problem with that.
+	The first request takes precedence over the second;
 
-> P.S.: What do you think should happen if there's a delayed suspend
-> request pending, then pm_request_resume is called (and it leaves the
-> request queued), and then someone calls pm_runtime_suspend?  You've got
-> two pending requests and a synchronous call all active at the same
-> time!
+	The second request takes precedence over the first;
 
-That's easy, pm_runtime_suspend() sees a pending resume, so it quits and the
-other things work out as usual.
+	Resumes take precedence over suspends.
 
-Best,
-Rafael
+Any one of those would be acceptable.
+
+Alan Stern
