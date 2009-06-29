@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.31-rc1-git3: Reported regressions from 2.6.30
-Date: Mon, 29 Jun 2009 01:51:02 +0200 (CEST)
-Message-ID: <ij4ZQY4URcP.A.F3B.vIASKB__37097.8457075127$1246233490$gmane$org@chimera>
+Subject: Re: [patch update] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 6)
+Date: Mon, 29 Jun 2009 02:15:38 +0200
+Message-ID: <200906290215.39517.rjw__5619.5834804841$1246234564$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906281642500.7576-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906281642500.7576-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,141 +19,231 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
-LjMwLCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
-b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
-ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
-ZnJvbSAyLjYuMzAsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
-dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
-aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
-c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
-aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
-dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
-ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQogIDIwMDktMDYtMjkgICAgICAgMjIgICAgICAgMjIgICAgICAgICAg
-MTUKCgpVbnJlc29sdmVkIHJlZ3Jlc3Npb25zCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1F
-bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzY2NwpT
-dWJqZWN0CQk6IGRybTogZGlzcGxheSBhcmlmYWN0cyB3aGVuIFguT3JnIGlzIHN0b3BwZWQKU3Vi
-bWl0dGVyCTogRnJhbnMgUG9wIDxlbGVuZGlsQHBsYW5ldC5ubD4KRGF0ZQkJOiAyMDA5LTA2LTI3
-IDE4OjUyICgyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAw
-OS82LzI3LzEwNQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMzY2NgpTdWJqZWN0CQk6IFdBUk5JTkc6IGF0IG1tL3BhZ2VfYWxsb2MuYzox
-NzQzIF9fYWxsb2NfcGFnZXNfbm9kZW1hc2sKU3VibWl0dGVyCTogVGhvbWFzIE1leWVyIDx0aG9t
-YXNAbTN5M3IuZGU+CkRhdGUJCTogMjAwOS0wNi0yNyAxNjoxNSAoMiBkYXlzIG9sZCkKUmVmZXJl
-bmNlcwk6IGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNi8yNy83NQoKCkJ1Zy1FbnRyeQk6IGh0
-dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzY2MQpTdWJqZWN0CQk6
-IHdhcm5pbmcgaW4gc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xlIHdoaWxlIFMyUgpTdWJtaXR0ZXIJ
-OiBUaG9tYXMgTWV5ZXIgPHRob21hc0BtM3kzci5kZT4KRGF0ZQkJOiAyMDA5LTA2LTI3IDE3OjEy
-ICgyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82LzI3
-LzgwCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
-P2lkPTEzNjU3ClN1YmplY3QJCTogTGludXgtMi42LjMxLXJjMSBGYWlscyBUbyBSZWNvZ25pemUg
-U29tZSBVU0IgRGlza3MKU3VibWl0dGVyCTogVGFya2FuIEVyaW1lciA8dGFya2FuLmVyaW1lckB0
-dXJrbmV0Lm5ldC50cj4KRGF0ZQkJOiAyMDA5LTA2LTI2IDEwOjAzICgzIGRheXMgb2xkKQpSZWZl
-cmVuY2VzCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82LzI2LzM0CgoKQnVnLUVudHJ5CTog
-aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNjU2ClN1YmplY3QJ
-CTogMi42LjMxLXJjMSBjcmFzaGVzIHJhbmRvbWx5IG9uIG15IE1hY2hpbmUuClN1Ym1pdHRlcgk6
-IFplbm8gRGF2YXR6IDx6ZGF2YXR6QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA2LTI2IDA4OjU2
-ICgzIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82LzI2
-LzI3CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
-P2lkPTEzNjUyClN1YmplY3QJCTogc2NoZWR1bGluZyB3aGlsZSBhdG9taWM6IHBwdHBndwpTdWJt
-aXR0ZXIJOiBTZXJnZXkgU2Vub3poYXRza3kgPHNlcmdleS5zZW5vemhhdHNreUBtYWlsLmJ5PgpE
-YXRlCQk6IDIwMDktMDYtMTkgMjE6MTUgKDEwIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDov
-L2xrbWwub3JnL2xrbWwvMjAwOS82LzE5LzIzNwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzY1MApTdWJqZWN0CQk6IFByb2JsZW0gd2l0
-aCBhbGxvY19hcmNoX3ByZWZlcnJlZF9ib290bWVtKCkgb24gcG93ZXJwYwpTdWJtaXR0ZXIJOiBT
-ZWFuIE1hY0xlbm5hbiA8c21hY2xlbm5hbkBwaWthdGVjaC5jb20+CkRhdGUJCTogMjAwOS0wNi0y
-MCAxOTo0OCAoOSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGlu
-dXhwcGMtZW1iZWRkZWQmbT0xMjQ1NTI3MzI0MTE3NzUmdz00CgoKQnVnLUVudHJ5CTogaHR0cDov
-L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNjQ1ClN1YmplY3QJCTogTlVM
-TCBwb2ludGVyIGRlcmVmZXJlbmNlIGF0IChudWxsKSAobGV2ZWwyX3NwYXJlX3BndCkKU3VibWl0
-dGVyCTogcG9vcm5pbWEgbmF5YWsgPG1wbmF5YWtAbGludXgudm5ldC5pYm0uY29tPgpEYXRlCQk6
-IDIwMDktMDYtMTcgMTc6NTYgKDEyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL2xrbWwu
-b3JnL2xrbWwvMjAwOS82LzE3LzE5NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzY0MwpTdWJqZWN0CQk6IFRvdWNocGFkIGxvc3Qgc3lu
-Y2hyb25pemF0aW9uIGFmdGVyIHJlc3VtZSBmcm9tIHN1c3BlbmQgdG8gUkFNClN1Ym1pdHRlcgk6
-IENpam9tbCBDaWpvbWxvdmljIENpam9tbG92IDxjaWpvbWxAdm9sbnkuY3o+CkRhdGUJCTogMjAw
-OS0wNi0yOCAxMDo0MiAoMSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9sa21sLm9yZy9s
-a21sLzIwMDkvNi8yMy8zNjUKCQkgIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNi8yNS8yNTYK
-CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-MTM2MzMKU3ViamVjdAkJOiBbYmlzZWN0ZWRdIE5vIHNvdW5kIG9uIEhEQSBJbnRlbCAoQUxDMjY4
-KQpTdWJtaXR0ZXIJOiBCcmlhbiBSb2dlcnMgPGJyaWFuQHh5encub3JnPgpEYXRlCQk6IDIwMDkt
-MDYtMjcgMDQ6NDIgKDIgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNjI3ClN1YmplY3QJCTogVHVubmVsIGRldmljZSBp
-Z25vcmVzIFRDUC9VRFAgdHJhZmZpYwpTdWJtaXR0ZXIJOiBQYXVsIE1hcnRpbiA8cG1AZGViaWFu
-Lm9yZz4KRGF0ZQkJOiAyMDA5LTA2LTI2IDE0OjQ1ICgzIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6
-IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzYxMApTdWJqZWN0
-CQk6IHJhZGVvbiBrbXMgaW52YWxpZCBlZGlkIGRhdGEgYXQgbHZkcwpTdWJtaXR0ZXIJOiBOaWNv
-bGFzIFJlaW5lY2tlIDxwbDRua3RvbkBnb29nbGVtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA2LTIz
-IDE5OjUzICg2IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwu
-b3JnL3Nob3dfYnVnLmNnaT9pZD0xMzYwMQpTdWJqZWN0CQk6IEhhcmQgY3Jhc2ggY29ubmVjdGlu
-ZyB2aWEgSHVhd2VpIEUxNjkgKyB1bXRzbW9uClN1Ym1pdHRlcgk6IENsZW1lbnMgRWlzc2VyZXIg
-PGxpbnV4aGlwcHlAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDYtMjIgMTM6NTggKDcgZGF5cyBv
-bGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
-P2lkPTEzNTkyClN1YmplY3QJCTogUm9vdCBwYXJ0aXRpb24gaXMgbm90IGZvdW5kClN1Ym1pdHRl
-cgk6IEZyYW7Dp29pcyBWYWxlbmR1YyA8ZnJhbmNvaXMudmFsZW5kdWNAdHZjYWJsZW5ldC5iZT4K
-RGF0ZQkJOiAyMDA5LTA2LTIxIDA4OjQyICg4IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzUyMgpTdWJqZWN0CQk6IEJV
-Rzogc2NoZWR1bGluZyB3aGlsZSBhdG9taWMKU3VibWl0dGVyCTogU2VyZ2V5IFNlbm96aGF0c2t5
-IDxzZXJnZXkuc2Vub3poYXRza3lAbWFpbC5ieT4KRGF0ZQkJOiAyMDA5LTA2LTEyIDE5OjI5ICgx
-NyBkYXlzIG9sZCkKCgpSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTM2NjUKU3ViamVjdAkJOiBjb21taXQgNjljODU0ODE3NTY2IGNhdXNlcyBPT01zClN1
-Ym1pdHRlcgk6IERhdmlkIEhvd2VsbHMgPGRob3dlbGxzQHJlZGhhdC5jb20+CkRhdGUJCTogMjAw
-OS0wNi0yNyAwODoxMiAoMiBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5r
-ZXJuZWwub3JnLz9wPWxpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNv
-bW1pdDtoPTY5Yzg1NDgxNzU2NmRiODJjMzYyNzk3YjRhNjUyMWQwYjAwZmUxZDgKUmVmZXJlbmNl
-cwk6IGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNi8yNy8yOApIYW5kbGVkLUJ5CTogV3UgRmVu
-Z2d1YW5nIDxmZW5nZ3Vhbmcud3VAaW50ZWwuY29tPgpQYXRjaAkJOiBodHRwOi8vcGF0Y2h3b3Jr
-Lmtlcm5lbC5vcmcvcGF0Y2gvMzI3NDAvCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNjYyClN1YmplY3QJCTogYnJva2VuIGFscGhhIHNt
-cCBidWlsZApTdWJtaXR0ZXIJOiBtYXhpbWlsaWFuIGF0dGVtcyA8bWF4QHN0cm8uYXQ+CkRhdGUJ
-CTogMjAwOS0wNi0yNSAxMTowOCAoNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9sa21s
-Lm9yZy9sa21sLzIwMDkvNi8yNS8xMDgKSGFuZGxlZC1CeQk6IFRlanVuIEhlbyA8dGpAa2VybmVs
-Lm9yZz4KUGF0Y2gJCTogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzMyNzE0LwoK
-CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MzY1OQpTdWJqZWN0CQk6IGl3bGFnbiAoNDk2NSk6IG5vIHdpcmVsZXNzIGR1ZSB0byBSRktJTEwg
-cHJvYmxlbQpTdWJtaXR0ZXIJOiBGcmFucyBQb3AgPGVsZW5kaWxAcGxhbmV0Lm5sPgpEYXRlCQk6
-IDIwMDktMDYtMjYgMTM6MzYgKDMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbGttbC5v
-cmcvbGttbC8yMDA5LzYvMjYvMTI3CkhhbmRsZWQtQnkJOiBKb2hhbm5lcyBCZXJnIDxqb2hhbm5l
-c0BzaXBzb2x1dGlvbnMubmV0PgpQYXRjaAkJOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA5LzYv
-MjcvMzUKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTM2NTgKU3ViamVjdAkJOiBwYXJpc2M6IG11bHRpcGxlIFBDSSBCQVIgY29sbGlzaW9u
-cwpTdWJtaXR0ZXIJOiBBbGV4YW5kZXIgQmVyZWdhbG92IDxhLmJlcmVnYWxvdkBnbWFpbC5jb20+
-CkRhdGUJCTogMjAwOS0wNi0yNiAxMjo1OCAoMyBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6
-Ly9sa21sLm9yZy9sa21sLzIwMDkvNi8yNi84NwpIYW5kbGVkLUJ5CTogTWF0dGhldyBXaWxjb3gg
-PG1hdHRoZXdAd2lsLmN4PgpQYXRjaAkJOiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0
-Y2gvMzI1OTMvCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTEzNjU1ClN1YmplY3QJCTogW09vcHNdIDIuNi4zMS1yYzE6IHR1bgpTdWJtaXR0
-ZXIJOiBTZXJnZWkgVHJvZmltb3ZpY2ggPHNseWljaEBnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0w
-Ni0yNSAyMzo1MyAoNCBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9sa21sLm9yZy9sa21s
-LzIwMDkvNi8yNS80MzUKSGFuZGxlZC1CeQk6IEhlcmJlcnQgWHUgPGhlcmJlcnRAZ29uZG9yLmFw
-YW5hLm9yZy5hdT4KUGF0Y2gJCTogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzMy
-NjcyLwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0xMzY1NApTdWJqZWN0CQk6IHBvc3NpYmxlIHJlY3Vyc2l2ZSBsb2NraW5nIGRldGVjdGVk
-IGF0IGttZW1fY2FjaGVfZnJlZQpTdWJtaXR0ZXIJOiBQYWxsaXBhZGksIFZlbmthdGVzaCA8dmVu
-a2F0ZXNoLnBhbGxpcGFkaUBpbnRlbC5jb20+CkRhdGUJCTogMjAwOS0wNi0yNSAxMTo1OSAoNCBk
-YXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDkvNi8yNS8zNzMK
-SGFuZGxlZC1CeQk6IFBla2thIEogRW5iZXJnIDxwZW5iZXJnQGNzLmhlbHNpbmtpLmZpPgpQYXRj
-aAkJOiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMzI1MjUvCgoKQnVnLUVudHJ5
-CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNjUzClN1Ympl
-Y3QJCTogc3lzdGVtIGhhbmdzIGFmdGVyIHJlc3VtZSBmcm9tIHN1c3BlbmQgdG8gZGlzaywgbWNl
-IHJlbGF0ZWQKU3VibWl0dGVyCTogTWFjaWVqIFJ1dGVja2kgPG1hY2llai5ydXRlY2tpQGdtYWls
-LmNvbT4KRGF0ZQkJOiAyMDA5LTA2LTIxIDE5OjAyICg4IGRheXMgb2xkKQpSZWZlcmVuY2VzCTog
-aHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82LzIxLzg2CkhhbmRsZWQtQnkJOiBIaWRldG9zaGkg
-U2V0byA8c2V0by5oaWRldG9zaGlAanAuZnVqaXRzdS5jb20+ClBhdGNoCQk6IGh0dHA6Ly9wYXRj
-aHdvcmsua2VybmVsLm9yZy9wYXRjaC8zMjA2Mi8KCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0
-IHRoZSBidWcgZW50cmllcyBhbmQgZm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2Vz
-LgoKQXMgeW91IGNhbiBzZWUsIHRoZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2Yg
-dGhlIGxpc3RlZCByZWdyZXNzaW9ucy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVz
-ZWQgZm9yIHRyYWNraW5nIHRoZSByZWdyZXNzaW9ucyBmcm9tIDIuNi4zMCwKdW5yZXNvbHZlZCBh
-cyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMzYxNQoKUGxlYXNlIGxldCBtZSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVn
-emlsbGEgZW50cmllcyB0aGF0IHNob3VsZCBiZSBhZGRlZCB0bwp0aGUgbGlzdCBpbiB0aGVyZS4K
-ClRoYW5rcywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LXBt
+On Sunday 28 June 2009, Alan Stern wrote:
+> On Sun, 28 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > It seems that if we do something like in the appended patch, then
+> > cancel_work() and cancel_delayed_work_dequeue() can be used to simplify the
+> > $subject patch slightly.
+> 
+> I merged your patch with my own work, leading to the patch below.
+> 
+> There were a bunch of things I didn't like about the existing code,
+> particularly cancel_delayed_work.  To start with, it seems like a large
+> enough routine that it shouldn't be inlined.
+
+Agreed.
+
+> More importantly, it foolishly calls del_timer_sync, resulting in the
+> unnecessary restriction that it cannot be used in_interrupt.  Finally,
+> although it will deactivate a delayed_work's timer, it doesn't even try to
+> remove the item from the workqueue if the timer has already expired.
+> 
+> Your cancel_delayed_work_dequeue is better -- so much better that I
+> don't see any reason to keep the original cancel_delayed_work at all.  
+> I got rid of it and used your routine instead.
+> 
+> I also changed the comments you wrote for cancel_work.  You can see 
+> that now they are much more explicit and complete.
+> 
+> The original version of __cancel_work_timer is not safe to use
+> in_interrupt.  If it is called from a handler whose IRQ interrupted
+> delayed_work_timer_fn, it can loop indefinitely.
+
+Right, I overlooked that.
+
+> Therefore I added a check; if it finds that the work_struct is currently
+> being enqueued and it is running in_interrupt, it gives up right away.
+
+Hmm, it doesn't do the work_clear_pending(work) in that case, so we allow
+the work to be queued and run?  Out of couriosity, what the caller is supposed
+to do then?
+
+> There are a few other improvements too.
+> 
+> Consequently it is now safe to call cancel_work and cancel_delayed_work
+> in_interrupt or while holding a spinlock.  This means you can use these
+> functions to cancel the various PM runtime work items whenever needed.  
+> As a result, you don't need two work_structs in dev_pm_info; a single
+> delayed_work will be enough.
+
+Yes, I'm going to rebase the framework patch on top of this one.
+
+> Tell me what you think.
+
+I like the patch. :-)
+
+Best,
+Rafael
+
+ 
+> Index: usb-2.6/include/linux/workqueue.h
+> ===================================================================
+> --- usb-2.6.orig/include/linux/workqueue.h
+> +++ usb-2.6/include/linux/workqueue.h
+> @@ -223,24 +223,10 @@ int execute_in_process_context(work_func
+>  extern int flush_work(struct work_struct *work);
+>  
+>  extern int cancel_work_sync(struct work_struct *work);
+> -
+> -/*
+> - * Kill off a pending schedule_delayed_work().  Note that the work callback
+> - * function may still be running on return from cancel_delayed_work(), unless
+> - * it returns 1 and the work doesn't re-arm itself. Run flush_workqueue() or
+> - * cancel_work_sync() to wait on it.
+> - */
+> -static inline int cancel_delayed_work(struct delayed_work *work)
+> -{
+> -	int ret;
+> -
+> -	ret = del_timer_sync(&work->timer);
+> -	if (ret)
+> -		work_clear_pending(&work->work);
+> -	return ret;
+> -}
+> +extern int cancel_work(struct work_struct *work);
+>  
+>  extern int cancel_delayed_work_sync(struct delayed_work *work);
+> +extern int cancel_delayed_work(struct delayed_work *dwork);
+>  
+>  /* Obsolete. use cancel_delayed_work_sync() */
+>  static inline
+> Index: usb-2.6/kernel/workqueue.c
+> ===================================================================
+> --- usb-2.6.orig/kernel/workqueue.c
+> +++ usb-2.6/kernel/workqueue.c
+> @@ -465,6 +465,7 @@ static int try_to_grab_pending(struct wo
+>  {
+>  	struct cpu_workqueue_struct *cwq;
+>  	int ret = -1;
+> +	unsigned long flags;
+>  
+>  	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+>  		return 0;
+> @@ -478,7 +479,7 @@ static int try_to_grab_pending(struct wo
+>  	if (!cwq)
+>  		return ret;
+>  
+> -	spin_lock_irq(&cwq->lock);
+> +	spin_lock_irqsave(&cwq->lock, flags);
+>  	if (!list_empty(&work->entry)) {
+>  		/*
+>  		 * This work is queued, but perhaps we locked the wrong cwq.
+> @@ -491,7 +492,7 @@ static int try_to_grab_pending(struct wo
+>  			ret = 1;
+>  		}
+>  	}
+> -	spin_unlock_irq(&cwq->lock);
+> +	spin_unlock_irqrestore(&cwq->lock, flags);
+>  
+>  	return ret;
+>  }
+> @@ -536,18 +537,26 @@ static void wait_on_work(struct work_str
+>  		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+>  }
+>  
+> -static int __cancel_work_timer(struct work_struct *work,
+> +static int __cancel_work_timer(struct work_struct *work, bool wait,
+>  				struct timer_list* timer)
+>  {
+>  	int ret;
+>  
+> -	do {
+> -		ret = (timer && likely(del_timer(timer)));
+> -		if (!ret)
+> -			ret = try_to_grab_pending(work);
+> -		wait_on_work(work);
+> -	} while (unlikely(ret < 0));
+> +	if (timer && likely(del_timer(timer))) {
+> +		ret = 1;
+> +		goto done;
+> +	}
+>  
+> +	for (;;) {
+> +		ret = try_to_grab_pending(work);
+> +		if (likely(ret >= 0))
+> +			break;
+> +		if (in_interrupt())
+> +			return ret;
+> +	}
+> +	if (ret == 0 && wait)
+> +		wait_on_work(work);
+> + done:
+>  	work_clear_pending(work);
+>  	return ret;
+>  }
+> @@ -575,11 +584,43 @@ static int __cancel_work_timer(struct wo
+>   */
+>  int cancel_work_sync(struct work_struct *work)
+>  {
+> -	return __cancel_work_timer(work, NULL);
+> +	return __cancel_work_timer(work, true, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(cancel_work_sync);
+>  
+>  /**
+> + * cancel_work - try to cancel a pending work_struct.
+> + * @work: the work_struct to cancel
+> + *
+> + * Try to cancel a pending work_struct before it starts running.
+> + * Upon return, @work may safely be reused if the return value
+> + * is 1 or the return value is 0 and the work callback function
+> + * doesn't resubmit @work.
+> + *
+> + * The callback function may be running upon return if the return value
+> + * is <= 0; use cancel_work_sync() to wait for the callback function
+> + * to finish.
+> + *
+> + * There's not much point using this routine unless you can guarantee
+> + * that neither the callback function nor anything else is in the
+> + * process of submitting @work (or is about to do so).  The only good
+> + * reason might be that optimistically trying to cancel @work has less
+> + * overhead than letting it go ahead and run.
+> + *
+> + * This routine may be called from interrupt context.
+> + *
+> + * Returns: 1 if @work was removed from its workqueue,
+> + *	    0 if @work was not pending (may be running),
+> + *	   -1 if @work was concurrently being enqueued and we were
+> + *		called in_interrupt.
+> + */
+> +int cancel_work(struct work_struct *work)
+> +{
+> +	return __cancel_work_timer(work, false, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(cancel_work);
+> +
+> +/**
+>   * cancel_delayed_work_sync - reliably kill off a delayed work.
+>   * @dwork: the delayed work struct
+>   *
+> @@ -590,10 +631,24 @@ EXPORT_SYMBOL_GPL(cancel_work_sync);
+>   */
+>  int cancel_delayed_work_sync(struct delayed_work *dwork)
+>  {
+> -	return __cancel_work_timer(&dwork->work, &dwork->timer);
+> +	return __cancel_work_timer(&dwork->work, true, &dwork->timer);
+>  }
+>  EXPORT_SYMBOL(cancel_delayed_work_sync);
+>  
+> +/**
+> + * cancel_delayed_work - try to cancel a delayed_work_struct.
+> + * @dwork: the delayed_work_struct to cancel
+> + *
+> + * Try to cancel a pending delayed_work, either by deactivating its
+> + * timer or by removing it from its workqueue.  This routine is just
+> + * like cancel_work() except that it handles a delayed_work.
+> + */
+> +int cancel_delayed_work(struct delayed_work *dwork)
+> +{
+> +	return __cancel_work_timer(&dwork->work, false, &dwork->timer);
+> +}
+> +EXPORT_SYMBOL(cancel_delayed_work);
+> +
+>  static struct workqueue_struct *keventd_wq __read_mostly;
+>  
+>  /**
