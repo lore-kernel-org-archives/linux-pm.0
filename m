@@ -1,11 +1,14 @@
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: [PATCH] pm: clear -EAGAIN in dpm_prepare
-Date: Tue, 30 Jun 2009 16:50:47 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.0906301647520.3286@localhost.localdomain>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] PM: Introduce core framework for
+ run-time PM of I/O devices (rev. 6)
+Date: Tue, 30 Jun 2009 11:10:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0906301027540.3049-100000__26898.9139855423$1246375181$gmane$org@iolanthe.rowland.org>
+References: <200906300050.56304.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200906300050.56304.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,30 +19,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-pm: clear -EAGAIN in dpm_prepare
+On Tue, 30 Jun 2009, Rafael J. Wysocki wrote:
 
-When the last device in the dpm list is unregistered directly after its
-prepare() callback returned with -EAGAIN, the return code is passed to
-the calling function, resulting in a resume failure. Prevent this by
-clearing the return code after -EAGAIN.
+> > There are three natural policies:
+> > 
+> > 	The first request takes precedence over the second;
+> > 
+> > 	The second request takes precedence over the first;
+> > 
+> > 	Resumes take precedence over suspends.
+> > 
+> > Any one of those would be acceptable.
+> 
+> IMO resumes should take precedence over suspends, because resume usually means
+> "there's I/O to process" and we usually we want the I/O to be processed as soon
+> as possible (deferred wake-up will usually mean deferred I/O and that would
+> hurt user experience).
 
-Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
----
- drivers/base/power/main.c |    1 +
- 1 file changed, 1 insertion(+)
+I don't know.  I gave this a lot of thought last night, and it seems
+that the best approach would be to always obey the most recent request.  
+(In the case of delayed suspend requests, this is ambiguous because
+there are two times involved: when the request was originally submitted
+and when the delay expires.  We should use the time of original
+submission.)  The only exception is pm_request_put; it shouldn't
+override an existing suspend request just to send an idle notification.
 
-Index: git.linux-2.6/drivers/base/power/main.c
-===================================================================
---- git.linux-2.6.orig/drivers/base/power/main.c	2009-06-30 12:27:33.000000000 +0200
-+++ git.linux-2.6/drivers/base/power/main.c	2009-06-30 12:38:26.000000000 +0200
-@@ -762,6 +762,7 @@ static int dpm_prepare(pm_message_t stat
- 			dev->power.status = DPM_ON;
- 			if (error == -EAGAIN) {
- 				put_device(dev);
-+				error = 0;
- 				continue;
- 			}
- 			printk(KERN_ERR "PM: Failed to prepare device %s "
+If this seems difficult to implement, it's an indication that the
+overall design needs to be reworked.  Here's what I came up with:
+
+The possible statuses are reduced to: RPM_ACTIVE, RPM_SUSPENDING, 
+RPM_SUSPENDED, RPM_RESUMING, and RPM_ERROR.  These most directly 
+correspond to the core's view of the device state.  Transitions are:
+
+	RPM_ACTIVE <-> RPM_SUSPENDING -> RPM_SUSPENDED ->
+		RPM_RESUMING -> RPM_ACTIVE ...
+
+Failure of a suspend causes the backward transition from RPM_SUSPENDING 
+to RPM_ACTIVE, and errors cause a transition to RPM_ERROR.  Otherwise 
+we always go forward.
+
+Instead of a delayed_work_struct, we'll have a regular work_struct plus 
+a separate timer_list structure.  That way we get more control over 
+what happens when the timer expires.  The timer callback routine will 
+submit the work_struct, but it will do so under the spinlock and only 
+after making the proper checks.
+
+There will be only one work callback routine.  It decides what to do
+based on the status and a new field: async_action.  The possible values
+for async_action are 0 (do nothing), ASYNC_SUSPEND, ASYNC_RESUME, and
+ASYNC_NOTIFY.
+
+There will be a few extra fields: a work_pending flag, the timer 
+expiration value (which doubles as a timer_pending flag by being set
+to 0 when the timer isn't pending), and maybe some others.
+
+There are restrictions on what can happen in each state.  The timer is
+allowed to run only in RPM_RESUMING and RPM_ACTIVE, and ASYNC_NOTIFY is
+allowed only in those states.  ASYNC_RESUME isn't allowed in
+RPM_RESUMING or RPM_ACTIVE, and ASYNC_SUSPEND isn't allowed in
+RPM_SUSPENDING or RPM_SUSPENDED.  Pending work isn't allowed in
+RPM_RESUMING or RPM_SUSPENDING; if a request is submitted at such times
+is merely sets async_action, and the work will be scheduled when the
+resume or suspend finishes.  This is to avoid forcing the workqueue
+thread to wait unnecessarily.
+
+__pm_runtime_suspend and __pm_runtime_resume start out by cancelling 
+the timer and the work_struct (if they are pending) and by setting 
+async_action to 0.  The cancellations don't have to wait; if a callback 
+routine is already running then when it gets the spinlock it will see 
+that it has nothing to do.
+
+If __pm_runtime_suspend was called asynchronously and the status is
+already RPM_SUSPENDING, it can return after taking these actions.  If
+the status is already RPM_RESUMING, it should set async_action to
+ASYNC_SUSPEND and then return.  __pm_runtime_resume behaves similarly.
+
+The pm_request_* routines similarly cancel a pending timer and clear
+async_action.  They should cancel any pending work unless they're going
+to submit new work anyway.
+
+That's enough to give you the general idea.  I think this design is 
+a lot cleaner than the current one.
+
+Alan Stern
