@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 6)
-Date: Tue, 30 Jun 2009 11:10:54 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0906301027540.3049-100000__26898.9139855423$1246375181$gmane$org@iolanthe.rowland.org>
-References: <200906300050.56304.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC] Run-time PM framework (was: Re: [patch update] PM:
+	Introduce core framework for run-time PM of I/O devices (rev. 6))
+Date: Wed, 1 Jul 2009 00:30:12 +0200
+Message-ID: <200907010030.13775.rjw__5970.90308224342$1246401565$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0906301027540.3049-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200906300050.56304.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0906301027540.3049-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,90 +19,135 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 30 Jun 2009, Rafael J. Wysocki wrote:
+On Tuesday 30 June 2009, Alan Stern wrote:
+... 
+> That's enough to give you the general idea.  I think this design is 
+> a lot cleaner than the current one.
 
-> > There are three natural policies:
-> > 
-> > 	The first request takes precedence over the second;
-> > 
-> > 	The second request takes precedence over the first;
-> > 
-> > 	Resumes take precedence over suspends.
-> > 
-> > Any one of those would be acceptable.
-> 
-> IMO resumes should take precedence over suspends, because resume usually means
-> "there's I/O to process" and we usually we want the I/O to be processed as soon
-> as possible (deferred wake-up will usually mean deferred I/O and that would
-> hurt user experience).
+Well, I'm not really happy with starting over, but if you think we should do
+that, then let's do it.
 
-I don't know.  I gave this a lot of thought last night, and it seems
-that the best approach would be to always obey the most recent request.  
-(In the case of delayed suspend requests, this is ambiguous because
-there are two times involved: when the request was originally submitted
-and when the delay expires.  We should use the time of original
-submission.)  The only exception is pm_request_put; it shouldn't
-override an existing suspend request just to send an idle notification.
+I think we both agree that the callbacks, ->runtime_idle(), ->runtime_suspend()
+and ->runtime_resume() make sense.  Now, the role of the framework, IMO, is to
+provide a mechanism by which it is possible:
+(1) to schedule a delayed execution of ->runtime_suspend(), possibly from
+    interrupt context,
+(2) to schedule execution of ->runtime_resume() or ->runtime_idle(), possibly
+    from interrupt context,
+(3) to execute ->runtime_suspend() or ->runtime_resume() directly in a
+    synchronous way (I'm not sure about ->runtime_idle())
+_and_ to ensure that these callbacks will be executed when it makes sense.
+There's no other point, because the core has no information to make choices,
+it can only prevent wrong things from happening, if possible.
 
-If this seems difficult to implement, it's an indication that the
-overall design needs to be reworked.  Here's what I came up with:
+I think you will agree that the users of the framework should be able to
+prevent ->runtime_suspend() from being called and that's what the usage counter
+is for.  Also, IMO it should be impossible to execute ->runtime_idle(), via the
+framework, when the usage counter is nonzero.
 
-The possible statuses are reduced to: RPM_ACTIVE, RPM_SUSPENDING, 
-RPM_SUSPENDED, RPM_RESUMING, and RPM_ERROR.  These most directly 
-correspond to the core's view of the device state.  Transitions are:
+BTW, I don't think resume_count is the best name; it used to be in the version
+of my patch where it was automatically incremented when ->runtime_resume() was
+about to called.  usage_count is probably better.
 
-	RPM_ACTIVE <-> RPM_SUSPENDING -> RPM_SUSPENDED ->
-		RPM_RESUMING -> RPM_ACTIVE ...
+Next, I think that the framework should refuse to call ->runtime_suspend() and
+->runtime_idle() if the children of the device are not suspended and the
+"ignore children" flag is unset.  The counter of unsuspended children is used
+for that.  I think the rule should be that it is decremented for the parent
+whenever ->runtime_suspend() is called for a child and it is incremented
+for the parent whenever ->runtime_resume() is called for a child.
 
-Failure of a suspend causes the backward transition from RPM_SUSPENDING 
-to RPM_ACTIVE, and errors cause a transition to RPM_ERROR.  Otherwise 
-we always go forward.
+Now, the question is what rules should apply to the ordering and possible
+simultaneous execution of ->runtime_idle(), ->runtime_suspend() and
+->runtime_resume().  I think the following rules make sense:
 
-Instead of a delayed_work_struct, we'll have a regular work_struct plus 
-a separate timer_list structure.  That way we get more control over 
-what happens when the timer expires.  The timer callback routine will 
-submit the work_struct, but it will do so under the spinlock and only 
-after making the proper checks.
+  * It is forbidden to run ->runtime_suspend() twice in a row.
 
-There will be only one work callback routine.  It decides what to do
-based on the status and a new field: async_action.  The possible values
-for async_action are 0 (do nothing), ASYNC_SUSPEND, ASYNC_RESUME, and
-ASYNC_NOTIFY.
+  * It is forbidden to run ->runtime_suspend() in parallel with another instance
+    of ->runtime_suspend().
 
-There will be a few extra fields: a work_pending flag, the timer 
-expiration value (which doubles as a timer_pending flag by being set
-to 0 when the timer isn't pending), and maybe some others.
+  * It is forbidden to run ->runtime_resume() twice in a row.
 
-There are restrictions on what can happen in each state.  The timer is
-allowed to run only in RPM_RESUMING and RPM_ACTIVE, and ASYNC_NOTIFY is
-allowed only in those states.  ASYNC_RESUME isn't allowed in
-RPM_RESUMING or RPM_ACTIVE, and ASYNC_SUSPEND isn't allowed in
-RPM_SUSPENDING or RPM_SUSPENDED.  Pending work isn't allowed in
-RPM_RESUMING or RPM_SUSPENDING; if a request is submitted at such times
-is merely sets async_action, and the work will be scheduled when the
-resume or suspend finishes.  This is to avoid forcing the workqueue
-thread to wait unnecessarily.
+  * It is forbidden to run ->runtime_resume() in parallel with another instance
+    of ->runtime_resume().
 
-__pm_runtime_suspend and __pm_runtime_resume start out by cancelling 
-the timer and the work_struct (if they are pending) and by setting 
-async_action to 0.  The cancellations don't have to wait; if a callback 
-routine is already running then when it gets the spinlock it will see 
-that it has nothing to do.
+  * It is allowed to run ->runtime_suspend() after ->runtime_resume() or after
+    ->runtime_idle(), but the latter case is preferred. 
 
-If __pm_runtime_suspend was called asynchronously and the status is
-already RPM_SUSPENDING, it can return after taking these actions.  If
-the status is already RPM_RESUMING, it should set async_action to
-ASYNC_SUSPEND and then return.  __pm_runtime_resume behaves similarly.
+  * It is allowed to run ->runtime_resume() after ->runtime_suspend().
 
-The pm_request_* routines similarly cancel a pending timer and clear
-async_action.  They should cancel any pending work unless they're going
-to submit new work anyway.
+  * It is forbidden to run ->runtime_resume() after ->runtime_idle().
 
-That's enough to give you the general idea.  I think this design is 
-a lot cleaner than the current one.
+  * It is forbidden to run ->runtime_suspend() and ->runtime_resume() in
+    parallel with each other.
 
-Alan Stern
+  * It is forbidden to run ->runtime_idle() twice in a row.
+
+  * It is forbidden to run ->runtime_idle() in parallel with another instance
+    of ->runtime_idle().
+
+  * It is forbidden to run ->runtime_idle() after ->runtime_suspend().
+
+  * It is allowed to run ->runtime_idle() after ->runtime_resume().
+
+  * It is allowed to execute ->runtime_suspend() or ->runtime_resume() when
+    ->runtime_idle() is running.  In particular, it is allowed to (indirectly)
+    call ->runtime_suspend() from within ->runtime_idle().
+
+  * It is forbidden to execute ->runtime_idle() when ->runtime_resume() or
+    ->runtime_suspend() is running.
+
+  * If ->runtime_resume() is about to be called immediately after
+    ->runtime_suspend(), the execution of ->runtime_suspend() should be
+    prevented from happening, if possible, in which case the execution of
+    ->runtime_resume() shouldn't happen.
+
+  * If ->runtime_suspend() is about to be called immediately after
+    ->runtime_resume(), the execution of ->runtime_resume() should be
+    prevented from happening, if possible, in which case the execution of
+    ->runtime_suspend() shouldn't happen.
+
+[Are there any more rules related to these callbacks we should take into
+account?]
+
+Next, if we agree about the rules above, the question is what helper functions
+should be provided by the core allowing these rules to be followed
+automatically and what error codes should be returned by them in case it
+wasn't possible to proceed without breaking the rules.
+
+IMO, it is reasonable to provide:
+
+  * pm_schedule_suspend(dev, delay) - schedule the execution of
+    ->runtime_suspend(dev) after delay.
+
+  * pm_runtime_suspend(dev) - execute ->runtime_suspend(dev) right now.
+
+  * pm_runtime_resume(dev) - execute ->runtime_resume(dev) right now.
+
+  * pm_request_resume(dev) - put a request to execute ->runtime_resume(dev)
+    into the run-time PM workqueue.
+
+  * pm_runtime_get(dev) - increment the device's usage counter.
+
+  * pm_runtime_put(dev) - decrement the device's usage counter.
+
+  * pm_runtime_idle(dev) - execute ->runtime_idle(dev) right now if the usage
+    counter is zero and all of the device's children are suspended (or the
+    "ignore children" flag is set).
+
+  * pm_request_idle(dev) - put a request to execute ->runtime_idle(dev)
+    into the run-time PM workqueue.  The usage counter and children will be
+    checked immediately before executing ->runtime_idle(dev).
+
+I'm not sure if it is really necessary to combine pm_runtime_idle() or
+pm_request_idle() with pm_runtime_put().  At least right now I don't see any
+real value of that.
+
+I also am not sure what error codes should be returned by the above helper
+functions and in what conditions.
+
+Thanks,
+Rafael
