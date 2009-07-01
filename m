@@ -1,7 +1,7 @@
 From: "Dasgupta, Romit" <romit@ti.com>
 Subject: Re: TI-OMAP3530 Power management
-Date: Wed, 1 Jul 2009 14:14:01 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301D8443405@dbde02.ent.ti.com>
+Date: Wed, 1 Jul 2009 14:19:47 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301D8443417@dbde02.ent.ti.com>
 References: <26d57bbb0907010012g5415463cje8a26704be9c0c9f@mail.gmail.com>
 	<B85A65D85D7EB246BE421B3FB0FBB59301D8443378@dbde02.ent.ti.com>
 	<26d57bbb0907010123x7048b7baj790c766ab5de9584@mail.gmail.com>
@@ -9,7 +9,6 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <26d57bbb0907010123x7048b7baj790c766ab5de9584@mail.gmail.com>
 Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,33 +23,50 @@ To: Ori Idan <ori@helicontech.co.il>
 Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-It is a cocktail of Dynamic Voltage & Frequency Scaling (cpufreq), Dynamic Power Switching (cpuidle), Smartreflex (TI proprietary), Standby Leakage management (suspend to RAM and also in cpuIdle).
+I will also revise what I said earlier. ACPI is an __interface__ to PM techniques used in the chip. TI does not use ACPI. The interface that TI uses is documented in the Technical reference manuals from TI. Having said DVFS, DPS, SLM are common goals across chips. So you will see cpufreq, cpuidle, suspend to memory etc. common across Intel and TI but as I said the interface is different.
 
-It is typically enabled by CONFIG_OMAP3_PM in omapzoom sources.  In Kevin Hilman's tree from kernel.org (linux/kernel/git/khilman/linux-omap-pm.git which is also being worked by TI) this is enabled by default.
 
-________________________________________
-From: Ori Idan [mailto:ori@helicontech.co.il] 
-Sent: Wednesday, July 01, 2009 1:53 PM
-To: Dasgupta, Romit
-Cc: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] TI-OMAP3530 Power management
-
-What power management technique is used in TI-OMAP processors?
-
--- 
-Ori Idan
-
-On Wed, Jul 1, 2009 at 10:56 AM, Dasgupta, Romit <romit@ti.com> wrote:
-No, ACPI is a different power management technique than what is used by TI. Both cannot exist together in the same system!
-
-________________________________________
-From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-bounces@lists.linux-foundation.org] On Behalf Of Ori Idan
-Sent: Wednesday, July 01, 2009 12:43 PM
-To: linux-pm@lists.linux-foundation.org
-Subject: [linux-pm] TI-OMAP3530 Power management
-
-I am just starting with this processor,
-Does anyone have any idea if ACPI power management is enabled on kernel sources supplied by TI?
-
---
-Ori Idan
+>-----Original Message-----
+>From: Dasgupta, Romit
+>Sent: Wednesday, July 01, 2009 2:14 PM
+>To: 'Ori Idan'
+>Cc: linux-pm@lists.linux-foundation.org
+>Subject: RE: [linux-pm] TI-OMAP3530 Power management
+>
+>It is a cocktail of Dynamic Voltage & Frequency Scaling (cpufreq), Dynamic Power
+>Switching (cpuidle), Smartreflex (TI proprietary), Standby Leakage management
+>(suspend to RAM and also in cpuIdle).
+>
+>It is typically enabled by CONFIG_OMAP3_PM in omapzoom sources.  In Kevin
+>Hilman's tree from kernel.org (linux/kernel/git/khilman/linux-omap-pm.git which
+>is also being worked by TI) this is enabled by default.
+>
+>________________________________________
+>From: Ori Idan [mailto:ori@helicontech.co.il]
+>Sent: Wednesday, July 01, 2009 1:53 PM
+>To: Dasgupta, Romit
+>Cc: linux-pm@lists.linux-foundation.org
+>Subject: Re: [linux-pm] TI-OMAP3530 Power management
+>
+>What power management technique is used in TI-OMAP processors?
+>
+>--
+>Ori Idan
+>
+>On Wed, Jul 1, 2009 at 10:56 AM, Dasgupta, Romit <romit@ti.com> wrote:
+>No, ACPI is a different power management technique than what is used by TI. Both
+>cannot exist together in the same system!
+>
+>________________________________________
+>From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-
+>bounces@lists.linux-foundation.org] On Behalf Of Ori Idan
+>Sent: Wednesday, July 01, 2009 12:43 PM
+>To: linux-pm@lists.linux-foundation.org
+>Subject: [linux-pm] TI-OMAP3530 Power management
+>
+>I am just starting with this processor,
+>Does anyone have any idea if ACPI power management is enabled on kernel
+>sources supplied by TI?
+>
+>--
+>Ori Idan
