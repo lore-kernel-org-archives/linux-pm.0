@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] Run-time PM framework (was: Re: [patch update]
-	PM: Introduce core framework for run-time PM of I/O devices
-	(rev. 6))
-Date: Thu, 2 Jul 2009 19:50:28 +0200
-Message-ID: <200907021950.29227.rjw__49923.929925035$1246557154$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0907021048530.3291-100000@iolanthe.rowland.org>
+ PM: Introduce core framework for run-time PM of I/O devices (rev. 6))
+Date: Thu, 2 Jul 2009 15:53:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0907021414480.4279-100000__37444.1043743447$1246564456$gmane$org@iolanthe.rowland.org>
+References: <200907021950.29227.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907021048530.3291-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200907021950.29227.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,364 +18,285 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 02 July 2009, Alan Stern wrote:
-> On Thu, 2 Jul 2009, Rafael J. Wysocki wrote:
+On Thu, 2 Jul 2009, Rafael J. Wysocki wrote:
+
+> > The RPM_IN_TRANSITION flag is unnecessary.  It would always be equal to
+> > (status == RPM_SUSPENDING || status == RPM_RESUMING).
 > 
-> > > > _and_ to ensure that these callbacks will be executed when it makes sense.
-> > > 
-> > > Thus if the situation changes before the callback can be made, so that
-> > > it no longer makes sense, the framework should cancel the callback.
-> > 
-> > Yes, but there's one thing to consider.  Suppose a remote wake-up causes a
-> > resume request to be queued up and pm_runtime_resume() is called synchronously
-> > exactly at the time the request's work function is started.  There are two
-> > attempts to resume in progress, but only one of them can call
-> > ->runtime_resume(), so what's the other one supposed to do?  The asynchronous
-> > one can just return error code, but the the caller of the synchronous
-> > pm_runtime_resume() must know whether or not the resume was successful.
-> > So, perhaps, if the synchronous resume happens to lose the race, it should
-> > wait for the other one to complete, check the device's status and return 0 if
-> > it's active?  That wouldn't cause the workqueue thread to wait.
+> I thought of replacing the old flags with RPM_IN_TRANSITION, actually.
+
+Okay, but hopefully you won't mind if I continue to use the old state 
+names in conversation.
+
+> Still, the additional flag for 'idle notification is in progress' is still
+> necessary for the following two reasons:
 > 
-> I didn't address this explicitly in the previous message, but yes.  
-> This is no different from the way your current version works.
+> (1) Idle notifications cannot be run (synchronously) when one is already in
+>     progress, so we need a means to determine whether or not this is the case.
 > 
-> Similarly, if a synchronous resume call occurs while a suspend is in 
-> progress, it should wait until the suspend finishes and then carry out 
-> a resume.
+> (2) If run-time PM is to be disabled, the function doing that must guarantee
+>     that ->runtime_idle() won't be running after it's returned, so it needs to
+>     know how to check that.
 
 Agreed.
 
-> > > We can summarize these rules as follows:
+
+> > I don't agree.  For example, suppose the device has an active child
+> > when the driver says: Suspend it in 30 seconds.  If the child is then
+> > removed after only 10 seconds, does it make sense to go ahead with
+> > suspending the parent 20 seconds later?  No -- if the parent is going
+> > to be suspended, the decision as to when should be made at the time the
+> > child is removed, not beforehand.
+> 
+> There are two functions, on that sets up the timer and the other that queues
+> up the request.  This is the second one that makes the decision if the request
+> is still worth queuing up.
+> 
+> > (Even more concretely, suppose there is a 30-second inactivity timeout
+> > for autosuspend.  Removing the child counts as activity and so should
+> > restart the timer.)
+> > 
+> > To put it another way, suppose you accept a delayed request under
+> > inappropriate conditions.  If the conditions don't change, the whole
+> > thing was a waste of effort.  And if the conditions do change, then the
+> > whole delayed request should be reconsidered anyhow.
+> 
+> The problem is, even if you always accept a delayed request under appropriate
+> conditions, you still have to reconsider it before putting it into the work
+> queue, because the conditions might have changed.  So, you'd like to do this:
+> 
+> (1) Check if the conditions are appropriate, set up a timer.
+> (2) Check if the conditions are appropriate, queue up a suspend request.
+> 
+> while I think it will be simpler to do this:
+> 
+> (1) Set up a timer.
+> (2) Check if the conditions are appropriate, queue up a suspend request.
+> 
+> In any case you can have a pm_runtime_suspend() / pm_runtime_resume() cycle
+> between (1) and (2), so I don't really see a practical difference.
+
+A cycle like that would cancel the timer anyway.  Maybe that's what you 
+meant...
+
+Hmm.  What sort of conditions are we talking about?  One possiblity is 
+that we are in the wrong state, i.e., in SUSPENDING or SUSPENDED.  It's 
+completely useless to start a timer then; if the state changes the 
+timer will be cancelled, and if it doesn't change then the request 
+won't be queued when the timer expires.
+
+The other possiblity is that either the children or usage counter is 
+positive.  If the counter decrements to 0 so that a suspend is feasible 
+then we would send an idle notification.  At that point the driver 
+could decide what to do; the most likely response would be to 
+reschedule the suspend.  In fact, it's hard to think of a situation 
+where the driver would want to just let the timer keep on running.
+
+> For example, suppose ->runtime_resume() has been called as
+> a result of a remote wake-up (ie. after pm_request_resume()) and it has some
+> I/O to process, but it is known beforehand that the device will most likely be
+> inactive after the I/O is done.  So, it's tempting to call
+> pm_schedule_suspend() from within ->runtime_resume(), but the conditions are
+> inappropriate (the device is not regarded as suspended).
+
+??  Conditions are perfectly appropriate, since suspend requests are 
+allowed in the RESUMING state.
+
+Unless the driver also did a pm_runtime_get, of course.  But in that 
+case it would have to do a pm_runtime_put eventually, at which point it 
+could schedule the suspend.
+
+>  However, calling
+> pm_schedule_suspend() with a long enough delay doesn't break any rules related
+> to the ->runtime_*() callbacks, so why should it be forbidden?
+
+It isn't.
+
+> Next, suppose pm_schedule_suspend() is called, but it fails because the
+> conditions are inappropriate.  What's the caller supposed to do?  Wait for the
+> conditions to change and repeat?
+
+In a manner of speaking.  More precisely, whatever code is responsible 
+for changing the conditions should call pm_schedule_suspend.  Or set up 
+an idle notification, leading indirectly to pm_schedule_suspend.
+
+>  But why should it bother if the conditions
+> may still change before ->runtime_suspend() is actually called?
+
+It should bother because conditions might _not_ change, in which case
+the suspend would occur.  But for what you are proposing, if the
+conditions don't change then the suspend will not occur.
+
+> IMO, it's the caller's problem whether or not what it does is useful or
+> efficient.  The core's problem is to ensure that it doesn't break things.
+
+But what's the drawback?  The extra overhead of checking whether two
+counters are positive is minuscule compared to the effort of setting up
+a timer.  And it's even better when you consider that the mostly likely
+outcome of letting the timer run is that the timer handler would fail
+to queue a suspend request (because the counters are unchanged).
+
+
+> > Trying to keep track of reasons for incrementing and decrementing 
+> > usage_count is very difficult to do in the core.  What happens if 
+> > pm_request_resume increments the count but then the driver calls 
+> > pm_runtime_get, pm_runtime_resume, pm_runtime_put all before the work 
+> > routine can run?
+> 
+> Nothing wrong, as long as the increments and decrements are balanced (if they
+> aren't balanced, there is a bug in the driver anyway).
+
+That's my point -- in this situation it's very difficult for the driver
+to balance them.  There would be no decrement to balance
+pm_request_resume's automatic increment, because the work routine would
+never run.
+
+>  In fact, for this to
+> work we need the rule that a new request of the same type doesn't replace an
+> existing one.  Then, the submitted resume request cannot be canceled, so the
+> work function will run and drop the usage counter.
+
+A new pm_schedule_suspend _should_ replace an existing one.  For 
+idle_notify and resume requests, this rule is more or less a no-op.
+
+> > It's better to make the driver responsible for maintaining the counter
+> > value.  Forcing the driver to do pm_runtime_get, pm_request_resume is
+> > better than having the core automatically change the counter.
+> 
+> So the caller will do:
+> 
+> pm_runtime_get(dev);
+> error = pm_request_resume(dev);
+> if (error)
+>     goto out;
+> <process I/O>
+> pm_runtime_put();
+
+["error" isn't a good name.  The return value would be 0 to indicate 
+the request was accepted and queued, or 1 to indicate the device is 
+already active.  Or perhaps vice versa.]
+
+> but how is it supposed to ensure that pm_runtime_put() will be called after
+> executing the 'goto out' thing?
+
+The same way it knows that the runtime_resume method has to process the
+pending I/O.  That is, the presence of I/O to process means that once
+the processing is over, the driver should call pm_runtime_put.
+
+> Anyway, we don't need to use the usage counter for that (although it's cheap).
+> Instead, we can make pm_request_suspend() and pm_request_idle() check if a
+> resume request is pending and fail if that's the case.
+
+But what about pm_runtime_suspend?  I think we need to use the counter.
+Besides, the states in which suspend requests and idle requests are 
+valid are disjoint from the states in which resume requests are valid.
+
+> Let's put it another way.  What's the practical benefit to the caller if we
+> always check the counters in submissions?
+
+It saves the overhead of setting up and running a useless timer.  It 
+avoids a race between the timer routine and pm_runtime_put.
+
+
+> > >     Any pending request takes precedence over a new idle notification request.
+> > 
+> > For pending resume requests this rule is unnecessary; it's invalid to
+> > submit an idle notification request while a resume request is pending
+> > (since resume requests can be pending only in the RPM_SUSPENDING and
+> > RPM_SUSPENDED states while idle notification requests are accepted only
+> > in RPM_RESUMING and RPM_ACTIVE).
+> 
+> It is correct nevertheless. :-)
+
+Okay, if you want.  Provided you agree that "pending request" doesn't 
+include unexpired suspend timers.
+
+> Well, after some reconsideration I think it's not enough (as I wrote in my last
+> message), becuase it generally makes sense to make the following rule:
+> 
+>     A pending request always takes precedence over a new request of the same
+>     type.
+> 
+> So, for example, if pm_request_resume() is called and there's a resume request
+> pending already, the new pm_request_resume() should just let the pending
+> request alone and quit.
+
+Do you mean we shouldn't cancel the work item and then requeue it?  I
+agree.  In fact I'd go even farther: If the timer routine find an idle
+request pending, it shouldn't cancel it -- instead it should simply
+change async_action to ASYNC_SUSPEND.  That's a simple optimization.  
+Regardless, the effect isn't visible to drivers.
+
+> Thus, it seems reasonable to remember what type of a request is pending
+> (i don't think we can figure it out from the status fields in 100% of the
+> cases).
+
+That's what the async_action field in my proposal is for.
+
+
+> > Yes.  But the driver might depend on something happening inside the
+> > runtime_resume method, so it would need to know if a successful
+> > pm_runtime_resume wasn't going to invoke the callback.
+> 
+> Hmm.  That would require the driver to know that the device was suspended,
+> but in that case pm_runtime_resume() returning 0 would mean that _someone_
+> ran ->runtime_resume() for it in any case.
+> 
+> If the driver doesn't know if the device was suspended beforehand, it cannot
+> depend on the execution of ->runtime_resume().
+
+Exactly.  Therefore it needs to be told if pm_runtime_resume isn't 
+going to call the runtime_resume method, so that it can take 
+appropriate remedial action.
+
+
+> > > > To be determined: How runtime PM will interact with system sleep.
 > > > 
-> > > 	Never allow more than one callback at a time, except that
-> > > 	runtime_suspend may be invoked while runtime_idle is running.
+> > > Yes.  My first idea was to disable run-time PM before entering a system sleep
+> > > state, but that would involve canceling all of the pending requests.
 > > 
-> > Caution here.  If ->runtime_idle() runs ->runtime_suspend() and immediately
-> > after that resume is requested by remote wake-up, ->runtime_resume() may also
-> > be run while ->runtime_idle() is still running.
+> > Or simply freezing the workqueue.
 > 
-> Yes, I didn't think of that case.  We have to allow either of the other 
-> two to be invoked while runtime_idle is running.  But we can rule out 
-> calling runtime_idle recursively.
+> Well, what about the synchronous calls?  How are we going to prevent them
+> from happening after freezing the workqueue?
+
+How about your "rpm_disabled" flag?
+
+
+> Now there's a point in which allowing to set up the suspend timer at any time
+> simplifies things quite a bit.  Namely, in that case, if pm_schedule_suspend()
+> is called and it sees a timer pending, it deactivates the timer with
+> del_timer() and sets up a new one with add_timer().  It doesn't need to worry
+> about whether the suspend request has been queued up already or
+> pm_runtime_suspend() is running or something.  Things will work themselves out
+> anyway eventually.
 > 
-> > OTOH, we need to know when ->runtime_idle() has completed, because we have to
-> > ensure it won't still be running after run-time PM has been disabled for the
-> > device.
-> > 
-> > IMO, we need two flags, one indicating that either ->runtime_suspend(), or
-> > ->runtime_resume() is being executed (they are mutually exclusive) and the
-> > the other one indicating that ->runtime_idle() is being executed.  For the
-> > purpose of further discussion below I'll call them RPM_IDLE_RUNNING and
-> > RPM_IN_TRANSITION.
-> 
-> The RPM_IN_TRANSITION flag is unnecessary.  It would always be equal to
-> (status == RPM_SUSPENDING || status == RPM_RESUMING).
+> Otherwise, after calling del_timer() we'll need to check if the timer was pending
+> and if it wasn't, then if the suspend requests has been queued up already, and
+> if it has, then if pm_runtime_suspend() is running (the current status is
+> RPM_SUSPENDING) etc.  That doesn't look particularly clean.
 
-I thought of replacing the old flags with RPM_IN_TRANSITION, actually.
+It's not as bad as you think.  In pseudo code:
 
-> > With this notation, the above rule may be translated as:
-> > 
-> >     Don't run any of the callbacks if RPM_IN_TRANSITION is set.  Don't run
-> >     ->runtime_idle() if RPM_IDLE_RUNNING is set.
-> > 
-> > Which implies that RPM_IDLE_RUNNING cannot be set when RPM_IN_TRANSITION is
-> > set, but it is valid to set RPM_IN_TRANSITION when RPM_IDLE_RUNNING is set.
-> 
-> That is equivalent to my conclusion above.
-> 
-> > There are two possible "final" states, so I'd use one flag to indicate the
-> > current status.  Let's call it RPM_SUSPENDED for now (which means that the
-> > device is suspended when it's set and active otherwise) and I think we can make
-> > the rule that this flag is only changed after successful execution of
-> > ->runtime_suspend() or ->runtime_resume().
-> > 
-> > Whether the device is suspending or resuming follows from the values of
-> > RPM_SUSPENDED and RPM_IN_TRANSITION.
-> 
-> You can use two single-bit flags (SUSPEND and IN_TRANSITION) or a 
-> single two-bit state value (ACTIVE, SUSPENDING, SUSPENDED, RESUMING).  
-> It doesn't make much difference which you choose.
+	ret = suspend_allowed(dev);
+	if (ret)
+		return ret;
+	if (dev->power.timer_expiration) {
+		del_timer(&dev->power.timer);
+		dev->power.timer_expiration = 0;
+	}
+	if (dev->power.work_pending) {
+		cancel_work(&dev->power.work);
+		dev->power.work_pending = 0;
+		dev->power.async_action = 0;
+	}
+	dev->power.timer_expiration = max(jiffies + delay, 1UL);
+	mod_timer(&dev->power.timer, delay);
 
-No, it doesn't.
+The middle section could usefully be put in a subroutine.
 
-Still, the additional flag for 'idle notification is in progress' is still
-necessary for the following two reasons:
-
-(1) Idle notifications cannot be run (synchronously) when one is already in
-    progress, so we need a means to determine whether or not this is the case.
-
-(2) If run-time PM is to be disabled, the function doing that must guarantee
-    that ->runtime_idle() won't be running after it's returned, so it needs to
-    know how to check that.
-
-> > > Should the counters also be checked when the request is submitted?  
-> > > And should the same go for pm_schedule_suspend?  These are nontrivial
-> > > questions; good arguments can be made both ways.
-> > 
-> > That's the difficult part. :-)
-> > 
-> > First, I think a delayed suspend should be treated in a special way, because
-> > it's not really a request to suspend.  Namely, as long as the timer hasn't
-> > triggered yet, nothing happens and there's nothing against the rules above.
-> > A request to suspend is queued up after the timer has triggered and the timer
-> > function is where the rules come into play.  IOW, it consists of two
-> > operations, setting up a timer and queuing up a request to suspend when the
-> > timer triggers.  IMO the first of them can be done at any time, while the other
-> > one may be affected by the rules.
-> 
-> I don't agree.  For example, suppose the device has an active child
-> when the driver says: Suspend it in 30 seconds.  If the child is then
-> removed after only 10 seconds, does it make sense to go ahead with
-> suspending the parent 20 seconds later?  No -- if the parent is going
-> to be suspended, the decision as to when should be made at the time the
-> child is removed, not beforehand.
-
-There are two functions, on that sets up the timer and the other that queues
-up the request.  This is the second one that makes the decision if the request
-is still worth queuing up.
-
-> (Even more concretely, suppose there is a 30-second inactivity timeout
-> for autosuspend.  Removing the child counts as activity and so should
-> restart the timer.)
-> 
-> To put it another way, suppose you accept a delayed request under
-> inappropriate conditions.  If the conditions don't change, the whole
-> thing was a waste of effort.  And if the conditions do change, then the
-> whole delayed request should be reconsidered anyhow.
-
-The problem is, even if you always accept a delayed request under appropriate
-conditions, you still have to reconsider it before putting it into the work
-queue, because the conditions might have changed.  So, you'd like to do this:
-
-(1) Check if the conditions are appropriate, set up a timer.
-(2) Check if the conditions are appropriate, queue up a suspend request.
-
-while I think it will be simpler to do this:
-
-(1) Set up a timer.
-(2) Check if the conditions are appropriate, queue up a suspend request.
-
-In any case you can have a pm_runtime_suspend() / pm_runtime_resume() cycle
-between (1) and (2), so I don't really see a practical difference.
-
-> So why accept it?
-
-Beacuse that simplifies things?
-
-For example, suppose ->runtime_resume() has been called as
-a result of a remote wake-up (ie. after pm_request_resume()) and it has some
-I/O to process, but it is known beforehand that the device will most likely be
-inactive after the I/O is done.  So, it's tempting to call
-pm_schedule_suspend() from within ->runtime_resume(), but the conditions are
-inappropriate (the device is not regarded as suspended).  However, calling
-pm_schedule_suspend() with a long enough delay doesn't break any rules related
-to the ->runtime_*() callbacks, so why should it be forbidden?
-
-Next, suppose pm_schedule_suspend() is called, but it fails because the
-conditions are inappropriate.  What's the caller supposed to do?  Wait for the
-conditions to change and repeat?  But why should it bother if the conditions
-may still change before ->runtime_suspend() is actually called?
-
-IMO, it's the caller's problem whether or not what it does is useful or
-efficient.  The core's problem is to ensure that it doesn't break things.
-
-> > It implies that we should really introduce a timer and a timer function that
-> > will queue up suspend requests, instead of using struct delayed_work.
-> 
-> Yes, this was part of my proposal.
-> 
-> > Second, I think it may be a good idea to use the usage counter to block further
-> > requests while submitting a resume request.
-> > 
-> > Namely, suppose that pm_request_resume() increments usage_count and returns 0,
-> > if the resume was not necessary and the caller can do the I/O by itself, or
-> > error code, which means that it was necessary to queue up a resume request.
-> > If 0 is returned, the caller is supposed to do the I/O and call
-> > pm_runtime_put() when done.  Otherwise it just quits and ->runtime_resume() is
-> > supposed to take care of the I/O, in which case the request's work function
-> > should call pm_runtime_put() when done.  [If it was impossible to queue up a
-> > request, error code is returned, but the usage counter is decremented by
-> > pm_request_resume(), so that the caller need not handle that special case,
-> > hopefully rare.]
-> 
-> Trying to keep track of reasons for incrementing and decrementing 
-> usage_count is very difficult to do in the core.  What happens if 
-> pm_request_resume increments the count but then the driver calls 
-> pm_runtime_get, pm_runtime_resume, pm_runtime_put all before the work 
-> routine can run?
-
-Nothing wrong, as long as the increments and decrements are balanced (if they
-aren't balanced, there is a bug in the driver anyway).  In fact, for this to
-work we need the rule that a new request of the same type doesn't replace an
-existing one.  Then, the submitted resume request cannot be canceled, so the
-work function will run and drop the usage counter.
-
-> It's better to make the driver responsible for maintaining the counter
-> value.  Forcing the driver to do pm_runtime_get, pm_request_resume is
-> better than having the core automatically change the counter.
-
-So the caller will do:
-
-pm_runtime_get(dev);
-error = pm_request_resume(dev);
-if (error)
-    goto out;
-<process I/O>
-pm_runtime_put();
-
-but how is it supposed to ensure that pm_runtime_put() will be called after
-executing the 'goto out' thing?
-
-Anyway, we don't need to use the usage counter for that (although it's cheap).
-Instead, we can make pm_request_suspend() and pm_request_idle() check if a
-resume request is pending and fail if that's the case.
-
-> > This implies that it may be a good idea to check usage_count when submitting
-> > idle notification and suspend requests (where in case of suspend a request is
-> > submitted by the timer function, when the timer has already triggered, so
-> > there's no need to check the counter while setting up the timer).
-> > 
-> > The counter of unsuspended children may change after a request has been
-> > submitted and before its work function has a chance to run, so I don't see much
-> > point checking it when submitting requests.
-> 
-> As I said above, if the counters don't change then the submission was 
-> unnecessary, and if they do change then the submission should be 
-> reconsidered.  Therefore they _should_ be checked in submissions.
-
-Let's put it another way.  What's the practical benefit to the caller if we
-always check the counters in submissions?
-
-> > So, if the above idea is adopted, idle notification and suspend requests
-> > won't be queued up when a resume request is pending (there's the question what
-> > the timer function attempting to queue up a suspend request is supposed to do
-> > in such a case) and in the other cases we can use the following rules:
-> > 
-> >     Any pending request takes precedence over a new idle notification request.
-> 
-> For pending resume requests this rule is unnecessary; it's invalid to
-> submit an idle notification request while a resume request is pending
-> (since resume requests can be pending only in the RPM_SUSPENDING and
-> RPM_SUSPENDED states while idle notification requests are accepted only
-> in RPM_RESUMING and RPM_ACTIVE).
-
-It is correct nevertheless. :-)
-
-> For pending suspends, I think we should allow synchronous idle
-> notifications while the suspend is pending.
-
-Sure, I was talking only about requests here, where by 'request' I understood
-a work item put into the workqueue.
-
-> The runtime_idle callback might then start its own suspend before the
-> workqueue can get around to it.  You're right about async idle requests
-> though; that was the exception I noted below.
-> 
-> >     If a new request is not an idle notification request, it takes precedence
-> >     over the pending one, so it cancels it with the help of cancel_work().
-> > 
-> > [In the latter case, if a suspend request is canceled, we may want to set up the
-> > timer for another one.]  For that, we're going to need a single flag, say
-> > RPM_PENDING, which is set whenever a request is queued up.
-> 
-> That's what I called work_pending in my proposal.
-
-Well, after some reconsideration I think it's not enough (as I wrote in my last
-message), becuase it generally makes sense to make the following rule:
-
-    A pending request always takes precedence over a new request of the same
-    type.
-
-So, for example, if pm_request_resume() is called and there's a resume request
-pending already, the new pm_request_resume() should just let the pending
-request alone and quit.
-
-Thus, it seems reasonable to remember what type of a request is pending
-(i don't think we can figure it out from the status fields in 100% of the
-cases).
-
-> > > The error codes you have been using seem okay to me, in general.
-> > > 
-> > > However, some of those requests would violate the rules in a trivial 
-> > > way.  For these we might return a positive value rather than a negative 
-> > > error code.  For example, calling pm_runtime_resume while the device is 
-> > > already active shouldn't be considered an error.  But it can't be 
-> > > considered a complete success either, because it won't invoke the 
-> > > runtime_resume method.
-> > 
-> > That need not matter from the caller's point of view, though.  In the case of
-> > pm_runtime_resume() the caller will probably be mostly interested whether or
-> > not it can do I/O after the function has returned.
-> 
-> Yes.  But the driver might depend on something happening inside the
-> runtime_resume method, so it would need to know if a successful
-> pm_runtime_resume wasn't going to invoke the callback.
-
-Hmm.  That would require the driver to know that the device was suspended,
-but in that case pm_runtime_resume() returning 0 would mean that _someone_
-ran ->runtime_resume() for it in any case.
-
-If the driver doesn't know if the device was suspended beforehand, it cannot
-depend on the execution of ->runtime_resume().
-
-> > > To be determined: How runtime PM will interact with system sleep.
-> > 
-> > Yes.  My first idea was to disable run-time PM before entering a system sleep
-> > state, but that would involve canceling all of the pending requests.
-> 
-> Or simply freezing the workqueue.
-
-Well, what about the synchronous calls?  How are we going to prevent them
-from happening after freezing the workqueue?
-
-> > > About all I can add is the "New requests override previous requests"  
-> > > policy.  This would apply to all the non-synchronous requests, whether
-> > > they are delayed or added directly to the workqueue.  If a new request
-> > > (synchronous or not) is received before the old one has started to run,
-> > > the old one will be cancelled.  This holds even if the new request is
-> > > redundant, like a resume request received while the device is active.
-> > > 
-> > > There is one exception to this rule: An idle_notify request does not 
-> > > cancel a delayed or queued suspend request.
-> > 
-> > I'm not sure if such a rigid rule will be really useful.
-> 
-> A rigid rule is easier to understand and apply than one with a large
-> number of special cases.  However, in the statement of the rule above,
-> I forgot to mention that this applies only if the new request is valid,
-> i.e., if it's not forbidden by the current status or the counter
-> values.
-
-Ah, OK.  I'd also like to add the rule about requests of the same type
-(if there's one pending already, the new one is discareded).
-
-> > Also, as I said above, I think we shouldn't regard setting up the suspend
-> > timer as queuing up a request, but as a totally separate operation.
-> 
-> Well, there can't be any pending resume requests when the suspend timer
-> is set up, so we have to consider only pending idle notifications or
-> pending suspends.  I agree, we would want to allow an idle notification
-> to remain pending when the suspend timer is set up.  As for pending
-> suspends, we _should_ allow the new request to override the old one.  
-> This will come up whenever the timeout value is changed.
-
-Now there's a point in which allowing to set up the suspend timer at any time
-simplifies things quite a bit.  Namely, in that case, if pm_schedule_suspend()
-is called and it sees a timer pending, it deactivates the timer with
-del_timer() and sets up a new one with add_timer().  It doesn't need to worry
-about whether the suspend request has been queued up already or
-pm_runtime_suspend() is running or something.  Things will work themselves out
-anyway eventually.
-
-Otherwise, after calling del_timer() we'll need to check if the timer was pending
-and if it wasn't, then if the suspend requests has been queued up already, and
-if it has, then if pm_runtime_suspend() is running (the current status is
-RPM_SUSPENDING) etc.  That doesn't look particularly clean.
-
-Best,
-Rafael
+Alan Stern
