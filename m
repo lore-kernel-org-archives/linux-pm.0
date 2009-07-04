@@ -1,12 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / irq: Fix comment describing
-	suspend_device_irqs()
-Date: Sun, 5 Jul 2009 00:22:34 +0200
-Message-ID: <200907050022.35117.rjw__5072.56597416035$1246746261$gmane$org@sisk.pl>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+Date: Sun, 5 Jul 2009 01:44:39 +0200
+Message-ID: <200907050144.40444.rjw@sisk.pl>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,38 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday 10 June 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> 
+> Allow architecture specific data in struct platform_device V3.
+> 
+> With this patch struct pdev_archdata is added to struct
+> platform_device, similar to struct dev_archdata in found in
+> struct device. Useful for architecture code that needs to
+> keep extra data associated with each platform device.
+> 
+> Struct pdev_archdata is different from dev.platform_data, the
+> convention is that dev.platform_data points to driver-specific
+> data. It may or may not be required by the driver. The format
+> of this depends on driver but is the same across architectures.
+> 
+> The structure pdev_archdata is a place for architecture specific
+> data. This data is handled by architecture specific code (for
+> example runtime PM), and since it is architecture specific it
+> should _never_ be touched by device driver code. Exactly like
+> struct dev_archdata but for platform devices.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Applies to next-20090610.
+> 
+>  Changes since V2:
+>  - updated commit message, thanks to Rafael for feedback
+> 
+>  Changes since V1:
+>  - post to lkml, keep linux-pm cc:ed
+>  - add struct pdev_archdata to asm-generic
+>  - add struct pdev_archdata to non-generic architectures
+>  - drop Kconfig bits
 
-The kerneldoc comment describing suspend_device_irqs() is currently
-misleading, because generally the function doesn't really disable
-interrupt lines at the chip level.  Replace it with a more accurate
-one.
+The patch is now in the linux-next branch of the suspend-2.6 tree.  I'll move
+it into the for-linus branch, which is not rebased, if it's not reported to
+cause any problems in the next few days.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/irq/pm.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/kernel/irq/pm.c
-===================================================================
---- linux-2.6.orig/kernel/irq/pm.c
-+++ linux-2.6/kernel/irq/pm.c
-@@ -15,10 +15,10 @@
- /**
-  * suspend_device_irqs - disable all currently enabled interrupt lines
-  *
-- * During system-wide suspend or hibernation device interrupts need to be
-- * disabled at the chip level and this function is provided for this purpose.
-- * It disables all interrupt lines that are enabled at the moment and sets the
-- * IRQ_SUSPENDED flag for them.
-+ * During system-wide suspend or hibernation device drivers need to be prevented
-+ * from receiving interrupts and this function is provided for this purpose.
-+ * It marks all interrupt lines in use, except for the timer ones, as disabled
-+ * and sets the IRQ_SUSPENDED flag for each of them.
-  */
- void suspend_device_irqs(void)
- {
+Best,
+Rafael
