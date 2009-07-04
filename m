@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
-Date: Sun, 5 Jul 2009 01:44:39 +0200
-Message-ID: <200907050144.40444.rjw@sisk.pl>
-References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
+	pm callbacks V2
+Date: Sun, 5 Jul 2009 01:45:13 +0200
+Message-ID: <200907050145.15122.rjw__4674.47631895101$1246751136$gmane$org@sisk.pl>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,47 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Magnus Damm <magnus.damm@gmail.com>
-Cc: paul@pwsan.com, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: gregkh@suse.de, ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 10 June 2009, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+On Wednesday 24 June 2009, Magnus Damm wrote:
+> pm: remove late/early platform driver pm callbacks V2
 > 
-> Allow architecture specific data in struct platform_device V3.
+> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
 > 
-> With this patch struct pdev_archdata is added to struct
-> platform_device, similar to struct dev_archdata in found in
-> struct device. Useful for architecture code that needs to
-> keep extra data associated with each platform device.
+> These patches simply remove ->suspend_late() and ->resume_early()
+> from struct platform_driver. Drivers are converted to dev_pm_ops
+> with CONFIG_SUSPEND in mind. Untested.
 > 
-> Struct pdev_archdata is different from dev.platform_data, the
-> convention is that dev.platform_data points to driver-specific
-> data. It may or may not be required by the driver. The format
-> of this depends on driver but is the same across architectures.
-> 
-> The structure pdev_archdata is a place for architecture specific
-> data. This data is handled by architecture specific code (for
-> example runtime PM), and since it is architecture specific it
-> should _never_ be touched by device driver code. Exactly like
-> struct dev_archdata but for platform devices.
+> All patches except [02/07] are known to compile.
 > 
 > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > ---
 > 
->  Applies to next-20090610.
-> 
->  Changes since V2:
->  - updated commit message, thanks to Rafael for feedback
-> 
 >  Changes since V1:
->  - post to lkml, keep linux-pm cc:ed
->  - add struct pdev_archdata to asm-generic
->  - add struct pdev_archdata to non-generic architectures
->  - drop Kconfig bits
+>  - resolved conflicts in [05/07], rediffed [07/07]
+>  - include lkml, linux-usb and akpm
+> 
+>  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
+>  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
+>  drivers/base/platform.c          |   36 ------------------------------------
+>  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
+>  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
+>  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
+>  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
+>  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
+>  include/linux/platform_device.h  |    2 --
+>  9 files changed, 82 insertions(+), 79 deletions(-)
 
-The patch is now in the linux-next branch of the suspend-2.6 tree.  I'll move
-it into the for-linus branch, which is not rebased, if it's not reported to
-cause any problems in the next few days.
+The series is now in the linux-next branch of the suspend-2.6 tree.  I'll move
+it into the for-linus branch, which is not rebased, if the patches are not
+reported to cause any problems in the next few days.
 
 Best,
 Rafael
