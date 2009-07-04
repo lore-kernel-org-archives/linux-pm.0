@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
-	pm callbacks V2
-Date: Sun, 5 Jul 2009 01:45:13 +0200
-Message-ID: <200907050145.15122.rjw__4674.47631895101$1246751136$gmane$org@sisk.pl>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH 2/3] Trivial: fix typo in label name
+	s/Platofrm_finish/Platform_finish/
+Date: Sun, 5 Jul 2009 01:46:24 +0200
+Message-ID: <200907050146.25108.rjw__21582.4335035451$1246751291$gmane$org@sisk.pl>
+References: <1246746815-12146-1-git-send-email-cascardo@holoscopio.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+In-Reply-To: <1246746815-12146-1-git-send-email-cascardo@holoscopio.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,48 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: gregkh@suse.de, ben-linux@fluff.org, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-pm@lists.linux-foundation.org, trivial@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 24 June 2009, Magnus Damm wrote:
-> pm: remove late/early platform driver pm callbacks V2
+On Sunday 05 July 2009, Thadeu Lima de Souza Cascardo wrote:
+> Although the same label name is used somewhere else in the file, this
+> particular label was consistently typoed in all of its uses.
 > 
-> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
-> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
-> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
-> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
-> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
-> [PATCH 06/07] usb: rework musb suspend()/resume_early()
-> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
-> 
-> These patches simply remove ->suspend_late() and ->resume_early()
-> from struct platform_driver. Drivers are converted to dev_pm_ops
-> with CONFIG_SUSPEND in mind. Untested.
-> 
-> All patches except [02/07] are known to compile.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 > ---
-> 
->  Changes since V1:
->  - resolved conflicts in [05/07], rediffed [07/07]
->  - include lkml, linux-usb and akpm
-> 
->  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
->  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
->  drivers/base/platform.c          |   36 ------------------------------------
->  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
->  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
->  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
->  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
->  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
->  include/linux/platform_device.h  |    2 --
->  9 files changed, 82 insertions(+), 79 deletions(-)
 
-The series is now in the linux-next branch of the suspend-2.6 tree.  I'll move
-it into the for-linus branch, which is not rebased, if the patches are not
-reported to cause any problems in the next few days.
+Thanks, the patch is now in the linux-next branch of the suspend-2.6 tree.
 
 Best,
 Rafael
