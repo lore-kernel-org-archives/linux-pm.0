@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch update] PM: Introduce core framework for
-	run-time PM of I/O devices
-Date: Mon, 6 Jul 2009 10:28:27 +0200
-Message-ID: <20090706082827.GA26142__34427.0064881586$1246868980$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <200906140023.36147.rjw@sisk.pl> <200906150057.32424.rjw@sisk.pl>
-	<20090624150400.GG1784@ucw.cz> <200906272352.42022.rjw@sisk.pl>
+From: "HU TAO-TGHK48" <taohu@motorola.com>
+Subject: Re: PM interface to suspend/resume individual/specific
+	device
+Date: Mon, 6 Jul 2009 19:01:01 +0800
+Message-ID: <F12CE1A68F023D498A2691C7B539311503655C1B@ZMY16EXM66.ds.mot.com>
+References: <F12CE1A68F023D498A2691C7B539311503655A9A@ZMY16EXM66.ds.mot.com>
+	<200907052330.48382.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200906272352.42022.rjw@sisk.pl>
+Content-class: urn:content-classes:message
+In-Reply-To: <200907052330.48382.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +21,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> On Wednesday 24 June 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > 
-> > > +2. Run-time PM Helper Functions and Device Fields
-> > > +
-> > > +The following helper functions are defined in drivers/base/power/runtime.c
-> > > +and include/linux/pm_runtime.h:
-> > > +
-> > > +* void pm_runtime_init(struct device *dev);
-> > > +* void pm_runtime_enable(struct device *dev);
-> > > +* void pm_runtime_disable(struct device *dev);
-> > > +* int pm_runtime_suspend(struct device *dev);
-> > > +* void pm_request_suspend(struct device *dev, unsigned long delay);
-> > > +* int pm_runtime_resume(struct device *dev);
-> > > +* void pm_request_resume(struct device *dev);
-> > > +* void pm_cancel_runtime_suspend(struct device *dev);
-> > > +* void pm_cancel_runtime_resume(struct device *dev);
-> > > +* void pm_suspend_check_children(struct device *dev, bool enable);
-> > 
-> > Those *s look confusingly like pointers. Remove them?
+ 
+Hi, Rafael
+
+Thank for the answer.
+
+2 more things
+A) The suspend/resume API assumes that  all user space process/kthread
+access to driver will be frozen first
+    This avoids race condition that processes/threads  are accessing
+driver while suspend()/resume() of the driver is called at the same
+time.
+    
+    Is my understanding correct?
+
+B) I noticed your "Run-time PM framework" patch was submitted recently
+    Do you think it is fair to allow user space to trigger run-time
+suspend/resume for specific device?
+    Sine the run-time suspend/resume would be system independent per my
+understanding.
+    
+
+
+-----Original Message-----
+From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+Sent: Monday, July 06, 2009 5:31 AM
+To: HU TAO-TGHK48
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] PM interface to suspend/resume
+individual/specific device
+
+On Sunday 05 July 2009, HU TAO-TGHK48 wrote:
+> Below command would suspend all of devices and system # echo mem > 
+> /sys/power/state
 > 
-> From the doc?  OK, I can use another character. :-)
-
-Yes. I suggest # :-)
-
+> How to just suspend/resume one specific devices? E.g.
+> /sys/devices/platform/serial8250
 > 
-> Best,
-> Rafael
+> It would be useful to test the stability of PM interface of individual
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> driver.
+> If drivers called earlier refuse to suspend then not able to reach the
+
+> suspend/resume function of the specific driver.
+> 
+> And it would be useful for automatic testing since a script can 
+> suspend/resume the specific device for many times without manual 
+> operation.
+> 
+> Is it possible to add "state" for each device?
+> E.g. 
+> # echo mem > /sys/devices/platform/serial8250/power/state
+
+No, and you can't suspend individual devices in general.  There is such
+a mechanism for USB devices.
+
+The problem is that suspend while entering a system sleep state is
+generally a different operation from a suspend done at run time and the
+latter wouldn't be suitable for testing the former.
+
+If you need to test the suspend-resume of a driver, please use the
+/sys/power/pm_test interface (it works on the entire system, but it
+doesn't complete the suspend, so it's suitable for testing).
+
+Thanks,
+Rafael
