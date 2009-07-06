@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PM interface to suspend/resume individual/specific
-	device
-Date: Mon, 6 Jul 2009 22:32:42 +0200
-Message-ID: <200907062232.42682.rjw@sisk.pl>
-References: <F12CE1A68F023D498A2691C7B539311503655A9A@ZMY16EXM66.ds.mot.com>
-	<200907052330.48382.rjw@sisk.pl>
-	<F12CE1A68F023D498A2691C7B539311503655C1B@ZMY16EXM66.ds.mot.com>
+Subject: Re: Patch 0/2: Add compression support to swsusp.
+Date: Tue, 7 Jul 2009 00:16:46 +0200
+Message-ID: <200907070016.47162.rjw__33134.5635735945$1246918733$gmane$org@sisk.pl>
+References: <4A518BA5.3060900@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <F12CE1A68F023D498A2691C7B539311503655C1B@ZMY16EXM66.ds.mot.com>
+In-Reply-To: <4A518BA5.3060900@crca.org.au>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,39 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: HU TAO-TGHK48 <taohu@motorola.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 06 July 2009, HU TAO-TGHK48 wrote:
-> 
-> Hi, Rafael
-> 
-> Thank for the answer.
-> 
-> 2 more things
-> A) The suspend/resume API assumes that  all user space process/kthread
-> access to driver will be frozen first
->     This avoids race condition that processes/threads  are accessing
-> driver while suspend()/resume() of the driver is called at the same
-> time.
->     
->     Is my understanding correct?
+On Monday 06 July 2009, Nigel Cunningham wrote:
+> Hi Rafael.
 
-Generally, it is, but while all user space processes are frozen before every
-attempt to put the system into a sleep state, only some of the kernel threads
-are frozen.
+Hi,
 
-> B) I noticed your "Run-time PM framework" patch was submitted recently
->     Do you think it is fair to allow user space to trigger run-time
-> suspend/resume for specific device?
->
->     Sine the run-time suspend/resume would be system independent per my
-> understanding.
+> Sorry that I've been so slow to send anything after our recent
+> discussion about merging TuxOnIce. Too much on my plate, as usual.
 
-There's a problem that the user space can potentially trigger a run-time
-suspend of a device at a wrong time.  It's probably better to let the driver
-decide.
+No problem, I've been quite busy recently too.
+
+> Here are a couple of patches for your consideration. The first one adds
+> support for combining partial pages together when writing the image
+> proper, and breaking them apart again when reading the image back. The
+> second patch builds on the first one, adding support for compressing the
+> data that is written in an image.
+> 
+> The net effect should be a good boost in the speed of writing the image,
+> but a slowdown (for now) in the speed of reading the image, because we
+> can't decompress data that hasn't been read yet, and so currently need
+> to do the reads synchronously. I'm a bit under the weather at the
+> moment, and am going to go to bed now. I hope, though, to get another
+> patch or two prepared reasonably quickly, which will implement an
+> algorithm for doing readahead.
+
+Thanks for the patches, I'll have a look at them shortly, but I need to prepare
+some slides for the Linux Symposium, so please be patient. :-)
 
 Best,
 Rafael
