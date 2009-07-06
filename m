@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Patch 0/2: Add compression support to swsusp.
-Date: Tue, 7 Jul 2009 00:16:46 +0200
-Message-ID: <200907070016.47162.rjw__33134.5635735945$1246918733$gmane$org@sisk.pl>
-References: <4A518BA5.3060900@crca.org.au>
+Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
+Date: Tue, 7 Jul 2009 00:40:14 +0200
+Message-ID: <200907070040.14796.rjw__38126.665648497$1246920037$gmane$org@sisk.pl>
+References: <4A438BA7.9010800@tuffmail.co.uk>
+	<8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
+	<4A43B1FC.7060609@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A518BA5.3060900@crca.org.au>
+In-Reply-To: <4A43B1FC.7060609@tuffmail.co.uk>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,36 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 06 July 2009, Nigel Cunningham wrote:
-> Hi Rafael.
+On Thursday 25 June 2009, Alan Jenkins wrote:
+> Maciej Rutecki wrote:
+> > 2009/6/25 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+> >   
+> >> The synaptics touchpad on my EeePC 701 dies on hibernation.  2.6.30 was
+> >> fine, and it doesn't happen on suspend to ram either.  There are no
+> >> obvious error messages, but maybe this boot message is relevant:
+> >>
+> >> Platform driver 'i8042' needs updating, please use dev_pm_ops
+> >>
+> >>     
+> >
+> > Similar on s2disk, HP/Compaq notebook. Try reload psmouse module. I
+> > reported it, but nobody answer.
+> >   
+> That works, thanks.
 
-Hi,
+Alan, Maciej, can you both try the patch at
+http://patchwork.kernel.org/patch/34075/, please?
 
-> Sorry that I've been so slow to send anything after our recent
-> discussion about merging TuxOnIce. Too much on my plate, as usual.
-
-No problem, I've been quite busy recently too.
-
-> Here are a couple of patches for your consideration. The first one adds
-> support for combining partial pages together when writing the image
-> proper, and breaking them apart again when reading the image back. The
-> second patch builds on the first one, adding support for compressing the
-> data that is written in an image.
-> 
-> The net effect should be a good boost in the speed of writing the image,
-> but a slowdown (for now) in the speed of reading the image, because we
-> can't decompress data that hasn't been read yet, and so currently need
-> to do the reads synchronously. I'm a bit under the weather at the
-> moment, and am going to go to bed now. I hope, though, to get another
-> patch or two prepared reasonably quickly, which will implement an
-> algorithm for doing readahead.
-
-Thanks for the patches, I'll have a look at them shortly, but I need to prepare
-some slides for the Linux Symposium, so please be patient. :-)
-
-Best,
 Rafael
