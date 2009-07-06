@@ -1,12 +1,17 @@
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH 2/3] Trivial: fix typo in label name
-	s/Platofrm_finish/Platform_finish/
-Date: Sat,  4 Jul 2009 19:33:35 -0300
-Message-ID: <1246746815-12146-1-git-send-email-cascardo__48776.7392457046$1246891551$gmane$org@holoscopio.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: PM interface to suspend/resume individual/specific
+	device
+Date: Mon, 6 Jul 2009 22:32:42 +0200
+Message-ID: <200907062232.42682.rjw@sisk.pl>
+References: <F12CE1A68F023D498A2691C7B539311503655A9A@ZMY16EXM66.ds.mot.com>
+	<200907052330.48382.rjw@sisk.pl>
+	<F12CE1A68F023D498A2691C7B539311503655C1B@ZMY16EXM66.ds.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <F12CE1A68F023D498A2691C7B539311503655C1B@ZMY16EXM66.ds.mot.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,44 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-pm@lists.linux-foundation.org, trivial@kernel.org, linux-kernel@vger.kernel.org
+To: HU TAO-TGHK48 <taohu@motorola.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Although the same label name is used somewhere else in the file, this
-particular label was consistently typoed in all of its uses.
+On Monday 06 July 2009, HU TAO-TGHK48 wrote:
+> 
+> Hi, Rafael
+> 
+> Thank for the answer.
+> 
+> 2 more things
+> A) The suspend/resume API assumes that  all user space process/kthread
+> access to driver will be frozen first
+>     This avoids race condition that processes/threads  are accessing
+> driver while suspend()/resume() of the driver is called at the same
+> time.
+>     
+>     Is my understanding correct?
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- kernel/power/hibernate.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Generally, it is, but while all user space processes are frozen before every
+attempt to put the system into a sleep state, only some of the kernel threads
+are frozen.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 81d2e74..ec82025 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -460,11 +460,11 @@ int hibernation_platform_enter(void)
- 
- 	error = hibernation_ops->prepare();
- 	if (error)
--		goto Platofrm_finish;
-+		goto Platform_finish;
- 
- 	error = disable_nonboot_cpus();
- 	if (error)
--		goto Platofrm_finish;
-+		goto Platform_finish;
- 
- 	local_irq_disable();
- 	sysdev_suspend(PMSG_HIBERNATE);
-@@ -476,7 +476,7 @@ int hibernation_platform_enter(void)
- 	 * We don't need to reenable the nonboot CPUs or resume consoles, since
- 	 * the system is going to be halted anyway.
- 	 */
-- Platofrm_finish:
-+ Platform_finish:
- 	hibernation_ops->finish();
- 
- 	dpm_suspend_noirq(PMSG_RESTORE);
--- 
-1.6.3
+> B) I noticed your "Run-time PM framework" patch was submitted recently
+>     Do you think it is fair to allow user space to trigger run-time
+> suspend/resume for specific device?
+>
+>     Sine the run-time suspend/resume would be system independent per my
+> understanding.
+
+There's a problem that the user space can potentially trigger a run-time
+suspend of a device at a wrong time.  It's probably better to let the driver
+decide.
+
+Best,
+Rafael
