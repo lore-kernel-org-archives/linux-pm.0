@@ -1,14 +1,12 @@
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH] Input: mark serio and i8042 as suspended
-	when	hibernating too.
-Date: Mon, 6 Jul 2009 20:33:48 -0300
-Message-ID: <20090706233346.GA32726__39146.0363906392$1246923312$gmane$org@vespa.holoscopio.com>
-References: <1246760019-4120-1-git-send-email-cascardo@holoscopio.com>
-	<200907070040.43299.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.31-rc2: Reported regressions from 2.6.30
+Date: Tue,  7 Jul 2009 01:42:09 +0200 (CEST)
+Message-ID: <35kKlbXMqWN.A.RXD.D0oUKB__47932.7567191378$1246924212$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0023805039033560730=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907070040.43299.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,136 +14,240 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, linux-input@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, maciej.rutecki@gmail.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+[NOTE: I'll be traveling next week, so there won't be a summary report.]
 
---===============0023805039033560730==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
-Content-Disposition: inline
+This message contains a list of some regressions from 2.6.30, for which there
+are no fixes in the mainline I know of.  If any of them have been fixed already,
+please let me know.
 
+If you know of any other unresolved regressions from 2.6.30, please let me know
+either and I'll add them to the list.  Also, please let me know if any of the
+entries below are invalid.
 
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jul 07, 2009 at 12:40:42AM +0200, Rafael J. Wysocki wrote:
-> On Sunday 05 July 2009, Thadeu Lima de Souza Cascardo wrote:
-> > serio ports are not being restarted any longer because resume operations
-> > after hibernate do nothing, since the device has not been marked as
-> > suspended. This happens because suspend is only considering the SUSPEND
-> > event but not the FREEZE event.
-> >=20
-> > Note that this driver has still to migrate to dev_pm_ops, but this fixes
-> > this particular bug now.
->=20
-> Hmm, this looks like a fix for:
-> http://bugzilla.kernel.org/show_bug.cgi?id=3D13643
->=20
-> Any objections to merging it through the suspend tree?
->=20
-> Best,
-> Rafael
->=20
->=20
-
-I even got to this bug report myself, but 1) I wasn't sure it would fix
-the original problem; 2) I didn't know how to include the patch as a
-solution in the report and submit it to the lists in one tackle and was
-too lazy to do it through the web interface.
-
-I found out the two references before I could find the bug report by
-looking into the mailing list archives (both for linux-input and
-linux-kernel). And since no one pointed out a solution, I've tried to
-solve it myself. Fortunately, those references told me that was a
-problem not found at 2.6.30 and that I should look for commits since
-then, not since the last git after that I couldn't find the problem in,
-and that hibernate was the problem. The fact is that I had hibernate
-totally failing for me for that git version and hibernate was the first
-thing I've tried, even before using the mouse.
-
-Anyway, since you are the PM maintainer and had submitted messages to
-the bug report and one of the messages, I've decided to copy you and I
-would be very glad that the merge was done throught your tree as any
-other tree. As long as this enters rc3, for sure.  :-D
-
-My best and any tips as to get these regression fixes more noticeable,
-I'll be glad.
-Cascardo.
-
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > ---
-> >  drivers/input/serio/i8042.c |    7 ++++---
-> >  drivers/input/serio/serio.c |    7 ++++---
-> >  2 files changed, 8 insertions(+), 6 deletions(-)
-> >=20
-> > diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-> > index f919bf5..582245c 100644
-> > --- a/drivers/input/serio/i8042.c
-> > +++ b/drivers/input/serio/i8042.c
-> > @@ -934,10 +934,11 @@ static bool i8042_suspended;
-> > =20
-> >  static int i8042_suspend(struct platform_device *dev, pm_message_t sta=
-te)
-> >  {
-> > -	if (!i8042_suspended && state.event =3D=3D PM_EVENT_SUSPEND) {
-> > +	if (!i8042_suspended && state.event =3D=3D PM_EVENT_SUSPEND)
-> >  		i8042_controller_reset();
-> > -		i8042_suspended =3D true;
-> > -	}
-> > +
-> > +	i8042_suspended =3D state.event =3D=3D PM_EVENT_SUSPEND ||
-> > +			  state.event =3D=3D PM_EVENT_FREEZE;
-> > =20
-> >  	return 0;
-> >  }
-> > diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
-> > index fb17573..d66f494 100644
-> > --- a/drivers/input/serio/serio.c
-> > +++ b/drivers/input/serio/serio.c
-> > @@ -935,10 +935,11 @@ static int serio_suspend(struct device *dev, pm_m=
-essage_t state)
-> >  {
-> >  	struct serio *serio =3D to_serio_port(dev);
-> > =20
-> > -	if (!serio->suspended && state.event =3D=3D PM_EVENT_SUSPEND) {
-> > +	if (!serio->suspended && state.event =3D=3D PM_EVENT_SUSPEND)
-> >  		serio_cleanup(serio);
-> > -		serio->suspended =3D true;
-> > -	}
-> > +
-> > +	serio->suspended =3D state.event =3D=3D PM_EVENT_SUSPEND ||
-> > +			   state.event =3D=3D PM_EVENT_FREEZE;
-> > =20
-> >  	return 0;
-> >  }
-
---0OAP2g/MAC+5xKAE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpSidoACgkQyTpryRcqtS0d6ACfeUFTnwX+bgOrPMG/StqKnrB+
-TVgAnjRynPtLHEjmhML2NgysaBrH9ncZ
-=eZWm
------END PGP SIGNATURE-----
-
---0OAP2g/MAC+5xKAE--
-
---===============0023805039033560730==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
 
 
---===============0023805039033560730==--
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2009-07-07       35       25          21
+  2009-06-29       22       22          15
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+Subject		: 2.6.31-rc2: irq 16: nobody cared
+Submitter	: Niel Lambrechts <niel.lambrechts@gmail.com>
+Date		: 2009-07-06 18:32 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13732
+Subject		: tty layer instabilities
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2009-07-06 13:43 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=124688781732419&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13731
+Subject		: Inconsistent {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2009-07-06 4:22 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=124685417325348&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13730
+Subject		: hitting lockdep limits...
+Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
+Date		: 2009-07-05 18:19 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=124681799023782&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13729
+Subject		: kernel BUG at fs/notify/notification.c:93!
+Submitter	: Mikko C. <mikko.cal@gmail.com>
+Date		: 2009-06-04 10:16 (33 days old)
+References	: http://lkml.org/lkml/2009/7/4/12
+Handled-By	: Eric Paris <eparis@redhat.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13728
+Subject		: 2.6.31-rc2 soft lockups, RPC-related
+Submitter	: Paul Collins <paul@burly.ondioline.org>
+Date		: 2009-07-05 7:17 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=124677884816794&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13727
+Subject		: Cannot Recognize Empty DVD Media
+Submitter	: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Date		: 2009-07-02 16:23 (5 days old)
+References	: http://lkml.org/lkml/2009/7/2/178
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13726
+Subject		: fio sync read 4k block size 35% regression
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-07-01 11:25 (6 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=51daa88ebd8e0d437289f589af29d4b39379ea76
+References	: http://lkml.org/lkml/2009/6/30/679
+Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13716
+Subject		: The AIC-7892P controller does not work any more
+Submitter	: Andrej Podzimek <andrej@podzimek.org>
+Date		: 2009-07-05 19:23 (2 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13700
+Subject		: usb error flood in dmesg, makes kde use plenty of cpu - bisected
+Submitter	: jouni susiluoto <jouni.susiluoto@helsinki.fi>
+Date		: 2009-07-03 21:13 (4 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13690
+Subject		: nodes_clear cause hugepage unusable on non-NUMA machine
+Submitter	: alexs <alex.shi@intel.com>
+Date		: 2009-07-02 01:22 (5 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13673
+Subject		: HIGHMEM64G causes hang in PCI init on 32-bit x86
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2009-06-26 15:59 (11 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=95ee14e4379c5e19c0897c872350570402014742
+References	: http://marc.info/?l=linux-pci&m=124615181602643&w=4
+Handled-By	: H. Peter Anvin <hpa@zytor.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13667
+Subject		: drm: display arifacts when X.Org is stopped
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2009-06-27 18:52 (10 days old)
+References	: http://lkml.org/lkml/2009/6/27/105
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13666
+Subject		: WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
+Submitter	: Thomas Meyer <thomas@m3y3r.de>
+Date		: 2009-06-27 16:15 (10 days old)
+References	: http://lkml.org/lkml/2009/6/27/75
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13661
+Subject		: warning in smp_call_function_single while S2R
+Submitter	: Thomas Meyer <thomas@m3y3r.de>
+Date		: 2009-06-27 17:12 (10 days old)
+References	: http://lkml.org/lkml/2009/6/27/80
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13657
+Subject		: Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+Submitter	: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Date		: 2009-06-26 10:03 (11 days old)
+References	: http://lkml.org/lkml/2009/6/26/34
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13656
+Subject		: 2.6.31-rc1 crashes randomly on my Machine.
+Submitter	: Zeno Davatz <zdavatz@gmail.com>
+Date		: 2009-06-26 08:56 (11 days old)
+References	: http://lkml.org/lkml/2009/6/26/27
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13652
+Subject		: scheduling while atomic: pptpgw
+Submitter	: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Date		: 2009-06-19 21:15 (18 days old)
+References	: http://lkml.org/lkml/2009/6/19/237
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13650
+Subject		: Problem with alloc_arch_preferred_bootmem() on powerpc
+Submitter	: Sean MacLennan <smaclennan@pikatech.com>
+Date		: 2009-06-20 19:48 (17 days old)
+References	: http://marc.info/?l=linuxppc-embedded&m=124552732411775&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13645
+Subject		: NULL pointer dereference at (null) (level2_spare_pgt)
+Submitter	: poornima nayak <mpnayak@linux.vnet.ibm.com>
+Date		: 2009-06-17 17:56 (20 days old)
+References	: http://lkml.org/lkml/2009/6/17/194
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13522
+Subject		: BUG: scheduling while atomic
+Submitter	: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Date		: 2009-06-12 19:29 (25 days old)
+References	: http://lkml.org/lkml/2009/6/29/237
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13734
+Subject		: regression in 2.6.31-rcX since commit a1091aa
+Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+Date		: 2009-07-06 19:07 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=124690725130645&w=4
+Handled-By	: David Miller <davem@davemloft.net>
+Patch		: http://patchwork.kernel.org/patch/34292/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13665
+Subject		: commit 69c854817566 causes OOMs
+Submitter	: David Howells <dhowells@redhat.com>
+Date		: 2009-06-27 08:12 (10 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69c854817566db82c362797b4a6521d0b00fe1d8
+References	: http://lkml.org/lkml/2009/6/27/28
+Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+Patch		: http://patchwork.kernel.org/patch/32740/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13659
+Subject		: iwlagn (4965): no wireless due to RFKILL problem
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2009-06-26 13:36 (11 days old)
+References	: http://lkml.org/lkml/2009/6/26/127
+Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+Patch		: http://lkml.org/lkml/2009/6/27/35
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13643
+Subject		: Touchpad lost synchronization after resume from suspend to RAM
+Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Date		: 2009-06-28 10:42 (9 days old)
+References	: http://lkml.org/lkml/2009/6/23/365
+		  2.6.30-rc1: touchpad disabled
+		  http://lkml.org/lkml/2009/6/25/256
+Handled-By	: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Patch		: http://patchwork.kernel.org/patch/34075/
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.30,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=13615
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
