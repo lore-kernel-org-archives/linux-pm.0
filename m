@@ -1,15 +1,13 @@
-From: Justin Madru <jdm64@gawab.com>
-Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
-Date: Mon, 06 Jul 2009 16:55:17 -0700
-Message-ID: <4A528EE5.5090901__46232.8874775723$1246979416$gmane$org@gawab.com>
-References: <4A438BA7.9010800@tuffmail.co.uk>
-	<8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
-	<4A43B1FC.7060609@tuffmail.co.uk> <200907070040.14796.rjw@sisk.pl>
+From: Andres Freund <andres@anarazel.de>
+Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
+Date: Tue, 7 Jul 2009 03:25:51 +0200
+Message-ID: <200907070325.51439.andres__25277.4132336073$1246979494$gmane$org@anarazel.de>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907070040.14796.rjw@sisk.pl>
+In-Reply-To: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +18,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-kernel <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Kernel Testers List <kernel-testers@vger.kernel.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 25 June 2009, Alan Jenkins wrote:
->   
->> Maciej Rutecki wrote:
->>     
->>> 2009/6/25 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
->>>   
->>>       
->>>> The synaptics touchpad on my EeePC 701 dies on hibernation.  2.6.30 was
->>>> fine, and it doesn't happen on suspend to ram either.  There are no
->>>> obvious error messages, but maybe this boot message is relevant:
->>>>
->>>> Platform driver 'i8042' needs updating, please use dev_pm_ops
->>>>
->>>>     
->>>>         
->>> Similar on s2disk, HP/Compaq notebook. Try reload psmouse module. I
->>> reported it, but nobody answer.
->>>   
->>>       
->> That works, thanks.
->>     
->
-> Alan, Maciej, can you both try the patch at
-> http://patchwork.kernel.org/patch/34075/, please?
->
-> Rafael
->
->   
-I've been having the same issue (laptop touchpad not working after resume).
-Your patch seams to fix the problem. I no longer have to reload the 
-psmouse module after resume.
+Hi Rafael,
 
-$ modinfo psmouse
+On Tuesday 07 July 2009 01:42:09 Rafael J. Wysocki wrote:
+> If you know of any other unresolved regressions from 2.6.30, please let me
+> know either and I'll add them to the list.  Also, please let me know if any
+> of the entries below are invalid.
+There is also http://lkml.org/lkml/2009/6/30/398 : Soft-Lockup/Race in 
+networking in 2.6.31-rc1+195 (possibly caused by netem)
 
-filename:      
-/lib/modules/2.6.31-rc2-git/kernel/drivers/input/mouse/psmouse.ko
-license:        GPL
-description:  PS/2 mouse driver
-author:         Vojtech Pavlik <vojtech@suse.cz>
-alias:            serio:ty05pr*id*ex*
-alias:            serio:ty01pr*id*ex*
-depends:
-vermagic:     2.6.31-rc2-git SMP preempt mod_unload modversions PENTIUM4 
-4KSTACKS
-parm:           proto:Highest protocol extension to probe (bare, imps, 
-exps, any). Useful for KVM switches. (proto_abbrev)
-parm:           resolution:Resolution, in dpi. (uint)
-parm:           rate:Report rate, in reports per second. (uint)
-parm:           smartscroll:Logitech Smartscroll autorepeat, 1 = enabled 
-(default), 0 = disabled. (bool)
-parm:           resetafter:Reset device after so many bad packets (0 = 
-never). (uint)
-parm:           resync_time:How long can mouse stay idle before forcing 
-resync (in seconds, 0 = never). (uint)
 
-Justin Madru
+Andres
