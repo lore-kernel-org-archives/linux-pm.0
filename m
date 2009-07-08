@@ -1,16 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Input: mark serio and i8042 as suspended
-	when hibernating too.
-Date: Wed, 8 Jul 2009 13:06:55 +0200
-Message-ID: <200907081306.56804.rjw__38688.75394478$1247051268$gmane$org@sisk.pl>
-References: <1246760019-4120-1-git-send-email-cascardo@holoscopio.com>
-	<200907070040.43299.rjw@sisk.pl>
-	<20090708065435.GF3309@dtor-d630.eng.vmware.com>
+Subject: [GIT PULL] PM fixes for 2.6.31
+Date: Wed, 8 Jul 2009 13:44:45 +0200
+Message-ID: <200907081344.46581.rjw__31209.2908112847$1247053566$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090708065435.GF3309@dtor-d630.eng.vmware.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,31 +16,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, linux-input@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, maciej.rutecki@gmail.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, Peter Chubb <peterc@nicta.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 08 July 2009, Dmitry Torokhov wrote:
-> On Tue, Jul 07, 2009 at 12:40:42AM +0200, Rafael J. Wysocki wrote:
-> > On Sunday 05 July 2009, Thadeu Lima de Souza Cascardo wrote:
-> > > serio ports are not being restarted any longer because resume operations
-> > > after hibernate do nothing, since the device has not been marked as
-> > > suspended. This happens because suspend is only considering the SUSPEND
-> > > event but not the FREEZE event.
-> > > 
-> > > Note that this driver has still to migrate to dev_pm_ops, but this fixes
-> > > this particular bug now.
-> > 
-> > Hmm, this looks like a fix for:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13643
-> > 
-> > Any objections to merging it through the suspend tree?
-> > 
-> 
-> Oops, just applied it to mine before reading your mail... I hope Linus
-> will pick my pull request soon so it won't matter thoough.
+Hi Linus,
 
-No problem, I haven't added it to my for-linus branch yet.
+Please pull power management fixes for 2.6.31 from:
 
-Best,
-Rafael
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+
+This will fix a regression introduced by the recent arch/x86/power/cpu_(32|64)
+unification (http://bugzilla.kernel.org/show_bug.cgi?id=13661) and a bug
+in drivers/base/power/main.c causing suspend to fail when it should succeed.
+
+ arch/x86/power/Makefile   |    2 +-
+ drivers/base/power/main.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
+
+---------------
+
+Peter Chubb (1):
+      x86: Fix resume from suspend when CONFIG_CC_STACKPROTECTOR
+
+Sebastian Ott (1):
+      PM: Clear -EAGAIN in dpm_prepare
