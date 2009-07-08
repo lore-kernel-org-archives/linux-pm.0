@@ -1,13 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Patch 2/2: Add compression support to swsusp.
-Date: Wed, 08 Jul 2009 18:16:09 +1000
-Message-ID: <4A5455C9.2050708__37252.9956898235$1247041107$gmane$org@crca.org.au>
-References: <4A518FBD.7050102@crca.org.au> <20090708080331.GA13403@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Input: mark serio and i8042 as suspended
+	when hibernating too.
+Date: Wed, 8 Jul 2009 13:06:55 +0200
+Message-ID: <200907081306.56804.rjw__38688.75394478$1247051268$gmane$org@sisk.pl>
+References: <1246760019-4120-1-git-send-email-cascardo@holoscopio.com>
+	<200907070040.43299.rjw@sisk.pl>
+	<20090708065435.GF3309@dtor-d630.eng.vmware.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090708080331.GA13403@elf.ucw.cz>
+In-Reply-To: <20090708065435.GF3309@dtor-d630.eng.vmware.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,29 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, linux-input@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, maciej.rutecki@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-Pavel Machek wrote:
->> @@ -437,7 +439,7 @@ static int enough_swap(unsigned int nr_pages)
->>  	unsigned int free_swap = count_swap_pages(root_swap, 1);
->>  
->>  	pr_debug("PM: Free swap pages: %u\n", free_swap);
->> -	return free_swap > (nr_pages + PAGES_FOR_IO) * 1.01;
->> +	return free_swap > (nr_pages + PAGES_FOR_IO) * .6;
->>  }
->>  
->>  /**
+On Wednesday 08 July 2009, Dmitry Torokhov wrote:
+> On Tue, Jul 07, 2009 at 12:40:42AM +0200, Rafael J. Wysocki wrote:
+> > On Sunday 05 July 2009, Thadeu Lima de Souza Cascardo wrote:
+> > > serio ports are not being restarted any longer because resume operations
+> > > after hibernate do nothing, since the device has not been marked as
+> > > suspended. This happens because suspend is only considering the SUSPEND
+> > > event but not the FREEZE event.
+> > > 
+> > > Note that this driver has still to migrate to dev_pm_ops, but this fixes
+> > > this particular bug now.
+> > 
+> > Hmm, this looks like a fix for:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13643
+> > 
+> > Any objections to merging it through the suspend tree?
+> > 
 > 
-> This is buggy and was buggy before. We may not use floating point in
-> kernel...
+> Oops, just applied it to mine before reading your mail... I hope Linus
+> will pick my pull request soon so it won't matter thoough.
 
-Yeah. Already rewritten. I was trying to simplify things for swsusp, but
-decided I should just do it right first time.
+No problem, I haven't added it to my for-linus branch yet.
 
-Regards,
-
-Nigel
+Best,
+Rafael
