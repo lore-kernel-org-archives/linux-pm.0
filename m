@@ -1,16 +1,14 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] Input: mark serio and i8042 as suspended
-	when	hibernating too.
-Date: Tue, 7 Jul 2009 23:54:36 -0700
-Message-ID: <20090708065435.GF3309@dtor-d630.eng.vmware.com>
-References: <1246760019-4120-1-git-send-email-cascardo@holoscopio.com>
-	<200907070040.43299.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Patch 2/2: Add compression support to swsusp.
+Date: Wed, 8 Jul 2009 10:03:32 +0200
+Message-ID: <20090708080331.GA13403__1292.6627802246$1247040293$gmane$org@elf.ucw.cz>
+References: <4A518FBD.7050102@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200907070040.43299.rjw@sisk.pl>
+In-Reply-To: <4A518FBD.7050102@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, linux-input@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, maciej.rutecki@gmail.com
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 12:40:42AM +0200, Rafael J. Wysocki wrote:
-> On Sunday 05 July 2009, Thadeu Lima de Souza Cascardo wrote:
-> > serio ports are not being restarted any longer because resume operations
-> > after hibernate do nothing, since the device has not been marked as
-> > suspended. This happens because suspend is only considering the SUSPEND
-> > event but not the FREEZE event.
-> > 
-> > Note that this driver has still to migrate to dev_pm_ops, but this fixes
-> > this particular bug now.
-> 
-> Hmm, this looks like a fix for:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13643
-> 
-> Any objections to merging it through the suspend tree?
-> 
 
-Oops, just applied it to mine before reading your mail... I hope Linus
-will pick my pull request soon so it won't matter thoough.
+> @@ -437,7 +439,7 @@ static int enough_swap(unsigned int nr_pages)
+>  	unsigned int free_swap = count_swap_pages(root_swap, 1);
+>  
+>  	pr_debug("PM: Free swap pages: %u\n", free_swap);
+> -	return free_swap > (nr_pages + PAGES_FOR_IO) * 1.01;
+> +	return free_swap > (nr_pages + PAGES_FOR_IO) * .6;
+>  }
+>  
+>  /**
 
+This is buggy and was buggy before. We may not use floating point in
+kernel...
+
+
+
+								Pavel
 -- 
-Dmitry
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
