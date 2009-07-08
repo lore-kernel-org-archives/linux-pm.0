@@ -2,7 +2,7 @@ From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Introduce core framework for
 	run-time PM of I/O devices (rev. 8)
 Date: Wed, 8 Jul 2009 23:29:50 +0200
-Message-ID: <200907082329.51795.rjw__47135.6610338718$1247088720$gmane$org@sisk.pl>
+Message-ID: <200907082329.51795.rjw__43473.8859221854$1247088789$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0907081707090.22618-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
