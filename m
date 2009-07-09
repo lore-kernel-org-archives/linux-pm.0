@@ -1,12 +1,14 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 00/06][RFC] sh: Runtime PM Prototype for SuperH
-	Mobile
-Date: Fri, 10 Jul 2009 00:19:26 +0900
-Message-ID: <20090709151926.8385.92800.sendpatchset__9403.85724320567$1247153067$gmane$org@rx1.opensource.se>
+Subject: [PATCH 01/06] Driver Core: Runtime PM callbacks for the
+	Platform Bus
+Date: Fri, 10 Jul 2009 00:19:35 +0900
+Message-ID: <20090709151935.8385.71812.sendpatchset__44089.3069761389$1247153075$gmane$org@rx1.opensource.se>
+References: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +22,77 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linux-sh@vger.kernel.org, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-sh: Runtime PM Prototype for SuperH Mobile
+From: Magnus Damm <damm@igel.co.jp>
 
-[PATCH 01/06] Driver Core: Runtime PM callbacks for the Platform Bus
-[PATCH 02/06] sh: Add support for multiple hwblk counters
-[PATCH 03/06] sh: Runtime PM for SuperH Mobile
-[PATCH 04/06] sh: Runtime PM for sh7722 and Migo-R
-[PATCH 05/06] i2c: Runtime PM for i2c-sh_mobile.c
-[PATCH 06/06] video: Runtime PM for sh_mobile_lcdcfb.c
-
-This is the first complete Runtime PM prototype for SuperH Mobile.
-The patches above should be applied on top of the sh-2.6 git tree
-and the following ones:
-"PM: Introduce core framework for run-time PM of I/O devices (rev. 9)"
-"Driver Core: Add platform device arch data V3"
-
-Looking forward to hear what you think. Before, during or after the
-PM Summit!
+This patch adds default Runtime PM callbacks to the dev_pm_ops
+belonging to the platform bus. The callbacks are weak symbols
+that architecture specific code may override. Also, call
+pm_runtime_enable() for the platform bus struct device.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- arch/sh/boards/mach-migor/setup.c        |    9 +
- arch/sh/include/asm/device.h             |   16 ++
- arch/sh/include/asm/hwblk.h              |   17 ++
- arch/sh/kernel/cpu/hwblk.c               |   69 ++++++----
- arch/sh/kernel/cpu/sh4a/hwblk-sh7722.c   |   14 +-
- arch/sh/kernel/cpu/sh4a/setup-sh7722.c   |   31 ++++
- arch/sh/kernel/cpu/shmobile/Makefile     |    1 
- arch/sh/kernel/cpu/shmobile/pm_runtime.c |  206 ++++++++++++++++++++++++++++++
- drivers/base/platform.c                  |   31 ++++
- drivers/i2c/busses/i2c-sh_mobile.c       |   21 +++
- drivers/video/sh_mobile_lcdcfb.c         |   31 +---
- 11 files changed, 398 insertions(+), 48 deletions(-)
+ drivers/base/platform.c |   31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+--- 0001/drivers/base/platform.c
++++ work/drivers/base/platform.c	2009-06-25 18:58:56.000000000 +0900
+@@ -17,6 +17,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "base.h"
+ 
+@@ -925,6 +926,30 @@ static int platform_pm_restore_noirq(str
+ 
+ #endif /* !CONFIG_HIBERNATION */
+ 
++#ifdef CONFIG_PM_RUNTIME
++
++int __weak platform_pm_runtime_suspend(struct device *dev)
++{
++	return -EINVAL;
++};
++
++int __weak platform_pm_runtime_resume(struct device *dev)
++{
++	return -EINVAL;
++};
++
++void __weak platform_pm_runtime_idle(struct device *dev)
++{
++};
++
++#else /* !CONFIG_PM_RUNTIME */
++
++#define platform_pm_runtime_suspend NULL
++#define platform_pm_runtime_resume NULL
++#define platform_pm_runtime_idle NULL
++
++#endif /* !CONFIG_PM_RUNTIME */
++
+ static struct dev_pm_ops platform_dev_pm_ops = {
+ 	.prepare = platform_pm_prepare,
+ 	.complete = platform_pm_complete,
+@@ -940,6 +965,9 @@ static struct dev_pm_ops platform_dev_pm
+ 	.thaw_noirq = platform_pm_thaw_noirq,
+ 	.poweroff_noirq = platform_pm_poweroff_noirq,
+ 	.restore_noirq = platform_pm_restore_noirq,
++	.runtime_suspend = platform_pm_runtime_suspend,
++	.runtime_resume = platform_pm_runtime_resume,
++	.runtime_idle = platform_pm_runtime_idle,
+ };
+ 
+ #define PLATFORM_PM_OPS_PTR	(&platform_dev_pm_ops)
+@@ -968,6 +996,9 @@ int __init platform_bus_init(void)
+ 	error = device_register(&platform_bus);
+ 	if (error)
+ 		return error;
++
++	pm_runtime_enable(&platform_bus);
++
+ 	error =  bus_register(&platform_bus_type);
+ 	if (error)
+ 		device_unregister(&platform_bus);
