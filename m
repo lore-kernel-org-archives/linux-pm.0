@@ -1,15 +1,14 @@
-From: Magnus Damm <magnus.damm@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 8)
-Date: Thu, 9 Jul 2009 11:52:24 +0900
-Message-ID: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8__17654.1900066242$1247108022$gmane$org@mail.gmail.com>
-References: <200907082101.29387.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0907081530120.22105-100000@iolanthe.rowland.org>
+ run-time PM of I/O devices (rev. 8)
+Date: Thu, 9 Jul 2009 09:48:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0907090937530.5823-100000__11417.1639587314$1247147392$gmane$org@iolanthe.rowland.org>
+References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907081530120.22105-100000@iolanthe.rowland.org>
+In-Reply-To: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,115 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Magnus Damm <magnus.damm@gmail.com>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+On Thu, 9 Jul 2009, Magnus Damm wrote:
 
-On Thu, Jul 9, 2009 at 4:42 AM, Alan Stern<stern@rowland.harvard.edu> wrote:
-> On Wed, 8 Jul 2009, Rafael J. Wysocki wrote:
->
->> > So I'd like to tie in two levels of power management in our runtime PM
->> > implementation. The most simple level is clock stopping, and I can do
->> > that using the bus callbacks ->runtime_suspend() and
->> > ->runtime_resume() with v8. The driver runtime callbacks are never
->> > invoked for clock stopping.
->> >
->> > On top of the clock stopping I'd like to turn off power to the domain.
->
-> I take it the devices in a single power domain don't all share a common
-> parent.
+> Clocks should be stopped as soon as possible without any delay. The
+> clock stopping is very cheap performance wise. Also, the clock
+> stopping is done on bus level without invoking any driver callbacks.
+> Delaying the clock stopping does not make any sense to me.
 
-It all depends on how we implement the software bus topology in the
-future. Right now from the software perspective the platform bus
-topology on SuperH is flat and more or less unused. It sounds sane to
-map in the power domains into the bus topology. I'm not sure if it is
-the best choice though, each device also has clock dependencies and
-it's of course communicating through some internal hardware bus with
-it's own hardware topology.
+In that case the device driver or bus subsystem should manage the
+device's clock directly.  There's no need to tie it in with the runtime
+PM framework.  Simply start the clock before each I/O operation and
+stop it afterward.
 
->> > So if all clocks are stopped to the devices within a domain, then I'd
->> > like to call the per-device ->runtime_suspend() callbacks provided by
->> > the drivers.
->
-> Why? =A0That is, why not tell the driver as soon as the device's own
-> clock is stopped? =A0What point is there in waiting for all the other
-> clocks to be stopped as well?
+> For my use case the driver callbacks manage context save and restore.
+> This to allow turning off power domains.
+> 
+> The reason why I don't want to execute the driver ->runtime_suspend()
+> callbacks directly is performance. Basically, we only want to execute
+> the driver callbacks when we know that we will be able to power off
+> the domain. The driver callbacks need to save and restore registers,
+> and each uncached memory access is expensive. Executing the driver
+> callback does not give us any power savings at all, it's just consumes
+> power.
+> 
+> I want to avoid the situation where the driver ->runtime_suspend() and
+> ->runtime_resume() callbacks get invoked over and over for all devices
+> except one in a certain power domain even though we will never be able
+> to power off because a single device in the power domain is active.
 
-Clocks should be stopped as soon as possible without any delay. The
-clock stopping is very cheap performance wise. Also, the clock
-stopping is done on bus level without invoking any driver callbacks.
-Delaying the clock stopping does not make any sense to me.
+Okay, I get the picture.  So what you want is something like this: Each 
+time a driver starts a clock, it does a pm_runtime_get on the 
+power-domain device.  Each time it stops the clock, it does a 
+pm_runtime_put on the power-domain device.
 
-For my use case the driver callbacks manage context save and restore.
-This to allow turning off power domains.
+When the power-domain device's runtime_idle callback runs, it should
+call pm_schedule_suspend.  The runtime_suspend callback should call
+pm_runtime_suspend for each of the devices in the power domain before
+turning off the power supply.  Conversely, the runtime_resume callback
+for the power-domain device should turn on the power supply and then
+call pm_runtime_resume for each of the devices in the domain.
 
-The reason why I don't want to execute the driver ->runtime_suspend()
-callbacks directly is performance. Basically, we only want to execute
-the driver callbacks when we know that we will be able to power off
-the domain. The driver callbacks need to save and restore registers,
-and each uncached memory access is expensive. Executing the driver
-callback does not give us any power savings at all, it's just consumes
-power.
+This will have to get more complicated if the individual device drivers
+want to maintain their own usage counters -- especially if they want to
+turn off the clock while leaving the counter positive.
 
-I want to avoid the situation where the driver ->runtime_suspend() and
-->runtime_resume() callbacks get invoked over and over for all devices
-except one in a certain power domain even though we will never be able
-to power off because a single device in the power domain is active.
-
-The situation above can be described with a practical example with an
-open a serial port. The receive side of the serial port hardware needs
-the clock to be enabled, so we can't turn off the clock. This leads to
-that we can't runtime suspend the device driver. In my opinion it's
-pure overhead to call ->runtime_suspend() and ->runtime_resume() for
-all other devices in the same power domain as the serial port, this
-because we already know that the open serial port is blocking the
-entire power domain.
-
->> > I wonder how to fit these two levels of power management into the
->> > runtime PM in a nice way. My first attempts simply made use of
->> > pm_runtime_resume() and pm_runtime_suspend(), but I'd like to move to
->> > get()/put() if possible. But for that to work I need to implement
->> > ->runtime_idle() in my bus code, and I wonder if the current runtime
->> > PM idle behaviour is a good fit.
->> >
->> > Below is how I'd like to make use of the runtime PM code. I'm not sure
->> > if it's compatible with your view. =3D)
->> >
->> > Drivers call pm_runtime_get_sync() and pm_runtime_put() before and
->> > after using the hardware. The runtime PM code invokes the bus
->> > ->runtime_idle() callback ASAP (of course depending on put() or
->> > put_sync(), but no timer). The bus->runtime_idle() callback stops the
->> > clock and decreases the power domain usage count. If the power domain
->> > is unused, then the pm_schedule_suspend() is called for each of the
->> > devices in the power domain. This in turn will invoke the
->> > ->runtime_suspend() callback which starts the clock, calls the driver
->> > ->runtime_suspend() and stops the clock again. When all devices are
->> > runtime suspended the power domain is turned off.
->
-> Instead, you should call pm_runtime_suspend from within the
-> runtime_idle method. =A0When the runtime_suspend method runs, have it
-> decrement the power domain's usage count. =A0Is the power domain
-> represented by a single struct device? =A0If it is then that device's
-> power.usage_count field would naturally be the thing to use; otherwise
-> you'd have to set up your own counter.
-
-Ok, calling pm_runtime_suspend() from the bus ->runtime_idle callback
-sounds like a good plan. The power domain is only represented by a
-simple structure at this point. I agree it would be nice to make use
-of the usage_count for this purpose.
-
-> Then depending on how things are organized, when the power-domain
-> device's usage_count goes to 0 you'll get a runtime_idle callback.
-> Call pm_runtime_resume for the power-domain device, and have that
-> routine shut off the power. =A0Or if you set up your own private counter
-> for the power domain, shut off the power when the counter goes to 0.
-
-Right, I'm with you how it works. I have to think a bit more about how
-to tie in both clock stopping and power domain control with
-runtime_idle though.
-
-Thanks for your suggestions,
-
-/ magnus
+Alan Stern
