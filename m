@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 03/06] sh: Runtime PM for SuperH Mobile
-Date: Fri, 10 Jul 2009 00:19:53 +0900
-Message-ID: <20090709151953.8385.89482.sendpatchset__29886.6410310895$1247153079$gmane$org@rx1.opensource.se>
+Subject: [PATCH 04/06] sh: Runtime PM for sh7722 and Migo-R
+Date: Fri, 10 Jul 2009 00:20:02 +0900
+Message-ID: <20090709152002.8385.30419.sendpatchset__19747.3952932798$1247153089$gmane$org@rx1.opensource.se>
 References: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,299 +23,183 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch contains the processor independent part of the
-SuperH Mobile Runtime PM prototype.
+This patch contains sh7722 processor specific Runtime PM code
+along with some Migo-R board code that deals with sh7722.
 
-The patch adds fields for Runtime PM to the architecture
-specific part of struct platform_device. The most important
-field is hw_blk_id which contains an id for the hardware
-block within the SoC.
-
-This hwblk id is used by the SuperH specific Runtime PM
-callbacks for the platform bus. Multiple devices are allowed
-to use the same hwblk id.
-
-The SuperH specific Runtime PM platform bus callbacks
-platform_pm_runtime_suspend() and platform_pm_runtime_resume()
-control clocks and adds/removes the platform device to a list
-of platform devices that has had their bus suspend callback
-executed.
-
-The driver Runtime PM suspend callbacks get invoked when
-cpuidle discovers that all devices in the power domain
-has had their bus suspend callback executed. When all devices
-have been suspended using their driver Runtime PM suspend
-callbacks, cpuidle is allowed to enter the deepest mode
-which involves turning off power to the domain.
-
-Please note that the code is very experimental. Alan kindly
-suggested a cleaner way to do this using the idle callback,
-but for that to work I need to rearrange all platform devices.
+For each platform device within the SoC a hwblk id is added
+to the architecture specific platform device data area. The
+hwblk code for sh7722 which is invoked by cpuidle is extended
+in a hackish way to tell the system to start driver suspending.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- arch/sh/include/asm/device.h             |   16 ++
- arch/sh/include/asm/hwblk.h              |    4 
- arch/sh/kernel/cpu/shmobile/Makefile     |    1 
- arch/sh/kernel/cpu/shmobile/pm_runtime.c |  206 ++++++++++++++++++++++++++++++
- 4 files changed, 225 insertions(+), 2 deletions(-)
+ arch/sh/boards/mach-migor/setup.c      |    9 +++++++++
+ arch/sh/kernel/cpu/sh4a/hwblk-sh7722.c |   10 +++++++++-
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c |   31 +++++++++++++++++++++++++++++++
+ 3 files changed, 49 insertions(+), 1 deletion(-)
 
---- 0001/arch/sh/include/asm/device.h
-+++ work/arch/sh/include/asm/device.h	2009-07-09 18:41:09.000000000 +0900
-@@ -3,7 +3,9 @@
-  *
-  * This file is released under the GPLv2
-  */
--#include <asm-generic/device.h>
-+
-+struct dev_archdata {
-+};
+--- 0001/arch/sh/boards/mach-migor/setup.c
++++ work/arch/sh/boards/mach-migor/setup.c	2009-07-09 18:43:42.000000000 +0900
+@@ -98,6 +98,9 @@ static struct platform_device sh_keysc_d
+ 	.dev	= {
+ 		.platform_data	= &sh_keysc_info,
+ 	},
++	.archdata = {
++		.hw_blk_id = HWBLK_KEYSC,
++	},
+ };
  
- struct platform_device;
- /* allocate contiguous memory chunk and fill in struct resource */
-@@ -12,3 +14,15 @@ int platform_resource_setup_memory(struc
+ static struct mtd_partition migor_nor_flash_partitions[] =
+@@ -292,6 +295,9 @@ static struct platform_device migor_lcdc
+ 	.dev	= {
+ 		.platform_data	= &sh_mobile_lcdc_info,
+ 	},
++	.archdata = {
++		.hw_blk_id = HWBLK_LCDC,
++	},
+ };
  
- void plat_early_device_setup(void);
+ static struct clk *camera_clk;
+@@ -379,6 +385,9 @@ static struct platform_device migor_ceu_
+ 	.dev	= {
+ 		.platform_data	= &sh_mobile_ceu_info,
+ 	},
++	.archdata = {
++		.hw_blk_id = HWBLK_CEU,
++	},
+ };
  
-+#define PDEV_ARCHDATA_FLAG_INIT 0
-+#define PDEV_ARCHDATA_FLAG_LIST 1
-+#define PDEV_ARCHDATA_FLAG_SUSP 2
-+
-+struct pdev_archdata {
-+#ifdef CONFIG_ARCH_SHMOBILE
-+	int hw_blk_id;
-+	unsigned long flags;
-+	struct list_head entry;
-+	struct work_struct work;
-+#endif
-+};
---- 0005/arch/sh/include/asm/hwblk.h
-+++ work/arch/sh/include/asm/hwblk.h	2009-07-09 18:42:49.000000000 +0900
-@@ -5,7 +5,9 @@
- #include <asm/io.h>
+ struct spi_gpio_platform_data sdcard_cn9_platform_data = {
+--- 0005/arch/sh/kernel/cpu/sh4a/hwblk-sh7722.c
++++ work/arch/sh/kernel/cpu/sh4a/hwblk-sh7722.c	2009-07-09 18:44:44.000000000 +0900
+@@ -89,10 +89,18 @@ static struct hwblk_info sh7722_hwblk_in
+ 	.nr_hwblks = ARRAY_SIZE(sh7722_hwblk),
+ };
  
- #define HWBLK_CNT_USAGE 0
--#define HWBLK_CNT_NR 1
-+#define HWBLK_CNT_IDLE 1
-+#define HWBLK_CNT_DEVICES 2
-+#define HWBLK_CNT_NR 3
++void platform_pm_runtime_suspend_idle(void); /* FIXME */
++
+ int arch_hwblk_sleep_mode(void)
+ {
+-	if (!sh7722_hwblk_area[CORE_AREA].cnt[HWBLK_CNT_USAGE])
++	if (!sh7722_hwblk_area[CORE_AREA].cnt[HWBLK_CNT_USAGE]) {
++		if (sh7722_hwblk_area[CORE_AREA].cnt[HWBLK_CNT_IDLE])
++			platform_pm_runtime_suspend_idle();
++		else
++			return SUSP_SH_USTANDBY | SUSP_SH_SF;
++
+ 		return SUSP_SH_STANDBY | SUSP_SH_SF;
++	}
  
- #define HWBLK_AREA_FLAG_PARENT (1 << 0) /* valid parent */
+ 	if (!sh7722_hwblk_area[CORE_AREA_BM].cnt[HWBLK_CNT_USAGE])
+ 		return SUSP_SH_SLEEP | SUSP_SH_SF;
+--- 0001/arch/sh/kernel/cpu/sh4a/setup-sh7722.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7722.c	2009-07-09 18:43:36.000000000 +0900
+@@ -16,6 +16,7 @@
+ #include <linux/sh_timer.h>
+ #include <asm/clock.h>
+ #include <asm/mmzone.h>
++#include <cpu/sh7722.h>
  
---- 0001/arch/sh/kernel/cpu/shmobile/Makefile
-+++ work/arch/sh/kernel/cpu/shmobile/Makefile	2009-07-09 18:41:12.000000000 +0900
-@@ -5,3 +5,4 @@
- # Power Management & Sleep mode
- obj-$(CONFIG_PM)	+= pm.o sleep.o
- obj-$(CONFIG_CPU_IDLE)	+= cpuidle.o
-+obj-$(CONFIG_PM_RUNTIME)	+= pm_runtime.o
---- /dev/null
-+++ work/arch/sh/kernel/cpu/shmobile/pm_runtime.c	2009-07-09 18:41:12.000000000 +0900
-@@ -0,0 +1,206 @@
-+/*
-+ * arch/sh/kernel/cpu/shmobile/pm_runtime.c
-+ *
-+ * Runtime PM support code for SuperH Mobile
-+ *
-+ *  Copyright (C) 2009 Magnus Damm
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/platform_device.h>
-+#include <asm/hwblk.h>
-+
-+static DEFINE_SPINLOCK(hwblk_idle_lock);
-+static LIST_HEAD(hwblk_idle_list);
-+
-+extern struct hwblk_info *hwblk_info;
-+
-+static void platform_pm_runtime_work(struct work_struct *work)
-+{
-+	struct platform_device *pdev = container_of(work,
-+						    struct platform_device,
-+						    archdata.work);
-+	struct device *dev = &pdev->dev;
-+	struct dev_pm_ops *dev_pm_ops = NULL;
-+	unsigned long flags;
-+	int hwblk = pdev->archdata.hw_blk_id;
-+	int ret = 0;
-+
-+	pr_info("platform_pm_runtime_work() suspending \"%s\" [%d]\n",
-+		dev_name(dev), hwblk);
-+
-+	if (dev->driver && dev->driver->pm)
-+		dev_pm_ops = dev->driver->pm;
-+
-+	if (dev_pm_ops && dev_pm_ops->runtime_suspend) {
-+		hwblk_enable(hwblk_info, hwblk);
-+		ret = dev_pm_ops->runtime_suspend(dev);
-+		hwblk_disable(hwblk_info, hwblk);
-+	}
-+
-+	if (ret)
-+		return;
-+
-+	/* remove device from idle list and decrease idle count */
-+	spin_lock_irqsave(&hwblk_idle_lock, flags);
-+	if (test_bit(PDEV_ARCHDATA_FLAG_LIST, &pdev->archdata.flags)) {
-+		list_del(&pdev->archdata.entry);
-+		__clear_bit(PDEV_ARCHDATA_FLAG_LIST, &pdev->archdata.flags);
-+		__set_bit(PDEV_ARCHDATA_FLAG_SUSP, &pdev->archdata.flags);
-+		hwblk_cnt_dec(hwblk_info, hwblk, HWBLK_CNT_IDLE);
-+	}
-+	spin_unlock_irqrestore(&hwblk_idle_lock, flags);
-+
-+	pr_info("platform_pm_runtime_work() suspended \"%s\" [%d]\n",
-+		dev_name(dev), hwblk);
-+}
-+
-+void platform_pm_runtime_suspend_idle(void)
-+{
-+	struct platform_device *pdev;
-+	unsigned long flags;
-+
-+	/* schedule suspend for all devices on the idle list */
-+	spin_lock_irqsave(&hwblk_idle_lock, flags);
-+	list_for_each_entry(pdev, &hwblk_idle_list, archdata.entry)
-+		schedule_work(&pdev->archdata.work);
-+	spin_unlock_irqrestore(&hwblk_idle_lock, flags);
-+}
-+
-+int platform_pm_runtime_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	unsigned long flags;
-+	int hwblk = pdev->archdata.hw_blk_id;
-+
-+	if (!hwblk)
-+		return -EINVAL;
-+
-+	pr_info("platform_pm_runtime_suspend() \"%s\" [%d]\n",
-+		dev_name(dev), hwblk);
-+
-+	if (test_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags)) {
-+		pr_warning("runtime_pm: driver should start from resume!\n");
-+		return -EINVAL;
-+	}
-+
-+	/* disable the clock */
-+	hwblk_disable(hwblk_info, hwblk);
-+
-+	/* increase idle count */
-+	hwblk_cnt_inc(hwblk_info, hwblk, HWBLK_CNT_IDLE);
-+
-+	/* put device on idle list */
-+	spin_lock_irqsave(&hwblk_idle_lock, flags);
-+	list_add_tail(&pdev->archdata.entry, &hwblk_idle_list);
-+	__set_bit(PDEV_ARCHDATA_FLAG_LIST, &pdev->archdata.flags);
-+	spin_unlock_irqrestore(&hwblk_idle_lock, flags);
-+
-+	return 0;
-+};
-+
-+int platform_pm_runtime_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct dev_pm_ops *dev_pm_ops = NULL;
-+	unsigned long flags;
-+	int hwblk = pdev->archdata.hw_blk_id;
-+	int ret = 0;
-+
-+	if (!hwblk)
-+		return -EINVAL;
-+
-+	pr_info("platform_pm_runtime_resume() \"%s\" [%d]\n",
-+		dev_name(dev), hwblk);
-+
-+	/* remove device from idle list if needed */
-+	spin_lock_irqsave(&hwblk_idle_lock, flags);
-+	if (test_bit(PDEV_ARCHDATA_FLAG_LIST, &pdev->archdata.flags)) {
-+		list_del(&pdev->archdata.entry);
-+		__clear_bit(PDEV_ARCHDATA_FLAG_LIST, &pdev->archdata.flags);
-+	}
-+	spin_unlock_irqrestore(&hwblk_idle_lock, flags);
-+
-+	/* decrease idle count if needed */
-+	if (!test_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags) &&
-+	    !test_bit(PDEV_ARCHDATA_FLAG_SUSP, &pdev->archdata.flags))
-+		hwblk_cnt_dec(hwblk_info, hwblk, HWBLK_CNT_IDLE);
-+
-+	__clear_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
-+
-+	/* enable the clock */
-+	hwblk_enable(hwblk_info, hwblk);
-+
-+	/* resume the device if needed */
-+	if (test_bit(PDEV_ARCHDATA_FLAG_SUSP, &pdev->archdata.flags)) {
-+
-+		pr_info("platform_pm_runtime_resume() resuming \"%s\" [%d]\n",
-+			dev_name(dev), hwblk);
-+
-+		if (dev->driver && dev->driver->pm)
-+			dev_pm_ops = dev->driver->pm;
-+
-+		if (dev_pm_ops && dev_pm_ops->runtime_resume)
-+			ret = dev_pm_ops->runtime_resume(dev);
-+
-+		__clear_bit(PDEV_ARCHDATA_FLAG_SUSP, &pdev->archdata.flags);
-+	}
-+
-+	return ret;
-+};
-+
-+static int __devinit platform_bus_notify(struct notifier_block *nb,
-+					 unsigned long action, void *data)
-+{
-+	struct device *dev = data;
-+	struct platform_device *pdev = to_platform_device(dev);
-+	int hwblk = pdev->archdata.hw_blk_id;
-+
-+	/* ignore off-chip non-SoC platform devices */
-+	if (!hwblk)
-+		return 0;
-+
-+	switch (action) {
-+	case BUS_NOTIFY_ADD_DEVICE:
-+		INIT_LIST_HEAD(&pdev->archdata.entry);
-+		INIT_WORK(&pdev->archdata.work, platform_pm_runtime_work);
-+		/* platform devices without drivers should be disabled */
-+		hwblk_enable(hwblk_info, hwblk);
-+		hwblk_disable(hwblk_info, hwblk);
-+		/* make sure driver re-inits itself once */
-+		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
-+		break;
-+	/* TODO: add BUS_NOTIFY_BIND_DRIVER and increase idle count */
-+	case BUS_NOTIFY_BOUND_DRIVER:
-+		/* keep track of number of devices in use per hwblk */
-+		hwblk_cnt_inc(hwblk_info, hwblk, HWBLK_CNT_DEVICES);
-+		break;
-+	case BUS_NOTIFY_UNBOUND_DRIVER:
-+		/* keep track of number of devices in use per hwblk */
-+		hwblk_cnt_dec(hwblk_info, hwblk, HWBLK_CNT_DEVICES);
-+		/* make sure driver re-inits itself once */
-+		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
-+		break;
-+	case BUS_NOTIFY_DEL_DEVICE:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block platform_bus_notifier = {
-+	.notifier_call = platform_bus_notify
-+};
-+
-+static int __init sh_pm_runtime_init(void)
-+{
-+	bus_register_notifier(&platform_bus_type, &platform_bus_notifier);
-+	return 0;
-+}
-+
-+arch_initcall(sh_pm_runtime_init);
+ static struct resource rtc_resources[] = {
+ 	[0] = {
+@@ -45,6 +46,9 @@ static struct platform_device rtc_device
+ 	.id		= -1,
+ 	.num_resources	= ARRAY_SIZE(rtc_resources),
+ 	.resource	= rtc_resources,
++	.archdata = {
++		.hw_blk_id = HWBLK_RTC,
++	},
+ };
+ 
+ static struct resource usbf_resources[] = {
+@@ -70,6 +74,9 @@ static struct platform_device usbf_devic
+ 	},
+ 	.num_resources	= ARRAY_SIZE(usbf_resources),
+ 	.resource	= usbf_resources,
++	.archdata = {
++		.hw_blk_id = HWBLK_USBF,
++	},
+ };
+ 
+ static struct resource iic_resources[] = {
+@@ -91,6 +98,9 @@ static struct platform_device iic_device
+ 	.id             = 0, /* "i2c0" clock */
+ 	.num_resources  = ARRAY_SIZE(iic_resources),
+ 	.resource       = iic_resources,
++	.archdata = {
++		.hw_blk_id = HWBLK_IIC,
++	},
+ };
+ 
+ static struct uio_info vpu_platform_data = {
+@@ -119,6 +129,9 @@ static struct platform_device vpu_device
+ 	},
+ 	.resource	= vpu_resources,
+ 	.num_resources	= ARRAY_SIZE(vpu_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_VPU,
++	},
+ };
+ 
+ static struct uio_info veu_platform_data = {
+@@ -147,6 +160,9 @@ static struct platform_device veu_device
+ 	},
+ 	.resource	= veu_resources,
+ 	.num_resources	= ARRAY_SIZE(veu_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_VEU,
++	},
+ };
+ 
+ static struct uio_info jpu_platform_data = {
+@@ -175,6 +191,9 @@ static struct platform_device jpu_device
+ 	},
+ 	.resource	= jpu_resources,
+ 	.num_resources	= ARRAY_SIZE(jpu_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_JPU,
++	},
+ };
+ 
+ static struct sh_timer_config cmt_platform_data = {
+@@ -207,6 +226,9 @@ static struct platform_device cmt_device
+ 	},
+ 	.resource	= cmt_resources,
+ 	.num_resources	= ARRAY_SIZE(cmt_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_CMT,
++	},
+ };
+ 
+ static struct sh_timer_config tmu0_platform_data = {
+@@ -238,6 +260,9 @@ static struct platform_device tmu0_devic
+ 	},
+ 	.resource	= tmu0_resources,
+ 	.num_resources	= ARRAY_SIZE(tmu0_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_TMU,
++	},
+ };
+ 
+ static struct sh_timer_config tmu1_platform_data = {
+@@ -269,6 +294,9 @@ static struct platform_device tmu1_devic
+ 	},
+ 	.resource	= tmu1_resources,
+ 	.num_resources	= ARRAY_SIZE(tmu1_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_TMU,
++	},
+ };
+ 
+ static struct sh_timer_config tmu2_platform_data = {
+@@ -299,6 +327,9 @@ static struct platform_device tmu2_devic
+ 	},
+ 	.resource	= tmu2_resources,
+ 	.num_resources	= ARRAY_SIZE(tmu2_resources),
++	.archdata = {
++		.hw_blk_id = HWBLK_TMU,
++	},
+ };
+ 
+ static struct plat_sci_port sci_platform_data[] = {
