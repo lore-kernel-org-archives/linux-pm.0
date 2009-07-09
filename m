@@ -1,15 +1,15 @@
-From: Andres Freund <andres@anarazel.de>
-Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
-Date: Fri, 10 Jul 2009 04:10:37 +0200
-Message-ID: <200907100410.37506.andres__29828.0738447376$1247191996$gmane$org@anarazel.de>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	<200907070325.51439.andres@anarazel.de>
-	<1247190417.7306.2.camel@merlyn>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH] PM: Introduce core framework for
+	run-time PM of	I/O devices (rev. 8)
+Date: Fri, 10 Jul 2009 01:22:40 +0200
+Message-ID: <20090709232239.GG1469@ucw.cz>
+References: <200907060252.12755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1247190417.7306.2.camel@merlyn>
+Content-Disposition: inline
+In-Reply-To: <200907060252.12755.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: John Dykstra <john.dykstra1@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Eric Sesterhenn <eric.sesterhenn@lsexperts.de>, Natalie Protasevich <protasnb@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi John, Hi Rafael,
+hi!
 
-On Friday 10 July 2009 03:46:57 John Dykstra wrote:
-> On Tue, 2009-07-07 at 03:25 +0200, Andres Freund wrote:
-> > There is also http://lkml.org/lkml/2009/6/30/398 : Soft-Lockup/Race
-> > in
-> > networking in 2.6.31-rc1+195 (possibly caused by netem)
->
-> There is some similarity between this soft lockup and the one reported
-> in http://www.spinics.net/lists/netdev/msg100957.html.  In both, the
-> process is doing both sends and receives on raw sockets.
-The issue turned out to be a hrtimer bug - i dont see anything like it in your 
-trace. If you still want to test the fix, its 
-de907e8432b08f2d5966c36e0747e97c0e596810 in -tip (or 
-http://lkml.org/lkml/2009/7/9/150)
+> +/**
+> + * Device run-time power management request types.
+> + *
+> + * RPM_REQ_NONE		Do nothing.
+> + *
+> + * RPM_REQ_IDLE		Run the device bus type's ->runtime_idle() callback
+> + *
+> + * RPM_REQ_SUSPEND	Run the device bus type's ->runtime_suspend() callback
+> + *
+> + * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
+> + */
+> +
+> +enum rpm_request {
+> +	RPM_REQ_NONE = 0,
+> +	RPM_REQ_IDLE,
+> +	RPM_REQ_SUSPEND,
+> +	RPM_REQ_RESUME,
+> +};
+> +
+>  struct dev_pm_info {
+>  	pm_message_t		power_state;
+> -	unsigned		can_wakeup:1;
+> -	unsigned		should_wakeup:1;
+> +	unsigned int		can_wakeup:1;
+> +	unsigned int		should_wakeup:1;
+>  	enum dpm_state		status;		/* Owned by the PM core */
+> -#ifdef	CONFIG_PM_SLEEP
+> +#ifdef CONFIG_PM_SLEEP
+>  	struct list_head	entry;
+>  #endif
+> +#ifdef CONFIG_PM_RUNTIME
+> +	struct timer_list	suspend_timer;
+> +	unsigned long		timer_expires;
+> +	struct work_struct	work;
+> +	wait_queue_head_t	wait_queue;
+> +	spinlock_t		lock;
+> +	atomic_t		usage_count;
+> +	atomic_t		child_count;
+> +	unsigned int		ignore_children:1;
+> +	unsigned int		runtime_disabled:1;
+> +	unsigned int		runtime_failure:1;
+> +	unsigned int		idle_notification:1;
+> +	unsigned int		request_pending:1;
+> +	unsigned int		deferred_resume:1;
+> +	enum rpm_request	request;
+> +	enum rpm_status		runtime_status;
 
-Rafael: In case youre reading this, I guess you can mark that bug as resolved.
+runtime_status seems to be accessed outside spinlocks. Should it be of
+type atomic_t?
 
-Andres
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
