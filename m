@@ -1,13 +1,15 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 06/06] video: Runtime PM for sh_mobile_lcdcfb.c
-Date: Fri, 10 Jul 2009 00:20:20 +0900
-Message-ID: <20090709152020.8385.83457.sendpatchset__18238.2820909426$1247153105$gmane$org@rx1.opensource.se>
-References: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
+Subject: Re: [RFC][PATCH] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 8)
+Date: Fri, 10 Jul 2009 00:31:02 +0900
+Message-ID: <aec7e5c30907090831y180b0972o6dcb961dd292a3c0__15960.122846491$1247153517$gmane$org@mail.gmail.com>
+References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
+	<Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
+In-Reply-To: <Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,131 +19,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-sh@vger.kernel.org, gregkh@suse.de
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrot=
+e:
+> On Thu, 9 Jul 2009, Magnus Damm wrote:
+>
+>> Clocks should be stopped as soon as possible without any delay. The
+>> clock stopping is very cheap performance wise. Also, the clock
+>> stopping is done on bus level without invoking any driver callbacks.
+>> Delaying the clock stopping does not make any sense to me.
+>
+> In that case the device driver or bus subsystem should manage the
+> device's clock directly. =A0There's no need to tie it in with the runtime
+> PM framework. =A0Simply start the clock before each I/O operation and
+> stop it afterward.
 
-This patch modifies the SuperH Mobile LCDC framebuffer driver
-to support Runtime PM. This patch is very experimental and is
-missing context save and restore support.
+It's not that easy. The clock needs to be enabled to let the hardware
+device perform device specific stuff. For instance, the clock for the
+LCD controller needs to be on to redraw the screen. When the driver
+knows that it's done with the clock it can notify the bus using
+Runtime PM.
 
-At this early point it is however already possible to see that
-the deferred io clock management strategy pays off since in that
-mode the clocks are only turned on for a short period of time to
-redraw the screen. When the screen is unchanged the clocks are
-disabled and the driver can be in Runtime suspended state.
+>> For my use case the driver callbacks manage context save and restore.
+>> This to allow turning off power domains.
+>>
+>> The reason why I don't want to execute the driver ->runtime_suspend()
+>> callbacks directly is performance. Basically, we only want to execute
+>> the driver callbacks when we know that we will be able to power off
+>> the domain. The driver callbacks need to save and restore registers,
+>> and each uncached memory access is expensive. Executing the driver
+>> callback does not give us any power savings at all, it's just consumes
+>> power.
+>>
+>> I want to avoid the situation where the driver ->runtime_suspend() and
+>> ->runtime_resume() callbacks get invoked over and over for all devices
+>> except one in a certain power domain even though we will never be able
+>> to power off because a single device in the power domain is active.
+>
+> Okay, I get the picture. =A0So what you want is something like this: Each
+> time a driver starts a clock, it does a pm_runtime_get on the
+> power-domain device. =A0Each time it stops the clock, it does a
+> pm_runtime_put on the power-domain device.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+Yes, this is exactly what I'd like to do in the driver.
 
- drivers/video/sh_mobile_lcdcfb.c |   31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+> When the power-domain device's runtime_idle callback runs, it should
+> call pm_schedule_suspend. =A0The runtime_suspend callback should call
+> pm_runtime_suspend for each of the devices in the power domain before
+> turning off the power supply. =A0Conversely, the runtime_resume callback
+> for the power-domain device should turn on the power supply and then
+> call pm_runtime_resume for each of the devices in the domain.
+>
+> This will have to get more complicated if the individual device drivers
+> want to maintain their own usage counters -- especially if they want to
+> turn off the clock while leaving the counter positive.
 
---- 0001/drivers/video/sh_mobile_lcdcfb.c
-+++ work/drivers/video/sh_mobile_lcdcfb.c	2009-07-09 18:24:22.000000000 +0900
-@@ -14,6 +14,7 @@
- #include <linux/mm.h>
- #include <linux/fb.h>
- #include <linux/clk.h>
-+#include <linux/pm_runtime.h>
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/interrupt.h>
-@@ -42,9 +43,9 @@ struct sh_mobile_lcdc_chan {
- struct sh_mobile_lcdc_priv {
- 	void __iomem *base;
- 	int irq;
--	atomic_t clk_usecnt;
-+	atomic_t hw_usecnt;
-+	struct device *dev;
- 	struct clk *dot_clk;
--	struct clk *clk;
- 	unsigned long lddckr;
- 	struct sh_mobile_lcdc_chan ch[2];
- 	int started;
-@@ -185,8 +186,8 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mob
- 
- static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
- {
--	if (atomic_inc_and_test(&priv->clk_usecnt)) {
--		clk_enable(priv->clk);
-+	if (atomic_inc_and_test(&priv->hw_usecnt)) {
-+		pm_runtime_resume(priv->dev);
- 		if (priv->dot_clk)
- 			clk_enable(priv->dot_clk);
- 	}
-@@ -194,10 +195,10 @@ static void sh_mobile_lcdc_clk_on(struct
- 
- static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
- {
--	if (atomic_sub_return(1, &priv->clk_usecnt) == -1) {
-+	if (atomic_sub_return(1, &priv->hw_usecnt) == -1) {
- 		if (priv->dot_clk)
- 			clk_disable(priv->dot_clk);
--		clk_disable(priv->clk);
-+		pm_schedule_suspend(priv->dev, 0);
- 	}
- }
- 
-@@ -566,7 +567,6 @@ static int sh_mobile_lcdc_setup_clocks(s
- 				       int clock_source,
- 				       struct sh_mobile_lcdc_priv *priv)
- {
--	char clk_name[8];
- 	char *str;
- 	int icksel;
- 
-@@ -580,23 +580,17 @@ static int sh_mobile_lcdc_setup_clocks(s
- 
- 	priv->lddckr = icksel << 16;
- 
--	atomic_set(&priv->clk_usecnt, -1);
--	snprintf(clk_name, sizeof(clk_name), "lcdc%d", pdev->id);
--	priv->clk = clk_get(&pdev->dev, clk_name);
--	if (IS_ERR(priv->clk)) {
--		dev_err(&pdev->dev, "cannot get clock \"%s\"\n", clk_name);
--		return PTR_ERR(priv->clk);
--	}
--
- 	if (str) {
- 		priv->dot_clk = clk_get(&pdev->dev, str);
- 		if (IS_ERR(priv->dot_clk)) {
- 			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
--			clk_put(priv->clk);
- 			return PTR_ERR(priv->dot_clk);
- 		}
- 	}
--
-+	atomic_set(&priv->hw_usecnt, -1);
-+	pm_suspend_ignore_children(priv->dev, true);
-+	pm_runtime_set_suspended(priv->dev);
-+	pm_runtime_enable(priv->dev);
- 	return 0;
- }
- 
-@@ -761,6 +755,7 @@ static int __init sh_mobile_lcdc_probe(s
- 	}
- 
- 	priv->irq = i;
-+	priv->dev = &pdev->dev;
- 	platform_set_drvdata(pdev, priv);
- 	pdata = pdev->dev.platform_data;
- 
-@@ -888,7 +883,6 @@ static int __init sh_mobile_lcdc_probe(s
- 		if (info->fbdefio)
- 			sh_mobile_lcdc_clk_off(priv);
- 	}
--
- 	return 0;
-  err1:
- 	sh_mobile_lcdc_remove(pdev);
-@@ -924,7 +918,6 @@ static int sh_mobile_lcdc_remove(struct 
- 
- 	if (priv->dot_clk)
- 		clk_put(priv->dot_clk);
--	clk_put(priv->clk);
- 
- 	if (priv->base)
- 		iounmap(priv->base);
+I'd like to mange both clocks and power domains using Runtime PM. The
+prototype I just posted does that, but the code is not very well
+integrated with the shared Runtime PM code.
+
+/ magnus
