@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 05/06] i2c: Runtime PM for i2c-sh_mobile.c
-Date: Fri, 10 Jul 2009 00:20:11 +0900
-Message-ID: <20090709152011.8385.40046.sendpatchset__17157.7315930792$1247153095$gmane$org@rx1.opensource.se>
+Subject: [PATCH 06/06] video: Runtime PM for sh_mobile_lcdcfb.c
+Date: Fri, 10 Jul 2009 00:20:20 +0900
+Message-ID: <20090709152020.8385.83457.sendpatchset__18238.2820909426$1247153105$gmane$org@rx1.opensource.se>
 References: <20090709151926.8385.92800.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,66 +23,125 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch modifies the SuperH Mobile i2c driver to support
-Runtime PM. These changes should be all that is needed for
-proper Runtime PM support in this driver. Driver callbacks
-for Runtime PM are not needed becuase the registers are
-always re-initialized.
+This patch modifies the SuperH Mobile LCDC framebuffer driver
+to support Runtime PM. This patch is very experimental and is
+missing context save and restore support.
+
+At this early point it is however already possible to see that
+the deferred io clock management strategy pays off since in that
+mode the clocks are only turned on for a short period of time to
+redraw the screen. When the screen is unchanged the clocks are
+disabled and the driver can be in Runtime suspended state.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/i2c/busses/i2c-sh_mobile.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ drivers/video/sh_mobile_lcdcfb.c |   31 ++++++++++++-------------------
+ 1 file changed, 12 insertions(+), 19 deletions(-)
 
---- 0001/drivers/i2c/busses/i2c-sh_mobile.c
-+++ work/drivers/i2c/busses/i2c-sh_mobile.c	2009-07-07 18:50:53.000000000 +0900
-@@ -28,6 +28,7 @@
- #include <linux/interrupt.h>
- #include <linux/i2c.h>
- #include <linux/err.h>
-+#include <linux/pm_runtime.h>
+--- 0001/drivers/video/sh_mobile_lcdcfb.c
++++ work/drivers/video/sh_mobile_lcdcfb.c	2009-07-09 18:24:22.000000000 +0900
+@@ -14,6 +14,7 @@
+ #include <linux/mm.h>
+ #include <linux/fb.h>
  #include <linux/clk.h>
- #include <linux/io.h>
++#include <linux/pm_runtime.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
+@@ -42,9 +43,9 @@ struct sh_mobile_lcdc_chan {
+ struct sh_mobile_lcdc_priv {
+ 	void __iomem *base;
+ 	int irq;
+-	atomic_t clk_usecnt;
++	atomic_t hw_usecnt;
++	struct device *dev;
+ 	struct clk *dot_clk;
+-	struct clk *clk;
+ 	unsigned long lddckr;
+ 	struct sh_mobile_lcdc_chan ch[2];
+ 	int started;
+@@ -185,8 +186,8 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mob
  
-@@ -165,6 +166,9 @@ static void activate_ch(struct sh_mobile
- 	u_int32_t denom;
- 	u_int32_t tmp;
+ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ {
+-	if (atomic_inc_and_test(&priv->clk_usecnt)) {
+-		clk_enable(priv->clk);
++	if (atomic_inc_and_test(&priv->hw_usecnt)) {
++		pm_runtime_resume(priv->dev);
+ 		if (priv->dot_clk)
+ 			clk_enable(priv->dot_clk);
+ 	}
+@@ -194,10 +195,10 @@ static void sh_mobile_lcdc_clk_on(struct
  
-+	/* Runtime PM must wake up device */
-+	pm_runtime_resume(pd->dev);
-+
- 	/* Make sure the clock is enabled */
- 	clk_enable(pd->clk);
- 
-@@ -215,6 +219,9 @@ static void deactivate_ch(struct sh_mobi
- 
- 	/* Disable clock */
- 	clk_disable(pd->clk);
-+
-+	/* Runtime PM code may suspend now */
-+	pm_runtime_suspend(pd->dev);
+ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+ {
+-	if (atomic_sub_return(1, &priv->clk_usecnt) == -1) {
++	if (atomic_sub_return(1, &priv->hw_usecnt) == -1) {
+ 		if (priv->dot_clk)
+ 			clk_disable(priv->dot_clk);
+-		clk_disable(priv->clk);
++		pm_schedule_suspend(priv->dev, 0);
+ 	}
  }
  
- static unsigned char i2c_op(struct sh_mobile_i2c_data *pd,
-@@ -572,6 +579,20 @@ static int sh_mobile_i2c_probe(struct pl
- 		goto err_irq;
+@@ -566,7 +567,6 @@ static int sh_mobile_lcdc_setup_clocks(s
+ 				       int clock_source,
+ 				       struct sh_mobile_lcdc_priv *priv)
+ {
+-	char clk_name[8];
+ 	char *str;
+ 	int icksel;
+ 
+@@ -580,23 +580,17 @@ static int sh_mobile_lcdc_setup_clocks(s
+ 
+ 	priv->lddckr = icksel << 16;
+ 
+-	atomic_set(&priv->clk_usecnt, -1);
+-	snprintf(clk_name, sizeof(clk_name), "lcdc%d", pdev->id);
+-	priv->clk = clk_get(&pdev->dev, clk_name);
+-	if (IS_ERR(priv->clk)) {
+-		dev_err(&pdev->dev, "cannot get clock \"%s\"\n", clk_name);
+-		return PTR_ERR(priv->clk);
+-	}
+-
+ 	if (str) {
+ 		priv->dot_clk = clk_get(&pdev->dev, str);
+ 		if (IS_ERR(priv->dot_clk)) {
+ 			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
+-			clk_put(priv->clk);
+ 			return PTR_ERR(priv->dot_clk);
+ 		}
+ 	}
+-
++	atomic_set(&priv->hw_usecnt, -1);
++	pm_suspend_ignore_children(priv->dev, true);
++	pm_runtime_set_suspended(priv->dev);
++	pm_runtime_enable(priv->dev);
+ 	return 0;
+ }
+ 
+@@ -761,6 +755,7 @@ static int __init sh_mobile_lcdc_probe(s
  	}
  
-+	/* Enable Runtime PM for this device.
-+	 *
-+	 * Also tell the Runtime PM core to ignore children
-+	 * for this device since it is valid for us to suspend
-+	 * this I2C master driver even though the slave devices
-+	 * on the I2C bus may not be suspended.
-+	 *
-+	 * The state of the I2C hardware bus is unaffected by
-+	 * the Runtime PM state.
-+	 */
-+	pm_suspend_ignore_children(&dev->dev, true);
-+	pm_runtime_set_suspended(&dev->dev);
-+	pm_runtime_enable(&dev->dev);
-+
- 	/* setup the private data */
- 	adap = &pd->adap;
- 	i2c_set_adapdata(adap, pd);
+ 	priv->irq = i;
++	priv->dev = &pdev->dev;
+ 	platform_set_drvdata(pdev, priv);
+ 	pdata = pdev->dev.platform_data;
+ 
+@@ -888,7 +883,6 @@ static int __init sh_mobile_lcdc_probe(s
+ 		if (info->fbdefio)
+ 			sh_mobile_lcdc_clk_off(priv);
+ 	}
+-
+ 	return 0;
+  err1:
+ 	sh_mobile_lcdc_remove(pdev);
+@@ -924,7 +918,6 @@ static int sh_mobile_lcdc_remove(struct 
+ 
+ 	if (priv->dot_clk)
+ 		clk_put(priv->dot_clk);
+-	clk_put(priv->clk);
+ 
+ 	if (priv->base)
+ 		iounmap(priv->base);
