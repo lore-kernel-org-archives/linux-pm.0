@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for
-	run-time PM of	I/O devices (rev. 8)
-Date: Fri, 10 Jul 2009 01:22:40 +0200
-Message-ID: <20090709232239.GG1469@ucw.cz>
-References: <200907060252.12755.rjw@sisk.pl>
+From: John Dykstra <john.dykstra1@gmail.com>
+Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
+Date: Thu, 09 Jul 2009 20:46:57 -0500
+Message-ID: <1247190417.7306.2.camel__5489.05949476666$1247237066$gmane$org@merlyn>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
+	<200907070325.51439.andres@anarazel.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200907060252.12755.rjw@sisk.pl>
+In-Reply-To: <200907070325.51439.andres@anarazel.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,63 +18,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+To: Andres Freund <andres@anarazel.de>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Eric Sesterhenn <eric.sesterhenn@lsexperts.de>, Natalie Protasevich <protasnb@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-hi!
+On Tue, 2009-07-07 at 03:25 +0200, Andres Freund wrote:
+> There is also http://lkml.org/lkml/2009/6/30/398 : Soft-Lockup/Race
+> in 
+> networking in 2.6.31-rc1+195 (possibly caused by netem)
 
-> +/**
-> + * Device run-time power management request types.
-> + *
-> + * RPM_REQ_NONE		Do nothing.
-> + *
-> + * RPM_REQ_IDLE		Run the device bus type's ->runtime_idle() callback
-> + *
-> + * RPM_REQ_SUSPEND	Run the device bus type's ->runtime_suspend() callback
-> + *
-> + * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
-> + */
-> +
-> +enum rpm_request {
-> +	RPM_REQ_NONE = 0,
-> +	RPM_REQ_IDLE,
-> +	RPM_REQ_SUSPEND,
-> +	RPM_REQ_RESUME,
-> +};
-> +
->  struct dev_pm_info {
->  	pm_message_t		power_state;
-> -	unsigned		can_wakeup:1;
-> -	unsigned		should_wakeup:1;
-> +	unsigned int		can_wakeup:1;
-> +	unsigned int		should_wakeup:1;
->  	enum dpm_state		status;		/* Owned by the PM core */
-> -#ifdef	CONFIG_PM_SLEEP
-> +#ifdef CONFIG_PM_SLEEP
->  	struct list_head	entry;
->  #endif
-> +#ifdef CONFIG_PM_RUNTIME
-> +	struct timer_list	suspend_timer;
-> +	unsigned long		timer_expires;
-> +	struct work_struct	work;
-> +	wait_queue_head_t	wait_queue;
-> +	spinlock_t		lock;
-> +	atomic_t		usage_count;
-> +	atomic_t		child_count;
-> +	unsigned int		ignore_children:1;
-> +	unsigned int		runtime_disabled:1;
-> +	unsigned int		runtime_failure:1;
-> +	unsigned int		idle_notification:1;
-> +	unsigned int		request_pending:1;
-> +	unsigned int		deferred_resume:1;
-> +	enum rpm_request	request;
-> +	enum rpm_status		runtime_status;
+There is some similarity between this soft lockup and the one reported
+in http://www.spinics.net/lists/netdev/msg100957.html.  In both, the
+process is doing both sends and receives on raw sockets.
 
-runtime_status seems to be accessed outside spinlocks. Should it be of
-type atomic_t?
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  --  John
