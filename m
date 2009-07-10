@@ -1,14 +1,14 @@
 From: Dave Jones <davej@redhat.com>
 Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
-Date: Fri, 10 Jul 2009 15:25:11 -0400
-Message-ID: <20090710192511.GB6240__33891.2529209212$1247254071$gmane$org@redhat.com>
-References: <4A561074.5080407@gmail.com>
+Date: Fri, 10 Jul 2009 16:13:08 -0400
+Message-ID: <20090710201308.GA11075__17592.8776771345$1247256851$gmane$org@redhat.com>
+References: <4A561074.5080407@gmail.com> <20090710192511.GB6240@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <4A561074.5080407@gmail.com>
+In-Reply-To: <20090710192511.GB6240@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +18,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
+To: Marcin Slusarz <marcin.slusarz@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 05:44:52PM +0200, Marcin Slusarz wrote:
- > I find this message after resume from s2ram:
- > [  133.014802] ------------[ cut here ]------------
- > [  133.014814] WARNING: at drivers/base/sys.c:411 sysdev_suspend+0xd3/0x27b()
- > [  133.014819] Hardware name: To Be Filled By O.E.M.
- > [  133.014828] Interrupts enabled after cpufreq_suspend+0x0/0xfd
- > [  133.014832] Modules linked in:
- > [  133.014840] Pid: 6569, comm: s2ram Not tainted 2.6.31-rc2-faf80-wusb54gc #139
- > [  133.014845] Call Trace:
- > [  133.014853]  [<ffffffff8126960a>] ? sysdev_suspend+0xd3/0x27b
- > [  133.014864]  [<ffffffff810388a9>] warn_slowpath_common+0x77/0xa4
- > [  133.014873]  [<ffffffff8103894b>] warn_slowpath_fmt+0x64/0x66
- > [  133.014883]  [<ffffffff8101ac71>] ? query_values_on_cpu+0x0/0x19
- > [  133.014892]  [<ffffffff813273bc>] ? cpufreq_suspend+0x0/0xfd
- > [  133.014900]  [<ffffffff811e6d35>] ? kobject_put+0x47/0x4b
- > [  133.014908]  [<ffffffff813269fd>] ? cpufreq_cpu_put+0x1f/0x21
- > [  133.014917]  [<ffffffff813274ac>] ? cpufreq_suspend+0xf0/0xfd
- > [  133.014926]  [<ffffffff8105aeda>] ? trace_hardirqs_off+0xd/0xf
- > [  133.014934]  [<ffffffff8126960a>] sysdev_suspend+0xd3/0x27b
- > [  133.014944]  [<ffffffff81068fd8>] suspend_devices_and_enter+0xca/0x14d
- > [  133.014952]  [<ffffffff81069114>] enter_state+0xb9/0xec
- > [  133.014959]  [<ffffffff81068923>] state_store+0xb7/0xd7
- > [  133.014967]  [<ffffffff811e6b4b>] kobj_attr_store+0x17/0x19
- > [  133.014976]  [<ffffffff811094b1>] sysfs_write_file+0xe4/0x119
- > [  133.014985]  [<ffffffff810b9f57>] vfs_write+0xac/0x164
- > [  133.014991]  [<ffffffff810ba0d3>] sys_write+0x47/0x6e
- > [  133.015000]  [<ffffffff8100aee8>] system_call_fastpath+0x16/0x1b
- > [  133.015006] ---[ end trace 470f36a1cfb444d7 ]---
+On Fri, Jul 10, 2009 at 03:25:11PM -0400, Dave Jones wrote:
 
-powernow-k8's ->get is calling smp_call_function_single which enables interrupts.
+ >     [PATCH] Add suspend method to cpufreq core
+ >     
+ >     In order to properly fix some issues with cpufreq vs. sleep on
+ >     PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
+ >     I must force a switch to full speed before sleep and I switch back to
+ >     previous speed on resume.
+ > 
+ > 
+ > Ben, is there something better we can do here ?
+ > 
+ > I really don't want to add an #ifdef __powerpc__ to core code if we can help it.
+ > I'd rather we didn't call into driver guts at all from the suspend path.
 
-So I couldn't help wondering... why are we caring so much about the current cpu
-speed when we ->suspend anyway ? Why is cpufreq_suspend doing those gymnastics at all,
-instead of just doing nothing at suspend time, and just setting the frequency
-to maximum speed on resume ?
-
-The answer seems to be in 42d4dc3f4e1ec1396371aac89d0dccfdd977191b
-which introduced all this code to work around some failure that only happens
-on PPC...
-
-    [PATCH] Add suspend method to cpufreq core
-    
-    In order to properly fix some issues with cpufreq vs. sleep on
-    PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
-    I must force a switch to full speed before sleep and I switch back to
-    previous speed on resume.
-
-
-Ben, is there something better we can do here ?
-
-I really don't want to add an #ifdef __powerpc__ to core code if we can help it.
-I'd rather we didn't call into driver guts at all from the suspend path.
+Marcin,
+ Unless we get a better solution proposed, try running with this, which just
+skips doing all that code entirely.
 
 	Dave
+ 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5cc77fb..8d3b3d1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1288,6 +1288,14 @@ static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
+ 
+ 	dprintk("suspending cpu %u\n", cpu);
+ 
++	/*
++	 * This whole bogosity is here because Powerbooks are made of fail.
++	 * No sane platform should need any of the code below to be run.
++	 * (it's entirely the wrong thing to do, as driver->get may
++	 *  reenable interrupts on some architectures).
++	 */
++
++#ifdef __powerpc__
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+@@ -1346,6 +1354,7 @@ static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
+ 
+ out:
+ 	cpufreq_cpu_put(cpu_policy);
++#endif	/* __powerpc__ */
+ 	return ret;
+ }
+ 
+@@ -1365,6 +1374,11 @@ static int cpufreq_resume(struct sys_device *sysdev)
+ 
+ 	dprintk("resuming cpu %u\n", cpu);
+ 
++	/* As with the ->suspend method, all the code below is
++	 * only necessary because Powerbooks suck.
++	 * See commit 42d4dc3f4e1e for jokes. */
++#ifdef __powerpc__
++
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+@@ -1428,6 +1442,7 @@ out:
+ 	schedule_work(&cpu_policy->update);
+ fail:
+ 	cpufreq_cpu_put(cpu_policy);
++#endif	/* __powerpc__ */
+ 	return ret;
+ }
+ 
