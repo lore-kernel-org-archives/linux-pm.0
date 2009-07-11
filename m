@@ -1,14 +1,14 @@
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
-Date: Sat, 11 Jul 2009 16:33:13 +0200
-Message-ID: <4A58A2A9.7020707__40203.959917608$1247322873$gmane$org@gmail.com>
-References: <4A561074.5080407@gmail.com> <20090710192511.GB6240@redhat.com>
-	<20090710201308.GA11075@redhat.com>
+Subject: Re: 2 bugs related to suspend to disk
+Date: Sat, 11 Jul 2009 16:38:35 +0200
+Message-ID: <4A58A3EB.9040006__12734.3980865136$1247323186$gmane$org@gmail.com>
+References: <4A199A7A.3010705@gmail.com> <200905252331.02488.rjw@sisk.pl>
+	<4A1D9A4C.4000600@gmail.com> <200905272247.29098.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090710201308.GA11075@redhat.com>
+In-Reply-To: <200905272247.29098.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@redhat.com>, Marcin Slusarz <marcin.slusarz@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dave Jones wrote:
-> On Fri, Jul 10, 2009 at 03:25:11PM -0400, Dave Jones wrote:
+Rafael J. Wysocki pisze:
+> On Wednesday 27 May 2009, Marcin Slusarz wrote:
+>> Rafael J. Wysocki wrote
+>>> On Monday 25 May 2009, Marcin Slusarz wrote:
+>>>> Rafael J. Wysocki wrote:
+>>>>> On Sunday 24 May 2009, Marcin Slusarz wrote:
+>>>>>> Pavel Machek wrote:
+>>>>>>> Hi!
+>>>>>>>
+>>>>>>>
+>>>>>>>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+>>>>>>>>
+>>>>>>> I'm afraid we need more details here. Is "resume" binary being ran?
+>>>>>> Excellent question ;) - I didn't know it has to. I'll try to setup
+>>>>>> initramfs tomorrow.
+>>>>>>
+>>>>>> Thanks and sorry for the noise!
+>>>>> However, the issue reported as 1) is not really a noise IMO. :-)
+>>>>>
+>>>>> Can you please attach a full dmesg output containing these messages?
+>>>> I've uploaded .config, dmesg (BUG was not saved) and 2 pictures of
+>>>> screen just before power loss to http://www.kadu.net/~joi/kernel/2009.05.25/
+>>>> (Please ignore first suspend failure (3681.078646 - 3685.514358) - I forgot
+>>>> to restore swap)
+>>> Thanks.
+>>>
+>>> Can you please test the patch sent by Sebastian Ott in this thread?
+>> BUG disappeared with this patch.
 > 
->  >     [PATCH] Add suspend method to cpufreq core
->  >     
->  >     In order to properly fix some issues with cpufreq vs. sleep on
->  >     PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
->  >     I must force a switch to full speed before sleep and I switch back to
->  >     previous speed on resume.
->  > 
->  > 
->  > Ben, is there something better we can do here ?
->  > 
->  > I really don't want to add an #ifdef __powerpc__ to core code if we can help it.
->  > I'd rather we didn't call into driver guts at all from the suspend path.
+> Thanks for testing.
 > 
-> Marcin,
->  Unless we get a better solution proposed, try running with this, which just
-> skips doing all that code entirely.
+>> Is this a final fix?
+> 
+> I'm not sure yet.
 
-Now it produces only:
-powernow-k8: error - out of sync, fix 0x2 0xc, vid 0x12 0x6
-(arch/x86/kernel/cpu/cpufreq/powernow-k8.c: powernowk8_target)
-but works fine.
 
-If it's nothing to worry about, you can add:
-Tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+This bug (first) is still with us as of 2.6.31-rc2-faf80d62e44dc627efb741f48db50c1858d1667c
 
-Thanks,
 Marcin
