@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: suspend to disk now broken
-Date: Sun, 12 Jul 2009 22:19:52 +0200
-Message-ID: <200907122219.53116.rjw__39744.637735612$1247430039$gmane$org@sisk.pl>
+Date: Sun, 12 Jul 2009 22:56:01 +0200
+Message-ID: <200907122256.01663.rjw@sisk.pl>
 References: <20090712151947.25446ceb.celejar@gmail.com>
+	<200907122219.53116.rjw@sisk.pl>
+	<20090712162635.0e451001.celejar@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090712151947.25446ceb.celejar@gmail.com>
+In-Reply-To: <20090712162635.0e451001.celejar@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,31 +25,22 @@ Cc: pm list <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kerne
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday 12 July 2009, Celejar wrote:
-> Hi,
+> On Sun, 12 Jul 2009 22:19:52 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> A recent change to the kernel has apparently broken suspend to disk on
-> my machine.  It still works fine in 2.6.30.1, but hangs during the
-> 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
-> problem using the wireless-testing git repo, but I've subsequently
-> reproduced it using the mainline code from the kernel.org homepage.]  I
-> saw a rumor that the problem may have something to do with recent
-> changes to the Intel graphics drivers, so  I've tried to remove the
-> driver (i915) before suspending, but it won't come out.
+> > On Sunday 12 July 2009, Celejar wrote:
+> > > Hi,
+> > > 
+> > > A recent change to the kernel has apparently broken suspend to disk on
+> > > my machine.  It still works fine in 2.6.30.1, but hangs during the
+> > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
 > 
-> The machine is an Acer Aspire 3690 laptop, with Intel motherboard and
-> chipsets and Broadcom networking.  The last message seen on the console
-> during the failed suspend is:
+> ...
 > 
-> Suspending console(s) (use no_console_suspend to debug)
+> > Do you use s2disk or 'echo disk > /sys/power/state'?
 > 
-> The machine has no serial port, but I do have a Prolific USB-serial
-> converter; will that be useful?
-> 
-> I'm attaching the output of 'grep ^C .config', since I assume that it
-> contains relevant information.
-> 
-> Please cc. me on responses.
+> First 'hibernate', then 's2disk', and finally 'echo ...' :)  None work.
 
-Do you use s2disk or 'echo disk > /sys/power/state'?
+Please try to boot with init=/bin/bash and use the 'echo ...' method.
 
 Rafael
