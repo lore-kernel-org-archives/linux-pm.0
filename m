@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: suspend to disk now broken
-Date: Sun, 12 Jul 2009 22:56:01 +0200
-Message-ID: <200907122256.01663.rjw@sisk.pl>
+Date: Mon, 13 Jul 2009 03:39:34 +0200
+Message-ID: <200907130339.35003.rjw__36835.720393765$1247449222$gmane$org@sisk.pl>
 References: <20090712151947.25446ceb.celejar@gmail.com>
-	<200907122219.53116.rjw@sisk.pl>
-	<20090712162635.0e451001.celejar@gmail.com>
+	<200907122256.01663.rjw@sisk.pl>
+	<20090712171950.4d493cac.celejar@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090712162635.0e451001.celejar@gmail.com>
+In-Reply-To: <20090712171950.4d493cac.celejar@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,22 +25,26 @@ Cc: pm list <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kerne
 List-Id: linux-pm@vger.kernel.org
 
 On Sunday 12 July 2009, Celejar wrote:
-> On Sun, 12 Jul 2009 22:19:52 +0200
+> On Sun, 12 Jul 2009 22:56:01 +0200
 > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
 > > On Sunday 12 July 2009, Celejar wrote:
-> > > Hi,
+> > > On Sun, 12 Jul 2009 22:19:52 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > > 
-> > > A recent change to the kernel has apparently broken suspend to disk on
-> > > my machine.  It still works fine in 2.6.30.1, but hangs during the
-> > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
+> > > > On Sunday 12 July 2009, Celejar wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > A recent change to the kernel has apparently broken suspend to disk on
+> > > > > my machine.  It still works fine in 2.6.30.1, but hangs during the
+> > > > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
 > 
 > ...
 > 
-> > Do you use s2disk or 'echo disk > /sys/power/state'?
+> > Please try to boot with init=/bin/bash and use the 'echo ...' method.
 > 
-> First 'hibernate', then 's2disk', and finally 'echo ...' :)  None work.
+> Still fails, as before.
 
-Please try to boot with init=/bin/bash and use the 'echo ...' method.
+Do you use IDE drivers?
 
 Rafael
