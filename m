@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 3/8] hook device async mechanism in device core
-Date: Wed, 15 Jul 2009 15:38:37 +0800
-Message-ID: <1247643517.26272.78.camel__16888.5412662805$1247643814$gmane$org@rzhang-dt>
+Subject: [PATCH 5/8] introduce device async resume
+Date: Wed, 15 Jul 2009 15:38:39 +0800
+Message-ID: <1247643519.26272.80.camel__11288.1506364376$1247643814$gmane$org@rzhang-dt>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,88 +21,64 @@ Cc: Pavel Machek <pavel@suse.cz>, "Van De Ven,
 List-Id: linux-pm@vger.kernel.org
 
 
-Hook the device async mechanism in driver core.
-A device inherits its parent's async domain when it's created.
+introduce device async resume.
+
+If boot option "dev_async_action" is added,
+devices can be resumed asynhronously.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/base/async_dev.c |   22 ++++++++++++++++++----
- drivers/base/core.c      |    9 +++++++++
- 2 files changed, 27 insertions(+), 4 deletions(-)
+ drivers/base/power/main.c |    4 +++-
+ include/linux/async_dev.h |    4 +++-
+ drivers/base/async_dev.c        |    1 +
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/base/core.c
+Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -899,6 +899,13 @@ int device_add(struct device *dev)
- 	if (parent)
- 		set_dev_node(dev, dev_to_node(parent));
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -445,7 +445,8 @@ static void dpm_resume(pm_message_t stat
+ 			dev->power.status = DPM_RESUMING;
+ 			mutex_unlock(&dpm_list_mtx);
  
-+	/* inherit parent's async domain */
-+	if (parent && parent->dev_async)
-+		if (!dev->dev_async)
-+			dev->dev_async = parent->dev_async;
-+		else
-+			dev_err(dev, "multiple dev async actions registered\n");
-+
- 	/* first, register with generic layer. */
- 	/* we require the name to be set before, and pass NULL */
- 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
-@@ -984,6 +991,7 @@ done:
- 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
- 	kobject_del(&dev->kobj);
-  Error:
-+	dev->dev_async = NULL;
- 	cleanup_device_parent(dev);
- 	if (parent)
- 		put_device(parent);
-@@ -1100,6 +1108,7 @@ void device_del(struct device *dev)
- 	if (platform_notify_remove)
- 		platform_notify_remove(dev);
- 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-+	dev->dev_async = NULL;
- 	cleanup_device_parent(dev);
- 	kobject_del(&dev->kobj);
- 	put_device(parent);
+-			error = device_resume(dev, state);
++			error = dev_async_schedule(dev, device_resume, &state,
++							DEV_ASYNC_RESUME);
+ 
+ 			mutex_lock(&dpm_list_mtx);
+ 			if (error)
+@@ -460,6 +461,7 @@ static void dpm_resume(pm_message_t stat
+ 	}
+ 	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
++	dev_async_synchronization();
+ }
+ 
+ /**
+Index: linux-2.6/include/linux/async_dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/async_dev.h
++++ linux-2.6/include/linux/async_dev.h
+@@ -29,7 +29,9 @@ struct dev_async_struct {
+ };
+ 
+ #define DEV_ASYNC_SUSPEND	1
+-#define DEV_ASYNC_ACTIONS_ALL	DEV_ASYNC_SUSPEND
++#define DEV_ASYNC_RESUME	2
++#define DEV_ASYNC_ACTIONS_ALL	(DEV_ASYNC_SUSPEND |	\
++				DEV_ASYNC_RESUME)
+ 
+ extern int dev_async_schedule(struct device *, void *,
+ 			void *, int);
 Index: linux-2.6/drivers/base/async_dev.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/async_dev.c
 +++ linux-2.6/drivers/base/async_dev.c
-@@ -105,6 +105,13 @@ void dev_async_synchronization(void)
- 	return;
- }
+@@ -36,6 +36,7 @@ static int dev_action(struct device *dev
  
-+static int dev_match(struct device *dev, void *data)
-+{
-+	dev_err(dev->parent, "Child device %s is registered before "
-+		"dev->dev_async being initialized", dev_name(dev));
-+	return 1;
-+}
-+
- /**
-  * device_async_register - register a device that supports async actions
-  * @dev: Device.
-@@ -123,12 +130,19 @@ int dev_async_register(struct device *de
- 		return -EINVAL;
- 
- 	if (dev->dev_async) {
--		if (dev->dev_async->dev == dev) {
--			printk(KERN_ERR "device already registered\n");
--			return -EEXIST;
--		}
-+		/* multiple async domains for a single device not supported */
-+		dev_err(dev, "async domain already registered\n");
-+		return -EEXIST;
- 	}
- 
-+	/*
-+	 * dev_async_register must be called before any of its child devices
-+	 * being registered to the driver model.
-+	 */
-+	if (dev->p)
-+		if (device_find_child(dev, NULL, dev_match))
-+			return -EINVAL;
-+
- 	if (!(DEV_ASYNC_ACTIONS_ALL & type))
- 	/* check for unsupported async actions */
- 		return -EINVAL;
+ 	switch (type) {
+ 	case DEV_ASYNC_SUSPEND:
++	case DEV_ASYNC_RESUME:
+ 		error = ((dev_async_suspend)func)(dev, *((pm_message_t *)data));
+ 		break;
+ 	default:
