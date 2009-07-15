@@ -1,10 +1,10 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 0/8] device async action mechanism
-Date: Wed, 15 Jul 2009 15:38:32 +0800
-Message-ID: <1247643512.26272.74.camel__37124.1530556746$1247643754$gmane$org@rzhang-dt>
+Subject: [PATCH 3/8] hook device async mechanism in device core
+Date: Wed, 15 Jul 2009 15:38:37 +0800
+Message-ID: <1247643517.26272.78.camel__16888.5412662805$1247643814$gmane$org@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,28 +20,89 @@ Cc: Pavel Machek <pavel@suse.cz>, "Van De Ven,
 	Arjan" <arjan.van.de.ven@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgp0aGlzIGlzIHRoZSBwYXRjaCBzZXQgSSBtYWRlIHRvIHNwZWVkIHVwIHRoZSBkZXZpY2UK
-c3VzcGVuZC9yZXN1bWUvc2h1dGRvd24gcHJvY2Vzcy4KCkEgbmV3IG1lY2hhbmlzbSBjYWxsZWQg
-RGV2aWNlIEFzeW5jIEFjdGlvbnMgaXMgaW50cm9kdWNlZCBpbiB0aGlzIHBhdGNoIHNldC4KVGhl
-IGJhc2ljIGlkZWEgaXMgdGhhdCwKMS4gZGV2aWNlIGRlY2xhcmVzIHRvIHN1cHBvcnQgY2VydGFp
-biBraW5kcyBvZiBkZXZpY2UgYXN5bmMgYWN0aW9uLAogICBsaWtlIHN1c3BlbmQsIHJlc3VtZSwg
-c2h1dGRvd24sIGV0Yy4KMi4gYSBhc3luYyBkb21haW4gaXMgY3JlYXRlIGZvciB0aGlzIGRldmlj
-ZQozLiB0aGUgY2hpbGQgZGV2aWNlIGluaGVyaXRzIHRoZSBhc3luYyBkb21haW4KNC4gZGV2aWNl
-cyBpbiB0aGUgc2FtZSBkb21haW4gc3VzcGVuZC9yZXN1bWUvc2h1dGRvd24gYXN5bmNocm9ub3Vz
-bHkgd2l0aAogICB0aGUgb3RoZXIgZGV2aWNlcy4KCkN1cnJlbnRseSwgaW4gb3JkZXIgdG8gbWFr
-ZSBzdXJlIHRoYXQgaXQgd29uJ3QgYnJpbmcgYW55IHNpZGUgZWZmZWN0cywKSSBvbmx5IGNvbnZl
-cnQgdGhlIEFDUEkgYmF0dGVyeSBhbmQgaTgwNDIgdG8gdXNlIHRoaXMgZnJhbWV3b3JrLCB3aGlj
-aCByZWR1Y2VzCjAuNXMrIFMzIHRpbWUoc3VzcGVuZCB0aW1lIHBsdXMgcmVzdW1lIHRpbWUp77u/
-LCBmcm9tIDcuMHMgdG8gbGVzcyB0aGFuIDYuNXMuCmFuZCBhYm91dCAwLjVzIHNodXRkb3duIHRp
-bWUgaW4gbXkgdGVzdC4KCkFueSBjb21tZW50cyBhcmUgd2VsY29tZS4gOikKCnRoYW5rcywKcnVp
-CgoKIGRyaXZlcnMvYWNwaS9iYXR0ZXJ5LmMgICAgICB8ICAgMTMgKysrCiBkcml2ZXJzL2Jhc2Uv
-TWFrZWZpbGUgICAgICAgfCAgICAzICstCiBkcml2ZXJzL2Jhc2UvYXN5bmNfZGV2LmMgICAgfCAg
-MjEwICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIGRyaXZlcnMv
-YmFzZS9jb3JlLmMgICAgICAgICB8ICAgMTYgKysrLQogZHJpdmVycy9iYXNlL3Bvd2VyL21haW4u
-YyAgIHwgICAxMCArKy0KIGRyaXZlcnMvaW5wdXQvc2VyaW8vaTgwNDIuYyB8ICAgMTAgKystCiBp
-bmNsdWRlL2xpbnV4L2FzeW5jLmggICAgICAgfCAgICAzICsKIGluY2x1ZGUvbGludXgvYXN5bmNf
-ZGV2LmggICB8ICAgNDUgKysrKysrKysrCiBpbmNsdWRlL2xpbnV4L2RldmljZS5oICAgICAgfCAg
-ICAyICsKIDkgZmlsZXMgY2hhbmdlZCwgMzA2IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0p
-CgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
-LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
-czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+Hook the device async mechanism in driver core.
+A device inherits its parent's async domain when it's created.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/base/async_dev.c |   22 ++++++++++++++++++----
+ drivers/base/core.c      |    9 +++++++++
+ 2 files changed, 27 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -899,6 +899,13 @@ int device_add(struct device *dev)
+ 	if (parent)
+ 		set_dev_node(dev, dev_to_node(parent));
+ 
++	/* inherit parent's async domain */
++	if (parent && parent->dev_async)
++		if (!dev->dev_async)
++			dev->dev_async = parent->dev_async;
++		else
++			dev_err(dev, "multiple dev async actions registered\n");
++
+ 	/* first, register with generic layer. */
+ 	/* we require the name to be set before, and pass NULL */
+ 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
+@@ -984,6 +991,7 @@ done:
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+ 	kobject_del(&dev->kobj);
+  Error:
++	dev->dev_async = NULL;
+ 	cleanup_device_parent(dev);
+ 	if (parent)
+ 		put_device(parent);
+@@ -1100,6 +1108,7 @@ void device_del(struct device *dev)
+ 	if (platform_notify_remove)
+ 		platform_notify_remove(dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
++	dev->dev_async = NULL;
+ 	cleanup_device_parent(dev);
+ 	kobject_del(&dev->kobj);
+ 	put_device(parent);
+Index: linux-2.6/drivers/base/async_dev.c
+===================================================================
+--- linux-2.6.orig/drivers/base/async_dev.c
++++ linux-2.6/drivers/base/async_dev.c
+@@ -105,6 +105,13 @@ void dev_async_synchronization(void)
+ 	return;
+ }
+ 
++static int dev_match(struct device *dev, void *data)
++{
++	dev_err(dev->parent, "Child device %s is registered before "
++		"dev->dev_async being initialized", dev_name(dev));
++	return 1;
++}
++
+ /**
+  * device_async_register - register a device that supports async actions
+  * @dev: Device.
+@@ -123,12 +130,19 @@ int dev_async_register(struct device *de
+ 		return -EINVAL;
+ 
+ 	if (dev->dev_async) {
+-		if (dev->dev_async->dev == dev) {
+-			printk(KERN_ERR "device already registered\n");
+-			return -EEXIST;
+-		}
++		/* multiple async domains for a single device not supported */
++		dev_err(dev, "async domain already registered\n");
++		return -EEXIST;
+ 	}
+ 
++	/*
++	 * dev_async_register must be called before any of its child devices
++	 * being registered to the driver model.
++	 */
++	if (dev->p)
++		if (device_find_child(dev, NULL, dev_match))
++			return -EINVAL;
++
+ 	if (!(DEV_ASYNC_ACTIONS_ALL & type))
+ 	/* check for unsupported async actions */
+ 		return -EINVAL;
