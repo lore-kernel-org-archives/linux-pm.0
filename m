@@ -1,14 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
-Date: Thu, 16 Jul 2009 13:10:47 +1000
-Message-ID: <1247713847.27937.14.camel__25922.5632450127$1247714015$gmane$org@pasglop>
-References: <4A561074.5080407@gmail.com> <20090710192511.GB6240@redhat.com>
-	<1247264617.21776.6.camel@pasglop> <20090710234646.GA11669@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 0/8] device async action mechanism
+Date: Thu, 16 Jul 2009 10:07:31 +0200
+Message-ID: <20090716080731.GB8046__2288.13244398243$1247731725$gmane$org@one.firstfloor.org>
+References: <1247643512.26272.74.camel@rzhang-dt>
+	<87ocrm6xeq.fsf@basil.nowhere.org>
+	<1247710483.26272.170.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090710234646.GA11669@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <1247710483.26272.170.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@redhat.com>
-Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, Marcin Slusarz <marcin.slusarz@gmail.com>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, "Van De Ven,
+	Arjan" <arjan.van.de.ven@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, arjan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2009-07-10 at 19:46 -0400, Dave Jones wrote:
+On Thu, Jul 16, 2009 at 10:14:43AM +0800, Zhang Rui wrote:
+> On Wed, 2009-07-15 at 18:41 +0800, Andi Kleen wrote:
+> > Zhang Rui <rui.zhang@intel.com> writes:
+> > >
+> > > Currently, in order to make sure that it won't bring any side effects,
+> > > I only convert the ACPI battery and i8042 to use this framework, whic=
+h reduces
+> > > 0.5s+ S3 time(suspend time plus resume time)=EF=BB=BF, from 7.0s to l=
+ess than 6.5s.
+> > =
 
-> The fail part comes from the fact that interrupts get reenabled.
-> And that's something that can easily happen out of our control if
-> we call into acpi_cpufreq's ->get method for example, so powernow-k8 isn't
-> the sole reason.
-> 
->  > I'm happy instead of #ifdef's however to push the logic into the ppc
->  > driver, or use a flag that the ppc driver sets to enable that logic.
+> > 10.5s+ was intended I guess?
+> > =
 
-So I'm not too familiar with what other platforms expect here, but would
-it be ok to do something like bailing our early in cpufreq_suspend() if
-there's no cpufreq_driver->suspend method ?
+> what do you mean?
 
-We would need to do the same on resume, though I do wonder whether there
-could be a problem with even x86 here.. do we know for sure that we come
-back from suspend with the same policy we had before suspending ? IE. We
-should probably always do that check on resume, but we can't do it too
-early due to irqs being off...
+I am confused by you writing
 
-It's all because cpufreq is a sysdev which was imho a mistake in the
-first place :-)
+"reduces <small number> from <much larger number> to <still larger number>"
 
-Maybe at this stage the best option is to add suspend_prepare and
-resume_finish callbacks to sysdevs that are called while IRQs are still
-on, and move cpufreq to use these instead ? That probably means we also
-need to keep track that we have started suspend in the cpufreq core and
-forbid attempts at changing policy etc... from either userspace of
-on-demand governor while suspended, so that's more work, but could be
-the best approach in the long run, what do you think ?
+So I assumed you dropped a decimal on <small number>
 
-Otherwise I'm happy to just submit a patch that makes
-cpufreq_suspend/resume bail out early if driver->suspend/resume are NULL
-(or do you prefer a driver flag ?)
 
-Cheers,
-Ben.
+> =
+
+> the kernel device suspend time is reduced from 3.2s to 2.8s after
+> applying this patch set in my test box.
+> And I get more optimistic numbers on another laptop, an Eeepc 901,
+> from about 2s to 1.6s. And the shutdown time is also reduced 0.4s.
+
+
+I think I am still confused by your numbers.
+
+How do the 0.5s and the 7.0s relate?
+
+-Andi
+
+-- =
+
+ak@linux.intel.com -- Speaking for myself only.
