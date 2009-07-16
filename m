@@ -1,15 +1,14 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/8] introduce the device async action
-	mechanism
-Date: Thu, 16 Jul 2009 10:05:10 +0800
-Message-ID: <1247709910.26272.159.camel__37062.977665528$1247709927$gmane$org@rzhang-dt>
-References: <1247643516.26272.77.camel@rzhang-dt>
-	<20090715060006.71c2e2b6@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
+Date: Thu, 16 Jul 2009 13:10:47 +1000
+Message-ID: <1247713847.27937.14.camel__25922.5632450127$1247714015$gmane$org@pasglop>
+References: <4A561074.5080407@gmail.com> <20090710192511.GB6240@redhat.com>
+	<1247264617.21776.6.camel@pasglop> <20090710234646.GA11669@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090715060006.71c2e2b6@infradead.org>
+In-Reply-To: <20090710234646.GA11669@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,83 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, "Van De Ven,
-	Arjan" <arjan.van.de.ven@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, Marcin Slusarz <marcin.slusarz@gmail.com>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDA5LTA3LTE1IGF0IDIxOjAwICswODAwLCBBcmphbiB2YW4gZGUgVmVuIHdyb3Rl
-Ogo+IE9uIFdlZCwgMTUgSnVsIDIwMDkgMTU6Mzg6MzYgKzA4MDAKPiBaaGFuZyBSdWkgPHJ1aS56
-aGFuZ0BpbnRlbC5jb20+IHdyb3RlOgo+IAo+ID4gSW50cm9kdWNlIHRoZSBkZXZpY2UgYXN5bmMg
-YWN0aW9uIG1lY2hhbmlzbS4KPiA+IAo+ID4gSW4gb3JkZXIgdG8gc3BlZWQgdXAgTGludXggc3Vz
-cGVuZC9yZXN1bWUvc2h1dGRvd24gcHJvY2VzcywKPiA+IHdlIGludHJvZHVjZSB0aGUgZGV2aWNl
-IGFzeW5jIGFjdGlvbiBtZWNoYW5pc20gdGhhdCBhbGxvdyBkZXZpY2VzCj4gPiB0byBzdXNwZW5k
-L3Jlc3VtZS9zaHV0ZG93biBhc3luY2hyb25vdXNseS4KPiA+IAo+ID4gVGhlIGJhc2ljIGlkZWEg
-aXMgdGhhdCwKPiA+IGlmIHRoZSBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBwcm9jZXNzIG9mIGEg
-ZGV2aWNlIHNldCwKPiA+IGluY2x1ZGluZyBhIHJvb3QgZGV2aWNlIGFuZCBpdHMgY2hpbGQgZGV2
-aWNlcywgYXJlIGluZGVwZW5kZW50IG9mCj4gPiBvdGhlciBkZXZpY2VzLCB3ZSBjcmVhdGUgYW4g
-YXN5bmMgZG9tYWluIGZvciB0aGlzIGRldmljZSBzZXQsCj4gPiBhbmQgbWFrZSB0aGVtIHN1c3Bl
-bmQvcmVzdW1lL3NodXRkb3duIGFzeW5jaHJvbm91c2x5Lgo+IAo+IEhpLAo+IAo+IEkgaGF2ZSBz
-b21lIGNvbmNlcm5zIGFib3V0IGhhdmluZyBhbiBhc3luYyBkb21haW4gcGVyIGRldmljZShncm91
-cCkKPiByYXRoZXIgdGhhbiBoYXZpbmcgb25lIGFzeW5jIGRvbWFpbiBmb3IgYWxsIG9mIHRoaXMs
-IAoK77u/d2UgY3JlYXRlIGFuIGFzeW5jIGRvbWFpbiBPTkxZIGlmIHdlIGFyZSBzdXJlIHRoYXQg
-dGhlIGRldmljZSBncm91cCBpcwppbmRlcGVuZGVudCB3aXRoIHRoZSBvdGhlciBkZXZpY2VzLgoK
-YW5kIElNTywgdXNpbmcgbXVsdGlwbGUgYXN5bmMgZG9tYWlucyBicmluZ3MgcmVhbCBkZXZpY2Ug
-YXN5bmMgYWN0aW9ucy4KRm9yIGV4YW1wbGUsIGluIFMzIHJlc3VtZSBjYXNlLCB0aGVyZSBhcmUg
-dHdvIGRldmljZSBncm91cHM6CmRldmljZSBncm91cDE6IGRldmljZTEsIGRldmljZTIsIGRldmlj
-ZTMKZGV2aWNlIGdyb3VwMjogZGV2aWNlNCwgZGV2aWNlNSwgZGV2aWNlNgoKSWYgdGhleSBzaGFy
-ZSB0aGUgZ2xvYmFsIGRvbWFpbiwgd2UgbWF5IGdldDrvu78KZGV2aWNlIGdyb3VwMTogZGV2aWNl
-MShjb29raWUgMSksIGRldmljZTIoY29va2llIDQpLCBkZXZpY2UzKGNvb2tpZSA1KQpkZXZpY2Ug
-Z3JvdXAyOiBkZXZpY2U0KGNvb2tpZSAyKSwgZGV2aWNlNShjb29raWUgMyksIGRldmljZTYoY29v
-a2llIDYpCgp0aGlzIGlzIG5vdCByZWFsIGFzeW5jaHJvbm91cyByZXN1bWUgYmVjYXVzZQpkZXZp
-Y2UzIG5lZWRzIHRvIGNhbGwgYXN5bmNfc3luY2hyb25pemVfY29va2llKDUpIGJlZm9yZSByZXN1
-bWUgaXRzZWxmLgp3aGljaCBtZWFucyB0aGF0IGRldmljZTQgYW5kIGRldmljZTUgbXVzdCBiZSBy
-ZXN1bWVkIGJlZm9yZSBkZXZpY2UzLgoKQnV0IGlmIG11bHRpcGxlIGFzeW5jIGRvbWFpbiBpcyB1
-c2VkLCB3ZSBnZXQ6Cu+7v2RldmljZSBncm91cDE6IGRldmljZTEoY29va2llIDEpLCBkZXZpY2Uy
-KGNvb2tpZSAyKSwgZGV2aWNlMyhjb29raWUgMykKZGV2aWNlIGdyb3VwMjogZGV2aWNlNChjb29r
-aWUgMSksIGRldmljZTUoY29va2llIDIpLCBkZXZpY2U2KGNvb2tpZSAzKQoKZGV2aWNlIGdyb3Vw
-MSBhbmQgZ3JvdXAyIGNhbiBiZSByZXN1bWVkIGFzeW5jaHJvbm91c2x5LgoKCkFub3RoZXIgZXhh
-bXBsZSwgaW4gbXkgcHJldmlvdXMgdGVzdCwKMS4gc2F0YSBjb250cm9sbGVyLiB0YWtlcyAwLjRz
-IHRvIHJlc3VtZS4KMi4gdXNiLCBpbmNsdWRpbmcgdWNoaSBhbmQgZWhjaSBjb250cm9sbGVyIHRh
-a2VzIDEuNHMgdG8gcmVzdW1lCjMuIEFDUEkgYmF0dGVyeSB0YWtlcyAwLjNzIHRvIHJlc3VtZS4K
-My4gYWxsIHRoZSBvdGhlciBkZXZpY2VzIHRha2UgMC4ycyB0byByZXN1bWUuCgpzYXRhLCB1c2Ig
-YW5kIEFDUEkgYmF0dGVyeSBhcmUgaW5kZXBlbmRlbnQgZGV2aWNlIGdyb3Vwcy4KSWYgd2UgdXNl
-IG11bHRpcGxlIGFzeW5jIGRvbWFpbnMsIHdlIGNhbiByZWR1Y2UgdGhlIHRvdGFsIGRldmljZSBy
-ZXN1bWUKdGltZSBmcm9tIDIuM3MgdG8gYSBsaXR0bGUgbW9yZSB0aGFuIDEuNHMgYmVjYXVzZSB0
-aGVyZSBhcmUgYSBsb3Qgb2YKc2xlZXAgaW4gdXNiIHJlc3VtZSBwcm9jZXNzLgpCdXQgaWYgd2Ug
-c2hhcmUgdGhlIGdsb2JhbCBhc3luYyBkb21haW4sIHRoZSB0b3RhbCByZXN1bWUgdGltZSBjYW4g
-b25seQpiZSByZWR1Y2VkIHRvIGFib3V0IDIuMXMgYmVjYXVzZSBzYXRhLCB1c2IgYW5kIEFDUEkg
-YmF0dGVyeSBhcmUgYWN0dWFsbHkKcmVzdW1lZCBzeW5jaHJvbm91c2x5LgoKCj4gSSB3b3VsZAo+
-IHN0cm9uZ2x5IHN1Z2dlc3QgZ29pbmcgdG8gb25lIGdsb2JhbCBkb21haW4sIHNvIHRoYXQgaXQg
-YmVjb21lcwo+IG1vcmUgcHJhY3RpY2FsIHRvIGp1c3Qgd2FpdCBmb3IgYWxsIGFzeW5jIGFjdGlv
-bnMgbGlrZSB0aGlzLi4uCj4gd2hpY2ggeW91IG5lZWQgdG8gZG8gZHVyaW5nIHN1c3BlbmQgZm9y
-IHN1cmUuCj4gCldlIGNhbiB1c2UgbXVsdGlwbGUgYXN5bmMgZG9tYWlucywgZXZlbiBpbiB0aGUg
-c3VzcGVuZCBjYXNlLCBvbiB0aGUKcHJlbWlzZSBvZiB0aGUgZGV2aWNlIGdyb3VwIGJlaW5nIGlu
-ZGVwZW5kZW50IG9mIEFOWSBvdGhlciBkZXZpY2VzLgpGb3IgZXhhbXBsZSwgdGhpcyBpcyB3aGF0
-IEkgZ2V0IGFmdGVyIHBhdGNoIDgvOCBpcyBhcHBsaWVkLgpCVFc6IGFjdGlvbnMgMSBzdGFuZHMg
-Zm9yIHN1c3BlbmQgaGVyZS4KWyAgNDk4Ljg5MTMzN10gZGV2aWNlIGV2ZW50OCBhY3Rpb25zIDEg
-c3RhcnRlZApbICA0OTguODkxMzM5XSBkZXZpY2UgZXZlbnQ4IGFjdGlvbnMgMSBkb25lClsgIDQ5
-OC44OTEzNDRdIGRldmljZSBtb3VzZTMgYWN0aW9ucyAxIHN0YXJ0ZWQKWyAgNDk4Ljg5MTM0NV0g
-ZGV2aWNlIG1vdXNlMyBhY3Rpb25zIDEgZG9uZQpbICA0OTguODkxMzQ5XSBkZXZpY2UgaW5wdXQx
-NyBhY3Rpb25zIDEgc3RhcnRlZApbICA0OTguODkxMzUwXSBkZXZpY2UgaW5wdXQxNyBhY3Rpb25z
-IDEgZG9uZQpbICA0OTguODkxMzU0XSBkZXZpY2UgZXZlbnQ3IGFjdGlvbnMgMSBzdGFydGVkClsg
-IDQ5OC44OTEzNTVdIGRldmljZSBldmVudDcgYWN0aW9ucyAxIGRvbmUKWyAgNDk4Ljg5MTM1OV0g
-ZGV2aWNlIG1vdXNlMiBhY3Rpb25zIDEgc3RhcnRlZApbICA0OTguODkxMzYwXSBkZXZpY2UgbW91
-c2UyIGFjdGlvbnMgMSBkb25lClsgIDQ5OC44OTEzNjRdIGRldmljZSBpbnB1dDE2IGFjdGlvbnMg
-MSBzdGFydGVkClsgIDQ5OC44OTEzNjVdIGRldmljZSBpbnB1dDE2IGFjdGlvbnMgMSBkb25lClsg
-IDQ5OC45OTIwNTJdIGRldmljZSBzZXJpbzQgYWN0aW9ucyAxIHN0YXJ0ZWQKWyAgNDk4Ljk5MjA1
-NF0gZGV2aWNlIHNlcmlvNCBhY3Rpb25zIDEgZG9uZQpbICA0OTguOTkyMDU4XSBkZXZpY2Ugc2Vy
-aW8zIGFjdGlvbnMgMSBzdGFydGVkClsgIDQ5OC45OTIwNjBdIGRldmljZSBzZXJpbzMgYWN0aW9u
-cyAxIGRvbmUKWyAgNDk4Ljk5MjA2NF0gZGV2aWNlIHNlcmlvMiBhY3Rpb25zIDEgc3RhcnRlZApb
-ICA0OTkuNDExODc3XSBkZXZpY2Ugc2VyaW8yIGFjdGlvbnMgMSBkb25lClsgIDQ5OS40NTQ3MzNd
-IGRldmljZSBzZXJpbzEgYWN0aW9ucyAxIHN0YXJ0ZWQKWyAgNDk5LjQ1NDczNF0gZGV2aWNlIHNl
-cmlvMSBhY3Rpb25zIDEgZG9uZQpbICA0OTkuNDU0NzM5XSBkZXZpY2UgZXZlbnQxIGFjdGlvbnMg
-MSBzdGFydGVkClsgIDQ5OS40NTQ3NDBdIGRldmljZSBldmVudDEgYWN0aW9ucyAxIGRvbmUKWyAg
-NDk5LjQ1NDc0NF0gZGV2aWNlIGlucHV0MSBhY3Rpb25zIDEgc3RhcnRlZApbICA0OTkuNDU0NzQ2
-XSBkZXZpY2UgaW5wdXQxIGFjdGlvbnMgMSBkb25lClsgIDQ5OS40NTQ3NTBdIGRldmljZSBzZXJp
-bzAgYWN0aW9ucyAxIHN0YXJ0ZWQKWyAgNDk5LjQ1NjA1Ml0gZGV2aWNlIGk4MDQyIGFjdGlvbnMg
-MSBzdGFydGVkClsgIDQ5OS41NTYwNTRdIGRldmljZSBzZXJpbzAgYWN0aW9ucyAxIGRvbmUKWyAg
-NDk5LjU1Njc0OF0gZGV2aWNlIGk4MDQyIGFjdGlvbnMgMSBkb25lCgp0aGFua3MsCnJ1aQoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
-bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Fri, 2009-07-10 at 19:46 -0400, Dave Jones wrote:
+
+> The fail part comes from the fact that interrupts get reenabled.
+> And that's something that can easily happen out of our control if
+> we call into acpi_cpufreq's ->get method for example, so powernow-k8 isn't
+> the sole reason.
+> 
+>  > I'm happy instead of #ifdef's however to push the logic into the ppc
+>  > driver, or use a flag that the ppc driver sets to enable that logic.
+
+So I'm not too familiar with what other platforms expect here, but would
+it be ok to do something like bailing our early in cpufreq_suspend() if
+there's no cpufreq_driver->suspend method ?
+
+We would need to do the same on resume, though I do wonder whether there
+could be a problem with even x86 here.. do we know for sure that we come
+back from suspend with the same policy we had before suspending ? IE. We
+should probably always do that check on resume, but we can't do it too
+early due to irqs being off...
+
+It's all because cpufreq is a sysdev which was imho a mistake in the
+first place :-)
+
+Maybe at this stage the best option is to add suspend_prepare and
+resume_finish callbacks to sysdevs that are called while IRQs are still
+on, and move cpufreq to use these instead ? That probably means we also
+need to keep track that we have started suspend in the cpufreq core and
+forbid attempts at changing policy etc... from either userspace of
+on-demand governor while suspended, so that's more work, but could be
+the best approach in the long run, what do you think ?
+
+Otherwise I'm happy to just submit a patch that makes
+cpufreq_suspend/resume bail out early if driver->suspend/resume are NULL
+(or do you prefer a driver flag ?)
+
+Cheers,
+Ben.
