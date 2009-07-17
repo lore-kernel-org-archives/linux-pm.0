@@ -1,16 +1,16 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/8] introduce the device async action
-	mechanism
-Date: Fri, 17 Jul 2009 10:44:03 +0800
-Message-ID: <1247798643.26272.275.camel__3393.2012309835$1247798707$gmane$org@rzhang-dt>
-References: <1247643516.26272.77.camel@rzhang-dt>
-	<20090715060006.71c2e2b6@infradead.org>
-	<1247709910.26272.159.camel@rzhang-dt> <200907170312.00006.rjw@sisk.pl>
+Subject: Re: [PATCH 8/8] i8042: support device async suspend &
+	shutdown
+Date: Fri, 17 Jul 2009 11:08:57 +0800
+Message-ID: <1247800137.26272.297.camel__12384.3617657714$1247800152$gmane$org@rzhang-dt>
+References: <1247643522.26272.83.camel@rzhang-dt>
+	<20090715003716.GE2360@ucw.cz> <1247795488.26272.227.camel@rzhang-dt>
+	<200907170440.16678.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907170312.00006.rjw@sisk.pl>
+In-Reply-To: <200907170440.16678.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,119 +21,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDA5LTA3LTE3IGF0IDA5OjExICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBUaHVyc2RheSAxNiBKdWx5IDIwMDksIFpoYW5nIFJ1aSB3cm90ZToKPiA+IE9uIFdl
-ZCwgMjAwOS0wNy0xNSBhdCAyMTowMCArMDgwMCwgQXJqYW4gdmFuIGRlIFZlbiB3cm90ZToKPiA+
-ID4gT24gV2VkLCAxNSBKdWwgMjAwOSAxNTozODozNiArMDgwMAo+ID4gPiBaaGFuZyBSdWkgPHJ1
-aS56aGFuZ0BpbnRlbC5jb20+IHdyb3RlOgo+ID4gPiAKPiA+ID4gPiBJbnRyb2R1Y2UgdGhlIGRl
-dmljZSBhc3luYyBhY3Rpb24gbWVjaGFuaXNtLgo+ID4gPiA+IAo+ID4gPiA+IEluIG9yZGVyIHRv
-IHNwZWVkIHVwIExpbnV4IHN1c3BlbmQvcmVzdW1lL3NodXRkb3duIHByb2Nlc3MsCj4gPiA+ID4g
-d2UgaW50cm9kdWNlIHRoZSBkZXZpY2UgYXN5bmMgYWN0aW9uIG1lY2hhbmlzbSB0aGF0IGFsbG93
-IGRldmljZXMKPiA+ID4gPiB0byBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBhc3luY2hyb25vdXNs
-eS4KPiA+ID4gPiAKPiA+ID4gPiBUaGUgYmFzaWMgaWRlYSBpcyB0aGF0LAo+ID4gPiA+IGlmIHRo
-ZSBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBwcm9jZXNzIG9mIGEgZGV2aWNlIHNldCwKPiA+ID4g
-PiBpbmNsdWRpbmcgYSByb290IGRldmljZSBhbmQgaXRzIGNoaWxkIGRldmljZXMsIGFyZSBpbmRl
-cGVuZGVudCBvZgo+ID4gPiA+IG90aGVyIGRldmljZXMsIHdlIGNyZWF0ZSBhbiBhc3luYyBkb21h
-aW4gZm9yIHRoaXMgZGV2aWNlIHNldCwKPiA+ID4gPiBhbmQgbWFrZSB0aGVtIHN1c3BlbmQvcmVz
-dW1lL3NodXRkb3duIGFzeW5jaHJvbm91c2x5Lgo+ID4gPiAKPiA+ID4gSGksCj4gPiA+IAo+ID4g
-PiBJIGhhdmUgc29tZSBjb25jZXJucyBhYm91dCBoYXZpbmcgYW4gYXN5bmMgZG9tYWluIHBlciBk
-ZXZpY2UoZ3JvdXApCj4gPiA+IHJhdGhlciB0aGFuIGhhdmluZyBvbmUgYXN5bmMgZG9tYWluIGZv
-ciBhbGwgb2YgdGhpcywgCj4gPiAKPiA+IO+7v3dlIGNyZWF0ZSBhbiBhc3luYyBkb21haW4gT05M
-WSBpZiB3ZSBhcmUgc3VyZSB0aGF0IHRoZSBkZXZpY2UgZ3JvdXAgaXMKPiA+IGluZGVwZW5kZW50
-IHdpdGggdGhlIG90aGVyIGRldmljZXMuCj4gPiAKPiA+IGFuZCBJTU8sIHVzaW5nIG11bHRpcGxl
-IGFzeW5jIGRvbWFpbnMgYnJpbmdzIHJlYWwgZGV2aWNlIGFzeW5jIGFjdGlvbnMuCj4gPiBGb3Ig
-ZXhhbXBsZSwgaW4gUzMgcmVzdW1lIGNhc2UsIHRoZXJlIGFyZSB0d28gZGV2aWNlIGdyb3VwczoK
-PiA+IGRldmljZSBncm91cDE6IGRldmljZTEsIGRldmljZTIsIGRldmljZTMKPiA+IGRldmljZSBn
-cm91cDI6IGRldmljZTQsIGRldmljZTUsIGRldmljZTYKPiA+IAo+ID4gSWYgdGhleSBzaGFyZSB0
-aGUgZ2xvYmFsIGRvbWFpbiwgd2UgbWF5IGdldDrvu78KPiA+IGRldmljZSBncm91cDE6IGRldmlj
-ZTEoY29va2llIDEpLCBkZXZpY2UyKGNvb2tpZSA0KSwgZGV2aWNlMyhjb29raWUgNSkKPiA+IGRl
-dmljZSBncm91cDI6IGRldmljZTQoY29va2llIDIpLCBkZXZpY2U1KGNvb2tpZSAzKSwgZGV2aWNl
-Nihjb29raWUgNikKPiA+IAo+ID4gdGhpcyBpcyBub3QgcmVhbCBhc3luY2hyb25vdXMgcmVzdW1l
-IGJlY2F1c2UKPiA+IGRldmljZTMgbmVlZHMgdG8gY2FsbCBhc3luY19zeW5jaHJvbml6ZV9jb29r
-aWUoNSkgYmVmb3JlIHJlc3VtZSBpdHNlbGYuCj4gPiB3aGljaCBtZWFucyB0aGF0IGRldmljZTQg
-YW5kIGRldmljZTUgbXVzdCBiZSByZXN1bWVkIGJlZm9yZSBkZXZpY2UzLgo+ID4gCj4gPiBCdXQg
-aWYgbXVsdGlwbGUgYXN5bmMgZG9tYWluIGlzIHVzZWQsIHdlIGdldDoKPiA+IO+7v2RldmljZSBn
-cm91cDE6IGRldmljZTEoY29va2llIDEpLCBkZXZpY2UyKGNvb2tpZSAyKSwgZGV2aWNlMyhjb29r
-aWUgMykKPiA+IGRldmljZSBncm91cDI6IGRldmljZTQoY29va2llIDEpLCBkZXZpY2U1KGNvb2tp
-ZSAyKSwgZGV2aWNlNihjb29raWUgMykKPiA+IAo+ID4gZGV2aWNlIGdyb3VwMSBhbmQgZ3JvdXAy
-IGNhbiBiZSByZXN1bWVkIGFzeW5jaHJvbm91c2x5Lgo+ID4gCj4gPiAKPiA+IEFub3RoZXIgZXhh
-bXBsZSwgaW4gbXkgcHJldmlvdXMgdGVzdCwKPiA+IDEuIHNhdGEgY29udHJvbGxlci4gdGFrZXMg
-MC40cyB0byByZXN1bWUuCj4gPiAyLiB1c2IsIGluY2x1ZGluZyB1Y2hpIGFuZCBlaGNpIGNvbnRy
-b2xsZXIgdGFrZXMgMS40cyB0byByZXN1bWUKPiA+IDMuIEFDUEkgYmF0dGVyeSB0YWtlcyAwLjNz
-IHRvIHJlc3VtZS4KPiA+IDMuIGFsbCB0aGUgb3RoZXIgZGV2aWNlcyB0YWtlIDAuMnMgdG8gcmVz
-dW1lLgo+ID4gCj4gPiBzYXRhLCB1c2IgYW5kIEFDUEkgYmF0dGVyeSBhcmUgaW5kZXBlbmRlbnQg
-ZGV2aWNlIGdyb3Vwcy4KPiA+IElmIHdlIHVzZSBtdWx0aXBsZSBhc3luYyBkb21haW5zLCB3ZSBj
-YW4gcmVkdWNlIHRoZSB0b3RhbCBkZXZpY2UgcmVzdW1lCj4gPiB0aW1lIGZyb20gMi4zcyB0byBh
-IGxpdHRsZSBtb3JlIHRoYW4gMS40cyBiZWNhdXNlIHRoZXJlIGFyZSBhIGxvdCBvZgo+ID4gc2xl
-ZXAgaW4gdXNiIHJlc3VtZSBwcm9jZXNzLgo+ID4gQnV0IGlmIHdlIHNoYXJlIHRoZSBnbG9iYWwg
-YXN5bmMgZG9tYWluLCB0aGUgdG90YWwgcmVzdW1lIHRpbWUgY2FuIG9ubHkKPiA+IGJlIHJlZHVj
-ZWQgdG8gYWJvdXQgMi4xcyBiZWNhdXNlIHNhdGEsIHVzYiBhbmQgQUNQSSBiYXR0ZXJ5IGFyZSBh
-Y3R1YWxseQo+ID4gcmVzdW1lZCBzeW5jaHJvbm91c2x5Lgo+IAo+IFdlbGwsIGZpcnN0LCBJJ20g
-bm90IHJlYWxseSBzdXJlIHRoYXQgdXNpbmcgdGhlIGFzeW5jIF9ib290XyBpbmZyYXN0cnVjdHVy
-ZSBmb3IKPiB0aGF0IGlzIGEgZ29vZCBjaG9pY2UuCgpJTU8sIGtlcm5lbC9hc3luYy5jIHByb3Zp
-ZGVzIGdvb2QgaW50ZXJmYWNlcyB0aGF0IGNhbiBiZSB1c2VkIG5vdCBvbmx5CmluIGJvb3QgcGhy
-YXNlLgppdCdzIGdlbmVyaWMgZW5vdWdoIGZvciBzdXNwZW5kL3Jlc3VtZS4KCj4gIER1cmluZyBz
-dXNwZW5kLXJlc3VtZSB3ZSBrbm93IGRlcGVuZGVuY2llcyBiZXR3ZWVuCj4gZGV2aWNlcyBiZWZv
-cmVoYW5kLCBhdCBsZWFzdCBpbiB0aGVvcnksIHNvIHdlIGNhbiB1c2UgdGhlbS4KPiAKdGhhdCdz
-IHdoeSBJIHVzZSBtdWx0aXBsZSBhc3luYyBkb21haW5zLiA6KQpPbmUgZG9tYWluIGZvciBhIGRl
-dmljZSBncm91cC4KCj4gSW4gcGFydGljdWxhciwgd2UgaGF2ZSB0byBtYWtlIHN1cmUgdGhhdCBw
-YXJlbnQgZGV2aWNlcyB3aWxsIG5vdCBiZSBzdXNwZW5kZWQKPiB1bnRpbCBhbGwgb2YgdGhlaXIg
-Y2hpbGRyZW4gaGF2ZSBiZWVuIHN1c3BlbmRlZCBhbmQgY2hpbGRyZW4gZGV2aWNlcyB3aWxsIG5v
-dAo+IGJlIHJlc3VtZWQgYmVmb3JlIHRoZSBwYXJlbnRzLgoKdGhhdCdzIG5vdCBlbm91Z2guCu+7
-v0ZvciBleGFtcGxlcywKQUNQSSBiYXR0ZXJ5IGFuZCBFQyBhcmUgaW5kZXBlbmRlbnQgZGV2aWNl
-cywgYnV0IEVDIG11c3QgYmUgcmVzdW1lZApiZWZvcmUgYmF0dGVyeSBiZWNhdXNlIGJhdHRlcnkg
-ZHJpdmVyIG1heSBhY2Nlc3Mgc29tZSBFQyBhZGRyZXNzIHNwYWNlCmR1cmluZyByZXN1bWUgdGlt
-ZS4KT2YgY291cnNlIHRoZSBwcm9ibGVtIEkgZGVzY3JpYmUgYWJvdmUgZG9lc24ndCBleGlzdCBi
-ZWNhdXNlIEFDUEkKYmF0dGVyeSBkcml2ZXIgZG9lc24ndCBoYXZlIC5yZXN1bWUgbWV0aG9kIHJp
-Z2h0IG5vdy4KQnV0IHRoaXMgaXMgdGhlIGNhc2UgdGhhdCB3b3JrcyB3ZWxsIGluIHRoZSBjdXJy
-ZW50IGNvZGUgYnV0IGNhbiBub3QgYmUKY29udmVydGVkIHRvIGFzeW5jIGRldmljZSByZXN1bWUu
-Cgo+IFRoZSBjdXJyZW50IGNvZGUgaGFuZGxlcyB0aGlzIHF1aXRlCj4gZWZmaWNpZW50bHksIHNv
-IEkgd29uZGVyIHdoYXQgeW91J3JlIGdvaW5nIHRvIGRvIG5vdCB0byBicmVhayBpdC4KPiAKc29y
-cnkgSSBkb24ndCBxdWl0ZSB1bmRlcnN0YW5kLgoKPiBTZWNvbmQsIHlvdSBzZWVtIHRvIHRoaW5r
-IHRoYXQgaXQgb25seSBtYWtlcyBzZW5zZSB0byBleGVjdXRlIC0+c3VzcGVuZCgpCj4gYW5kIC0+
-cmVzdW1lKCkgYXN5bmNocm9ub3VzbHkgKG9yIGluIHBhcmFsbGVsKSwgd2hpbGUgZm9yIGV4YW1w
-bGUgaW4gdGhlIGNhc2UKPiBvZiBQQ0kgLT5zdXNwZW5kX25vaXJxKCkgYW5kIC0+cmVzdW1lX25v
-aXJxKCkgYWxzbyBjb250YWluIGNvZGUgdGhhdAo+IHBvdGVudGlhbGx5IGNhbiB0YWtlIHF1aXRl
-IHNvbWUgdGltZSB0byBleGVjdXRlLgo+IApJTU8sIHRoaXMgcGF0Y2ggc2V0IGp1c3QgcHJvdmlk
-ZXMgYSBmcmFtZXdvcmsgdGhhdCBjYW4gYmUgdXNlZCBmb3IKc3VzcGVuZC9yZXN1bWUvc2h1dGRv
-d24gb3B0aW1pemF0aW9uLCBhbmQgaXQgZG9lc24ndCBzb2x2ZSBhbGwgdGhlCnByb2JsZW0gYXQg
-b25lIHRpbWUuCgpJTU8sIHRoZSBuZXh0IHN0ZXAgd2Ugc2hvdWxkIGRvIGlzOgoxLiBhbmFseXpl
-IHRoZSBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBwcm9jZXNzIGFuZCBmaW5kIG91dCB0aGUgaG90
-c3BvdCwKICAgaS5lLiB3aGljaCBkcml2ZXJzIHN1c3BlbmQvcmVzdW1lIHNsb3dseQoyLiBJZiBp
-dCdzIHNvZnR3YXJlIHByb2JsZW0gdGhhdCB3ZSBjYW4gZml4IGluIHRoZSBkcml2ZXIsIGZpeCBp
-dC4KICAgbGlrZSBjb21taXQgMjQ5MjBjOGE2MzU4YmY1NTMyZjEzMzZiOTkwYjFjMGZlMmI1OTll
-ZQozLiBJZiB0aGUgaGFyZHdhcmUgaXMgc2xvdywgdHJ5IHRvIGRvIGl0IGFzeW5jaHJvbm91c2x5
-LgogICBsaWtlIEkgZGlkIGluIHBhdGNoIDgvOC4KClRoaXMgZnJhbWV3b3JrIG1ha2VzIGl0IHF1
-aXRlIGVhc3kgdG8gcmVnaXN0ZXIgYW4gYXN5bmMgZGV2aWNlIGdyb3VwLgoKQW5kIGV2ZW4gdGhl
-IHN1c3BlbmRfbm9pcnEgYW5kIHJlc3VtZV9ub2lycSBjYW4gYmUgY292ZXJlZCBlYXNpbHkgd2l0
-aAp0aGlzIGZyYW1ld29yay4KRm9yIGV4YW1wbGUsCjEuIGludHJvZHVjZSB0d28gbmV3IGRldmlj
-ZSBhc3luYyBhY3Rpb25zLgogICDvu79ERVZfQVNZTkNfU1VTUEVORF9OT0lSUS9ERVZfQVNZTkNf
-UkVTVU1FX05PSVJRCiAgIGp1c3QgbGlrZSB3aGF0IEkgZGlkIGluIHBhdGNoIDQvOCwgNS84IGFu
-ZCA2LzguCjIuIGZpbmQgb3V0IHdoaWNoIGRldmljZSBpcyBzbG93IGluIC0+c3VzcGVuZF9ub2ly
-cSBhbmQgLT5yZXN1bWVfbm9pcnEKMy4gc2VlIGlmIHdlIGNhbiBmaW5kIGFuIGFzeW5jIGRldmlj
-ZSBncm91cCB0aGF0IGluY2x1ZGluZyB0aGlzIGRldmljZS4KNC4gaWYgeWVzLCByZWdpc3RlciB0
-aGlzIG5ldyBhc3luYyBkZXZpY2UgZ3JvdXAsCiAgIHdpdGggdGhlIHR5cGUgREVWX0FTWU5DX1NV
-U1BFTkRfTk9JUlEvREVWX0FTWU5DX1JFU1VNRV9OT0lSUQoKPiBGaW5hbGx5LCBJIGRvbid0IHJl
-YWxseSB1bmRlcnN0YW5kIHdoYXQgdGhlIGNvZGUgaW4gdGhlICRzdWJqZWN0IHBhdGNoIGlzCj4g
-c3VwcG9zZWQgdG8gZG8uICBJbiBwYXJ0aWN1bGFyLCB3aGF0J3MgdGhlIHB1cnBvc2Ugb2YgZGV2
-X2FjdGlvbigpPwo+IEl0IG9ubHkgc2VlbXMgdG8gY2hlY2sgaWYgZnVuYyBpcyBub3QgTlVMTCBy
-aWdodCBub3cuICBBbHNvLCB5b3UgZGVmaW5lCj4gREVWX0FTWU5DX0FDVElPTlNfQUxMIGFzIDAs
-IHNvIHRoZSBjb25kaXRpb24KPiBpZiAoIShERVZfQVNZTkNfQUNUSU9OU19BTEwgJiB0eXBlKSkg
-aW4gZGV2X2FzeW5jX3JlZ2lzdGVyKCkgaXMgYWx3YXlzCj4gc2F0aXNmaWVkLgoKcGxlYXNlIHJl
-ZmVyIHRvIHBhdGNoIDQvOCBhbmQgNS84IGFuZCA2LzgKClBhdGNoIDIvOCBpcyBqdXN0IGEgZnJh
-bWV3b3JrLiBObyBkZXZpY2UgYXN5bmMgYWN0aW9uIGlzIHN1cHBvcnQgeWV0LgpBbmQgaW4gUGF0
-Y2ggNCwgNSwgNiwgd2UgaW50cm9kdWNlZCB0aHJlZSBkaWZmZXJlbnQgdHlwZXMgb2YgZGV2aWNl
-CmFzeW5jIGFjdGlvbnMsIERFVl9BU1lOQ19TVVNQRU5ELCBERVZfQVNZTkNfUkVTVU1FIGFuZApE
-RVZfQVNZTkNfU0hVVERPV04uCkkgdHJpZWQgdG8gc3BsaXQgYSBiaWcgcGF0Y2ggaW50byBzZXZl
-cmFsIHNtYWxsIHBhdGNoZXMuCkFuZCBpdCBzdWdnZXN0cyBob3cgdG8gYWRkaW5nIGEgbmV3IGRl
-dmljZSBhc3luYyB0eXBlLCBsaWtlCkRFVl9BU1lOQ19TVVNQRU5EX05PSVJRLCBERVZfQVNZTkNf
-UkVTVU1FX05PX0lSUSwgZXRjLiA6KQoKPiBDYW4gd2UgcGxlYXNlIGRpc2N1c3MgdGhpcyB0aG9y
-b3VnaGx5IGJlZm9yZSBhbnkgbmV3IHBhdGNoZXMgYXJlIHNlbnQ/Cj4gCmRvIEkgc3RpbGwgbmVl
-ZCB0byByZXNlbmQgdGhlIHBhdGNoPwpJZiB5ZXMsIEknbGwgcmVzZW5kIHBhdGNoIDIvOCwgMy84
-LCA0LzgsIDUvOCwgNi84IGFzIGEgbmV3IGJpZyBvbmUuIDopCgp0aGFua3MsCnJ1aQoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
-ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Fri, 2009-07-17 at 10:40 +0800, Rafael J. Wysocki wrote:
+> On Friday 17 July 2009, Zhang Rui wrote:
+> > On Wed, 2009-07-15 at 08:37 +0800, Pavel Machek wrote:
+> > > On Wed 2009-07-15 15:38:42, Zhang Rui wrote:
+> > > > 
+> > > > i8042 controller support device async actions.
+> > > > 
+> > > > If boot option "dev_async_action" is added,
+> > > > i8042 controller and its child devices can be
+> > > > suspended/resumed/shutdown asynchronously.
+> > > > 
+> > > > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > > > ---
+> > > >  drivers/input/serio/i8042.c |   10 +++++++++-
+> > > >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > > > 
+> > > > Index: linux-2.6/drivers/input/serio/i8042.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/drivers/input/serio/i8042.c
+> > > > +++ linux-2.6/drivers/input/serio/i8042.c
+> > > > @@ -1284,14 +1284,21 @@ static int __init i8042_init(void)
+> > > >  		goto err_unregister_driver;
+> > > >  	}
+> > > >  
+> > > > -	err = platform_device_add(i8042_platform_device);
+> > > > +	err = dev_async_register(&i8042_platform_device->dev,
+> > > > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
+> > > >  	if (err)
+> > > >  		goto err_free_device;
+> > > >  
+> > > > +	err = platform_device_add(i8042_platform_device);
+> > > > +	if (err)
+> > > > +		goto err_dev_async_unregister;
+> > > > +
+> > > >  	panic_blink = i8042_panic_blink;
+> > > >  
+> > > >  	return 0;
+> > > >  
+> > > > + err_dev_async_unregister:
+> > > > +	dev_async_unregister(&i8042_platform_device->dev);
+> > > 
+> > > 
+> > > >   err_free_device:
+> > > >  	platform_device_put(i8042_platform_device);
+> > > >   err_unregister_driver:
+> > > > @@ -1304,6 +1311,7 @@ static int __init i8042_init(void)
+> > > >  
+> > > >  static void __exit i8042_exit(void)
+> > > >  {
+> > > > +	dev_async_unregister(&i8042_platform_device->dev);
+> > > >  	platform_device_unregister(i8042_platform_device);
+> > > >  	platform_driver_unregister(&i8042_driver);
+> > > >  	i8042_platform_exit();
+> > > 
+> > > Could we get the core to do async_unregister during device_unregister?
+> > > 
+> > yes, we can.
+> > I think it's a little strange that drivers need to invoke
+> > dev_async_register to register an async device group, but don't need to
+> > call dev_async_unregister to unregister it.
+> > 
+> > > Or maybe better, just add flags during device_add?
+> > > 
+> > Many devices don't know if they support async actions or not during
+> > device initialization time, like PCI and ACPI devices.
+> > If we want to create an async group for a PCI device, we have to call
+> > dev_async_register in the specified PCI device driver, rather than in
+> > the PCI bus scan stage.
+> 
+> That is quite a big design issue, IMO.
+> 
+> Did you consider any other approach to this?
+> 
+not yet.
+
+Just like the async boot approach, this async action mechanism is not
+designed for all the devices.
+
+Plus different device actions should be handled differently.
+
+E.g device suspend and shutdown are more complicate than resume case.
+Because in resume case, child devices are ALWAYS resumed after its
+parent device, so it's easy to register an DEV_ASYNC_RESUME group.
+But if we want to register an async device group that supports
+DEV_ASYNC_SUSPEND/DEV_ASYNC_SHUTDOWN, we must make sure that
+the device groups is something like a Closure, i.e. they don't depend on
+ANY OTHER devices.
+
+Anyway, IMO, if we want to register a new async device group, we should
+do it case by case.
+
+thanks,
+rui
