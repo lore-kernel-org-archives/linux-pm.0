@@ -1,17 +1,14 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [PATCH 0/8] device async action mechanism
-Date: Fri, 17 Jul 2009 09:37:00 +0800
-Message-ID: <1247794620.26272.213.camel__1098.65869530967$1247794642$gmane$org@rzhang-dt>
+Date: Fri, 17 Jul 2009 09:40:13 +0800
+Message-ID: <1247794814.26272.216.camel__49155.0648388968$1247794907$gmane$org@rzhang-dt>
 References: <1247643512.26272.74.camel@rzhang-dt>
-	<87ocrm6xeq.fsf@basil.nowhere.org>
-	<1247710483.26272.170.camel@rzhang-dt>
-	<20090716114020.GA11928@khazad-dum.debian.net>
-	<4A5F2EEC.8010508@linux.intel.com>
+	<20090715002916.GC2360@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A5F2EEC.8010508@linux.intel.com>
+In-Reply-To: <20090715002916.GC2360@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2009-07-16 at 21:45 +0800, Arjan van de Ven wrote:
-> Henrique de Moraes Holschuh wrote:
-> > On Thu, 16 Jul 2009, Zhang Rui wrote:
-> >> the kernel device suspend time is reduced from 3.2s to 2.8s after
-> >> applying this patch set in my test box.
-> > 
-> > It will give even a bigger boot time saving on ThinkPads, where there is a
-> > Synaptics (or ALPS if you are unlucky) touchpad with the trackpoint behind
-> > it... it takes about 2s to init both devices here.  That's two seconds of
-> > boot time you can shove off if it is being initialized assyncronously :-)
-> > 
+On Wed, 2009-07-15 at 08:29 +0800, Pavel Machek wrote:
+> Hi!
 > 
-> that's a different problem that I don't think this will solve;
-
-right.
-we are not able to get an async device group during initialization.
+> I notice you are still ccing my @suse.cz address. That one no longer
+> works :-(. 
+> 
+> > this is the patch set I made to speed up the device
+> > suspend/resume/shutdown process.
+> > 
+> > A new mechanism called Device Async Actions is introduced in this patch set.
+> > The basic idea is that,
+> > 1. device declares to support certain kinds of device async action,
+> >    like suspend, resume, shutdown, etc.
+> > 2. a async domain is create for this device
+> > 3. the child device inherits the async domain
+> > 4. devices in the same domain suspend/resume/shutdown asynchronously with
+> >    the other devices.
+> > 
+> > Currently, in order to make sure that it won't bring any side effects,
+> > I only convert the ACPI battery and i8042 to use this framework, which reduces
+> > 0.5s+ S3 time(suspend time plus resume time)???, from 7.0s to less than 6.5s.
+> > and about 0.5s shutdown time in my test.
+> 
+> Hmm, 7seconds is still quite long. What hw is that?
+> 
+7 seconds including both kernel suspend and resume time.
+it takes about 3.2s to suspend and 3.8 seconds to resume.
 
 thanks,
 rui
-
->  as long
-> as you keep the boot of the kernel wait for all async actions, you're going
-> to hit that wait. In Moblin we have a (bad) patch to not do the wait,
-> at some point we need to figure how to get a mainline-able patch....
