@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] [suspend] pci_raw_set_power_state: replace
- msleep by udelay in resuming procedure
-Date: Thu, 16 Jul 2009 13:02:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0907161259510.2952-100000__18650.636697612$1247763882$gmane$org@iolanthe.rowland.org>
-References: <1247759007-27411-1-git-send-email-wuzhangjin@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/8] introduce the device async action
+	mechanism
+Date: Fri, 17 Jul 2009 03:11:59 +0200
+Message-ID: <200907170312.00006.rjw__14646.9048726887$1247793184$gmane$org@sisk.pl>
+References: <1247643516.26272.77.camel@rzhang-dt>
+	<20090715060006.71c2e2b6@infradead.org>
+	<1247709910.26272.159.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1247759007-27411-1-git-send-email-wuzhangjin@gmail.com>
+In-Reply-To: <1247709910.26272.159.camel@rzhang-dt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +21,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: len.brown@intel.com, yanh@lemote.com, linux-kernel@vger.kernel.org, wuzj@lemote.com, zhangfx@lemote.com, linux-pm@lists.linux-foundation.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, "Van De Ven,
+	Arjan" <arjan.van.de.ven@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 16 Jul 2009, Wu Zhangjin wrote:
-
-> we can not call msleep() when resuming from STR/Standby: if the
-> current_state of the pci device is PCI_D3hot, means we are in the
-> procedure of resuming, in this procedure, we can not re-schedule,
-> otherwise, there will be a deadlock.
-
-I don't understand.
-
-First of all, why does current_state == PCI_D3hot mean the system is
-resuming from sleep?  Isn't it possible that the PCI device is going
-through a runtime resume?
-
-Secondly, why will scheduling during a resume cause a deadlock?
-
-Alan Stern
+T24gVGh1cnNkYXkgMTYgSnVseSAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gT24gV2VkLCAyMDA5
+LTA3LTE1IGF0IDIxOjAwICswODAwLCBBcmphbiB2YW4gZGUgVmVuIHdyb3RlOgo+ID4gT24gV2Vk
+LCAxNSBKdWwgMjAwOSAxNTozODozNiArMDgwMAo+ID4gWmhhbmcgUnVpIDxydWkuemhhbmdAaW50
+ZWwuY29tPiB3cm90ZToKPiA+IAo+ID4gPiBJbnRyb2R1Y2UgdGhlIGRldmljZSBhc3luYyBhY3Rp
+b24gbWVjaGFuaXNtLgo+ID4gPiAKPiA+ID4gSW4gb3JkZXIgdG8gc3BlZWQgdXAgTGludXggc3Vz
+cGVuZC9yZXN1bWUvc2h1dGRvd24gcHJvY2VzcywKPiA+ID4gd2UgaW50cm9kdWNlIHRoZSBkZXZp
+Y2UgYXN5bmMgYWN0aW9uIG1lY2hhbmlzbSB0aGF0IGFsbG93IGRldmljZXMKPiA+ID4gdG8gc3Vz
+cGVuZC9yZXN1bWUvc2h1dGRvd24gYXN5bmNocm9ub3VzbHkuCj4gPiA+IAo+ID4gPiBUaGUgYmFz
+aWMgaWRlYSBpcyB0aGF0LAo+ID4gPiBpZiB0aGUgc3VzcGVuZC9yZXN1bWUvc2h1dGRvd24gcHJv
+Y2VzcyBvZiBhIGRldmljZSBzZXQsCj4gPiA+IGluY2x1ZGluZyBhIHJvb3QgZGV2aWNlIGFuZCBp
+dHMgY2hpbGQgZGV2aWNlcywgYXJlIGluZGVwZW5kZW50IG9mCj4gPiA+IG90aGVyIGRldmljZXMs
+IHdlIGNyZWF0ZSBhbiBhc3luYyBkb21haW4gZm9yIHRoaXMgZGV2aWNlIHNldCwKPiA+ID4gYW5k
+IG1ha2UgdGhlbSBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBhc3luY2hyb25vdXNseS4KPiA+IAo+
+ID4gSGksCj4gPiAKPiA+IEkgaGF2ZSBzb21lIGNvbmNlcm5zIGFib3V0IGhhdmluZyBhbiBhc3lu
+YyBkb21haW4gcGVyIGRldmljZShncm91cCkKPiA+IHJhdGhlciB0aGFuIGhhdmluZyBvbmUgYXN5
+bmMgZG9tYWluIGZvciBhbGwgb2YgdGhpcywgCj4gCj4g77u/d2UgY3JlYXRlIGFuIGFzeW5jIGRv
+bWFpbiBPTkxZIGlmIHdlIGFyZSBzdXJlIHRoYXQgdGhlIGRldmljZSBncm91cCBpcwo+IGluZGVw
+ZW5kZW50IHdpdGggdGhlIG90aGVyIGRldmljZXMuCj4gCj4gYW5kIElNTywgdXNpbmcgbXVsdGlw
+bGUgYXN5bmMgZG9tYWlucyBicmluZ3MgcmVhbCBkZXZpY2UgYXN5bmMgYWN0aW9ucy4KPiBGb3Ig
+ZXhhbXBsZSwgaW4gUzMgcmVzdW1lIGNhc2UsIHRoZXJlIGFyZSB0d28gZGV2aWNlIGdyb3VwczoK
+PiBkZXZpY2UgZ3JvdXAxOiBkZXZpY2UxLCBkZXZpY2UyLCBkZXZpY2UzCj4gZGV2aWNlIGdyb3Vw
+MjogZGV2aWNlNCwgZGV2aWNlNSwgZGV2aWNlNgo+IAo+IElmIHRoZXkgc2hhcmUgdGhlIGdsb2Jh
+bCBkb21haW4sIHdlIG1heSBnZXQ677u/Cj4gZGV2aWNlIGdyb3VwMTogZGV2aWNlMShjb29raWUg
+MSksIGRldmljZTIoY29va2llIDQpLCBkZXZpY2UzKGNvb2tpZSA1KQo+IGRldmljZSBncm91cDI6
+IGRldmljZTQoY29va2llIDIpLCBkZXZpY2U1KGNvb2tpZSAzKSwgZGV2aWNlNihjb29raWUgNikK
+PiAKPiB0aGlzIGlzIG5vdCByZWFsIGFzeW5jaHJvbm91cyByZXN1bWUgYmVjYXVzZQo+IGRldmlj
+ZTMgbmVlZHMgdG8gY2FsbCBhc3luY19zeW5jaHJvbml6ZV9jb29raWUoNSkgYmVmb3JlIHJlc3Vt
+ZSBpdHNlbGYuCj4gd2hpY2ggbWVhbnMgdGhhdCBkZXZpY2U0IGFuZCBkZXZpY2U1IG11c3QgYmUg
+cmVzdW1lZCBiZWZvcmUgZGV2aWNlMy4KPiAKPiBCdXQgaWYgbXVsdGlwbGUgYXN5bmMgZG9tYWlu
+IGlzIHVzZWQsIHdlIGdldDoKPiDvu79kZXZpY2UgZ3JvdXAxOiBkZXZpY2UxKGNvb2tpZSAxKSwg
+ZGV2aWNlMihjb29raWUgMiksIGRldmljZTMoY29va2llIDMpCj4gZGV2aWNlIGdyb3VwMjogZGV2
+aWNlNChjb29raWUgMSksIGRldmljZTUoY29va2llIDIpLCBkZXZpY2U2KGNvb2tpZSAzKQo+IAo+
+IGRldmljZSBncm91cDEgYW5kIGdyb3VwMiBjYW4gYmUgcmVzdW1lZCBhc3luY2hyb25vdXNseS4K
+PiAKPiAKPiBBbm90aGVyIGV4YW1wbGUsIGluIG15IHByZXZpb3VzIHRlc3QsCj4gMS4gc2F0YSBj
+b250cm9sbGVyLiB0YWtlcyAwLjRzIHRvIHJlc3VtZS4KPiAyLiB1c2IsIGluY2x1ZGluZyB1Y2hp
+IGFuZCBlaGNpIGNvbnRyb2xsZXIgdGFrZXMgMS40cyB0byByZXN1bWUKPiAzLiBBQ1BJIGJhdHRl
+cnkgdGFrZXMgMC4zcyB0byByZXN1bWUuCj4gMy4gYWxsIHRoZSBvdGhlciBkZXZpY2VzIHRha2Ug
+MC4ycyB0byByZXN1bWUuCj4gCj4gc2F0YSwgdXNiIGFuZCBBQ1BJIGJhdHRlcnkgYXJlIGluZGVw
+ZW5kZW50IGRldmljZSBncm91cHMuCj4gSWYgd2UgdXNlIG11bHRpcGxlIGFzeW5jIGRvbWFpbnMs
+IHdlIGNhbiByZWR1Y2UgdGhlIHRvdGFsIGRldmljZSByZXN1bWUKPiB0aW1lIGZyb20gMi4zcyB0
+byBhIGxpdHRsZSBtb3JlIHRoYW4gMS40cyBiZWNhdXNlIHRoZXJlIGFyZSBhIGxvdCBvZgo+IHNs
+ZWVwIGluIHVzYiByZXN1bWUgcHJvY2Vzcy4KPiBCdXQgaWYgd2Ugc2hhcmUgdGhlIGdsb2JhbCBh
+c3luYyBkb21haW4sIHRoZSB0b3RhbCByZXN1bWUgdGltZSBjYW4gb25seQo+IGJlIHJlZHVjZWQg
+dG8gYWJvdXQgMi4xcyBiZWNhdXNlIHNhdGEsIHVzYiBhbmQgQUNQSSBiYXR0ZXJ5IGFyZSBhY3R1
+YWxseQo+IHJlc3VtZWQgc3luY2hyb25vdXNseS4KCldlbGwsIGZpcnN0LCBJJ20gbm90IHJlYWxs
+eSBzdXJlIHRoYXQgdXNpbmcgdGhlIGFzeW5jIF9ib290XyBpbmZyYXN0cnVjdHVyZSBmb3IKdGhh
+dCBpcyBhIGdvb2QgY2hvaWNlLiAgRHVyaW5nIHN1c3BlbmQtcmVzdW1lIHdlIGtub3cgZGVwZW5k
+ZW5jaWVzIGJldHdlZW4KZGV2aWNlcyBiZWZvcmVoYW5kLCBhdCBsZWFzdCBpbiB0aGVvcnksIHNv
+IHdlIGNhbiB1c2UgdGhlbS4KCkluIHBhcnRpY3VsYXIsIHdlIGhhdmUgdG8gbWFrZSBzdXJlIHRo
+YXQgcGFyZW50IGRldmljZXMgd2lsbCBub3QgYmUgc3VzcGVuZGVkCnVudGlsIGFsbCBvZiB0aGVp
+ciBjaGlsZHJlbiBoYXZlIGJlZW4gc3VzcGVuZGVkIGFuZCBjaGlsZHJlbiBkZXZpY2VzIHdpbGwg
+bm90CmJlIHJlc3VtZWQgYmVmb3JlIHRoZSBwYXJlbnRzLiAgVGhlIGN1cnJlbnQgY29kZSBoYW5k
+bGVzIHRoaXMgcXVpdGUKZWZmaWNpZW50bHksIHNvIEkgd29uZGVyIHdoYXQgeW91J3JlIGdvaW5n
+IHRvIGRvIG5vdCB0byBicmVhayBpdC4KClNlY29uZCwgeW91IHNlZW0gdG8gdGhpbmsgdGhhdCBp
+dCBvbmx5IG1ha2VzIHNlbnNlIHRvIGV4ZWN1dGUgLT5zdXNwZW5kKCkKYW5kIC0+cmVzdW1lKCkg
+YXN5bmNocm9ub3VzbHkgKG9yIGluIHBhcmFsbGVsKSwgd2hpbGUgZm9yIGV4YW1wbGUgaW4gdGhl
+IGNhc2UKb2YgUENJIC0+c3VzcGVuZF9ub2lycSgpIGFuZCAtPnJlc3VtZV9ub2lycSgpIGFsc28g
+Y29udGFpbiBjb2RlIHRoYXQKcG90ZW50aWFsbHkgY2FuIHRha2UgcXVpdGUgc29tZSB0aW1lIHRv
+IGV4ZWN1dGUuCgpGaW5hbGx5LCBJIGRvbid0IHJlYWxseSB1bmRlcnN0YW5kIHdoYXQgdGhlIGNv
+ZGUgaW4gdGhlICRzdWJqZWN0IHBhdGNoIGlzCnN1cHBvc2VkIHRvIGRvLiAgSW4gcGFydGljdWxh
+ciwgd2hhdCdzIHRoZSBwdXJwb3NlIG9mIGRldl9hY3Rpb24oKT8KSXQgb25seSBzZWVtcyB0byBj
+aGVjayBpZiBmdW5jIGlzIG5vdCBOVUxMIHJpZ2h0IG5vdy4gIEFsc28sIHlvdSBkZWZpbmUKREVW
+X0FTWU5DX0FDVElPTlNfQUxMIGFzIDAsIHNvIHRoZSBjb25kaXRpb24KaWYgKCEoREVWX0FTWU5D
+X0FDVElPTlNfQUxMICYgdHlwZSkpIGluIGRldl9hc3luY19yZWdpc3RlcigpIGlzIGFsd2F5cwpz
+YXRpc2ZpZWQuICBUaGVyZSBhcmUgbW9yZSB0aGluZ3MgbGlrZSB0aGF0IGluIHRoaXMgcGF0Y2gs
+IG5vdCB0byBtZW50aW9uCmV4Y2Vzc2l2ZSByZXR1cm4gc3RhdGVtZW50cyBhbmQgcGFzc2luZyBm
+dW5jdGlvbiBwb2ludGVycyBhcyAodm9pZCAqKS4KCkNhbiB3ZSBwbGVhc2UgZGlzY3VzcyB0aGlz
+IHRob3JvdWdobHkgYmVmb3JlIGFueSBuZXcgcGF0Y2hlcyBhcmUgc2VudD8KCkJlc3QsClJhZmFl
+bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1w
+bSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6
+Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
