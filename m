@@ -1,16 +1,16 @@
-From: Wu Zhangjin <wuzhangjin@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] [suspend] pci_raw_set_power_state: replace
- msleep by udelay in resuming procedure
-Date: Fri, 17 Jul 2009 10:18:05 +0800
-Message-ID: <1247797085.19112.82.camel__42875.4983157434$1247797155$gmane$org@falcon>
+	msleep by udelay in resuming procedure
+Date: Fri, 17 Jul 2009 04:33:41 +0200
+Message-ID: <200907170433.42366.rjw__33968.7809152112$1247798122$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0907161259510.2952-100000@iolanthe.rowland.org>
 	<1247796643.19112.77.camel@falcon>
-Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1247796643.19112.77.camel@falcon>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,11 +20,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: wuzhangjin@gmail.com
 Cc: len.brown@intel.com, yanh@lemote.com, linux-kernel@vger.kernel.org, zhangfx@lemote.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2009-07-17 at 10:10 +0800, Wu Zhangjin wrote:
+On Friday 17 July 2009, Wu Zhangjin wrote:
 > Hi,
 > 
 > On Thu, 2009-07-16 at 13:02 -0400, Alan Stern wrote:
@@ -82,14 +82,6 @@ On Fri, 2009-07-17 at 10:10 +0800, Wu Zhangjin wrote:
 >                         int error;
 > 
 >                         dev->power.status = DPM_OFF;
-
-traced the dev_name(dev) via serial port, and found it with lspci, it
-is:
-
-00:09.0 USB Controller: NEC Corporation USB (rev 44)
-
-and the state here is D0, the current_sate is PCI_D3hot.
-
 >                         error = resume_device_noirq(dev, state);
 >                         if (error)
 >                                 pm_dev_err(dev, state, " early", error);
@@ -137,6 +129,16 @@ and the state here is D0, the current_sate is PCI_D3hot.
 >    ((current_state == PCI_D3hot) && (state == PCI_D0))
 > 
 > but seems this also can not indicate we are resuming from standby.
-> 
-> Regards,
-> Wu Zhangjin
+
+'standby' is a system sleep state, while 'current_state' and 'state' refer to
+device power states.
+
+Anyway, the fact that schedule() did not return in your testing setup indicates
+that there were no timer interrupts delivered to the CPU during resume, which
+should not have happened.
+
+Perhaps it's necessary to annotate your timer interrupts appropriately so that
+they are not disabled during suspend?
+
+Best,
+Rafael
