@@ -1,16 +1,14 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting
- of frozen tasks really
-Date: Fri, 17 Jul 2009 14:48:43 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.0907171441020.11571__22771.3009379388$1247835058$gmane$org@localhost.localdomain>
-References: <20090717121545.489258927@linutronix.de>
-	<20090717122103.225652146@linutronix.de>
-	<1247833910.15751.61.camel@twins>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: PM/hibernate swapfile regression
+Date: Fri, 17 Jul 2009 14:08:46 +0100
+Message-ID: <4A6077DE.6060202__27757.9020745636$1247836284$gmane$org@tuffmail.co.uk>
+References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
+	<200907141821.06101.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1247833910.15751.61.camel@twins>
+In-Reply-To: <200907141821.06101.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +18,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: containers@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, Nathan Lynch <ntl@pobox.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+Rafael J. Wysocki wrote:
+> On Tuesday 14 July 2009, Heiko Carstens wrote:
+>   
+>> We've seen this bug:
+>>
+>> Jul  8 13:16:02 h05lp03 kernel: BUG: sleeping function called from invalid context at /home/autobuild/BUILD/linux-2.6.30-20090707/include/linux/writeback.h:87
+>> Jul  8 13:16:02 h05lp03 kernel: in_atomic(): 1, irqs_disabled(): 0, pid: 24377, name: bash
+>> Jul  8 13:16:02 h05lp03 kernel: 3 locks held by bash/24377:
+>> Jul  8 13:16:02 h05lp03 kernel: #0:  (&buffer->mutex){+.+.+.}, at: [<0000000000276e74>] sysfs_write_file+0x4c/0x1ac
+>> Jul  8 13:16:02 h05lp03 kernel: #1:  (pm_mutex#2){+.+.+.}, at: [<000000000018f128>] hibernate+0x34/0x200
+>> Jul  8 13:16:02 h05lp03 kernel: #2:  (swap_lock){+.+.-.}, at: [<00000000001f371c>] swap_type_of+0x44/0x158
+>> Jul  8 13:16:02 h05lp03 kernel: CPU: 8 Not tainted 2.6.30-39.x.20090707-s390xdefault #1
+>> Jul  8 13:16:02 h05lp03 kernel: Process bash (pid: 24377, task: 000000012ce84240, ksp: 00000000c262bb00)
+>> Jul  8 13:16:02 h05lp03 kernel: 0000000000000000 00000000c262ba88 0000000000000002 0000000000000000
+>> Jul  8 13:16:02 h05lp03 kernel:       00000000c262bb28 00000000c262baa0 00000000c262baa0 00000000005448c4
+>> Jul  8 13:16:02 h05lp03 kernel:       0000000000000000 000000012ce84718 000000013d5bf1a8 0000000000000000
+>> Jul  8 13:16:02 h05lp03 kernel:       000000000000000d 0000000000000000 00000000c262baf8 000000000000000e
+>> Jul  8 13:16:02 h05lp03 kernel:       0000000000553da8 0000000000105600 00000000c262ba88 00000000c262bad0
+>> Jul  8 13:16:02 h05lp03 kernel: Call Trace:
+>> Jul  8 13:16:02 h05lp03 kernel: ([<00000000001054fc>] show_trace+0xf0/0x148)
+>> Jul  8 13:16:02 h05lp03 kernel: [<00000000001391ba>] __might_sleep+0x172/0x188
+>> Jul  8 13:16:02 h05lp03 kernel: [<000000000021f738>] ifind+0x88/0xe4
+>> Jul  8 13:16:02 h05lp03 kernel: [<0000000000220b0e>] iget5_locked+0x66/0x1d8
+>> Jul  8 13:16:02 h05lp03 kernel: [<000000000023b676>] bdget+0x5e/0x150
+>> Jul  8 13:16:02 h05lp03 kernel: [<00000000001f37b2>] swap_type_of+0xda/0x158
+>> Jul  8 13:16:02 h05lp03 kernel: [<0000000000192342>] swsusp_write+0x4e/0x458
+>> Jul  8 13:16:02 h05lp03 kernel: [<000000000018f254>] hibernate+0x160/0x200
+>> Jul  8 13:16:02 h05lp03 kernel: [<000000000018d8da>] state_store+0x82/0xa8
+>> Jul  8 13:16:02 h05lp03 kernel: [<0000000000276f20>] sysfs_write_file+0xf8/0x1ac
+>> Jul  8 13:16:02 h05lp03 kernel: [<000000000020663a>] vfs_write+0xae/0x15c
+>> Jul  8 13:16:02 h05lp03 kernel: [<00000000002067e0>] SyS_write+0x54/0xac
+>> Jul  8 13:16:02 h05lp03 kernel: [<0000000000117a96>] sysc_noemu+0x10/0x16
+>> Jul  8 13:16:02 h05lp03 kernel: [<00000047083e36b4>] 0x47083e36b4
+>>
+>> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
+>> breaks after hibernation failures"".
+>> Calling bdget while holding a spinlock doesn't seem to be a good idea...
+>>     
+>
+> Agreed, sorry for missing that.
+>
+> Alan, can you please prepare a fix?
+>
+> Rafael
+>   
 
-> On Fri, 2009-07-17 at 12:25 +0000, Thomas Gleixner wrote:
-> > plain text document attachment (freezer-fix-accounting-for-real.patch)
-> > commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
-> > the nr_uninterruptible accounting on freeze/thaw. On freeze the task
-> > is excluded from accounting with a check for (task->flags &
-> > PF_FROZEN), but that flag is cleared before the task is thawed. So
-> > while we prevent that the freezing task with state
-> > TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
-> > nr_uninterruptible on thaw.
-> > 
-> > Use a separate flag which is handled by the freezing task itself. Set
-> > it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
-> > clear it after we return from frozen state.
-> 
-> Right, so I'm wondering why we don't fully revert e3c8ca8336 to begin
-> with.
+I'm not sure how to reproduce.  I tried pm-hibernate with
+CONFIG_DEBUG_SPINLOCK_SLEEP, but nothing showed up in dmesg.
 
-Fine with me, but it seems that the cgroup folks have some luser space
-stuff looking at proc/loadavg which goes berserk when loadavg
-increases rapidly due to freezing. OTOH that stuff seems to be
-oblivious to the fact that the commit in question brings loadavg
-irreversibly to 0 when you do enough freeze/thaw cycles.
+Here's a quick & dirty patch. Please test (or explain how I can test it
+myself, whichever is easier :-). swap_unplug_sem is used to avoid
+holding swap_lock when calling the block device unplug function.  I
+think it can also be used for this bdget call.
 
-So either we revert or apply the fix, which keeps the accounting
-straight and solves the freezer loadavg thing. No strong opinion on
-that.
+Thanks
+Alan
 
-Thanks,
-
-	tglx
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index d1ade1a..9176464 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -744,6 +744,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+ 	if (device)
+ 		bdev = bdget(device);
+ 
++	down_read(&swap_unplug_sem);
+ 	spin_lock(&swap_lock);
+ 	for (i = 0; i < nr_swapfiles; i++) {
+ 		struct swap_info_struct *sis = swap_info + i;
+@@ -752,10 +753,11 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+ 			continue;
+ 
+ 		if (!bdev) {
++			spin_unlock(&swap_lock);
+ 			if (bdev_p)
+ 				*bdev_p = bdget(sis->bdev->bd_dev);
++			up_read(&swap_unplug_sem);
+ 
+-			spin_unlock(&swap_lock);
+ 			return i;
+ 		}
+ 		if (bdev == sis->bdev) {
+@@ -764,16 +766,18 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+ 			se = list_entry(sis->extent_list.next,
+ 					struct swap_extent, list);
+ 			if (se->start_block == offset) {
++				spin_unlock(&swap_lock);
+ 				if (bdev_p)
+ 					*bdev_p = bdget(sis->bdev->bd_dev);
++				up_read(&swap_unplug_sem);
+ 
+-				spin_unlock(&swap_lock);
+ 				bdput(bdev);
+ 				return i;
+ 			}
+ 		}
+ 	}
+ 	spin_unlock(&swap_lock);
++	up_read(&swap_unplug_sem);
+ 	if (bdev)
+ 		bdput(bdev);
+ 
