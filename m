@@ -1,14 +1,15 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/8] device async action mechanism
-Date: Fri, 17 Jul 2009 09:40:13 +0800
-Message-ID: <1247794814.26272.216.camel__49155.0648388968$1247794907$gmane$org@rzhang-dt>
-References: <1247643512.26272.74.camel@rzhang-dt>
-	<20090715002916.GC2360@ucw.cz>
+Subject: Re: [PATCH 8/8] i8042: support device async suspend &
+	shutdown
+Date: Fri, 17 Jul 2009 09:51:28 +0800
+Message-ID: <1247795488.26272.227.camel@rzhang-dt>
+References: <1247643522.26272.83.camel@rzhang-dt>
+	<20090715003716.GE2360@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090715002916.GC2360@ucw.cz>
+In-Reply-To: <20090715003716.GE2360@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,33 +23,72 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2009-07-15 at 08:29 +0800, Pavel Machek wrote:
-> Hi!
-> 
-> I notice you are still ccing my @suse.cz address. That one no longer
-> works :-(. 
-> 
-> > this is the patch set I made to speed up the device
-> > suspend/resume/shutdown process.
+On Wed, 2009-07-15 at 08:37 +0800, Pavel Machek wrote:
+> On Wed 2009-07-15 15:38:42, Zhang Rui wrote:
 > > 
-> > A new mechanism called Device Async Actions is introduced in this patch set.
-> > The basic idea is that,
-> > 1. device declares to support certain kinds of device async action,
-> >    like suspend, resume, shutdown, etc.
-> > 2. a async domain is create for this device
-> > 3. the child device inherits the async domain
-> > 4. devices in the same domain suspend/resume/shutdown asynchronously with
-> >    the other devices.
+> > i8042 controller support device async actions.
 > > 
-> > Currently, in order to make sure that it won't bring any side effects,
-> > I only convert the ACPI battery and i8042 to use this framework, which reduces
-> > 0.5s+ S3 time(suspend time plus resume time)???, from 7.0s to less than 6.5s.
-> > and about 0.5s shutdown time in my test.
+> > If boot option "dev_async_action" is added,
+> > i8042 controller and its child devices can be
+> > suspended/resumed/shutdown asynchronously.
+> > 
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/input/serio/i8042.c |   10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/input/serio/i8042.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/input/serio/i8042.c
+> > +++ linux-2.6/drivers/input/serio/i8042.c
+> > @@ -1284,14 +1284,21 @@ static int __init i8042_init(void)
+> >  		goto err_unregister_driver;
+> >  	}
+> >  
+> > -	err = platform_device_add(i8042_platform_device);
+> > +	err = dev_async_register(&i8042_platform_device->dev,
+> > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
+> >  	if (err)
+> >  		goto err_free_device;
+> >  
+> > +	err = platform_device_add(i8042_platform_device);
+> > +	if (err)
+> > +		goto err_dev_async_unregister;
+> > +
+> >  	panic_blink = i8042_panic_blink;
+> >  
+> >  	return 0;
+> >  
+> > + err_dev_async_unregister:
+> > +	dev_async_unregister(&i8042_platform_device->dev);
 > 
-> Hmm, 7seconds is still quite long. What hw is that?
 > 
-7 seconds including both kernel suspend and resume time.
-it takes about 3.2s to suspend and 3.8 seconds to resume.
+> >   err_free_device:
+> >  	platform_device_put(i8042_platform_device);
+> >   err_unregister_driver:
+> > @@ -1304,6 +1311,7 @@ static int __init i8042_init(void)
+> >  
+> >  static void __exit i8042_exit(void)
+> >  {
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >  	platform_device_unregister(i8042_platform_device);
+> >  	platform_driver_unregister(&i8042_driver);
+> >  	i8042_platform_exit();
+> 
+> Could we get the core to do async_unregister during device_unregister?
+> 
+yes, we can.
+I think it's a little strange that drivers need to invoke
+dev_async_register to register an async device group, but don't need to
+call dev_async_unregister to unregister it.
+
+> Or maybe better, just add flags during device_add?
+> 
+Many devices don't know if they support async actions or not during
+device initialization time, like PCI and ACPI devices.
+If we want to create an async group for a PCI device, we have to call
+dev_async_register in the specified PCI device driver, rather than in
+the PCI bus scan stage.
 
 thanks,
 rui
