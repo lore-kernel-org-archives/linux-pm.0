@@ -1,14 +1,16 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: PM/hibernate swapfile regression
-Date: Fri, 17 Jul 2009 14:08:46 +0100
-Message-ID: <4A6077DE.6060202__27757.9020745636$1247836284$gmane$org@tuffmail.co.uk>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
-	<200907141821.06101.rjw@sisk.pl>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting
+	of frozen	tasks really
+Date: Fri, 17 Jul 2009 08:51:17 -0700
+Message-ID: <20090717155116.GB5878__35177.0959132866$1247845975$gmane$org@count0.beaverton.ibm.com>
+References: <20090717121545.489258927@linutronix.de>
+	<20090717122103.225652146@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907141821.06101.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20090717122103.225652146@linutronix.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,109 +20,137 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, containers@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, Nathan Lynch <ntl@pobox.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 14 July 2009, Heiko Carstens wrote:
->   
->> We've seen this bug:
->>
->> Jul  8 13:16:02 h05lp03 kernel: BUG: sleeping function called from invalid context at /home/autobuild/BUILD/linux-2.6.30-20090707/include/linux/writeback.h:87
->> Jul  8 13:16:02 h05lp03 kernel: in_atomic(): 1, irqs_disabled(): 0, pid: 24377, name: bash
->> Jul  8 13:16:02 h05lp03 kernel: 3 locks held by bash/24377:
->> Jul  8 13:16:02 h05lp03 kernel: #0:  (&buffer->mutex){+.+.+.}, at: [<0000000000276e74>] sysfs_write_file+0x4c/0x1ac
->> Jul  8 13:16:02 h05lp03 kernel: #1:  (pm_mutex#2){+.+.+.}, at: [<000000000018f128>] hibernate+0x34/0x200
->> Jul  8 13:16:02 h05lp03 kernel: #2:  (swap_lock){+.+.-.}, at: [<00000000001f371c>] swap_type_of+0x44/0x158
->> Jul  8 13:16:02 h05lp03 kernel: CPU: 8 Not tainted 2.6.30-39.x.20090707-s390xdefault #1
->> Jul  8 13:16:02 h05lp03 kernel: Process bash (pid: 24377, task: 000000012ce84240, ksp: 00000000c262bb00)
->> Jul  8 13:16:02 h05lp03 kernel: 0000000000000000 00000000c262ba88 0000000000000002 0000000000000000
->> Jul  8 13:16:02 h05lp03 kernel:       00000000c262bb28 00000000c262baa0 00000000c262baa0 00000000005448c4
->> Jul  8 13:16:02 h05lp03 kernel:       0000000000000000 000000012ce84718 000000013d5bf1a8 0000000000000000
->> Jul  8 13:16:02 h05lp03 kernel:       000000000000000d 0000000000000000 00000000c262baf8 000000000000000e
->> Jul  8 13:16:02 h05lp03 kernel:       0000000000553da8 0000000000105600 00000000c262ba88 00000000c262bad0
->> Jul  8 13:16:02 h05lp03 kernel: Call Trace:
->> Jul  8 13:16:02 h05lp03 kernel: ([<00000000001054fc>] show_trace+0xf0/0x148)
->> Jul  8 13:16:02 h05lp03 kernel: [<00000000001391ba>] __might_sleep+0x172/0x188
->> Jul  8 13:16:02 h05lp03 kernel: [<000000000021f738>] ifind+0x88/0xe4
->> Jul  8 13:16:02 h05lp03 kernel: [<0000000000220b0e>] iget5_locked+0x66/0x1d8
->> Jul  8 13:16:02 h05lp03 kernel: [<000000000023b676>] bdget+0x5e/0x150
->> Jul  8 13:16:02 h05lp03 kernel: [<00000000001f37b2>] swap_type_of+0xda/0x158
->> Jul  8 13:16:02 h05lp03 kernel: [<0000000000192342>] swsusp_write+0x4e/0x458
->> Jul  8 13:16:02 h05lp03 kernel: [<000000000018f254>] hibernate+0x160/0x200
->> Jul  8 13:16:02 h05lp03 kernel: [<000000000018d8da>] state_store+0x82/0xa8
->> Jul  8 13:16:02 h05lp03 kernel: [<0000000000276f20>] sysfs_write_file+0xf8/0x1ac
->> Jul  8 13:16:02 h05lp03 kernel: [<000000000020663a>] vfs_write+0xae/0x15c
->> Jul  8 13:16:02 h05lp03 kernel: [<00000000002067e0>] SyS_write+0x54/0xac
->> Jul  8 13:16:02 h05lp03 kernel: [<0000000000117a96>] sysc_noemu+0x10/0x16
->> Jul  8 13:16:02 h05lp03 kernel: [<00000047083e36b4>] 0x47083e36b4
->>
->> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
->> breaks after hibernation failures"".
->> Calling bdget while holding a spinlock doesn't seem to be a good idea...
->>     
->
-> Agreed, sorry for missing that.
->
-> Alan, can you please prepare a fix?
->
-> Rafael
->   
+On Fri, Jul 17, 2009 at 12:25:01PM -0000, Thomas Gleixner wrote:
+> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
+> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
+> is excluded from accounting with a check for (task->flags &
+> PF_FROZEN), but that flag is cleared before the task is thawed. So
+> while we prevent that the freezing task with state
+> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
+> nr_uninterruptible on thaw.
+> 
+> Use a separate flag which is handled by the freezing task itself. Set
+> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
+> clear it after we return from frozen state.
 
-I'm not sure how to reproduce.  I tried pm-hibernate with
-CONFIG_DEBUG_SPINLOCK_SLEEP, but nothing showed up in dmesg.
+I'm sorry, it's not clear to me based on the description what problem is
+being fixed. As far as I can see PF_FROZEN is almost exactly the same as
+PF_FREEZING. When a task is being frozen TIF_FREEZE is set. Then the task
+enters the refrigerator, sets PF_FROZEN, and schedule()s until PF_FROZEN
+is no longer set. The original code with extra comments:
 
-Here's a quick & dirty patch. Please test (or explain how I can test it
-myself, whichever is easier :-). swap_unplug_sem is used to avoid
-holding swap_lock when calling the block device unplug function.  I
-think it can also be used for this bdget call.
+static inline void frozen_process(void)
+{
+        if (!unlikely(current->flags & PF_NOFREEZE)) {
+                current->flags |= PF_FROZEN;
+                wmb();
+        }
+        clear_freeze_flag(current);
+}
 
-Thanks
-Alan
+/* Refrigerator is place where frozen processes are stored :-). */
+void refrigerator(void)
+{
+        /* Hmm, should we be allowed to suspend when there are realtime
+           processes around? */
+        long save;
 
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index d1ade1a..9176464 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -744,6 +744,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
- 	if (device)
- 		bdev = bdget(device);
- 
-+	down_read(&swap_unplug_sem);
- 	spin_lock(&swap_lock);
- 	for (i = 0; i < nr_swapfiles; i++) {
- 		struct swap_info_struct *sis = swap_info + i;
-@@ -752,10 +753,11 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
- 			continue;
- 
- 		if (!bdev) {
-+			spin_unlock(&swap_lock);
- 			if (bdev_p)
- 				*bdev_p = bdget(sis->bdev->bd_dev);
-+			up_read(&swap_unplug_sem);
- 
--			spin_unlock(&swap_lock);
- 			return i;
- 		}
- 		if (bdev == sis->bdev) {
-@@ -764,16 +766,18 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
- 			se = list_entry(sis->extent_list.next,
- 					struct swap_extent, list);
- 			if (se->start_block == offset) {
-+				spin_unlock(&swap_lock);
- 				if (bdev_p)
- 					*bdev_p = bdget(sis->bdev->bd_dev);
-+				up_read(&swap_unplug_sem);
- 
--				spin_unlock(&swap_lock);
- 				bdput(bdev);
- 				return i;
- 			}
- 		}
- 	}
- 	spin_unlock(&swap_lock);
-+	up_read(&swap_unplug_sem);
- 	if (bdev)
- 		bdput(bdev);
- 
+        task_lock(current);
+        if (freezing(current)) {
+		/* prevent accounting of that task to load */
+                frozen_process();  /* <-- sets PF_FROZEN */
+                task_unlock(current);
+        } else {
+                task_unlock(current);
+                return;
+        }
+        save = current->state;
+        pr_debug("%s entered refrigerator\n", current->comm);
+
+        spin_lock_irq(&current->sighand->siglock);
+        recalc_sigpending(); /* We sent fake signal, clean it up */
+        spin_unlock_irq(&current->sighand->siglock);
+
+	/* you set PF_FREEZING here */
+        for (;;) {
+                set_current_state(TASK_UNINTERRUPTIBLE);
+                if (!frozen(current))  /* <-- checks PF_FROZEN */
+                        break;
+                schedule();
+        }
+	/* you clear PF_FREEZING here */
+        pr_debug("%s left refrigerator\n", current->comm);
+        __set_current_state(save);
+}
+
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Nathan Lynch <ntl@pobox.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Nigel Cunningham <nigel@tuxonice.net>
+> Cc: <stable@kernel.org>
+> Cc: containers@lists.linux-foundation.org
+> Cc: linux-pm@lists.linux-foundation.org
+> Cc: Matt Helsley <matthltc@us.ibm.com>
+> 
+> ---
+>  include/linux/sched.h |    3 ++-
+>  kernel/freezer.c      |    7 +++++++
+>  2 files changed, 9 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/sched.h
+> +++ linux-2.6/include/linux/sched.h
+> @@ -209,7 +209,7 @@ extern unsigned long long time_sync_thre
+>  			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+>  #define task_contributes_to_load(task)	\
+>  				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
+> -				 (task->flags & PF_FROZEN) == 0)
+> +				 (task->flags & PF_FREEZING) == 0)
+> 
+>  #define __set_task_state(tsk, state_value)		\
+>  	do { (tsk)->state = (state_value); } while (0)
+> @@ -1680,6 +1680,7 @@ extern cputime_t task_gtime(struct task_
+>  #define PF_MEMALLOC	0x00000800	/* Allocating memory */
+>  #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+>  #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+> +#define PF_FREEZING	0x00004000	/* freeze in progress. do not account to load */
+>  #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+>  #define PF_FROZEN	0x00010000	/* frozen for system suspend */
+>  #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+> Index: linux-2.6/kernel/freezer.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/freezer.c
+> +++ linux-2.6/kernel/freezer.c
+> @@ -44,12 +44,19 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+> 
+> +	/* prevent accounting of that task to load */
+> +	current->flags |= PF_FREEZING;
+> +
+>  	for (;;) {
+>  		set_current_state(TASK_UNINTERRUPTIBLE);
+>  		if (!frozen(current))
+>  			break;
+>  		schedule();
+>  	}
+> +
+> +	/* Remove the accounting blocker */
+> +	current->flags &= ~PF_FREEZING;
+> +
+
+Hence PF_FREEZING covers slightly less time than PF_FROZEN but
+otherwise does not change the way nr_uninterruptible is incremented or
+decremented (in (de)activate_task()).
+
+So it's not clear to me how adding PF_FREEZING fixes anything. Am I
+missing something?
+
+Cheers,
+	-Matt Helsley
