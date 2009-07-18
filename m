@@ -1,15 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
-Date: Sat, 18 Jul 2009 13:49:48 +0200
-Message-ID: <20090718114947.GG1433__3376.80507586828$1247917895$gmane$org@ucw.cz>
-References: <Pine.LNX.4.44L0.0906020954110.3074-100000@iolanthe.rowland.org>
-	<200906041830.54897.rjw@sisk.pl>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting
+ of frozen tasks really
+Date: Sat, 18 Jul 2009 14:56:31 +0200
+Message-ID: <1247921791.6597.5.camel__29942.0292176821$1247921977$gmane$org@laptop>
+References: <20090717121545.489258927@linutronix.de>
+	<20090717122103.225652146@linutronix.de>
+	<1247833910.15751.61.camel@twins>
+	<20090717152235.GA5878@count0.beaverton.ibm.com>
+	<1247849254.6522.75.camel@laptop>
+	<1247864134.17553.30.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200906041830.54897.rjw@sisk.pl>
+In-Reply-To: <1247864134.17553.30.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,56 +23,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paul@pwsan.com, gregkh@suse.de, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-sh@vger.kernel.org
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, containers@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > Sure, conditions may have changed while the system was asleep.  They might
-> > also change while the system is awake.  In general, whether or not the system
-> > was asleep shouldn't make any difference -- to as great an extent as possible
-> > we should strive to pretend that the entire sleep took no time at all (or
-> > simply didn't happen).
+On Fri, 2009-07-17 at 15:55 -0500, Nathan Lynch wrote:
+> On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
+> > On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
 > > 
-> > So: Suppose the system had been awake when the access point
-> > disappeared.  What would the wireless adapter driver do then?  It
-> > should try to do exactly the same thing if the access point disappears
-> > while the system is asleep.
+> > > The job scheduler in question does not use FROZEN as a transient state and
+> > > does not use checkpoint/restart at all since c/r is still a work in progress.
 > 
-> Not really.  Namely, when the access point _vanishes_ at run time, this is an
-> error condition from which we have to recover, while if it's _not_ _present_
-> after a resume, it's a normal situation and we shouldn't be recovering from
-> that (the user might have changed the physical location while
-> suspended).
+> Right, the job scheduler uses the cgroup freezer as a mechanism to
+> preempt a low priority job for a higher priority job.  (It had used
+> SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
+> that state for a while.  Load average is consulted as a measure of
+> system utilization.
 
-I disagree here. User can just walk away with powered notebook.
+I think that this is an utterly broken use for it, if you want something
+like that make a signal cgroup or something and deliver SIGSTOP to all
+of them.
 
+In other words, why is the freezer any better than the SIGSTOP approach?
 
-> > You see?  The sleep should be transparent.
+> > > Even when used for power management it seems wrong to count frozen tasks
+> > > towards the loadavg since they aren't using CPU time or waiting for IO.
+> > 
+> > You're abusing it for _WHAT_?
 > 
-> In some cases it won't be, because the hardware state changes while sleeping.
-> For example, a laptop battery may be depleted while suspended, so that after
-> resume it's in the 'low' condition, while it was in the 'good' condition before
-> the preceding suspend.  Arguably, you can't drain a battery from 90% to 10%,
-> for example, momentarily.  Also, a CPU fan might be 100% on before
-> suspend,
+> I think Matt was referring to system-wide suspend/resume/hibernate, not
+> a behavior of the job scheduler, if that's your concern.
 
-Actually... going 90%->10% immediately is common behaviour of old
-li-ion batteries.
+I understood he referred to the crazy use-case you mentioned above, IMHO
+frozen should be a temporary state used for things like
+snapshot/migrate.
 
-> because the CPU was hot at that time, but that doesn't mean the fan should be
-> 100% on after the subsequent resume, because it's likely that the CPU will be
-> cold (on some systems trying to make the fan spin too fast may lead to
-> general problems with thermal management afterwards).
-
-100% is indeed sane default for fan. Yes you should slow the fan down
-when you read the real temperature. And yes some systems play it safe
-and do 100% fan during boot.
-
-(Otherwise you may have heat problems if you suspend and immediately
-resume).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm still very tempted to plain simply revert that original patch.
