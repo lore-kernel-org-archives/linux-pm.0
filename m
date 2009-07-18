@@ -1,17 +1,15 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting
- of frozen tasks really
-Date: Sat, 18 Jul 2009 08:26:58 +1000
-Message-ID: <4A60FAB2.6030906__11920.277917716$1247869871$gmane$org@crca.org.au>
-References: <20090717121545.489258927@linutronix.de>
-	<20090717122103.225652146@linutronix.de>
-	<1247833910.15751.61.camel@twins>
-	<alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 00/04][RFC] PM: Runtime platform device PM
+Date: Sat, 18 Jul 2009 13:49:48 +0200
+Message-ID: <20090718114947.GG1433__3376.80507586828$1247917895$gmane$org@ucw.cz>
+References: <Pine.LNX.4.44L0.0906020954110.3074-100000@iolanthe.rowland.org>
+	<200906041830.54897.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <200906041830.54897.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, containers@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, Nathan Lynch <ntl@pobox.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paul@pwsan.com, gregkh@suse.de, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi!
 
-Thomas Gleixner wrote:
-> On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+> > Sure, conditions may have changed while the system was asleep.  They might
+> > also change while the system is awake.  In general, whether or not the system
+> > was asleep shouldn't make any difference -- to as great an extent as possible
+> > we should strive to pretend that the entire sleep took no time at all (or
+> > simply didn't happen).
+> > 
+> > So: Suppose the system had been awake when the access point
+> > disappeared.  What would the wireless adapter driver do then?  It
+> > should try to do exactly the same thing if the access point disappears
+> > while the system is asleep.
 > 
->> On Fri, 2009-07-17 at 12:25 +0000, Thomas Gleixner wrote:
->>> plain text document attachment (freezer-fix-accounting-for-real.patch)
->>> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
->>> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
->>> is excluded from accounting with a check for (task->flags &
->>> PF_FROZEN), but that flag is cleared before the task is thawed. So
->>> while we prevent that the freezing task with state
->>> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
->>> nr_uninterruptible on thaw.
->>>
->>> Use a separate flag which is handled by the freezing task itself. Set
->>> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
->>> clear it after we return from frozen state.
->> Right, so I'm wondering why we don't fully revert e3c8ca8336 to begin
->> with.
+> Not really.  Namely, when the access point _vanishes_ at run time, this is an
+> error condition from which we have to recover, while if it's _not_ _present_
+> after a resume, it's a normal situation and we shouldn't be recovering from
+> that (the user might have changed the physical location while
+> suspended).
+
+I disagree here. User can just walk away with powered notebook.
+
+
+> > You see?  The sleep should be transparent.
 > 
-> Fine with me, but it seems that the cgroup folks have some luser space
-> stuff looking at proc/loadavg which goes berserk when loadavg
-> increases rapidly due to freezing. OTOH that stuff seems to be
-> oblivious to the fact that the commit in question brings loadavg
-> irreversibly to 0 when you do enough freeze/thaw cycles.
+> In some cases it won't be, because the hardware state changes while sleeping.
+> For example, a laptop battery may be depleted while suspended, so that after
+> resume it's in the 'low' condition, while it was in the 'good' condition before
+> the preceding suspend.  Arguably, you can't drain a battery from 90% to 10%,
+> for example, momentarily.  Also, a CPU fan might be 100% on before
+> suspend,
 
-That's right. I don't remember the exact details (it's been ages since
-this was first reported to me), but sendmail (IIRC) was looking at the
-load average and stopping delivery until it dropped sufficiently.
+Actually... going 90%->10% immediately is common behaviour of old
+li-ion batteries.
 
-Historically, my solution has been to save and restore the load average
-values (on the theory that hibernation should be transparent to
-userspace), but I dropped that in favour of this approach.
+> because the CPU was hot at that time, but that doesn't mean the fan should be
+> 100% on after the subsequent resume, because it's likely that the CPU will be
+> cold (on some systems trying to make the fan spin too fast may lead to
+> general problems with thermal management afterwards).
 
-Regards,
+100% is indeed sane default for fan. Yes you should slow the fan down
+when you read the real temperature. And yes some systems play it safe
+and do 100% fan during boot.
 
-Nigel
+(Otherwise you may have heat problems if you suspend and immediately
+resume).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
