@@ -1,12 +1,19 @@
-From: Corrado Zoccolo <czoccolo@gmail.com>
-Subject: [PATCH] cpuidle: menu governor: reduce latency on exit
-Date: Sun, 19 Jul 2009 16:59:46 +0200
-Message-ID: <200907191659.47179.czoccolo__44510.8220832937$1248015631$gmane$org@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/8] introduce the device async action
+	mechanism
+Date: Mon, 20 Jul 2009 00:16:58 +0200
+Message-ID: <20090719221658.GL26511__16339.9277873852$1248042002$gmane$org@elf.ucw.cz>
+References: <1247643516.26272.77.camel@rzhang-dt>
+	<20090715060006.71c2e2b6@infradead.org>
+	<1247709910.26272.159.camel@rzhang-dt>
+	<200907170312.00006.rjw@sisk.pl>
+	<1247798643.26272.275.camel@rzhang-dt>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <1247798643.26272.275.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,74 +23,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: venkatesh.pallipadi@intel.com, abelay@novell.com
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch moves the state residency accounting and statistics
-computation off the hot exit path.
-On exit, the need to recompute statistics is recorded, and new
-statistics will be computed when menu_select is called again.
+Hi!
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+> >  During suspend-resume we know dependencies between
+> > devices beforehand, at least in theory, so we can use them.
+> > 
+> that's why I use multiple async domains. :)
+> One domain for a device group.
+> 
+> > In particular, we have to make sure that parent devices will not be suspended
+> > until all of their children have been suspended and children devices will not
+> > be resumed before the parents.
+> 
+> that's not enough.
+> ???For examples,
+> ACPI battery and EC are independent devices, but EC must be resumed
+> before battery because battery driver may access some EC address space
+> during resume time.
 
----
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index f1df59f..5e905e0 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -19,6 +19,7 @@
- 
- struct menu_device {
- 	int		last_state_idx;
-+	int             needs_update;
- 
- 	unsigned int	expected_us;
- 	unsigned int	predicted_us;
-@@ -29,6 +30,8 @@ struct menu_device {
- 
- static DEFINE_PER_CPU(struct menu_device, menu_devices);
- 
-+static void menu_update(struct cpuidle_device *dev);
-+
- /**
-  * menu_select - selects the next idle state to enter
-  * @dev: the CPU
-@@ -39,6 +42,11 @@ static int menu_select(struct cpuidle_device *dev)
- 	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 
-+	if (data->needs_update) {
-+		menu_update(dev);
-+		data->needs_update = 0;
-+	}
-+
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0)) {
- 		data->last_state_idx = 0;
-@@ -72,7 +80,7 @@ static int menu_select(struct cpuidle_device *dev)
- }
- 
- /**
-- * menu_reflect - attempts to guess what happened after entry
-+ * menu_reflect - records that data structures need update
-  * @dev: the CPU
-  *
-  * NOTE: it's important to be fast here because this operation will add to
-@@ -81,6 +89,16 @@ static int menu_select(struct cpuidle_device *dev)
- static void menu_reflect(struct cpuidle_device *dev)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	data->needs_update = 1;
-+}
-+
-+/**
-+ * menu_update - attempts to guess what happened after entry
-+ * @dev: the CPU
-+ */
-+static void menu_update(struct cpuidle_device *dev)
-+{
-+	struct menu_device *data = &__get_cpu_var(menu_devices);
- 	int last_idx = data->last_state_idx;
- 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
- 	struct cpuidle_state *target = &dev->states[last_idx];
+Yes, but those dependencies should be pulled from driver tree, not
+adding separate dependencies infrastructure.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
