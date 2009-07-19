@@ -1,20 +1,12 @@
-From: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting
- of frozen tasks really
-Date: Sat, 18 Jul 2009 18:59:55 -0500
-Message-ID: <1247961595.5256.63.camel__24593.5423336507$1247961839$gmane$org@localhost.localdomain>
-References: <20090717121545.489258927@linutronix.de>
-	<20090717122103.225652146@linutronix.de>
-	<1247833910.15751.61.camel@twins>
-	<20090717152235.GA5878@count0.beaverton.ibm.com>
-	<1247849254.6522.75.camel@laptop>
-	<1247864134.17553.30.camel@localhost.localdomain>
-	<1247921791.6597.5.camel@laptop>
+From: Corrado Zoccolo <czoccolo@gmail.com>
+Subject: [PATCH] cpuidle: menu governor: reduce latency on exit
+Date: Sun, 19 Jul 2009 16:59:46 +0200
+Message-ID: <200907191659.47179.czoccolo__44510.8220832937$1248015631$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1247921791.6597.5.camel@laptop>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,47 +16,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, containers@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, stable@kernel.org, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+To: venkatesh.pallipadi@intel.com, abelay@novell.com
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2009-07-18 at 14:56 +0200, Peter Zijlstra wrote:
-> On Fri, 2009-07-17 at 15:55 -0500, Nathan Lynch wrote:
-> > On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
-> > > On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
-> > > 
-> > > > The job scheduler in question does not use FROZEN as a transient state and
-> > > > does not use checkpoint/restart at all since c/r is still a work in progress.
-> > 
-> > Right, the job scheduler uses the cgroup freezer as a mechanism to
-> > preempt a low priority job for a higher priority job.  (It had used
-> > SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
-> > that state for a while.  Load average is consulted as a measure of
-> > system utilization.
-> 
-> I think that this is an utterly broken use for it, if you want something
-> like that make a signal cgroup or something and deliver SIGSTOP to all
-> of them.
-> 
-> In other words, why is the freezer any better than the SIGSTOP approach?
+This patch moves the state residency accounting and statistics
+computation off the hot exit path.
+On exit, the need to recompute statistics is recorded, and new
+statistics will be computed when menu_select is called again.
 
-Documentation/cgroups/freezer-subsystem.txt happens to document this use
-case and the disadvantages of SIGSTOP/SIGCONT.  Does that change your
-opinion at all?
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
 
-
-> > > > Even when used for power management it seems wrong to count frozen tasks
-> > > > towards the loadavg since they aren't using CPU time or waiting for IO.
-> > > 
-> > > You're abusing it for _WHAT_?
-> > 
-> > I think Matt was referring to system-wide suspend/resume/hibernate, not
-> > a behavior of the job scheduler, if that's your concern.
-> 
-> I understood he referred to the crazy use-case you mentioned above, IMHO
-> frozen should be a temporary state used for things like
-> snapshot/migrate.
-
-But snapshot (or checkpoint) and migration aren't possible with mainline
-at this time.  As far as I know, the use case to which you object is the
-primary use of the cgroup freezer on production systems.
+---
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index f1df59f..5e905e0 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -19,6 +19,7 @@
+ 
+ struct menu_device {
+ 	int		last_state_idx;
++	int             needs_update;
+ 
+ 	unsigned int	expected_us;
+ 	unsigned int	predicted_us;
+@@ -29,6 +30,8 @@ struct menu_device {
+ 
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+ 
++static void menu_update(struct cpuidle_device *dev);
++
+ /**
+  * menu_select - selects the next idle state to enter
+  * @dev: the CPU
+@@ -39,6 +42,11 @@ static int menu_select(struct cpuidle_device *dev)
+ 	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 
++	if (data->needs_update) {
++		menu_update(dev);
++		data->needs_update = 0;
++	}
++
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0)) {
+ 		data->last_state_idx = 0;
+@@ -72,7 +80,7 @@ static int menu_select(struct cpuidle_device *dev)
+ }
+ 
+ /**
+- * menu_reflect - attempts to guess what happened after entry
++ * menu_reflect - records that data structures need update
+  * @dev: the CPU
+  *
+  * NOTE: it's important to be fast here because this operation will add to
+@@ -81,6 +89,16 @@ static int menu_select(struct cpuidle_device *dev)
+ static void menu_reflect(struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
++	data->needs_update = 1;
++}
++
++/**
++ * menu_update - attempts to guess what happened after entry
++ * @dev: the CPU
++ */
++static void menu_update(struct cpuidle_device *dev)
++{
++	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &dev->states[last_idx];
