@@ -1,8 +1,8 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Greg KH <gregkh@suse.de>
 Subject: Re: [PATCH] Driver core: make pm operations a const
 	pointer
-Date: Tue, 21 Jul 2009 08:45:51 -0700
-Message-ID: <20090721154550.GA4352__12169.3994770341$1248191321$gmane$org@dtor-d630.eng.vmware.com>
+Date: Tue, 21 Jul 2009 09:42:12 -0700
+Message-ID: <20090721164212.GA14493__28321.4097413749$1248194952$gmane$org@suse.de>
 References: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
 	<200907211546.49906.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -21,7 +21,7 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Tue, Jul 21, 2009 at 03:46:49PM +0200, Rafael J. Wysocki wrote:
@@ -29,8 +29,18 @@ On Tue, Jul 21, 2009 at 03:46:49PM +0200, Rafael J. Wysocki wrote:
 > 
 > Please always Cc linux-pm on PM-related patches.
 > 
+> On Tuesday 21 July 2009, Dmitry Torokhov wrote:
+> > From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > 
+> > They are not supposed to be modified by drivers, so make them const.
+> 
+> OK, I guess I should handle this.
+> 
+> Greg, is the patch fine with you?
 
-My apologies, will do next time.
+Yes, feel free to add:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
--- 
-Dmitry
+thanks,
+
+greg k-h
