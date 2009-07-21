@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PM/hibernate swapfile regression
-Date: Tue, 21 Jul 2009 15:41:37 +0200
-Message-ID: <200907211541.38694.rjw__17755.078248638$1248183767$gmane$org@sisk.pl>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
-	<20090720132456.GA29023@osiris.boeblingen.de.ibm.com>
-	<4A659D75.3050004@tuffmail.co.uk>
+Subject: Re: [PATCH] Driver core: make pm operations a const
+	pointer
+Date: Tue, 21 Jul 2009 15:46:49 +0200
+Message-ID: <200907211546.49906.rjw__2920.58297568492$1248184038$gmane$org@sisk.pl>
+References: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A659D75.3050004@tuffmail.co.uk>
+In-Reply-To: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,122 +19,191 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnd Schneider <arnd@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Magnus Damm <magnus.damm@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 21 July 2009, Alan Jenkins wrote:
-> Heiko Carstens wrote:
-> > On Fri, Jul 17, 2009 at 02:08:46PM +0100, Alan Jenkins wrote:
-> >   
-> >> Rafael J. Wysocki wrote:
-> >>     
-> >>> On Tuesday 14 July 2009, Heiko Carstens wrote:
-> >>>   
-> >>>       
-> >>>> We've seen this bug [...]
-> >>>>
-> >>>> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
-> >>>> breaks after hibernation failures"".
-> >>>> Calling bdget while holding a spinlock doesn't seem to be a good idea...
-> >>>>     
-> >>>>         
-> >>> Agreed, sorry for missing that.
-> >>>
-> >>> Alan, can you please prepare a fix?
-> >>>       
-> >> Here's a quick & dirty patch [...]
-> >>     
-> >
-> > Thanks for the patch. Unfortunately Arnd was unable to reproduce the original
-> > behaviour. But your patch makes sense anyway.
-> > I also tested it and nothing broke. So should this go upstream?  
-> 
-> I do want to fix it, but I think there's a better way.
-> 
-> It doesn't really need the sleeping bdget().  All we want is
-> atomic_inc(&bdev->bd_inode->i_count).  I think we should call it bdcopy().
+Hi Dmitry,
 
-Makes sense to me, but IMO that requres an ACK from Jens.
+Please always Cc linux-pm on PM-related patches.
 
-Jens, is the patch below fine with you?
+On Tuesday 21 July 2009, Dmitry Torokhov wrote:
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> They are not supposed to be modified by drivers, so make them const.
+
+OK, I guess I should handle this.
+
+Greg, is the patch fine with you?
+
+Magnus, would it cause any trouble to you?
 
 Rafael
 
 
-> ---------->
-> From 643014ec079610a8b01dfd78c6949c1e8727195b Mon Sep 17 00:00:00 2001
-> From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Date: Tue, 21 Jul 2009 10:17:30 +0100
-> Subject: [PATCH] PM/hibernate: replace bdget call with bdcopy (simple atomic_inc of i_count)
-> 
-> Create bdcopy().  This function copies an existing reference to a
-> block_device.  It is safe to call from any context.
-> 
-> Hibernation code wishes to copy a reference to the active swap device.
-> Right now it calls bdget() under a spinlock, but this is wrong because
-> bdget() can sleep.  It doesn't need a full bdget() because we already
-> hold a reference to active swap devices (and the spinlock protects
-> against swapoff).
-> 
-> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> CC: linux-fsdevel@vger.kernel.org
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 > ---
->  fs/block_dev.c     |    8 ++++++++
->  include/linux/fs.h |    1 +
->  mm/swapfile.c      |    4 ++--
->  3 files changed, 11 insertions(+), 2 deletions(-)
 > 
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 3a6d4fb..0b04974 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -564,6 +564,14 @@ struct block_device *bdget(dev_t dev)
+>  drivers/base/platform.c   |    2 +-
+>  drivers/base/power/main.c |    8 +++++---
+>  drivers/pci/pci-driver.c  |   16 ++++++++--------
+>  include/linux/device.h    |    9 +++++----
+>  4 files changed, 19 insertions(+), 16 deletions(-)
+> 
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 81cb01b..c4b3fce 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -925,7 +925,7 @@ static int platform_pm_restore_noirq(struct device *dev)
 >  
->  EXPORT_SYMBOL(bdget);
+>  #endif /* !CONFIG_HIBERNATION */
 >  
-> +struct block_device *bdcopy(struct block_device *bdev)
-> +{
-> +	atomic_inc(&bdev->bd_inode->i_count);
-> +	return bdev;
-> +}
-> +
-> +EXPORT_SYMBOL(bdcopy);
-> +
->  long nr_blockdev_pages(void)
+> -static struct dev_pm_ops platform_dev_pm_ops = {
+> +static const struct dev_pm_ops platform_dev_pm_ops = {
+>  	.prepare = platform_pm_prepare,
+>  	.complete = platform_pm_complete,
+>  	.suspend = platform_pm_suspend,
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 58a3e57..1b1a786 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -157,8 +157,9 @@ void device_pm_move_last(struct device *dev)
+>   *	@ops:	PM operations to choose from.
+>   *	@state:	PM transition of the system being carried out.
+>   */
+> -static int pm_op(struct device *dev, struct dev_pm_ops *ops,
+> -			pm_message_t state)
+> +static int pm_op(struct device *dev,
+> +		 const struct dev_pm_ops *ops,
+> +		 pm_message_t state)
 >  {
->  	struct block_device *bdev;
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 0872372..eeb1091 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1946,6 +1946,7 @@ extern void putname(const char *name);
->  extern int register_blkdev(unsigned int, const char *);
->  extern void unregister_blkdev(unsigned int, const char *);
->  extern struct block_device *bdget(dev_t);
-> +extern struct block_device *bdcopy(struct block_device *bdev);
->  extern void bd_set_size(struct block_device *, loff_t size);
->  extern void bd_forget(struct inode *inode);
->  extern void bdput(struct block_device *);
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index d1ade1a..272ea8e 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -753,7 +753,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  	int error = 0;
 >  
->  		if (!bdev) {
->  			if (bdev_p)
-> -				*bdev_p = bdget(sis->bdev->bd_dev);
-> +				*bdev_p = bdcopy(sis->bdev);
+> @@ -220,7 +221,8 @@ static int pm_op(struct device *dev, struct dev_pm_ops *ops,
+>   *	The operation is executed with interrupts disabled by the only remaining
+>   *	functional CPU in the system.
+>   */
+> -static int pm_noirq_op(struct device *dev, struct dev_pm_ops *ops,
+> +static int pm_noirq_op(struct device *dev,
+> +			const struct dev_pm_ops *ops,
+>  			pm_message_t state)
+>  {
+>  	int error = 0;
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index d76c4c8..0c2ea44 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -575,7 +575,7 @@ static void pci_pm_complete(struct device *dev)
+>  static int pci_pm_suspend(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
 >  
->  			spin_unlock(&swap_lock);
->  			return i;
-> @@ -765,7 +765,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
->  					struct swap_extent, list);
->  			if (se->start_block == offset) {
->  				if (bdev_p)
-> -					*bdev_p = bdget(sis->bdev->bd_dev);
-> +					*bdev_p = bdcopy(sis->bdev);
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+> @@ -613,7 +613,7 @@ static int pci_pm_suspend(struct device *dev)
+>  static int pci_pm_suspend_noirq(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
 >  
->  				spin_unlock(&swap_lock);
->  				bdput(bdev);
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
+> @@ -672,7 +672,7 @@ static int pci_pm_resume_noirq(struct device *dev)
+>  static int pci_pm_resume(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	/*
+> @@ -711,7 +711,7 @@ static int pci_pm_resume(struct device *dev)
+>  static int pci_pm_freeze(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_FREEZE);
+> @@ -780,7 +780,7 @@ static int pci_pm_thaw_noirq(struct device *dev)
+>  static int pci_pm_thaw(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+> @@ -799,7 +799,7 @@ static int pci_pm_thaw(struct device *dev)
+>  static int pci_pm_poweroff(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
+> @@ -872,7 +872,7 @@ static int pci_pm_restore_noirq(struct device *dev)
+>  static int pci_pm_restore(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	/*
+> @@ -910,7 +910,7 @@ static int pci_pm_restore(struct device *dev)
+>  
+>  #endif /* !CONFIG_HIBERNATION */
+>  
+> -struct dev_pm_ops pci_dev_pm_ops = {
+> +const struct dev_pm_ops pci_dev_pm_ops = {
+>  	.prepare = pci_pm_prepare,
+>  	.complete = pci_pm_complete,
+>  	.suspend = pci_pm_suspend,
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index aebb810..a286429 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -62,7 +62,7 @@ struct bus_type {
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+>  	int (*resume)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  
+>  	struct bus_type_private *p;
+>  };
+> @@ -132,7 +132,7 @@ struct device_driver {
+>  	int (*resume) (struct device *dev);
+>  	struct attribute_group **groups;
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  
+>  	struct driver_private *p;
+>  };
+> @@ -200,7 +200,8 @@ struct class {
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+>  	int (*resume)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+> +
+>  	struct class_private *p;
+>  };
+>  
+> @@ -291,7 +292,7 @@ struct device_type {
+>  	char *(*nodename)(struct device *dev);
+>  	void (*release)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  };
+>  
+>  /* interface for exporting device attributes */
