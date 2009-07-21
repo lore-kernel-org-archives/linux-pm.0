@@ -1,11 +1,14 @@
-From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] mips: decrease size of au1xxx_dbdma_pm_regs[][]
-Date: Tue, 21 Jul 2009 16:19:08 +0200
-Message-ID: <4A65CE5C.4090607__11673.8819903278$1248200264$gmane$org@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: x86: Expected system state when resumed
+Date: Tue, 21 Jul 2009 22:48:17 +0200
+Message-ID: <200907212248.18050.rjw@sisk.pl>
+References: <20090721164542.GA30390@plexity.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090721164542.GA30390@plexity.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,59 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, Manuel Lauss <manuel.lauss@googlemail.com>, ralf@linux-mips.org, linux-pm@lists.linux-foundation.org, linux-mips@linux-mips.org, Andrew Morton <akpm@linux-fo>
+To: Deepak Saxena <dsaxena@plexity.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-There are 16 individual channels (NUM_DBDMA_CHANS) to save/restore
-plus the global ddma block config (the +1). The last register in a
-channel can be skipped since it's read-only (at offset 0x18).
+On Tuesday 21 July 2009, Deepak Saxena wrote:
+> 
+> I am working on getting suspend/resume working on an x86 system
+> (OLPC XO-1.5) where we are implementing ACPI based suspend/resume
+> using Open Firmware and what I am seeing right now is that on 
+> resume, we're not receiving interrupts so the system locks
+> up in the suspend path when msleep() is called from the EHCI
+> HCD resume code. lapic_resume() is being called so the APIC
+> is being restored.  I'm looking for information on what else
+> Linux's expectation from the firmware when control is handed back 
+> before I start dumping every system register pre and post resume.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Thanks for your review and explanation, Manuel!
+If that's 2.6.30 or later and your timer interrupt is MSI, for example, please
+check if the timer interrupt is marked as IRQF_TIMER.  If it's not,
+suspend_device_irqs() will mark it as disabled and it won't work during
+early resume.
 
-diff --git a/arch/mips/alchemy/common/dbdma.c b/arch/mips/alchemy/common/dbdma.c
-index 3ab6d80..19c1c82 100644
---- a/arch/mips/alchemy/common/dbdma.c
-+++ b/arch/mips/alchemy/common/dbdma.c
-@@ -175,7 +175,7 @@ static dbdev_tab_t dbdev_tab[] = {
- #define DBDEV_TAB_SIZE	ARRAY_SIZE(dbdev_tab)
- 
- #ifdef CONFIG_PM
--static u32 au1xxx_dbdma_pm_regs[NUM_DBDMA_CHANS + 1][8];
-+static u32 au1xxx_dbdma_pm_regs[NUM_DBDMA_CHANS + 1][6];
- #endif
- 
- 
-@@ -993,14 +993,13 @@ void au1xxx_dbdma_suspend(void)
- 	au1xxx_dbdma_pm_regs[0][3] = au_readl(addr + 0x0c);
- 
- 	/* save channel configurations */
--	for (i = 1, addr = DDMA_CHANNEL_BASE; i < NUM_DBDMA_CHANS; i++) {
-+	for (i = 1, addr = DDMA_CHANNEL_BASE; i <= NUM_DBDMA_CHANS; i++) {
- 		au1xxx_dbdma_pm_regs[i][0] = au_readl(addr + 0x00);
- 		au1xxx_dbdma_pm_regs[i][1] = au_readl(addr + 0x04);
- 		au1xxx_dbdma_pm_regs[i][2] = au_readl(addr + 0x08);
- 		au1xxx_dbdma_pm_regs[i][3] = au_readl(addr + 0x0c);
- 		au1xxx_dbdma_pm_regs[i][4] = au_readl(addr + 0x10);
- 		au1xxx_dbdma_pm_regs[i][5] = au_readl(addr + 0x14);
--		au1xxx_dbdma_pm_regs[i][6] = au_readl(addr + 0x18);
- 
- 		/* halt channel */
- 		au_writel(au1xxx_dbdma_pm_regs[i][0] & ~1, addr + 0x00);
-@@ -1027,14 +1026,13 @@ void au1xxx_dbdma_resume(void)
- 	au_writel(au1xxx_dbdma_pm_regs[0][3], addr + 0x0c);
- 
- 	/* restore channel configurations */
--	for (i = 1, addr = DDMA_CHANNEL_BASE; i < NUM_DBDMA_CHANS; i++) {
-+	for (i = 1, addr = DDMA_CHANNEL_BASE; i <= NUM_DBDMA_CHANS; i++) {
- 		au_writel(au1xxx_dbdma_pm_regs[i][0], addr + 0x00);
- 		au_writel(au1xxx_dbdma_pm_regs[i][1], addr + 0x04);
- 		au_writel(au1xxx_dbdma_pm_regs[i][2], addr + 0x08);
- 		au_writel(au1xxx_dbdma_pm_regs[i][3], addr + 0x0c);
- 		au_writel(au1xxx_dbdma_pm_regs[i][4], addr + 0x10);
- 		au_writel(au1xxx_dbdma_pm_regs[i][5], addr + 0x14);
--		au_writel(au1xxx_dbdma_pm_regs[i][6], addr + 0x18);
- 		au_sync();
- 		addr += 0x100;	/* next channel base */
- 	}
+Best,
+Rafael
