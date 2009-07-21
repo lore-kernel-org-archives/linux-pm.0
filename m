@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] hibernate / memory hotplug: always use
-	for_each_populated_zone()
-Date: Mon, 20 Jul 2009 18:04:59 +0200
-Message-ID: <200907201804.59851.rjw__681.162896990095$1248112069$gmane$org@sisk.pl>
-References: <1248103551.23961.0.camel@localhost.localdomain>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: PM/hibernate swapfile regression
+Date: Tue, 21 Jul 2009 11:50:29 +0100
+Message-ID: <4A659D75.3050004__31375.467652879$1248173630$gmane$org@tuffmail.co.uk>
+References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
+	<200907141821.06101.rjw@sisk.pl> <4A6077DE.6060202@tuffmail.co.uk>
+	<20090720132456.GA29023@osiris.boeblingen.de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1248103551.23961.0.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <20090720132456.GA29023@osiris.boeblingen.de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,100 +19,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Yasunori Goto <y-goto@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arnd Schneider <arnd@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 20 July 2009, Gerald Schaefer wrote:
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> Use for_each_populated_zone() instead of for_each_zone() in hibernation
-> code. This fixes a bug on s390, where we allow both config options
-> HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
-> here. We only allow hibernation if no memory hotplug operation was
-> performed, so in fact both features can only be used exclusively, but
-> this way we don't need 2 differently configured (distribution) kernels.
-> 
-> If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
-> into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
-> code iterates through all zones, not only the populated zones, in
-> several places. For example, swsusp_free() does for_each_zone() and
-> then checks for pfn_valid(), which is true even if the zone is not
-> populated, resulting in a BUG_ON() later because the pfn cannot be
-> found in the memory bitmap.
-> 
-> Replacing all occurences of for_each_zone() in hibernation code with
-> for_each_populated_zone() would fix this issue.
+Heiko Carstens wrote:
+> On Fri, Jul 17, 2009 at 02:08:46PM +0100, Alan Jenkins wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>> On Tuesday 14 July 2009, Heiko Carstens wrote:
+>>>   
+>>>       
+>>>> We've seen this bug [...]
+>>>>
+>>>> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
+>>>> breaks after hibernation failures"".
+>>>> Calling bdget while holding a spinlock doesn't seem to be a good idea...
+>>>>     
+>>>>         
+>>> Agreed, sorry for missing that.
+>>>
+>>> Alan, can you please prepare a fix?
+>>>       
+>> Here's a quick & dirty patch [...]
+>>     
+>
+> Thanks for the patch. Unfortunately Arnd was unable to reproduce the original
+> behaviour. But your patch makes sense anyway.
+> I also tested it and nothing broke. So should this go upstream?  
 
-Thanks for the patch, I'm going to add it to my 2.6.32 queue.
+I do want to fix it, but I think there's a better way.
 
-Best,
-Rafael
+It doesn't really need the sleeping bdget().  All we want is
+atomic_inc(&bdev->bd_inode->i_count).  I think we should call it bdcopy().
 
+---------->
+>From 643014ec079610a8b01dfd78c6949c1e8727195b Mon Sep 17 00:00:00 2001
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Date: Tue, 21 Jul 2009 10:17:30 +0100
+Subject: [PATCH] PM/hibernate: replace bdget call with bdcopy (simple atomic_inc of i_count)
 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> ---
->  kernel/power/snapshot.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> Index: linux-2.6-work/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6-work.orig/kernel/power/snapshot.c
-> +++ linux-2.6-work/kernel/power/snapshot.c
-> @@ -853,7 +853,7 @@ static unsigned int count_highmem_pages(
->  	struct zone *zone;
->  	unsigned int n = 0;
->  
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		unsigned long pfn, max_zone_pfn;
->  
->  		if (!is_highmem(zone))
-> @@ -916,7 +916,7 @@ static unsigned int count_data_pages(voi
->  	unsigned long pfn, max_zone_pfn;
->  	unsigned int n = 0;
->  
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		if (is_highmem(zone))
->  			continue;
->  
-> @@ -1010,7 +1010,7 @@ copy_data_pages(struct memory_bitmap *co
->  	struct zone *zone;
->  	unsigned long pfn;
->  
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		unsigned long max_zone_pfn;
->  
->  		mark_free_pages(zone);
-> @@ -1046,7 +1046,7 @@ void swsusp_free(void)
->  	struct zone *zone;
->  	unsigned long pfn, max_zone_pfn;
->  
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
->  		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
->  			if (pfn_valid(pfn)) {
-> @@ -1166,7 +1166,7 @@ static int enough_free_mem(unsigned int 
->  	struct zone *zone;
->  	unsigned int free = 0, meta = 0;
->  
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		meta += snapshot_additional_pages(zone);
->  		if (!is_highmem(zone))
->  			free += zone_page_state(zone, NR_FREE_PAGES);
-> @@ -1474,7 +1474,7 @@ static int mark_unsafe_pages(struct memo
->  	unsigned long pfn, max_zone_pfn;
->  
->  	/* Clear page flags */
-> -	for_each_zone(zone) {
-> +	for_each_populated_zone(zone) {
->  		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
->  		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
->  			if (pfn_valid(pfn))
-> 
-> 
-> 
+Create bdcopy().  This function copies an existing reference to a
+block_device.  It is safe to call from any context.
+
+Hibernation code wishes to copy a reference to the active swap device.
+Right now it calls bdget() under a spinlock, but this is wrong because
+bdget() can sleep.  It doesn't need a full bdget() because we already
+hold a reference to active swap devices (and the spinlock protects
+against swapoff).
+
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: linux-fsdevel@vger.kernel.org
+---
+ fs/block_dev.c     |    8 ++++++++
+ include/linux/fs.h |    1 +
+ mm/swapfile.c      |    4 ++--
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 3a6d4fb..0b04974 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -564,6 +564,14 @@ struct block_device *bdget(dev_t dev)
+ 
+ EXPORT_SYMBOL(bdget);
+ 
++struct block_device *bdcopy(struct block_device *bdev)
++{
++	atomic_inc(&bdev->bd_inode->i_count);
++	return bdev;
++}
++
++EXPORT_SYMBOL(bdcopy);
++
+ long nr_blockdev_pages(void)
+ {
+ 	struct block_device *bdev;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 0872372..eeb1091 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1946,6 +1946,7 @@ extern void putname(const char *name);
+ extern int register_blkdev(unsigned int, const char *);
+ extern void unregister_blkdev(unsigned int, const char *);
+ extern struct block_device *bdget(dev_t);
++extern struct block_device *bdcopy(struct block_device *bdev);
+ extern void bd_set_size(struct block_device *, loff_t size);
+ extern void bd_forget(struct inode *inode);
+ extern void bdput(struct block_device *);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index d1ade1a..272ea8e 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -753,7 +753,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+ 
+ 		if (!bdev) {
+ 			if (bdev_p)
+-				*bdev_p = bdget(sis->bdev->bd_dev);
++				*bdev_p = bdcopy(sis->bdev);
+ 
+ 			spin_unlock(&swap_lock);
+ 			return i;
+@@ -765,7 +765,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+ 					struct swap_extent, list);
+ 			if (se->start_block == offset) {
+ 				if (bdev_p)
+-					*bdev_p = bdget(sis->bdev->bd_dev);
++					*bdev_p = bdcopy(sis->bdev);
+ 
+ 				spin_unlock(&swap_lock);
+ 				bdput(bdev);
+-- 
+1.6.3.2
