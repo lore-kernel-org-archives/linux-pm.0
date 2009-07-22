@@ -1,12 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] NET / skge: Enable WoL by default if supported
-Date: Wed, 22 Jul 2009 14:58:55 +0200
-Message-ID: <200907221458.55616.rjw@sisk.pl>
+From: Deepak Saxena <dsaxena@plexity.net>
+Subject: Re: x86: Expected system state when resumed
+Date: Wed, 22 Jul 2009 07:17:10 -0700
+Message-ID: <20090722141710.GA17721@plexity.net>
+References: <20090721164542.GA30390@plexity.net>
+	<200907212248.18050.rjw@sisk.pl>
+Reply-To: dsaxena@plexity.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <200907212248.18050.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,37 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: netdev@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Michael Guntsche <mike@it-loops.com>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Jul 21 2009, at 22:48, Rafael J. Wysocki was caught saying:
+> On Tuesday 21 July 2009, Deepak Saxena wrote:
+> > 
+> > I am working on getting suspend/resume working on an x86 system
+> > (OLPC XO-1.5) where we are implementing ACPI based suspend/resume
+> > using Open Firmware and what I am seeing right now is that on 
+> > resume, we're not receiving interrupts so the system locks
+> > up in the suspend path when msleep() is called from the EHCI
+> > HCD resume code. lapic_resume() is being called so the APIC
+> > is being restored.  I'm looking for information on what else
+> > Linux's expectation from the firmware when control is handed back 
+> > before I start dumping every system register pre and post resume.
+> 
+> If that's 2.6.30 or later and your timer interrupt is MSI, for example, please
+> check if the timer interrupt is marked as IRQF_TIMER.  If it's not,
+> suspend_device_irqs() will mark it as disabled and it won't work during
+> early resume.
 
-If skge hardware is capable of waking up the system from sleep,
-enable magic packet WoL during driver initialisation.
+Thanks. I am using 2.6.30.1 and the standard x86 HPET driver which has 
+IRQF_TIMER set so this is not the issue. I've determined that if I boot 
+with "noapic", I can suspend/resume, but the system runs very slow as the
+PATA controller is now polled instead of irq driven.
 
-This makes WoL work without calling 'ethtool -s ethX wol g'
-for each adapter.
+~Deepak
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Tested-by: Michael Guntsche <mike@it-loops.com>
----
- drivers/net/skge.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/net/skge.c
-===================================================================
---- linux-2.6.orig/drivers/net/skge.c
-+++ linux-2.6/drivers/net/skge.c
-@@ -3856,8 +3856,10 @@ static struct net_device *skge_devinit(s
- 	skge->speed = -1;
- 	skge->advertising = skge_supported_modes(hw);
- 
--	if (device_may_wakeup(&hw->pdev->dev))
-+	if (device_can_wakeup(&hw->pdev->dev)) {
- 		skge->wol = wol_supported(hw) & WAKE_MAGIC;
-+		device_set_wakeup_enable(&hw->pdev->dev, skge->wol);
-+	}
- 
- 	hw->dev[port] = dev;
- 
+-- 
+In the end, they will not say, "those were dark times,"  they will ask
+"why were their poets silent?" - Bertold Brecht
