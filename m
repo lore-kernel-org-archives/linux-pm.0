@@ -1,16 +1,15 @@
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: PM/hibernate swapfile regression
-Date: Tue, 21 Jul 2009 23:46:57 +0200
-Message-ID: <20090721214657.GA27605__19612.0950895876$1248220952$gmane$org@cmpxchg.org>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
-	<20090720132456.GA29023@osiris.boeblingen.de.ibm.com>
-	<4A659D75.3050004@tuffmail.co.uk> <200907212257.21878.rjw@sisk.pl>
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: Re: x86: Expected system state when resumed
+Date: Wed, 22 Jul 2009 10:09:01 +0800
+Message-ID: <1248228542.12360.14.camel@falcon>
+References: <20090721164542.GA30390@plexity.net>
+	<200907212248.18050.rjw@sisk.pl>
+Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200907212257.21878.rjw@sisk.pl>
+In-Reply-To: <200907212248.18050.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,53 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Arnd Schneider <arnd@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-fsdevel@vger.kernel.org, Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 10:57:21PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday 21 July 2009, Alan Jenkins wrote:
-> > From 643014ec079610a8b01dfd78c6949c1e8727195b Mon Sep 17 00:00:00 2001
-> > From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > Date: Tue, 21 Jul 2009 10:17:30 +0100
-> > Subject: [PATCH] PM/hibernate: replace bdget call with bdcopy (simple atomic_inc of i_count)
+On Tue, 2009-07-21 at 22:48 +0200, Rafael J. Wysocki wrote:
+> On Tuesday 21 July 2009, Deepak Saxena wrote:
 > > 
-> > Create bdcopy().  This function copies an existing reference to a
-> > block_device.  It is safe to call from any context.
-> > 
-> > Hibernation code wishes to copy a reference to the active swap device.
-> > Right now it calls bdget() under a spinlock, but this is wrong because
-> > bdget() can sleep.  It doesn't need a full bdget() because we already
-> > hold a reference to active swap devices (and the spinlock protects
-> > against swapoff).
-> > 
-> > Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > CC: linux-fsdevel@vger.kernel.org
-> > ---
-> >  fs/block_dev.c     |    8 ++++++++
-> >  include/linux/fs.h |    1 +
-> >  mm/swapfile.c      |    4 ++--
-> >  3 files changed, 11 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/fs/block_dev.c b/fs/block_dev.c
-> > index 3a6d4fb..0b04974 100644
-> > --- a/fs/block_dev.c
-> > +++ b/fs/block_dev.c
-> > @@ -564,6 +564,14 @@ struct block_device *bdget(dev_t dev)
-> >  
-> >  EXPORT_SYMBOL(bdget);
-> >  
-> > +struct block_device *bdcopy(struct block_device *bdev)
-> > +{
-> > +	atomic_inc(&bdev->bd_inode->i_count);
-> > +	return bdev;
-> > +}
+> > I am working on getting suspend/resume working on an x86 system
+> > (OLPC XO-1.5) where we are implementing ACPI based suspend/resume
+> > using Open Firmware and what I am seeing right now is that on 
+> > resume, we're not receiving interrupts so the system locks
+> > up in the suspend path when msleep() is called from the EHCI
+> > HCD resume code. lapic_resume() is being called so the APIC
+> > is being restored.  I'm looking for information on what else
+> > Linux's expectation from the firmware when control is handed back 
+> > before I start dumping every system register pre and post resume.
 > 
-> Hmm.  If you defined bdcopy() as static inline directly in mm/swapfile.c,
-> the patch would be slightly simpler.
+> If that's 2.6.30 or later and your timer interrupt is MSI, for example, please
+> check if the timer interrupt is marked as IRQF_TIMER.  If it's not,
+> suspend_device_irqs() will mark it as disabled and it won't work during
+> early resume.
 
-Please don't do that.
+Hi, Rafael
 
-This helper seems to be generic enough to live next to the rest of the
-bd interface, don't you think?  swapfile.c is a mess already...
+This IRQF_TIMER flag also works for me, thanks very much.
 
-	Hannes
+is there a need to tell all the guys who are maintaining the
+platform-specific STR/Standby to mark their external timer interrupt to
+IRQF_TIMER? or, pushing a patch to fix all of the relative timer
+interrupts existing in the kernel. otherwise, they will waste time to
+debug and fix this problem, hope they can search this E-mail and the
+relative commits:
+
+1. commit fee803b2f0c28c78984fc319bd4b88ad47117368
+    x86: hpet: Mark per cpu interrupts IRQF_TIMER to prevent resume
+failure
+2. commit 936577c61d0c10b8929608a92c98d839b22053bc
+    x86: Add IRQF_TIMER to legacy x86 timer interrupt descriptors
+
+Regards,
+Wu Zhangjin
