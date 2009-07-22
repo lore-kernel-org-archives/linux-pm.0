@@ -1,15 +1,16 @@
 From: Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: Re: x86: Expected system state when resumed
-Date: Wed, 22 Jul 2009 10:09:01 +0800
-Message-ID: <1248228542.12360.14.camel@falcon>
-References: <20090721164542.GA30390@plexity.net>
-	<200907212248.18050.rjw@sisk.pl>
+Subject: Re: [PATCH] [suspend] pci_raw_set_power_state: replace
+ msleep by udelay in resuming procedure
+Date: Wed, 22 Jul 2009 10:23:56 +0800
+Message-ID: <1248229436.12360.27.camel__39463.6894845918$1248229585$gmane$org@falcon>
+References: <Pine.LNX.4.44L0.0907161259510.2952-100000@iolanthe.rowland.org>
+	<1247796643.19112.77.camel@falcon>  <200907170433.42366.rjw@sisk.pl>
 Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907212248.18050.rjw@sisk.pl>
+In-Reply-To: <200907170433.42366.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,43 +21,177 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.osdl.org
+Cc: len.brown@intel.com, yanh@lemote.com, linux-kernel@vger.kernel.org, zhangfx@lemote.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2009-07-21 at 22:48 +0200, Rafael J. Wysocki wrote:
-> On Tuesday 21 July 2009, Deepak Saxena wrote:
+On Fri, 2009-07-17 at 04:33 +0200, Rafael J. Wysocki wrote:
+> On Friday 17 July 2009, Wu Zhangjin wrote:
+> > Hi,
 > > 
-> > I am working on getting suspend/resume working on an x86 system
-> > (OLPC XO-1.5) where we are implementing ACPI based suspend/resume
-> > using Open Firmware and what I am seeing right now is that on 
-> > resume, we're not receiving interrupts so the system locks
-> > up in the suspend path when msleep() is called from the EHCI
-> > HCD resume code. lapic_resume() is being called so the APIC
-> > is being restored.  I'm looking for information on what else
-> > Linux's expectation from the firmware when control is handed back 
-> > before I start dumping every system register pre and post resume.
+> > On Thu, 2009-07-16 at 13:02 -0400, Alan Stern wrote:
+> > > On Thu, 16 Jul 2009, Wu Zhangjin wrote:
+> > > 
+> > > > we can not call msleep() when resuming from STR/Standby: if the
+> > > > current_state of the pci device is PCI_D3hot, means we are in the
+> > > > procedure of resuming, in this procedure, we can not re-schedule,
+> > > > otherwise, there will be a deadlock.
+> > > 
+> > > I don't understand.
+> > > 
+> > > First of all, why does current_state == PCI_D3hot mean the system is
+> > > resuming from sleep?  Isn't it possible that the PCI device is going
+> > > through a runtime resume?
+> > > 
+> > > Secondly, why will scheduling during a resume cause a deadlock?
+> > 
+> > Sorry, I'm stupid to make conclusion before describing the problem
+> > clearly, here is the problem I encountered:
+> > 
+> > when I enabled SUSPEND=y in linux-2.6.30.1(with relative patches) on a
+> > loongson-based machine(yeeloong laptop,loongson is mips-compatiable), I
+> > tried to suspend it via "echo standby > /sys/power/state", with the
+> > serial port debugging support, I found it enter into the standby mode
+> > successfully. and then, tried to wake it up via the keyboard interrupt,
+> > but it stopped at the "Power_up_devices:" of kernel/power/main.c.
+> > 
+> > here is a short path of this procedure:
+> > 
+> > suspend_enter:
+> > 	...
+> > 	device_power_down
+> > 	...
+> > 	arch_suspend_disable_irqs
+> > 	...
+> > 	sysdev_suspend
+> > 	...
+> > 	suspend_ops->enter  (board-specific part)
+> > 	...
+> > 	sysdev_resume
+> > 	...
+> > 	arch_suspend_enable_irqs
+> > 	...
+> > 	device_power_up	 <-----------------------stop here
+> > 	...
+> > 	
+> > and then I continue to trace it:
+> > 
+> > device_power_up:
+> > 	dpm_power_up:
+> > 		list_for_each_entry(dev, &dpm_list, power.entry)
+> > 			<<DEBUG>>
+> >                 if (dev->power.status > DPM_OFF) {
+> >                         int error;
+> > 
+> >                         dev->power.status = DPM_OFF;
+> >                         error = resume_device_noirq(dev, state);
+> >                         if (error)
+> >                                 pm_dev_err(dev, state, " early", error);
+> >                 }   
+> > 
+> > I tried to add prom_putchar() at <<DEBUG>> to print something, and This
+> > will make it resume from standby mode successfully. seems,
+> > prom_putchar() have influenced the power.status, and make some devices
+> > not enter into the condition statement, and make dpm_power_up return
+> > directly. (this is very weird, not sure why?)
+> > 
+> > so, I removed the prom_putchar() from <<DEBUG>>, and it stopped at
+> > resume_device_noirq, here is the following tracing path:
+> > 	
+> > resume_device_noirq:
+> >    --> pm_noirq_op
+> >    --> ops->resume_noirq (dev) <--> pci_pm_resume_noirq:
+> > 	   --> pci_pm_default_resume_noirq
+> > 	   --> pci_restore_standard_config
+> > 	   --> pci_set_power_state
+> >            --> pci_raw_set_power_state
+> >            --> msleep    <-----------------------[ stop here]
+> > 
+> > msleep:
+> > 	--> schedule_timeout_uninterruptible
+> > 	--> schedule_timeout
+> > 	     --> ... 
+> > 	     --> __mod_timer
+> >              --> ...
+> > 	     --> schedule ---> a new scheduling happen and never return
+> > 
+> > and then I tried to trace schedule(), and even added a prom_putchar() to
+> > the end of the schedule() function, it output something successfully,
+> > but never return to schedule_timeout(dead? no keyboard response), seems
+> > very weird! this is reproductive, perhaps I have missed something here.
+> >  
+> > so, to avoid this 'weird' situation, I think it's better not to
+> > re-schedule in the resuming procedure from standby. and here, I can not
+> > find another condition to judge the resuming procedure from standby, so,
+> > I use "current_state == PCI_D3hot"(so, my pre-expression is really wrong
+> > for it maybe not resume from standby as you indicated). and is there
+> > another condition to judge we are resuming from standby? perhaps this is
+> > better:
+> > 
+> >    ((current_state == PCI_D3hot) && (state == PCI_D0))
+> > 
+> > but seems this also can not indicate we are resuming from standby.
 > 
-> If that's 2.6.30 or later and your timer interrupt is MSI, for example, please
-> check if the timer interrupt is marked as IRQF_TIMER.  If it's not,
-> suspend_device_irqs() will mark it as disabled and it won't work during
-> early resume.
+> 'standby' is a system sleep state, while 'current_state' and 'state' refer to
+> device power states.
+> 
+> Anyway, the fact that schedule() did not return in your testing setup indicates
+> that there were no timer interrupts delivered to the CPU during resume, which
+> should not have happened
+> 
+> Perhaps it's necessary to annotate your timer interrupts appropriately so that
+> they are not disabled during suspend?
 
-Hi, Rafael
+Thanks very much, The IRQF_TIMER flag works for me, so the replacement
+of msleep by udelay is not needed.
 
-This IRQF_TIMER flag also works for me, thanks very much.
+[This source code is not ready to upstream, herein, just a prompt to the
+other guys who will meet the same problem.]
 
-is there a need to tell all the guys who are maintaining the
-platform-specific STR/Standby to mark their external timer interrupt to
-IRQF_TIMER? or, pushing a patch to fix all of the relative timer
-interrupts existing in the kernel. otherwise, they will waste time to
-debug and fix this problem, hope they can search this E-mail and the
-relative commits:
+[PATCH][loongson] Mark external timer interrupt IRQF_TIMER to prevent
+resume failure
 
-1. commit fee803b2f0c28c78984fc319bd4b88ad47117368
-    x86: hpet: Mark per cpu interrupts IRQF_TIMER to prevent resume
-failure
-2. commit 936577c61d0c10b8929608a92c98d839b22053bc
-    x86: Add IRQF_TIMER to legacy x86 timer interrupt descriptors
+This PATCH refers to the commit fee803b2f0c28c78984fc319bd4b88ad47117368
+and
+the feedback from "Rafael J. Wysocki" <rjw@sisk.pl> of my patch:
+"[suspend]
+pci_raw_set_power_state: replace msleep by udelay in resuming procedure"
 
-Regards,
-Wu Zhangjin
+"timer interrupts are excluded from being disabled during suspend. The
+clock
+events code manages the disabling of clock events on its own because the
+timer
+interrupt needs to be functional before the resume code reenables the
+device
+interrupts."
+
+The external mfgpt timers request their interrupt without setting the
+IRQF_TIMER
+flag so suspend_device_irqs() disables them as well which results in a
+fatal
+resume failure on the boot CPU.
+
+Adding IRQF_TIMER to the interupt flags when requesting the mfgpt timer
+interrupts solves the problem.
+
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ arch/mips/loongson/common/cs5536/cs5536_mfgpt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
+b/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
+index 1a518ec..5b8fa9f 100644
+--- a/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
++++ b/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
+@@ -133,7 +133,7 @@ static irqreturn_t timer_interrupt(int irq, void
+*dev_id)
+ 
+ static struct irqaction irq5 = {
+ 	.handler = timer_interrupt,
+-	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
++	.flags = IRQF_TIMER | IRQF_DISABLED | IRQF_NOBALANCING,
+ 	.name = "timer"
+ };
+ 
+-- 
+1.6.2.1
