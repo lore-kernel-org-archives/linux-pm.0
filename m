@@ -1,14 +1,16 @@
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
- know if it's in use
-Date: Thu, 23 Jul 2009 18:00:19 +0200
-Message-ID: <4A688913.7040000@gandalf.sssup.it>
-References: <Pine.LNX.4.44L0.0907231053040.2825-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Generic events for wake up from S1-S4
+Date: Thu, 23 Jul 2009 23:27:59 +0200
+Message-ID: <200907232328.03566.rjw__23436.7936537184$1248384627$gmane$org@sisk.pl>
+References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
+	<20090723195114.GR28158@elf.ucw.cz>
+	<20090723201050.GD19369@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907231053040.2825-100000@iolanthe.rowland.org>
+In-Reply-To: <20090723201050.GD19369@khazad-dum.debian.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, len.brown@intel.com
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jouni Malinen <j@w1.fi>, linux-wireless <linux-wireless@vger.kernel.org>, linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, Stephen Chen <Stephen.Chen@atheros.com>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern wrote:
-> On Thu, 23 Jul 2009, Rafael J. Wysocki wrote:
->
->   
->>> I follow the discussion around the new runtime support and I would like 
->>> to know if I can
->>> add to the new interface the no_suspend flag or maybe now there is a 
->>> better solution.
->>>       
->> Hmm.  Do I remember correctly that the no_suspend flag is for preventing the
->> system-wide suspend in case some devices are in use?
->>     
->
-> As I recall, the no_suspend flag was used to mark a few devices which
-> should not be powered down during an otherwise normal system sleep.
->
-> For example, you might want to suspend the computer while leaving a
-> built-in DVB tuner on because the tuner is attached to an external TV
-> set.
->
-> Alan Stern
->   
-Is it ok for you if a prepare only the patch the add the flag and let 
-the user space
-and the driver to use it?
+On Thursday 23 July 2009, Henrique de Moraes Holschuh wrote:
+> On Thu, 23 Jul 2009, Pavel Machek wrote:
+> > On Thu 2009-07-23 16:45:22, Henrique de Moraes Holschuh wrote:
+> > > On Thu, 23 Jul 2009, Pavel Machek wrote:
+> > > > > > Note that the "why" is unreliable by design. Network driver will
+> > > > > > ignore WoL during run-time, right?
+> > > > > 
+> > > > > "Why" is unrealible?  I don't follow your reasoning.  It should be as
+> > > > > reliable as "who"...
+> > > > 
+> > > > See above. The wakeup events race with each other.
+> > > 
+> > > We deliver them all.  It is that simple.  The rest is up to userspace.
+> > 
+> > Ok, but then we should not be talking about wake up events,
+> > but... events.
+> > 
+> > Like "lid opened", "wake packet came", ... . And deliver them even
+> > when they happen during run-time. That's okay with me.
+> 
+> Well, we *already* deliver "lid opened" when the lid is opened, regardless
+> of it waking up the computer or not.  But we are missing a way to deliver
+> other classes of wakeup events.
+> 
+> I know of at least these (incomplete list):
+> 
+> 1. network-initiated wakeup
+>    a. wired
+>    b. wireless
+>    c. long-range wireless
+> 
+> 2. platform health/condition alarms
+>    a. battery alarm (two levels, warning and emergency)
+>    b. thermal alarm (two levels, warning and emergency)
+>    (we need these as generic alarms, not just reason-for-wakeup)
+> 
+> 3. device (or device tree) hotplug/hotunplug
+>    a. hotunplug request or notification
+>       (we deliver the request/notification, but we don't know we should
+>       go back to sleep, so all we are missing is the reason-for-wakeup
+>       event)
+> 
+> 4. management
+>    a. wake-up/power on clock
+>    b. remote management command (IMPI, etc)
+>    c. intrusion alarm
+>    d. theft alarm
+> 
+> None of those have a standard interface to notify userspace of the reason of
+> the wake up AFAIK.  Many of these want a generic event interface to be
+> delivered not just as reason-for-wakeup, but also as runtime events.
+> 
+> And I guess we should also tell userspace what state we are waking up from
+> (S5 clean state, S5/S4 hibernation, S3), sometimes it matters.
 
-Michael
->
->   
+Agreed, and same for the above.
+
+So, what in your opinion would be the best way to expose this information?
+
+Rafael
