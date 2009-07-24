@@ -1,17 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Generic events for wake up from S1-S4
-Date: Fri, 24 Jul 2009 16:49:16 +0200
-Message-ID: <1248446956.32151.0.camel__40080.394774168$1248447094$gmane$org@johannes.local>
-References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
-	<20090723195114.GR28158@elf.ucw.cz>
-	<20090723201050.GD19369@khazad-dum.debian.net>
-	<200907232328.03566.rjw@sisk.pl>
-	<1248396826.3556.26.camel@localhost.localdomain>
-	<20090724133903.GA18827@khazad-dum.debian.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC Add no_suspend attribute V2] Let the driver
+	know if it's in use
+Date: Fri, 24 Jul 2009 17:36:30 +0200
+Message-ID: <200907241736.31388.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0907231053040.2825-100000@iolanthe.rowland.org>
+	<4A688913.7040000@gandalf.sssup.it>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2903306567967022077=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090724133903.GA18827@khazad-dum.debian.net>
+In-Reply-To: <4A688913.7040000@gandalf.sssup.it>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +18,42 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jouni Malinen <j@w1.fi>, linux-wireless <linux-wireless@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, ykzhao <yakui.zhao@intel.com>, Stephen Chen <Stephen.Chen@atheros.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+Cc: Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday 23 July 2009, Michael Trimarchi wrote:
+> Alan Stern wrote:
+> > On Thu, 23 Jul 2009, Rafael J. Wysocki wrote:
+> >
+> >   
+> >>> I follow the discussion around the new runtime support and I would like 
+> >>> to know if I can
+> >>> add to the new interface the no_suspend flag or maybe now there is a 
+> >>> better solution.
+> >>>       
+> >> Hmm.  Do I remember correctly that the no_suspend flag is for preventing the
+> >> system-wide suspend in case some devices are in use?
+> >>     
+> >
+> > As I recall, the no_suspend flag was used to mark a few devices which
+> > should not be powered down during an otherwise normal system sleep.
+> >
+> > For example, you might want to suspend the computer while leaving a
+> > built-in DVB tuner on because the tuner is attached to an external TV
+> > set.
+> >
+> > Alan Stern
+> >   
+> Is it ok for you if a prepare only the patch the add the flag and let 
+> the user space
+> and the driver to use it?
 
---===============2903306567967022077==
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-k3uMWwkqwgmLBnwDG77h"
+It seems unrelated to the run-time framework, so I think we can add that flag.
 
+Please post the patch.
 
---=-k3uMWwkqwgmLBnwDG77h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2009-07-24 at 10:39 -0300, Henrique de Moraes Holschuh wrote:
-
-> ACPI notifications are hard to extend, I think.  Please correct me if I a=
-m
-> wrong.
-
-ACPI is the wrong place anyway, since it's fundamentally platform
-dependent. Unlike the rest of suspend and wake functionality.
-
-johannes
-
---=-k3uMWwkqwgmLBnwDG77h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKacnoAAoJEODzc/N7+QmaSScP/R7Y3kpqY/fbBkNKBopqkkpE
-eEmGWiYd31VOMMVlcyjQYCogkTc1m7u5PDou7s3pFyqS+Aq8ypFbCsYKuoZRzFFg
-69lUr7hLyyHBF7Bb/CwoXAVsoSqdwUvCG0eHLK86KjYnzYurhd//oJq/yXzZbQfz
-XmzoUZJk6cFLR4cZ8ZYsPIHfdJi7k3wFulcl1CGRqBvdJt0JdR1wz8c7M5ieMDJN
-TER0JsXzkuuPd6i4eqNhOi47y8BeC5JrTXcw5RitxnRFwdd5mAvRpf43eTkdWnZq
-y2AiJ0wfSYeTNXVZM5Fc9wOpzWYKcK3BD1YaRtFad5lYS5CK8njCX/yI3yl4PI2g
-+H7x5Ur/YikUIHtTg70qNGj/HQ7XoeRqOGIVPP2uo5EJlBWgVrwlGvLLdrzB5eO1
-ejhW4mMQo01T0EFz/E0L1l/ptSRE7GOcXuub258Md8SCX8qxHilFVSebRGP/GreC
-voc4gKMOlVE+yXvyBEAcJgz6O5YU/f1HHrRRtLU2JzI9KVO/mVc7fBGsXNU/TIuK
-WK9JW9BdrzVjshk6HjP9SheOjGCPlEZVeN9dXUbAHiJW3sErOo8m6OKo66UDAiDd
-MZvfqvIRz/qfNGxMXSR9l4mfskzg/fkDxkuR1uf0rdjnwi4bgzV82J+9ZErabd3J
-CIYyGQg0Nta9kejlVpoc
-=92Uq
------END PGP SIGNATURE-----
-
---=-k3uMWwkqwgmLBnwDG77h--
-
-
---===============2903306567967022077==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2903306567967022077==--
+Best,
+Rafael
