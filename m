@@ -1,16 +1,11 @@
-From: ykzhao <yakui.zhao@intel.com>
-Subject: Re: Generic events for wake up from S1-S4
-Date: Fri, 24 Jul 2009 08:53:46 +0800
-Message-ID: <1248396826.3556.26.camel__39577.3757635199$1248396964$gmane$org@localhost.localdomain>
-References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
-	<20090723195114.GR28158@elf.ucw.cz>
-	<20090723201050.GD19369@khazad-dum.debian.net>
-	<200907232328.03566.rjw@sisk.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH V2 0/4] introduce device async actions mechanism
+Date: Fri, 24 Jul 2009 11:01:54 +0800
+Message-ID: <1248404514.2670.107.camel__34281.706941738$1248404554$gmane$org@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907232328.03566.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,79 +15,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jouni Malinen <j@w1.fi>, linux-wireless <linux-wireless@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Chen <Stephen.Chen@atheros.com>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-acpi <linux-acpi@vger.kernel.org>
+Cc: dtor@mail.ru, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2009-07-24 at 05:27 +0800, Rafael J. Wysocki wrote:
-> On Thursday 23 July 2009, Henrique de Moraes Holschuh wrote:
-> > On Thu, 23 Jul 2009, Pavel Machek wrote:
-> > > On Thu 2009-07-23 16:45:22, Henrique de Moraes Holschuh wrote:
-> > > > On Thu, 23 Jul 2009, Pavel Machek wrote:
-> > > > > > > Note that the "why" is unreliable by design. Network driver will
-> > > > > > > ignore WoL during run-time, right?
-> > > > > > 
-> > > > > > "Why" is unrealible?  I don't follow your reasoning.  It should be as
-> > > > > > reliable as "who"...
-> > > > > 
-> > > > > See above. The wakeup events race with each other.
-> > > > 
-> > > > We deliver them all.  It is that simple.  The rest is up to userspace.
-> > > 
-> > > Ok, but then we should not be talking about wake up events,
-> > > but... events.
-> > > 
-> > > Like "lid opened", "wake packet came", ... . And deliver them even
-> > > when they happen during run-time. That's okay with me.
-> > 
-> > Well, we *already* deliver "lid opened" when the lid is opened, regardless
-> > of it waking up the computer or not.  But we are missing a way to deliver
-> > other classes of wakeup events.
-> > 
-> > I know of at least these (incomplete list):
-> > 
-> > 1. network-initiated wakeup
-> >    a. wired
-> >    b. wireless
-> >    c. long-range wireless
-> > 
-> > 2. platform health/condition alarms
-> >    a. battery alarm (two levels, warning and emergency)
-> >    b. thermal alarm (two levels, warning and emergency)
-> >    (we need these as generic alarms, not just reason-for-wakeup)
-> > 
-> > 3. device (or device tree) hotplug/hotunplug
-> >    a. hotunplug request or notification
-> >       (we deliver the request/notification, but we don't know we should
-> >       go back to sleep, so all we are missing is the reason-for-wakeup
-> >       event)
-> > 
-> > 4. management
-> >    a. wake-up/power on clock
-> >    b. remote management command (IMPI, etc)
-> >    c. intrusion alarm
-> >    d. theft alarm
-> > 
-> > None of those have a standard interface to notify userspace of the reason of
-> > the wake up AFAIK.  Many of these want a generic event interface to be
-> > delivered not just as reason-for-wakeup, but also as runtime events.
-> > 
-> > And I guess we should also tell userspace what state we are waking up from
-> > (S5 clean state, S5/S4 hibernation, S3), sometimes it matters.
-> 
-> Agreed, and same for the above.
-> 
-> So, what in your opinion would be the best way to expose this information?
-Maybe we should firstly define what event should be delivered to user
-space when it is resumed from S1--S4.
-
-And another issue who is in charge of sending the event? By the specific
-device or ACPI notification?
-
-Thanks.
-> 
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+77u/SGksCgp0aGlzIGlzIHRoZSBwYXRjaCBzZXQgSSBtYWRlIHRvIHNwZWVkIHVwIHRoZSBkZXZp
+Y2UKc3VzcGVuZC9yZXN1bWUvc2h1dGRvd24gcHJvY2Vzcy4KCkEgbmV3IG1lY2hhbmlzbSBjYWxs
+ZWQgRGV2aWNlIEFzeW5jIEFjdGlvbnMgaXMgaW50cm9kdWNlZAppbiB0aGlzIHBhdGNoIHNldC4K
+ClRoZSBiYXNpYyBpZGVhIGlzIHRoYXQsCmlmIHRoZSBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBw
+cm9jZXNzIG9mIGEgZGV2aWNlIGdyb3VwLCBpbmNsdWRpbmcKYSByb290IGRldmljZSBhbmQgaXRz
+IGNoaWxkIGRldmljZXMsIGFyZSBpbmRlcGVuZGVudCBvZiBvdGhlciBkZXZpY2VzLAp3ZSBjcmVh
+dGUgYW4gYXN5bmMgZG9tYWluIGZvciB0aGlzIGRldmljZSBncm91cCwKYW5kIG1ha2UgdGhlbSBz
+dXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBhc3luY2hyb25vdXNseS4gICAgCgpOb3RlIHRoYXQgdGhp
+cyBtZWNoYW5pc20gaXMgbm90IGRlc2lnbmVkIGZvciBhbGwgdGhlIGRldmljZXMuCkdlbmVyYWxs
+eSBzcGVha2luZywgaWYgd2Ugd2FudCB0byBzdXNwZW5kL3Jlc3VtZS9zaHV0ZG93biBhIGRldmlj
+ZQphc3luY2hyb25vdXNseSwgd2Ugc2hvdWxkCjEuIGZpbmQgb3V0IGEgc3VpdGFibGUgZGV2aWNl
+IGFzeW5jIGdyb3VwIHRoYXQgY29udGFpbnMgdGhpcyBkZXZpY2UuCjIuIGdldCB0aGUgcm9vdCBk
+ZXZpY2UgaW4gdGhlIGRldmljZSBhc3luYyBncm91cC4KMy4gcm9vdCBkZXZpY2UgcmVnaXN0ZXJz
+IGFuIGFzeW5jIGRvbWFpbiBmb3IgdGhpcyBkZXZpY2UgYXN5bmMgZ3JvdXAsCiAgIHdpdGggdGhl
+IHByb3BlciBhc3luYyBhY3Rpb24gdHlwZS4KCkkgdHJpZWQgdG8gbWFrZSBpdCBtb3JlIGdlbmVy
+aWMgYnV0IGZhaWxlZC4KQmVjYXVzZSBjdXJyZW50bHkgdGhlIGRlcGVuZGVuY3kgYXJlIHB1bGxl
+ZCBmcm9tIHRoZSBkZXZpY2UgdHJlZSwgaS5lLgrvu79wYXJlbnQgZGV2aWNlcyB3aWxsIG5vdCBi
+ZSBzdXNwZW5kZWQgdW50aWwgYWxsIG9mIHRoZWlyIGNoaWxkcmVuIGhhdmUKYmVlbiBzdXNwZW5k
+ZWQgYW5kIGNoaWxkcmVuIGRldmljZXMgd2lsbCBub3QgYmUgcmVzdW1lZCBiZWZvcmUgdGhlCnBh
+cmVudHMuCgpCdXQgc29tZSBoYXJkd2FyZSBicmVha3MgdGhpcyBydWxlLgplLmcuIAowMDoxYS4w
+IFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUggVVNCIFVIQ0kgQ29udHJv
+bGxlcgowMDoxYS4xIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUggVVNC
+IFVIQ0kgQ29udHJvbGxlcgowMDoxYS43IFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUggVVNCMiBFSENJIENvbnRyb2xsZXIKdGhlc2UgcGNpIGRldmljZXMgYXJlIHNpYmxp
+bmdzLCBidXQgMDA6MWEuNyBtdXN0IGJlIHJlc3VtZWQgYWZ0ZXIKMDA6MWEuMCwgc2FpZCBieSBB
+bGFuIFN0ZXJuLCB3aGlsZSB3ZSBjYW4gbm90IGdldCB0aGlzIGRlcGVuZGVuY3kKZnJvbSBkZXZp
+Y2UgdHJlZS4KCkN1cnJlbnRseSwgaW4gb3JkZXIgdG8gbWFrZSBzdXJlIHRoYXQgaXQgd29uJ3Qg
+YnJpbmcgYW55IHNpZGUgZWZmZWN0cywKSSBvbmx5IGNvbnZlcnQgdGhlIEFDUEkgYmF0dGVyeSBh
+bmQgaTgwNDIgdG8gdXNlIHRoaXMgZnJhbWV3b3JrLCB3aGljaApyZWR1Y2VzIHRoZSBTMyBrZXJu
+ZWwgdGltZSAoa2VybmVsIHN1c3BlbmQgYW5kIGtlcm5lbCByZXN1bWUgdGltZSkgZnJvbQo3LjBz
+IHRvIGxlc3MgdGhhbiA2LjVzLgpBbmQgaXQgYWxzbyByZWR1Y2VzIDAuNHMgc2h1dGRvd24gdGlt
+ZSBpbiBteSB0ZXN0LgoKQW55IGNvbW1lbnRzIGFyZSB3ZWxjb21lLiA6KQoKdGhhbmtzLApydWkK
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
+IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
+L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
