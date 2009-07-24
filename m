@@ -1,15 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V2 4/4] i8042: support async suspend and
-	shutdown
-Date: Fri, 24 Jul 2009 09:14:11 +0200
-Message-ID: <20090724071411.GB10760__19271.1242278621$1248419713$gmane$org@elf.ucw.cz>
-References: <1248404532.2670.112.camel@rzhang-dt>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: Generic events for wake up from S1-S4
+Date: Fri, 24 Jul 2009 10:39:03 -0300
+Message-ID: <20090724133903.GA18827__41561.5595681176$1248442914$gmane$org@khazad-dum.debian.net>
+References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
+	<20090723195114.GR28158@elf.ucw.cz>
+	<20090723201050.GD19369@khazad-dum.debian.net>
+	<200907232328.03566.rjw@sisk.pl>
+	<1248396826.3556.26.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1248404532.2670.112.camel@rzhang-dt>
+In-Reply-To: <1248396826.3556.26.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,64 +22,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: dtor@mail.ru, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jouni Malinen <j@w1.fi>, linux-wireless <linux-wireless@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, Stephen Chen <Stephen.Chen@atheros.com>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2009-07-24 11:02:12, Zhang Rui wrote:
-> 
-> i8042 controller support device async actions.
-> 
-> If boot option "dev_async_action" is added,
-> i8042 controller and its child devices can be
-> suspended/shutdown asynchronously.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/input/serio/i8042.c |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/input/serio/i8042.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/input/serio/i8042.c
-> +++ linux-2.6/drivers/input/serio/i8042.c
-> @@ -1285,14 +1285,21 @@ static int __init i8042_init(void)
->  		goto err_unregister_driver;
->  	}
->  
-> -	err = platform_device_add(i8042_platform_device);
-> +	err = dev_async_register(&i8042_platform_device->dev,
-> +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
->  	if (err)
->  		goto err_free_device;
->  
-> +	err = platform_device_add(i8042_platform_device);
-> +	if (err)
-> +		goto err_dev_async_unregister;
-> +
->  	panic_blink = i8042_panic_blink;
->  
->  	return 0;
->  
-> + err_dev_async_unregister:
-> +	dev_async_unregister(&i8042_platform_device->dev);
->   err_free_device:
->  	platform_device_put(i8042_platform_device);
->   err_unregister_driver:
+On Fri, 24 Jul 2009, ykzhao wrote:
+> > > Well, we *already* deliver "lid opened" when the lid is opened, regardless
+> > > of it waking up the computer or not.  But we are missing a way to deliver
+> > > other classes of wakeup events.
+> > > 
+> > > I know of at least these (incomplete list):
+> > > 
+> > > 1. network-initiated wakeup
+> > >    a. wired
+> > >    b. wireless
+> > >    c. long-range wireless
+> > > 
+> > > 2. platform health/condition alarms
+> > >    a. battery alarm (two levels, warning and emergency)
+> > >    b. thermal alarm (two levels, warning and emergency)
+> > >    (we need these as generic alarms, not just reason-for-wakeup)
+> > > 
+> > > 3. device (or device tree) hotplug/hotunplug
+> > >    a. hotunplug request or notification
+> > >       (we deliver the request/notification, but we don't know we should
+> > >       go back to sleep, so all we are missing is the reason-for-wakeup
+> > >       event)
+> > > 
+> > > 4. management
+> > >    a. wake-up/power on clock
+> > >    b. remote management command (IMPI, etc)
+> > >    c. intrusion alarm
+> > >    d. theft alarm
+> > > 
+> > > None of those have a standard interface to notify userspace of the reason of
+> > > the wake up AFAIK.  Many of these want a generic event interface to be
+> > > delivered not just as reason-for-wakeup, but also as runtime events.
+> > > 
+> > > And I guess we should also tell userspace what state we are waking up from
+> > > (S5 clean state, S5/S4 hibernation, S3), sometimes it matters.
+> > 
+> > Agreed, and same for the above.
+> > 
+> > So, what in your opinion would be the best way to expose this information?
 
-I still do not like the interface: manually unregistering seems to be
-ugly & error prone.
+Frankly?  It needs to be an easy-to-extend ABI, and the only one that cames
+to mind right now are uevents.
 
-> @@ -1305,6 +1312,7 @@ static int __init i8042_init(void)
->  
->  static void __exit i8042_exit(void)
->  {
-> +	dev_async_unregister(&i8042_platform_device->dev);
->  	platform_device_unregister(i8042_platform_device);
->  	platform_driver_unregister(&i8042_driver);
->  	i8042_platform_exit();
-> 
+> Maybe we should firstly define what event should be delivered to user
+> space when it is resumed from S1--S4.
+
+Why not a change uevent (although we could always come up with a new uevent
+type for this, and that might be a good idea)?
+
+> And another issue who is in charge of sending the event? By the specific
+> device or ACPI notification?
+
+ACPI notifications are hard to extend, I think.  Please correct me if I am
+wrong.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
