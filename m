@@ -1,17 +1,12 @@
-From: Christoph Hellwig <hch@infradead.org>
-Subject: Re: PM/hibernate swapfile regression
-Date: Mon, 27 Jul 2009 01:12:17 -0400
-Message-ID: <20090727051217.GA24854__29319.2116929733$1248671706$gmane$org@infradead.org>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com>
-	<4A659D75.3050004@tuffmail.co.uk>
-	<20090721215536.GA9502@infradead.org>
-	<200907252358.26434.rjw@sisk.pl>
+From: Ben Dooks <ben-linux@fluff.org>
+Subject: Converting to dev_pm_ops (remove annoying warnings)
+Date: Tue, 28 Jul 2009 11:44:34 +0100
+Message-ID: <20090728104434.GA1728__48487.3705580414$1248793270$gmane$org@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200907252358.26434.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,11 +16,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Arnd Schneider <arnd@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-fsdevel@vger.kernel.org, Hans-Joachim Picht <hans@linux.vnet.ibm.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 25, 2009 at 11:58:25PM +0200, Rafael J. Wysocki wrote:
-> Thanks for the comments.  Does the one below look better?
+I have a couple of questions about changing drivers to use the
+dev_pm_ops method within drivers using the device driver model.
 
-Yes, that looks much better to me.
+1) Should the suspend/resume code still be wrapped in #ifdef CONFIG_PM
+   and supply a NULL 'struct dev_pm_ops' wen CONFIG_PM=n
+
+2) Is it allowable to submit changes to move drivers to dev_pm_ops
+   during the -rc phase, or do we have to wait for the merge window
+   before sending these? The number of warnings on a system that
+   relies heavily on platform devices is annoying (S3C24XX ARM).
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
