@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 13865] New: Can only resume with HP_WMI
-	selected on compaq nc6000 when
-	4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is reverted
-Date: Wed, 29 Jul 2009 22:57:40 +0200
-Message-ID: <200907292257.41573.rjw__17265.7621712007$1248901202$gmane$org@sisk.pl>
-References: <bug-13865-10028@http.bugzilla.kernel.org/>
+Subject: Re: [PATH] i915: Read outside array bounds
+Date: Wed, 29 Jul 2009 23:06:14 +0200
+Message-ID: <200907292306.15195.rjw__33014.0569633388$1248901825$gmane$org@sisk.pl>
+References: <4A6B8C3E.7060501@gmail.com>
+	<20090728145003.be5399d1.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <bug-13865-10028@http.bugzilla.kernel.org/>
+In-Reply-To: <20090728145003.be5399d1.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,37 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: airlied@linux.ie, linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net, Roel Kluin <roel.kluin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 29 July 2009, you wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13865
+On Tuesday 28 July 2009, Andrew Morton wrote:
+> (cc jbarnes)
 > 
->            Summary: Can only resume with HP_WMI selected on compaq nc6000
->                     when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is
->                     reverted
->            Product: Power Management
->            Version: 2.5
->     Kernel Version: 2.6.30
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Hibernation/Suspend
->         AssignedTo: power-management_other@kernel-bugs.osdl.org
->         ReportedBy: cedric@belbone.be
->         Regression: No
+> On Sun, 26 Jul 2009 00:50:38 +0200
+> Roel Kluin <roel.kluin@gmail.com> wrote:
 > 
+> > dev_priv->saveSWF1 is a 16 element array, but this reads up to index 22
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> > save_state does not do this addition, can it be removed? please review.
+> > 
+> > diff --git a/drivers/gpu/drm/i915/i915_suspend.c b/drivers/gpu/drm/i915/i915_suspend.c
+> > index 9e1d16e..1d04e19 100644
+> > --- a/drivers/gpu/drm/i915/i915_suspend.c
+> > +++ b/drivers/gpu/drm/i915/i915_suspend.c
+> > @@ -598,7 +598,7 @@ int i915_restore_state(struct drm_device *dev)
+> >  
+> >  	for (i = 0; i < 16; i++) {
+> >  		I915_WRITE(SWF00 + (i << 2), dev_priv->saveSWF0[i]);
+> > -		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i+7]);
+> > +		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i]);
+> >  	}
+> >  	for (i = 0; i < 3; i++)
+> >  		I915_WRITE(SWF30 + (i << 2), dev_priv->saveSWF2[i]);
 > 
-> Just for testing I enabled HP_WMI. But from then, I could not resume anymore.
-> I just reverted the last git commit on the 'drivers/platform/x86/hp-wmi.c' code
-> (4c395bdd3f2ca8f7e8efad881e16071182c3b8ca) and now I can resume.
-> The problem still persists on .31-rc serie
+> This looks rather correct and the original code looked rather wrong.
+> 
+> Someone please tell me that this might fix one of our splendid number
+> of i915 bugs :(
 
-Frans, that's something for you to take care of.
+Hmm, Jesse, what's your opinion about this one?  It looks correct to me.
 
-Best,
 Rafael
