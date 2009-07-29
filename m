@@ -1,13 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATH] i915: Read outside array bounds
-Date: Tue, 28 Jul 2009 14:50:03 -0700
-Message-ID: <20090728145003.be5399d1.akpm@linux-foundation.org>
-References: <4A6B8C3E.7060501@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: x86: Expected system state when resumed
+Date: Wed, 29 Jul 2009 17:08:17 +0200
+Message-ID: <20090729150817.GI1534@ucw.cz>
+References: <20090721164542.GA30390@plexity.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A6B8C3E.7060501@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20090721164542.GA30390@plexity.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: airlied@linux.ie, linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Deepak Saxena <dsaxena@plexity.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-(cc jbarnes)
-
-On Sun, 26 Jul 2009 00:50:38 +0200
-Roel Kluin <roel.kluin@gmail.com> wrote:
-
-> dev_priv->saveSWF1 is a 16 element array, but this reads up to index 22
+On Tue 2009-07-21 09:45:42, Deepak Saxena wrote:
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> save_state does not do this addition, can it be removed? please review.
-> 
-> diff --git a/drivers/gpu/drm/i915/i915_suspend.c b/drivers/gpu/drm/i915/i915_suspend.c
-> index 9e1d16e..1d04e19 100644
-> --- a/drivers/gpu/drm/i915/i915_suspend.c
-> +++ b/drivers/gpu/drm/i915/i915_suspend.c
-> @@ -598,7 +598,7 @@ int i915_restore_state(struct drm_device *dev)
->  
->  	for (i = 0; i < 16; i++) {
->  		I915_WRITE(SWF00 + (i << 2), dev_priv->saveSWF0[i]);
-> -		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i+7]);
-> +		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i]);
->  	}
->  	for (i = 0; i < 3; i++)
->  		I915_WRITE(SWF30 + (i << 2), dev_priv->saveSWF2[i]);
+> I am working on getting suspend/resume working on an x86 system
+> (OLPC XO-1.5) where we are implementing ACPI based suspend/resume
+> using Open Firmware and what I am seeing right now is that on 
+> resume, we're not receiving interrupts so the system locks
+> up in the suspend path when msleep() is called from the EHCI
+> HCD resume code. lapic_resume() is being called so the APIC
+> is being restored.  I'm looking for information on what else
+> Linux's expectation from the firmware when control is handed back 
+> before I start dumping every system register pre and post resume.
 
-This looks rather correct and the original code looked rather wrong.
+Well, acpi spec should answer that...
+								Pavel
 
-Someone please tell me that this might fix one of our splendid number
-of i915 bugs :(
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
