@@ -1,11 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM fixes for 2.6.31
-Date: Thu, 30 Jul 2009 00:06:03 +0200
-Message-ID: <200907300006.04751.rjw__2281.12439294836$1248905415$gmane$org@sisk.pl>
+From: Frans Pop <elendil@planet.nl>
+Subject: Re: [Bug 13865] Can only resume with HP_WMI selected on
+	compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca
+	is reverted
+Date: Thu, 30 Jul 2009 00:57:47 +0200
+Message-ID: <200907300057.48669.elendil__14670.2372505844$1248908338$gmane$org@planet.nl>
+References: <bug-13865-10028@http.bugzilla.kernel.org/>
+	<200907292257.41573.rjw@sisk.pl>
+	<200907292331.34214.elendil@planet.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200907292331.34214.elendil@planet.nl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,31 +22,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-fsdevel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, stable@kernel.org
+To: cedric@belbone.be, linux-kernel@vger.kernel.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Wednesday 29 July 2009, Frans Pop wrote:
+> The strange thing is that the resume function does not do anything
+> that's not also done in hp_wmi_input_setup(). The only thing I can
+> think of is that we might need to test for
+> wmi_has_guid(HPWMI_EVENT_GUID) because that model simply does not
+> support input events.
 
-Please pull power management fixes for 2.6.31 from:
+If that is the problem, the following patch will hopefully fix it.
+This patch is against .31-rc4 but will need only minor changes to
+apply against .30.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+Subject: hp-wmi: check that an input device exists in resume handler
 
-This will fix two regressions, one related to the handling of the
-ACPI SCI_EN bit during resume from suspend to RAM (machine with a
-broken BIOS has to be blacklisted) and the other caused by
-putting bdget() under a spinlock in the hibernation code.
+Some systems may not support input events, or registering the input
+handler may have failed. So check that an input device exists before
+trying to set the docking and tablet mode state during resume.
 
- drivers/acpi/sleep.c |    8 ++++++++
- fs/block_dev.c       |   10 ++++++++++
- include/linux/fs.h   |    1 +
- mm/swapfile.c        |    4 ++--
- 4 files changed, 21 insertions(+), 2 deletions(-)
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13865
 
----------------
+Reported-by: cedric@belbone.be
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Alan Jenkins (1):
-      PM / Hibernate: Replace bdget call with simple atomic_inc of i_count
-
-Bartlomiej Zolnierkiewicz (1):
-      PM / ACPI: HP G7000 Notebook needs a SCI_EN resume quirk
+diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+index 369bd43..63c9214 100644
+--- a/drivers/platform/x86/hp-wmi.c
++++ b/drivers/platform/x86/hp-wmi.c
+@@ -540,11 +540,13 @@ static int hp_wmi_resume_handler(struct device *device)
+ 	 * the input layer will only actually pass it on if the state
+ 	 * changed.
+ 	 */
+-
+-	input_report_switch(hp_wmi_input_dev, SW_DOCK, hp_wmi_dock_state());
+-	input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
+-			    hp_wmi_tablet_state());
+-	input_sync(hp_wmi_input_dev);
++	if (hp_wmi_input_dev) {
++		input_report_switch(hp_wmi_input_dev, SW_DOCK,
++				    hp_wmi_dock_state());
++		input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
++				    hp_wmi_tablet_state());
++		input_sync(hp_wmi_input_dev);
++	}
+ 
+ 	if (wifi_rfkill)
+ 		rfkill_set_states(wifi_rfkill,
