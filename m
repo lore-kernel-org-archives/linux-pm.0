@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATH] i915: Read outside array bounds
-Date: Wed, 29 Jul 2009 23:06:14 +0200
-Message-ID: <200907292306.15195.rjw__33014.0569633388$1248901825$gmane$org@sisk.pl>
-References: <4A6B8C3E.7060501@gmail.com>
-	<20090728145003.be5399d1.akpm@linux-foundation.org>
+From: Frans Pop <elendil@planet.nl>
+Subject: [Bug 13865] Can only resume with HP_WMI selected on
+	compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca
+	is reverted
+Date: Wed, 29 Jul 2009 23:31:32 +0200
+Message-ID: <200907292331.34214.elendil__34225.6214040846$1248903161$gmane$org@planet.nl>
+References: <bug-13865-10028@http.bugzilla.kernel.org/>
+	<200907292257.41573.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090728145003.be5399d1.akpm@linux-foundation.org>
+In-Reply-To: <200907292257.41573.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,41 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: airlied@linux.ie, linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net, Roel Kluin <roel.kluin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+To: cedric@belbone.be
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 28 July 2009, Andrew Morton wrote:
-> (cc jbarnes)
-> 
-> On Sun, 26 Jul 2009 00:50:38 +0200
-> Roel Kluin <roel.kluin@gmail.com> wrote:
-> 
-> > dev_priv->saveSWF1 is a 16 element array, but this reads up to index 22
-> > 
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > ---
-> > save_state does not do this addition, can it be removed? please review.
-> > 
-> > diff --git a/drivers/gpu/drm/i915/i915_suspend.c b/drivers/gpu/drm/i915/i915_suspend.c
-> > index 9e1d16e..1d04e19 100644
-> > --- a/drivers/gpu/drm/i915/i915_suspend.c
-> > +++ b/drivers/gpu/drm/i915/i915_suspend.c
-> > @@ -598,7 +598,7 @@ int i915_restore_state(struct drm_device *dev)
-> >  
-> >  	for (i = 0; i < 16; i++) {
-> >  		I915_WRITE(SWF00 + (i << 2), dev_priv->saveSWF0[i]);
-> > -		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i+7]);
-> > +		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i]);
-> >  	}
-> >  	for (i = 0; i < 3; i++)
-> >  		I915_WRITE(SWF30 + (i << 2), dev_priv->saveSWF2[i]);
-> 
-> This looks rather correct and the original code looked rather wrong.
-> 
-> Someone please tell me that this might fix one of our splendid number
-> of i915 bugs :(
+On Wednesday 29 July 2009, Rafael J. Wysocki wrote:
+> On Wednesday 29 July 2009, you wrote:
+> > Just for testing I enabled HP_WMI. But from then, I could not resume
+> > anymore. I just reverted the last git commit on the
+> > 'drivers/platform/x86/hp-wmi.c' code
+> > (4c395bdd3f2ca8f7e8efad881e16071182c3b8ca) and now I can resume. The
+> > problem still persists on .31-rc serie
+>
+> Frans, that's something for you to take care of.
 
-Hmm, Jesse, what's your opinion about this one?  It looks correct to me.
+I'll at least give it a try.
 
-Rafael
+Cedric, as a start, can you please provide the output of the following 
+commands after the system is booted and with hp-wmi loaded:
+$ grep . /sys/devices/platform/hp-wmi/*
+$ ls -l /dev/input/*
+$ cat /proc/bus/input/devices
+
+Does an unload and reload of the module work correctly? What gets output 
+in dmesg by that?
+
+The strange thing is that the resume function does not do anything that's 
+not also done in hp_wmi_input_setup(). The only thing I can think of is 
+that we might need to test for wmi_has_guid(HPWMI_EVENT_GUID) because 
+that model simply does not support input events.
+
+Cheers,
+FJP
