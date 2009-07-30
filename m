@@ -1,11 +1,17 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: intermittent suspend problem
-Date: Thu, 30 Jul 2009 13:29:12 +0200
-Message-ID: <877hxqflyv.fsf@tac.ki.iif.hu>
+From: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [Bug 13865] [PATCH] hp-wmi: check that an input
+	device exists	in resume handler
+Date: Thu, 30 Jul 2009 13:37:11 +0100
+Message-ID: <20090730123711.GB14127__45467.2139291235$1248957690$gmane$org@srcf.ucam.org>
+References: <bug-13865-10028@http.bugzilla.kernel.org/>
+	<200907292257.41573.rjw@sisk.pl>
+	<200907301242.07973.elendil@planet.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200907301242.07973.elendil@planet.nl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,37 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Frans Pop <elendil@planet.nl>
+Cc: bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>, =?iso-8859-1?Q?C=E9dric?= Godin <cedric@belbone.be>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jul 30, 2009 at 12:42:05PM +0200, Frans Pop wrote:
+> From: Frans Pop <elendil@planet.nl>
+> Subject: hp-wmi: check that an input device exists in resume handler
+> =
 
-Right now I'm running v2.6.31-rc4-169-g967e4bf and it produced
-something I've never seen before (neither on 2.6.30 nor 2.6.31-rc3).
-The hibernation process froze like this:
+> Some systems may not support input events, or registering the input
+> handler may have failed. So check that an input device exists before
+> trying to set the docking and tablet mode state during resume.
+> =
 
-Looking for splash system... Splashy ERROR: Cannot read XML File <</etc/splashy/config.xml>> Exiting...
-Splashy ERROR: libsplashy: No config file found at (null)
-splashy_init: error -1none
-s2disk: Snapshotting system
-s2disk: System snapshot ready. Preparing to write
-s2disk: Image size: 240872 kilobytes
-s2disk: Free swap: 1333596 kilobytes
-s2disk: Saving 60217 image data pages (press backspace to abort) ... 100% done (60217 pages)
-s2disk: Compression ratio -63208.85
-S|
+> Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=3D13865
+> =
 
-Basically, it looked like it simply neglected to switch off the
-machine (ThinkPad R50e), switching it off and later on manually
-resulted in a perfect resume from the written image.  However, the
-next suspend to RAM failed with this:
+> Reported-and-tested-by: C=E9dric Godin <cedric@belbone.be>
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Acked-by: Matthew Garrett <mjg@redhat.com>
 
-[66105.285713] Freezing user space processes ... (elapsed 0.02 seconds) done.
-[66105.313558] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+-- =
 
-where the machine froze with its suspend led blinking.  After a clean
-restart, I couldn't reproduce either problem.  Sorry for being of so
-little use, but I decided to report it, who knows...
--- 
-Regards,
-Feri.
+Matthew Garrett | mjg59@srcf.ucam.org
