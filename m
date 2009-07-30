@@ -1,16 +1,14 @@
-From: =?UTF-8?B?Q8OpZHJpYyBHb2Rpbg==?= <cedric@belbone.be>
-Subject: Re: [Bug 13865] Can only resume with HP_WMI selected on
- compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is reverted
-Date: Thu, 30 Jul 2009 11:20:24 +0200
-Message-ID: <4A7165D8.8060705__8096.75347195498$1248978155$gmane$org@belbone.be>
-References: <bug-13865-10028@http.bugzilla.kernel.org/>
-	<200907292257.41573.rjw@sisk.pl>
-	<200907292331.34214.elendil@planet.nl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: intermittent suspend problem
+Date: Thu, 30 Jul 2009 22:38:04 +0200
+Message-ID: <200907302238.04319.rjw@sisk.pl>
+References: <877hxqflyv.fsf@tac.ki.iif.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907292331.34214.elendil@planet.nl>
+In-Reply-To: <877hxqflyv.fsf@tac.ki.iif.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Ferenc Wagner <wferi@niif.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Frans Pop wrote:
-> On Wednesday 29 July 2009, Rafael J. Wysocki wrote:
->   
->> On Wednesday 29 July 2009, you wrote:
->>     
->>> Just for testing I enabled HP_WMI. But from then, I could not resume
->>> anymore. I just reverted the last git commit on the
->>> 'drivers/platform/x86/hp-wmi.c' code
->>> (4c395bdd3f2ca8f7e8efad881e16071182c3b8ca) and now I can resume. The
->>> problem still persists on .31-rc serie
->>>       
->> Frans, that's something for you to take care of.
->>     
->
-> I'll at least give it a try.
->
-> Cedric, as a start, can you please provide the output of the following 
-> commands after the system is booted and with hp-wmi loaded:
-> $ grep . /sys/devices/platform/hp-wmi/*
-> $ ls -l /dev/input/*
-> $ cat /proc/bus/input/devices
->
-> Does an unload and reload of the module work correctly? What gets output 
-> in dmesg by that?
->
-> The strange thing is that the resume function does not do anything that's 
-> not also done in hp_wmi_input_setup(). The only thing I can think of is 
-> that we might need to test for wmi_has_guid(HPWMI_EVENT_GUID) because 
-> that model simply does not support input events.
->
-> Cheers,
-> FJP
->   
-I tested your patch (from buzilla) and now I can resume.
+On Thursday 30 July 2009, Ferenc Wagner wrote:
+> Hi,
 
-Thanks ! You have my tested-by ;-)
+Hi,
 
-PS: I suppose you don't need this infos anymore ?
+> Right now I'm running v2.6.31-rc4-169-g967e4bf and it produced
+> something I've never seen before (neither on 2.6.30 nor 2.6.31-rc3).
+> The hibernation process froze like this:
+> 
+> Looking for splash system... Splashy ERROR: Cannot read XML File <</etc/splashy/config.xml>> Exiting...
+> Splashy ERROR: libsplashy: No config file found at (null)
+> splashy_init: error -1none
+> s2disk: Snapshotting system
+> s2disk: System snapshot ready. Preparing to write
+> s2disk: Image size: 240872 kilobytes
+> s2disk: Free swap: 1333596 kilobytes
+> s2disk: Saving 60217 image data pages (press backspace to abort) ... 100% done (60217 pages)
+> s2disk: Compression ratio -63208.85
+> S|
+> 
+> Basically, it looked like it simply neglected to switch off the
+> machine (ThinkPad R50e), switching it off and later on manually
+> resulted in a perfect resume from the written image.  However, the
+> next suspend to RAM failed with this:
+> 
+> [66105.285713] Freezing user space processes ... (elapsed 0.02 seconds) done.
+> [66105.313558] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> 
+> where the machine froze with its suspend led blinking.  After a clean
+> restart, I couldn't reproduce either problem.  Sorry for being of so
+> little use, but I decided to report it, who knows...
+
+Thanks for the report.  I'm observing a hibernation issue where the machine
+hangs on the second attempt to hibernate 100% of the time.  It looks like it
+may be related to what you've observed.
+
+Best,
+Rafael
