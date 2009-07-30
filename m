@@ -1,16 +1,11 @@
-From: Frans Pop <elendil@planet.nl>
-Subject: Re: [Bug 13865] [PATCH] hp-wmi: check that an input
-	device exists in resume handler
-Date: Thu, 30 Jul 2009 12:42:05 +0200
-Message-ID: <200907301242.07973.elendil__44181.5611477525$1248950672$gmane$org@planet.nl>
-References: <bug-13865-10028@http.bugzilla.kernel.org/>
-	<200907292257.41573.rjw@sisk.pl>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: intermittent suspend problem
+Date: Thu, 30 Jul 2009 13:29:12 +0200
+Message-ID: <877hxqflyv.fsf@tac.ki.iif.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907292257.41573.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +15,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>, =?utf-8?q?C=C3=A9dric_Godin?= <cedric@belbone.be>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkbmVzZGF5IDI5IEp1bHkgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24g
-V2VkbmVzZGF5IDI5IEp1bHkgMjAwOSwgeW91IHdyb3RlOgo+ID4gaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzODY1Cj4gPgo+ID4gSnVzdCBmb3IgdGVzdGluZyBJ
-IGVuYWJsZWQgSFBfV01JLiBCdXQgZnJvbSB0aGVuLCBJIGNvdWxkIG5vdCByZXN1bWUKPiA+IGFu
-eW1vcmUuIEkganVzdCByZXZlcnRlZCB0aGUgbGFzdCBnaXQgY29tbWl0IG9uIHRoZQo+ID4gJ2Ry
-aXZlcnMvcGxhdGZvcm0veDg2L2hwLXdtaS5jJyBjb2RlCj4gPiAoNGMzOTViZGQzZjJjYThmN2U4
-ZWZhZDg4MWUxNjA3MTE4MmMzYjhjYSkgYW5kIG5vdyBJIGNhbiByZXN1bWUuIFRoZQo+ID4gcHJv
-YmxlbSBzdGlsbCBwZXJzaXN0cyBvbiAuMzEtcmMgc2VyaWUKCkhlcmUncyB0aGUgZmluYWwgcGF0
-Y2gsIHRlc3RlZCBieSBDw6lkcmljLiAoQW5kIHByb3Blcmx5IGFnYWluc3QgbWFpbmxpbmUuKQoK
-RnJvbTogRnJhbnMgUG9wIDxlbGVuZGlsQHBsYW5ldC5ubD4KU3ViamVjdDogaHAtd21pOiBjaGVj
-ayB0aGF0IGFuIGlucHV0IGRldmljZSBleGlzdHMgaW4gcmVzdW1lIGhhbmRsZXIKClNvbWUgc3lz
-dGVtcyBtYXkgbm90IHN1cHBvcnQgaW5wdXQgZXZlbnRzLCBvciByZWdpc3RlcmluZyB0aGUgaW5w
-dXQKaGFuZGxlciBtYXkgaGF2ZSBmYWlsZWQuIFNvIGNoZWNrIHRoYXQgYW4gaW5wdXQgZGV2aWNl
-IGV4aXN0cyBiZWZvcmUKdHJ5aW5nIHRvIHNldCB0aGUgZG9ja2luZyBhbmQgdGFibGV0IG1vZGUg
-c3RhdGUgZHVyaW5nIHJlc3VtZS4KCkZpeGVzOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MTM4NjUKClJlcG9ydGVkLWFuZC10ZXN0ZWQtYnk6IEPDqWRyaWMgR29k
-aW4gPGNlZHJpY0BiZWxib25lLmJlPgpTaWduZWQtb2ZmLWJ5OiBGcmFucyBQb3AgPGVsZW5kaWxA
-cGxhbmV0Lm5sPgpDYzogTWF0dGhldyBHYXJyZXR0IDxtamc1OUBzcmNmLnVjYW0ub3JnPgoKZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvcGxhdGZvcm0veDg2L2hwLXdtaS5jIGIvZHJpdmVycy9wbGF0Zm9y
-bS94ODYvaHAtd21pLmMKaW5kZXggY2E1MDg1Ni4uYTJhZDUzZSAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9wbGF0Zm9ybS94ODYvaHAtd21pLmMKKysrIGIvZHJpdmVycy9wbGF0Zm9ybS94ODYvaHAtd21p
-LmMKQEAgLTUyMCwxMSArNTIwLDEzIEBAIHN0YXRpYyBpbnQgaHBfd21pX3Jlc3VtZV9oYW5kbGVy
-KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKmRldmljZSkKIAkgKiB0aGUgaW5wdXQgbGF5ZXIgd2ls
-bCBvbmx5IGFjdHVhbGx5IHBhc3MgaXQgb24gaWYgdGhlIHN0YXRlCiAJICogY2hhbmdlZC4KIAkg
-Ki8KLQotCWlucHV0X3JlcG9ydF9zd2l0Y2goaHBfd21pX2lucHV0X2RldiwgU1dfRE9DSywgaHBf
-d21pX2RvY2tfc3RhdGUoKSk7Ci0JaW5wdXRfcmVwb3J0X3N3aXRjaChocF93bWlfaW5wdXRfZGV2
-LCBTV19UQUJMRVRfTU9ERSwKLQkJCSAgICBocF93bWlfdGFibGV0X3N0YXRlKCkpOwotCWlucHV0
-X3N5bmMoaHBfd21pX2lucHV0X2Rldik7CisJaWYgKGhwX3dtaV9pbnB1dF9kZXYpIHsKKwkJaW5w
-dXRfcmVwb3J0X3N3aXRjaChocF93bWlfaW5wdXRfZGV2LCBTV19ET0NLLAorCQkJCSAgICBocF93
-bWlfZG9ja19zdGF0ZSgpKTsKKwkJaW5wdXRfcmVwb3J0X3N3aXRjaChocF93bWlfaW5wdXRfZGV2
-LCBTV19UQUJMRVRfTU9ERSwKKwkJCQkgICAgaHBfd21pX3RhYmxldF9zdGF0ZSgpKTsKKwkJaW5w
-dXRfc3luYyhocF93bWlfaW5wdXRfZGV2KTsKKwl9CiAKIAlyZXR1cm4gMDsKIH0KX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
-aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Hi,
+
+Right now I'm running v2.6.31-rc4-169-g967e4bf and it produced
+something I've never seen before (neither on 2.6.30 nor 2.6.31-rc3).
+The hibernation process froze like this:
+
+Looking for splash system... Splashy ERROR: Cannot read XML File <</etc/splashy/config.xml>> Exiting...
+Splashy ERROR: libsplashy: No config file found at (null)
+splashy_init: error -1none
+s2disk: Snapshotting system
+s2disk: System snapshot ready. Preparing to write
+s2disk: Image size: 240872 kilobytes
+s2disk: Free swap: 1333596 kilobytes
+s2disk: Saving 60217 image data pages (press backspace to abort) ... 100% done (60217 pages)
+s2disk: Compression ratio -63208.85
+S|
+
+Basically, it looked like it simply neglected to switch off the
+machine (ThinkPad R50e), switching it off and later on manually
+resulted in a perfect resume from the written image.  However, the
+next suspend to RAM failed with this:
+
+[66105.285713] Freezing user space processes ... (elapsed 0.02 seconds) done.
+[66105.313558] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+
+where the machine froze with its suspend led blinking.  After a clean
+restart, I couldn't reproduce either problem.  Sorry for being of so
+little use, but I decided to report it, who knows...
+-- 
+Regards,
+Feri.
