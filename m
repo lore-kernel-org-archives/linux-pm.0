@@ -2,16 +2,16 @@ From: Frans Pop <elendil@planet.nl>
 Subject: Re: [Bug 13865] Can only resume with HP_WMI selected on
 	compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca
 	is reverted
-Date: Thu, 30 Jul 2009 00:57:47 +0200
-Message-ID: <200907300057.48669.elendil__14670.2372505844$1248908338$gmane$org@planet.nl>
+Date: Thu, 30 Jul 2009 11:56:01 +0200
+Message-ID: <200907301156.03248.elendil__20465.6786787838$1248947880$gmane$org@planet.nl>
 References: <bug-13865-10028@http.bugzilla.kernel.org/>
-	<200907292257.41573.rjw@sisk.pl>
 	<200907292331.34214.elendil@planet.nl>
+	<4A7165D8.8060705@belbone.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907292331.34214.elendil@planet.nl>
+In-Reply-To: <4A7165D8.8060705@belbone.be>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,53 +22,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: cedric@belbone.be, linux-kernel@vger.kernel.org
+To: =?utf-8?q?C=C3=A9dric_Godin?= <cedric@belbone.be>, linux-kernel@vger.kernel.org
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 29 July 2009, Frans Pop wrote:
-> The strange thing is that the resume function does not do anything
-> that's not also done in hp_wmi_input_setup(). The only thing I can
-> think of is that we might need to test for
-> wmi_has_guid(HPWMI_EVENT_GUID) because that model simply does not
-> support input events.
-
-If that is the problem, the following patch will hopefully fix it.
-This patch is against .31-rc4 but will need only minor changes to
-apply against .30.
-
-Subject: hp-wmi: check that an input device exists in resume handler
-
-Some systems may not support input events, or registering the input
-handler may have failed. So check that an input device exists before
-trying to set the docking and tablet mode state during resume.
-
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13865
-
-Reported-by: cedric@belbone.be
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-
-diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
-index 369bd43..63c9214 100644
---- a/drivers/platform/x86/hp-wmi.c
-+++ b/drivers/platform/x86/hp-wmi.c
-@@ -540,11 +540,13 @@ static int hp_wmi_resume_handler(struct device *device)
- 	 * the input layer will only actually pass it on if the state
- 	 * changed.
- 	 */
--
--	input_report_switch(hp_wmi_input_dev, SW_DOCK, hp_wmi_dock_state());
--	input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
--			    hp_wmi_tablet_state());
--	input_sync(hp_wmi_input_dev);
-+	if (hp_wmi_input_dev) {
-+		input_report_switch(hp_wmi_input_dev, SW_DOCK,
-+				    hp_wmi_dock_state());
-+		input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
-+				    hp_wmi_tablet_state());
-+		input_sync(hp_wmi_input_dev);
-+	}
- 
- 	if (wifi_rfkill)
- 		rfkill_set_states(wifi_rfkill,
+T24gVGh1cnNkYXkgMzAgSnVseSAyMDA5LCBDw6lkcmljIEdvZGluIHdyb3RlOgo+ID4gVGhlIHN0
+cmFuZ2UgdGhpbmcgaXMgdGhhdCB0aGUgcmVzdW1lIGZ1bmN0aW9uIGRvZXMgbm90IGRvIGFueXRo
+aW5nCj4gPiB0aGF0J3Mgbm90IGFsc28gZG9uZSBpbiBocF93bWlfaW5wdXRfc2V0dXAoKS4gVGhl
+IG9ubHkgdGhpbmcgSSBjYW4KPiA+IHRoaW5rIG9mIGlzIHRoYXQgd2UgbWlnaHQgbmVlZCB0byB0
+ZXN0IGZvcgo+ID4gd21pX2hhc19ndWlkKEhQV01JX0VWRU5UX0dVSUQpIGJlY2F1c2UgdGhhdCBt
+b2RlbCBzaW1wbHkgZG9lcyBub3QKPiA+IHN1cHBvcnQgaW5wdXQgZXZlbnRzLgo+Cj4gSSB0ZXN0
+ZWQgeW91ciBwYXRjaCAoZnJvbSBidXppbGxhKSBhbmQgbm93IEkgY2FuIHJlc3VtZS4KCkdyZWF0
+LgoKPiBUaGFua3MgISBZb3UgaGF2ZSBteSB0ZXN0ZWQtYnkgOy0pCj4KPiBQUzogSSBzdXBwb3Nl
+IHlvdSBkb24ndCBuZWVkIHRoaXMgaW5mb3MgYW55bW9yZSA/CgpJJ2Qgc3RpbGwgbGlrZSB0byBz
+ZWUgdGhlIGZvbGxvd2luZyBpZiBpdCdzIG5vdCB0b28gbXVjaCB0cm91YmxlLCAKYmFzaWNhbGx5
+IHRvIGNvbmZpcm0gdGhhdCB0aGUgdGhlb3J5IHdhcyBpbmRlZWQgY29ycmVjdC4KCiQgZ3JlcCAu
+IC9zeXMvZGV2aWNlcy9wbGF0Zm9ybS9ocC13bWkvKgokIGNhdCAvcHJvYy9idXMvaW5wdXQvZGV2
+aWNlcwoKVGhhbmtzLApGSlAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
