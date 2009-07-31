@@ -1,8 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] Driver Core: Runtime PM callbacks for the
-	Platform Bus V2
-Date: Fri, 31 Jul 2009 21:46:58 +0900
-Message-ID: <20090731124658.10540.29648.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 00/04] PM: SuperH Runtime PM prototype V2
+Date: Fri, 31 Jul 2009 23:01:58 +0900
+Message-ID: <20090731140158.11351.26021.sendpatchset__32425.6293163218$1249049248$gmane$org@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,85 +16,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: gregkh@suse.de
+Cc: linux-sh@vger.kernel.org, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+PM: SuperH Runtime PM prototype V2
 
-This patch adds default Runtime PM callbacks to the dev_pm_ops
-belonging to the platform bus. The callbacks are weak symbols
-that architecture specific code may override. Also, call
-pm_runtime_enable() for the platform bus struct device.
+[PATCH 01/04] sh: SuperH platform bus code for Runtime PM v11
+[PATCH 02/04] i2c: Runtime PM changes for SuperH I2C driver 
+[PATCH 03/04] uio: Runtime PM changes for UIO driver
+[PATCH 04/04] video: Runtime PM hack for SuperH LCDC driver
+
+This series is the Runtime PM prototype for SuperH V2. Included
+is a architecture specific Runtime PM implementation prototype
+for the platform bus together with a few driver changes.
+
+The patches are meant to be applied on top of the following: 
+"PM: Introduce core framework for run-time PM of I/O devices (rev. 11)"
+"PM: Runtime PM v11 - add dev_pm_ops helpers"
+"PM: Runtime PM v11 - let bus-less devices succeed"
+"PM: Runtime PM v11 - add debug printouts"
+"PM: Runtime PM v11 - CONFIG_PM_SLEEP=n support"
+"Driver Core: Runtime PM callbacks for the Platform Bus V2"
+
+For the SuperH side of things you also need latest sh-2.6 git and:
+"Driver Core: Add platform device arch data V3"
+"sh: Runtime PM pdev hwblk changes"
+
+Patch 01 + 04 need more attention
+Patch 02 + 03 should be all that is needed for Runtime PM driver support.
+
+Rafael, please have a look at the Runtime PM v11 issue in patch 04.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Needed by the SuperH platform bus Runtime PM implementation.
-
- Changes since V1:
- - Return -ENOSYS instead of -EINVAL.
-
- drivers/base/platform.c |   31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
-
---- 0001/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2009-07-31 18:55:34.000000000 +0900
-@@ -17,6 +17,7 @@
- #include <linux/bootmem.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-+#include <linux/pm_runtime.h>
- 
- #include "base.h"
- 
-@@ -925,6 +926,30 @@ static int platform_pm_restore_noirq(str
- 
- #endif /* !CONFIG_HIBERNATION */
- 
-+#ifdef CONFIG_PM_RUNTIME
-+
-+int __weak platform_pm_runtime_suspend(struct device *dev)
-+{
-+	return -ENOSYS;
-+};
-+
-+int __weak platform_pm_runtime_resume(struct device *dev)
-+{
-+	return -ENOSYS;
-+};
-+
-+void __weak platform_pm_runtime_idle(struct device *dev)
-+{
-+};
-+
-+#else /* !CONFIG_PM_RUNTIME */
-+
-+#define platform_pm_runtime_suspend NULL
-+#define platform_pm_runtime_resume NULL
-+#define platform_pm_runtime_idle NULL
-+
-+#endif /* !CONFIG_PM_RUNTIME */
-+
- static struct dev_pm_ops platform_dev_pm_ops = {
- 	.prepare = platform_pm_prepare,
- 	.complete = platform_pm_complete,
-@@ -940,6 +965,9 @@ static struct dev_pm_ops platform_dev_pm
- 	.thaw_noirq = platform_pm_thaw_noirq,
- 	.poweroff_noirq = platform_pm_poweroff_noirq,
- 	.restore_noirq = platform_pm_restore_noirq,
-+	.runtime_suspend = platform_pm_runtime_suspend,
-+	.runtime_resume = platform_pm_runtime_resume,
-+	.runtime_idle = platform_pm_runtime_idle,
- };
- 
- #define PLATFORM_PM_OPS_PTR	(&platform_dev_pm_ops)
-@@ -968,6 +996,9 @@ int __init platform_bus_init(void)
- 	error = device_register(&platform_bus);
- 	if (error)
- 		return error;
-+
-+	pm_runtime_enable(&platform_bus);
-+
- 	error =  bus_register(&platform_bus_type);
- 	if (error)
- 		device_unregister(&platform_bus);
+ arch/sh/include/asm/device.h             |    8 
+ arch/sh/include/asm/hwblk.h              |    4 
+ arch/sh/kernel/cpu/shmobile/Makefile     |    1 
+ arch/sh/kernel/cpu/shmobile/pm_runtime.c |  244 ++++++++++++++++++++++++++++++
+ drivers/i2c/busses/i2c-sh_mobile.c       |   39 ++++
+ drivers/uio/uio_pdrv_genirq.c            |   54 ++++++
+ drivers/video/sh_mobile_lcdcfb.c         |   47 +++--
+ 7 files changed, 376 insertions(+), 21 deletions(-)
