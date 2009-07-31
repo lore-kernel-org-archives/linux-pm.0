@@ -1,14 +1,12 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 04/04] PM: Runtime PM v11 - CONFIG_PM_SLEEP=n
-	support
-Date: Fri, 31 Jul 2009 21:27:18 +0900
-Message-ID: <20090731122718.31004.84809.sendpatchset@rx1.opensource.se>
-References: <20090731122639.31004.95390.sendpatchset@rx1.opensource.se>
+Subject: [PATCH] Driver Core: Runtime PM callbacks for the
+	Platform Bus V2
+Date: Fri, 31 Jul 2009 21:46:58 +0900
+Message-ID: <20090731124658.10540.29648.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090731122639.31004.95390.sendpatchset@rx1.opensource.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,66 +22,80 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch contains a few fixes to allow Runtime PM
-to be used even though suspend and hibernation are disabled
-in the kconfig. Without this patch the Runtime PM code
-compiles just fine with CONFIG_PM_SLEEP=n but the functions
-pm_runtime_init() and pm_runtime_remove() never gets called
-during runtime.
-
-Not sure if CONFIG_PM_RUNTIME=y and CONFIG_PM_SLEEP=n really
-is a valid combination, but I can easily imagine use cases
-for Runtime PM without system suspend/hibernation support.
+This patch adds default Runtime PM callbacks to the dev_pm_ops
+belonging to the platform bus. The callbacks are weak symbols
+that architecture specific code may override. Also, call
+pm_runtime_enable() for the platform bus struct device.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/base/core.c       |    3 +++
- drivers/base/power/main.c |    3 ---
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ Needed by the SuperH platform bus Runtime PM implementation.
 
---- 0001/drivers/base/core.c
-+++ work/drivers/base/core.c	2009-07-31 19:52:26.000000000 +0900
-@@ -23,6 +23,7 @@
- #include <linux/semaphore.h>
- #include <linux/mutex.h>
- #include <linux/async.h>
+ Changes since V1:
+ - Return -ENOSYS instead of -EINVAL.
+
+ drivers/base/platform.c |   31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+--- 0001/drivers/base/platform.c
++++ work/drivers/base/platform.c	2009-07-31 18:55:34.000000000 +0900
+@@ -17,6 +17,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
 +#include <linux/pm_runtime.h>
  
  #include "base.h"
- #include "power/power.h"
-@@ -555,6 +556,7 @@ void device_initialize(struct device *de
- 	INIT_LIST_HEAD(&dev->devres_head);
- 	device_init_wakeup(dev, 0);
- 	device_pm_init(dev);
-+	pm_runtime_init(dev);
- 	set_dev_node(dev, -1);
- }
  
-@@ -1063,6 +1065,7 @@ void device_del(struct device *dev)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	device_pm_remove(dev);
-+	pm_runtime_remove(dev);
- 	dpm_sysfs_remove(dev);
- 	if (parent)
- 		klist_del(&dev->p->knode_parent);
---- 0015/drivers/base/power/main.c
-+++ work/drivers/base/power/main.c	2009-07-31 19:52:26.000000000 +0900
-@@ -56,7 +56,6 @@ static bool transition_started;
- void device_pm_init(struct device *dev)
- {
- 	dev->power.status = DPM_ON;
--	pm_runtime_init(dev);
- }
+@@ -925,6 +926,30 @@ static int platform_pm_restore_noirq(str
  
- /**
-@@ -116,8 +115,6 @@ void device_pm_remove(struct device *dev
- 	mutex_lock(&dpm_list_mtx);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
--
--	pm_runtime_remove(dev);
- }
+ #endif /* !CONFIG_HIBERNATION */
  
- /**
++#ifdef CONFIG_PM_RUNTIME
++
++int __weak platform_pm_runtime_suspend(struct device *dev)
++{
++	return -ENOSYS;
++};
++
++int __weak platform_pm_runtime_resume(struct device *dev)
++{
++	return -ENOSYS;
++};
++
++void __weak platform_pm_runtime_idle(struct device *dev)
++{
++};
++
++#else /* !CONFIG_PM_RUNTIME */
++
++#define platform_pm_runtime_suspend NULL
++#define platform_pm_runtime_resume NULL
++#define platform_pm_runtime_idle NULL
++
++#endif /* !CONFIG_PM_RUNTIME */
++
+ static struct dev_pm_ops platform_dev_pm_ops = {
+ 	.prepare = platform_pm_prepare,
+ 	.complete = platform_pm_complete,
+@@ -940,6 +965,9 @@ static struct dev_pm_ops platform_dev_pm
+ 	.thaw_noirq = platform_pm_thaw_noirq,
+ 	.poweroff_noirq = platform_pm_poweroff_noirq,
+ 	.restore_noirq = platform_pm_restore_noirq,
++	.runtime_suspend = platform_pm_runtime_suspend,
++	.runtime_resume = platform_pm_runtime_resume,
++	.runtime_idle = platform_pm_runtime_idle,
+ };
+ 
+ #define PLATFORM_PM_OPS_PTR	(&platform_dev_pm_ops)
+@@ -968,6 +996,9 @@ int __init platform_bus_init(void)
+ 	error = device_register(&platform_bus);
+ 	if (error)
+ 		return error;
++
++	pm_runtime_enable(&platform_bus);
++
+ 	error =  bus_register(&platform_bus_type);
+ 	if (error)
+ 		device_unregister(&platform_bus);
