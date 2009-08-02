@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 04/04] video: Runtime PM hack for SuperH LCDC
-	driver
-Date: Fri, 31 Jul 2009 20:56:19 +0200
-Message-ID: <200907312056.20542.rjw__11868.8325085261$1249066663$gmane$org@sisk.pl>
-References: <20090731140158.11351.26021.sendpatchset@rx1.opensource.se>
-	<20090731140252.11351.1697.sendpatchset@rx1.opensource.se>
+Subject: 2.6.31-rc5: Reported regressions from 2.6.30
+Date: Sun,  2 Aug 2009 20:49:40 +0200 (CEST)
+Message-ID: <Su1q3S6JjyO.A.jeB.hcgdKB__49838.7961568826$1249249352$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090731140252.11351.1697.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,199 +16,320 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 31 July 2009, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
-> 
-> This patch modifies the SuperH Mobile LCDC framebuffer driver
-> to support Runtime PM. This patch is experimental and is at this
-> point still missing context save and restore support.
-> 
-> With debug messages it is however already possible to see that
-> the deferred io clock management strategy pays off since in that
-> mode the clocks are only turned on for a short period of time to
-> redraw the screen. When the screen is unchanged the clocks are
-> disabled and the driver can be in runtime suspended state.
-> 
-> Regarding pm_runtime_put_noidle()/pm_runtime_get_noresume():
-> 
-> This driver does not work well with the Runtime PM v11 code
-> since it performs runtime_pm_get_sync() from probe() which is
-> not allowed.
+This message contains a list of some regressions from 2.6.30, for which there
+are no fixes in the mainline I know of.  If any of them have been fixed already,
+please let me know.
 
-It is allowed, but doesn't work as expected.
+If you know of any other unresolved regressions from 2.6.30, please let me know
+either and I'll add them to the list.  Also, please let me know if any of the
+entries below are invalid.
 
-> This driver needs to access hardware registers from
-> probe() so runtime_pm_get_sync() must really succeed in this case
-> so the bus code gets a chance to turn on the hardware device.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> ---
-> 
->  Changes from V1 prototype:
->  - use pm_runtime_get_sync() and pm_runtime_put_sync()
->  - use pm_runtime_disable()
->  - no need for pm_runtime_set_suspended()
->  - incomplete runtime pm functions for dev_pm_ops
->  - work around with pm_runtime_put_noidle()/pm_runtime_get_noresume()
-> 
->  TODO:
->  - quite a bit
-> 
->  drivers/video/sh_mobile_lcdcfb.c |   47 +++++++++++++++++++++++---------------
->  1 file changed, 29 insertions(+), 18 deletions(-)
-> 
-> --- 0001/drivers/video/sh_mobile_lcdcfb.c
-> +++ work/drivers/video/sh_mobile_lcdcfb.c	2009-07-30 23:12:49.000000000 +0900
-> @@ -14,6 +14,7 @@
->  #include <linux/mm.h>
->  #include <linux/fb.h>
->  #include <linux/clk.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/platform_device.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/interrupt.h>
-> @@ -42,9 +43,9 @@ struct sh_mobile_lcdc_chan {
->  struct sh_mobile_lcdc_priv {
->  	void __iomem *base;
->  	int irq;
-> -	atomic_t clk_usecnt;
-> +	atomic_t hw_usecnt;
-> +	struct device *dev;
->  	struct clk *dot_clk;
-> -	struct clk *clk;
->  	unsigned long lddckr;
->  	struct sh_mobile_lcdc_chan ch[2];
->  	int started;
-> @@ -185,8 +186,8 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mob
->  
->  static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
->  {
-> -	if (atomic_inc_and_test(&priv->clk_usecnt)) {
-> -		clk_enable(priv->clk);
-> +	if (atomic_inc_and_test(&priv->hw_usecnt)) {
-> +		pm_runtime_get_sync(priv->dev);
->  		if (priv->dot_clk)
->  			clk_enable(priv->dot_clk);
->  	}
-> @@ -194,10 +195,10 @@ static void sh_mobile_lcdc_clk_on(struct
->  
->  static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
->  {
-> -	if (atomic_sub_return(1, &priv->clk_usecnt) == -1) {
-> +	if (atomic_sub_return(1, &priv->hw_usecnt) == -1) {
->  		if (priv->dot_clk)
->  			clk_disable(priv->dot_clk);
-> -		clk_disable(priv->clk);
-> +		pm_runtime_put(priv->dev);
->  	}
->  }
->  
-> @@ -566,7 +567,6 @@ static int sh_mobile_lcdc_setup_clocks(s
->  				       int clock_source,
->  				       struct sh_mobile_lcdc_priv *priv)
->  {
-> -	char clk_name[8];
->  	char *str;
->  	int icksel;
->  
-> @@ -580,23 +580,15 @@ static int sh_mobile_lcdc_setup_clocks(s
->  
->  	priv->lddckr = icksel << 16;
->  
-> -	atomic_set(&priv->clk_usecnt, -1);
-> -	snprintf(clk_name, sizeof(clk_name), "lcdc%d", pdev->id);
-> -	priv->clk = clk_get(&pdev->dev, clk_name);
-> -	if (IS_ERR(priv->clk)) {
-> -		dev_err(&pdev->dev, "cannot get clock \"%s\"\n", clk_name);
-> -		return PTR_ERR(priv->clk);
-> -	}
-> -
->  	if (str) {
->  		priv->dot_clk = clk_get(&pdev->dev, str);
->  		if (IS_ERR(priv->dot_clk)) {
->  			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
-> -			clk_put(priv->clk);
->  			return PTR_ERR(priv->dot_clk);
->  		}
->  	}
-> -
-> +	atomic_set(&priv->hw_usecnt, -1);
-> +	pm_runtime_enable(priv->dev);
->  	return 0;
->  }
->  
-> @@ -714,9 +706,18 @@ static int sh_mobile_lcdc_resume(struct 
->  	return sh_mobile_lcdc_start(platform_get_drvdata(pdev));
->  }
->  
-> +static int sh_mobile_lcdc_runtime_nop(struct device *dev)
-> +{
-> +	/* TODO: implement register save and restore */
-> +
-> +	return 0;
-> +}
-> +
->  static struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
->  	.suspend = sh_mobile_lcdc_suspend,
->  	.resume = sh_mobile_lcdc_resume,
-> +	.runtime_suspend = sh_mobile_lcdc_runtime_nop,
-> +	.runtime_resume = sh_mobile_lcdc_runtime_nop,
->  };
->  
->  static int sh_mobile_lcdc_remove(struct platform_device *pdev);
-> @@ -753,6 +754,9 @@ static int __init sh_mobile_lcdc_probe(s
->  		goto err0;
->  	}
->  
-> +	/* workaround: allow resume from probe() */
-> +	pm_runtime_put_noidle(&pdev->dev);
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
 
-Why don't you just call pm_runtime_resume(&pdev->dev); from here?
 
-You know that the usage counter has been incremented, because it is .probe(),
-so that should be safe.  And you won't need that
-pm_runtime_get_noresume(&pdev->dev); below in that case. :-)
+Listed regressions statistics:
 
-> +
->  	error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
->  			    dev_name(&pdev->dev), priv);
->  	if (error) {
-> @@ -761,6 +765,7 @@ static int __init sh_mobile_lcdc_probe(s
->  	}
->  
->  	priv->irq = i;
-> +	priv->dev = &pdev->dev;
->  	platform_set_drvdata(pdev, priv);
->  	pdata = pdev->dev.platform_data;
->  
-> @@ -896,8 +901,13 @@ static int __init sh_mobile_lcdc_probe(s
->  			sh_mobile_lcdc_clk_off(priv);
->  	}
->  
-> +	/* workaround: balance pm_runtime_put_noidle() call */
-> +	pm_runtime_get_noresume(&pdev->dev);
->  	return 0;
->   err1:
-> +	/* workaround: balance pm_runtime_put_noidle() call */
-> +	pm_runtime_get_noresume(&pdev->dev);
-> +
->  	sh_mobile_lcdc_remove(pdev);
->   err0:
->  	return error;
-> @@ -932,7 +942,8 @@ static int sh_mobile_lcdc_remove(struct 
->  
->  	if (priv->dot_clk)
->  		clk_put(priv->dot_clk);
-> -	clk_put(priv->clk);
-> +
-> +	pm_runtime_disable(priv->dev);
->  
->  	if (priv->base)
->  		iounmap(priv->base);
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2009-08-02       76       36          28
+  2009-07-27       70       51          43
+  2009-07-07       35       25          21
+  2009-06-29       22       22          15
 
-Best,
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13899
+Subject		: Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
+Submitter	: Gene Heskett <gene.heskett@verizon.net>
+Date		: 2009-08-01 13:04 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=124913190304149&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13896
+Subject		: 2.6.31-rc4 broke expect and gcc's testsuite
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2009-07-29 11:00 (5 days old)
+References	: http://marc.info/?l=linux-kernel&m=124885806406520&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13895
+Subject		: 2.6.31-rc4 - slab entry tak_delay_info leaking ???
+Submitter	: Paul Rolland <rol@as2917.net>
+Date		: 2009-07-29 08:20 (5 days old)
+References	: http://marc.info/?l=linux-kernel&m=124884847925375&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13894
+Subject		: intermittent hibernation problem
+Submitter	: Ferenc Wagner <wferi@niif.hu>
+Date		: 2009-07-30 13:29 (4 days old)
+References	: https://lists.linux-foundation.org/pipermail/linux-pm/2009-July/022095.html
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
+Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
+Submitter	: Duncan <1i5t5.duncan@cox.net>
+Date		: 2009-07-29 16:44 (5 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13848
+Subject		: iwlwifi (4965) regression since 2.6.30
+Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Date		: 2009-07-26 7:57 (8 days old)
+References	: http://marc.info/?l=linux-kernel&m=124859658502866&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13846
+Subject		: Possible regression in rt61pci driver
+Submitter	: Chris Clayton <chris2553@googlemail.com>
+Date		: 2009-07-13 8:27 (21 days old)
+References	: http://marc.info/?l=linux-kernel&m=124747418828398&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13842
+Subject		: Oops when writing to /sys/block/ram0/queue/max_sectors_kb
+Submitter	: Jens Rosenboom <jens@mcbone.net>
+Date		: 2009-07-23 15:30 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=124836574403032&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13837
+Subject		: Input : regression - touchpad not detected
+Submitter	: Dave Young <hidave.darkstar@gmail.com>
+Date		: 2009-07-17 07:13 (17 days old)
+References	: http://marc.info/?l=linux-kernel&m=124780763701571&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13836
+Subject		: suspend script fails, related to stdout?
+Submitter	: Tomas M. <tmezzadra@gmail.com>
+Date		: 2009-07-17 21:24 (17 days old)
+References	: http://marc.info/?l=linux-kernel&m=124785853811667&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13833
+Subject		: Kernel Oops when trying to suspend with ubifs mounted on block2mtd mtd device
+Submitter	: Tobias Diedrich <ranma@tdiedrich.de>
+Date		: 2009-07-15 14:20 (19 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=15bce40cb3133bcc07d548013df97e4653d363c1
+References	: http://marc.info/?l=linux-kernel&m=124766049207807&w=4
+		  http://marc.info/?l=linux-kernel&m=124704927819769&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13826
+Subject		: thinkpad boots with backlight low
+Submitter	: Pavel Machek <pavel@ucw.cz>
+Date		: 2009-07-15 15:13 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=124756359126830&w=4
+Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13819
+Subject		: system freeze when switching to console
+Submitter	: Reinette Chatre <reinette.chatre@intel.com>
+Date		: 2009-07-23 17:57 (11 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
+Subject		: emacs -nw compilation doesn't show the error message
+Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date		: 2009-07-23 06:22 (11 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
+Subject		: Hangups in n_tty_read()
+Submitter	: Johannes Weiner <hannes@cmpxchg.org>
+Date		: 2009-07-16 18:48 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13812
+Subject		: Ooops on uplug
+Submitter	: Daniel Mack <daniel@caiaq.de>
+Date		: 2009-07-20 17:51 (14 days old)
+References	: http://marc.info/?l=linux-kernel&m=124811234302786&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+		  Alan Cox <alan@linux.intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13809
+Subject		: oprofile: possible circular locking dependency detected
+Submitter	: Jerome Marchand <jmarchan@redhat.com>
+Date		: 2009-07-22 13:35 (12 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13770
+Subject		: System freeze on XFS filesystem recovery on an external disk
+Submitter	: Jean-Luc Coulon <jean.luc.coulon@gmail.com>
+Date		: 2009-07-14 10:31 (20 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13762
+Subject		: AHCI on HP Compaq 6715s broken, did not detect slots/ports -> unable to boot
+Submitter	: Matthias Tingelhoff <mindo83@t-online.de>
+Date		: 2009-07-11 20:48 (23 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a76117dfd687ec4be0a9a05214f3009cc5f73a42
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13740
+Subject		: X server crashes with 2.6.31-rc2 when options are changed
+Submitter	: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
+Date		: 2009-07-07 15:19 (27 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+Subject		: 2.6.31-rc2: irq 16: nobody cared
+Submitter	: Niel Lambrechts <niel.lambrechts@gmail.com>
+Date		: 2009-07-06 18:32 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13731
+Subject		: Inconsistent {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2009-07-06 4:22 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=124685417325348&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13726
+Subject		: fio sync read 4k block size 35% regression
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-07-01 11:25 (33 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=51daa88ebd8e0d437289f589af29d4b39379ea76
+References	: http://lkml.org/lkml/2009/6/30/679
+Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13716
+Subject		: The AIC-7892P controller does not work any more
+Submitter	: Andrej Podzimek <andrej@podzimek.org>
+Date		: 2009-07-05 19:23 (29 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13713
+Subject		: [drm/i915] Possible regression due to commit "Change GEM throttling to be 20ms (...)"
+Submitter	:  <kazikcz@gmail.com>
+Date		: 2009-07-05 10:49 (29 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b962442e46a9340bdbc6711982c59ff0cc2b5afb
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13657
+Subject		: Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+Submitter	: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Date		: 2009-06-26 10:03 (38 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3821d768912a47ddbd6cab52943a8284df88003c
+References	: http://lkml.org/lkml/2009/6/26/34
+Handled-By	: Martin K. Petersen <martin.petersen@oracle.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13656
+Subject		: 2.6.31-rc1 crashes randomly on my Machine.
+Submitter	: Zeno Davatz <zdavatz@gmail.com>
+Date		: 2009-06-26 08:56 (38 days old)
+References	: http://lkml.org/lkml/2009/6/26/27
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13645
+Subject		: NULL pointer dereference at (null) (level2_spare_pgt)
+Submitter	: poornima nayak <mpnayak@linux.vnet.ibm.com>
+Date		: 2009-06-17 17:56 (47 days old)
+References	: http://lkml.org/lkml/2009/6/17/194
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13891
+Subject		: PCI resources allocation problem on HP nx6325
+Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
+Date		: 2009-08-02 13:37 (1 days old)
+Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+Patch		: http://patchwork.kernel.org/patch/38774/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13872
+Subject		: cpufreq bug (null pointer dereference)
+Submitter	: Christophe Lermytte <christophe.lermytte@thomson.net>
+Date		: 2009-07-21 22:07 (13 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ee88415caf736b89500f16e0a545614541a45005
+References	: http://marc.info/?l=linux-kernel&m=124820689011112&w=4
+Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+Patch		: http://patchwork.kernel.org/patch/38229/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13861
+Subject		: CIFS mounts ignore uid argument (ok in 2.6.30.3)
+Submitter	:  <bugzilla.kernel.org@falkensweb.com>
+Date		: 2009-07-28 21:39 (6 days old)
+Handled-By	: Jeff Layton <jlayton@redhat.com>
+Patch		: http://patchwork.kernel.org/patch/38498/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13840
+Subject		: KMS oops on 945G system
+Submitter	: Diego Calleja <diegocg@gmail.com>
+Date		: 2009-07-21 20:50 (13 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7662c8bd6545c12ac7b2b39e4554c3ba34789c50
+References	: http://marc.info/?l=linux-kernel&m=124820945815030&w=4
+Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+Patch		: http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=commit;h=dff33cfcefa31c30b72c57f44586754ea9e8f3e2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13838
+Subject		: kernel BUG at include/net/netns/generic.h:41!
+Submitter	: Luca Tettamanti <kronos.it@gmail.com>
+Date		: 2009-07-20 15:27 (14 days old)
+References	: http://lkml.org/lkml/2009/7/20/105
+Handled-By	: Eric Dumazet <eric.dumazet@gmail.com>
+Patch		: http://patchwork.kernel.org/patch/37779/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13825
+Subject		: eeepc-laptop: fix hot-unplug on resume
+Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Date		: 2009-06-29 13:12 (35 days old)
+References	: http://lkml.org/lkml/2009/6/29/150
+Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Patch		: http://patchwork.kernel.org/patch/32926/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13781
+Subject		: System freeze at resume after suspend to RAM
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2009-07-15 18:42 (19 days old)
+Handled-By	: Zhao Yakui <yakui.zhao@intel.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=22463
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13742
+Subject		: iwlagn (4965): regression when hardware rf switch is used
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2009-06-29 11:28 (35 days old)
+References	: http://lkml.org/lkml/2009/6/29/88
+Handled-By	: Reinette Chatre <reinette.chatre@intel.com>
+Patch		: http://lkml.org/lkml/2009/6/30/224
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.30,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=13615
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
 Rafael
