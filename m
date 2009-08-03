@@ -1,13 +1,14 @@
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: 2.6.31-rc5: Reported regressions 2.6.29 -> 2.6.30
-Date: Mon, 3 Aug 2009 08:16:39 -0700
-Message-ID: <43e72e890908030816n187cda20keda2c9ba1b15a89c__13868.8991348774$1249317546$gmane$org@mail.gmail.com>
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V2] au1xmmc: dev_pm_ops conversion
+Date: Mon, 3 Aug 2009 21:23:16 +0200
+Message-ID: <200908032123.17069.rjw__46695.9944148131$1249327440$gmane$org@sisk.pl>
+References: <20090803163304.GF5002@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
+In-Reply-To: <20090803163304.GF5002@laptop>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,53 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, rootkit85@yahoo.it
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: Frans Pop <elendil@planet.nl>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGVyZSBhcmUgdGhlIHdpcmVsZXNzIG9uZXM6CgpPbiBTdW4sIEF1ZyAyLCAyMDA5IGF0IDEyOjA2
-IFBNLCBSYWZhZWwgSi4gV3lzb2NraTxyandAc2lzay5wbD4gd3JvdGU6Cgo+IFVucmVzb2x2ZWQg
-cmVncmVzc2lvbnMKPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4KPiBCdWctRW50cnkgwqAgwqAg
-wqAgOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM4OTgKPiBT
-dWJqZWN0IMKgIMKgIMKgIMKgIDogSW50ZWwgMzk0NUFCRyAtIHByb2JsZW1zIG9uIDIuNi4zMC5Y
-Cj4gU3VibWl0dGVyIMKgIMKgIMKgIDogZGllbmV0IDxkaWVuZXRAcG9jenRhLmZtPgo+IERhdGUg
-wqAgwqAgwqAgwqAgwqAgwqA6IDIwMDktMDctMzEgMTU6MTcgKDMgZGF5cyBvbGQpCj4gUmVmZXJl
-bmNlcyDCoCDCoCDCoDogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQ5MDUz
-NDY3Mjk5NTkmdz00CgoKPiBCdWctRW50cnkgwqAgwqAgwqAgOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM2MzgKPiBTdWJqZWN0IMKgIMKgIMKgIMKgIDogcnQy
-ODcwIGRyaXZlciBpcyBicm9rZW4gZm9yIChzb21lKSBjYXJkcwo+IFN1Ym1pdHRlciDCoCDCoCDC
-oCA6IGpha29iIGdydWJlciA8amFrb2IuZ3J1YmVyQGthYmVsbmV0LmF0Pgo+IERhdGUgwqAgwqAg
-wqAgwqAgwqAgwqA6IDIwMDktMDYtMjcgMTc6MzMgKDM3IGRheXMgb2xkKQoKCgo+IEJ1Zy1FbnRy
-eSDCoCDCoCDCoCA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MzU4MQo+IFN1YmplY3QgwqAgwqAgwqAgwqAgOiBhdGg5ayBkb2Vzbid0IHdvcmsgd2l0aCBuZXdl
-ciBrZXJuZWxzCj4gU3VibWl0dGVyIMKgIMKgIMKgIDogTWF0dGVvIDxyb290a2l0ODVAeWFob28u
-aXQ+Cj4gRGF0ZSDCoCDCoCDCoCDCoCDCoCDCoDogMjAwOS0wNi0xOSAxMjowNCAoNDUgZGF5cyBv
-bGQpCgpJc3N1ZSBsb29rcyBtb3JlIGxpa2UgYSB0aGUgdXNlciBoYXMgcmZraWxsIGVuYWJsZWQg
-cmF0aGVyIHRoYW4gYQpkcml2ZXIgaXNzdWUuIFdhaXRpbmcgb24gdXNlciBmZWVkYmFjayBzaW5j
-ZSAyMDA5LTA3LTI3LgoKPiBCdWctRW50cnkgwqAgwqAgwqAgOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTMzNjIKPiBTdWJqZWN0IMKgIMKgIMKgIMKgIDogcnQy
-eDAwOiBzbG93IHdpZmkgd2l0aCBjb3JyZWN0IGJhc2ljIHJhdGUgYml0bWFwCj4gU3VibWl0dGVy
-IMKgIMKgIMKgIDogQWxlamFuZHJvIFJpdmVpcmEgPGFyaXZlaXJhQGdtYWlsLmNvbT4KPiBEYXRl
-IMKgIMKgIMKgIMKgIMKgIMKgOiAyMDA5LTA1LTIyIDEzOjMyICg3MyBkYXlzIG9sZCkKCgoKPiBC
-dWctRW50cnkgwqAgwqAgwqAgOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MTMzMzcKPiBTdWJqZWN0IMKgIMKgIMKgIMKgIDogW3Bvc3QgMi42LjI5IHJlZ3Jlc3Np
-b25dIGhhbmcgZHVyaW5nIHN1c3BlbmQgb2YgYjQ0L2I0MyBtb2R1bGVzCj4gU3VibWl0dGVyIMKg
-IMKgIMKgIDogVG9tYXMgSmFub3VzZWsgPHRvbWlAbm9taS5jej4KPiBEYXRlIMKgIMKgIMKgIMKg
-IMKgIMKgOiAyMDA5LTA1LTE4IDEwOjU5ICg3NyBkYXlzIG9sZCkKPiBIYW5kbGVkLUJ5IMKgIMKg
-IMKgOiBKb2hhbm5lcyBCZXJnIDxqb2hhbm5lc0BzaXBzb2x1dGlvbnMubmV0Pgo+IFBhdGNoIMKg
-IMKgIMKgIMKgIMKgIDogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzM3ODM3LwoK
-Cj4gQnVnLUVudHJ5IMKgIMKgIMKgIDogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTEzMzE5Cj4gU3ViamVjdCDCoCDCoCDCoCDCoCA6IFBhZ2UgYWxsb2NhdGlvbiBm
-YWlsdXJlcyB3aXRoIGI0MyBhbmQgcDU0dXNiCj4gU3VibWl0dGVyIMKgIMKgIMKgIDogTGFycnkg
-RmluZ2VyIDxMYXJyeS5GaW5nZXJAbHdmaW5nZXIubmV0Pgo+IERhdGUgwqAgwqAgwqAgwqAgwqAg
-wqA6IDIwMDktMDQtMjkgMjE6MDEgKDk2IGRheXMgb2xkKQo+IFJlZmVyZW5jZXMgwqAgwqAgwqA6
-IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0MTAzODk3MTAxMDg4Jnc9NAo+
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82Lzcv
-MTM2Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA5
-LzcvMjYvMjEzCj4gSGFuZGxlZC1CeSDCoCDCoCDCoDogSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNA
-c2lwc29sdXRpb25zLm5ldD4KPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoERhdmlkIFJpZW50
-amVzIDxyaWVudGplc0Bnb29nbGUuY29tPgo+IFBhdGNoIMKgIMKgIMKgIMKgIMKgIDogaHR0cDov
-L3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzM3NjU1LwpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Monday 03 August 2009, Albin Tonnerre wrote:
+> On Sat, Jul 25, 2009, Frans Pop wrote:
+> > Yes, I see that in drivers/base/platform.c (legacy) .suspend resp. .resume
+> > also got called for those cases?
+> > Ouch :-(
+> 
+> This really looks like it's error-prone (I made this mistake for atmel_serial
+> and wouldn't have noticed if Frans hadn't told me), and AFAICS, for a number of
+> drivers we'll have suspend = freeze = poweroff and resume = thaw = restore.
+> Maybe putting something like this in pm.h would help ?
+> 
+> #define PM_OPS(name, suspend, resume) \
+> struct dev_pm_ops name = { \
+> 	.suspend = suspend, \
+> 	.resume = resume, \
+> 	.freeze = suspend, \
+> 	.thaw = resume, \
+> 	.poweroff = suspend, \
+> 	.restore = resume, \
+> };
+
+That looks like a good idea, but please call that macro SIMPLE_PM_OPS (or
+something similar) and submit a patch.
+
+Best,
+Rafael
