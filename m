@@ -1,16 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH update] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 11)
-Date: Mon, 3 Aug 2009 12:26:14 +0900
-Message-ID: <aec7e5c30908022026t2fa8f328s27424073c9ff560b__8662.70939955047$1249270036$gmane$org@mail.gmail.com>
-References: <200907221701.50449.rjw@sisk.pl> <200907222110.47701.rjw@sisk.pl>
-	<aec7e5c30907310732u35faa15fpab070025f596463e@mail.gmail.com>
-	<200907312053.17914.rjw@sisk.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V2 4/4] i8042: support async suspend and
+	shutdown
+Date: Mon, 03 Aug 2009 17:26:30 +0800
+Message-ID: <1249291590.2670.263.camel__43951.4864855029$1249291742$gmane$org@rzhang-dt>
+References: <1248404532.2670.112.camel@rzhang-dt>
+	<20090724071411.GB10760@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907312053.17914.rjw@sisk.pl>
+In-Reply-To: <20090724071411.GB10760@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "dtor@mail.ru" <dtor@mail.ru>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi again Rafael,
+On Fri, 2009-07-24 at 15:14 +0800, Pavel Machek wrote:
+> On Fri 2009-07-24 11:02:12, Zhang Rui wrote:
+> > 
+> > i8042 controller support device async actions.
+> > 
+> > If boot option "dev_async_action" is added,
+> > i8042 controller and its child devices can be
+> > suspended/shutdown asynchronously.
+> > 
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/input/serio/i8042.c |   10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/input/serio/i8042.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/input/serio/i8042.c
+> > +++ linux-2.6/drivers/input/serio/i8042.c
+> > @@ -1285,14 +1285,21 @@ static int __init i8042_init(void)
+> >  		goto err_unregister_driver;
+> >  	}
+> >  
+> > -	err = platform_device_add(i8042_platform_device);
+> > +	err = dev_async_register(&i8042_platform_device->dev,
+> > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
+> >  	if (err)
+> >  		goto err_free_device;
+> >  
+> > +	err = platform_device_add(i8042_platform_device);
+> > +	if (err)
+> > +		goto err_dev_async_unregister;
+> > +
+> >  	panic_blink = i8042_panic_blink;
+> >  
+> >  	return 0;
+> >  
+> > + err_dev_async_unregister:
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >   err_free_device:
+> >  	platform_device_put(i8042_platform_device);
+> >   err_unregister_driver:
+> 
+> I still do not like the interface: manually unregistering seems to be
+> ugly & error prone.
+> 
+hmm, yes, we can check device->dev_async and unregister it in driver
+core, at device_unregister time.
 
-On Sat, Aug 1, 2009 at 3:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> On Friday 31 July 2009, Magnus Damm wrote:
->> [Runtime PM v11]
+then I think we should rename the interfaces to:
+device_enable_async_action(dev, type),
+and device_disable_async_action(dev)
+so that they are more like driver core helper functions.
+what do you think?
 
->> > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
->> > =A0 =A0 =A0 =A0pr_debug("bus: '%s': %s: matched device %s with driver =
-%s\n",
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->bus->name, __func__, dev_name(dev=
-), drv->name);
->> >
->> > + =A0 =A0 =A0 pm_runtime_get_noresume(dev);
->> > =A0 =A0 =A0 =A0ret =3D really_probe(dev, drv);
->> > + =A0 =A0 =A0 pm_runtime_put_noidle(dev);
->> >
->> > =A0 =A0 =A0 =A0return ret;
->> > =A0}
->>
->> This creates problems when drivers want to performing runtime resume
->> from within probe(). For more details please have a look at "[PATCH
->> 04/04] video: Runtime PM hack for SuperH LCDC driver".
->
-> Ah, I see. =A0You'd like to call pm_runtime_get_sync() from .probe(), but=
- that
-> sees the usage counter different from zero and exits immediately.
-
-Exactly.
-
-> OTOH, I think we should prevent suspends from racing with .probe() at the=
- core
-> level. =A0Hmm.
-
-Doesn't it make more sense to allow runtime suspend and resume to
-happen after the pm_runtime_enable() call? What case are you trying to
-protect against?
-
-> One possible approach could be to call pm_runtime_resume() from
-> sh_mobile_lcdc_probe() instead of pm_runtime_put_noidle(). =A0Then, the p=
-latform
-> code will have a chance to turn the device on and the later pm_runtime_ge=
-t*()
-> and pm_runtime_put*() calls will be balanced. =A0Of course, in that case =
-the
-> pm_runtime_get_noresume() in sh_mobile_lcdc_probe() won't be necessary any
-> more. =A0Am I overlooking anything?
-
-So for drivers that want to access hardware from .probe(), calling
-pm_runtime_resume() after pm_runtime_enable() in should be enough?
-
-Thanks for your help!
-
-/ magnus
+thanks,
+rui
+> > @@ -1305,6 +1312,7 @@ static int __init i8042_init(void)
+> >  
+> >  static void __exit i8042_exit(void)
+> >  {
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >  	platform_device_unregister(i8042_platform_device);
+> >  	platform_driver_unregister(&i8042_driver);
+> >  	i8042_platform_exit();
+> > 
+> 
