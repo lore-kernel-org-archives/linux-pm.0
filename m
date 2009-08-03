@@ -1,15 +1,16 @@
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: 2.6.31-rc5: Reported regressions from 2.6.30
-Date: Mon, 3 Aug 2009 16:31:08 +0200
-Message-ID: <20090803143108.GA12041__5316.65708772397$1249310113$gmane$org@cmpxchg.org>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
-	<alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH update] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 11)
+Date: Mon, 3 Aug 2009 17:15:18 +0200
+Message-ID: <200908031715.19302.rjw__17144.1234335818$1249312558$gmane$org@sisk.pl>
+References: <200907221701.50449.rjw@sisk.pl> <200907312053.17914.rjw@sisk.pl>
+	<aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Mikael Pettersson <mikpe@it.uu.se>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 02, 2009 at 03:22:01PM -0700, Linus Torvalds wrote:
+On Monday 03 August 2009, Magnus Damm wrote:
+> Hi again Rafael,
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
-> > Subject		: emacs -nw compilation doesn't show the error message
-> > Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > Date		: 2009-07-23 06:22 (11 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
+Hi,
+
+> On Sat, Aug 1, 2009 at 3:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > On Friday 31 July 2009, Magnus Damm wrote:
+> >> [Runtime PM v11]
 > 
-> Same old pty bug, same fix: commit e043e42bdb.
+> >> > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
+> >> >        pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+> >> >                 drv->bus->name, __func__, dev_name(dev), drv->name);
+> >> >
+> >> > +       pm_runtime_get_noresume(dev);
+> >> >        ret = really_probe(dev, drv);
+> >> > +       pm_runtime_put_noidle(dev);
+> >> >
+> >> >        return ret;
+> >> >  }
+> >>
+> >> This creates problems when drivers want to performing runtime resume
+> >> from within probe(). For more details please have a look at "[PATCH
+> >> 04/04] video: Runtime PM hack for SuperH LCDC driver".
+> >
+> > Ah, I see.  You'd like to call pm_runtime_get_sync() from .probe(), but that
+> > sees the usage counter different from zero and exits immediately.
 > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
-> > Subject		: Hangups in n_tty_read()
-> > Submitter	: Johannes Weiner <hannes@cmpxchg.org>
-> > Date		: 2009-07-16 18:48 (18 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
+> Exactly.
 > 
-> Hmm. Worth testing that same fix, although the symptoms here are not 
-> exactly the same.
+> > OTOH, I think we should prevent suspends from racing with .probe() at the core
+> > level.  Hmm.
+> 
+> Doesn't it make more sense to allow runtime suspend and resume to
+> happen after the pm_runtime_enable() call? What case are you trying to
+> protect against?
 
-Hm, I had no debugging enabled, but I think a silent hang in
+If runtime PM is enabled before .probe() and then .probe() itself doesn't
+use pm_runtime_get_*(), then theory it is possible to have ->runtime_suspend()
+called while .probe() is running and there's no synchronization between the
+two.  So, we prevent ->runtime_suspend() from being called while .proble()
+is running with the help of the usage counter.
 
-	pty_write()
-	  tty_flip_buffer_push()
-	    flush_to_ldisc()
+> > One possible approach could be to call pm_runtime_resume() from
+> > sh_mobile_lcdc_probe() instead of pm_runtime_put_noidle().  Then, the platform
+> > code will have a chance to turn the device on and the later pm_runtime_get*()
+> > and pm_runtime_put*() calls will be balanced.  Of course, in that case the
+> > pm_runtime_get_noresume() in sh_mobile_lcdc_probe() won't be necessary any
+> > more.  Am I overlooking anything?
+> 
+> So for drivers that want to access hardware from .probe(), calling
+> pm_runtime_resume() after pm_runtime_enable() in should be enough?
 
-can cause the receiving side
+Yes, that should be sufficient (as long as the pm_runtime_resume() is
+successful).
 
-	tty_read()
-	  n_tty_read()
-
-to wait forever for updates.  I haven't looked closely.  It seems to
-be gone with your latest master in any case.
-
-	Hannes
+Best,
+Rafael
