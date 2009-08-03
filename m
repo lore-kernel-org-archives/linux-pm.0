@@ -1,21 +1,15 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all
-	threads by	tgid at once
-Date: Tue, 4 Aug 2009 14:40:38 -0700
-Message-ID: <20090804214038.GA5141__49465.3090522208$1249422121$gmane$org@count0.beaverton.ibm.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-	<20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
-	<20090803175452.GA5481@us.ibm.com>
-	<2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
-	<20090803185556.GA8469@us.ibm.com>
-	<20090803194555.GA10158@us.ibm.com>
-	<6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [Regression] Hibernation failure on dual core Athlon
+	64	(64-bit)
+Date: Mon, 3 Aug 2009 18:23:59 -0400
+Message-ID: <20090803222359.GA3770__4908.66821860454$1249430435$gmane$org@Krystal>
+References: <200908032303.57859.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
+In-Reply-To: <200908032303.57859.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,74 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Menage <menage@google.com>
-Cc: Benjamin Blum <bblum@google.com>, linux-kernel@vger.kernel.org, Linux Power Management <linux-pm@lists.linux-foundation.org>, "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org, containers@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[ Cc'ing Rafael and linux-pm for more eyes on proposed freezer usage. ]
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> Hi Mathieu,
+> 
+> As reported at
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=13903
+> 
+> one of my test systems suffers from a hibernation regression where the second
+> attempt to hibernate in a row makes it hang solid right before creating the
+> image.
+> 
+> Bisection turned up your commit 3f4a782b5ce2698b1870b5a7b573cd721d4fce33
+> ([CPUFREQ] fix (utter) cpufreq_add_dev mess) as the first bad one.
+> 
 
-On Mon, Aug 03, 2009 at 12:55:33PM -0700, Paul Menage wrote:
-> On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
-> >
-> > This is probably a stupid idea, but... =A0what about having zero
-> > overhead at clone(), and instead, at cgroup_task_migrate(),
-> > dequeue_task()ing all of the affected threads for the duration of
-> > the migrate?
-> =
+Can you try with the following patch applied ?
 
-> That doesn't sound too unreasonable, actually - it would certainly
-> simplify things a fair bit. Is there a standard API for doing that?
+http://www.spinics.net/lists/cpufreq/msg00964.html
 
-I'm all for simplifying cgroup locking. I doubt anybody's against
-it, given the "right" simplification.
+Subject: [PATCH 1/5] CPUFREQ: Fix a kobject reference bug related to managed CPUs
+From: Thomas Renninger <trenn@suse.de>
 
-I'm not sure if the freezer is actually the right thing to
-use for this though. Perhaps CFS/scheduler folks could advise?
+Thanks,
 
-> dequeue_task() itself doesn't really look like a public API. I guess
-> that the task freezer would be one way to accomplish this?
- =
+Mathieu
 
-The freezer won't actually remove the task from the runqueue -- just
-cause it to go into a schedule() loop until it's thawed.
+> Best,
+> Rafael
 
-[ Incidentally, sorry if this is a dumb question, but why don't frozen
-tasks go onto a special wait queue rather than loop around schedule() ? =
-
-At least for the cgroup freezer I can imagine keeping the wait queue
-with the cgroup subsystem... ]
-
-The freezer sends a fake signal to the task which will interrupt syscalls
-and userspace to handle the signal. So all of the frozen tasks would be
-looping around schedule() just inside the syscall entry layer "handling"
-the fake signal until they are thawed.
-
-This could interrupt a read of the cgroup pidlist for example.
-
-I don't think it's 100% reliable -- vfork-ing tasks could delay freezing
-the task "indefinitely" if the vfork'ing userspace tasks are =
-
-clueless/malicious.
-
-However the signaling code used there uses kick_process() which may be
-needed for this idea.
-
-So if I understand correctly it goes something like:
-
-for each thread
-	dequeue from runqueue onto ?what?
-	kick thread (I think this should ensure that the thread is no longer
-			"current" on any CPU since we dequeued..)
-
-<seems we'd need something to ensure that the previous operations on each
-thread have "completed" as far as all other cpus are concerned...>
-
-for each thread
-	cgroup migrate
-
-for each thread
-	enqueue back on runqueue from ?what? (is this still the right
-						queue?)
-
-Cheers,
-	-Matt Helsley
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
