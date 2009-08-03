@@ -1,13 +1,16 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Converting to dev_pm_ops (remove annoying warnings)
-Date: Mon, 3 Aug 2009 12:15:13 +0900
-Message-ID: <aec7e5c30908022015u4ec2489ex49bad474893c66f3__35055.1728312441$1249269384$gmane$org@mail.gmail.com>
-References: <20090728104434.GA1728@fluff.org.uk>
+Subject: Re: [PATCH update] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 11)
+Date: Mon, 3 Aug 2009 12:26:14 +0900
+Message-ID: <aec7e5c30908022026t2fa8f328s27424073c9ff560b__8662.70939955047$1249270036$gmane$org@mail.gmail.com>
+References: <200907221701.50449.rjw@sisk.pl> <200907222110.47701.rjw@sisk.pl>
+	<aec7e5c30907310732u35faa15fpab070025f596463e@mail.gmail.com>
+	<200907312053.17914.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090728104434.GA1728@fluff.org.uk>
+In-Reply-To: <200907312053.17914.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ben!
+Hi again Rafael,
 
-On Tue, Jul 28, 2009 at 7:44 PM, Ben Dooks<ben-linux@fluff.org> wrote:
-> I have a couple of questions about changing drivers to use the
-> dev_pm_ops method within drivers using the device driver model.
+On Sat, Aug 1, 2009 at 3:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Friday 31 July 2009, Magnus Damm wrote:
+>> [Runtime PM v11]
+
+>> > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
+>> > =A0 =A0 =A0 =A0pr_debug("bus: '%s': %s: matched device %s with driver =
+%s\n",
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->bus->name, __func__, dev_name(dev=
+), drv->name);
+>> >
+>> > + =A0 =A0 =A0 pm_runtime_get_noresume(dev);
+>> > =A0 =A0 =A0 =A0ret =3D really_probe(dev, drv);
+>> > + =A0 =A0 =A0 pm_runtime_put_noidle(dev);
+>> >
+>> > =A0 =A0 =A0 =A0return ret;
+>> > =A0}
+>>
+>> This creates problems when drivers want to performing runtime resume
+>> from within probe(). For more details please have a look at "[PATCH
+>> 04/04] video: Runtime PM hack for SuperH LCDC driver".
 >
-> 1) Should the suspend/resume code still be wrapped in #ifdef CONFIG_PM
-> =A0 and supply a NULL 'struct dev_pm_ops' wen CONFIG_PM=3Dn
->
-> 2) Is it allowable to submit changes to move drivers to dev_pm_ops
-> =A0 during the -rc phase, or do we have to wait for the merge window
-> =A0 before sending these? The number of warnings on a system that
-> =A0 relies heavily on platform devices is annoying (S3C24XX ARM).
+> Ah, I see. =A0You'd like to call pm_runtime_get_sync() from .probe(), but=
+ that
+> sees the usage counter different from zero and exits immediately.
 
-To begin with: I'm the one to blame for the annoying printouts. If
-people dislike the printout then I'm all for disabling it later on in
-the -rc phase. As you understand the goal is to motivate people to
-update their drivers. =3D)
+Exactly.
 
-I'm not the right person to answer the merge policy question, but
-wouldn't it be good to submit patches regardless of when they will be
-picked up? OTOH, I guess knowing when helps if you have a bunch of
-other changes queued up for your drivers though...
+> OTOH, I think we should prevent suspends from racing with .probe() at the=
+ core
+> level. =A0Hmm.
 
-Any thoughts?
+Doesn't it make more sense to allow runtime suspend and resume to
+happen after the pm_runtime_enable() call? What case are you trying to
+protect against?
 
-Cheers,
+> One possible approach could be to call pm_runtime_resume() from
+> sh_mobile_lcdc_probe() instead of pm_runtime_put_noidle(). =A0Then, the p=
+latform
+> code will have a chance to turn the device on and the later pm_runtime_ge=
+t*()
+> and pm_runtime_put*() calls will be balanced. =A0Of course, in that case =
+the
+> pm_runtime_get_noresume() in sh_mobile_lcdc_probe() won't be necessary any
+> more. =A0Am I overlooking anything?
+
+So for drivers that want to access hardware from .probe(), calling
+pm_runtime_resume() after pm_runtime_enable() in should be enough?
+
+Thanks for your help!
 
 / magnus
