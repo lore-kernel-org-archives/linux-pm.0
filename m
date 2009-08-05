@@ -1,14 +1,14 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V2 0/4] introduce device async actions
-	mechanism
-Date: Wed, 05 Aug 2009 09:47:31 +0800
-Message-ID: <1249436851.2670.422.camel__16338.3742016324$1249436973$gmane$org@rzhang-dt>
-References: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Resend][PATCH] PM: Introduce core framework for
+ run-time PM of I/O devices (rev. 11)
+Date: Tue, 4 Aug 2009 22:44:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908042208460.10693-100000__16934.336620807$1249440435$gmane$org@netrider.rowland.org>
+References: <200908050219.19066.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
+In-Reply-To: <200908050219.19066.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +18,178 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "dtor@mail.ru" <dtor@mail.ru>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2009-08-05 at 01:33 +0800, Alan Stern wrote:
-> On Tue, 4 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > Not only that.  I'd like to simplify the design, because IMO using one async
-> > domain would be much more straightforward than using multiple ones.
-> 
-> > If I understand the async framework correctly, the domains are only used for
-> > synchronization, ie. if you want to wait for a group of async operations to
-> > complete, you can put them all into one domain and then call
-> > async_synchronize_full_domain() to wait for them all together.
+On Wed, 5 Aug 2009, Rafael J. Wysocki wrote:
+
+> > > +	spin_unlock_irq(&dev->power.lock);
+> > > +
+> > > +	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle)
+> > > +		dev->bus->pm->runtime_idle(dev);
+> > > +
+> > > +	spin_lock_irq(&dev->power.lock);
 > > 
-> > You don't need multiple domains to run multiple things in parallel.
+> > Small optimization: Put the spin_{un}lock_irq stuff inside the "if"
+> > statement, so it doesn't happen if the test fails.
 > 
-> There's a basic confusion going on here.
+> Well, I don't think so.  We need to take the lock here unconditionally,
+> because the caller is going to unlock it.
+
+No, I meant do this:
+
+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
+		spin_unlock_irq(&dev->power.lock);
+		dev->bus->pm->runtime_idle(dev);
+		spin_lock_irq(&dev->power.lock);
+	}
+
+By the way, I don't know if anyone still pays attention to sparse-type
+annotations.  If you do, you should add "__releases(&dev->power.lock)"
+and "__acquires(&dev->power.lock)" annotations to functions like this,
+which release the lock without first acquiring it, and then acquire
+the lock without releasing before returning.
+
+> > The same thing can be done in other places.
 > 
-> Rui is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed serially.  Different domains run in 
-> parallel.
+> I'm not really sure it can.
+
+The other places aren't quite the same as this.  I'll leave it to your
+discretion.  :-)
+
+
+> > > +int __pm_runtime_set_status(struct device *dev, unsigned int status)
+> > > +{
+> > > +	struct device *parent = dev->parent;
+> > > +	unsigned long flags;
+> > > +	int error = 0;
+> > > +
+> > > +	if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+> > > +		return -EINVAL;
+> > 
+> > This should go inside the spinlocked area.
 > 
-> Rafael is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed in parallel.  Different domains run 
-> serially.
+> Why?  'status' is a function argument, it doesn't need to be protected from
+> concurrent modification.
+
+Oops, my mistake.  Never mind...
+
+
+> > > +int pm_runtime_disable(struct device *dev)
+> > > +{
+> > ...
+> > > +	if (dev->power.disable_depth++ > 0)
+> > > +		goto out;
+> > > +
+> > > +	if (dev->power.runtime_failure)
+> > > +		goto out;
+> > 
+> > I don't see why this is needed.
 > 
-cool, thanks for stating the confusion so clearly, Alan. :)
+> If dev->power.runtime_failure, there's no need to do anything more.
 
-Hi, Rafael,
+Don't you still want to deactivate the timer and kill any pending
+requests?  True, they won't be able to do anything until the failure 
+state is cleared, but even so...
 
-maybe there is still some confusions about my proposal.
 
-I re-read kernel/async.c file, and notice that Arjan calls the domain as
-*_synchronization_* domain. sorry I use the wrong word before.
-
-And I use the synchronization domains just to keep devices dependency.
-
-First, the general idea is to suspend/resume those slow devices in
-parallel. So we don't suspend/resume them synchronously, instead, we
-move these actions to the global domain.
-
-Then, I found that these actions can not be run asynchronously because
-they depend on other devices.
-For example, sd depends on SATA controller, we should make sure the PM
-callbacks of sd and ahci sata controller are run serially. so a
-synchronization domain is created for them.
-This is how multiple synchronization domains come from in this proposal.
-
-thanks,
-rui
-
-> Once that is cleared up, you should be able to communicate a little 
-> better...  :-)
+> > > +void pm_runtime_remove(struct device *dev)
+> > > +{
+> > > +	pm_runtime_disable(dev);
+> > > +
+> > > +	if (dev->power.runtime_status == RPM_ACTIVE) {
+> > > +		struct device *parent = dev->parent;
+> > > +
+> > > +		/*
+> > > +		 * Change the status back to 'suspended' to match the initial
+> > > +		 * status.
+> > > +		 */
+> > > +		pm_runtime_set_suspended(dev);
+> > > +		if (parent && !parent->power.ignore_children)
+> > > +			pm_request_idle(parent);
+> > 
+> > Shouldn't these last two lines be part of __pm_runtime_set_status()?
 > 
-> Alan Stern
+> No.  It is valid to call __pm_runtime_set_status() when runtime PM is disabled
+> for the device and I don't think we should kick the parent in such cases.
+
+Ah, an interesting point.  Suppose the device is in RPM_ACTIVE, and
+then someone calls pm_runtime_disable followed by
+pm_runtime_set_suspended.  Then the device's status would change to
+RPM_SUSPENDED and the parent's count of active children would be
+decremented, perhaps to 0.  If the count does go to 0, why wouldn't you
+want to send out an idle notification for the parent?
+
+
+> > > @@ -757,11 +771,15 @@ static int dpm_prepare(pm_message_t stat
+> > >  		dev->power.status = DPM_PREPARING;
+> > >  		mutex_unlock(&dpm_list_mtx);
+> > >  
+> > > -		error = device_prepare(dev, state);
+> > > +		if (pm_runtime_disable(dev) && device_may_wakeup(dev))
+> > > +			error = -EBUSY;
+> > 
+> > What's the reason for the -EBUSY error?
 > 
+> If this is a wake-up device and pm_runtime_disable(dev) returned 1 (it can only
+> return 1 or 0), which means there was a resume request pending for the device,
+> suspend fails with -EBUSY (wake-up event during suspend).
+
+I see.  That's a little obscure; a comment would help.  Even something
+as simple as:
+
+			error = -EBUSY;		/* wake-up during suspend */
+
+
+> > > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
+> > >  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+> > >  		 drv->bus->name, __func__, dev_name(dev), drv->name);
+> > >  
+> > > +	pm_runtime_get_noresume(dev);
+> > >  	ret = really_probe(dev, drv);
+> > > +	pm_runtime_put_noidle(dev);
+> > 
+> > This is bad because it won't wait if there's a runtime-PM call in
+> > progress.  Also, we shouldn't use put_noidle because it might subvert
+> > the driver's attempt to autosuspend.
+> 
+> I'm not sure how that's possible, but whatever.
+
+Suppose the probe routine does:
+
+	pm_runtime_get_sync(dev);
+	/* do some work */
+	pm_runtime_put_sync(dev);
+
+There is a clear expectation that an idle notification will eventually
+be sent.  But if the probe is surrounded by
+
+	pm_runtime_get_noresume(dev);
+	... probe ...
+	pm_runtime_put_noidle(dev);
+
+then there won't be any idle notifications.
+
+
+> > > +2. Device Run-time PM Callbacks
+> > 
+> > > +In particular, it is recommended that ->runtime_suspend() return -EBUSY if
+> > > +device_may_wakeup() returns 'false' for the device.
+> > 
+> > What's the point of this?  I don't understand -- we don't want to
+> > discourage people from suspending devices with wakeup enabled.
+> 
+> device_may_wakeup(dev) == false means wake-up is disabled for dev, so
+> suspending it might not be a good idea.
+
+Okay.  This needs to be rephrased.  For example,
+
+	In particular, if the driver requires remote wakeup capability
+	for proper functioning and device_may_wakeup() returns 'false'
+	for the device, then ->runtime_suspend() should return -EBUSY.
+
+The point is that plenty of drivers can work perfectly well without
+remote wakeup, so they have no reason to check device_may_wakeup().
+
+Alan Stern
