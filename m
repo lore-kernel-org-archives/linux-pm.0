@@ -1,13 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] w1_gpio: switch to new dev_pm_ops
-Date: Wed, 5 Aug 2009 20:44:01 +0200
-Message-ID: <200908052044.02103.rjw__5018.75399281761$1249497890$gmane$org@sisk.pl>
-References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+Subject: Re: [PATCH] Add SIMPLE_PM_OPS: make switching to
+	dev_pm_ops less error-prone
+Date: Wed, 5 Aug 2009 20:47:25 +0200
+Message-ID: <200908052047.26293.rjw__27205.3449335091$1249498152$gmane$org@sisk.pl>
+References: <20090803163304.GF5002@laptop>
+	<20090805045533.C3574526EA5@mailhub.coreip.homeip.net>
+	<20090805093758.GE5854@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <20090805093758.GE5854@laptop>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,89 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Ville Syrjala <syrjala@sci.fi>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: Frans Pop <elendil@planet.nl>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 05 August 2009, Daniel Mack wrote:
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Ville Syrjala <syrjala@sci.fi>
-> Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
->  drivers/w1/masters/w1-gpio.c |   23 +++++++++++++++--------
->  1 files changed, 15 insertions(+), 8 deletions(-)
+On Wednesday 05 August 2009, Albin Tonnerre wrote:
+> On Tue, Aug 04, 2009 at 09:55:33PM -0700, Dmitry Torokhov wrote :
+> > On Tue, Aug 04, 2009 at 11:36:12AM +0200, Albin Tonnerre wrote:
+> > > In a number of cases, the .suspend, .freeze, .poweroff and .resume,
+> > > .thaw, .restore functions are identical. However, they all need to be
+> > > assigned to avoid regressionsm as the previous code called .suspend
+> > > resp. .resume in all those cases. SIMPLE_PM_OPS allows to deal with
+> > > this case.
 > 
-> diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-> index 6f8866d..7099b11 100644
-> --- a/drivers/w1/masters/w1-gpio.c
-> +++ b/drivers/w1/masters/w1-gpio.c
-> @@ -106,9 +106,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
->  
->  #ifdef CONFIG_PM
->  
-> -static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
-> +static int w1_gpio_suspend(struct device *dev)
->  {
-> -	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-> +	struct w1_gpio_platform_data *pdata = dev->platform_data;
->  
->  	if (pdata->enable_external_pullup)
->  		pdata->enable_external_pullup(0);
-> @@ -116,9 +116,9 @@ static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
->  	return 0;
->  }
->  
-> -static int w1_gpio_resume(struct platform_device *pdev)
-> +static int w1_gpio_resume(struct device *dev)
->  {
-> -	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-> +	struct w1_gpio_platform_data *pdata = dev->platform_data;
->  
->  	if (pdata->enable_external_pullup)
->  		pdata->enable_external_pullup(1);
-> @@ -126,19 +126,26 @@ static int w1_gpio_resume(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +static struct dev_pm_ops w1_gpio_pm_ops = {
-> +	.suspend	= w1_gpio_suspend,
-> +	.freeze		= w1_gpio_suspend,
-> +	.resume		= w1_gpio_resume,
-> +	.thaw		= w1_gpio_resume,
+> 
+> > I'd much rather have conversions done with a bit more analysis now that
+> > our framework is more flexible and we can have specialized routines for
+> > hibernation and suspend.
+> 
+> I still think that even though they can, quite a number of drivers won't
+> /need/ to have different functions for this, but maybe I'm mistaken.
+> 
+> > Maybe we should try changing from run-time to build time warning so that
+> > users are not overly concerned with it?
+> 
+> I'm not sure that solves the problem. The fact is that even for developers, it's
+> easy to overlook that assiging only the .suspend and .resume fields is probably
+> a mistake.
 
-You need
+I agree, so I'm going to take the patch.
 
-+	.poweroff	= w1_gpio_suspend,
-+	.restore		= w1_gpio_resume,
+I'll add a comment describing what the macro is for, though.
 
-in addition to these, which seems to be the case with the rest of the patches
-too.
-
-If you wait for a little while with the patchset, we're going to have a
-convenience macro for defining such 'standard' dev_pm_ops objects.
-
-> +};
-> +
-> +#define W1_GPIO_PM_OPS (&w1_gpio_pm_ops)
-> +
->  #else
-> -#define w1_gpio_suspend	NULL
-> -#define w1_gpio_resume	NULL
-> +#define W1_GPIO_PM_OPS NULL
->  #endif
->  
->  static struct platform_driver w1_gpio_driver = {
->  	.driver = {
->  		.name	= "w1-gpio",
->  		.owner	= THIS_MODULE,
-> +		.pm	= W1_GPIO_PM_OPS,
->  	},
->  	.remove	= __exit_p(w1_gpio_remove),
-> -	.suspend = w1_gpio_suspend,
-> -	.resume = w1_gpio_resume,
->  };
->  
->  static int __init w1_gpio_init(void)
-
-Best,
+Thanks,
 Rafael
