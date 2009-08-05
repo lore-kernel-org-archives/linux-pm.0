@@ -1,13 +1,16 @@
 From: Daniel Mack <daniel@caiaq.de>
-Subject: [PATCH 2/5] pda-power: switch to new dev_pm_ops
-Date: Wed,  5 Aug 2009 20:29:28 +0200
-Message-ID: <1249496971-9019-2-git-send-email-daniel__39123.7455922694$1249507281$gmane$org@caiaq.de>
+Subject: [PATCH 5/5] net: smsc911x: switch to new dev_pm_ops
+Date: Wed,  5 Aug 2009 20:29:31 +0200
+Message-ID: <1249496971-9019-5-git-send-email-daniel__42673.2680215084$1249507283$gmane$org@caiaq.de>
 References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+	<1249496971-9019-2-git-send-email-daniel@caiaq.de>
+	<1249496971-9019-3-git-send-email-daniel@caiaq.de>
+	<1249496971-9019-4-git-send-email-daniel@caiaq.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <1249496971-9019-4-git-send-email-daniel@caiaq.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,80 +21,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>, linux-pm@lists.linux-foundation.org, Matt Reimer <mreimer@vpop.net>, Daniel Mack <daniel@caiaq.de>
+Cc: Steve Glendinning <steve.glendinning@smsc.com>, linux-pm@lists.linux-foundation.org, "David S. Miller" <davem@davemloft.net>, Daniel Mack <daniel@caiaq.de>, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Anton Vorontsov <cbou@mail.ru>
-Cc: Matt Reimer <mreimer@vpop.net>
----
- drivers/power/pda_power.c |   27 ++++++++++++++++++---------
- 1 files changed, 18 insertions(+), 9 deletions(-)
+Hibernation is unsupported for now, which meets the actual
+implementation in the driver. For free/thaw, the chip's D2 state should
+be entered.
 
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
-index a232de6..34af275 100644
---- a/drivers/power/pda_power.c
-+++ b/drivers/power/pda_power.c
-@@ -402,9 +402,9 @@ static int pda_power_remove(struct platform_device *pdev)
- static int ac_wakeup_enabled;
- static int usb_wakeup_enabled;
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Steve Glendinning <steve.glendinning@smsc.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org
+---
+ drivers/net/smsc911x.c |   31 ++++++++++++++++++++-----------
+ 1 files changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/smsc911x.c b/drivers/net/smsc911x.c
+index 94b6d26..c266785 100644
+--- a/drivers/net/smsc911x.c
++++ b/drivers/net/smsc911x.c
+@@ -50,6 +50,7 @@
+ #include <linux/swab.h>
+ #include <linux/phy.h>
+ #include <linux/smsc911x.h>
++#include <linux/device.h>
+ #include "smsc911x.h"
  
--static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
-+static int pda_power_suspend(struct device *dev)
- {
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		if (ac_irq)
- 			ac_wakeup_enabled = !enable_irq_wake(ac_irq->start);
- 		if (usb_irq)
-@@ -414,9 +414,9 @@ static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
- 	return 0;
- }
+ #define SMSC_CHIPNAME		"smsc911x"
+@@ -2114,10 +2115,12 @@ out_0:
+ /* This implementation assumes the devices remains powered on its VDDVARIO
+  * pins during suspend. */
  
--static int pda_power_resume(struct platform_device *pdev)
-+static int pda_power_resume(struct device *dev)
- {
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		if (usb_irq && usb_wakeup_enabled)
- 			disable_irq_wake(usb_irq->start);
- 		if (ac_irq && ac_wakeup_enabled)
-@@ -425,21 +425,30 @@ static int pda_power_resume(struct platform_device *pdev)
- 
- 	return 0;
- }
+-static int smsc911x_suspend(struct platform_device *pdev, pm_message_t state)
++/* TODO: implement freeze/thaw callbacks for hibernation.*/
 +
-+static struct dev_pm_ops pda_power_pm_ops = {
-+	.suspend	= pda_power_suspend,
-+	.freeze		= pda_power_freeze,
-+	.resume		= pda_power_resume,
-+	.thaw		= pda_power_resume,
++static int smsc911x_suspend(struct device *dev)
+ {
+-	struct net_device *dev = platform_get_drvdata(pdev);
+-	struct smsc911x_data *pdata = netdev_priv(dev);
++	struct net_device *ndev = dev_get_drvdata(dev);
++	struct smsc911x_data *pdata = netdev_priv(ndev);
+ 
+ 	/* enable wake on LAN, energy detection and the external PME
+ 	 * signal. */
+@@ -2128,10 +2131,10 @@ static int smsc911x_suspend(struct platform_device *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int smsc911x_resume(struct platform_device *pdev)
++static int smsc911x_resume(struct device *dev)
+ {
+-	struct net_device *dev = platform_get_drvdata(pdev);
+-	struct smsc911x_data *pdata = netdev_priv(dev);
++	struct net_device *ndev = dev_get_drvdata(dev);
++	struct smsc911x_data *pdata = netdev_priv(ndev);
+ 	unsigned int to = 100;
+ 
+ 	/* Note 3.11 from the datasheet:
+@@ -2149,19 +2152,25 @@ static int smsc911x_resume(struct platform_device *pdev)
+ 	return (to == 0) ? -EIO : 0;
+ }
+ 
++static struct dev_pm_ops smsc911x_pm_ops = {
++	.suspend	= smsc911x_suspend,
++	.resume		= smsc911x_resume,
 +};
 +
-+#define PDA_POWER_PM_OPS (&pda_power_pm_ops)
++#define SMSC911X_PM_OPS (&smsc911x_pm_ops)
 +
  #else
--#define pda_power_suspend NULL
--#define pda_power_resume NULL
-+#define PDA_POWER_PM_OPS NULL
- #endif /* CONFIG_PM */
+-#define smsc911x_suspend	NULL
+-#define smsc911x_resume		NULL
++#define SMSC911X_PM_OPS NULL
+ #endif
  
- MODULE_ALIAS("platform:pda-power");
- 
- static struct platform_driver pda_power_pdrv = {
+ static struct platform_driver smsc911x_driver = {
+ 	.probe = smsc911x_drv_probe,
+ 	.remove = __devexit_p(smsc911x_drv_remove),
  	.driver = {
--		.name = "pda-power",
-+		.name	= "pda-power",
+-		.name = SMSC_CHIPNAME,
++		.name	= SMSC_CHIPNAME,
 +		.owner	= THIS_MODULE,
-+		.pm	= PDA_POWER_PM_OPS,
++		.pm	= SMSC911X_PM_OPS,
  	},
- 	.probe = pda_power_probe,
- 	.remove = pda_power_remove,
--	.suspend = pda_power_suspend,
--	.resume = pda_power_resume,
+-	.suspend = smsc911x_suspend,
+-	.resume = smsc911x_resume,
  };
  
- static int __init pda_power_init(void)
+ /* Entry point for loading the module */
 -- 
 1.6.3.3
