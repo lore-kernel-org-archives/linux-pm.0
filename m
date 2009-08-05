@@ -1,11 +1,13 @@
 From: Daniel Mack <daniel@caiaq.de>
-Subject: [PATCH 1/5] w1_gpio: switch to new dev_pm_ops
-Date: Wed,  5 Aug 2009 20:29:27 +0200
-Message-ID: <1249496971-9019-1-git-send-email-daniel__20711.002048529$1249507280$gmane$org@caiaq.de>
+Subject: [PATCH 2/5] pda-power: switch to new dev_pm_ops
+Date: Wed,  5 Aug 2009 20:29:28 +0200
+Message-ID: <1249496971-9019-2-git-send-email-daniel__39123.7455922694$1249507281$gmane$org@caiaq.de>
+References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,74 +18,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-pm@lists.linux-foundation.org, Ville Syrjala <syrjala@sci.fi>, Daniel Mack <daniel@caiaq.de>
+Cc: Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>, linux-pm@lists.linux-foundation.org, Matt Reimer <mreimer@vpop.net>, Daniel Mack <daniel@caiaq.de>
 List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ville Syrjala <syrjala@sci.fi>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Ian Molton <spyro@f2s.com>
+Cc: Anton Vorontsov <cbou@mail.ru>
+Cc: Matt Reimer <mreimer@vpop.net>
 ---
- drivers/w1/masters/w1-gpio.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ drivers/power/pda_power.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-index 6f8866d..7099b11 100644
---- a/drivers/w1/masters/w1-gpio.c
-+++ b/drivers/w1/masters/w1-gpio.c
-@@ -106,9 +106,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
+diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+index a232de6..34af275 100644
+--- a/drivers/power/pda_power.c
++++ b/drivers/power/pda_power.c
+@@ -402,9 +402,9 @@ static int pda_power_remove(struct platform_device *pdev)
+ static int ac_wakeup_enabled;
+ static int usb_wakeup_enabled;
  
- #ifdef CONFIG_PM
- 
--static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
-+static int w1_gpio_suspend(struct device *dev)
+-static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
++static int pda_power_suspend(struct device *dev)
  {
--	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+	struct w1_gpio_platform_data *pdata = dev->platform_data;
- 
- 	if (pdata->enable_external_pullup)
- 		pdata->enable_external_pullup(0);
-@@ -116,9 +116,9 @@ static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
+-	if (device_may_wakeup(&pdev->dev)) {
++	if (device_may_wakeup(dev)) {
+ 		if (ac_irq)
+ 			ac_wakeup_enabled = !enable_irq_wake(ac_irq->start);
+ 		if (usb_irq)
+@@ -414,9 +414,9 @@ static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
  	return 0;
  }
  
--static int w1_gpio_resume(struct platform_device *pdev)
-+static int w1_gpio_resume(struct device *dev)
+-static int pda_power_resume(struct platform_device *pdev)
++static int pda_power_resume(struct device *dev)
  {
--	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+	struct w1_gpio_platform_data *pdata = dev->platform_data;
+-	if (device_may_wakeup(&pdev->dev)) {
++	if (device_may_wakeup(dev)) {
+ 		if (usb_irq && usb_wakeup_enabled)
+ 			disable_irq_wake(usb_irq->start);
+ 		if (ac_irq && ac_wakeup_enabled)
+@@ -425,21 +425,30 @@ static int pda_power_resume(struct platform_device *pdev)
  
- 	if (pdata->enable_external_pullup)
- 		pdata->enable_external_pullup(1);
-@@ -126,19 +126,26 @@ static int w1_gpio_resume(struct platform_device *pdev)
  	return 0;
  }
- 
-+static struct dev_pm_ops w1_gpio_pm_ops = {
-+	.suspend	= w1_gpio_suspend,
-+	.freeze		= w1_gpio_suspend,
-+	.resume		= w1_gpio_resume,
-+	.thaw		= w1_gpio_resume,
++
++static struct dev_pm_ops pda_power_pm_ops = {
++	.suspend	= pda_power_suspend,
++	.freeze		= pda_power_freeze,
++	.resume		= pda_power_resume,
++	.thaw		= pda_power_resume,
 +};
 +
-+#define W1_GPIO_PM_OPS (&w1_gpio_pm_ops)
++#define PDA_POWER_PM_OPS (&pda_power_pm_ops)
 +
  #else
--#define w1_gpio_suspend	NULL
--#define w1_gpio_resume	NULL
-+#define W1_GPIO_PM_OPS NULL
- #endif
+-#define pda_power_suspend NULL
+-#define pda_power_resume NULL
++#define PDA_POWER_PM_OPS NULL
+ #endif /* CONFIG_PM */
  
- static struct platform_driver w1_gpio_driver = {
+ MODULE_ALIAS("platform:pda-power");
+ 
+ static struct platform_driver pda_power_pdrv = {
  	.driver = {
- 		.name	= "w1-gpio",
- 		.owner	= THIS_MODULE,
-+		.pm	= W1_GPIO_PM_OPS,
+-		.name = "pda-power",
++		.name	= "pda-power",
++		.owner	= THIS_MODULE,
++		.pm	= PDA_POWER_PM_OPS,
  	},
- 	.remove	= __exit_p(w1_gpio_remove),
--	.suspend = w1_gpio_suspend,
--	.resume = w1_gpio_resume,
+ 	.probe = pda_power_probe,
+ 	.remove = pda_power_remove,
+-	.suspend = pda_power_suspend,
+-	.resume = pda_power_resume,
  };
  
- static int __init w1_gpio_init(void)
+ static int __init pda_power_init(void)
 -- 
 1.6.3.3
