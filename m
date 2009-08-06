@@ -1,16 +1,13 @@
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-Subject: Re: [PATCH 2/5] pda-power: switch to new dev_pm_ops
-Date: Thu, 6 Aug 2009 13:52:41 +0200
-Message-ID: <74d0deb30908060452k1fc0e982jf14be2e895e9a805__44934.548988431$1249566174$gmane$org@mail.gmail.com>
-References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
-	<1249496971-9019-2-git-send-email-daniel@caiaq.de>
-	<200908052149.55567.elendil@planet.nl>
-	<20090805222920.GF19257@buzzloop.caiaq.de>
+From: Steve.Glendinning@smsc.com
+Subject: Re: [PATCH 5/5] net: smsc911x: switch to new dev_pm_ops
+Date: Thu, 6 Aug 2009 12:53:45 +0100
+Message-ID: <OF06D1E485.71250FEA-ON8025760A.003F9572-8025760A.00415798__18937.3022680686$1249570842$gmane$org@smsc.com>
+References: <20090805.202922.241102337.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090805222920.GF19257@buzzloop.caiaq.de>
+In-Reply-To: <20090805.202922.241102337.davem@davemloft.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Mack <daniel@caiaq.de>
-Cc: spyro@f2s.com, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, cbou@mail.ru, mreimer@vpop.net, linux-pm@lists.linux-foundation.org
+To: David Miller <davem@davemloft.net>
+Cc: linux-sh@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, daniel@caiaq.de, Ian.Saturley@smsc.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 6, 2009 at 12:29 AM, Daniel Mack<daniel@caiaq.de> wrote:
-> On Wed, Aug 05, 2009 at 09:49:52PM +0200, Frans Pop wrote:
->> Daniel Mack wrote:
->> > +static struct dev_pm_ops pda_power_pm_ops =3D {
->> > + =A0 =A0 =A0 .suspend =A0 =A0 =A0 =A0=3D pda_power_suspend,
->> > + =A0 =A0 =A0 .freeze =A0 =A0 =A0 =A0 =3D pda_power_freeze,
->>
->> Hmmm. Where's pda_power_freeze defined? Forgot to (compile)test the
->> patches?
->
-> Yes, sorry. I can't test hibernation, so I didn't pay enough attention.
-> I'll resend them anyway with Rafael's new macro used.
+David Miller <davem@davemloft.net> wrote on 06/08/2009 04:29:22:
 
-After Rafael's comments on gpio_keys, I believe also here
-.freeze/.thaw should be empty. enable/disable_irq_wake should be
-called from .poweroff/.restore.
+> From: Daniel Mack <daniel@caiaq.de>
+> Date: Wed,  5 Aug 2009 20:29:31 +0200
+> 
+> > Hibernation is unsupported for now, which meets the actual
+> > implementation in the driver. For free/thaw, the chip's D2 state 
+should
+> > be entered.
+> > 
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> 
+> Steve, if it looks good to you I can toss this into net-next-2.6
+> 
+> Just let me know.
 
-regards
-Philipp
+Looks fine.  Compiles ok and doesn't actually change any PM 
+implementation.
+
+Acked-by: <steve.glendinning@smsc.com>
+
+Unfortunately I can't test it.  The only dev platform I have in front of 
+me
+is SH7709S, which doesn't boot since 
+4ff29ff8e8723a41e7defd8bc78a7b16cbf940a2
+(the sh maintainers are aware and working on it:
+http://marc.info/?l=linux-sh&m=124891631203530&w=2)
+
+Steve
