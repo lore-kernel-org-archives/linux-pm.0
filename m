@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 03/05] PM: Runtime PM v13 - add debug printouts
-Date: Fri, 07 Aug 2009 16:33:42 +0900
-Message-ID: <20090807073342.22479.85640.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 01/05] PM: Runtime PM v13 - add dev_pm_ops helpers
+Date: Fri, 07 Aug 2009 16:33:25 +0900
+Message-ID: <20090807073325.22479.31226.sendpatchset@rx1.opensource.se>
 References: <20090807073315.22479.89012.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,109 +23,106 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch adds dev_dbg() printouts to the Runtime PM
-code. Just add a #define DEBUG at the top of the file
-to get suspend and resume printouts. Also add a missing
-newline to the pm_runtime_enable() printout while at it.
+This patch breaks out the dev_pm_ops handling code
+for Runtime PM into separate functions. This change
+makes is possible for the main code and separate
+bus implementations to deal with callbacks and error
+codes in a consistent fashion.
+
+The broken out functions are used by the Runtime PM
+platform device bus implementation for SuperH.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Can this patch be rolled into the main Runtime PM patch?
-
  Changes for v11->v13:
  - solved conflicts introduced by v11->v13 update
 
- drivers/base/power/runtime.c |   32 +++++++++++++++++++++++---------
- 1 file changed, 23 insertions(+), 9 deletions(-)
+ drivers/base/power/runtime.c |   29 ++++++++++-------------------
+ include/linux/pm_runtime.h   |   19 +++++++++++++++++++
+ 2 files changed, 29 insertions(+), 19 deletions(-)
 
---- 0009/drivers/base/power/runtime.c
-+++ work/drivers/base/power/runtime.c	2009-08-07 13:55:20.000000000 +0900
-@@ -125,13 +125,19 @@ int __pm_runtime_suspend(struct device *
- 	bool notify = false;
- 	int retval = 0;
+--- 0007/drivers/base/power/runtime.c
++++ work/drivers/base/power/runtime.c	2009-08-07 13:42:57.000000000 +0900
+@@ -77,13 +77,12 @@ static int __pm_runtime_idle(struct devi
  
-+	dev_dbg(dev, "__pm_runtime_suspend() %d!\n", from_wq);
-  repeat:
--	if (dev->power.runtime_error)
--		return -EINVAL;
-+	if (dev->power.runtime_error) {
-+		retval = -EINVAL;
-+		goto out;
-+	}
+ 	dev->power.idle_notification = true;
  
- 	/* Pending resume requests take precedence over us. */
--	if (dev->power.request_pending && dev->power.request == RPM_REQ_RESUME)
--			return -EAGAIN;
-+	if (dev->power.request_pending
-+	    && dev->power.request == RPM_REQ_RESUME) {
-+		retval = -EAGAIN;
-+		goto out;
-+	}
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
+-		spin_unlock_irq(&dev->power.lock);
++	spin_unlock_irq(&dev->power.lock);
  
- 	/* Other scheduled or pending requests need to be canceled. */
- 	pm_runtime_cancel_pending(dev);
-@@ -145,13 +151,15 @@ int __pm_runtime_suspend(struct device *
- 	else if (!pm_children_suspended(dev))
- 		retval = -EBUSY;
- 	if (retval)
--		return retval;
-+		goto out;
+-		dev->bus->pm->runtime_idle(dev);
++	if (dev->bus)
++		pm_runtime_ops_idle(dev, dev->bus->pm);
  
- 	if (dev->power.runtime_status == RPM_SUSPENDING) {
- 		DEFINE_WAIT(wait);
+-		spin_lock_irq(&dev->power.lock);
+-	}
++	spin_lock_irq(&dev->power.lock);
  
--		if (from_wq)
--			return -EINPROGRESS;
-+		if (from_wq) {
-+			retval = -EINPROGRESS;
-+			goto out;
-+		}
+ 	dev->power.idle_notification = false;
+ 	wake_up_all(&dev->power.wait_queue);
+@@ -173,15 +172,11 @@ int __pm_runtime_suspend(struct device *
  
- 		/* Wait for the other suspend running in parallel with us. */
- 		for (;;) {
-@@ -200,7 +208,8 @@ int __pm_runtime_suspend(struct device *
- 	if (dev->power.deferred_resume) {
- 		dev->power.deferred_resume = false;
- 		__pm_runtime_resume(dev, false);
--		return -EAGAIN;
-+		retval = -EAGAIN;
-+		goto out;
- 	}
+ 	dev->power.runtime_status = RPM_SUSPENDING;
  
- 	if (notify)
-@@ -213,6 +222,8 @@ int __pm_runtime_suspend(struct device *
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
+-		spin_unlock_irq(&dev->power.lock);
++	spin_unlock_irq(&dev->power.lock);
  
- 		spin_lock_irq(&dev->power.lock);
- 	}
-+ out:
-+	dev_dbg(dev, "__pm_runtime_suspend() returns %d!\n", retval);
+-		retval = dev->bus->pm->runtime_suspend(dev);
++	retval = dev->bus ? pm_runtime_ops_suspend(dev, dev->bus->pm) : -ENOSYS;
  
- 	return retval;
+-		spin_lock_irq(&dev->power.lock);
+-	} else {
+-		retval = -ENOSYS;
+-	}
++	spin_lock_irq(&dev->power.lock);
+ 
+ 	if (retval) {
+ 		dev->power.runtime_status = RPM_ACTIVE;
+@@ -332,15 +327,11 @@ int __pm_runtime_resume(struct device *d
+ 
+ 	dev->power.runtime_status = RPM_RESUMING;
+ 
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
+-		spin_unlock_irq(&dev->power.lock);
++	spin_unlock_irq(&dev->power.lock);
+ 
+-		retval = dev->bus->pm->runtime_resume(dev);
++	retval = dev->bus ? pm_runtime_ops_resume(dev, dev->bus->pm) : -ENOSYS;
+ 
+-		spin_lock_irq(&dev->power.lock);
+-	} else {
+-		retval = -ENOSYS;
+-	}
++	spin_lock_irq(&dev->power.lock);
+ 
+ 	if (retval) {
+ 		dev->power.runtime_status = RPM_SUSPENDED;
+--- 0007/include/linux/pm_runtime.h
++++ work/include/linux/pm_runtime.h	2009-08-07 13:37:27.000000000 +0900
+@@ -112,4 +112,23 @@ static inline int pm_runtime_disable(str
+ 	return __pm_runtime_disable(dev, true);
  }
-@@ -252,6 +263,7 @@ int __pm_runtime_resume(struct device *d
- 	struct device *parent = NULL;
- 	int retval = 0;
  
-+	dev_dbg(dev, "__pm_runtime_resume() %d!\n", from_wq);
-  repeat:
- 	if (dev->power.runtime_error) {
- 		retval = -EINVAL;
-@@ -358,6 +370,8 @@ int __pm_runtime_resume(struct device *d
- 		spin_lock_irq(&dev->power.lock);
- 	}
- 
-+	dev_dbg(dev, "__pm_runtime_resume() returns %d!\n", retval);
++static inline int pm_runtime_ops_suspend(struct device *dev,
++					 struct dev_pm_ops *p)
++{
++	return p && p->runtime_suspend ? p->runtime_suspend(dev) : -ENOSYS;
++}
 +
- 	return retval;
- }
- 
-@@ -795,7 +809,7 @@ void pm_runtime_enable(struct device *de
- 	if (dev->power.disable_depth > 0)
- 		dev->power.disable_depth--;
- 	else
--		dev_warn(dev, "Unbalanced %s!", __func__);
-+		dev_warn(dev, "Unbalanced %s!\n", __func__);
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- }
++static inline int pm_runtime_ops_resume(struct device *dev,
++					struct dev_pm_ops *p)
++{
++	return p && p->runtime_resume ? p->runtime_resume(dev) : -ENOSYS;
++}
++
++static inline void pm_runtime_ops_idle(struct device *dev,
++				       struct dev_pm_ops *p)
++{
++	if (p && p->runtime_idle)
++		p->runtime_idle(dev);
++}
++
+ #endif
