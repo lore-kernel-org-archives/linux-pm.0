@@ -1,7 +1,8 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 01/05] PM: Runtime PM v13 - add dev_pm_ops helpers
-Date: Fri, 07 Aug 2009 16:33:25 +0900
-Message-ID: <20090807073325.22479.31226.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 04/05] PM: Runtime PM v13 - CONFIG_PM_SLEEP=n
+	support
+Date: Fri, 07 Aug 2009 16:33:51 +0900
+Message-ID: <20090807073351.22479.43870.sendpatchset@rx1.opensource.se>
 References: <20090807073315.22479.89012.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,106 +24,70 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch breaks out the dev_pm_ops handling code
-for Runtime PM into separate functions. This change
-makes is possible for the main code and separate
-bus implementations to deal with callbacks and error
-codes in a consistent fashion.
+This patch contains a few fixes to allow Runtime PM
+to be used even though suspend and hibernation are disabled
+in the kconfig. Without this patch the Runtime PM code
+compiles just fine with CONFIG_PM_SLEEP=n but the functions
+pm_runtime_init() and pm_runtime_remove() never gets called
+during runtime.
 
-The broken out functions are used by the Runtime PM
-platform device bus implementation for SuperH.
+Not sure if CONFIG_PM_RUNTIME=y and CONFIG_PM_SLEEP=n really
+is a valid combination, but I can easily imagine use cases
+for Runtime PM without system suspend/hibernation support.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
+ Can this patch be rolled into the main Runtime PM patch?
+
  Changes for v11->v13:
  - solved conflicts introduced by v11->v13 update
 
- drivers/base/power/runtime.c |   29 ++++++++++-------------------
- include/linux/pm_runtime.h   |   19 +++++++++++++++++++
- 2 files changed, 29 insertions(+), 19 deletions(-)
+ drivers/base/core.c       |    3 +++
+ drivers/base/power/main.c |    2 --
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
---- 0007/drivers/base/power/runtime.c
-+++ work/drivers/base/power/runtime.c	2009-08-07 13:42:57.000000000 +0900
-@@ -77,13 +77,12 @@ static int __pm_runtime_idle(struct devi
+--- 0001/drivers/base/core.c
++++ work/drivers/base/core.c	2009-08-07 13:56:54.000000000 +0900
+@@ -23,6 +23,7 @@
+ #include <linux/semaphore.h>
+ #include <linux/mutex.h>
+ #include <linux/async.h>
++#include <linux/pm_runtime.h>
  
- 	dev->power.idle_notification = true;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irq(&dev->power.lock);
- 
--		dev->bus->pm->runtime_idle(dev);
-+	if (dev->bus)
-+		pm_runtime_ops_idle(dev, dev->bus->pm);
- 
--		spin_lock_irq(&dev->power.lock);
--	}
-+	spin_lock_irq(&dev->power.lock);
- 
- 	dev->power.idle_notification = false;
- 	wake_up_all(&dev->power.wait_queue);
-@@ -173,15 +172,11 @@ int __pm_runtime_suspend(struct device *
- 
- 	dev->power.runtime_status = RPM_SUSPENDING;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irq(&dev->power.lock);
- 
--		retval = dev->bus->pm->runtime_suspend(dev);
-+	retval = dev->bus ? pm_runtime_ops_suspend(dev, dev->bus->pm) : -ENOSYS;
- 
--		spin_lock_irq(&dev->power.lock);
--	} else {
--		retval = -ENOSYS;
--	}
-+	spin_lock_irq(&dev->power.lock);
- 
- 	if (retval) {
- 		dev->power.runtime_status = RPM_ACTIVE;
-@@ -332,15 +327,11 @@ int __pm_runtime_resume(struct device *d
- 
- 	dev->power.runtime_status = RPM_RESUMING;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irq(&dev->power.lock);
- 
--		retval = dev->bus->pm->runtime_resume(dev);
-+	retval = dev->bus ? pm_runtime_ops_resume(dev, dev->bus->pm) : -ENOSYS;
- 
--		spin_lock_irq(&dev->power.lock);
--	} else {
--		retval = -ENOSYS;
--	}
-+	spin_lock_irq(&dev->power.lock);
- 
- 	if (retval) {
- 		dev->power.runtime_status = RPM_SUSPENDED;
---- 0007/include/linux/pm_runtime.h
-+++ work/include/linux/pm_runtime.h	2009-08-07 13:37:27.000000000 +0900
-@@ -112,4 +112,23 @@ static inline int pm_runtime_disable(str
- 	return __pm_runtime_disable(dev, true);
+ #include "base.h"
+ #include "power/power.h"
+@@ -555,6 +556,7 @@ void device_initialize(struct device *de
+ 	INIT_LIST_HEAD(&dev->devres_head);
+ 	device_init_wakeup(dev, 0);
+ 	device_pm_init(dev);
++	pm_runtime_init(dev);
+ 	set_dev_node(dev, -1);
  }
  
-+static inline int pm_runtime_ops_suspend(struct device *dev,
-+					 struct dev_pm_ops *p)
-+{
-+	return p && p->runtime_suspend ? p->runtime_suspend(dev) : -ENOSYS;
-+}
-+
-+static inline int pm_runtime_ops_resume(struct device *dev,
-+					struct dev_pm_ops *p)
-+{
-+	return p && p->runtime_resume ? p->runtime_resume(dev) : -ENOSYS;
-+}
-+
-+static inline void pm_runtime_ops_idle(struct device *dev,
-+				       struct dev_pm_ops *p)
-+{
-+	if (p && p->runtime_idle)
-+		p->runtime_idle(dev);
-+}
-+
- #endif
+@@ -1063,6 +1065,7 @@ void device_del(struct device *dev)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_pm_remove(dev);
++	pm_runtime_remove(dev);
+ 	dpm_sysfs_remove(dev);
+ 	if (parent)
+ 		klist_del(&dev->p->knode_parent);
+--- 0007/drivers/base/power/main.c
++++ work/drivers/base/power/main.c	2009-08-07 13:57:25.000000000 +0900
+@@ -56,7 +56,6 @@ static bool transition_started;
+ void device_pm_init(struct device *dev)
+ {
+ 	dev->power.status = DPM_ON;
+-	pm_runtime_init(dev);
+ }
+ 
+ /**
+@@ -116,7 +115,6 @@ void device_pm_remove(struct device *dev
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+-	pm_runtime_remove(dev);
+ }
+ 
+ /**
