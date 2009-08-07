@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH update x2] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 13)
-Date: Fri, 7 Aug 2009 11:41:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908071130440.3063-100000__42917.5603473142$1249659900$gmane$org@iolanthe.rowland.org>
-References: <200908062353.14822.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 00/05] PM: Runtime PM v13 for Platform
+	Devices 20090807
+Date: Sat, 8 Aug 2009 00:42:31 +0900
+Message-ID: <aec7e5c30908070842y19d01150yf6dd4279f8a674c1@mail.gmail.com>
+References: <20090807073315.22479.89012.sendpatchset@rx1.opensource.se>
+	<Pine.LNX.4.44L0.0908071024370.2886-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908062353.14822.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0908071024370.2886-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +19,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 Aug 2009, Rafael J. Wysocki wrote:
+On Fri, Aug 7, 2009 at 11:32 PM, Alan Stern<stern@rowland.harvard.edu> wrot=
+e:
+> On Fri, 7 Aug 2009, Magnus Damm wrote:
+>
+>> PM: Runtime PM v13 for Platform Devices 20090807
+>>
+>> [PATCH 01/05] PM: Runtime PM v13 - add dev_pm_ops helpers
+>
+> This patch doesn't do anything much, besides reverting a change I asked
+> Rafael to make. =A0I don't see how it helps platform-specific code do
+> anything.
 
-> Hi,
-> 
-> The patch below should address all of your most recent comments.
+It's helping different bus types to implement the runtime part of the
+dev_pm_ops in a consistent way. I suggest that all bus types should
+return -ENOSYS if the callback is missing. And they can do so by using
+the helper functions. The change is not platform specific, but my
+latest SuperH platform Runtime PM prototype makes use of it.
 
-Only two comments.
+The latest SuperH specific Runtime PM implementation require
+dev_pm_ops even though there is no work to be done for the driver. The
+code works in a sort of opt-in way at this point, so callbacks are
+explicitly required. I'd like us to standardize on this behaviour if
+possible, so runtime pm enabled platform drivers can be shared between
+different platform bus implementations. So my LCDC platform driver
+will work fine on both SuperH SoCs and ARM SoCs.
 
+Sorry for reverting your change, but I couldn't see any clear benefit
+with the v11->v13 lock-drop-inside-the-if-case change. Isn't it just
+avoiding dropping the lock in the uncommon error case? Maybe I'm
+misunderstanding.
 
-> +static int __pm_request_idle(struct device *dev)
-> +{
-...
-> +	if (dev->power.request_pending) {
-> +		/* Any requests other then RPM_REQ_IDLE take precedence. */
-> +		if (dev->power.request != RPM_REQ_NONE)
+>> [PATCH 02/05] PM: Runtime PM v13 - let bus-less devices succeed
+>
+> This could be added without 01/05. =A0But why do you want it? =A0Busless
+> devices don't have PM runtime callbacks, so whether the core thinks the
+> callbacks succeed or not doesn't make any difference.
+>
+> You say that "Runtime suspend and resume of devices on the platform bus
+> is impossible without this change", but you don't explain why -- or why
+> the patch makes runtime suspend and resume of these devices possible.
 
-Replace != with ==.
+Right now, in the standard upstream kernel all platform devices get
+assigned a parent device unless one exists are registration time. The
+shared parent device is parent-less. Since the Runtime PM code resumes
+the parent before the child, the resume operation will fail because
+there is no dev_pm_ops for the shared parent.
 
-> +			dev->power.request = RPM_REQ_IDLE;
-> +		else if (dev->power.request != RPM_REQ_IDLE)
-> +			retval = -EAGAIN;
-> +		return retval;
+So I wonder which way that is the best to allow resuming platform
+devices. Patch [02/05] is one way, but maybe there are more elegant
+ways to handle it? Should the platform code be modified instead? If
+so, how? I suppose root hubs for USB may have a similar issue, no?
 
+>> [PATCH 03/05] PM: Runtime PM v13 - add debug printouts
+>
+> This looks good.
 
-> --- linux-2.6.orig/drivers/base/dd.c
-> +++ linux-2.6/drivers/base/dd.c
-...
-> @@ -306,6 +317,8 @@ static void __device_release_driver(stru
->  
->  	drv = dev->driver;
->  	if (drv) {
-> +		pm_runtime_disable(dev);
-> +
->  		driver_sysfs_remove(dev);
->  
->  		if (dev->bus)
-> @@ -324,6 +337,8 @@ static void __device_release_driver(stru
->  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->  						     BUS_NOTIFY_UNBOUND_DRIVER,
->  						     dev);
-> +
-> +		pm_runtime_enable(dev);
->  	}
->  }
+Thanks. Maybe it's a good plan to add similar printouts to other
+functions as well?
 
-We may need to be more careful here.  The driver's remove method may
-want to do some runtime PM stuff to the device before giving up
-control.  On the other hand I'm not sure what _should_ be done here, so
-I can't suggest anything better.
+>> [PATCH 04/05] PM: Runtime PM v13 - CONFIG_PM_SLEEP=3Dn support
+>
+> This isn't needed at all; equivalent functionality is already present
+> in v13 of Runtime PM.
 
-Alan Stern
+Yep, I totally missed that one. Will drop.
+
+>> [PATCH 05/05] PM: Runtime PM v13 - platform device bus support
+>
+> This doesn't affect the Runtime PM patch, so it shouldn't be rolled in
+> with it. =A0They should remain separate.
+
+Yeah, it should be kept separate. I still would like to hear an
+ACK/NACK from someone if possible.
+
+Thanks for your feedback!
+
+/ magnus
