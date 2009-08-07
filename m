@@ -1,18 +1,17 @@
 From: pHilipp Zabel <philipp.zabel@gmail.com>
-Subject: Re: [PATCH 2/5] pda-power: switch to new dev_pm_ops
-Date: Fri, 7 Aug 2009 15:35:19 +0200
-Message-ID: <74d0deb30908070635s2fa76e5t954742239b8592a4__18504.7671701343$1249652191$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 4/5] input: gpio-keys: switch to new
+	dev_pm_ops
+Date: Fri, 7 Aug 2009 15:39:26 +0200
+Message-ID: <74d0deb30908070639y6e949d0dr9ebf2f6144130208__35475.5142740489$1249652429$gmane$org@mail.gmail.com>
 References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
-	<1249496971-9019-2-git-send-email-daniel@caiaq.de>
-	<200908052149.55567.elendil@planet.nl>
-	<20090805222920.GF19257@buzzloop.caiaq.de>
-	<74d0deb30908060452k1fc0e982jf14be2e895e9a805@mail.gmail.com>
-	<20090806125631.GI19257@buzzloop.caiaq.de>
+	<200908060251.55157.rjw@sisk.pl>
+	<20090806125909.GJ19257@buzzloop.caiaq.de>
+	<200908061719.44068.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090806125631.GI19257@buzzloop.caiaq.de>
+In-Reply-To: <200908061719.44068.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,135 +21,171 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Mack <daniel@caiaq.de>
-Cc: spyro@f2s.com, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, cbou@mail.ru, mreimer@vpop.net, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Phil Blundell <pb@handhelds.org>, linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 6, 2009 at 2:56 PM, Daniel Mack<daniel@caiaq.de> wrote:
-> On Thu, Aug 06, 2009 at 01:52:41PM +0200, pHilipp Zabel wrote:
->> On Thu, Aug 6, 2009 at 12:29 AM, Daniel Mack<daniel@caiaq.de> wrote:
->> > On Wed, Aug 05, 2009 at 09:49:52PM +0200, Frans Pop wrote:
->> >> Daniel Mack wrote:
->> >> > +static struct dev_pm_ops pda_power_pm_ops =3D {
->> >> > + =A0 =A0 =A0 .suspend =A0 =A0 =A0 =A0=3D pda_power_suspend,
->> >> > + =A0 =A0 =A0 .freeze =A0 =A0 =A0 =A0 =3D pda_power_freeze,
->> >>
->> >> Hmmm. Where's pda_power_freeze defined? Forgot to (compile)test the
->> >> patches?
+On Thu, Aug 6, 2009 at 5:19 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Thursday 06 August 2009, Daniel Mack wrote:
+>> On Thu, Aug 06, 2009 at 02:51:55AM +0200, Rafael J. Wysocki wrote:
+>> > On Thursday 06 August 2009, Daniel Mack wrote:
+>> > > On Wed, Aug 05, 2009 at 10:15:52PM +0200, pHilipp Zabel wrote:
+>> > > > On Wed, Aug 5, 2009 at 8:29 PM, Daniel Mack<daniel@caiaq.de> wrote:
+>> > > > > -static int gpio_keys_resume(struct platform_device *pdev)
+>> > > > > +static int gpio_keys_resume(struct device *dev)
+>> > > > > =A0{
+>> > > > > - =A0 =A0 =A0 struct gpio_keys_platform_data *pdata =3D pdev->de=
+v.platform_data;
+>> > > > > + =A0 =A0 =A0 struct gpio_keys_platform_data *pdata =3D dev->pla=
+tform_data;
+>> > > > > =A0 =A0 =A0 =A0int i;
+>> > > > >
+>> > > > > - =A0 =A0 =A0 if (device_may_wakeup(&pdev->dev)) {
+>> > > > > + =A0 =A0 =A0 if (device_may_wakeup(dev)) {
+>> > > > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0for (i =3D 0; i < pdata->nbuttons=
+; i++) {
+>> > > > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct gpio_keys_=
+button *button =3D &pdata->buttons[i];
+>> > > > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (button->wakeu=
+p) {
+>> > > > > @@ -251,19 +251,27 @@ static int gpio_keys_resume(struct platfor=
+m_device *pdev)
+>> > > > >
+>> > > > > =A0 =A0 =A0 =A0return 0;
+>> > > > > =A0}
+>> > > > > +
+>> > > > > +static struct dev_pm_ops gpio_keys_pm_ops =3D {
+>> > > > > + =A0 =A0 =A0 .suspend =A0 =A0 =A0 =A0=3D gpio_keys_suspend,
+>> > > > > + =A0 =A0 =A0 .freeze =A0 =A0 =A0 =A0 =3D gpio_keys_suspend,
+>> > > > > + =A0 =A0 =A0 .resume =A0 =A0 =A0 =A0 =3D gpio_keys_resume,
+>> > > > > + =A0 =A0 =A0 .thaw =A0 =A0 =A0 =A0 =A0 =3D gpio_keys_resume,
+>> > > >
+>> > > > I'm not sure I understand hibernation correctly, but isn't
+>> > > > .freeze/.thaw about saving state and halting/resuming the device
+>> > > > operation only?
 >> >
->> > Yes, sorry. I can't test hibernation, so I didn't pay enough attention.
->> > I'll resend them anyway with Rafael's new macro used.
+>> > It is.
+>> >
+>> > > > It seems to me that enabling system wakeup functionality should go
+>> > > > into .poweroff. (See <linux/pm.h>)
+>> >
+>> > That's correct.
+>> >
+>> > And .restore() plays the role of ".resume() from hibernation".
 >>
->> After Rafael's comments on gpio_keys, I believe also here
->> .freeze/.thaw should be empty. enable/disable_irq_wake should be
->> called from .poweroff/.restore.
+>> Hence, In case of this driver which only calls disable_irq/enable_irq,
+>> setting .poweroff and .restore seems to suffice?
 >
-> Yes. See the version below.
+> I'll have a look at the driver. =A0Still, it seems .suspend and .resume s=
+hould be
+> set too, shouldn't they?
+
+.suspend/.resume need to be set. But I think .restore is not needed,
+as the effects of calling enable_irq_wake in .poweroff are already
+completely reverted by rebooting the system and restoring the memory
+image that was captured before .poweroff was called.
+
+>> From afa35cebccf49a24613e711afb8009fb6aadce0e Mon Sep 17 00:00:00 2001
+>> From: Daniel Mack <daniel@caiaq.de>
+>> Date: Wed, 5 Aug 2009 15:28:54 +0200
+>> Subject: [PATCH 3/3] input: gpio-keys: switch to new dev_pm_ops
+>>
+>> The callbacks for the implemented functions are .poweroff and .restore,
+>> as they only care for {dis,en}able_irq(). Renamed the functions
+>> to reflect that.
+>>
+>> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+>> Cc: Phil Blundell <pb@handhelds.org>
+>> Cc: linux-input@vger.kernel.org
+>> ---
+>> =A0drivers/input/keyboard/gpio_keys.c | =A0 26 ++++++++++++++++----------
+>> =A01 files changed, 16 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard=
+/gpio_keys.c
+>> index efed0c9..8e670d4 100644
+>> --- a/drivers/input/keyboard/gpio_keys.c
+>> +++ b/drivers/input/keyboard/gpio_keys.c
+>> @@ -216,12 +216,12 @@ static int __devexit gpio_keys_remove(struct platf=
+orm_device *pdev)
+>>
+>>
+>> =A0#ifdef CONFIG_PM
+>> -static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t=
+ state)
+>> +static int gpio_keys_poweroff(struct device *dev)
+>> =A0{
+>> - =A0 =A0 struct gpio_keys_platform_data *pdata =3D pdev->dev.platform_d=
+ata;
+>> + =A0 =A0 struct gpio_keys_platform_data *pdata =3D dev->platform_data;
+>> =A0 =A0 =A0 int i;
+>>
+>> - =A0 =A0 if (device_may_wakeup(&pdev->dev)) {
+>> + =A0 =A0 if (device_may_wakeup(dev)) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (i =3D 0; i < pdata->nbuttons; i++) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct gpio_keys_button *but=
+ton =3D &pdata->buttons[i];
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (button->wakeup) {
+>> @@ -234,12 +234,12 @@ static int gpio_keys_suspend(struct platform_devic=
+e *pdev, pm_message_t state)
+>> =A0 =A0 =A0 return 0;
+>> =A0}
+>>
+>> -static int gpio_keys_resume(struct platform_device *pdev)
+>> +static int gpio_keys_restore(struct device *dev)
+>> =A0{
+>> - =A0 =A0 struct gpio_keys_platform_data *pdata =3D pdev->dev.platform_d=
+ata;
+>> + =A0 =A0 struct gpio_keys_platform_data *pdata =3D dev->platform_data;
+>> =A0 =A0 =A0 int i;
+>>
+>> - =A0 =A0 if (device_may_wakeup(&pdev->dev)) {
+>> + =A0 =A0 if (device_may_wakeup(dev)) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (i =3D 0; i < pdata->nbuttons; i++) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct gpio_keys_button *but=
+ton =3D &pdata->buttons[i];
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (button->wakeup) {
+>> @@ -251,19 +251,25 @@ static int gpio_keys_resume(struct platform_device=
+ *pdev)
+>>
+>> =A0 =A0 =A0 return 0;
+>> =A0}
+>> +
+>> +static struct dev_pm_ops gpio_keys_pm_ops =3D {
+>> + =A0 =A0 .poweroff =A0 =A0 =A0 =3D gpio_keys_poweroff,
+>> + =A0 =A0 .restore =A0 =A0 =A0 =A0=3D gpio_keys_restore,
+>
+> Should .suspend and .resume really be NULL?
+>
+>> +};
+>> +
+>> +#define GPIO_KEYS_PM_OPS (&gpio_keys_pm_ops)
+>> +
+>> =A0#else
+>> -#define gpio_keys_suspend =A0 =A0NULL
+>> -#define gpio_keys_resume =A0 =A0 NULL
+>> +#define GPIO_KEYS_PM_OPS NULL
+>> =A0#endif
+>>
+>> =A0static struct platform_driver gpio_keys_device_driver =3D {
+>> =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0=3D gpio_keys_probe,
+>> =A0 =A0 =A0 .remove =A0 =A0 =A0 =A0 =3D __devexit_p(gpio_keys_remove),
+>> - =A0 =A0 .suspend =A0 =A0 =A0 =A0=3D gpio_keys_suspend,
+>> - =A0 =A0 .resume =A0 =A0 =A0 =A0 =3D gpio_keys_resume,
+>> =A0 =A0 =A0 .driver =A0 =A0 =A0 =A0 =3D {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =3D "gpio-keys",
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .owner =A0=3D THIS_MODULE,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 .pm =A0 =A0 =3D GPIO_KEYS_PM_OPS,
+>> =A0 =A0 =A0 }
+>> =A0};
 >
 > Thanks,
-> Daniel
->
->
-> From 6b534fb029f4623a8ddd60a4ea636bd626d6382a Mon Sep 17 00:00:00 2001
-> From: Daniel Mack <daniel@caiaq.de>
-> Date: Wed, 5 Aug 2009 15:31:23 +0200
-> Subject: [PATCH 1/3] pda-power: switch to new dev_pm_ops
->
-> The callbacks for the implemented functions are .poweroff and .restore,
-> as they only care for {dis,en}able_irq(). Renamed the functions to
-> reflect that.
->
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Ian Molton <spyro@f2s.com>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> Cc: Matt Reimer <mreimer@vpop.net>
-> ---
-> =A0drivers/power/pda_power.c | =A0 25 ++++++++++++++++---------
-> =A01 files changed, 16 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
-> index a232de6..c46a6dc 100644
-> --- a/drivers/power/pda_power.c
-> +++ b/drivers/power/pda_power.c
-> @@ -402,9 +402,9 @@ static int pda_power_remove(struct platform_device *p=
-dev)
-> =A0static int ac_wakeup_enabled;
-> =A0static int usb_wakeup_enabled;
->
-> -static int pda_power_suspend(struct platform_device *pdev, pm_message_t =
-state)
-> +static int pda_power_poweroff(struct device *dev)
-> =A0{
-> - =A0 =A0 =A0 if (device_may_wakeup(&pdev->dev)) {
-> + =A0 =A0 =A0 if (device_may_wakeup(dev)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ac_irq)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ac_wakeup_enabled =3D !ena=
-ble_irq_wake(ac_irq->start);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (usb_irq)
-> @@ -414,9 +414,9 @@ static int pda_power_suspend(struct platform_device *=
-pdev, pm_message_t state)
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
->
-> -static int pda_power_resume(struct platform_device *pdev)
-> +static int pda_power_restore(struct device *dev)
-> =A0{
-> - =A0 =A0 =A0 if (device_may_wakeup(&pdev->dev)) {
-> + =A0 =A0 =A0 if (device_may_wakeup(dev)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (usb_irq && usb_wakeup_enabled)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0disable_irq_wake(usb_irq->=
-start);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ac_irq && ac_wakeup_enabled)
-> @@ -425,21 +425,28 @@ static int pda_power_resume(struct platform_device =
-*pdev)
->
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
-> +
-> +static struct dev_pm_ops pda_power_pm_ops =3D {
-> + =A0 =A0 =A0 .poweroff =A0 =A0 =A0 =3D pda_power_poweroff,
-> + =A0 =A0 =A0 .restore =A0 =A0 =A0 =A0=3D pda_power_restore,
-> +};
-
-No no, now you're missing .suspend/.resume. As I understand it, the
-suspend and hibernation codepaths are now completely separate.
-
-Also, I'm not sure using .restore here is quite correct.
-enable_irq_wake is called in .poweroff, after .freeze + creation of
-the memory image. So if this memory image is restored during the next
-boot, there is no trace of irq wakup ever being enabled and thus no
-need to call disable_irq_wake.
-
-I think just .suspend/.poweroff and .resume need to be used for this driver.
-
-> +
-> +#define PDA_POWER_PM_OPS (&pda_power_pm_ops)
-> +
-> =A0#else
-> -#define pda_power_suspend NULL
-> -#define pda_power_resume NULL
-> +#define PDA_POWER_PM_OPS NULL
-> =A0#endif /* CONFIG_PM */
->
-> =A0MODULE_ALIAS("platform:pda-power");
->
-> =A0static struct platform_driver pda_power_pdrv =3D {
-> =A0 =A0 =A0 =A0.driver =3D {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =3D "pda-power",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =3D "pda-power",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .owner =A0=3D THIS_MODULE,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .pm =A0 =A0 =3D PDA_POWER_PM_OPS,
-> =A0 =A0 =A0 =A0},
-> =A0 =A0 =A0 =A0.probe =3D pda_power_probe,
-> =A0 =A0 =A0 =A0.remove =3D pda_power_remove,
-> - =A0 =A0 =A0 .suspend =3D pda_power_suspend,
-> - =A0 =A0 =A0 .resume =3D pda_power_resume,
-> =A0};
->
-> =A0static int __init pda_power_init(void)
+> Rafael
 > --
-> 1.6.3.3
->
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at =A0http://www.tux.org/lkml/
 >
 
 regards
