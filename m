@@ -1,8 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 02/05] PM: Runtime PM v13 - let bus-less devices
-	succeed
-Date: Fri, 07 Aug 2009 16:33:33 +0900
-Message-ID: <20090807073333.22479.65407.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 03/05] PM: Runtime PM v13 - add debug printouts
+Date: Fri, 07 Aug 2009 16:33:42 +0900
+Message-ID: <20090807073342.22479.85640.sendpatchset@rx1.opensource.se>
 References: <20090807073315.22479.89012.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,45 +23,109 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch allows bus-less devices to pass as being
-suspended even though there is no dev_pm_ops structure
-to use to get the Runtime PM callbacks.
-
-Workarounds the fact that "struct device platform_bus"
-becomes the parent of otherwise parent-less platform
-devices. Runtime suspend and resume of devices on the
-platform bus is impossible without this change. It may
-however be better to modify the actual struct device
-than working around things in the Runtime PM core code.
+This patch adds dev_dbg() printouts to the Runtime PM
+code. Just add a #define DEBUG at the top of the file
+to get suspend and resume printouts. Also add a missing
+newline to the pm_runtime_enable() printout while at it.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Please let me know if this Runtime PM core change is acceptable.
+ Can this patch be rolled into the main Runtime PM patch?
 
  Changes for v11->v13:
- - none
+ - solved conflicts introduced by v11->v13 update
 
- drivers/base/power/runtime.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/base/power/runtime.c |   32 +++++++++++++++++++++++---------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
 
---- 0008/drivers/base/power/runtime.c
-+++ work/drivers/base/power/runtime.c	2009-08-07 13:45:22.000000000 +0900
-@@ -174,7 +174,7 @@ int __pm_runtime_suspend(struct device *
+--- 0009/drivers/base/power/runtime.c
++++ work/drivers/base/power/runtime.c	2009-08-07 13:55:20.000000000 +0900
+@@ -125,13 +125,19 @@ int __pm_runtime_suspend(struct device *
+ 	bool notify = false;
+ 	int retval = 0;
  
- 	spin_unlock_irq(&dev->power.lock);
++	dev_dbg(dev, "__pm_runtime_suspend() %d!\n", from_wq);
+  repeat:
+-	if (dev->power.runtime_error)
+-		return -EINVAL;
++	if (dev->power.runtime_error) {
++		retval = -EINVAL;
++		goto out;
++	}
  
--	retval = dev->bus ? pm_runtime_ops_suspend(dev, dev->bus->pm) : -ENOSYS;
-+	retval = dev->bus ? pm_runtime_ops_suspend(dev, dev->bus->pm) : 0;
+ 	/* Pending resume requests take precedence over us. */
+-	if (dev->power.request_pending && dev->power.request == RPM_REQ_RESUME)
+-			return -EAGAIN;
++	if (dev->power.request_pending
++	    && dev->power.request == RPM_REQ_RESUME) {
++		retval = -EAGAIN;
++		goto out;
++	}
  
- 	spin_lock_irq(&dev->power.lock);
+ 	/* Other scheduled or pending requests need to be canceled. */
+ 	pm_runtime_cancel_pending(dev);
+@@ -145,13 +151,15 @@ int __pm_runtime_suspend(struct device *
+ 	else if (!pm_children_suspended(dev))
+ 		retval = -EBUSY;
+ 	if (retval)
+-		return retval;
++		goto out;
  
-@@ -329,7 +329,7 @@ int __pm_runtime_resume(struct device *d
+ 	if (dev->power.runtime_status == RPM_SUSPENDING) {
+ 		DEFINE_WAIT(wait);
  
- 	spin_unlock_irq(&dev->power.lock);
+-		if (from_wq)
+-			return -EINPROGRESS;
++		if (from_wq) {
++			retval = -EINPROGRESS;
++			goto out;
++		}
  
--	retval = dev->bus ? pm_runtime_ops_resume(dev, dev->bus->pm) : -ENOSYS;
-+	retval = dev->bus ? pm_runtime_ops_resume(dev, dev->bus->pm) : 0;
+ 		/* Wait for the other suspend running in parallel with us. */
+ 		for (;;) {
+@@ -200,7 +208,8 @@ int __pm_runtime_suspend(struct device *
+ 	if (dev->power.deferred_resume) {
+ 		dev->power.deferred_resume = false;
+ 		__pm_runtime_resume(dev, false);
+-		return -EAGAIN;
++		retval = -EAGAIN;
++		goto out;
+ 	}
  
- 	spin_lock_irq(&dev->power.lock);
+ 	if (notify)
+@@ -213,6 +222,8 @@ int __pm_runtime_suspend(struct device *
  
+ 		spin_lock_irq(&dev->power.lock);
+ 	}
++ out:
++	dev_dbg(dev, "__pm_runtime_suspend() returns %d!\n", retval);
+ 
+ 	return retval;
+ }
+@@ -252,6 +263,7 @@ int __pm_runtime_resume(struct device *d
+ 	struct device *parent = NULL;
+ 	int retval = 0;
+ 
++	dev_dbg(dev, "__pm_runtime_resume() %d!\n", from_wq);
+  repeat:
+ 	if (dev->power.runtime_error) {
+ 		retval = -EINVAL;
+@@ -358,6 +370,8 @@ int __pm_runtime_resume(struct device *d
+ 		spin_lock_irq(&dev->power.lock);
+ 	}
+ 
++	dev_dbg(dev, "__pm_runtime_resume() returns %d!\n", retval);
++
+ 	return retval;
+ }
+ 
+@@ -795,7 +809,7 @@ void pm_runtime_enable(struct device *de
+ 	if (dev->power.disable_depth > 0)
+ 		dev->power.disable_depth--;
+ 	else
+-		dev_warn(dev, "Unbalanced %s!", __func__);
++		dev_warn(dev, "Unbalanced %s!\n", __func__);
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ }
