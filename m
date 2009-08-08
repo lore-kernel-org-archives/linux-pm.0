@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 03/05] PM: Runtime PM v13 - add debug
-	printouts
-Date: Sat, 8 Aug 2009 15:28:45 +0200
-Message-ID: <200908081528.45184.rjw@sisk.pl>
-References: <20090807073315.22479.89012.sendpatchset@rx1.opensource.se>
-	<20090807073342.22479.85640.sendpatchset@rx1.opensource.se>
+Subject: Re: [PATCH 00/05] PM: Runtime PM v13 for Platform
+	Devices 20090807
+Date: Sat, 8 Aug 2009 15:47:56 +0200
+Message-ID: <200908081547.56394.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0908071206380.3063-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090807073342.22479.85640.sendpatchset@rx1.opensource.se>
+In-Reply-To: <Pine.LNX.4.44L0.0908071206380.3063-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,123 +18,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 07 August 2009, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+On Friday 07 August 2009, Alan Stern wrote:
+> On Sat, 8 Aug 2009, Magnus Damm wrote:
 > 
-> This patch adds dev_dbg() printouts to the Runtime PM
-> code. Just add a #define DEBUG at the top of the file
-> to get suspend and resume printouts. Also add a missing
-> newline to the pm_runtime_enable() printout while at it.
+> > On Fri, Aug 7, 2009 at 11:32 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
+> > > On Fri, 7 Aug 2009, Magnus Damm wrote:
+> > >
+> > >> PM: Runtime PM v13 for Platform Devices 20090807
+> > >>
+> > >> [PATCH 01/05] PM: Runtime PM v13 - add dev_pm_ops helpers
+> > >
+> > > This patch doesn't do anything much, besides reverting a change I asked
+> > > Rafael to make.  I don't see how it helps platform-specific code do
+> > > anything.
+> > 
+> > It's helping different bus types to implement the runtime part of the
+> > dev_pm_ops in a consistent way. I suggest that all bus types should
+> > return -ENOSYS if the callback is missing.
 > 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> ---
+> Doesn't Rafael's code already do this?
 > 
->  Can this patch be rolled into the main Runtime PM patch?
+> >  And they can do so by using
+> > the helper functions. The change is not platform specific, but my
+> > latest SuperH platform Runtime PM prototype makes use of it.
+> > 
+> > The latest SuperH specific Runtime PM implementation require
+> > dev_pm_ops even though there is no work to be done for the driver. The
+> > code works in a sort of opt-in way at this point, so callbacks are
+> > explicitly required. I'd like us to standardize on this behaviour if
+> > possible, so runtime pm enabled platform drivers can be shared between
+> > different platform bus implementations. So my LCDC platform driver
+> > will work fine on both SuperH SoCs and ARM SoCs.
+> 
+> I still don't see the connection.  Why are helper functions useful?
+> 
+> > Sorry for reverting your change, but I couldn't see any clear benefit
+> > with the v11->v13 lock-drop-inside-the-if-case change. Isn't it just
+> > avoiding dropping the lock in the uncommon error case? Maybe I'm
+> > misunderstanding.
+> 
+> Basically you are right, except for one thing: The error case might not
+> be so uncommon.  That's the benefit.
+> 
+> Rafael, along these lines, I suspect we might not want to go into an
+> error state if a runtime suspend fails because there is no callback
+> function.  Returning -ENOSYS to the caller is fine, but leave 
+> runtime_error set to 0.  Maybe do the same for runtime resume.
 
-Yes, I've just folded it into the runtime PM patch, with some minor modifications.
+Yes, I've just made this change.
+
+> > >> [PATCH 02/05] PM: Runtime PM v13 - let bus-less devices succeed
+> > >
+> > > This could be added without 01/05.  But why do you want it?  Busless
+> > > devices don't have PM runtime callbacks, so whether the core thinks the
+> > > callbacks succeed or not doesn't make any difference.
+> > >
+> > > You say that "Runtime suspend and resume of devices on the platform bus
+> > > is impossible without this change", but you don't explain why -- or why
+> > > the patch makes runtime suspend and resume of these devices possible.
+> > 
+> > Right now, in the standard upstream kernel all platform devices get
+> > assigned a parent device unless one exists are registration time. The
+> > shared parent device is parent-less. Since the Runtime PM code resumes
+> > the parent before the child, the resume operation will fail because
+> > there is no dev_pm_ops for the shared parent.
+> 
+> Not if the parent is disabled for runtime PM, which it is in this case, 
+> right?
+> 
+> > So I wonder which way that is the best to allow resuming platform
+> > devices. Patch [02/05] is one way, but maybe there are more elegant
+> > ways to handle it? Should the platform code be modified instead? If
+> > so, how? I suppose root hubs for USB may have a similar issue, no?
+> 
+> If necessary, I would suggest adding appropriate dummy runtime PM 
+> routines for that catch-all parent device.  But it may not be 
+> necessary.
+> 
+> 
+> > >> [PATCH 03/05] PM: Runtime PM v13 - add debug printouts
+> > >
+> > > This looks good.
+> > 
+> > Thanks. Maybe it's a good plan to add similar printouts to other
+> > functions as well?
+> 
+> Perhaps so.  When writing similar code for USB I found that lots of 
+> debugging printouts were needed all over the place, to get everything 
+> working right.  Once it was working, they were a nuisance.
+
+I've added such messages to __pm_runtime_idle(), for consistency.
 
 Thanks,
 Rafael
-
-
->  Changes for v11->v13:
->  - solved conflicts introduced by v11->v13 update
-> 
->  drivers/base/power/runtime.c |   32 +++++++++++++++++++++++---------
->  1 file changed, 23 insertions(+), 9 deletions(-)
-> 
-> --- 0009/drivers/base/power/runtime.c
-> +++ work/drivers/base/power/runtime.c	2009-08-07 13:55:20.000000000 +0900
-> @@ -125,13 +125,19 @@ int __pm_runtime_suspend(struct device *
->  	bool notify = false;
->  	int retval = 0;
->  
-> +	dev_dbg(dev, "__pm_runtime_suspend() %d!\n", from_wq);
->   repeat:
-> -	if (dev->power.runtime_error)
-> -		return -EINVAL;
-> +	if (dev->power.runtime_error) {
-> +		retval = -EINVAL;
-> +		goto out;
-> +	}
->  
->  	/* Pending resume requests take precedence over us. */
-> -	if (dev->power.request_pending && dev->power.request == RPM_REQ_RESUME)
-> -			return -EAGAIN;
-> +	if (dev->power.request_pending
-> +	    && dev->power.request == RPM_REQ_RESUME) {
-> +		retval = -EAGAIN;
-> +		goto out;
-> +	}
->  
->  	/* Other scheduled or pending requests need to be canceled. */
->  	pm_runtime_cancel_pending(dev);
-> @@ -145,13 +151,15 @@ int __pm_runtime_suspend(struct device *
->  	else if (!pm_children_suspended(dev))
->  		retval = -EBUSY;
->  	if (retval)
-> -		return retval;
-> +		goto out;
->  
->  	if (dev->power.runtime_status == RPM_SUSPENDING) {
->  		DEFINE_WAIT(wait);
->  
-> -		if (from_wq)
-> -			return -EINPROGRESS;
-> +		if (from_wq) {
-> +			retval = -EINPROGRESS;
-> +			goto out;
-> +		}
->  
->  		/* Wait for the other suspend running in parallel with us. */
->  		for (;;) {
-> @@ -200,7 +208,8 @@ int __pm_runtime_suspend(struct device *
->  	if (dev->power.deferred_resume) {
->  		dev->power.deferred_resume = false;
->  		__pm_runtime_resume(dev, false);
-> -		return -EAGAIN;
-> +		retval = -EAGAIN;
-> +		goto out;
->  	}
->  
->  	if (notify)
-> @@ -213,6 +222,8 @@ int __pm_runtime_suspend(struct device *
->  
->  		spin_lock_irq(&dev->power.lock);
->  	}
-> + out:
-> +	dev_dbg(dev, "__pm_runtime_suspend() returns %d!\n", retval);
->  
->  	return retval;
->  }
-> @@ -252,6 +263,7 @@ int __pm_runtime_resume(struct device *d
->  	struct device *parent = NULL;
->  	int retval = 0;
->  
-> +	dev_dbg(dev, "__pm_runtime_resume() %d!\n", from_wq);
->   repeat:
->  	if (dev->power.runtime_error) {
->  		retval = -EINVAL;
-> @@ -358,6 +370,8 @@ int __pm_runtime_resume(struct device *d
->  		spin_lock_irq(&dev->power.lock);
->  	}
->  
-> +	dev_dbg(dev, "__pm_runtime_resume() returns %d!\n", retval);
-> +
->  	return retval;
->  }
->  
-> @@ -795,7 +809,7 @@ void pm_runtime_enable(struct device *de
->  	if (dev->power.disable_depth > 0)
->  		dev->power.disable_depth--;
->  	else
-> -		dev_warn(dev, "Unbalanced %s!", __func__);
-> +		dev_warn(dev, "Unbalanced %s!\n", __func__);
->  
->  	spin_unlock_irqrestore(&dev->power.lock, flags);
->  }
-> 
