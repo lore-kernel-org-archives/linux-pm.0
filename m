@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH update x2] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 13)
-Date: Sun, 9 Aug 2009 11:19:51 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908091100470.10326-100000__31139.7877442234$1249831258$gmane$org@netrider.rowland.org>
-References: <200908091510.55216.rjw@sisk.pl>
+	run-time PM of I/O devices (rev. 13)
+Date: Sun, 9 Aug 2009 22:49:53 +0200
+Message-ID: <200908092249.53401.rjw__24342.3882093795$1249851035$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908091510.55216.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0908091100470.10326-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,66 +18,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 9 Aug 2009, Rafael J. Wysocki wrote:
-
-> > >  How exactly would you like to implement it
-> > > instead?
-> > 
-> > As described above.  The barrier would be equivalent to
-> > pm_runtime_get_noresume followed by pm_runtime_disable except that it
-> > wouldn't actually disable anything.
+On Sunday 09 August 2009, Alan Stern wrote:
+> On Sun, 9 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> OK, I can do that, but the only difference between that and the above sequence
-> of three calls will be the possibility to call resume helpers while the
-> "barrier" is in progress.
+> > > >  How exactly would you like to implement it
+> > > > instead?
+> > > 
+> > > As described above.  The barrier would be equivalent to
+> > > pm_runtime_get_noresume followed by pm_runtime_disable except that it
+> > > wouldn't actually disable anything.
+> > 
+> > OK, I can do that, but the only difference between that and the above sequence
+> > of three calls will be the possibility to call resume helpers while the
+> > "barrier" is in progress.
+> 
+> Exactly.  In other words, if the driver tries to carry out a resume
+> while the barrier is running, the resume won't get lost.  Whereas with 
+> the temporarily-disable approach, it _would_ get lost.
+> 
+> > Allowing runtime PM helpers to be run during system sleep transitions would be
+> > problematic IMHO, because the run-time PM 'states' are not well defined at that
+> > time.  Consequently, the rules that the PM helpers follow do not really hold
+> > during system sleep transitions.
+> 
+> The workqueue will be frozen, so runtime PM helpers will run only if
+> they are invoked more or less directly by the driver (i.e., through
+> pm_runtime_resume, ...).  I think we should allow drivers to do what
+> they want, especially between the "prepare" and "suspend" stages.
 
-Exactly.  In other words, if the driver tries to carry out a resume
-while the barrier is running, the resume won't get lost.  Whereas with 
-the temporarily-disable approach, it _would_ get lost.
+Well, I'm not sure if that's a good idea, but also I have no good techincal
+arguments against it at the moment.  And I'm too tired to argue. ;-)
 
-> Allowing runtime PM helpers to be run during system sleep transitions would be
-> problematic IMHO, because the run-time PM 'states' are not well defined at that
-> time.  Consequently, the rules that the PM helpers follow do not really hold
-> during system sleep transitions.
+> > Also, in principle the device driver's ->suspend() routine  (the non-runtime
+> > one), or even the ->prepare() callback, may notice that the remote wake-up has
+> > happened and put the device back into the full power state and return -EBUSY.
+> 
+> It may.  But then again, it may not -- it may depend on the runtime PM  
+> core to make sure that resume requests get forwarded appropriately.
+> 
+> Furthermore, if you disable runtime PM _before_ calling the prepare 
+> method, that leaves a window during which the driver has no reason to 
+> realize that anything unusual is going on.
+> 
+> > Still, we can allow runtime PM requests to be put into the workqueue during
+> > system sleep transitions, to be executed after the resume (or in case the
+> > suspend fails, that will make the action described in the previous paragraph
+> > somewhat easier).  It seems we'd need a separate flag for it, though.
+> 
+> If every device gets resumed at the end of a system sleep, even the
+> ones that were runtime-suspended before the sleep began, then there's
+> no reason to preserve requests in the workqueue.  But if
+> previously-suspended devices don't get resumed at the end of a system
+> sleep, then we should allow requests to remain in the workqueue.
 
-The workqueue will be frozen, so runtime PM helpers will run only if
-they are invoked more or less directly by the driver (i.e., through
-pm_runtime_resume, ...).  I think we should allow drivers to do what
-they want, especially between the "prepare" and "suspend" stages.
+We also should preserve the requests in case the system sleep transition
+fails.
 
-> Also, in principle the device driver's ->suspend() routine  (the non-runtime
-> one), or even the ->prepare() callback, may notice that the remote wake-up has
-> happened and put the device back into the full power state and return -EBUSY.
+> In the end, it's probably safer and easier just to leave the workqueue 
+> alone -- freeze and unfreeze it, but don't meddle with its contents.
+> 
+> The whole question of remote wakeup vs. runtime suspend vs. system 
+> sleep is complicated, and people haven't dealt with all the issues yet.
 
-It may.  But then again, it may not -- it may depend on the runtime PM  
-core to make sure that resume requests get forwarded appropriately.
+Agreed.
+ 
+> For instance, it seems quite likely that with some devices you would 
+> want to enable remote wakeup during runtime suspend but not during 
+> system sleep.  We don't have any good way to do this.
 
-Furthermore, if you disable runtime PM _before_ calling the prepare 
-method, that leaves a window during which the driver has no reason to 
-realize that anything unusual is going on.
+Yes, for now we have to assume that any device with wakeup enabled is a
+wakeup device.
 
-> Still, we can allow runtime PM requests to be put into the workqueue during
-> system sleep transitions, to be executed after the resume (or in case the
-> suspend fails, that will make the action described in the previous paragraph
-> somewhat easier).  It seems we'd need a separate flag for it, though.
+OK, I'll post the new version of the patch shortly.  Please check if the
+barrier mechanism is implemeted and used correctly.
 
-If every device gets resumed at the end of a system sleep, even the
-ones that were runtime-suspended before the sleep began, then there's
-no reason to preserve requests in the workqueue.  But if
-previously-suspended devices don't get resumed at the end of a system
-sleep, then we should allow requests to remain in the workqueue.
-
-In the end, it's probably safer and easier just to leave the workqueue 
-alone -- freeze and unfreeze it, but don't meddle with its contents.
-
-The whole question of remote wakeup vs. runtime suspend vs. system 
-sleep is complicated, and people haven't dealt with all the issues yet.  
-For instance, it seems quite likely that with some devices you would 
-want to enable remote wakeup during runtime suspend but not during 
-system sleep.  We don't have any good way to do this.
-
-Alan Stern
+Best,
+Rafael
