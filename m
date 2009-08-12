@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH update] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 15)
-Date: Wed, 12 Aug 2009 11:47:08 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908121145200.9635-100000__33517.3473381021$1250092185$gmane$org@iolanthe.rowland.org>
-References: <aec7e5c30908120337g2928b825m1a17a311a0756305@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V2 0/4] introduce device async actions
+	mechanism
+Date: Wed, 12 Aug 2009 22:10:35 +0200
+Message-ID: <200908122210.35591.rjw__33977.5108070627$1250108051$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <aec7e5c30908120337g2928b825m1a17a311a0756305@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0908120958200.2955-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "dtor@mail.ru" <dtor@mail.ru>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 12 Aug 2009, Magnus Damm wrote:
+On Wednesday 12 August 2009, Alan Stern wrote:
+> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > That looks quite complicated at first sight, but asynchronous resume with
+> > completions can be done in a relatively simple patch.  I've got one, so
+> > tomorow I'll post it for further discussion.
+> 
+> Okay.  I would think that managing the threads would account for most 
+> of the complexity in either implementation, but I'll wait to see how 
+> your approach works out.
+> 
+> > Thanks,
+> > Rafael
+> > 
+> > 
+> > PS
+> > Did you have a chance to look at rev. 15 of the runtime PM patch
+> > (http://patchwork.kernel.org/patch/40306/)?
+> 
+> Yes, sorry for not getting back to you.  It looks okay.
+> 
+> The one thing I'm not sure of is the pm_runtime_put_noidle calls in 
+> driver_probe_device and __device_release_driver.  It seems that we 
+> should always call pm_runtime_put regardless of whether the probe 
+> succeeds or not.
 
-> > --- /dev/null
-> > +++ linux-2.6/drivers/base/power/runtime.c
-> [...]
-> > +int __pm_runtime_suspend(struct device *dev, bool from_wq)
-> > + =A0 =A0 =A0 __releases(&dev->power.lock) __acquires(&dev->power.lock)
-> [...]
-> > + =A0 =A0 =A0 if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_sus=
-pend) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock_irq(&dev->power.lock);
-> > +
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 retval =3D dev->bus->pm->runtime_suspend(=
-dev);
-> > +
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_lock_irq(&dev->power.lock);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev->power.runtime_error =3D retval;
-> > + =A0 =A0 =A0 } else {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 retval =3D -ENOSYS;
-> > + =A0 =A0 =A0 }
-> =
+Did you mean pm_runtime_put_sync()?
 
-> Nit: { and } above do not follow the regular coding style.
+> For example, the USB stack is set up to suspend devices that don't have
+> a driver (this is handled at the bus subsystem level).  But if probing
+> failed, there wouldn't be any idle callback and so the suspend wouldn't
+> take place.
 
-As a matter of fact they do.  From Documentation/CodingStyle:
+OK, I'll make this change.
 
-
-Do not unnecessarily use braces where a single statement will do.
-
-if (condition)
-	action();
-
-This does not apply if one branch of a conditional statement is a single
-statement. Use braces in both branches.
-
-if (condition) {
-	do_this();
-	do_that();
-} else {
-	otherwise();
-}
-
-
-Alan Stern
+Thanks,
+Rafael
