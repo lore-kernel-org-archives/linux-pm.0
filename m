@@ -1,14 +1,16 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: [RFC] PCI: Runtime power management
-Date: Thu, 13 Aug 2009 01:29:25 +0100
-Message-ID: <20090813002925.GA2532__6531.67068162492$1250123510$gmane$org@srcf.ucam.org>
+Subject: [RFC] usb: Add support for runtime power management of
+	the hcd
+Date: Thu, 13 Aug 2009 01:35:44 +0100
+Message-ID: <20090813003544.GB2532__38226.570437155$1250123895$gmane$org@srcf.ucam.org>
 References: <200908081625.57333.rjw@sisk.pl> <200908092313.05541.rjw@sisk.pl>
+	<20090813002925.GA2532@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200908092313.05541.rjw@sisk.pl>
+In-Reply-To: <20090813002925.GA2532@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,412 +24,151 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-I got a fixed BIOS from Dell and have been able to get this working now. 
-It seems entirely happy with USB, but I'd like some sanity checks on 
-whether I'm doing this correctly. There's certainly a couple of quirks 
-related to setting the ACPI GPE type that would need a little bit of 
-work in the ACPI layer, and it breaks ACPI-mediated PCI hotplug though 
-that's easy enough to fix by just calling into the hotplug code from the 
-core notifier.
+The PCI runtime power management code means that we can implement support
+for powering down PCI host controllers. This patchset adds core support code
+along with a new hcd flag (HCD_RUNTIME_PM) that allows hosts to opt in if
+they support this functionality. Successfully tested with Intel EHCI and
+UHCI, though the UHCI code may need to pay more attention to vendor-specific
+features.
 
-This patch builds on top of Rafael's work on systemwide runtime power
-management. It supports suspending and resuming PCI devices at runtime,
-enabling platform wakeup events that allow the devices to automatically
-resume when appropriate. It currently requires platform support, but PCIe
-setups could be supported natively once native PCIe PME code has been added
-to the kernel.
+The power savings from this are measurable but not huge - it still seems 
+like a decent optimisation. The main problem is that BIOS bugs on some 
+Dell laptops will kill USB if this is used, so we either default to off 
+or add some quirks to handle that case (I have some ideas in that 
+respect).
+
 ---
- drivers/pci/pci-acpi.c   |   55 +++++++++++++++++++++++++
- drivers/pci/pci-driver.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.c        |   87 ++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.h        |    3 +
- include/linux/pci.h      |    3 +
- 5 files changed, 248 insertions(+), 0 deletions(-)
+ drivers/usb/core/hcd-pci.c  |   13 +++++++++++++
+ drivers/usb/core/hcd.c      |    9 +++++++++
+ drivers/usb/core/hcd.h      |    1 +
+ drivers/usb/host/ehci-pci.c |    2 +-
+ drivers/usb/host/uhci-hcd.c |    2 +-
+ 5 files changed, 25 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-index ea15b05..a98a777 100644
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -12,6 +12,7 @@
- #include <linux/pci.h>
- #include <linux/module.h>
- #include <linux/pci-aspm.h>
-+#include <linux/pm_runtime.h>
- #include <acpi/acpi.h>
- #include <acpi/acpi_bus.h>
- 
-@@ -120,14 +121,62 @@ static int acpi_pci_sleep_wake(struct pci_dev *dev, bool enable)
- 	return error;
+diff --git a/drivers/usb/core/hcd-pci.c b/drivers/usb/core/hcd-pci.c
+index 91f2885..e86324b 100644
+--- a/drivers/usb/core/hcd-pci.c
++++ b/drivers/usb/core/hcd-pci.c
+@@ -363,6 +363,18 @@ static int hcd_pci_restore(struct device *dev)
+ 	return resume_common(dev, true);
  }
  
-+static int acpi_pci_runtime_wake(struct pci_dev *dev, bool enable)
++static int hcd_pci_runtime_suspend(struct device *dev)
 +{
-+	acpi_status status;
-+	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
-+	struct acpi_device *acpi_dev;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct usb_hcd *hcd = pci_get_drvdata(pci_dev);
++	struct usb_device *rhdev = hcd->self.root_hub;
 +
-+	if (!handle)
-+		return -ENODEV;
++	if (!(hcd->driver->flags & HCD_RUNTIME_PM))
++		return -EINVAL;
 +
-+	status = acpi_bus_get_device(handle, &acpi_dev);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	if (enable) {
-+		acpi_set_gpe_type(acpi_dev->wakeup.gpe_device,
-+				  acpi_dev->wakeup.gpe_number,
-+				  ACPI_GPE_TYPE_WAKE_RUN);
-+		acpi_enable_gpe(acpi_dev->wakeup.gpe_device,
-+				acpi_dev->wakeup.gpe_number);
-+	} else {
-+		acpi_set_gpe_type(acpi_dev->wakeup.gpe_device,
-+				  acpi_dev->wakeup.gpe_number,
-+				  ACPI_GPE_TYPE_WAKE);
-+		acpi_disable_gpe(acpi_dev->wakeup.gpe_device,
-+				 acpi_dev->wakeup.gpe_number);
-+	}
 +	return 0;
 +}
 +
-+
- static struct pci_platform_pm_ops acpi_pci_platform_pm = {
- 	.is_manageable = acpi_pci_power_manageable,
- 	.set_state = acpi_pci_set_power_state,
- 	.choose_state = acpi_pci_choose_state,
- 	.can_wakeup = acpi_pci_can_wakeup,
- 	.sleep_wake = acpi_pci_sleep_wake,
-+	.runtime_wake = acpi_pci_runtime_wake,
+ struct dev_pm_ops usb_hcd_pci_pm_ops = {
+ 	.suspend	= hcd_pci_suspend,
+ 	.suspend_noirq	= hcd_pci_suspend_noirq,
+@@ -376,6 +388,7 @@ struct dev_pm_ops usb_hcd_pci_pm_ops = {
+ 	.poweroff_noirq	= hcd_pci_suspend_noirq,
+ 	.restore_noirq	= hcd_pci_resume_noirq,
+ 	.restore	= hcd_pci_restore,
++	.runtime_suspend = hcd_pci_runtime_suspend,
  };
+ EXPORT_SYMBOL_GPL(usb_hcd_pci_pm_ops);
  
-+static void pci_device_notify(acpi_handle handle, u32 event, void *data)
-+{
-+	struct device *dev = data;
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 95ccfa0..a8f8784 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -38,6 +38,7 @@
+ #include <asm/unaligned.h>
+ #include <linux/platform_device.h>
+ #include <linux/workqueue.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <linux/usb.h>
+ 
+@@ -1747,6 +1748,7 @@ int hcd_bus_suspend(struct usb_device *rhdev, pm_message_t msg)
+ 	if (status == 0) {
+ 		usb_set_device_state(rhdev, USB_STATE_SUSPENDED);
+ 		hcd->state = HC_STATE_SUSPENDED;
++		pm_runtime_put(hcd->self.controller);
+ 	} else {
+ 		hcd->state = old_state;
+ 		dev_dbg(&rhdev->dev, "bus %s fail, err %d\n",
+@@ -1768,6 +1770,7 @@ int hcd_bus_resume(struct usb_device *rhdev, pm_message_t msg)
+ 	if (hcd->state == HC_STATE_RUNNING)
+ 		return 0;
+ 
++	pm_runtime_get_sync(hcd->self.controller);
+ 	hcd->state = HC_STATE_RESUMING;
+ 	status = hcd->driver->bus_resume(hcd);
+ 	if (status == 0) {
+@@ -1781,6 +1784,7 @@ int hcd_bus_resume(struct usb_device *rhdev, pm_message_t msg)
+ 		hcd->state = old_state;
+ 		dev_dbg(&rhdev->dev, "bus %s fail, err %d\n",
+ 				"resume", status);
++		pm_runtime_put(hcd->self.controller);
+ 		if (status != -ESHUTDOWN)
+ 			usb_hc_died(hcd);
+ 	}
+@@ -1968,6 +1972,9 @@ struct usb_hcd *usb_create_hcd (const struct hc_driver *driver,
+ 	INIT_WORK(&hcd->wakeup_work, hcd_resume_work);
+ #endif
+ 
++	pm_runtime_enable(dev);
++	pm_runtime_get(dev);
 +
-+	if (event == ACPI_NOTIFY_DEVICE_WAKE)
-+		pm_runtime_resume(dev);
-+}
-+
-+static void pci_root_bridge_notify(acpi_handle handle, u32 event, void *data)
-+{
-+	struct device *dev = data;
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+
-+	if (event == ACPI_NOTIFY_DEVICE_WAKE)
-+		pci_bus_pme_event(pci_dev);
-+}
-+
- /* ACPI bus type */
- static int acpi_pci_find_device(struct device *dev, acpi_handle *handle)
+ 	hcd->driver = driver;
+ 	hcd->product_desc = (driver->product_desc) ? driver->product_desc :
+ 			"USB Host Controller";
+@@ -1979,6 +1986,8 @@ static void hcd_release (struct kref *kref)
  {
-@@ -140,6 +189,9 @@ static int acpi_pci_find_device(struct device *dev, acpi_handle *handle)
- 	*handle = acpi_get_child(DEVICE_ACPI_HANDLE(dev->parent), addr);
- 	if (!*handle)
- 		return -ENODEV;
+ 	struct usb_hcd *hcd = container_of (kref, struct usb_hcd, kref);
+ 
++	pm_runtime_put_sync(hcd->self.controller);
 +
-+	acpi_install_notify_handler(*handle, ACPI_SYSTEM_NOTIFY,
-+				    pci_device_notify, dev);
- 	return 0;
+ 	kfree(hcd);
  }
  
-@@ -158,6 +210,9 @@ static int acpi_pci_find_root_bridge(struct device *dev, acpi_handle *handle)
- 	*handle = acpi_get_pci_rootbridge_handle(seg, bus);
- 	if (!*handle)
- 		return -ENODEV;
-+
-+	acpi_install_notify_handler(*handle, ACPI_SYSTEM_NOTIFY,
-+				    pci_root_bridge_notify, dev);
- 	return 0;
- }
+diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
+index ec5c67e..4dc12a8 100644
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -171,6 +171,7 @@ struct hc_driver {
+ 	int	flags;
+ #define	HCD_MEMORY	0x0001		/* HC regs use memory (else I/O) */
+ #define	HCD_LOCAL_MEM	0x0002		/* HC needs local memory */
++#define	HCD_RUNTIME_PM	0x0004		/* HC supports handling runtime PM */
+ #define	HCD_USB11	0x0010		/* USB 1.1 */
+ #define	HCD_USB2	0x0020		/* USB 2.0 */
+ #define	HCD_USB3	0x0040		/* USB 3.0 */
+diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
+index c2f1b7d..9583621 100644
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -368,7 +368,7 @@ static const struct hc_driver ehci_pci_hc_driver = {
+ 	 * generic hardware linkage
+ 	 */
+ 	.irq =			ehci_irq,
+-	.flags =		HCD_MEMORY | HCD_USB2,
++	.flags =		HCD_MEMORY | HCD_USB2 | HCD_RUNTIME_PM,
  
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index d76c4c8..1f605d8 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -11,12 +11,14 @@
- #include <linux/pci.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/device.h>
- #include <linux/mempolicy.h>
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/sched.h>
- #include <linux/cpu.h>
-+#include <linux/pm_runtime.h>
- #include "pci.h"
+ 	/*
+ 	 * basic lifecycle operations
+diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
+index 274751b..36a3a4a 100644
+--- a/drivers/usb/host/uhci-hcd.c
++++ b/drivers/usb/host/uhci-hcd.c
+@@ -900,7 +900,7 @@ static const struct hc_driver uhci_driver = {
  
- /*
-@@ -910,6 +912,101 @@ static int pci_pm_restore(struct device *dev)
+ 	/* Generic hardware linkage */
+ 	.irq =			uhci_irq,
+-	.flags =		HCD_USB11,
++	.flags =		HCD_USB11 | HCD_RUNTIME_PM,
  
- #endif /* !CONFIG_HIBERNATION */
- 
-+#ifdef CONFIG_PM_RUNTIME
-+
-+static int pci_pm_runtime_suspend(struct device *dev)
-+{
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int error;
-+
-+	device_set_wakeup_enable(dev, 1);
-+	error = pci_enable_runtime_wake(pci_dev, true);
-+
-+	if (error)
-+		return -EBUSY;
-+
-+	if (pm && pm->runtime_suspend)
-+		error = pm->runtime_suspend(dev);
-+
-+	if (error)
-+		goto out;
-+
-+	error = pci_pm_suspend(dev);
-+
-+	if (error)
-+		goto resume;
-+
-+	disable_irq(pci_dev->irq);
-+	error = pci_pm_suspend_noirq(dev);
-+	enable_irq(pci_dev->irq);
-+
-+	if (error)
-+		goto resume_noirq;
-+
-+	return 0;
-+
-+resume_noirq:
-+	disable_irq(pci_dev->irq);
-+	pci_pm_resume_noirq(dev);
-+	enable_irq(pci_dev->irq);
-+resume:
-+	pci_pm_resume(dev);
-+out:
-+	pci_enable_runtime_wake(pci_dev, false);
-+	return error;
-+}
-+
-+static int pci_pm_runtime_resume(struct device *dev)
-+{
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int error = 0;
-+
-+	disable_irq(pci_dev->irq);
-+	error = pci_pm_resume_noirq(dev);
-+	enable_irq(pci_dev->irq);
-+
-+	if (error)
-+		return error;
-+
-+	error = pci_pm_resume(dev);
-+
-+	if (error)
-+		return error;
-+
-+	if (pm->runtime_resume)
-+		error = pm->runtime_resume(dev);
-+
-+	if (error)
-+		return error;
-+
-+	error = pci_enable_runtime_wake(pci_dev, false);
-+
-+	if (error)
-+		return error;
-+
-+	return 0;
-+}
-+
-+static void pci_pm_runtime_idle(struct device *dev)
-+{
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+
-+	if (pm && pm->runtime_idle)
-+		pm->runtime_idle(dev);
-+
-+	pm_schedule_suspend(dev, 0);
-+}
-+
-+#else /* !CONFIG_PM_RUNTIME */
-+
-+#define pci_pm_runtime_suspend	NULL
-+#define pci_pm_runtime_resume	NULL
-+#define pci_pm_runtime_idle	NULL
-+
-+#endif
-+
- struct dev_pm_ops pci_dev_pm_ops = {
- 	.prepare = pci_pm_prepare,
- 	.complete = pci_pm_complete,
-@@ -925,6 +1022,9 @@ struct dev_pm_ops pci_dev_pm_ops = {
- 	.thaw_noirq = pci_pm_thaw_noirq,
- 	.poweroff_noirq = pci_pm_poweroff_noirq,
- 	.restore_noirq = pci_pm_restore_noirq,
-+	.runtime_suspend = pci_pm_runtime_suspend,
-+	.runtime_resume = pci_pm_runtime_resume,
-+	.runtime_idle = pci_pm_runtime_idle,
- };
- 
- #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index dbd0f94..ab3a116 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -18,6 +18,7 @@
- #include <linux/log2.h>
- #include <linux/pci-aspm.h>
- #include <linux/pm_wakeup.h>
-+#include <linux/pm_runtime.h>
- #include <linux/interrupt.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include <linux/device.h>
-@@ -428,6 +429,12 @@ static inline int platform_pci_sleep_wake(struct pci_dev *dev, bool enable)
- 			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
- }
- 
-+static inline int platform_pci_runtime_wake(struct pci_dev *dev, bool enable)
-+{
-+	return pci_platform_pm ?
-+			pci_platform_pm->runtime_wake(dev, enable) : -ENODEV;
-+}
-+
- /**
-  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
-  *                           given PCI device
-@@ -1239,6 +1246,38 @@ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
- }
- 
- /**
-+ * pci_enable_runtime_wake - enable PCI device as runtime wakeup event source
-+ * @dev: PCI device affected
-+ * @enable: True to enable event generation; false to disable
-+ *
-+ * This enables the device as a runtime wakeup event source, or disables it.
-+ * This typically requires platform support.
-+ *
-+ * RETURN VALUE:
-+ * 0 is returned on success
-+ * -EINVAL is returned if device is not supposed to wake up the system
-+ * -ENODEV is returned if platform cannot support runtime PM on the device
-+ */
-+int pci_enable_runtime_wake(struct pci_dev *dev, bool enable)
-+{
-+	int error = 0;
-+	bool pme_done = false;
-+
-+	if (!enable && platform_pci_can_wakeup(dev))
-+		error = platform_pci_runtime_wake(dev, false);
-+
-+	if (!enable || pci_pme_capable(dev, PCI_D3hot)) {
-+		pci_pme_active(dev, enable);
-+		pme_done = true;
-+	}
-+
-+	if (enable && platform_pci_can_wakeup(dev))
-+		error = platform_pci_runtime_wake(dev, true);
-+
-+	return pme_done ? 0 : error;
-+}
-+
-+/**
-  * pci_wake_from_d3 - enable/disable device to wake up from D3_hot or D3_cold
-  * @dev: PCI device to prepare
-  * @enable: True to enable wake-up event generation; false to disable
-@@ -1346,6 +1385,54 @@ int pci_back_from_sleep(struct pci_dev *dev)
- }
- 
- /**
-+ * pci_dev_pme_event - check if a device has a pending pme
-+ *
-+ * @dev: Device to handle.
-+ */
-+
-+int pci_dev_pme_event(struct pci_dev *dev)
-+{
-+	u16 pmcsr;
-+
-+	if (!dev->pm_cap)
-+		return -ENODEV;
-+
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-+
-+	if (pmcsr & PCI_PM_CTRL_PME_STATUS) {
-+		pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
-+		pm_runtime_get(&dev->dev);
-+		return 0;
-+	}
-+
-+	return -ENODEV;
-+}
-+
-+/**
-+ * pci_bus_pme_event - search for subordinate devices with a pending
-+ *		   pme and handle them
-+ *
-+ * @dev: Parent device to handle
-+ */
-+int pci_bus_pme_event(struct pci_dev *dev)
-+{
-+	struct pci_bus *bus;
-+	struct pci_dev *pdev;
-+
-+	if (pci_is_root_bus(dev->bus))
-+		bus = dev->bus;
-+	else if (dev->subordinate)
-+		bus = dev->subordinate;
-+	else
-+		return -ENODEV;
-+
-+	list_for_each_entry(pdev, &bus->devices, bus_list)
-+		pci_dev_pme_event(pdev);
-+
-+	return 0;
-+}
-+
-+/**
-  * pci_pm_init - Initialize PM functions of given PCI device
-  * @dev: PCI device to handle.
-  */
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index f73bcbe..a81aff2 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -34,6 +34,8 @@ extern int pci_mmap_fits(struct pci_dev *pdev, int resno,
-  *
-  * @sleep_wake: enables/disables the system wake up capability of given device
-  *
-+ * @runtime_wake: enables/disables the runtime wakeup capability of given device
-+ *
-  * If given platform is generally capable of power managing PCI devices, all of
-  * these callbacks are mandatory.
-  */
-@@ -43,6 +45,7 @@ struct pci_platform_pm_ops {
- 	pci_power_t (*choose_state)(struct pci_dev *dev);
- 	bool (*can_wakeup)(struct pci_dev *dev);
- 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
-+	int (*runtime_wake)(struct pci_dev *dev, bool enable);
- };
- 
- extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 115fb7b..8a3fea0 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -734,10 +734,13 @@ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
- void pci_pme_active(struct pci_dev *dev, bool enable);
- int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable);
-+int pci_enable_runtime_wake(struct pci_dev *dev, bool enable);
- int pci_wake_from_d3(struct pci_dev *dev, bool enable);
- pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
- int pci_back_from_sleep(struct pci_dev *dev);
-+int pci_dev_pme_event(struct pci_dev *dev);
-+int pci_bus_pme_event(struct pci_dev *dev);
- 
- /* Functions for PCI Hotplug drivers to use */
- int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
+ 	/* Basic lifecycle operations */
+ 	.reset =		uhci_init,
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
