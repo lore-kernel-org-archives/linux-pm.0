@@ -1,14 +1,17 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Thu, 13 Aug 2009 16:18:29 +0800
-Message-ID: <1250151509.2906.61.camel__19099.2379481488$1250151746$gmane$org@rzhang-dt>
-References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
-	<200908122343.20554.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC] usb: Add support for runtime power management
+	of the hcd
+Date: Thu, 13 Aug 2009 14:16:41 +0200
+Message-ID: <200908131416.42189.oliver__46390.8495651141$1250165825$gmane$org@neukum.org>
+References: <200908081625.57333.rjw@sisk.pl>
+	<20090813002925.GA2532@srcf.ucam.org>
+	<20090813003544.GB2532@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908122343.20554.rjw@sisk.pl>
+In-Reply-To: <20090813003544.GB2532@srcf.ucam.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,74 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMDA5LTA4LTEzIGF0IDA1OjQzICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBXZWRuZXNkYXkgMTIgQXVndXN0IDIwMDksIEFsYW4gU3Rlcm4gd3JvdGU6Cj4gPiBP
-biBXZWQsIDEyIEF1ZyAyMDA5LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IAo+ID4gPiBI
-aSwKPiA+ID4gCj4gPiA+IFRoZSBmb2xsb3dpbmcgcGF0Y2hlcyBpbnRyb2R1Y2UgYSBtZWNoYW5p
-c20gYWxsb3dpbmcgdXMgdG8gZXhlY3V0ZSBkZXZpY2UKPiA+ID4gZHJpdmVycycgc3VzcGVuZCBh
-bmQgcmVzdW1lIGNhbGxiYWNrcyBhc3luY2hyb25vdXNseSBkdXJpbmcgc3lzdGVtIHNsZWVwCj4g
-PiA+IHRyYW5zaXRpb25zLCBzdWNoIGFzIHN1c3BlbmQgdG8gUkFNLiAgVGhlIGlkZWEgaXMgZXhw
-bGFpbmVkIGluIHRoZSBbMS8xXSBwYXRjaAo+ID4gPiBtZXNzYWdlLgo+ID4gPiAKPiA+ID4gQ29t
-bWVudHMgd2VsY29tZS4KPiA+IAo+ID4gSSBnZXQgdGhlIGlkZWEuICBOb3QgYmFkLgo+IAo+IFRo
-YW5rcyEKPiAKPiA+IEhhdmUgeW91IHRyaWVkIGl0IGluIGEgc2VyaW91cyB3YXk/ICBGb3IgZXhh
-bXBsZSwgdHVybmluZyBvbiB0aGUKPiA+IGFzeW5jX3N1c3BlbmQgZmxhZyBmb3IgZXZlcnkgZGV2
-aWNlPwo+IAo+IE5vLCBJJ3ZlIG9ubHkgdGVzdGVkIGl0IHdpdGggYSBmZXcgc2VsZWN0ZWQgZHJp
-dmVycy4gIEknbSBnb2luZyB0byB0cnkgdGhlCj4gImFzeW5jIGV2ZXJ5b25lIiBzY2VuYXJpbywg
-dGhvdWdoLgo+IAo+ID4gSW4gb25lIHdheSBpdCBpc24ndCBhcyBlZmZpY2llbnQgYXMgaXQgY291
-bGQgYmUuICBZb3UgZmlyZSBvZmYgYSBidW5jaAo+ID4gb2YgYXN5bmMgdGhyZWFkcyBhbmQgdGhl
-biBtYWtlIG1hbnkgb2YgdGhlbSB3YWl0IGZvciBwYXJlbnQgb3IgY2hpbGQKPiA+IGRldmljZXMu
-ICBUaGV5IGNvdWxkIGJlIGRvaW5nIHVzZWZ1bCB3b3JrIGluc3RlYWQuCj4gCu+7v++7v2FyZSB5
-b3UgdGFsa2luZyBhYm91dCB0aGlzIHNjZW5hcmlvLCBvciBJIGZpbmQgYW5vdGhlciBwcm9ibGVt
-IG9mIHRoaXMKYXBwcm9hY2g6CnRoZXJlIGlzIGEgcGFydCBvZiBkcG1fbGlzdCwgZGV2MS0+ZGV2
-X2FhYS0+Li4uLT5kZXZfYmJiLT5kZXYyCgpkZXYyIGlzIGRldjEncyBmaXJzdCBjaGlsZC4KZGV2
-MSByZXN1bWUgdGFrZXMgMXMKZGV2X2FhYX5kZXZfYmJiIHJlc3VtZSB0YWtlcyAwLjFzLgoKaWYg
-d2UgY2FsbCDvu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3BlbmQoZGV2MSwgdHJ1ZSkgaW4gb3Jk
-ZXIgdG8gcmVzdW1lCmRldmljZTEgYXN5bmNocm9ub3VzbHksIHRoZSByZWFsIGFzeW5jaHJvbm91
-cyByZXN1bWUgb25seSBoYXBwZW5zCmJldHdlZW4gZGV2MSBhbmQgZGV2X2FhYSB0byBkZXZfYmJi
-IGJlY2F1c2UgZGV2MiBuZWVkcyB0byB3YWl0IHVudGlsCmRldjEgcmVzdW1lIGZpbmlzaGVkLgoK
-c28ga2VybmVsIHNjaGVkdWxlcyBkZXYxIHJlc3VtZSBpbiBhbiBhc3luYyB0aHJlYWQgZmlyc3Qs
-IGFuZCB0aGVuIHRha2VzCjAuMXMgdG8gZmluaXNoIHRoZSBkZXZfYWFhIHRvIGRldl9iYmIgcmVz
-dW1lLCBhbmQgdGhlbiBzbGVlcCAwLjlzCgo+IEkga2luZCBvZiBhZ3JlZSwgYnV0IHRoZW4gdGhl
-IHBhdGNoZXMgd291bGQgYmUgbW9yZSBjb21wbGljYXRlZC4KPiAKVGhlIHByb2JsZW0gaXMgdGhh
-dCB3ZSBuZWVkIHRvIGludm9rZSBkZXZpY2VfcmVzdW1lIGZvciBldmVyeSBkZXZpY2UKc3luY2hy
-b25vdXNseS4KSSB3b25kZXIgaWYgd2UgY2FuIG1ha2UgdGhlIGNoaWxkIGRldmljZXMgaW5oZXJp
-dCB0aGUKcGFyZW50J3Mg77u/ZGV2LT5wb3dlci5hc3luY19zdXNwZW5kIGZsYWcsIHNvIHRoYXQg
-ZGV2aWNlcyB0aGF0IG5lZWQgdG8Kd2FpdCBhcmUgcmVzdW1lZCBhc3luY2hyb25vdXNseSwgaS5l
-LiB3ZSBuZXZlciB3YWl0L3NsZWVwIHdoZW4gcGFyc2luZwp0aGUgZHBtX2xpc3QuCgp0aGlzIGRv
-ZXNuJ3QgYnJpbmcgdG9vIG11Y2ggYmVuZWZpdCBpbiBzdXNwZW5kIGNhc2UgYnV0IGl0IGNhbiBz
-cGVlZCB1cAp0aGUgcmVzdW1lIHByb2Nlc3MgYSBsb3QuCgpPZiBjYXVzZSwgdGhpcyBpcyBub3Qg
-YSBwcm9ibGVtIGlmIHdlIHR1cm4gb24gdGhlIGFzeW5jX3N1c3BlbmQgZmxhZyBmb3IKZXZlcnkg
-ZGV2aWNlLgoKPiA+IEl0IHdvdWxkIGJlIGludGVyZXN0aW5nIHRvIGludmVudCBhIHdheSBvZiBy
-ZXByZXNlbnRpbmcgZXhwbGljaXRseSB0aGUgCj4gPiBub24tdHJlZSBkZXBlbmRlbmNpZXMgLS0g
-YXNzdW1pbmcgdGhlcmUgYXJlbid0IHRvbyBtYW55IG9mIHRoZW0hICAoSSAKPiA+IGNhbiBqdXN0
-IGhlYXIgdGhlIFRJIGd1eXMgaG9sbGVyaW5nIGFib3V0IHBvd2VyIGFuZCB0aW1lciBkb21haW5z
-Li4uKQo+IAo+IEkgaGF2ZSBhbiBpZGVhLgo+IAo+IEV2ZXJ5IHN1Y2ggZGVwZW5kZW5jeSBpbnZv
-bHZlcyB0d28gZGV2aWNlcywgb25lIG9mIHdoaWNoIGlzIGEgIm1hc3RlciIKPiBhbmQgdGhlIHNl
-Y29uZCBvZiB3aGljaCBpcyBhICJzbGF2ZSIsIG1lYW5pbmcgdGhhdCB0aGUgInNsYXZlIiBoYXZl
-IHRvIGJlCj4gc3VzcGVuZGVkIGJlZm9yZSB0aGUgIm1hc3RlciIgYW5kIGNhbm5vdCBiZSByZXN1
-bWVkIGJlZm9yZSBpdC4gIEluIHByaW5jaXBsZQo+IHdlIGNvdWxkIGdpdmUgZWFjaCBkZXZpY2Ug
-dHdvIGxpc3RzIG9mICJkZXBlbmRlbmN5IG9iamVjdHMiLCBvbmUgY29udGFpbmluZwo+ICJkZXBl
-bmRlbmN5IG9iamVjdHMiIHdoZXJlIHRoZSBkZXZpY2UgaXMgdGhlICJtYXN0ZXIiIGFuZCB0aGUg
-b3RoZXIgY29udGFpbmluZwo+ICJkZXBlbmRlbmN5IG9iamVjdHMiIHdoZXJlIHRoZSBkZXZpY2Ug
-aXMgdGhlICJzbGF2ZSIuICBUaGVuLCBlYWNoICJkZXBlbmRlbmN5Cj4gb2JqZWN0IiBjb3VsZCBi
-ZSByZXByZXNlbnRlZCBhcwo+IAo+IHN0cnVjdCBwbV9jb25uZWN0aW9uIHsKPiAgICAgc3RydWN0
-IGRldmljZSAqbWFzdGVyOwo+ICAgICBzdHJ1Y3QgbGlzdF9oZWFkIG1hc3Rlcl9ob29rOwo+ICAg
-ICBzdHJ1Y3QgZGV2aWNlICpzbGF2ZTsKPiAgICAgc3RydWN0IGxpc3RfaGVhZCBzbGF2ZV9ob29r
-Owo+IH07Cj4gCj4gQWRkIHNvbWUgbG9ja2luZywgaGVscGVycyBmb3IgYWRkaW5nIC8gcmVtb3Zp
-bmcgImRlcGVuZGVuY3kgb2JqZWN0cyIgZXRjLgo+IGFuZCBpdCBzaG91bGQgd29yay4gIEluc3Rl
-YWQgb2YgY2hlY2tpbmcgdGhlIHBhcmVudCwgd2FsayB0aGUgbGlzdCBvZgo+ICJtYXN0ZXJzIiwg
-aW5zdGVhZCBvZiB3YWxraW5nIHRoZSBsaXN0IG9mIGNoaWxkcmVuLCB3YWxrIHRoZSBsaXN0IG9m
-ICJzbGF2ZXMiLgo+IAo+IFRoZSBjb3JlIGNvdWxkIGNyZWF0ZSB0aG9zZSBvYmplY3RzIGZvciBw
-YXJlbnQtY2hpbGQgcmVsYXRpb25zaGlwcwo+IGF1dG9tYXRpY2FsbHksIHRoZSBvdGhlciBvbmVz
-IHdvdWxkIGhhdmUgdG8gYmUgYWRkZWQgYnkgcGxhdGZvcm1zIC8gYnVzIHR5cGVzIC8KPiBkcml2
-ZXJzIGV0Yy4KPiAK77u/dGhpcyBzb3VuZHMgZ3JlYXQuIDopCgp0aGFua3MsCnJ1aQoKPiBUaGlz
-IGFwcHJvYWNoIGhhcyBhIHByb2JsZW0gdGhhdCBpdCdzIHByb25lIHRvIGFkZGluZyBjaXJjdWxh
-ciBkZXBlbmRlbmNpZXMgYnkKPiBtaXN0YWtlLCBidXQgdGhlbiBJIHRoaW5rIGl0IHdvdWxkIGFw
-cGx5IHRvIGFueSBvdGhlciBhcHByb2FjaCBqdXN0IGFzIHdlbGwuCj4gCj4gQmVzdCwKPiBSYWZh
-ZWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
-LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
-czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+Am Donnerstag, 13. August 2009 02:35:44 schrieb Matthew Garrett:
+
+> The power savings from this are measurable but not huge - it still seems
+
+How large?
+
+> like a decent optimisation. The main problem is that BIOS bugs on some
+> Dell laptops will kill USB if this is used, so we either default to off
+> or add some quirks to handle that case (I have some ideas in that
+> respect).
+
+Your earlier failures don't look promising regarding BIOSes.
+What do you have in mind?
+
+> @@ -1968,6 +1972,9 @@ struct usb_hcd *usb_create_hcd (const struct
+> hc_driver *driver, INIT_WORK(&hcd->wakeup_work, hcd_resume_work);
+>  #endif
+>
+> +	pm_runtime_enable(dev);
+
+So you don't get a reference from that?
+
+> +	pm_runtime_get(dev);
+
+What happens if you get a runtime suspend request in between? Is this a flaw
+of the API?
+
+	Regards
+		Oliver
