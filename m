@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Thu, 13 Aug 2009 20:08:26 +0200
-Message-ID: <200908132008.26508.rjw__7172.05175101316$1250186917$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
-	<200908122343.20554.rjw@sisk.pl>
-	<1250151509.2906.61.camel@rzhang-dt>
+Date: Thu, 13 Aug 2009 20:28:52 +0200
+Message-ID: <200908132028.53094.rjw__46046.535348478$1250188687$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908131031060.2940-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1250151509.2906.61.camel@rzhang-dt>
+In-Reply-To: <Pine.LNX.4.44L0.0908131031060.2940-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,90 +17,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMTMgQXVndXN0IDIwMDksIFpoYW5nIFJ1aSB3cm90ZToKPiBPbiBUaHUsIDIw
-MDktMDgtMTMgYXQgMDU6NDMgKzA4MDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gT24g
-V2VkbmVzZGF5IDEyIEF1Z3VzdCAyMDA5LCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gPiBPbiBXZWQs
-IDEyIEF1ZyAyMDA5LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+ID4gCj4gPiA+ID4gSGks
-Cj4gPiA+ID4gCj4gPiA+ID4gVGhlIGZvbGxvd2luZyBwYXRjaGVzIGludHJvZHVjZSBhIG1lY2hh
-bmlzbSBhbGxvd2luZyB1cyB0byBleGVjdXRlIGRldmljZQo+ID4gPiA+IGRyaXZlcnMnIHN1c3Bl
-bmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgYXN5bmNocm9ub3VzbHkgZHVyaW5nIHN5c3RlbSBzbGVl
-cAo+ID4gPiA+IHRyYW5zaXRpb25zLCBzdWNoIGFzIHN1c3BlbmQgdG8gUkFNLiAgVGhlIGlkZWEg
-aXMgZXhwbGFpbmVkIGluIHRoZSBbMS8xXSBwYXRjaAo+ID4gPiA+IG1lc3NhZ2UuCj4gPiA+ID4g
-Cj4gPiA+ID4gQ29tbWVudHMgd2VsY29tZS4KPiA+ID4gCj4gPiA+IEkgZ2V0IHRoZSBpZGVhLiAg
-Tm90IGJhZC4KPiA+IAo+ID4gVGhhbmtzIQo+ID4gCj4gPiA+IEhhdmUgeW91IHRyaWVkIGl0IGlu
-IGEgc2VyaW91cyB3YXk/ICBGb3IgZXhhbXBsZSwgdHVybmluZyBvbiB0aGUKPiA+ID4gYXN5bmNf
-c3VzcGVuZCBmbGFnIGZvciBldmVyeSBkZXZpY2U/Cj4gPiAKPiA+IE5vLCBJJ3ZlIG9ubHkgdGVz
-dGVkIGl0IHdpdGggYSBmZXcgc2VsZWN0ZWQgZHJpdmVycy4gIEknbSBnb2luZyB0byB0cnkgdGhl
-Cj4gPiAiYXN5bmMgZXZlcnlvbmUiIHNjZW5hcmlvLCB0aG91Z2guCj4gPiAKPiA+ID4gSW4gb25l
-IHdheSBpdCBpc24ndCBhcyBlZmZpY2llbnQgYXMgaXQgY291bGQgYmUuICBZb3UgZmlyZSBvZmYg
-YSBidW5jaAo+ID4gPiBvZiBhc3luYyB0aHJlYWRzIGFuZCB0aGVuIG1ha2UgbWFueSBvZiB0aGVt
-IHdhaXQgZm9yIHBhcmVudCBvciBjaGlsZAo+ID4gPiBkZXZpY2VzLiAgVGhleSBjb3VsZCBiZSBk
-b2luZyB1c2VmdWwgd29yayBpbnN0ZWFkLgo+ID4gCj4g77u/77u/YXJlIHlvdSB0YWxraW5nIGFi
-b3V0IHRoaXMgc2NlbmFyaW8sIG9yIEkgZmluZCBhbm90aGVyIHByb2JsZW0gb2YgdGhpcwo+IGFw
-cHJvYWNoOgo+IHRoZXJlIGlzIGEgcGFydCBvZiBkcG1fbGlzdCwgZGV2MS0+ZGV2X2FhYS0+Li4u
-LT5kZXZfYmJiLT5kZXYyCj4gCj4gZGV2MiBpcyBkZXYxJ3MgZmlyc3QgY2hpbGQuCj4gZGV2MSBy
-ZXN1bWUgdGFrZXMgMXMKPiBkZXZfYWFhfmRldl9iYmIgcmVzdW1lIHRha2VzIDAuMXMuCj4gCj4g
-aWYgd2UgY2FsbCDvu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3BlbmQoZGV2MSwgdHJ1ZSkgaW4g
-b3JkZXIgdG8gcmVzdW1lCj4gZGV2aWNlMSBhc3luY2hyb25vdXNseSwgdGhlIHJlYWwgYXN5bmNo
-cm9ub3VzIHJlc3VtZSBvbmx5IGhhcHBlbnMKPiBiZXR3ZWVuIGRldjEgYW5kIGRldl9hYWEgdG8g
-ZGV2X2JiYiBiZWNhdXNlIGRldjIgbmVlZHMgdG8gd2FpdCB1bnRpbAo+IGRldjEgcmVzdW1lIGZp
-bmlzaGVkLgoKWWVzLCB0aGF0J3MgaG93IGl0IHdvcmtzLCBidXQgSSB3b3VsZCBjYWxsIGl0IGEg
-bGltaXRhdGlvbiByYXRoZXIgdGhhbiBhCnByb2JsZW0uICBJdCBwYXJ0aWFsbHkgc3RlbXMgZnJv
-bSB0aGUgZmFjdCB0aGF0IF9fYXN5bmNfc2NoZWR1bGUoKSBleGVjdXRlcwpwdHIoKSBzeW5jaHJv
-bm91c2x5IGluIHNvbWUgY2lyY3Vtc3RhbmNlcyAoZS5nLiBhc3luY19lbmFibGVkIHVuc2V0KSwg
-c28gdGhlCnN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgaGF2ZSB0byBiZSBzY2hlZHVsZWQg
-aW4gdGhlIHNhbWUgb3JkZXIsIGluIHdoaWNoCnRoZXkgd291bGQgaGF2ZSBiZWVuIGNhbGxlZCBz
-eW5jaHJvbm91c2x5LgoKPiBzbyBrZXJuZWwgc2NoZWR1bGVzIGRldjEgcmVzdW1lIGluIGFuIGFz
-eW5jIHRocmVhZCBmaXJzdCwgYW5kIHRoZW4gdGFrZXMKPiAwLjFzIHRvIGZpbmlzaCB0aGUgZGV2
-X2FhYSB0byBkZXZfYmJiIHJlc3VtZSwgYW5kIHRoZW4gc2xlZXAgMC45cwo+IAo+ID4gSSBraW5k
-IG9mIGFncmVlLCBidXQgdGhlbiB0aGUgcGF0Y2hlcyB3b3VsZCBiZSBtb3JlIGNvbXBsaWNhdGVk
-Lgo+ID4gCj4gVGhlIHByb2JsZW0gaXMgdGhhdCB3ZSBuZWVkIHRvIGludm9rZSBkZXZpY2VfcmVz
-dW1lIGZvciBldmVyeSBkZXZpY2UKPiBzeW5jaHJvbm91c2x5LgoKWWVzLCB3ZSBkby4KCj4gSSB3
-b25kZXIgaWYgd2UgY2FuIG1ha2UgdGhlIGNoaWxkIGRldmljZXMgaW5oZXJpdCB0aGUKPiBwYXJl
-bnQncyDvu79kZXYtPnBvd2VyLmFzeW5jX3N1c3BlbmQgZmxhZywgc28gdGhhdCBkZXZpY2VzIHRo
-YXQgbmVlZCB0bwo+IHdhaXQgYXJlIHJlc3VtZWQgYXN5bmNocm9ub3VzbHksIGkuZS4gd2UgbmV2
-ZXIgd2FpdC9zbGVlcCB3aGVuIHBhcnNpbmcKPiB0aGUgZHBtX2xpc3QuCj4gCj4gdGhpcyBkb2Vz
-bid0IGJyaW5nIHRvbyBtdWNoIGJlbmVmaXQgaW4gc3VzcGVuZCBjYXNlIGJ1dCBpdCBjYW4gc3Bl
-ZWQgdXAKPiB0aGUgcmVzdW1lIHByb2Nlc3MgYSBsb3QuCgpXZSBjYW4gZG8gdGhhdCBhdCB0aGUg
-Y29yZSBsZXZlbCwgYmVjYXVzZSB0aGVyZSBtYXkgYmUgZGVwZW5kZW5jaWVzIGJldHdlZW4KdGhl
-IGNoaWxkcmVuIHRoZSBjb3JlIGRvZXNuJ3Qga25vdyBhYm91dC4gIFN1YnN5c3RlbXMgYXJlIGZy
-ZWUgdG8gc2V0CmFzeW5jX3N1c3BlbmQgZm9yIHRoZSBlbnRpcmUgYnJhbmNoZXMgb2YgZGV2aWNl
-IGhpZXJhcmNoeSBpZiB0aGV5IGFyZSBrbm93bgpub3QgdG8gY29udGFpbiBhbnkgb2ZmLXRyZWUg
-ZGVwZW5kZW5jaWVzLCBidXQgdGhlIGNvcmUgaGFzIG5vIGluZm9ybWF0aW9uCmFib3V0IHRoYXQu
-Cgo+IE9mIGNhdXNlLCB0aGlzIGlzIG5vdCBhIHByb2JsZW0gaWYgd2UgdHVybiBvbiB0aGUgYXN5
-bmNfc3VzcGVuZCBmbGFnIGZvcgo+IGV2ZXJ5IGRldmljZS4KClllcywgYnV0IHdlIGNhbm5vdCBk
-byB0aGF0IGF0IHRoaXMgcG9pbnQuCgo+ID4gPiBJdCB3b3VsZCBiZSBpbnRlcmVzdGluZyB0byBp
-bnZlbnQgYSB3YXkgb2YgcmVwcmVzZW50aW5nIGV4cGxpY2l0bHkgdGhlIAo+ID4gPiBub24tdHJl
-ZSBkZXBlbmRlbmNpZXMgLS0gYXNzdW1pbmcgdGhlcmUgYXJlbid0IHRvbyBtYW55IG9mIHRoZW0h
-ICAoSSAKPiA+ID4gY2FuIGp1c3QgaGVhciB0aGUgVEkgZ3V5cyBob2xsZXJpbmcgYWJvdXQgcG93
-ZXIgYW5kIHRpbWVyIGRvbWFpbnMuLi4pCj4gPiAKPiA+IEkgaGF2ZSBhbiBpZGVhLgo+ID4gCj4g
-PiBFdmVyeSBzdWNoIGRlcGVuZGVuY3kgaW52b2x2ZXMgdHdvIGRldmljZXMsIG9uZSBvZiB3aGlj
-aCBpcyBhICJtYXN0ZXIiCj4gPiBhbmQgdGhlIHNlY29uZCBvZiB3aGljaCBpcyBhICJzbGF2ZSIs
-IG1lYW5pbmcgdGhhdCB0aGUgInNsYXZlIiBoYXZlIHRvIGJlCj4gPiBzdXNwZW5kZWQgYmVmb3Jl
-IHRoZSAibWFzdGVyIiBhbmQgY2Fubm90IGJlIHJlc3VtZWQgYmVmb3JlIGl0LiAgSW4gcHJpbmNp
-cGxlCj4gPiB3ZSBjb3VsZCBnaXZlIGVhY2ggZGV2aWNlIHR3byBsaXN0cyBvZiAiZGVwZW5kZW5j
-eSBvYmplY3RzIiwgb25lIGNvbnRhaW5pbmcKPiA+ICJkZXBlbmRlbmN5IG9iamVjdHMiIHdoZXJl
-IHRoZSBkZXZpY2UgaXMgdGhlICJtYXN0ZXIiIGFuZCB0aGUgb3RoZXIgY29udGFpbmluZwo+ID4g
-ImRlcGVuZGVuY3kgb2JqZWN0cyIgd2hlcmUgdGhlIGRldmljZSBpcyB0aGUgInNsYXZlIi4gIFRo
-ZW4sIGVhY2ggImRlcGVuZGVuY3kKPiA+IG9iamVjdCIgY291bGQgYmUgcmVwcmVzZW50ZWQgYXMK
-PiA+IAo+ID4gc3RydWN0IHBtX2Nvbm5lY3Rpb24gewo+ID4gICAgIHN0cnVjdCBkZXZpY2UgKm1h
-c3RlcjsKPiA+ICAgICBzdHJ1Y3QgbGlzdF9oZWFkIG1hc3Rlcl9ob29rOwo+ID4gICAgIHN0cnVj
-dCBkZXZpY2UgKnNsYXZlOwo+ID4gICAgIHN0cnVjdCBsaXN0X2hlYWQgc2xhdmVfaG9vazsKPiA+
-IH07Cj4gPiAKPiA+IEFkZCBzb21lIGxvY2tpbmcsIGhlbHBlcnMgZm9yIGFkZGluZyAvIHJlbW92
-aW5nICJkZXBlbmRlbmN5IG9iamVjdHMiIGV0Yy4KPiA+IGFuZCBpdCBzaG91bGQgd29yay4gIElu
-c3RlYWQgb2YgY2hlY2tpbmcgdGhlIHBhcmVudCwgd2FsayB0aGUgbGlzdCBvZgo+ID4gIm1hc3Rl
-cnMiLCBpbnN0ZWFkIG9mIHdhbGtpbmcgdGhlIGxpc3Qgb2YgY2hpbGRyZW4sIHdhbGsgdGhlIGxp
-c3Qgb2YgInNsYXZlcyIuCj4gPiAKPiA+IFRoZSBjb3JlIGNvdWxkIGNyZWF0ZSB0aG9zZSBvYmpl
-Y3RzIGZvciBwYXJlbnQtY2hpbGQgcmVsYXRpb25zaGlwcwo+ID4gYXV0b21hdGljYWxseSwgdGhl
-IG90aGVyIG9uZXMgd291bGQgaGF2ZSB0byBiZSBhZGRlZCBieSBwbGF0Zm9ybXMgLyBidXMgdHlw
-ZXMgLwo+ID4gZHJpdmVycyBldGMuCj4gPiAKPiDvu790aGlzIHNvdW5kcyBncmVhdC4gOikKCkl0
-IGNhbiBvbmx5IGJlIHRoZSBuZXh0IHN0ZXAsIHRob3VnaCwgYmVjYXVzZSBpdCB3aWxsIGFmZmVj
-dCB0aGUgcnVudGltZSBQTSBhcwp3ZWxsLCAgYW1vbmcgb3RoZXIgdGhpbmdzLgoKVGhhbmtzLApS
-YWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
-dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
-dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
-bQ==
+On Thursday 13 August 2009, Alan Stern wrote:
+> On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > I have an idea.
+> > 
+> > Every such dependency involves two devices, one of which is a "master"
+> > and the second of which is a "slave", meaning that the "slave" have to be
+> > suspended before the "master" and cannot be resumed before it.  In principle
+> > we could give each device two lists of "dependency objects", one containing
+> > "dependency objects" where the device is the "master" and the other containing
+> > "dependency objects" where the device is the "slave".  Then, each "dependency
+> > object" could be represented as
+> > 
+> > struct pm_connection {
+> >     struct device *master;
+> >     struct list_head master_hook;
+> >     struct device *slave;
+> >     struct list_head slave_hook;
+> > };
+> > 
+> > Add some locking, helpers for adding / removing "dependency objects" etc.
+> > and it should work.  Instead of checking the parent, walk the list of
+> > "masters", instead of walking the list of children, walk the list of "slaves".
+> 
+> If the set of pm_connection objects is reasonably small then the
+> master_hook and slave_hook aren't needed; you can just read through the
+> entire list.  Leaving out parent-child connections, which we already
+> know, would help shrink the set.
+
+Do you mean a global list for the entire system?  I'm not sure if that wouldn't
+hurt performance (please note that it also affects runtime PM).
+
+We could use counters of "suspended slaves" and "active masters" to optimize
+things, but still updating these counters could take time (one has to find all
+devices dependent on given one and update a counter for each of them).
+
+> The layout of the pm_connection objects could then be improved
+> slightly.  Each object could contain a variable-sized array of device
+> pointers together with two integers, M and S.  The first M pointers
+> would be masters and the remaining S pointers would be slaves.  This
+> could be useful when, for example, a large number of devices all depend
+> on one particular power device.
+
+I'm not sure.  If we use the coutners, this case will be quite easy to handle.
+
+Thanks,
+Rafael
