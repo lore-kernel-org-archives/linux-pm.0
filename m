@@ -1,16 +1,14 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [RFC] usb: Add support for runtime power management
-	of the hcd
-Date: Thu, 13 Aug 2009 22:47:29 +0100
-Message-ID: <20090813214729.GD14532__44148.2253642336$1250200282$gmane$org@srcf.ucam.org>
-References: <20090813003544.GB2532@srcf.ucam.org>
-	<Pine.LNX.4.44L0.0908131117130.2940-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Thu, 13 Aug 2009 23:53:54 +0200
+Message-ID: <200908132353.54902.rjw__49468.1059419692$1250200463$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
+	<200908122343.20554.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0908131117130.2940-100000@iolanthe.rowland.org>
+In-Reply-To: <200908122343.20554.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,17 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 13, 2009 at 11:22:44AM -0400, Alan Stern wrote:
+On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
+> On Wednesday 12 August 2009, Alan Stern wrote:
+> > On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
+> > 
+> > > Hi,
+> > > 
+> > > The following patches introduce a mechanism allowing us to execute device
+> > > drivers' suspend and resume callbacks asynchronously during system sleep
+> > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
+> > > message.
+> > > 
+> > > Comments welcome.
+> > 
+> > I get the idea.  Not bad.
+> 
+> Thanks!
+> 
+> > Have you tried it in a serious way?  For example, turning on the
+> > async_suspend flag for every device?
+> 
+> No, I've only tested it with a few selected drivers.  I'm going to try the
+> "async everyone" scenario, though.
 
-> You have to call the HCD's pci_suspend method!  Not to mention calling 
-> synchronize_irq and all the other stuff in hcd_pci_suspend and 
-> hcd_pci_suspend_noirq.
+On HP nx6325 booted with init=/bin/bash it doesn't pass the
+'echo devices > /sys/power/pm_test && echo mem > /sys/power/state' test.
 
-The bus level code does this, assuming that the driver-level code 
-doesn't return an error.
+The suspend part actually seems to work, but the resume part crashes
+miserably.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+Rafael
