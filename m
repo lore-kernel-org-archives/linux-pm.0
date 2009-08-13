@@ -1,17 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC] usb: Add support for runtime power management
-	of the hcd
-Date: Thu, 13 Aug 2009 16:26:33 +0200
-Message-ID: <200908131626.33891.oliver__694.709600839083$1250173612$gmane$org@neukum.org>
-References: <200908081625.57333.rjw@sisk.pl>
-	<200908131416.42189.oliver@neukum.org>
-	<20090813123034.GA25770@srcf.ucam.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH V2 0/4] introduce device async actions
+	mechanism
+Date: Thu, 13 Aug 2009 10:30:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908131028370.2940-100000__5648.34199981323$1250173906$gmane$org@iolanthe.rowland.org>
+References: <200908122318.12145.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090813123034.GA25770@srcf.ucam.org>
-Content-Disposition: inline
+In-Reply-To: <200908122318.12145.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,21 +18,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "dtor@mail.ru" <dtor@mail.ru>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 13. August 2009 14:30:34 schrieb Matthew Garrett:
-> > Your earlier failures don't look promising regarding BIOSes.
-> > What do you have in mind?
->
-> They range from pragmatic to ugly. We could blacklist all Dells, though
-> I'm trying to find out if there's a BIOS date that guarantees the system
-> is fixed. Alternatively, it's a single-line bug in the DSDT - we could
-> implement some kind of fixup in the ACPI parsing code. I find the latter
-> interesting but possibly too hideous to live :)
+On Wed, 12 Aug 2009, Rafael J. Wysocki wrote:
 
-Is there any indication only those BIOSes are affected?
+> On a second thought, though, would it be a good idea to add
+> pm_runtime_get_noresume() / pm_runtime_put_sync() around the bus_for_each_drv()
+> in device_attach()?  That would prevent us from resuming-suspending the device
+> on each failing probe.
 
-	Regards
-		Oliver
+Good idea.  But don't remove the existing code in driver_probe_device.
+
+Alan Stern
