@@ -1,16 +1,14 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: [RFC] usb: Add support for runtime power management of
-	the hcd
-Date: Thu, 13 Aug 2009 01:35:44 +0100
-Message-ID: <20090813003544.GB2532__38226.570437155$1250123895$gmane$org@srcf.ucam.org>
-References: <200908081625.57333.rjw@sisk.pl> <200908092313.05541.rjw@sisk.pl>
-	<20090813002925.GA2532@srcf.ucam.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Thu, 13 Aug 2009 16:18:29 +0800
+Message-ID: <1250151509.2906.61.camel__19099.2379481488$1250151746$gmane$org@rzhang-dt>
+References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
+	<200908122343.20554.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090813002925.GA2532@srcf.ucam.org>
+In-Reply-To: <200908122343.20554.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,154 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The PCI runtime power management code means that we can implement support
-for powering down PCI host controllers. This patchset adds core support code
-along with a new hcd flag (HCD_RUNTIME_PM) that allows hosts to opt in if
-they support this functionality. Successfully tested with Intel EHCI and
-UHCI, though the UHCI code may need to pay more attention to vendor-specific
-features.
-
-The power savings from this are measurable but not huge - it still seems 
-like a decent optimisation. The main problem is that BIOS bugs on some 
-Dell laptops will kill USB if this is used, so we either default to off 
-or add some quirks to handle that case (I have some ideas in that 
-respect).
-
----
- drivers/usb/core/hcd-pci.c  |   13 +++++++++++++
- drivers/usb/core/hcd.c      |    9 +++++++++
- drivers/usb/core/hcd.h      |    1 +
- drivers/usb/host/ehci-pci.c |    2 +-
- drivers/usb/host/uhci-hcd.c |    2 +-
- 5 files changed, 25 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/usb/core/hcd-pci.c b/drivers/usb/core/hcd-pci.c
-index 91f2885..e86324b 100644
---- a/drivers/usb/core/hcd-pci.c
-+++ b/drivers/usb/core/hcd-pci.c
-@@ -363,6 +363,18 @@ static int hcd_pci_restore(struct device *dev)
- 	return resume_common(dev, true);
- }
- 
-+static int hcd_pci_runtime_suspend(struct device *dev)
-+{
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct usb_hcd *hcd = pci_get_drvdata(pci_dev);
-+	struct usb_device *rhdev = hcd->self.root_hub;
-+
-+	if (!(hcd->driver->flags & HCD_RUNTIME_PM))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- struct dev_pm_ops usb_hcd_pci_pm_ops = {
- 	.suspend	= hcd_pci_suspend,
- 	.suspend_noirq	= hcd_pci_suspend_noirq,
-@@ -376,6 +388,7 @@ struct dev_pm_ops usb_hcd_pci_pm_ops = {
- 	.poweroff_noirq	= hcd_pci_suspend_noirq,
- 	.restore_noirq	= hcd_pci_resume_noirq,
- 	.restore	= hcd_pci_restore,
-+	.runtime_suspend = hcd_pci_runtime_suspend,
- };
- EXPORT_SYMBOL_GPL(usb_hcd_pci_pm_ops);
- 
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 95ccfa0..a8f8784 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -38,6 +38,7 @@
- #include <asm/unaligned.h>
- #include <linux/platform_device.h>
- #include <linux/workqueue.h>
-+#include <linux/pm_runtime.h>
- 
- #include <linux/usb.h>
- 
-@@ -1747,6 +1748,7 @@ int hcd_bus_suspend(struct usb_device *rhdev, pm_message_t msg)
- 	if (status == 0) {
- 		usb_set_device_state(rhdev, USB_STATE_SUSPENDED);
- 		hcd->state = HC_STATE_SUSPENDED;
-+		pm_runtime_put(hcd->self.controller);
- 	} else {
- 		hcd->state = old_state;
- 		dev_dbg(&rhdev->dev, "bus %s fail, err %d\n",
-@@ -1768,6 +1770,7 @@ int hcd_bus_resume(struct usb_device *rhdev, pm_message_t msg)
- 	if (hcd->state == HC_STATE_RUNNING)
- 		return 0;
- 
-+	pm_runtime_get_sync(hcd->self.controller);
- 	hcd->state = HC_STATE_RESUMING;
- 	status = hcd->driver->bus_resume(hcd);
- 	if (status == 0) {
-@@ -1781,6 +1784,7 @@ int hcd_bus_resume(struct usb_device *rhdev, pm_message_t msg)
- 		hcd->state = old_state;
- 		dev_dbg(&rhdev->dev, "bus %s fail, err %d\n",
- 				"resume", status);
-+		pm_runtime_put(hcd->self.controller);
- 		if (status != -ESHUTDOWN)
- 			usb_hc_died(hcd);
- 	}
-@@ -1968,6 +1972,9 @@ struct usb_hcd *usb_create_hcd (const struct hc_driver *driver,
- 	INIT_WORK(&hcd->wakeup_work, hcd_resume_work);
- #endif
- 
-+	pm_runtime_enable(dev);
-+	pm_runtime_get(dev);
-+
- 	hcd->driver = driver;
- 	hcd->product_desc = (driver->product_desc) ? driver->product_desc :
- 			"USB Host Controller";
-@@ -1979,6 +1986,8 @@ static void hcd_release (struct kref *kref)
- {
- 	struct usb_hcd *hcd = container_of (kref, struct usb_hcd, kref);
- 
-+	pm_runtime_put_sync(hcd->self.controller);
-+
- 	kfree(hcd);
- }
- 
-diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
-index ec5c67e..4dc12a8 100644
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -171,6 +171,7 @@ struct hc_driver {
- 	int	flags;
- #define	HCD_MEMORY	0x0001		/* HC regs use memory (else I/O) */
- #define	HCD_LOCAL_MEM	0x0002		/* HC needs local memory */
-+#define	HCD_RUNTIME_PM	0x0004		/* HC supports handling runtime PM */
- #define	HCD_USB11	0x0010		/* USB 1.1 */
- #define	HCD_USB2	0x0020		/* USB 2.0 */
- #define	HCD_USB3	0x0040		/* USB 3.0 */
-diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
-index c2f1b7d..9583621 100644
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -368,7 +368,7 @@ static const struct hc_driver ehci_pci_hc_driver = {
- 	 * generic hardware linkage
- 	 */
- 	.irq =			ehci_irq,
--	.flags =		HCD_MEMORY | HCD_USB2,
-+	.flags =		HCD_MEMORY | HCD_USB2 | HCD_RUNTIME_PM,
- 
- 	/*
- 	 * basic lifecycle operations
-diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
-index 274751b..36a3a4a 100644
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -900,7 +900,7 @@ static const struct hc_driver uhci_driver = {
- 
- 	/* Generic hardware linkage */
- 	.irq =			uhci_irq,
--	.flags =		HCD_USB11,
-+	.flags =		HCD_USB11 | HCD_RUNTIME_PM,
- 
- 	/* Basic lifecycle operations */
- 	.reset =		uhci_init,
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+T24gVGh1LCAyMDA5LTA4LTEzIGF0IDA1OjQzICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToKPiBPbiBXZWRuZXNkYXkgMTIgQXVndXN0IDIwMDksIEFsYW4gU3Rlcm4gd3JvdGU6Cj4gPiBP
+biBXZWQsIDEyIEF1ZyAyMDA5LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IAo+ID4gPiBI
+aSwKPiA+ID4gCj4gPiA+IFRoZSBmb2xsb3dpbmcgcGF0Y2hlcyBpbnRyb2R1Y2UgYSBtZWNoYW5p
+c20gYWxsb3dpbmcgdXMgdG8gZXhlY3V0ZSBkZXZpY2UKPiA+ID4gZHJpdmVycycgc3VzcGVuZCBh
+bmQgcmVzdW1lIGNhbGxiYWNrcyBhc3luY2hyb25vdXNseSBkdXJpbmcgc3lzdGVtIHNsZWVwCj4g
+PiA+IHRyYW5zaXRpb25zLCBzdWNoIGFzIHN1c3BlbmQgdG8gUkFNLiAgVGhlIGlkZWEgaXMgZXhw
+bGFpbmVkIGluIHRoZSBbMS8xXSBwYXRjaAo+ID4gPiBtZXNzYWdlLgo+ID4gPiAKPiA+ID4gQ29t
+bWVudHMgd2VsY29tZS4KPiA+IAo+ID4gSSBnZXQgdGhlIGlkZWEuICBOb3QgYmFkLgo+IAo+IFRo
+YW5rcyEKPiAKPiA+IEhhdmUgeW91IHRyaWVkIGl0IGluIGEgc2VyaW91cyB3YXk/ICBGb3IgZXhh
+bXBsZSwgdHVybmluZyBvbiB0aGUKPiA+IGFzeW5jX3N1c3BlbmQgZmxhZyBmb3IgZXZlcnkgZGV2
+aWNlPwo+IAo+IE5vLCBJJ3ZlIG9ubHkgdGVzdGVkIGl0IHdpdGggYSBmZXcgc2VsZWN0ZWQgZHJp
+dmVycy4gIEknbSBnb2luZyB0byB0cnkgdGhlCj4gImFzeW5jIGV2ZXJ5b25lIiBzY2VuYXJpbywg
+dGhvdWdoLgo+IAo+ID4gSW4gb25lIHdheSBpdCBpc24ndCBhcyBlZmZpY2llbnQgYXMgaXQgY291
+bGQgYmUuICBZb3UgZmlyZSBvZmYgYSBidW5jaAo+ID4gb2YgYXN5bmMgdGhyZWFkcyBhbmQgdGhl
+biBtYWtlIG1hbnkgb2YgdGhlbSB3YWl0IGZvciBwYXJlbnQgb3IgY2hpbGQKPiA+IGRldmljZXMu
+ICBUaGV5IGNvdWxkIGJlIGRvaW5nIHVzZWZ1bCB3b3JrIGluc3RlYWQuCj4gCu+7v++7v2FyZSB5
+b3UgdGFsa2luZyBhYm91dCB0aGlzIHNjZW5hcmlvLCBvciBJIGZpbmQgYW5vdGhlciBwcm9ibGVt
+IG9mIHRoaXMKYXBwcm9hY2g6CnRoZXJlIGlzIGEgcGFydCBvZiBkcG1fbGlzdCwgZGV2MS0+ZGV2
+X2FhYS0+Li4uLT5kZXZfYmJiLT5kZXYyCgpkZXYyIGlzIGRldjEncyBmaXJzdCBjaGlsZC4KZGV2
+MSByZXN1bWUgdGFrZXMgMXMKZGV2X2FhYX5kZXZfYmJiIHJlc3VtZSB0YWtlcyAwLjFzLgoKaWYg
+d2UgY2FsbCDvu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3BlbmQoZGV2MSwgdHJ1ZSkgaW4gb3Jk
+ZXIgdG8gcmVzdW1lCmRldmljZTEgYXN5bmNocm9ub3VzbHksIHRoZSByZWFsIGFzeW5jaHJvbm91
+cyByZXN1bWUgb25seSBoYXBwZW5zCmJldHdlZW4gZGV2MSBhbmQgZGV2X2FhYSB0byBkZXZfYmJi
+IGJlY2F1c2UgZGV2MiBuZWVkcyB0byB3YWl0IHVudGlsCmRldjEgcmVzdW1lIGZpbmlzaGVkLgoK
+c28ga2VybmVsIHNjaGVkdWxlcyBkZXYxIHJlc3VtZSBpbiBhbiBhc3luYyB0aHJlYWQgZmlyc3Qs
+IGFuZCB0aGVuIHRha2VzCjAuMXMgdG8gZmluaXNoIHRoZSBkZXZfYWFhIHRvIGRldl9iYmIgcmVz
+dW1lLCBhbmQgdGhlbiBzbGVlcCAwLjlzCgo+IEkga2luZCBvZiBhZ3JlZSwgYnV0IHRoZW4gdGhl
+IHBhdGNoZXMgd291bGQgYmUgbW9yZSBjb21wbGljYXRlZC4KPiAKVGhlIHByb2JsZW0gaXMgdGhh
+dCB3ZSBuZWVkIHRvIGludm9rZSBkZXZpY2VfcmVzdW1lIGZvciBldmVyeSBkZXZpY2UKc3luY2hy
+b25vdXNseS4KSSB3b25kZXIgaWYgd2UgY2FuIG1ha2UgdGhlIGNoaWxkIGRldmljZXMgaW5oZXJp
+dCB0aGUKcGFyZW50J3Mg77u/ZGV2LT5wb3dlci5hc3luY19zdXNwZW5kIGZsYWcsIHNvIHRoYXQg
+ZGV2aWNlcyB0aGF0IG5lZWQgdG8Kd2FpdCBhcmUgcmVzdW1lZCBhc3luY2hyb25vdXNseSwgaS5l
+LiB3ZSBuZXZlciB3YWl0L3NsZWVwIHdoZW4gcGFyc2luZwp0aGUgZHBtX2xpc3QuCgp0aGlzIGRv
+ZXNuJ3QgYnJpbmcgdG9vIG11Y2ggYmVuZWZpdCBpbiBzdXNwZW5kIGNhc2UgYnV0IGl0IGNhbiBz
+cGVlZCB1cAp0aGUgcmVzdW1lIHByb2Nlc3MgYSBsb3QuCgpPZiBjYXVzZSwgdGhpcyBpcyBub3Qg
+YSBwcm9ibGVtIGlmIHdlIHR1cm4gb24gdGhlIGFzeW5jX3N1c3BlbmQgZmxhZyBmb3IKZXZlcnkg
+ZGV2aWNlLgoKPiA+IEl0IHdvdWxkIGJlIGludGVyZXN0aW5nIHRvIGludmVudCBhIHdheSBvZiBy
+ZXByZXNlbnRpbmcgZXhwbGljaXRseSB0aGUgCj4gPiBub24tdHJlZSBkZXBlbmRlbmNpZXMgLS0g
+YXNzdW1pbmcgdGhlcmUgYXJlbid0IHRvbyBtYW55IG9mIHRoZW0hICAoSSAKPiA+IGNhbiBqdXN0
+IGhlYXIgdGhlIFRJIGd1eXMgaG9sbGVyaW5nIGFib3V0IHBvd2VyIGFuZCB0aW1lciBkb21haW5z
+Li4uKQo+IAo+IEkgaGF2ZSBhbiBpZGVhLgo+IAo+IEV2ZXJ5IHN1Y2ggZGVwZW5kZW5jeSBpbnZv
+bHZlcyB0d28gZGV2aWNlcywgb25lIG9mIHdoaWNoIGlzIGEgIm1hc3RlciIKPiBhbmQgdGhlIHNl
+Y29uZCBvZiB3aGljaCBpcyBhICJzbGF2ZSIsIG1lYW5pbmcgdGhhdCB0aGUgInNsYXZlIiBoYXZl
+IHRvIGJlCj4gc3VzcGVuZGVkIGJlZm9yZSB0aGUgIm1hc3RlciIgYW5kIGNhbm5vdCBiZSByZXN1
+bWVkIGJlZm9yZSBpdC4gIEluIHByaW5jaXBsZQo+IHdlIGNvdWxkIGdpdmUgZWFjaCBkZXZpY2Ug
+dHdvIGxpc3RzIG9mICJkZXBlbmRlbmN5IG9iamVjdHMiLCBvbmUgY29udGFpbmluZwo+ICJkZXBl
+bmRlbmN5IG9iamVjdHMiIHdoZXJlIHRoZSBkZXZpY2UgaXMgdGhlICJtYXN0ZXIiIGFuZCB0aGUg
+b3RoZXIgY29udGFpbmluZwo+ICJkZXBlbmRlbmN5IG9iamVjdHMiIHdoZXJlIHRoZSBkZXZpY2Ug
+aXMgdGhlICJzbGF2ZSIuICBUaGVuLCBlYWNoICJkZXBlbmRlbmN5Cj4gb2JqZWN0IiBjb3VsZCBi
+ZSByZXByZXNlbnRlZCBhcwo+IAo+IHN0cnVjdCBwbV9jb25uZWN0aW9uIHsKPiAgICAgc3RydWN0
+IGRldmljZSAqbWFzdGVyOwo+ICAgICBzdHJ1Y3QgbGlzdF9oZWFkIG1hc3Rlcl9ob29rOwo+ICAg
+ICBzdHJ1Y3QgZGV2aWNlICpzbGF2ZTsKPiAgICAgc3RydWN0IGxpc3RfaGVhZCBzbGF2ZV9ob29r
+Owo+IH07Cj4gCj4gQWRkIHNvbWUgbG9ja2luZywgaGVscGVycyBmb3IgYWRkaW5nIC8gcmVtb3Zp
+bmcgImRlcGVuZGVuY3kgb2JqZWN0cyIgZXRjLgo+IGFuZCBpdCBzaG91bGQgd29yay4gIEluc3Rl
+YWQgb2YgY2hlY2tpbmcgdGhlIHBhcmVudCwgd2FsayB0aGUgbGlzdCBvZgo+ICJtYXN0ZXJzIiwg
+aW5zdGVhZCBvZiB3YWxraW5nIHRoZSBsaXN0IG9mIGNoaWxkcmVuLCB3YWxrIHRoZSBsaXN0IG9m
+ICJzbGF2ZXMiLgo+IAo+IFRoZSBjb3JlIGNvdWxkIGNyZWF0ZSB0aG9zZSBvYmplY3RzIGZvciBw
+YXJlbnQtY2hpbGQgcmVsYXRpb25zaGlwcwo+IGF1dG9tYXRpY2FsbHksIHRoZSBvdGhlciBvbmVz
+IHdvdWxkIGhhdmUgdG8gYmUgYWRkZWQgYnkgcGxhdGZvcm1zIC8gYnVzIHR5cGVzIC8KPiBkcml2
+ZXJzIGV0Yy4KPiAK77u/dGhpcyBzb3VuZHMgZ3JlYXQuIDopCgp0aGFua3MsCnJ1aQoKPiBUaGlz
+IGFwcHJvYWNoIGhhcyBhIHByb2JsZW0gdGhhdCBpdCdzIHByb25lIHRvIGFkZGluZyBjaXJjdWxh
+ciBkZXBlbmRlbmNpZXMgYnkKPiBtaXN0YWtlLCBidXQgdGhlbiBJIHRoaW5rIGl0IHdvdWxkIGFw
+cGx5IHRvIGFueSBvdGhlciBhcHByb2FjaCBqdXN0IGFzIHdlbGwuCj4gCj4gQmVzdCwKPiBSYWZh
+ZWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
+LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
+czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
