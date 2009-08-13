@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Thu, 13 Aug 2009 14:39:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908131435490.8368-100000__33411.4018398852$1250189608$gmane$org@iolanthe.rowland.org>
-References: <200908132028.53094.rjw@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: hibernate causes nobody cared on acpi irq
+Date: Thu, 13 Aug 2009 21:52:36 +0200
+Message-ID: <4A846F04.9050005@gmail.com>
+References: <4A833CAD.5050209@gmail.com> <200908130021.34378.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908132028.53094.rjw@sisk.pl>
+In-Reply-To: <200908130021.34378.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 Aug 2009, Rafael J. Wysocki wrote:
-
-> > If the set of pm_connection objects is reasonably small then the
-> > master_hook and slave_hook aren't needed; you can just read through the
-> > entire list.  Leaving out parent-child connections, which we already
-> > know, would help shrink the set.
+On 08/13/2009 12:21 AM, Rafael J. Wysocki wrote:
+> On Thursday 13 August 2009, Jiri Slaby wrote:
+>> with current mmotm I get this while trying to hibernate from a system in
+>> qemu:
 > 
-> Do you mean a global list for the entire system?  I'm not sure if that wouldn't
-> hurt performance (please note that it also affects runtime PM).
+> Does it trigger with the "core" test:
 
-It doesn't have to affect runtime PM.  That is, for runtime PM we can 
-make the bus subsystems responsible for enforcing the dependencies.
+Yes, but I found out it's totally unrelated to the susp code. There is
+an interrupt storm on IRQ9 after system boot -- 150000 intrs on both
+CPUs in the first minute. Then the message emerges.
 
-> We could use counters of "suspended slaves" and "active masters" to optimize
-> things, but still updating these counters could take time (one has to find all
-> devices dependent on given one and update a counter for each of them).
+It's just a coincidence it appears during hibernation (after interrupts
+enable phase).
 
-The problem with counters is that devices can be removed in the middle 
-of a suspend or resume.  That would mess up the counter values.
+Any idea what it could be?
 
-Alan Stern
+Thanks.
