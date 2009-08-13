@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH update 2x] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 16)
-Date: Thu, 13 Aug 2009 23:14:47 +0200
-Message-ID: <200908132314.47180.rjw__49819.429315585$1250198172$gmane$org@sisk.pl>
-References: <200908081625.57333.rjw@sisk.pl> <200908132256.42941.rjw@sisk.pl>
-	<20090813210308.GA9570@linux-sh.org>
+From: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [RFC] usb: Add support for runtime power
+	management	of the hcd
+Date: Thu, 13 Aug 2009 22:42:19 +0100
+Message-ID: <20090813214219.GB14532__30431.1506603428$1250199884$gmane$org@srcf.ucam.org>
+References: <200908081625.57333.rjw@sisk.pl>
+	<200908131416.42189.oliver@neukum.org>
+	<20090813123034.GA25770@srcf.ucam.org>
+	<200908131626.33891.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090813210308.GA9570@linux-sh.org>
+Content-Disposition: inline
+In-Reply-To: <200908131626.33891.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 13 August 2009, Paul Mundt wrote:
-> On Thu, Aug 13, 2009 at 10:56:42PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 16)
-> > 
-> > Introduce a core framework for run-time power management of I/O
-> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> > a run-time PM workqueue and define some device run-time PM helper
-> > functions at the core level.  Document all these things.
-> > 
-> > Special thanks to Alan Stern for his help with the design and
-> > multiple detailed reviews of the pereceding versions of this patch
-> > and to Magnus Damm for testing feedback.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, Aug 13, 2009 at 04:26:33PM +0200, Oliver Neukum wrote:
+> Am Donnerstag, 13. August 2009 14:30:34 schrieb Matthew Garrett:
+> > > Your earlier failures don't look promising regarding BIOSes.
+> > > What do you have in mind?
+> >
+> > They range from pragmatic to ugly. We could blacklist all Dells, though
+> > I'm trying to find out if there's a BIOS date that guarantees the system
+> > is fixed. Alternatively, it's a single-line bug in the DSDT - we could
+> > implement some kind of fixup in the ACPI parsing code. I find the latter
+> > interesting but possibly too hideous to live :)
 > 
-> If there are no more outstanding issues with this, any chance of having
-> this rolled in to a topic branch along with Magnus's platform bus
-> support? It would be nice if these could spend some time in -next,
-> especially as it seems there are no longer any glaring issues with the
-> patch series.
+> Is there any indication only those BIOSes are affected?
 
-I completely agree and I hope there are no major issues with this patch any
-more.
+Based on what I've looked at, other BIOSes either indicate that they 
+don't support this or should work properly. Real life may disagree.
 
-If there are no objections, I'm going to put the patch into my linux-next
-branch shortly, from where it will go to the for-linus branch.  I'm going to do
-that with the Magnus' patch too.
-
-Thanks,
-Rafael
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
