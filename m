@@ -1,13 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 05/05] uio: Runtime PM for UIO devices
-Date: Fri, 14 Aug 2009 19:49:38 +0900
-Message-ID: <20090814104938.32396.56126.sendpatchset__16191.2148273133$1250247293$gmane$org@rx1.opensource.se>
-References: <20090814104808.32396.50021.sendpatchset@rx1.opensource.se>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
+Date: Fri, 14 Aug 2009 13:58:54 +0200
+Message-ID: <200908141358.54129.rjw__43649.2830784575$1250251186$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
+	<200908132008.26508.rjw@sisk.pl>
+	<1250220244.1804.9.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090814104808.32396.50021.sendpatchset@rx1.opensource.se>
+In-Reply-To: <1250220244.1804.9.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,132 +19,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-sh@vger.kernel.org, gregkh@suse.de
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
-
-This patch modifies the uio_pdrv_genirq driver to support
-Runtime PM. The power management implementation simply
-runtime resumes the device at open() time and runtime
-suspends it at release() time. The user space driver is
-responsible for re-initializing the hardware after open().
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- Tested with the sh7722 VEU hardware block using the
- mplayer sh_veu vidix user space driver.
-
- Changes since V2:
- - updated comments
-
- drivers/uio/uio_pdrv_genirq.c |   54 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
-
---- 0001/drivers/uio/uio_pdrv_genirq.c
-+++ work/drivers/uio/uio_pdrv_genirq.c	2009-08-14 18:13:32.000000000 +0900
-@@ -20,6 +20,7 @@
- #include <linux/bitops.h>
- #include <linux/interrupt.h>
- #include <linux/stringify.h>
-+#include <linux/pm_runtime.h>
- 
- #define DRIVER_NAME "uio_pdrv_genirq"
- 
-@@ -27,8 +28,27 @@ struct uio_pdrv_genirq_platdata {
- 	struct uio_info *uioinfo;
- 	spinlock_t lock;
- 	unsigned long flags;
-+	struct platform_device *pdev;
- };
- 
-+static int uio_pdrv_genirq_open(struct uio_info *info, struct inode *inode)
-+{
-+	struct uio_pdrv_genirq_platdata *priv = info->priv;
-+
-+	/* Wait until the Runtime PM code has woken up the device */
-+	pm_runtime_get_sync(&priv->pdev->dev);
-+	return 0;
-+}
-+
-+static int uio_pdrv_genirq_release(struct uio_info *info, struct inode *inode)
-+{
-+	struct uio_pdrv_genirq_platdata *priv = info->priv;
-+
-+	/* Tell the Runtime PM code that the device has become idle */
-+	pm_runtime_put_sync(&priv->pdev->dev);
-+	return 0;
-+}
-+
- static irqreturn_t uio_pdrv_genirq_handler(int irq, struct uio_info *dev_info)
- {
- 	struct uio_pdrv_genirq_platdata *priv = dev_info->priv;
-@@ -97,6 +117,7 @@ static int uio_pdrv_genirq_probe(struct 
- 	priv->uioinfo = uioinfo;
- 	spin_lock_init(&priv->lock);
- 	priv->flags = 0; /* interrupt is enabled to begin with */
-+	priv->pdev = pdev;
- 
- 	uiomem = &uioinfo->mem[0];
- 
-@@ -136,8 +157,17 @@ static int uio_pdrv_genirq_probe(struct 
- 	uioinfo->irq_flags |= IRQF_DISABLED;
- 	uioinfo->handler = uio_pdrv_genirq_handler;
- 	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
-+	uioinfo->open = uio_pdrv_genirq_open;
-+	uioinfo->release = uio_pdrv_genirq_release;
- 	uioinfo->priv = priv;
- 
-+	/* Enable Runtime PM for this device:
-+	 * The device starts in suspended state to allow the hardware to be
-+	 * turned off by default. The Runtime PM bus code should power on the
-+	 * hardware and enable clocks at open().
-+	 */
-+	pm_runtime_enable(&pdev->dev);
-+
- 	ret = uio_register_device(&pdev->dev, priv->uioinfo);
- 	if (ret) {
- 		dev_err(&pdev->dev, "unable to register uio device\n");
-@@ -157,16 +187,40 @@ static int uio_pdrv_genirq_remove(struct
- 	struct uio_pdrv_genirq_platdata *priv = platform_get_drvdata(pdev);
- 
- 	uio_unregister_device(priv->uioinfo);
-+	pm_runtime_disable(&pdev->dev);
- 	kfree(priv);
- 	return 0;
- }
- 
-+static int uio_pdrv_genirq_runtime_nop(struct device *dev)
-+{
-+	/* Runtime PM callback shared between ->runtime_suspend()
-+	 * and ->runtime_resume(). Simply returns success.
-+	 *
-+	 * In this driver pm_runtime_get_sync() and pm_runtime_put_sync()
-+	 * are used at open() and release() time. This allows the
-+	 * Runtime PM code to turn off power to the device while the
-+	 * device is unused, ie before open() and after release().
-+	 *
-+	 * This Runtime PM callback does not need to save or restore
-+	 * any registers since user space is responsbile for hardware
-+	 * register reinitialization after open().
-+	 */
-+	return 0;
-+}
-+
-+static struct dev_pm_ops uio_pdrv_genirq_dev_pm_ops = {
-+	.runtime_suspend = uio_pdrv_genirq_runtime_nop,
-+	.runtime_resume = uio_pdrv_genirq_runtime_nop,
-+};
-+
- static struct platform_driver uio_pdrv_genirq = {
- 	.probe = uio_pdrv_genirq_probe,
- 	.remove = uio_pdrv_genirq_remove,
- 	.driver = {
- 		.name = DRIVER_NAME,
- 		.owner = THIS_MODULE,
-+		.pm = &uio_pdrv_genirq_dev_pm_ops,
- 	},
- };
- 
+T24gRnJpZGF5IDE0IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gT24gRnJpLCAyMDA5
+LTA4LTE0IGF0IDAyOjA4ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IE9uIFRo
+dXJzZGF5IDEzIEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gPiA+IE9uIFRodSwgMjAw
+OS0wOC0xMyBhdCAwNTo0MyArMDgwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4g
+T24gV2VkbmVzZGF5IDEyIEF1Z3VzdCAyMDA5LCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gPiA+ID4g
+T24gV2VkLCAxMiBBdWcgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4gPiAK
+PiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBUaGUgZm9sbG93aW5nIHBh
+dGNoZXMgaW50cm9kdWNlIGEgbWVjaGFuaXNtIGFsbG93aW5nIHVzIHRvIGV4ZWN1dGUgZGV2aWNl
+Cj4gPiA+ID4gPiA+IGRyaXZlcnMnIHN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgYXN5bmNo
+cm9ub3VzbHkgZHVyaW5nIHN5c3RlbSBzbGVlcAo+ID4gPiA+ID4gPiB0cmFuc2l0aW9ucywgc3Vj
+aCBhcyBzdXNwZW5kIHRvIFJBTS4gIFRoZSBpZGVhIGlzIGV4cGxhaW5lZCBpbiB0aGUgWzEvMV0g
+cGF0Y2gKPiA+ID4gPiA+ID4gbWVzc2FnZS4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IENvbW1l
+bnRzIHdlbGNvbWUuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IEkgZ2V0IHRoZSBpZGVhLiAgTm90IGJh
+ZC4KPiA+ID4gPiAKPiA+ID4gPiBUaGFua3MhCj4gPiA+ID4gCj4gPiA+ID4gPiBIYXZlIHlvdSB0
+cmllZCBpdCBpbiBhIHNlcmlvdXMgd2F5PyAgRm9yIGV4YW1wbGUsIHR1cm5pbmcgb24gdGhlCj4g
+PiA+ID4gPiBhc3luY19zdXNwZW5kIGZsYWcgZm9yIGV2ZXJ5IGRldmljZT8KPiA+ID4gPiAKPiA+
+ID4gPiBObywgSSd2ZSBvbmx5IHRlc3RlZCBpdCB3aXRoIGEgZmV3IHNlbGVjdGVkIGRyaXZlcnMu
+ICBJJ20gZ29pbmcgdG8gdHJ5IHRoZQo+ID4gPiA+ICJhc3luYyBldmVyeW9uZSIgc2NlbmFyaW8s
+IHRob3VnaC4KPiA+ID4gPiAKPiA+ID4gPiA+IEluIG9uZSB3YXkgaXQgaXNuJ3QgYXMgZWZmaWNp
+ZW50IGFzIGl0IGNvdWxkIGJlLiAgWW91IGZpcmUgb2ZmIGEgYnVuY2gKPiA+ID4gPiA+IG9mIGFz
+eW5jIHRocmVhZHMgYW5kIHRoZW4gbWFrZSBtYW55IG9mIHRoZW0gd2FpdCBmb3IgcGFyZW50IG9y
+IGNoaWxkCj4gPiA+ID4gPiBkZXZpY2VzLiAgVGhleSBjb3VsZCBiZSBkb2luZyB1c2VmdWwgd29y
+ayBpbnN0ZWFkLgo+ID4gPiA+IAo+ID4gPiDvu7/vu79hcmUgeW91IHRhbGtpbmcgYWJvdXQgdGhp
+cyBzY2VuYXJpbywgb3IgSSBmaW5kIGFub3RoZXIgcHJvYmxlbSBvZiB0aGlzCj4gPiA+IGFwcHJv
+YWNoOgo+ID4gPiB0aGVyZSBpcyBhIHBhcnQgb2YgZHBtX2xpc3QsIGRldjEtPmRldl9hYWEtPi4u
+Li0+ZGV2X2JiYi0+ZGV2Mgo+ID4gPiAKPiA+ID4gZGV2MiBpcyBkZXYxJ3MgZmlyc3QgY2hpbGQu
+Cj4gPiA+IGRldjEgcmVzdW1lIHRha2VzIDFzCj4gPiA+IGRldl9hYWF+ZGV2X2JiYiByZXN1bWUg
+dGFrZXMgMC4xcy4KPiA+ID4gCj4gPiA+IGlmIHdlIGNhbGwg77u/ZGV2aWNlX2VuYWJsZV9hc3lu
+Y19zdXNwZW5kKGRldjEsIHRydWUpIGluIG9yZGVyIHRvIHJlc3VtZQo+ID4gPiBkZXZpY2UxIGFz
+eW5jaHJvbm91c2x5LCB0aGUgcmVhbCBhc3luY2hyb25vdXMgcmVzdW1lIG9ubHkgaGFwcGVucwo+
+ID4gPiBiZXR3ZWVuIGRldjEgYW5kIGRldl9hYWEgdG8gZGV2X2JiYiBiZWNhdXNlIGRldjIgbmVl
+ZHMgdG8gd2FpdCB1bnRpbAo+ID4gPiBkZXYxIHJlc3VtZSBmaW5pc2hlZC4KPiA+IAo+ID4gWWVz
+LCB0aGF0J3MgaG93IGl0IHdvcmtzLCBidXQgSSB3b3VsZCBjYWxsIGl0IGEgbGltaXRhdGlvbiBy
+YXRoZXIgdGhhbiBhCj4gPiBwcm9ibGVtLiAgSXQgcGFydGlhbGx5IHN0ZW1zIGZyb20gdGhlIGZh
+Y3QgdGhhdCBfX2FzeW5jX3NjaGVkdWxlKCkgZXhlY3V0ZXMKPiA+IHB0cigpIHN5bmNocm9ub3Vz
+bHkgaW4gc29tZSBjaXJjdW1zdGFuY2VzIChlLmcuIGFzeW5jX2VuYWJsZWQgdW5zZXQpLCBzbyB0
+aGUKPiA+IHN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgaGF2ZSB0byBiZSBzY2hlZHVsZWQg
+aW4gdGhlIHNhbWUgb3JkZXIsIGluIHdoaWNoCj4gPiB0aGV5IHdvdWxkIGhhdmUgYmVlbiBjYWxs
+ZWQgc3luY2hyb25vdXNseS4KPiA+IAo+ID4gPiBzbyBrZXJuZWwgc2NoZWR1bGVzIGRldjEgcmVz
+dW1lIGluIGFuIGFzeW5jIHRocmVhZCBmaXJzdCwgYW5kIHRoZW4gdGFrZXMKPiA+ID4gMC4xcyB0
+byBmaW5pc2ggdGhlIGRldl9hYWEgdG8gZGV2X2JiYiByZXN1bWUsIGFuZCB0aGVuIHNsZWVwIDAu
+OXMKPiA+ID4gCj4gPiA+ID4gSSBraW5kIG9mIGFncmVlLCBidXQgdGhlbiB0aGUgcGF0Y2hlcyB3
+b3VsZCBiZSBtb3JlIGNvbXBsaWNhdGVkLgo+ID4gPiA+IAo+ID4gPiBUaGUgcHJvYmxlbSBpcyB0
+aGF0IHdlIG5lZWQgdG8gaW52b2tlIGRldmljZV9yZXN1bWUgZm9yIGV2ZXJ5IGRldmljZQo+ID4g
+PiBzeW5jaHJvbm91c2x5Lgo+ID4gCj4gPiBZZXMsIHdlIGRvLgo+ID4gCj4gPiA+IEkgd29uZGVy
+IGlmIHdlIGNhbiBtYWtlIHRoZSBjaGlsZCBkZXZpY2VzIGluaGVyaXQgdGhlCj4gPiA+IHBhcmVu
+dCdzIO+7v2Rldi0+cG93ZXIuYXN5bmNfc3VzcGVuZCBmbGFnLCBzbyB0aGF0IGRldmljZXMgdGhh
+dCBuZWVkIHRvCj4gPiA+IHdhaXQgYXJlIHJlc3VtZWQgYXN5bmNocm9ub3VzbHksIGkuZS4gd2Ug
+bmV2ZXIgd2FpdC9zbGVlcCB3aGVuIHBhcnNpbmcKPiA+ID4gdGhlIGRwbV9saXN0Lgo+ID4gPiAK
+PiA+ID4gdGhpcyBkb2Vzbid0IGJyaW5nIHRvbyBtdWNoIGJlbmVmaXQgaW4gc3VzcGVuZCBjYXNl
+IGJ1dCBpdCBjYW4gc3BlZWQgdXAKPiA+ID4gdGhlIHJlc3VtZSBwcm9jZXNzIGEgbG90Lgo+ID4g
+Cj4gPiBXZSBjYW4gZG8gdGhhdCBhdCB0aGUgY29yZSBsZXZlbCwKPiAKPiBJIHRoaW5rIHlvdSBt
+ZWFuIHdlIGNhbid0IGRvIHRoYXQgYXQgdGhlIGNvcmUgbGV2ZWwuCgpUaGF0J3MgY29ycmVjdCwg
+c29ycnkgZm9yIHRoZSBtaXN0YWtlLgoKPiA+ICBiZWNhdXNlIHRoZXJlIG1heSBiZSBkZXBlbmRl
+bmNpZXMgYmV0d2Vlbgo+ID4gdGhlIGNoaWxkcmVuIHRoZSBjb3JlIGRvZXNuJ3Qga25vdyBhYm91
+dC4gIFN1YnN5c3RlbXMgYXJlIGZyZWUgdG8gc2V0Cj4gPiBhc3luY19zdXNwZW5kIGZvciB0aGUg
+ZW50aXJlIGJyYW5jaGVzIG9mIGRldmljZSBoaWVyYXJjaHkgaWYgdGhleSBhcmUga25vd24KPiA+
+IG5vdCB0byBjb250YWluIGFueSBvZmYtdHJlZSBkZXBlbmRlbmNpZXMsIGJ1dCB0aGUgY29yZSBo
+YXMgbm8gaW5mb3JtYXRpb24KPiA+IGFib3V0IHRoYXQuCj4gPiAKPiBobW0sIGJ1dCB0aGUgY3Vy
+cmVudCBwYXRjaCBkb2Vzbid0IGhhbmRsZSB0aGUgb2ZmLXRyZWUgZGVwZW5kZW5jaWVzCj4gbmVp
+dGhlci4KPiBlLmcuCj4gZGV2MSwgZGV2MiwgZGV2Mwo+IGRldjIgZGVwZW5kcyBvbiBkZXYxLCBk
+ZXYzIGlzIGRldjEncyBmaXJzdCBjaGlsZCwKPiB3ZSBvbmx5IHByb21pc2UgdGhhdCBkZXYxIGhh
+cyBiZWVuIHJlc3VtZWQgYmVmb3JlIHJlc3VtaW5nIGRldjMgaW4gdGhlCj4gY3VycmVudCBwcm9w
+b3NhbC4KClN1cmUsIGFuZCB0aGF0J3Mgd2h5IEkgc2FpZCAiaWYgdGhleSBhcmUga25vd24gbm90
+IHRvIGNvbnRhaW4gYW55IG9mZi10cmVlCmRlcGVuZGVuY2llcyIuICBJT1csIGlmIGEgc3Vic3lz
+dGVtIChlLmcuIHBsYXRmb3JtKSBrbm93cyB0aGF0IG5vbmUgb2YgaXRzCmRldmljZXMgaGF2ZSBh
+bnkgb2ZmLXRyZWUgZGVwZW5kZW5jaWVzLCBpdCBjYW4gc2FmZWx5IHNldCBhc3luY19zdXNwZW5k
+IGZvcgphbGwgb2YgdGhlbS4KCj4gYW55d2F5LCB0aGlzIGlzIG5vdCBhIHByb2JsZW0gYWZ0ZXIg
+dGhlIHBtX2Nvbm5lY3Rpb24gc3R1ZmYgaXMKPiBpbXBsZW1lbnRlZC4gOikKCldlbGwsIHRoYXQn
+cyBnb2luZyB0byB0YWtlIHNvbWUgdGltZSBJIGd1ZXNzLgoKVGhhbmtzLApSYWZhZWwKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
+ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
