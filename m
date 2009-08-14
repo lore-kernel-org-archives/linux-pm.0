@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Fri, 14 Aug 2009 13:58:54 +0200
-Message-ID: <200908141358.54129.rjw__43649.2830784575$1250251186$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908121702520.23954-100000@iolanthe.rowland.org>
-	<200908132008.26508.rjw@sisk.pl>
-	<1250220244.1804.9.camel@rzhang-dt>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC] PCI: Runtime power management
+Date: Fri, 14 Aug 2009 13:30:59 +0100
+Message-ID: <20090814123059.GA27995__14346.9612965875$1250253120$gmane$org@srcf.ucam.org>
+References: <20090813002925.GA2532@srcf.ucam.org>
+	<Pine.LNX.4.44L0.0908131100440.2940-100000@iolanthe.rowland.org>
+	<20090813214701.GC14532@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1250220244.1804.9.camel@rzhang-dt>
+Content-Disposition: inline
+In-Reply-To: <20090813214701.GC14532@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,80 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-usb@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5IDE0IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gT24gRnJpLCAyMDA5
-LTA4LTE0IGF0IDAyOjA4ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IE9uIFRo
-dXJzZGF5IDEzIEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gPiA+IE9uIFRodSwgMjAw
-OS0wOC0xMyBhdCAwNTo0MyArMDgwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4g
-T24gV2VkbmVzZGF5IDEyIEF1Z3VzdCAyMDA5LCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gPiA+ID4g
-T24gV2VkLCAxMiBBdWcgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4gPiAK
-PiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBUaGUgZm9sbG93aW5nIHBh
-dGNoZXMgaW50cm9kdWNlIGEgbWVjaGFuaXNtIGFsbG93aW5nIHVzIHRvIGV4ZWN1dGUgZGV2aWNl
-Cj4gPiA+ID4gPiA+IGRyaXZlcnMnIHN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgYXN5bmNo
-cm9ub3VzbHkgZHVyaW5nIHN5c3RlbSBzbGVlcAo+ID4gPiA+ID4gPiB0cmFuc2l0aW9ucywgc3Vj
-aCBhcyBzdXNwZW5kIHRvIFJBTS4gIFRoZSBpZGVhIGlzIGV4cGxhaW5lZCBpbiB0aGUgWzEvMV0g
-cGF0Y2gKPiA+ID4gPiA+ID4gbWVzc2FnZS4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IENvbW1l
-bnRzIHdlbGNvbWUuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IEkgZ2V0IHRoZSBpZGVhLiAgTm90IGJh
-ZC4KPiA+ID4gPiAKPiA+ID4gPiBUaGFua3MhCj4gPiA+ID4gCj4gPiA+ID4gPiBIYXZlIHlvdSB0
-cmllZCBpdCBpbiBhIHNlcmlvdXMgd2F5PyAgRm9yIGV4YW1wbGUsIHR1cm5pbmcgb24gdGhlCj4g
-PiA+ID4gPiBhc3luY19zdXNwZW5kIGZsYWcgZm9yIGV2ZXJ5IGRldmljZT8KPiA+ID4gPiAKPiA+
-ID4gPiBObywgSSd2ZSBvbmx5IHRlc3RlZCBpdCB3aXRoIGEgZmV3IHNlbGVjdGVkIGRyaXZlcnMu
-ICBJJ20gZ29pbmcgdG8gdHJ5IHRoZQo+ID4gPiA+ICJhc3luYyBldmVyeW9uZSIgc2NlbmFyaW8s
-IHRob3VnaC4KPiA+ID4gPiAKPiA+ID4gPiA+IEluIG9uZSB3YXkgaXQgaXNuJ3QgYXMgZWZmaWNp
-ZW50IGFzIGl0IGNvdWxkIGJlLiAgWW91IGZpcmUgb2ZmIGEgYnVuY2gKPiA+ID4gPiA+IG9mIGFz
-eW5jIHRocmVhZHMgYW5kIHRoZW4gbWFrZSBtYW55IG9mIHRoZW0gd2FpdCBmb3IgcGFyZW50IG9y
-IGNoaWxkCj4gPiA+ID4gPiBkZXZpY2VzLiAgVGhleSBjb3VsZCBiZSBkb2luZyB1c2VmdWwgd29y
-ayBpbnN0ZWFkLgo+ID4gPiA+IAo+ID4gPiDvu7/vu79hcmUgeW91IHRhbGtpbmcgYWJvdXQgdGhp
-cyBzY2VuYXJpbywgb3IgSSBmaW5kIGFub3RoZXIgcHJvYmxlbSBvZiB0aGlzCj4gPiA+IGFwcHJv
-YWNoOgo+ID4gPiB0aGVyZSBpcyBhIHBhcnQgb2YgZHBtX2xpc3QsIGRldjEtPmRldl9hYWEtPi4u
-Li0+ZGV2X2JiYi0+ZGV2Mgo+ID4gPiAKPiA+ID4gZGV2MiBpcyBkZXYxJ3MgZmlyc3QgY2hpbGQu
-Cj4gPiA+IGRldjEgcmVzdW1lIHRha2VzIDFzCj4gPiA+IGRldl9hYWF+ZGV2X2JiYiByZXN1bWUg
-dGFrZXMgMC4xcy4KPiA+ID4gCj4gPiA+IGlmIHdlIGNhbGwg77u/ZGV2aWNlX2VuYWJsZV9hc3lu
-Y19zdXNwZW5kKGRldjEsIHRydWUpIGluIG9yZGVyIHRvIHJlc3VtZQo+ID4gPiBkZXZpY2UxIGFz
-eW5jaHJvbm91c2x5LCB0aGUgcmVhbCBhc3luY2hyb25vdXMgcmVzdW1lIG9ubHkgaGFwcGVucwo+
-ID4gPiBiZXR3ZWVuIGRldjEgYW5kIGRldl9hYWEgdG8gZGV2X2JiYiBiZWNhdXNlIGRldjIgbmVl
-ZHMgdG8gd2FpdCB1bnRpbAo+ID4gPiBkZXYxIHJlc3VtZSBmaW5pc2hlZC4KPiA+IAo+ID4gWWVz
-LCB0aGF0J3MgaG93IGl0IHdvcmtzLCBidXQgSSB3b3VsZCBjYWxsIGl0IGEgbGltaXRhdGlvbiBy
-YXRoZXIgdGhhbiBhCj4gPiBwcm9ibGVtLiAgSXQgcGFydGlhbGx5IHN0ZW1zIGZyb20gdGhlIGZh
-Y3QgdGhhdCBfX2FzeW5jX3NjaGVkdWxlKCkgZXhlY3V0ZXMKPiA+IHB0cigpIHN5bmNocm9ub3Vz
-bHkgaW4gc29tZSBjaXJjdW1zdGFuY2VzIChlLmcuIGFzeW5jX2VuYWJsZWQgdW5zZXQpLCBzbyB0
-aGUKPiA+IHN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgaGF2ZSB0byBiZSBzY2hlZHVsZWQg
-aW4gdGhlIHNhbWUgb3JkZXIsIGluIHdoaWNoCj4gPiB0aGV5IHdvdWxkIGhhdmUgYmVlbiBjYWxs
-ZWQgc3luY2hyb25vdXNseS4KPiA+IAo+ID4gPiBzbyBrZXJuZWwgc2NoZWR1bGVzIGRldjEgcmVz
-dW1lIGluIGFuIGFzeW5jIHRocmVhZCBmaXJzdCwgYW5kIHRoZW4gdGFrZXMKPiA+ID4gMC4xcyB0
-byBmaW5pc2ggdGhlIGRldl9hYWEgdG8gZGV2X2JiYiByZXN1bWUsIGFuZCB0aGVuIHNsZWVwIDAu
-OXMKPiA+ID4gCj4gPiA+ID4gSSBraW5kIG9mIGFncmVlLCBidXQgdGhlbiB0aGUgcGF0Y2hlcyB3
-b3VsZCBiZSBtb3JlIGNvbXBsaWNhdGVkLgo+ID4gPiA+IAo+ID4gPiBUaGUgcHJvYmxlbSBpcyB0
-aGF0IHdlIG5lZWQgdG8gaW52b2tlIGRldmljZV9yZXN1bWUgZm9yIGV2ZXJ5IGRldmljZQo+ID4g
-PiBzeW5jaHJvbm91c2x5Lgo+ID4gCj4gPiBZZXMsIHdlIGRvLgo+ID4gCj4gPiA+IEkgd29uZGVy
-IGlmIHdlIGNhbiBtYWtlIHRoZSBjaGlsZCBkZXZpY2VzIGluaGVyaXQgdGhlCj4gPiA+IHBhcmVu
-dCdzIO+7v2Rldi0+cG93ZXIuYXN5bmNfc3VzcGVuZCBmbGFnLCBzbyB0aGF0IGRldmljZXMgdGhh
-dCBuZWVkIHRvCj4gPiA+IHdhaXQgYXJlIHJlc3VtZWQgYXN5bmNocm9ub3VzbHksIGkuZS4gd2Ug
-bmV2ZXIgd2FpdC9zbGVlcCB3aGVuIHBhcnNpbmcKPiA+ID4gdGhlIGRwbV9saXN0Lgo+ID4gPiAK
-PiA+ID4gdGhpcyBkb2Vzbid0IGJyaW5nIHRvbyBtdWNoIGJlbmVmaXQgaW4gc3VzcGVuZCBjYXNl
-IGJ1dCBpdCBjYW4gc3BlZWQgdXAKPiA+ID4gdGhlIHJlc3VtZSBwcm9jZXNzIGEgbG90Lgo+ID4g
-Cj4gPiBXZSBjYW4gZG8gdGhhdCBhdCB0aGUgY29yZSBsZXZlbCwKPiAKPiBJIHRoaW5rIHlvdSBt
-ZWFuIHdlIGNhbid0IGRvIHRoYXQgYXQgdGhlIGNvcmUgbGV2ZWwuCgpUaGF0J3MgY29ycmVjdCwg
-c29ycnkgZm9yIHRoZSBtaXN0YWtlLgoKPiA+ICBiZWNhdXNlIHRoZXJlIG1heSBiZSBkZXBlbmRl
-bmNpZXMgYmV0d2Vlbgo+ID4gdGhlIGNoaWxkcmVuIHRoZSBjb3JlIGRvZXNuJ3Qga25vdyBhYm91
-dC4gIFN1YnN5c3RlbXMgYXJlIGZyZWUgdG8gc2V0Cj4gPiBhc3luY19zdXNwZW5kIGZvciB0aGUg
-ZW50aXJlIGJyYW5jaGVzIG9mIGRldmljZSBoaWVyYXJjaHkgaWYgdGhleSBhcmUga25vd24KPiA+
-IG5vdCB0byBjb250YWluIGFueSBvZmYtdHJlZSBkZXBlbmRlbmNpZXMsIGJ1dCB0aGUgY29yZSBo
-YXMgbm8gaW5mb3JtYXRpb24KPiA+IGFib3V0IHRoYXQuCj4gPiAKPiBobW0sIGJ1dCB0aGUgY3Vy
-cmVudCBwYXRjaCBkb2Vzbid0IGhhbmRsZSB0aGUgb2ZmLXRyZWUgZGVwZW5kZW5jaWVzCj4gbmVp
-dGhlci4KPiBlLmcuCj4gZGV2MSwgZGV2MiwgZGV2Mwo+IGRldjIgZGVwZW5kcyBvbiBkZXYxLCBk
-ZXYzIGlzIGRldjEncyBmaXJzdCBjaGlsZCwKPiB3ZSBvbmx5IHByb21pc2UgdGhhdCBkZXYxIGhh
-cyBiZWVuIHJlc3VtZWQgYmVmb3JlIHJlc3VtaW5nIGRldjMgaW4gdGhlCj4gY3VycmVudCBwcm9w
-b3NhbC4KClN1cmUsIGFuZCB0aGF0J3Mgd2h5IEkgc2FpZCAiaWYgdGhleSBhcmUga25vd24gbm90
-IHRvIGNvbnRhaW4gYW55IG9mZi10cmVlCmRlcGVuZGVuY2llcyIuICBJT1csIGlmIGEgc3Vic3lz
-dGVtIChlLmcuIHBsYXRmb3JtKSBrbm93cyB0aGF0IG5vbmUgb2YgaXRzCmRldmljZXMgaGF2ZSBh
-bnkgb2ZmLXRyZWUgZGVwZW5kZW5jaWVzLCBpdCBjYW4gc2FmZWx5IHNldCBhc3luY19zdXNwZW5k
-IGZvcgphbGwgb2YgdGhlbS4KCj4gYW55d2F5LCB0aGlzIGlzIG5vdCBhIHByb2JsZW0gYWZ0ZXIg
-dGhlIHBtX2Nvbm5lY3Rpb24gc3R1ZmYgaXMKPiBpbXBsZW1lbnRlZC4gOikKCldlbGwsIHRoYXQn
-cyBnb2luZyB0byB0YWtlIHNvbWUgdGltZSBJIGd1ZXNzLgoKVGhhbmtzLApSYWZhZWwKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
-ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, Aug 13, 2009 at 10:47:01PM +0100, Matthew Garrett wrote:
+
+> Ugh. I'd really prefer us to assume that drivers are able to cope unless 
+> proven otherwise. Userspace policy makes sense where we don't have any 
+> idea whether something will work or not, but I'd really expect that most 
+> PCI drivers will either cope (in which case they'll have enabling code) 
+> or won't (in which case they won't). Why would we want userspace to 
+> influence this?
+
+Though, thinking about it, you're right that setting this does override 
+user policy. I think we need an additional flag to indicate that the 
+device supports runtime wakeup and test that as well when doing 
+device_may_wakeup().
+
+> > This misses the point.  The whole idea of runtime_idle is to tell you 
+> > that the device is idle and might be ready to be suspended.  If you're 
+> > going to call pm_schedule_suspend anyway, there's no reason to invoke 
+> > pm->runtime_idle.
+> 
+> My understanding of the API was that pm_device_put() invokes 
+> runtime_idle if the refcount hits 0. The bus layer has no idea of the 
+> refcount, and calling suspend directly from the driver would defeat the 
+> point of the system-wide recounting.
+
+>From the API docs:
+
+"The action performed by a bus type's ->runtime_idle() callback is 
+totally dependent on the bus type in question, but the expected and 
+recommended action is to check if the device can be suspended (i.e. if 
+all of the conditions necessary for suspending the device are satisfied) 
+and to queue up a suspend request for the device in that case."
+
+Though perhaps the device level runtime_idle shouldn't be void - that 
+way the bus can ask the driver whether its suspend conditions have been 
+satisfied? Right now there doesn't seem to be any way for the bus to ask 
+that.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
