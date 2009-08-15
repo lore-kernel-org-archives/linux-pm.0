@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/3] PM: Asynchronous resume of devices
-Date: Sat, 15 Aug 2009 22:59:18 +0200
-Message-ID: <200908152259.18417.rjw__29882.4626989246$1250369963$gmane$org@sisk.pl>
-References: <200908122218.13975.rjw@sisk.pl> <200908122220.03363.rjw@sisk.pl>
-	<20090814163328.GF1626@ucw.cz>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC] PCI: Runtime power management
+Date: Sat, 15 Aug 2009 21:58:17 +0100
+Message-ID: <20090815205817.GA30254__18541.238041553$1250369967$gmane$org@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org>
+	<200908152254.23227.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090814163328.GF1626@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <200908152254.23227.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,105 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 14 August 2009, Pavel Machek wrote:
-> > The patch below introduces a mechanism allowing some devices to be
-> > resumed asynchronously, using completions with the following rules:
-> > (1) There is a completion, dev->power.comp, for each device object.
-> > (2) All of these completions are reset before suspend as well as
-> >     each resume stage (dpm_resume_noirq(), dpm_resume()).
-> > (3) If dev->power.async_suspend is set for dev or for its parent, the
-> >     PM core waits for the parent's completion before attempting to
-> >     run the resume callbacks, appropriate for this particular stage
-> >     of resume, for dev.
-> 
-> at least this needs to go in as a comment.
+On Sat, Aug 15, 2009 at 10:54:23PM +0200, Rafael J. Wysocki wrote:
 
-OK, this is a prototype patch, still under discussion.
+> runtime_wakeup - if set, the device is allowed to do remote wakeup at run time
+>   That could be represented as 'runtime_wakeup' under 'power' with the
+>   following values:
+>   * no value (empty file) is 'runtime' is 'disabled'
+>   * 'enabled'
+>   * 'disabled'
+>   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+>   The default is set.
 
-> > (4) dev->power.comp is completed for each device after running its
-> > @@ -411,9 +412,12 @@ struct dev_pm_info {
-> >  	pm_message_t		power_state;
-> >  	unsigned int		can_wakeup:1;
-> >  	unsigned int		should_wakeup:1;
-> > +	unsigned		async_suspend:1;
-> >  	enum dpm_state		status;		/* Owned by the PM core */
-> 
-> unsigned int? Or bool?
+Why would you ever want runtime_wakeup to be false unless 
+runtime_forbidden is true? Surely the point of runtime power management 
+is to be transparent to the user, in which case remote wakeup is 
+required?
 
-unsigned means 'unsigned int'.  I should have added 'int', but again, this is
-a prototype patch.
-
-> Should it go under config_pm_sleep?
-
-Not necessaily.  'status' is not there as well.
-
-> >  #ifdef CONFIG_PM_SLEEP
-> >  	struct list_head	entry;
-> > +	struct completion	comp;
-> > +	pm_message_t		async_state;
-> >  #endif
-> >  }
-> >  
-> > +static inline void device_enable_async_suspend(struct device *dev, bool enable)
-> > +{
-> > +	if (dev->power.status == DPM_ON)
-> > +		dev->power.async_suspend = enable;
-> > +}
-> > +
-> > @@ -163,6 +166,34 @@ void device_pm_move_last(struct device *
-> >  	list_move_tail(&dev->power.entry, &dpm_list);
-> >  }
-> >  
-> > +static void dpm_synchronize_noirq(void)
-> > +{
-> > +	struct device *dev;
-> > +
-> > +	async_synchronize_full();
-> > +
-> > +	list_for_each_entry(dev, &dpm_list, power.entry)
-> > +		INIT_COMPLETION(dev->power.comp);
-> > +}
-> > +
-> > +static void dpm_synchronize(void)
-> > +{
-> > +	struct device *dev;
-> > +
-> > +	async_synchronize_full();
-> > +
-> > +	mutex_lock(&dpm_list_mtx);
-> > +	list_for_each_entry(dev, &dpm_list, power.entry)
-> > +		INIT_COMPLETION(dev->power.comp);
-> > +	mutex_unlock(&dpm_list_mtx);
-> > +}
-> 
-> Why is it ok to avoid locking in noirq case?
-
-It's not, but we hold dpm_list_mtx throughout the entire noirq suspend.
-
-> Do we really need async for noirq handlers?
-
-Yes, we do.  Specifically, for PCI.
-
-> >  /**
-> > - *	device_resume_noirq - Power on one device (early resume).
-> > - *	@dev:	Device.
-> > - *	@state: PM transition of the system being carried out.
-> > + * __device_resume_noirq - Execute an "early resume" callback for given device.
-> > + * @dev: Device to resume.
-> > + * @state: PM transition of the system being carried out.
-> >   *
-> > - *	Must be called with interrupts disabled.
-> > + * The driver of the device won't receive interrupts while this function is
-> > + * being executed.
-> >   */
-> 
-> You still want it called with interrupts disabled, right?
-
-No.  It's not called with interrupts off now.
-
-Thanks,
-Rafael
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
