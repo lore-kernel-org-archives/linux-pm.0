@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] PCI: Runtime power management
-Date: Sat, 15 Aug 2009 17:24:27 +0200
-Message-ID: <200908151724.27207.rjw__13565.7166982584$1250349898$gmane$org@sisk.pl>
-References: <200908081625.57333.rjw@sisk.pl>
-	<20090814223013.GB20015@srcf.ucam.org>
-	<200908151641.56571.rjw@sisk.pl>
+Date: Sat, 15 Aug 2009 11:53:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908151143560.18415-100000__23491.0022969872$1250351666$gmane$org@netrider.rowland.org>
+References: <200908151618.10169.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908151641.56571.rjw@sisk.pl>
+In-Reply-To: <200908151618.10169.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,110 +17,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 15 August 2009, Rafael J. Wysocki wrote:
-> On Saturday 15 August 2009, Matthew Garrett wrote:
-> > On Fri, Aug 14, 2009 at 11:22:27PM +0200, Rafael J. Wysocki wrote:
-...
-> > > > +	error = pci_pm_suspend(dev);
-> > > 
-> > > This has a chance to be confusing IMO.  pci_pm_suspend() calls the driver's
-> > > ->suspend() routine, which is specific to suspend to RAM.  So, this means
-> > > that drivers are supposed to implement ->runtime_suspend() only if they
-> > > want to do something _in_ _addition_ to the things done by
-> > > ->suspend() and ->suspend_noirq().
+On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
+
+> > > Why don't we add a flag indicating whether or not the device is allowed to
+> > > be power managed at run time, something like runtime_forbidden, that the
+> > > user space will be able to set through sysfs?
 > > 
-> > Yes, that was how I'd planned it. An alternative would be for 
-> > runtime_suspend to return a negative value if there's an error, 0 if the 
-> > bus code should continue or a positive value if the runtime_suspend() 
-> > call handles all of it and the bus code should just return immediately?
+> > I think even having a runtime_wakeup flag (which defaults to on) would 
+> > be sufficient.
 > 
-> I just don't think that the existing suspend-resume callbacks are suitable for
-> runtime PM.
-> 
-> For example, in the majority of cases the existing suspend callbacks put
-> devices into D3_hot (or into the deepest low power state allowed by the
-> platform and hardware), but that means 10 ms latency, also for the resume
-> part.  Do we want that for runtime PM for all drivers?
-> 
-> Perhaps a more suitable model would be to put devices into D1 first, if
-> available, and then put them into D2 and D3 after specific delays?  Currently
-> the core framework doesn't provide any tools for that, but it may be worth
-> extending it for this purpose.
-> 
-> Also, I think it should be impossible to use the "legacy" callbacks for runtime
-> PM.  They surely are not designed with that in mind.
+> Perhaps it would, but then unsetting runtime_wakeup would effectively disable
+> runtime PM for devices that need it to be power managed at run time (probably
+> all input devices).  Also there may be situations in which user space may
+> really want to disable runtime PM for some devices (think of broken hardware
+> for one example).
 
-To be more specific, let's go through pci_pm_suspend() and
-pci_pm_suspend_noirq() and see what parts of these are useful for runtime PM.
+It sounds like there are really three choices here, and the decision 
+should largely be left up to the user:
 
-pci_legacy_suspend() shouldn't be used at run time IMO, as I said above.
+	1. don't use runtime PM,
 
-For runtime PM we shouldn't even continue if pm is NULL.  There's nothing
-like "default runtime PM", either the driver supports it, or not.  We also
-should require the callback to be implemented and IMO that should be
-->runtime_suspend().
+	2. allow runtime PM but disable remote wakeup,
 
-Of course we need to invoke the callback and call pci_fixup_device() after
-that.
+	3. allow runtime PM with remote wakeup enabled.
 
-pci_legacy_suspend_late() shouldn't be used at run time.
+Now, a driver may say "I can't do my job without remote wakeup".  Such
+a driver would refuse to do runtime_suspend in case 2.  But otherwise
+we should follow the preference of the user.
 
-Since I think we should require pm to be not NULL for runtime PM, the second
-block in pci_pm_suspend_noirq() is redundant in that case.
+The only remaining question is how to expose this in sysfs in a way 
+that won't be confusing and that won't be confused with the "wakeup" 
+attribute.  One possibility is to use the "level" attribute introduced 
+in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
+PM allowed).  Then a new "runtime_wakeup" attribute could contain 
+nothing (if wakeup is not available), "enabled", or "disabled".
 
-Now, I don't think we need the _noirq callback for runtime PM, because
-we've just executed the "regular" callback and I bet there are no devices
-requiring additional driver-specific operations after pci_fixup_device().
-So ->runtime_suspend() should be sufficient.
-
-The remaining part of pci_pm_suspend_noirq() is useful, so it can be executed
-by pci_pm_runtime_suspend() directly.
-
-Thus we get
-
-static int pci_pm_runtime_suspend(struct device *dev)
-{
-	struct pci_dev *pci_dev = to_pci_dev(dev);
-	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-	int error;
-
-	if (!pm || !pm->runtime_suspend)
-		return -ENOSYS;
-
-	pci_dev->state_saved = false;
-
-	error = pm->runtime_suspend(dev);
-	suspend_report_result(pm->runtime_suspend, error);
-	if (error)
-		return error;
-
-	pci_fixup_device(pci_fixup_suspend, pci_dev);
-
-	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-	    && pci_dev->current_state != PCI_UNKNOWN) {
-		WARN_ONCE(pci_dev->current_state != prev,
-				"PCI PM: State of device not saved by %pF\n",
-				pm->runtime_suspend);
-		return 0;
-	}
-
-	if (!pci_dev->state_saved) {
-		pci_save_state(pci_dev);
-		if (!pci_is_bridge(pci_dev))
-			pci_prepare_to_sleep(pci_dev);
-	}
-
-	pci_pm_set_unknown_state(pci_dev);
-
-	return 0;
-}
-
-Now, if the driver has a universal suspend routine, like for example r8169,
-it only needs to point .runtime_suspend to that one and it should work.
-
-Thanks,
-Rafael
+Alan Stern
