@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 0/3] PM: Asynchronous suspend and resume
-Date: Sun, 16 Aug 2009 12:29:56 +0200
-Message-ID: <200908161229.56362.rjw__44273.6877747395$1250418604$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908141717350.2922-100000@iolanthe.rowland.org>
-	<200908142331.26855.rjw@sisk.pl>
+From: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory	unnecessarily (rev. 2)
+Date: Sun, 16 Aug 2009 21:46:10 +0800
+Message-ID: <20090816134610.GA6266__31323.5496789732$1250430513$gmane$org@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040222.39062.rjw@sisk.pl>
+	<20090505022427.GA10880@localhost> <200905060105.10800.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908142331.26855.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200905060105.10800.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 14 August 2009, Rafael J. Wysocki wrote:
-> On Friday 14 August 2009, Alan Stern wrote:
-> > On Fri, 14 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > > On Friday 14 August 2009, Alan Stern wrote:
-> > > > On Thu, 13 Aug 2009, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > > No, I've only tested it with a few selected drivers.  I'm going to try the
-> > > > > > "async everyone" scenario, though.
-> > > > > 
-> > > > > On HP nx6325 booted with init=/bin/bash it doesn't pass the
-> > > > > 'echo devices > /sys/power/pm_test && echo mem > /sys/power/state' test.
-> > > > > 
-> > > > > The suspend part actually seems to work, but the resume part crashes
-> > > > > miserably.
-> > > > 
-> > > > Any details?  Can you tell where it crashes?
+On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > > 
-> > > Unfortunately it ends up in a continuous flood of backtraces, so I can't
-> > > say much.
+> > > Since the hibernation code is now going to use allocations of memory
+> > > to create enough room for the image, it can also use the page frames
+> > > allocated at this stage as image page frames.  The low-level
+> > > hibernation code needs to be rearranged for this purpose, but it
+> > > allows us to avoid freeing a great number of pages and allocating
+> > > these same pages once again later, so it generally is worth doing.
+> > > 
+> > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > >  many pages as needed to get the right image size in one shot (the
+> > >  excessive allocated pages are released afterwards).]
 > > 
-> > Same sort of thing happened with me, but it appeared to happen during 
-> > suspend.  (I say "appeared" because the system froze for a while at the 
-> > start of the suspend until I hit a key.  This may be related to all the 
-> > recent churn in the TTY layer, combined with the fact that I was using 
-> > a serial console.  It didn't help -- none of the backtraces got sent 
-> > out the serial port.)
-> > 
-> > > However, if I set async_suspend for all PCI devices, as well as for ACPI battery
-> > > and i8042, everything apparently works, even with real suspend-resume.
-> > 
-> > I think it would be worthwhile to track down these unknown problems and 
-> > dependencies.  It won't be easy, though...
+> > Rafael, I tried out your patches and found doubled memory shrink speed!
+> >
+> > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
 > 
-> Agreed.
+> Unfortunately, I'm observing a regression and a huge one.
+> 
+> On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> and that takes ~2 s with the old code and ~15 s with the new one.
+> 
+> It helps to call shrink_all_memory() once with a sufficiently large argument
+> before the preallocation.
 
-One data point: I set async_syspend for all ACPI devices in addition to PCI
-devices and that broke things.
+The 10 fold slowdown may be related to swapping IO:
+shrink_all_memory() tends to be reclaiming less anon pages.
 
-Which isn't really strange given that PCI devices generally have ACPI
-counterparts linked to them that I guess should be suspended later.
+Is this box running on SSD? (Which can be slow on random writes.)
 
 Thanks,
-Rafael
+Fengguang
