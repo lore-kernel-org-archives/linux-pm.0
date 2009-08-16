@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] PCI: Runtime power management
-Date: Sat, 15 Aug 2009 23:44:46 +0200
-Message-ID: <200908152344.46898.rjw__44422.701400663$1250372699$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908151143560.18415-100000@netrider.rowland.org>
-	<200908152321.53283.rjw@sisk.pl>
-	<20090815212756.GA31784@srcf.ucam.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Very strange issues with ethernet wake on lan
+Date: Sun, 16 Aug 2009 06:42:54 +0300
+Message-ID: <1250394174.32268.13.camel__11431.0137265877$1250394252$gmane$org@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090815212756.GA31784@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +15,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 15 August 2009, Matthew Garrett wrote:
-> On Sat, Aug 15, 2009 at 11:21:53PM +0200, Rafael J. Wysocki wrote:
-> 
-> > I can even imagine a scenario where this setting might be useful, like when
-> > we don't want a network adapter to be woken up from the outside.
-> 
-> I think in that case we'd probably just want the interface to be downed? 
-> Some of this is going to require device-specific policy, I think - for 
-> the network case we probably want something in between IF_RUNNING and 
-> IF_DOWN (IF_CARRIER, perhaps) that indicates that we want the PHY to be 
-> powered. Pushing this out to sysfs would mean we'd have a consistent 
-> interface but varying semantics, and I'm not convinced that's an 
-> especially helpful interface.
+Hi,
 
-I'm not disagreeing with that.
+I have recently put back the davicom dm9009 ethernet card into my
+computer.
 
-At this point I'd like to know the Alan's opinion.  I would gladly use the
-'runtime_forbidden' flag only, but if we overlook something now, it's going
-to be difficult to fix later.
+Some long time ago, I have written its suspend/resume routines.
+Now I see that few things have changed, like I need to enable wake in
+sysfs or better patch the code to do so, some nice helpers like
+pci_prepare_to_sleep have arrived, etc.
 
-Thanks,
-Rafael
+
+I narrowed the strange issue down to following situation:
+
+I reload dmfe.ko (and networkmanager is disabled)
+I don't ifup the device, thus pretty much no hardware initialization
+takes place (but this appears not to matter anyway)
+
+I then suspend the system, and WOL doesn't work (I have patched the
+driver to enable WOL automaticly)
+
+I then, suspend again. WOL works, and continues to work as long as I
+don't reload the driver. If I do, same situation repeats.
+
+Also, after a boot, WOL works, so a reload cycle triggers that issue.
+
+And most importantly, if I don't do a
+
+pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
+
+in .suspend, then WOL always works.
+
+and I have even tried to set state manually to PCI_D3hot or PCI_D3cold, 
+
+I also tried to use pci_save_state
+
+
+I also have 2 copies of this card, and both have this issue.
+I also tried 2 pci slots.
+
+Kernel is vanilla 2.6.31-rc5
+
+
+Any ideas?
+
+Best regards,
+	Maxim Levitsky
