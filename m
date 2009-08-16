@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] PCI: Runtime power management
-Date: Sun, 16 Aug 2009 12:09:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908161158210.6522-100000__25891.5556980812$1250439007$gmane$org@netrider.rowland.org>
-References: <200908152344.46898.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
+	preallocated memory unnecessarily (rev. 2)
+Date: Mon, 17 Aug 2009 00:48:01 +0200
+Message-ID: <200908170048.01609.rjw__37927.3362727419$1250463024$gmane$org@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl>
+	<20090816134610.GA6266@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908152344.46898.rjw@sisk.pl>
+In-Reply-To: <20090816134610.GA6266@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,46 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
-
-> On Saturday 15 August 2009, Matthew Garrett wrote:
-> > On Sat, Aug 15, 2009 at 11:21:53PM +0200, Rafael J. Wysocki wrote:
+On Sunday 16 August 2009, Wu Fengguang wrote:
+> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Since the hibernation code is now going to use allocations of memory
+> > > > to create enough room for the image, it can also use the page frames
+> > > > allocated at this stage as image page frames.  The low-level
+> > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > allows us to avoid freeing a great number of pages and allocating
+> > > > these same pages once again later, so it generally is worth doing.
+> > > > 
+> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > >  many pages as needed to get the right image size in one shot (the
+> > > >  excessive allocated pages are released afterwards).]
+> > > 
+> > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > >
+> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
 > > 
-> > > I can even imagine a scenario where this setting might be useful, like when
-> > > we don't want a network adapter to be woken up from the outside.
+> > Unfortunately, I'm observing a regression and a huge one.
 > > 
-> > I think in that case we'd probably just want the interface to be downed? 
-> > Some of this is going to require device-specific policy, I think - for 
-> > the network case we probably want something in between IF_RUNNING and 
-> > IF_DOWN (IF_CARRIER, perhaps) that indicates that we want the PHY to be 
-> > powered. Pushing this out to sysfs would mean we'd have a consistent 
-> > interface but varying semantics, and I'm not convinced that's an 
-> > especially helpful interface.
+> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > and that takes ~2 s with the old code and ~15 s with the new one.
+> > 
+> > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > before the preallocation.
 > 
-> I'm not disagreeing with that.
+> The 10 fold slowdown may be related to swapping IO:
+
+I guess it is.
+
+> shrink_all_memory() tends to be reclaiming less anon pages.
 > 
-> At this point I'd like to know the Alan's opinion.  I would gladly use the
-> 'runtime_forbidden' flag only, but if we overlook something now, it's going
-> to be difficult to fix later.
+> Is this box running on SSD? (Which can be slow on random writes.)
 
-The notion of "remote wakeup" is more or less the same for all devices,
-and it can effectively be abstracted into the core.  Other notions,
-like IF_CARRIER, are more device-dependent.  They must be handled at
-the bus or driver level, not in the core.
+No, on a normal spinning-plate HDD (2.5'').
 
-The real question is whether we should export a "may_runtime_wakeup"  
-flag.  If we don't then we prevent the use of a degraded
-power-management mode in devices with broken wakeup support.  Perhaps 
-that's okay, I don't know.
-
-Which reminds me...  In addition to these flags controlling what
-settings should be enabled, maybe we should add a flag to record
-whether or not remote wakeup was turned on when the device was last
-suspended.  Although the core wouldn't use it, such a flag might be
-very convenient for drivers.
-
-Alan Stern
+Thanks,
+Rafael
