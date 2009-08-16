@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [RFC] PCI: Runtime power management
-Date: Sun, 16 Aug 2009 11:57:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908161151020.6522-100000__36707.3244801306$1250438413$gmane$org@netrider.rowland.org>
+Date: Sun, 16 Aug 2009 17:04:06 +0100
+Message-ID: <20090816160406.GA10163__8019.47975201092$1250438713$gmane$org@srcf.ucam.org>
 References: <200908152321.53283.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0908161151020.6522-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908152321.53283.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0908161151020.6522-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,34 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
-
-> > Why would you ever want runtime_wakeup to be false unless 
-> > runtime_forbidden is true? Surely the point of runtime power management 
-> > is to be transparent to the user, in which case remote wakeup is 
-> > required?
-
-Matthew, what makes you think remote wakeup is required?  Lots of
-power-manageable devices don't support it at all (consider disk drives
-or display screens).
-
-> Well, this was exactly my point previously. :-)
+On Sun, Aug 16, 2009 at 11:57:53AM -0400, Alan Stern wrote:
+> On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> Still, although for the majority of devices 'runtime_wakeup' disabled would
-> mean no runtime PM at all IMO, there may be devices that actually work without
-> remote wakeup, although they support it in general.
+> > > Why would you ever want runtime_wakeup to be false unless 
+> > > runtime_forbidden is true? Surely the point of runtime power management 
+> > > is to be transparent to the user, in which case remote wakeup is 
+> > > required?
+> 
+> Matthew, what makes you think remote wakeup is required?  Lots of
+> power-manageable devices don't support it at all (consider disk drives
+> or display screens).
 
-That last part is quite true.  For example, we might suspend the device
-whenever no process has opened the device file.  It would be a degraded 
-form of power management, but better than nothing.
+Sorry, I meant in cases where remote wakeup is a sensible concept. For 
+things like storage there's obviously no reason to require it, but for 
+something like USB the absence of remote wakeup would effectively break 
+the driver for most users.
 
-> I can even imagine a scenario where this setting might be useful, like when
-> we don't want a network adapter to be woken up from the outside.
-
-Or if the device's support for remote wakeup is broken.
-
-Alan Stern
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
