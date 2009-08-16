@@ -1,16 +1,13 @@
-From: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release
-	preallocated memory	unnecessarily (rev. 2)
-Date: Sun, 16 Aug 2009 21:46:10 +0800
-Message-ID: <20090816134610.GA6266__31323.5496789732$1250430513$gmane$org@localhost>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040222.39062.rjw@sisk.pl>
-	<20090505022427.GA10880@localhost> <200905060105.10800.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] PCI: Runtime power management
+Date: Sun, 16 Aug 2009 11:50:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908161130590.6522-100000__27828.3674306751$1250437911$gmane$org@netrider.rowland.org>
+References: <200908152254.23227.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200905060105.10800.rjw@sisk.pl>
+In-Reply-To: <200908152254.23227.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,43 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
-> On Tuesday 05 May 2009, Wu Fengguang wrote:
-> > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Since the hibernation code is now going to use allocations of memory
-> > > to create enough room for the image, it can also use the page frames
-> > > allocated at this stage as image page frames.  The low-level
-> > > hibernation code needs to be rearranged for this purpose, but it
-> > > allows us to avoid freeing a great number of pages and allocating
-> > > these same pages once again later, so it generally is worth doing.
-> > > 
-> > > [rev. 2: Change the strategy of preallocating memory to allocate as
-> > >  many pages as needed to get the right image size in one shot (the
-> > >  excessive allocated pages are released afterwards).]
-> > 
-> > Rafael, I tried out your patches and found doubled memory shrink speed!
-> >
-> > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
-> 
-> Unfortunately, I'm observing a regression and a huge one.
-> 
-> On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
-> with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
-> and that takes ~2 s with the old code and ~15 s with the new one.
-> 
-> It helps to call shrink_all_memory() once with a sufficiently large argument
-> before the preallocation.
+On Sat, 15 Aug 2009, Rafael J. Wysocki wrote:
 
-The 10 fold slowdown may be related to swapping IO:
-shrink_all_memory() tends to be reclaiming less anon pages.
+> > The only remaining question is how to expose this in sysfs in a way 
+> > that won't be confusing and that won't be confused with the "wakeup" 
+> > attribute.  One possibility is to use the "level" attribute introduced 
+> > in USB; possible levels are "on" (no runtime PM) and "auto" (runtime 
+> > PM allowed).  Then a new "runtime_wakeup" attribute could contain 
+> > nothing (if wakeup is not available), "enabled", or "disabled".
+> 
+> That seems to require two flags.
+> 
+> runtime_forbidden - if unset, the driver decides whether or not to use runtime
+>   PM; that could be exposed through sysfs as 'runtime' under the 'power'
+>   subdirectory with the following values:
+>   * 'disabled' - runtime_forbidden is set by the user space
+>   * 'on' - runtime_forbidden is unset, runtime PM is used (disable_depth == 0)
+>   * 'off' - runtime_forbidden is unset, runtime PM is not used
+>   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+>   The default is unset.
 
-Is this box running on SSD? (Which can be slow on random writes.)
+Too confusing.  The difference between "disabled" and "off" is so
+subtle that even I don't understand it!
 
-Thanks,
-Fengguang
+All we need for this is a simple on/off switch.  Or to be consistent
+with the terms that are already exposed to userspace for USB devices:  
+"auto"/"on", where "auto" means the system automatically changes power
+levels (runtime PM is enabled) and "on" means the device is always on
+(runtime PM is disabled).
+
+And I don't like the "runtime_forbidden" name either.  It's long and
+it's a negative, making it harder to understand.  ("off" means that the
+device is permanently on!)  What's wrong with "level", as in
+"power/level"?  That seems very intuitive.
+
+> runtime_wakeup - if set, the device is allowed to do remote wakeup at run time
+>   That could be represented as 'runtime_wakeup' under 'power' with the
+>   following values:
+>   * no value (empty file) is 'runtime' is 'disabled'
+>   * 'enabled'
+>   * 'disabled'
+>   To set/unset the user space writes 'enabled'/'disabled' to it, respectively.
+>   The default is set.
+
+This is okay except for your definition of empty file.  This makes it
+dependent on the power/level setting.  The two should be independent.  
+Thus, empty file should mean that the device doesn't support remote
+wakeup, in which case writes are ignored.
+
+This scheme, like yours, requires two new bitflags.  We could call them
+something like "may_runtime_suspend" and "may_runtime_wakeup".
+
+Alan Stern
