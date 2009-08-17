@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 3/7] PM: Asynchronous resume of I/O devices
-Date: Mon, 17 Aug 2009 02:18:45 +0200
-Message-ID: <200908170218.45513.rjw__17298.1458752931$1250469792$gmane$org@sisk.pl>
-References: <200908122218.13975.rjw@sisk.pl> <200908170215.21173.rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Very strange issues with ethernet wake on lan
+Date: Mon, 17 Aug 2009 12:16:28 +0300
+Message-ID: <1250500588.4301.5.camel__12901.8689659008$1250500724$gmane$org@localhost.localdomain>
+References: <1250394174.32268.13.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908170215.21173.rjw@sisk.pl>
+In-Reply-To: <1250394174.32268.13.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,342 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Theoretically, the total time of system sleep transitions (suspend
-to RAM, hibernation) can be reduced by running suspend and resume
-callbacks of device drivers in parallel with each other.  However,
-there are dependencies between devices such that, for example, we may
-not be allowed to put one device into a low power state before
-anohter one has been suspended (e.g. we cannot suspend a bridge
-before suspending all devices behind it).  In particular, we're not
-allowed to suspend the parent of a device before suspending the
-device itself.  Analogously, we're not allowed to resume a device
-before resuming its parent.
+On Sun, 2009-08-16 at 06:42 +0300, Maxim Levitsky wrote:
+> Hi,
+> 
+> I have recently put back the davicom dm9009 ethernet card into my
+> computer.
+> 
+> Some long time ago, I have written its suspend/resume routines.
+> Now I see that few things have changed, like I need to enable wake in
+> sysfs or better patch the code to do so, some nice helpers like
+> pci_prepare_to_sleep have arrived, etc.
+> 
+> 
+> I narrowed the strange issue down to following situation:
+> 
+> I reload dmfe.ko (and networkmanager is disabled)
+> I don't ifup the device, thus pretty much no hardware initialization
+> takes place (but this appears not to matter anyway)
+> 
+> I then suspend the system, and WOL doesn't work (I have patched the
+> driver to enable WOL automaticly)
+> 
+> I then, suspend again. WOL works, and continues to work as long as I
+> don't reload the driver. If I do, same situation repeats.
+> 
+> Also, after a boot, WOL works, so a reload cycle triggers that issue.
+> 
+> And most importantly, if I don't do a
+> 
+> pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
+> 
+> in .suspend, then WOL always works.
+> 
+> and I have even tried to set state manually to PCI_D3hot or PCI_D3cold, 
+> 
+> I also tried to use pci_save_state
+> 
+> 
+> I also have 2 copies of this card, and both have this issue.
+> I also tried 2 pci slots.
+> 
+> Kernel is vanilla 2.6.31-rc5
 
-Thus, to make it possible to execute suspend and resume callbacks
-provided by device drivers in parallel with each other, we need to
-provide a synchronization mechanism preventing the dependencies
-between devices from being violated.
 
-The patch below introduces a mechanism allowing some devices to be
-resumed asynchronously, using completions with the following rules:
-(1) There is a completion, dev->power.comp, for each device object.
-(2) All of these completions are reset before suspend as well as
-    each resume stage (dpm_resume_noirq(), dpm_resume()).
-(3) If dev->power.async_suspend is set for dev or for one of devices
-    it depends on, the PM core waits for the "master" device's
-    completion before attempting to run the resume callbacks,
-    appropriate for this particular stage of resume, for dev.
-(4) dev->power.comp is completed for each device after running its
-    resume callbacks.
+Bisect reveals:
 
-With this mechanism in place, the drivers wanting their resume
-callbacks to be executed asynchronously can set
-dev->power.async_suspend for them, with the help of
-device_enable_async_suspend().  In addition to that, the PM
-dependencies between devices have to be represented by
-'struct pm_link' objects introduced by the previous patch.
+44e4e66eeae5338b3ca0b28f8352e60bf18d5ba8 is first bad commit
+commit 44e4e66eeae5338b3ca0b28f8352e60bf18d5ba8
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Mon Jul 7 03:32:52 2008 +0200
 
----
- drivers/base/power/common.c |    5 +
- drivers/base/power/main.c   |  124 ++++++++++++++++++++++++++++++++++++++++----
- include/linux/device.h      |    6 ++
- include/linux/pm.h          |    4 +
- 4 files changed, 129 insertions(+), 10 deletions(-)
+    PCI: rework pci_set_power_state function to call platform first
+    
+    Rework pci_set_power_state() so that the platform callback is
+    invoked before the native mechanism, if necessary.  Also, make
+    the function check if the device is power manageable by the
+    platform before invoking the platform callback.
+    
+    This may matter if the device dependent on additional power
+    resources controlled by the platform is being put into D0, in which
+    case those power resources must be turned on before we attempt to
+    handle the device itself.
+    
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Acked-by: Pavel Machek <pavel@suse.cz>
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -26,6 +26,7 @@
- #include <linux/spinlock.h>
- #include <linux/wait.h>
- #include <linux/timer.h>
-+#include <linux/completion.h>
- 
- /*
-  * Callbacks for platform drivers to implement.
-@@ -414,9 +415,12 @@ struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned int		can_wakeup:1;
- 	unsigned int		should_wakeup:1;
-+	unsigned int		async_suspend:1;
- 	enum dpm_state		status;		/* Owned by the PM core */
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-+	struct completion	comp;
-+	pm_message_t		async_state;
- #endif
- #ifdef CONFIG_PM_RUNTIME
- 	struct timer_list	suspend_timer;
-Index: linux-2.6/include/linux/device.h
-===================================================================
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -472,6 +472,12 @@ static inline int device_is_registered(s
- 	return dev->kobj.state_in_sysfs;
- }
- 
-+static inline void device_enable_async_suspend(struct device *dev, bool enable)
-+{
-+	if (dev->power.status == DPM_ON)
-+		dev->power.async_suspend = enable;
-+}
-+
- void driver_init(void);
- 
- /*
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -26,6 +26,8 @@
- #include <linux/resume-trace.h>
- #include <linux/rwsem.h>
- #include <linux/interrupt.h>
-+#include <linux/async.h>
-+#include <linux/completion.h>
- 
- #include "../base.h"
- #include "power.h"
-@@ -50,6 +52,11 @@ static DEFINE_MUTEX(dpm_list_mtx);
-  */
- static bool transition_started;
- 
-+void device_pm_sleep_init(struct device *dev)
-+{
-+	init_completion(&dev->power.comp);
-+}
-+
- /**
-  * device_pm_lock - Lock the list of active devices used by the PM core.
-  */
-@@ -144,6 +151,50 @@ void device_pm_move_last(struct device *
- 	list_move_tail(&dev->power.entry, &dpm_list);
- }
- 
-+static void dpm_synchronize_noirq(void)
-+{
-+	struct device *dev;
-+
-+	async_synchronize_full();
-+
-+	list_for_each_entry(dev, &dpm_list, power.entry)
-+		INIT_COMPLETION(dev->power.comp);
-+}
-+
-+static void dpm_synchronize(void)
-+{
-+	struct device *dev;
-+
-+	async_synchronize_full();
-+
-+	mutex_lock(&dpm_list_mtx);
-+	list_for_each_entry(dev, &dpm_list, power.entry)
-+		INIT_COMPLETION(dev->power.comp);
-+	mutex_unlock(&dpm_list_mtx);
-+}
-+
-+static void device_pm_wait(struct device *sub, struct device *dev)
-+{
-+	if (sub->power.async_suspend || (dev && dev->power.async_suspend)) {
-+		dev_dbg(sub, "PM: Waiting for %s %s\n", dev_driver_string(dev),
-+			dev_name(dev));
-+		wait_for_completion(&dev->power.comp);
-+	}
-+}
-+
-+static int device_pm_wait_fn(struct device *dev, void *data)
-+{
-+	struct device *sub = (struct device *)data;
-+
-+	device_pm_wait(sub, dev);
-+	return 0;
-+}
-+
-+static void device_pm_wait_for_masters(struct device *slave)
-+{
-+	device_for_each_master(slave, slave, device_pm_wait_fn);
-+}
-+
- /**
-  * pm_op - Execute the PM operation appropiate for given PM event.
-  * @dev: Device to handle.
-@@ -310,32 +361,57 @@ static void pm_dev_err(struct device *de
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-- * device_resume_noirq - Execute an "early resume" callback for given device.
-+ * __device_resume_noirq - Execute an "early resume" callback for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-  *
-  * The driver of @dev will not receive interrupts while this fuction is being
-  * executed.
-  */
--static int device_resume_noirq(struct device *dev, pm_message_t state)
-+static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (!dev->bus)
--		goto End;
-+	device_pm_wait_for_masters(dev);
- 
--	if (dev->bus->pm) {
-+	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "EARLY ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
- 	}
-- End:
-+
-+	complete_all(&dev->power.comp);
-+
- 	TRACE_RESUME(error);
- 	return error;
- }
- 
-+static void async_resume_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	pm_dev_dbg(dev, dev->power.async_state, "async EARLY ");
-+	error = __device_resume_noirq(dev, dev->power.async_state);
-+	if (error)
-+		pm_dev_err(dev, dev->power.async_state, " async EARLY", error);
-+	put_device(dev);
-+}
-+
-+static int device_resume_noirq(struct device *dev, pm_message_t state)
-+{
-+	if (dev->power.async_suspend) {
-+		get_device(dev);
-+		dev->power.async_state = state;
-+		async_schedule(async_resume_noirq, dev);
-+		return 0;
-+	}
-+
-+	return __device_resume_noirq(dev, state);
-+}
-+
- /**
-  * dpm_resume_noirq - Execute "early resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
-@@ -357,23 +433,25 @@ void dpm_resume_noirq(pm_message_t state
- 			if (error)
- 				pm_dev_err(dev, state, " early", error);
- 		}
-+	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
- 	resume_device_irqs();
- }
- EXPORT_SYMBOL_GPL(dpm_resume_noirq);
- 
- /**
-- * device_resume - Execute "resume" callbacks for given device.
-+ * __device_resume - Execute "resume" callbacks for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-  */
--static int device_resume(struct device *dev, pm_message_t state)
-+static int __device_resume(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-+	device_pm_wait_for_masters(dev);
- 	down(&dev->sem);
- 
- 	if (dev->bus) {
-@@ -408,11 +486,36 @@ static int device_resume(struct device *
- 	}
-  End:
- 	up(&dev->sem);
-+	complete_all(&dev->power.comp);
- 
- 	TRACE_RESUME(error);
- 	return error;
- }
- 
-+static void async_resume(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	pm_dev_dbg(dev, dev->power.async_state, "async ");
-+	error = __device_resume(dev, dev->power.async_state);
-+	if (error)
-+		pm_dev_err(dev, dev->power.async_state, " async", error);
-+	put_device(dev);
-+}
-+
-+static int device_resume(struct device *dev, pm_message_t state)
-+{
-+	if (dev->power.async_suspend) {
-+		get_device(dev);
-+		dev->power.async_state = state;
-+		async_schedule(async_resume, dev);
-+		return 0;
-+	}
-+
-+	return __device_resume(dev, state);
-+}
-+
- /**
-  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
-@@ -452,6 +555,7 @@ static void dpm_resume(pm_message_t stat
- 	}
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+	dpm_synchronize();
- }
- 
- /**
-@@ -775,8 +879,10 @@ static int dpm_prepare(pm_message_t stat
- 			break;
- 		}
- 		dev->power.status = DPM_SUSPENDING;
--		if (!list_empty(&dev->power.entry))
-+		if (!list_empty(&dev->power.entry)) {
- 			list_move_tail(&dev->power.entry, &list);
-+			INIT_COMPLETION(dev->power.comp);
-+		}
- 		put_device(dev);
- 	}
- 	list_splice(&list, &dpm_list);
-Index: linux-2.6/drivers/base/power/common.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/common.c
-+++ linux-2.6/drivers/base/power/common.c
-@@ -19,10 +19,11 @@
-  */
- void device_pm_init(struct device *dev)
- {
--	dev->power.status = DPM_ON;
- 	spin_lock_init(&dev->power.lock);
- 	INIT_LIST_HEAD(&dev->power.master_links);
- 	INIT_LIST_HEAD(&dev->power.slave_links);
-+	dev->power.status = DPM_ON;
-+	device_pm_sleep_init(dev);
- 	pm_runtime_init(dev);
- }
- 
-@@ -82,6 +83,8 @@ int pm_link_add(struct device *slave, st
- 	return 0;
- 
-  err_link:
-+	master->power.async_suspend = false;
-+	slave->power.async_suspend = false;
- 	error = -ENOMEM;
- 	put_device(slave);
- 
+
+Note that probably this device has no acpi entries, because it is an
+addon card, bios knows nothing about it
+
+
+Best regards,
+	Maxim Levitsky
