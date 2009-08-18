@@ -1,13 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Wed, 19 Aug 2009 01:22:16 +0200
-Message-ID: <200908190122.17015.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0908181149300.2684-100000@iolanthe.rowland.org>
+Subject: Re: [RFC][PATCH 7/7] PM: Asynchronous suspend and resume
+	of i8042
+Date: Wed, 19 Aug 2009 01:40:26 +0200
+Message-ID: <200908190140.26730.rjw__13998.1046355844$1250638916$gmane$org@sisk.pl>
+References: <200908122218.13975.rjw@sisk.pl>
+	<1250579010.5351.69.camel@rzhang-dt>
+	<200908182157.53283.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908181149300.2684-100000@iolanthe.rowland.org>
+In-Reply-To: <200908182157.53283.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,64 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 18 August 2009, Alan Stern wrote:
-> On Mon, 17 Aug 2009, Alan Stern wrote:
-> 
-> > It appears that some part of the resume messed up the VT console
-> > driver.
-> 
-> I have narrowed this down.  The problem occurs in agp_intel_resume()
-> in drivers/char/agp/intel-agp.c.  Here's the beginning of the routine:
-> 
-> 
-> static int agp_intel_resume(struct pci_dev *pdev)
-> {
-> 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
-> 	int ret_val;
-> 
-> 	pci_restore_state(pdev);
-> 
-> 	/* We should restore our graphics device's config space,
-> 	 * as host bridge (00:00) resumes before graphics device (02:00),
-> 	 * then our access to its pci space can work right.
-> 	 */
-> 	if (intel_private.pcidev)
-> 		pci_restore_state(intel_private.pcidev);
-> 
-> 
-> As the comment says, pdev is 0000:00:00.0 and intel_private.pcidev is
-> 0000:00:02.0.  So this is the resume routine for 00:00.0, and it calls
-> pci_restore_state() for 00:02.0 before that device has been resumed.
-> 
-> Note that there is no corresponding agp_intel_suspend() function.
-> 
-> Stuff stops appearing on the screen in the middle of the second
-> pci_restore_state() call.  That is, I see messages about "restoring
-> config space at offset..." for each of the two devices, but a
-> debugging message added at the end of pci_restore_state() doesn't
-> appear for the second call.
-> 
-> (Should these config space changes occur at all, given that I'm
-> testing with "echo devices >pm_test"?)
-> 
-> It's also worth noting that a debugging message added to the start of
-> pci_restore_state() shows that for both of these calls,
-> pdev->state_saved is false.  It's not clear whether that matters,
-> though, because the suspend and resume routines in the PCI core do so
-> many calls to pci_save_state() and pci_restore_state() on their own.
-> 
-> Commenting out the second call to pci_restore_state() apparently fixes 
-> the problem.  I have no idea whether it's the right thing to do, 
-> though.
-
-It is.  The PCI core have restored the PCI config already anyway at the early
-resume stage.
-
-I think the first pci_restore_state() could be dropped from there as well.
-
-Thanks,
-Rafael
+T24gVHVlc2RheSAxOCBBdWd1c3QgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24g
+VHVlc2RheSAxOCBBdWd1c3QgMjAwOSwgWmhhbmcgUnVpIHdyb3RlOgo+ID4gT24gTW9uLCAyMDA5
+LTA4LTE3IGF0IDA4OjIxICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+ID4gU2V0
+IGFzeW5jX3N1c3BlbmQgZm9yIGk4MDQyLgo+ID4gPiAKPiA+IGl0J3MgdGhlIHBzbW91c2UgcmVz
+ZXQgdGhhdCB0YWtlcyB0aGUgMC40IHNlY29uZHMgZHVyaW5nIHN1c3BlbmQuCj4gPiDvu79zbyB3
+ZSBzaG91bGQgY2FsbCBkZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3BlbmQgZm9yIHRoZSBwc21vdXNl
+IHNlcmlvCj4gPiBkZXZpY2UgaW4gcHNtb3VzZS1iYXNlLmMKPiA+IAo+ID4gT3IgaW52b2tpbmcg
+ZGV2aWNlX2VuYWJsZV9hc3luY19zdXNwZW5kIGZvciBldmVyeSBzZXJpbyBkZXZpY2UgaW4KPiA+
+IHNlcmlvLmMsIGFzIHRoZSBrZXlib2FyZCBhbHNvIHRha2VzIGFib3V0IDAuMnMgdG8gc3VzcGVu
+ZC4KPiAKPiBZZXMgd2UgY2FuIGRvIHRoYXQuICBJJ2xsIHRlc3QgdGhhdCBsYXRlciB0b2RheS4K
+ClRoZSBhcHBlbmRlZCBwYXRjaCBhcHBlYXJzIHRvIHdvcmsgb24gbXkgdGVzdCBib3guCgpUaGFu
+a3MsClJhZmFlbAoKLS0tClNldCBhc3luY19zdXNwZW5kIGZvciBzZXJpbyBpbnB1dCBkZXZpY2Vz
+LgoKLS0tCiBkcml2ZXJzL2lucHV0L3NlcmlvL3NlcmlvLmMgfCAgICAxICsKIDEgZmlsZSBjaGFu
+Z2VkLCAxIGluc2VydGlvbigrKQoKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2lucHV0L3Nlcmlv
+L3NlcmlvLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy9pbnB1dC9zZXJp
+by9zZXJpby5jCisrKyBsaW51eC0yLjYvZHJpdmVycy9pbnB1dC9zZXJpby9zZXJpby5jCkBAIC01
+NzYsNiArNTc2LDcgQEAgc3RhdGljIHZvaWQgc2VyaW9fYWRkX3BvcnQoc3RydWN0IHNlcmlvIAog
+CQkJcHJpbnRrKEtFUk5fRVJSCiAJCQkJInNlcmlvOiBzeXNmc19jcmVhdGVfZ3JvdXAoKSBmYWls
+ZWQgZm9yICVzICglcyksIGVycm9yOiAlZFxuIiwKIAkJCQlzZXJpby0+cGh5cywgc2VyaW8tPm5h
+bWUsIGVycm9yKTsKKwkJZGV2aWNlX2VuYWJsZV9hc3luY19zdXNwZW5kKCZzZXJpby0+ZGV2LCB0
+cnVlKTsKIAl9CiB9CiAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eC1wbQ==
