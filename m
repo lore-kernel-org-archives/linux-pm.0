@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
-	(updated)
-Date: Thu, 20 Aug 2009 17:56:36 +0200
-Message-ID: <200908201756.36801.rjw__2356.393778655$1250783801$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Wed, 19 Aug 2009 10:01:56 +0800
+Message-ID: <20090819020156.GA22638@zhen-devel.sh.intel.com>
+References: <Pine.LNX.4.44L0.0908181149300.2684-100000@iolanthe.rowland.org>
+	<200908190122.17015.rjw@sisk.pl>
+Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4303252824238390049=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
+In-Reply-To: <200908190122.17015.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,55 +16,117 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 20 August 2009, Alan Stern wrote:
-> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > On Wednesday 19 August 2009, Alan Stern wrote:
-> > > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > There's a problem that for safety reasons I maintain the ordering of dpm_list
-> > > > and the callbacks are scheduled for async execution in the same order in
-> > > > which they would have been executed synchronously.  If were to change this,
-> > > > we'd have to be _very_ careful.
-> > > 
-> > > Why?  The order in which jobs are scheduled for async execution doesn't 
-> > > bear any particular relation to the order in which they get run.
-> > 
-> > Yes, it does, if all of the async threads are busy and we add more async jobs
-> > to the queue.  We must ensure that none of the jobs being executed will wait
-> > for any jobs in the queue.
-> 
-> That's part of the reason for the dependencies: to make sure that where
-> it matters, things don't run in the wrong order.
-> 
-> > Also, if any devices are handled synchronously, they must not wait for any
-> > "async" devices that haven't been scheduled yet.
-> 
-> I'm not sure what you mean.  If a device is handled synchronously, it 
-> must wait for all the devices preceding it on the list, regardless of 
-> whether those devices are handled asynchronously.
 
-Not really, IMO.  Namely, setting async_suspend for a device is a declaration
-that all of its dependencies are known, whether they are on "async" or on
-"sync" devices.  Hence, "sync" devices don't need to wait for the "async"
-devices they don't depend on in a known way, because otherwise it would be
-invalid to set async_suspend for those "async" devices.
+--===============4303252824238390049==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
+Content-Disposition: inline
 
-Nevertheless, "sync" devices have to wait for all of the other "sync" devices
-that are "in front" of them in dpm_list, because dependencies between different
-"sync" devices need not be known (the direct dependencies betwee them are
-known, but there may be other unknown dependencies satisfied only because the
-the ordering of dpm_list is preserved).
 
-Obviously "sync" devices have to wait for the "async" devices they depend on
-in a known way.  In turn, "async" devices have to wait for all of the devices
-they depend on in a known way, "sync" as well as "async".
+--HcAYCG3uE/tztfnV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Rafael
+On 2009.08.19 01:22:16 +0200, Rafael J. Wysocki wrote:
+> >=20
+> > I have narrowed this down.  The problem occurs in agp_intel_resume()
+> > in drivers/char/agp/intel-agp.c.  Here's the beginning of the routine:
+> >=20
+> >=20
+> > static int agp_intel_resume(struct pci_dev *pdev)
+> > {
+> > 	struct agp_bridge_data *bridge =3D pci_get_drvdata(pdev);
+> > 	int ret_val;
+> >=20
+> > 	pci_restore_state(pdev);
+> >=20
+> > 	/* We should restore our graphics device's config space,
+> > 	 * as host bridge (00:00) resumes before graphics device (02:00),
+> > 	 * then our access to its pci space can work right.
+> > 	 */
+> > 	if (intel_private.pcidev)
+> > 		pci_restore_state(intel_private.pcidev);
+> >=20
+> >=20
+> > As the comment says, pdev is 0000:00:00.0 and intel_private.pcidev is
+> > 0000:00:02.0.  So this is the resume routine for 00:00.0, and it calls
+> > pci_restore_state() for 00:02.0 before that device has been resumed.
+> >=20
+> > Note that there is no corresponding agp_intel_suspend() function.
+> >=20
+> > Stuff stops appearing on the screen in the middle of the second
+> > pci_restore_state() call.  That is, I see messages about "restoring
+> > config space at offset..." for each of the two devices, but a
+> > debugging message added at the end of pci_restore_state() doesn't
+> > appear for the second call.
+> >=20
+> > (Should these config space changes occur at all, given that I'm
+> > testing with "echo devices >pm_test"?)
+> >=20
+> > It's also worth noting that a debugging message added to the start of
+> > pci_restore_state() shows that for both of these calls,
+> > pdev->state_saved is false.  It's not clear whether that matters,
+> > though, because the suspend and resume routines in the PCI core do so
+> > many calls to pci_save_state() and pci_restore_state() on their own.
+> >=20
+> > Commenting out the second call to pci_restore_state() apparently fixes=
+=20
+> > the problem.  I have no idea whether it's the right thing to do,=20
+> > though.
+>=20
+> It is.  The PCI core have restored the PCI config already anyway at the e=
+arly
+> resume stage.
+>=20
+> I think the first pci_restore_state() could be dropped from there as well.
+>=20
+
+Rafael, as I added this restore long time ago, pci core has changed in some=
+ way?
+We had problem when reconfigure agp GTT space in resume, as we must be sure
+gfx device's config space has been restored properly, and as 02:00 gfx devi=
+ce
+restored later than host bridge 00:00 device, that came to my origin patch =
+to
+restore it earlier. So do you mean this order issue is gone now?
+
+We also do proper pci save/restore in drm/i915 driver, which is the real pci
+driver for our gfx device. I'm not sure if there could any conflict between=
+ them...
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--HcAYCG3uE/tztfnV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqLXRQACgkQsQQaM014GCcdRACdFTyPCjy/KrekCdbXSEMsKXn8
+sB8An2HqCe/3B0DkjZmTzEBGYSqa7Ejq
+=HAD/
+-----END PGP SIGNATURE-----
+
+--HcAYCG3uE/tztfnV--
+
+--===============4303252824238390049==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4303252824238390049==--
