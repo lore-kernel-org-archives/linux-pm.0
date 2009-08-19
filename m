@@ -1,61 +1,35 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 4/5]PCIe native PME support
-Date: Wed, 19 Aug 2009 12:58:11 +0100
-Message-ID: <20090819115811.GD12216@srcf.ucam.org>
-References: <1250666659.23178.119.camel@sli10-desk.sh.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
+	(updated)
+Date: Wed, 19 Aug 2009 10:07:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908191004560.3001-100000__30270.9849355326$1250691006$gmane$org@iolanthe.rowland.org>
+References: <200908190033.23502.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1250666659.23178.119.camel@sli10-desk.sh.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200908190033.23502.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 03:24:19PM +0800, Shaohua Li wrote:
+On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
 
-> +static inline void npme_enable_pme(struct pci_dev *pdev, bool enable)
-> +{
-> +	int pos;
-> +	u16 rtctl;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> +
-> +	pci_read_config_word(pdev, pos + PCI_EXP_RTCTL, &rtctl);
-> +	if (!enable)
-> +		rtctl &= ~PCI_EXP_RTCTL_PMEIE;
-> +	else
-> +		rtctl |= PCI_EXP_RTCTL_PMEIE;
-> +	pci_write_config_word(pdev, pos + PCI_EXP_RTCTL, rtctl);
-> +}
+> There's a problem that for safety reasons I maintain the ordering of dpm_list
+> and the callbacks are scheduled for async execution in the same order in
+> which they would have been executed synchronously.  If were to change this,
+> we'd have to be _very_ careful.
 
-This seems to duplicate the existing pci_pme_active() function?
+Why?  The order in which jobs are scheduled for async execution doesn't 
+bear any particular relation to the order in which they get run.
 
-> +static inline void npme_clear_pme(struct pci_dev *pdev)
-> +{
-> +	int pos;
-> +	u32 rtsta;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> +
-> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &rtsta);
-> +	rtsta |= PCI_EXP_RTSTA_PME;
-> +	pci_write_config_dword(pdev, pos + PCI_EXP_RTSTA, rtsta);
-> +}
-
-Ditto.
-
-> +static bool npme_pme_target(struct pci_dev *target)
-> +{
-> +	bool ret = false;
-> +	if (target->dev.bus->pm && target->dev.bus->pm->wakeup_event)
-> +		ret = target->dev.bus->pm->wakeup_event(&target->dev);
-> +	return ret;
-> +}
-
-Is there any situation in which we wouldn't want to just perform a 
-runtime resume of the device here?
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
