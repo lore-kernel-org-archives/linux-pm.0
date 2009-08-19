@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] drivers/base/power: reset transition_started
-	at dpm_resume_noirq
-Date: Wed, 19 Aug 2009 22:58:58 +0200
-Message-ID: <200908192258.58356.rjw__11324.6208908551$1250715582$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908191009330.3001-100000@iolanthe.rowland.org>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
+	(updated)
+Date: Wed, 19 Aug 2009 23:02:31 +0200
+Message-ID: <200908192302.31453.rjw__38864.487122237$1250715760$gmane$org@sisk.pl>
+References: <200908122218.13975.rjw@sisk.pl> <200908190158.09623.rjw@sisk.pl>
+	<1250643929.17853.11.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908191009330.3001-100000@iolanthe.rowland.org>
+In-Reply-To: <1250643929.17853.11.camel@rzhang-dt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,78 +19,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: len.brown@intel.com, gregkh@suse.de, linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>, damm@igel.co.jp, linux-pm@lists.linux-foundation.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 August 2009, Alan Stern wrote:
-> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > On Monday 17 August 2009, Xiaotian Feng wrote:
-> > > transition_started should be set once the preparation of devices for
-> > > a PM has started, reset before starting to resume devices. When resuming
-> > > devices, kernel calls dpm_resume_noirq then dpm_resume_end(dpm_resume).
-> > > Thus we should reset transition_started at dpm_resume_noirq.
-> > > 
-> > > This patch fixes acpi warning when resuming from suspend/hibernate:
-> > > 
-> > > ACPI: \_SB_.PCI0.IDE1.PRI1.MAS1 - docking
-> > > ------------[ cut here ]------------
-> > > WARNING: at drivers/base/power/main.c:87 device_pm_add+0x8b/0xcc()
-> > > Hardware name: OptiPlex 760
-> > > Device: acpi
-> > > Parentless device registered during a PM transaction
-> > > Modules linked in: fuse sco bridge stp llc bnep l2cap bluetooth sunrpc ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 dm_multipath uinput snd_hda_codec_analog radeon ppdev parport_pc snd_hda_intel ttm snd_hda_codec serio_raw snd_hwdep iTCO_wdt drm i2c_i801 parport iTCO_vendor_support pcspkr snd_pcm snd_timer i2c_algo_bit i2c_core snd dcdbas wmi e1000e soundcore snd_page_alloc ata_generic pata_acpi [last unloaded: speedstep_lib]
-> > > Pid: 33, comm: kacpi_hotplug Not tainted 2.6.31-rc5 #51
-> > > Call Trace:
-> > >  [<ffffffff8104ece1>] warn_slowpath_common+0x7c/0x94
-> > >  [<ffffffff8104ed50>] warn_slowpath_fmt+0x41/0x43
-> > >  [<ffffffff812ae827>] device_pm_add+0x8b/0xcc
-> > >  [<ffffffff812a820b>] device_add+0x36f/0x519
-> > >  [<ffffffff812a83d3>] device_register+0x1e/0x22
-> > >  [<ffffffff81245c86>] acpi_add_single_object+0xb48/0xd68
-> > >  [<ffffffff810750d6>] ? trace_hardirqs_on_caller+0x1f/0x159
-> > >  [<ffffffff8107521d>] ? trace_hardirqs_on+0xd/0xf
-> > >  [<ffffffff812461cb>] acpi_bus_add+0x2a/0x40
-> > >  [<ffffffff81244128>] ? acpi_bus_get_device+0x47/0x66
-> > >  [<ffffffff81247c52>] hotplug_dock_devices+0x109/0x133
-> > >  [<ffffffff812423b1>] ? acpi_os_execute_hp_deferred+0x0/0x43
-> > >  [<ffffffff81248013>] acpi_dock_deferred_cb+0xbf/0x192
-> > >  [<ffffffff812423e7>] acpi_os_execute_hp_deferred+0x36/0x43
-> > >  [<ffffffff8106099a>] worker_thread+0x215/0x31d
-> > >  [<ffffffff81060945>] ? worker_thread+0x1c0/0x31d
-> > >  [<ffffffff81415f34>] ? thread_return+0x3e/0xaf
-> > >  [<ffffffff810739bb>] ? lock_release_holdtime+0x2c/0x11d
-> > >  [<ffffffff8106549e>] ? autoremove_wake_function+0x0/0x39
-> > >  [<ffffffff81060785>] ? worker_thread+0x0/0x31d
-> > >  [<ffffffff8106513c>] kthread+0x8a/0x92
-> > >  [<ffffffff81012d4a>] child_rip+0xa/0x20
-> > >  [<ffffffff810126d0>] ? restore_args+0x0/0x30
-> > >  [<ffffffff810650b2>] ? kthread+0x0/0x92
-> > >  [<ffffffff81012d40>] ? child_rip+0x0/0x20
-> > > ---[ end trace 6f4892372e7d9f1a ]---
-> > > 
-> > > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> > 
-> > OK, we can do this IMO.
-> > 
-> > Alan, what do you think?
-> 
-> I suppose so.  The difference between dpm_resume() and 
-> dpm_resume_noirq() is minimal.
-> 
-> But at the same time, I wonder if this isn't really a bug in ACPI.  
-> Why does it want to register a new top-level device during the 
-> resume_noirq phase?
-> 
-> The stack trace indicates that the registration occurred from within a
-> workqueue.  Maybe it should be moved to a freezable workqueue; that
-> would prevent it from happening too early.
-
-This looks like the box was put into a docking station while suspended or
-something like this, which would indicate that the action was legitimate.
-
-Anyway, I don't think that's anything the core has to care about. :-)
-
-Thanks,
-Rafael
+T24gV2VkbmVzZGF5IDE5IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gT24gV2VkLCAy
+MDA5LTA4LTE5IGF0IDA3OjU4ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IE9u
+IFR1ZXNkYXkgMTggQXVndXN0IDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gPiBP
+biBUdWVzZGF5IDE4IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gPiA+ID4gT24gTW9u
+LCAyMDA5LTA4LTE3IGF0IDA4OjE1ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+
+ID4gPiA+IE9uIFdlZG5lc2RheSAxMiBBdWd1c3QgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3Jv
+dGU6Cj4gPiA+ID4gPiA+IEhpLAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gVGhlIGZvbGxvd2lu
+ZyBwYXRjaGVzIGludHJvZHVjZSBhIG1lY2hhbmlzbSBhbGxvd2luZyB1cyB0byBleGVjdXRlIGRl
+dmljZQo+ID4gPiA+ID4gPiBkcml2ZXJzJyBzdXNwZW5kIGFuZCByZXN1bWUgY2FsbGJhY2tzIGFz
+eW5jaHJvbm91c2x5IGR1cmluZyBzeXN0ZW0gc2xlZXAKPiA+ID4gPiA+ID4gdHJhbnNpdGlvbnMs
+IHN1Y2ggYXMgc3VzcGVuZCB0byBSQU0uICBUaGUgaWRlYSBpcyBleHBsYWluZWQgaW4gdGhlIFsx
+LzFdIHBhdGNoCj4gPiA+ID4gPiA+IG1lc3NhZ2UuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IENoYW5n
+ZXM6Cj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogQWRkZWQgWzEvN10gdGhhdCBmaXhlcyBrZXJuZWxk
+b2MgY29tbWVudHMgaW4gZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+ID4gPiA+ID4gICAodGhp
+cyBpcyBhIDIuNi4zMiBjYW5kaWRhdGUpLgo+ID4gPiA+ID4gCj4gPiA+ID4gPiAqIEFkZGVkIFsy
+LzddIGFkZGluZyBhIGZyYW1ld29yayBmb3IgcmVwcmVzZW50aW5nIFBNIGxpbmsgKGlkZWEgZGVz
+Y3JpYmVkCj4gPiA+ID4gPiAgIGluIHRoZSBwYXRjaCBtZXNzYWdlKS4KPiA+ID4gPiA+IAo+ID4g
+PiA+ID4gKiBbMy83XSBpcyB0aGUgYXN5bmMgcmVzdW1lIHBhdGNoIChpZGVhIGRlc2NyaWJlZCBp
+biB0aGUgcGF0Y2ggbWVzc2FnZSkuCj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogWzQvN10gaXMgdGhl
+IGFzeW5jIHN1c3BlbmQgcGF0Y2guCj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogWzUvN10gLSBbNy83
+XSBzZXQgYXN5bmNfc3VzcGVuZCBmb3IgZGV2aWNlcyBpbiBhIGZldyBzZWxlY3RlZCBzdWJzeXN0
+ZW1zLgo+ID4gPiA+ID4gCj4gPiA+ID4gPiBUaGUgcGF0Y2hlcyBoYXZlIGJlZW4gdGVzdGVkIG9u
+IEhQIG54NjMyNS4KPiA+ID4gPiA+IAo+ID4gPiA+IEkgdHJpZWQgdGhpcyBwYXRjaCBzZXQgYW5k
+IGl0IGRvZXMgd29yay4gOikKPiA+ID4gPiBCdXQgdW5mb3J0dW5hdGVseSBpdCBkb2Vzbid0IHNh
+dmUgdG9vIG11Y2ggdGltZS4KPiA+ID4gPiAKPiA+ID4gPiBJIHN0aWxsIHRoaW5rIHRoYXQgdGhl
+IGNoaWxkIGRldmljZSBzaG91bGQgaW5oZXJpdCBpdHMgcGFyZW50J3MKPiA+ID4gPiBhc3luY19z
+dXNwZW5kIGZsYWcgdG8gZG8gdGhlIGFzeW5jaHJvbm91cyByZXN1bWUgbW9yZSBlZmZpY2llbnRs
+eS4KPiA+ID4gPiAKPiA+ID4gPiBvciBhdCBsZWFzdCB3ZSBzaG91bGQgcHJvdmlkZSBzdWNoIGFu
+IGludGVyZmFjZQo+ID4gPiA+IGluIO+7v2RyaXZlcnMvYmFzZS9wb3dlci9jb21tb24uYywgc28g
+dGhhdCBkZXZpY2UgY2FuIHRlbGwgdGhlIGRldmljZSBjb3JlCj4gPiA+ID4gdG8gaW5oZXJpdCB0
+aGlzIGZsYWcgaWYgdGhlcmUgaXMgbm8gb2ZmLXRyZWUgZGVwZW5kZW5jeS4KPiA+ID4gCj4gPiA+
+IFdlbGwsIEknZCBwcmVmZXIgdG8gaWRlbnRpZnkgYWxsIG9mIHRoZSBvZmYtdHJlZSBkZXBlbmRl
+bmNpZXMgdGhhdCBoYXZlIHRvIGJlCj4gPiA+IHRha2VuIGludG8gYWNjb3VudCBhbmQgaGFuZGxl
+IGFsbCBkZXZpY2VzIGFzeW5jaHJvbm91c2x5Lgo+ID4gCj4gPiBBbnl3YXksIEkgaGF2ZSB0ZXN0
+ZWQgdGhlIGFwcGVuZGVkIHBhdGNoIG9uIHRvcCBvZiBbMS83XS1bNy83XSBhbmQgbXkgdGVzdCBi
+b3gKPiA+IGFwcGVhcnMgdG8gd29yayBmaW5lIHdpdGggaXQsIGFsdGhvdWdoIGl0IGRvZXNuJ3Qg
+d29yayBpbiB0aGUgImFzeW5jIGZvciBhbGwiCj4gPiBjYXNlLgo+ID4gCj4gPiBJIGd1ZXNzIHRo
+ZSBuZXh0IHN0ZXAgd2lsbCBiZSB0byBzZWUgd2hpY2ggZGV2aWNlcyBhcmUgbm90IGhhbmRsZWQK
+PiA+IGFzeW5jaHJvbm91c2x5IHdpdGggdGhlIHBhdGNoIGJlbG93IGFuZCB0cnkgdG8gZmlndXJl
+IG91dCB3aGljaCBvZiB0aGVtCj4gPiBicmVhayhzKSB0aGluZ3MuCj4gPiAKPiA+IFRoYW5rcywK
+PiA+IFJhZmFlbAo+ID4gCj4gPiAtLS0KPiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMg
+fCAgICA2ICsrKysrLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDEgZGVs
+ZXRpb24oLSkKPiA+IAo+ID4gSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2Jhc2UvcG93ZXIvY29t
+bW9uLmMKPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT0KPiA+IC0tLSBsaW51eC0yLjYub3JpZy9kcml2ZXJzL2Jhc2Uv
+cG93ZXIvY29tbW9uLmMKPiA+ICsrKyBsaW51eC0yLjYvZHJpdmVycy9iYXNlL3Bvd2VyL2NvbW1v
+bi5jCj4gPiBAQCAtMzIsNyArMzIsMTEgQEAgdm9pZCBkZXZpY2VfcG1fYWRkKHN0cnVjdCBkZXZp
+Y2UgKmRldikKPiA+ICAJcHJfZGVidWcoIlBNOiBBZGRpbmcgaW5mbyBmb3IgJXM6JXNcbiIsCj4g
+PiAgCQkgZGV2LT5idXMgPyBkZXYtPmJ1cy0+bmFtZSA6ICJObyBCdXMiLAo+ID4gIAkJIGtvYmpl
+Y3RfbmFtZSgmZGV2LT5rb2JqKSk7Cj4gPiAtCXBtX2xpbmtfYWRkKGRldiwgZGV2LT5wYXJlbnQp
+Owo+ID4gKwlpZiAoZGV2LT5wYXJlbnQpIHsKPiA+ICsJCXBtX2xpbmtfYWRkKGRldiwgZGV2LT5w
+YXJlbnQpOwo+ID4gKwkJaWYgKGRldi0+cGFyZW50LT5wb3dlci5hc3luY19zdXNwZW5kKQo+ID4g
+KwkJCWRldi0+cG93ZXIuYXN5bmNfc3VzcGVuZCA9IHRydWU7Cj4gPiArCX0KPiAKPiB0byB1c2Ug
+dGhpcywgd2UgbXVzdCBtYWtlIHN1cmUgdGhhdCDvu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3Bl
+bmQgaXMKPiBjYWxsZWQgYmVmb3JlIGFueSBvZiBpdHMgY2hpbGQgZGV2aWNlIGJlaW5nIHJlZ2lz
+dGVyZWQsIHJpZ2h0Pwo+IHNob3VsZCB3ZSBjaGVjayB0aGlzIGluIO+7v++7v2RldmljZV9lbmFi
+bGVfYXN5bmNfc3VzcGVuZD8KPiBvciBhdCBsZWFzdCB3ZSBzaG91bGQgYWRkIHRoZSBjb21tZW50
+cyBzdGF0aW5nIHRoaXMgaXNzdWUuCgpUaGF0J3MgY29ycmVjdCBpbiBnZW5lcmFsLCBidXQgSSBh
+ZGRlZCB0aGUgcGF0Y2ggZm9yIHRlc3RpbmcgcHVycG9zZXMgb25seS4KClRoZSBnb2FsIHN0aWxs
+IGlzIHRvIGlkZW50aWZ5IGFsbCBvZiB0aGUgZGVwZW5kZW5jaWVzIHRoYXQgbmVlZCB0byBiZSB0
+YWtlbgpjYXJlIG9mIGFuZCB0byByZXByZXNlbnQgdGhlbSBhcHByb3ByaWF0ZWx5LCBzbyB0aGF0
+IHdlIGNhbiBzYWZlbHkgc2V0CmFzeW5jX3N1c3BlbmQgZm9yIGFsbCBkZXZpY2VzLgoKSSB3b25k
+ZXIgaWYgeW91IGdldCBhbnkgaW1wcm92ZW1lbnQgd2l0aCB0aGlzIHBhdGNoIGFwcGxpZWQ/CgpU
+aGFua3MsClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2xpbnV4LXBt
