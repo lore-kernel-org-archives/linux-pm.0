@@ -1,84 +1,52 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
-	(updated)
-Date: Wed, 19 Aug 2009 09:05:29 +0800
-Message-ID: <1250643929.17853.11.camel__11642.3444626436$1250644098$gmane$org@rzhang-dt>
-References: <200908122218.13975.rjw@sisk.pl>
-	<1250579793.5351.79.camel@rzhang-dt> <200908182201.11489.rjw@sisk.pl>
-	<200908190158.09623.rjw@sisk.pl>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: [PATCH 2/5] introduce default operation for wakeup event
+Date: Wed, 19 Aug 2009 15:24:14 +0800
+Message-ID: <1250666654.23178.117.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908190158.09623.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, mjg59 <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDA5LTA4LTE5IGF0IDA3OjU4ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBUdWVzZGF5IDE4IEF1Z3VzdCAyMDA5LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToK
-PiA+IE9uIFR1ZXNkYXkgMTggQXVndXN0IDIwMDksIFpoYW5nIFJ1aSB3cm90ZToKPiA+ID4gT24g
-TW9uLCAyMDA5LTA4LTE3IGF0IDA4OjE1ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToK
-PiA+ID4gPiBPbiBXZWRuZXNkYXkgMTIgQXVndXN0IDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdy
-b3RlOgo+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiAKPiA+ID4gPiA+IFRoZSBmb2xsb3dpbmcgcGF0
-Y2hlcyBpbnRyb2R1Y2UgYSBtZWNoYW5pc20gYWxsb3dpbmcgdXMgdG8gZXhlY3V0ZSBkZXZpY2UK
-PiA+ID4gPiA+IGRyaXZlcnMnIHN1c3BlbmQgYW5kIHJlc3VtZSBjYWxsYmFja3MgYXN5bmNocm9u
-b3VzbHkgZHVyaW5nIHN5c3RlbSBzbGVlcAo+ID4gPiA+ID4gdHJhbnNpdGlvbnMsIHN1Y2ggYXMg
-c3VzcGVuZCB0byBSQU0uICBUaGUgaWRlYSBpcyBleHBsYWluZWQgaW4gdGhlIFsxLzFdIHBhdGNo
-Cj4gPiA+ID4gPiBtZXNzYWdlLgo+ID4gPiA+IAo+ID4gPiA+IENoYW5nZXM6Cj4gPiA+ID4gCj4g
-PiA+ID4gKiBBZGRlZCBbMS83XSB0aGF0IGZpeGVzIGtlcm5lbGRvYyBjb21tZW50cyBpbiBkcml2
-ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jCj4gPiA+ID4gICAodGhpcyBpcyBhIDIuNi4zMiBjYW5kaWRh
-dGUpLgo+ID4gPiA+IAo+ID4gPiA+ICogQWRkZWQgWzIvN10gYWRkaW5nIGEgZnJhbWV3b3JrIGZv
-ciByZXByZXNlbnRpbmcgUE0gbGluayAoaWRlYSBkZXNjcmliZWQKPiA+ID4gPiAgIGluIHRoZSBw
-YXRjaCBtZXNzYWdlKS4KPiA+ID4gPiAKPiA+ID4gPiAqIFszLzddIGlzIHRoZSBhc3luYyByZXN1
-bWUgcGF0Y2ggKGlkZWEgZGVzY3JpYmVkIGluIHRoZSBwYXRjaCBtZXNzYWdlKS4KPiA+ID4gPiAK
-PiA+ID4gPiAqIFs0LzddIGlzIHRoZSBhc3luYyBzdXNwZW5kIHBhdGNoLgo+ID4gPiA+IAo+ID4g
-PiA+ICogWzUvN10gLSBbNy83XSBzZXQgYXN5bmNfc3VzcGVuZCBmb3IgZGV2aWNlcyBpbiBhIGZl
-dyBzZWxlY3RlZCBzdWJzeXN0ZW1zLgo+ID4gPiA+IAo+ID4gPiA+IFRoZSBwYXRjaGVzIGhhdmUg
-YmVlbiB0ZXN0ZWQgb24gSFAgbng2MzI1Lgo+ID4gPiA+IAo+ID4gPiBJIHRyaWVkIHRoaXMgcGF0
-Y2ggc2V0IGFuZCBpdCBkb2VzIHdvcmsuIDopCj4gPiA+IEJ1dCB1bmZvcnR1bmF0ZWx5IGl0IGRv
-ZXNuJ3Qgc2F2ZSB0b28gbXVjaCB0aW1lLgo+ID4gPiAKPiA+ID4gSSBzdGlsbCB0aGluayB0aGF0
-IHRoZSBjaGlsZCBkZXZpY2Ugc2hvdWxkIGluaGVyaXQgaXRzIHBhcmVudCdzCj4gPiA+IGFzeW5j
-X3N1c3BlbmQgZmxhZyB0byBkbyB0aGUgYXN5bmNocm9ub3VzIHJlc3VtZSBtb3JlIGVmZmljaWVu
-dGx5Lgo+ID4gPiAKPiA+ID4gb3IgYXQgbGVhc3Qgd2Ugc2hvdWxkIHByb3ZpZGUgc3VjaCBhbiBp
-bnRlcmZhY2UKPiA+ID4gaW4g77u/ZHJpdmVycy9iYXNlL3Bvd2VyL2NvbW1vbi5jLCBzbyB0aGF0
-IGRldmljZSBjYW4gdGVsbCB0aGUgZGV2aWNlIGNvcmUKPiA+ID4gdG8gaW5oZXJpdCB0aGlzIGZs
-YWcgaWYgdGhlcmUgaXMgbm8gb2ZmLXRyZWUgZGVwZW5kZW5jeS4KPiA+IAo+ID4gV2VsbCwgSSdk
-IHByZWZlciB0byBpZGVudGlmeSBhbGwgb2YgdGhlIG9mZi10cmVlIGRlcGVuZGVuY2llcyB0aGF0
-IGhhdmUgdG8gYmUKPiA+IHRha2VuIGludG8gYWNjb3VudCBhbmQgaGFuZGxlIGFsbCBkZXZpY2Vz
-IGFzeW5jaHJvbm91c2x5Lgo+IAo+IEFueXdheSwgSSBoYXZlIHRlc3RlZCB0aGUgYXBwZW5kZWQg
-cGF0Y2ggb24gdG9wIG9mIFsxLzddLVs3LzddIGFuZCBteSB0ZXN0IGJveAo+IGFwcGVhcnMgdG8g
-d29yayBmaW5lIHdpdGggaXQsIGFsdGhvdWdoIGl0IGRvZXNuJ3Qgd29yayBpbiB0aGUgImFzeW5j
-IGZvciBhbGwiCj4gY2FzZS4KPiAKPiBJIGd1ZXNzIHRoZSBuZXh0IHN0ZXAgd2lsbCBiZSB0byBz
-ZWUgd2hpY2ggZGV2aWNlcyBhcmUgbm90IGhhbmRsZWQKPiBhc3luY2hyb25vdXNseSB3aXRoIHRo
-ZSBwYXRjaCBiZWxvdyBhbmQgdHJ5IHRvIGZpZ3VyZSBvdXQgd2hpY2ggb2YgdGhlbQo+IGJyZWFr
-KHMpIHRoaW5ncy4KPiAKPiBUaGFua3MsCj4gUmFmYWVsCj4gCj4gLS0tCj4gIGRyaXZlcnMvYmFz
-ZS9wb3dlci9jb21tb24uYyB8ICAgIDYgKysrKystCj4gIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2Vy
-dGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiAKPiBJbmRleDogbGludXgtMi42L2RyaXZlcnMvYmFz
-ZS9wb3dlci9jb21tb24uYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gbGludXgtMi42Lm9yaWcvZHJpdmVy
-cy9iYXNlL3Bvd2VyL2NvbW1vbi5jCj4gKysrIGxpbnV4LTIuNi9kcml2ZXJzL2Jhc2UvcG93ZXIv
-Y29tbW9uLmMKPiBAQCAtMzIsNyArMzIsMTEgQEAgdm9pZCBkZXZpY2VfcG1fYWRkKHN0cnVjdCBk
-ZXZpY2UgKmRldikKPiAgCXByX2RlYnVnKCJQTTogQWRkaW5nIGluZm8gZm9yICVzOiVzXG4iLAo+
-ICAJCSBkZXYtPmJ1cyA/IGRldi0+YnVzLT5uYW1lIDogIk5vIEJ1cyIsCj4gIAkJIGtvYmplY3Rf
-bmFtZSgmZGV2LT5rb2JqKSk7Cj4gLQlwbV9saW5rX2FkZChkZXYsIGRldi0+cGFyZW50KTsKPiAr
-CWlmIChkZXYtPnBhcmVudCkgewo+ICsJCXBtX2xpbmtfYWRkKGRldiwgZGV2LT5wYXJlbnQpOwo+
-ICsJCWlmIChkZXYtPnBhcmVudC0+cG93ZXIuYXN5bmNfc3VzcGVuZCkKPiArCQkJZGV2LT5wb3dl
-ci5hc3luY19zdXNwZW5kID0gdHJ1ZTsKPiArCX0KCnRvIHVzZSB0aGlzLCB3ZSBtdXN0IG1ha2Ug
-c3VyZSB0aGF0IO+7v2RldmljZV9lbmFibGVfYXN5bmNfc3VzcGVuZCBpcwpjYWxsZWQgYmVmb3Jl
-IGFueSBvZiBpdHMgY2hpbGQgZGV2aWNlIGJlaW5nIHJlZ2lzdGVyZWQsIHJpZ2h0PwpzaG91bGQg
-d2UgY2hlY2sgdGhpcyBpbiDvu7/vu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3BlbmQ/Cm9yIGF0
-IGxlYXN0IHdlIHNob3VsZCBhZGQgdGhlIGNvbW1lbnRzIHN0YXRpbmcgdGhpcyBpc3N1ZS4KCnRo
-YW5rcywKcnVpCgo+ICAJZGV2aWNlX3BtX2xpc3RfYWRkKGRldik7Cj4gIH0KPiAgCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+
+The default action to handle wakeup event. Currently just prints something.
+Later we should add real operations like calling pm_runtime_resume().
+The routine will be called in task context.
+
+---
+ drivers/base/power/main.c |    6 ++++++
+ include/linux/pm.h        |    2 ++
+ 2 files changed, 8 insertions(+)
+
+Index: linux/drivers/base/power/main.c
+===================================================================
+--- linux.orig/drivers/base/power/main.c	2009-08-19 13:44:03.000000000 +0800
++++ linux/drivers/base/power/main.c	2009-08-19 13:48:27.000000000 +0800
+@@ -825,3 +825,9 @@ void __suspend_report_result(const char 
+ 		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
+ }
+ EXPORT_SYMBOL_GPL(__suspend_report_result);
++
++void device_receive_wakeup_event(struct device *dev)
++{
++	pr_debug("Device %s invokes wakeup event\n", dev_name(dev));
++}
++EXPORT_SYMBOL(device_receive_wakeup_event);
+Index: linux/include/linux/pm.h
+===================================================================
+--- linux.orig/include/linux/pm.h	2009-08-19 13:44:03.000000000 +0800
++++ linux/include/linux/pm.h	2009-08-19 13:48:27.000000000 +0800
+@@ -437,6 +437,8 @@ struct dev_pm_info {
+ /* Necessary, because several drivers use PM_EVENT_PRETHAW */
+ #define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
+ 
++void device_receive_wakeup_event(struct device *dev);
++
+ /*
+  * One transition is triggered by resume(), after a suspend() call; the
+  * message is implicit:
+
+
