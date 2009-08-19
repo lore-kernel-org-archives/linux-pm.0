@@ -1,7 +1,7 @@
 From: Shaohua Li <shaohua.li@intel.com>
-Subject: [PATCH 2/5] introduce default operation for wakeup event
-Date: Wed, 19 Aug 2009 15:24:14 +0800
-Message-ID: <1250666654.23178.117.camel@sli10-desk.sh.intel.com>
+Subject: [PATCH 5/5] acpi-based wakeup event detection
+Date: Wed, 19 Aug 2009 15:24:21 +0800
+Message-ID: <1250666661.23178.120.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -12,41 +12,109 @@ Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, m
 List-Id: linux-pm@vger.kernel.org
 
 
-The default action to handle wakeup event. Currently just prints something.
-Later we should add real operations like calling pm_runtime_resume().
-The routine will be called in task context.
-
+In ACPI platform, if native PME isn't enabled, GPE is used to report wakeup event.
 ---
- drivers/base/power/main.c |    6 ++++++
- include/linux/pm.h        |    2 ++
- 2 files changed, 8 insertions(+)
+ drivers/acpi/Kconfig        |    9 ++++++
+ drivers/acpi/bus.c          |   15 +++++++++++
+ drivers/acpi/sleep/wakeup.c |   60 ++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h     |    4 ++
+ 4 files changed, 88 insertions(+)
 
-Index: linux/drivers/base/power/main.c
+Index: linux/drivers/acpi/Kconfig
 ===================================================================
---- linux.orig/drivers/base/power/main.c	2009-08-19 13:44:03.000000000 +0800
-+++ linux/drivers/base/power/main.c	2009-08-19 13:48:27.000000000 +0800
-@@ -825,3 +825,9 @@ void __suspend_report_result(const char 
- 		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
- }
- EXPORT_SYMBOL_GPL(__suspend_report_result);
-+
-+void device_receive_wakeup_event(struct device *dev)
-+{
-+	pr_debug("Device %s invokes wakeup event\n", dev_name(dev));
-+}
-+EXPORT_SYMBOL(device_receive_wakeup_event);
-Index: linux/include/linux/pm.h
-===================================================================
---- linux.orig/include/linux/pm.h	2009-08-19 13:44:03.000000000 +0800
-+++ linux/include/linux/pm.h	2009-08-19 13:48:27.000000000 +0800
-@@ -437,6 +437,8 @@ struct dev_pm_info {
- /* Necessary, because several drivers use PM_EVENT_PRETHAW */
- #define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
+--- linux.orig/drivers/acpi/Kconfig	2009-08-05 11:00:06.000000000 +0800
++++ linux/drivers/acpi/Kconfig	2009-08-19 10:07:05.000000000 +0800
+@@ -45,6 +45,15 @@ config ACPI_SLEEP
+ 	depends on SUSPEND || HIBERNATION
+ 	default y
  
-+void device_receive_wakeup_event(struct device *dev);
++config ACPI_GPE_WAKEUP
++	bool "ACPI wakeup event support"
++	depends on PM_SLEEP && EXPERIMENTAL
++	help
++	  Enable ACPI to detect wakeup event. For example, PCI device can
++	  invoke PME, and in ACPI platform, the PME will invoke a GPE. With
++	  the option, we can detect which device invokes wakeup event.
 +
- /*
-  * One transition is triggered by resume(), after a suspend() call; the
-  * message is implicit:
++
+ config ACPI_PROCFS
+ 	bool "Deprecated /proc/acpi files"
+ 	depends on PROC_FS
+Index: linux/drivers/acpi/wakeup.c
+===================================================================
+--- linux.orig/drivers/acpi/wakeup.c	2009-07-24 11:31:05.000000000 +0800
++++ linux/drivers/acpi/wakeup.c	2009-08-19 10:16:27.000000000 +0800
+@@ -124,6 +124,63 @@ void acpi_disable_wakeup_device(u8 sleep
+ 	}
+ }
+ 
++#ifdef CONFIG_ACPI_GPE_WAKEUP
++static int acpi_gpe_pme_check(struct acpi_device *dev)
++{
++	struct device *ldev;
++
++	ldev = acpi_get_physical_device(dev->handle);
++	if (!ldev)
++		return -ENODEV;
++	/*
++	 * AML code might already clear the event, so ignore the return value.
++	 * Actually we can't correctly detect which device invokes GPE if the
++	 * event is cleared.
++	 */
++	if (ldev->bus->pm && ldev->bus->pm->wakeup_event)
++		ldev->bus->pm->wakeup_event(ldev);
++
++	put_device(ldev);
++	return 0;
++}
++
++static int acpi_gpe_pme_handler(struct notifier_block *nb,
++	unsigned long type, void *data)
++{
++	int ret;
++	acpi_handle handle = data;
++	struct acpi_device *dev;
++
++	if (type != ACPI_NOTIFY_DEVICE_WAKE)
++		return NOTIFY_DONE;
++
++	if (acpi_bus_get_device(handle, &dev))
++		return NOTIFY_DONE;
++
++	ret = acpi_gpe_pme_check(dev);
++
++	acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number);
++
++	/* FIXME: spurious interrupt, disables it? */
++	if (ret)
++		printk(KERN_ERR"Spurious GPE %d detected\n",
++			dev->wakeup.gpe_number);
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block acpi_gpe_pme_nb = {
++	.notifier_call = acpi_gpe_pme_handler,
++};
++
++static void acpi_init_gpe_pme(void)
++{
++	register_acpi_bus_notifier(&acpi_gpe_pme_nb);
++}
++#else
++static inline void acpi_init_gpe_pme(void) {}
++#endif
++
+ int __init acpi_wakeup_device_init(void)
+ {
+ 	struct list_head *node, *next;
+@@ -144,5 +201,7 @@ int __init acpi_wakeup_device_init(void)
+ 		dev->wakeup.state.enabled = 1;
+ 	}
+ 	mutex_unlock(&acpi_device_lock);
++
++	acpi_init_gpe_pme();
+ 	return 0;
+ }
 
 
