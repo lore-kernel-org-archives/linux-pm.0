@@ -1,17 +1,14 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] PM: Runtime PM v17 - Platform Device Bus
-	Support
-Date: Wed, 19 Aug 2009 15:11:26 -0700
-Message-ID: <20090819221126.GB28691@suse.de>
-References: <20090815032620.20925.21607.sendpatchset@rx1.opensource.se>
-	<200908161221.18288.rjw@sisk.pl>
-	<20090818221452.GB20676@linux-sh.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/7] PM: Update kerneldoc comments in
+ drivers/base/power/main.c
+Date: Wed, 19 Aug 2009 18:28:56 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908191822520.26174-100000__16306.5781853676$1250721298$gmane$org@iolanthe.rowland.org>
+References: <200908192357.31358.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090818221452.GB20676@linux-sh.org>
+In-Reply-To: <200908192357.31358.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +18,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org, stern@rowland.harvard.edu
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 07:14:52AM +0900, Paul Mundt wrote:
-> Greg?
+On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
 
-Odd, I don't see this in my inbox, sorry for the delay.
-
-> On Sun, Aug 16, 2009 at 12:21:18PM +0200, Rafael J. Wysocki wrote:
-> > On Saturday 15 August 2009, Magnus Damm wrote:
-> > > From: Magnus Damm <damm@igel.co.jp>
-> > > 
-> > > This patch adds default Runtime PM callbacks to the dev_pm_ops
-> > > belonging to the platform bus. The callbacks are weak symbols
-> > > that architecture specific code can override.
-> > > 
-> > > Allows Runtime PM even though CONFIG_PM_SLEEP=n.
-> > > 
-> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> On Monday 17 August 2009, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Update kerneldoc comments in drivers/base/power/main.c
 > > 
-> > Thanks for the patch.
+> > The kerneldoc comments in drivers/base/power/main.c are generally
+> > outdated and some of them don't describe the functions very
+> > accurately.  Update them and standardize the format to use spaces
+> > instead of tabs.
 > > 
-> > Greg, is it fine with you?
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Any objections to this patch from anyone?  Greg, Alan, Randy?
 
-It's fine with me, Rafael, are you taking this through your tree?  If
-so, please add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Just some very minor changes.
 
-thanks,
+> >  /**
+> > - *	pm_op - execute the PM operation appropiate for given PM event
+> > - *	@dev:	Device.
+> > - *	@ops:	PM operations to choose from.
+> > - *	@state:	PM transition of the system being carried out.
+> > + * pm_op - Execute the PM operation appropiate for given PM event.
+> > + * @dev: Device to handle.
+> > + * @ops: PM operations to choose from.
+> > + * @state: PM transition of the system being carried out.
+> >   */
 
-greg k-h
+Here and in several places below, "appropriate" is missing an "r".
+
+> >  /**
+> > - *	pm_noirq_op - execute the PM operation appropiate for given PM event
+> > - *	@dev:	Device.
+> > - *	@ops:	PM operations to choose from.
+> > - *	@state: PM transition of the system being carried out.
+> > + * pm_noirq_op - Execute the PM operation appropiate for given PM event.
+> > + * @dev: Device to handle.
+> > + * @ops: PM operations to choose from.
+> > + * @state: PM transition of the system being carried out.
+> >   *
+> > - *	The operation is executed with interrupts disabled by the only remaining
+> > - *	functional CPU in the system.
+> > + * The driver of @dev will not receive interrupts while this fuction is being
+> > + * executed.
+> >   */
+
+Here and in several places below, "function" is missing an "n".
+
+> >  /**
+> > - *	dpm_resume - Resume every device.
+> > - *	@state: PM transition of the system being carried out.
+> > + * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
+> > + * @state: PM transition of the system being carried out.
+> >   *
+> > - *	Execute the appropriate "resume" callback for all devices the status of
+> > - *	which indicates that they are inactive.
+> > + * Execute the appropriate "resume" callback for all devices the status of which
+> > + * indicates that they are suspended.
+> >   */
+
+The phrasing is slightly awkward.  "... all devices whose status
+indicates..." would be better.  Below as well.
+
+> >  /**
+> > - *	dpm_resume_end - Restore state of each device in system.
+> > - *	@state: PM transition of the system being carried out.
+> > + * dpm_resume_end - Execute "resume" callbacks and complete system transition.
+> > + * @state: PM transition of the system being carried out.
+> >   *
+> > - *	Resume all the devices, unlock them all, and allow new
+> > - *	devices to be registered once again.
+> > + * Resume all the devices, unlock them all, and complete the PM transition of
+> > + * the system.
+> >   */
+
+The "unlock them all" part is a fossil.  It should be removed.
+
+Alan Stern
