@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
 	(updated)
-Date: Wed, 19 Aug 2009 23:02:31 +0200
-Message-ID: <200908192302.31453.rjw__38864.487122237$1250715760$gmane$org@sisk.pl>
-References: <200908122218.13975.rjw@sisk.pl> <200908190158.09623.rjw@sisk.pl>
-	<1250643929.17853.11.camel@rzhang-dt>
+Date: Wed, 19 Aug 2009 23:17:41 +0200
+Message-ID: <200908192317.41253.rjw__17203.5805102952$1250716669$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908191004560.3001-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1250643929.17853.11.camel@rzhang-dt>
+In-Reply-To: <Pine.LNX.4.44L0.0908191004560.3001-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,74 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkbmVzZGF5IDE5IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gT24gV2VkLCAy
-MDA5LTA4LTE5IGF0IDA3OjU4ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+IE9u
-IFR1ZXNkYXkgMTggQXVndXN0IDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gPiBP
-biBUdWVzZGF5IDE4IEF1Z3VzdCAyMDA5LCBaaGFuZyBSdWkgd3JvdGU6Cj4gPiA+ID4gT24gTW9u
-LCAyMDA5LTA4LTE3IGF0IDA4OjE1ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+
-ID4gPiA+IE9uIFdlZG5lc2RheSAxMiBBdWd1c3QgMjAwOSwgUmFmYWVsIEouIFd5c29ja2kgd3Jv
-dGU6Cj4gPiA+ID4gPiA+IEhpLAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gVGhlIGZvbGxvd2lu
-ZyBwYXRjaGVzIGludHJvZHVjZSBhIG1lY2hhbmlzbSBhbGxvd2luZyB1cyB0byBleGVjdXRlIGRl
-dmljZQo+ID4gPiA+ID4gPiBkcml2ZXJzJyBzdXNwZW5kIGFuZCByZXN1bWUgY2FsbGJhY2tzIGFz
-eW5jaHJvbm91c2x5IGR1cmluZyBzeXN0ZW0gc2xlZXAKPiA+ID4gPiA+ID4gdHJhbnNpdGlvbnMs
-IHN1Y2ggYXMgc3VzcGVuZCB0byBSQU0uICBUaGUgaWRlYSBpcyBleHBsYWluZWQgaW4gdGhlIFsx
-LzFdIHBhdGNoCj4gPiA+ID4gPiA+IG1lc3NhZ2UuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IENoYW5n
-ZXM6Cj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogQWRkZWQgWzEvN10gdGhhdCBmaXhlcyBrZXJuZWxk
-b2MgY29tbWVudHMgaW4gZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+ID4gPiA+ID4gICAodGhp
-cyBpcyBhIDIuNi4zMiBjYW5kaWRhdGUpLgo+ID4gPiA+ID4gCj4gPiA+ID4gPiAqIEFkZGVkIFsy
-LzddIGFkZGluZyBhIGZyYW1ld29yayBmb3IgcmVwcmVzZW50aW5nIFBNIGxpbmsgKGlkZWEgZGVz
-Y3JpYmVkCj4gPiA+ID4gPiAgIGluIHRoZSBwYXRjaCBtZXNzYWdlKS4KPiA+ID4gPiA+IAo+ID4g
-PiA+ID4gKiBbMy83XSBpcyB0aGUgYXN5bmMgcmVzdW1lIHBhdGNoIChpZGVhIGRlc2NyaWJlZCBp
-biB0aGUgcGF0Y2ggbWVzc2FnZSkuCj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogWzQvN10gaXMgdGhl
-IGFzeW5jIHN1c3BlbmQgcGF0Y2guCj4gPiA+ID4gPiAKPiA+ID4gPiA+ICogWzUvN10gLSBbNy83
-XSBzZXQgYXN5bmNfc3VzcGVuZCBmb3IgZGV2aWNlcyBpbiBhIGZldyBzZWxlY3RlZCBzdWJzeXN0
-ZW1zLgo+ID4gPiA+ID4gCj4gPiA+ID4gPiBUaGUgcGF0Y2hlcyBoYXZlIGJlZW4gdGVzdGVkIG9u
-IEhQIG54NjMyNS4KPiA+ID4gPiA+IAo+ID4gPiA+IEkgdHJpZWQgdGhpcyBwYXRjaCBzZXQgYW5k
-IGl0IGRvZXMgd29yay4gOikKPiA+ID4gPiBCdXQgdW5mb3J0dW5hdGVseSBpdCBkb2Vzbid0IHNh
-dmUgdG9vIG11Y2ggdGltZS4KPiA+ID4gPiAKPiA+ID4gPiBJIHN0aWxsIHRoaW5rIHRoYXQgdGhl
-IGNoaWxkIGRldmljZSBzaG91bGQgaW5oZXJpdCBpdHMgcGFyZW50J3MKPiA+ID4gPiBhc3luY19z
-dXNwZW5kIGZsYWcgdG8gZG8gdGhlIGFzeW5jaHJvbm91cyByZXN1bWUgbW9yZSBlZmZpY2llbnRs
-eS4KPiA+ID4gPiAKPiA+ID4gPiBvciBhdCBsZWFzdCB3ZSBzaG91bGQgcHJvdmlkZSBzdWNoIGFu
-IGludGVyZmFjZQo+ID4gPiA+IGluIO+7v2RyaXZlcnMvYmFzZS9wb3dlci9jb21tb24uYywgc28g
-dGhhdCBkZXZpY2UgY2FuIHRlbGwgdGhlIGRldmljZSBjb3JlCj4gPiA+ID4gdG8gaW5oZXJpdCB0
-aGlzIGZsYWcgaWYgdGhlcmUgaXMgbm8gb2ZmLXRyZWUgZGVwZW5kZW5jeS4KPiA+ID4gCj4gPiA+
-IFdlbGwsIEknZCBwcmVmZXIgdG8gaWRlbnRpZnkgYWxsIG9mIHRoZSBvZmYtdHJlZSBkZXBlbmRl
-bmNpZXMgdGhhdCBoYXZlIHRvIGJlCj4gPiA+IHRha2VuIGludG8gYWNjb3VudCBhbmQgaGFuZGxl
-IGFsbCBkZXZpY2VzIGFzeW5jaHJvbm91c2x5Lgo+ID4gCj4gPiBBbnl3YXksIEkgaGF2ZSB0ZXN0
-ZWQgdGhlIGFwcGVuZGVkIHBhdGNoIG9uIHRvcCBvZiBbMS83XS1bNy83XSBhbmQgbXkgdGVzdCBi
-b3gKPiA+IGFwcGVhcnMgdG8gd29yayBmaW5lIHdpdGggaXQsIGFsdGhvdWdoIGl0IGRvZXNuJ3Qg
-d29yayBpbiB0aGUgImFzeW5jIGZvciBhbGwiCj4gPiBjYXNlLgo+ID4gCj4gPiBJIGd1ZXNzIHRo
-ZSBuZXh0IHN0ZXAgd2lsbCBiZSB0byBzZWUgd2hpY2ggZGV2aWNlcyBhcmUgbm90IGhhbmRsZWQK
-PiA+IGFzeW5jaHJvbm91c2x5IHdpdGggdGhlIHBhdGNoIGJlbG93IGFuZCB0cnkgdG8gZmlndXJl
-IG91dCB3aGljaCBvZiB0aGVtCj4gPiBicmVhayhzKSB0aGluZ3MuCj4gPiAKPiA+IFRoYW5rcywK
-PiA+IFJhZmFlbAo+ID4gCj4gPiAtLS0KPiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMg
-fCAgICA2ICsrKysrLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDEgZGVs
-ZXRpb24oLSkKPiA+IAo+ID4gSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL2Jhc2UvcG93ZXIvY29t
-bW9uLmMKPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT0KPiA+IC0tLSBsaW51eC0yLjYub3JpZy9kcml2ZXJzL2Jhc2Uv
-cG93ZXIvY29tbW9uLmMKPiA+ICsrKyBsaW51eC0yLjYvZHJpdmVycy9iYXNlL3Bvd2VyL2NvbW1v
-bi5jCj4gPiBAQCAtMzIsNyArMzIsMTEgQEAgdm9pZCBkZXZpY2VfcG1fYWRkKHN0cnVjdCBkZXZp
-Y2UgKmRldikKPiA+ICAJcHJfZGVidWcoIlBNOiBBZGRpbmcgaW5mbyBmb3IgJXM6JXNcbiIsCj4g
-PiAgCQkgZGV2LT5idXMgPyBkZXYtPmJ1cy0+bmFtZSA6ICJObyBCdXMiLAo+ID4gIAkJIGtvYmpl
-Y3RfbmFtZSgmZGV2LT5rb2JqKSk7Cj4gPiAtCXBtX2xpbmtfYWRkKGRldiwgZGV2LT5wYXJlbnQp
-Owo+ID4gKwlpZiAoZGV2LT5wYXJlbnQpIHsKPiA+ICsJCXBtX2xpbmtfYWRkKGRldiwgZGV2LT5w
-YXJlbnQpOwo+ID4gKwkJaWYgKGRldi0+cGFyZW50LT5wb3dlci5hc3luY19zdXNwZW5kKQo+ID4g
-KwkJCWRldi0+cG93ZXIuYXN5bmNfc3VzcGVuZCA9IHRydWU7Cj4gPiArCX0KPiAKPiB0byB1c2Ug
-dGhpcywgd2UgbXVzdCBtYWtlIHN1cmUgdGhhdCDvu79kZXZpY2VfZW5hYmxlX2FzeW5jX3N1c3Bl
-bmQgaXMKPiBjYWxsZWQgYmVmb3JlIGFueSBvZiBpdHMgY2hpbGQgZGV2aWNlIGJlaW5nIHJlZ2lz
-dGVyZWQsIHJpZ2h0Pwo+IHNob3VsZCB3ZSBjaGVjayB0aGlzIGluIO+7v++7v2RldmljZV9lbmFi
-bGVfYXN5bmNfc3VzcGVuZD8KPiBvciBhdCBsZWFzdCB3ZSBzaG91bGQgYWRkIHRoZSBjb21tZW50
-cyBzdGF0aW5nIHRoaXMgaXNzdWUuCgpUaGF0J3MgY29ycmVjdCBpbiBnZW5lcmFsLCBidXQgSSBh
-ZGRlZCB0aGUgcGF0Y2ggZm9yIHRlc3RpbmcgcHVycG9zZXMgb25seS4KClRoZSBnb2FsIHN0aWxs
-IGlzIHRvIGlkZW50aWZ5IGFsbCBvZiB0aGUgZGVwZW5kZW5jaWVzIHRoYXQgbmVlZCB0byBiZSB0
-YWtlbgpjYXJlIG9mIGFuZCB0byByZXByZXNlbnQgdGhlbSBhcHByb3ByaWF0ZWx5LCBzbyB0aGF0
-IHdlIGNhbiBzYWZlbHkgc2V0CmFzeW5jX3N1c3BlbmQgZm9yIGFsbCBkZXZpY2VzLgoKSSB3b25k
-ZXIgaWYgeW91IGdldCBhbnkgaW1wcm92ZW1lbnQgd2l0aCB0aGlzIHBhdGNoIGFwcGxpZWQ/CgpU
-aGFua3MsClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LXBt
+On Wednesday 19 August 2009, Alan Stern wrote:
+> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > There's a problem that for safety reasons I maintain the ordering of dpm_list
+> > and the callbacks are scheduled for async execution in the same order in
+> > which they would have been executed synchronously.  If were to change this,
+> > we'd have to be _very_ careful.
+> 
+> Why?  The order in which jobs are scheduled for async execution doesn't 
+> bear any particular relation to the order in which they get run.
+
+Yes, it does, if all of the async threads are busy and we add more async jobs
+to the queue.  We must ensure that none of the jobs being executed will wait
+for any jobs in the queue.
+
+Also, if any devices are handled synchronously, they must not wait for any
+"async" devices that haven't been scheduled yet.
+
+With a master thread that would do all the waiting that wouldn't be a problem
+any more, but I'm not sure how to implement such a thread efficiently.  The
+problem is that each device may depend on multiple other devices, so even
+if one callback finishes, there's no guarantee there will be any device with
+satisfied dependencies, so it looks like the master thread would have to
+browse dpm_list continuously searching it for devices that are ready for
+suspending.
+
+Also I don't think we can change the ordering of dpm_list as a result of
+asynchronous execution.
+
+Thanks,
+Rafael
