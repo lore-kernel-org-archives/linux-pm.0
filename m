@@ -1,14 +1,15 @@
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Thu, 20 Aug 2009 09:05:28 +0800
-Message-ID: <20090820010528.GA9596@zhen-devel.sh.intel.com>
-References: <20090819020156.GA22638@zhen-devel.sh.intel.com>
-	<Pine.LNX.4.44L0.0908191040050.3001-100000@iolanthe.rowland.org>
-Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
+From: Patrick Boettcher <pboettcher@kernellabs.com>
+Subject: Re: linux-next: suspend tree build warnings
+Date: Thu, 20 Aug 2009 09:01:44 +0200 (CEST)
+Message-ID: <alpine.LRH.1.10.0908200859060.7249__32317.0793978081$1250785191$gmane$org@pub3.ifh.de>
+References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
+	<200908192338.03910.rjw@sisk.pl> <20090819233601.GA2875@kroah.com>
+	<1250729056.2716.37.camel@morgan.walls.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5494542548496381390=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908191040050.3001-100000@iolanthe.rowland.org>
+In-Reply-To: <1250729056.2716.37.camel@morgan.walls.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,80 +17,37 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andy Walls <awalls@radix.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---===============5494542548496381390==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
-Content-Disposition: inline
+On Wed, 19 Aug 2009, Andy Walls wrote:
+>> Ick.  struct device should _never_ be on the stack, why would this code
+>> want to do such a thing?
 
+When you are doing a thing it does not necessarily you know that you're 
+doing it.
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> It appears that the state object is a dummy being used to detect and
+> twiddle some identical chips on the i2c bus.  The functions called only
+> use the "i2c_adapter" and "cfg" member of the dummy state object, but
+> those functions want that state object as an input argument.
+>
+> <obvious>
+> The simplest fix is dynamic allocation of the dummy state object with
+> kmalloc() and then to free it before exiting the function.
+> </obvious>
 
-On 2009.08.19 10:42:07 -0400, Alan Stern wrote:
-> On Wed, 19 Aug 2009, Zhenyu Wang wrote:
->=20
-> > Rafael, as I added this restore long time ago, pci core has changed in =
-some way?
-> > We had problem when reconfigure agp GTT space in resume, as we must be =
-sure
-> > gfx device's config space has been restored properly, and as 02:00 gfx =
-device
-> > restored later than host bridge 00:00 device, that came to my origin pa=
-tch to
-> > restore it earlier.
->=20
-> Why did you do it that way?  I mean, why not restore the gfx device's=20
-> config space in its own resume routine instead of in the host bridge's=20
-> resume routine?
->=20
+Even more obvious: Fix the function with simpler code to do the same 
+thing.
 
-That's the order issue I have mentioned. intel_agp is the pci driver for
-host bridge (dev 00:00), and drm/i915 is the pci driver for gfx device
-(dev 00:02). Host bridge will always resume earlier than gfx device, but
-for intel_agp we need to access gfx device when reconfigure GTT in resume,
-we can't wait until restore happen in i915 driver.
+I will try to fetch some time from somewhere to work on it.
 
-So there might be a conflict here, as i915 driver also do pci_restore_state=
-()
-after we did reconfigure in intel_agp driver, some configs may be corrupted=
-=20
-then. Although I haven't seen it in real testing.=20
+--
 
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---NzB8fVQJ5HfG6fxh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqMoVgACgkQsQQaM014GCe3rACfd5v2civlM3+J1Ne3fHc3LLl2
-2ncAn08/3uK0kXv5kiy04QH9215SIX8h
-=ZtSr
------END PGP SIGNATURE-----
-
---NzB8fVQJ5HfG6fxh--
-
---===============5494542548496381390==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5494542548496381390==--
+Patrick 
+http://www.kernellabs.com/
