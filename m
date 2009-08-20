@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Thu, 20 Aug 2009 18:17:04 +0200
-Message-ID: <200908201817.04231.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0908201115020.2656-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
+Date: Thu, 20 Aug 2009 21:37:28 +0200
+Message-ID: <200908202137.28358.rjw__28836.7314533845$1250797110$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908201118490.2656-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908201115020.2656-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908201118490.2656-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Airlie <airlied@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 20 August 2009, Alan Stern wrote:
-> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> On Thu, 20 Aug 2009, Matthew Garrett wrote:
 > 
-> > Usually, however, restoring the PCI config space twice doesn't hurt, although
-> > it evidently does hurt on your system.
+> > > If the wakeup signal isn't squelched at the source, as part of the
+> > > event handling, will we get an interrupt storm?  Will the uhci-hcd 
+> > > resume routine be able to handle this or does it need to be done 
+> > > earlier?  In other words, do we need special-purpose code in the PCI 
+> > > layer to handler it?
 > > 
-> > Hm, there's a patch that should help here I think.  Can you please test
-> > this one: http://patchwork.kernel.org/patch/40062/ ?
+> > No, nothing special needs to be done at the PCI level. It seems that 
+> > (for Intel at least) there's no need to do anything special at the UHCI 
+> > level either.
 > 
-> Testing confirms that Alex's patch (pci: check saved state before
-> restore) fixes the resume problem.
+> This contradicts what Shaohua wrote:
+> 
+> "The only case is UHCI in my mind. Because UHCI has non-standard wakeup
+> event register. If BIOS doesn't handle it correctly (for example, not
+> clear the wakeup event after a GPE), we will keep see the wakeup
+> event."
 
-Thanks for the confirmation.
+I'm not sure what the phrase "we will keep see the wakeup event" is supposed to
+mean.  For us to "see" any events there has to be a GPE set up or PCIe PME
+enabled on the right root port.  Otherwise I don't see how we can receive the
+event at all.
 
-> IMO it should be merged before 2.6.31 is released.
+The bus type wakeup code won't know how to clear the register to acknowledge
+the wakeup, but the driver's ->runtime_resume() callback surely can do that.
 
-Well, that's a Jesse's decision, I've already acked the patch.
+> What code would be responsible for setting and clearing the 
+> non-standard wakeup register?  Are you assuming that ACPI will always 
+> handle it?  I guess that's a reasonable assumption -- if ACPI wasn't 
+> aware of the register then it never would get enabled, and conversely, 
+> if ACPI was aware and could enable the register, then ACPI ought to 
+> disable it when necessary.
 
-There is a small risk related to it, though, because it's going to affect
-all of the drivers that do their own pci_restore_state().
+In any case the event has to be raised in one of the standard ways.
 
 Thanks,
 Rafael
