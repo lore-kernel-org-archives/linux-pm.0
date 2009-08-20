@@ -1,7 +1,7 @@
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: Very strange issues with ethernet wake on lan
 Date: Thu, 20 Aug 2009 12:16:55 +0300
-Message-ID: <1250759815.6326.5.camel__27749.3992158727$1250759894$gmane$org@localhost.localdomain>
+Message-ID: <1250759815.6326.5.camel__34252.5378488519$1250760021$gmane$org@localhost.localdomain>
 References: <1250394174.32268.13.camel@localhost.localdomain>
 	<1250500588.4301.5.camel@localhost.localdomain>
 	<200908172030.54505.rjw@sisk.pl>
