@@ -1,15 +1,14 @@
-From: Patrick Boettcher <pboettcher@kernellabs.com>
-Subject: Re: linux-next: suspend tree build warnings
-Date: Thu, 20 Aug 2009 09:01:44 +0200 (CEST)
-Message-ID: <alpine.LRH.1.10.0908200859060.7249__32317.0793978081$1250785191$gmane$org@pub3.ifh.de>
-References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
-	<200908192338.03910.rjw@sisk.pl> <20090819233601.GA2875@kroah.com>
-	<1250729056.2716.37.camel@morgan.walls.org>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Thu, 20 Aug 2009 09:05:48 -0700
+Message-ID: <20090820090548.2ea98580@jbarnes-g45>
+References: <Pine.LNX.4.44L0.0908191022390.3001-100000@iolanthe.rowland.org>
+	<200908192322.25261.rjw@sisk.pl> <200908201741.06423.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1250729056.2716.37.camel@morgan.walls.org>
+In-Reply-To: <200908201741.06423.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andy Walls <awalls@radix.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-media@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Alek Du <alek.du@intel.com>, Dave Airlie <airlied@redhat.com>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, 20 Aug 2009 17:41:06 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-On Wed, 19 Aug 2009, Andy Walls wrote:
->> Ick.  struct device should _never_ be on the stack, why would this code
->> want to do such a thing?
+> On Wednesday 19 August 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 19 August 2009, Alan Stern wrote:
+> > > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > > Commenting out the second call to pci_restore_state()
+> > > > > apparently fixes the problem.  I have no idea whether it's
+> > > > > the right thing to do, though.
+> > > > 
+> > > > It is.  The PCI core have restored the PCI config already
+> > > > anyway at the early resume stage.
+> > > > 
+> > > > I think the first pci_restore_state() could be dropped from
+> > > > there as well.
+> > > 
+> > > What about the other AGP drivers in drivers/char/agp?  Looks like
+> > > their suspend and resume routines could all use some updating.
+> > 
+> > As well as many other drivers. :-)
+> > 
+> > Usually, however, restoring the PCI config space twice doesn't
+> > hurt, although it evidently does hurt on your system.
+> > 
+> > Hm, there's a patch that should help here I think.  Can you please
+> > test this one: http://patchwork.kernel.org/patch/40062/ ?
+> 
+> Quoting the patch for completness.
+> 
+> ---
+> From: Alek Du <alek.du@intel.com>
+> Subject: [PATCH] pci: check saved state before restore
 
-When you are doing a thing it does not necessarily you know that you're 
-doing it.
+Ok, I'll send that over to Linus.  I'd been holding off on it since it
+didn't actually fix any external reports.  But now that we have one...
 
-> It appears that the state object is a dummy being used to detect and
-> twiddle some identical chips on the i2c bus.  The functions called only
-> use the "i2c_adapter" and "cfg" member of the dummy state object, but
-> those functions want that state object as an input argument.
->
-> <obvious>
-> The simplest fix is dynamic allocation of the dummy state object with
-> kmalloc() and then to free it before exiting the function.
-> </obvious>
-
-Even more obvious: Fix the function with simpler code to do the same 
-thing.
-
-I will try to fetch some time from somewhere to work on it.
-
---
-
-Patrick 
-http://www.kernellabs.com/
+-- 
+Jesse Barnes, Intel Open Source Technology Center
