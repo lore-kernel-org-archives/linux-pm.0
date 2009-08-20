@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
-Date: Thu, 20 Aug 2009 11:22:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908201118490.2656-100000__37895.4140389853$1250781988$gmane$org@iolanthe.rowland.org>
-References: <20090820144246.GA4229@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: What to do?
+Date: Thu, 20 Aug 2009 17:24:34 +0200
+Message-ID: <200908201724.34430.rjw__14884.399859193$1250782152$gmane$org@sisk.pl>
+References: <4A8CCF95.9030401@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090820144246.GA4229@srcf.ucam.org>
+In-Reply-To: <4A8CCF95.9030401@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,34 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Aug 2009, Matthew Garrett wrote:
+On Thursday 20 August 2009, Nigel Cunningham wrote:
+> Hi all.
 
-> > If the wakeup signal isn't squelched at the source, as part of the
-> > event handling, will we get an interrupt storm?  Will the uhci-hcd 
-> > resume routine be able to handle this or does it need to be done 
-> > earlier?  In other words, do we need special-purpose code in the PCI 
-> > layer to handler it?
+Hi,
+
+> A few months back, I posted TuxOnIce for something like the third time,
+> seeking to see if we could make some progress on getting it merged. The
+> outcome of that was an agreement between Rafael and I that we'd work on
+> getting TuxOnIce functionality (if not the actual code) merged bit by
+> bit, improving swsusp rather than doing an outright merge.
 > 
-> No, nothing special needs to be done at the PCI level. It seems that 
-> (for Intel at least) there's no need to do anything special at the UHCI 
-> level either.
+> Unfortunately, as the intervening months have shown, Rafael is busy with
+> other things and so am I. The few patches I did prepare and post have
+> had no review, and I haven't had a chance to build on or rework them
+> since. (I'd actually like them not to be merged, because I've realised
+> that there are more foundational changes that need to go in first.)
+> 
+> Given that this has been the outcome so far, I see no reason to imagine
+> that we're going to make any serious progress any time soon.
 
-This contradicts what Shaohua wrote:
+That unfortunately is probably right.
 
-"The only case is UHCI in my mind. Because UHCI has non-standard wakeup
-event register. If BIOS doesn't handle it correctly (for example, not
-clear the wakeup event after a GPE), we will keep see the wakeup
-event."
+The problem for my part is that new things are still appearing that I need to
+take care of rather urgently.
 
-What code would be responsible for setting and clearing the 
-non-standard wakeup register?  Are you assuming that ACPI will always 
-handle it?  I guess that's a reasonable assumption -- if ACPI wasn't 
-aware of the register then it never would get enabled, and conversely, 
-if ACPI was aware and could enable the register, then ACPI ought to 
-disable it when necessary.
+In fact the user space part of (u)swsusp also has been suffering from the lack
+of attention recently, so to speak.
 
-Alan Stern
+> I'd therefore like to ask whether there's anyone out there who could do
+> one or more of:
+> 
+> 1) Step up to the plate and help improve swsusp, without relying on any
+> help from me but with my blessing if they choose to copy wholesale bits
+> of TuxOnIce;
+> 2) Take over maintaining TuxOnIce from me;
+> 3) Some other way forward that hasn't occurred to me.
+> 
+> Thoughts, input, flames, whatever else welcome. A lack of deadly silence
+> would be especially appreciated :)
+
+Well, the code is out there.  If there's time to try to get it in, I think it's
+worth doing.
+
+Best,
+Rafael
