@@ -1,14 +1,14 @@
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Wed, 19 Aug 2009 10:01:56 +0800
-Message-ID: <20090819020156.GA22638@zhen-devel.sh.intel.com>
-References: <Pine.LNX.4.44L0.0908181149300.2684-100000@iolanthe.rowland.org>
-	<200908190122.17015.rjw@sisk.pl>
-Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
+From: Andy Walls <awalls@radix.net>
+Subject: Re: linux-next: suspend tree build warnings
+Date: Wed, 19 Aug 2009 20:44:16 -0400
+Message-ID: <1250729056.2716.37.camel__21548.549042973$1250784980$gmane$org@morgan.walls.org>
+References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
+	<200908192338.03910.rjw@sisk.pl>  <20090819233601.GA2875@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4303252824238390049=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908190122.17015.rjw@sisk.pl>
+In-Reply-To: <20090819233601.GA2875@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,117 +16,41 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
---===============4303252824238390049==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
-Content-Disposition: inline
-
-
---HcAYCG3uE/tztfnV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 2009.08.19 01:22:16 +0200, Rafael J. Wysocki wrote:
-> >=20
-> > I have narrowed this down.  The problem occurs in agp_intel_resume()
-> > in drivers/char/agp/intel-agp.c.  Here's the beginning of the routine:
-> >=20
-> >=20
-> > static int agp_intel_resume(struct pci_dev *pdev)
-> > {
-> > 	struct agp_bridge_data *bridge =3D pci_get_drvdata(pdev);
-> > 	int ret_val;
-> >=20
-> > 	pci_restore_state(pdev);
-> >=20
-> > 	/* We should restore our graphics device's config space,
-> > 	 * as host bridge (00:00) resumes before graphics device (02:00),
-> > 	 * then our access to its pci space can work right.
-> > 	 */
-> > 	if (intel_private.pcidev)
-> > 		pci_restore_state(intel_private.pcidev);
-> >=20
-> >=20
-> > As the comment says, pdev is 0000:00:00.0 and intel_private.pcidev is
-> > 0000:00:02.0.  So this is the resume routine for 00:00.0, and it calls
-> > pci_restore_state() for 00:02.0 before that device has been resumed.
-> >=20
-> > Note that there is no corresponding agp_intel_suspend() function.
-> >=20
-> > Stuff stops appearing on the screen in the middle of the second
-> > pci_restore_state() call.  That is, I see messages about "restoring
-> > config space at offset..." for each of the two devices, but a
-> > debugging message added at the end of pci_restore_state() doesn't
-> > appear for the second call.
-> >=20
-> > (Should these config space changes occur at all, given that I'm
-> > testing with "echo devices >pm_test"?)
-> >=20
-> > It's also worth noting that a debugging message added to the start of
-> > pci_restore_state() shows that for both of these calls,
-> > pdev->state_saved is false.  It's not clear whether that matters,
-> > though, because the suspend and resume routines in the PCI core do so
-> > many calls to pci_save_state() and pci_restore_state() on their own.
-> >=20
-> > Commenting out the second call to pci_restore_state() apparently fixes=
-=20
-> > the problem.  I have no idea whether it's the right thing to do,=20
-> > though.
->=20
-> It is.  The PCI core have restored the PCI config already anyway at the e=
-arly
-> resume stage.
->=20
-> I think the first pci_restore_state() could be dropped from there as well.
->=20
-
-Rafael, as I added this restore long time ago, pci core has changed in some=
- way?
-We had problem when reconfigure agp GTT space in resume, as we must be sure
-gfx device's config space has been restored properly, and as 02:00 gfx devi=
-ce
-restored later than host bridge 00:00 device, that came to my origin patch =
-to
-restore it earlier. So do you mean this order issue is gone now?
-
-We also do proper pci save/restore in drm/i915 driver, which is the real pci
-driver for our gfx device. I'm not sure if there could any conflict between=
- them...
-
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---HcAYCG3uE/tztfnV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqLXRQACgkQsQQaM014GCcdRACdFTyPCjy/KrekCdbXSEMsKXn8
-sB8An2HqCe/3B0DkjZmTzEBGYSqa7Ejq
-=HAD/
------END PGP SIGNATURE-----
-
---HcAYCG3uE/tztfnV--
-
---===============4303252824238390049==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4303252824238390049==--
+T24gV2VkLCAyMDA5LTA4LTE5IGF0IDE2OjM2IC0wNzAwLCBHcmVnIEtIIHdyb3RlOgo+IE9uIFdl
+ZCwgQXVnIDE5LCAyMDA5IGF0IDExOjM4OjAzUE0gKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdy
+b3RlOgo+ID4gT24gV2VkbmVzZGF5IDE5IEF1Z3VzdCAyMDA5LCBTdGVwaGVuIFJvdGh3ZWxsIHdy
+b3RlOgo+ID4gPiBIaSBSYWZhZWwsCj4gPiAKPiA+IEhpLAo+ID4gCj4gPiA+IFRvZGF5J3MgbGlu
+dXgtbmV4dCBidWlsZCAoeDg2XzY0IGFsbG1vZGNvbmZpZykgcHJvZHVjZWQgdGhlc2Ugd2Fybmlu
+Z3M6Cj4gPiA+IAo+ID4gPiBkcml2ZXJzL21lZGlhL2R2Yi9mcm9udGVuZHMvZGliNzAwMHAuYzog
+SW4gZnVuY3Rpb24g4oCYZGliNzAwMHBfaTJjX2VudW1lcmF0aW9u4oCZOgo+ID4gPiBkcml2ZXJz
+L21lZGlhL2R2Yi9mcm9udGVuZHMvZGliNzAwMHAuYzoxMzE1OiB3YXJuaW5nOiB0aGUgZnJhbWUg
+c2l6ZSBvZiAyMjU2IGJ5dGVzIGlzIGxhcmdlciB0aGFuIDIwNDggYnl0ZXMKPiA+ID4gZHJpdmVy
+cy9tZWRpYS9kdmIvZnJvbnRlbmRzL2RpYjMwMDBtYy5jOiBJbiBmdW5jdGlvbiDigJhkaWIzMDAw
+bWNfaTJjX2VudW1lcmF0aW9u4oCZOgo+ID4gPiBkcml2ZXJzL21lZGlhL2R2Yi9mcm9udGVuZHMv
+ZGliMzAwMG1jLmM6ODUzOiB3YXJuaW5nOiB0aGUgZnJhbWUgc2l6ZSBvZiAyMTYwIGJ5dGVzIGlz
+IGxhcmdlciB0aGFuIDIwNDggYnl0ZXMKPiA+ID4gCj4gPiA+IEludHJvZHVjZWQgYnkgY29tbWl0
+IDk5MzA3OTU4Y2M5YzFiMGIyZTBkYWQ0YmJlZmRhZmFmOWFjNWE2ODEgKCJQTToKPiA+ID4gSW50
+cm9kdWNlIGNvcmUgZnJhbWV3b3JrIGZvciBydW4tdGltZSBQTSBvZiBJL08gZGV2aWNlcyAocmV2
+LiAxNykiKS4KPiA+IAo+ID4gV2VsbC4KPiA+IAo+ID4gVGhpcyBjb21taXQgaW5jcmVhc2VzIHRo
+ZSBzaXplIG9mIHN0cnVjdCBkZXZpY2UgcXVpdGUgYSBiaXQgYW5kIGJvdGggb2YgdGhlCj4gPiBk
+cml2ZXJzIGFib3ZlIGNyZWF0ZSBhICJzdGF0ZSIgb2JqZWN0IG9uIHRoZSBzdGFjayB0aGF0IGNv
+bnRhaW5zIHN0cnVjdCBkZXZpY2UKPiA+IGFtb25nIG90aGVyIHRoaW5ncy4KPiAKPiBJY2suICBz
+dHJ1Y3QgZGV2aWNlIHNob3VsZCBfbmV2ZXJfIGJlIG9uIHRoZSBzdGFjaywgd2h5IHdvdWxkIHRo
+aXMgY29kZQo+IHdhbnQgdG8gZG8gc3VjaCBhIHRoaW5nPwoKSXQgYXBwZWFycyB0aGF0IHRoZSBz
+dGF0ZSBvYmplY3QgaXMgYSBkdW1teSBiZWluZyB1c2VkIHRvIGRldGVjdCBhbmQKdHdpZGRsZSBz
+b21lIGlkZW50aWNhbCBjaGlwcyBvbiB0aGUgaTJjIGJ1cy4gIFRoZSBmdW5jdGlvbnMgY2FsbGVk
+IG9ubHkKdXNlIHRoZSAiaTJjX2FkYXB0ZXIiIGFuZCAiY2ZnIiBtZW1iZXIgb2YgdGhlIGR1bW15
+IHN0YXRlIG9iamVjdCwgYnV0CnRob3NlIGZ1bmN0aW9ucyB3YW50IHRoYXQgc3RhdGUgb2JqZWN0
+IGFzIGFuIGlucHV0IGFyZ3VtZW50LgoKPG9idmlvdXM+ClRoZSBzaW1wbGVzdCBmaXggaXMgZHlu
+YW1pYyBhbGxvY2F0aW9uIG9mIHRoZSBkdW1teSBzdGF0ZSBvYmplY3Qgd2l0aAprbWFsbG9jKCkg
+YW5kIHRoZW4gdG8gZnJlZSBpdCBiZWZvcmUgZXhpdGluZyB0aGUgZnVuY3Rpb24uCjwvb2J2aW91
+cz4KClJlZ2FyZHMsCkFuZHkKCgo+IHRoYW5rcywKPiAKPiBncmVnIGstaAoKCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
+dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
+LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
