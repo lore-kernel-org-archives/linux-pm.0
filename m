@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Thu, 20 Aug 2009 11:17:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0908201115020.2656-100000@iolanthe.rowland.org>
-References: <200908192322.25261.rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
+Date: Thu, 20 Aug 2009 11:22:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908201118490.2656-100000__37895.4140389853$1250781988$gmane$org@iolanthe.rowland.org>
+References: <20090820144246.GA4229@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908192322.25261.rjw@sisk.pl>
+In-Reply-To: <20090820144246.GA4229@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,20 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+On Thu, 20 Aug 2009, Matthew Garrett wrote:
 
-> Usually, however, restoring the PCI config space twice doesn't hurt, although
-> it evidently does hurt on your system.
+> > If the wakeup signal isn't squelched at the source, as part of the
+> > event handling, will we get an interrupt storm?  Will the uhci-hcd 
+> > resume routine be able to handle this or does it need to be done 
+> > earlier?  In other words, do we need special-purpose code in the PCI 
+> > layer to handler it?
 > 
-> Hm, there's a patch that should help here I think.  Can you please test
-> this one: http://patchwork.kernel.org/patch/40062/ ?
+> No, nothing special needs to be done at the PCI level. It seems that 
+> (for Intel at least) there's no need to do anything special at the UHCI 
+> level either.
 
-Testing confirms that Alex's patch (pci: check saved state before
-restore) fixes the resume problem.  IMO it should be merged before
-2.6.31 is released.
+This contradicts what Shaohua wrote:
+
+"The only case is UHCI in my mind. Because UHCI has non-standard wakeup
+event register. If BIOS doesn't handle it correctly (for example, not
+clear the wakeup event after a GPE), we will keep see the wakeup
+event."
+
+What code would be responsible for setting and clearing the 
+non-standard wakeup register?  Are you assuming that ACPI will always 
+handle it?  I guess that's a reasonable assumption -- if ACPI wasn't 
+aware of the register then it never would get enabled, and conversely, 
+if ACPI was aware and could enable the register, then ACPI ought to 
+disable it when necessary.
 
 Alan Stern
