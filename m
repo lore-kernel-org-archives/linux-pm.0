@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Thu, 20 Aug 2009 17:41:06 +0200
-Message-ID: <200908201741.06423.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0908191022390.3001-100000@iolanthe.rowland.org>
-	<200908192322.25261.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
+	(updated)
+Date: Thu, 20 Aug 2009 17:56:36 +0200
+Message-ID: <200908201756.36801.rjw__2356.393778655$1250783801$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908192322.25261.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Alek Du <alek.du@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 August 2009, Rafael J. Wysocki wrote:
-> On Wednesday 19 August 2009, Alan Stern wrote:
-> > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > > > Commenting out the second call to pci_restore_state() apparently fixes 
-> > > > the problem.  I have no idea whether it's the right thing to do, 
-> > > > though.
+On Thursday 20 August 2009, Alan Stern wrote:
+> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > On Wednesday 19 August 2009, Alan Stern wrote:
+> > > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
 > > > 
-> > > It is.  The PCI core have restored the PCI config already anyway at the early
-> > > resume stage.
+> > > > There's a problem that for safety reasons I maintain the ordering of dpm_list
+> > > > and the callbacks are scheduled for async execution in the same order in
+> > > > which they would have been executed synchronously.  If were to change this,
+> > > > we'd have to be _very_ careful.
 > > > 
-> > > I think the first pci_restore_state() could be dropped from there as well.
+> > > Why?  The order in which jobs are scheduled for async execution doesn't 
+> > > bear any particular relation to the order in which they get run.
 > > 
-> > What about the other AGP drivers in drivers/char/agp?  Looks like their
-> > suspend and resume routines could all use some updating.
+> > Yes, it does, if all of the async threads are busy and we add more async jobs
+> > to the queue.  We must ensure that none of the jobs being executed will wait
+> > for any jobs in the queue.
 > 
-> As well as many other drivers. :-)
+> That's part of the reason for the dependencies: to make sure that where
+> it matters, things don't run in the wrong order.
 > 
-> Usually, however, restoring the PCI config space twice doesn't hurt, although
-> it evidently does hurt on your system.
+> > Also, if any devices are handled synchronously, they must not wait for any
+> > "async" devices that haven't been scheduled yet.
 > 
-> Hm, there's a patch that should help here I think.  Can you please test
-> this one: http://patchwork.kernel.org/patch/40062/ ?
+> I'm not sure what you mean.  If a device is handled synchronously, it 
+> must wait for all the devices preceding it on the list, regardless of 
+> whether those devices are handled asynchronously.
 
-Quoting the patch for completness.
+Not really, IMO.  Namely, setting async_suspend for a device is a declaration
+that all of its dependencies are known, whether they are on "async" or on
+"sync" devices.  Hence, "sync" devices don't need to wait for the "async"
+devices they don't depend on in a known way, because otherwise it would be
+invalid to set async_suspend for those "async" devices.
 
----
-From: Alek Du <alek.du@intel.com>
-Subject: [PATCH] pci: check saved state before restore
+Nevertheless, "sync" devices have to wait for all of the other "sync" devices
+that are "in front" of them in dpm_list, because dependencies between different
+"sync" devices need not be known (the direct dependencies betwee them are
+known, but there may be other unknown dependencies satisfied only because the
+the ordering of dpm_list is preserved).
 
-Without the check, the config space may be filled with zeros. Though
-the driver should try to avoid call restoring before saving, but the
-pci layer also should check this.
+Obviously "sync" devices have to wait for the "async" devices they depend on
+in a known way.  In turn, "async" devices have to wait for all of the devices
+they depend on in a known way, "sync" as well as "async".
 
-Also removed the existing check in pci_restore_standard_config.
-
-Signed-off-by: Alek Du <alek.du@intel.com>
----
- drivers/pci/pci-driver.c |    2 +-
- drivers/pci/pci.c        |    2 ++
- 2 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index d76c4c8..f99bc7f 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -508,7 +508,7 @@ static int pci_restore_standard_config(struct pci_dev *pci_dev)
- 			return error;
- 	}
- 
--	return pci_dev->state_saved ? pci_restore_state(pci_dev) : 0;
-+	return pci_restore_state(pci_dev);
- }
- 
- static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index dbd0f94..7b70312 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -846,6 +846,8 @@ pci_restore_state(struct pci_dev *dev)
- 	int i;
- 	u32 val;
- 
-+	if (!dev->state_saved)
-+		return 0;
- 	/* PCI Express register must be restored first */
- 	pci_restore_pcie_state(dev);
- 
--- 
+Thanks,
+Rafael
