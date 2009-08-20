@@ -1,14 +1,14 @@
-From: Andy Walls <awalls@radix.net>
-Subject: Re: linux-next: suspend tree build warnings
-Date: Wed, 19 Aug 2009 20:44:16 -0400
-Message-ID: <1250729056.2716.37.camel__21548.549042973$1250784980$gmane$org@morgan.walls.org>
-References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
-	<200908192338.03910.rjw@sisk.pl>  <20090819233601.GA2875@kroah.com>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Thu, 20 Aug 2009 09:05:28 +0800
+Message-ID: <20090820010528.GA9596@zhen-devel.sh.intel.com>
+References: <20090819020156.GA22638@zhen-devel.sh.intel.com>
+	<Pine.LNX.4.44L0.0908191040050.3001-100000@iolanthe.rowland.org>
+Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============5494542548496381390=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090819233601.GA2875@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.0908191040050.3001-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,41 +16,80 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-media@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDA5LTA4LTE5IGF0IDE2OjM2IC0wNzAwLCBHcmVnIEtIIHdyb3RlOgo+IE9uIFdl
-ZCwgQXVnIDE5LCAyMDA5IGF0IDExOjM4OjAzUE0gKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdy
-b3RlOgo+ID4gT24gV2VkbmVzZGF5IDE5IEF1Z3VzdCAyMDA5LCBTdGVwaGVuIFJvdGh3ZWxsIHdy
-b3RlOgo+ID4gPiBIaSBSYWZhZWwsCj4gPiAKPiA+IEhpLAo+ID4gCj4gPiA+IFRvZGF5J3MgbGlu
-dXgtbmV4dCBidWlsZCAoeDg2XzY0IGFsbG1vZGNvbmZpZykgcHJvZHVjZWQgdGhlc2Ugd2Fybmlu
-Z3M6Cj4gPiA+IAo+ID4gPiBkcml2ZXJzL21lZGlhL2R2Yi9mcm9udGVuZHMvZGliNzAwMHAuYzog
-SW4gZnVuY3Rpb24g4oCYZGliNzAwMHBfaTJjX2VudW1lcmF0aW9u4oCZOgo+ID4gPiBkcml2ZXJz
-L21lZGlhL2R2Yi9mcm9udGVuZHMvZGliNzAwMHAuYzoxMzE1OiB3YXJuaW5nOiB0aGUgZnJhbWUg
-c2l6ZSBvZiAyMjU2IGJ5dGVzIGlzIGxhcmdlciB0aGFuIDIwNDggYnl0ZXMKPiA+ID4gZHJpdmVy
-cy9tZWRpYS9kdmIvZnJvbnRlbmRzL2RpYjMwMDBtYy5jOiBJbiBmdW5jdGlvbiDigJhkaWIzMDAw
-bWNfaTJjX2VudW1lcmF0aW9u4oCZOgo+ID4gPiBkcml2ZXJzL21lZGlhL2R2Yi9mcm9udGVuZHMv
-ZGliMzAwMG1jLmM6ODUzOiB3YXJuaW5nOiB0aGUgZnJhbWUgc2l6ZSBvZiAyMTYwIGJ5dGVzIGlz
-IGxhcmdlciB0aGFuIDIwNDggYnl0ZXMKPiA+ID4gCj4gPiA+IEludHJvZHVjZWQgYnkgY29tbWl0
-IDk5MzA3OTU4Y2M5YzFiMGIyZTBkYWQ0YmJlZmRhZmFmOWFjNWE2ODEgKCJQTToKPiA+ID4gSW50
-cm9kdWNlIGNvcmUgZnJhbWV3b3JrIGZvciBydW4tdGltZSBQTSBvZiBJL08gZGV2aWNlcyAocmV2
-LiAxNykiKS4KPiA+IAo+ID4gV2VsbC4KPiA+IAo+ID4gVGhpcyBjb21taXQgaW5jcmVhc2VzIHRo
-ZSBzaXplIG9mIHN0cnVjdCBkZXZpY2UgcXVpdGUgYSBiaXQgYW5kIGJvdGggb2YgdGhlCj4gPiBk
-cml2ZXJzIGFib3ZlIGNyZWF0ZSBhICJzdGF0ZSIgb2JqZWN0IG9uIHRoZSBzdGFjayB0aGF0IGNv
-bnRhaW5zIHN0cnVjdCBkZXZpY2UKPiA+IGFtb25nIG90aGVyIHRoaW5ncy4KPiAKPiBJY2suICBz
-dHJ1Y3QgZGV2aWNlIHNob3VsZCBfbmV2ZXJfIGJlIG9uIHRoZSBzdGFjaywgd2h5IHdvdWxkIHRo
-aXMgY29kZQo+IHdhbnQgdG8gZG8gc3VjaCBhIHRoaW5nPwoKSXQgYXBwZWFycyB0aGF0IHRoZSBz
-dGF0ZSBvYmplY3QgaXMgYSBkdW1teSBiZWluZyB1c2VkIHRvIGRldGVjdCBhbmQKdHdpZGRsZSBz
-b21lIGlkZW50aWNhbCBjaGlwcyBvbiB0aGUgaTJjIGJ1cy4gIFRoZSBmdW5jdGlvbnMgY2FsbGVk
-IG9ubHkKdXNlIHRoZSAiaTJjX2FkYXB0ZXIiIGFuZCAiY2ZnIiBtZW1iZXIgb2YgdGhlIGR1bW15
-IHN0YXRlIG9iamVjdCwgYnV0CnRob3NlIGZ1bmN0aW9ucyB3YW50IHRoYXQgc3RhdGUgb2JqZWN0
-IGFzIGFuIGlucHV0IGFyZ3VtZW50LgoKPG9idmlvdXM+ClRoZSBzaW1wbGVzdCBmaXggaXMgZHlu
-YW1pYyBhbGxvY2F0aW9uIG9mIHRoZSBkdW1teSBzdGF0ZSBvYmplY3Qgd2l0aAprbWFsbG9jKCkg
-YW5kIHRoZW4gdG8gZnJlZSBpdCBiZWZvcmUgZXhpdGluZyB0aGUgZnVuY3Rpb24uCjwvb2J2aW91
-cz4KClJlZ2FyZHMsCkFuZHkKCgo+IHRoYW5rcywKPiAKPiBncmVnIGstaAoKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+--===============5494542548496381390==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
+Content-Disposition: inline
+
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On 2009.08.19 10:42:07 -0400, Alan Stern wrote:
+> On Wed, 19 Aug 2009, Zhenyu Wang wrote:
+>=20
+> > Rafael, as I added this restore long time ago, pci core has changed in =
+some way?
+> > We had problem when reconfigure agp GTT space in resume, as we must be =
+sure
+> > gfx device's config space has been restored properly, and as 02:00 gfx =
+device
+> > restored later than host bridge 00:00 device, that came to my origin pa=
+tch to
+> > restore it earlier.
+>=20
+> Why did you do it that way?  I mean, why not restore the gfx device's=20
+> config space in its own resume routine instead of in the host bridge's=20
+> resume routine?
+>=20
+
+That's the order issue I have mentioned. intel_agp is the pci driver for
+host bridge (dev 00:00), and drm/i915 is the pci driver for gfx device
+(dev 00:02). Host bridge will always resume earlier than gfx device, but
+for intel_agp we need to access gfx device when reconfigure GTT in resume,
+we can't wait until restore happen in i915 driver.
+
+So there might be a conflict here, as i915 driver also do pci_restore_state=
+()
+after we did reconfigure in intel_agp driver, some configs may be corrupted=
+=20
+then. Although I haven't seen it in real testing.=20
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqMoVgACgkQsQQaM014GCe3rACfd5v2civlM3+J1Ne3fHc3LLl2
+2ncAn08/3uK0kXv5kiy04QH9215SIX8h
+=ZtSr
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
+
+--===============5494542548496381390==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============5494542548496381390==--
