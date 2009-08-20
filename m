@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: What to do?
-Date: Thu, 20 Aug 2009 17:24:34 +0200
-Message-ID: <200908201724.34430.rjw__14884.399859193$1250782152$gmane$org@sisk.pl>
-References: <4A8CCF95.9030401@crca.org.au>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Thu, 20 Aug 2009 17:34:28 +0200
+Message-ID: <200908201734.28331.rjw@sisk.pl>
+References: <20090819020156.GA22638@zhen-devel.sh.intel.com>
+	<Pine.LNX.4.44L0.0908191040050.3001-100000@iolanthe.rowland.org>
+	<20090820010528.GA9596@zhen-devel.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A8CCF95.9030401@crca.org.au>
+In-Reply-To: <20090820010528.GA9596@zhen-devel.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>, LKML <linux-kernel@vger.kernel.org>
+To: Zhenyu Wang <zhenyuw@linux.intel.com>
+Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 20 August 2009, Nigel Cunningham wrote:
-> Hi all.
-
-Hi,
-
-> A few months back, I posted TuxOnIce for something like the third time,
-> seeking to see if we could make some progress on getting it merged. The
-> outcome of that was an agreement between Rafael and I that we'd work on
-> getting TuxOnIce functionality (if not the actual code) merged bit by
-> bit, improving swsusp rather than doing an outright merge.
+On Thursday 20 August 2009, Zhenyu Wang wrote:
+> On 2009.08.19 10:42:07 -0400, Alan Stern wrote:
+> > On Wed, 19 Aug 2009, Zhenyu Wang wrote:
+> > 
+> > > Rafael, as I added this restore long time ago, pci core has changed in some way?
+> > > We had problem when reconfigure agp GTT space in resume, as we must be sure
+> > > gfx device's config space has been restored properly, and as 02:00 gfx device
+> > > restored later than host bridge 00:00 device, that came to my origin patch to
+> > > restore it earlier.
+> > 
+> > Why did you do it that way?  I mean, why not restore the gfx device's 
+> > config space in its own resume routine instead of in the host bridge's 
+> > resume routine?
+> > 
 > 
-> Unfortunately, as the intervening months have shown, Rafael is busy with
-> other things and so am I. The few patches I did prepare and post have
-> had no review, and I haven't had a chance to build on or rework them
-> since. (I'd actually like them not to be merged, because I've realised
-> that there are more foundational changes that need to go in first.)
+> That's the order issue I have mentioned. intel_agp is the pci driver for
+> host bridge (dev 00:00), and drm/i915 is the pci driver for gfx device
+> (dev 00:02). Host bridge will always resume earlier than gfx device, but
+> for intel_agp we need to access gfx device when reconfigure GTT in resume,
+> we can't wait until restore happen in i915 driver.
 > 
-> Given that this has been the outcome so far, I see no reason to imagine
-> that we're going to make any serious progress any time soon.
+> So there might be a conflict here, as i915 driver also do pci_restore_state()
+> after we did reconfigure in intel_agp driver, some configs may be corrupted 
+> then. Although I haven't seen it in real testing. 
 
-That unfortunately is probably right.
+I think that shouldn't be a problem any more in the 2.6.29 and later kernels,
+because the PCI standard config registers are now restored by the PCI bus
+code at the early resume stage.
 
-The problem for my part is that new things are still appearing that I need to
-take care of rather urgently.
-
-In fact the user space part of (u)swsusp also has been suffering from the lack
-of attention recently, so to speak.
-
-> I'd therefore like to ask whether there's anyone out there who could do
-> one or more of:
-> 
-> 1) Step up to the plate and help improve swsusp, without relying on any
-> help from me but with my blessing if they choose to copy wholesale bits
-> of TuxOnIce;
-> 2) Take over maintaining TuxOnIce from me;
-> 3) Some other way forward that hasn't occurred to me.
-> 
-> Thoughts, input, flames, whatever else welcome. A lack of deadly silence
-> would be especially appreciated :)
-
-Well, the code is out there.  If there's time to try to get it in, I think it's
-worth doing.
-
-Best,
+Thanks,
 Rafael
