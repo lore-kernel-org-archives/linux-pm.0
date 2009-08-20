@@ -1,15 +1,11 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
-Date: Thu, 20 Aug 2009 11:24:50 +0800
-Message-ID: <20090820032450.GD26357__12807.0742277943$1250738838$gmane$org@sli10-desk.sh.intel.com>
-References: <1250666651.23178.116.camel@sli10-desk.sh.intel.com>
-	<20090819115210.GC12216@srcf.ucam.org>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: What to do?
+Date: Thu, 20 Aug 2009 14:22:45 +1000
+Message-ID: <4A8CCF95.9030401__7242.10457779026$1250742123$gmane$org@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090819115210.GC12216@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +15,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Rafael Wysocki <rjw@sisk.pl>, linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 07:52:10PM +0800, Matthew Garrett wrote:
-> On Wed, Aug 19, 2009 at 03:24:11PM +0800, Shaohua Li wrote:
-> 
-> > Usually driver should does nothing in the op as bus can handle it. But in some
-> > cases, like pci bus, UHCI controller doesn't use standard PME registers for
-> > wakeup, instead of using special approach. In this case, UHCI controller driver
-> > should implement this op.
-> 
-> I'm not averse to the general concept, but I'm not entirely sold on it 
-> being necessary. All the hardware I'm aware of will send non-PME events 
-> as a notification on a specific device. Under what circumstances will we 
-> get a wakeup GPE for a non-PME device without knowing which device 
-> should be woken?
-Below code is gotten from a laptop (samsung-x10), the PCIB is the PCI bridge.
-We can't guarantee the device which gets a wakeup event notification is really
-the device which invokes the wakeup event.
+Hi all.
 
-	Device (PCIB)
-        {
-                Name (_ADR, 0x001E0000)
-                Device (CDB0)
-		{
-		    Name (_ADR, 0x00030000)
-		}
-		 Device (CDB1)
-                {
-                    Name (_ADR, 0x00030001)
+A few months back, I posted TuxOnIce for something like the third time,
+seeking to see if we could make some progress on getting it merged. The
+outcome of that was an agreement between Rafael and I that we'd work on
+getting TuxOnIce functionality (if not the actual code) merged bit by
+bit, improving swsusp rather than doing an outright merge.
 
-		}
-	}
+Unfortunately, as the intervening months have shown, Rafael is busy with
+other things and so am I. The few patches I did prepare and post have
+had no review, and I haven't had a chance to build on or rework them
+since. (I'd actually like them not to be merged, because I've realised
+that there are more foundational changes that need to go in first.)
 
+Given that this has been the outcome so far, I see no reason to imagine
+that we're going to make any serious progress any time soon.
 
-        Method (_L0B, 0, NotSerialized)
-        {
-            Notify (\_SB.PCI0.PCIB, 0x02)
-            Notify (\_SB.PWRB, 0x02)
-            Store (0x01, \_SB.PCI0.PCIB.CDB0.PMES)
-            Store (0x01, \_SB.PCI0.PCIB.CDB1.PMES)
-        }
+I'd therefore like to ask whether there's anyone out there who could do
+one or more of:
 
-Thanks,
-Shaohua
+1) Step up to the plate and help improve swsusp, without relying on any
+help from me but with my blessing if they choose to copy wholesale bits
+of TuxOnIce;
+2) Take over maintaining TuxOnIce from me;
+3) Some other way forward that hasn't occurred to me.
+
+Thoughts, input, flames, whatever else welcome. A lack of deadly silence
+would be especially appreciated :)
+
+Regards,
+
+Nigel
