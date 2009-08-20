@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/5] implement .wakeup_event in PCI bus level
-Date: Thu, 20 Aug 2009 22:15:15 +0200
-Message-ID: <200908202215.15460.rjw__247.276182244782$1250799441$gmane$org@sisk.pl>
-References: <1250666656.23178.118.camel@sli10-desk.sh.intel.com>
+From: John Dykstra <john.dykstra1@gmail.com>
+Subject: Re: 2.6.31-rc6-git5: Reported regressions from 2.6.30
+Date: Thu, 20 Aug 2009 20:52:51 +0000
+Message-ID: <1250801571.7176.10.camel__19545.8606388003$1250801786$gmane$org@Maple>
+References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1250666656.23178.118.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,149 +17,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 August 2009, Shaohua Li wrote:
-> Add an implementation how to detect wakeup event for PCI bus level. PCI device
-> can invoke PME and platform or PCIe native approach can collect the PME and
-> reports to OS. OS should identify exactly which device invokes PME as several
-> devices can share interrupts.
-> 
-> In platform approach (ACPI in this case), some BIOS give exact device which
-> invokes PME but others doesn't. 
-> In PCIe native approach, if PME source device is a pcie endpoint, the device
-> is the exact PME source. If the device is root port or pcie-to-pci bridge,
-> we need scan the hierarchy under the device.
-> 
-> To identify PME source, the patch does:
-> 1. if the source is a pci device, the device is the only source for PME
-> 2. if the source is a bridge, scan the hierarchy under the bridge. Several
-> devices under the bridge could be the source.
-> 
-> 
-> ---
->  drivers/pci/pci-driver.c |   90 +++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 90 insertions(+)
-> 
-> Index: linux/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux.orig/drivers/pci/pci-driver.c	2009-08-19 13:43:18.000000000 +0800
-> +++ linux/drivers/pci/pci-driver.c	2009-08-19 13:50:29.000000000 +0800
-> @@ -570,6 +570,95 @@ static void pci_pm_complete(struct devic
->  		drv->pm->complete(dev);
->  }
->  
-> +/*
-> + * Called when dev is suspected to invoke a wakeup event
-> + * */
-> +static bool pci_handle_one_wakeup_event(struct pci_dev *pdev)
-> +{
-> +	int pme_pos = pdev->pm_cap;
-> +	struct pci_driver *drv = pdev->driver;
-> +	u16 pmcsr;
-> +	bool spurious = false;
-> +
-> +	if (pme_pos == 0) {
-> +		/*
-> +		 * Some USB devices haven't PME, but have specific registers to
-> +		 * control wakeup
-> +		 */
-> +		goto out;
-> +	}
-> +
-> +	/* clear PME status and disable PME to avoid interrupt flood */
-> +	pci_read_config_word(pdev, pme_pos + PCI_PM_CTRL, &pmcsr);
-> +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
-> +		return false;
-> +	/* I see spurious PME here, just ignore it for now */
-> +	if (!(pmcsr & PCI_PM_CTRL_PME_ENABLE))
-> +		spurious = true;
-> +	else
-> +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
-> +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
-> +	pci_write_config_word(pdev, pme_pos + PCI_PM_CTRL, pmcsr);
-> +
-> +	if (spurious)
-> +		return false;
-> +	return true;
-> +out:
-> +	if (drv && drv->driver.pm && drv->driver.pm->wakeup_event)
-> +		return drv->driver.pm->wakeup_event(&pdev->dev);
-> +	return false;
-> +}
-> +
-> +static bool pci_pm_wakeup_event(struct device *dev)
-> +{
-> +	bool ret;
-> +	struct pci_dev *tmp = NULL, *target = to_pci_dev(dev);
-> +	int domain_nr, bus_start, bus_end;
-> +
-> +	/*
-> +	 * @target could be a bridge or a device.
-> +	 * PCIe native PME case:
-> +	 *   @target is device - @target must be the exact device invoking PME
-> +	 *   @target is a root port or pcie-pci bridge - should scan legacy pci
-> +	 *	devices under the bridge
-> +	 * ACPI GPE case:
-> +	 *   @target is device - AML code could clear PME status before this
-> +	 *	routine is called, so we can't detect if @target invokes PME.
-> +	 *	Let's trust AML code
-> +	 *   @target is bridge - scan devices under the bridge
-> +	 * So: if target is device, trust the device invokes PME. If target is
-> +	 * bridge, scan devices under the bridge and only trust device invokes
-> +	 * PME which we can detect
-> +	 **/
-> +	ret = pci_handle_one_wakeup_event(target);
-> +	if (!target->subordinate || (target->is_pcie &&
-> +	    target->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
-> +	    target->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE)) {
-> +		/* always trust the device invokes PME even we can't detect */
-> +		device_receive_wakeup_event(&target->dev);
+On Wed, 2009-08-19 at 22:20 +0200, Rafael J. Wysocki wrote:
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14002
+> Subject         : WARNING: at net/ipv4/af_inet.c:154
+> inet_sock_destruct+0x164/0x1c0()
+> Submitter       : Ralf Hildebrandt <ralf.hildebrandt@charite.de>
+> Date            : 2009-08-18 12:37 (2 days old)
 
-How's that thing defined?  We want to call pm_request_resume() at this point.
+That looks similar to the WARNING discussed in [1].
 
-> +		return true;
-> +	}
-> +
-> +	if (ret)
-> +		device_receive_wakeup_event(&target->dev);
-> +
-> +	/* scan devices under the bridge */
-> +	domain_nr = pci_domain_nr(target->bus);
-> +	bus_start = target->subordinate->secondary;
-> +	bus_end = target->subordinate->subordinate;
-> +	while ((tmp = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, tmp)) != NULL) {
-> +		if (pci_domain_nr(tmp->bus) == domain_nr &&
-> +		   tmp->bus->number >= bus_start &&
-> +		   tmp->bus->number <= bus_end) {
-> +			if (pci_handle_one_wakeup_event(tmp)) {
-> +				ret = true;
-> +				device_receive_wakeup_event(&tmp->dev);
+There was no resolution to that thread.  However, [2] points out
+possible other occurrences of the problem in 2.6.27, 28 and 29.
 
-And here.
+--  John
 
-> +			}
-> +		}
-> +	}
-> +	return ret;
-> +}
-> +
->  #ifdef CONFIG_SUSPEND
->  
->  static int pci_pm_suspend(struct device *dev)
-> @@ -925,6 +1014,7 @@ struct dev_pm_ops pci_dev_pm_ops = {
->  	.thaw_noirq = pci_pm_thaw_noirq,
->  	.poweroff_noirq = pci_pm_poweroff_noirq,
->  	.restore_noirq = pci_pm_restore_noirq,
-> +	.wakeup_event = pci_pm_wakeup_event,
-
-Please don't do that.
-
->  };
->  
->  #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
-
-Best,
-Rafael
+[1]  http://www.spinics.net/lists/netdev/msg103267.html
+[2]  http://www.spinics.net/lists/netdev/msg104120.html
