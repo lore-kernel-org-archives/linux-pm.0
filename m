@@ -1,15 +1,24 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: linux-next: suspend tree build warnings
-Date: Wed, 19 Aug 2009 16:36:01 -0700
-Message-ID: <20090819233601.GA2875__28029.1492156268$1250725390$gmane$org@kroah.com>
-References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
-	<200908192338.03910.rjw@sisk.pl>
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button
+ suspends, but does not wakes up
+Date: Wed, 19 Aug 2009 23:54:01 -0300
+Message-ID: <20090820025401.GB1787__5342.88902204043$1250737006$gmane$org@ime.usp.br>
+References: <20081107014535.GA19201@ime.usp.br>
+	<1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+	<20081108075008.GA8177@ime.usp.br>
+	<dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
+	<20081109024514.GA11744@ime.usp.br>
+	<20081109113332.GD6094@elf.ucw.cz>
+	<dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com>
+	<20081110074516.GB707@atrey.karlin.mff.cuni.cz>
+	<dd18b0c30811100700y7922ce37y8ba39ba7b43031b3@mail.gmail.com>
+	<20081111093758.GA18786@ime.usp.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200908192338.03910.rjw@sisk.pl>
+In-Reply-To: <20081111093758.GA18786@ime.usp.br>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +28,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-media@vger.kernel.org
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: linux-kernel@vger.kernel.org, yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@atrey.karlin.mff.cuni.cz>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, bugzilla@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMTksIDIwMDkgYXQgMTE6Mzg6MDNQTSArMDIwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gT24gV2VkbmVzZGF5IDE5IEF1Z3VzdCAyMDA5LCBTdGVwaGVuIFJvdGh3ZWxs
-IHdyb3RlOgo+ID4gSGkgUmFmYWVsLAo+IAo+IEhpLAo+IAo+ID4gVG9kYXkncyBsaW51eC1uZXh0
-IGJ1aWxkICh4ODZfNjQgYWxsbW9kY29uZmlnKSBwcm9kdWNlZCB0aGVzZSB3YXJuaW5nczoKPiA+
-IAo+ID4gZHJpdmVycy9tZWRpYS9kdmIvZnJvbnRlbmRzL2RpYjcwMDBwLmM6IEluIGZ1bmN0aW9u
-IOKAmGRpYjcwMDBwX2kyY19lbnVtZXJhdGlvbuKAmToKPiA+IGRyaXZlcnMvbWVkaWEvZHZiL2Zy
-b250ZW5kcy9kaWI3MDAwcC5jOjEzMTU6IHdhcm5pbmc6IHRoZSBmcmFtZSBzaXplIG9mIDIyNTYg
-Ynl0ZXMgaXMgbGFyZ2VyIHRoYW4gMjA0OCBieXRlcwo+ID4gZHJpdmVycy9tZWRpYS9kdmIvZnJv
-bnRlbmRzL2RpYjMwMDBtYy5jOiBJbiBmdW5jdGlvbiDigJhkaWIzMDAwbWNfaTJjX2VudW1lcmF0
-aW9u4oCZOgo+ID4gZHJpdmVycy9tZWRpYS9kdmIvZnJvbnRlbmRzL2RpYjMwMDBtYy5jOjg1Mzog
-d2FybmluZzogdGhlIGZyYW1lIHNpemUgb2YgMjE2MCBieXRlcyBpcyBsYXJnZXIgdGhhbiAyMDQ4
-IGJ5dGVzCj4gPiAKPiA+IEludHJvZHVjZWQgYnkgY29tbWl0IDk5MzA3OTU4Y2M5YzFiMGIyZTBk
-YWQ0YmJlZmRhZmFmOWFjNWE2ODEgKCJQTToKPiA+IEludHJvZHVjZSBjb3JlIGZyYW1ld29yayBm
-b3IgcnVuLXRpbWUgUE0gb2YgSS9PIGRldmljZXMgKHJldi4gMTcpIikuCj4gCj4gV2VsbC4KPiAK
-PiBUaGlzIGNvbW1pdCBpbmNyZWFzZXMgdGhlIHNpemUgb2Ygc3RydWN0IGRldmljZSBxdWl0ZSBh
-IGJpdCBhbmQgYm90aCBvZiB0aGUKPiBkcml2ZXJzIGFib3ZlIGNyZWF0ZSBhICJzdGF0ZSIgb2Jq
-ZWN0IG9uIHRoZSBzdGFjayB0aGF0IGNvbnRhaW5zIHN0cnVjdCBkZXZpY2UKPiBhbW9uZyBvdGhl
-ciB0aGluZ3MuCgpJY2suICBzdHJ1Y3QgZGV2aWNlIHNob3VsZCBfbmV2ZXJfIGJlIG9uIHRoZSBz
-dGFjaywgd2h5IHdvdWxkIHRoaXMgY29kZQp3YW50IHRvIGRvIHN1Y2ggYSB0aGluZz8KCnRoYW5r
-cywKCmdyZWcgay1oCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtcG0=
+RGVhciBaaGFuZywgYW5kIG90aGVyIHBlb3BsZS4KCk9uIE5vdiAxMSAyMDA4LCBSb2fDqXJpbyBC
+cml0byB3cm90ZToKPiBaaGFuZyBSdWkgd3JvdGU6Cj4gPiBsZXQncyBmb2N1cyBvbiB0aGUgc3Vz
+cGVuZC9yZXN1bWUgcHJvYmxlbSBpbiB0aGlzIGJ1ZyBlbnRyeS4KPiA+IFNvIHBsZWFzZSBzdG9w
+IHVzaW5nIHN1c3BlbmQgYnV0dG9uIG9yIGxpZCBidXR0b24gdG8gZG8gc3VzcGVuZC9yZXN1bWUK
+PiA+IHRlc3QuCj4gPiBZb3UgY2FuIHVzZSAiZWNobyBtZW0gPiAvc3lzL3Bvd2VyL3N0YXRlIiB0
+byBzdXNwZW5kIGFuZCB1c2UgcG93ZXIgYnV0dG9uCj4gPiB0byByZXN1bWUgdG8gc2VlIGhvdyBz
+dXNwZW5kL3Jlc3VtZSB3b3JrcyBvbiB5b3VyIGxhcHRvcC4KPiAKPiBXaGF0IEkgZ2V0IHdoZW4g
+SSB1c2UgdGhpcyBpcyB0aGF0IHRoZSBub3RlYm9vayBnb2VzIHRvIHN1c3BlbmQgc3RhdGUgYW5k
+Cj4gdGhlIG9ubHkgYnV0dG9uIHRoYXQgaXQgaGFzIChwb3dlciBidXR0b24pIGhhcyBhIGJsdWUg
+bGlnaHQgdGhhdCBzdGFydHMKPiBibGlua2luZy4KClpoYW5nLCB5b3UgbWVudGlvbmVkIHRoYXQg
+eW91IHRob3VnaHQgdGhhdCBteSBub3RlYm9vayBjb3VsZCByZXN1bWUgaWYKdGhlIEJJT1MgaXMg
+c2tpcHBlZCwgcmlnaHQ/CgpTZXR0aW5nIAoKIyBlY2hvIDEgPiAvc3lzL3Bvd2VyL3BtX3RyYWNl
+CgpJIHRlc3RlZCBhbGwgdGhlIHZhcmlhdGlvbnMgb2Y6CgojIGVjaG8gPz8/ID4gL3N5cy9wb3dl
+ci9wbV90ZXN0CiMgZWNobyBtZW0gPiAvc3lzL3Bvd2VyL3N0YXRlCgp0aGF0IGNvdWxkIGJlIHB1
+dCBpbnRvIC9zeXMvcG93ZXIvcG1fdGVzdCwgYnV0IHRoZSBub3RlYm9vayBhbHdheXMKInJlc3Vt
+ZWQiICgid29rZSB1cCIgZnJvbSAic2xlZXAiKS4KCk9uIHRoZSBvdGhlciBoYW5kLCBpZiBJIGRv
+IGEgcmVhbCBzbGVlcCAoc2F5LCBwdXR0aW5nIG5vbmUgaW50bwpwbV90ZXN0KSwgdGhlbjoKCiog
+dGhlIG5vdGVib29rIGdvZXMgdG8gc2xlZXA7Ciogd2hlbiBJIHByZXNzIHRoZSBwb3dlciBidXR0
+b24sIHRoZSBtYWNoaW5lIHBvd2VyIGl0c2VsZiBvZmY7CiogYSBmZXcgc2Vjb25kcyBhZnRlciB0
+aGF0LCBpdCBwb3dlcnMgaXRzZWxmIG9uIGFnYWluLgoKVW5mb3J0dW5hdGVseSwgYXQgdGhpcyBw
+b2ludCwgKmV2ZXJ5dGhpbmcqIGlzIGJsYWNrIGluIHRoZSBtb25pdG9yIGFuZAp0aGVyZSBhcmUg
+bm8gcmVzcG9uc2VzIChub3QgZXZlbiBNYWdpYyBTeXNScSkuCgpUaGUgcmFuZ2Ugb2Yga2VybmVs
+cyB0ZXN0ZWQgd2FzOiAyLjYuMjQgdG8gMi42LjMxLXJjNS4KCkFzIGNhbiBiZSBvYnZpb3VzbHkg
+c2VlbiBmcm9tIHRoZSBrZXJuZWxzIGFuZCB0aGUgb3JpZ2luYWwgcmVwb3J0IGRhdGUsCnRoaXMg
+YnVnIGlzIG1vcmUgdGhhbiBvbmUgeWVhciBvbGQgKGl0IHdhcyBmaWxlZCB3aXRoIGJ1Z3ppbGxh
+IG9uCjIwMDgtMTAtMDcpLgoKUGxlYXNlLCBoZWxwLgoKClRoYW5rcywgUm9nw6lyaW8gQnJpdG8u
+CgotLSAKUm9nw6lyaW8gQnJpdG8gOiByYnJpdG9Ae21hY2tlbnppZSxpbWUudXNwfS5iciA6IEdQ
+RyBrZXkgMTAyNEQvN0MyQ0FFQjgKaHR0cDovL3d3dy5pbWUudXNwLmJyL35yYnJpdG8gOiBodHRw
+Oi8vbWV1c2l0ZS5tYWNrZW56aWUuY29tLmJyL3Jicml0bwpQcm9qZWN0czogYWxnb3JpdGhtcy5i
+ZXJsaW9zLmRlIDogbGFtZS5zZi5uZXQgOiB2cm1zLmFsaW90aC5kZWJpYW4ub3JnCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
