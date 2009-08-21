@@ -1,16 +1,18 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume
-	(updated)
-Date: Fri, 21 Aug 2009 15:40:34 +0800
-Message-ID: <1250840434.17853.176.camel__44462.5032636852$1250840805$gmane$org@rzhang-dt>
-References: <200908122218.13975.rjw@sisk.pl>
-	<200908190158.09623.rjw@sisk.pl> <1250643929.17853.11.camel@rzhang-dt>
-	<200908192302.31453.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
+Date: Fri, 21 Aug 2009 10:23:16 +0100
+Message-ID: <20090821092316.GA19617__46690.1823449463$1250846783$gmane$org@srcf.ucam.org>
+References: <1250666651.23178.116.camel@sli10-desk.sh.intel.com>
+	<20090819115210.GC12216@srcf.ucam.org>
+	<20090820032450.GD26357@sli10-desk.sh.intel.com>
+	<20090820074050.GA30288@srcf.ucam.org>
+	<20090821063350.GA16694@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908192302.31453.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20090821063350.GA16694@sli10-desk.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,79 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMDA5LTA4LTIwIGF0IDA1OjAyICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBXZWRuZXNkYXkgMTkgQXVndXN0IDIwMDksIFpoYW5nIFJ1aSB3cm90ZToKPiA+IE9u
-IFdlZCwgMjAwOS0wOC0xOSBhdCAwNzo1OCArMDgwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6
-Cj4gPiA+IE9uIFR1ZXNkYXkgMTggQXVndXN0IDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3Rl
-Ogo+ID4gPiA+IE9uIFR1ZXNkYXkgMTggQXVndXN0IDIwMDksIFpoYW5nIFJ1aSB3cm90ZToKPiA+
-ID4gPiA+IE9uIE1vbiwgMjAwOS0wOC0xNyBhdCAwODoxNSArMDgwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gPiA+ID4gPiA+IE9uIFdlZG5lc2RheSAxMiBBdWd1c3QgMjAwOSwgUmFmYWVs
-IEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+ID4gCj4gPiA+
-ID4gPiA+ID4gVGhlIGZvbGxvd2luZyBwYXRjaGVzIGludHJvZHVjZSBhIG1lY2hhbmlzbSBhbGxv
-d2luZyB1cyB0byBleGVjdXRlIGRldmljZQo+ID4gPiA+ID4gPiA+IGRyaXZlcnMnIHN1c3BlbmQg
-YW5kIHJlc3VtZSBjYWxsYmFja3MgYXN5bmNocm9ub3VzbHkgZHVyaW5nIHN5c3RlbSBzbGVlcAo+
-ID4gPiA+ID4gPiA+IHRyYW5zaXRpb25zLCBzdWNoIGFzIHN1c3BlbmQgdG8gUkFNLiAgVGhlIGlk
-ZWEgaXMgZXhwbGFpbmVkIGluIHRoZSBbMS8xXSBwYXRjaAo+ID4gPiA+ID4gPiA+IG1lc3NhZ2Uu
-Cj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBDaGFuZ2VzOgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gKiBBZGRlZCBbMS83XSB0aGF0IGZpeGVzIGtlcm5lbGRvYyBjb21tZW50cyBpbiBkcml2ZXJz
-L2Jhc2UvcG93ZXIvbWFpbi5jCj4gPiA+ID4gPiA+ICAgKHRoaXMgaXMgYSAyLjYuMzIgY2FuZGlk
-YXRlKS4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ICogQWRkZWQgWzIvN10gYWRkaW5nIGEgZnJh
-bWV3b3JrIGZvciByZXByZXNlbnRpbmcgUE0gbGluayAoaWRlYSBkZXNjcmliZWQKPiA+ID4gPiA+
-ID4gICBpbiB0aGUgcGF0Y2ggbWVzc2FnZSkuCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiAqIFsz
-LzddIGlzIHRoZSBhc3luYyByZXN1bWUgcGF0Y2ggKGlkZWEgZGVzY3JpYmVkIGluIHRoZSBwYXRj
-aCBtZXNzYWdlKS4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ICogWzQvN10gaXMgdGhlIGFzeW5j
-IHN1c3BlbmQgcGF0Y2guCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiAqIFs1LzddIC0gWzcvN10g
-c2V0IGFzeW5jX3N1c3BlbmQgZm9yIGRldmljZXMgaW4gYSBmZXcgc2VsZWN0ZWQgc3Vic3lzdGVt
-cy4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IFRoZSBwYXRjaGVzIGhhdmUgYmVlbiB0ZXN0ZWQg
-b24gSFAgbng2MzI1Lgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+IEkgdHJpZWQgdGhpcyBwYXRjaCBz
-ZXQgYW5kIGl0IGRvZXMgd29yay4gOikKPiA+ID4gPiA+IEJ1dCB1bmZvcnR1bmF0ZWx5IGl0IGRv
-ZXNuJ3Qgc2F2ZSB0b28gbXVjaCB0aW1lLgo+ID4gPiA+ID4gCj4gPiA+ID4gPiBJIHN0aWxsIHRo
-aW5rIHRoYXQgdGhlIGNoaWxkIGRldmljZSBzaG91bGQgaW5oZXJpdCBpdHMgcGFyZW50J3MKPiA+
-ID4gPiA+IGFzeW5jX3N1c3BlbmQgZmxhZyB0byBkbyB0aGUgYXN5bmNocm9ub3VzIHJlc3VtZSBt
-b3JlIGVmZmljaWVudGx5Lgo+ID4gPiA+ID4gCj4gPiA+ID4gPiBvciBhdCBsZWFzdCB3ZSBzaG91
-bGQgcHJvdmlkZSBzdWNoIGFuIGludGVyZmFjZQo+ID4gPiA+ID4gaW4g77u/ZHJpdmVycy9iYXNl
-L3Bvd2VyL2NvbW1vbi5jLCBzbyB0aGF0IGRldmljZSBjYW4gdGVsbCB0aGUgZGV2aWNlIGNvcmUK
-PiA+ID4gPiA+IHRvIGluaGVyaXQgdGhpcyBmbGFnIGlmIHRoZXJlIGlzIG5vIG9mZi10cmVlIGRl
-cGVuZGVuY3kuCj4gPiA+ID4gCj4gPiA+ID4gV2VsbCwgSSdkIHByZWZlciB0byBpZGVudGlmeSBh
-bGwgb2YgdGhlIG9mZi10cmVlIGRlcGVuZGVuY2llcyB0aGF0IGhhdmUgdG8gYmUKPiA+ID4gPiB0
-YWtlbiBpbnRvIGFjY291bnQgYW5kIGhhbmRsZSBhbGwgZGV2aWNlcyBhc3luY2hyb25vdXNseS4K
-PiA+ID4gCj4gPiA+IEFueXdheSwgSSBoYXZlIHRlc3RlZCB0aGUgYXBwZW5kZWQgcGF0Y2ggb24g
-dG9wIG9mIFsxLzddLVs3LzddIGFuZCBteSB0ZXN0IGJveAo+ID4gPiBhcHBlYXJzIHRvIHdvcmsg
-ZmluZSB3aXRoIGl0LCBhbHRob3VnaCBpdCBkb2Vzbid0IHdvcmsgaW4gdGhlICJhc3luYyBmb3Ig
-YWxsIgo+ID4gPiBjYXNlLgo+ID4gPiAKPiA+ID4gSSBndWVzcyB0aGUgbmV4dCBzdGVwIHdpbGwg
-YmUgdG8gc2VlIHdoaWNoIGRldmljZXMgYXJlIG5vdCBoYW5kbGVkCj4gPiA+IGFzeW5jaHJvbm91
-c2x5IHdpdGggdGhlIHBhdGNoIGJlbG93IGFuZCB0cnkgdG8gZmlndXJlIG91dCB3aGljaCBvZiB0
-aGVtCj4gPiA+IGJyZWFrKHMpIHRoaW5ncy4KPiA+ID4gCj4gPiA+IFRoYW5rcywKPiA+ID4gUmFm
-YWVsCj4gPiA+IAo+ID4gPiAtLS0KPiA+ID4gIGRyaXZlcnMvYmFzZS9wb3dlci9jb21tb24uYyB8
-ICAgIDYgKysrKystCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCAxIGRl
-bGV0aW9uKC0pCj4gPiA+IAo+ID4gPiBJbmRleDogbGludXgtMi42L2RyaXZlcnMvYmFzZS9wb3dl
-ci9jb21tb24uYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51eC0yLjYub3JpZy9kcml2
-ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMKPiA+ID4gKysrIGxpbnV4LTIuNi9kcml2ZXJzL2Jhc2Uv
-cG93ZXIvY29tbW9uLmMKPiA+ID4gQEAgLTMyLDcgKzMyLDExIEBAIHZvaWQgZGV2aWNlX3BtX2Fk
-ZChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiA+ICAJcHJfZGVidWcoIlBNOiBBZGRpbmcgaW5mbyBm
-b3IgJXM6JXNcbiIsCj4gPiA+ICAJCSBkZXYtPmJ1cyA/IGRldi0+YnVzLT5uYW1lIDogIk5vIEJ1
-cyIsCj4gPiA+ICAJCSBrb2JqZWN0X25hbWUoJmRldi0+a29iaikpOwo+ID4gPiAtCXBtX2xpbmtf
-YWRkKGRldiwgZGV2LT5wYXJlbnQpOwo+ID4gPiArCWlmIChkZXYtPnBhcmVudCkgewo+ID4gPiAr
-CQlwbV9saW5rX2FkZChkZXYsIGRldi0+cGFyZW50KTsKPiA+ID4gKwkJaWYgKGRldi0+cGFyZW50
-LT5wb3dlci5hc3luY19zdXNwZW5kKQo+ID4gPiArCQkJZGV2LT5wb3dlci5hc3luY19zdXNwZW5k
-ID0gdHJ1ZTsKPiA+ID4gKwl9Cj4gPiAKPiA+IHRvIHVzZSB0aGlzLCB3ZSBtdXN0IG1ha2Ugc3Vy
-ZSB0aGF0IO+7v2RldmljZV9lbmFibGVfYXN5bmNfc3VzcGVuZCBpcwo+ID4gY2FsbGVkIGJlZm9y
-ZSBhbnkgb2YgaXRzIGNoaWxkIGRldmljZSBiZWluZyByZWdpc3RlcmVkLCByaWdodD8KPiA+IHNo
-b3VsZCB3ZSBjaGVjayB0aGlzIGluIO+7v++7v2RldmljZV9lbmFibGVfYXN5bmNfc3VzcGVuZD8K
-PiA+IG9yIGF0IGxlYXN0IHdlIHNob3VsZCBhZGQgdGhlIGNvbW1lbnRzIHN0YXRpbmcgdGhpcyBp
-c3N1ZS4KPiAKPiBUaGF0J3MgY29ycmVjdCBpbiBnZW5lcmFsLCBidXQgSSBhZGRlZCB0aGUgcGF0
-Y2ggZm9yIHRlc3RpbmcgcHVycG9zZXMgb25seS4KPiAKPiBUaGUgZ29hbCBzdGlsbCBpcyB0byBp
-ZGVudGlmeSBhbGwgb2YgdGhlIGRlcGVuZGVuY2llcyB0aGF0IG5lZWQgdG8gYmUgdGFrZW4KPiBj
-YXJlIG9mIGFuZCB0byByZXByZXNlbnQgdGhlbSBhcHByb3ByaWF0ZWx5LCBzbyB0aGF0IHdlIGNh
-biBzYWZlbHkgc2V0Cj4gYXN5bmNfc3VzcGVuZCBmb3IgYWxsIGRldmljZXMuCj4gCj4gSSB3b25k
-ZXIgaWYgeW91IGdldCBhbnkgaW1wcm92ZW1lbnQgd2l0aCB0aGlzIHBhdGNoIGFwcGxpZWQ/Cj4g
-Ck5vLCBpdCBkb2Vzbid0IHdvcmsuCnRoZSBzeXN0ZW0gaGFuZ3MgZHVyaW5nIHN1c3BlbmQuCkkg
-aGF2ZSBub3QgZmlndXJlZCBvdXQgdGhlIHJvb3QgY2F1c2UuCgp0aGFua3MsCnJ1aQoKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, Aug 21, 2009 at 02:33:50PM +0800, Shaohua Li wrote:
+> On Thu, Aug 20, 2009 at 03:40:51PM +0800, Matthew Garrett wrote:
+> > _L0B will only be triggered if a PME is generated, so we'll be able to 
+> > determine which device generated the wakeup by looking at the PME 
+> > registers.
+> Right, but the event is sent to a bridge. The devices under the bridge invoke
+> wakeup event, not the bridge itself. So you must scan all devices under the
+> bridge to check which device has its PME registers set.
+> So the bridge case isn't what you said (notification always sent to a specific
+> device which invokes the wakeup event)
+
+Yes, but that's fine because the PME state tells us exactly which device 
+caused the wakeup. We'll never get a bus notification if the wakeup is 
+triggered by UHCI on Intel.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
