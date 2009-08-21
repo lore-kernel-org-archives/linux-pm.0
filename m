@@ -1,18 +1,12 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
-Date: Fri, 21 Aug 2009 10:23:16 +0100
-Message-ID: <20090821092316.GA19617__46690.1823449463$1250846783$gmane$org@srcf.ucam.org>
-References: <1250666651.23178.116.camel@sli10-desk.sh.intel.com>
-	<20090819115210.GC12216@srcf.ucam.org>
-	<20090820032450.GD26357@sli10-desk.sh.intel.com>
-	<20090820074050.GA30288@srcf.ucam.org>
-	<20090821063350.GA16694@sli10-desk.sh.intel.com>
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: How to wakup system from standby via USB keyboard
+Date: Fri, 21 Aug 2009 21:47:29 +0800
+Message-ID: <1250862449.29439.85.camel@falcon>
+Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20090821063350.GA16694@sli10-desk.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,24 +16,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 02:33:50PM +0800, Shaohua Li wrote:
-> On Thu, Aug 20, 2009 at 03:40:51PM +0800, Matthew Garrett wrote:
-> > _L0B will only be triggered if a PME is generated, so we'll be able to 
-> > determine which device generated the wakeup by looking at the PME 
-> > registers.
-> Right, but the event is sent to a bridge. The devices under the bridge invoke
-> wakeup event, not the bridge itself. So you must scan all devices under the
-> bridge to check which device has its PME registers set.
-> So the bridge case isn't what you said (notification always sent to a specific
-> device which invokes the wakeup event)
+Hi All,
 
-Yes, but that's fine because the PME state tells us exactly which device 
-caused the wakeup. We'll never get a bus notification if the wakeup is 
-triggered by UHCI on Intel.
+After reading some documents in Documentation/ and the Internet, I found
+there is an interface /proc/acpi/wakeup to set the wakeup devices on
+machines support ACPI. but my machine does not support ACPI,
+no /proc/acpi/wakeup there.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+my machine is FuLoong2F, which is loongson based machine, it does not
+support ACPI, but currently, I have made it support basic standby mode
+for it has a 'wait' mode(after setting it's frequency to ZERO) and can
+be waked up via an external interrupt. and here is the basic framework:
+
+0. suspend:
+
+arch_suspend_disable_irqs(disable all interrupts)
+
+...
+
+fuloong_pm_enter()
+
+...
+
+arch_suspend_enable_irqs(enable all interrupts)
+
+1. fuloong_pm_enter:
+
+setup_wakeup_interrupts()
+
+loongson_pm_enter(put loongson into 'wait' mode)
+
+3. setup_wakeup_interrupts
+
+if the interrupt line is connected to loongson directly, no setup need
+to do, but if there is an interrupt line connected to loongson
+indirectly(i.e via i8259A), I need to get through the interrupt path via
+enable(un-mask) the interrupts in interrupt controller and resuming the
+devices earlier manually or enable the interrupt bit on the devices and
+even or set a flag of the device driver to tell the system not suspend
+this device.
+
+I have tried the first(resuming earlier) and second method(enable the
+interrupt bit) on the 8042 keyboard o YeeLoong(another loongson-based
+machine, a netbook, i8042 is connected to i8259A directly), it works
+well, but not tried the third method yet.
+
+I guess the /proc/acpi/wakeup based method in user-space should be
+something like this, but is there any relative method in kernel space?
+
+there are only USB interfaces on FuLoong2F machines, I guess it will be
+very hard to get through the interrupt path via the above two methods(I
+have tried to enable the USB interrupt in south bright, but not work),
+so, is there an easier method to do it?
+
+Thanks & Regards,
+Wu Zhangjin
