@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc6-git5: Reported regressions from 2.6.30
-Date: Sat, 22 Aug 2009 00:02:03 +0200
-Message-ID: <200908220002.03707.rjw__45317.2932881445$1250892210$gmane$org@sisk.pl>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <4A8F12CE.9090601@lwfinger.net>
+Subject: Re: How to wakup system from standby via USB keyboard
+Date: Sat, 22 Aug 2009 00:06:10 +0200
+Message-ID: <200908220006.10863.rjw@sisk.pl>
+References: <1250862449.29439.85.camel@falcon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4A8F12CE.9090601@lwfinger.net>
+In-Reply-To: <1250862449.29439.85.camel@falcon>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,26 +17,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: wuzhangjin@gmail.com
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 21 August 2009, Larry Finger wrote:
-> Rafael J. Wysocki wrote:
+On Friday 21 August 2009, Wu Zhangjin wrote:
+> Hi All,
 > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13960
-> > Subject		: rtl8187 not connect to wifi
-> > Submitter	: okias <d.okias@gmail.com>
-> > Date		: 2009-08-10 19:16 (10 days old)
+> After reading some documents in Documentation/ and the Internet, I found
+> there is an interface /proc/acpi/wakeup to set the wakeup devices on
+> machines support ACPI. but my machine does not support ACPI,
+> no /proc/acpi/wakeup there.
 > 
-> The patch for this one was sent from Linville to DaveM earlier today,
-> and should be sent to mainline in the near future.
+> my machine is FuLoong2F, which is loongson based machine, it does not
+> support ACPI, but currently, I have made it support basic standby mode
+> for it has a 'wait' mode(after setting it's frequency to ZERO) and can
+> be waked up via an external interrupt. and here is the basic framework:
 > 
-> AFAIK, the OP has not yet tested the patch, but I think I was able to
-> reproduce the problem, and the patch did fit it for me.
+> 0. suspend:
+> 
+> arch_suspend_disable_irqs(disable all interrupts)
+> 
+> ...
+> 
+> fuloong_pm_enter()
+> 
+> ...
+> 
+> arch_suspend_enable_irqs(enable all interrupts)
+> 
+> 1. fuloong_pm_enter:
+> 
+> setup_wakeup_interrupts()
+> 
+> loongson_pm_enter(put loongson into 'wait' mode)
+> 
+> 3. setup_wakeup_interrupts
+> 
+> if the interrupt line is connected to loongson directly, no setup need
+> to do, but if there is an interrupt line connected to loongson
+> indirectly(i.e via i8259A), I need to get through the interrupt path via
+> enable(un-mask) the interrupts in interrupt controller and resuming the
+> devices earlier manually or enable the interrupt bit on the devices and
+> even or set a flag of the device driver to tell the system not suspend
+> this device.
+> 
+> I have tried the first(resuming earlier) and second method(enable the
+> interrupt bit) on the 8042 keyboard o YeeLoong(another loongson-based
+> machine, a netbook, i8042 is connected to i8259A directly), it works
+> well, but not tried the third method yet.
+> 
+> I guess the /proc/acpi/wakeup based method in user-space should be
+> something like this, but is there any relative method in kernel space?
+> 
+> there are only USB interfaces on FuLoong2F machines, I guess it will be
+> very hard to get through the interrupt path via the above two methods(I
+> have tried to enable the USB interrupt in south bright, but not work),
+> so, is there an easier method to do it?
 
-Thanks for the update.
-
-Can you please close the bug when the patch is merged?
+Is your USB controller a PCI one?
 
 Rafael
