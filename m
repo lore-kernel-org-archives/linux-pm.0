@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 4/5]PCIe native PME support
-Date: Fri, 21 Aug 2009 18:47:11 +0200
-Message-ID: <200908211847.11347.rjw__43676.51921134$1250873319$gmane$org@sisk.pl>
-References: <1250666659.23178.119.camel@sli10-desk.sh.intel.com>
-	<200908202322.02588.rjw@sisk.pl>
-	<20090821070112.GC16694@sli10-desk.sh.intel.com>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Fri, 21 Aug 2009 19:01:06 +0200
+Message-ID: <200908211901.06616.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0908211022210.2912-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090821070112.GC16694@sli10-desk.sh.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0908211022210.2912-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +17,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Zhenyu Wang <zhenyuw@linux.intel.com>
+Cc: Greg KH <greg@kroah.com>, Alek Du <alek.du@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 21 August 2009, Shaohua Li wrote:
-> On Fri, Aug 21, 2009 at 05:22:02AM +0800, Rafael J. Wysocki wrote:
-> > On Wednesday 19 August 2009, Shaohua Li wrote:
-> > > 
-> > > PCIe defines a native PME detection mechanism. When a PCIe endpoint
-> > > invokes PME, PCIe root port has a set of regisets to detect the
-> > > endpoint's bus/device/function number and root port will send out
-> > > interrupt when PME is received. After getting interrupt, OS can identify
-> > > which device invokes PME according to such information. See PCIe
-> > > spec for detail. This patch implements this feature.
-> > > 
-> > > ---
-> > >  drivers/pci/pcie/Kconfig  |    7 +
-> > >  drivers/pci/pcie/Makefile |    2 
-> > >  drivers/pci/pcie/npme.c   |  300 ++++++++++++++++++++++++++++++++++++++++++++++
-> > >  include/linux/pci_regs.h  |    1 
-> > >  4 files changed, 310 insertions(+)
-> > > 
-> > > Index: linux/drivers/pci/pcie/Kconfig
-> > > ===================================================================
-> > > --- linux.orig/drivers/pci/pcie/Kconfig	2009-08-19 13:43:18.000000000 +0800
-> > > +++ linux/drivers/pci/pcie/Kconfig	2009-08-19 14:34:00.000000000 +0800
-> > > @@ -46,3 +46,10 @@ config PCIEASPM_DEBUG
-> > >  	help
-> > >  	  This enables PCI Express ASPM debug support. It will add per-device
-> > >  	  interface to control ASPM.
-> > > +
-> > > +config PCIENPME
-> > > +	bool "PCIE Native PME support(Experimental)"
-> > > +	depends on PCIEPORTBUS && EXPERIMENTAL
-> > > +	help
-> > > +	  This enables PCI Express Native PME Reporting.
+On Friday 21 August 2009, Alan Stern wrote:
+> On Fri, 21 Aug 2009, Zhenyu Wang wrote:
+> 
+> > > I can't understand why Alex's patch could fix for you, or because you've
+> > > seen 'state_saved' is false in your testing, and Alex's patch just workaround
+> > > state restore for you? I don't understand why 'state_saved' is false in your
+> > > case, as pci layer should do save state for us by default, no?
+> 
+> The PCI layer _does_ save the state, in pci_legacy_suspend_late().  
+> And then in pci_pm_default_resume_noirq() it restores the state and
+> sets state_saved to false.  That's why state_saved is false when
+> agp_intel_resume() runs.
+> 
+> > > Could you try with this one? And what's your gfx chip?
+> 
+> 00:02.0 VGA compatible controller: Intel Corporation 82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device (rev 03)
+> 
+> 
+> > oops, here's right one for testing...
 > > 
-> > I don't really think we need that.  Or maybe.  But I'd prefer to call it
-> > PCIE_PME.
-> It definitely is required if you ever looked at PCIe spec.
-> In my test machine, the e1000 card can send such event, and the root port can
-> collect it.
+> > diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> > index 8c9d50d..5ed62c1 100644
+> > --- a/drivers/char/agp/intel-agp.c
+> > +++ b/drivers/char/agp/intel-agp.c
+> > @@ -2303,6 +2303,13 @@ static void __devexit agp_intel_remove(struct pci_dev *pdev)
+> >  }
+> >  
+> >  #ifdef CONFIG_PM
+> > +static int agp_intel_suspend(struct pci_dev *pdev, pm_message_t state)
+> > +{
+> > +	pci_save_state(pdev);
+> > +	pci_set_power_state(pdev, 3);
+> > +	return 0;
+> > +}
+> 
+> I don't think this will help.  The state _is_ getting saved, so saving
+> it again won't make any difference.  The problem occurs because the
+> state is restored at the wrong time.
 
-I meant the CONFIG switch, not the feature. :-)
+Yes.  Moreover, it doesn't need to be restored at that point, because it has
+already been restored earlier by the PCI bus type code.
+
+So, Zhenyu, it is completely unnecessary to call pci_restore_state() from
+a driver's ->resume() routine, because the PCI bus type driver has
+already called it in its ->resume_noirq().  And please note that
+pci_pm_default_resume_noirq() clears state_saved, which is why the Alek's
+patch helps.
+
+Without the Alek's patch on the Alan's system the config registers of both
+PCI devices are restored twice, first by the PCI bus type at the "noirq" stage
+and next by the driver.  The Alek's patch turns the second restorations into
+NOPs, which is fine, because they are unnecessary in general and they break
+things on the Alan's system.
 
 Thanks,
 Rafael
