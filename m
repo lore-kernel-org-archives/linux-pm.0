@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Mon, 24 Aug 2009 20:55:49 +0200
-Message-ID: <200908242055.49912.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0908211022210.2912-100000@iolanthe.rowland.org>
-	<200908211901.06616.rjw@sisk.pl>
-	<20090824023423.GC4624@zhen-devel.sh.intel.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: PME# for add-on cards
+Date: Mon, 24 Aug 2009 12:12:39 -0700
+Message-ID: <20090824121239.51ac35ce@jbarnes-g45>
+References: <200908240112.39424.rjw@sisk.pl>
+	<20090824094429.GB1134@srcf.ucam.org>
+	<200908242039.07607.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090824023423.GC4624@zhen-devel.sh.intel.com>
+In-Reply-To: <200908242039.07607.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,93 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhenyu Wang <zhenyuw@linux.intel.com>
-Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alek Du <alek.du@intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, list <linux-pm@lists.linux-foundation.org>, pm@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 August 2009, Zhenyu Wang wrote:
-> On 2009.08.21 19:01:06 +0200, Rafael J. Wysocki wrote:
-> > Yes.  Moreover, it doesn't need to be restored at that point, because it has
-> > already been restored earlier by the PCI bus type code.
-> 
-> true.
-> 
-> > 
-> > So, Zhenyu, it is completely unnecessary to call pci_restore_state() from
-> > a driver's ->resume() routine, because the PCI bus type driver has
-> > already called it in its ->resume_noirq().  And please note that
-> > pci_pm_default_resume_noirq() clears state_saved, which is why the Alek's
-> > patch helps.
-> > 
-> > Without the Alek's patch on the Alan's system the config registers of both
-> > PCI devices are restored twice, first by the PCI bus type at the "noirq" stage
-> > and next by the driver.  The Alek's patch turns the second restorations into
-> > NOPs, which is fine, because they are unnecessary in general and they break
-> > things on the Alan's system.
-> > 
-> 
-> yeah, Alex's patch is ok in general, and Alan's problem seems specific on 845G.
-> So the origin restore order issue for us seems gone with pci layer early resume,
-> we could remove the restore in intel_agp and drm/i915, although Alex's patch makes
-> them noop.
-> 
-> How about this one? Alan, could you help to test this with drm/i915 module loaded?
-> 
-> thanks.
-> 
-> From 7ab123a67e3ab3f31051d95e74362ae711e0657e Mon Sep 17 00:00:00 2001
-> From: Zhenyu Wang <zhenyuw@linux.intel.com>
-> Date: Mon, 24 Aug 2009 10:29:07 +0800
-> Subject: [PATCH] agp/intel: remove restore in resume
-> 
-> As earlier pci driver resume has already restored space for
-> host bridge and graphics device, don't need to restore it
-> again which might cause problem on some chips, e.g 845G tested
-> by Alan.
-> 
-> Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-> ---
->  drivers/char/agp/intel-agp.c    |    9 ---------
->  drivers/gpu/drm/i915/i915_drv.c |    1 -
->  2 files changed, 0 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-> index 8c9d50d..ed43ab2 100644
-> --- a/drivers/char/agp/intel-agp.c
-> +++ b/drivers/char/agp/intel-agp.c
-> @@ -2308,15 +2308,6 @@ static int agp_intel_resume(struct pci_dev *pdev)
->  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
->  	int ret_val;
->  
-> -	pci_restore_state(pdev);
-> -
-> -	/* We should restore our graphics device's config space,
-> -	 * as host bridge (00:00) resumes before graphics device (02:00),
-> -	 * then our access to its pci space can work right.
-> -	 */
-> -	if (intel_private.pcidev)
-> -		pci_restore_state(intel_private.pcidev);
-> -
->  	if (bridge->driver == &intel_generic_driver)
->  		intel_configure();
->  	else if (bridge->driver == &intel_850_driver)
-> diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
-> index fc4b68a..645f298 100644
-> --- a/drivers/gpu/drm/i915/i915_drv.c
-> +++ b/drivers/gpu/drm/i915/i915_drv.c
-> @@ -95,7 +95,6 @@ static int i915_resume(struct drm_device *dev)
->  	int ret = 0;
->  
->  	pci_set_power_state(dev->pdev, PCI_D0);
-> -	pci_restore_state(dev->pdev);
+On Mon, 24 Aug 2009 20:39:07 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-You can also drop the pci_set_power_state() above, the device is already in D0
-at this point.
-
->  	if (pci_enable_device(dev->pdev))
->  		return -1;
->  	pci_set_master(dev->pdev);
+> On Monday 24 August 2009, Matthew Garrett wrote:
+> > On Mon, Aug 24, 2009 at 01:12:39AM +0200, Rafael J. Wysocki wrote:
+> > 
+> > > After some debugging it turned out that PCI0 is the PCI host
+> > > bridge (no-bus:pci0000:00), so apparently echoing PCI0
+> > > to /proc/acpi/wakeup causes a wake-up GPE to be set up for the
+> > > host bridge which triggers wake-up once eth0 signals PME#.
+> > 
+> > Mm. That sounds entirely plausible. If it were a built-in card then
+> > the DSDT would provide that GPE, but as an add-in...
+> > 
+> > > First, I wonder if that's the case in general (anybody knows?).
+> > > Second, if that is the case, would it be a good idea to set up
+> > > the host bridge wake-up GPE by default?
+> > 
+> > I'd expect this to be the case in general, yes. Systems that work 
+> > without this probably have the BIOS enable it themselves on
+> > suspend. I suspect we'll have to set it to make sure.
 > 
+> OK, Matthew, Alan, thanks for your opinions.
+> 
+> I'll try to implement this, then.
+
+I think that's the best approach.  The only risk that I can see
+immediately is that we'll expose ourselves to add-in cards with flakey
+PME# signals.  We can worry about that when/if we see it though.
 
 Thanks,
-Rafael
+-- 
+Jesse Barnes, Intel Open Source Technology Center
