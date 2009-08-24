@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] introduce .wakeup_event ops
-Date: Mon, 24 Aug 2009 20:49:08 +0200
-Message-ID: <200908242049.08189.rjw__2179.66530840403$1251140007$gmane$org@sisk.pl>
-References: <20090819115210.GC12216@srcf.ucam.org>
-	<20090824082722.GA32264@srcf.ucam.org>
-	<1251103572.24336.8.camel@sli10-desk.sh.intel.com>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Mon, 24 Aug 2009 20:55:49 +0200
+Message-ID: <200908242055.49912.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0908211022210.2912-100000@iolanthe.rowland.org>
+	<200908211901.06616.rjw@sisk.pl>
+	<20090824023423.GC4624@zhen-devel.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1251103572.24336.8.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <20090824023423.GC4624@zhen-devel.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +19,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
+To: Zhenyu Wang <zhenyuw@linux.intel.com>
+Cc: Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alek Du <alek.du@intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 August 2009, Shaohua Li wrote:
-> On Mon, 2009-08-24 at 16:27 +0800, Matthew Garrett wrote:
-> > On Mon, Aug 24, 2009 at 04:21:50PM +0800, Shaohua Li wrote:
-> > > On Mon, 2009-08-24 at 16:09 +0800, Matthew Garrett wrote:
-> > > > I don't agree - the wakeup GPE will generate a standard notify, and the 
-> > > > notification handler has to be at the device or bus layer to handle 
-> > > > device-specific requests.
-> > > Then we will have duplicate code at each device or bus.
+On Monday 24 August 2009, Zhenyu Wang wrote:
+> On 2009.08.21 19:01:06 +0200, Rafael J. Wysocki wrote:
+> > Yes.  Moreover, it doesn't need to be restored at that point, because it has
+> > already been restored earlier by the PCI bus type code.
+> 
+> true.
+> 
 > > 
-> > I think that's inevitable, unless the notification infrastructure is 
-> > made more fine grained.
-> At least we need some check and maybe gpe handling and we need some
-> "ifdef ACPI" staff at each device or bus.
+> > So, Zhenyu, it is completely unnecessary to call pci_restore_state() from
+> > a driver's ->resume() routine, because the PCI bus type driver has
+> > already called it in its ->resume_noirq().  And please note that
+> > pci_pm_default_resume_noirq() clears state_saved, which is why the Alek's
+> > patch helps.
+> > 
+> > Without the Alek's patch on the Alan's system the config registers of both
+> > PCI devices are restored twice, first by the PCI bus type at the "noirq" stage
+> > and next by the driver.  The Alek's patch turns the second restorations into
+> > NOPs, which is fine, because they are unnecessary in general and they break
+> > things on the Alan's system.
+> > 
+> 
+> yeah, Alex's patch is ok in general, and Alan's problem seems specific on 845G.
+> So the origin restore order issue for us seems gone with pci layer early resume,
+> we could remove the restore in intel_agp and drm/i915, although Alex's patch makes
+> them noop.
+> 
+> How about this one? Alan, could you help to test this with drm/i915 module loaded?
+> 
+> thanks.
+> 
+> From 7ab123a67e3ab3f31051d95e74362ae711e0657e Mon Sep 17 00:00:00 2001
+> From: Zhenyu Wang <zhenyuw@linux.intel.com>
+> Date: Mon, 24 Aug 2009 10:29:07 +0800
+> Subject: [PATCH] agp/intel: remove restore in resume
+> 
+> As earlier pci driver resume has already restored space for
+> host bridge and graphics device, don't need to restore it
+> again which might cause problem on some chips, e.g 845G tested
+> by Alan.
+> 
+> Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+> ---
+>  drivers/char/agp/intel-agp.c    |    9 ---------
+>  drivers/gpu/drm/i915/i915_drv.c |    1 -
+>  2 files changed, 0 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> index 8c9d50d..ed43ab2 100644
+> --- a/drivers/char/agp/intel-agp.c
+> +++ b/drivers/char/agp/intel-agp.c
+> @@ -2308,15 +2308,6 @@ static int agp_intel_resume(struct pci_dev *pdev)
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+>  	int ret_val;
+>  
+> -	pci_restore_state(pdev);
+> -
+> -	/* We should restore our graphics device's config space,
+> -	 * as host bridge (00:00) resumes before graphics device (02:00),
+> -	 * then our access to its pci space can work right.
+> -	 */
+> -	if (intel_private.pcidev)
+> -		pci_restore_state(intel_private.pcidev);
+> -
+>  	if (bridge->driver == &intel_generic_driver)
+>  		intel_configure();
+>  	else if (bridge->driver == &intel_850_driver)
+> diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+> index fc4b68a..645f298 100644
+> --- a/drivers/gpu/drm/i915/i915_drv.c
+> +++ b/drivers/gpu/drm/i915/i915_drv.c
+> @@ -95,7 +95,6 @@ static int i915_resume(struct drm_device *dev)
+>  	int ret = 0;
+>  
+>  	pci_set_power_state(dev->pdev, PCI_D0);
+> -	pci_restore_state(dev->pdev);
 
-Why would we need that?
+You can also drop the pci_set_power_state() above, the device is already in D0
+at this point.
 
-> There isn't big difference device/bus register a notification handler or
-> register a .wakeup_event. And .wakeup_event is more simple in device/bus
-> level.
-
-As Matthew said, there is.
-
-To make things clear, we're not going to add .wakeup_event().
+>  	if (pci_enable_device(dev->pdev))
+>  		return -1;
+>  	pci_set_master(dev->pdev);
+> 
 
 Thanks,
 Rafael
