@@ -1,15 +1,15 @@
 From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH 2/2] PCIe native PME support
-Date: Tue, 25 Aug 2009 09:27:38 +0800
-Message-ID: <20090825012738.GA27590__35848.4700126157$1251163836$gmane$org@sli10-desk.sh.intel.com>
-References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
-	<200908250013.32462.rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] handle wakeup event in PCI
+Date: Tue, 25 Aug 2009 09:58:38 +0800
+Message-ID: <20090825015838.GB27590__20338.547617621$1251165698$gmane$org@sli10-desk.sh.intel.com>
+References: <1251101493.22288.53.camel@sli10-desk.sh.intel.com>
+	<200908242302.27131.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200908250013.32462.rjw@sisk.pl>
+In-Reply-To: <200908242302.27131.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,438 +23,191 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pci <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 06:13:32AM +0800, Rafael J. Wysocki wrote:
+On Tue, Aug 25, 2009 at 05:02:27AM +0800, Rafael J. Wysocki wrote:
 > On Monday 24 August 2009, Shaohua Li wrote:
-> >
-> > PCIe defines a native PME detection mechanism. When a PCIe endpoint
-> > invokes PME, PCIe root port has a set of regisets to detect the
-> > endpoint's bus/device/function number and root port will send out
-> > interrupt when PME is received. After getting interrupt, OS can identify
-> > which device invokes PME according to such information. See PCIe
-> > spec for detail. This patch implements this feature.
-> >
+> > Add an implementation how to detect wakeup event for PCI. PCI device can
+> > invoke PME, platform or PCIe native approach can collect the event and
+> > report to OS. OS should identify exactly which device invokes PME as
+> > several devices can share PME pin.
+> > 
+> > In platform approach (ACPI in this case), some BIOS give exact device which
+> > invokes PME but others doesn't. 
+> 
+> I don't think the BIOS can reliably say which device signals PME# in the PCI
+> (non-PCIe) case, unless the PME# is routed separately from each device to the
+> chipset.  Also, two or more devices may signal PME# at the same time.
+> 
+> So, in this case we generally need to scan the entire hierarchy each time
+> we get a PME#.
+The thing isn't that simple. Some BIOS in its AML code clear PME status before
+sending notification to OS, which will make the 'scan the entire hierarchy each
+time' broken.
+
+So my assumption here is BIOS sent notification to a specific device only when
+it makes sure the device signals PME#. Otherwise, BIOS should send notification
+to a bridge.
+
+Or do you have better solution?
+> > In PCIe native approach, if PME source device is a pcie endpoint, the device
+> > is the exact PME source. If the device is root port or pcie-to-pci bridge,
+> > we need scan the hierarchy under the device.
+> 
+> Why do we have to scan if the source is a root port itself?
+The spec says legacy pci PME can directly route to root port, so this is similar
+with the pcie-to-pci bridge case.
+
+> > To identify PME source, the patch does:
+> > 1. if the source is a pci device, the device is the only source for PME
+> 
+> That need not be true in the non-PCIe case IMO.
+See my first comment.
+
+> > 2. if the source is a bridge, scan the hierarchy under the bridge. Several
+> > devices under the bridge could be the sources.
+> 
+> I think we need a function that will scan the hierarchy below a bridge
+> (that may be the root bridge in the non-PCIe case or a PCIe-to-PCI
+> bridge in the PCIe case) and if a device has PME_Status set, it will
+> (a) clear it and (b) call pm_request_resume() for the device.
+Even the PCIe device can work like a legacy PCI device to send PME and ACPI GPE
+fires when this happens. I'd like we have a general solution for both PCIe case
+and non-PCIe case.
+
 > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 > > ---
-> >  drivers/pci/pcie/Kconfig     |    8 +
-> >  drivers/pci/pcie/Makefile    |    2
-> >  drivers/pci/pcie/pcie_npme.c |  327 +++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 337 insertions(+)
-> >
-> > Index: linux/drivers/pci/pcie/Kconfig
+> >  drivers/pci/pci-driver.c |   77 +++++++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/pci/pci.h        |    2 +
+> >  2 files changed, 79 insertions(+)
+> > 
+> > Index: linux/drivers/pci/pci-driver.c
 > > ===================================================================
-> > --- linux.orig/drivers/pci/pcie/Kconfig       2009-08-24 15:38:46.000000000 +0800
-> > +++ linux/drivers/pci/pcie/Kconfig    2009-08-24 15:47:09.000000000 +0800
-> > @@ -46,3 +46,11 @@ config PCIEASPM_DEBUG
-> >       help
-> >         This enables PCI Express ASPM debug support. It will add per-device
-> >         interface to control ASPM.
+> > --- linux.orig/drivers/pci/pci-driver.c	2009-08-24 10:50:12.000000000 +0800
+> > +++ linux/drivers/pci/pci-driver.c	2009-08-24 15:42:49.000000000 +0800
+> > @@ -17,6 +17,7 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/cpu.h>
+> > +#include <linux/pm_runtime.h>
+> >  #include "pci.h"
+> >  
+> >  /*
+> > @@ -570,6 +571,82 @@ static void pci_pm_complete(struct devic
+> >  		drv->pm->complete(dev);
+> >  }
+> >  
+> > +/*
+> > + * Called when dev is suspected to invoke a wakeup event
+> > + * */
+> 
+> Please add a full kerneldoc comment.
+> 
+> > +static bool pci_pm_check_wakeup_event(struct pci_dev *pdev)
+> > +{
+> > +	int pme_pos = pdev->pm_cap;
+> > +	u16 pmcsr;
+> > +	bool spurious = false;
 > > +
-> > +config PCIE_NPME
-> > +     bool "PCIe Native PME reporint(Experimental)"
-> > +     depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-> > +     help
-> > +       This enables PCI Express Native PME Reporting. When device invokes
-> > +       PME, root port or root complex event collector can report the PME
-> > +       events to OS.
+> > +	if (pme_pos == 0) {
 > 
-> Well, I think we can just drop the CONFIG option and make the whole thing
-> depend on PM_RUNTIME && PCIEPORTBUS.  So make it
-This isn't always required, the ACPI approach still works. But fine, I'll do it.
- 
-> +config PCIE_PME
-> +       def_bool y
-> +       depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
+> if (!pme_pos) would be better IMO.  Also the braces are not necessary and I'd
+> move the comment somewhere else (that function is going to be called for
+> devices that don't have the PM capability other than the USB controllers).
 > 
-> Ah, please drop the 'N' as I've just done.  It doesn't carry any substantial
-> information and is confusing IMO.  Please also drop it from the function names
-> below.
-I don't want to drop the 'N'. The spec calls it native pme, so it's natural to
-name the driver npme.
+> > +		/*
+> > +		 * Some USB devices haven't PME, but have specific registers to
+> > +		 * control wakeup
+> > +		 */
+> > +		return false;
+> > +	}
+> > +
+> > +	/* clear PME status and disable PME to avoid interrupt flood */
+> > +	pci_read_config_word(pdev, pme_pos + PCI_PM_CTRL, &pmcsr);
+> > +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+> > +		return false;
+> > +	/* I see spurious PME here, just ignore it for now */
+> > +	if (!(pmcsr & PCI_PM_CTRL_PME_ENABLE))
+> > +		spurious = true;
+> > +	else
+> > +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
+> > +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
+> > +	pci_write_config_word(pdev, pme_pos + PCI_PM_CTRL, pmcsr);
+> > +
+> > +	if (spurious)
+> > +		return false;
+> > +	return true;
+> 
+> Fold these three lines into one:
+> 
+> + return !spurious;
+> 
+> Thus, I wouldn't call that variable 'spurious'.  I'd rather call it 'ret' and
+> make it so that we can just return its value at the end.
+but it's really spurious interrupt :).
 
-> > +#define PCI_EXP_RTSTA_PME 0x10000 /* PME status */
-> > +
-> > +static int disabled;
-> > +module_param(disabled, bool, 0);
-> > +static int force = 1;
-> > +module_param(force, bool, 0);
+> So, the above can be rewritten as
 > 
-> Why would anyone want to force it or disable it at this level?
-In ACPI platform, we need call _OSC to declare the feature before we can use it.
-Some BIOSes simply don't provide _OSC or implement it wrong. Per spec, we can't
-enable the feature in such cases, so I provide an option to force it enabled.
+> + 	/* Check if PME status is set. */
+> +	pci_read_config_word(pdev, pme_pos + PCI_PM_CTRL, &pmcsr);
+> +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+> +		return false;
+> +	/* Clear PME status and disable PME to avoid interrupt flood. */
+> +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
+> +	if (pmcsr & PCI_PM_CTRL_PME_ENABLE)
+> +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
+> +	else
+> +		ret = false;
+> +	pci_write_config_word(pdev, pme_pos + PCI_PM_CTRL, pmcsr);
+> +	return ret;
+> 
+> > +}
+> > +
+> > +/* @target is suspected to invoke a wakeup event. Return true if it's true */
+> 
+> Please add full kerneldoc comment.
+> 
+> > +bool pci_pm_handle_wakeup_event(struct pci_dev *target)
+> > +{
+> > +	bool ret;
+> > +	struct pci_dev *tmp = NULL;
+> > +	int domain_nr, bus_start, bus_end;
+> > +
+> > +	/*
+> > +	 * @target could be a bridge or a device.
+> > +	 * if target is device, trust the device invokes PME. If target is a
+> > +	 * bridge, scan devices under the bridge and only trust device invokes
+> > +	 * PME which we can detect
+> > +	 **/
+> > +	ret = pci_pm_check_wakeup_event(target);
+> > +	if (!target->subordinate || (target->is_pcie &&
+> > +	    target->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
+> > +	    target->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE)) {
+> > +		/* always trust the device invokes PME even we can't detect */
+> > +		pm_request_resume(&target->dev);
+> 
+> I don't think we can return here.  There may be other devices signalling
+> PME.
+they will invoke another interrupt, right?
 
-The 'disabled' option is in case the feature doesn't work.
-> > +
-> > +struct pcie_npme_service_data {
-> > +     spinlock_t lock;
-> > +     struct pcie_device *dev;
-> > +     struct work_struct work;
-> > +     int in_exiting; /* driver is exiting, don't reenable interrupt */
-> > +};
-> > +
+> Well, perhaps move the pm_request_resume(&target->dev) to the function above
+> along with the conditional?  In that case you could call the function
+> pci_pm_wakeup() which would be nicer IMO.
 > 
-> Please add kerneldoc comments to all new functions
-> 
-> > +static inline void pcie_npme_enable_interrupt(struct pci_dev *pdev, bool enable)
-> > +{
-> > +     int pos;
-> > +     u16 rtctl;
-> > +
-> > +     pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> > +
-> > +     pci_read_config_word(pdev, pos + PCI_EXP_RTCTL, &rtctl);
-> > +     if (enable)
-> > +             rtctl |= PCI_EXP_RTCTL_PMEIE;
-> > +     else
-> > +             rtctl &= ~PCI_EXP_RTCTL_PMEIE;
-> > +     pci_write_config_word(pdev, pos + PCI_EXP_RTCTL, rtctl);
-> > +}
-> > +
-> > +static inline void pcie_npme_clear_status(struct pci_dev *pdev)
-> > +{
-> > +     int pos;
-> > +     u32 rtsta;
-> > +
-> > +     pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> > +
-> > +     pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &rtsta);
-> > +     rtsta |= PCI_EXP_RTSTA_PME;
-> > +     pci_write_config_dword(pdev, pos + PCI_EXP_RTSTA, rtsta);
-> > +}
-> > +
-> > +static bool pcie_npme_handle_request(struct pci_dev *root_port, u16 request_id)
-> 
-> requester_id would be better.
-ok
+> Also I'm not sure about the conditional.  Namely, I don't think we'll need to
+> call this function in the PCIe case except for PCI-to-PCIe bridges, because
+> the root port will give us the requester ID of the device the interrupt was for
+> if that's an endpoint.  So, perhaps we can assume we scan over non-PCIe
+> devices here?
+As I said, PCIe device can invoke ACPI GPE if BIOS doesn't enable PCIe native
+PME, so sounds not true to only scan non-PCIe devices.
 
-> > +{
-> > +     struct pci_dev *target;
-> > +     bool device_found = false;
-> > +     u8 busnr = request_id >> 8, devfn = request_id & 0xff;
+> > +		return true;
+> > +	}
 > > +
-> > +     target = pci_get_bus_and_slot(busnr, devfn);
-> > +     /*
-> > +      * PME from PCI devices under a PCIe-to-PCI bridge may be converted to
-> > +      * a PCIe in-band PME message. In such case, bridge will assign the
-> > +      * message a new request id using bridge's secondary bus numer and
-> > +      * device number/function number 0
-> > +      */
-> > +     if (!target && devfn == 0) {
+> > +	if (ret)
+> > +		pm_request_resume(&target->dev);
 > 
-> +       if (!target && !devfn) {
-> 
-> Or better
-> 
-> +       if (target) {
-> +               ret = pci_pm_wakeup(target);
-> +               pci_dev_put(target);
-> +               return ret;
-> +       }
-> 
-> BTW, what we do if target is NULL, but devfn is nonzero?
->From my understanding of PCIe bridge spec, the bridge always makes the devfn to zero
-for legacy pci request upstream.
-
-> > +             struct pci_bus *bus;
-> > +
-> > +             bus = pci_find_bus(pci_domain_nr(root_port->bus), busnr);
-> > +             if (bus) {
-> > +                     target = bus->self;
-> > +                     if (!target->is_pcie || target->pcie_type !=
-> > +                                     PCI_EXP_TYPE_PCI_BRIDGE)
-> 
-> +                       if (!target->is_pcie
-> +                           || target->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE)
-> 
-> > +                             target = NULL;
-> > +             }
-> > +             if (target)
-> > +                     pci_dev_get(target);
-> 
-> Now we don't need to do the _get().
-ok
-
-> > +     }
-> > +
-> > +     if (target)
-> > +             device_found = pci_pm_handle_wakeup_event(target);
-> 
-> Now we call the function that searches over the hierarchy below the bridge.
-> 
-> > +     else
-> > +             printk(KERN_ERR"Can't find device %02d:%d.%d which invokes PME\n",
-> > +                     busnr, PCI_SLOT(devfn), PCI_FUNC(devfn));
-> > +
-> > +     if (target)
-> > +             pci_dev_put(target);
-> 
-> The two lines above aren't necessary any more.
-> > +
-> > +     return device_found;
-> > +}
-> > +
-> > +static void pcie_npme_work_handle(struct work_struct *work)
-> > +{
-> > +     struct pcie_npme_service_data *data =
-> > +                     container_of(work, struct pcie_npme_service_data, work);
-> > +     struct pci_dev *root_port = data->dev->port;
-> > +     unsigned long flags;
-> > +     bool spurious = true;
-> > +     u32 rtsta;
-> > +     int pos;
-> > +
-> > +     pos = pci_find_capability(root_port, PCI_CAP_ID_EXP);
-> > +     while (1) {
-> > +             spin_lock_irqsave(&data->lock, flags);
-> > +             pci_read_config_dword(root_port, pos + PCI_EXP_RTSTA, &rtsta);
-> > +
-> > +             if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> > +                     spin_unlock_irqrestore(&data->lock, flags);
-> > +                     break;
-> > +             }
-> > +
-> > +             /* clear PME, if there are other pending PME, the status will
-> > +              * get set again
-> > +              */
-> > +             pcie_npme_clear_status(root_port);
-> > +             spin_unlock_irqrestore(&data->lock, flags);
-> > +
-> > +             if (pcie_npme_handle_request(root_port, rtsta & 0xffff))
-> > +                     spurious = false;
-> > +     }
-> 
-> It doesn't work like this if my reading of the spec is correct.  Namely,
-> we should get a separate interrupt for each device that generated a PME,
-> so it's only necessary to clear the status without looping.
-> 
-> Moreover, I think we should do something like this:
-> 
-> * interrrupt arrives
-> * disable interrupt
-> * read the requester ID, schedule the service
-> * clear the status
-> * enable interrupt
-> 
-> which now will allow us to get the interrupt for another device, if any.
-> The spec seems to require devices not to generate PME messages continously,
-> but only if they are not handled within a "reasonable amount of time" (original
-> wording), so we should be safe from interrupt flooding.
-> 
-> Note that we need to create a separate work_struct for each interrupt in this
-> case, though.
-I have different understanding. The root port can buffer several PME requests from
-different devices. If the PME pending bit is set and after the status is clear,
-the status bit will get set soon. We can do one request one time for each interrupt,
-but seems not necessary. And the loop makes OS more quickly handle PME request without
-overflow root port buffer.
-
-> > +
-> > +     if (!spurious && !data->in_exiting) {
-> > +             spin_lock_irqsave(&data->lock, flags);
-> > +             /* reenable native PME */
-> > +             pcie_npme_enable_interrupt(root_port, true);
-> > +             spin_unlock_irqrestore(&data->lock, flags);
-> > +     }
-> > +
-> > +     if (spurious)
-> > +             printk(KERN_ERR"Spurious Native PME interrupt %d received\n",
-> > +                     root_port->irq);
-> > +}
-> > +
-> > +static irqreturn_t pcie_npme_irq(int irq, void *context)
-> > +{
-> > +     int pos;
-> > +     struct pci_dev *pdev;
-> > +     u32 rtsta;
-> > +     struct pcie_npme_service_data *data;
-> > +     unsigned long flags;
-> > +
-> > +     pdev = ((struct pcie_device *)context)->port;
-> > +     data = get_service_data((struct pcie_device *)context);
-> > +
-> > +     pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> > +
-> > +     spin_lock_irqsave(&data->lock, flags);
-> > +     pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &rtsta);
-> > +
-> > +     if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> > +             spin_unlock_irqrestore(&data->lock, flags);
-> > +             return IRQ_NONE;
-> > +     }
-> > +
-> > +     /* disable PME to avoid interrupt flood */
-> > +     pcie_npme_enable_interrupt(pdev, false);
-> > +     spin_unlock_irqrestore(&data->lock, flags);
-> > +
-> > +     queue_work(pm_wq, &data->work);
-> 
-> IMO, we should read the requester ID here and put it into the work struct as
-> per the comment above.
-see my above comment.
-
-> Also, since in principle the interrupt may be shared with Hot-Plug Events,
-> we should be careful about returning IRQ_HANDLED.  Perhaps we should at least
-> check if the requester ID is nonzero?
-This is overthinking. Unless the hardware is broken, we don't need this.
-
-> > +
-> > +     return IRQ_HANDLED;
-> > +}
-> > +
-> > +#ifdef CONFIG_ACPI
-> > +static int pcie_npme_osc_setup(struct pcie_device *pciedev)
-> > +{
-> > +     acpi_status status = AE_NOT_FOUND;
-> > +     struct pci_dev *pdev = pciedev->port;
-> > +     acpi_handle handle = DEVICE_ACPI_HANDLE(&pdev->dev);
-> > +
-> > +     if (!handle)
-> > +             return -EINVAL;
-> > +     status = acpi_pci_osc_control_set(handle,
-> > +                     OSC_PCI_EXPRESS_PME_CONTROL |
-> > +                     OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-> > +
-> > +     if (ACPI_FAILURE(status)) {
-> > +             printk(KERN_DEBUG "Native PME service couldn't init device "
-> > +                     "%s - %s\n", dev_name(&pciedev->device),
-> > +                     (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-> > +                     "no _OSC support" : "Run ACPI _OSC fails");
-> > +             return -EINVAL;
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> > +#else
-> > +static inline int pcie_npme_osc_setup(struct pcie_device *pciedev)
-> > +{
-> > +     return 0;
-> > +}
-> > +#endif
-> > +
-> > +static int __devinit pcie_npme_probe(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev;
-> > +     int status;
-> > +     struct pcie_npme_service_data *data;
-> > +
-> > +     if (pcie_npme_osc_setup(dev) && !force)
-> > +             return -EINVAL;
-> > +
-> > +     data = kzalloc(sizeof(*data), GFP_KERNEL);
-> > +     if (!data)
-> > +             return -ENOMEM;
-> > +     spin_lock_init(&data->lock);
-> > +     INIT_WORK(&data->work, pcie_npme_work_handle);
-> > +     data->dev = dev;
-> > +     set_service_data(dev, data);
-> > +
-> > +     pdev = dev->port;
-> > +
-> > +     /* clear pending PME */
-> > +     pcie_npme_clear_status(pdev);
-> > +
-> > +     status = request_irq(dev->irq, pcie_npme_irq, IRQF_SHARED,
-> > +             "pcie_npme", dev);
-> > +     if (status) {
-> > +             kfree(data);
-> > +             return status;
-> > +     }
-> > +
-> > +     /* enable PME interrupt */
-> > +     pcie_npme_enable_interrupt(pdev, true);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static void pcie_npme_remove(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev;
-> > +     unsigned long flags;
-> > +     struct pcie_npme_service_data *data = get_service_data(dev);
-> > +
-> > +     pdev = dev->port;
-> > +
-> > +     /* disable PME interrupt */
-> > +     spin_lock_irqsave(&data->lock, flags);
-> > +     data->in_exiting = 1;
-> > +     pcie_npme_enable_interrupt(pdev, false);
-> > +     spin_unlock_irqrestore(&data->lock, flags);
-> > +
-> > +     flush_scheduled_work();
-> > +     free_irq(dev->irq, dev);
-> > +
-> > +     /* clear pending PME */
-> > +     pcie_npme_clear_status(pdev);
-> > +
-> > +     set_service_data(dev, NULL);
-> > +     kfree(data);
-> > +}
-> > +
-> > +static int pcie_npme_suspend(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev;
-> > +     struct pcie_npme_service_data *data;
-> > +     unsigned long flags;
-> > +
-> > +     pdev = dev->port;
-> > +     data = get_service_data(dev);
-> > +
-> > +     spin_lock_irqsave(&data->lock, flags);
-> > +     /* disable PME to avoid further interrupt */
-> > +     pcie_npme_enable_interrupt(pdev, false);
-> > +
-> > +     /* clear pending PME */
-> > +     pcie_npme_clear_status(pdev);
-> > +     spin_unlock_irqrestore(&data->lock, flags);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int pcie_npme_resume(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev = dev->port;
-> > +     unsigned long flags;
-> > +     struct pcie_npme_service_data *data = get_service_data(dev);
-> > +
-> > +     spin_lock_irqsave(&data->lock, flags);
-> > +     pcie_npme_clear_status(pdev);
-> > +     pcie_npme_enable_interrupt(pdev, true);
-> > +     spin_unlock_irqrestore(&data->lock, flags);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static struct pcie_port_service_driver pcie_npme_driver = {
-> > +     .name           = "pcie_npme",
-> > +     .port_type      = PCIE_RC_PORT,
-> > +     .service        = PCIE_PORT_SERVICE_PME,
-> > +
-> > +     .probe          = pcie_npme_probe,
-> > +     .remove         = pcie_npme_remove,
-> > +     .suspend        = pcie_npme_suspend,
-> > +     .resume         = pcie_npme_resume,
-> > +};
-> > +
-> > +static int __init pcie_npme_service_init(void)
-> > +{
-> > +     if (disabled)
-> > +             return -EINVAL;
-> > +     return pcie_port_service_register(&pcie_npme_driver);
-> > +}
-> > +
-> > +static void __exit pcie_npme_service_exit(void)
-> > +{
-> > +     pcie_port_service_unregister(&pcie_npme_driver);
-> > +}
-> > +
-> > +module_init(pcie_npme_service_init);
-> > +module_exit(pcie_npme_service_exit);
-> > +
-> > +MODULE_AUTHOR("Shaohua Li<shaohua.li@intel.com>");
-> > +MODULE_LICENSE("GPL");
-> 
-> I'm not entirely sure if that should be a module.  Perhaps it sholdn't.
-Ok.
+> Do we want to do that for bridges?
+birdges can send PME too, right? Seems not harmful.
 
 Thanks,
 Shaohua
