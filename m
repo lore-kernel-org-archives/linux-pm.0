@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/6] PM: Allow serio input devices to
-	suspend/resume asynchronously
-Date: Wed, 26 Aug 2009 22:24:19 +0200
-Message-ID: <200908262224.19110.rjw__38382.9217091717$1251319354$gmane$org@sisk.pl>
+Subject: [PATCH 5/6] PM: Allow ACPI devices to suspend/resume
+	asynchronously
+Date: Wed, 26 Aug 2009 22:23:28 +0200
+Message-ID: <200908262223.28899.rjw__12819.7321821519$1251320604$gmane$org@sisk.pl>
 References: <200908262217.19609.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,26 +24,25 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Set async_suspend for all serio input devices, so that they can be
-suspended and resumed asynchronously with other devices they don't
-depend on in a known way (i.e. devices which are not their parents
-or children and to which they are not connected via struct pm_link
-objects).
+Set async_suspend for all ACPI devices, so that they can be suspended
+and resumed asynchronously with other devices they don't depend on in
+a known way (i.e. devices which are not their parents or children and
+to which they are not connected via struct pm_link objects).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/input/serio/serio.c |    1 +
+ drivers/acpi/scan.c |    1 +
  1 file changed, 1 insertion(+)
 
-Index: linux-2.6/drivers/input/serio/serio.c
+Index: linux-2.6/drivers/acpi/scan.c
 ===================================================================
---- linux-2.6.orig/drivers/input/serio/serio.c
-+++ linux-2.6/drivers/input/serio/serio.c
-@@ -576,6 +576,7 @@ static void serio_add_port(struct serio 
- 			printk(KERN_ERR
- 				"serio: sysfs_create_group() failed for %s (%s), error: %d\n",
- 				serio->phys, serio->name, error);
-+		device_enable_async_suspend(&serio->dev, true);
- 	}
- }
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -539,6 +539,7 @@ static int acpi_device_register(struct a
+ 		       dev_name(&device->dev));
  
+ 	device->removal_type = ACPI_BUS_REMOVAL_NORMAL;
++	device_enable_async_suspend(&device->dev, true);
+ 	return 0;
+ end:
+ 	mutex_lock(&acpi_device_lock);
