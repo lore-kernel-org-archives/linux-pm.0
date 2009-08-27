@@ -1,15 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI
-	RTC drivers
-Date: Thu, 27 Aug 2009 14:52:36 -0700
-Message-ID: <200908271452.37358.david-b@pacbell.net>
-References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 7 updated] PM: Add a switch for
+	disabling/enabling asynchronous suspend/resume
+Date: Fri, 28 Aug 2009 00:22:40 +0200
+Message-ID: <200908280022.40522.rjw__41475.9564366706$1251411920$gmane$org@sisk.pl>
+References: <200908262217.19609.rjw@sisk.pl> <200908272119.47053.rjw@sisk.pl>
+	<20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
-Content-Disposition: inline
+In-Reply-To: <20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +19,203 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-NAK; see details below
+On Thursday 27 August 2009, Dmitry Torokhov wrote:
+> On Thu, Aug 27, 2009 at 09:19:46PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Add sysfs attribute kernel/power/pm_async allowing the user space to
+> > disable and enable async suspend/resume of devices.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/base/power/main.c  |   13 +++++++------
+> >  drivers/base/power/power.h |    6 +++---
+> >  kernel/power/main.c        |   28 +++++++++++++++++++++++++++-
+> >  3 files changed, 37 insertions(+), 10 deletions(-)
+> > 
+> > Index: linux-2.6/kernel/power/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/main.c
+> > +++ linux-2.6/kernel/power/main.c
+> > @@ -44,6 +44,29 @@ int pm_notifier_call_chain(unsigned long
+> >  			== NOTIFY_BAD) ? -EINVAL : 0;
+> >  }
+> >  
+> > +/* If set, devices may be suspended and resumed asynchronously. */
+> > +int pm_async_enabled = 1;
+> > +
+> > +static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
+> > +			     char *buf)
+> > +{
+> > +	return sprintf(buf, "%d\n", pm_async_enabled);
+> > +}
+> > +
+> > +static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
+> > +			      const char *buf, size_t n)
+> > +{
+> > +	int val;
+> > +
+> > +	if (sscanf(buf, "%d", &val) == 1) {
+> 
+> I prefer more vigorous restrictions on the sysfs interfaces. Maybe:
+> 
+> 	if (strict_strtoul(buf, 10, &val) || val > 1)
+> 		return -EINVAL;
+> 
+> 	pm_async_enabled = val;
+> 
+> ?
 
-On Thursday 27 August 2009, Anton Vorontsov wrote:
-> RTC core won't allow wakeup alarms to be set if RTC devices' parent
-> (i.e. i2c_client or spi_device) isn't wakeup capable.
+OK
 
-Quite rightly so ... being wakeup-capable is config-specific.
+Updated patch below.
 
+Thanks,
+Rafael
 
-> For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass
-> via board info, and if set, I2C core will initialize wakeup capability.
-> For SPI devices there is no such flag at all.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM: Add a switch for disabling/enabling asynchronous suspend/resume
 
-So why not add it for SPI?  If it's an issue, it's not
-unique to RTC devices.
+Add sysfs attribute kernel/power/pm_async allowing the user space to
+disable and enable async suspend/resume of devices.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c  |   13 +++++++------
+ drivers/base/power/power.h |    6 +++---
+ kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
+ 3 files changed, 40 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
  
-> I believe that it's not platform code responsibility to allow or
-> disallow wakeups, instead, drivers themselves should set the capability
-> if a device can trigger wakeups.
-
-Drivers can't generally know if that's possible though.
-They need to be told that it is, by platform code.
-
-Most devices can't issue wakeup events.
-
++/* If set, devices may be suspended and resumed asynchronously. */
++int pm_async_enabled = 1;
++
++static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%d\n", pm_async_enabled);
++}
++
++static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
++			      const char *buf, size_t n)
++{
++	unsigned long val;
++
++	if (strict_strtoul(buf, 10, &val))
++		return -EINVAL;
++
++	if (val > 1)
++		return -EINVAL;
++
++	pm_async_enabled = val;
++	return n;
++}
++
++power_attr(pm_async);
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
  
-> That's what drivers/base/power/sysfs.c says:
-> 
->  * It is the responsibility of device drivers to enable (or disable)
->  * wakeup signaling as part of changing device power states, respecting
->  * the policy choices provided through the driver model.
-> 
-> I2C and SPI RTC devices send wakeup events via interrupt lines, so we
-> should set the wakeup capability if IRQ is routed.
-
-Re-read the quoted sentence.  You're saying that policy
-choices should be hard-wired into the driver; contrary
-to that quote.  (In this case the choice is one that
-platform code must report, and which the hardware
-designer made:  if the device can issue wakeup events.)  
-
-
-> Ideally we should also check irq for wakeup capability before setting
-> device's capability, i.e.
-> 
-> 	if (can_irq_wake(irq))
-> 		device_set_wakeup_capable(&client->dev, 1);
-> 
-> But there is no can_irq_wake() call exist, and it is not that trivial
-> to implement it for all interrupts controllers and complex/cascaded
-> setups.
-
-That is why platform code should device_init_wakeup() and
-drivers should check device_can_wakeup(dev) ...
-
-
-> drivers/base/power/sysfs.c also covers these cases:
-> 
->  * Devices may not be able to generate wakeup events from all power
->  * states.  Also, the events may be ignored in some configurations;
->  * for example, they might need help from other devices that aren't
->  * active
-> 
-> So there is no guarantee that wakeup will actually work, 
-
-Yes there is ... it's only **exceptional** cases where it can't
-work.  Your patch would make it routine that those flags be
-unreliable; pretty nasty.
+@@ -208,9 +234,12 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_TRACE
+ 	&pm_trace_attr.attr,
+ #endif
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
++#ifdef CONFIG_PM_SLEEP
++	&pm_async_attr.attr,
++#ifdef CONFIG_PM_DEBUG
+ 	&pm_test_attr.attr,
+ #endif
++#endif
+ 	NULL,
+ };
+ 
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -235,7 +235,7 @@ static int device_pm_wait_fn(struct devi
+  */
+ static void device_pm_wait_for_masters(struct device *slave)
+ {
+-	if (!pm_trace_enabled)
++	if (pm_async_enabled && !pm_trace_enabled)
+ 		device_for_each_master(slave, slave, device_pm_wait_fn);
+ }
+ 
+@@ -245,7 +245,8 @@ static void device_pm_wait_for_masters(s
+  */
+ static void device_pm_wait_for_slaves(struct device *master)
+ {
+-	device_for_each_slave(master, master, device_pm_wait_fn);
++	if (pm_async_enabled)
++		device_for_each_slave(master, master, device_pm_wait_fn);
+ }
+ 
+ /**
+@@ -560,7 +561,7 @@ static int device_resume_noirq(struct de
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_resume_noirq, dev);
+ 		return 0;
+ 	}
+@@ -719,7 +720,7 @@ static int device_resume(struct device *
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_resume, dev);
+ 		return 0;
+@@ -965,7 +966,7 @@ static int device_suspend_noirq(struct d
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_suspend_noirq, dev);
+ 		return 0;
+ 	}
+@@ -1139,7 +1140,7 @@ static int device_suspend(struct device 
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_suspend, dev);
+ 		return 0;
+Index: linux-2.6/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -16,10 +16,10 @@ static inline void pm_runtime_remove(str
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
+-/*
+- * main.c
+- */
++/* kernel/power/main.c */
++extern int pm_async_enabled;
+ 
++/* drivers/base/power/main.c */
+ extern struct list_head dpm_list;	/* The active device list */
+ 
+ static inline struct device *to_device(struct list_head *entry)
