@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/6] PM: Allow serio input devices to
-	suspend/resume asynchronously
-Date: Thu, 27 Aug 2009 22:58:35 +0200
-Message-ID: <200908272258.35861.rjw__28135.9588647776$1251406735$gmane$org@sisk.pl>
-References: <200908262217.19609.rjw@sisk.pl> <200908262224.19110.rjw@sisk.pl>
-	<20090827204106.1132B526EC9@mailhub.coreip.homeip.net>
+Subject: Re: [PATCH 0/6] PM: Asynchronous suspend and resume of
+	devices
+Date: Thu, 27 Aug 2009 23:18:19 +0200
+Message-ID: <200908272318.19868.rjw__40020.1569348157$1251407992$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908271637480.25639-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090827204106.1132B526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <Pine.LNX.4.44L0.0908271637480.25639-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 August 2009, Dmitry Torokhov wrote:
-> On Wed, Aug 26, 2009 at 10:24:19PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Set async_suspend for all serio input devices, so that they can be
-> > suspended and resumed asynchronously with other devices they don't
-> > depend on in a known way (i.e. devices which are not their parents
-> > or children and to which they are not connected via struct pm_link
-> > objects).
-> > 
+On Thursday 27 August 2009, Alan Stern wrote:
+> On Wed, 26 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> As I mentioned not yet, please - i8042 may be unhappy if you pound
-> all its ports at once. I should have a solution for it though.
+> > Hi,
+> > 
+> > The following patches introduce a mechanism allowing us to execute device
+> > drivers' suspend and resume callbacks asynchronously during system sleep
+> > transitions, such as suspend to RAM.
+> > 
+> > The idea is explained in the changelogs of the first two patches.
+> > 
+> > Comments welcome.
+> 
+> I've been terribly busy and haven't had a chance to look at this.  The
+> earlier version seemed to have a bunch of mutual-exclusion issues; are
+> they resolved now?
 
-OK, I'll drop this patch.
+Please be more specific.
+
+> There were also some problems involving unsafe iteration over the dpm_list
+> -- remember that devices can be unregistered at any time, not just while
+> they are suspending or resuming.
+
+Not at the time we're holding dpm_list_mtx, though.
+
+I don't think there are any unsafe iterations over dpm_list in the patches.
+
+> When a device finishes, instead of having the async thread look for 
+> another device to work on, I think it would be better to have the 
+> thread check the dependents of the current device.  Those which are 
+> now ready can be added to a "device-ready" list, which is used to 
+> direct the actions of new async threads.
+
+Actually, I wanted to avoid adding such a list, because that would be
+duplicating of the async framework's actions, to some extent.  Yes, we can
+duplicate the async framework just for the suspend/resume needs.  No, I don't
+think it's worth it.
+
+BTW, the patches have been tested on a dual-core box and I haven't seen any
+problems with them so far.  Also, the testing shows that the waiting for
+devices with unsatisfied dependencies is almost eliminated (on my test box
+it happens 4-8 times during the entire suspend-resume cycle).
 
 Thanks,
 Rafael
