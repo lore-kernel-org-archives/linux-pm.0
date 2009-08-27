@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 8] PM: Allow user space to change the
-	power.async_suspend flag of devices
-Date: Thu, 27 Aug 2009 21:20:55 +0200
-Message-ID: <200908272120.56021.rjw__44903.8681960248$1251401074$gmane$org@sisk.pl>
+Subject: [PATCH 7] PM: Add a switch for disabling/enabling
+	asynchronous suspend/resume
+Date: Thu, 27 Aug 2009 21:19:46 +0200
+Message-ID: <200908272119.47053.rjw__27675.654894165$1251401083$gmane$org@sisk.pl>
 References: <200908262217.19609.rjw@sisk.pl> <200908270025.34821.rjw@sisk.pl>
 	<200908272117.52931.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -25,97 +25,138 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add sysfs attribute power/async for every device allowing the user
-space to access the device's power.async_suspend flag and modify it,
-if necessary.
+Add sysfs attribute kernel/power/pm_async allowing the user space to
+disable and enable async suspend/resume of devices.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/sysfs.c |   47 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h     |    5 ++++
- 2 files changed, 52 insertions(+)
+ drivers/base/power/main.c  |   13 +++++++------
+ drivers/base/power/power.h |    6 +++---
+ kernel/power/main.c        |   28 +++++++++++++++++++++++++++-
+ 3 files changed, 37 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/drivers/base/power/sysfs.c
+Index: linux-2.6/kernel/power/main.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/sysfs.c
-+++ linux-2.6/drivers/base/power/sysfs.c
-@@ -38,6 +38,22 @@
-  *	wakeup events internally (unless they are disabled), keeping
-  *	their hardware in low power modes whenever they're unused.  This
-  *	saves runtime power, without requiring system-wide sleep states.
-+ *
-+ *	async - Report/change current async suspend setting for the device
-+ *
-+ *	If set, the PM core will attempt to suspend and resume the device during
-+ *	system power transitions (e.g. suspend to RAM, hibernation) in parallel
-+ *	with other devices it doesn't appear to depend on (to the PM core's
-+ *	knowledge).
-+ *
-+ *	 + "enabled\n" to permit the asynchronous suspend/resume of the device
-+ *	 + "disabled\n" to forbid it
-+ *
-+ *	NOTE: It generally is unsafe to permit the asynchronous suspend/resume
-+ *	of a device unless it is certain that all of the PM dependencies of the
-+ *	device are known to the PM core.  However, for some devices this
-+ *	attribute is set to "enabled" by the kernel and in that cases it should
-+ *	be safe to leave the default value.
-  */
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -44,6 +44,29 @@ int pm_notifier_call_chain(unsigned long
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
  
- static const char enabled[] = "enabled";
-@@ -77,9 +93,40 @@ wake_store(struct device * dev, struct d
- 
- static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
- 
-+#ifdef CONFIG_PM_SLEEP
-+static ssize_t async_show(struct device *dev, struct device_attribute *attr,
-+			  char *buf)
++/* If set, devices may be suspended and resumed asynchronously. */
++int pm_async_enabled = 1;
++
++static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
++			     char *buf)
 +{
-+	return sprintf(buf, "%s\n",
-+			device_async_suspend_enabled(dev) ? enabled : disabled);
++	return sprintf(buf, "%d\n", pm_async_enabled);
 +}
 +
-+static ssize_t async_store(struct device *dev, struct device_attribute *attr,
-+			   const char *buf, size_t n)
++static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
++			      const char *buf, size_t n)
 +{
-+	char *cp;
-+	int len = n;
++	int val;
 +
-+	cp = memchr(buf, '\n', n);
-+	if (cp)
-+		len = cp - buf;
-+	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
-+		device_enable_async_suspend(dev, true);
-+	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
-+		device_enable_async_suspend(dev, false);
-+	else
-+		return -EINVAL;
-+	return n;
++	if (sscanf(buf, "%d", &val) == 1) {
++		pm_async_enabled = !!val;
++		return n;
++	}
++	return -EINVAL;
 +}
 +
-+static DEVICE_ATTR(async, 0644, async_show, async_store);
-+#endif /* CONFIG_PM_SLEEP */
++power_attr(pm_async);
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
  
- static struct attribute * power_attrs[] = {
- 	&dev_attr_wakeup.attr,
+@@ -208,9 +231,12 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_TRACE
+ 	&pm_trace_attr.attr,
+ #endif
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
 +#ifdef CONFIG_PM_SLEEP
-+	&dev_attr_async.attr,
++	&pm_async_attr.attr,
++#ifdef CONFIG_PM_DEBUG
+ 	&pm_test_attr.attr,
+ #endif
 +#endif
  	NULL,
  };
- static struct attribute_group pm_attr_group = {
-Index: linux-2.6/include/linux/device.h
+ 
+Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -478,6 +478,11 @@ static inline void device_enable_async_s
- 		dev->power.async_suspend = enable;
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -235,7 +235,7 @@ static int device_pm_wait_fn(struct devi
+  */
+ static void device_pm_wait_for_masters(struct device *slave)
+ {
+-	if (!pm_trace_enabled)
++	if (pm_async_enabled && !pm_trace_enabled)
+ 		device_for_each_master(slave, slave, device_pm_wait_fn);
  }
  
-+static inline bool device_async_suspend_enabled(struct device *dev)
-+{
-+	return !!dev->power.async_suspend;
-+}
-+
- void driver_init(void);
+@@ -245,7 +245,8 @@ static void device_pm_wait_for_masters(s
+  */
+ static void device_pm_wait_for_slaves(struct device *master)
+ {
+-	device_for_each_slave(master, master, device_pm_wait_fn);
++	if (pm_async_enabled)
++		device_for_each_slave(master, master, device_pm_wait_fn);
+ }
  
- /*
+ /**
+@@ -560,7 +561,7 @@ static int device_resume_noirq(struct de
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_resume_noirq, dev);
+ 		return 0;
+ 	}
+@@ -719,7 +720,7 @@ static int device_resume(struct device *
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_resume, dev);
+ 		return 0;
+@@ -965,7 +966,7 @@ static int device_suspend_noirq(struct d
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_suspend_noirq, dev);
+ 		return 0;
+ 	}
+@@ -1139,7 +1140,7 @@ static int device_suspend(struct device 
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_suspend, dev);
+ 		return 0;
+Index: linux-2.6/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -16,10 +16,10 @@ static inline void pm_runtime_remove(str
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
+-/*
+- * main.c
+- */
++/* kernel/power/main.c */
++extern int pm_async_enabled;
+ 
++/* drivers/base/power/main.c */
+ extern struct list_head dpm_list;	/* The active device list */
+ 
+ static inline struct device *to_device(struct list_head *entry)
