@@ -1,14 +1,13 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Suspend problems in 2.6.31-rc6
-Date: Thu, 27 Aug 2009 09:18:34 -0700
-Message-ID: <20090827091834.3571d9a7@jbarnes-g45>
-References: <20090824023423.GC4624@zhen-devel.sh.intel.com>
-	<Pine.LNX.4.44L0.0908271031420.2649-100000@iolanthe.rowland.org>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC
+	drivers
+Date: Thu, 27 Aug 2009 22:22:07 +0400
+Message-ID: <20090827182207.GA7358__25812.5308821493$1251398999$gmane$org@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908271031420.2649-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,89 +17,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Alek Du <alek.du@intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 Aug 2009 10:51:47 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+RTC core won't allow wakeup alarms to be set if RTC devices' parent
+(i.e. i2c_client or spi_device) isn't wakeup capable.
 
-> On Mon, 24 Aug 2009, Zhenyu Wang wrote:
-> 
-> > yeah, Alex's patch is ok in general, and Alan's problem seems
-> > specific on 845G. So the origin restore order issue for us seems
-> > gone with pci layer early resume, we could remove the restore in
-> > intel_agp and drm/i915, although Alex's patch makes them noop.
-> > 
-> > How about this one? Alan, could you help to test this with drm/i915
-> > module loaded?
-> > 
-> > thanks.
-> > 
-> > From 7ab123a67e3ab3f31051d95e74362ae711e0657e Mon Sep 17 00:00:00
-> > 2001 From: Zhenyu Wang <zhenyuw@linux.intel.com>
-> > Date: Mon, 24 Aug 2009 10:29:07 +0800
-> > Subject: [PATCH] agp/intel: remove restore in resume
-> > 
-> > As earlier pci driver resume has already restored space for
-> > host bridge and graphics device, don't need to restore it
-> > again which might cause problem on some chips, e.g 845G tested
-> > by Alan.
-> > 
-> > Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-> > ---
-> >  drivers/char/agp/intel-agp.c    |    9 ---------
-> >  drivers/gpu/drm/i915/i915_drv.c |    1 -
-> >  2 files changed, 0 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/char/agp/intel-agp.c
-> > b/drivers/char/agp/intel-agp.c index 8c9d50d..ed43ab2 100644
-> > --- a/drivers/char/agp/intel-agp.c
-> > +++ b/drivers/char/agp/intel-agp.c
-> > @@ -2308,15 +2308,6 @@ static int agp_intel_resume(struct pci_dev
-> > *pdev) struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
-> >  	int ret_val;
-> >  
-> > -	pci_restore_state(pdev);
-> > -
-> > -	/* We should restore our graphics device's config space,
-> > -	 * as host bridge (00:00) resumes before graphics device
-> > (02:00),
-> > -	 * then our access to its pci space can work right.
-> > -	 */
-> > -	if (intel_private.pcidev)
-> > -		pci_restore_state(intel_private.pcidev);
-> > -
-> >  	if (bridge->driver == &intel_generic_driver)
-> >  		intel_configure();
-> >  	else if (bridge->driver == &intel_850_driver)
-> > diff --git a/drivers/gpu/drm/i915/i915_drv.c
-> > b/drivers/gpu/drm/i915/i915_drv.c index fc4b68a..645f298 100644
-> > --- a/drivers/gpu/drm/i915/i915_drv.c
-> > +++ b/drivers/gpu/drm/i915/i915_drv.c
-> > @@ -95,7 +95,6 @@ static int i915_resume(struct drm_device *dev)
-> >  	int ret = 0;
-> >  
-> >  	pci_set_power_state(dev->pdev, PCI_D0);
-> > -	pci_restore_state(dev->pdev);
-> >  	if (pci_enable_device(dev->pdev))
-> >  		return -1;
-> >  	pci_set_master(dev->pdev);
-> 
-> I tested the following configurations (each with your patch applied):
-> 
-> 	Without Alex's patch and without i915 loaded;
-> 
-> 	With Alex's patch and without i915 loaded;
-> 
-> 	With Alex's patch and with i915 loaded.
-> 
-> They all worked.  (Note that I normally run without drm/i915.  The
-> Xorg 2D-acceleration code is buggy on my hardware, so I don't use it.)
+For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass
+via board info, and if set, I2C core will initialize wakeup capability.
+For SPI devices there is no such flag at all.
 
-Could I convince you to file bugs for the problems you're seeing at
-bugs.freedesktop.org?  We don't have many 845G test machines but we
-have fixed several problems on that chipset recently.
+I believe that it's not platform code responsibility to allow or
+disallow wakeups, instead, drivers themselves should set the capability
+if a device can trigger wakeups.
 
+That's what drivers/base/power/sysfs.c says:
+
+ * It is the responsibility of device drivers to enable (or disable)
+ * wakeup signaling as part of changing device power states, respecting
+ * the policy choices provided through the driver model.
+
+I2C and SPI RTC devices send wakeup events via interrupt lines, so we
+should set the wakeup capability if IRQ is routed.
+
+Ideally we should also check irq for wakeup capability before setting
+device's capability, i.e.
+
+	if (can_irq_wake(irq))
+		device_set_wakeup_capable(&client->dev, 1);
+
+But there is no can_irq_wake() call exist, and it is not that trivial
+to implement it for all interrupts controllers and complex/cascaded
+setups.
+
+drivers/base/power/sysfs.c also covers these cases:
+
+ * Devices may not be able to generate wakeup events from all power
+ * states.  Also, the events may be ignored in some configurations;
+ * for example, they might need help from other devices that aren't
+ * active
+
+So there is no guarantee that wakeup will actually work, and so I think
+there is no point in being pedantic wrt checking IRQ wakeup capability.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/rtc/rtc-ds1305.c |    2 ++
+ drivers/rtc/rtc-ds1307.c |    2 ++
+ drivers/rtc/rtc-ds1374.c |    2 ++
+ 3 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/rtc/rtc-ds1305.c b/drivers/rtc/rtc-ds1305.c
+index 2736b11..e256c03 100644
+--- a/drivers/rtc/rtc-ds1305.c
++++ b/drivers/rtc/rtc-ds1305.c
+@@ -780,6 +780,8 @@ static int __devinit ds1305_probe(struct spi_device *spi)
+ 					spi->irq, status);
+ 			goto fail1;
+ 		}
++
++		device_set_wakeup_capable(&spi->dev, 1);
+ 	}
+ 
+ 	/* export NVRAM */
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index 47a93c0..87097d4 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -881,6 +881,8 @@ read_rtc:
+ 				"unable to request IRQ!\n");
+ 			goto exit_irq;
+ 		}
++
++		device_set_wakeup_capable(&client->dev, 1);
+ 		set_bit(HAS_ALARM, &ds1307->flags);
+ 		dev_dbg(&client->dev, "got IRQ %d\n", client->irq);
+ 	}
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 713f7bf..5317bbc 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -383,6 +383,8 @@ static int ds1374_probe(struct i2c_client *client,
+ 			dev_err(&client->dev, "unable to request IRQ\n");
+ 			goto out_free;
+ 		}
++
++		device_set_wakeup_capable(&client->dev, 1);
+ 	}
+ 
+ 	ds1374->rtc = rtc_device_register(client->name, &client->dev,
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.3.3
