@@ -1,17 +1,14 @@
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: PME# for add-on cards
-Date: Thu, 27 Aug 2009 09:13:07 -0700
-Message-ID: <20090827091307.1fe8af2b__1570.35920206017$1251390006$gmane$org@jbarnes-g45>
-References: <200908240112.39424.rjw@sisk.pl>
-	<20090824094429.GB1134@srcf.ucam.org>
-	<200908242039.07607.rjw@sisk.pl>
-	<20090824121239.51ac35ce@jbarnes-g45>
-	<20090825234203.GB14047@khazad-dum.debian.net>
+Subject: Re: Suspend problems in 2.6.31-rc6
+Date: Thu, 27 Aug 2009 09:18:34 -0700
+Message-ID: <20090827091834.3571d9a7@jbarnes-g45>
+References: <20090824023423.GC4624@zhen-devel.sh.intel.com>
+	<Pine.LNX.4.44L0.0908271031420.2649-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090825234203.GB14047@khazad-dum.debian.net>
+In-Reply-To: <Pine.LNX.4.44L0.0908271031420.2649-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,65 +18,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, ACPI@smtp1.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Zhenyu Wang <zhenyuw@linux.intel.com>, Alek Du <alek.du@intel.com>, Dave Airlie <airlied@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 Aug 2009 20:42:03 -0300
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+On Thu, 27 Aug 2009 10:51:47 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> On Mon, 24 Aug 2009, Jesse Barnes wrote:
-> > On Mon, 24 Aug 2009 20:39:07 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > On Monday 24 August 2009, Matthew Garrett wrote:
-> > > > On Mon, Aug 24, 2009 at 01:12:39AM +0200, Rafael J. Wysocki
-> > > > wrote:
-> > > > > After some debugging it turned out that PCI0 is the PCI host
-> > > > > bridge (no-bus:pci0000:00), so apparently echoing PCI0
-> > > > > to /proc/acpi/wakeup causes a wake-up GPE to be set up for the
-> > > > > host bridge which triggers wake-up once eth0 signals PME#.
-> > > > 
-> > > > Mm. That sounds entirely plausible. If it were a built-in card
-> > > > then the DSDT would provide that GPE, but as an add-in...
-> > > > 
-> > > > > First, I wonder if that's the case in general (anybody
-> > > > > knows?). Second, if that is the case, would it be a good idea
-> > > > > to set up the host bridge wake-up GPE by default?
-> > > > 
-> > > > I'd expect this to be the case in general, yes. Systems that
-> > > > work without this probably have the BIOS enable it themselves on
-> > > > suspend. I suspect we'll have to set it to make sure.
-> > > 
-> > > OK, Matthew, Alan, thanks for your opinions.
-> > > 
-> > > I'll try to implement this, then.
+> On Mon, 24 Aug 2009, Zhenyu Wang wrote:
+> 
+> > yeah, Alex's patch is ok in general, and Alan's problem seems
+> > specific on 845G. So the origin restore order issue for us seems
+> > gone with pci layer early resume, we could remove the restore in
+> > intel_agp and drm/i915, although Alex's patch makes them noop.
 > > 
-> > I think that's the best approach.  The only risk that I can see
-> > immediately is that we'll expose ourselves to add-in cards with
-> > flakey PME# signals.  We can worry about that when/if we see it
-> > though.
+> > How about this one? Alan, could you help to test this with drm/i915
+> > module loaded?
+> > 
+> > thanks.
+> > 
+> > From 7ab123a67e3ab3f31051d95e74362ae711e0657e Mon Sep 17 00:00:00
+> > 2001 From: Zhenyu Wang <zhenyuw@linux.intel.com>
+> > Date: Mon, 24 Aug 2009 10:29:07 +0800
+> > Subject: [PATCH] agp/intel: remove restore in resume
+> > 
+> > As earlier pci driver resume has already restored space for
+> > host bridge and graphics device, don't need to restore it
+> > again which might cause problem on some chips, e.g 845G tested
+> > by Alan.
+> > 
+> > Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+> > ---
+> >  drivers/char/agp/intel-agp.c    |    9 ---------
+> >  drivers/gpu/drm/i915/i915_drv.c |    1 -
+> >  2 files changed, 0 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/drivers/char/agp/intel-agp.c
+> > b/drivers/char/agp/intel-agp.c index 8c9d50d..ed43ab2 100644
+> > --- a/drivers/char/agp/intel-agp.c
+> > +++ b/drivers/char/agp/intel-agp.c
+> > @@ -2308,15 +2308,6 @@ static int agp_intel_resume(struct pci_dev
+> > *pdev) struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> >  	int ret_val;
+> >  
+> > -	pci_restore_state(pdev);
+> > -
+> > -	/* We should restore our graphics device's config space,
+> > -	 * as host bridge (00:00) resumes before graphics device
+> > (02:00),
+> > -	 * then our access to its pci space can work right.
+> > -	 */
+> > -	if (intel_private.pcidev)
+> > -		pci_restore_state(intel_private.pcidev);
+> > -
+> >  	if (bridge->driver == &intel_generic_driver)
+> >  		intel_configure();
+> >  	else if (bridge->driver == &intel_850_driver)
+> > diff --git a/drivers/gpu/drm/i915/i915_drv.c
+> > b/drivers/gpu/drm/i915/i915_drv.c index fc4b68a..645f298 100644
+> > --- a/drivers/gpu/drm/i915/i915_drv.c
+> > +++ b/drivers/gpu/drm/i915/i915_drv.c
+> > @@ -95,7 +95,6 @@ static int i915_resume(struct drm_device *dev)
+> >  	int ret = 0;
+> >  
+> >  	pci_set_power_state(dev->pdev, PCI_D0);
+> > -	pci_restore_state(dev->pdev);
+> >  	if (pci_enable_device(dev->pdev))
+> >  		return -1;
+> >  	pci_set_master(dev->pdev);
 > 
-> I have seen it, an old atheros-based wifi card packaged by 3COM.  My
-> Intel D875PBZ motherboard could not turn off (it would turn back on
-> due to #PME) with that crap installed.  Probably the BIOS didn't
-> defend itself enough against PME on power _off_.  I didn't even need
-> to have ANY driver at all for that card for it to be a hassle.
+> I tested the following configurations (each with your patch applied):
 > 
-> I have sinced given that card away to someone who runs it under
-> Windows in a different motherboard (that probably masks #PME on
-> shutdown :p).
+> 	Without Alex's patch and without i915 loaded;
 > 
-> May I humbly suggest a command-line switch to let the user disable
-> the new behaviour (or even selectively disable/enable it per host
-> bridge) since day one?  The default can be enabled, let's priorize
-> good hardware and firmware over buggy crap!  but let's make it easy
-> to work around any issues it could cause right from the beginning,
-> because they _will_ happen.
+> 	With Alex's patch and without i915 loaded;
+> 
+> 	With Alex's patch and with i915 loaded.
+> 
+> They all worked.  (Note that I normally run without drm/i915.  The
+> Xorg 2D-acceleration code is buggy on my hardware, so I don't use it.)
 
-Hopefully we can do even better than that with per-device quirks (i.e.
-only disable PME on a bridge if a child device is buggy).
-
-Rafael?
+Could I convince you to file bugs for the problems you're seeing at
+bugs.freedesktop.org?  We don't have many 845G test machines but we
+have fixed several problems on that chipset recently.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
