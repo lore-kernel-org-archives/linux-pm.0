@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: power draw depending on PHY speed
-Date: Fri, 28 Aug 2009 21:03:59 +0200
-Message-ID: <200908282103.59159.rjw__34102.6245886043$1251486324$gmane$org@sisk.pl>
-References: <76FA3B279DD9DA48896E2B40494495720368E449@USA7061MS02.na.xerox.net>
+Subject: Re: [PATCH 1/6] PM: Introduce PM links framework
+Date: Fri, 28 Aug 2009 21:11:19 +0200
+Message-ID: <200908282111.19925.rjw__23771.0275258452$1251486740$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908281114520.4116-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <76FA3B279DD9DA48896E2B40494495720368E449@USA7061MS02.na.xerox.net>
+In-Reply-To: <Pine.LNX.4.44L0.0908281114520.4116-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,28 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: martyleisner@yahoo.com, NetDEV list <netdev@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 28 August 2009, Leisner, Martin wrote:
-> While doing some current probe measurements (i.e. to measure the effects
-> of NAP and frequency scaling with a freescale processor) I noticed some
-> very
-> significant differents if we ran on 100Mbit of 1000Mbit ethernet.
+On Friday 28 August 2009, Alan Stern wrote:
+> On Wed, 26 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> The hardware guys like at their data sheets and agreed.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Introduce a framework for representing off-tree PM dependencies
+> > between devices.
+> > 
+> > There are PM dependencies between devices that are not reflected by
+> > the structure of the device tree.  In other words, as far as PM is
+> > concerned, a device may depend on some other devices which are not
+> > its children and none of which is its parent.
+> > 
+> > Every such dependency involves two devices, one of which is a
+> > "master" and the other of which is a "slave", meaning that the
+> > "slave" have to be suspended before the "master" and cannot be
+> > woken up before it.  Thus every device can be given two lists of
+> > "dependency objects", one for the dependencies where the device is
+> > the "master" and the other for the dependencies where the device is
+> > the "slave".  Then, each "dependency object" can be represented as
 > 
-> Does anyone "drop ethernet speed" to save power?
-> (when a system is idle, is isn't necessary to run 1G ethernet).
+> 
+> > Index: linux-2.6/drivers/base/power/common.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/drivers/base/power/common.c
+> 
+> > +/**
+> > + * device_for_each_master - Execute given function for each master of a device.
+> > + * @slave: Device whose masters to execute the function for.
+> > + * @data: Data pointer to pass to the function.
+> > + * @fn: Function to execute for each master of @slave.
+> > + *
+> > + * The function is executed for the parent of the device, if there is one, and
+> > + * for each device connected to it via a pm_link object where @slave is the
+> > + * "slave".
+> > + */
+> > +int device_for_each_master(struct device *slave, void *data,
+> > +			   int (*fn)(struct device *dev, void *data))
+> > +{
+> > +	struct pm_link *link;
+> > +	int idx;
+> > +	int error = 0;
+> > +
+> > +	if (slave->parent) {
+> > +		error = fn(slave->parent, data);
+> > +		if (error)
+> > +			return error;
+> > +	}
+> > +
+> > +	idx = srcu_read_lock(&pm_link_ss);
+> > +
+> > +	list_for_each_entry(link, &slave->power.slave_links, slave_hook) {
+> 
+> This needs to use list_for_each_entry_rcu.  Likewise in
+> device_for_each_slave().
 
-I don't know, really.  This is a netdev question IMO (CC added).
-
-> When a system has WOL capability, what speed does it run at when the
-> system is sleeping?
-
-That's a very good question.  I bet that depends on the NIC in question, at
-least I'm not sure if any spec regulates it.
+OK, I wasn't sure about that.
 
 Thanks,
 Rafael
