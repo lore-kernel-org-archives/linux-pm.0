@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/6] PM: Introduce PM links framework
-Date: Fri, 28 Aug 2009 21:11:19 +0200
-Message-ID: <200908282111.19925.rjw__23771.0275258452$1251486740$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908281114520.4116-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
+Date: Fri, 28 Aug 2009 21:38:14 +0200
+Message-ID: <200908282138.14602.rjw__40188.970990903$1251488321$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908281137110.4116-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908281114520.4116-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908281137110.4116-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,59 +26,39 @@ On Friday 28 August 2009, Alan Stern wrote:
 > 
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Introduce a framework for representing off-tree PM dependencies
-> > between devices.
-> > 
-> > There are PM dependencies between devices that are not reflected by
-> > the structure of the device tree.  In other words, as far as PM is
-> > concerned, a device may depend on some other devices which are not
-> > its children and none of which is its parent.
-> > 
-> > Every such dependency involves two devices, one of which is a
-> > "master" and the other of which is a "slave", meaning that the
-> > "slave" have to be suspended before the "master" and cannot be
-> > woken up before it.  Thus every device can be given two lists of
-> > "dependency objects", one for the dependencies where the device is
-> > the "master" and the other for the dependencies where the device is
-> > the "slave".  Then, each "dependency object" can be represented as
+> > Theoretically, the total time of system sleep transitions (suspend
+> > to RAM, hibernation) can be reduced by running suspend and resume
+> > callbacks of device drivers in parallel with each other.  However,
+> > there are dependencies between devices such that, for example, we may
+> > not be allowed to put one device into a low power state before
+> > anohter one has been suspended (e.g. we cannot suspend a bridge
+> > before suspending all devices behind it).  In particular, we're not
+> > allowed to suspend the parent of a device before suspending the
+> > device itself.  Analogously, we're not allowed to resume a device
+> > before resuming its parent.
 > 
+> > In this version of the patch the async threads started to execute
+> > the resume callbacks of specific device don't exit immediately having
+> > done that, but search dpm_list for devices whose PM dependencies have
+> > already been satisfied and execute their callbacks without waiting.
 > 
-> > Index: linux-2.6/drivers/base/power/common.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/drivers/base/power/common.c
+> Given this design, why bother to invoke device_resume() for the async 
+> devices?  Why not just start up a bunch of async threads, each of which 
+> calls async_resume() repeatedly until everything is finished?  (And 
+> rearrange async_resume() to scan the list first and do the actual 
+> resume second.)
 > 
-> > +/**
-> > + * device_for_each_master - Execute given function for each master of a device.
-> > + * @slave: Device whose masters to execute the function for.
-> > + * @data: Data pointer to pass to the function.
-> > + * @fn: Function to execute for each master of @slave.
-> > + *
-> > + * The function is executed for the parent of the device, if there is one, and
-> > + * for each device connected to it via a pm_link object where @slave is the
-> > + * "slave".
-> > + */
-> > +int device_for_each_master(struct device *slave, void *data,
-> > +			   int (*fn)(struct device *dev, void *data))
-> > +{
-> > +	struct pm_link *link;
-> > +	int idx;
-> > +	int error = 0;
-> > +
-> > +	if (slave->parent) {
-> > +		error = fn(slave->parent, data);
-> > +		if (error)
-> > +			return error;
-> > +	}
-> > +
-> > +	idx = srcu_read_lock(&pm_link_ss);
-> > +
-> > +	list_for_each_entry(link, &slave->power.slave_links, slave_hook) {
-> 
-> This needs to use list_for_each_entry_rcu.  Likewise in
-> device_for_each_slave().
+> The same goes for the noirq versions.
 
-OK, I wasn't sure about that.
+I thought about that, but there are a few things to figure out:
+- how many threads to start
+- when to start them
+- stop condition
+I had a few ideas, but then I thought it would be simpler to start an async
+thread when we know there's some async work to do (ie. there's an async
+device to handle) and make each async thread browse the list just once (the
+rationale is that we've just handled a device, so there's a chance there are
+some devices with satisfied dependencies down the list).
 
 Thanks,
 Rafael
