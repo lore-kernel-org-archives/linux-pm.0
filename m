@@ -1,12 +1,13 @@
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Subject: power draw depending on PHY speed
-Date: Fri, 28 Aug 2009 08:26:13 -0700
-Message-ID: <76FA3B279DD9DA48896E2B40494495720368E449@USA7061MS02.na.xerox.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
+Date: Fri, 28 Aug 2009 11:43:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0908281137110.4116-100000__23493.0904386149$1251474722$gmane$org@iolanthe.rowland.org>
+References: <200908262221.09224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <200908262221.09224.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,23 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: martyleisner@yahoo.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-While doing some current probe measurements (i.e. to measure the effects
-of NAP and frequency scaling with a freescale processor) I noticed some
-very
-significant differents if we ran on 100Mbit of 1000Mbit ethernet.
+On Wed, 26 Aug 2009, Rafael J. Wysocki wrote:
 
-The hardware guys like at their data sheets and agreed.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Theoretically, the total time of system sleep transitions (suspend
+> to RAM, hibernation) can be reduced by running suspend and resume
+> callbacks of device drivers in parallel with each other.  However,
+> there are dependencies between devices such that, for example, we may
+> not be allowed to put one device into a low power state before
+> anohter one has been suspended (e.g. we cannot suspend a bridge
+> before suspending all devices behind it).  In particular, we're not
+> allowed to suspend the parent of a device before suspending the
+> device itself.  Analogously, we're not allowed to resume a device
+> before resuming its parent.
 
-Does anyone "drop ethernet speed" to save power?
-(when a system is idle, is isn't necessary to run 1G ethernet).
+> In this version of the patch the async threads started to execute
+> the resume callbacks of specific device don't exit immediately having
+> done that, but search dpm_list for devices whose PM dependencies have
+> already been satisfied and execute their callbacks without waiting.
 
+Given this design, why bother to invoke device_resume() for the async 
+devices?  Why not just start up a bunch of async threads, each of which 
+calls async_resume() repeatedly until everything is finished?  (And 
+rearrange async_resume() to scan the list first and do the actual 
+resume second.)
 
-When a system has WOL capability, what speed does it run at when the
-system
-is sleeping?
+The same goes for the noirq versions.
 
-marty
+Alan Stern
