@@ -1,14 +1,13 @@
-From: Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: power draw depending on PHY speed
-Date: Fri, 28 Aug 2009 20:29:07 +0100
-Message-ID: <1251487747.2785.13.camel__37079.2528534823$1251498137$gmane$org@achroite>
-References: <76FA3B279DD9DA48896E2B40494495720368E449@USA7061MS02.na.xerox.net>
-	<200908282103.59159.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
+Date: Sat, 29 Aug 2009 00:22:00 +0200
+Message-ID: <200908290022.00446.rjw__25107.7066096061$1251498398$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0908281548140.2865-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908282103.59159.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0908281548140.2865-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +17,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: martyleisner@yahoo.com, NetDEV list <netdev@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Leisner,
-	Martin" <Martin.Leisner@xerox.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2009-08-28 at 21:03 +0200, Rafael J. Wysocki wrote:
-> On Friday 28 August 2009, Leisner, Martin wrote:
-> > While doing some current probe measurements (i.e. to measure the effects
-> > of NAP and frequency scaling with a freescale processor) I noticed some
-> > very
-> > significant differents if we ran on 100Mbit of 1000Mbit ethernet.
-> > 
-> > The hardware guys like at their data sheets and agreed.
-> > 
-> > Does anyone "drop ethernet speed" to save power?
-> > (when a system is idle, is isn't necessary to run 1G ethernet).
+On Friday 28 August 2009, Alan Stern wrote:
+> On Fri, 28 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> I don't know, really.  This is a netdev question IMO (CC added).
-
-Doing this through the existing autonegotiation mechanism is a bad idea,
-because it requires bringing the link down, possibly for a few seconds.
-There is a standard on the way (802.3az, aka Energy-Efficient Ethernet
-or EEE) which will allow for speed renegotiation without dropping the
-link.
-
-> > When a system has WOL capability, what speed does it run at when the
-> > system is sleeping?
+> > > Given this design, why bother to invoke device_resume() for the async 
+> > > devices?  Why not just start up a bunch of async threads, each of which 
+> > > calls async_resume() repeatedly until everything is finished?  (And 
+> > > rearrange async_resume() to scan the list first and do the actual 
+> > > resume second.)
+> > > 
+> > > The same goes for the noirq versions.
+> > 
+> > I thought about that, but there are a few things to figure out:
+> > - how many threads to start
 > 
-> That's a very good question.  I bet that depends on the NIC in question, at
-> least I'm not sure if any spec regulates it.
+> That's a tough question.  Right now you start roughly as many threads
+> as there are async devices.  That seems like overkill.
 
-I'm not aware of a spec, but generally a 1G or 10G multi-speed PHY will
-not advertise speeds higher than 100 Mbit/s when sleeping.
+In fact they are substantially fewer than that, for the following reasons.
 
-Ben.
+First, the async framework will not start more than MAX_THREADS threads,
+which is 256 at the moment.  This number is less than the number of async
+devices to handle on an average system.
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Second, no new async threads are started while the main thread is handling the
+sync devices , so the existing threads have a chance to do their job.  If
+there's a "cluster" of sync devices in dpm_list, the number of async threads
+running is likely to drop rapidly while those devices are being handled.
+(BTW, if there were no sync devices, the whole thing would be much simpler,
+but I don't think it's realistic to assume we'll be able to get rid of them any
+time soon).
+
+Finally, but not least importantly, async threads are not started for the
+async devices that were previously handled "out of order" by the already
+running async threads (or by async threads that have already finished).  My
+testing shows that there are quite a few of them on the average.  For example,
+on the HP nx6325 typically there are as many as 580 async devices handled "out
+of order" during a _single_ suspend-resume cycle (including the "early" and
+"late" phases), while only a few (below 10) devices are waited for by at least
+one async thread.
+
+I can try to monitor the number of asyn threads started if you're interested.
+
+> I would expect that a reasonably small number of threads would suffice 
+> to achieve most of the possible time savings.  Something on the order 
+> of 10 should work well.  If the majority of the time is spent 
+> handling N devices then N+1 threads would be enough.  Judging from some 
+> of the comments posted earlier, even 4 threads would give a big 
+> advantage.
+
+That unfortunately is not the case with the set of async devices including
+PCI, ACPI and serio devices only.  The average time savings are between 5% to
+14%, depending on the system and the phase of the cycle (the relative savings
+are typically greater for suspend).  Still, that amounts to .5 s in some cases.
+
+> > - when to start them
+> 
+> You might as well start them at the beginning of dpm_resume and 
+> dpm_resume_noirq.  That way they can overlap with the synchronous 
+> operations.
+
+In that case they would have to wait in the beginning, so I'd need a mechanism
+to wake them up.
+
+Alternatively, there could be a limit to the number of async threads started
+within the current design, but I'd prefer to leave that to the async framework
+(namely, if MAX_THREADS makes sense for boot, it's also likely to make sense
+for PM).
+
+> > - stop condition
+> 
+> When an error occurs or when op_started has been set for every 
+> remaining async device.
+
+Yeah, that's the easy one. :-)
+
+> > I had a few ideas, but then I thought it would be simpler to start an async
+> > thread when we know there's some async work to do (ie. there's an async
+> > device to handle) and make each async thread browse the list just once (the
+> > rationale is that we've just handled a device, so there's a chance there are
+> > some devices with satisfied dependencies down the list).
+> 
+> It comes down to this: Should there be many threads, each of which 
+> browses the list only once, or should there be a few threads, each of 
+> which browses the list many times?
+
+Well, quite obviously I prefer the many threads version. :-)
+
+Thanks,
+Rafael
