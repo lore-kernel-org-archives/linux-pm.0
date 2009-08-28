@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
-Date: Sat, 29 Aug 2009 01:20:14 +0200
-Message-ID: <200908290120.14840.rjw__45172.6487059661$1251501712$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908281548140.2865-100000@iolanthe.rowland.org>
-	<200908290022.00446.rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: ACPI locks hardware devices when it doesn't detect
+	vista
+Date: Sat, 29 Aug 2009 02:53:58 +0300
+Message-ID: <1251503638.17451.14.camel__46014.5114608624$1251503712$gmane$org@maxim-laptop>
+References: <1250945310.14167.150.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200908290022.00446.rjw@sisk.pl>
+In-Reply-To: <1250945310.14167.150.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,126 +18,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: Mairo <rety@poczta.onet.pl>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 29 August 2009, Rafael J. Wysocki wrote:
-> On Friday 28 August 2009, Alan Stern wrote:
-> > On Fri, 28 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > > > Given this design, why bother to invoke device_resume() for the async 
-> > > > devices?  Why not just start up a bunch of async threads, each of which 
-> > > > calls async_resume() repeatedly until everything is finished?  (And 
-> > > > rearrange async_resume() to scan the list first and do the actual 
-> > > > resume second.)
-> > > > 
-> > > > The same goes for the noirq versions.
-> > > 
-> > > I thought about that, but there are a few things to figure out:
-> > > - how many threads to start
-> > 
-> > That's a tough question.  Right now you start roughly as many threads
-> > as there are async devices.  That seems like overkill.
+On Sat, 2009-08-22 at 15:48 +0300, Maxim Levitsky wrote:
+> Hi,
 > 
-> In fact they are substantially fewer than that, for the following reasons.
+> <joke>
+> This should be brought to a Microsoft antitrust case...
+> </joke>
 > 
-> First, the async framework will not start more than MAX_THREADS threads,
-> which is 256 at the moment.  This number is less than the number of async
-> devices to handle on an average system.
 > 
-> Second, no new async threads are started while the main thread is handling the
-> sync devices , so the existing threads have a chance to do their job.  If
-> there's a "cluster" of sync devices in dpm_list, the number of async threads
-> running is likely to drop rapidly while those devices are being handled.
-> (BTW, if there were no sync devices, the whole thing would be much simpler,
-> but I don't think it's realistic to assume we'll be able to get rid of them any
-> time soon).
+> Today many notebooks ship with a embedded infrared receiver.
+> In Vista there is new subsystem that decodes these signals.
+> (of course it works only with Microsoft Certificated Remotes (TM)...)
 > 
-> Finally, but not least importantly, async threads are not started for the
-> async devices that were previously handled "out of order" by the already
-> running async threads (or by async threads that have already finished).  My
-> testing shows that there are quite a few of them on the average.  For example,
-> on the HP nx6325 typically there are as many as 580 async devices handled "out
-> of order" during a _single_ suspend-resume cycle (including the "early" and
-> "late" phases), while only a few (below 10) devices are waited for by at least
-> one async thread.
+> The receiver is usually presented to system as a pnp device 
+> (using acpi tables)
 > 
-> I can try to monitor the number of asyn threads started if you're interested.
+> It turns out that some bioses actually use the OSI, ACPI feature of the
+> operation system to detect if running inside Vista. If not they disable
+> the infrared receiver.
+> 
+>             Device (MIR)
+>             {
+>                 Name (_HID, EisaId ("ENE0100"))
+>                 Method (_STA, 0, NotSerialized)
+>                 {
+>                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
+>                     {
+>                         Return (0x0F)
+>                     }
+>                     Else
+>                     {
+>                         Store (Zero, ^^LPCB.IOR2)
+>                         Return (Zero)
+>                     }
+>                 }
+> 
+> 	.......
+> 
 
-I did that out of curiousity.  To be precise, I applied the appended patch on
-top of the previous ones and the maximum number of scheduled async operations
-I've got so far is 14 (strangely enough, during "late" suspend).
+>     Scope (_SB)
+>     {
+>         Method (_INI, 0, NotSerialized)
+>         {
+		....
 
-So, that's not like there are hundreds of async threads being started.
+>             If (CondRefOf (_OSI, Local0))
+>             {
+>                 If (_OSI ("Linux"))
+>                 {
+>                     Store (One, LINX)
+>                     Store (Zero, ECDY)
+>                 }
 
-Thanks,
-Rafael
+                  ..........
+> 
+
+>                 If (_OSI ("Windows 2006"))
+>                 {
+>                     Store (0x07D6, OSYS)
+>                 }
+                  .......
 
 
----
- drivers/base/power/main.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+I have finally managed to find root case of this problem.
 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -53,6 +53,8 @@ static pm_message_t pm_transition;
-  */
- static bool transition_started;
- 
-+static unsigned int nr_async;
-+
- /**
-  * device_pm_lock - Lock the list of active devices used by the PM core.
-  */
-@@ -166,6 +168,8 @@ static void dpm_reset_all(void)
- 
- 	list_for_each_entry(dev, &dpm_list, power.entry)
- 		dpm_reset(dev);
-+	printk(KERN_INFO "PM: Scheduled %d async operations\n", nr_async);
-+	nr_async = 0;
- }
- 
- /**
-@@ -563,6 +567,7 @@ static int device_resume_noirq(struct de
- 
- 	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
- 		async_schedule(async_resume_noirq, dev);
-+		nr_async++;
- 		return 0;
- 	}
- 
-@@ -723,6 +728,7 @@ static int device_resume(struct device *
- 	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_resume, dev);
-+		nr_async++;
- 		return 0;
- 	}
- 
-@@ -968,6 +974,7 @@ static int device_suspend_noirq(struct d
- 
- 	if (pm_async_enabled && dev->power.async_suspend) {
- 		async_schedule(async_suspend_noirq, dev);
-+		nr_async++;
- 		return 0;
- 	}
- 
-@@ -1143,6 +1150,7 @@ static int device_suspend(struct device 
- 	if (pm_async_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
-+		nr_async++;
- 		return 0;
- 	}
- 
-@@ -1247,6 +1255,7 @@ static int dpm_prepare(pm_message_t stat
- 	mutex_lock(&dpm_list_mtx);
- 	transition_started = true;
- 	atomic_set(&async_error, 0);
-+	nr_async = 0;
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
- 
+Indeed the _STA method of infrared receiver is called before the _INI of
+_SB.
+
+The problem lies in acpi_bus_init()
+	/*
+	 * ACPI 2.0 requires the EC driver to be loaded and work before
+	 * the EC device is found in the namespace (i.e. before acpi_initialize_objects()
+	 * is called).
+	 *
+	 * This is accomplished by looking for the ECDT table, and getting
+	 * the EC parameters out of that.
+	 */
+
+	status = acpi_ec_ecdt_probe();
+	/* Ignore result. Not having an ECDT is not fatal. */
+
+	status = acpi_initialize_objects(ACPI_FULL_INITIALIZATION);
+	if (ACPI_FAILURE(status)) {
+		printk(KERN_ERR PREFIX "Unable to initialize ACPI objects\n");
+		goto error1;
+	}
+        .......
+
+
+on Mairo's system (just as well as on mine) there is no ECDT.
+Thus, acpi_ec_ecdt_probe() triggers a acpi namespace walk, 
+which in turn triggers invocation on _STA (which is supposed to be
+harmless, but the <beep>, the bios developers produce doesn't seem to
+meet this criteria....).
+
+And this is done before running _INI methods, which are run just later,
+in acpi_initialize_objects.
+
+I suspect that many systems use _SB._INI to test the OS version, thus
+this behavior needs to be revised.
+
+The fact that this (as usual) works in windows suggest that it might  be
+good to look up the ECDT table before acpi_initialize_objects, but if
+not found, look up the EC later.
+
+On my system, although I have tried to reproduce this bug, I couldn't,
+and I know now why: It just so happens that on my system CIR device is
+listed in acpi tables after the EC, but on Mairo's system EC is just
+first device.
+
+Maybe we can add a 'walk only' function, that walks the namespace, but
+doesn't touch the _STA, and use it to find the EC there?
+
+Looking for comments,
+	Best regards,
+		Maxim Levitsky
