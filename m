@@ -1,12 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Allow PCI root bridges to wake up the
-	system
-Date: Sun, 30 Aug 2009 00:41:14 +0200
-Message-ID: <200908300041.14541.rjw__48375.5699512132$1251585678$gmane$org@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks
+ hardware devices when it doesn't detect vista)
+Date: Sun, 30 Aug 2009 02:30:34 +0300
+Message-ID: <1251588634.15582.0.camel__41061.8432717913$1251588708$gmane$org@maxim-laptop>
+References: <1250945310.14167.150.camel@maxim-laptop>
+	<1251575484.10321.11.camel@maxim-laptop>
+	<200908292305.55050.rety@poczta.onet.pl>
+	<200908300037.45412.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200908300037.45412.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,94 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mario <rety@poczta.onet.pl>, linux-kernel <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun, 2009-08-30 at 00:37 +0200, Rafael J. Wysocki wrote:
+> On Saturday 29 August 2009, Mario wrote:
+> > Exact model is Compal JFL92.
+> > I've attached a dmidecode output.
+> 
+> OK
+> 
+> Maxim, Mario, can you create a bug entry in the kernel Bugzilla for this
+> issue and put my address into the CC list in there?
 
-If PCI root bridge is declared in the ACPI tables as a wake-up
-device, allow it to wake up the system by default.
+Done,
 
-This allows add-on PCI devices to work as wake-up devices on some
-systems, where PME# asserted by an add-on device causes the root
-bridge GPE to generate a wake-up event, without using
-/proc/acpi/wakeup to change the root bridge wake-up setting.
+http://bugzilla.kernel.org/show_bug.cgi?id=14086
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/glue.c     |    3 +++
- drivers/acpi/pci_root.c |   25 +++++++++++++------------
- include/acpi/acpi_bus.h |    1 +
- 3 files changed, 17 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/drivers/acpi/glue.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/glue.c
-+++ linux-2.6/drivers/acpi/glue.c
-@@ -168,6 +168,9 @@ static int acpi_bind_one(struct device *
- 				"physical_node");
- 		if (acpi_dev->wakeup.flags.valid) {
- 			device_set_wakeup_capable(dev, true);
-+			/* Allow PCI root bridges to wake up the system. */
-+			if (acpi_dev_is_root_bridge(acpi_dev))
-+				acpi_dev->wakeup.state.enabled = true;
- 			device_set_wakeup_enable(dev,
- 						acpi_dev->wakeup.state.enabled);
- 		}
-Index: linux-2.6/drivers/acpi/pci_root.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -138,26 +138,27 @@ acpi_handle acpi_get_pci_rootbridge_hand
- EXPORT_SYMBOL_GPL(acpi_get_pci_rootbridge_handle);
- 
- /**
-+ * acpi_dev_is_root_bridge - determine if an ACPI device is a PCI root bridge
-+ * @device: ACPI device to check.
-+ */
-+bool acpi_dev_is_root_bridge(struct acpi_device *device)
-+{
-+	return !acpi_match_device_ids(device, root_device_ids);
-+}
-+
-+/**
-  * acpi_is_root_bridge - determine whether an ACPI CA node is a PCI root bridge
-- * @handle - the ACPI CA node in question.
-- *
-- * Note: we could make this API take a struct acpi_device * instead, but
-- * for now, it's more convenient to operate on an acpi_handle.
-+ * @handle: the ACPI CA node in question.
-  */
- int acpi_is_root_bridge(acpi_handle handle)
- {
- 	int ret;
- 	struct acpi_device *device;
- 
--	ret = acpi_bus_get_device(handle, &device);
-+	ret = !acpi_bus_get_device(handle, &device);
- 	if (ret)
--		return 0;
--
--	ret = acpi_match_device_ids(device, root_device_ids);
--	if (ret)
--		return 0;
--	else
--		return 1;
-+		ret = acpi_dev_is_root_bridge(device);
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(acpi_is_root_bridge);
- 
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -371,6 +371,7 @@ struct device *acpi_get_physical_device(
- 
- /* helper */
- acpi_handle acpi_get_child(acpi_handle, acpi_integer);
-+bool acpi_dev_is_root_bridge(struct acpi_device *);
- int acpi_is_root_bridge(acpi_handle);
- acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+Best regards,
+	Maxim Levitsky
