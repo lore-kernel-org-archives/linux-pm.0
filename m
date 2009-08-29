@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
-Date: Sat, 29 Aug 2009 14:49:57 +0200
-Message-ID: <200908291449.57667.rjw__31645.6332141117$1251550321$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0908282146550.9540-100000@netrider.rowland.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: ACPI locks hardware devices when it doesn't detect
+	vista
+Date: Sat, 29 Aug 2009 21:50:41 +0300
+Message-ID: <1251571841.10321.1.camel__33108.1922552132$1251571926$gmane$org@maxim-laptop>
+References: <1250945310.14167.150.camel@maxim-laptop>
+	<1251503638.17451.14.camel@maxim-laptop>
+	<1251506453.28828.0.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908282146550.9540-100000@netrider.rowland.org>
+In-Reply-To: <1251506453.28828.0.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,136 +20,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: Mairo <rety@poczta.onet.pl>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 29 August 2009, Alan Stern wrote:
-> On Sat, 29 Aug 2009, Rafael J. Wysocki wrote:
+What do you think to do in this case:
+
+On Sat, 2009-08-29 at 03:40 +0300, Maxim Levitsky wrote:
+> Oh, and cc linux-acpi....
 > 
-> > On Friday 28 August 2009, Alan Stern wrote:
-> > > On Fri, 28 Aug 2009, Rafael J. Wysocki wrote:
+> On Sat, 2009-08-29 at 02:53 +0300, Maxim Levitsky wrote:
+> > On Sat, 2009-08-22 at 15:48 +0300, Maxim Levitsky wrote:
+> > > Hi,
 > > > 
-> > > > > Given this design, why bother to invoke device_resume() for the async 
-> > > > > devices?  Why not just start up a bunch of async threads, each of which 
-> > > > > calls async_resume() repeatedly until everything is finished?  (And 
-> > > > > rearrange async_resume() to scan the list first and do the actual 
-> > > > > resume second.)
-> > > > > 
-> > > > > The same goes for the noirq versions.
-> > > > 
-> > > > I thought about that, but there are a few things to figure out:
-> > > > - how many threads to start
+> > > <joke>
+> > > This should be brought to a Microsoft antitrust case...
+> > > </joke>
 > > > 
-> > > That's a tough question.  Right now you start roughly as many threads
-> > > as there are async devices.  That seems like overkill.
-> > 
-> > In fact they are substantially fewer than that, for the following reasons.
-> > 
-> > First, the async framework will not start more than MAX_THREADS threads,
-> > which is 256 at the moment.  This number is less than the number of async
-> > devices to handle on an average system.
-> 
-> Okay, but MAX_THREADS isn't under your control.  Remember also that 
-> each thread takes up some memory, and during hibernation we are in a 
-> memory-constrained situation.
-
-We keep some extra free memory for things like this.  It's not likely to be
-exhausted by the async threads alone.
-
-> > Second, no new async threads are started while the main thread is handling the
-> > sync devices , so the existing threads have a chance to do their job.  If
-> > there's a "cluster" of sync devices in dpm_list, the number of async threads
-> > running is likely to drop rapidly while those devices are being handled.
-> > (BTW, if there were no sync devices, the whole thing would be much simpler,
-> > but I don't think it's realistic to assume we'll be able to get rid of them any
-> > time soon).
-> 
-> Perhaps not, but it would be interesting to see what happens if every 
-> device is async.  Maybe you can try it and get a meaningful result.
-
-I could if it didn't crash.  Perhaps I can with init=/bin/bash.
-
-> > Finally, but not least importantly, async threads are not started for the
-> > async devices that were previously handled "out of order" by the already
-> > running async threads (or by async threads that have already finished).  My
-> > testing shows that there are quite a few of them on the average.  For example,
-> > on the HP nx6325 typically there are as many as 580 async devices handled "out
-> > of order" during a _single_ suspend-resume cycle (including the "early" and
-> > "late" phases), while only a few (below 10) devices are waited for by at least
-> > one async thread.
-> 
-> That is a difficult sort of thing to know in advance.  It ought to be 
-> highly influenced by the percentage of async devices; that's another 
-> reason for wanting to know what happens when every device is async.
-
-There are a few factors beyond our direct control influencing this, like for
-example how much time it takes to handle each individual device (that may
-vary from .5 s to microseconds AFAICS).
-
-In addition to this not only the percentage, but also the distribution of sync
-devices in dpm_list has an effect.  For example, the situations where every
-second device is sync and where the first half of devices are async and the
-other is sync would lead to different kinds of behavior.
-
-> > > I would expect that a reasonably small number of threads would suffice 
-> > > to achieve most of the possible time savings.  Something on the order 
-> > > of 10 should work well.  If the majority of the time is spent 
-> > > handling N devices then N+1 threads would be enough.  Judging from some 
-> > > of the comments posted earlier, even 4 threads would give a big 
-> > > advantage.
-> > 
-> > That unfortunately is not the case with the set of async devices including
-> > PCI, ACPI and serio devices only.  The average time savings are between 5% to
-> > 14%, depending on the system and the phase of the cycle (the relative savings
-> > are typically greater for suspend).  Still, that amounts to .5 s in some cases.
-> 
-> Without context it's hard to be sure, but I don't think your numbers 
-> contradict what I said.  If you get between 5% and 14% time savings 
-> with 14 threads, then you might get between 4% and 10% savings with 
-> only 4 threads.
-
-I only wanted to say that the advantage is not really that "big". :-)
-
-> I must agree, 14 threads isn't a lot.  But at the moment that number is 
-> random, not under your control.
-
-It's not directly controlled, but there are some interactions between the
-async threads, the main threads and the async framework that don't allow this
-number to grow too much.
-
-IMO it sometimes is better to allow things to work themselves out, as long as
-they don't explode, than to try to keep everything under strict control.  YMMV.
-
-> > > > - when to start them
 > > > 
-> > > You might as well start them at the beginning of dpm_resume and 
-> > > dpm_resume_noirq.  That way they can overlap with the synchronous 
-> > > operations.
+> > > Today many notebooks ship with a embedded infrared receiver.
+> > > In Vista there is new subsystem that decodes these signals.
+> > > (of course it works only with Microsoft Certificated Remotes (TM)...)
+> > > 
+> > > The receiver is usually presented to system as a pnp device 
+> > > (using acpi tables)
+> > > 
+> > > It turns out that some bioses actually use the OSI, ACPI feature of the
+> > > operation system to detect if running inside Vista. If not they disable
+> > > the infrared receiver.
+> > > 
+> > >             Device (MIR)
+> > >             {
+> > >                 Name (_HID, EisaId ("ENE0100"))
+> > >                 Method (_STA, 0, NotSerialized)
+> > >                 {
+> > >                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
+> > >                     {
+> > >                         Return (0x0F)
+> > >                     }
+> > >                     Else
+> > >                     {
+> > >                         Store (Zero, ^^LPCB.IOR2)
+> > >                         Return (Zero)
+> > >                     }
+> > >                 }
+> > > 
+> > > 	.......
+> > > 
 > > 
-> > In that case they would have to wait in the beginning, so I'd need a mechanism
-> > to wake them up.
+> > >     Scope (_SB)
+> > >     {
+> > >         Method (_INI, 0, NotSerialized)
+> > >         {
+> > 		....
+> > 
+> > >             If (CondRefOf (_OSI, Local0))
+> > >             {
+> > >                 If (_OSI ("Linux"))
+> > >                 {
+> > >                     Store (One, LINX)
+> > >                     Store (Zero, ECDY)
+> > >                 }
+> > 
+> >                   ..........
+> > > 
+> > 
+> > >                 If (_OSI ("Windows 2006"))
+> > >                 {
+> > >                     Store (0x07D6, OSYS)
+> > >                 }
+> >                   .......
+> > 
+> > 
+> > I have finally managed to find root case of this problem.
+> > 
+> > Indeed the _STA method of infrared receiver is called before the _INI of
+> > _SB.
+> > 
+> > The problem lies in acpi_bus_init()
+> > 	/*
+> > 	 * ACPI 2.0 requires the EC driver to be loaded and work before
+> > 	 * the EC device is found in the namespace (i.e. before acpi_initialize_objects()
+> > 	 * is called).
+> > 	 *
+> > 	 * This is accomplished by looking for the ECDT table, and getting
+> > 	 * the EC parameters out of that.
+> > 	 */
+> > 
+> > 	status = acpi_ec_ecdt_probe();
+> > 	/* Ignore result. Not having an ECDT is not fatal. */
+> > 
+> > 	status = acpi_initialize_objects(ACPI_FULL_INITIALIZATION);
+> > 	if (ACPI_FAILURE(status)) {
+> > 		printk(KERN_ERR PREFIX "Unable to initialize ACPI objects\n");
+> > 		goto error1;
+> > 	}
+> >         .......
+> > 
+> > 
+> > on Mairo's system (just as well as on mine) there is no ECDT.
+> > Thus, acpi_ec_ecdt_probe() triggers a acpi namespace walk, 
+> > which in turn triggers invocation on _STA (which is supposed to be
+> > harmless, but the <beep>, the bios developers produce doesn't seem to
+> > meet this criteria....).
+> > 
+> > And this is done before running _INI methods, which are run just later,
+> > in acpi_initialize_objects.
+> > 
+> > I suspect that many systems use _SB._INI to test the OS version, thus
+> > this behavior needs to be revised.
+> > 
+> > The fact that this (as usual) works in windows suggest that it might  be
+> > good to look up the ECDT table before acpi_initialize_objects, but if
+> > not found, look up the EC later.
+> > 
+> > On my system, although I have tried to reproduce this bug, I couldn't,
+> > and I know now why: It just so happens that on my system CIR device is
+> > listed in acpi tables after the EC, but on Mairo's system EC is just
+> > first device.
+> > 
+> > Maybe we can add a 'walk only' function, that walks the namespace, but
+> > doesn't touch the _STA, and use it to find the EC there?
+> > 
+> > Looking for comments,
+> > 	Best regards,
+> > 		Maxim Levitsky
+> > 
 > 
-> You already have two such mechanisms: dpm_list_mtx and the embedded 
-> wait_queue_heads.  Although in the scheme I'm proposing, no async 
-> threads would ever have to wait on a per-device waitqueue.  A 
-> system-wide waitqueue might work out better (for use when a thread 
-> reaches the end of the list and then waits before starting over at the 
-> beginning).
-
-However, sync devices may depend on the async ones and they need the
-per-device wait queues for this purpose.
-
-> > Alternatively, there could be a limit to the number of async threads started
-> > within the current design, but I'd prefer to leave that to the async framework
-> > (namely, if MAX_THREADS makes sense for boot, it's also likely to make sense
-> > for PM).
-> 
-> Strictly speaking, a new thread should be started only when needed.  
-> That is, only when all the existing threads are busy running a 
-> callback.  It shouldn't be too hard to keep track of when that happens.
-
-The async framework does that for us. :-)
-
-Thanks,
-Rafael
