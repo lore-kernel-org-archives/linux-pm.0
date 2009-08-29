@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] PCIe native PME support
-Date: Sat, 29 Aug 2009 22:48:00 +0200
-Message-ID: <200908292248.01079.rjw__49330.092003993$1251578887$gmane$org@sisk.pl>
-References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
-	<200908260143.58580.rjw@sisk.pl>
-	<20090827064907.GB9769@sli10-desk.sh.intel.com>
+From: Mario <rety@poczta.onet.pl>
+Subject: Re: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks
+	hardware devices when it doesn't detect vista)
+Date: Sat, 29 Aug 2009 23:05:54 +0200
+Message-ID: <200908292305.55050.rety__25338.5802185678$1251580024$gmane$org@poczta.onet.pl>
+References: <1250945310.14167.150.camel@maxim-laptop>
+	<200908292140.06935.rjw@sisk.pl>
+	<1251575484.10321.11.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_zgZmK4C3FkD+Kob"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090827064907.GB9769@sli10-desk.sh.intel.com>
+In-Reply-To: <1251575484.10321.11.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,498 +20,332 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-pci <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--Boundary-00=_zgZmK4C3FkD+Kob
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Thursday 27 August 2009, Shaohua Li wrote:
-...
-> > > I have different understanding. The root port can buffer several PME requests from
-> > > different devices. If the PME pending bit is set and after the status is clear,
-> > > the status bit will get set soon. We can do one request one time for each interrupt,
-> > > but seems not necessary. And the loop makes OS more quickly handle PME request without
-> > > overflow root port buffer.
-> > 
-> > OK, but in that case it probably is a good idea to use the PME Pending bit as
-> > well.
-> Sounds not required. If the pending bit is set, the status bit will get re-set soon after
-> it's cleared.
+Exact model is Compal JFL92.
+I've attached a dmidecode output.
+Regards
+Mario
 
-That's exactly why I'd like to check it. :-)
+Saturday 29 of August 2009 21:51:24 Maxim Levitsky wrote:
+> dmidecode
 
-The whole point of the loop in pcie_pme_work_handle() is to avoid being
-interrupted again after it's returned, but if the pending bit is set, we _know_
-we're going to get interrupted immediately, so the loop should continue in
-that case.  Otherwise there's no point in looping at all.
+>No, Mairo's system is a compal laptop, and I know that it does't have a
+>ECDT (as well as mine btw, today hardware is quite similar)
 
-> If pending isn't set, the loop will exit in one circle since the status bit
-> is cleared after the circle. Even we missed one PME in the loop, we will get a new interrupt
-> soon after PME interrupt is reeabled. So we should be fine here in any case.
-> 
-> Changes since last post:
-> 1. Add kerneldoc for functions/remove config option/add boot option
-> 2. Handle the pcie-to-pci bridge case more robust
-> 3. don't disable PME report interrupt even spurios interrupt occurs. I saw
-> root port receives an extra interrupt when device resumes and sounds harmless.
-> 
-> 
-> 
-> PCIe defines a native PME detection mechanism. When a PCIe endpoint
-> invokes PME, PCIe root port has a set of regisets to detect the
-> endpoint's bus/device/function number and root port will send out
-> interrupt when PME is received. After getting interrupt, OS can identify
-> which device invokes PME according to such information. See PCIe
-> spec for detail. This patch implements this feature.
-> 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> ---
->  drivers/pci/pcie/Kconfig    |    4 
->  drivers/pci/pcie/Makefile   |    2 
->  drivers/pci/pcie/pcie_pme.c |  383 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 389 insertions(+)
-> 
-> Index: linux/drivers/pci/pcie/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/pci/pcie/Kconfig	2009-08-27 14:07:35.000000000 +0800
-> +++ linux/drivers/pci/pcie/Kconfig	2009-08-27 14:15:41.000000000 +0800
-> @@ -46,3 +46,7 @@ config PCIEASPM_DEBUG
->  	help
->  	  This enables PCI Express ASPM debug support. It will add per-device
->  	  interface to control ASPM.
-> +
-> +config PCIE_PME
-> +	def_bool y
-> +	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-> Index: linux/drivers/pci/pcie/Makefile
-> ===================================================================
-> --- linux.orig/drivers/pci/pcie/Makefile	2009-08-27 14:07:35.000000000 +0800
-> +++ linux/drivers/pci/pcie/Makefile	2009-08-27 14:30:20.000000000 +0800
-> @@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
->  
->  # Build PCI Express AER if needed
->  obj-$(CONFIG_PCIEAER)		+= aer/
-> +
-> +obj-$(CONFIG_PCIE_PME) += pcie_pme.o
-> Index: linux/drivers/pci/pcie/pcie_pme.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux/drivers/pci/pcie/pcie_pme.c	2009-08-27 14:15:41.000000000 +0800
-> @@ -0,0 +1,383 @@
-> +/*
-> + * PCIe Native PME support
-> + *
-> + * Copyright (C) 2007 - 2009 Intel Corp
-> + *  Shaohua Li <shaohua.li@intel.com>
-> + *
-> + * This file is subject to the terms and conditions of the GNU General Public
-> + * License.  See the file "COPYING" in the main directory of this archive
-> + * for more details.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/pci.h>
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/device.h>
-> +#include <linux/pcieport_if.h>
-> +#include <linux/acpi.h>
-> +#include <linux/pci-acpi.h>
-> +#include <linux/pm_runtime.h>
-> +#include "../pci.h"
-> +
-> +#define PCI_EXP_RTSTA_PME 0x10000 /* PME status */
-> +
-> +static int disabled;
-> +/*
-> + * It appears a lot of BIOS doesn't implement ACPI _OSC correctly, so let's
-> + * force to enable PCIe PME by default
-> + */
-> +static int force = 1;
-> +
-> +static int __init pcie_pme_setup(char *str)
-> +{
-> +	if (!strcmp(str, "off"))
-> +		disabled = 1;
-> +	else if (!strcmp(str, "strict"))
-> +		force = 0;
-> +	return 1;
-> +}
-> +__setup("pcie_pme=", pcie_pme_setup);
-> +
-> +struct pcie_pme_service_data {
-> +	spinlock_t lock;
-> +	struct pcie_device *dev;
-> +	struct work_struct work;
-> +	int in_exiting; /* driver is exiting, don't reenable interrupt */
+>On top of that, I have asked Mairo to put acpi_ec_ecdt_probe(); just
+>below the acpi_initialize_objects, but he said his system didn't boot
+>after this change.
 
-That should be bool.
+>_SB._INI does some black SMI magic that might need a EC after all.
 
-> +};
-> +
-> +/*
-> + * pcie_pme_enable_interrupt - enable/disable PCIe PME report interrupt
-> + * @pdev: PCI root port
-> + * @enable: enable or disable interrupt
-> + */
-> +static inline void pcie_pme_enable_interrupt(struct pci_dev *pdev,
-> +	bool enable)
-> +{
-> +	int pos;
-> +	u16 rtctl;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> +
-> +	pci_read_config_word(pdev, pos + PCI_EXP_RTCTL, &rtctl);
-> +	if (enable)
-> +		rtctl |= PCI_EXP_RTCTL_PMEIE;
-> +	else
-> +		rtctl &= ~PCI_EXP_RTCTL_PMEIE;
-> +	pci_write_config_word(pdev, pos + PCI_EXP_RTCTL, rtctl);
-> +}
-> +
-> +/*
-> + * pcie_pme_clear_status - clear root port PME report status
-> + * @pdev: the root port
-> + */
-> +static inline void pcie_pme_clear_status(struct pci_dev *pdev)
-> +{
-> +	int pos;
-> +	u32 rtsta;
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> +
-> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &rtsta);
-> +	rtsta |= PCI_EXP_RTSTA_PME;
-> +	pci_write_config_dword(pdev, pos + PCI_EXP_RTSTA, rtsta);
-> +}
-> +
-> +/*
-> + * pcie_pme_handle_request - handle one PCI device's PME
-> + * @root_port: the root port which gets PME report
-> + * @requester_id: the device ID of PCI device which invokes PME event
-> + */
-> +static bool pcie_pme_handle_request(struct pci_dev *root_port,
-> +	u16 requester_id)
+>For reference, I attach acpidump of his system, and dmesg with some acpi
+>debugging enabled.
 
-Do we care about the return value?
+>Mairo, could you post output of dmidecode, so I know exactly the laptop
+>model.
 
-> +{
-> +	struct pci_dev *target;
-> +	bool device_found = false;
-> +	u8 busnr = requester_id >> 8, devfn = requester_id & 0xff;
-> +
-> +	target = pci_get_bus_and_slot(busnr, devfn);
-> +
-> +	/* the PCIe-to-PCI bridge case, see below comment */
-> +	if (!target->is_pcie) {
-> +		pci_dev_put(target);
-> +		target = NULL;
-> +		WARN_ON(devfn); /* devfn should be zero */
 
-Perhaps reset devfn after printing the warning?
+>Best regards,
+>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Maxim Levitsky
 
-> +	}
+--Boundary-00=_zgZmK4C3FkD+Kob
+Content-Type: text/plain;
+  charset="iso 8859-15";
+  name="dmidecode_output"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="dmidecode_output"
 
-You shouldn't dereference target before checking it's not NULL.
+# dmidecode 2.9
+SMBIOS 2.4 present.
+24 structures occupying 1067 bytes.
+Table at 0x000DC010.
 
-> +	if (target) {
-> +		device_found = pci_pm_handle_wakeup_event_native(target);
-> +		pci_dev_put(target);
-> +		return device_found;
-> +	}
-> +
-> +	/*
-> +	 * PME from PCI devices under a PCIe-to-PCI bridge may be converted to
-> +	 * a PCIe in-band PME message. In such case, bridge will assign the
-> +	 * message a new request id using bridge's secondary bus numer and
-> +	 * device number/function number 0
-> +	 */
-> +	if (!target && !devfn) {
-> +		struct pci_bus *bus;
-> +
-> +		bus = pci_find_bus(pci_domain_nr(root_port->bus), busnr);
-> +		if (bus) {
-> +			target = bus->self;
-> +			if (!target->is_pcie || target->pcie_type !=
-> +					PCI_EXP_TYPE_PCI_BRIDGE)
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+	Vendor: COMPAL          
+	Version: 1.16
+	Release Date: 12/31/2007
+	Address: 0xE6010
+	Runtime Size: 106480 bytes
+	ROM Size: 1024 kB
+	Characteristics:
+		PCI is supported
+		PNP is supported
+		APM is supported
+		BIOS is upgradeable
+		BIOS shadowing is allowed
+		ESCD support is available
+		Boot from CD is supported
+		Selectable boot is supported
+		EDD is supported
+		5.25"/360 KB floppy services are supported (int 13h)
+		5.25"/1.2 MB floppy services are supported (int 13h)
+		3.5"/720 KB floppy services are supported (int 13h)
+		3.5"/2.88 MB floppy services are supported (int 13h)
+		Print screen service is supported (int 5h)
+		8042 keyboard services are supported (int 9h)
+		Serial services are supported (int 14h)
+		Printer services are supported (int 17h)
+		CGA/mono video services are supported (int 10h)
+		ACPI is supported
+		USB legacy is supported
+		LS-120 boot is supported
+		BIOS boot specification is supported
+		Targeted content distribution is supported
+	BIOS Revision: 49.49
+	Firmware Revision: 49.49
 
-Please don't break the line like this.  Is it necessary to break it at all?
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+	Manufacturer: -
+	Product Name: N/A                                            
+	Version: N/A                             
+	Serial Number: N/A                                                             
+	UUID: 9CCC7D2C-134E-11DD-9C8D-001EEC42BF70
+	Wake-up Type: Power Switch
+	SKU Number: Compal
+	Family: Compal
 
-> +				target = NULL;
-> +		}
-> +	}
-> +
-> +	if (target)
-> +		device_found = pci_pm_handle_wakeup_event_native(target);
-> +	else
-> +		printk(KERN_ERR"Can't find device %02d:%d.%d which invokes PME\n",
-> +			busnr, PCI_SLOT(devfn), PCI_FUNC(devfn));
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+	Manufacturer: -
+	Product Name: JFL92         
+	Version: IFT00
+	Serial Number: N/A                                                                       
 
-If you print the message about the spurious interrupt here, the return value
-won't be necessary any more and you'll be able to simplify the next function.
+Handle 0x0003, DMI type 3, 17 bytes
+Chassis Information
+	Manufacturer: No Enclosure
+	Type: Notebook
+	Lock: Not Present
+	Version: N/A
+	Serial Number: None
+	Asset Tag: -
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Safe
+	Security Status: None
+	OEM Information: 0x00001234
 
-> +
-> +	return device_found;
-> +}
-> +
-> +/* pcie_pme_work_handle - work handler for root port PME report interrupt */
-> +static void pcie_pme_work_handle(struct work_struct *work)
-> +{
-> +	struct pcie_pme_service_data *data =
-> +			container_of(work, struct pcie_pme_service_data, work);
-> +	struct pci_dev *root_port = data->dev->port;
-> +	unsigned long flags;
-> +	bool spurious = true;
-> +	u32 rtsta;
-> +	int pos;
-> +
-> +	pos = pci_find_capability(root_port, PCI_CAP_ID_EXP);
-> +	while (1) {
-> +		spin_lock_irqsave(&data->lock, flags);
-> +		pci_read_config_dword(root_port, pos + PCI_EXP_RTSTA, &rtsta);
-> +
-> +		if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> +			spin_unlock_irqrestore(&data->lock, flags);
-> +			break;
-> +		}
+Handle 0x0004, DMI type 4, 35 bytes
+Processor Information
+	Socket Designation: U2E1
+	Type: Central Processor
+	Family: Other
+	Manufacturer: Intel
+	ID: 76 06 01 00 FF FB EB BF
+	Version: CPU Version
+	Voltage: 3.3 V
+	External Clock: Unknown
+	Max Speed: 4096 MHz
+	Current Speed: 2500 MHz
+	Status: Populated, Enabled
+	Upgrade: ZIF Socket
+	L1 Cache Handle: 0x0005
+	L2 Cache Handle: 0x0006
+	L3 Cache Handle: Not Provided
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Part Number: Not Specified
 
-As I said above, I'd check PME_Pending here as well.
+Handle 0x0005, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: L1 Cache
+	Configuration: Enabled, Socketed, Level 1
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 64 KB
+	Maximum Size: 64 KB
+	Supported SRAM Types:
+		Burst
+		Pipeline Burst
+		Asynchronous
+	Installed SRAM Type: Asynchronous
+	Speed: Unknown
+	Error Correction Type: Unknown
+	System Type: Unknown
+	Associativity: Unknown
 
-> +		/* clear PME, if there are other pending PME, the status will
-> +		 * get set again
-> +		 */
-> +		pcie_pme_clear_status(root_port);
-> +		spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +		if (pcie_pme_handle_request(root_port, rtsta & 0xffff))
-> +			spurious = false;
-> +	}
-> +
-> +	if (!data->in_exiting) {
+Handle 0x0006, DMI type 7, 19 bytes
+Cache Information
+	Socket Designation: L2 Cache
+	Configuration: Enabled, Socketed, Level 2
+	Operational Mode: Write Back
+	Location: Internal
+	Installed Size: 6144 KB
+	Maximum Size: 4096 KB
+	Supported SRAM Types:
+		Burst
+		Pipeline Burst
+		Asynchronous
+	Installed SRAM Type: Burst
+	Speed: Unknown
+	Error Correction Type: Unknown
+	System Type: Unknown
+	Associativity: Unknown
 
-Perhaps
+Handle 0x0007, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: J1A1
+	Internal Connector Type: None
+	External Reference Designator: Keyboard
+	External Connector Type: Circular DIN-8 male
+	Port Type: Keyboard Port
 
-+	if (!data->in_exiting)
-+		return;
+Handle 0x0008, DMI type 8, 9 bytes
+Port Connector Information
+	Internal Reference Designator: J1A1
+	Internal Connector Type: None
+	External Reference Designator: PS/2 Mouse
+	External Connector Type: Circular DIN-8 male
+	Port Type: Mouse Port
 
-and save an indentation level?
+Handle 0x0009, DMI type 9, 13 bytes
+System Slot Information
+	Designation: PEG Slot J6C1
+	Type: 32-bit PCI Express
+	Current Usage: In Use
+	Length: Long
+	ID: 6
+	Characteristics:
+		5.0 V is provided
+		3.3 V is provided
 
-Also data->in_exiting should be checked under the spinlock, shouldn't it?
+Handle 0x000A, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Sound
+	Status: Disabled
+	Description: HD-Audio
 
-> +		spin_lock_irqsave(&data->lock, flags);
-> +		/* reenable native PME */
-> +		pcie_pme_enable_interrupt(root_port, true);
-> +		spin_unlock_irqrestore(&data->lock, flags);
-> +	}
-> +
-> +	if (spurious)
-> +		printk(KERN_ERR"Spurious Native PME interrupt %d received\n",
-> +			root_port->irq);
-> +}
-> +
-> +/* pcie_pme_irq - interrupt handler for root port PME report interrupt */
-> +static irqreturn_t pcie_pme_irq(int irq, void *context)
-> +{
-> +	int pos;
-> +	struct pci_dev *pdev;
-> +	u32 rtsta;
-> +	struct pcie_pme_service_data *data;
-> +	unsigned long flags;
-> +
-> +	pdev = ((struct pcie_device *)context)->port;
-> +	data = get_service_data((struct pcie_device *)context);
-> +
-> +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	pci_read_config_dword(pdev, pos + PCI_EXP_RTSTA, &rtsta);
-> +
-> +	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> +		spin_unlock_irqrestore(&data->lock, flags);
-> +		return IRQ_NONE;
-> +	}
-> +
-> +	/* disable PME to avoid interrupt flood */
-> +	pcie_pme_enable_interrupt(pdev, false);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	queue_work(pm_wq, &data->work);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +#ifdef CONFIG_ACPI
-> +/*
-> + * pcie_pme_osc_setup - declare OS support PCIe native PME feature to BIOS
-> + * @pciedev - pcie device struct for root port
-> + */
-> +static int pcie_pme_osc_setup(struct pcie_device *pciedev)
-> +{
-> +	acpi_status status = AE_NOT_FOUND;
-> +	struct pci_dev *pdev = pciedev->port;
-> +	acpi_handle handle = DEVICE_ACPI_HANDLE(&pdev->dev);
-> +
-> +	if (!handle)
-> +		return -EINVAL;
-> +	status = acpi_pci_osc_control_set(handle,
-> +			OSC_PCI_EXPRESS_PME_CONTROL |
-> +			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-> +
-> +	if (ACPI_FAILURE(status)) {
-> +		printk(KERN_DEBUG "Native PME service couldn't init device "
-> +			"%s - %s\n", dev_name(&pciedev->device),
-> +			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-> +			"no _OSC support" : "Run ACPI _OSC fails");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +#else
-> +static inline int pcie_pme_osc_setup(struct pcie_device *pciedev)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
-> +/*
-> + * pcie_pme_probe - initialize PCIe PME report for a root port
-> + * @dev - pcie device struct for root port
-> + */
-> +static int pcie_pme_probe(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev;
-> +	int status;
-> +	struct pcie_pme_service_data *data;
-> +
-> +	if (pcie_pme_osc_setup(dev) && !force)
-> +		return -EINVAL;
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +	spin_lock_init(&data->lock);
-> +	INIT_WORK(&data->work, pcie_pme_work_handle);
-> +	data->dev = dev;
-> +	set_service_data(dev, data);
-> +
-> +	pdev = dev->port;
-> +
-> +	/* clear pending PME */
-> +	pcie_pme_clear_status(pdev);
-> +
-> +	status = request_irq(dev->irq, pcie_pme_irq, IRQF_SHARED,
-> +		"pcie_pme", dev);
-> +	if (status) {
-> +		kfree(data);
-> +		return status;
-> +	}
-> +
-> +	/* enable PME interrupt */
-> +	pcie_pme_enable_interrupt(pdev, true);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * pcie_pme_remove - finialize PCIe PME report for a root port
-> + * @dev - pcie device struct for root port
-> + */
-> +static void pcie_pme_remove(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev;
-> +	unsigned long flags;
-> +	struct pcie_pme_service_data *data = get_service_data(dev);
-> +
-> +	pdev = dev->port;
-> +
-> +	/* disable PME interrupt */
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	data->in_exiting = 1;
-> +	pcie_pme_enable_interrupt(pdev, false);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	flush_scheduled_work();
-> +	free_irq(dev->irq, dev);
-> +
-> +	/* clear pending PME */
-> +	pcie_pme_clear_status(pdev);
-> +
-> +	set_service_data(dev, NULL);
-> +	kfree(data);
-> +}
-> +
-> +/*
-> + * pcie_pme_suspend - suspend PCIe PME report for a root port
-> + * @dev - pcie device struct for root port
-> + */
-> +static int pcie_pme_suspend(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct pcie_pme_service_data *data;
-> +	unsigned long flags;
-> +
-> +	pdev = dev->port;
-> +	data = get_service_data(dev);
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	/* disable PME to avoid further interrupt */
-> +	pcie_pme_enable_interrupt(pdev, false);
-> +
-> +	/* clear pending PME */
-> +	pcie_pme_clear_status(pdev);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * pcie_pme_resume - resume PCIe PME report for a root port
-> + * @dev - pcie device struct for root port
-> + */
-> +static int pcie_pme_resume(struct pcie_device *dev)
-> +{
-> +	struct pci_dev *pdev = dev->port;
-> +	unsigned long flags;
-> +	struct pcie_pme_service_data *data = get_service_data(dev);
-> +
-> +	spin_lock_irqsave(&data->lock, flags);
-> +	pcie_pme_clear_status(pdev);
-> +	pcie_pme_enable_interrupt(pdev, true);
-> +	spin_unlock_irqrestore(&data->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct pcie_port_service_driver pcie_pme_driver = {
-> +	.name		= "pcie_pme",
-> +	.port_type 	= PCIE_RC_PORT,
-> +	.service 	= PCIE_PORT_SERVICE_PME,
-> +
-> +	.probe		= pcie_pme_probe,
-> +	.remove		= pcie_pme_remove,
-> +	.suspend	= pcie_pme_suspend,
-> +	.resume		= pcie_pme_resume,
-> +};
-> +
-> +static int __init pcie_pme_service_init(void)
-> +{
-> +	if (disabled)
-> +		return -EINVAL;
-> +	return pcie_port_service_register(&pcie_pme_driver);
-> +}
-> +
-> +static void __exit pcie_pme_service_exit(void)
-> +{
-> +	pcie_port_service_unregister(&pcie_pme_driver);
-> +}
-> +
-> +module_init(pcie_pme_service_init);
-> +module_exit(pcie_pme_service_exit);
+Handle 0x000B, DMI type 11, 5 bytes
+OEM Strings
+	String 1: -
 
-Thanks,
-Rafael
+Handle 0x000C, DMI type 12, 5 bytes
+System Configuration Options
+	Option 1: None
+
+Handle 0x000D, DMI type 16, 15 bytes
+Physical Memory Array
+	Location: System Board Or Motherboard
+	Use: System Memory
+	Error Correction Type: None
+	Maximum Capacity: 1000 MB
+	Error Information Handle: Not Provided
+	Number Of Devices: 2
+
+Handle 0x000E, DMI type 17, 27 bytes
+Memory Device
+	Array Handle: 0x000D
+	Error Information Handle: No Error
+	Total Width: 64 bits
+	Data Width: 64 bits
+	Size: 2048 MB
+	Form Factor: SODIMM
+	Set: 1
+	Locator: M1
+	Bank Locator: Bank 0
+	Type: DDR2
+	Type Detail: Synchronous
+	Speed: 667 MHz (1.5 ns)
+	Manufacturer: Mfg 0
+	Serial Number: 1234-B0
+	Asset Tag: Not Specified
+	Part Number: SODIMM000
+
+Handle 0x000F, DMI type 17, 27 bytes
+Memory Device
+	Array Handle: 0x000D
+	Error Information Handle: No Error
+	Total Width: 64 bits
+	Data Width: 64 bits
+	Size: 2048 MB
+	Form Factor: SODIMM
+	Set: 1
+	Locator: M2
+	Bank Locator: Bank 1
+	Type: DDR2
+	Type Detail: Synchronous
+	Speed: 667 MHz (1.5 ns)
+	Manufacturer: Mfg 1
+	Serial Number: 1234-B1
+	Asset Tag: Not Specified
+	Part Number: SODIMM001
+
+Handle 0x0010, DMI type 19, 15 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x000FFFFFFFF
+	Range Size: 4 GB
+	Physical Array Handle: 0x000D
+	Partition Width: 0
+
+Handle 0x0011, DMI type 20, 19 bytes
+Memory Device Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x0007FFFFFFF
+	Range Size: 2 GB
+	Physical Device Handle: 0x000E
+	Memory Array Mapped Address Handle: 0x0010
+	Partition Row Position: 1
+	Interleave Position: 1
+	Interleaved Data Depth: 2
+
+Handle 0x0012, DMI type 20, 19 bytes
+Memory Device Mapped Address
+	Starting Address: 0x00080000000
+	Ending Address: 0x000FFFFFFFF
+	Range Size: 2 GB
+	Physical Device Handle: 0x000F
+	Memory Array Mapped Address Handle: 0x0010
+	Partition Row Position: 1
+	Interleave Position: 1
+	Interleaved Data Depth: 2
+
+Handle 0x0013, DMI type 32, 20 bytes
+System Boot Information
+	Status: <OUT OF SPEC>
+
+Handle 0x0014, DMI type 131, 22 bytes
+OEM-specific Type
+	Header and Data:
+		83 16 14 00 01 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 01
+	Strings:
+		TVT-Enablement
+
+Handle 0x0015, DMI type 131, 22 bytes
+OEM-specific Type
+	Header and Data:
+		83 16 15 00 01 00 00 00 00 00 00 00 00 00 00 00
+		00 00 00 00 00 01
+	Strings:
+		TVT-Enablement
+
+Handle 0x0016, DMI type 135, 10 bytes
+OEM-specific Type
+	Header and Data:
+		87 0A 16 00 50 54 07 03 01 00
+
+Handle 0x0017, DMI type 127, 4 bytes
+End Of Table
+
+
+--Boundary-00=_zgZmK4C3FkD+Kob
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--Boundary-00=_zgZmK4C3FkD+Kob--
