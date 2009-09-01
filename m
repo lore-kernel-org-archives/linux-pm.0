@@ -1,59 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH update] ACPI / PM: Allow PCI root
-	bridges to wake up the system
-Date: Tue, 1 Sep 2009 21:03:19 +0200
-Message-ID: <200909012103.19761.rjw__1841.26095050505$1251832391$gmane$org@sisk.pl>
-References: <200908300041.14541.rjw@sisk.pl> <200908312324.20850.rjw@sisk.pl>
-	<20090901132547.GA13084@srcf.ucam.org>
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+Subject: Re: Montreal Linux Power Management Mini-Summit, July 13, 2009 -
+	Meeting Notes
+Date: Wed, 2 Sep 2009 00:22:14 +0200
+Message-ID: <63386a3d0909011522m7a175d3eyb3bbe8a29a5fd104@mail.gmail.com>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+	 <alpine.LFD.2.00.0907301801240.17818@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090901132547.GA13084@srcf.ucam.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755286AbZIAWWO@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0907301801240.17818@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 01 September 2009, Matthew Garrett wrote:
-> On Mon, Aug 31, 2009 at 11:24:20PM +0200, Rafael J. Wysocki wrote:
-> 
-> > Updated patch is appended, but there's a problem with it.  Namely, when the
-> > root bridge GPE is shared with other devices, those devices are also enabled
-> > to wake up and they may be kind of "interesting" (on one of my test boxes they
-> > include the ethernet and audio adapters).  I'm not sure what to do about that.
-> 
-> Perhaps only enable it if a child device is enabled?
+2009/7/31 Len Brown <lenb@kernel.org>:
 
-Well, the problem is that we have to enable the devices that share the GPE to
-wake up together, but the child device we _really_ want to wake-up need not
-be any of them.
+> A Linux Power Management "mini-summit" was held on July 13th, 2009 -
+> on the first day of the Montreal Linux Symposium.
+> (...)
 
-Also, the child device may be enabled to wake up after we've run the "glue"
-code.
+> SH running cpufreq on top of clock framework
+> =A0 =A0 =A0 =A0cpufreq has notifiers, clock framework does not
 
-Well, perhaps it's better to rework pci_enable_wake() so that it, if the device
-doesn't have an ACPI handle and is not PCIe, it will go and enable the root
-bridge to wake up as well?
+Hm! Paul can you elaborate on what that was about.
 
-I wonder what about the bridges between the desired wake-up device and the
-root bridge.  I guess they also should be enabled to wake-up, so that they can
-forward the PME# in case the system is designed this way.
+I've felt a need for clock notifiers and we've cheated by using
+CPUfreq because it so happens that the clocking in system-wide
+and whenever the CPU freq change so may the other clocks.
 
-Thoughts?
+But if I put code into a PrimeCell MMC/SPI/I2C driver or whatever and
+use CPUfreq that's very unelegant, and for other platforms where
+the CPU freq don't change when this particular device clk freq
+change plain misleading.
 
-> This is difficult with the current code - the refcounted GPE stuff I'm
-> working on ought to make it easier.
+A clk pre/postchange notifier pair would really help and would
+make for elegant drivers that can handle clock freq transitions.
 
-Ah, I think that's going to be useful.
+Has anyone poked at this?
 
-Thanks,
-Rafael
+Linus Walleij
