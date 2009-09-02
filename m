@@ -1,20 +1,59 @@
-From: Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: Montreal Linux Power Management Mini-Summit, July 13, 2009 -
- Meeting Notes
-Date: Tue, 01 Sep 2009 21:25:20 -0500
-Message-ID: <4A9DD790.50302@billgatliff.com>
-References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>	<alpine.LFD.2.00.0907301801240.17818@localhost.localdomain> <63386a3d0909011522m7a175d3eyb3bbe8a29a5fd104@mail.gmail.com>
+From: Francesco VIRLINZI <francesco.virlinzi@st.com>
+Subject: Re: Montreal Linux Power Management Mini-Summit, July 13,
+ 2009 - 	Meeting Notes
+Date: Wed, 02 Sep 2009 10:36:55 +0200
+Message-ID: <4A9E2EA7.8080700@st.com>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>	<alpine.LFD.2.00.0907301801240.17818@localhost.localdomain>
+	<63386a3d0909011522m7a175d3eyb3bbe8a29a5fd104@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932114AbZIBCZG@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <63386a3d0909011522m7a175d3eyb3bbe8a29a5fd104@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Linus Walleij wrote:
+Hi Linus
+FYI:
+I'm going to present a generic linux clock framework during the CELF-Europe
+  @
+http://www.embeddedlinuxconference.com/elc_europe09/sessions.html#Virlinzi
+
+It's integrated in the LDM via platform_driver and platform_device.
+
+It would be a proposal but it doesn't use the CPUFreq.
+
+It uses struct clk to identify each phisical the clock in the system
+  and it adds clock information to the platform_device to link each
+  device to the clock it uses.
+
+Regards
+  Francesco
+
+On 09/02/2009 12:22 AM, Linus Walleij wrote:
+> 2009/7/31 Len Brown<lenb@kernel.org>:
+>
+>    
+>> A Linux Power Management "mini-summit" was held on July 13th, 2009 -
+>> on the first day of the Montreal Linux Symposium.
+>> (...)
+>>      
+>    
+>> SH running cpufreq on top of clock framework
+>>         cpufreq has notifiers, clock framework does not
+>>      
+> Hm! Paul can you elaborate on what that was about.
+>
 > I've felt a need for clock notifiers and we've cheated by using
 > CPUfreq because it so happens that the clocking in system-wide
 > and whenever the CPU freq change so may the other clocks.
@@ -26,26 +65,13 @@ Linus Walleij wrote:
 >
 > A clk pre/postchange notifier pair would really help and would
 > make for elegant drivers that can handle clock freq transitions.
->   
-
-A lot of ARM chips have peripherals that are driven by PLLs that run 
-quasi-independently of the CPU clock.
-
-If I guess correctly at what is being described above, a notifier chain 
-for the users of a clock would be a clean way for peripherals to deal 
-with clock speed *and* CPU speed changes, indeed.  A clock source that 
-was affected by cpufreq would place itself on the cpufreq notifier 
-chain, and also provide a notifier chain for peripherals that are driven 
-by that clock.  When a cpufreq notification arrived, if the clock 
-couldn't adjust for the cpufreq change it would use its notifier chain 
-to tell all downstream peripherals about it.
-
-A lot of peripherals could then focus just on the clock notifier chain, 
-and would no longer care about cpufreq.  I like it.
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
+>
+> Has anyone poked at this?
+>
+> Linus Walleij
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
+>    
