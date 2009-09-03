@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 3/4] PCI PM: Introduce device flag
-	wakeup_prepared
-Date: Fri, 4 Sep 2009 00:05:26 +0200
-Message-ID: <200909040005.26979.rjw__14506.4357122921$1252015940$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 1/4] PCI PM: Simplify PCI wake-up code
+Date: Fri, 4 Sep 2009 00:03:36 +0200
+Message-ID: <200909040003.36917.rjw__42822.9315708906$1252015956$gmane$org@sisk.pl>
 References: <200908300041.14541.rjw@sisk.pl> <200909020041.57754.rjw@sisk.pl>
 	<200909040002.02562.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -25,61 +24,82 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce a new PCI device flag, wakeup_prepared, to prevent PCI
-wake-up preparation code from being executed twice in a row for the
-same device and for the same purpose.
+Rework the PCI wake-up code so that it's easier to read without
+changing the functionality.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c   |    8 ++++++++
- include/linux/pci.h |    1 +
- 2 files changed, 9 insertions(+)
+ drivers/pci/pci-acpi.c |   10 +++++++---
+ drivers/pci/pci.c      |   25 ++++++++++++++-----------
+ 2 files changed, 21 insertions(+), 14 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci.c
 +++ linux-2.6/drivers/pci/pci.c
-@@ -1223,6 +1223,10 @@ int pci_enable_wake(struct pci_dev *dev,
+@@ -1218,8 +1218,7 @@ void pci_pme_active(struct pci_dev *dev,
+  */
+ int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
+ {
+-	int error = 0;
+-	bool pme_done = false;
++	int ret = 0;
+ 
  	if (enable && !device_may_wakeup(&dev->dev))
  		return -EINVAL;
+@@ -1230,18 +1229,22 @@ int pci_enable_wake(struct pci_dev *dev,
+ 	 * enable.  To disable wake-up we call the platform first, for symmetry.
+ 	 */
  
-+	/* Don't do the same thing twice in a row for one device. */
-+	if (!!enable == !!dev->wakeup_prepared)
+-	if (!enable && platform_pci_can_wakeup(dev))
+-		error = platform_pci_sleep_wake(dev, false);
+-
+-	if (!enable || pci_pme_capable(dev, state)) {
+-		pci_pme_active(dev, enable);
+-		pme_done = true;
+-	}
++	if (enable) {
++		int error;
+ 
+-	if (enable && platform_pci_can_wakeup(dev))
++		if (pci_pme_capable(dev, state))
++			pci_pme_active(dev, true);
++		else
++			ret = 1;
+ 		error = platform_pci_sleep_wake(dev, true);
++		if (ret)
++			ret = error;
++	} else {
++		platform_pci_sleep_wake(dev, false);
++		pci_pme_active(dev, false);
++	}
+ 
+-	return pme_done ? 0 : error;
++	return ret;
+ }
+ 
+ /**
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -111,12 +111,16 @@ static bool acpi_pci_can_wakeup(struct p
+ 
+ static int acpi_pci_sleep_wake(struct pci_dev *dev, bool enable)
+ {
+-	int error = acpi_pm_device_sleep_wake(&dev->dev, enable);
++	int error;
+ 
++	if (!acpi_pci_can_wakeup(dev))
 +		return 0;
 +
- 	/*
- 	 * According to "PCI System Architecture" 4th ed. by Tom Shanley & Don
- 	 * Anderson we should be doing PME# wake enable followed by ACPI wake
-@@ -1239,9 +1243,12 @@ int pci_enable_wake(struct pci_dev *dev,
- 		error = platform_pci_sleep_wake(dev, true);
- 		if (ret)
- 			ret = error;
-+		if (!ret)
-+			dev->wakeup_prepared = true;
- 	} else {
- 		platform_pci_sleep_wake(dev, false);
- 		pci_pme_active(dev, false);
-+		dev->wakeup_prepared = false;
- 	}
++	error = acpi_pm_device_sleep_wake(&dev->dev, enable);
+ 	if (!error)
+-		dev_printk(KERN_INFO, &dev->dev,
+-				"wake-up capability %s by ACPI\n",
++		dev_info(&dev->dev, "wake-up capability %s by ACPI\n",
+ 				enable ? "enabled" : "disabled");
++
+ 	return error;
+ }
  
- 	return ret;
-@@ -1364,6 +1371,7 @@ void pci_pm_init(struct pci_dev *dev)
- 	u16 pmc;
- 
- 	device_enable_async_suspend(&dev->dev, true);
-+	dev->wakeup_prepared = false;
- 	dev->pm_cap = 0;
- 
- 	/* find PCI PM capability in list */
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -241,6 +241,7 @@ struct pci_dev {
- 	unsigned int	d1_support:1;	/* Low power state D1 is supported */
- 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
- 	unsigned int	no_d1d2:1;	/* Only allow D0 and D3 */
-+	unsigned int	wakeup_prepared:1;
- 
- #ifdef CONFIG_PCIEASPM
- 	struct pcie_link_state	*link_state;	/* ASPM link state. */
