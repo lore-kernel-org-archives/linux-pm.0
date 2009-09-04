@@ -1,17 +1,21 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH 4/4] PCI/ACPI PM: Propagate wake-up
-	enable for	devices w/o ACPI support
-Date: Fri, 4 Sep 2009 15:56:38 +0100
-Message-ID: <20090904145638.GA23091__47667.9598833018$1252076444$gmane$org@srcf.ucam.org>
-References: <200908300041.14541.rjw@sisk.pl> <200909040007.09926.rjw@sisk.pl>
-	<1252030384.3609.45.camel@localhost.localdomain>
-	<200909041639.46289.rjw@sisk.pl>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/5] pda-power: switch to new dev_pm_ops
+Date: Fri, 4 Sep 2009 20:34:04 +0400
+Message-ID: <20090904163404.GA26581__40854.2387107902$1252082115$gmane$org@oksana.dev.rtsoft.ru>
+References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+	<1249496971-9019-2-git-send-email-daniel@caiaq.de>
+	<200908052149.55567.elendil@planet.nl>
+	<20090805222920.GF19257@buzzloop.caiaq.de>
+	<74d0deb30908060452k1fc0e982jf14be2e895e9a805@mail.gmail.com>
+	<20090806125631.GI19257@buzzloop.caiaq.de>
+	<74d0deb30908070635s2fa76e5t954742239b8592a4@mail.gmail.com>
+Reply-To: avorontsov@ru.mvista.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200909041639.46289.rjw@sisk.pl>
+In-Reply-To: <74d0deb30908070635s2fa76e5t954742239b8592a4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +25,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ykzhao <yakui.zhao@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: spyro@f2s.com, Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, cbou@mail.ru, mreimer@vpop.net, Daniel Mack <daniel@caiaq.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 04:39:46PM +0200, Rafael J. Wysocki wrote:
-
-> Quite frankly, I'm not sure of that.  It really depends on how PME# is routed
-> in given system.  The spec permits routing it directly to the chipset as well
-> as routing it through bridges and I don't know if we can assume that the
-> first upstream device capable of generating wake-up events will handle it.
-
-The GPE block is going to be in the chipset, so unless the vendors have 
-explicitly hooked up a link between the PME line from a bridge and the 
-EC, we're presumably always going to get it from the chipset if at all.
-
-> That said, I think we can try returning from
-> acpi_pci_propagate_wakeup_enable() as soon as
-> acpi_pm_device_sleep_wake() returns 0 for current device.  On the test systems
-> I have it won't make any difference, because the GPE is shared among the
-> root bridge and the first upstream bridge of the device in question.
-
-Yes, it's presumably the case that the PME event in the bridge is just 
-tied to the root bridge in the chipset. Do we know what chipset this 
-hardware is? For Intel, at least, GPE behaviour is defined in the 
-chipset docs.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+T24gRnJpLCBBdWcgMDcsIDIwMDkgYXQgMDM6MzU6MTlQTSArMDIwMCwgcEhpbGlwcCBaYWJlbCB3
+cm90ZToKWy4uLl0KPiA+ICtzdGF0aWMgc3RydWN0IGRldl9wbV9vcHMgcGRhX3Bvd2VyX3BtX29w
+cyA9IHsKPiA+ICsgwqAgwqAgwqAgLnBvd2Vyb2ZmIMKgIMKgIMKgID0gcGRhX3Bvd2VyX3Bvd2Vy
+b2ZmLAo+ID4gKyDCoCDCoCDCoCAucmVzdG9yZSDCoCDCoCDCoCDCoD0gcGRhX3Bvd2VyX3Jlc3Rv
+cmUsCj4gPiArfTsKPiAKPiBObyBubywgbm93IHlvdSdyZSBtaXNzaW5nIC5zdXNwZW5kLy5yZXN1
+bWUuIEFzIEkgdW5kZXJzdGFuZCBpdCwgdGhlCj4gc3VzcGVuZCBhbmQgaGliZXJuYXRpb24gY29k
+ZXBhdGhzIGFyZSBub3cgY29tcGxldGVseSBzZXBhcmF0ZS4KPiAKPiBBbHNvLCBJJ20gbm90IHN1
+cmUgdXNpbmcgLnJlc3RvcmUgaGVyZSBpcyBxdWl0ZSBjb3JyZWN0Lgo+IGVuYWJsZV9pcnFfd2Fr
+ZSBpcyBjYWxsZWQgaW4gLnBvd2Vyb2ZmLCBhZnRlciAuZnJlZXplICsgY3JlYXRpb24gb2YKPiB0
+aGUgbWVtb3J5IGltYWdlLiBTbyBpZiB0aGlzIG1lbW9yeSBpbWFnZSBpcyByZXN0b3JlZCBkdXJp
+bmcgdGhlIG5leHQKPiBib290LCB0aGVyZSBpcyBubyB0cmFjZSBvZiBpcnEgd2FrdXAgZXZlciBi
+ZWluZyBlbmFibGVkIGFuZCB0aHVzIG5vCj4gbmVlZCB0byBjYWxsIGRpc2FibGVfaXJxX3dha2Uu
+Cj4gCj4gSSB0aGluayBqdXN0IC5zdXNwZW5kLy5wb3dlcm9mZiBhbmQgLnJlc3VtZSBuZWVkIHRv
+IGJlIHVzZWQgZm9yIHRoaXMgZHJpdmVyLgoKRGFuaWVsLCBhbnkgdXBkYXRlIG9uIHRoaXMgcGF0
+Y2g/CgpUaGFua3MsCgotLSAKQW50b24gVm9yb250c292CmVtYWlsOiBjYm91YXRtYWlscnVAZ21h
+aWwuY29tCmlyYzovL2lyYy5mcmVlbm9kZS5uZXQvYmQyCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
