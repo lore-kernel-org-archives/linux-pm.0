@@ -1,16 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1 update] PCI PM: PCIe PME root port service
-	driver
-Date: Sun, 6 Sep 2009 19:01:14 +0200
-Message-ID: <200909061901.14979.rjw__27851.7480277971$1252256516$gmane$org@sisk.pl>
-References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
-	<20090901023549.GB3695@sli10-desk.sh.intel.com>
-	<200909061434.24870.rjw@sisk.pl>
+Subject: 2.6.31-rc9: Reported regressions from 2.6.30
+Date: Sun,  6 Sep 2009 19:15:07 +0200 (CEST)
+Message-ID: <2ehA7xoGvXL.A.4PB.3eBpKB__1575.87835933573$1252268358$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909061434.24870.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,508 +16,219 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-pci <linux-pci@vger.kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 September 2009, Rafael J. Wysocki wrote:
-> On Tuesday 01 September 2009, Shaohua Li wrote:
-> ...
-> > Updated patch.
-> 
-> I looked at it and thought I would do it differently in many places, so
-> below is my version.
-
-One refinement.  We can avoid using pci_get_bus_and_slot(), which essentially
-is a loop over all PCI devices, and instead use pci_find_bus() to find the bus
-the device is on and then look for the device in bus->devices.
-
-Thanks,
-Rafael
-
----
-Subject: PCI PM: PCIe PME root port service driver
-
-PCIe native PME detection mechanism is based on interrupts generated
-by root ports or event collectors every time a PCIe device sends a
-PME message upstream.
-
-Once a PME message has been sent by an endpoint device and received
-by its root port (or event collector in the case of root complex
-integrated endpoints), the Requester ID from the message header is
-registered in the root port's Root Status register.  At the same
-time, the PME Status bit of the Root Status register is set to
-indicate that there's a PME to handle.  If PCIe PME interrupt is
-enabled for the root port, it generates the interrupt once the PME
-Status has been set.  After receiving the interrupt, the kernel can
-identify the PCIe device that generated the PME using the Requester
-ID from the root port's Root Status register. [For details, see PCI
-Express Base Specification, Rev. 2.0.]
-
-Implement a driver for the PCIe PME root port service working in
-accordance with the above description.
-
-Based on a patch from Shaohua Li <shaohua.li@intel.com>.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pcie/Kconfig    |    4 
- drivers/pci/pcie/Makefile   |    2 
- drivers/pci/pcie/pcie_pme.c |  428 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 434 insertions(+)
-
-Index: linux-2.6/drivers/pci/pcie/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/Kconfig
-+++ linux-2.6/drivers/pci/pcie/Kconfig
-@@ -46,3 +46,7 @@ config PCIEASPM_DEBUG
- 	help
- 	  This enables PCI Express ASPM debug support. It will add per-device
- 	  interface to control ASPM.
-+
-+config PCIE_PME
-+	def_bool y
-+	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-Index: linux-2.6/drivers/pci/pcie/Makefile
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/Makefile
-+++ linux-2.6/drivers/pci/pcie/Makefile
-@@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
- 
- # Build PCI Express AER if needed
- obj-$(CONFIG_PCIEAER)		+= aer/
-+
-+obj-$(CONFIG_PCIE_PME) += pcie_pme.o
-Index: linux-2.6/drivers/pci/pcie/pcie_pme.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/pci/pcie/pcie_pme.c
-@@ -0,0 +1,428 @@
-+/*
-+ * PCIe Native PME support
-+ *
-+ * Copyright (C) 2007 - 2009 Intel Corp
-+ * Copyright (C) 2007 - 2009 Shaohua Li <shaohua.li@intel.com>
-+ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License V2.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/pcieport_if.h>
-+#include <linux/acpi.h>
-+#include <linux/pci-acpi.h>
-+#include <linux/pm_runtime.h>
-+
-+#include "../pci.h"
-+
-+#define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
-+#define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
-+
-+static bool pcie_pme_enabled = true;
-+
-+/*
-+ * Apparently, many BIOSes don't implement ACPI _OSC correctly, so let's not use
-+ * it by default.
-+ */
-+static bool use_acpi_osc;
-+
-+static int __init pcie_pme_setup(char *str)
-+{
-+	if (!strcmp(str, "off"))
-+		pcie_pme_enabled = false;
-+	else if (!strcmp(str, "acpi"))
-+		use_acpi_osc = true;
-+	return 1;
-+}
-+__setup("pcie_pme=", pcie_pme_setup);
-+
-+struct pcie_pme_service_data {
-+	spinlock_t lock;
-+	struct pcie_device *srv;
-+	struct work_struct work;
-+	bool noirq; /* Don't enable the PME interrupt used by this service. */
-+};
-+
-+/**
-+ * pcie_pme_interrupt_enable - Enable/disable PCIe PME interrupt generation.
-+ * @dev: PCIe root port or event collector.
-+ * @enable: Enable or disable the interrupt.
-+ */
-+static void pcie_pme_interrupt_enable(struct pci_dev *dev, bool enable)
-+{
-+	int rtctl_pos;
-+	u16 rtctl;
-+
-+	rtctl_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTCTL;
-+
-+	pci_read_config_word(dev, rtctl_pos, &rtctl);
-+	if (enable)
-+		rtctl |= PCI_EXP_RTCTL_PMEIE;
-+	else
-+		rtctl &= ~PCI_EXP_RTCTL_PMEIE;
-+	pci_write_config_word(dev, rtctl_pos, rtctl);
-+}
-+
-+/**
-+ * pcie_pme_clear_status - Clear root port PME interrupt status.
-+ * @dev: PCIe root port or event collector.
-+ */
-+static void pcie_pme_clear_status(struct pci_dev *dev)
-+{
-+	int rtsta_pos;
-+	u32 rtsta;
-+
-+	rtsta_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	pci_read_config_dword(dev, rtsta_pos, &rtsta);
-+	rtsta |= PCI_EXP_RTSTA_PME;
-+	pci_write_config_dword(dev, rtsta_pos, rtsta);
-+}
-+
-+/**
-+ * pcie_pme_handle_bus - Scan a PCI bus for devices asserting PME#.
-+ * @bus: PCI bus to scan.
-+ *
-+ * Scan given PCI bus and all buses under it for devices asserting PME#.
-+ */
-+static bool pcie_pme_handle_bus(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+	bool ret = false;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		/* Skip PCIe devices in case we started from a root port. */
-+		if (!dev->is_pcie && pci_check_pme_status(dev)) {
-+			pm_request_resume(&dev->dev);
-+			ret = true;
-+		}
-+
-+		if (dev->subordinate && pcie_pme_handle_bus(dev->subordinate))
-+			ret = true;
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * pcie_pme_handle_request - Find device that generated PME and handle it.
-+ * @port: Root port or event collector that generated the PME interrupt.
-+ * @req_id: PCIe Requester ID of the device that generated the PME.
-+ */
-+static void pcie_pme_handle_request(struct pci_dev *port, u16 req_id)
-+{
-+	u8 busnr = req_id >> 8, devfn = req_id & 0xff;
-+	struct pci_bus *bus;
-+	struct pci_dev *dev;
-+	bool found = false;
-+
-+	bus = pci_find_bus(pci_domain_nr(port->bus), busnr);
-+	if (!bus)
-+		goto out;
-+
-+	down_read(&pci_bus_sem);
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		pci_dev_get(dev);
-+		if (dev->devfn == devfn) {
-+			found = true;
-+			break;
-+		}
-+		pci_dev_put(dev);
-+	}
-+	up_read(&pci_bus_sem);
-+
-+	if (found) {
-+		pm_request_resume(&dev->dev);
-+	} else {
-+		if (devfn)
-+			dev_dbg(&port->dev, "PME interrupt generated for "
-+				"non-existent device %02x:%02x.%d\n",
-+				busnr, PCI_SLOT(devfn), PCI_FUNC(devfn));
-+		/*
-+		 * PME from PCI devices under a PCIe-PCI bridge may be converted
-+		 * to a PCIe in-band PME message.  In such that case the bridge
-+		 * will use the Requester ID of device/function number 0 on its
-+		 * secondary bus.
-+		 */
-+		dev = pci_dev_get(bus->self);
-+		if (!dev->is_pcie || dev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE)
-+			goto out_dev;
-+	}
-+
-+	/*
-+	 * PME may be generated by a PCIe-PCI bridge or a root port on behalf
-+	 * of a non-PCIe device downstream.  If this is done by a root port, its
-+	 * Requester ID field may contain either the root port's or the source
-+	 * device's information (PCI Express Base Specification, Rev. 2.0,
-+	 * Section 6.1.9).
-+	 */
-+	if (dev->subordinate && dev->is_pcie
-+	    && ((!found && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT)
-+	    || dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)) {
-+		down_read(&pci_bus_sem);
-+		if (pcie_pme_handle_bus(dev->subordinate))
-+			found = true;
-+		up_read(&pci_bus_sem);
-+	}
-+
-+ out_dev:
-+	pci_dev_put(dev);
-+
-+ out:
-+	if (!found)
-+		dev_dbg(&port->dev, "Spurious native PME interrupt!\n");
-+}
-+
-+/**
-+ * pcie_pme_work_fn - Work handler for PCIe PME interrupt.
-+ * @work: Work structure giving access to service data.
-+ */
-+static void pcie_pme_work_fn(struct work_struct *work)
-+{
-+	struct pcie_pme_service_data *data =
-+			container_of(work, struct pcie_pme_service_data, work);
-+	struct pci_dev *port = data->srv->port;
-+	int rtsta_pos;
-+	u32 rtsta;
-+
-+	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	spin_lock_irq(&data->lock);
-+
-+	for (;;) {
-+		if (data->noirq)
-+			break;
-+
-+		pci_read_config_dword(port, rtsta_pos, &rtsta);
-+		if (rtsta & PCI_EXP_RTSTA_PME) {
-+			/*
-+			 * Clear PME status of the port.  If there are other
-+			 * pending PMEs, the status will be set again.
-+			 */
-+			pcie_pme_clear_status(port);
-+
-+			spin_unlock_irq(&data->lock);
-+			pcie_pme_handle_request(port, rtsta & 0xffff);
-+			spin_lock_irq(&data->lock);
-+
-+			continue;
-+		}
-+
-+		/* No need to loop if there are no more PMEs pending. */
-+		if (!(rtsta & PCI_EXP_RTSTA_PENDING))
-+			break;
-+
-+		spin_unlock_irq(&data->lock);
-+		cpu_relax();
-+		spin_lock_irq(&data->lock);
-+	}
-+
-+	if (!data->noirq)
-+		pcie_pme_interrupt_enable(port, true);
-+
-+	spin_unlock_irq(&data->lock);
-+}
-+
-+/**
-+ * pcie_pme_irq - Interrupt handler for PCIe root port PME interrupt.
-+ * @irq: Interrupt vector.
-+ * @context: Interrupt context pointer.
-+ */
-+static irqreturn_t pcie_pme_irq(int irq, void *context)
-+{
-+	struct pci_dev *port;
-+	struct pcie_pme_service_data *data;
-+	int rtsta_pos;
-+	u32 rtsta;
-+	unsigned long flags;
-+
-+	port = ((struct pcie_device *)context)->port;
-+	data = get_service_data((struct pcie_device *)context);
-+
-+	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	spin_lock_irqsave(&data->lock, flags);
-+	pci_read_config_dword(port, rtsta_pos, &rtsta);
-+
-+	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-+		spin_unlock_irqrestore(&data->lock, flags);
-+		return IRQ_NONE;
-+	}
-+
-+	pcie_pme_interrupt_enable(port, false);
-+	spin_unlock_irqrestore(&data->lock, flags);
-+
-+	queue_work(pm_wq, &data->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+#ifdef CONFIG_ACPI
-+/**
-+ * pcie_pme_osc_setup - Declare native PCIe PME support to the ACPI BIOS.
-+ * @srv - PCIe PME service for a root port or event collector.
-+ */
-+static int pcie_pme_osc_setup(struct pcie_device *srv)
-+{
-+	acpi_status status = AE_NOT_FOUND;
-+	struct pci_dev *port = srv->port;
-+	acpi_handle handle = DEVICE_ACPI_HANDLE(&port->dev);
-+
-+	if (!handle)
-+		return -EINVAL;
-+
-+	status = acpi_pci_osc_control_set(handle,
-+			OSC_PCI_EXPRESS_PME_CONTROL |
-+			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-+	if (ACPI_FAILURE(status)) {
-+		dev_dbg(&srv->device,
-+			"ACPI couldn't initialize PME service: %s\n",
-+			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-+			"no _OSC support" : "ACPI _OSC failed");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+#else /* !CONFIG_ACPI */
-+static inline int pcie_pme_osc_setup(struct pcie_device *pciedev)
-+{
-+	return 0;
-+}
-+#endif /* !CONFIG_ACPI */
-+
-+/**
-+ * pcie_pme_probe - Initialize PCIe PME service for given root port.
-+ * @srv - PCIe service to initialize.
-+ */
-+static int pcie_pme_probe(struct pcie_device *srv)
-+{
-+	struct pci_dev *port;
-+	struct pcie_pme_service_data *data;
-+	int ret;
-+
-+	if (use_acpi_osc) {
-+		ret = pcie_pme_osc_setup(srv);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&data->lock);
-+	INIT_WORK(&data->work, pcie_pme_work_fn);
-+	data->srv = srv;
-+	set_service_data(srv, data);
-+
-+	port = srv->port;
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+
-+	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
-+	if (ret)
-+		kfree(data);
-+	else
-+		pcie_pme_interrupt_enable(port, true);
-+
-+	return ret;
-+}
-+
-+/**
-+ * pcie_pme_remove - Prepare PCIe PME service device for removal.
-+ * @srv - PCIe service device to be removed.
-+ */
-+static void pcie_pme_remove(struct pcie_device *srv)
-+{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
-+
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+	data->noirq = true;
-+	spin_unlock_irq(&data->lock);
-+
-+	flush_work(&data->work);
-+	free_irq(srv->irq, srv);
-+
-+	set_service_data(srv, NULL);
-+	kfree(data);
-+}
-+
-+/**
-+ * pcie_pme_suspend - Suspend PCIe PME service device.
-+ * @srv - PCIe service device to suspend.
-+ */
-+static int pcie_pme_suspend(struct pcie_device *srv)
-+{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
-+
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+	data->noirq = true;
-+	spin_unlock_irq(&data->lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pcie_pme_resume - Resume PCIe PME service device.
-+ * @srv - PCIe service device to resume.
-+ */
-+static int pcie_pme_resume(struct pcie_device *srv)
-+{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
-+
-+	spin_lock_irq(&data->lock);
-+	data->noirq = false;
-+	pcie_pme_clear_status(port);
-+	pcie_pme_interrupt_enable(port, true);
-+	spin_unlock_irq(&data->lock);
-+
-+	return 0;
-+}
-+
-+static struct pcie_port_service_driver pcie_pme_driver = {
-+	.name		= "pcie_pme",
-+	.port_type 	= PCIE_RC_PORT,
-+	.service 	= PCIE_PORT_SERVICE_PME,
-+
-+	.probe		= pcie_pme_probe,
-+	.remove		= pcie_pme_remove,
-+	.suspend	= pcie_pme_suspend,
-+	.resume		= pcie_pme_resume,
-+};
-+
-+/**
-+ * pcie_pme_service_init - Register the PCIe PME service driver.
-+ */
-+static int __init pcie_pme_service_init(void)
-+{
-+	return pcie_pme_enabled ?
-+		pcie_port_service_register(&pcie_pme_driver) : -ENODEV;
-+}
-+
-+/**
-+ * pcie_pme_service_exit - Unregister the PCIe PME service driver.
-+ */
-+static void __exit pcie_pme_service_exit(void)
-+{
-+	pcie_port_service_unregister(&pcie_pme_driver);
-+}
-+
-+module_init(pcie_pme_service_init);
-+module_exit(pcie_pme_service_exit);
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjMwLCBmb3Igd2hpY2ggdGhlcmUKYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBJIGtub3cg
+b2YuICBJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwKcGxlYXNlIGxldCBt
+ZSBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQgcmVncmVzc2lvbnMg
+ZnJvbSAyLjYuMzAsIHBsZWFzZSBsZXQgbWUga25vdwplaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0g
+dG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IG1lIGtub3cgaWYgYW55IG9mIHRoZQplbnRy
+aWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUg
+c2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3
+aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcg
+dGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAg
+ICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQogIDIwMDktMDktMDYgICAgICAxMjMgICAgICAgMzQgICAgICAgICAg
+MjcKICAyMDA5LTA4LTI2ICAgICAgMTA4ICAgICAgIDMzICAgICAgICAgIDI2CiAgMjAwOS0wOC0y
+MCAgICAgIDEwMiAgICAgICAzMiAgICAgICAgICAyOQogIDIwMDktMDgtMTAgICAgICAgODkgICAg
+ICAgMjcgICAgICAgICAgMjQKICAyMDA5LTA4LTAyICAgICAgIDc2ICAgICAgIDM2ICAgICAgICAg
+IDI4CiAgMjAwOS0wNy0yNyAgICAgICA3MCAgICAgICA1MSAgICAgICAgICA0MwogIDIwMDktMDct
+MDcgICAgICAgMzUgICAgICAgMjUgICAgICAgICAgMjEKICAyMDA5LTA2LTI5ICAgICAgIDIyICAg
+ICAgIDIyICAgICAgICAgIDE1CgoKVW5yZXNvbHZlZCByZWdyZXNzaW9ucwotLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
+Zy5jZ2k/aWQ9MTQxNDEKU3ViamVjdAkJOiBvcmRlciAyIHBhZ2UgYWxsb2NhdGlvbiBmYWlsdXJl
+cwpTdWJtaXR0ZXIJOiBGcmFucyBQb3AgPGVsZW5kaWxAcGxhbmV0Lm5sPgpEYXRlCQk6IDIwMDkt
+MDktMDYgNzo0MCAoMSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9
+bGludXgta2VybmVsJm09MTI1MjIyMjg3NDE5NjkxJnc9NApIYW5kbGVkLUJ5CTogUGVra2EgRW5i
+ZXJnIDxwZW5iZXJnQGNzLmhlbHNpbmtpLmZpPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
+YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDEzOQpTdWJqZWN0CQk6IE91dHB1dCB0byBl
+eHRlcm5hbCBtb25pdG9yIGlzIGJyb2tlbgpTdWJtaXR0ZXIJOiBDYXJsb3MgUi4gTWFmcmEgPGNy
+bWFmcmEyQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA5LTA2IDE0OjIyICgxIGRheXMgb2xkKQpG
+aXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dp
+dC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9ZjhhZWQ3MDBjNmVjNDZkZGFkZTY1
+NzAwMDRjZTI1MzMyMjgzYjMwNgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51
+eC1rZXJuZWwmbT0xMjUyMjQ3MDE1MjA3Mzgmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3pp
+bGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE0MTM1ClN1YmplY3QJCTogTlVMTCBwb2lu
+dGVyIGRlcmVmZXJlbmNlIGluIGltYV9jb3VudHNfcHV0ClN1Ym1pdHRlcgk6IENpcHJpYW4gRG9j
+YW4gPGRvY2FuQGVkZW4ucnV0Z2Vycy5lZHU+CkRhdGUJCTogMjAwOS0wOS0wMiAxMzo0OSAoNSBk
+YXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxpbnV4
+L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPTk0ZTVkNzE0ZjYw
+NGQ0Y2I0Y2IxMzE2M2YwMWVkZTI3OGU2OTI1OGIKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
+Zm8vP2w9bGludXgta2VybmVsJm09MTI1MTkwMTQ2MDI4MTE2Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0
+dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDEzMwpTdWJqZWN0CQk6
+IFdBUk5JTkc6IGF0IGFyY2gveDg2L2tlcm5lbC9zbXAuYzoxMTcgbmF0aXZlX3NtcF9zZW5kX3Jl
+c2NoZWR1bGUKU3VibWl0dGVyCTogSmVucyBBeGJvZSA8amVucy5heGJvZUBvcmFjbGUuY29tPgpE
+YXRlCQk6IDIwMDktMDgtMzEgMjA6NDMgKDcgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8v
+bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNTE3NTE0MzkxODA1MCZ3PTQKCgpCdWctRW50
+cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQxMTQKU3Vi
+amVjdAkJOiBUdW5pbmcgYSBzYWE3MTM0IGJhc2VkIGNhcmQgaXMgYnJva2VuIGluIGtlcm5lbCAy
+LjYuMzEtcmM3ClN1Ym1pdHRlcgk6IFRzdmV0eSBQZXRyb3YgPFRzdmV0b3NsYXYuUGV0cm92QGl0
+cm9uLmNvbT4KRGF0ZQkJOiAyMDA5LTA5LTAzIDIxOjA2ICg0IGRheXMgb2xkKQoKCkJ1Zy1FbnRy
+eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDEwMwpTdWJq
+ZWN0CQk6IGNkY19hY20gZ2l2ZXMgSS9PIGVycm9yClN1Ym1pdHRlcgk6IFBhdWwgTWFydGluIDxw
+bUBkZWJpYW4ub3JnPgpEYXRlCQk6IDIwMDktMDktMDEgMTM6MzAgKDYgZGF5cyBvbGQpCkhhbmRs
+ZWQtQnkJOiBPbGl2ZXIgTmV1a3VtIDxvbGl2ZXJAbmV1a3VtLm9yZz4KCgpCdWctRW50cnkJOiBo
+dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQwOTUKU3ViamVjdAkJ
+OiBBc3VzIEVlZVBDIDEwMDVIQS1NOiBTdXNwZW5kIGhhbmdzIGFuZCBkaXNhYmxlcyB0aGUgd2ly
+ZWxlc3MKU3VibWl0dGVyCTogIEthcnN0ZW4gSmFlZ2VyIDxsaXN0c0Bvc3M0Mi5jb20+CkRhdGUJ
+CTogMjAwOS0wOC0zMSAxMDoxNCAoNyBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9saXN0
+cy5hbGlvdGguZGViaWFuLm9yZy9waXBlcm1haWwvZGViaWFuLWVlZXBjLWRldmVsLzIwMDktQXVn
+dXN0LzAwMjUxMy5odG1sCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTE0MDcwClN1YmplY3QJCTogbG9ja2RlcCB3YXJuaW5nIHRyaWdnZXJl
+ZCBieSBkdXBfZmQKU3VibWl0dGVyCTogQmFydCBWYW4gQXNzY2hlIDxiYXJ0LnZhbmFzc2NoZUBn
+bWFpbC5jb20+CkRhdGUJCTogMjAwOS0wOC0yMyAwOTozNiAoMTUgZGF5cyBvbGQpClJlZmVyZW5j
+ZXMJOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA5LzgvMjMvOAoKCkJ1Zy1FbnRyeQk6IGh0dHA6
+Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDA1OApTdWJqZWN0CQk6IE9v
+cHMgaW4gZnNub3RpZnkKU3VibWl0dGVyCTogR3JhbnQgV2lsc29uIDxncmFudC53aWxzb25AemVu
+LmNvLnVrPgpEYXRlCQk6IDIwMDktMDgtMjAgMTU6NDggKDE4IGRheXMgb2xkKQpSZWZlcmVuY2Vz
+CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjUwNzg0NTA5MjMxMzMmdz00
+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTE0MDQzClN1YmplY3QJCTogU3lzdGVtIHNvbWV0aW1lcyBoYW5ncyBkdXJpbmcgYm9vdApTdWJt
+aXR0ZXIJOiBCYXJ0IFZhbiBBc3NjaGUgPGJhcnQudmFuYXNzY2hlQGdtYWlsLmNvbT4KRGF0ZQkJ
+OiAyMDA5LTA4LTIzIDE4OjA0ICgxNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
+emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQwMTgKU3ViamVjdAkJOiBrZXJuZWwg
+ZnJlZXplcywgaW5vdGlmeSBwcm9ibGVtClN1Ym1pdHRlcgk6IENocmlzdG9waCBUaGllbGVja2Ug
+PGNocmlzdG9waC50aGllbGVja2VAZ214LmRlPgpEYXRlCQk6IDIwMDktMDgtMTkgMTI6NDggKDE5
+IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwm
+bT0xMjUwNjg2MTY4MTgzNTMmdz00CkhhbmRsZWQtQnkJOiBFcmljIFBhcmlzIDxlcGFyaXNAcGFy
+aXNwbGFjZS5vcmc+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
+d19idWcuY2dpP2lkPTE0MDEzClN1YmplY3QJCTogaGQgZG9uJ3Qgc2hvdyB1cApTdWJtaXR0ZXIJ
+OiBUaW0gQmxlY2htYW5uIDx0aW1Aa2xpbmd0Lm9yZz4KRGF0ZQkJOiAyMDA5LTA4LTE0IDg6MjYg
+KDI0IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
+ZWwmbT0xMjUwMjM4NDI1MTQ0ODAmdz00CkhhbmRsZWQtQnkJOiBUZWp1biBIZW8gPHRqQGtlcm5l
+bC5vcmc+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTEzOTg3ClN1YmplY3QJCTogUmVjZWl2ZWQgTk1JIGludGVycnVwdCBhdCByZXN1bWUK
+U3VibWl0dGVyCTogQ2hyaXN0aWFuIENhc3RleWRlIDxjYXN0ZXlkZS5jaHJpc3RpYW5AZnJlZS5m
+cj4KRGF0ZQkJOiAyMDA5LTA4LTE1IDA3OjU1ICgyMyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBo
+dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM5NTAKU3ViamVjdAkJ
+OiBPb3BzIHdoZW4gVVNCIFNlcmlhbCBkaXNjb25uZWN0ZWQgd2hpbGUgaW4gdXNlClN1Ym1pdHRl
+cgk6IEJydW5vIFByw6ltb250IDxib25ib25zQGxpbnV4LXZzZXJ2ZXIub3JnPgpEYXRlCQk6IDIw
+MDktMDgtMDggMTc6NDcgKDMwIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5m
+by8/bD1saW51eC1rZXJuZWwmbT0xMjQ5NzU0MzI5MDA0NjYmdz00CkhhbmRsZWQtQnkJOiBBbGFu
+IFN0ZXJuIDxzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1PgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
+dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMzk0MwpTdWJqZWN0CQk6IFdBUk5J
+Tkc6IGF0IG5ldC9tYWM4MDIxMS9tbG1lLmM6MjI5MiB3aXRoIGF0aDVrClN1Ym1pdHRlcgk6IEZh
+YmlvIENvbW9sbGkgPGZhYmlvLmNvbW9sbGlAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDgtMDYg
+MjA6MTUgKDMyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51
+eC1rZXJuZWwmbT0xMjQ5NTg5Nzg2MDA2MDAmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3pp
+bGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzOTQyClN1YmplY3QJCTogVHJvdWJsZXMg
+d2l0aCBBb0UgYW5kIHVuaW5pdGlhbGl6ZWQgb2JqZWN0ClN1Ym1pdHRlcgk6IEJydW5vIFByw6lt
+b250IDxib25ib25zQGxpbnV4LXZzZXJ2ZXIub3JnPgpEYXRlCQk6IDIwMDktMDgtMDQgMTA6MTIg
+KDM0IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
+ZWwmbT0xMjQ5MzgxMTcxMDQ4MTEmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
+cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzOTQxClN1YmplY3QJCTogeDg2IEdlb2RlIGlzc3Vl
+ClN1Ym1pdHRlcgk6IE1hcnRpbi3DiXJpYyBSYWNpbmUgPHEtZnVua0Bpa2kuZmk+CkRhdGUJCTog
+MjAwOS0wOC0wMyAxMjo1OCAoMzUgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5p
+bmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNDkzMDQzNDczMjQ4MSZ3PTQKCgpCdWctRW50cnkJOiBo
+dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM5NDAKU3ViamVjdAkJ
+OiBpd2xhZ24gYW5kIHNreTIgc3RvcHBlZCB3b3JraW5nLCBBQ1BJLXJlbGF0ZWQKU3VibWl0dGVy
+CTogUmljYXJkbyBKb3JnZSBkYSBGb25zZWNhIE1hcnF1ZXMgRmVycmVpcmEgPHN0b3JtQHN5czQ5
+MTUyLm5ldD4KRGF0ZQkJOiAyMDA5LTA4LTA3IDIyOjMzICgzMSBkYXlzIG9sZCkKUmVmZXJlbmNl
+cwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI0OTY4NDU3NzMxMTA3Jnc9
+NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0xMzkzNQpTdWJqZWN0CQk6IDIuNi4zMS1yY1ggYnJlYWtzIEFwcGxlIE1pZ2h0eU1vdXNlIChC
+bHVldG9vdGggdmVyc2lvbikKU3VibWl0dGVyCTogQWRyaWFuIFVscmljaCA8a2VybmVsQGJsaW5r
+ZW5saWdodHMuY2g+CkRhdGUJCTogMjAwOS0wOC0wOCAyMjowOCAoMzAgZGF5cyBvbGQpCkZpcnN0
+LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3Rv
+cnZhbGRzL2xpbnV4LTIuNi5naXQ7YT1jb21taXQ7aD1mYTA0N2U0ZjZmYTYzYTZlOWQwYWU0ZDc3
+NDk1Mzg4MzBkMTRhMzQzCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTEzOTA2ClN1YmplY3QJCTogSHVhd2VpIEUxNjkgR1BSUyBjb25uZWN0
+aW9uIGNhdXNlcyBPb29wcwpTdWJtaXR0ZXIJOiBDbGVtZW5zIEVpc3NlcmVyIDxsaW51eGhpcHB5
+QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDA5LTA4LTA0IDA5OjAyICgzNCBkYXlzIG9sZCkKCgpCdWct
+RW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM4NjkK
+U3ViamVjdAkJOiBSYWRlb24gZnJhbWVidWZmZXIgKHcvbyBLTVMpIGNvcnJ1cHRpb24gYXQgYm9v
+dC4KU3VibWl0dGVyCTogRHVuY2FuIDwxaTV0NS5kdW5jYW5AY294Lm5ldD4KRGF0ZQkJOiAyMDA5
+LTA3LTI5IDE2OjQ0ICg0MCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
+a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM4MzYKU3ViamVjdAkJOiBzdXNwZW5kIHNjcmlw
+dCBmYWlscywgcmVsYXRlZCB0byBzdGRvdXQ/ClN1Ym1pdHRlcgk6IFRvbWFzIE0uIDx0bWV6emFk
+cmFAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDctMTcgMjE6MjQgKDUyIGRheXMgb2xkKQpSZWZl
+cmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQ3ODU4NTM4MTE2
+Njcmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTEzODE5ClN1YmplY3QJCTogc3lzdGVtIGZyZWV6ZSB3aGVuIHN3aXRjaGluZyB0byBj
+b25zb2xlClN1Ym1pdHRlcgk6IFJlaW5ldHRlIENoYXRyZSA8cmVpbmV0dGUuY2hhdHJlQGludGVs
+LmNvbT4KRGF0ZQkJOiAyMDA5LTA3LTIzIDE3OjU3ICg0NiBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
+OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM4MDkKU3ViamVj
+dAkJOiBvcHJvZmlsZTogcG9zc2libGUgY2lyY3VsYXIgbG9ja2luZyBkZXBlbmRlbmN5IGRldGVj
+dGVkClN1Ym1pdHRlcgk6IEplcm9tZSBNYXJjaGFuZCA8am1hcmNoYW5AcmVkaGF0LmNvbT4KRGF0
+ZQkJOiAyMDA5LTA3LTIyIDEzOjM1ICg0NyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8v
+YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM3NDAKU3ViamVjdAkJOiBYIHNl
+cnZlciBjcmFzaGVzIHdpdGggMi42LjMxLXJjMiB3aGVuIG9wdGlvbnMgYXJlIGNoYW5nZWQKU3Vi
+bWl0dGVyCTogTWljaGFlbCBTLiBUc2lya2luIDxtLnMudHNpcmtpbkBnbWFpbC5jb20+CkRhdGUJ
+CTogMjAwOS0wNy0wNyAxNToxOSAoNjIgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
+Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTEzNzMzClN1YmplY3QJCTogMi42LjMx
+LXJjMjogaXJxIDE2OiBub2JvZHkgY2FyZWQKU3VibWl0dGVyCTogTmllbCBMYW1icmVjaHRzIDxu
+aWVsLmxhbWJyZWNodHNAZ21haWwuY29tPgpEYXRlCQk6IDIwMDktMDctMDYgMTg6MzIgKDYzIGRh
+eXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0x
+MjQ2OTA1MjQwMjcxNjYmdz00CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5v
+cmcvc2hvd19idWcuY2dpP2lkPTEzNjQ1ClN1YmplY3QJCTogTlVMTCBwb2ludGVyIGRlcmVmZXJl
+bmNlIGF0IChudWxsKSAobGV2ZWwyX3NwYXJlX3BndCkKU3VibWl0dGVyCTogcG9vcm5pbWEgbmF5
+YWsgPG1wbmF5YWtAbGludXgudm5ldC5pYm0uY29tPgpEYXRlCQk6IDIwMDktMDYtMTcgMTc6NTYg
+KDgyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAwOS82LzE3
+LzE5NAoKClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
+CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
+NDE0MApTdWJqZWN0CQk6IDIuNi4zMS1yYzkgYnJlYWtzIGdpYW5mYXIKU3VibWl0dGVyCTogTWlj
+aGFlbCBHdW50c2NoZSA8bWlrZUBpdC1sb29wcy5jb20+CkRhdGUJCTogMjAwOS0wOS0wNiA3OjI3
+ICgxIGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9
+bGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9MzhiZGRm
+MDRiY2ZlNjYxZmJkYWI5NDg4OGMzYjcyYzMyZjY4NzNiMwpSZWZlcmVuY2VzCTogaHR0cDovL21h
+cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjUyMjIyMDYyMTg3ODQmdz00CkhhbmRsZWQtQnkJ
+OiBEYXZpZCBNaWxsZXIgPGRhdmVtQGRhdmVtbG9mdC5uZXQ+ClBhdGNoCQk6IGh0dHA6Ly9wYXRj
+aHdvcmsua2VybmVsLm9yZy9wYXRjaC80NTk2NS8KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
+bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQxMzgKU3ViamVjdAkJOiBSZWdyZXNzaW9u
+IGluIHN1c3BlbmQgdG8gcmFtClN1Ym1pdHRlcgk6IFpkZW5layBLYWJlbGFjIDx6ZGVuZWsua2Fi
+ZWxhY0BnbWFpbC5jb20+CkRhdGUJCTogMjAwOS0wOC0zMSAxMTo1MSAoNyBkYXlzIG9sZCkKUmVm
+ZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI1MTcxOTUyODE3
+ODUxJnc9NApIYW5kbGVkLUJ5CTogT0dBV0EgSGlyb2Z1bWkgPGhpcm9mdW1pQG1haWwucGFya25l
+dC5jby5qcD4KUGF0Y2gJCTogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzQ1OTQ1
+LwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0xNDEzNwpTdWJqZWN0CQk6IHVzYiBjb25zb2xlIHJlZ3Jlc3Npb25zClN1Ym1pdHRlcgk6IEph
+c29uIFdlc3NlbCA8amFzb24ud2Vzc2VsQHdpbmRyaXZlci5jb20+CkRhdGUJCTogMjAwOS0wOS0w
+NSAyMTowOCAoMiBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGlu
+dXgta2VybmVsJm09MTI1MjE4NTAxMzEwNTEyJnc9NApIYW5kbGVkLUJ5CTogSmFzb24gV2Vzc2Vs
+IDxqYXNvbi53ZXNzZWxAd2luZHJpdmVyLmNvbT4KUGF0Y2gJCTogaHR0cDovL3BhdGNod29yay5r
+ZXJuZWwub3JnL3BhdGNoLzQ1OTUzLwoJCSAgaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3Bh
+dGNoLzQ1OTUyLwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xNDEzNgpTdWJqZWN0CQk6IHJlYWRjZCBPb3BzClN1Ym1pdHRlcgk6IEJvYiBU
+cmFjeSA8cmN0QGdoZXJraW4uZnJ1cy5jb20+CkRhdGUJCTogMjAwOS0wOS0wMyAzOjM5ICg0IGRh
+eXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0x
+MjUxOTUwNDM2MTc0MTgmdz00CkhhbmRsZWQtQnkJOiBNaWNoYWwgU2NobWlkdCA8bXNjaG1pZHRA
+cmVkaGF0LmNvbT4KUGF0Y2gJCTogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzQ1
+MzQ3LwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
+aT9pZD0xNDAxNwpTdWJqZWN0CQk6IF9lbmQgc3ltYm9sIG1pc3NpbmcgZnJvbSBTeW1ib2wubWFw
+ClN1Ym1pdHRlcgk6IEhhbm5lcyBSZWluZWNrZSA8aGFyZUBzdXNlLmRlPgpEYXRlCQk6IDIwMDkt
+MDgtMTMgNjo0NSAoMjUgZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2Vy
+bmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LTIuNi5naXQ7YT1jb21t
+aXQ7aD0wOTFlNTJjMzU1MWQzMDMxMzQzZGYyNGI1NzNiNzcwYjRjNmM3MmI2ClJlZmVyZW5jZXMJ
+OiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNTAxNDY0OTEwMjI1MyZ3PTQK
+SGFuZGxlZC1CeQk6IEhhbm5lcyBSZWluZWNrZSA8aGFyZUBzdXNlLmRlPgpQYXRjaAkJOiBodHRw
+Oi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNTAxNDY0OTEwMjI1MyZ3PTQKCgpCdWct
+RW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM5NDgK
+U3ViamVjdAkJOiBhdGg1ayBicm9rZW4gYWZ0ZXIgc3VzcGVuZC10by1yYW0KU3VibWl0dGVyCTog
+Sm9oYW5uZXMgU3RlemVuYmFjaCA8anNAc2lnMjEubmV0PgpEYXRlCQk6IDIwMDktMDgtMDcgMjE6
+NTEgKDMxIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1r
+ZXJuZWwmbT0xMjQ5NjgxOTI3Mjc4NTQmdz00CkhhbmRsZWQtQnkJOiBOaWNrIEtvc3NpZmlkaXMg
+PG1pY2tmbGVtbUBnbWFpbC5jb20+ClBhdGNoCQk6IGh0dHA6Ly9wYXRjaHdvcmsua2VybmVsLm9y
+Zy9wYXRjaC8zODU1MC8KCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9MTM5NDcKU3ViamVjdAkJOiBMaWJlcnRhczogQXNzb2NpYXRpb24gcmVx
+dWVzdCB0byB0aGUgZHJpdmVyIGZhaWxlZApTdWJtaXR0ZXIJOiBEYW5pZWwgTWFjayA8ZGFuaWVs
+QGNhaWFxLmRlPgpEYXRlCQk6IDIwMDktMDgtMDcgMTk6MTEgKDMxIGRheXMgb2xkKQpGaXJzdC1C
+YWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9bGludXgva2VybmVsL2dpdC90b3J2
+YWxkcy9saW51eC0yLjYuZ2l0O2E9Y29tbWl0O2g9NTc5MjFjMzEyZThjZWY3MmJhMzVhNGNmZTg3
+MGIzNzZkYTBiMWI4NwpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
+ZWwmbT0xMjQ5NjcyMzQzMTE0ODEmdz00CkhhbmRsZWQtQnkJOiBSb2VsIEtsdWluIDxyb2VsLmts
+dWluQGdtYWlsLmNvbT4KCQkgIERhbiBXaWxsaWFtcyA8ZGNid0ByZWRoYXQuY29tPgpQYXRjaAkJ
+OiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvNDMxMTQvCgoKRm9yIGRldGFpbHMs
+IHBsZWFzZSB2aXNpdCB0aGUgYnVnIGVudHJpZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4g
+aW4KcmVmZXJlbmNlcy4KCkFzIHlvdSBjYW4gc2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5
+IGZvciBlYWNoIG9mIHRoZSBsaXN0ZWQgcmVncmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6
+aWxsYSBlbnRyeSB1c2VkIGZvciB0cmFja2luZyB0aGUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMzAs
+CnVucmVzb2x2ZWQgYXMgd2VsbCBhcyByZXNvbHZlZCwgYXQ6CgpodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTM2MTUKClBsZWFzZSBsZXQgbWUga25vdyBpZiB0aGVy
+ZSBhcmUgYW55IEJ1Z3ppbGxhIGVudHJpZXMgdGhhdCBzaG91bGQgYmUgYWRkZWQgdG8KdGhlIGxp
+c3QgaW4gdGhlcmUuCgpUaGFua3MsClJhZmFlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
