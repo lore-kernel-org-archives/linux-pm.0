@@ -1,17 +1,14 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH 1 update] PCI PM: PCIe PME root port
-	service	driver
-Date: Mon, 7 Sep 2009 15:53:34 +0800
-Message-ID: <20090907075334.GB19224__7578.02711236781$1252310144$gmane$org@sli10-desk.sh.intel.com>
-References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
-	<20090901023549.GB3695@sli10-desk.sh.intel.com>
-	<200909061434.24870.rjw@sisk.pl> <200909061901.14979.rjw@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: What to do?
+Date: Mon, 07 Sep 2009 12:06:58 +0200
+Message-ID: <4AA4DB42.1000800__6359.98769798807$1252318106$gmane$org@gmail.com>
+References: <4A8CCF95.9030401@crca.org.au> <200908240004.16769.rjw@sisk.pl>
+	<4A91CBB9.1080702@crca.org.au> <200908240120.30776.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200909061901.14979.rjw@sisk.pl>
+In-Reply-To: <200908240120.30776.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,59 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci <linux-pci@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>, linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi again.
 
-On Mon, Sep 07, 2009 at 01:01:14AM +0800, Rafael J. Wysocki wrote:
-> On Sunday 06 September 2009, Rafael J. Wysocki wrote:
-> > On Tuesday 01 September 2009, Shaohua Li wrote:
-> > ...
-> > > Updated patch.
-> >
-> > I looked at it and thought I would do it differently in many places, so
-> > below is my version.
-> +/*
-> + * Apparently, many BIOSes don't implement ACPI _OSC correctly, so let's not use
-> + * it by default.
-> + */
-> +static bool use_acpi_osc;
-I'd prefer _OSC is called by default, because without it PCIe PME might not work,
-chipset might have internal registers to change in the _OSC. Instead, if _OSC fails,
-we just ignore it by default.
+On 08/24/2009 01:20 AM, Rafael J. Wysocki wrote:
+> On Monday 24 August 2009, Nigel Cunningham wrote:
+>> We should start by asking where you're at as far as knowledge of swsusp
+>> and TuxOnIce goes. 
 
-> +/**
-> + * pcie_pme_handle_request - Find device that generated PME and handle it.
-> + * @port: Root port or event collector that generated the PME interrupt.
-> + * @req_id: PCIe Requester ID of the device that generated the PME.
-> + */
-> +static void pcie_pme_handle_request(struct pci_dev *port, u16 req_id)
-> +{
-> +       u8 busnr = req_id >> 8, devfn = req_id & 0xff;
-> +       struct pci_bus *bus;
-> +       struct pci_dev *dev;
-> +       bool found = false;
-> +
-> +       bus = pci_find_bus(pci_domain_nr(port->bus), busnr);
-> +       if (!bus)
-> +               goto out;
-> +
-> +       down_read(&pci_bus_sem);
-> +       list_for_each_entry(dev, &bus->devices, bus_list) {
-> +               pci_dev_get(dev);
-> +               if (dev->devfn == devfn) {
-> +                       found = true;
-> +                       break;
-> +               }
-> +               pci_dev_put(dev);
-> +       }
-> +       up_read(&pci_bus_sem);
-> +
-> +       if (found) {
-> +               pm_request_resume(&dev->dev);
-Sounds we missed the case dev is PCIe-PCI bridge's (secondary bus, devfn 0). In such
-case we still need scan the legacy devices under PCIe-PCI bridge
+Well, I know swsups a bit and don't know about toi much. Still I think
+it's not a problem at all. I learn quickly ;).
 
-Thanks,
-Shaohua
+>> I know you've been around the TuxOnIce lists a bit,
+>> but don't know how much you know about C programming or the inards of
+>> the kernel, swsusp or TuxOnIce (ie how much help do you need to get up
+>> to speed?).
+
+I think C is no problem at all, so the kernel. The two I mentioned
+above. I think I'll need no or low help from your side regarding the
+code site. From what I've read already I would say it's well documented.
+
+> Well, if you start from something that people don't like, it may be difficult
+> to push the rest.
+> 
+> Still, I think Jiri is more than capable of handling that, so more or less
+> everything that is a clear improvement and doesn't introduce regressions of any
+> kind will probably work for me.
+
+Thank you guys. I needed to cope with other things (a suspend
+regression, writable /proc/<pid>/limits etc.) which took me a long time,
+sorry.
+
+Then I also went through the last "discussion" around the last merge try
+mainly to see what others think about kernel-side implementation of
+compression etc.
+
+I hope I'll come up with something early.
+
+Thanks.
