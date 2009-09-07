@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1 update 2x] PCI PM: PCIe PME root port service
-	driver (rev. 2)
-Date: Tue, 8 Sep 2009 01:17:58 +0200
-Message-ID: <200909080117.58445.rjw__16327.8680215173$1252365600$gmane$org@sisk.pl>
-References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
-	<20090907075334.GB19224@sli10-desk.sh.intel.com>
-	<200909072235.29265.rjw@sisk.pl>
+Subject: [RFC][PATCH 3/3 update] PCI PM: Run-time callbacks for
+	PCI bus type
+Date: Tue, 8 Sep 2009 01:22:28 +0200
+Message-ID: <200909080122.29040.rjw__4470.73331238261$1252365893$gmane$org@sisk.pl>
+References: <200909070102.21056.rjw@sisk.pl> <200909070105.25835.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909072235.29265.rjw@sisk.pl>
+In-Reply-To: <200909070105.25835.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,610 +18,195 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>, linux-pci <linux-pci@vger.kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-pci <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 September 2009, Rafael J. Wysocki wrote:
-> On Monday 07 September 2009, Shaohua Li wrote:
-> > Hi,
-> > 
-> > On Mon, Sep 07, 2009 at 01:01:14AM +0800, Rafael J. Wysocki wrote:
-> > > On Sunday 06 September 2009, Rafael J. Wysocki wrote:
-> > > > On Tuesday 01 September 2009, Shaohua Li wrote:
-> > > > ...
-> > > > > Updated patch.
-> > > >
-> > > > I looked at it and thought I would do it differently in many places, so
-> > > > below is my version.
-> > > +/*
-> > > + * Apparently, many BIOSes don't implement ACPI _OSC correctly, so let's not use
-> > > + * it by default.
-> > > + */
-> > > +static bool use_acpi_osc;
-> > I'd prefer _OSC is called by default, because without it PCIe PME might not work,
-> > chipset might have internal registers to change in the _OSC. Instead, if _OSC fails,
-> > we just ignore it by default.
-> 
-> OK
-> 
-> > > +/**
-> > > + * pcie_pme_handle_request - Find device that generated PME and handle it.
-> > > + * @port: Root port or event collector that generated the PME interrupt.
-> > > + * @req_id: PCIe Requester ID of the device that generated the PME.
-> > > + */
-> > > +static void pcie_pme_handle_request(struct pci_dev *port, u16 req_id)
-> > > +{
-> > > +       u8 busnr = req_id >> 8, devfn = req_id & 0xff;
-> > > +       struct pci_bus *bus;
-> > > +       struct pci_dev *dev;
-> > > +       bool found = false;
-> > > +
-> > > +       bus = pci_find_bus(pci_domain_nr(port->bus), busnr);
-> > > +       if (!bus)
-> > > +               goto out;
-> > > +
-> > > +       down_read(&pci_bus_sem);
-> > > +       list_for_each_entry(dev, &bus->devices, bus_list) {
-> > > +               pci_dev_get(dev);
-> > > +               if (dev->devfn == devfn) {
-> > > +                       found = true;
-> > > +                       break;
-> > > +               }
-> > > +               pci_dev_put(dev);
-> > > +       }
-> > > +       up_read(&pci_bus_sem);
-> > > +
-> > > +       if (found) {
-> > > +               pm_request_resume(&dev->dev);
-> > Sounds we missed the case dev is PCIe-PCI bridge's (secondary bus, devfn 0). In such
-> > case we still need scan the legacy devices under PCIe-PCI bridge
-> 
-> Hmm.  So, if devfn is zero and we find the device, we should go back to
-> bus->self rather than to scan devices on dev->subordinate, which is NULL.
-> Makes sense.
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI PM: Run-time callbacks for PCI bus type
 
-Updated patch is appended.  In fact, I totally reworked
-pcie_pme_handle_request().
+Introduce run-time PM callbacks for the PCI bus type.  Make the new
+callbacks work in analogy with the existing system sleep PM
+callbacks, so that the drivers already converted to struct dev_pm_ops
+can use their suspend and resume routines for run-time PM without
+modifications.
+
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+Fixed compilation.
+
+One thing is still missing from here.  Namely, when the device is being
+suspended, it generally is necessary to set up the device's GPE to wake it up
+and the bus type callback should take care of that (analogously, the resume
+callback should switch the GPE back to the "inactive" state).
 
 Thanks,
 Rafael
 
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI PM: PCIe PME root port service driver (rev. 2)
+ drivers/pci/pci-driver.c |   96 ++++++++++++++++++++++++++++++++++++++++++++---
+ kernel/power/Kconfig     |    5 ++
+ 2 files changed, 96 insertions(+), 5 deletions(-)
 
-PCIe native PME detection mechanism is based on interrupts generated
-by root ports or event collectors every time a PCIe device sends a
-PME message upstream.
-
-Once a PME message has been sent by an endpoint device and received
-by its root port (or event collector in the case of root complex
-integrated endpoints), the Requester ID from the message header is
-registered in the root port's Root Status register.  At the same
-time, the PME Status bit of the Root Status register is set to
-indicate that there's a PME to handle.  If PCIe PME interrupt is
-enabled for the root port, it generates the interrupt once the PME
-Status has been set.  After receiving the interrupt, the kernel can
-identify the PCIe device that generated the PME using the Requester
-ID from the root port's Root Status register. [For details, see PCI
-Express Base Specification, Rev. 2.0.]
-
-Implement a driver for the PCIe PME root port service working in
-accordance with the above description.
-
-Based on a patch from Shaohua Li <shaohua.li@intel.com>.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pcie/Kconfig    |    4 
- drivers/pci/pcie/Makefile   |    2 
- drivers/pci/pcie/pcie_pme.c |  479 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 485 insertions(+)
-
-Index: linux-2.6/drivers/pci/pcie/Kconfig
+Index: linux-2.6/kernel/power/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/Kconfig
-+++ linux-2.6/drivers/pci/pcie/Kconfig
-@@ -46,3 +46,7 @@ config PCIEASPM_DEBUG
- 	help
- 	  This enables PCI Express ASPM debug support. It will add per-device
- 	  interface to control ASPM.
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -236,3 +236,8 @@ config PM_RUNTIME
+ 	  and the bus type drivers of the buses the devices are on are
+ 	  responsible for the actual handling of the autosuspend requests and
+ 	  wake-up events.
 +
-+config PCIE_PME
-+	def_bool y
-+	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
-Index: linux-2.6/drivers/pci/pcie/Makefile
++config PM_OPERATIONS
++	bool
++	depends on PM_SLEEP || PM_RUNTIME
++	default y
+Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/Makefile
-+++ linux-2.6/drivers/pci/pcie/Makefile
-@@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
- 
- # Build PCI Express AER if needed
- obj-$(CONFIG_PCIEAER)		+= aer/
-+
-+obj-$(CONFIG_PCIE_PME) += pcie_pme.o
-Index: linux-2.6/drivers/pci/pcie/pcie_pme.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/pci/pcie/pcie_pme.c
-@@ -0,0 +1,479 @@
-+/*
-+ * PCIe Native PME support
-+ *
-+ * Copyright (C) 2007 - 2009 Intel Corp
-+ * Copyright (C) 2007 - 2009 Shaohua Li <shaohua.li@intel.com>
-+ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License V2.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/pcieport_if.h>
-+#include <linux/acpi.h>
-+#include <linux/pci-acpi.h>
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -17,6 +17,7 @@
+ #include <linux/slab.h>
+ #include <linux/sched.h>
+ #include <linux/cpu.h>
 +#include <linux/pm_runtime.h>
+ #include "pci.h"
+ 
+ /*
+@@ -509,7 +510,7 @@ static int pci_restore_standard_config(s
+ 	return pci_restore_state(pci_dev);
+ }
+ 
+-static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
++static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
+ {
+ 	pci_restore_standard_config(pci_dev);
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+@@ -653,7 +654,7 @@ static int pci_pm_resume_noirq(struct de
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_pm_default_resume_noirq(pci_dev);
++	pci_pm_default_resume_early(pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+@@ -851,7 +852,7 @@ static int pci_pm_restore_noirq(struct d
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_pm_default_resume_noirq(pci_dev);
++	pci_pm_default_resume_early(pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+@@ -903,6 +904,88 @@ static int pci_pm_restore(struct device 
+ 
+ #endif /* !CONFIG_HIBERNATION */
+ 
++#endif /* !CONFIG_PM_SLEEP */
 +
-+#include "../pci.h"
++#ifdef CONFIG_PM_RUNTIME
 +
-+#define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
-+#define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
-+
-+static bool pcie_pme_enabled = true;
-+
-+struct pcie_pme_service_data {
-+	spinlock_t lock;
-+	struct pcie_device *srv;
-+	struct work_struct work;
-+	bool noirq; /* Don't enable the PME interrupt used by this service. */
-+};
-+
-+/**
-+ * pcie_pme_interrupt_enable - Enable/disable PCIe PME interrupt generation.
-+ * @dev: PCIe root port or event collector.
-+ * @enable: Enable or disable the interrupt.
-+ */
-+static void pcie_pme_interrupt_enable(struct pci_dev *dev, bool enable)
++static int pci_pm_runtime_suspend(struct device *dev)
 +{
-+	int rtctl_pos;
-+	u16 rtctl;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	pci_power_t prev = pci_dev->current_state;
++	int error;
 +
-+	rtctl_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTCTL;
++	if (!pm || !pm->runtime_suspend)
++		return -ENOSYS;
 +
-+	pci_read_config_word(dev, rtctl_pos, &rtctl);
-+	if (enable)
-+		rtctl |= PCI_EXP_RTCTL_PMEIE;
-+	else
-+		rtctl &= ~PCI_EXP_RTCTL_PMEIE;
-+	pci_write_config_word(dev, rtctl_pos, rtctl);
-+}
++	error = pm->runtime_suspend(dev);
++	suspend_report_result(pm->runtime_suspend, error);
++	if (error)
++		return error;
 +
-+/**
-+ * pcie_pme_clear_status - Clear root port PME interrupt status.
-+ * @dev: PCIe root port or event collector.
-+ */
-+static void pcie_pme_clear_status(struct pci_dev *dev)
-+{
-+	int rtsta_pos;
-+	u32 rtsta;
++	pci_fixup_device(pci_fixup_suspend, pci_dev);
 +
-+	rtsta_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	pci_read_config_dword(dev, rtsta_pos, &rtsta);
-+	rtsta |= PCI_EXP_RTSTA_PME;
-+	pci_write_config_dword(dev, rtsta_pos, rtsta);
-+}
-+
-+/**
-+ * pcie_pme_handle_bus - Scan a PCI bus for devices asserting PME#.
-+ * @bus: PCI bus to scan.
-+ *
-+ * Scan given PCI bus and all buses under it for devices asserting PME#.
-+ */
-+static bool pcie_pme_handle_bus(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+	bool ret = false;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		/* Skip PCIe devices in case we started from a root port. */
-+		if (!dev->is_pcie && pci_check_pme_status(dev)) {
-+			pm_request_resume(&dev->dev);
-+			ret = true;
-+		}
-+
-+		if (dev->subordinate && pcie_pme_handle_bus(dev->subordinate))
-+			ret = true;
++	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
++	    && pci_dev->current_state != PCI_UNKNOWN) {
++		WARN_ONCE(pci_dev->current_state != prev,
++			"PCI PM: State of device not saved by %pF\n",
++			pm->runtime_suspend);
++		return 0;
 +	}
 +
-+	return ret;
-+}
-+
-+/**
-+ * pcie_pme_from_pci_bridge - Check if PCIe-PCI bridge generated a PME.
-+ * @bus: Secondary bus of the bridge.
-+ * @devfn: Device/function number to check.
-+ *
-+ * PME from PCI devices under a PCIe-PCI bridge may be converted to an in-band
-+ * PCIe PME message.  In such that case the bridge should use the Requester ID
-+ * of device/function number 0 on its secondary bus.
-+ */
-+static bool pcie_pme_from_pci_bridge(struct pci_bus *bus, u8 devfn)
-+{
-+	struct pci_dev *dev;
-+	bool found = false;
-+
-+	if (devfn)
-+		return false;
-+
-+	dev = pci_dev_get(bus->self);
-+	if (!dev)
-+		return false;
-+
-+	if (dev->is_pcie && dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE) {
-+		down_read(&pci_bus_sem);
-+		if (pcie_pme_handle_bus(bus))
-+			found = true;
-+		up_read(&pci_bus_sem);
++	if (!pci_dev->state_saved) {
++		pci_save_state(pci_dev);
++		if (!pci_is_bridge(pci_dev))
++			pci_prepare_to_sleep(pci_dev);
 +	}
 +
-+	pci_dev_put(dev);
-+	return found;
-+}
-+
-+/**
-+ * pcie_pme_handle_request - Find device that generated PME and handle it.
-+ * @port: Root port or event collector that generated the PME interrupt.
-+ * @req_id: PCIe Requester ID of the device that generated the PME.
-+ */
-+static void pcie_pme_handle_request(struct pci_dev *port, u16 req_id)
-+{
-+	u8 busnr = req_id >> 8, devfn = req_id & 0xff;
-+	struct pci_bus *bus;
-+	struct pci_dev *dev;
-+	bool found = false;
-+
-+	/* First, check if the PME is from the root port itself. */
-+	if (port->devfn == devfn && port->bus->number == busnr) {
-+		if (pci_check_pme_status(port)) {
-+			pm_request_resume(&port->dev);
-+			found = true;
-+		} else {
-+			/*
-+			 * Apparently, the root port generated the PME on behalf
-+			 * of a non-PCIe device downstream.  If this is done by
-+			 * a root port, the Requester ID field in its status
-+			 * register may contain either the root port's, or the
-+			 * source device's information (PCI Express Base
-+			 * Specification, Rev. 2.0, Section 6.1.9).
-+			 */
-+			down_read(&pci_bus_sem);
-+			if (pcie_pme_handle_bus(port->subordinate))
-+				found = true;
-+			up_read(&pci_bus_sem);
-+		}
-+		goto out;
-+	}
-+
-+	/* Second, find the bus the source device is on. */
-+	bus = pci_find_bus(pci_domain_nr(port->bus), busnr);
-+	if (!bus)
-+		goto out;
-+
-+	/* Next, check if the PME is from a PCIe-PCI bridge. */
-+	found = pcie_pme_from_pci_bridge(bus, devfn);
-+	if (found)
-+		goto out;
-+
-+	/* Finally, try to find the PME source on the bus. */
-+	down_read(&pci_bus_sem);
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		pci_dev_get(dev);
-+		if (dev->devfn == devfn) {
-+			found = true;
-+			break;
-+		}
-+		pci_dev_put(dev);
-+	}
-+	up_read(&pci_bus_sem);
-+
-+	if (found) {
-+		/* The device is there, but we have to check its PME status. */
-+		found = pci_check_pme_status(dev);
-+		if (found)
-+			pm_request_resume(&dev->dev);
-+		pci_dev_put(dev);
-+	} else if (devfn) {
-+		/*
-+		 * The device is not there, but we can still try to recover by
-+		 * assuming that the PME was reported by a PCIe-PCI bridge that
-+		 * used devfn different from zero.
-+		 */
-+		dev_dbg(&port->dev, "PME interrupt generated for "
-+			"non-existent device %02x:%02x.%d\n",
-+			busnr, PCI_SLOT(devfn), PCI_FUNC(devfn));
-+		found = pcie_pme_from_pci_bridge(bus, 0);
-+	}
-+
-+ out:
-+	if (!found)
-+		dev_dbg(&port->dev, "Spurious native PME interrupt!\n");
-+}
-+
-+/**
-+ * pcie_pme_work_fn - Work handler for PCIe PME interrupt.
-+ * @work: Work structure giving access to service data.
-+ */
-+static void pcie_pme_work_fn(struct work_struct *work)
-+{
-+	struct pcie_pme_service_data *data =
-+			container_of(work, struct pcie_pme_service_data, work);
-+	struct pci_dev *port = data->srv->port;
-+	int rtsta_pos;
-+	u32 rtsta;
-+
-+	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	spin_lock_irq(&data->lock);
-+
-+	for (;;) {
-+		if (data->noirq)
-+			break;
-+
-+		pci_read_config_dword(port, rtsta_pos, &rtsta);
-+		if (rtsta & PCI_EXP_RTSTA_PME) {
-+			/*
-+			 * Clear PME status of the port.  If there are other
-+			 * pending PMEs, the status will be set again.
-+			 */
-+			pcie_pme_clear_status(port);
-+
-+			spin_unlock_irq(&data->lock);
-+			pcie_pme_handle_request(port, rtsta & 0xffff);
-+			spin_lock_irq(&data->lock);
-+
-+			continue;
-+		}
-+
-+		/* No need to loop if there are no more PMEs pending. */
-+		if (!(rtsta & PCI_EXP_RTSTA_PENDING))
-+			break;
-+
-+		spin_unlock_irq(&data->lock);
-+		cpu_relax();
-+		spin_lock_irq(&data->lock);
-+	}
-+
-+	if (!data->noirq)
-+		pcie_pme_interrupt_enable(port, true);
-+
-+	spin_unlock_irq(&data->lock);
-+}
-+
-+/**
-+ * pcie_pme_irq - Interrupt handler for PCIe root port PME interrupt.
-+ * @irq: Interrupt vector.
-+ * @context: Interrupt context pointer.
-+ */
-+static irqreturn_t pcie_pme_irq(int irq, void *context)
-+{
-+	struct pci_dev *port;
-+	struct pcie_pme_service_data *data;
-+	int rtsta_pos;
-+	u32 rtsta;
-+	unsigned long flags;
-+
-+	port = ((struct pcie_device *)context)->port;
-+	data = get_service_data((struct pcie_device *)context);
-+
-+	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-+
-+	spin_lock_irqsave(&data->lock, flags);
-+	pci_read_config_dword(port, rtsta_pos, &rtsta);
-+
-+	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-+		spin_unlock_irqrestore(&data->lock, flags);
-+		return IRQ_NONE;
-+	}
-+
-+	pcie_pme_interrupt_enable(port, false);
-+	spin_unlock_irqrestore(&data->lock, flags);
-+
-+	queue_work(pm_wq, &data->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+#ifdef CONFIG_ACPI
-+/*
-+ * Apparently, many BIOSes don't implement ACPI _OSC correctly, so let's ignore
-+ * _OSC failures by default.
-+ */
-+static bool ignore_osc_failure = true;
-+
-+static inline void pcie_pme_platform_ignore_failure(bool ignore)
-+{
-+	ignore_osc_failure = ignore;
-+}
-+
-+/**
-+ * pcie_pme_osc_setup - Declare native PCIe PME support to the ACPI BIOS.
-+ * @srv - PCIe PME service for a root port or event collector.
-+ */
-+static int pcie_pme_platform_setup(struct pcie_device *srv)
-+{
-+	acpi_status status = AE_NOT_FOUND;
-+	struct pci_dev *port = srv->port;
-+	acpi_handle handle = DEVICE_ACPI_HANDLE(&port->dev);
-+	int error = 0;
-+
-+	if (!handle) {
-+		error = -EINVAL;
-+		goto out;
-+	}
-+
-+	status = acpi_pci_osc_control_set(handle,
-+			OSC_PCI_EXPRESS_PME_CONTROL |
-+			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-+	if (ACPI_FAILURE(status)) {
-+		dev_dbg(&srv->device,
-+			"ACPI couldn't initialize PME service: %s\n",
-+			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-+			"no _OSC support" : "ACPI _OSC failed");
-+		error = -ENODEV;
-+	}
-+
-+ out:
-+	return ignore_osc_failure ? 0 : error;
-+}
-+#else /* !CONFIG_ACPI */
-+static inline void pcie_pme_platform_ignore_failure(bool ignore) {}
-+
-+static inline int pcie_pme_platform_setup(struct pcie_device *pciedev)
-+{
-+	return 0;
-+}
-+#endif /* !CONFIG_ACPI */
-+
-+/**
-+ * pcie_pme_probe - Initialize PCIe PME service for given root port.
-+ * @srv - PCIe service to initialize.
-+ */
-+static int pcie_pme_probe(struct pcie_device *srv)
-+{
-+	struct pci_dev *port;
-+	struct pcie_pme_service_data *data;
-+	int ret;
-+
-+	ret = pcie_pme_platform_setup(srv);
-+	if (ret)
-+		return ret;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&data->lock);
-+	INIT_WORK(&data->work, pcie_pme_work_fn);
-+	data->srv = srv;
-+	set_service_data(srv, data);
-+
-+	port = srv->port;
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+
-+	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
-+	if (ret)
-+		kfree(data);
-+	else
-+		pcie_pme_interrupt_enable(port, true);
-+
-+	return ret;
-+}
-+
-+/**
-+ * pcie_pme_remove - Prepare PCIe PME service device for removal.
-+ * @srv - PCIe service device to be removed.
-+ */
-+static void pcie_pme_remove(struct pcie_device *srv)
-+{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
-+
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+	data->noirq = true;
-+	spin_unlock_irq(&data->lock);
-+
-+	flush_work(&data->work);
-+	free_irq(srv->irq, srv);
-+
-+	set_service_data(srv, NULL);
-+	kfree(data);
-+}
-+
-+/**
-+ * pcie_pme_suspend - Suspend PCIe PME service device.
-+ * @srv - PCIe service device to suspend.
-+ */
-+static int pcie_pme_suspend(struct pcie_device *srv)
-+{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
-+
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_pme_clear_status(port);
-+	data->noirq = true;
-+	spin_unlock_irq(&data->lock);
++	pci_pm_set_unknown_state(pci_dev);
 +
 +	return 0;
 +}
 +
-+/**
-+ * pcie_pme_resume - Resume PCIe PME service device.
-+ * @srv - PCIe service device to resume.
-+ */
-+static int pcie_pme_resume(struct pcie_device *srv)
++static int pci_pm_runtime_resume(struct device *dev)
 +{
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+	struct pci_dev *port = srv->port;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
 +
-+	spin_lock_irq(&data->lock);
-+	data->noirq = false;
-+	pcie_pme_clear_status(port);
-+	pcie_pme_interrupt_enable(port, true);
-+	spin_unlock_irq(&data->lock);
++	if (!pm || !pm->runtime_resume)
++		return -ENOSYS;
++
++	pci_pm_default_resume_early(pci_dev);
++	pci_pm_default_resume(pci_dev);
++
++	return pm->runtime_resume(dev);
++}
++
++static int pci_pm_runtime_idle(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++
++	if (!pm)
++		return -ENOSYS;
++
++	if (pm->runtime_idle) {
++		int ret = pm->runtime_idle(dev);
++		if (ret)
++			return ret;
++	}
++
++	pm_runtime_suspend(dev);
 +
 +	return 0;
 +}
 +
-+static struct pcie_port_service_driver pcie_pme_driver = {
-+	.name		= "pcie_pme",
-+	.port_type 	= PCIE_RC_PORT,
-+	.service 	= PCIE_PORT_SERVICE_PME,
++#else /* !CONFIG_PM_RUNTIME */
 +
-+	.probe		= pcie_pme_probe,
-+	.remove		= pcie_pme_remove,
-+	.suspend	= pcie_pme_suspend,
-+	.resume		= pcie_pme_resume,
-+};
++#define pci_pm_runtime_suspend	NULL
++#define pci_pm_runtime_resume	NULL
++#define pci_pm_runtime_idle	NULL
 +
-+/**
-+ * pcie_pme_service_init - Register the PCIe PME service driver.
-+ */
-+static int __init pcie_pme_service_init(void)
-+{
-+	return pcie_pme_enabled ?
-+		pcie_port_service_register(&pcie_pme_driver) : -ENODEV;
-+}
++#endif /* !CONFIG_PM_RUNTIME */
 +
-+/**
-+ * pcie_pme_service_exit - Unregister the PCIe PME service driver.
-+ */
-+static void __exit pcie_pme_service_exit(void)
-+{
-+	pcie_port_service_unregister(&pcie_pme_driver);
-+}
++#ifdef CONFIG_PM_OPERATIONS
 +
-+module_init(pcie_pme_service_init);
-+module_exit(pcie_pme_service_exit);
-+
-+static int __init pcie_pme_setup(char *str)
-+{
-+	if (!strcmp(str, "off"))
-+		pcie_pme_enabled = false;
-+	else if (!strcmp(str, "platform"))
-+		pcie_pme_platform_ignore_failure(false);
-+	return 1;
-+}
-+__setup("pcie_pme=", pcie_pme_setup);
+ const struct dev_pm_ops pci_dev_pm_ops = {
+ 	.prepare = pci_pm_prepare,
+ 	.complete = pci_pm_complete,
+@@ -918,15 +1001,18 @@ const struct dev_pm_ops pci_dev_pm_ops =
+ 	.thaw_noirq = pci_pm_thaw_noirq,
+ 	.poweroff_noirq = pci_pm_poweroff_noirq,
+ 	.restore_noirq = pci_pm_restore_noirq,
++	.runtime_suspend = pci_pm_runtime_suspend,
++	.runtime_resume = pci_pm_runtime_resume,
++	.runtime_idle = pci_pm_runtime_idle,
+ };
+ 
+ #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
+ 
+-#else /* !CONFIG_PM_SLEEP */
++#else /* !COMFIG_PM_OPERATIONS */
+ 
+ #define PCI_PM_OPS_PTR	NULL
+ 
+-#endif /* !CONFIG_PM_SLEEP */
++#endif /* !COMFIG_PM_OPERATIONS */
+ 
+ /**
+  * __pci_register_driver - register a new pci driver
