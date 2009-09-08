@@ -1,14 +1,15 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
-	pm callbacks V2
-Date: Tue, 8 Sep 2009 18:25:55 -0700
-Message-ID: <e9c3a7c20909081825i1578a522w5d7f4e5d678b5d74__30787.4691709459$1252512206$gmane$org@mail.gmail.com>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-	<200907050145.15122.rjw@sisk.pl>
+From: Alex Bennee <kernel-hacker@bennee.com>
+Subject: Re: Machine resumes straight after suspend to RAM (or
+	disk)
+Date: Tue, 8 Sep 2009 21:05:25 +0100
+Message-ID: <b2cdc9f30909081305u61b896c1kff8caab3e003412e__803.401057101105$1252512215$gmane$org@mail.gmail.com>
+References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
+	<200909082138.15312.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=000e0cd32810ea5aad04731af68a
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200907050145.15122.rjw@sisk.pl>
+In-Reply-To: <200909082138.15312.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,100 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-usb@vger.kernel.org, ben-linux@fluff.org, hskinnemoen@atmel.com, nicolas.ferre@atmel.com, anemo@mba.ocn.ne.jp, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---000e0cd32810ea5aad04731af68a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-2009/7/4 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Wednesday 24 June 2009, Magnus Damm wrote:
->> pm: remove late/early platform driver pm callbacks V2
+2009/9/8 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Tuesday 08 September 2009, Alex Bennee wrote:
+>> Hi,
 >>
->> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
->> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
->> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
->> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
->> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
->> [PATCH 06/07] usb: rework musb suspend()/resume_early()
->> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V=
-2
+>> I thought I'd enable suspend and resume on my desktop machine so I
+>> could save myself some time in the morning when I restart the machine.
+>> The machine is fairly standard Intel Core Duo based system (lspci
+>> attached). However when I execute pm-suspend (or Gentoo's own
+>> hibernate-script) the system does suspend but resumes immediately.
+<snip>
 >>
->> These patches simply remove ->suspend_late() and ->resume_early()
->> from struct platform_driver. Drivers are converted to dev_pm_ops
->> with CONFIG_SUSPEND in mind. Untested.
->>
->> All patches except [02/07] are known to compile.
->>
->> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-[..]
+>> So any ideas?
 >
-> The series is now in the linux-next branch of the suspend-2.6 tree. =A0I'=
-ll move
-> it into the for-linus branch, which is not rebased, if the patches are no=
-t
-> reported to cause any problems in the next few days.
->
+> What's in /proc/acpi/wakeup after a clean boot?
 
-Hi,
-
-My linux-next test builds for drivers/dma/ caught a missed conversion
-of the at_hdmac driver.  Please check the attached fix (compile tested
-only) and include it in this series.
-
-Thanks and regards,
-Dan
-
---000e0cd32810ea5aad04731af68a
-Content-Type: application/octet-stream; name="at-hdmac-rework-suspend.patch"
-Content-Disposition: attachment; filename="at-hdmac-rework-suspend.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fzddz1gn0
-
-YXRfaGRtYWM6IFJld29yayBzdXNwZW5kX2xhdGUoKS9yZXN1bWVfZWFybHkoKQoKRnJvbTogRGFu
-IFdpbGxpYW1zIDxkYW4uai53aWxsaWFtc0BpbnRlbC5jb20+CgpUaGlzIHBhdGNoIHJld29ya3Mg
-cGxhdGZvcm0gZHJpdmVyIHBvd2VyIG1hbmFnZW1lbnQgY29kZQpmb3IgYXRfaGRtYWMgZnJvbSBs
-ZWdhY3kgbGF0ZS9lYXJseSBjYWxsYmFja3MgdG8gZGV2X3BtX29wcy4KClRoZSBjYWxsYmFja3Mg
-YXJlIGNvbnZlcnRlZCBmb3IgQ09ORklHX1NVU1BFTkQgbGlrZSB0aGlzOgogIHN1c3BlbmRfbGF0
-ZSgpIC0+IHN1c3BlbmRfbm9pcnEoKQogIHJlc3VtZV9lYXJseSgpIC0+IHJlc3VtZV9ub2lycSgp
-CgpDYzogTWFnbnVzIERhbW0gPGRhbW1AaWdlbC5jby5qcD4KQ2M6IEdyZWcgS3JvYWgtSGFydG1h
-biA8Z3JlZ2toQHN1c2UuZGU+CkNjOiBQYXZlbCBNYWNoZWsgPHBhdmVsQHVjdy5jej4KQ2M6IFJh
-ZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KQ2M6IE5pY29sYXMgRmVycmUgPG5pY29sYXMu
-ZmVycmVAYXRtZWwuY29tPgpTaWduZWQtb2ZmLWJ5OiBEYW4gV2lsbGlhbXMgPGRhbi5qLndpbGxp
-YW1zQGludGVsLmNvbT4KLS0tCiBkcml2ZXJzL2RtYS9hdF9oZG1hYy5jIHwgICAxOSArKysrKysr
-KysrKystLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKyksIDcgZGVsZXRp
-b25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9kbWEvYXRfaGRtYWMuYyBiL2RyaXZlcnMvZG1h
-L2F0X2hkbWFjLmMKaW5kZXggMGFlYjU3OC4uNzU4NWM0MSAxMDA2NDQKLS0tIGEvZHJpdmVycy9k
-bWEvYXRfaGRtYWMuYworKysgYi9kcml2ZXJzL2RtYS9hdF9oZG1hYy5jCkBAIC0xMTY4LDMyICsx
-MTY4LDM3IEBAIHN0YXRpYyB2b2lkIGF0X2RtYV9zaHV0ZG93bihzdHJ1Y3QgcGxhdGZvcm1fZGV2
-aWNlICpwZGV2KQogCWNsa19kaXNhYmxlKGF0ZG1hLT5jbGspOwogfQogCi1zdGF0aWMgaW50IGF0
-X2RtYV9zdXNwZW5kX2xhdGUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwgcG1fbWVzc2Fn
-ZV90IG1lc2cpCitzdGF0aWMgaW50IGF0X2RtYV9zdXNwZW5kX25vaXJxKHN0cnVjdCBkZXZpY2Ug
-KmRldikKIHsKLQlzdHJ1Y3QgYXRfZG1hCSphdGRtYSA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBk
-ZXYpOworCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2Uo
-ZGV2KTsKKwlzdHJ1Y3QgYXRfZG1hICphdGRtYSA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYp
-OwogCiAJYXRfZG1hX29mZihwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KSk7CiAJY2xrX2Rpc2Fi
-bGUoYXRkbWEtPmNsayk7CiAJcmV0dXJuIDA7CiB9CiAKLXN0YXRpYyBpbnQgYXRfZG1hX3Jlc3Vt
-ZV9lYXJseShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQorc3RhdGljIGludCBhdF9kbWFf
-cmVzdW1lX25vaXJxKHN0cnVjdCBkZXZpY2UgKmRldikKIHsKLQlzdHJ1Y3QgYXRfZG1hCSphdGRt
-YSA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOworCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
-KnBkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2UoZGV2KTsKKwlzdHJ1Y3QgYXRfZG1hICphdGRtYSA9
-IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOwogCiAJY2xrX2VuYWJsZShhdGRtYS0+Y2xrKTsK
-IAlkbWFfd3JpdGVsKGF0ZG1hLCBFTiwgQVRfRE1BX0VOQUJMRSk7CiAJcmV0dXJuIDA7Ci0KIH0K
-IAorc3RhdGljIHN0cnVjdCBkZXZfcG1fb3BzIGF0X2RtYV9kZXZfcG1fb3BzID0geworCS5zdXNw
-ZW5kX25vaXJxID0gYXRfZG1hX3N1c3BlbmRfbm9pcnEsCisJLnJlc3VtZV9ub2lycSA9IGF0X2Rt
-YV9yZXN1bWVfbm9pcnEsCit9OworCiBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBhdF9k
-bWFfZHJpdmVyID0gewogCS5yZW1vdmUJCT0gX19leGl0X3AoYXRfZG1hX3JlbW92ZSksCiAJLnNo
-dXRkb3duCT0gYXRfZG1hX3NodXRkb3duLAotCS5zdXNwZW5kX2xhdGUJPSBhdF9kbWFfc3VzcGVu
-ZF9sYXRlLAotCS5yZXN1bWVfZWFybHkJPSBhdF9kbWFfcmVzdW1lX2Vhcmx5LAogCS5kcml2ZXIg
-PSB7CiAJCS5uYW1lCT0gImF0X2hkbWFjIiwKKwkJLnBtCT0gJmF0X2RtYV9kZXZfcG1fb3BzLAog
-CX0sCiB9OwogCg==
---000e0cd32810ea5aad04731af68a
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+21:03 alex@danny/x86_64 [~] >cat /proc/acpi/wakeup
+Device	S-state	  Status   Sysfs node
+P0P1	  S4	 disabled
+P0P3	  S4	 disabled  pci:0000:00:1e.0
+P0P4	  S4	 disabled  pci:0000:00:1c.0
+P0P5	  S4	 disabled
+P0P6	  S4	 disabled
+P0P7	  S4	 disabled
+P0P8	  S4	 disabled
+P0P9	  S4	 disabled
+PS2K	  S4	 disabled  pnp:00:09
+PS2M	  S4	 disabled  pnp:00:0a
+MC97	  S4	 disabled
+USB1	  S4	 disabled  pci:0000:00:1d.0
+USB2	  S4	 disabled  pci:0000:00:1d.1
+USB3	  S4	 disabled  pci:0000:00:1d.2
+USB4	  S4	 disabled  pci:0000:00:1d.3
+EUSB	  S4	 disabled  pci:0000:00:1d.7
 
 
---000e0cd32810ea5aad04731af68a--
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
+http://www.half-llama.co.uk
