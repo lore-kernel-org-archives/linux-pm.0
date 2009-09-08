@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 1/3 update] PCI: Clear saved_state after the
-	state has been restored
-Date: Tue, 8 Sep 2009 01:29:47 +0200
-Message-ID: <200909080129.47665.rjw__29481.0729720213$1252366183$gmane$org@sisk.pl>
-References: <200909070102.21056.rjw@sisk.pl> <200909070103.20731.rjw@sisk.pl>
+Subject: Re: Machine resumes straight after suspend to RAM (or
+	disk)
+Date: Tue, 8 Sep 2009 21:38:15 +0200
+Message-ID: <200909082138.15312.rjw__49893.2055350908$1252438739$gmane$org@sisk.pl>
+References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909070103.20731.rjw@sisk.pl>
+In-Reply-To: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,129 +18,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-pci <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Bennee <kernel-hacker@bennee.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI: Clear saved_state after the state has been restored
+On Tuesday 08 September 2009, Alex Bennee wrote:
+> Hi,
+> 
+> I thought I'd enable suspend and resume on my desktop machine so I
+> could save myself some time in the morning when I restart the machine.
+> The machine is fairly standard Intel Core Duo based system (lspci
+> attached). However when I execute pm-suspend (or Gentoo's own
+> hibernate-script) the system does suspend but resumes immediately. To
+> add insult to injury the ethernet doesn't come back properly and needs
+> a reboot to reset it.
+> 
+> I've played about a little with the ACPI debug stuff but it's easy to
+> overflow the dmesg buffer. The relevant section around the
+> suspend/resume looks like:
+> 
+> [ 1025.178019] Disabling non-boot CPUs ...
+> [ 1025.182071] kvm: disabling virtualization on CPU1
+> [ 1025.227729] CPU 1 is now offline
+> [ 1025.227731] SMP alternatives: switching to UP code
+> [ 1025.232627] CPU0 attaching NULL sched-domain.
+> [ 1025.232630] CPU1 attaching NULL sched-domain.
+> [ 1025.232634] CPU0 attaching NULL sched-domain.
+> [ 1025.232771] CPU1 is down
+> [ 1025.233264] acpi_suspend_enter acpi_state=3
+> [ 1025.233276] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233286] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233290] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233299] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233303] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233311] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233315] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233319] evxfevnt-0074 [ffff8800b70d8000] [05] enable
+>     : ----Entry
+> [ 1025.233319] evxfevnt-0086 [ffff8800b70d8000] [05] enable
+>     : System is already in ACPI mode
+> [ 1025.233319] evxfevnt-0101 [ffff8800b70d8000] [05] enable
+>     : ----Exit- AE_OK
+> [ 1025.233319] evxfevnt-0397 [ffff8800b70d8000] [05] clear_event
+>     : ----Entry
+> [ 1025.233319] evxfevnt-0413 [ffff8800b70d8000] [05] clear_event
+>     : ----Exit- AE_OK
+> [ 1025.233319] evxfevnt-0831 [ffff8800b70d8000] [05] disable_all_gpes
+>     : ----Entry
+> [ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
+>     : ----Entry
+> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
+>     : ----Exit- AE_OK
+> [ 1025.233319] evxfevnt-0841 [ffff8800b70d8000] [05] disable_all_gpes
+>     : ----Exit- AE_OK
+> [ 1025.233319] Back to C!
+> [ 1025.233319] CPU0: Thermal LVT vector (0xfa) already installed
+> [ 1025.233319] Enabling non-boot CPUs ...
+> [ 1025.233319] SMP alternatives: switching to SMP code
+> [ 1025.237548] Booting processor 1 APIC 0x1 ip 0x6000
+> [ 1025.232536] Initializing CPU#1
+> [ 1025.232536] Calibrating delay using timer specific routine..
+> 4245.78 BogoMIPS (lpj=8491564)
+> 
+> Unfortunately the ACPI stuff is all Greek to me. If anyone wants
+> additional debug information then please let me know.
+> 
+> So any ideas?
 
-Some PCI devices fail if their standard configuration registers are
-restored twice in a row.  Prevent this from happening by making
-pci_restore_state() clear the saved_state flag of the device right
-after the device's standard configuration registers have been
-populated with the previously saved values.
+What's in /proc/acpi/wakeup after a clean boot?
 
-Simplify PCI PM callbacks by removing the direct clearing of
-state_saved from them, as it shouldn't be necessary any more, except
-in pci_pm_thaw(), where it has to be cleared to so that the values saved
-during the "freeze" phase of hibernation are not used later by mistake.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
-
-Of course, the state_saved flag has to be cleared in pci_pm_thaw() in case
-the driver doesn't restore the state saved in ->freeze() (it doesn't need to do
-that).
-
-Thanks,
 Rafael
-
----
- drivers/pci/pci-driver.c |   11 ++---------
- drivers/pci/pci.c        |    3 +++
- drivers/pci/probe.c      |    3 +++
- 3 files changed, 8 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -417,8 +417,6 @@ static int pci_legacy_suspend(struct dev
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
- 
--	pci_dev->state_saved = false;
--
- 	if (drv && drv->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
- 		int error;
-@@ -514,7 +512,6 @@ static int pci_restore_standard_config(s
- static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
- {
- 	pci_restore_standard_config(pci_dev);
--	pci_dev->state_saved = false;
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- }
- 
-@@ -580,8 +577,6 @@ static int pci_pm_suspend(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
- 
--	pci_dev->state_saved = false;
--
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
-@@ -716,8 +711,6 @@ static int pci_pm_freeze(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
- 
--	pci_dev->state_saved = false;
--
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		return 0;
-@@ -793,6 +786,8 @@ static int pci_pm_thaw(struct device *de
- 		pci_pm_reenable_device(pci_dev);
- 	}
- 
-+	pci_dev->state_saved = false;
-+
- 	return error;
- }
- 
-@@ -804,8 +799,6 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
--	pci_dev->state_saved = false;
--
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -852,6 +852,7 @@ pci_restore_state(struct pci_dev *dev)
- 
- 	if (!dev->state_saved)
- 		return 0;
-+
- 	/* PCI Express register must be restored first */
- 	pci_restore_pcie_state(dev);
- 
-@@ -873,6 +874,8 @@ pci_restore_state(struct pci_dev *dev)
- 	pci_restore_msi_state(dev);
- 	pci_restore_iov_state(dev);
- 
-+	dev->state_saved = false;
-+
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c
-+++ linux-2.6/drivers/pci/probe.c
-@@ -1009,6 +1009,9 @@ void pci_device_add(struct pci_dev *dev,
- 	/* Fix up broken headers */
- 	pci_fixup_device(pci_fixup_header, dev);
- 
-+	/* Clear the state_saved flag. */
-+	dev->state_saved = false;
-+
- 	/* Initialize various capabilities */
- 	pci_init_capabilities(dev);
- 
