@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/9] PM: Measure suspend and resume times for
-	individual devices
-Date: Thu, 10 Sep 2009 01:40:52 +0200
-Message-ID: <200909100140.52270.rjw__4016.42707079208$1252540637$gmane$org@sisk.pl>
+Subject: [PATCH 8/9] PM: Add facility for advanced testing of
+	async suspend/resume
+Date: Thu, 10 Sep 2009 01:40:08 +0200
+Message-ID: <200909100140.08687.rjw__33913.9246185825$1252540641$gmane$org@sisk.pl>
 References: <200909100127.11252.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,159 +24,134 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If verbose PM debugging is enabled, measure and print the time of
-suspending and resuming of individual devices.
+Add configuration switch CONFIG_PM_ADVANCED_DEBUG for compiling in
+extra PM debugging/testing code allowing one to access some
+PM-related attributes of devices from the user space via sysfs.
+
+If CONFIG_PM_ADVANCED_DEBUG is set, add sysfs attribute power/async
+for every device allowing the user space to access the device's
+power.async_suspend flag and modify it, if desired.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c |   50 +++++++++++++++++++++++++++++++++++++++++-----
- kernel/power/swsusp.c     |    2 -
- 2 files changed, 46 insertions(+), 6 deletions(-)
+ drivers/base/power/sysfs.c |   47 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h     |    5 ++++
+ kernel/power/Kconfig       |   14 +++++++++++++
+ 3 files changed, 66 insertions(+)
 
-Index: linux-2.6/drivers/base/power/main.c
+Index: linux-2.6/drivers/base/power/sysfs.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
+--- linux-2.6.orig/drivers/base/power/sysfs.c
++++ linux-2.6/drivers/base/power/sysfs.c
+@@ -38,6 +38,22 @@
+  *	wakeup events internally (unless they are disabled), keeping
+  *	their hardware in low power modes whenever they're unused.  This
+  *	saves runtime power, without requiring system-wide sleep states.
++ *
++ *	async - Report/change current async suspend setting for the device
++ *
++ *	If set, the PM core will attempt to suspend and resume the device during
++ *	system power transitions (e.g. suspend to RAM, hibernation) in parallel
++ *	with other devices it doesn't appear to depend on (to the PM core's
++ *	knowledge).
++ *
++ *	 + "enabled\n" to permit the asynchronous suspend/resume of the device
++ *	 + "disabled\n" to forbid it
++ *
++ *	NOTE: It generally is unsafe to permit the asynchronous suspend/resume
++ *	of a device unless it is certain that all of the PM dependencies of the
++ *	device are known to the PM core.  However, for some devices this
++ *	attribute is set to "enabled" by the kernel and in that cases it should
++ *	be safe to leave the default value.
   */
- int pm_time_elapsed(struct timeval *start, struct timeval *stop)
- {
--	s64 elapsed_centisecs64;
-+	s64 elapsed_msecs64;
  
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	return elapsed_centisecs64;
-+	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_msecs64, NSEC_PER_SEC / MSEC_PER_SEC);
-+	return elapsed_msecs64;
- }
+ static const char enabled[] = "enabled";
+@@ -77,9 +93,40 @@ wake_store(struct device * dev, struct d
  
- static char *pm_verb(int event)
-@@ -476,7 +476,7 @@ static char *pm_verb(int event)
- static void dpm_show_time(struct timeval *start, struct timeval *stop,
- 			  pm_message_t state, const char *info)
- {
--	int centisecs = pm_time_elapsed(start, stop);
-+	int centisecs = pm_time_elapsed(start, stop) / 10;
+ static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
  
- 	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
- 		info ? info : "", info ? " " : "", pm_verb(state.event),
-@@ -497,6 +497,32 @@ static void pm_dev_err(struct device *de
- 		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
- }
- 
-+#ifdef DEBUG
-+static inline void dbg_get_time(struct timeval *start)
++#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++static ssize_t async_show(struct device *dev, struct device_attribute *attr,
++			  char *buf)
 +{
-+	do_gettimeofday(start);
++	return sprintf(buf, "%s\n",
++			device_async_suspend_enabled(dev) ? enabled : disabled);
 +}
 +
-+static void dbg_show_time(struct timeval *start, struct device *dev,
-+			  pm_message_t state, char *info)
++static ssize_t async_store(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t n)
 +{
-+	struct timeval stop;
-+	int msecs;
++	char *cp;
++	int len = n;
 +
-+	do_gettimeofday(&stop);
-+	msecs = pm_time_elapsed(start, &stop);
-+	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
-+		task_pid_nr(current), info ? info : "", info ? " " : "",
-+		pm_verb(state.event), msecs / 1000, msecs % 1000);
++	cp = memchr(buf, '\n', n);
++	if (cp)
++		len = cp - buf;
++	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
++		device_enable_async_suspend(dev, true);
++	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
++		device_enable_async_suspend(dev, false);
++	else
++		return -EINVAL;
++	return n;
 +}
 +
-+#else /* !DEBUG */
-+static void dbg_get_time(struct timeval *start) {}
-+static void dbg_show_time(struct timeval *start, struct device *dev,
-+			  pm_message_t state, char *info) {}
-+
-+#endif /* !DEBUG */
-+
- /*------------------------- Resume routines -------------------------*/
++static DEVICE_ATTR(async, 0644, async_show, async_store);
++#endif /* CONFIG_PM_SLEEP_ADVANCED_DEBUG */
  
- /**
-@@ -510,7 +536,9 @@ static void pm_dev_err(struct device *de
- static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	struct timeval start;
- 
-+	dbg_get_time(&start);
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-@@ -523,6 +551,7 @@ static int __device_resume_noirq(struct 
- 	wake_up_all(&dev->power.wait_queue);
- 
- 	TRACE_RESUME(error);
-+	dbg_show_time(&start, dev, state, "EARLY");
- 	return error;
- }
- 
-@@ -639,7 +668,9 @@ EXPORT_SYMBOL_GPL(dpm_resume_noirq);
- static int __device_resume(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	struct timeval start;
- 
-+	dbg_get_time(&start);
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-@@ -681,6 +712,7 @@ static int __device_resume(struct device
- 	wake_up_all(&dev->power.wait_queue);
- 
- 	TRACE_RESUME(error);
-+	dbg_show_time(&start, dev, state, NULL);
- 	return error;
- }
- 
-@@ -923,6 +955,9 @@ static pm_message_t resume_event(pm_mess
- static int __device_suspend_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	struct timeval start;
-+
-+	dbg_get_time(&start);
- 
- 	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "LATE ");
-@@ -932,6 +967,7 @@ static int __device_suspend_noirq(struct
- 	dev->power.op_complete = true;
- 	wake_up_all(&dev->power.wait_queue);
- 
-+	dbg_show_time(&start, dev, state, "LATE");
- 	return error;
- }
- 
-@@ -1063,6 +1099,9 @@ EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
- static int __device_suspend(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	struct timeval start;
-+
-+	dbg_get_time(&start);
- 
- 	down(&dev->sem);
- 
-@@ -1103,6 +1142,7 @@ static int __device_suspend(struct devic
- 	dev->power.op_complete = true;
- 	wake_up_all(&dev->power.wait_queue);
- 
-+	dbg_show_time(&start, dev, state, NULL);
- 	return error;
- }
- 
-Index: linux-2.6/kernel/power/swsusp.c
+ static struct attribute * power_attrs[] = {
+ 	&dev_attr_wakeup.attr,
++#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++	&dev_attr_async.attr,
++#endif
+ 	NULL,
+ };
+ static struct attribute_group pm_attr_group = {
+Index: linux-2.6/include/linux/device.h
 ===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -169,7 +169,7 @@ int swsusp_swap_in_use(void)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	int centisecs = pm_time_elapsed(start, stop);
-+	int centisecs = pm_time_elapsed(start, stop) / 10;
- 	int k;
- 	int kps;
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -478,6 +478,11 @@ static inline void device_enable_async_s
+ 		dev->power.async_suspend = enable;
+ }
  
++static inline bool device_async_suspend_enabled(struct device *dev)
++{
++	return !!dev->power.async_suspend;
++}
++
+ void driver_init(void);
+ 
+ /*
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -27,6 +27,15 @@ config PM_DEBUG
+ 	code. This is helpful when debugging and reporting PM bugs, like
+ 	suspend support.
+ 
++config PM_ADVANCED_DEBUG
++	bool "Extra PM attributes in sysfs for low-level debugging/testing"
++	depends on PM_DEBUG
++	default n
++	---help---
++	Add extra sysfs attributes allowing one to access some Power Management
++	fields of device objects from user space.  If you are not a kernel
++	developer interested in debugging/testing Power Management, say "no".
++
+ config PM_VERBOSE
+ 	bool "Verbose Power Management debugging"
+ 	depends on PM_DEBUG
+@@ -85,6 +94,11 @@ config PM_SLEEP
+ 	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+ 	default y
+ 
++config PM_SLEEP_ADVANCED_DEBUG
++	bool
++	depends on PM_ADVANCED_DEBUG
++	default n
++
+ config SUSPEND
+ 	bool "Suspend to RAM and standby"
+ 	depends on PM && ARCH_SUSPEND_POSSIBLE
