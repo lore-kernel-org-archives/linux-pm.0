@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/9] PM: Measure device suspend and resume times
-Date: Thu, 10 Sep 2009 01:39:21 +0200
-Message-ID: <200909100139.21954.rjw__42106.7454539754$1252540478$gmane$org@sisk.pl>
+Subject: [PATCH 9/9] PM: Measure suspend and resume times for
+	individual devices
+Date: Thu, 10 Sep 2009 01:40:52 +0200
+Message-ID: <200909100140.52270.rjw__4016.42707079208$1252540637$gmane$org@sisk.pl>
 References: <200909100127.11252.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,188 +24,159 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Measure and print the time of suspending and resuming all devices.
+If verbose PM debugging is enabled, measure and print the time of
+suspending and resuming of individual devices.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c |   56 +++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm.h        |    3 ++
- kernel/power/swsusp.c     |    6 ----
- 3 files changed, 59 insertions(+), 6 deletions(-)
+ drivers/base/power/main.c |   50 +++++++++++++++++++++++++++++++++++++++++-----
+ kernel/power/swsusp.c     |    2 -
+ 2 files changed, 46 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -169,14 +169,10 @@ int swsusp_swap_in_use(void)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	s64 elapsed_centisecs64;
--	int centisecs;
-+	int centisecs = pm_time_elapsed(start, stop);
- 	int k;
- 	int kps;
- 
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	centisecs = elapsed_centisecs64;
- 	if (centisecs == 0)
- 		centisecs = 1;	/* avoid div-by-zero */
- 	k = nr_pages * (PAGE_SIZE / 1024);
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -28,6 +28,7 @@
- #include <linux/interrupt.h>
- #include <linux/async.h>
- #include <linux/completion.h>
-+#include <linux/time.h>
+@@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
+  */
+ int pm_time_elapsed(struct timeval *start, struct timeval *stop)
+ {
+-	s64 elapsed_centisecs64;
++	s64 elapsed_msecs64;
  
- #include "../base.h"
- #include "power.h"
-@@ -434,6 +435,20 @@ static bool pm_op_started(struct device 
- 	return ret;
+-	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+-	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
+-	return elapsed_centisecs64;
++	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
++	do_div(elapsed_msecs64, NSEC_PER_SEC / MSEC_PER_SEC);
++	return elapsed_msecs64;
  }
  
-+/**
-+ * pm_time_elapsed - Compute time elapsed between two timestamps.
-+ * @start: First timestamp.
-+ * @stop: Second timestamp.
-+ */
-+int pm_time_elapsed(struct timeval *start, struct timeval *stop)
-+{
-+	s64 elapsed_centisecs64;
-+
-+	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
-+	return elapsed_centisecs64;
-+}
-+
  static char *pm_verb(int event)
+@@ -476,7 +476,7 @@ static char *pm_verb(int event)
+ static void dpm_show_time(struct timeval *start, struct timeval *stop,
+ 			  pm_message_t state, const char *info)
  {
- 	switch (event) {
-@@ -458,6 +473,16 @@ static char *pm_verb(int event)
- 	}
+-	int centisecs = pm_time_elapsed(start, stop);
++	int centisecs = pm_time_elapsed(start, stop) / 10;
+ 
+ 	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
+ 		info ? info : "", info ? " " : "", pm_verb(state.event),
+@@ -497,6 +497,32 @@ static void pm_dev_err(struct device *de
+ 		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
  }
  
-+static void dpm_show_time(struct timeval *start, struct timeval *stop,
-+			  pm_message_t state, const char *info)
++#ifdef DEBUG
++static inline void dbg_get_time(struct timeval *start)
 +{
-+	int centisecs = pm_time_elapsed(start, stop);
-+
-+	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
-+		info ? info : "", info ? " " : "", pm_verb(state.event),
-+		centisecs / 100, centisecs % 100);
++	do_gettimeofday(start);
 +}
 +
- static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
- {
- 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
-@@ -580,6 +605,9 @@ static int device_resume_noirq(struct de
- void dpm_resume_noirq(pm_message_t state)
- {
- 	struct device *dev;
-+	struct timeval start, stop;
-+
-+	do_gettimeofday(&start);
- 
- 	mutex_lock(&dpm_list_mtx);
- 	transition_started = false;
-@@ -595,6 +623,10 @@ void dpm_resume_noirq(pm_message_t state
- 		}
- 	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
++static void dbg_show_time(struct timeval *start, struct device *dev,
++			  pm_message_t state, char *info)
++{
++	struct timeval stop;
++	int msecs;
 +
 +	do_gettimeofday(&stop);
-+	dpm_show_time(&start, &stop, state, "EARLY");
++	msecs = pm_time_elapsed(start, &stop);
++	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
++		task_pid_nr(current), info ? info : "", info ? " " : "",
++		pm_verb(state.event), msecs / 1000, msecs % 1000);
++}
 +
- 	resume_device_irqs();
- }
- EXPORT_SYMBOL_GPL(dpm_resume_noirq);
-@@ -740,6 +772,9 @@ static int device_resume(struct device *
- static void dpm_resume(pm_message_t state)
- {
- 	struct list_head list;
-+	struct timeval start, stop;
++#else /* !DEBUG */
++static void dbg_get_time(struct timeval *start) {}
++static void dbg_show_time(struct timeval *start, struct device *dev,
++			  pm_message_t state, char *info) {}
 +
-+	do_gettimeofday(&start);
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
-@@ -770,6 +805,9 @@ static void dpm_resume(pm_message_t stat
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
- 	dpm_synchronize();
++#endif /* !DEBUG */
 +
-+	do_gettimeofday(&stop);
-+	dpm_show_time(&start, &stop, state, NULL);
- }
+ /*------------------------- Resume routines -------------------------*/
  
  /**
-@@ -985,8 +1023,11 @@ static int device_suspend_noirq(struct d
- int dpm_suspend_noirq(pm_message_t state)
+@@ -510,7 +536,9 @@ static void pm_dev_err(struct device *de
+ static int __device_resume_noirq(struct device *dev, pm_message_t state)
  {
- 	struct device *dev;
-+	struct timeval start, stop;
  	int error = 0;
++	struct timeval start;
  
-+	do_gettimeofday(&start);
-+
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
-@@ -1004,8 +1045,12 @@ int dpm_suspend_noirq(pm_message_t state
- 	}
- 	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	if (error) {
- 		dpm_resume_noirq(resume_event(state));
-+	} else {
-+		do_gettimeofday(&stop);
-+		dpm_show_time(&start, &stop, state, "LATE");
-+	}
- 	return error;
- }
- EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
-@@ -1157,8 +1202,11 @@ static int device_suspend(struct device 
- static int dpm_suspend(pm_message_t state)
- {
- 	struct list_head list;
-+	struct timeval start, stop;
- 	int error = 0;
++	dbg_get_time(&start);
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
  
-+	do_gettimeofday(&start);
-+
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
-@@ -1188,6 +1236,12 @@ static int dpm_suspend(pm_message_t stat
- 	list_splice(&list, dpm_list.prev);
- 	mutex_unlock(&dpm_list_mtx);
- 	dpm_synchronize();
-+
-+	if (!error) {
-+		do_gettimeofday(&stop);
-+		dpm_show_time(&start, &stop, state, NULL);
-+	}
-+
+@@ -523,6 +551,7 @@ static int __device_resume_noirq(struct 
+ 	wake_up_all(&dev->power.wait_queue);
+ 
+ 	TRACE_RESUME(error);
++	dbg_show_time(&start, dev, state, "EARLY");
  	return error;
  }
  
-Index: linux-2.6/include/linux/pm.h
+@@ -639,7 +668,9 @@ EXPORT_SYMBOL_GPL(dpm_resume_noirq);
+ static int __device_resume(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
++	struct timeval start;
+ 
++	dbg_get_time(&start);
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+ 
+@@ -681,6 +712,7 @@ static int __device_resume(struct device
+ 	wake_up_all(&dev->power.wait_queue);
+ 
+ 	TRACE_RESUME(error);
++	dbg_show_time(&start, dev, state, NULL);
+ 	return error;
+ }
+ 
+@@ -923,6 +955,9 @@ static pm_message_t resume_event(pm_mess
+ static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
++	struct timeval start;
++
++	dbg_get_time(&start);
+ 
+ 	if (dev->bus && dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "LATE ");
+@@ -932,6 +967,7 @@ static int __device_suspend_noirq(struct
+ 	dev->power.op_complete = true;
+ 	wake_up_all(&dev->power.wait_queue);
+ 
++	dbg_show_time(&start, dev, state, "LATE");
+ 	return error;
+ }
+ 
+@@ -1063,6 +1099,9 @@ EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
+ static int __device_suspend(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
++	struct timeval start;
++
++	dbg_get_time(&start);
+ 
+ 	down(&dev->sem);
+ 
+@@ -1103,6 +1142,7 @@ static int __device_suspend(struct devic
+ 	dev->power.op_complete = true;
+ 	wake_up_all(&dev->power.wait_queue);
+ 
++	dbg_show_time(&start, dev, state, NULL);
+ 	return error;
+ }
+ 
+Index: linux-2.6/kernel/power/swsusp.c
 ===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -505,6 +505,9 @@ extern int sysdev_suspend(pm_message_t s
- extern int dpm_suspend_noirq(pm_message_t state);
- extern int dpm_suspend_start(pm_message_t state);
+--- linux-2.6.orig/kernel/power/swsusp.c
++++ linux-2.6/kernel/power/swsusp.c
+@@ -169,7 +169,7 @@ int swsusp_swap_in_use(void)
+ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+ 			unsigned nr_pages, char *msg)
+ {
+-	int centisecs = pm_time_elapsed(start, stop);
++	int centisecs = pm_time_elapsed(start, stop) / 10;
+ 	int k;
+ 	int kps;
  
-+struct timeval;
-+extern int pm_time_elapsed(struct timeval *start, struct timeval *stop);
-+
- extern void __suspend_report_result(const char *function, void *fn, int ret);
- 
- #define suspend_report_result(fn, ret)					\
