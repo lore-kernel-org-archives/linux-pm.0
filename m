@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH 2/2] PCI PM: Return error codes from
-	pci_pm_resume()
-Date: Wed, 9 Sep 2009 23:51:27 +0200
-Message-ID: <200909092351.27178.rjw__20446.0797519006$1252533078$gmane$org@sisk.pl>
-References: <200909092349.59170.rjw@sisk.pl>
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver
+	pm callbacks V2
+Date: Thu, 10 Sep 2009 00:09:48 +0200
+Message-ID: <200909100009.48504.rjw__9562.12856476686$1252534415$gmane$org@sisk.pl>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+	<200907050145.15122.rjw@sisk.pl>
+	<e9c3a7c20909081825i1578a522w5d7f4e5d678b5d74@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909092349.59170.rjw@sisk.pl>
+In-Reply-To: <e9c3a7c20909081825i1578a522w5d7f4e5d678b5d74@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-usb@vger.kernel.org, ben-linux@fluff.org, hskinnemoen@atmel.com, nicolas.ferre@atmel.com, anemo@mba.ocn.ne.jp, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday 09 September 2009, Dan Williams wrote:
+> 2009/7/4 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Wednesday 24 June 2009, Magnus Damm wrote:
+> >> pm: remove late/early platform driver pm callbacks V2
+> >>
+> >> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> >> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> >> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> >> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> >> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> >> [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> >> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> >>
+> >> These patches simply remove ->suspend_late() and ->resume_early()
+> >> from struct platform_driver. Drivers are converted to dev_pm_ops
+> >> with CONFIG_SUSPEND in mind. Untested.
+> >>
+> >> All patches except [02/07] are known to compile.
+> >>
+> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> [..]
+> >
+> > The series is now in the linux-next branch of the suspend-2.6 tree.  I'll move
+> > it into the for-linus branch, which is not rebased, if the patches are not
+> > reported to cause any problems in the next few days.
+> >
+> 
+> Hi,
+> 
+> My linux-next test builds for drivers/dma/ caught a missed conversion
+> of the at_hdmac driver.  Please check the attached fix (compile tested
+> only) and include it in this series.
 
-Currently pci_pm_resume() always returns 0, which makes the error
-variable defined in there a bit pointless.  Make pci_pm_resume()
-return error codes obtained from drivers' callbacks.
+Applied to suspend-2.6/linux-next, thanks.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/pci-driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -689,7 +689,7 @@ static int pci_pm_resume(struct device *
- 		pci_pm_reenable_device(pci_dev);
- 	}
- 
--	return 0;
-+	return error;
- }
- 
- #else /* !CONFIG_SUSPEND */
+Best,
+Rafael
