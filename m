@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/9] PM: Asynchronous resume of devices
-Date: Thu, 10 Sep 2009 01:35:12 +0200
-Message-ID: <200909100135.12689.rjw__11206.1846339659$1252539786$gmane$org@sisk.pl>
+Subject: [PATCH 1/9] PM: Introduce PM links framework
+Date: Thu, 10 Sep 2009 01:32:36 +0200
+Message-ID: <200909100132.36618.rjw__36335.6498456143$1252539791$gmane$org@sisk.pl>
 References: <200909100127.11252.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,588 +23,608 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Theoretically, the total time of system sleep transitions (suspend
-to RAM, hibernation) can be reduced by running suspend and resume
-callbacks of device drivers in parallel with each other.  However,
-there are dependencies between devices such that, for example, we may
-not be allowed to put one device into a low power state before
-anohter one has been suspended (e.g. we cannot suspend a bridge
-before suspending all devices behind it).  In particular, we're not
-allowed to suspend the parent of a device before suspending the
-device itself.  Analogously, we're not allowed to resume a device
-before resuming its parent.
+Introduce a framework for representing off-tree PM dependencies
+between devices.
 
-Thus, to make it possible to execute suspend and resume callbacks
-provided by device drivers in parallel with each other, we need to
-provide a synchronization mechanism preventing the dependencies
-between devices from being violated.
+There are PM dependencies between devices that are not reflected by
+the structure of the device tree.  In other words, as far as PM is
+concerned, a device may depend on some other devices which are not
+its children and none of which is its parent.
 
-The patch below allows some devices to be resumed asynchronously,
-with the following rules:
-(1) There is a wait queue head, dev->power.wait_queue, and an
-    "operation complete" flag, dev->power.op_complete for each device
-    object.
-(2) All of the power.op_complete flags are reset before suspend as
-    well as after each resume stage (dpm_resume_noirq(),
-    dpm_resume()).
-(3) If power.async_suspend is set for dev or for one of devices it
-    depends on, the PM core waits for the "master" device's
-    power.op_complete flag to be set before attempting to run the
-    resume callbacks, appropriate for this particular stage of
-    resume, for dev.
-(4) dev->power.op_complete is set for each device after running its
-    resume callbacks at each stage of resume (dpm_resume_noirq(),
-    dpm_resume()) and all threads waiting in the devices wait
-    queue are woken up.
+Every such dependency involves two devices, one of which is a
+"master" and the other of which is a "slave", meaning that the
+"slave" have to be suspended before the "master" and cannot be
+woken up before it.  Thus every device can be given two lists of
+"dependency objects", one for the dependencies where the device is
+the "master" and the other for the dependencies where the device is
+the "slave".  Then, each "dependency object" can be represented as
 
-With this mechanism in place, the drivers wanting their resume
-callbacks to be executed asynchronously can set
-dev->power.async_suspend for them, with the help of
-device_enable_async_suspend().  In addition to that, the PM off-tree
-dependencies between devices have to be represented by
-'struct pm_link' objects introduced by the previous patch.
+struct pm_link {
+    struct device *master;
+    struct list_head master_hook;
+    struct device *slave;
+    struct list_head slave_hook;
+};
 
-In this version of the patch the async threads started to execute
-the resume callbacks of specific device don't exit immediately having
-done that, but search dpm_list for devices whose PM dependencies have
-already been satisfied and execute their callbacks without waiting.
+Add some synchronization, helpers for adding and removing
+'struct pm_link' objects.
+
+In addition to checking a device's parent, walk the list of its
+"masters", in addition to walking the list of a device's children,
+walk the list of its "slaves".
+
+'struct pm_link' objects are created automatically for ACPI devices
+and "regular" devices associated with them.  In the other cases such
+objects will have to be added directly by platforms / bus types /
+drivers etc.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/common.c |    5 
- drivers/base/power/main.c   |  327 ++++++++++++++++++++++++++++++++++++++++++--
- include/linux/device.h      |    6 
- include/linux/pm.h          |    6 
- 4 files changed, 329 insertions(+), 15 deletions(-)
+ drivers/acpi/glue.c          |    3 
+ drivers/base/core.c          |    4 
+ drivers/base/power/Makefile  |    2 
+ drivers/base/power/common.c  |  280 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/base/power/main.c    |   27 ----
+ drivers/base/power/power.h   |   31 ++--
+ drivers/base/power/runtime.c |    4 
+ include/linux/pm.h           |    4 
+ include/linux/pm_link.h      |   30 ++++
+ 9 files changed, 343 insertions(+), 42 deletions(-)
 
 Index: linux-2.6/include/linux/pm.h
 ===================================================================
 --- linux-2.6.orig/include/linux/pm.h
 +++ linux-2.6/include/linux/pm.h
-@@ -26,6 +26,7 @@
- #include <linux/spinlock.h>
- #include <linux/wait.h>
- #include <linux/timer.h>
-+#include <linux/completion.h>
- 
- /*
-  * Callbacks for platform drivers to implement.
-@@ -409,20 +410,23 @@ enum rpm_request {
+@@ -408,6 +408,9 @@ enum rpm_request {
+ };
  
  struct dev_pm_info {
- 	spinlock_t		lock;
-+	wait_queue_head_t	wait_queue;
- 	struct list_head	master_links;
- 	struct list_head	slave_links;
++	spinlock_t		lock;
++	struct list_head	master_links;
++	struct list_head	slave_links;
  	pm_message_t		power_state;
  	unsigned int		can_wakeup:1;
  	unsigned int		should_wakeup:1;
-+	unsigned int		async_suspend:1;
- 	enum dpm_state		status;		/* Owned by the PM core */
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-+	unsigned int		op_started:1;
-+	unsigned int		op_complete:1;
- #endif
- #ifdef CONFIG_PM_RUNTIME
- 	struct timer_list	suspend_timer;
+@@ -420,7 +423,6 @@ struct dev_pm_info {
  	unsigned long		timer_expires;
  	struct work_struct	work;
--	wait_queue_head_t	wait_queue;
+ 	wait_queue_head_t	wait_queue;
+-	spinlock_t		lock;
  	atomic_t		usage_count;
  	atomic_t		child_count;
  	unsigned int		disable_depth:3;
-Index: linux-2.6/include/linux/device.h
+Index: linux-2.6/drivers/base/power/power.h
 ===================================================================
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -472,6 +472,12 @@ static inline int device_is_registered(s
- 	return dev->kobj.state_in_sysfs;
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -1,3 +1,7 @@
++extern void device_pm_init(struct device *dev);
++extern void device_pm_add(struct device *dev);
++extern void device_pm_remove(struct device *dev);
++
+ #ifdef CONFIG_PM_RUNTIME
+ 
+ extern void pm_runtime_init(struct device *dev);
+@@ -23,7 +27,8 @@ static inline struct device *to_device(s
+ 	return container_of(entry, struct device, power.entry);
  }
  
-+static inline void device_enable_async_suspend(struct device *dev, bool enable)
-+{
-+	if (dev->power.status == DPM_ON)
-+		dev->power.async_suspend = enable;
-+}
-+
- void driver_init(void);
+-extern void device_pm_init(struct device *dev);
++extern void device_pm_list_add(struct device *dev);
++extern void device_pm_list_remove(struct device *dev);
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+ extern void device_pm_move_before(struct device *, struct device *);
+@@ -32,17 +37,8 @@ extern void device_pm_move_last(struct d
  
- /*
+ #else /* !CONFIG_PM_SLEEP */
+ 
+-static inline void device_pm_init(struct device *dev)
+-{
+-	pm_runtime_init(dev);
+-}
+-
+-static inline void device_pm_remove(struct device *dev)
+-{
+-	pm_runtime_remove(dev);
+-}
+-
+-static inline void device_pm_add(struct device *dev) {}
++static inline void device_pm_list_add(struct device *dev) {}
++static inline void device_pm_list_remove(struct device *dev) {}
+ static inline void device_pm_move_before(struct device *deva,
+ 					 struct device *devb) {}
+ static inline void device_pm_move_after(struct device *deva,
+@@ -60,7 +56,11 @@ static inline void device_pm_move_last(s
+ extern int dpm_sysfs_add(struct device *);
+ extern void dpm_sysfs_remove(struct device *);
+ 
+-#else /* CONFIG_PM */
++/* drivers/base/power/link.c */
++extern int pm_link_init(void);
++extern void pm_link_remove_all(struct device *dev);
++
++#else /* !CONFIG_PM */
+ 
+ static inline int dpm_sysfs_add(struct device *dev)
+ {
+@@ -71,4 +71,7 @@ static inline void dpm_sysfs_remove(stru
+ {
+ }
+ 
+-#endif
++static inline int pm_link_init(void) { return 0; }
++static inline void pm_link_remove_all(struct device *dev) {}
++
++#endif  /* !CONFIG_PM */
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -1252,9 +1252,13 @@ int __init devices_init(void)
+ 	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);
+ 	if (!sysfs_dev_char_kobj)
+ 		goto char_kobj_err;
++	if (pm_link_init())
++		goto pm_link_err;
+ 
+ 	return 0;
+ 
++ pm_link_err:
++	kobject_put(sysfs_dev_char_kobj);
+  char_kobj_err:
+ 	kobject_put(sysfs_dev_block_kobj);
+  block_kobj_err:
+Index: linux-2.6/include/linux/pm_link.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/linux/pm_link.h
+@@ -0,0 +1,30 @@
++/*
++ * include/linux/pm_link.h - PM links manipulation core.
++ *
++ * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is released under the GPLv2.
++ */
++
++#ifndef _LINUX_PM_LINK_H
++#define _LINUX_PM_LINK_H
++
++#include <linux/list.h>
++
++struct device;
++
++struct pm_link {
++	struct device *master;
++	struct list_head master_hook;
++	struct device *slave;
++	struct list_head slave_hook;
++};
++
++extern int pm_link_add(struct device *slave, struct device *master);
++extern void pm_link_remove(struct device *dev, struct device *master);
++extern int device_for_each_master(struct device *slave, void *data,
++			   int (*fn)(struct device *dev, void *data));
++extern int device_for_each_slave(struct device *master, void *data,
++			  int (*fn)(struct device *dev, void *data));
++
++#endif
+Index: linux-2.6/drivers/base/power/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/base/power/Makefile
++++ linux-2.6/drivers/base/power/Makefile
+@@ -1,4 +1,4 @@
+-obj-$(CONFIG_PM)	+= sysfs.o
++obj-$(CONFIG_PM)	+= sysfs.o common.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o
+ obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -972,8 +972,6 @@ EXPORT_SYMBOL_GPL(pm_runtime_enable);
+  */
+ void pm_runtime_init(struct device *dev)
+ {
+-	spin_lock_init(&dev->power.lock);
+-
+ 	dev->power.runtime_status = RPM_SUSPENDED;
+ 	dev->power.idle_notification = false;
+ 
+@@ -993,8 +991,6 @@ void pm_runtime_init(struct device *dev)
+ 	dev->power.timer_expires = 0;
+ 	setup_timer(&dev->power.suspend_timer, pm_suspend_timer_fn,
+ 			(unsigned long)dev);
+-
+-	init_waitqueue_head(&dev->power.wait_queue);
+ }
+ 
+ /**
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -26,6 +26,8 @@
+@@ -21,6 +21,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
++#include <linux/pm_link.h>
+ #include <linux/pm_runtime.h>
  #include <linux/resume-trace.h>
  #include <linux/rwsem.h>
- #include <linux/interrupt.h>
-+#include <linux/async.h>
-+#include <linux/completion.h>
- 
- #include "../base.h"
- #include "power.h"
-@@ -43,6 +45,7 @@
- LIST_HEAD(dpm_list);
- 
- static DEFINE_MUTEX(dpm_list_mtx);
-+static pm_message_t pm_transition;
- 
- /*
-  * Set once the preparation of devices for a PM transition has started, reset
-@@ -145,6 +148,131 @@ void device_pm_move_last(struct device *
- }
+@@ -50,16 +51,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
+ static bool transition_started;
  
  /**
-+ * dpm_reset - Clear power.op_started and power.op_complete for given device.
-+ * @dev: Device to handle.
-+ */
-+static void dpm_reset(struct device *dev)
-+{
-+	dev->power.op_started = false;
-+	dev->power.op_complete = false;
-+}
-+
-+/**
-+ * dpm_reset_all - Call dpm_reset() for all devices.
-+ */
-+static void dpm_reset_all(void)
-+{
-+	struct device *dev;
-+
-+	list_for_each_entry(dev, &dpm_list, power.entry)
-+		dpm_reset(dev);
-+}
-+
-+/**
-+ * dpm_synchronize_noirq - Wait for "late" or "early" PM callbacks to complete.
-+ *
-+ * Wait for the "late" or "early" suspend/resume callbacks of all devices to
-+ * complete and clear power.op_started and power.op_complete for all devices.
-+ */
-+static void dpm_synchronize_noirq(void)
-+{
-+	async_synchronize_full();
-+	dpm_reset_all();
-+}
-+
-+/**
-+ * dpm_synchronize_noirq - Wait for PM callbacks to complete.
-+ *
-+ * Wait for the "regular" suspend/resume callbacks of all devices to complete
-+ * and clear power.op_started and power.op_complete for all devices.
-+ */
-+static void dpm_synchronize(void)
-+{
-+	async_synchronize_full();
-+	mutex_lock(&dpm_list_mtx);
-+	dpm_reset_all();
-+	mutex_unlock(&dpm_list_mtx);
-+}
-+
-+/**
-+ * device_pm_wait - Wait for a PM operation to complete.
-+ * @sub: "Slave" device.
-+ * @dev: Device to wait for.
-+ *
-+ * Wait for a PM operation carried out for @dev to complete, unless both @sub
-+ * and @dev have to be handled synchronously (in such a case they are going to
-+ * be handled in the right order anyway thanks to the pm_list ordering).
-+ */
-+static void device_pm_wait(struct device *sub, struct device *dev)
-+{
-+	if (!dev)
-+		return;
-+
-+	if (!(sub->power.async_suspend || dev->power.async_suspend))
-+		return;
-+
-+	if (!dev->power.op_complete) {
-+		dev_dbg(sub, "PM: Waiting for %s %s\n", dev_driver_string(dev),
-+			dev_name(dev));
-+		wait_event(dev->power.wait_queue, !!dev->power.op_complete);
-+	}
-+}
-+
-+/**
-+ * device_pm_wait_fn - Wrapper for device_pm_wait().
-+ * @dev: Device to wait for.
-+ * @data: Pointer to the "slave" device object.
-+ */
-+static int device_pm_wait_fn(struct device *dev, void *data)
-+{
-+	device_pm_wait((struct device *)data, dev);
-+	return 0;
-+}
-+
-+/**
-+ * device_pm_wait_for_masters - Wait for all masters of given device.
-+ * @slave: Device to wait for the masters of.
-+ */
-+static void device_pm_wait_for_masters(struct device *slave)
-+{
-+	if (!pm_trace_enabled)
-+		device_for_each_master(slave, slave, device_pm_wait_fn);
-+}
-+
-+/**
-+ * device_pm_check - Check the power.op_complete flag of given device.
-+ * @dev: Device to check.
-+ */
-+static bool device_pm_check(struct device *dev)
-+{
-+	int ret = 0;
-+
-+	if (dev)
-+		ret = !dev->power.op_complete;
-+
-+	return ret;
-+}
-+
-+/**
-+ * device_pm_check_fn - Wrapper for device_pm_check().
-+ * @dev: Device to check.
-+ * @data: Ignored.
-+ */
-+static int device_pm_check_fn(struct device *dev, void *data)
-+{
-+	return device_pm_check(dev);
-+}
-+
-+/**
-+ * device_pm_check_masters - Check power.op_complete for masters of a device.
-+ * @slave: Device to check the masters of.
-+ */
-+static int device_pm_check_masters(struct device *slave)
-+{
-+	return device_for_each_master(slave, NULL, device_pm_check_fn);
-+}
-+
-+/**
-  * pm_op - Execute the PM operation appropriate for given PM event.
-  * @dev: Device to handle.
-  * @ops: PM operations to choose from.
-@@ -269,6 +397,24 @@ static int pm_noirq_op(struct device *de
- 	return error;
- }
- 
-+/**
-+ * pm_op_started - Mark the beginning of a PM operation for given device.
-+ * @dev: Device to handle.
-+ */
-+static bool pm_op_started(struct device *dev)
-+{
-+	bool ret = false;
-+
-+	spin_lock_irq(&dev->power.lock);
-+	if (dev->power.op_started)
-+		ret = true;
-+	else
-+		dev->power.op_started = true;
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	return ret;
-+}
-+
- static char *pm_verb(int event)
- {
- 	switch (event) {
-@@ -310,33 +456,102 @@ static void pm_dev_err(struct device *de
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-- * device_resume_noirq - Execute an "early resume" callback for given device.
-+ * __device_resume_noirq - Execute an "early resume" callback for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-  *
-  * The driver of @dev will not receive interrupts while this function is being
-  * executed.
-  */
--static int device_resume_noirq(struct device *dev, pm_message_t state)
-+static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (!dev->bus)
--		goto End;
+- * device_pm_init - Initialize the PM-related part of a device object.
+- * @dev: Device object being initialized.
+- */
+-void device_pm_init(struct device *dev)
+-{
+-	dev->power.status = DPM_ON;
+-	pm_runtime_init(dev);
+-}
 -
--	if (dev->bus->pm) {
-+	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "EARLY ");
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
- 	}
-- End:
-+
-+	dev->power.op_complete = true;
-+	wake_up_all(&dev->power.wait_queue);
-+
- 	TRACE_RESUME(error);
- 	return error;
- }
- 
- /**
-+ * async_device_resume_noirq - Wrapper of __device_resume_noirq().
-+ * @dev: Device to resume.
-+ */
-+static void async_device_resume_noirq(struct device *dev)
-+{
-+	int error;
-+
-+	pm_dev_dbg(dev, pm_transition, "async EARLY ");
-+	error = __device_resume_noirq(dev, pm_transition);
-+	if (error)
-+		pm_dev_err(dev, pm_transition, " async EARLY", error);
-+}
-+
-+/**
-+ * async_resume_noirq - Execute "early" resume callbacks asynchronously.
-+ * @data: Pointer to the first device to resume.
-+ * @cookie: Ignored.
-+ *
-+ * The execution of this function is scheduled with async_schedule(), so it runs
-+ * in its own kernel thread.  It first calls the "early" resume callback for the
-+ * device passed to it as @data.  Next, it walks dpm_list looking for devices
-+ * that can be resumed without waiting for their "masters".  If such a device is
-+ * found, its "early" resume callback is run.
-+ */
-+static void async_resume_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+
-+	device_pm_wait_for_masters(dev);
-+	async_device_resume_noirq(dev);
-+
-+	list_for_each_entry_continue(dev, &dpm_list, power.entry) {
-+		if (!dev->power.async_suspend || dev->power.status <= DPM_OFF)
-+			continue;
-+
-+		if (device_pm_check_masters(dev))
-+			continue;
-+
-+		if (pm_op_started(dev))
-+			continue;
-+
-+		pm_dev_dbg(dev, pm_transition, "out of order EARLY ");
-+		async_device_resume_noirq(dev);
-+	}
-+}
-+
-+/**
-+ * device_resume_noirq - Execute or schedule "early" resume callback.
-+ * @dev: Device to resume.
-+ *
-+ * If @dev can be resumed asynchronously, schedule the execution of
-+ * async_resume_noirq() for it.  Otherwise, execute its "early" resume callback
-+ * directly.
-+ */
-+static int device_resume_noirq(struct device *dev)
-+{
-+	if (pm_op_started(dev))
-+		return 0;
-+
-+	if (dev->power.async_suspend && !pm_trace_enabled) {
-+		async_schedule(async_resume_noirq, dev);
-+		return 0;
-+	}
-+
-+	device_pm_wait_for_masters(dev);
-+	return __device_resume_noirq(dev, pm_transition);
-+}
-+
-+/**
-  * dpm_resume_noirq - Execute "early resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
-  *
-@@ -349,26 +564,28 @@ void dpm_resume_noirq(pm_message_t state
- 
- 	mutex_lock(&dpm_list_mtx);
- 	transition_started = false;
-+	pm_transition = state;
- 	list_for_each_entry(dev, &dpm_list, power.entry)
- 		if (dev->power.status > DPM_OFF) {
- 			int error;
- 
- 			dev->power.status = DPM_OFF;
--			error = device_resume_noirq(dev, state);
-+			error = device_resume_noirq(dev);
- 			if (error)
--				pm_dev_err(dev, state, " early", error);
-+				pm_dev_err(dev, state, " EARLY", error);
- 		}
-+	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
- 	resume_device_irqs();
- }
- EXPORT_SYMBOL_GPL(dpm_resume_noirq);
- 
- /**
-- * device_resume - Execute "resume" callbacks for given device.
-+ * __device_resume - Execute "resume" callbacks for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
+-/**
+  * device_pm_lock - Lock the list of active devices used by the PM core.
   */
--static int device_resume(struct device *dev, pm_message_t state)
-+static int __device_resume(struct device *dev, pm_message_t state)
+ void device_pm_lock(void)
+@@ -76,14 +67,11 @@ void device_pm_unlock(void)
+ }
+ 
+ /**
+- * device_pm_add - Add a device to the PM core's list of active devices.
++ * device_pm_list_add - Add a device to the PM core's list of active devices.
+  * @dev: Device to add to the list.
+  */
+-void device_pm_add(struct device *dev)
++void device_pm_list_add(struct device *dev)
  {
- 	int error = 0;
- 
-@@ -409,12 +626,92 @@ static int device_resume(struct device *
- 	}
-  End:
- 	up(&dev->sem);
-+	dev->power.op_complete = true;
-+	wake_up_all(&dev->power.wait_queue);
- 
- 	TRACE_RESUME(error);
- 	return error;
- }
- 
- /**
-+ * async_device_resume - Wrapper of __device_resume().
-+ * @dev: Device to resume.
-+ */
-+static void async_device_resume(struct device *dev)
-+{
-+	int error;
-+
-+	pm_dev_dbg(dev, pm_transition, "async ");
-+	error = __device_resume(dev, pm_transition);
-+	if (error)
-+		pm_dev_err(dev, pm_transition, " async", error);
-+}
-+
-+/**
-+ * async_resume - Execute resume callbacks asynchronously.
-+ * @data: Pointer to the first device to resume.
-+ * @cookie: Ignored.
-+ *
-+ * The execution of this function is scheduled with async_schedule(), so it runs
-+ * in its own kernel thread.  It first calls the resume callbacks for the device
-+ * passed to it as @data.  Next, it walks dpm_list looking for devices that can
-+ * be resumed without waiting for their "masters".  If such a device is found,
-+ * its resume callbacks are run.
-+ */
-+static void async_resume(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+
-+	device_pm_wait_for_masters(dev);
-+
-+ repeat:
-+	async_device_resume(dev);
-+	put_device(dev);
-+
-+	mutex_lock(&dpm_list_mtx);
-+	if (dev->power.status < DPM_OFF)
-+		dev = to_device(dpm_list.next);
-+	list_for_each_entry_continue(dev, &dpm_list, power.entry) {
-+		if (!dev->power.async_suspend || dev->power.status < DPM_OFF)
-+			continue;
-+
-+		if (device_pm_check_masters(dev))
-+			continue;
-+
-+		if (pm_op_started(dev))
-+			continue;
-+
-+		get_device(dev);
-+		mutex_unlock(&dpm_list_mtx);
-+		pm_dev_dbg(dev, pm_transition, "out of order ");
-+		goto repeat;
-+	}
-+	mutex_unlock(&dpm_list_mtx);
-+}
-+
-+/**
-+ * device_resume - Execute or schedule resume callbacks for given device.
-+ * @dev: Device to resume.
-+ *
-+ * If @dev can be resumed asynchronously, schedule the execution of
-+ * async_resume() for it.  Otherwise, execute its resume callbacks directly.
-+ */
-+static int device_resume(struct device *dev)
-+{
-+	if (pm_op_started(dev))
-+		return 0;
-+
-+	if (dev->power.async_suspend && !pm_trace_enabled) {
-+		get_device(dev);
-+		async_schedule(async_resume, dev);
-+		return 0;
-+	}
-+
-+	device_pm_wait_for_masters(dev);
-+	return __device_resume(dev, pm_transition);
-+}
-+
-+/**
-  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
-  *
-@@ -427,6 +724,7 @@ static void dpm_resume(pm_message_t stat
- 
- 	INIT_LIST_HEAD(&list);
+-	pr_debug("PM: Adding info for %s:%s\n",
+-		 dev->bus ? dev->bus->name : "No Bus",
+-		 kobject_name(&dev->kobj));
  	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
- 
-@@ -437,7 +735,7 @@ static void dpm_resume(pm_message_t stat
- 			dev->power.status = DPM_RESUMING;
- 			mutex_unlock(&dpm_list_mtx);
- 
--			error = device_resume(dev, state);
-+			error = device_resume(dev);
- 
- 			mutex_lock(&dpm_list_mtx);
- 			if (error)
-@@ -452,6 +750,7 @@ static void dpm_resume(pm_message_t stat
+ 	if (dev->parent) {
+ 		if (dev->parent->power.status >= DPM_SUSPENDING)
+@@ -97,24 +85,19 @@ void device_pm_add(struct device *dev)
+ 		 */
+ 		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
  	}
- 	list_splice(&list, &dpm_list);
+-
+ 	list_add_tail(&dev->power.entry, &dpm_list);
  	mutex_unlock(&dpm_list_mtx);
-+	dpm_synchronize();
  }
  
  /**
-@@ -775,8 +1074,10 @@ static int dpm_prepare(pm_message_t stat
- 			break;
- 		}
- 		dev->power.status = DPM_SUSPENDING;
--		if (!list_empty(&dev->power.entry))
-+		if (!list_empty(&dev->power.entry)) {
- 			list_move_tail(&dev->power.entry, &list);
-+			dpm_reset(dev);
-+		}
- 		put_device(dev);
- 	}
- 	list_splice(&list, &dpm_list);
+- * device_pm_remove - Remove a device from the PM core's list of active devices.
++ * device_pm_list_remove - Remove a device from the PM core's list of devices.
+  * @dev: Device to be removed from the list.
+  */
+-void device_pm_remove(struct device *dev)
++void device_pm_list_remove(struct device *dev)
+ {
+-	pr_debug("PM: Removing info for %s:%s\n",
+-		 dev->bus ? dev->bus->name : "No Bus",
+-		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+-	pm_runtime_remove(dev);
+ }
+ 
+ /**
 Index: linux-2.6/drivers/base/power/common.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/common.c
+--- /dev/null
 +++ linux-2.6/drivers/base/power/common.c
-@@ -19,10 +19,11 @@
-  */
- void device_pm_init(struct device *dev)
- {
--	dev->power.status = DPM_ON;
- 	spin_lock_init(&dev->power.lock);
-+	init_waitqueue_head(&dev->power.wait_queue);
- 	INIT_LIST_HEAD(&dev->power.master_links);
- 	INIT_LIST_HEAD(&dev->power.slave_links);
+@@ -0,0 +1,280 @@
++/*
++ * drivers/base/power/common.c - device PM common functions.
++ *
++ * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/rculist.h>
++#include <linux/device.h>
++#include <linux/srcu.h>
++#include <linux/pm_link.h>
++
++#include "power.h"
++
++/**
++ * device_pm_init - Initialize the PM part of a device object.
++ * @dev: Device object being initialized.
++ */
++void device_pm_init(struct device *dev)
++{
 +	dev->power.status = DPM_ON;
- 	pm_runtime_init(dev);
- }
++	spin_lock_init(&dev->power.lock);
++	INIT_LIST_HEAD(&dev->power.master_links);
++	INIT_LIST_HEAD(&dev->power.slave_links);
++	pm_runtime_init(dev);
++}
++
++/**
++ * device_pm_add - Handle the PM part of a device added to device tree.
++ * @dev: Device object being added to device tree.
++ */
++void device_pm_add(struct device *dev)
++{
++	pr_debug("PM: Adding info for %s:%s\n",
++		 dev->bus ? dev->bus->name : "No Bus",
++		 kobject_name(&dev->kobj));
++	device_pm_list_add(dev);
++}
++
++/**
++ * device_pm_remove - Handle the PM part of a device removed from device tree.
++ * @dev: Device object being removed from device tree.
++ */
++void device_pm_remove(struct device *dev)
++{
++	pr_debug("PM: Removing info for %s:%s\n",
++		 dev->bus ? dev->bus->name : "No Bus",
++		 kobject_name(&dev->kobj));
++	device_pm_list_remove(dev);
++	pm_runtime_remove(dev);
++	pm_link_remove_all(dev);
++}
++
++/*
++ * PM links framework.
++ *
++ * There are PM dependencies between devices that are not reflected by the
++ * structure of the device tree.  In other words, as far as PM is concerned, a
++ * device may depend on some other devices which are not its children and none
++ * of which is its parent.
++ *
++ * Every such dependency involves two devices, one of which is a "master" and
++ * the other of which is a "slave", meaning that the "slave" have to be
++ * suspended before the "master" and cannot be woken up before it.  Thus every
++ * device can be given two lists of "dependency objects", one for the
++ * dependencies where the device is the "master" and the other for the
++ * dependencies where the device is the "slave".  Then, each "dependency object"
++ * can be represented as 'struct pm_link' as defined in include/linux/pm_link.h.
++ *
++ * The PM links of a device can help decide when the device should be suspended
++ * or resumed.  Namely, In addition to checking the device's parent, the PM core
++ * can walk the list of its "masters" and check their PM status.  Similarly, in
++ * addition to walking the list of a device's children, the PM core can walk the
++ * list of its "slaves".
++ */
++
++static struct srcu_struct pm_link_ss;
++static DEFINE_MUTEX(pm_link_mtx);
++
++/**
++ * pm_link_add - Create a PM link object connecting two devices.
++ * @slave: Device to be the slave in this link.
++ * @master: Device to be the master in this link.
++ */
++int pm_link_add(struct device *slave, struct device *master)
++{
++	struct pm_link *link;
++	int error = -ENODEV;
++
++	if (!get_device(master))
++		return error;
++
++	if (!get_device(slave))
++		goto err_slave;
++
++	link = kzalloc(sizeof(*link), GFP_KERNEL);
++	if (!link)
++		goto err_link;
++
++	dev_dbg(slave, "PM: Creating PM link to (master) %s %s\n",
++		dev_driver_string(master), dev_name(master));
++
++	link->master = master;
++	INIT_LIST_HEAD(&link->master_hook);
++	link->slave = slave;
++	INIT_LIST_HEAD(&link->slave_hook);
++
++	spin_lock_irq(&master->power.lock);
++	list_add_tail_rcu(&link->master_hook, &master->power.master_links);
++	spin_unlock_irq(&master->power.lock);
++
++	spin_lock_irq(&slave->power.lock);
++	list_add_tail_rcu(&link->slave_hook, &slave->power.slave_links);
++	spin_unlock_irq(&slave->power.lock);
++
++	return 0;
++
++ err_link:
++	error = -ENOMEM;
++	put_device(slave);
++
++ err_slave:
++	put_device(master);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(pm_link_add);
++
++/**
++ * __pm_link_remove - Remove a PM link object.
++ * @link: PM link object to remove
++ */
++static void __pm_link_remove(struct pm_link *link)
++{
++	struct device *master = link->master;
++	struct device *slave = link->slave;
++
++	dev_dbg(slave, "PM: Removing PM link to (master) %s %s\n",
++		dev_driver_string(master), dev_name(master));
++
++	spin_lock_irq(&master->power.lock);
++	list_del_rcu(&link->master_hook);
++	spin_unlock_irq(&master->power.lock);
++
++	spin_lock_irq(&slave->power.lock);
++	list_del_rcu(&link->slave_hook);
++	spin_unlock_irq(&slave->power.lock);
++
++	synchronize_srcu(&pm_link_ss);
++
++	kfree(link);
++
++	put_device(master);
++	put_device(slave);
++}
++
++/**
++ * pm_link_remove_all - Remove all PM link objects for given device.
++ * @dev: Device to handle.
++ */
++void pm_link_remove_all(struct device *dev)
++{
++	struct pm_link *link, *n;
++
++	mutex_lock(&pm_link_mtx);
++
++	list_for_each_entry_safe(link, n, &dev->power.master_links, master_hook)
++		__pm_link_remove(link);
++
++	list_for_each_entry_safe(link, n, &dev->power.slave_links, slave_hook)
++		__pm_link_remove(link);
++
++	mutex_unlock(&pm_link_mtx);
++}
++
++/**
++ * pm_link_remove - Remove a PM link object connecting two devices.
++ * @dev: Slave device of the PM link to remove.
++ * @master: Master device of the PM link to remove.
++ */
++void pm_link_remove(struct device *dev, struct device *master)
++{
++	struct pm_link *link, *n;
++
++	mutex_lock(&pm_link_mtx);
++
++	list_for_each_entry_safe(link, n, &dev->power.slave_links, slave_hook) {
++		if (link->master != master)
++			continue;
++
++		__pm_link_remove(link);
++		break;
++	}
++
++	mutex_unlock(&pm_link_mtx);
++}
++EXPORT_SYMBOL_GPL(pm_link_remove);
++
++/**
++ * device_for_each_master - Execute given function for each master of a device.
++ * @slave: Device whose masters to execute the function for.
++ * @data: Data pointer to pass to the function.
++ * @fn: Function to execute for each master of @slave.
++ *
++ * The function is executed for the parent of the device, if there is one, and
++ * for each device connected to it via a pm_link object where @slave is the
++ * "slave".
++ */
++int device_for_each_master(struct device *slave, void *data,
++			   int (*fn)(struct device *dev, void *data))
++{
++	struct pm_link *link;
++	int idx;
++	int error = 0;
++
++	if (slave->parent) {
++		error = fn(slave->parent, data);
++		if (error)
++			return error;
++	}
++
++	idx = srcu_read_lock(&pm_link_ss);
++
++	list_for_each_entry_rcu(link, &slave->power.slave_links, slave_hook) {
++		struct device *master = link->master;
++
++		error = fn(master, data);
++		if (error)
++			break;
++	}
++
++	srcu_read_unlock(&pm_link_ss, idx);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(device_for_each_master);
++
++/**
++ * device_for_each_slave - Execute given function for each slave of a device.
++ * @master: Device whose slaves to execute the function for.
++ * @data: Data pointer to pass to the function.
++ * @fn: Function to execute for each slave of @master.
++ *
++ * The function is executed for all children of the device, if there are any,
++ * and for each device connected to it via a pm_link object where @master is the
++ * "master".
++ */
++int device_for_each_slave(struct device *master, void *data,
++			  int (*fn)(struct device *dev, void *data))
++{
++	struct pm_link *link;
++	int idx;
++	int error;
++
++	error = device_for_each_child(master, data, fn);
++	if (error)
++		return error;
++
++	idx = srcu_read_lock(&pm_link_ss);
++
++	list_for_each_entry_rcu(link, &master->power.master_links,
++				master_hook) {
++		struct device *slave = link->slave;
++
++		error = fn(slave, data);
++		if (error)
++			break;
++	}
++
++	srcu_read_unlock(&pm_link_ss, idx);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(device_for_each_slave);
++
++int __init pm_link_init(void)
++{
++	return init_srcu_struct(&pm_link_ss);
++}
+Index: linux-2.6/drivers/acpi/glue.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/glue.c
++++ linux-2.6/drivers/acpi/glue.c
+@@ -11,6 +11,7 @@
+ #include <linux/device.h>
+ #include <linux/rwsem.h>
+ #include <linux/acpi.h>
++#include <linux/pm_link.h>
  
-@@ -117,6 +118,8 @@ int pm_link_add(struct device *slave, st
+ #define ACPI_GLUE_DEBUG	0
+ #if ACPI_GLUE_DEBUG
+@@ -170,6 +171,7 @@ static int acpi_bind_one(struct device *
+ 			device_set_wakeup_enable(dev,
+ 						acpi_dev->wakeup.state.enabled);
+ 		}
++		pm_link_add(dev, &acpi_dev->dev);
+ 	}
+ 
  	return 0;
+@@ -189,6 +191,7 @@ static int acpi_unbind_one(struct device
+ 					&acpi_dev)) {
+ 			sysfs_remove_link(&dev->kobj, "firmware_node");
+ 			sysfs_remove_link(&acpi_dev->dev.kobj, "physical_node");
++			pm_link_remove(dev, &acpi_dev->dev);
+ 		}
  
-  err_link:
-+	master->power.async_suspend = false;
-+	slave->power.async_suspend = false;
- 	error = -ENOMEM;
- 	put_device(slave);
- 
+ 		acpi_detach_data(dev->archdata.acpi_handle,
