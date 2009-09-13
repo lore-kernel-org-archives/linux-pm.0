@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: What's in suspend-2.6.git
-Date: Sun, 13 Sep 2009 01:09:11 +0200
-Message-ID: <200909130109.11291.rjw__6493.39941232956$1252796990$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 1/4] PCI PM: Add function for checking PME
+	status of devices
+Date: Sun, 13 Sep 2009 23:20:58 +0200
+Message-ID: <200909132320.58093.rjw__3697.56563236496$1252877186$gmane$org@sisk.pl>
+References: <200909132320.05077.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200909132320.05077.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,102 +19,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This is a summary of the changes queued on the #linux-next branch
-of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+Add function pci_check_pme_status() that will check the PME status
+bit of given device and clear it along with the PME enable bit.  It
+will be necessary for PCI run-time power management.
 
-They are going to be pushed to Linus in the next couple of days, since I know
-Paul is waiting for some of them to appear upstream.
+Based on a patch from Shaohua Li <shaohua.li@intel.com>
 
-PM developers, please speak up if there's anything obviously wrong or missing.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h |    1 +
+ 2 files changed, 36 insertions(+)
 
-
-Albin Tonnerre (1):
-      PM: Add convenience macro to make switching to dev_pm_ops less error-prone
-
-Dan Williams (1):
-      at_hdmac: Rework suspend_late()/resume_early()
-
-Dmitry Torokhov (1):
-      Driver Core: Make PM operations a const pointer
-
-Frans Pop (2):
-      floppy: Switch driver to dev_pm_ops
-      hp-wmi: Switch driver to dev_pm_ops
-
-Gerald Schaefer (1):
-      PM / Hibernate / Memory hotplug: Always use for_each_populated_zone()
-
-Magnus Damm (9):
-      Driver Core: Add platform device arch data V3
-      ARM: Rework omap suspend_late()/resume_early()
-      DMA: Rework dw_dmac suspend_late()/resume_early()
-      DMA: Rework txx9dmac suspend_late()/resume_early()
-      I2C: Rework i2c-pxa suspend_late()/resume_early()
-      I2C: Rework i2c-s3c2410 suspend_late()/resume() V2
-      USB: Rework musb suspend()/resume_early()
-      PM: Remove platform device suspend_late()/resume_early() V2
-      PM: Run-time PM platform device bus support
-
-Rafael J. Wysocki (6):
-      PM: Introduce core framework for run-time PM of I/O devices (rev. 17)
-      PM/Hibernate: Rework shrinking of memory
-      PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
-      PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
-      PM / irq: Fix comment describing suspend_device_irqs()
-      PM: Update kerneldoc comments in drivers/base/power/main.c
-
-Thadeu Lima de Souza Cascardo (1):
-      PM: Fix typo in label name s/Platofrm_finish/Platform_finish/
-
-Wu Fengguang (1):
-      PM: Trivial fixes
-
-Xiaotian Feng (1):
-      PM: Reset transition_started at dpm_resume_noirq
-
----------------
-
- Documentation/power/runtime_pm.txt   |  378 +++++++++++++
- arch/arm/include/asm/device.h        |    3 +
- arch/arm/plat-omap/debug-leds.c      |   11 +-
- arch/arm/plat-omap/gpio.c            |   14 +-
- arch/ia64/include/asm/device.h       |    3 +
- arch/microblaze/include/asm/device.h |    3 +
- arch/powerpc/include/asm/device.h    |    3 +
- arch/sparc/include/asm/device.h      |    3 +
- arch/x86/include/asm/device.h        |    3 +
- drivers/base/dd.c                    |   11 +
- drivers/base/platform.c              |   84 ++--
- drivers/base/power/Makefile          |    1 +
- drivers/base/power/main.c            |  199 ++++---
- drivers/base/power/power.h           |   31 +-
- drivers/base/power/runtime.c         | 1011 ++++++++++++++++++++++++++++++++++
- drivers/block/floppy.c               |    9 +-
- drivers/dma/at_hdmac.c               |   19 +-
- drivers/dma/dw_dmac.c                |   15 +-
- drivers/dma/txx9dmac.c               |   15 +-
- drivers/i2c/busses/i2c-pxa.c         |   25 +-
- drivers/i2c/busses/i2c-s3c2410.c     |   25 +-
- drivers/pci/pci-driver.c             |   16 +-
- drivers/platform/x86/hp-wmi.c        |   15 +-
- drivers/usb/musb/musb_core.c         |   18 +-
- include/asm-generic/device.h         |    3 +
- include/linux/device.h               |    9 +-
- include/linux/platform_device.h      |    5 +-
- include/linux/pm.h                   |  115 ++++-
- include/linux/pm_runtime.h           |  114 ++++
- kernel/irq/pm.c                      |    8 +-
- kernel/power/Kconfig                 |   14 +
- kernel/power/hibernate.c             |   21 +-
- kernel/power/main.c                  |   17 +
- kernel/power/power.h                 |    2 +-
- kernel/power/snapshot.c              |  412 +++++++++++----
- 35 files changed, 2310 insertions(+), 325 deletions(-)
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -48,6 +48,7 @@ struct pci_platform_pm_ops {
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
++extern bool pci_check_pme_status(struct pci_dev *dev);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1161,6 +1161,41 @@ int pci_set_pcie_reset_state(struct pci_
+ }
+ 
+ /**
++ * pci_check_pme_status - Check if given device has generated PME.
++ * @dev: Device to check.
++ *
++ * Check the PME status of the device, clear PME status and PME enable.  Return
++ * 'true' if PME has been generated by the device (and hasn't been spurious) or
++ * 'false' otherwise.
++ */
++bool pci_check_pme_status(struct pci_dev *dev)
++{
++	int pmcsr_pos;
++	u16 pmcsr;
++	bool ret = false;
++
++	if (!dev->pm_cap)
++		return false;
++
++	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
++	/* clear PME status and disable PME to avoid interrupt flood */
++	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
++	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
++		return false;
++
++	pmcsr |= PCI_PM_CTRL_PME_STATUS;
++	/* Ignore spurious PME or clear PME enable if it's not spurious. */
++	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
++		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
++		ret = true;
++	}
++
++	pci_write_config_word(dev, pmcsr_pos, pmcsr);
++
++	return ret;
++}
++
++/**
+  * pci_pme_capable - check the capability of PCI device to generate PME#
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
