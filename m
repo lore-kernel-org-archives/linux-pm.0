@@ -1,14 +1,18 @@
-From: Jesse Barnes <jesse.barnes@intel.com>
-Subject: Re: [Resend][PATCH 2/2] PCI PM: Return error codes from
- pci_pm_resume()
-Date: Mon, 14 Sep 2009 13:42:10 -0700
-Message-ID: <20090914134210.3376e0f7__7643.05509296737$1252961203$gmane$org@jbarnes-g45>
-References: <200909092349.59170.rjw@sisk.pl> <200909092351.27178.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1] PCI PM: PCIe PME root port service
+	driver	(was: Re: [PATCH 2/2] PCIe native PME support)
+Date: Tue, 15 Sep 2009 13:32:30 +0200
+Message-ID: <20090915113230.GA1328__6954.90601142428$1253014528$gmane$org@ucw.cz>
+References: <1251101495.22288.54.camel@sli10-desk.sh.intel.com>
+	<200908292248.01079.rjw@sisk.pl>
+	<20090901023549.GB3695@sli10-desk.sh.intel.com>
+	<200909061434.24870.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909092351.27178.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200909061434.24870.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +23,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-pci <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 Sep 2009 23:51:27 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi!
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Updated patch.
 > 
-> Currently pci_pm_resume() always returns 0, which makes the error
-> variable defined in there a bit pointless.  Make pci_pm_resume()
-> return error codes obtained from drivers' callbacks.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/pci/pci-driver.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/pci/pci-driver.c
+> I looked at it and thought I would do it differently in many places, so
+> below is my version.
+
+> Index: linux-2.6/drivers/pci/pcie/Kconfig
 > ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci-driver.c
-> +++ linux-2.6/drivers/pci/pci-driver.c
-> @@ -689,7 +689,7 @@ static int pci_pm_resume(struct device *
->  		pci_pm_reenable_device(pci_dev);
->  	}
->  
-> -	return 0;
-> +	return error;
->  }
->  
->  #else /* !CONFIG_SUSPEND */
-> 
+> --- linux-2.6.orig/drivers/pci/pcie/Kconfig
+> +++ linux-2.6/drivers/pci/pcie/Kconfig
+> @@ -46,3 +46,7 @@ config PCIEASPM_DEBUG
+>  	help
+>  	  This enables PCI Express ASPM debug support. It will add per-device
+>  	  interface to control ASPM.
+> +
+> +config PCIE_PME
+> +	def_bool y
+> +	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
 
-Applied these two, thanks.
+This is evil. Now config_EXPERIMENTAL controls if this option is
+enabled or not.
 
+If the feature is so experimental that it needs this kind of markup,
+it should probably be user-selectable, too...
+
+								Pavel
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
