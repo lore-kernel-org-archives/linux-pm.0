@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: s2ram / s2disk / s2both repository moved to git
-Date: Wed, 23 Sep 2009 01:27:19 +0200
-Message-ID: <200909230127.19534.rjw__48368.2625614621$1253662155$gmane$org@sisk.pl>
+Subject: Re: Help
+Date: Wed, 23 Sep 2009 01:33:28 +0200
+Message-ID: <200909230133.28689.rjw__49681.9622735076$1253662506$gmane$org@sisk.pl>
+References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
+	<200908152239.15915.rjw@sisk.pl> <20090822073516.GD2108@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20090822073516.GD2108@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,26 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: suspend-devel List <suspend-devel@lists.sourceforge.net>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, stefan.seyfried@googlemail.com
+To: kix <kixdotes@users.sourceforge.net>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>, stefan.seyfried@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi kix,
 
-I've just set up a git tree on kernel.org holding the s2ram / s2disk / s2both
-repository.  I'm not going to update the CVS repository at suspend.sf.net any
-more, so if you want any changes to be made to the project's source code,
-please send me patches or, preferably, point me to the trees from where I
-can pull the changes directly.
+On Saturday 22 August 2009, Pavel Machek wrote:
+> Hi!
+> 
+> > > Message body follows:
+> > > 
+> > > I would like to help in the project.
+> > > 
+> > > - updating the database.
+> > > 
+> > > Have you seen the patch I sent?
+> > 
+> > Yes, sorry for the lack of response, but I didn't really have the time to
+> > review the patch.
+> > 
+> > That said, I don't think we'd like to move the whitelist to a separate file.
+> > Rather than that, we've been considering removing it altogether.
+> > 
+> > Still, if you want to maintain the whitelist in its current form, I think
+> > you could do that.
+> 
+> Yes, maintainer for the whitelist would be very welcome.
+> 
+> Now... whitelist inside the binary is very welcome for init=/bin/bash,
+> etc; OTOH if the .c file is compiled from .txt description... that's
+> probably acceptable. Also it might make sense to load external
+> whitelist _in addition_ to the internal one, so people can quickly
+> experiment with whitelist entries...
 
-The tree is available for cloning from:
+If you're still willing to be a whitelist maintainer, please set up a git
+repository from which I can pull the whitelist updates.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-utils.git
+If you'd like to move the whitelist to a separate file, please do so.  You are
+free to use whatever format you think is suitable, although it would be nice
+if the whitelist file could be easily updated by users.
 
-I'm going to stop administering the suspend-devel list shortly and most
-probably I'll stop subscribing it as well.  Please send messages related to
-s2ram / s2disk / s2both to linux-pm@lists.linux-foundation.org or directly
-to me (preferably with a CC to linux-pm).
-
-Best regards,
+Best,
 Rafael
