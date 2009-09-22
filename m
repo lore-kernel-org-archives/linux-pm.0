@@ -1,16 +1,14 @@
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Subject: Re: [Suspend-devel] Help
-Date: Thu, 24 Sep 2009 14:51:28 +0200
-Message-ID: <20090924145128.26e758df__10774.3567940362$1253796785$gmane$org@strolchi.home.s3e.de>
-References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
-	<200909230133.28689.rjw@sisk.pl>
-	<3096bd910909230134v6ad1c5acr53b172d9472488e8@mail.gmail.com>
-	<200909240028.03305.rjw@sisk.pl>
+From: kevin granade <kevin.granade@gmail.com>
+Subject: Re: [PATCH] PCI PM: Read device power state from
+	register after updating it (rev. 2)
+Date: Tue, 22 Sep 2009 14:56:55 -0500
+Message-ID: <7004b08e0909221256m6d917531kc8b51e1af85d3459@mail.gmail.com>
+References: <20090922080747.GA20853@rhlx01.hs-esslingen.de>
+	<200909222150.01185.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============0348182755172567241=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909240028.03305.rjw@sisk.pl>
+In-Reply-To: <200909222150.01185.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +16,105 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pci@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyNCBTZXAgMjAwOSAwMDoyODowMyArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
-andAc2lzay5wbD4gd3JvdGU6Cgo+IE9uIFdlZG5lc2RheSAyMyBTZXB0ZW1iZXIgMjAwOSwgUm9k
-b2xmbyAoa2l4KSB3cm90ZToKPiA+IEhpIFJhZmFlbCwKPiAKPiBIaSwKPiAKPiA+IEkgYW0gdGhp
-bmtpbmcgYWJvdXQgdGhlIG1haW50YWluaW5nIC4uLgoKR29vZCBsdWNrISBJIGtub3cgdGhhdCB5
-b3UnbGwgbmVlZCBpdCA7KQoKTGV0IG1lIHRocm93IG15IDIgY2VudHMgaW50byB0aGUgYm93bC4K
-Cj4gPiAxLiBUaGUgdXNlcnMgc2VuZHMgdGhlIGhhcmR3YXJlIGluZm8gdG8gYmUgYWRkZWQgdG8g
-dGhlIGRhdGFiYXNlCj4gPiAobm93IGJ5IG1haWwpLiBUaGVuOgo+ID4gCj4gPiAxLiBQcm9iYWJs
-eSB3ZSBuZWVkIGEgbGl0dGxlIHNjcmlwdCAob3Igd2ViIHNjcmlwdD8gb3IgcG9zdCBkaXJlY3Rs
-eQo+ID4gZm9ybSB0aGUgczJyYW0gLWk/KToKPiA+ICAgMS5hIFRoZSBzY3JpcHQgY2hlY2tzIGlm
-IHRoZSBtYWNoaW5lIGlzIHByZXZpb3VzbHkgYWRkZWQgdG8gdGhlCj4gPiBkYXRhYmFzZSAoaW4g
-YSB0ZXh0IGZpbGUpLiBQcm9iYWJseSB0aGlzIHNjcmlwdCBjYW4gcmVhZCBmcm9tIHRoZQo+ID4g
-bWFpbGluZyBsaXN0IGZvcm1hdAo+ID4gCj4gPiB4eHh4OiUgc3VkbyAvcm9vdC9zMnJhbSAtaQo+
-ID4gVGhpcyBtYWNoaW5lIGNhbiBiZSBpZGVudGlmaWVkIGJ5Ogo+ID4gICAgIHN5c192ZW5kb3Ig
-ICA9ICJUT1NISUJBIgo+ID4gICAgIHN5c19wcm9kdWN0ICA9ICJTYXRlbGxpdGUgVTMwNSIKPiA+
-ICAgICBzeXNfdmVyc2lvbiAgPSAiUFNVMzRVLTAwTDAwMyIKPiA+ICAgICBiaW9zX3ZlcnNpb24g
-PSAiVjEuNzAgICAiCj4gPiBTZWUgaHR0cDovL2VuLm9wZW5zdXNlLm9yZy9TMnJhbSBmb3IgZGV0
-YWlscy4KPiA+IAo+ID4gICAxLmIgSWYgaXMgbm90IGFkZGVkLCB0aGUgc2NyaXB0IGFkZCB0aGUg
-bWFjaGluZSB0byBhIHRleHQgZmlsZS4KPiAKPiBIb3dldmVyIHlvdSBhcnJhbmdlIHRoYXQgaXMg
-dXAgdG8geW91LiAgTXkgZXhwZXJpZW5jZSBpcyB0aGF0IHRoZQo+IHVzZXJzIGdlbmVyYWxseSBz
-ZW5kIHdoaXRlbGlzdCBpbmZvcm1hdGlvbiBieSBlbWFpbC4KPiAKPiA+IDIuIFRoZSB0ZXh0IGZp
-bGUgY2FuIGJlIHByb2Nlc3NlZCB1c2luZyBhIGxpdHRsZSBzY3JpcHQgdG8gY29udmVydAo+ID4g
-aXQgdG8gdGhlICJ3aGl0ZWxpc3QuW2MsaF0iIGZpbGVzIGFuZCBjb252ZXJ0ZWQgdG8gd2ViIHBh
-Z2UKPiA+IChzMndoaXRlbGlzdCBhbmQgczJ3ZWIgOi0pKQo+ID4gMy4gVGhlIHNjcmlwdCBjYW4g
-ZG8gYSBnaXQgdXBkYXRlIGlmIG5lZWRlZC4KPiAKPiBXZWxsLCBJJ20gc3VyZWx5IG5vdCBnb2lu
-ZyB0byBhbGxvdyB0aGUgc2NyaXB0IHRvIHVwZGF0ZSB0aGUgbWFzdGVyCj4gZ2l0IHRyZWUgYXQg
-a2VybmVsLm9yZyBkaXJlY3RseS4KClRoZXJlJ3MgYWxzbyB0aGUgaXNzdWUgdGhhdCBzb21lIHNh
-bml0eSBjaGVja2luZyBzaG91bGQgYmUgZG9uZSBiZWZvcmUKYWRkaW5nIGFuIGVudHJ5LiBQcmV0
-dHkgb2Z0ZW4sIHVzZXJzIHNlbmQgc29tZSBoaWxhcmlvdXMgb3B0aW9uCmNvbWJpbmF0aW9ucywg
-b24gbWFjaGluZXMgdGhhdCBzaG91bGQgbm93YWRheXMganVzdCB3b3JrIHdpdGhvdXQgYW55Cm9w
-dGlvbnMgKGUuZy4gaW50ZWwtYmFzZWQpLgoKVGhlIG5leHQgdGhpbmcgaXMsIHRoYXQgSSwgcGVy
-c29uYWxseSwgd291bGQgcmVqZWN0IGFueSBtYWNoaW5lcyB0aGF0CnNob3VsZCB3b3JrIG91dCBv
-ZiB0aGUgYm94IG5vd2FkYXlzIHdpdGggaW4ta2VybmVsIGRyaXZlcnMgKG1lYW5zOgppbnRlbCwg
-bnZpZGlhLSBhbmQgQVRJIGJpbmFyeS1tb2R1bGUgZHJpdmVuKS4gWW91IGNhbiBvbmx5IG1ha2Ug
-dGhpbmdzCndvcnNlIG9uIHN1Y2ggbWFjaGluZXMgd2l0aCB1c2Vyc3BhY2Ugd29ya2Fyb3VuZHMs
-IGFuZCB0aGV5IHNob3VsZCBiZQpyZWNvZ25pemVkIGF1dG9tYXRpY2FsbHkgYnkgcmVjZW50ICht
-ZWFuczogbmV3ZXIgdGhhbiAyIHllYXJzKQpwbS11dGlscywgc28gdGhhdCBubyBoYWNrIGlzIG5l
-ZWRlZC4gSU1ITyB0aGUgd2hpdGVsaXN0IHNob3VsZCBub3QgYmUKY2x1dHRlcmVkIHdpdGggdGhl
-bS4KCj4gPiBJbiBteSBvcGluaW9uLCB0aGUgZmlsZSBzaG91bGQgaGF2ZSB0aGlzIGZvcm1hdDoK
-PiA+IAo+ID4gPGF1dGhvciBpbmZvIGZvciB0aGUgY29tbWVudCdzCj4gPiBsaW5lPsK3PHN5c192
-ZW5kb3I+wrc8c3lzX3Byb2R1Y3Q+wrc8c3lzX3ZlcnNpb24+wrc8Ymlvc192ZXJzaW9uPsK3PGZs
-YWdzPgo+ID4gCj4gPiBJIGFtIHVzaW5nIHRoZSAiwrciIHNlcGFyYXRvciBiZWNhdXNlIHByb2Jh
-Ymx5IGlzIG5vdCB1c2VkIGluIGFueQo+ID4gZmllbGQuCj4gCj4gV2hhdCdzIHRoZSBjb2RlIG9m
-IHRoaXMgY2hhcmFjdGVyPwoKU29tZXRoaW5nIHN0cmFuZ2UgOy0pCgpJJ2QgdXNlIHRoZSBwaXBl
-IGNoYXJhY3RlcjogJ3wnLiBJIGhhdmUgbm90IHlldCBlbmNvdW50ZXJlZCBpdCBpbgpzMnJhbS1y
-ZWxldmFudCBETUkgZGF0YS4gSXQgc3RpbGwgaXMgcmVhZGFibGUgYW5kIG5vdCBzdWJqZWN0IHRv
-CmVuY29kaW5nIGlzc3VlcyBBRkFJQ1QuCgpJJ2QgcHV0IHRoZSBhdXRob3IgaW5mbyAvIGNvbW1l
-bnQgYXQgdGhlIGVuZCwgc2luY2UgdGhlbiB5b3UgY2FuCnNvcnQvZ3JlcCBmb3Igc3lzX3ZlbmRv
-ciBlYXNpbHksIHdoaWNoIGlzIHByb2JhYmx5IG1vc3QgdXNlZnVsLgoKQW5kIEkgc3RpbGwgdGhp
-bmsgdGhhdCBub3dhZGF5cyBzMnJhbSBpcyB0aGUgd3JvbmcgdG9vbCBmb3IgdGhlCndoaXRlbGlz
-dCwgYnV0IHdlbGwuLi4gOi0pCgpHb29kIGx1Y2ssCgoJU3RlZmFuCi0tIApTdGVmYW4gU2V5ZnJp
-ZWQKCiJDZXRlcnVtIGNlbnNlbyB3aGl0ZWxpc3QuYyBlc3NlIGRlbGVuZGFtIgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
-c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+--===============0348182755172567241==
+Content-Type: multipart/alternative; boundary=0016364d29d11cae78047430009e
+
+--0016364d29d11cae78047430009e
+Content-Type: text/plain; charset=ISO-8859-1
+
+On Tue, Sep 22, 2009 at 2:50 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> On Tuesday 22 September 2009, Andreas Mohr wrote:
+> > Hi Rafael,
+>
+> Hi,
+>
+> > first you say "returning an error code in such cases would..."
+> > and then the patch content has...?
+>
+> I don't quite understand your comment, care to elaborate?
+>
+>
+I think this is what was being referenced:
+
++       /* Return error code if we have failed to change the state */
++       if (dev->current_state != state)
++               dev_info(&dev->dev, "Refused to change power state, "
++                       "currently in D%d\n", dev->current_state);
+
+The comment says, "Return error code", where it should probably say, "Log
+error".  Or possibly no comment at all.
+
+-Kevin Granade
+
+
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+--0016364d29d11cae78047430009e
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div class=3D"gmail_quote">On Tue, Sep 22, 2009 at 2:50 PM, Rafael J. Wysoc=
+ki <span dir=3D"ltr">&lt;rjw@sisk.pl&gt;</span> wrote:<br><blockquote class=
+=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin=
+: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+On Tuesday 22 September 2009, Andreas Mohr wrote:<br>
+&gt; Hi Rafael,<br>
+<br>
+Hi,<br>
+<div class=3D"im"><br>
+&gt; first you say &quot;returning an error code in such cases would...&quo=
+t;<br>
+&gt; and then the patch content has...?<br>
+<br>
+</div>I don&#39;t quite understand your comment, care to elaborate?<br>
+<font color=3D"#888888"><br></font></blockquote><div>=A0</div><div>I think =
+this is what was being referenced:<br>
+<br>
++ =A0 =A0 =A0 /* Return error code if we have failed to change the state */=
+<br>
++ =A0 =A0 =A0 if (dev-&gt;current_state !=3D state)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_info(&amp;dev-&gt;dev, &quot;Refused to c=
+hange power state, &quot;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &quot;currently in D%d\n&quot=
+;, dev-&gt;current_state);<br><br>The comment says, &quot;Return error code=
+&quot;, where it should probably say, &quot;Log error&quot;.=A0 Or possibly=
+ no comment at all.<br>
+<br>-Kevin Granade<br>=A0</div><blockquote class=3D"gmail_quote" style=3D"b=
+order-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; paddin=
+g-left: 1ex;"><font color=3D"#888888">
+Rafael<br>
+</font><div><div></div><div class=3D"h5">--<br>
+To unsubscribe from this list: send the line &quot;unsubscribe linux-kernel=
+&quot; in<br>
+the body of a message to <a href=3D"mailto:majordomo@vger.kernel.org">major=
+domo@vger.kernel.org</a><br>
+More majordomo info at =A0<a href=3D"http://vger.kernel.org/majordomo-info.=
+html" target=3D"_blank">http://vger.kernel.org/majordomo-info.html</a><br>
+Please read the FAQ at =A0<a href=3D"http://www.tux.org/lkml/" target=3D"_b=
+lank">http://www.tux.org/lkml/</a><br>
+</div></div></blockquote></div><br>
+
+--0016364d29d11cae78047430009e--
+
+--===============0348182755172567241==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0348182755172567241==--
