@@ -1,17 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI
-	RTC drivers
-Date: Tue, 22 Sep 2009 14:19:40 -0700
-Message-ID: <20090922141940.22596f11.akpm__15548.9588309594$1253654521$gmane$org@linux-foundation.org>
-References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
-	<200908271452.37358.david-b@pacbell.net>
-	<20090827231925.GA1131@oksana.dev.rtsoft.ru>
-	<20090828003010.GA19160@oksana.dev.rtsoft.ru>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] make refrigerator cold
+Date: Wed, 23 Sep 2009 01:13:20 +0200
+Message-ID: <200909230113.20461.rjw__28237.2457710609$1253661208$gmane$org@sisk.pl>
+References: <20090921210416.1982bcab@nehalam> <200909222154.09726.rjw@sisk.pl>
+	<20090922140914.041b7328@s6510>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090828003010.GA19160@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090922140914.041b7328@s6510>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,134 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: avorontsov@ru.mvista.com
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, ben-linux@fluff.org, khali@linux-fr.org, linux-pm@lists.linux-foundation.org
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 Aug 2009 04:30:10 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> On Fri, Aug 28, 2009 at 03:19:25AM +0400, Anton Vorontsov wrote:
-> [...]
-> > > That is why platform code should device_init_wakeup() and
-> > > drivers should check device_can_wakeup(dev) ...
-> > 
-> > They should (and do) check may_wakeup() (i.e. should_wakeup) before
-> > suspending, not can_wakeup().
-> > 
-> > static int ds1374_suspend(struct i2c_client *client, pm_message_t state)
-> > {
-> >         if (client->irq >= 0 && device_may_wakeup(&client->dev))
-> >                 enable_irq_wake(client->irq);
-> >         return 0;
-> > }
-> > 
-> > (quite funny, they issue enable_irq_wake(), assuming that otherwise
-> > IRQ line won't trigger CPU wakeup. But in reality, there are interrupt
-> > controllers that you can't control in that regard: any IRQ activity
-> > will always resume CPU. And so 'echo disable > /sys/.../wakeup' won't
-> > guarantee anything. Unreliable, nasty? Could be.)
+On Tuesday 22 September 2009, Stephen Hemminger wrote:
+> On Tue, 22 Sep 2009 21:54:09 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> BTW, of course we can fix this by masking interrupts before
-> suspending, but nobody actually do this (but should, I think).
+> > On Tuesday 22 September 2009, Stephen Hemminger wrote:
+> > > By marking it cold, then the code path in kernel thread 
+> > > usage of try_to_freeze() that is normally used be
+> > > selected.
+> > 
 > 
-> And if RTC's IRQ is wired to power switch you're in trouble
-> without any way to fix this.
+> In the code for try_to_freeze(), for optimization, it might
+> help to tell the compiler to not favor the code path where
+> the refigrator is being called.
 > 
+> Another way to do the same thing would be to do.
+>    if (unlikely(freezing(current))) {
+> 	refrigerator();
+> 	return 1;
+>    } else
+> 	return 0;
+> 
+> or build unlikely into the freezing function (see need_resched).
+> 
+> I saw this by trying to minimize the number of intstructions
+> in pktgen which is a special case.
 
-afaik nothing got resolved here, so this patch is floating about
-wondering what its future will be.
+OK, thanks.
 
+Will it be fine with you if I add the patch to the suspend-2.6 tree with the
+above information in the changelog?
 
-
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-RTC core won't allow wakeup alarms to be set if RTC devices' parent (i.e. 
-i2c_client or spi_device) isn't wakeup capable.
-
-For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass via
-board info, and if set, I2C core will initialize wakeup capability.  For
-SPI devices there is no such flag at all.
-
-I believe that it's not platform code responsibility to allow or disallow
-wakeups, instead, drivers themselves should set the capability if a device
-can trigger wakeups.
-
-That's what drivers/base/power/sysfs.c says:
-
- * It is the responsibility of device drivers to enable (or disable)
- * wakeup signaling as part of changing device power states, respecting
- * the policy choices provided through the driver model.
-
-I2C and SPI RTC devices send wakeup events via interrupt lines, so we
-should set the wakeup capability if IRQ is routed.
-
-Ideally we should also check irq for wakeup capability before setting
-device's capability, i.e.
-
-	if (can_irq_wake(irq))
-		device_set_wakeup_capable(&client->dev, 1);
-
-But there is no can_irq_wake() call exist, and it is not that trivial to
-implement it for all interrupts controllers and complex/cascaded setups.
-
-drivers/base/power/sysfs.c also covers these cases:
-
- * Devices may not be able to generate wakeup events from all power
- * states.  Also, the events may be ignored in some configurations;
- * for example, they might need help from other devices that aren't
- * active
-
-So there is no guarantee that wakeup will actually work, and so I think
-there is no point in being pedantic wrt checking IRQ wakeup capability.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/rtc/rtc-ds1305.c |    2 ++
- drivers/rtc/rtc-ds1307.c |    2 ++
- drivers/rtc/rtc-ds1374.c |    2 ++
- 3 files changed, 6 insertions(+)
-
-diff -puN drivers/rtc/rtc-ds1305.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers drivers/rtc/rtc-ds1305.c
---- a/drivers/rtc/rtc-ds1305.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers
-+++ a/drivers/rtc/rtc-ds1305.c
-@@ -780,6 +780,8 @@ static int __devinit ds1305_probe(struct
- 					spi->irq, status);
- 			goto fail1;
- 		}
-+
-+		device_set_wakeup_capable(&spi->dev, 1);
- 	}
- 
- 	/* export NVRAM */
-diff -puN drivers/rtc/rtc-ds1307.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers drivers/rtc/rtc-ds1307.c
---- a/drivers/rtc/rtc-ds1307.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers
-+++ a/drivers/rtc/rtc-ds1307.c
-@@ -881,6 +881,8 @@ read_rtc:
- 				"unable to request IRQ!\n");
- 			goto exit_irq;
- 		}
-+
-+		device_set_wakeup_capable(&client->dev, 1);
- 		set_bit(HAS_ALARM, &ds1307->flags);
- 		dev_dbg(&client->dev, "got IRQ %d\n", client->irq);
- 	}
-diff -puN drivers/rtc/rtc-ds1374.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers drivers/rtc/rtc-ds1374.c
---- a/drivers/rtc/rtc-ds1374.c~rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers
-+++ a/drivers/rtc/rtc-ds1374.c
-@@ -383,6 +383,8 @@ static int ds1374_probe(struct i2c_clien
- 			dev_err(&client->dev, "unable to request IRQ\n");
- 			goto out_free;
- 		}
-+
-+		device_set_wakeup_capable(&client->dev, 1);
- 	}
- 
- 	ds1374->rtc = rtc_device_register(client->name, &client->dev,
-_
+Rafael
