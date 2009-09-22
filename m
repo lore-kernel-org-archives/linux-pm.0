@@ -1,13 +1,14 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Andreas Mohr <andi@lisas.de>
 Subject: Re: [PATCH] PCI PM: Read device power state from
- register after updating it (rev. 2)
-Date: Tue, 22 Sep 2009 09:16:20 +0200
-Message-ID: <20090922091620.599ab046__8968.30341448567$1253603940$gmane$org@infradead.org>
+	register after	updating it (rev. 2)
+Date: Tue, 22 Sep 2009 10:07:47 +0200
+Message-ID: <20090922080747.GA20853__18342.0863272206$1253606932$gmane$org@rhlx01.hs-esslingen.de>
 References: <200909212337.01812.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <200909212337.01812.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,27 +20,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm@smtp1.linux-foundation.org
+Cc: linux-pci@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Sep 2009 23:37:01 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->  
-> -	dev->current_state = state;
-> +	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-> +	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-> +	/* Return error code if we have failed to change the state */
-> +	if (dev->current_state != state)
-> +		dev_info(&dev->dev, "Refused to change power state, "
-> +			"currently in D%d\n", dev->current_state);
+Hi Rafael,
 
-I would suspect that you want this message only once...
-to avoid it flooding logs and such
+first you say "returning an error code in such cases would..."
+and then the patch content has...?
 
-or at least ratelimiting it
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Andreas Mohr
