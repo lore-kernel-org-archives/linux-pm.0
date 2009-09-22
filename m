@@ -1,14 +1,11 @@
-From: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH] make refrigerator cold
-Date: Tue, 22 Sep 2009 16:19:41 -0700
-Message-ID: <20090922161941.519cf5da__629.968479234044$1253661782$gmane$org@s6510>
-References: <20090921210416.1982bcab@nehalam> <200909222154.09726.rjw@sisk.pl>
-	<20090922140914.041b7328@s6510> <200909230113.20461.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: s2ram / s2disk / s2both repository moved to git
+Date: Wed, 23 Sep 2009 01:27:19 +0200
+Message-ID: <200909230127.19534.rjw__48368.2625614621$1253662155$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909230113.20461.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +15,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: suspend-devel List <suspend-devel@lists.sourceforge.net>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, stefan.seyfried@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Sep 2009 01:13:20 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi,
 
-> On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> > On Tue, 22 Sep 2009 21:54:09 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> > > > By marking it cold, then the code path in kernel thread 
-> > > > usage of try_to_freeze() that is normally used be
-> > > > selected.
-> > > 
-> > 
-> > In the code for try_to_freeze(), for optimization, it might
-> > help to tell the compiler to not favor the code path where
-> > the refigrator is being called.
-> > 
-> > Another way to do the same thing would be to do.
-> >    if (unlikely(freezing(current))) {
-> > 	refrigerator();
-> > 	return 1;
-> >    } else
-> > 	return 0;
-> > 
-> > or build unlikely into the freezing function (see need_resched).
-> > 
-> > I saw this by trying to minimize the number of intstructions
-> > in pktgen which is a special case.
-> 
-> OK, thanks.
-> 
-> Will it be fine with you if I add the patch to the suspend-2.6 tree with the
-> above information in the changelog?
-> 
-> Rafael
+I've just set up a git tree on kernel.org holding the s2ram / s2disk / s2both
+repository.  I'm not going to update the CVS repository at suspend.sf.net any
+more, so if you want any changes to be made to the project's source code,
+please send me patches or, preferably, point me to the trees from where I
+can pull the changes directly.
 
-Sure, any of the possibilities works, you choose.
+The tree is available for cloning from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-utils.git
+
+I'm going to stop administering the suspend-devel list shortly and most
+probably I'll stop subscribing it as well.  Please send messages related to
+s2ram / s2disk / s2both to linux-pm@lists.linux-foundation.org or directly
+to me (preferably with a CC to linux-pm).
+
+Best regards,
+Rafael
