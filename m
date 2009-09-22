@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Stephen Hemminger <shemminger@vyatta.com>
 Subject: Re: [PATCH] make refrigerator cold
-Date: Wed, 23 Sep 2009 01:13:20 +0200
-Message-ID: <200909230113.20461.rjw__28237.2457710609$1253661208$gmane$org@sisk.pl>
+Date: Tue, 22 Sep 2009 16:19:41 -0700
+Message-ID: <20090922161941.519cf5da__629.968479234044$1253661782$gmane$org@s6510>
 References: <20090921210416.1982bcab@nehalam> <200909222154.09726.rjw@sisk.pl>
-	<20090922140914.041b7328@s6510>
+	<20090922140914.041b7328@s6510> <200909230113.20461.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090922140914.041b7328@s6510>
+In-Reply-To: <200909230113.20461.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Hemminger <shemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> On Tue, 22 Sep 2009 21:54:09 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> > > By marking it cold, then the code path in kernel thread 
-> > > usage of try_to_freeze() that is normally used be
-> > > selected.
+On Wed, 23 Sep 2009 01:13:20 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Tuesday 22 September 2009, Stephen Hemminger wrote:
+> > On Tue, 22 Sep 2009 21:54:09 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > 
+> > > On Tuesday 22 September 2009, Stephen Hemminger wrote:
+> > > > By marking it cold, then the code path in kernel thread 
+> > > > usage of try_to_freeze() that is normally used be
+> > > > selected.
+> > > 
+> > 
+> > In the code for try_to_freeze(), for optimization, it might
+> > help to tell the compiler to not favor the code path where
+> > the refigrator is being called.
+> > 
+> > Another way to do the same thing would be to do.
+> >    if (unlikely(freezing(current))) {
+> > 	refrigerator();
+> > 	return 1;
+> >    } else
+> > 	return 0;
+> > 
+> > or build unlikely into the freezing function (see need_resched).
+> > 
+> > I saw this by trying to minimize the number of intstructions
+> > in pktgen which is a special case.
 > 
-> In the code for try_to_freeze(), for optimization, it might
-> help to tell the compiler to not favor the code path where
-> the refigrator is being called.
+> OK, thanks.
 > 
-> Another way to do the same thing would be to do.
->    if (unlikely(freezing(current))) {
-> 	refrigerator();
-> 	return 1;
->    } else
-> 	return 0;
+> Will it be fine with you if I add the patch to the suspend-2.6 tree with the
+> above information in the changelog?
 > 
-> or build unlikely into the freezing function (see need_resched).
-> 
-> I saw this by trying to minimize the number of intstructions
-> in pktgen which is a special case.
+> Rafael
 
-OK, thanks.
-
-Will it be fine with you if I add the patch to the suspend-2.6 tree with the
-above information in the changelog?
-
-Rafael
+Sure, any of the possibilities works, you choose.
