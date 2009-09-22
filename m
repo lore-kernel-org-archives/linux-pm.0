@@ -1,11 +1,14 @@
-From: Stephen Hemminger <shemminger@vyatta.com>
-Subject: [PATCH] make refrigerator cold
-Date: Mon, 21 Sep 2009 21:04:16 -0700
-Message-ID: <20090921210416.1982bcab@nehalam>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] PCI PM: Read device power state from
+ register after updating it (rev. 2)
+Date: Tue, 22 Sep 2009 09:16:20 +0200
+Message-ID: <20090922091620.599ab046__8968.30341448567$1253603940$gmane$org@infradead.org>
+References: <200909212337.01812.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200909212337.01812.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,27 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Linux PCI <linux-pci@vger.kernel.org>, list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-By marking it cold, then the code path in kernel thread 
-usage of try_to_freeze() that is normally used be
-selected.
+On Mon, 21 Sep 2009 23:37:01 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>  
+> -	dev->current_state = state;
+> +	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+> +	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+> +	/* Return error code if we have failed to change the state */
+> +	if (dev->current_state != state)
+> +		dev_info(&dev->dev, "Refused to change power state, "
+> +			"currently in D%d\n", dev->current_state);
 
-Don't think it matters that much for performance but the
-concordance of this patch struck me as humorous.
+I would suspect that you want this message only once...
+to avoid it flooding logs and such
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+or at least ratelimiting it
 
 
---- a/include/linux/freezer.h	2009-09-21 20:34:17.579233461 -0700
-+++ b/include/linux/freezer.h	2009-09-21 20:35:25.724322028 -0700
-@@ -47,7 +47,7 @@ static inline bool should_send_signal(st
- /* Takes and releases task alloc lock using task_lock() */
- extern int thaw_process(struct task_struct *p);
- 
--extern void refrigerator(void);
-+extern void refrigerator(void) __cold;
- extern int freeze_processes(void);
- extern void thaw_processes(void);
- 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
