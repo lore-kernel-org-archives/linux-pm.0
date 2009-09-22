@@ -1,13 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] make refrigerator cold
-Date: Tue, 22 Sep 2009 21:54:09 +0200
-Message-ID: <200909222154.09726.rjw__30688.3656922311$1253649823$gmane$org@sisk.pl>
-References: <20090921210416.1982bcab@nehalam>
+Subject: Re: [PATCH] PCI PM: Read device power state from
+	register after updating it (rev. 2)
+Date: Tue, 22 Sep 2009 22:39:08 +0200
+Message-ID: <200909222239.08255.rjw__33555.1064963967$1253653085$gmane$org@sisk.pl>
+References: <20090922080747.GA20853@rhlx01.hs-esslingen.de>
+	<200909222150.01185.rjw@sisk.pl>
+	<7004b08e0909221256m6d917531kc8b51e1af85d3459@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090921210416.1982bcab@nehalam>
+In-Reply-To: <7004b08e0909221256m6d917531kc8b51e1af85d3459@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: kevin granade <kevin.granade@gmail.com>
+Cc: linux-pci@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 22 September 2009, Stephen Hemminger wrote:
-> By marking it cold, then the code path in kernel thread 
-> usage of try_to_freeze() that is normally used be
-> selected.
-
-The sentence above isn't very clear IMO, could you please rephrase?
-
-> Don't think it matters that much for performance but the
-> concordance of this patch struck me as humorous.
-
-Well, yeah.
-
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+On Tuesday 22 September 2009, kevin granade wrote:
+> On Tue, Sep 22, 2009 at 2:50 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
+> > On Tuesday 22 September 2009, Andreas Mohr wrote:
+> > > Hi Rafael,
+> >
+> > Hi,
+> >
+> > > first you say "returning an error code in such cases would..."
+> > > and then the patch content has...?
+> >
+> > I don't quite understand your comment, care to elaborate?
+> >
+> >
+> I think this is what was being referenced:
 > 
-> --- a/include/linux/freezer.h	2009-09-21 20:34:17.579233461 -0700
-> +++ b/include/linux/freezer.h	2009-09-21 20:35:25.724322028 -0700
-> @@ -47,7 +47,7 @@ static inline bool should_send_signal(st
->  /* Takes and releases task alloc lock using task_lock() */
->  extern int thaw_process(struct task_struct *p);
->  
-> -extern void refrigerator(void);
-> +extern void refrigerator(void) __cold;
->  extern int freeze_processes(void);
->  extern void thaw_processes(void);
+> +       /* Return error code if we have failed to change the state */
+> +       if (dev->current_state != state)
+> +               dev_info(&dev->dev, "Refused to change power state, "
+> +                       "currently in D%d\n", dev->current_state);
+> 
+> The comment says, "Return error code", where it should probably say, "Log
+> error".  Or possibly no comment at all.
+
+Ah, thanks.
+
+Rafael
