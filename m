@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Help
-Date: Wed, 23 Sep 2009 18:43:07 +0200
-Message-ID: <20090923164307.GA2092@elf.ucw.cz>
-References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
-	<200908152239.15915.rjw@sisk.pl> <20090822073516.GD2108@elf.ucw.cz>
-	<200909230133.28689.rjw@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [regression,
+ bisected] adb trackpad disappears after suspend to ram
+Date: Thu, 24 Sep 2009 07:28:52 +1000
+Message-ID: <1253741332.7103.324.camel__45669.7049471133$1253741480$gmane$org@pasglop>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<200906032200.55563.rjw@sisk.pl> <1253676745.7103.268.camel@pasglop>
+	<200909231538.51227.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200909230133.28689.rjw@sisk.pl>
+In-Reply-To: <200909231538.51227.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,48 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>, stefan.seyfried@googlemail.com
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Jan Scholz <scholz@fias.uni-frankfurt.de>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > > Message body follows:
-> > > > 
-> > > > I would like to help in the project.
-> > > > 
-> > > > - updating the database.
-> > > > 
-> > > > Have you seen the patch I sent?
-> > > 
-> > > Yes, sorry for the lack of response, but I didn't really have the time to
-> > > review the patch.
-> > > 
-> > > That said, I don't think we'd like to move the whitelist to a separate file.
-> > > Rather than that, we've been considering removing it altogether.
-> > > 
-> > > Still, if you want to maintain the whitelist in its current form, I think
-> > > you could do that.
-> > 
-> > Yes, maintainer for the whitelist would be very welcome.
-> > 
-> > Now... whitelist inside the binary is very welcome for init=/bin/bash,
-> > etc; OTOH if the .c file is compiled from .txt description... that's
-> > probably acceptable. Also it might make sense to load external
-> > whitelist _in addition_ to the internal one, so people can quickly
-> > experiment with whitelist entries...
+On Wed, 2009-09-23 at 15:38 +0200, Rafael J. Wysocki wrote:
+> > This patch fixes it by using IRQF_TIMER for both the PMU and the I2C
+> > interrupts. I prefer doing it this way than moving the call sites since
+> > I really want those platform functions to still be called after all
+> > drivers (and before sysdevs).
 > 
-> If you're still willing to be a whitelist maintainer, please set up a git
-> repository from which I can pull the whitelist updates.
+> Alternatively, you could introduce a new flag IRQF_NOSUSPEND and use that
+> instead of IRQF_TIMER.  That would be cleaner than using IRQF_TIMER for
+> non-timer interrupts IMHO.
 
-Yes, that would be great.
+I totally agree. The current patch is still good for stable though.
 
-> If you'd like to move the whitelist to a separate file, please do so.  You are
-> free to use whatever format you think is suitable, although it would be nice
-> if the whitelist file could be easily updated by users.
+I'll send it to Greg after I've upstreamed it, we can introduce IRQF_NOSUSPEND
+in a second patch.
 
-Ack.
-										Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ben.
