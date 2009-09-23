@@ -1,18 +1,14 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Wed, 23 Sep 2009 16:36:19 -0700
-Message-ID: <4ABAB0F3.2050802__21250.6643300459$1253749129$gmane$org@deeprootsystems.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+From: Oren Laadan <orenl@librato.com>
+Subject: [PATCH v18 05/80] cgroup freezer: Fix buggy resume test
+	for tasks frozen with cgroup freezer
+Date: Wed, 23 Sep 2009 19:50:45 -0400
+Message-ID: <1253749920-18673-6-git-send-email-orenl__15547.6779480979$1253750498$gmane$org@librato.com>
+References: <1253749920-18673-1-git-send-email-orenl@librato.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,46 +18,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, linux-arm-kernel@lists.infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, Cedric Le Goater <legoater@free.fr>, linux-api@vger.kernel.org, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>
 List-Id: linux-pm@vger.kernel.org
 
-Eric Miao wrote:
-> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->> Mikael Pettersson wrote:
->>> Eric Miao writes:
->>>  > On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>>  > <khilman@deeprootsystems.com> wrote:
->>>  > > On ARM platforms, power management can be very platform specific.
->>>  > > This patch allows ARM subarches to extend the platform_device
->>>  > > pdev_archdata for each subarch by creating a new struct pdev_machdata
->>>  > > and allowing each subarch to customize it as needed.
->>>  > >
->>>  > > As a starting point, each subarch's <mach/device.h> creates an empty
->>>  > > struct pdev_machdata.
->>>  > >
->>>  >  > Shouldn't that pdev_archdata and pdev_machdata be pointer or
->>> something
->>>  > so that multiple platform_device can share something in common?
->>>
->>> Forcing it to be a pointer has allocation and lifetime implications.
->>> Making it a struct allows the subarch to duplicate or share
->>> (via a private pointer) data as it sees fit.
->> Yes, the allocation/lifetime issues were why a struct was chosen.
->>
-> 
-> Mmm... this makes sense to me. I'm ok with this patch - just wondering
-> for the moment what to put for the pxa architecture - I'll see what davinci
-> will do first, of course :)
+From: Matt Helsley <matthltc@us.ibm.com>
 
-Well, I'll be doing OMAP before davinci, and the pdev_machdata will 
-bascailly contain an OMAP specific struct (omap_device) that keeps track 
-of various OMAP-specific device proerties (powerdomain, clock(s), PM 
-register offsets, etc. etc.)  Basically, nothing that would be shared by 
-other arches.
+When the cgroup freezer is used to freeze tasks we do not want to thaw
+those tasks during resume. Currently we test the cgroup freezer
+state of the resuming tasks to see if the cgroup is FROZEN.  If so
+then we don't thaw the task. However, the FREEZING state also indicates
+that the task should remain frozen.
 
-If down the road we figure out stuff common to all ARM platforms, we 
-could put it in the pdev_archdata struct.
+This also avoids a problem pointed out by Oren Ladaan: the freezer state
+transition from FREEZING to FROZEN is updated lazily when userspace reads
+or writes the freezer.state file in the cgroup filesystem. This means that
+resume will thaw tasks in cgroups which should be in the FROZEN state if
+there is no read/write of the freezer.state file to trigger this
+transition before suspend.
 
-Kevin
+NOTE: Another "simple" solution would be to always update the cgroup
+freezer state during resume. However it's a bad choice for several reasons:
+Updating the cgroup freezer state is somewhat expensive because it requires
+walking all the tasks in the cgroup and checking if they are each frozen.
+Worse, this could easily make resume run in N^2 time where N is the number
+of tasks in the cgroup. Finally, updating the freezer state from this code
+path requires trickier locking because of the way locks must be ordered.
+
+Instead of updating the freezer state we rely on the fact that lazy
+updates only manage the transition from FREEZING to FROZEN. We know that
+a cgroup with the FREEZING state may actually be FROZEN so test for that
+state too. This makes sense in the resume path even for partially-frozen
+cgroups -- those that really are FREEZING but not FROZEN.
+
+Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+Cc: Cedric Le Goater <legoater@free.fr>
+Cc: Paul Menage <menage@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org
+
+Seems like a candidate for -stable.
+---
+ include/linux/freezer.h |    7 +++++--
+ kernel/cgroup_freezer.c |    9 ++++++---
+ kernel/power/process.c  |    2 +-
+ 3 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 5a361f8..da7e52b 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -64,9 +64,12 @@ extern bool freeze_task(struct task_struct *p, bool sig_only);
+ extern void cancel_freezing(struct task_struct *p);
+ 
+ #ifdef CONFIG_CGROUP_FREEZER
+-extern int cgroup_frozen(struct task_struct *task);
++extern int cgroup_freezing_or_frozen(struct task_struct *task);
+ #else /* !CONFIG_CGROUP_FREEZER */
+-static inline int cgroup_frozen(struct task_struct *task) { return 0; }
++static inline int cgroup_freezing_or_frozen(struct task_struct *task)
++{
++	return 0;
++}
+ #endif /* !CONFIG_CGROUP_FREEZER */
+ 
+ /*
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index fb249e2..765e2c1 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -47,17 +47,20 @@ static inline struct freezer *task_freezer(struct task_struct *task)
+ 			    struct freezer, css);
+ }
+ 
+-int cgroup_frozen(struct task_struct *task)
++int cgroup_freezing_or_frozen(struct task_struct *task)
+ {
+ 	struct freezer *freezer;
+ 	enum freezer_state state;
+ 
+ 	task_lock(task);
+ 	freezer = task_freezer(task);
+-	state = freezer->state;
++	if (!freezer->css.cgroup->parent)
++		state = CGROUP_THAWED; /* root cgroup can't be frozen */
++	else
++		state = freezer->state;
+ 	task_unlock(task);
+ 
+-	return state == CGROUP_FROZEN;
++	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
+ }
+ 
+ /*
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index da2072d..3728d4c 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -138,7 +138,7 @@ static void thaw_tasks(bool nosig_only)
+ 		if (nosig_only && should_send_signal(p))
+ 			continue;
+ 
+-		if (cgroup_frozen(p))
++		if (cgroup_freezing_or_frozen(p))
+ 			continue;
+ 
+ 		thaw_process(p);
+-- 
+1.6.0.4
