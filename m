@@ -1,15 +1,17 @@
-From: Mikael Pettersson <mikpe@it.uu.se>
+From: Eric Miao <eric.y.miao@gmail.com>
 Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
 	extensions of pdev_archdata
-Date: Wed, 23 Sep 2009 12:23:28 +0200
-Message-ID: <19129.63264.653666.70492__43290.0084452287$1253804612$gmane$org@pilspetsen.it.uu.se>
+Date: Thu, 24 Sep 2009 07:30:40 +0800
+Message-ID: <f17812d70909231630i20f64328k8d604c3436094b85__42683.5512313575$1253804795$gmane$org@mail.gmail.com>
 References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
 	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+In-Reply-To: <4ABAAF1D.6090907@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Eric Miao writes:
- > On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
- > <khilman@deeprootsystems.com> wrote:
- > > On ARM platforms, power management can be very platform specific.
- > > This patch allows ARM subarches to extend the platform_device
- > > pdev_archdata for each subarch by creating a new struct pdev_machdata
- > > and allowing each subarch to customize it as needed.
- > >
- > > As a starting point, each subarch's <mach/device.h> creates an empty
- > > struct pdev_machdata.
- > >
- > 
- > Shouldn't that pdev_archdata and pdev_machdata be pointer or something
- > so that multiple platform_device can share something in common?
-
-Forcing it to be a pointer has allocation and lifetime implications.
-Making it a struct allows the subarch to duplicate or share
-(via a private pointer) data as it sees fit.
+T24gVGh1LCBTZXAgMjQsIDIwMDkgYXQgNzoyOCBBTSwgS2V2aW4gSGlsbWFuCjxraGlsbWFuQGRl
+ZXByb290c3lzdGVtcy5jb20+IHdyb3RlOgo+IE1pa2FlbCBQZXR0ZXJzc29uIHdyb3RlOgo+Pgo+
+PiBFcmljIE1pYW8gd3JpdGVzOgo+PiDCoD4gT24gV2VkLCBTZXAgMjMsIDIwMDkgYXQgOTo1MCBB
+TSwgS2V2aW4gSGlsbWFuCj4+IMKgPiA8a2hpbG1hbkBkZWVwcm9vdHN5c3RlbXMuY29tPiB3cm90
+ZToKPj4gwqA+ID4gT24gQVJNIHBsYXRmb3JtcywgcG93ZXIgbWFuYWdlbWVudCBjYW4gYmUgdmVy
+eSBwbGF0Zm9ybSBzcGVjaWZpYy4KPj4gwqA+ID4gVGhpcyBwYXRjaCBhbGxvd3MgQVJNIHN1YmFy
+Y2hlcyB0byBleHRlbmQgdGhlIHBsYXRmb3JtX2RldmljZQo+PiDCoD4gPiBwZGV2X2FyY2hkYXRh
+IGZvciBlYWNoIHN1YmFyY2ggYnkgY3JlYXRpbmcgYSBuZXcgc3RydWN0IHBkZXZfbWFjaGRhdGEK
+Pj4gwqA+ID4gYW5kIGFsbG93aW5nIGVhY2ggc3ViYXJjaCB0byBjdXN0b21pemUgaXQgYXMgbmVl
+ZGVkLgo+PiDCoD4gPgo+PiDCoD4gPiBBcyBhIHN0YXJ0aW5nIHBvaW50LCBlYWNoIHN1YmFyY2gn
+cyA8bWFjaC9kZXZpY2UuaD4gY3JlYXRlcyBhbiBlbXB0eQo+PiDCoD4gPiBzdHJ1Y3QgcGRldl9t
+YWNoZGF0YS4KPj4gwqA+ID4KPj4gwqA+IMKgPiBTaG91bGRuJ3QgdGhhdCBwZGV2X2FyY2hkYXRh
+IGFuZCBwZGV2X21hY2hkYXRhIGJlIHBvaW50ZXIgb3IKPj4gc29tZXRoaW5nCj4+IMKgPiBzbyB0
+aGF0IG11bHRpcGxlIHBsYXRmb3JtX2RldmljZSBjYW4gc2hhcmUgc29tZXRoaW5nIGluIGNvbW1v
+bj8KPj4KPj4gRm9yY2luZyBpdCB0byBiZSBhIHBvaW50ZXIgaGFzIGFsbG9jYXRpb24gYW5kIGxp
+ZmV0aW1lIGltcGxpY2F0aW9ucy4KPj4gTWFraW5nIGl0IGEgc3RydWN0IGFsbG93cyB0aGUgc3Vi
+YXJjaCB0byBkdXBsaWNhdGUgb3Igc2hhcmUKPj4gKHZpYSBhIHByaXZhdGUgcG9pbnRlcikgZGF0
+YSBhcyBpdCBzZWVzIGZpdC4KPgo+IFllcywgdGhlIGFsbG9jYXRpb24vbGlmZXRpbWUgaXNzdWVz
+IHdlcmUgd2h5IGEgc3RydWN0IHdhcyBjaG9zZW4uCj4KCk1tbS4uLiB0aGlzIG1ha2VzIHNlbnNl
+IHRvIG1lLiBJJ20gb2sgd2l0aCB0aGlzIHBhdGNoIC0ganVzdCB3b25kZXJpbmcKZm9yIHRoZSBt
+b21lbnQgd2hhdCB0byBwdXQgZm9yIHRoZSBweGEgYXJjaGl0ZWN0dXJlIC0gSSdsbCBzZWUgd2hh
+dCBkYXZpbmNpCndpbGwgZG8gZmlyc3QsIG9mIGNvdXJzZSA6KQpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
+cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
