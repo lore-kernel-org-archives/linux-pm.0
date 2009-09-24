@@ -1,14 +1,16 @@
-From: Oren Laadan <orenl@librato.com>
-Subject: [PATCH v18 05/80] cgroup freezer: Fix buggy resume test
-	for tasks frozen with cgroup freezer
-Date: Wed, 23 Sep 2009 19:50:45 -0400
-Message-ID: <1253749920-18673-6-git-send-email-orenl__15547.6779480979$1253750498$gmane$org@librato.com>
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Subject: Re: [Suspend-devel] Help
+Date: Thu, 24 Sep 2009 14:51:28 +0200
+Message-ID: <20090924145128.26e758df__10774.3567940362$1253796785$gmane$org@strolchi.home.s3e.de>
+References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
+	<200909230133.28689.rjw@sisk.pl>
+	<3096bd910909230134v6ad1c5acr53b172d9472488e8@mail.gmail.com>
+	<200909240028.03305.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1253749920-18673-1-git-send-email-orenl@librato.com>
+In-Reply-To: <200909240028.03305.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,114 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@suse.cz>, Cedric Le Goater <legoater@free.fr>, linux-api@vger.kernel.org, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Matt Helsley <matthltc@us.ibm.com>
-
-When the cgroup freezer is used to freeze tasks we do not want to thaw
-those tasks during resume. Currently we test the cgroup freezer
-state of the resuming tasks to see if the cgroup is FROZEN.  If so
-then we don't thaw the task. However, the FREEZING state also indicates
-that the task should remain frozen.
-
-This also avoids a problem pointed out by Oren Ladaan: the freezer state
-transition from FREEZING to FROZEN is updated lazily when userspace reads
-or writes the freezer.state file in the cgroup filesystem. This means that
-resume will thaw tasks in cgroups which should be in the FROZEN state if
-there is no read/write of the freezer.state file to trigger this
-transition before suspend.
-
-NOTE: Another "simple" solution would be to always update the cgroup
-freezer state during resume. However it's a bad choice for several reasons:
-Updating the cgroup freezer state is somewhat expensive because it requires
-walking all the tasks in the cgroup and checking if they are each frozen.
-Worse, this could easily make resume run in N^2 time where N is the number
-of tasks in the cgroup. Finally, updating the freezer state from this code
-path requires trickier locking because of the way locks must be ordered.
-
-Instead of updating the freezer state we rely on the fact that lazy
-updates only manage the transition from FREEZING to FROZEN. We know that
-a cgroup with the FREEZING state may actually be FROZEN so test for that
-state too. This makes sense in the resume path even for partially-frozen
-cgroups -- those that really are FREEZING but not FROZEN.
-
-Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Cedric Le Goater <legoater@free.fr>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org
-
-Seems like a candidate for -stable.
----
- include/linux/freezer.h |    7 +++++--
- kernel/cgroup_freezer.c |    9 ++++++---
- kernel/power/process.c  |    2 +-
- 3 files changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 5a361f8..da7e52b 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -64,9 +64,12 @@ extern bool freeze_task(struct task_struct *p, bool sig_only);
- extern void cancel_freezing(struct task_struct *p);
- 
- #ifdef CONFIG_CGROUP_FREEZER
--extern int cgroup_frozen(struct task_struct *task);
-+extern int cgroup_freezing_or_frozen(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
--static inline int cgroup_frozen(struct task_struct *task) { return 0; }
-+static inline int cgroup_freezing_or_frozen(struct task_struct *task)
-+{
-+	return 0;
-+}
- #endif /* !CONFIG_CGROUP_FREEZER */
- 
- /*
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index fb249e2..765e2c1 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -47,17 +47,20 @@ static inline struct freezer *task_freezer(struct task_struct *task)
- 			    struct freezer, css);
- }
- 
--int cgroup_frozen(struct task_struct *task)
-+int cgroup_freezing_or_frozen(struct task_struct *task)
- {
- 	struct freezer *freezer;
- 	enum freezer_state state;
- 
- 	task_lock(task);
- 	freezer = task_freezer(task);
--	state = freezer->state;
-+	if (!freezer->css.cgroup->parent)
-+		state = CGROUP_THAWED; /* root cgroup can't be frozen */
-+	else
-+		state = freezer->state;
- 	task_unlock(task);
- 
--	return state == CGROUP_FROZEN;
-+	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
- }
- 
- /*
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index da2072d..3728d4c 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -138,7 +138,7 @@ static void thaw_tasks(bool nosig_only)
- 		if (nosig_only && should_send_signal(p))
- 			continue;
- 
--		if (cgroup_frozen(p))
-+		if (cgroup_freezing_or_frozen(p))
- 			continue;
- 
- 		thaw_process(p);
--- 
-1.6.0.4
+T24gVGh1LCAyNCBTZXAgMjAwOSAwMDoyODowMyArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
+andAc2lzay5wbD4gd3JvdGU6Cgo+IE9uIFdlZG5lc2RheSAyMyBTZXB0ZW1iZXIgMjAwOSwgUm9k
+b2xmbyAoa2l4KSB3cm90ZToKPiA+IEhpIFJhZmFlbCwKPiAKPiBIaSwKPiAKPiA+IEkgYW0gdGhp
+bmtpbmcgYWJvdXQgdGhlIG1haW50YWluaW5nIC4uLgoKR29vZCBsdWNrISBJIGtub3cgdGhhdCB5
+b3UnbGwgbmVlZCBpdCA7KQoKTGV0IG1lIHRocm93IG15IDIgY2VudHMgaW50byB0aGUgYm93bC4K
+Cj4gPiAxLiBUaGUgdXNlcnMgc2VuZHMgdGhlIGhhcmR3YXJlIGluZm8gdG8gYmUgYWRkZWQgdG8g
+dGhlIGRhdGFiYXNlCj4gPiAobm93IGJ5IG1haWwpLiBUaGVuOgo+ID4gCj4gPiAxLiBQcm9iYWJs
+eSB3ZSBuZWVkIGEgbGl0dGxlIHNjcmlwdCAob3Igd2ViIHNjcmlwdD8gb3IgcG9zdCBkaXJlY3Rs
+eQo+ID4gZm9ybSB0aGUgczJyYW0gLWk/KToKPiA+ICAgMS5hIFRoZSBzY3JpcHQgY2hlY2tzIGlm
+IHRoZSBtYWNoaW5lIGlzIHByZXZpb3VzbHkgYWRkZWQgdG8gdGhlCj4gPiBkYXRhYmFzZSAoaW4g
+YSB0ZXh0IGZpbGUpLiBQcm9iYWJseSB0aGlzIHNjcmlwdCBjYW4gcmVhZCBmcm9tIHRoZQo+ID4g
+bWFpbGluZyBsaXN0IGZvcm1hdAo+ID4gCj4gPiB4eHh4OiUgc3VkbyAvcm9vdC9zMnJhbSAtaQo+
+ID4gVGhpcyBtYWNoaW5lIGNhbiBiZSBpZGVudGlmaWVkIGJ5Ogo+ID4gICAgIHN5c192ZW5kb3Ig
+ICA9ICJUT1NISUJBIgo+ID4gICAgIHN5c19wcm9kdWN0ICA9ICJTYXRlbGxpdGUgVTMwNSIKPiA+
+ICAgICBzeXNfdmVyc2lvbiAgPSAiUFNVMzRVLTAwTDAwMyIKPiA+ICAgICBiaW9zX3ZlcnNpb24g
+PSAiVjEuNzAgICAiCj4gPiBTZWUgaHR0cDovL2VuLm9wZW5zdXNlLm9yZy9TMnJhbSBmb3IgZGV0
+YWlscy4KPiA+IAo+ID4gICAxLmIgSWYgaXMgbm90IGFkZGVkLCB0aGUgc2NyaXB0IGFkZCB0aGUg
+bWFjaGluZSB0byBhIHRleHQgZmlsZS4KPiAKPiBIb3dldmVyIHlvdSBhcnJhbmdlIHRoYXQgaXMg
+dXAgdG8geW91LiAgTXkgZXhwZXJpZW5jZSBpcyB0aGF0IHRoZQo+IHVzZXJzIGdlbmVyYWxseSBz
+ZW5kIHdoaXRlbGlzdCBpbmZvcm1hdGlvbiBieSBlbWFpbC4KPiAKPiA+IDIuIFRoZSB0ZXh0IGZp
+bGUgY2FuIGJlIHByb2Nlc3NlZCB1c2luZyBhIGxpdHRsZSBzY3JpcHQgdG8gY29udmVydAo+ID4g
+aXQgdG8gdGhlICJ3aGl0ZWxpc3QuW2MsaF0iIGZpbGVzIGFuZCBjb252ZXJ0ZWQgdG8gd2ViIHBh
+Z2UKPiA+IChzMndoaXRlbGlzdCBhbmQgczJ3ZWIgOi0pKQo+ID4gMy4gVGhlIHNjcmlwdCBjYW4g
+ZG8gYSBnaXQgdXBkYXRlIGlmIG5lZWRlZC4KPiAKPiBXZWxsLCBJJ20gc3VyZWx5IG5vdCBnb2lu
+ZyB0byBhbGxvdyB0aGUgc2NyaXB0IHRvIHVwZGF0ZSB0aGUgbWFzdGVyCj4gZ2l0IHRyZWUgYXQg
+a2VybmVsLm9yZyBkaXJlY3RseS4KClRoZXJlJ3MgYWxzbyB0aGUgaXNzdWUgdGhhdCBzb21lIHNh
+bml0eSBjaGVja2luZyBzaG91bGQgYmUgZG9uZSBiZWZvcmUKYWRkaW5nIGFuIGVudHJ5LiBQcmV0
+dHkgb2Z0ZW4sIHVzZXJzIHNlbmQgc29tZSBoaWxhcmlvdXMgb3B0aW9uCmNvbWJpbmF0aW9ucywg
+b24gbWFjaGluZXMgdGhhdCBzaG91bGQgbm93YWRheXMganVzdCB3b3JrIHdpdGhvdXQgYW55Cm9w
+dGlvbnMgKGUuZy4gaW50ZWwtYmFzZWQpLgoKVGhlIG5leHQgdGhpbmcgaXMsIHRoYXQgSSwgcGVy
+c29uYWxseSwgd291bGQgcmVqZWN0IGFueSBtYWNoaW5lcyB0aGF0CnNob3VsZCB3b3JrIG91dCBv
+ZiB0aGUgYm94IG5vd2FkYXlzIHdpdGggaW4ta2VybmVsIGRyaXZlcnMgKG1lYW5zOgppbnRlbCwg
+bnZpZGlhLSBhbmQgQVRJIGJpbmFyeS1tb2R1bGUgZHJpdmVuKS4gWW91IGNhbiBvbmx5IG1ha2Ug
+dGhpbmdzCndvcnNlIG9uIHN1Y2ggbWFjaGluZXMgd2l0aCB1c2Vyc3BhY2Ugd29ya2Fyb3VuZHMs
+IGFuZCB0aGV5IHNob3VsZCBiZQpyZWNvZ25pemVkIGF1dG9tYXRpY2FsbHkgYnkgcmVjZW50ICht
+ZWFuczogbmV3ZXIgdGhhbiAyIHllYXJzKQpwbS11dGlscywgc28gdGhhdCBubyBoYWNrIGlzIG5l
+ZWRlZC4gSU1ITyB0aGUgd2hpdGVsaXN0IHNob3VsZCBub3QgYmUKY2x1dHRlcmVkIHdpdGggdGhl
+bS4KCj4gPiBJbiBteSBvcGluaW9uLCB0aGUgZmlsZSBzaG91bGQgaGF2ZSB0aGlzIGZvcm1hdDoK
+PiA+IAo+ID4gPGF1dGhvciBpbmZvIGZvciB0aGUgY29tbWVudCdzCj4gPiBsaW5lPsK3PHN5c192
+ZW5kb3I+wrc8c3lzX3Byb2R1Y3Q+wrc8c3lzX3ZlcnNpb24+wrc8Ymlvc192ZXJzaW9uPsK3PGZs
+YWdzPgo+ID4gCj4gPiBJIGFtIHVzaW5nIHRoZSAiwrciIHNlcGFyYXRvciBiZWNhdXNlIHByb2Jh
+Ymx5IGlzIG5vdCB1c2VkIGluIGFueQo+ID4gZmllbGQuCj4gCj4gV2hhdCdzIHRoZSBjb2RlIG9m
+IHRoaXMgY2hhcmFjdGVyPwoKU29tZXRoaW5nIHN0cmFuZ2UgOy0pCgpJJ2QgdXNlIHRoZSBwaXBl
+IGNoYXJhY3RlcjogJ3wnLiBJIGhhdmUgbm90IHlldCBlbmNvdW50ZXJlZCBpdCBpbgpzMnJhbS1y
+ZWxldmFudCBETUkgZGF0YS4gSXQgc3RpbGwgaXMgcmVhZGFibGUgYW5kIG5vdCBzdWJqZWN0IHRv
+CmVuY29kaW5nIGlzc3VlcyBBRkFJQ1QuCgpJJ2QgcHV0IHRoZSBhdXRob3IgaW5mbyAvIGNvbW1l
+bnQgYXQgdGhlIGVuZCwgc2luY2UgdGhlbiB5b3UgY2FuCnNvcnQvZ3JlcCBmb3Igc3lzX3ZlbmRv
+ciBlYXNpbHksIHdoaWNoIGlzIHByb2JhYmx5IG1vc3QgdXNlZnVsLgoKQW5kIEkgc3RpbGwgdGhp
+bmsgdGhhdCBub3dhZGF5cyBzMnJhbSBpcyB0aGUgd3JvbmcgdG9vbCBmb3IgdGhlCndoaXRlbGlz
+dCwgYnV0IHdlbGwuLi4gOi0pCgpHb29kIGx1Y2ssCgoJU3RlZmFuCi0tIApTdGVmYW4gU2V5ZnJp
+ZWQKCiJDZXRlcnVtIGNlbnNlbyB3aGl0ZWxpc3QuYyBlc3NlIGRlbGVuZGFtIgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
+c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
