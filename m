@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] Help
-Date: Thu, 24 Sep 2009 19:53:46 +0200
-Message-ID: <200909241953.46519.rjw__23508.5008120679$1253814923$gmane$org@sisk.pl>
-References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
-	<200909240028.03305.rjw@sisk.pl>
-	<20090924145128.26e758df@strolchi.home.s3e.de>
+Subject: Re: [2.6.31] NFS + suspend to ram hang...
+Date: Thu, 24 Sep 2009 19:59:39 +0200
+Message-ID: <200909241959.39497.rjw__22164.4145124175$1253815305$gmane$org@sisk.pl>
+References: <6278d2220909231545x217e1100k496bbdd44d0704de@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090924145128.26e758df@strolchi.home.s3e.de>
+In-Reply-To: <6278d2220909231545x217e1100k496bbdd44d0704de@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +17,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMjQgU2VwdGVtYmVyIDIwMDksIFN0ZWZhbiBTZXlmcmllZCB3cm90ZToKPiBP
-biBUaHUsIDI0IFNlcCAyMDA5IDAwOjI4OjAzICswMjAwCj4gIlJhZmFlbCBKLiBXeXNvY2tpIiA8
-cmp3QHNpc2sucGw+IHdyb3RlOgo+IAo+ID4gT24gV2VkbmVzZGF5IDIzIFNlcHRlbWJlciAyMDA5
-LCBSb2RvbGZvIChraXgpIHdyb3RlOgo+ID4gPiBIaSBSYWZhZWwsCj4gPiAKPiA+IEhpLAo+ID4g
-Cj4gPiA+IEkgYW0gdGhpbmtpbmcgYWJvdXQgdGhlIG1haW50YWluaW5nIC4uLgo+IAo+IEdvb2Qg
-bHVjayEgSSBrbm93IHRoYXQgeW91J2xsIG5lZWQgaXQgOykKPiAKPiBMZXQgbWUgdGhyb3cgbXkg
-MiBjZW50cyBpbnRvIHRoZSBib3dsLgo+IAo+ID4gPiAxLiBUaGUgdXNlcnMgc2VuZHMgdGhlIGhh
-cmR3YXJlIGluZm8gdG8gYmUgYWRkZWQgdG8gdGhlIGRhdGFiYXNlCj4gPiA+IChub3cgYnkgbWFp
-bCkuIFRoZW46Cj4gPiA+IAo+ID4gPiAxLiBQcm9iYWJseSB3ZSBuZWVkIGEgbGl0dGxlIHNjcmlw
-dCAob3Igd2ViIHNjcmlwdD8gb3IgcG9zdCBkaXJlY3RseQo+ID4gPiBmb3JtIHRoZSBzMnJhbSAt
-aT8pOgo+ID4gPiAgIDEuYSBUaGUgc2NyaXB0IGNoZWNrcyBpZiB0aGUgbWFjaGluZSBpcyBwcmV2
-aW91c2x5IGFkZGVkIHRvIHRoZQo+ID4gPiBkYXRhYmFzZSAoaW4gYSB0ZXh0IGZpbGUpLiBQcm9i
-YWJseSB0aGlzIHNjcmlwdCBjYW4gcmVhZCBmcm9tIHRoZQo+ID4gPiBtYWlsaW5nIGxpc3QgZm9y
-bWF0Cj4gPiA+IAo+ID4gPiB4eHh4OiUgc3VkbyAvcm9vdC9zMnJhbSAtaQo+ID4gPiBUaGlzIG1h
-Y2hpbmUgY2FuIGJlIGlkZW50aWZpZWQgYnk6Cj4gPiA+ICAgICBzeXNfdmVuZG9yICAgPSAiVE9T
-SElCQSIKPiA+ID4gICAgIHN5c19wcm9kdWN0ICA9ICJTYXRlbGxpdGUgVTMwNSIKPiA+ID4gICAg
-IHN5c192ZXJzaW9uICA9ICJQU1UzNFUtMDBMMDAzIgo+ID4gPiAgICAgYmlvc192ZXJzaW9uID0g
-IlYxLjcwICAgIgo+ID4gPiBTZWUgaHR0cDovL2VuLm9wZW5zdXNlLm9yZy9TMnJhbSBmb3IgZGV0
-YWlscy4KPiA+ID4gCj4gPiA+ICAgMS5iIElmIGlzIG5vdCBhZGRlZCwgdGhlIHNjcmlwdCBhZGQg
-dGhlIG1hY2hpbmUgdG8gYSB0ZXh0IGZpbGUuCj4gPiAKPiA+IEhvd2V2ZXIgeW91IGFycmFuZ2Ug
-dGhhdCBpcyB1cCB0byB5b3UuICBNeSBleHBlcmllbmNlIGlzIHRoYXQgdGhlCj4gPiB1c2VycyBn
-ZW5lcmFsbHkgc2VuZCB3aGl0ZWxpc3QgaW5mb3JtYXRpb24gYnkgZW1haWwuCj4gPiAKPiA+ID4g
-Mi4gVGhlIHRleHQgZmlsZSBjYW4gYmUgcHJvY2Vzc2VkIHVzaW5nIGEgbGl0dGxlIHNjcmlwdCB0
-byBjb252ZXJ0Cj4gPiA+IGl0IHRvIHRoZSAid2hpdGVsaXN0LltjLGhdIiBmaWxlcyBhbmQgY29u
-dmVydGVkIHRvIHdlYiBwYWdlCj4gPiA+IChzMndoaXRlbGlzdCBhbmQgczJ3ZWIgOi0pKQo+ID4g
-PiAzLiBUaGUgc2NyaXB0IGNhbiBkbyBhIGdpdCB1cGRhdGUgaWYgbmVlZGVkLgo+ID4gCj4gPiBX
-ZWxsLCBJJ20gc3VyZWx5IG5vdCBnb2luZyB0byBhbGxvdyB0aGUgc2NyaXB0IHRvIHVwZGF0ZSB0
-aGUgbWFzdGVyCj4gPiBnaXQgdHJlZSBhdCBrZXJuZWwub3JnIGRpcmVjdGx5Lgo+IAo+IFRoZXJl
-J3MgYWxzbyB0aGUgaXNzdWUgdGhhdCBzb21lIHNhbml0eSBjaGVja2luZyBzaG91bGQgYmUgZG9u
-ZSBiZWZvcmUKPiBhZGRpbmcgYW4gZW50cnkuIFByZXR0eSBvZnRlbiwgdXNlcnMgc2VuZCBzb21l
-IGhpbGFyaW91cyBvcHRpb24KPiBjb21iaW5hdGlvbnMsIG9uIG1hY2hpbmVzIHRoYXQgc2hvdWxk
-IG5vd2FkYXlzIGp1c3Qgd29yayB3aXRob3V0IGFueQo+IG9wdGlvbnMgKGUuZy4gaW50ZWwtYmFz
-ZWQpLgoKQWdyZWVkLgoKPiBUaGUgbmV4dCB0aGluZyBpcywgdGhhdCBJLCBwZXJzb25hbGx5LCB3
-b3VsZCByZWplY3QgYW55IG1hY2hpbmVzIHRoYXQKPiBzaG91bGQgd29yayBvdXQgb2YgdGhlIGJv
-eCBub3dhZGF5cyB3aXRoIGluLWtlcm5lbCBkcml2ZXJzIChtZWFuczoKPiBpbnRlbCwgbnZpZGlh
-LSBhbmQgQVRJIGJpbmFyeS1tb2R1bGUgZHJpdmVuKS4gWW91IGNhbiBvbmx5IG1ha2UgdGhpbmdz
-Cj4gd29yc2Ugb24gc3VjaCBtYWNoaW5lcyB3aXRoIHVzZXJzcGFjZSB3b3JrYXJvdW5kcywgYW5k
-IHRoZXkgc2hvdWxkIGJlCj4gcmVjb2duaXplZCBhdXRvbWF0aWNhbGx5IGJ5IHJlY2VudCAobWVh
-bnM6IG5ld2VyIHRoYW4gMiB5ZWFycykKPiBwbS11dGlscywgc28gdGhhdCBubyBoYWNrIGlzIG5l
-ZWRlZC4gSU1ITyB0aGUgd2hpdGVsaXN0IHNob3VsZCBub3QgYmUKPiBjbHV0dGVyZWQgd2l0aCB0
-aGVtLgoKQWdyZWVkIGluIGdlbmVyYWwsIG1heWJlIGV4Y2VwdCBmb3IgdGhlIGJpbmFyeSBkcml2
-ZXIgcGFydC4gIEkgY2VydGFpbmx5IHByZWZlcgpwZW9wbGUgdXNpbmcgczJyYW0ncyB3b3JrYXJv
-dW5kcyB0byBwZW9wbGUgaW5zdGFsbGluZyBiaW5hcnkgZ3JhcGhpY3MgZHJpdmVycwpqdXN0IHRv
-IG1ha2Ugc3VzcGVuZCB3b3JrLgoKPiA+ID4gSW4gbXkgb3BpbmlvbiwgdGhlIGZpbGUgc2hvdWxk
-IGhhdmUgdGhpcyBmb3JtYXQ6Cj4gPiA+IAo+ID4gPiA8YXV0aG9yIGluZm8gZm9yIHRoZSBjb21t
-ZW50J3MKPiA+ID4gbGluZT7CtzxzeXNfdmVuZG9yPsK3PHN5c19wcm9kdWN0PsK3PHN5c192ZXJz
-aW9uPsK3PGJpb3NfdmVyc2lvbj7CtzxmbGFncz4KPiA+ID4gCj4gPiA+IEkgYW0gdXNpbmcgdGhl
-ICLCtyIgc2VwYXJhdG9yIGJlY2F1c2UgcHJvYmFibHkgaXMgbm90IHVzZWQgaW4gYW55Cj4gPiA+
-IGZpZWxkLgo+ID4gCj4gPiBXaGF0J3MgdGhlIGNvZGUgb2YgdGhpcyBjaGFyYWN0ZXI/Cj4gCj4g
-U29tZXRoaW5nIHN0cmFuZ2UgOy0pCj4gCj4gSSdkIHVzZSB0aGUgcGlwZSBjaGFyYWN0ZXI6ICd8
-Jy4gSSBoYXZlIG5vdCB5ZXQgZW5jb3VudGVyZWQgaXQgaW4KPiBzMnJhbS1yZWxldmFudCBETUkg
-ZGF0YS4gSXQgc3RpbGwgaXMgcmVhZGFibGUgYW5kIG5vdCBzdWJqZWN0IHRvCj4gZW5jb2Rpbmcg
-aXNzdWVzIEFGQUlDVC4KClllcywgaXQgaXMgYW4gQVNDSUkgY2hhcmFjdGVyIChvZmZpY2lhbGx5
-IGNhbGxlZCAidmVydGljYWwgYmFyIiBCVFcpLgoKPiBJJ2QgcHV0IHRoZSBhdXRob3IgaW5mbyAv
-IGNvbW1lbnQgYXQgdGhlIGVuZCwgc2luY2UgdGhlbiB5b3UgY2FuCj4gc29ydC9ncmVwIGZvciBz
-eXNfdmVuZG9yIGVhc2lseSwgd2hpY2ggaXMgcHJvYmFibHkgbW9zdCB1c2VmdWwuCgpBZ3JlZWQu
-Cgo+IEFuZCBJIHN0aWxsIHRoaW5rIHRoYXQgbm93YWRheXMgczJyYW0gaXMgdGhlIHdyb25nIHRv
-b2wgZm9yIHRoZQo+IHdoaXRlbGlzdCwgYnV0IHdlbGwuLi4gOi0pCgpPaCwgeW91IGtub3cgbXkg
-b3Bpbmlvbi4gOy0pCgpTdGlsbCwgaWYgUm9kb2xmbyBpcyB3aWxsaW5nIHRvIG1haW50YWluIHRo
-ZSB3aGl0ZWxpc3QsIEkgd29uJ3Qgb2JqZWN0LgoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0
-CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thursday 24 September 2009, Daniel J Blueman wrote:
+> Without the NFS4 homedir mount, suspend to ram works perfectly. With
+> NFS4 homedir, suspend is started, but doesn't complete. Invoking
+> kernel crashdump, all messages and backtrace looks entirely expected
+> [1].
+> 
+> Anyone else find the same? Expected to work or not? What information
+> would help with this?
+
+Can you try this with 2.6.30?
+
+Best,
+Rafael
