@@ -1,16 +1,16 @@
-From: Kix <rodolfogarciap@gmail.com>
-Subject: Re: [Suspend-devel] Help
-Date: Thu, 24 Sep 2009 20:20:13 +0200
-Message-ID: <5B7CD99A-A3B3-44EC-A073-31C0A5B7286B__14896.8538306237$1253831209$gmane$org@gmail.com>
-References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
-	<200909240028.03305.rjw@sisk.pl>
-	<20090924145128.26e758df@strolchi.home.s3e.de>
-	<200909241953.46519.rjw@sisk.pl>
-Mime-Version: 1.0 (iPhone Mail 7A341)
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] 3c59x: Get rid of "Trying to free
+	already-free IRQ"
+Date: Thu, 24 Sep 2009 15:26:19 -0700 (PDT)
+Message-ID: <20090924.152619.260814858.davem__36716.2970979281$1253831481$gmane$org@davemloft.net>
+References: <20090924183152.GA30254@oksana.dev.rtsoft.ru>
+	<200909242230.33881.rjw@sisk.pl>
+	<20090924213039.GA15904@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909241953.46519.rjw@sisk.pl>
+In-Reply-To: <20090924213039.GA15904@oksana.dev.rtsoft.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>, Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: avorontsov@ru.mvista.com
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T2ssIEkgd2lsbCB3cml0ZSBzb21lIGxpbmVzIHRvIG1hbmFnZSB0aGUgd2hpdGVsaXN0LiBJIHdp
-bGwgdXNlIHlvdXIgIApjb21tZW50cyA6LSkKClRoYW5rcyEKCgoKRWwgMjQvMDkvMjAwOSwgYSBs
-YXMgMTk6NTMsICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0BzaXNrLnBsPiBlc2NyaWJpw7M6Cgo+
-IE9uIFRodXJzZGF5IDI0IFNlcHRlbWJlciAyMDA5LCBTdGVmYW4gU2V5ZnJpZWQgd3JvdGU6Cj4+
-IE9uIFRodSwgMjQgU2VwIDIwMDkgMDA6Mjg6MDMgKzAyMDAKPj4gIlJhZmFlbCBKLiBXeXNvY2tp
-IiA8cmp3QHNpc2sucGw+IHdyb3RlOgo+Pgo+Pj4gT24gV2VkbmVzZGF5IDIzIFNlcHRlbWJlciAy
-MDA5LCBSb2RvbGZvIChraXgpIHdyb3RlOgo+Pj4+IEhpIFJhZmFlbCwKPj4+Cj4+PiBIaSwKPj4+
-Cj4+Pj4gSSBhbSB0aGlua2luZyBhYm91dCB0aGUgbWFpbnRhaW5pbmcgLi4uCj4+Cj4+IEdvb2Qg
-bHVjayEgSSBrbm93IHRoYXQgeW91J2xsIG5lZWQgaXQgOykKPj4KPj4gTGV0IG1lIHRocm93IG15
-IDIgY2VudHMgaW50byB0aGUgYm93bC4KPj4KPj4+PiAxLiBUaGUgdXNlcnMgc2VuZHMgdGhlIGhh
-cmR3YXJlIGluZm8gdG8gYmUgYWRkZWQgdG8gdGhlIGRhdGFiYXNlCj4+Pj4gKG5vdyBieSBtYWls
-KS4gVGhlbjoKPj4+Pgo+Pj4+IDEuIFByb2JhYmx5IHdlIG5lZWQgYSBsaXR0bGUgc2NyaXB0IChv
-ciB3ZWIgc2NyaXB0PyBvciBwb3N0ICAKPj4+PiBkaXJlY3RseQo+Pj4+IGZvcm0gdGhlIHMycmFt
-IC1pPyk6Cj4+Pj4gIDEuYSBUaGUgc2NyaXB0IGNoZWNrcyBpZiB0aGUgbWFjaGluZSBpcyBwcmV2
-aW91c2x5IGFkZGVkIHRvIHRoZQo+Pj4+IGRhdGFiYXNlIChpbiBhIHRleHQgZmlsZSkuIFByb2Jh
-Ymx5IHRoaXMgc2NyaXB0IGNhbiByZWFkIGZyb20gdGhlCj4+Pj4gbWFpbGluZyBsaXN0IGZvcm1h
-dAo+Pj4+Cj4+Pj4geHh4eDolIHN1ZG8gL3Jvb3QvczJyYW0gLWkKPj4+PiBUaGlzIG1hY2hpbmUg
-Y2FuIGJlIGlkZW50aWZpZWQgYnk6Cj4+Pj4gICAgc3lzX3ZlbmRvciAgID0gIlRPU0hJQkEiCj4+
-Pj4gICAgc3lzX3Byb2R1Y3QgID0gIlNhdGVsbGl0ZSBVMzA1Igo+Pj4+ICAgIHN5c192ZXJzaW9u
-ICA9ICJQU1UzNFUtMDBMMDAzIgo+Pj4+ICAgIGJpb3NfdmVyc2lvbiA9ICJWMS43MCAgICIKPj4+
-PiBTZWUgaHR0cDovL2VuLm9wZW5zdXNlLm9yZy9TMnJhbSBmb3IgZGV0YWlscy4KPj4+Pgo+Pj4+
-ICAxLmIgSWYgaXMgbm90IGFkZGVkLCB0aGUgc2NyaXB0IGFkZCB0aGUgbWFjaGluZSB0byBhIHRl
-eHQgZmlsZS4KPj4+Cj4+PiBIb3dldmVyIHlvdSBhcnJhbmdlIHRoYXQgaXMgdXAgdG8geW91LiAg
-TXkgZXhwZXJpZW5jZSBpcyB0aGF0IHRoZQo+Pj4gdXNlcnMgZ2VuZXJhbGx5IHNlbmQgd2hpdGVs
-aXN0IGluZm9ybWF0aW9uIGJ5IGVtYWlsLgo+Pj4KPj4+PiAyLiBUaGUgdGV4dCBmaWxlIGNhbiBi
-ZSBwcm9jZXNzZWQgdXNpbmcgYSBsaXR0bGUgc2NyaXB0IHRvIGNvbnZlcnQKPj4+PiBpdCB0byB0
-aGUgIndoaXRlbGlzdC5bYyxoXSIgZmlsZXMgYW5kIGNvbnZlcnRlZCB0byB3ZWIgcGFnZQo+Pj4+
-IChzMndoaXRlbGlzdCBhbmQgczJ3ZWIgOi0pKQo+Pj4+IDMuIFRoZSBzY3JpcHQgY2FuIGRvIGEg
-Z2l0IHVwZGF0ZSBpZiBuZWVkZWQuCj4+Pgo+Pj4gV2VsbCwgSSdtIHN1cmVseSBub3QgZ29pbmcg
-dG8gYWxsb3cgdGhlIHNjcmlwdCB0byB1cGRhdGUgdGhlIG1hc3Rlcgo+Pj4gZ2l0IHRyZWUgYXQg
-a2VybmVsLm9yZyBkaXJlY3RseS4KPj4KPj4gVGhlcmUncyBhbHNvIHRoZSBpc3N1ZSB0aGF0IHNv
-bWUgc2FuaXR5IGNoZWNraW5nIHNob3VsZCBiZSBkb25lICAKPj4gYmVmb3JlCj4+IGFkZGluZyBh
-biBlbnRyeS4gUHJldHR5IG9mdGVuLCB1c2VycyBzZW5kIHNvbWUgaGlsYXJpb3VzIG9wdGlvbgo+
-PiBjb21iaW5hdGlvbnMsIG9uIG1hY2hpbmVzIHRoYXQgc2hvdWxkIG5vd2FkYXlzIGp1c3Qgd29y
-ayB3aXRob3V0IGFueQo+PiBvcHRpb25zIChlLmcuIGludGVsLWJhc2VkKS4KPgo+IEFncmVlZC4K
-Pgo+PiBUaGUgbmV4dCB0aGluZyBpcywgdGhhdCBJLCBwZXJzb25hbGx5LCB3b3VsZCByZWplY3Qg
-YW55IG1hY2hpbmVzIHRoYXQKPj4gc2hvdWxkIHdvcmsgb3V0IG9mIHRoZSBib3ggbm93YWRheXMg
-d2l0aCBpbi1rZXJuZWwgZHJpdmVycyAobWVhbnM6Cj4+IGludGVsLCBudmlkaWEtIGFuZCBBVEkg
-YmluYXJ5LW1vZHVsZSBkcml2ZW4pLiBZb3UgY2FuIG9ubHkgbWFrZSAgCj4+IHRoaW5ncwo+PiB3
-b3JzZSBvbiBzdWNoIG1hY2hpbmVzIHdpdGggdXNlcnNwYWNlIHdvcmthcm91bmRzLCBhbmQgdGhl
-eSBzaG91bGQgYmUKPj4gcmVjb2duaXplZCBhdXRvbWF0aWNhbGx5IGJ5IHJlY2VudCAobWVhbnM6
-IG5ld2VyIHRoYW4gMiB5ZWFycykKPj4gcG0tdXRpbHMsIHNvIHRoYXQgbm8gaGFjayBpcyBuZWVk
-ZWQuIElNSE8gdGhlIHdoaXRlbGlzdCBzaG91bGQgbm90IGJlCj4+IGNsdXR0ZXJlZCB3aXRoIHRo
-ZW0uCj4KPiBBZ3JlZWQgaW4gZ2VuZXJhbCwgbWF5YmUgZXhjZXB0IGZvciB0aGUgYmluYXJ5IGRy
-aXZlciBwYXJ0LiAgSSAgCj4gY2VydGFpbmx5IHByZWZlcgo+IHBlb3BsZSB1c2luZyBzMnJhbSdz
-IHdvcmthcm91bmRzIHRvIHBlb3BsZSBpbnN0YWxsaW5nIGJpbmFyeSAgCj4gZ3JhcGhpY3MgZHJp
-dmVycwo+IGp1c3QgdG8gbWFrZSBzdXNwZW5kIHdvcmsuCj4KPj4+PiBJbiBteSBvcGluaW9uLCB0
-aGUgZmlsZSBzaG91bGQgaGF2ZSB0aGlzIGZvcm1hdDoKPj4+Pgo+Pj4+IDxhdXRob3IgaW5mbyBm
-b3IgdGhlIGNvbW1lbnQncwo+Pj4+IGxpbmU+wrc8c3lzX3ZlbmRvcj7CtzxzeXNfcHJvZHVjdD7C
-tzxzeXNfdmVyc2lvbj7CtzxiaW9zX3ZlcnNpb24+wrcgCj4+Pj4gPGZsYWdzPgo+Pj4+Cj4+Pj4g
-SSBhbSB1c2luZyB0aGUgIsK3IiBzZXBhcmF0b3IgYmVjYXVzZSBwcm9iYWJseSBpcyBub3QgdXNl
-ZCBpbiBhbnkKPj4+PiBmaWVsZC4KPj4+Cj4+PiBXaGF0J3MgdGhlIGNvZGUgb2YgdGhpcyBjaGFy
-YWN0ZXI/Cj4+Cj4+IFNvbWV0aGluZyBzdHJhbmdlIDstKQo+Pgo+PiBJJ2QgdXNlIHRoZSBwaXBl
-IGNoYXJhY3RlcjogJ3wnLiBJIGhhdmUgbm90IHlldCBlbmNvdW50ZXJlZCBpdCBpbgo+PiBzMnJh
-bS1yZWxldmFudCBETUkgZGF0YS4gSXQgc3RpbGwgaXMgcmVhZGFibGUgYW5kIG5vdCBzdWJqZWN0
-IHRvCj4+IGVuY29kaW5nIGlzc3VlcyBBRkFJQ1QuCj4KPiBZZXMsIGl0IGlzIGFuIEFTQ0lJIGNo
-YXJhY3RlciAob2ZmaWNpYWxseSBjYWxsZWQgInZlcnRpY2FsIGJhciIgQlRXKS4KPgo+PiBJJ2Qg
-cHV0IHRoZSBhdXRob3IgaW5mbyAvIGNvbW1lbnQgYXQgdGhlIGVuZCwgc2luY2UgdGhlbiB5b3Ug
-Y2FuCj4+IHNvcnQvZ3JlcCBmb3Igc3lzX3ZlbmRvciBlYXNpbHksIHdoaWNoIGlzIHByb2JhYmx5
-IG1vc3QgdXNlZnVsLgo+Cj4gQWdyZWVkLgo+Cj4+IEFuZCBJIHN0aWxsIHRoaW5rIHRoYXQgbm93
-YWRheXMgczJyYW0gaXMgdGhlIHdyb25nIHRvb2wgZm9yIHRoZQo+PiB3aGl0ZWxpc3QsIGJ1dCB3
-ZWxsLi4uIDotKQo+Cj4gT2gsIHlvdSBrbm93IG15IG9waW5pb24uIDstKQo+Cj4gU3RpbGwsIGlm
-IFJvZG9sZm8gaXMgd2lsbGluZyB0byBtYWludGFpbiB0aGUgd2hpdGVsaXN0LCBJIHdvbid0ICAK
-PiBvYmplY3QuCj4KPiBUaGFua3MsCj4gUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Fri, 25 Sep 2009 01:30:39 +0400
+
+> On Thu, Sep 24, 2009 at 10:30:33PM +0200, Rafael J. Wysocki wrote:
+>> On Thursday 24 September 2009, Anton Vorontsov wrote:
+>> > Following trace pops up if we try to suspend with 3c59x ethernet NIC
+>> > brought down:
+>> 
+>> Patch looks good, but IMO it'd be a little effort to convert the driver to
+>> dev_pm_ops while you're at it (please see r8169 for a working example).
+> 
+> I'd like to avoid putting irrelevant stuff into bugfixes.
+
+Agreed.
