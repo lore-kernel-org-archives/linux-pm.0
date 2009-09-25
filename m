@@ -1,17 +1,12 @@
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] 3c59x: Get rid of "Trying to free
- already-free IRQ"
-Date: Fri, 25 Sep 2009 16:56:16 +0400
-Message-ID: <20090925125616.GA20863__13956.9139726975$1253884780$gmane$org@oksana.dev.rtsoft.ru>
-References: <Pine.LNX.4.44L0.0909250038300.14463-100000@netrider.rowland.org>
-	<200909251432.30738.rjw@sisk.pl>
-Reply-To: avorontsov@ru.mvista.com
+Subject: [PATCH] 3c59x: Rework suspend and resume
+Date: Sat, 26 Sep 2009 00:52:06 +0400
+Message-ID: <20090925205206.GA9270__36737.1198641651$1253912025$gmane$org@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200909251432.30738.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +16,131 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 25, 2009 at 02:32:30PM +0200, Rafael J. Wysocki wrote:
-> On Friday 25 September 2009, Alan Stern wrote:
-> > On Thu, 24 Sep 2009, Anton Vorontsov wrote:
-> > 
-> > > Though, there are few other issues with suspend/resume in this driver.
-> > > The intention of calling free_irq() in suspend() was to avoid any
-> > > possible spurious interrupts (see commit 5b039e681b8c5f30aac9cc04385
-> > > "3c59x PM fixes"). But,
-> > > 
-> > > - On resume, the driver was requesting IRQ just after pci_set_master(),
-> > >   but before vortex_up() (which actually resets 3c59x chips).
-> > 
-> > Shouldn't it be possible to reset the chip (or at least prevent it from 
-> > generating spurious IRQs) during the early-resume phase?
-> > 
-> > > - Issuing free_irq() on a shared IRQ doesn't guarantee that a buggy
-> > >   HW won't trigger spurious interrupts in another driver that
-> > >   requested the same interrupt. So, if we want to protect from
-> > >   unexpected interrupts, then on suspend we should issue disable_irq(),
-> > >   not free_irq().
-> > 
-> > What if some other device shares the IRQ and still relies on receiving
-> > interrupts when this code runs?  Won't disable_irq() mess up the other
-> > device?
-> 
-> Ah, I overlooked the disable_irq()/enable_irq() part, which is not really
-> necessary anyway.
+As noticed by Alan Stern, there is still one issue with the driver:
+we disable PCI IRQ on suspend, but other devices on the same IRQ
+line might still need the IRQ enabled to suspend properly.
 
-Well, it is necessary if 3c59x really throws spurious interrupts
-upon suspend (i.e. after pci_disable_device(pdev)). My first though
-was to just remove free/request_irq stuff, but then I could introduce
-a regression if 3c59x really throws unexpected IRQs and 3c59x was
-the only user of a PCI IRQ (in that case free_irq() would actually
-help).
+Nowadays, PCI core handles all power management work by itself, with
+one condition though: if we use dev_pm_ops. So, rework the driver to
+only quiesce 3c59x internal logic on suspend, while PCI core will
+manage PCI device power state with IRQs disabled.
 
-> Anton, have you tried without that?
+Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
+Suggested-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/3c59x.c |   77 +++++++++++++++++++++++++--------------------------
+ 1 files changed, 38 insertions(+), 39 deletions(-)
 
-Yes, and there wasn't any issues for 3x59x I have. Alan raised a very
-good point, and converting to dev_pm_opsas as you've suggested would
-solve it in a nice way, since if we use the dev_pm_ops, PCI core
-will disable the device in _noirq suspend, after we quiesced the
-chip itself.
-
-I'll send another patch that reworks PM stuff in the driver soon.
-
-Thanks,
-
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index 7cdd4b0..dee2320 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -799,52 +799,54 @@ static void poll_vortex(struct net_device *dev)
+ 
+ #ifdef CONFIG_PM
+ 
+-static int vortex_suspend(struct pci_dev *pdev, pm_message_t state)
++static int vortex_suspend(struct device *dev)
+ {
+-	struct net_device *dev = pci_get_drvdata(pdev);
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *ndev = pci_get_drvdata(pdev);
++
++	if (!ndev || !netif_running(ndev))
++		return 0;
++
++	netif_device_detach(ndev);
++	vortex_down(ndev, 1);
+ 
+-	if (dev && netdev_priv(dev)) {
+-		if (netif_running(dev)) {
+-			netif_device_detach(dev);
+-			vortex_down(dev, 1);
+-			disable_irq(dev->irq);
+-		}
+-		pci_save_state(pdev);
+-		pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
+-		pci_disable_device(pdev);
+-		pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-	}
+ 	return 0;
+ }
+ 
+-static int vortex_resume(struct pci_dev *pdev)
++static int vortex_resume(struct device *dev)
+ {
+-	struct net_device *dev = pci_get_drvdata(pdev);
+-	struct vortex_private *vp = netdev_priv(dev);
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *ndev = pci_get_drvdata(pdev);
+ 	int err;
+ 
+-	if (dev && vp) {
+-		pci_set_power_state(pdev, PCI_D0);
+-		pci_restore_state(pdev);
+-		err = pci_enable_device(pdev);
+-		if (err) {
+-			pr_warning("%s: Could not enable device\n",
+-				dev->name);
+-			return err;
+-		}
+-		pci_set_master(pdev);
+-		if (netif_running(dev)) {
+-			err = vortex_up(dev);
+-			if (err)
+-				return err;
+-			enable_irq(dev->irq);
+-			netif_device_attach(dev);
+-		}
+-	}
++	if (!ndev || !netif_running(ndev))
++		return 0;
++
++	err = vortex_up(ndev);
++	if (err)
++		return err;
++
++	netif_device_attach(ndev);
++
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM */
++static struct dev_pm_ops vortex_pm_ops = {
++	.suspend = vortex_suspend,
++	.resume = vortex_resume,
++	.freeze = vortex_suspend,
++	.thaw = vortex_resume,
++	.poweroff = vortex_suspend,
++	.restore = vortex_resume,
++};
++
++#define VORTEX_PM_OPS (&vortex_pm_ops)
++
++#else /* !CONFIG_PM */
++
++#define VORTEX_PM_OPS NULL
++
++#endif /* !CONFIG_PM */
+ 
+ #ifdef CONFIG_EISA
+ static struct eisa_device_id vortex_eisa_ids[] = {
+@@ -3191,10 +3193,7 @@ static struct pci_driver vortex_driver = {
+ 	.probe		= vortex_init_one,
+ 	.remove		= __devexit_p(vortex_remove_one),
+ 	.id_table	= vortex_pci_tbl,
+-#ifdef CONFIG_PM
+-	.suspend	= vortex_suspend,
+-	.resume		= vortex_resume,
+-#endif
++	.driver.pm	= VORTEX_PM_OPS,
+ };
+ 
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.3.3
