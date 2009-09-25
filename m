@@ -1,8 +1,8 @@
-From: David Miller <davem@davemloft.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] 3c59x: Get rid of "Trying to free
-	already-free IRQ"
-Date: Thu, 24 Sep 2009 15:47:42 -0700 (PDT)
-Message-ID: <20090924.154742.171195189.davem__42206.4053979286$1253832525$gmane$org@davemloft.net>
+ already-free IRQ"
+Date: Fri, 25 Sep 2009 00:43:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0909250038300.14463-100000__17697.0428591178$1253853893$gmane$org@netrider.rowland.org>
 References: <20090924183152.GA30254@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,16 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: avorontsov@ru.mvista.com
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Thu, 24 Sep 2009 22:31:52 +0400
+On Thu, 24 Sep 2009, Anton Vorontsov wrote:
 
-> Following trace pops up if we try to suspend with 3c59x ethernet NIC
-> brought down:
- ...
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Though, there are few other issues with suspend/resume in this driver.
+> The intention of calling free_irq() in suspend() was to avoid any
+> possible spurious interrupts (see commit 5b039e681b8c5f30aac9cc04385
+> "3c59x PM fixes"). But,
+> 
+> - On resume, the driver was requesting IRQ just after pci_set_master(),
+>   but before vortex_up() (which actually resets 3c59x chips).
 
-Applied.
+Shouldn't it be possible to reset the chip (or at least prevent it from 
+generating spurious IRQs) during the early-resume phase?
+
+> - Issuing free_irq() on a shared IRQ doesn't guarantee that a buggy
+>   HW won't trigger spurious interrupts in another driver that
+>   requested the same interrupt. So, if we want to protect from
+>   unexpected interrupts, then on suspend we should issue disable_irq(),
+>   not free_irq().
+
+What if some other device shares the IRQ and still relies on receiving
+interrupts when this code runs?  Won't disable_irq() mess up the other
+device?
+
+Alan Stern
