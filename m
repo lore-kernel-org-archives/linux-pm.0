@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression] 2.6.31-git: tty change broke resume
-	from hibernation on MSI Wind U100
-Date: Sun, 27 Sep 2009 17:00:38 +0200
-Message-ID: <200909271700.38541.rjw@sisk.pl>
-References: <200909260038.22079.rjw@sisk.pl>
-	<20090927124716.2fd8a1de@lxorguk.ukuu.org.uk>
+Subject: Re: Status of Regression/Bug 13407 adb trackpad
+	disappears after suspend to ram?
+Date: Sun, 27 Sep 2009 17:13:44 +0200
+Message-ID: <200909271713.44719.rjw@sisk.pl>
+References: <4ABF5432.9020508@gmx.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20090927124716.2fd8a1de@lxorguk.ukuu.org.uk>
+In-Reply-To: <4ABF5432.9020508@gmx.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
+To: Martin Wache <m.wache@gmx.net>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 27 September 2009, Alan Cox wrote:
-> On Sat, 26 Sep 2009 00:38:21 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sunday 27 September 2009, Martin Wache wrote:
+> Hi all,
 > 
-> > Hi Alan,
-> > 
-> > As stated at http://bugzilla.kernel.org/show_bug.cgi?id=14229, your commit
-> > b50989dc444599c8b21edc23536fc305f4e9b7d5
-> > (tty: make the kref destructor occur asynchronously) appears to have broken
-> > resume from hibernation on MSI Wind U100.
-> > 
-> > I verified that hibernation works correctly with this commit reverted.
-> > 
-> > I'm still not sure what the root cause of the problem is, though.
+> I'd like to ask if there is any news on the bug 13407
 > 
-> The root cause is that the patch to fix the console async/sync behaviour
-> went into Andrews tree, back out of it and vanished.
+> http://bugzilla.kernel.org/show_bug.cgi?id=13407
 > 
-> It's a known bug, with a known confirmed fix. You may want to pick it up
-> and submit it as there is no tty maintainer currently.
+> The status of the bugreport is "NEEDINFO", I'm also hit by this bug, 
+> using 2.6.31 on an iBook G4. Can I help in anyway to get this bug fixed? 
+> I'm happy to provide any info I can, if there is need for more info. I 
+> would also try patches if that helps.
 
-Thanks, I guess it's this one:
-tty-fix-regression-caused-by-tty-make-the-kref-destructor-occur-asynchronously.patch ?
+A patch has been submitted which is reported to fix the issue:
+
+http://patchwork.kernel.org/patch/49462/
+
+Please test it as requested.
+
+Best,
+Rafael
