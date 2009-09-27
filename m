@@ -1,15 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH,
- fix] Re: [Regression] 2.6.31-git: tty change broke resume from
- hibernation on MSI Wind U100
-Date: Mon, 28 Sep 2009 02:07:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0909280202280.14348-100000__38148.9460975446$1254118208$gmane$org@netrider.rowland.org>
-References: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
+From: Martin Wache <m.wache@gmx.net>
+Subject: Re: Status of Regression/Bug 13407 adb trackpad
+ disappears after suspend to ram?
+Date: Sun, 27 Sep 2009 20:10:10 +0200
+Message-ID: <4ABFAA82.2040200__26579.7950131402$1254149470$gmane$org@gmx.net>
+References: <4ABF5432.9020508@gmx.net> <200909271713.44719.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
+In-Reply-To: <200909271713.44719.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 28 Sep 2009, Dave Young wrote:
+Hi,
 
-> On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 27 September 2009, Alan Stern wrote:
-> >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
-> >>
-> >> > Tested, works.
-> >> >
-> >> > Greg, could you please consider taking the patch below? =C2=A0It fix=
-es a recent
-> >> > hibernation regression for me, so if not this one, another fix is ne=
-cessary.
-> >>
-> >> This patch has a mistake.
-> >>
-> >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> >> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
-> >> > =C2=A0 =C2=A0 .chars_in_buffer =3D =C2=A0 =C2=A0 =C2=A0serial_chars_=
-in_buffer,
-> >> > =C2=A0 =C2=A0 .tiocmget =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 serial_tiocmget,
-> >> > =C2=A0 =C2=A0 .tiocmset =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 serial_tiocmset,
-> >> > - =C2=A0 .shutdown =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ser=
-ial_release,
-> >> > + =C2=A0 .cleanup =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0serial_release,
-> >> > =C2=A0 =C2=A0 .install =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0serial_install,
-> >> > =C2=A0 =C2=A0 .proc_fops =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0&serial_proc_fops,
-> >> > =C2=A0};
-> >>
-> >> It isn't enough to change the method pointer. =C2=A0The code in
-> >> serial_release() has to be changed too; it must not call tty_shutdown()
-> >> any more.
-> >
-> > Would it be sufficient to remove the tty_shutdown() call from
-> > serial_release()?
-> =
+Rafael J. Wysocki schrieb:
 
-> I think so, because standard shutdown will be called in queue_release_one=
-_tty.
-> =
+> A patch has been submitted which is reported to fix the issue:
+> 
+> http://patchwork.kernel.org/patch/49462/
+> 
+> Please test it as requested.
+>
+Thank you for the info :-)
 
-> Alan, could you confirm about this?  Thus I'd like to update the patch.
+Unfortunately, applying the patch on top of 2.6.31 doesn't improve the 
+situation for me, rather the opposite. Under X I get no reaction on any 
+  keypress on the keyboard or movement on the trackpad. Even plugging in 
+an USB mouse and keyboard didn't help, the usb port doesn't provide an 
+power to the mouse (at least the led in the mouse doesn't light up).
+Before X starts up the keyboard does respond, also the trackpad seems to 
+be detected. Doing a suspend/resume cycle doesn't change the situation.
 
-Yes, that's right.  Just remove the function call.  But what happens if
-the device is a serial console?  Shouldn't the call to tty_shutdown()  =
+I'm not sure if there was a miscompilation, I didn't do a "make clean", 
+I just applied the patch and did a "make". Should this be enough? 
+Compiling the whole kernel unfortunately takes quite a while on my iBook :-(
+I will see if I can connect to the iBook via net and get some 
+information on what is happening, or maybe I try to start it up without 
+X. Would it help you if I send you the logs, etc? Which information 
+would help you?
 
-be skipped in that case?  (Eventually this won't matter; the console
-code will be straightened out so that we never release a serial console
-device.  But for now it's important.)
+Thanks,
 
-If you think it would be appropriate, you could also rename
-serial_release() to serial_cleanup() -- it's up to you.
-
-Alan Stern
+Martin
