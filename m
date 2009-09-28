@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH,
-	fix] Re: [Regression] 2.6.31-git: tty change broke resume from
-	hibernation on MSI Wind U100
-Date: Sun, 27 Sep 2009 20:16:04 +0200
-Message-ID: <200909272016.04597.rjw__31069.3341227763$1254075368$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0909271329400.5871-100000@netrider.rowland.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Status of Regression/Bug 13407 adb trackpad
+ disappears after suspend to ram?
+Date: Mon, 28 Sep 2009 13:27:47 +1000
+Message-ID: <1254108467.8421.3.camel__17955.3545582623$1254108549$gmane$org@pasglop>
+References: <4ABF5432.9020508@gmx.net> <200909271713.44719.rjw@sisk.pl>
+	<4ABFAA82.2040200@gmx.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0909271329400.5871-100000@netrider.rowland.org>
+In-Reply-To: <4ABFAA82.2040200@gmx.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Young <hidave.darkstar@gmail.com>
+To: Martin Wache <m.wache@gmx.net>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 27 September 2009, Alan Stern wrote:
-> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
+On Sun, 2009-09-27 at 20:10 +0200, Martin Wache wrote:
+> Hi,
 > 
-> > Tested, works.
+> Rafael J. Wysocki schrieb:
+> 
+> > A patch has been submitted which is reported to fix the issue:
 > > 
-> > Greg, could you please consider taking the patch below?  It fixes a recent
-> > hibernation regression for me, so if not this one, another fix is necessary.
+> > http://patchwork.kernel.org/patch/49462/
+> > 
+> > Please test it as requested.
+> >
+> Thank you for the info :-)
 > 
-> This patch has a mistake.
-> 
-> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
-> >  	.chars_in_buffer =	serial_chars_in_buffer,
-> >  	.tiocmget =		serial_tiocmget,
-> >  	.tiocmset =		serial_tiocmset,
-> > -	.shutdown = 		serial_release,
-> > +	.cleanup = 		serial_release,
-> >  	.install = 		serial_install,
-> >  	.proc_fops =		&serial_proc_fops,
-> >  };
-> 
-> It isn't enough to change the method pointer.  The code in 
-> serial_release() has to be changed too; it must not call tty_shutdown() 
-> any more.
+> Unfortunately, applying the patch on top of 2.6.31 doesn't improve the 
+> situation for me, rather the opposite. Under X I get no reaction on any 
+>   keypress on the keyboard or movement on the trackpad. Even plugging in 
+> an USB mouse and keyboard didn't help, the usb port doesn't provide an 
+> power to the mouse (at least the led in the mouse doesn't light up).
+> Before X starts up the keyboard does respond, also the trackpad seems to 
+> be detected. Doing a suspend/resume cycle doesn't change the situation.
 
-Would it be sufficient to remove the tty_shutdown() call from
-serial_release()?
+That looks like a different problem than the one I fixed. Is there an
+email thread or a bugzilla entry that describes the setup precisely, the
+symptoms, kernel logs etc... ?
 
-Rafael
+> I'm not sure if there was a miscompilation, I didn't do a "make clean", 
+> I just applied the patch and did a "make". Should this be enough? 
+> Compiling the whole kernel unfortunately takes quite a while on my iBook :-(
+> I will see if I can connect to the iBook via net and get some 
+> information on what is happening, or maybe I try to start it up without 
+> X. Would it help you if I send you the logs, etc? Which information 
+> would help you?
+
+Start with sending the dmesg, the output of cat /proc/cpuinfo, and the
+Xorg log (/var/log/Xorg.0.log)
+
+Cheers,
+Ben.
+
+> Thanks,
+> 
+> Martin
