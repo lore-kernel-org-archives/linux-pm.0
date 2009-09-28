@@ -1,14 +1,16 @@
-From: Martin Wache <m.wache@gmx.net>
-Subject: Re: Status of Regression/Bug 13407 adb trackpad
- disappears after suspend to ram?
-Date: Sun, 27 Sep 2009 20:10:10 +0200
-Message-ID: <4ABFAA82.2040200__26579.7950131402$1254149470$gmane$org@gmx.net>
-References: <4ABF5432.9020508@gmx.net> <200909271713.44719.rjw@sisk.pl>
+From: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH,
+	fix] Re: [Regression] 2.6.31-git: tty change broke resume from
+	hibernation on MSI Wind U100
+Date: Mon, 28 Sep 2009 13:03:52 +0800
+Message-ID: <a8e1da0909272203me287858y2f8d82f3710e07d3__7934.79556818983$1254149481$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.0909271329400.5871-100000@netrider.rowland.org>
+	<200909272016.04597.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909271713.44719.rjw@sisk.pl>
+In-Reply-To: <200909272016.04597.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +21,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Rafael J. Wysocki schrieb:
-
-> A patch has been submitted which is reported to fix the issue:
-> 
-> http://patchwork.kernel.org/patch/49462/
-> 
-> Please test it as requested.
->
-Thank you for the info :-)
-
-Unfortunately, applying the patch on top of 2.6.31 doesn't improve the 
-situation for me, rather the opposite. Under X I get no reaction on any 
-  keypress on the keyboard or movement on the trackpad. Even plugging in 
-an USB mouse and keyboard didn't help, the usb port doesn't provide an 
-power to the mouse (at least the led in the mouse doesn't light up).
-Before X starts up the keyboard does respond, also the trackpad seems to 
-be detected. Doing a suspend/resume cycle doesn't change the situation.
-
-I'm not sure if there was a miscompilation, I didn't do a "make clean", 
-I just applied the patch and did a "make". Should this be enough? 
-Compiling the whole kernel unfortunately takes quite a while on my iBook :-(
-I will see if I can connect to the iBook via net and get some 
-information on what is happening, or maybe I try to start it up without 
-X. Would it help you if I send you the logs, etc? Which information 
-would help you?
-
-Thanks,
-
-Martin
+T24gTW9uLCBTZXAgMjgsIDIwMDkgYXQgMjoxNiBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBPbiBTdW5kYXkgMjcgU2VwdGVtYmVyIDIwMDksIEFsYW4gU3Rlcm4g
+d3JvdGU6Cj4+IE9uIFN1biwgMjcgU2VwIDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
+Pgo+PiA+IFRlc3RlZCwgd29ya3MuCj4+ID4KPj4gPiBHcmVnLCBjb3VsZCB5b3UgcGxlYXNlIGNv
+bnNpZGVyIHRha2luZyB0aGUgcGF0Y2ggYmVsb3c/IMKgSXQgZml4ZXMgYSByZWNlbnQKPj4gPiBo
+aWJlcm5hdGlvbiByZWdyZXNzaW9uIGZvciBtZSwgc28gaWYgbm90IHRoaXMgb25lLCBhbm90aGVy
+IGZpeCBpcyBuZWNlc3NhcnkuCj4+Cj4+IFRoaXMgcGF0Y2ggaGFzIGEgbWlzdGFrZS4KPj4KPj4g
+PiBJbmRleDogbGludXgtMi42L2RyaXZlcnMvdXNiL3NlcmlhbC91c2Itc2VyaWFsLmMKPj4gPiA9
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09Cj4+ID4gLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvdXNiL3NlcmlhbC91c2It
+c2VyaWFsLmMKPj4gPiArKysgbGludXgtMi42L2RyaXZlcnMvdXNiL3NlcmlhbC91c2Itc2VyaWFs
+LmMKPj4gPiBAQCAtMTIxMCw3ICsxMjEwLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCB0dHlfb3Bl
+cmF0aW9ucyBzZXJpYQo+PiA+IMKgIMKgIC5jaGFyc19pbl9idWZmZXIgPSDCoCDCoCDCoHNlcmlh
+bF9jaGFyc19pbl9idWZmZXIsCj4+ID4gwqAgwqAgLnRpb2NtZ2V0ID0gwqAgwqAgwqAgwqAgwqAg
+wqAgc2VyaWFsX3Rpb2NtZ2V0LAo+PiA+IMKgIMKgIC50aW9jbXNldCA9IMKgIMKgIMKgIMKgIMKg
+IMKgIHNlcmlhbF90aW9jbXNldCwKPj4gPiAtIMKgIC5zaHV0ZG93biA9IMKgIMKgIMKgIMKgIMKg
+IMKgIHNlcmlhbF9yZWxlYXNlLAo+PiA+ICsgwqAgLmNsZWFudXAgPSDCoCDCoCDCoCDCoCDCoCDC
+oCDCoHNlcmlhbF9yZWxlYXNlLAo+PiA+IMKgIMKgIC5pbnN0YWxsID0gwqAgwqAgwqAgwqAgwqAg
+wqAgwqBzZXJpYWxfaW5zdGFsbCwKPj4gPiDCoCDCoCAucHJvY19mb3BzID0gwqAgwqAgwqAgwqAg
+wqAgwqAmc2VyaWFsX3Byb2NfZm9wcywKPj4gPiDCoH07Cj4+Cj4+IEl0IGlzbid0IGVub3VnaCB0
+byBjaGFuZ2UgdGhlIG1ldGhvZCBwb2ludGVyLiDCoFRoZSBjb2RlIGluCj4+IHNlcmlhbF9yZWxl
+YXNlKCkgaGFzIHRvIGJlIGNoYW5nZWQgdG9vOyBpdCBtdXN0IG5vdCBjYWxsIHR0eV9zaHV0ZG93
+bigpCj4+IGFueSBtb3JlLgo+Cj4gV291bGQgaXQgYmUgc3VmZmljaWVudCB0byByZW1vdmUgdGhl
+IHR0eV9zaHV0ZG93bigpIGNhbGwgZnJvbQo+IHNlcmlhbF9yZWxlYXNlKCk/CgpJIHRoaW5rIHNv
+LCBiZWNhdXNlIHN0YW5kYXJkIHNodXRkb3duIHdpbGwgYmUgY2FsbGVkIGluIHF1ZXVlX3JlbGVh
+c2Vfb25lX3R0eS4KCkFsYW4sIGNvdWxkIHlvdSBjb25maXJtIGFib3V0IHRoaXM/ICBUaHVzIEkn
+ZCBsaWtlIHRvIHVwZGF0ZSB0aGUgcGF0Y2guCgoKCj4KPiBSYWZhZWwKPiAtLQo+IFRvIHVuc3Vi
+c2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1r
+ZXJuZWwiIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
+bC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0IMKgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9t
+YWpvcmRvbW8taW5mby5odG1sCj4gUGxlYXNlIHJlYWQgdGhlIEZBUSBhdCDCoGh0dHA6Ly93d3cu
+dHV4Lm9yZy9sa21sLwo+CgoKCi0tIApSZWdhcmRzCmRhdmUKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
