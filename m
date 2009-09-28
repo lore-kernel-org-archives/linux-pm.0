@@ -1,12 +1,15 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: [PATCH 2/2] Shift remaining code from swsusp.c to
-	hibernate.c
-Date: Mon, 28 Sep 2009 14:10:22 +1000
-Message-ID: <4AC0372E.8090706__35538.2463233129$1254111332$gmane$org@crca.org.au>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH,
+ fix] Re: [Regression] 2.6.31-git: tty change broke resume from
+ hibernation on MSI Wind U100
+Date: Mon, 28 Sep 2009 02:07:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0909280202280.14348-100000__38148.9460975446$1254118208$gmane$org@netrider.rowland.org>
+References: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <a8e1da0909272203me287858y2f8d82f3710e07d3@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,174 +19,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Rafael Wysocki <rjw@sisk.pl>, linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Shift the remaining declaration of the variable in_suspend and the
-function swsusp_show_speed from swsusp.c to hibernate.c, and delete
-swsusp.c.
+On Mon, 28 Sep 2009, Dave Young wrote:
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/Makefile    |    2 +-
- kernel/power/hibernate.c |   30 ++++++++++++++++
- kernel/power/swsusp.c    |   87 ----------------------------------------------
- 3 files changed, 31 insertions(+), 88 deletions(-)
- delete mode 100644 kernel/power/swsusp.c
+> On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday 27 September 2009, Alan Stern wrote:
+> >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
+> >>
+> >> > Tested, works.
+> >> >
+> >> > Greg, could you please consider taking the patch below? =C2=A0It fix=
+es a recent
+> >> > hibernation regression for me, so if not this one, another fix is ne=
+cessary.
+> >>
+> >> This patch has a mistake.
+> >>
+> >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
+> >> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
+> >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
+> >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
+> >> > =C2=A0 =C2=A0 .chars_in_buffer =3D =C2=A0 =C2=A0 =C2=A0serial_chars_=
+in_buffer,
+> >> > =C2=A0 =C2=A0 .tiocmget =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 serial_tiocmget,
+> >> > =C2=A0 =C2=A0 .tiocmset =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 serial_tiocmset,
+> >> > - =C2=A0 .shutdown =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ser=
+ial_release,
+> >> > + =C2=A0 .cleanup =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0serial_release,
+> >> > =C2=A0 =C2=A0 .install =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0serial_install,
+> >> > =C2=A0 =C2=A0 .proc_fops =3D =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0&serial_proc_fops,
+> >> > =C2=A0};
+> >>
+> >> It isn't enough to change the method pointer. =C2=A0The code in
+> >> serial_release() has to be changed too; it must not call tty_shutdown()
+> >> any more.
+> >
+> > Would it be sufficient to remove the tty_shutdown() call from
+> > serial_release()?
+> =
 
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index c3b81c3..4319181 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -8,7 +8,7 @@ obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
--obj-$(CONFIG_HIBERNATION)	+= swsusp.o hibernate.o snapshot.o swap.o user.o
-+obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o
- obj-$(CONFIG_HIBERNATION_NVS)	+= hibernate_nvs.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 04b3a83..a5b2538 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -32,6 +32,7 @@ static int noresume = 0;
- static char resume_file[256] = CONFIG_PM_STD_PARTITION;
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
-+int in_suspend __nosavedata = 0;
- 
- enum {
- 	HIBERNATION_INVALID,
-@@ -202,6 +203,35 @@ static void platform_recover(int platform_mode)
- }
- 
- /**
-+ *	swsusp_show_speed - print the time elapsed between two events represented by
-+ *	@start and @stop
-+ *
-+ *	@nr_pages -	number of pages processed between @start and @stop
-+ *	@msg -		introductory message to print
-+ */
-+
-+void swsusp_show_speed(struct timeval *start, struct timeval *stop,
-+			unsigned nr_pages, char *msg)
-+{
-+	s64 elapsed_centisecs64;
-+	int centisecs;
-+	int k;
-+	int kps;
-+
-+	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
-+	centisecs = elapsed_centisecs64;
-+	if (centisecs == 0)
-+		centisecs = 1;	/* avoid div-by-zero */
-+	k = nr_pages * (PAGE_SIZE / 1024);
-+	kps = (k * 100) / centisecs;
-+	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
-+			msg, k,
-+			centisecs / 100, centisecs % 100,
-+			kps / 1000, (kps % 1000) / 10);
-+}
-+
-+/**
-  *	create_image - freeze devices that need to be frozen with interrupts
-  *	off, create the hibernation image and thaw those devices.  Control
-  *	reappears in this routine after a restore.
-diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-deleted file mode 100644
-index 57222d2..0000000
---- a/kernel/power/swsusp.c
-+++ /dev/null
-@@ -1,87 +0,0 @@
--/*
-- * linux/kernel/power/swsusp.c
-- *
-- * This file provides code to write suspend image to swap and read it back.
-- *
-- * Copyright (C) 1998-2001 Gabor Kuti <seasons@fornax.hu>
-- * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
-- *
-- * This file is released under the GPLv2.
-- *
-- * I'd like to thank the following people for their work:
-- *
-- * Pavel Machek <pavel@ucw.cz>:
-- * Modifications, defectiveness pointing, being with me at the very beginning,
-- * suspend to swap space, stop all tasks. Port to 2.4.18-ac and 2.5.17.
-- *
-- * Steve Doddi <dirk@loth.demon.co.uk>:
-- * Support the possibility of hardware state restoring.
-- *
-- * Raph <grey.havens@earthling.net>:
-- * Support for preserving states of network devices and virtual console
-- * (including X and svgatextmode)
-- *
-- * Kurt Garloff <garloff@suse.de>:
-- * Straightened the critical function in order to prevent compilers from
-- * playing tricks with local variables.
-- *
-- * Andreas Mohr <a.mohr@mailto.de>
-- *
-- * Alex Badea <vampire@go.ro>:
-- * Fixed runaway init
-- *
-- * Rafael J. Wysocki <rjw@sisk.pl>
-- * Reworked the freeing of memory and the handling of swap
-- *
-- * More state savers are welcome. Especially for the scsi layer...
-- *
-- * For TODOs,FIXMEs also look in Documentation/power/swsusp.txt
-- */
--
--#include <linux/mm.h>
--#include <linux/suspend.h>
--#include <linux/spinlock.h>
--#include <linux/kernel.h>
--#include <linux/major.h>
--#include <linux/swap.h>
--#include <linux/pm.h>
--#include <linux/swapops.h>
--#include <linux/bootmem.h>
--#include <linux/syscalls.h>
--#include <linux/highmem.h>
--#include <linux/time.h>
--#include <linux/rbtree.h>
--#include <linux/io.h>
--
--#include "power.h"
--
--int in_suspend __nosavedata = 0;
--
--/**
-- *	swsusp_show_speed - print the time elapsed between two events represented by
-- *	@start and @stop
-- *
-- *	@nr_pages -	number of pages processed between @start and @stop
-- *	@msg -		introductory message to print
-- */
--
--void swsusp_show_speed(struct timeval *start, struct timeval *stop,
--			unsigned nr_pages, char *msg)
--{
--	s64 elapsed_centisecs64;
--	int centisecs;
--	int k;
--	int kps;
--
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	centisecs = elapsed_centisecs64;
--	if (centisecs == 0)
--		centisecs = 1;	/* avoid div-by-zero */
--	k = nr_pages * (PAGE_SIZE / 1024);
--	kps = (k * 100) / centisecs;
--	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
--			msg, k,
--			centisecs / 100, centisecs % 100,
--			kps / 1000, (kps % 1000) / 10);
--}
--- 
-1.6.3.3
+> I think so, because standard shutdown will be called in queue_release_one=
+_tty.
+> =
+
+> Alan, could you confirm about this?  Thus I'd like to update the patch.
+
+Yes, that's right.  Just remove the function call.  But what happens if
+the device is a serial console?  Shouldn't the call to tty_shutdown()  =
+
+be skipped in that case?  (Eventually this won't matter; the console
+code will be straightened out so that we never release a serial console
+device.  But for now it's important.)
+
+If you think it would be appropriate, you could also rename
+serial_release() to serial_cleanup() -- it's up to you.
+
+Alan Stern
