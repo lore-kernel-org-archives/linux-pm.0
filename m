@@ -1,11 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM fixes for 2.6.32
-Date: Tue, 29 Sep 2009 00:58:20 +0200
-Message-ID: <200909290058.20509.rjw__11980.6730458096$1254178673$gmane$org@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Kix <rodolfogarciap@gmail.com>
+Subject: Re: [Suspend-devel] Help
+Date: Tue, 29 Sep 2009 00:57:16 +0200
+Message-ID: <3A45B297-68FA-461E-9E31-864627534050__12464.8542413071$1254178704$gmane$org@gmail.com>
+References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
+	<5B7CD99A-A3B3-44EC-A073-31C0A5B7286B@gmail.com>
+	<3096bd910909281513h134e505cy6631f998cd1cba5b@mail.gmail.com>
+	<200909290027.08115.rjw@sisk.pl>
+Mime-Version: 1.0 (iPhone Mail 7A341)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200909290027.08115.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,42 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, stable@kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>, Stefan Seyfried <stefan.seyfried@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
-
-Please pull power management fixes for 2.6.32 from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
-
-This removes the redundant second argument of pcmcia_socket_dev_suspend()
-and, on top of that, fixes CardBus suspend/resume that has been broken
-since 2.6.29.
-
- drivers/pcmcia/at91_cf.c        |    2 +-
- drivers/pcmcia/au1000_generic.c |    2 +-
- drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
- drivers/pcmcia/cs.c             |    2 +-
- drivers/pcmcia/i82092.c         |    2 +-
- drivers/pcmcia/i82365.c         |    2 +-
- drivers/pcmcia/m32r_cfc.c       |    2 +-
- drivers/pcmcia/m32r_pcc.c       |    2 +-
- drivers/pcmcia/m8xx_pcmcia.c    |    2 +-
- drivers/pcmcia/omap_cf.c        |    2 +-
- drivers/pcmcia/pd6729.c         |    2 +-
- drivers/pcmcia/pxa2xx_base.c    |    2 +-
- drivers/pcmcia/sa1100_generic.c |    2 +-
- drivers/pcmcia/sa1111_generic.c |    2 +-
- drivers/pcmcia/tcic.c           |    2 +-
- drivers/pcmcia/vrc4171_card.c   |    2 +-
- drivers/pcmcia/yenta_socket.c   |   88 +++++++++++++++++++++------------------
- include/pcmcia/ss.h             |    2 +-
- 18 files changed, 65 insertions(+), 57 deletions(-)
-
----------------
-
-Rafael J. Wysocki (2):
-      PM / PCMCIA: Drop second argument of pcmcia_socket_dev_suspend()
-      PM / yenta: Fix cardbus suspend/resume regression
+CgoKCkVsIDI5LzA5LzIwMDksIGEgbGFzIDAwOjI3LCAiUmFmYWVsIEouIFd5c29ja2kiIDxyandA
+c2lzay5wbD4gZXNjcmliacOzOgoKPiBPbiBUdWVzZGF5IDI5IFNlcHRlbWJlciAyMDA5LCBSb2Rv
+bGZvIChraXgpIHdyb3RlOgo+PiBIaSEhCj4KPiBIaSwKPgo+PiAxLiBBIG5ldyBkYXRhYmFzZSBm
+aWxlLCBjb21tYSBzZXBhcmF0ZWQsIGhhcyBiZWVuIGNyZWF0ZWQgKGl0IHdhcwo+PiB0ZXJyaWJs
+ZSwgSSBhbSB2ZXJ5IHRpcmVkKQo+Cj4gV2VsbCwgSSBjYW4gaW1hZ2luZS4gOi0pCj4KPj4gMi4g
+QSBsaXR0bGUgc2NyaXB0IHRvIHNlYXJjaCBpbiB0aGUgZGF0YWJhc2UgKHVzaW5nIHRoZSAibWF0
+Y2giCj4+IGZ1bmN0aW9uKSBpcyBpbXBsZW1lbnRlZAo+PiAzLiBPdGhlciBzY3JpcHQgdG8gY29u
+dmVydCB0aGUgZGF0YWJhc2UgZmlsZSB0byB3aGl0ZWxpc3QuYyBoYXMgYmVlbgo+PiBjcmVhdGVk
+IHRvby4KPj4KPj4gVGhlIHNjcmlwdHMgaGFzIGJlZW4gY3JlYXRlZCB1c2luZyBwZXJsLiBXaHk/
+IGJlY2F1c2UgaXMgZmFzdCwgZ29vZAo+PiBhbmQgaXMgb25seSBmb3IgdGhlIGRhdGFiYXNlIG1h
+aW50YW5pbmcsIG5vdCBmb3IgdGhlIGNvZGUKPj4gZGlzdHJpYnV0aW9uLgo+Pgo+PiBQbGVhc2Us
+IHRlc3QgaXQsIHRoZSBjb2RlIGlzIGluIGh0dHA6Ly93d3cua2l4LmVzLzIwMDkwOTI5Lwo+Cj4g
+T0ssIHNvIHRoZSBpZGVhIGlzIHRoYXQgdXNlcnMgd2FudGluZyB0byBhZGQgYW4gZW50cnkgdG8g
+dGhlICAKPiB3aGl0ZWxpc3Qgd2lsbAo+IGVkaXQgdGhlIHdoaXRlbGlzdCBmaWxlIGFuZCB0aGUg
+dXNlIHlvdXIgc2NyaXB0IHRvIGdlbmVyYXRlIGEgbmV3Cj4gd2hpdGVsaXN0LmMgYmVmb3JlIGJ1
+aWxkaW5nIHMycmFtLiAgSXMgdGhpcyBjb3JyZWN0PwoKUmVhbGx5IEkgZG9uJ3Qga25vdy4gUHJv
+YmFibHkgdGhlIHVzZXJzIGNhbiBzZW5kIHRoZSBlbnRyeSB0byB0aGUgbWFpbCAgCmxpc3QgYW5k
+IChJIHwgV2UpIGdlbmVyYXRlIGEgbmV3IHdoaXRlbGlzdC5jCgpQcm9iYWJseSB3ZSBjYW4gYWNj
+ZXB0LyBkZWNsaW5lIHRoZSBuZXcgbWFjaGluZSB1c2luZyBvdGhlciBzY3JpcHQgYW5kICAKcG9z
+dCBpdCB0byB0aGUgZ2l0IGF1dG9tYXRpY2FsbHkKCkkgYW0gbm90IHN1cmUgYWJvdXQgaWYgdGhl
+IHVzZXJzIG5lZWQgdGhlIGRhdGFiYXNlIGZpbGUuLi4gSU1PIHRoZSAgCmRhdGFiYXNlIG1hbmFn
+ZW1lbnQgYW5kIHRoZSB3aGl0ZWxpc3QuYyBjcmVhdGlvbiBzaG91bGQgYmUgbW9uaXRvcml6ZWQg
+IAphbmQgbm90IGZ1bGx5IG9wZW4uIEEgYmFkIGVudHJ5IGNhbiBiZSAuLi4gdGVycmlibGU/CgpV
+c2luZyB5b3VyIHByb2NlZHVyZSwgaWYgdHdvIHVzZXJzIG1vZGlmeSB0aGUgc2NyaXB0IGF0IHRo
+ZSBzb21lIHRpbWUgIAphbmQgc2VudCBpdCwgd2Ugd2lsbCBsb3N0IG9uZSBlbnRyeSwgdGhlcmVm
+b3JlIHdlIG5lZWQgdG8gdXNlIGRpZmYgIApiZXR3ZWVuIHRoZW0uCgpPbiB0aGUgb3RoZXIgaGFu
+ZCwgcHJvYmFibHkgdGhlIGRhdGFiYXNlIGNhbiBiZSAiY2xlYW5lZCIuIFByb2JhYmx5ICAKc29t
+ZSBlbnRyaWVzIGNhbiBiZSBkdXBwbGljYXRlZC4KClRpbWUgdG8gc2xlZXAuCgpNb3JlIG9waW5p
+b25zPz8KCktpeAoKPgo+IFJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXBt
