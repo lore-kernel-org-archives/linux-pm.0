@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] Help
-Date: Tue, 29 Sep 2009 00:27:08 +0200
-Message-ID: <200909290027.08115.rjw__16411.9346686222$1254176827$gmane$org@sisk.pl>
-References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
-	<5B7CD99A-A3B3-44EC-A073-31C0A5B7286B@gmail.com>
-	<3096bd910909281513h134e505cy6631f998cd1cba5b@mail.gmail.com>
+Subject: [GIT PULL] PM fixes for 2.6.32
+Date: Tue, 29 Sep 2009 00:58:20 +0200
+Message-ID: <200909290058.20509.rjw__11980.6730458096$1254178673$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <3096bd910909281513h134e505cy6631f998cd1cba5b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +15,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rodolfo (kix)" <kix@kix.es>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>, Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 29 September 2009, Rodolfo (kix) wrote:
-> Hi!!
+Hi Linus,
 
-Hi,
+Please pull power management fixes for 2.6.32 from:
 
-> 1. A new database file, comma separated, has been created (it was
-> terrible, I am very tired)
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
 
-Well, I can imagine. :-)
+This removes the redundant second argument of pcmcia_socket_dev_suspend()
+and, on top of that, fixes CardBus suspend/resume that has been broken
+since 2.6.29.
 
-> 2. A little script to search in the database (using the "match"
-> function) is implemented
-> 3. Other script to convert the database file to whitelist.c has been
-> created too.
-> 
-> The scripts has been created using perl. Why? because is fast, good
-> and is only for the database maintaning, not for the code
-> distribution.
-> 
-> Please, test it, the code is in http://www.kix.es/20090929/
+ drivers/pcmcia/at91_cf.c        |    2 +-
+ drivers/pcmcia/au1000_generic.c |    2 +-
+ drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
+ drivers/pcmcia/cs.c             |    2 +-
+ drivers/pcmcia/i82092.c         |    2 +-
+ drivers/pcmcia/i82365.c         |    2 +-
+ drivers/pcmcia/m32r_cfc.c       |    2 +-
+ drivers/pcmcia/m32r_pcc.c       |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c    |    2 +-
+ drivers/pcmcia/omap_cf.c        |    2 +-
+ drivers/pcmcia/pd6729.c         |    2 +-
+ drivers/pcmcia/pxa2xx_base.c    |    2 +-
+ drivers/pcmcia/sa1100_generic.c |    2 +-
+ drivers/pcmcia/sa1111_generic.c |    2 +-
+ drivers/pcmcia/tcic.c           |    2 +-
+ drivers/pcmcia/vrc4171_card.c   |    2 +-
+ drivers/pcmcia/yenta_socket.c   |   88 +++++++++++++++++++++------------------
+ include/pcmcia/ss.h             |    2 +-
+ 18 files changed, 65 insertions(+), 57 deletions(-)
 
-OK, so the idea is that users wanting to add an entry to the whitelist will
-edit the whitelist file and the use your script to generate a new
-whitelist.c before building s2ram.  Is this correct?
+---------------
 
-Rafael
+Rafael J. Wysocki (2):
+      PM / PCMCIA: Drop second argument of pcmcia_socket_dev_suspend()
+      PM / yenta: Fix cardbus suspend/resume regression
