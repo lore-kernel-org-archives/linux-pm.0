@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH,
-	fix] Re: [Regression] 2.6.31-git: tty change broke resume from
-	hibernation on MSI Wind U100
-Date: Mon, 28 Sep 2009 22:20:32 +0200
-Message-ID: <200909282220.32582.rjw__42715.1183401749$1254169545$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
+From: "Rodolfo (kix)" <kix@kix.es>
+Subject: Re: [Suspend-devel] Help
+Date: Tue, 29 Sep 2009 00:13:33 +0200
+Message-ID: <3096bd910909281513h134e505cy6631f998cd1cba5b__4881.6927861937$1254176242$gmane$org@mail.gmail.com>
+References: <E1McOLX-0003Lq-BN@665xhf1.ch3.sourceforge.com>
+	<200909240028.03305.rjw@sisk.pl>
+	<20090924145128.26e758df@strolchi.home.s3e.de>
+	<200909241953.46519.rjw@sisk.pl>
+	<5B7CD99A-A3B3-44EC-A073-31C0A5B7286B@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
+In-Reply-To: <5B7CD99A-A3B3-44EC-A073-31C0A5B7286B@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,81 +21,146 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, Dave Young <hidave.darkstar@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, kix <kixdotes@users.sourceforge.net>, "Rodolfo (kix)" <kix@kix.es>, pm list <linux-pm@lists.linux-foundation.org>, Stefan Seyfried <stefan.seyfried@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 28 September 2009, Alan Stern wrote:
-> On Mon, 28 Sep 2009, Dave Young wrote:
-> =
+Hi!!
 
-> > On Mon, Sep 28, 2009 at 2:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Sunday 27 September 2009, Alan Stern wrote:
-> > >> On Sun, 27 Sep 2009, Rafael J. Wysocki wrote:
-> > >>
-> > >> > Tested, works.
-> > >> >
-> > >> > Greg, could you please consider taking the patch below? =C2 It fix=
-es a recent
-> > >> > hibernation regression for me, so if not this one, another fix is =
-necessary.
-> > >>
-> > >> This patch has a mistake.
-> > >>
-> > >> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> > >> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > >> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> > >> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> > >> > @@ -1210,7 +1210,7 @@ static const struct tty_operations seria
-> > >> > =C2  =C2  .chars_in_buffer =3D =C2  =C2  =C2 serial_chars_in_buffe=
-r,
-> > >> > =C2  =C2  .tiocmget =3D =C2  =C2  =C2  =C2  =C2  =C2  serial_tiocm=
-get,
-> > >> > =C2  =C2  .tiocmset =3D =C2  =C2  =C2  =C2  =C2  =C2  serial_tiocm=
-set,
-> > >> > - =C2  .shutdown =3D =C2  =C2  =C2  =C2  =C2  =C2  serial_release,
-> > >> > + =C2  .cleanup =3D =C2  =C2  =C2  =C2  =C2  =C2  =C2 serial_relea=
-se,
-> > >> > =C2  =C2  .install =3D =C2  =C2  =C2  =C2  =C2  =C2  =C2 serial_in=
-stall,
-> > >> > =C2  =C2  .proc_fops =3D =C2  =C2  =C2  =C2  =C2  =C2 &serial_proc=
-_fops,
-> > >> > =C2 };
-> > >>
-> > >> It isn't enough to change the method pointer. =C2 The code in
-> > >> serial_release() has to be changed too; it must not call tty_shutdow=
-n()
-> > >> any more.
-> > >
-> > > Would it be sufficient to remove the tty_shutdown() call from
-> > > serial_release()?
-> > =
+1. A new database file, comma separated, has been created (it was
+terrible, I am very tired)
+2. A little script to search in the database (using the "match"
+function) is implemented
+3. Other script to convert the database file to whitelist.c has been
+created too.
 
-> > I think so, because standard shutdown will be called in queue_release_o=
-ne_tty.
-> > =
+The scripts has been created using perl. Why? because is fast, good
+and is only for the database maintaning, not for the code
+distribution.
 
-> > Alan, could you confirm about this?  Thus I'd like to update the patch.
-> =
+Please, test it, the code is in http://www.kix.es/20090929/
 
-> Yes, that's right.  Just remove the function call.  But what happens if
-> the device is a serial console?  Shouldn't the call to tty_shutdown()  =
+Any comments are welcome.
 
-> be skipped in that case?  (Eventually this won't matter; the console
-> code will be straightened out so that we never release a serial console
-> device.  But for now it's important.)
-> =
+-kix-
 
-> If you think it would be appropriate, you could also rename
-> serial_release() to serial_cleanup() -- it's up to you.
+On Thu, Sep 24, 2009 at 8:20 PM, Kix <rodolfogarciap@gmail.com> wrote:
+> Ok, I will write some lines to manage the whitelist. I will use your
+> comments :-)
+>
+> Thanks!
+>
+>
+>
+> El 24/09/2009, a las 19:53, "Rafael J. Wysocki" <rjw@sisk.pl> escribi=F3:
+>
+>> On Thursday 24 September 2009, Stefan Seyfried wrote:
+>>>
+>>> On Thu, 24 Sep 2009 00:28:03 +0200
+>>> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>>>
+>>>> On Wednesday 23 September 2009, Rodolfo (kix) wrote:
+>>>>>
+>>>>> Hi Rafael,
+>>>>
+>>>> Hi,
+>>>>
+>>>>> I am thinking about the maintaining ...
+>>>
+>>> Good luck! I know that you'll need it ;)
+>>>
+>>> Let me throw my 2 cents into the bowl.
+>>>
+>>>>> 1. The users sends the hardware info to be added to the database
+>>>>> (now by mail). Then:
+>>>>>
+>>>>> 1. Probably we need a little script (or web script? or post directly
+>>>>> form the s2ram -i?):
+>>>>> =A01.a The script checks if the machine is previously added to the
+>>>>> database (in a text file). Probably this script can read from the
+>>>>> mailing list format
+>>>>>
+>>>>> xxxx:% sudo /root/s2ram -i
+>>>>> This machine can be identified by:
+>>>>> =A0 sys_vendor =A0 =3D "TOSHIBA"
+>>>>> =A0 sys_product =A0=3D "Satellite U305"
+>>>>> =A0 sys_version =A0=3D "PSU34U-00L003"
+>>>>> =A0 bios_version =3D "V1.70 =A0 "
+>>>>> See http://en.opensuse.org/S2ram for details.
+>>>>>
+>>>>> =A01.b If is not added, the script add the machine to a text file.
+>>>>
+>>>> However you arrange that is up to you. =A0My experience is that the
+>>>> users generally send whitelist information by email.
+>>>>
+>>>>> 2. The text file can be processed using a little script to convert
+>>>>> it to the "whitelist.[c,h]" files and converted to web page
+>>>>> (s2whitelist and s2web :-))
+>>>>> 3. The script can do a git update if needed.
+>>>>
+>>>> Well, I'm surely not going to allow the script to update the master
+>>>> git tree at kernel.org directly.
+>>>
+>>> There's also the issue that some sanity checking should be done before
+>>> adding an entry. Pretty often, users send some hilarious option
+>>> combinations, on machines that should nowadays just work without any
+>>> options (e.g. intel-based).
+>>
+>> Agreed.
+>>
+>>> The next thing is, that I, personally, would reject any machines that
+>>> should work out of the box nowadays with in-kernel drivers (means:
+>>> intel, nvidia- and ATI binary-module driven). You can only make things
+>>> worse on such machines with userspace workarounds, and they should be
+>>> recognized automatically by recent (means: newer than 2 years)
+>>> pm-utils, so that no hack is needed. IMHO the whitelist should not be
+>>> cluttered with them.
+>>
+>> Agreed in general, maybe except for the binary driver part. =A0I certain=
+ly
+>> prefer
+>> people using s2ram's workarounds to people installing binary graphics
+>> drivers
+>> just to make suspend work.
+>>
+>>>>> In my opinion, the file should have this format:
+>>>>>
+>>>>> <author info for the comment's
+>>>>> line>=B7<sys_vendor>=B7<sys_product>=B7<sys_version>=B7<bios_version>=
+=B7<flags>
+>>>>>
+>>>>> I am using the "=B7" separator because probably is not used in any
+>>>>> field.
+>>>>
+>>>> What's the code of this character?
+>>>
+>>> Something strange ;-)
+>>>
+>>> I'd use the pipe character: '|'. I have not yet encountered it in
+>>> s2ram-relevant DMI data. It still is readable and not subject to
+>>> encoding issues AFAICT.
+>>
+>> Yes, it is an ASCII character (officially called "vertical bar" BTW).
+>>
+>>> I'd put the author info / comment at the end, since then you can
+>>> sort/grep for sys_vendor easily, which is probably most useful.
+>>
+>> Agreed.
+>>
+>>> And I still think that nowadays s2ram is the wrong tool for the
+>>> whitelist, but well... :-)
+>>
+>> Oh, you know my opinion. ;-)
+>>
+>> Still, if Rodolfo is willing to maintain the whitelist, I won't object.
+>>
+>> Thanks,
+>> Rafael
+>
 
-The patch has been fixed up by Linus and merged as
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-it;h=3Df278a2f7bbc2239f479eaf63d0b3ae573b1d746c
 
-If any more fixes are necessary, they'll have to go on top of it.
 
-Best,
-Rafael
+-- =
+
+Rodolfo Garc=EDa "kix"
+EA4ERH - IN80ER
