@@ -1,16 +1,14 @@
-From: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH,
-	fix] Re: [Regression] 2.6.31-git: tty change broke resume from
-	hibernation on MSI Wind U100
-Date: Tue, 29 Sep 2009 08:39:12 +0800
-Message-ID: <a8e1da0909281739j516177cfv82dcf0dcb807ce9b__2118.27102252773$1254184878$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0909280202280.14348-100000@netrider.rowland.org>
-	<200909282220.32582.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] Move swap functions to
+	kernel/power/swap.c.
+Date: Tue, 29 Sep 2009 22:24:32 +0200
+Message-ID: <200909292224.32795.rjw__25561.3708905459$1254255884$gmane$org@sisk.pl>
+References: <4AC036F9.5000003@crca.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909282220.32582.rjw@sisk.pl>
+In-Reply-To: <4AC036F9.5000003@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +18,251 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBTZXAgMjksIDIwMDkgYXQgNDoyMCBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPiBPbiBNb25kYXkgMjggU2VwdGVtYmVyIDIwMDksIEFsYW4gU3Rlcm4g
-d3JvdGU6Cj4+IE9uIE1vbiwgMjggU2VwIDIwMDksIERhdmUgWW91bmcgd3JvdGU6Cj4+Cj4+ID4g
-T24gTW9uLCBTZXAgMjgsIDIwMDkgYXQgMjoxNiBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPj4gPiA+IE9uIFN1bmRheSAyNyBTZXB0ZW1iZXIgMjAwOSwgQWxhbiBT
-dGVybiB3cm90ZToKPj4gPiA+PiBPbiBTdW4sIDI3IFNlcCAyMDA5LCBSYWZhZWwgSi4gV3lzb2Nr
-aSB3cm90ZToKPj4gPiA+Pgo+PiA+ID4+ID4gVGVzdGVkLCB3b3Jrcy4KPj4gPiA+PiA+Cj4+ID4g
-Pj4gPiBHcmVnLCBjb3VsZCB5b3UgcGxlYXNlIGNvbnNpZGVyIHRha2luZyB0aGUgcGF0Y2ggYmVs
-b3c/IMOCIEl0IGZpeGVzIGEgcmVjZW50Cj4+ID4gPj4gPiBoaWJlcm5hdGlvbiByZWdyZXNzaW9u
-IGZvciBtZSwgc28gaWYgbm90IHRoaXMgb25lLCBhbm90aGVyIGZpeCBpcyBuZWNlc3NhcnkuCj4+
-ID4gPj4KPj4gPiA+PiBUaGlzIHBhdGNoIGhhcyBhIG1pc3Rha2UuCj4+ID4gPj4KPj4gPiA+PiA+
-IEluZGV4OiBsaW51eC0yLjYvZHJpdmVycy91c2Ivc2VyaWFsL3VzYi1zZXJpYWwuYwo+PiA+ID4+
-ID4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PQo+PiA+ID4+ID4gLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvdXNiL3Nl
-cmlhbC91c2Itc2VyaWFsLmMKPj4gPiA+PiA+ICsrKyBsaW51eC0yLjYvZHJpdmVycy91c2Ivc2Vy
-aWFsL3VzYi1zZXJpYWwuYwo+PiA+ID4+ID4gQEAgLTEyMTAsNyArMTIxMCw3IEBAIHN0YXRpYyBj
-b25zdCBzdHJ1Y3QgdHR5X29wZXJhdGlvbnMgc2VyaWEKPj4gPiA+PiA+IMOCIMKgw4IgwqAuY2hh
-cnNfaW5fYnVmZmVyID0gw4IgwqDDgiDCoMOCIHNlcmlhbF9jaGFyc19pbl9idWZmZXIsCj4+ID4g
-Pj4gPiDDgiDCoMOCIMKgLnRpb2NtZ2V0ID0gw4IgwqDDgiDCoMOCIMKgw4IgwqDDgiDCoMOCIMKg
-c2VyaWFsX3Rpb2NtZ2V0LAo+PiA+ID4+ID4gw4IgwqDDgiDCoC50aW9jbXNldCA9IMOCIMKgw4Ig
-wqDDgiDCoMOCIMKgw4IgwqDDgiDCoHNlcmlhbF90aW9jbXNldCwKPj4gPiA+PiA+IC0gw4IgwqAu
-c2h1dGRvd24gPSDDgiDCoMOCIMKgw4IgwqDDgiDCoMOCIMKgw4IgwqBzZXJpYWxfcmVsZWFzZSwK
-Pj4gPiA+PiA+ICsgw4IgwqAuY2xlYW51cCA9IMOCIMKgw4IgwqDDgiDCoMOCIMKgw4IgwqDDgiDC
-oMOCIHNlcmlhbF9yZWxlYXNlLAo+PiA+ID4+ID4gw4IgwqDDgiDCoC5pbnN0YWxsID0gw4IgwqDD
-giDCoMOCIMKgw4IgwqDDgiDCoMOCIMKgw4Igc2VyaWFsX2luc3RhbGwsCj4+ID4gPj4gPiDDgiDC
-oMOCIMKgLnByb2NfZm9wcyA9IMOCIMKgw4IgwqDDgiDCoMOCIMKgw4IgwqDDgiAmc2VyaWFsX3By
-b2NfZm9wcywKPj4gPiA+PiA+IMOCIH07Cj4+ID4gPj4KPj4gPiA+PiBJdCBpc24ndCBlbm91Z2gg
-dG8gY2hhbmdlIHRoZSBtZXRob2QgcG9pbnRlci4gw4IgVGhlIGNvZGUgaW4KPj4gPiA+PiBzZXJp
-YWxfcmVsZWFzZSgpIGhhcyB0byBiZSBjaGFuZ2VkIHRvbzsgaXQgbXVzdCBub3QgY2FsbCB0dHlf
-c2h1dGRvd24oKQo+PiA+ID4+IGFueSBtb3JlLgo+PiA+ID4KPj4gPiA+IFdvdWxkIGl0IGJlIHN1
-ZmZpY2llbnQgdG8gcmVtb3ZlIHRoZSB0dHlfc2h1dGRvd24oKSBjYWxsIGZyb20KPj4gPiA+IHNl
-cmlhbF9yZWxlYXNlKCk/Cj4+ID4KPj4gPiBJIHRoaW5rIHNvLCBiZWNhdXNlIHN0YW5kYXJkIHNo
-dXRkb3duIHdpbGwgYmUgY2FsbGVkIGluIHF1ZXVlX3JlbGVhc2Vfb25lX3R0eS4KPj4gPgo+PiA+
-IEFsYW4sIGNvdWxkIHlvdSBjb25maXJtIGFib3V0IHRoaXM/IMKgVGh1cyBJJ2QgbGlrZSB0byB1
-cGRhdGUgdGhlIHBhdGNoLgo+Pgo+PiBZZXMsIHRoYXQncyByaWdodC4gwqBKdXN0IHJlbW92ZSB0
-aGUgZnVuY3Rpb24gY2FsbC4gwqBCdXQgd2hhdCBoYXBwZW5zIGlmCj4+IHRoZSBkZXZpY2UgaXMg
-YSBzZXJpYWwgY29uc29sZT8gwqBTaG91bGRuJ3QgdGhlIGNhbGwgdG8gdHR5X3NodXRkb3duKCkK
-Pj4gYmUgc2tpcHBlZCBpbiB0aGF0IGNhc2U/IMKgKEV2ZW50dWFsbHkgdGhpcyB3b24ndCBtYXR0
-ZXI7IHRoZSBjb25zb2xlCj4+IGNvZGUgd2lsbCBiZSBzdHJhaWdodGVuZWQgb3V0IHNvIHRoYXQg
-d2UgbmV2ZXIgcmVsZWFzZSBhIHNlcmlhbCBjb25zb2xlCj4+IGRldmljZS4gwqBCdXQgZm9yIG5v
-dyBpdCdzIGltcG9ydGFudC4pCj4+Cj4+IElmIHlvdSB0aGluayBpdCB3b3VsZCBiZSBhcHByb3By
-aWF0ZSwgeW91IGNvdWxkIGFsc28gcmVuYW1lCj4+IHNlcmlhbF9yZWxlYXNlKCkgdG8gc2VyaWFs
-X2NsZWFudXAoKSAtLSBpdCdzIHVwIHRvIHlvdS4KPgo+IFRoZSBwYXRjaCBoYXMgYmVlbiBmaXhl
-ZCB1cCBieSBMaW51cyBhbmQgbWVyZ2VkIGFzCj4gaHR0cDovL2dpdC5rZXJuZWwub3JnLz9wPWxp
-bnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdDthPWNvbW1pdDtoPWYyNzhhMmY3
-YmJjMjIzOWY0NzllYWY2M2QwYjNhZTU3M2IxZDc0NmMKPgo+IElmIGFueSBtb3JlIGZpeGVzIGFy
-ZSBuZWNlc3NhcnksIHRoZXknbGwgaGF2ZSB0byBnbyBvbiB0b3Agb2YgaXQuCgpPaCwgSSdtIGxh
-dGUuIFRoYW5rcyBmb3IgdGVsbAoKPgo+IEJlc3QsCj4gUmFmYWVsCj4KCgoKLS0gClJlZ2FyZHMK
-ZGF2ZQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Monday 28 September 2009, Nigel Cunningham wrote:
+> Move hibernation code's functions for allocating and freeing swap
+> from swsusp.c to swap.c, which is where you'd expect to find them.
+
+Sorry for the delay.
+
+Both patches look good, I'm going to add them to suspend-2.6/linux-next
+in the next few days.
+
+Thanks,
+Rafael
+
+
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> ---
+>  kernel/power/swap.c   |  101 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/power/swsusp.c |  101 -------------------------------------------------
+>  2 files changed, 101 insertions(+), 101 deletions(-)
+> 
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 8ba052c..ce2d8a7 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -39,6 +39,107 @@ struct swsusp_header {
+>  
+>  static struct swsusp_header *swsusp_header;
+>  
+> +/**
+> + *	The following functions are used for tracing the allocated
+> + *	swap pages, so that they can be freed in case of an error.
+> + */
+> +
+> +struct swsusp_extent {
+> +	struct rb_node node;
+> +	unsigned long start;
+> +	unsigned long end;
+> +};
+> +
+> +static struct rb_root swsusp_extents = RB_ROOT;
+> +
+> +static int swsusp_extents_insert(unsigned long swap_offset)
+> +{
+> +	struct rb_node **new = &(swsusp_extents.rb_node);
+> +	struct rb_node *parent = NULL;
+> +	struct swsusp_extent *ext;
+> +
+> +	/* Figure out where to put the new node */
+> +	while (*new) {
+> +		ext = container_of(*new, struct swsusp_extent, node);
+> +		parent = *new;
+> +		if (swap_offset < ext->start) {
+> +			/* Try to merge */
+> +			if (swap_offset == ext->start - 1) {
+> +				ext->start--;
+> +				return 0;
+> +			}
+> +			new = &((*new)->rb_left);
+> +		} else if (swap_offset > ext->end) {
+> +			/* Try to merge */
+> +			if (swap_offset == ext->end + 1) {
+> +				ext->end++;
+> +				return 0;
+> +			}
+> +			new = &((*new)->rb_right);
+> +		} else {
+> +			/* It already is in the tree */
+> +			return -EINVAL;
+> +		}
+> +	}
+> +	/* Add the new node and rebalance the tree. */
+> +	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
+> +	if (!ext)
+> +		return -ENOMEM;
+> +
+> +	ext->start = swap_offset;
+> +	ext->end = swap_offset;
+> +	rb_link_node(&ext->node, parent, new);
+> +	rb_insert_color(&ext->node, &swsusp_extents);
+> +	return 0;
+> +}
+> +
+> +/**
+> + *	alloc_swapdev_block - allocate a swap page and register that it has
+> + *	been allocated, so that it can be freed in case of an error.
+> + */
+> +
+> +sector_t alloc_swapdev_block(int swap)
+> +{
+> +	unsigned long offset;
+> +
+> +	offset = swp_offset(get_swap_page_of_type(swap));
+> +	if (offset) {
+> +		if (swsusp_extents_insert(offset))
+> +			swap_free(swp_entry(swap, offset));
+> +		else
+> +			return swapdev_block(swap, offset);
+> +	}
+> +	return 0;
+> +}
+> +
+> +/**
+> + *	free_all_swap_pages - free swap pages allocated for saving image data.
+> + *	It also frees the extents used to register which swap entres had been
+> + *	allocated.
+> + */
+> +
+> +void free_all_swap_pages(int swap)
+> +{
+> +	struct rb_node *node;
+> +
+> +	while ((node = swsusp_extents.rb_node)) {
+> +		struct swsusp_extent *ext;
+> +		unsigned long offset;
+> +
+> +		ext = container_of(node, struct swsusp_extent, node);
+> +		rb_erase(node, &swsusp_extents);
+> +		for (offset = ext->start; offset <= ext->end; offset++)
+> +			swap_free(swp_entry(swap, offset));
+> +
+> +		kfree(ext);
+> +	}
+> +}
+> +
+> +int swsusp_swap_in_use(void)
+> +{
+> +	return (swsusp_extents.rb_node != NULL);
+> +}
+> +
+>  /*
+>   * General things
+>   */
+> diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
+> index 6a07f4d..57222d2 100644
+> --- a/kernel/power/swsusp.c
+> +++ b/kernel/power/swsusp.c
+> @@ -58,107 +58,6 @@
+>  int in_suspend __nosavedata = 0;
+>  
+>  /**
+> - *	The following functions are used for tracing the allocated
+> - *	swap pages, so that they can be freed in case of an error.
+> - */
+> -
+> -struct swsusp_extent {
+> -	struct rb_node node;
+> -	unsigned long start;
+> -	unsigned long end;
+> -};
+> -
+> -static struct rb_root swsusp_extents = RB_ROOT;
+> -
+> -static int swsusp_extents_insert(unsigned long swap_offset)
+> -{
+> -	struct rb_node **new = &(swsusp_extents.rb_node);
+> -	struct rb_node *parent = NULL;
+> -	struct swsusp_extent *ext;
+> -
+> -	/* Figure out where to put the new node */
+> -	while (*new) {
+> -		ext = container_of(*new, struct swsusp_extent, node);
+> -		parent = *new;
+> -		if (swap_offset < ext->start) {
+> -			/* Try to merge */
+> -			if (swap_offset == ext->start - 1) {
+> -				ext->start--;
+> -				return 0;
+> -			}
+> -			new = &((*new)->rb_left);
+> -		} else if (swap_offset > ext->end) {
+> -			/* Try to merge */
+> -			if (swap_offset == ext->end + 1) {
+> -				ext->end++;
+> -				return 0;
+> -			}
+> -			new = &((*new)->rb_right);
+> -		} else {
+> -			/* It already is in the tree */
+> -			return -EINVAL;
+> -		}
+> -	}
+> -	/* Add the new node and rebalance the tree. */
+> -	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
+> -	if (!ext)
+> -		return -ENOMEM;
+> -
+> -	ext->start = swap_offset;
+> -	ext->end = swap_offset;
+> -	rb_link_node(&ext->node, parent, new);
+> -	rb_insert_color(&ext->node, &swsusp_extents);
+> -	return 0;
+> -}
+> -
+> -/**
+> - *	alloc_swapdev_block - allocate a swap page and register that it has
+> - *	been allocated, so that it can be freed in case of an error.
+> - */
+> -
+> -sector_t alloc_swapdev_block(int swap)
+> -{
+> -	unsigned long offset;
+> -
+> -	offset = swp_offset(get_swap_page_of_type(swap));
+> -	if (offset) {
+> -		if (swsusp_extents_insert(offset))
+> -			swap_free(swp_entry(swap, offset));
+> -		else
+> -			return swapdev_block(swap, offset);
+> -	}
+> -	return 0;
+> -}
+> -
+> -/**
+> - *	free_all_swap_pages - free swap pages allocated for saving image data.
+> - *	It also frees the extents used to register which swap entres had been
+> - *	allocated.
+> - */
+> -
+> -void free_all_swap_pages(int swap)
+> -{
+> -	struct rb_node *node;
+> -
+> -	while ((node = swsusp_extents.rb_node)) {
+> -		struct swsusp_extent *ext;
+> -		unsigned long offset;
+> -
+> -		ext = container_of(node, struct swsusp_extent, node);
+> -		rb_erase(node, &swsusp_extents);
+> -		for (offset = ext->start; offset <= ext->end; offset++)
+> -			swap_free(swp_entry(swap, offset));
+> -
+> -		kfree(ext);
+> -	}
+> -}
+> -
+> -int swsusp_swap_in_use(void)
+> -{
+> -	return (swsusp_extents.rb_node != NULL);
+> -}
+> -
+> -/**
+>   *	swsusp_show_speed - print the time elapsed between two events represented by
+>   *	@start and @stop
+>   *
+> 
