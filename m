@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] Move swap functions to
-	kernel/power/swap.c.
-Date: Tue, 29 Sep 2009 22:24:32 +0200
-Message-ID: <200909292224.32795.rjw__25561.3708905459$1254255884$gmane$org@sisk.pl>
-References: <4AC036F9.5000003@crca.org.au>
+Subject: Re: Very strange issues with ethernet wake on lan
+Date: Tue, 29 Sep 2009 22:28:18 +0200
+Message-ID: <200909292228.18200.rjw__15655.5543224842$1254256067$gmane$org@sisk.pl>
+References: <1250394174.32268.13.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC036F9.5000003@crca.org.au>
+In-Reply-To: <1250394174.32268.13.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,251 +17,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 28 September 2009, Nigel Cunningham wrote:
-> Move hibernation code's functions for allocating and freeing swap
-> from swsusp.c to swap.c, which is where you'd expect to find them.
+On Sunday 16 August 2009, Maxim Levitsky wrote:
+> Hi,
+> 
+> I have recently put back the davicom dm9009 ethernet card into my
+> computer.
+> 
+> Some long time ago, I have written its suspend/resume routines.
+> Now I see that few things have changed, like I need to enable wake in
+> sysfs or better patch the code to do so, some nice helpers like
+> pci_prepare_to_sleep have arrived, etc.
+> 
+> 
+> I narrowed the strange issue down to following situation:
+> 
+> I reload dmfe.ko (and networkmanager is disabled)
+> I don't ifup the device, thus pretty much no hardware initialization
+> takes place (but this appears not to matter anyway)
+> 
+> I then suspend the system, and WOL doesn't work (I have patched the
+> driver to enable WOL automaticly)
+> 
+> I then, suspend again. WOL works, and continues to work as long as I
+> don't reload the driver. If I do, same situation repeats.
+> 
+> Also, after a boot, WOL works, so a reload cycle triggers that issue.
+> 
+> And most importantly, if I don't do a
+> 
+> pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
+> 
+> in .suspend, then WOL always works.
+> 
+> and I have even tried to set state manually to PCI_D3hot or PCI_D3cold, 
+> 
+> I also tried to use pci_save_state
+> 
+> 
+> I also have 2 copies of this card, and both have this issue.
+> I also tried 2 pci slots.
+> 
+> Kernel is vanilla 2.6.31-rc5
 
-Sorry for the delay.
+Please check if this still happens with 2.6.32-rc1.
 
-Both patches look good, I'm going to add them to suspend-2.6/linux-next
-in the next few days.
-
-Thanks,
+Best,
 Rafael
-
-
-> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> ---
->  kernel/power/swap.c   |  101 +++++++++++++++++++++++++++++++++++++++++++++++++
->  kernel/power/swsusp.c |  101 -------------------------------------------------
->  2 files changed, 101 insertions(+), 101 deletions(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 8ba052c..ce2d8a7 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -39,6 +39,107 @@ struct swsusp_header {
->  
->  static struct swsusp_header *swsusp_header;
->  
-> +/**
-> + *	The following functions are used for tracing the allocated
-> + *	swap pages, so that they can be freed in case of an error.
-> + */
-> +
-> +struct swsusp_extent {
-> +	struct rb_node node;
-> +	unsigned long start;
-> +	unsigned long end;
-> +};
-> +
-> +static struct rb_root swsusp_extents = RB_ROOT;
-> +
-> +static int swsusp_extents_insert(unsigned long swap_offset)
-> +{
-> +	struct rb_node **new = &(swsusp_extents.rb_node);
-> +	struct rb_node *parent = NULL;
-> +	struct swsusp_extent *ext;
-> +
-> +	/* Figure out where to put the new node */
-> +	while (*new) {
-> +		ext = container_of(*new, struct swsusp_extent, node);
-> +		parent = *new;
-> +		if (swap_offset < ext->start) {
-> +			/* Try to merge */
-> +			if (swap_offset == ext->start - 1) {
-> +				ext->start--;
-> +				return 0;
-> +			}
-> +			new = &((*new)->rb_left);
-> +		} else if (swap_offset > ext->end) {
-> +			/* Try to merge */
-> +			if (swap_offset == ext->end + 1) {
-> +				ext->end++;
-> +				return 0;
-> +			}
-> +			new = &((*new)->rb_right);
-> +		} else {
-> +			/* It already is in the tree */
-> +			return -EINVAL;
-> +		}
-> +	}
-> +	/* Add the new node and rebalance the tree. */
-> +	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
-> +	if (!ext)
-> +		return -ENOMEM;
-> +
-> +	ext->start = swap_offset;
-> +	ext->end = swap_offset;
-> +	rb_link_node(&ext->node, parent, new);
-> +	rb_insert_color(&ext->node, &swsusp_extents);
-> +	return 0;
-> +}
-> +
-> +/**
-> + *	alloc_swapdev_block - allocate a swap page and register that it has
-> + *	been allocated, so that it can be freed in case of an error.
-> + */
-> +
-> +sector_t alloc_swapdev_block(int swap)
-> +{
-> +	unsigned long offset;
-> +
-> +	offset = swp_offset(get_swap_page_of_type(swap));
-> +	if (offset) {
-> +		if (swsusp_extents_insert(offset))
-> +			swap_free(swp_entry(swap, offset));
-> +		else
-> +			return swapdev_block(swap, offset);
-> +	}
-> +	return 0;
-> +}
-> +
-> +/**
-> + *	free_all_swap_pages - free swap pages allocated for saving image data.
-> + *	It also frees the extents used to register which swap entres had been
-> + *	allocated.
-> + */
-> +
-> +void free_all_swap_pages(int swap)
-> +{
-> +	struct rb_node *node;
-> +
-> +	while ((node = swsusp_extents.rb_node)) {
-> +		struct swsusp_extent *ext;
-> +		unsigned long offset;
-> +
-> +		ext = container_of(node, struct swsusp_extent, node);
-> +		rb_erase(node, &swsusp_extents);
-> +		for (offset = ext->start; offset <= ext->end; offset++)
-> +			swap_free(swp_entry(swap, offset));
-> +
-> +		kfree(ext);
-> +	}
-> +}
-> +
-> +int swsusp_swap_in_use(void)
-> +{
-> +	return (swsusp_extents.rb_node != NULL);
-> +}
-> +
->  /*
->   * General things
->   */
-> diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-> index 6a07f4d..57222d2 100644
-> --- a/kernel/power/swsusp.c
-> +++ b/kernel/power/swsusp.c
-> @@ -58,107 +58,6 @@
->  int in_suspend __nosavedata = 0;
->  
->  /**
-> - *	The following functions are used for tracing the allocated
-> - *	swap pages, so that they can be freed in case of an error.
-> - */
-> -
-> -struct swsusp_extent {
-> -	struct rb_node node;
-> -	unsigned long start;
-> -	unsigned long end;
-> -};
-> -
-> -static struct rb_root swsusp_extents = RB_ROOT;
-> -
-> -static int swsusp_extents_insert(unsigned long swap_offset)
-> -{
-> -	struct rb_node **new = &(swsusp_extents.rb_node);
-> -	struct rb_node *parent = NULL;
-> -	struct swsusp_extent *ext;
-> -
-> -	/* Figure out where to put the new node */
-> -	while (*new) {
-> -		ext = container_of(*new, struct swsusp_extent, node);
-> -		parent = *new;
-> -		if (swap_offset < ext->start) {
-> -			/* Try to merge */
-> -			if (swap_offset == ext->start - 1) {
-> -				ext->start--;
-> -				return 0;
-> -			}
-> -			new = &((*new)->rb_left);
-> -		} else if (swap_offset > ext->end) {
-> -			/* Try to merge */
-> -			if (swap_offset == ext->end + 1) {
-> -				ext->end++;
-> -				return 0;
-> -			}
-> -			new = &((*new)->rb_right);
-> -		} else {
-> -			/* It already is in the tree */
-> -			return -EINVAL;
-> -		}
-> -	}
-> -	/* Add the new node and rebalance the tree. */
-> -	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
-> -	if (!ext)
-> -		return -ENOMEM;
-> -
-> -	ext->start = swap_offset;
-> -	ext->end = swap_offset;
-> -	rb_link_node(&ext->node, parent, new);
-> -	rb_insert_color(&ext->node, &swsusp_extents);
-> -	return 0;
-> -}
-> -
-> -/**
-> - *	alloc_swapdev_block - allocate a swap page and register that it has
-> - *	been allocated, so that it can be freed in case of an error.
-> - */
-> -
-> -sector_t alloc_swapdev_block(int swap)
-> -{
-> -	unsigned long offset;
-> -
-> -	offset = swp_offset(get_swap_page_of_type(swap));
-> -	if (offset) {
-> -		if (swsusp_extents_insert(offset))
-> -			swap_free(swp_entry(swap, offset));
-> -		else
-> -			return swapdev_block(swap, offset);
-> -	}
-> -	return 0;
-> -}
-> -
-> -/**
-> - *	free_all_swap_pages - free swap pages allocated for saving image data.
-> - *	It also frees the extents used to register which swap entres had been
-> - *	allocated.
-> - */
-> -
-> -void free_all_swap_pages(int swap)
-> -{
-> -	struct rb_node *node;
-> -
-> -	while ((node = swsusp_extents.rb_node)) {
-> -		struct swsusp_extent *ext;
-> -		unsigned long offset;
-> -
-> -		ext = container_of(node, struct swsusp_extent, node);
-> -		rb_erase(node, &swsusp_extents);
-> -		for (offset = ext->start; offset <= ext->end; offset++)
-> -			swap_free(swp_entry(swap, offset));
-> -
-> -		kfree(ext);
-> -	}
-> -}
-> -
-> -int swsusp_swap_in_use(void)
-> -{
-> -	return (swsusp_extents.rb_node != NULL);
-> -}
-> -
-> -/**
->   *	swsusp_show_speed - print the time elapsed between two events represented by
->   *	@start and @stop
->   *
-> 
