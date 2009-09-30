@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] CPUidle: always return with interrupts
-	enabled
-Date: Wed, 30 Sep 2009 23:21:33 +0200
-Message-ID: <200909302321.33088.rjw__2371.76313899017$1254345708$gmane$org@sisk.pl>
-References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+Subject: Re: suspend vs usb and PS/2 ports
+Date: Wed, 30 Sep 2009 23:54:55 +0200
+Message-ID: <200909302354.55673.rjw@sisk.pl>
+References: <4AC35F86.20405@msgid.tls.msk.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+In-Reply-To: <4AC35F86.20405@msgid.tls.msk.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>, Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux-kernel <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 30 September 2009, Kevin Hilman wrote:
-> In the case where cpuidle_idle_call() returns before changing state
-> due to a need_resched(), it was returning with IRQs disabled.
+On Wednesday 30 September 2009, Michael Tokarev wrote:
+> Hello.
 > 
-> This patch ensures IRQs are (re)enabled before returning.
-
-Venki, any comments on this?
-
-> Reported-by: Hemanth V <hemanthv@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> ---
->  drivers/cpuidle/cpuidle.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+> I've several PCs here which are able to wakeup -
+> among others - from PS/2 and/or USB keyboard.
+> Here for testing I'm using PS/2 keyboard and
+> Asus M3A78-EM motherboard.
 > 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index ad41f19..12fdd39 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
->  #endif
->  	/* ask the governor for the next state */
->  	next_state = cpuidle_curr_governor->select(dev);
-> -	if (need_resched())
-> +	if (need_resched()) {
-> +		local_irq_enable();
->  		return;
-> +	}
-> +
->  	target_state = &dev->states[next_state];
->  
->  	/* enter the state and update stats */
+> When I do poweroff from linux, the keyboard
+> stays powered up as it should (according to
+> the BIOS settings).  But when I do suspend,
+> keyboard is NOT powered anymore, and hence
+> the system can't be woken up from it but only
+> by using the power button.
+> 
+> This happens consistently for many kernel
+> versions.  To be fair, I don't even know if
+> there was any kernel which does not show this
+> behaviour: old versions was unable to do
+> suspend/resume cycle on this platform at all.
+> 
+> Any hints for this please?
+
+With USB, I think keyboard wake-up is off by default as it causes some
+systems to wake up immediately after suspending.  Alan and Oliver can provide
+more info about that.
+
+I don't know about PS/2.
+
+Can you post the contents of /proc/acpi/wakeup from one of these systems,
+please?
 
 Best,
 Rafael
