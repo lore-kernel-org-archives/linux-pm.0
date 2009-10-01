@@ -1,14 +1,14 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] 3c59x: Rework suspend and resume
-Date: Wed, 30 Sep 2009 20:11:19 -0700 (PDT)
-Message-ID: <20090930.201119.136086134.davem__10076.2745169506$1254366809$gmane$org@davemloft.net>
-References: <20090925205206.GA9270@oksana.dev.rtsoft.ru>
-	<200909252354.34511.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend-devel] How to turn off graphics to save
+	energy?
+Date: Thu, 1 Oct 2009 22:52:47 +0200
+Message-ID: <200910012252.47665.rjw__43149.9553648338$1254430376$gmane$org@sisk.pl>
+References: <4AC49C5D.4040209@voddler.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909252354.34511.rjw@sisk.pl>
+In-Reply-To: <4AC49C5D.4040209@voddler.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +18,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, avorontsov@ru.mvista.com
+To: per =?iso-8859-1?q?j=E4gmalm?= <per.jagmalm@voddler.com>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Fri, 25 Sep 2009 23:54:34 +0200
+On Thursday 01 October 2009, per j=E4gmalm wrote:
+> but let the rest of the machine run..
 
-> On Friday 25 September 2009, Anton Vorontsov wrote:
->> As noticed by Alan Stern, there is still one issue with the driver:
->> we disable PCI IRQ on suspend, but other devices on the same IRQ
->> line might still need the IRQ enabled to suspend properly.
->> 
->> Nowadays, PCI core handles all power management work by itself, with
->> one condition though: if we use dev_pm_ops. So, rework the driver to
->> only quiesce 3c59x internal logic on suspend, while PCI core will
->> manage PCI device power state with IRQs disabled.
->> 
->> Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+I believe X drivers allow you to do that to some extent.  Beyond that you'd
+need a kernel support for such things which is missing at the moment.
 
-Applied, thanks everyone.
+Thanks,
+Rafael
