@@ -1,13 +1,14 @@
-From: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: suspend vs usb and PS/2 ports
-Date: Thu, 01 Oct 2009 02:03:29 +0400
-Message-ID: <4AC3D5B1.3030708__28428.5964830362$1254350007$gmane$org@msgid.tls.msk.ru>
-References: <4AC35F86.20405@msgid.tls.msk.ru> <200909302354.55673.rjw@sisk.pl>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH 1/2] Move swap functions
+	to	kernel/power/swap.c.
+Date: Thu, 01 Oct 2009 11:28:30 +1000
+Message-ID: <4AC405BE.7070304__28907.3106986054$1254360611$gmane$org@crca.org.au>
+References: <4AC036F9.5000003@crca.org.au> <200909292224.32795.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909302354.55673.rjw@sisk.pl>
+In-Reply-To: <200909292224.32795.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,116 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux-kernel <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi.
+
 Rafael J. Wysocki wrote:
-> On Wednesday 30 September 2009, Michael Tokarev wrote:
->> Hello.
->>
->> I've several PCs here which are able to wakeup -
->> among others - from PS/2 and/or USB keyboard.
->> Here for testing I'm using PS/2 keyboard and
->> Asus M3A78-EM motherboard.
->>
->> When I do poweroff from linux, the keyboard
->> stays powered up as it should (according to
->> the BIOS settings).  But when I do suspend,
->> keyboard is NOT powered anymore, and hence
->> the system can't be woken up from it but only
->> by using the power button.
->>
->> This happens consistently for many kernel
->> versions.  To be fair, I don't even know if
->> there was any kernel which does not show this
->> behaviour: old versions was unable to do
->> suspend/resume cycle on this platform at all.
->>
->> Any hints for this please?
+> On Monday 28 September 2009, Nigel Cunningham wrote:
+>> Move hibernation code's functions for allocating and freeing swap
+>> from swsusp.c to swap.c, which is where you'd expect to find them.
 > 
-> With USB, I think keyboard wake-up is off by default as it causes some
-> systems to wake up immediately after suspending.  Alan and Oliver can provide
-> more info about that.
-
-Actually I wasn't able to get any machine to resume based on
-USB devices - notable keyboard, be it sleep/power button (on
-the keyboards that have it) or any other combination of keys
-configured in the BIOS.  Most motherboards I tried are from
-Asus, one or two from Gigabyte and one more from Biostar.
-
-That's why I use PS/2=>USB adaptor, to connect an USB keyboard
-to a PS/2 port - this one works just fine, with all the mobos
-I tried (provided the appropriate BIOS settings are turned on
-and ever exists, to start with).
-
-> I don't know about PS/2.
+> Sorry for the delay.
 > 
-> Can you post the contents of /proc/acpi/wakeup from one of these systems,
-> please?
+> Both patches look good, I'm going to add them to suspend-2.6/linux-next
+> in the next few days.
 
-Hm.  That's.. curious.  Here we go, my home machine whihc I turn
-on every day from a PS/2-connected keyboard:
+Okay; thanks.
 
-Device	S-state	  Status   Sysfs node
-PCE2	  S4	 disabled
-PCE3	  S4	 disabled
-PCE4	  S4	 disabled
-PCE5	  S4	 disabled
-PCE6	  S4	 disabled  pci:0000:00:06.0
-RLAN	  S4	 disabled  pci:0000:02:00.0
-PCE7	  S4	 disabled
-PCE9	  S4	 disabled
-PCEA	  S4	 disabled
-PCEB	  S4	 disabled
-PCEC	  S4	 disabled
-SBAZ	  S4	 disabled  pci:0000:00:14.2
-PS2K	  S4	 disabled  pnp:00:09
-UAR1	  S4	 disabled  pnp:00:0a
-P0PC	  S4	 disabled  pci:0000:00:14.4
-UHC1	  S4	 disabled  pci:0000:00:12.0
-UHC2	  S4	 disabled  pci:0000:00:12.1
-UHC3	  S4	 disabled  pci:0000:00:12.2
-USB4	  S4	 disabled  pci:0000:00:13.0
-UHC5	  S4	 disabled  pci:0000:00:13.1
-UHC6	  S4	 disabled  pci:0000:00:13.2
-UHC7	  S4	 disabled  pci:0000:00:14.5
+I have another patch for allocating the swap prior to starting to write 
+the image (working towards removing the index pages and then adding 
+readahead & compression). I know the preallocation patch works, but want 
+to do a little more testing (make sure it's always calculating correctly 
+how many pages are needed) before I send it.
 
-It's all disabled!  But I *know* it wakes up
-from network and from ps/2 keyboard at least!
-In the corresponding BIOS menu almost everything
-is enabled (excluding RTC alarm, but including
-USB events).  This is an Asus motherboard, M3A-78EM,
-with latest BIOS.
+Regards,
 
-Here's another one, Gigabyte's GA-MA74GM-S2H,
-which definitely wakes on network:
-
-Device	S-state	  Status   Sysfs node
-PCI0	  S5	 disabled  no-bus:pci0000:00
-USB0	  S3	 disabled  pci:0000:00:12.0
-USB1	  S3	 disabled  pci:0000:00:12.1
-USB2	  S3	 disabled  pci:0000:00:12.2
-USB3	  S3	 disabled  pci:0000:00:13.0
-USB4	  S3	 disabled  pci:0000:00:13.1
-USB5	  S3	 disabled  pci:0000:00:13.2
-USB6	  S3	 disabled  pci:0000:00:14.5
-SBAZ	  S4	 disabled  pci:0000:00:14.2
-P2P	  S5	 disabled  pci:0000:00:14.4
-PCE2	  S4	 disabled
-PCE3	  S4	 disabled
-PCE4	  S4	 disabled
-PCE5	  S4	 disabled
-PCE6	  S4	 disabled  pci:0000:00:06.0
-PCE7	  S4	 disabled
-PCE8	  S4	 disabled
-
-hmm.  Blaming BIOS, as usual? :)
-
-But even if that's the case, why there's a difference
-between "just" power-off and power-off when suspending?
-
-The kernel is 2.6.31 vanilla.
-
-Thanks!
-
-/mjt
+Nigel
