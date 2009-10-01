@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re:
- =?iso-8859-1?q?=5BPATCH_1/2=5D_Move_swap_functions_to?=
- =?iso-8859-1?q?=09kernel/power/swap=2Ec=2E?=
-Date: Thu, 1 Oct 2009 22:53:24 +0200
-Message-ID: <200910012253.24465.rjw__7212.21145145154$1254430382$gmane$org@sisk.pl>
-References: <4AC036F9.5000003@crca.org.au> <200909292224.32795.rjw@sisk.pl>
-	<4AC405BE.7070304@crca.org.au>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: WOL with flex filters, reflecting it in /sys
+Date: Thu, 1 Oct 2009 13:55:03 -0700
+Message-ID: <76FA3B279DD9DA48896E2B404944957203C09587@USA7061MS02.na.xerox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC405BE.7070304@crca.org.au>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +16,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, netdev@vger.kernel.org
+Cc: martyleisner@yahoo.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 01 October 2009, Nigel Cunningham wrote:
-> Hi.
-> 
-> Rafael J. Wysocki wrote:
-> > On Monday 28 September 2009, Nigel Cunningham wrote:
-> >> Move hibernation code's functions for allocating and freeing swap
-> >> from swsusp.c to swap.c, which is where you'd expect to find them.
-> > 
-> > Sorry for the delay.
-> > 
-> > Both patches look good, I'm going to add them to suspend-2.6/linux-next
-> > in the next few days.
-> 
-> Okay; thanks.
-> 
-> I have another patch for allocating the swap prior to starting to write 
-> the image (working towards removing the index pages and then adding 
-> readahead & compression). I know the preallocation patch works, but want 
-> to do a little more testing (make sure it's always calculating correctly 
-> how many pages are needed) before I send it.
+I'm looking to extend the work of Mitch Williams to support flexible
+filters.
+(http://www.mail-archive.com/netdev@vger.kernel.org/msg60332.html}
 
-Fine by me.
+Looking at the problem, would it be a good idea to reflect WOL
+characteristics in the /sys filesystem (instead of requiring ethtool to
+set them)?
 
-Thanks,
-Rafael
+Seems straightforward and easy enough.
+
+I know the VIA Rhinefet and Intel e1000 support filters -- and some
+freescale
+seems to have some front end that support filters...and we've also
+implemented filters in software...
+
+What I'm thinking of is a hierarchy in /sys/classes/net/<device>/wol/
+
+wol/
+   /flex-filters
+      /0
+           data -- hex data to match
+           mask -- string of 1 and 0 -- if 1, the data is valid in the
+bit 
+                   position
+      ...
+      /n
+	   data
+         mask
+  /wake_up_packet
+  /traditional --r/w (0/1)
+     /magic_packet
+     /arp
+     /unicast
+     /multicast
+     /broadcast
+     /phy
+    
+marty
