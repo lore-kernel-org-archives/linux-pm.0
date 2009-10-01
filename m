@@ -1,7 +1,7 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: David Miller <davem@davemloft.net>
 Subject: Re: WOL with flex filters, reflecting it in /sys
-Date: Thu, 1 Oct 2009 23:23:15 +0200
-Message-ID: <200910012323.15166.rjw__34813.3551342928$1254432177$gmane$org@sisk.pl>
+Date: Thu, 01 Oct 2009 14:22:57 -0700 (PDT)
+Message-ID: <20091001.142257.125105313.davem__40003.1054080047$1254432214$gmane$org@davemloft.net>
 References: <76FA3B279DD9DA48896E2B404944957203C09587@USA7061MS02.na.xerox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -17,26 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: martyleisner@yahoo.com, netdev@vger.kernel.org, "Leisner,
-	Martin" <Martin.Leisner@xerox.com>
+To: Martin.Leisner@xerox.com
+Cc: martyleisner@yahoo.com, netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 01 October 2009, Leisner, Martin wrote:
-> I'm looking to extend the work of Mitch Williams to support flexible
-> filters.
-> (http://www.mail-archive.com/netdev@vger.kernel.org/msg60332.html}
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Date: Thu, 1 Oct 2009 13:55:03 -0700
+
+> What I'm thinking of is a hierarchy in /sys/classes/net/<device>/wol/
 > 
-> Looking at the problem, would it be a good idea to reflect WOL
-> characteristics in the /sys filesystem (instead of requiring ethtool to
-> set them)?
-> 
-> Seems straightforward and easy enough.
+> wol/
+>    /flex-filters
+>       /0
+>            data -- hex data to match
+>            mask -- string of 1 and 0 -- if 1, the data is valid in the
+> bit 
+>                    position
+>       ...
+>       /n
+> 	   data
+>          mask
+>   /wake_up_packet
+>   /traditional --r/w (0/1)
+>      /magic_packet
+>      /arp
+>      /unicast
+>      /multicast
+>      /broadcast
+>      /phy
 
-I'm not sure about that.
-
-The supported WoL settings seem to depend on the driver and whether WoL is
-going to work also depends on the device's power/wakeup setting.
-
-Thanks,
-Rafael
+That's a pretty hairy interface for users to learn.  Are you
+really sure this is nicer than adding this facility to ethtool? :-)
