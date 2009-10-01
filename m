@@ -1,14 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH 1/2] Move swap functions
-	to	kernel/power/swap.c.
-Date: Thu, 01 Oct 2009 11:28:30 +1000
-Message-ID: <4AC405BE.7070304__28907.3106986054$1254360611$gmane$org@crca.org.au>
-References: <4AC036F9.5000003@crca.org.au> <200909292224.32795.rjw@sisk.pl>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] 3c59x: Rework suspend and resume
+Date: Wed, 30 Sep 2009 20:11:19 -0700 (PDT)
+Message-ID: <20090930.201119.136086134.davem__10076.2745169506$1254366809$gmane$org@davemloft.net>
+References: <20090925205206.GA9270@oksana.dev.rtsoft.ru>
+	<200909252354.34511.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909292224.32795.rjw@sisk.pl>
+In-Reply-To: <200909252354.34511.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: rjw@sisk.pl
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, avorontsov@ru.mvista.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Fri, 25 Sep 2009 23:54:34 +0200
 
-Rafael J. Wysocki wrote:
-> On Monday 28 September 2009, Nigel Cunningham wrote:
->> Move hibernation code's functions for allocating and freeing swap
->> from swsusp.c to swap.c, which is where you'd expect to find them.
+> On Friday 25 September 2009, Anton Vorontsov wrote:
+>> As noticed by Alan Stern, there is still one issue with the driver:
+>> we disable PCI IRQ on suspend, but other devices on the same IRQ
+>> line might still need the IRQ enabled to suspend properly.
+>> 
+>> Nowadays, PCI core handles all power management work by itself, with
+>> one condition though: if we use dev_pm_ops. So, rework the driver to
+>> only quiesce 3c59x internal logic on suspend, while PCI core will
+>> manage PCI device power state with IRQs disabled.
+>> 
+>> Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Sorry for the delay.
-> 
-> Both patches look good, I'm going to add them to suspend-2.6/linux-next
-> in the next few days.
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Okay; thanks.
-
-I have another patch for allocating the swap prior to starting to write 
-the image (working towards removing the index pages and then adding 
-readahead & compression). I know the preallocation patch works, but want 
-to do a little more testing (make sure it's always calculating correctly 
-how many pages are needed) before I send it.
-
-Regards,
-
-Nigel
+Applied, thanks everyone.
