@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] How to turn off graphics to save
-	energy?
-Date: Thu, 1 Oct 2009 22:52:47 +0200
-Message-ID: <200910012252.47665.rjw__43149.9553648338$1254430376$gmane$org@sisk.pl>
-References: <4AC49C5D.4040209@voddler.com>
+Subject: Re:
+ =?iso-8859-1?q?=5BPATCH_1/2=5D_Move_swap_functions_to?=
+ =?iso-8859-1?q?=09kernel/power/swap=2Ec=2E?=
+Date: Thu, 1 Oct 2009 22:53:24 +0200
+Message-ID: <200910012253.24465.rjw__7212.21145145154$1254430382$gmane$org@sisk.pl>
+References: <4AC036F9.5000003@crca.org.au> <200909292224.32795.rjw@sisk.pl>
+	<4AC405BE.7070304@crca.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC49C5D.4040209@voddler.com>
+In-Reply-To: <4AC405BE.7070304@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,15 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: per =?iso-8859-1?q?j=E4gmalm?= <per.jagmalm@voddler.com>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.linux-foundation.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 01 October 2009, per j=E4gmalm wrote:
-> but let the rest of the machine run..
+On Thursday 01 October 2009, Nigel Cunningham wrote:
+> Hi.
+> 
+> Rafael J. Wysocki wrote:
+> > On Monday 28 September 2009, Nigel Cunningham wrote:
+> >> Move hibernation code's functions for allocating and freeing swap
+> >> from swsusp.c to swap.c, which is where you'd expect to find them.
+> > 
+> > Sorry for the delay.
+> > 
+> > Both patches look good, I'm going to add them to suspend-2.6/linux-next
+> > in the next few days.
+> 
+> Okay; thanks.
+> 
+> I have another patch for allocating the swap prior to starting to write 
+> the image (working towards removing the index pages and then adding 
+> readahead & compression). I know the preallocation patch works, but want 
+> to do a little more testing (make sure it's always calculating correctly 
+> how many pages are needed) before I send it.
 
-I believe X drivers allow you to do that to some extent.  Beyond that you'd
-need a kernel support for such things which is missing at the moment.
+Fine by me.
 
 Thanks,
 Rafael
