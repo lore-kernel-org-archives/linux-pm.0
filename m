@@ -1,13 +1,13 @@
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
-Date: Fri, 02 Oct 2009 13:08:59 +0530
-Message-ID: <1254469139.3531.19.camel__41350.7702447989$1254762754$gmane$org@ht.satnam>
-References: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
+From: Andrew Lutomirski <luto@mit.edu>
+Subject: Re: High power consumption after suspend/resume cycle
+Date: Fri, 2 Oct 2009 15:29:24 -0400
+Message-ID: <cb0375e10910021229x7924ec56o61627ec0f625a70c__12545.5629583032$1254762755$gmane$org@mail.gmail.com>
+References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
+In-Reply-To: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,58 +17,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org, linux-thinkpad@linux-thinkpad.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Rafael,
+[Adding cc's to linux-pm and linux-acpi and ]
 
-On Thu, 2009-10-01 at 21:26 +0200, Rafael J. Wysocki wrote:
-> [Notes:
-> 
->  * Here's the first summary report of known regressions from 2.6.31.  There's
->    not too many of them at the moment, which is nice.
-> 
->  * We're still getting quite a number of reports of regressions from 2.6.30 and
->    it's been that way since 2.6.31 was released.  For details please see the
->    summary report of regressions 2.6.30 -> 2.6.31 that will follow shortly.]
-> 
-> This message contains a list of some regressions from 2.6.31, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
-> 
-> If you know of any other unresolved regressions from 2.6.31, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
-> 
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
-> 
-> 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2009-10-02       22       15           9
-> 
-> 
-> Unresolved regressions
-> ----------------------
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14299
-> Subject		: oops in wireless, iwl3945 related?
-> Submitter	: Pavel Machek <pavel@ucw.cz>
-> Date		: 2009-09-29 17:12 (3 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125424439725743&w=4
-> 
+On Fri, Oct 2, 2009 at 1:44 PM, Andrew Lutomirski <luto@mit.edu> wrote:
+> Hi all-
+>
+> I'm running a git kernel that's slightly newer than 2.6.32-rc1.
+>
+> First, thanks for all the great work everywhere on laptop power
+> consumption -- on my Lenovo X200s, it looks like Linux is getting
+> close to Windows (Windows wins by about 0.7W, except that its power
+> usage frequently spikes since Windows apparently still doesn't know
+> how to sit still and do nothing, whereas Linux's seems more stable.),
+> even running KDE with compositing enabled and
+> while connected to wifi, at least after some tweaking.
 
-If you add one more entry say "Suspected commit :" then it will be great
-and will solve regressions much faster. You can request submitter to
-submit 'suspected commit' by git bisect and also specify git bisect
-links like : (for more information about git bisect check
-http://kerneltrap.org/node/11753)
+[fixed irrelevant typo above, too.]
 
-Thanks,
---
-JSR
+>
+> There's a catch, though: after a suspend/resume cycle, power
+> consumption goes up by over well over a watt. =A0(On a system that draws
+> about 7 watts before suspending, that's a big deal.) =A0I've tried
+> turning off X, suspending with 'echo mem > /sys/power/state' to avoid
+> any distro scripts running, and manually restoring SATA power saving
+> settings, but it still happens. =A0I even tried unbinding e1000e and
+> both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
+> iwlcore, and it still happens. =A0This is 100% reproducible, and I'd be
+> happy to test things.
+>
+> This could be a BIOS bug I suppose (although I'm running the latest
+> BIOS), but Windows 7 does not have this problem at all.
+>
+> Any ideas about what to try or what subsystem to blame?
+>
+> I'm running Fedora 11 if that makes any difference.
+
+This is actually more like 90% reproducible.  I've gotten it to stay
+in low power after suspend a couple times with HAL disabled, but I
+can't reliably reproduce *that*, either.
+
+>
+> Thanks,
+> Andy
+>
