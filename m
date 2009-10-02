@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
-Date: Fri, 2 Oct 2009 19:32:27 +0200
-Message-ID: <200910021932.27789.rjw__42178.5418097444$1254504779$gmane$org@sisk.pl>
-References: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
-	<1254469139.3531.19.camel@ht.satnam>
-	<4AC5F975.6060505@s5r6.in-berlin.de>
+From: Oren Laadan <orenl@librato.com>
+Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while
+	waiting
+Date: Fri, 02 Oct 2009 15:47:14 -0400
+Message-ID: <4AC658C2.6070406__39325.1747046181$1254512994$gmane$org@librato.com>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org>
+	<1254384558-1018-2-git-send-email-tj@kernel.org>
+	<20091001183655.GA9995@atrey.karlin.mff.cuni.cz>
+	<200910012304.00720.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC5F975.6060505@s5r6.in-berlin.de>
+In-Reply-To: <200910012304.00720.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +21,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Jaswinder Singh Rajput <jaswinder@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cl@linux-foundation.org, jeff@garzik.org, pm list <linux-pm@lists.linux-foundation.org>, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, dhowells@redhat.com, jens.axboe@oracle.com, Tejun Heo <tj@kernel.org>, akpm@linux-foundation.org, arjan@linux.intel.com, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 02 October 2009, Stefan Richter wrote:
-> Jaswinder Singh Rajput wrote:
-> > If you add one more entry say "Suspected commit :" then it will be great
-> > and will solve regressions much faster.
+
+
+Rafael J. Wysocki wrote:
+> On Thursday 01 October 2009, Pavel Machek wrote:
+>>> Freezing isn't exactly the most latency sensitive operation and
+>>> there's no reason to burn cpu cycles and power waiting for it to
+>>> complete.  msleep(10) instead of yield().  This should improve
+>>> reliability of emergency hibernation.
+>> i don't see how it improves reliability, but its probably ok.
+>>
+>> Well... for hibernation anyway. I can imagine cgroup users where
+>> freeze is so fast that this matters. rjw cc-ed.		pavel
 > 
-> Will?  Might.
-
-In fact I add the "First-Bad-Commit" annotation where there is a bisection
-result or it's possible to fix things by reverting a specific commit.
-
-> > You can request submitter to
-> > submit 'suspected commit' by git bisect and also specify git bisect
-> > links like : (for more information about git bisect check
-> > http://kerneltrap.org/node/11753)
+> Thanks.  I'd like to hear from the cgroup freezer people about that.
 > 
-> I disagree.  A reporter should only be asked to bisect (using git or
-> other tools) /if/ a developer determined that bisection may speed up the
-> debugging process or is the only remaining option to make progress with
-> a bug.
+
+[Adding Matt Helsley to the CC list]
+
+To checkpoint or migrate an application, the cgroup to which it belongs
+must be frozen first.
+
+It's a bit down the road, but if one seeks minimum application downtime
+during application checkpoint and/or migration, then a (minimum of)
+10ms - or multiples of it - may result in a visible/undesired hick-up.
+
+Perhaps avoid it when freezing a cgroup ?  or maybe a way for the user
+to control this behavior per cgroup ?
+
+Oren.
+
+>>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>>> ---
+>>>  kernel/power/process.c |   13 +++++++++----
+>>>  1 files changed, 9 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/kernel/power/process.c b/kernel/power/process.c
+>>> index cc2e553..9d26a0a 100644
+>>> --- a/kernel/power/process.c
+>>> +++ b/kernel/power/process.c
+>>> @@ -41,7 +41,7 @@ static int try_to_freeze_tasks(bool sig_only)
+>>>  	do_gettimeofday(&start);
+>>>  
+>>>  	end_time = jiffies + TIMEOUT;
+>>> -	do {
+>>> +	while (true) {
+>>>  		todo = 0;
+>>>  		read_lock(&tasklist_lock);
+>>>  		do_each_thread(g, p) {
+>>> @@ -62,10 +62,15 @@ static int try_to_freeze_tasks(bool sig_only)
+>>>  				todo++;
+>>>  		} while_each_thread(g, p);
+>>>  		read_unlock(&tasklist_lock);
+>>> -		yield();			/* Yield is okay here */
+>>> -		if (time_after(jiffies, end_time))
+>>> +		if (!todo || time_after(jiffies, end_time))
+>>>  			break;
+>>> -	} while (todo);
+>>> +
+>>> +		/*
+>>> +		 * We need to retry.  There's no reason to be
+>>> +		 * over-anxious about it and waste power.
+>>> +		 */
 > 
-> It would be wrong to steal a reporter's valuable time by asking for
-> bisection before anybody familiar with the matter even had a first look
-> at the report.
-
-Agreed.
-
-Thanks,
-Rafael
+> The comment above looks like it's only meaningful in the context of the patch.
+> After it's been applied the meaning of the comment won't be so obvious, I'm
+> afraid.
+> 
+>>> +		msleep(10);
+>>> +	}
+>>>  
+>>>  	do_gettimeofday(&end);
+>>>  	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
+> 
+> Thanks,
+> Rafael
