@@ -1,17 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while
-	waiting
-Date: Fri, 02 Oct 2009 19:56:33 +0900
-Message-ID: <4AC5DC61.9060900@kernel.org>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-	<1254384558-1018-2-git-send-email-tj@kernel.org>
-	<20091001183655.GA9995@atrey.karlin.mff.cuni.cz>
-	<200910012304.00720.rjw@sisk.pl>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
+Date: Fri, 02 Oct 2009 15:00:37 +0200
+Message-ID: <4AC5F975.6060505__1322.69485989145$1254488792$gmane$org@s5r6.in-berlin.de>
+References: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
+	<1254469139.3531.19.camel@ht.satnam>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200910012304.00720.rjw@sisk.pl>
+In-Reply-To: <1254469139.3531.19.camel@ht.satnam>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cl@linux-foundation.org, jeff@garzik.org, pm list <linux-pm@lists.linux-foundation.org>, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, Oren Laadan <orenl@librato.com>, dhowells@redhat.com, jens.axboe@oracle.com, akpm@linux-foundation.org, arjan@linux.intel.com, mingo@elte.hu
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Pavel, Rafael.
+Jaswinder Singh Rajput wrote:
+> If you add one more entry say "Suspected commit :" then it will be great
+> and will solve regressions much faster.
 
-Rafael J. Wysocki wrote:
-> On Thursday 01 October 2009, Pavel Machek wrote:
->>> Freezing isn't exactly the most latency sensitive operation and
->>> there's no reason to burn cpu cycles and power waiting for it to
->>> complete.  msleep(10) instead of yield().  This should improve
->>> reliability of emergency hibernation.
->> i don't see how it improves reliability, but its probably ok.
+Will?  Might.
 
-It's about battery.  When emergency hibernation kicks in and something
-is taking a while to freeze (usually nfs does this for me) burning
-power waiting for it to finish is a pretty bad idea.
+> You can request submitter to
+> submit 'suspected commit' by git bisect and also specify git bisect
+> links like : (for more information about git bisect check
+> http://kerneltrap.org/node/11753)
 
->> Well... for hibernation anyway. I can imagine cgroup users where
->> freeze is so fast that this matters. rjw cc-ed.		pavel
-> 
-> Thanks.  I'd like to hear from the cgroup freezer people about that.
+I disagree.  A reporter should only be asked to bisect (using git or
+other tools) /if/ a developer determined that bisection may speed up the
+debugging process or is the only remaining option to make progress with
+a bug.
 
-Oh... didn't know that.  10ms sleeps really matter there?
+It would be wrong to steal a reporter's valuable time by asking for
+bisection before anybody familiar with the matter even had a first look
+at the report.
 
+Remember:
+  - Not all bugs can be economically narrowed down by bisection.
+  - Bisection requires skills, rigor, and time.
+  - Alas there are considerable sections in our kernel history which
+    are not bisectable.
 -- 
-tejun
+Stefan Richter
+-=====-==--= =-=- ---=-
+http://arcgraph.de/sr/
