@@ -1,11 +1,15 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] SWSUSP: fix blkdev refleaks
-Date: Fri,  2 Oct 2009 18:12:46 +0200
-Message-ID: <1254499966-4806-1-git-send-email-jirislaby__27632.1315941916$1254500037$gmane$org@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
+Date: Fri, 2 Oct 2009 19:32:27 +0200
+Message-ID: <200910021932.27789.rjw__42178.5418097444$1254504779$gmane$org@sisk.pl>
+References: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
+	<1254469139.3531.19.camel@ht.satnam>
+	<4AC5F975.6060505@s5r6.in-berlin.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4AC5F975.6060505@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,111 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: len.brown@intel.com
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Jaswinder Singh Rajput <jaswinder@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-While cruising through the swsusp code I found few blkdev reference
-leaks of resume_bdev.
+On Friday 02 October 2009, Stefan Richter wrote:
+> Jaswinder Singh Rajput wrote:
+> > If you add one more entry say "Suspected commit :" then it will be great
+> > and will solve regressions much faster.
+> 
+> Will?  Might.
 
-swsusp_read: remove blkdev_put altogether. Some fail paths do
-             not do that.
-swsusp_check: make sure we always put a reference on fail paths
-software_resume: all fail paths between swsusp_check and swsusp_read
-                 omit swsusp_close. Add it in those cases. And since
-                 swsusp_read doesn't drop the reference anymore, do
-                 it here unconditionally.
+In fact I add the "First-Bad-Commit" annotation where there is a bisection
+result or it's possible to fix things by reverting a specific commit.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/hibernate.c |   11 ++++++++---
- kernel/power/swap.c      |   10 ++++------
- 2 files changed, 12 insertions(+), 9 deletions(-)
+> > You can request submitter to
+> > submit 'suspected commit' by git bisect and also specify git bisect
+> > links like : (for more information about git bisect check
+> > http://kerneltrap.org/node/11753)
+> 
+> I disagree.  A reporter should only be asked to bisect (using git or
+> other tools) /if/ a developer determined that bisection may speed up the
+> debugging process or is the only remaining option to make progress with
+> a bug.
+> 
+> It would be wrong to steal a reporter's valuable time by asking for
+> bisection before anybody familiar with the matter even had a first look
+> at the report.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 04b3a83..04a9e90 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -693,21 +693,22 @@ static int software_resume(void)
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
- 		error = -EBUSY;
-+		swsusp_close(FMODE_READ);
- 		goto Unlock;
- 	}
- 
- 	pm_prepare_console();
- 	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	error = usermodehelper_disable();
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	error = create_basic_memory_bitmaps();
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	pr_debug("PM: Preparing processes for restore.\n");
- 	error = prepare_processes();
-@@ -719,6 +720,7 @@ static int software_resume(void)
- 	pr_debug("PM: Reading hibernation image.\n");
- 
- 	error = swsusp_read(&flags);
-+	swsusp_close(FMODE_READ);
- 	if (!error)
- 		hibernation_restore(flags & SF_PLATFORM_MODE);
- 
-@@ -737,6 +739,9 @@ static int software_resume(void)
- 	mutex_unlock(&pm_mutex);
- 	pr_debug("PM: Resume from disk failed.\n");
- 	return error;
-+close_finish:
-+	swsusp_close(FMODE_READ);
-+	goto Finish;
- }
- 
- late_initcall(software_resume);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index b101cdc..cccea0b 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -572,8 +572,6 @@ int swsusp_read(unsigned int *flags_p)
- 		error = load_image(&handle, &snapshot, header->pages - 1);
- 	release_swap_reader(&handle);
- 
--	blkdev_put(resume_bdev, FMODE_READ);
--
- 	if (!error)
- 		pr_debug("PM: Image successfully loaded\n");
- 	else
-@@ -596,16 +594,16 @@ int swsusp_check(void)
- 		error = bio_read_page(swsusp_resume_block,
- 					swsusp_header, NULL);
- 		if (error)
--			return error;
-+			goto put;
- 
- 		if (!memcmp(SWSUSP_SIG, swsusp_header->sig, 10)) {
- 			memcpy(swsusp_header->sig, swsusp_header->orig_sig, 10);
- 			/* Reset swap signature now */
- 			error = bio_write_page(swsusp_resume_block,
- 						swsusp_header, NULL);
--		} else {
--			return -EINVAL;
--		}
-+		} else
-+			error = -EINVAL;
-+put:
- 		if (error)
- 			blkdev_put(resume_bdev, FMODE_READ);
- 		else
--- 
-1.6.4.2
+Agreed.
+
+Thanks,
+Rafael
