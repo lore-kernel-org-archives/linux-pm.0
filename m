@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while
-	waiting
-Date: Sat, 3 Oct 2009 21:36:36 +0200
-Message-ID: <200910032136.36691.rjw@sisk.pl>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-	<200910022321.11796.rjw@sisk.pl> <4AC69E3F.80301@kernel.org>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: 2.6.32-rc1: various BUGs on resume from hibernation
+Date: Sun, 04 Oct 2009 18:03:36 +0100
+Message-ID: <4AC8D568.9090103@tuffmail.co.uk>
+References: <4AC8B4A8.3050601@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC69E3F.80301@kernel.org>
+In-Reply-To: <4AC8B4A8.3050601@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: cl@linux-foundation.org, jeff@garzik.org, pm list <linux-pm@lists.linux-foundation.org>, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, Oren Laadan <orenl@librato.com>, dhowells@redhat.com, jens.axboe@oracle.com, mingo@elte.hu, arjan@linux.intel.com, akpm@linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 03 October 2009, Tejun Heo wrote:
-> Hello, Rafael.
-> 
-> Rafael J. Wysocki wrote:
-> > Tejun, do you want me to take the patch or is it more convenient to you to
-> > push it yourself?
-> 
-> Please take the patch.  As long as it's in a stable git tree, it
-> should be fine for me.
+Alan Jenkins wrote:
+> I'm seeing a variety of BUGs on my EeePC 701 after hibernation.  
+> Sometimes they cause a hang during resume; sometimes they happen just 
+> after resume.  It doesn't happen all the time either -  I've just 
+> hibernated three times in a row with no problems.  It's most perplexing.
+>
+> One resume hang showed a series of SCSI backtraces and errors.  
+> Unfortunately I wasn't able to capture it at the time.  They were most 
+> probably related to the root device, an SSD controlled by ata_piix.
+>
+> Today on latest -git I captured this "bad swap file entry" problem.  I 
+> use a swap file for hibernation (I don't have a swap partition).
 
-OK, I'll put it into suspend-2.6/for-linus, but first it'll stay in
-suspend-2.6/linux-next for a few days.
+> Previously, on a slightly older kernel (still after 32-rc1), I 
+> captured this BUG in fget_light():
 
-> > Also, care to respond to my previous comment?
-> 
-> About the comment?  Dropping it is fine.  Do you want me to resend the
-> patch w/o the comment?
+And later suspend to ram failed, and then showed a hung task warning.
 
-No, thanks. 
+I've attached everything at 
+<http://bugzilla.kernel.org/show_bug.cgi?id=14320>.
 
-Best,
-Rafael
+Thanks
+Alan
