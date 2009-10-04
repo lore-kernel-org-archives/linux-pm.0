@@ -1,13 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc1: various BUGs on resume from hibernation
-Date: Sun, 4 Oct 2009 22:47:43 +0200
-Message-ID: <200910042247.43528.rjw__2871.45835250175$1254692865$gmane$org@sisk.pl>
-References: <4AC8B4A8.3050601@tuffmail.co.uk> <4AC8D568.9090103@tuffmail.co.uk>
+Subject: [Resend][PATCH] PCI PM: Read device power state from
+	register after updating it
+Date: Mon, 5 Oct 2009 00:48:40 +0200
+Message-ID: <200910050048.40699.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC8D568.9090103@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>, pm list <linux-pm@lists.linux-foundation.org>, kevin granade <kevin.granade@gmail.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 04 October 2009, Alan Jenkins wrote:
-> Alan Jenkins wrote:
-> > I'm seeing a variety of BUGs on my EeePC 701 after hibernation.  
-> > Sometimes they cause a hang during resume; sometimes they happen just 
-> > after resume.  It doesn't happen all the time either -  I've just 
-> > hibernated three times in a row with no problems.  It's most perplexing.
-> >
-> > One resume hang showed a series of SCSI backtraces and errors.  
-> > Unfortunately I wasn't able to capture it at the time.  They were most 
-> > probably related to the root device, an SSD controlled by ata_piix.
-> >
-> > Today on latest -git I captured this "bad swap file entry" problem.  I 
-> > use a swap file for hibernation (I don't have a swap partition).
-> 
-> > Previously, on a slightly older kernel (still after 32-rc1), I 
-> > captured this BUG in fget_light():
-> 
-> And later suspend to ram failed, and then showed a hung task warning.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-As I already asked in the Bugzilla, can you verify that this is reproducible
-without KMS?
+After attempting to change the power state of a PCI device
+pci_raw_set_power_state() doesn't check if the value it wrote into
+the device's PCI_PM_CTRL register has been stored in there, but
+unconditionally modifies the device's current_state field to reflect
+the change.  This may cause problems to happen if the power state of
+the device hasn't been changed in fact, because it will make the PCI
+PM core make a wrong assumption.
 
-Best,
-Rafael
+To prevent such situations from happening modify
+pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+register after writing into it and uses the value read from the
+register to update the device's current_state field.  Also make it
+print a message saying that the device refused to change its power
+state as requested (returning an error code in such cases would cause
+suspend regressions to appear on some systems, where device drivers'
+suspend routines return error codes if pci_set_power_state() fails).
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -513,7 +513,11 @@ static int pci_raw_set_power_state(struc
+ 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
+ 		udelay(PCI_PM_D2_DELAY);
+ 
+-	dev->current_state = state;
++	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
++	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
++	if (dev->current_state != state && printk_ratelimit())
++		dev_info(&dev->dev, "Refused to change power state, "
++			"currently in D%d\n", dev->current_state);
+ 
+ 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
+ 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
