@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH] PCI PM: Read device power state from
-	register after updating it
-Date: Mon, 5 Oct 2009 00:48:40 +0200
-Message-ID: <200910050048.40699.rjw@sisk.pl>
+Subject: [PATCH] Wireless / ath5k: Simplify suspend and resume
+	callbacks
+Date: Mon, 5 Oct 2009 00:52:09 +0200
+Message-ID: <200910050052.09085.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,48 +16,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>, pm list <linux-pm@lists.linux-foundation.org>, kevin granade <kevin.granade@gmail.com>, Arjan van de Ven <arjan@infradead.org>
+To: ath5k-devel@venema.h4ckr.net
+Cc: Bob Copeland <me@bobcopeland.com>, pm list <linux-pm@lists.linux-foundation.org>, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-After attempting to change the power state of a PCI device
-pci_raw_set_power_state() doesn't check if the value it wrote into
-the device's PCI_PM_CTRL register has been stored in there, but
-unconditionally modifies the device's current_state field to reflect
-the change.  This may cause problems to happen if the power state of
-the device hasn't been changed in fact, because it will make the PCI
-PM core make a wrong assumption.
-
-To prevent such situations from happening modify
-pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
-register after writing into it and uses the value read from the
-register to update the device's current_state field.  Also make it
-print a message saying that the device refused to change its power
-state as requested (returning an error code in such cases would cause
-suspend regressions to appear on some systems, where device drivers'
-suspend routines return error codes if pci_set_power_state() fails).
+Simplify the suspend and resume callbacks of ath5k by converting the
+driver to struct dev_pm_ops and allowing the PCI PM core to do the
+PCI-specific suspend/resume handling.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/wireless/ath/ath5k/base.c |   35 ++++++++++------------------------
+ 1 file changed, 11 insertions(+), 24 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.c
+Index: linux-2.6/drivers/net/wireless/ath/ath5k/base.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -513,7 +513,11 @@ static int pci_raw_set_power_state(struc
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
+--- linux-2.6.orig/drivers/net/wireless/ath/ath5k/base.c
++++ linux-2.6/drivers/net/wireless/ath/ath5k/base.c
+@@ -195,12 +195,13 @@ static int __devinit	ath5k_pci_probe(str
+ 				const struct pci_device_id *id);
+ static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
+ #ifdef CONFIG_PM
+-static int		ath5k_pci_suspend(struct pci_dev *pdev,
+-					pm_message_t state);
+-static int		ath5k_pci_resume(struct pci_dev *pdev);
++static int		ath5k_pci_suspend(struct device *dev);
++static int		ath5k_pci_resume(struct device *dev);
++
++SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
++#define ATH5K_PM_OPS	(&ath5k_pm_ops)
+ #else
+-#define ath5k_pci_suspend NULL
+-#define ath5k_pci_resume NULL
++#define ATH5K_PM_OPS	NULL
+ #endif /* CONFIG_PM */
  
--	dev->current_state = state;
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-+	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-+	if (dev->current_state != state && printk_ratelimit())
-+		dev_info(&dev->dev, "Refused to change power state, "
-+			"currently in D%d\n", dev->current_state);
+ static struct pci_driver ath5k_pci_driver = {
+@@ -208,8 +209,7 @@ static struct pci_driver ath5k_pci_drive
+ 	.id_table	= ath5k_pci_id_table,
+ 	.probe		= ath5k_pci_probe,
+ 	.remove		= __devexit_p(ath5k_pci_remove),
+-	.suspend	= ath5k_pci_suspend,
+-	.resume		= ath5k_pci_resume,
++	.driver.pm	= ATH5K_PM_OPS,
+ };
  
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
+ 
+@@ -669,33 +669,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int
+-ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int ath5k_pci_suspend(struct device *dev)
+ {
+-	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
++	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
+ 	struct ath5k_softc *sc = hw->priv;
+ 
+ 	ath5k_led_off(sc);
+-
+-	pci_save_state(pdev);
+-	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
+-
+ 	return 0;
+ }
+ 
+-static int
+-ath5k_pci_resume(struct pci_dev *pdev)
++static int ath5k_pci_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+ 	struct ath5k_softc *sc = hw->priv;
+-	int err;
+-
+-	pci_restore_state(pdev);
+-
+-	err = pci_enable_device(pdev);
+-	if (err)
+-		return err;
+ 
+ 	/*
+ 	 * Suspend/Resume resets the PCI configuration space, so we have to
