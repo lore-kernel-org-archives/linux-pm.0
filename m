@@ -1,15 +1,12 @@
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: 2.6.32-rc1: various BUGs on resume from hibernation
-Date: Mon, 5 Oct 2009 09:10:03 +0100
-Message-ID: <9b2b86520910050110h3087f80dl46d1b61ef3f8f9d1@mail.gmail.com>
-References: <4AC8B4A8.3050601@tuffmail.co.uk> <4AC8D568.9090103@tuffmail.co.uk>
-	<200910042247.43528.rjw@sisk.pl> <20091005095327.5ea9831b@strolchi>
-	<4AC9A979.2020007@tuffmail.co.uk>
+From: "Premi, Sanjeev" <premi@ti.com>
+Subject: [RFC]cpuidle: Incorrect statistics
+Date: Mon, 5 Oct 2009 19:56:41 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DDC08B8D@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AC9A979.2020007@tuffmail.co.uk>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/5/09, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
-> Stefan Seyfried wrote:
->> On Sun, 4 Oct 2009 22:47:43 +0200
->> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->>
->>> On Sunday 04 October 2009, Alan Jenkins wrote:
->>>
->>>> Alan Jenkins wrote:
->>>>
->>>>> I'm seeing a variety of BUGs on my EeePC 701 after hibernation.
->>>>> Sometimes they cause a hang during resume; sometimes they happen
->>>>> just after resume.  It doesn't happen all the time either -  I've
->>>>> just hibernated three times in a row with no problems.  It's most
->>>>> perplexing.
->>>>>
->>
->>
->>> As I already asked in the Bugzilla, can you verify that this is
->>> reproducible without KMS?
->>>
->>
->> This is important, there *are* hibernation issues with intel/KMS,
->> e.g. http://bugs.freedesktop.org/show_bug.cgi?id=23701
->>
->
-> Sure, it's definitely on my suspect list.  I'm now booting with
-> i915.modeset=1
+Hi,
+ 
+While testing the cpuidle on the OMAP3 platform, I observed
+that the usage statistics did not match the actual idle
+state transitions. This was happening due to two reasons:
 
-heh, I mean =0
+1) The menu governor is selecting a "deep" idle state that
+   cannot be attained. The system is able to attain one of
+   the higher states; however, the statistics get updated
+   for the "originally" selected state.
 
-, which gets me back to slow and flickery VT switches
-> again :-).
->
-> Thanks
-> Alan
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+2) Some of the deep states can be defined as "invalid" at
+   run-time via a sysfs entry "enable_off_mode". The since
+   argument passed into the "enter_idle()" is pointer to
+   the state selected by governor, it is possble to reach
+   an invalid state.
+
+I am suggesting the following:
+
+1) An additional flag for each idle state "valid".
+   Any change in the "valid" flag is reflected back.
+
+2) Governor takes this flag into account before selecting
+   a target idle state.
+
+Looking for comments/suggestions.
+
+Here are link to this discussion on the linux-omap list:
+ - http://marc.info/?l=linux-omap&m=125214460417989&w=2
+ - http://marc.info/?l=linux-omap&m=125260684907329&w=2
+ - http://marc.info/?l=linux-omap&m=125423861614898&w=2
+ 
+Best regards,
+Sanjeev
