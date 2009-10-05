@@ -1,13 +1,15 @@
-From: The Holy ettlz <theholyettlz@googlemail.com>
-Subject: Re: High power consumption after suspend/resume cycle
-Date: Sun, 04 Oct 2009 10:17:13 +0100
-Message-ID: <1254647833.3845.3.camel@localhost.localdomain>
-References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
-	<cb0375e10910021229x7924ec56o61627ec0f625a70c@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Wireless / ath5k: Simplify suspend and
+	resume callbacks
+Date: Mon, 5 Oct 2009 21:40:47 +0200
+Message-ID: <200910052140.47372.rjw__31831.040493171$1254771751$gmane$org@sisk.pl>
+References: <200910050052.09085.rjw@sisk.pl>
+	<43e72e890910050921q7f516c67ofe17603d6d873c4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2426446892881993185=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <cb0375e10910021229x7924ec56o61627ec0f625a70c@mail.gmail.com>
+In-Reply-To: <43e72e890910050921q7f516c67ofe17603d6d873c4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,67 +17,76 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, "John W. Linville" <linville@tuxdriver.com>, LKML <linux-kernel@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday 05 October 2009, Luis R. Rodriguez wrote:
+> On Sun, Oct 4, 2009 at 10:52 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Simplify the suspend and resume callbacks of ath5k by converting the
+> > driver to struct dev_pm_ops and allowing the PCI PM core to do the
+> > PCI-specific suspend/resume handling.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Do you happen to know if the new dev_pm_ops thing handle WOL / WoW [1]?
+> 
+> [1] http://wireless.kernel.org/en/users/Documentation/WoW
 
---===============2426446892881993185==
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tm9hUJjLwqFNzr1bH6Qz"
+It does enable wake-up at the PCI level if so configured, so in principle it
+should handle it.  However, for WoL to work there are some things that the
+drivers is reponsible for, so I guess it will be analogous for WoW.
 
+Anyway, the PCI-specific mechanics is there.
 
---=-tm9hUJjLwqFNzr1bH6Qz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> >  #ifdef CONFIG_PM
+> > -static int
+> > -ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+> > +static int ath5k_pci_suspend(struct device *dev)
+> >  {
+> > -       struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+> > +       struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
+> >        struct ath5k_softc *sc = hw->priv;
+> >
+> >        ath5k_led_off(sc);
+> > -
+> > -       pci_save_state(pdev);
+> > -       pci_disable_device(pdev);
+> 
+> For WoW right here we'd do
+> 
+> pci_prepare_to_sleep(pdev) and bail out.
+> 
+> > -       pci_set_power_state(pdev, PCI_D3hot);
+> 
+> And here we'd call something like this:
+> 
+> pci_wake_from_d3(pdev, !!sc->wow_triggers_enabled);
 
-Hello,
+All of this is unnecessary, the PCI PM core should take care of this just
+fine.  In case it doesn't, it has to be fixed.
 
-> > There's a catch, though: after a suspend/resume cycle, power
-> > consumption goes up by over well over a watt.  (On a system that draws
-> > about 7 watts before suspending, that's a big deal.)  I've tried
-> > turning off X, suspending with 'echo mem > /sys/power/state' to avoid
-> > any distro scripts running, and manually restoring SATA power saving
-> > settings, but it still happens.  I even tried unbinding e1000e and
-> > both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
-> > iwlcore, and it still happens.  This is 100% reproducible, and I'd be
-> > happy to test things.
+> > -
+> >        return 0;
+> >  }
+> 
+> Are all drivers being converted?
 
-Just out of curiosity: does it make any difference whether tickless mode
-is enabled or not, and do you see an excess of wakeups with no apparent
-origin, a la http://bugzilla.kernel.org/show_bug.cgi?id=3D12788 ?
+Generally, yes, but that's not a priority work for me.  I've just happened to
+have the patch ready, so here it goes.
+
+They should be converted, though, to be able to support PCI run-time PM.
+
+> It'll be a while before we get WoW enabled on ath5k but it is
+> technically possible, the work was tested for ath9k back in July [2]
+> but I never submitted this to be merged due to some inconsistent
+> issues I was noticing with the hardware.
+> 
+> [2] http://kernel.org/pub/linux/kernel/people/mcgrof/patches/wow-07-21.patch
 
 Thanks,
-James.
-
---=20
-The Holy ettlz                              TheHolyettlz@googlemail.com
-PGP key ID: 03F94B5D
------------------------------------------------------------------------
-
-
---=-tm9hUJjLwqFNzr1bH6Qz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkrIaBcACgkQL/Is9AP5S10vUACeKYrLazVLr7XSaA68H2xh5E41
-7NAAoIgskYfkaJuOkCnfbJk01RqtcSvy
-=qrlP
------END PGP SIGNATURE-----
-
---=-tm9hUJjLwqFNzr1bH6Qz--
-
-
---===============2426446892881993185==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2426446892881993185==--
+Rafael
