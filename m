@@ -1,12 +1,14 @@
-From: "Premi, Sanjeev" <premi@ti.com>
-Subject: [RFC]cpuidle: Incorrect statistics
-Date: Mon, 5 Oct 2009 19:56:41 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DDC08B8D@dbde02.ent.ti.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [PATCH] Wireless / ath5k: Simplify suspend and
+	resume callbacks
+Date: Mon, 5 Oct 2009 16:21:02 +0000
+Message-ID: <43e72e890910050921q7f516c67ofe17603d6d873c4__31165.4985220686$1254759782$gmane$org@mail.gmail.com>
+References: <200910050052.09085.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Language: en-US
+In-Reply-To: <200910050052.09085.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,40 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org
+Cc: linux-wireless@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, "John W. Linville" <linville@tuxdriver.com>, LKML <linux-kernel@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
- 
-While testing the cpuidle on the OMAP3 platform, I observed
-that the usage statistics did not match the actual idle
-state transitions. This was happening due to two reasons:
-
-1) The menu governor is selecting a "deep" idle state that
-   cannot be attained. The system is able to attain one of
-   the higher states; however, the statistics get updated
-   for the "originally" selected state.
-
-2) Some of the deep states can be defined as "invalid" at
-   run-time via a sysfs entry "enable_off_mode". The since
-   argument passed into the "enter_idle()" is pointer to
-   the state selected by governor, it is possble to reach
-   an invalid state.
-
-I am suggesting the following:
-
-1) An additional flag for each idle state "valid".
-   Any change in the "valid" flag is reflected back.
-
-2) Governor takes this flag into account before selecting
-   a target idle state.
-
-Looking for comments/suggestions.
-
-Here are link to this discussion on the linux-omap list:
- - http://marc.info/?l=linux-omap&m=125214460417989&w=2
- - http://marc.info/?l=linux-omap&m=125260684907329&w=2
- - http://marc.info/?l=linux-omap&m=125423861614898&w=2
- 
-Best regards,
-Sanjeev
+T24gU3VuLCBPY3QgNCwgMjAwOSBhdCAxMDo1MiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4K
+PiBTaW1wbGlmeSB0aGUgc3VzcGVuZCBhbmQgcmVzdW1lIGNhbGxiYWNrcyBvZiBhdGg1ayBieSBj
+b252ZXJ0aW5nIHRoZQo+IGRyaXZlciB0byBzdHJ1Y3QgZGV2X3BtX29wcyBhbmQgYWxsb3dpbmcg
+dGhlIFBDSSBQTSBjb3JlIHRvIGRvIHRoZQo+IFBDSS1zcGVjaWZpYyBzdXNwZW5kL3Jlc3VtZSBo
+YW5kbGluZy4KPgo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5w
+bD4KCkRvIHlvdSBoYXBwZW4gdG8ga25vdyBpZiB0aGUgbmV3IGRldl9wbV9vcHMgdGhpbmcgaGFu
+ZGxlIFdPTCAvIFdvVyBbMV0/CgpbMV0gaHR0cDovL3dpcmVsZXNzLmtlcm5lbC5vcmcvZW4vdXNl
+cnMvRG9jdW1lbnRhdGlvbi9Xb1cKCj4gwqAjaWZkZWYgQ09ORklHX1BNCj4gLXN0YXRpYyBpbnQK
+PiAtYXRoNWtfcGNpX3N1c3BlbmQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIHBtX21lc3NhZ2VfdCBz
+dGF0ZSkKPiArc3RhdGljIGludCBhdGg1a19wY2lfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYp
+Cj4gwqB7Cj4gLSDCoCDCoCDCoCBzdHJ1Y3QgaWVlZTgwMjExX2h3ICpodyA9IHBjaV9nZXRfZHJ2
+ZGF0YShwZGV2KTsKPiArIMKgIMKgIMKgIHN0cnVjdCBpZWVlODAyMTFfaHcgKmh3ID0gcGNpX2dl
+dF9kcnZkYXRhKHRvX3BjaV9kZXYoZGV2KSk7Cj4gwqAgwqAgwqAgwqBzdHJ1Y3QgYXRoNWtfc29m
+dGMgKnNjID0gaHctPnByaXY7Cj4KPiDCoCDCoCDCoCDCoGF0aDVrX2xlZF9vZmYoc2MpOwo+IC0K
+PiAtIMKgIMKgIMKgIHBjaV9zYXZlX3N0YXRlKHBkZXYpOwo+IC0gwqAgwqAgwqAgcGNpX2Rpc2Fi
+bGVfZGV2aWNlKHBkZXYpOwoKRm9yIFdvVyByaWdodCBoZXJlIHdlJ2QgZG8KCnBjaV9wcmVwYXJl
+X3RvX3NsZWVwKHBkZXYpIGFuZCBiYWlsIG91dC4KCj4gLSDCoCDCoCDCoCBwY2lfc2V0X3Bvd2Vy
+X3N0YXRlKHBkZXYsIFBDSV9EM2hvdCk7CgpBbmQgaGVyZSB3ZSdkIGNhbGwgc29tZXRoaW5nIGxp
+a2UgdGhpczoKCnBjaV93YWtlX2Zyb21fZDMocGRldiwgISFzYy0+d293X3RyaWdnZXJzX2VuYWJs
+ZWQpOwoKPiAtCj4gwqAgwqAgwqAgwqByZXR1cm4gMDsKPiDCoH0KCkFyZSBhbGwgZHJpdmVycyBi
+ZWluZyBjb252ZXJ0ZWQ/CgpJdCdsbCBiZSBhIHdoaWxlIGJlZm9yZSB3ZSBnZXQgV29XIGVuYWJs
+ZWQgb24gYXRoNWsgYnV0IGl0IGlzCnRlY2huaWNhbGx5IHBvc3NpYmxlLCB0aGUgd29yayB3YXMg
+dGVzdGVkIGZvciBhdGg5ayBiYWNrIGluIEp1bHkgWzJdCmJ1dCBJIG5ldmVyIHN1Ym1pdHRlZCB0
+aGlzIHRvIGJlIG1lcmdlZCBkdWUgdG8gc29tZSBpbmNvbnNpc3RlbnQKaXNzdWVzIEkgd2FzIG5v
+dGljaW5nIHdpdGggdGhlIGhhcmR3YXJlLgoKWzJdIGh0dHA6Ly9rZXJuZWwub3JnL3B1Yi9saW51
+eC9rZXJuZWwvcGVvcGxlL21jZ3JvZi9wYXRjaGVzL3dvdy0wNy0yMS5wYXRjaAoKICBMdWlzCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
+aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
