@@ -1,15 +1,14 @@
-From: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] ACPI / PCI: Fix NULL pointer dereference
-	in	acpi_get_pci_dev()
-Date: Mon, 5 Oct 2009 17:37:59 -0600
-Message-ID: <20091005233759.GB14394__35707.1213926703$1254842269$gmane$org@ldl.fc.hp.com>
-References: <200910060130.43246.rjw@sisk.pl>
+From: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: [Resend][PATCH] PCI PM: Read device power state from
+ register after updating it
+Date: Tue, 6 Oct 2009 09:08:55 -0700
+Message-ID: <20091006090855.650ef454@jbarnes-g45>
+References: <200910050048.40699.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200910060130.43246.rjw@sisk.pl>
+In-Reply-To: <200910050048.40699.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: chepioq@gmail.com, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Danny Feng <dfeng@redhat.com>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>, pm list <linux-pm@lists.linux-foundation.org>, granade <kevin.granade@gmail.com>, kevin@smtp1.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Rafael J. Wysocki <rjw@sisk.pl>:
+On Mon, 5 Oct 2009 00:48:40 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14129, which is a
-> regression from 2.6.30.
-
-Thanks for doing this.
-
-One small comment below (not major), but other than that:
-
-Reviewed-by: Alex Chiang <achiang@hp.com>
-
+> After attempting to change the power state of a PCI device
+> pci_raw_set_power_state() doesn't check if the value it wrote into
+> the device's PCI_PM_CTRL register has been stored in there, but
+> unconditionally modifies the device's current_state field to reflect
+> the change.  This may cause problems to happen if the power state of
+> the device hasn't been changed in fact, because it will make the PCI
+> PM core make a wrong assumption.
+> 
+> To prevent such situations from happening modify
+> pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+> register after writing into it and uses the value read from the
+> register to update the device's current_state field.  Also make it
+> print a message saying that the device refused to change its power
+> state as requested (returning an error code in such cases would cause
+> suspend regressions to appear on some systems, where device drivers'
+> suspend routines return error codes if pci_set_power_state() fails).
+> 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Danny Feng <dfeng@redhat.com>
-> Tested-by: chepioq <chepioq@gmail.com>
-> ---
->  drivers/acpi/pci_root.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> Index: linux-2.6/drivers/acpi/pci_root.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/pci_root.c
-> +++ linux-2.6/drivers/acpi/pci_root.c
-> @@ -389,6 +389,18 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
->  
->  		pbus = pdev->subordinate;
->  		pci_dev_put(pdev);
-> +
-> +		/*
-> +		 * During resume from a sleep state we can get a dock
-> +		 * notification for a device that is present in ACPI tables,
-> +		 * but not physically accessible at the moment, so tell the
-> +		 * caller it's not present in that case.
-> +		 */
-> +		if (!pbus) {
-> +			dev_info(&pdev->dev, "Secondary bus not present\n");
 
-Should this be dev_dbg() or maybe even strike it completely?
+Applied to my for-linus branch, thanks.
 
-> +			pdev = NULL;
-> +			break;
-> +		}
->  	}
->  out:
->  	list_for_each_entry_safe(node, tmp, &device_list, node)
-> 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
