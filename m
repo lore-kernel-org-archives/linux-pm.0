@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI / PCI: Fix NULL pointer dereference in
-	acpi_get_pci_dev()
-Date: Tue, 6 Oct 2009 02:01:42 +0200
-Message-ID: <200910060201.42519.rjw@sisk.pl>
-References: <200910060130.43246.rjw@sisk.pl>
-	<20091005233759.GB14394@ldl.fc.hp.com>
+Subject: Re: 2.6.32-rc1: various BUGs on resume from hibernation
+Date: Tue, 6 Oct 2009 02:06:49 +0200
+Message-ID: <200910060206.49500.rjw@sisk.pl>
+References: <4AC8B4A8.3050601@tuffmail.co.uk> <4ACA5E3D.1020108@tuffmail.co.uk>
+	<200910060048.41615.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091005233759.GB14394@ldl.fc.hp.com>
+In-Reply-To: <200910060048.41615.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alex Chiang <achiang@hp.com>
-Cc: chepioq@gmail.com, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Danny Feng <dfeng@redhat.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Stefan Seyfried <stefan.seyfried@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 06 October 2009, Alex Chiang wrote:
-> * Rafael J. Wysocki <rjw@sisk.pl>:
+On Tuesday 06 October 2009, Rafael J. Wysocki wrote:
+> On Monday 05 October 2009, Alan Jenkins wrote:
+> > Alan Jenkins wrote:
+> > > Stefan Seyfried wrote:
+> > >> On Sun, 4 Oct 2009 22:47:43 +0200
+> > >> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > >>> On Sunday 04 October 2009, Alan Jenkins wrote:
+> > >>>> Alan Jenkins wrote:
+> > >>>>> I'm seeing a variety of BUGs on my EeePC 701 after hibernation. 
+> > >>>>> Sometimes they cause a hang during resume; sometimes they happen
+> > >>>>> just after resume. It doesn't happen all the time either - I've
+> > >>>>> just hibernated three times in a row with no problems. It's most
+> > >>>>> perplexing.
+> > >>
+> > >>> As I already asked in the Bugzilla, can you verify that this is
+> > >>> reproducible without KMS?
+> > >
+> > > No. I couldn't reproduce it without KMS. Then I re-enabled KMS, 
+> > > hibernated a couple of times, and had another resume hang (different 
+> > > again - this time in the freezer).
+> > >
 > > 
-> > Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14129, which is a
-> > regression from 2.6.30.
+> > Perhaps this GEM backtrace is more relevant than the others, or perhaps 
+> > not. I closed the lid during resume from hibernation; the screen stayed 
+> > black when I re-opened it, but syslogd recorded the following. (Again, 
+> > I've done the exact thing before and often nothing unusual happens) -
 > 
-> Thanks for doing this.
+> OK, let's assume it's related to KMS, then.
 > 
-> One small comment below (not major), but other than that:
-> 
-> Reviewed-by: Alex Chiang <achiang@hp.com>
-> 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Reported-by: Danny Feng <dfeng@redhat.com>
-> > Tested-by: chepioq <chepioq@gmail.com>
-> > ---
-> >  drivers/acpi/pci_root.c |   12 ++++++++++++
-> >  1 file changed, 12 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/acpi/pci_root.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/pci_root.c
-> > +++ linux-2.6/drivers/acpi/pci_root.c
-> > @@ -389,6 +389,18 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
-> >  
-> >  		pbus = pdev->subordinate;
-> >  		pci_dev_put(pdev);
-> > +
-> > +		/*
-> > +		 * During resume from a sleep state we can get a dock
-> > +		 * notification for a device that is present in ACPI tables,
-> > +		 * but not physically accessible at the moment, so tell the
-> > +		 * caller it's not present in that case.
-> > +		 */
-> > +		if (!pbus) {
-> > +			dev_info(&pdev->dev, "Secondary bus not present\n");
-> 
-> Should this be dev_dbg() or maybe even strike it completely?
+> 1. Do we already have a Bugzilla entry for it?
 
-I thought about that, but I decided not to just in order to get some idea about
-how many affected systems are out there.  If that happens to be a problem for
-anyone, we can simply remove the message in the future.
+Ah, yes, we do, http://bugzilla.kernel.org/show_bug.cgi?id=14320 (I tend to
+forget about these things).
 
-> 
-> > +			pdev = NULL;
-> > +			break;
-> > +		}
-> >  	}
-> >  out:
-> >  	list_for_each_entry_safe(node, tmp, &device_list, node)
-> > 
+> 2. Did it work with 2.6.31 (and with KMS)?
+> 3. Are you aware of http://marc.info/?l=linux-kernel&m=125452324520623&w=4 ?
 
 Thanks,
 Rafael
