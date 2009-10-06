@@ -1,16 +1,12 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] CPUidle: always return with interrupts
-	enabled
-Date: Tue, 6 Oct 2009 14:02:51 -0700
-Message-ID: <636c5030910061402x5a1e6f99i9cebf098c37147ee@mail.gmail.com>
-References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
-	<200909302321.33088.rjw@sisk.pl>
-	<20091006133456.5177a32a.akpm@linux-foundation.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Massive ext4 filesystem corruption after a failed
+	s2disk/ram cycle
+Date: Tue, 06 Oct 2009 23:06:55 +0200
+Message-ID: <1254863215.11577.23.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091006133456.5177a32a.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,82 +16,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 6, 2009 at 1:34 PM, Andrew Morton <akpm@linux-foundation.org> w=
-rote:
-> On Wed, 30 Sep 2009 23:21:33 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->
->> On Wednesday 30 September 2009, Kevin Hilman wrote:
->> > In the case where cpuidle_idle_call() returns before changing state
->> > due to a need_resched(), it was returning with IRQs disabled.
->> >
->> > This patch ensures IRQs are (re)enabled before returning.
->>
->> Venki, any comments on this?
->
-> Rigor mortis is setting in on this one.
->
-> Venki's most recent linux-acpi email was on July 31.
->
->> > Reported-by: Hemanth V <hemanthv@ti.com>
->> > Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
->> > ---
->> > =A0drivers/cpuidle/cpuidle.c | =A0 =A05 ++++-
->> > =A01 files changed, 4 insertions(+), 1 deletions(-)
->> >
->> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> > index ad41f19..12fdd39 100644
->> > --- a/drivers/cpuidle/cpuidle.c
->> > +++ b/drivers/cpuidle/cpuidle.c
->> > @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
->> > =A0#endif
->> > =A0 =A0 /* ask the governor for the next state */
->> > =A0 =A0 next_state =3D cpuidle_curr_governor->select(dev);
->> > - =A0 if (need_resched())
->> > + =A0 if (need_resched()) {
->> > + =A0 =A0 =A0 =A0 =A0 local_irq_enable();
->> > =A0 =A0 =A0 =A0 =A0 =A0 return;
->> > + =A0 }
->> > +
->> > =A0 =A0 target_state =3D &dev->states[next_state];
->> >
->> > =A0 =A0 /* enter the state and update stats */
->
-> The patch seems correct to me. =A0The code is hopelessly poorly
-> documented as per usual, but other paths in that function, including
-> the call to target_state->enter() (which devolves to default_idle) also
-> enable interrupts.
->
-> Kevin, the changelog is not good. =A0It tells us what was wrong with the
-> code but does not describe the user-visible effects of the bug.
+Hi,
 
-The idle path assumes that the platform specific idle code returns
-with interrupts enabled (although this too is undocumented AFAICT) and
-on ARM we have a WARN_ON(!(irqs_disabled()) when returning from the
-idle loop, so the user-visible effects were only a warning since
-interrupts were eventually re-enabled later.
+Just prior to 2.6.32 cycle I tried -next tree and noticed that after a
+failed s2ram (here it works only once, and I test once in a whileto see
+if fixed accidentally) I got a minor filesystem corruption. I am sorry I
+didn't report that back then.
 
-> I'm unable to find any bug report from Hemanth so I'm all in the dark.
->
-> Your cc to linux-omap makes me suspect that <whatever the problem was>
-> was exhibited on a non-x86 platform, under some circumstances. =A0Perhaps
-> that explains (for unknown reasons) why <whatever the problem was> was
-> not observed on x86. =A0But I'm totally in the dark and grasping for
-> clues and have no way of determining (for example) whether we should
-> backport the fix to earlier kernels.
->
-> Please send along the additional information?
->
+Now I have installed 2.6.32-rc2 (well -rc1...) and things were sort of
+ok, I have even thought that hibernation is once again stable
+(somewhere in the not that distinct past the hibernation which used to
+work, began to fail randomly on resume)
 
-On x86, this same problem exists, but there is no WARN_ON() to detect
-it.  As on ARM, the interrupts are eventually re-enabled, so I'm not
-sure of any actual bugs triggered by this.  It's primarily a
-correctness/consistency fix.
+Few days ago, I got a read-only filesystem again, an fsck, few more
+corrupted files..., It should have had rung the bell for me (I have
+still used hibernation, trying to understand why it fails sometimes)
 
-Thanks,
+Yesterday, however, I have decided to fix that once and for all, and for
+that I have set up a loop + rtc wakealarm to make it cycle through
+hibernation.
 
-Kevin
+Needless to say I didn't run that loop more that maybe 3 cycles (and no
+failures), but noticed that rtc clock is dead on resume. 
+
+I sort of fixed that (this is hpet emulation that strikes again), I will
+post when I test the fix (trivial), because when I had rebooted the
+system into the modified kernel, I got that readonly filesystem again,
+and this time the damage had spread over lots of files.
+(I have even lost most of dpkg database..., many programs,
+libraries,..., settings)
+
+Yet, thanks to Linux flexibility, after a day, and some study of
+nautilus source, I had the system recovered fully.
+(Now am doing backups.....)
+
+But I don't want that to happen again...
+
+Another clue that I have seen was that ext4 driver reported that it
+aborts journal replay.
+
+I know that for now there is not much you can do, but just to let you
+know that something is there...
+
+What is especially interesting is that there were no s2ram'disk faulure
+preceding the corruption, but my theory is that corruption wasn't
+detected for a while from last failure, probably giving such bad
+consequences.
+
+You do sync file-systems before entering the hibernation, don't you?
+
+
+Best regards,
+Maxim Levitsky
