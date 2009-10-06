@@ -1,12 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Massive ext4 filesystem corruption after a failed
-	s2disk/ram cycle
-Date: Tue, 06 Oct 2009 23:06:55 +0200
-Message-ID: <1254863215.11577.23.camel@maxim-laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for
+	PCI PME wake-up
+Date: Tue, 6 Oct 2009 23:32:32 +0200
+Message-ID: <200910062332.32132.rjw@sisk.pl>
+References: <200909132320.05077.rjw@sisk.pl> <200909210226.10671.rjw@sisk.pl>
+	<20091006103213.1803cb65@jbarnes-g45>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20091006103213.1803cb65@jbarnes-g45>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,59 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tuesday 06 October 2009, Jesse Barnes wrote:
+> On Mon, 21 Sep 2009 02:26:10 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Monday 14 September 2009, Matthew Garrett wrote:
+> > > On Mon, Sep 14, 2009 at 12:53:05AM +0200, Rafael J. Wysocki wrote:
+> > > > On Monday 14 September 2009, Matthew Garrett wrote:
+> > > > > On Sun, Sep 13, 2009 at 11:24:03PM +0200, Rafael J. Wysocki
+> > > > > wrote:
+> > > > > > +	} else if (!dev->wakeup.flags.run_wake) {
+> > > > > > +		acpi_set_gpe_type(dev->wakeup.gpe_device,
+> > > > > > +
+> > > > > > dev->wakeup.gpe_number,
+> > > > > > +					ACPI_GPE_TYPE_WAKE);
+> > > > > 
+> > > > > Is this going to work for cases where we have multiple devices
+> > > > > attached to the same GPE? The common one is EHCI, where both
+> > > > > EHCI HCDs will be one a single GPE. If we wake one, that'll
+> > > > > then disable the GPE for the other. Further wakeup events will
+> > > > > then be lost.
+> > > > 
+> > > > You're right, I overlooked that.  Some kind of refcounting is
+> > > > needed here.
+> > > 
+> > > I've sent patches to implement this at the GPE level, which also
+> > > change the API for requesting them. I'm waiting on feedback from
+> > > Bob Moore.
+> > 
+> > In the meantime I realized there's one more thing we need to take
+> > care of. Namely, if a wake-up GPE is shared between multiple devices,
+> > it need not be necessary to install notify handlers for all of them.
+> > For example, if one of these devices is the root bridge, we will walk
+> > all of the hierarchy under it looking for devices that have PME set,
+> > so we need not install notify handlers for any devices that share the
+> > wake-up GPE with the root bridge.  Similarly, there's no need to
+> > install a notify handler for a device that shares the wake-up GPE
+> > with a bridge (non-root) it is under.
+> > 
+> > Taking that into account I have prepared another version of the
+> > @subject patch which is appended below.  It also takes the PM vs
+> > hotplug issue into account.  The idea is pretty straightforward,
+> > everything should be clear from the changelog and the comments within
+> > the patch.
+> > 
+> 
+> What's the latest on this set?  Is this the final version?  Anyone have
+> issues with this version?
 
-Just prior to 2.6.32 cycle I tried -next tree and noticed that after a
-failed s2ram (here it works only once, and I test once in a whileto see
-if fixed accidentally) I got a minor filesystem corruption. I am sorry I
-didn't report that back then.
+This was the last one I sent, haven't received any feedback whatever.
 
-Now I have installed 2.6.32-rc2 (well -rc1...) and things were sort of
-ok, I have even thought that hibernation is once again stable
-(somewhere in the not that distinct past the hibernation which used to
-work, began to fail randomly on resume)
+Perhaps I'll send the entire patchset as is again for completness?
 
-Few days ago, I got a read-only filesystem again, an fsck, few more
-corrupted files..., It should have had rung the bell for me (I have
-still used hibernation, trying to understand why it fails sometimes)
-
-Yesterday, however, I have decided to fix that once and for all, and for
-that I have set up a loop + rtc wakealarm to make it cycle through
-hibernation.
-
-Needless to say I didn't run that loop more that maybe 3 cycles (and no
-failures), but noticed that rtc clock is dead on resume. 
-
-I sort of fixed that (this is hpet emulation that strikes again), I will
-post when I test the fix (trivial), because when I had rebooted the
-system into the modified kernel, I got that readonly filesystem again,
-and this time the damage had spread over lots of files.
-(I have even lost most of dpkg database..., many programs,
-libraries,..., settings)
-
-Yet, thanks to Linux flexibility, after a day, and some study of
-nautilus source, I had the system recovered fully.
-(Now am doing backups.....)
-
-But I don't want that to happen again...
-
-Another clue that I have seen was that ext4 driver reported that it
-aborts journal replay.
-
-I know that for now there is not much you can do, but just to let you
-know that something is there...
-
-What is especially interesting is that there were no s2ram'disk faulure
-preceding the corruption, but my theory is that corruption wasn't
-detected for a while from last failure, probably giving such bad
-consequences.
-
-You do sync file-systems before entering the hibernation, don't you?
-
-
-Best regards,
-Maxim Levitsky
+Thanks,
+Rafael
