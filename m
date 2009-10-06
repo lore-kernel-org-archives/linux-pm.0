@@ -1,16 +1,15 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for
- PCI PME wake-up
-Date: Tue, 6 Oct 2009 10:32:13 -0700
-Message-ID: <20091006103213.1803cb65@jbarnes-g45>
-References: <200909132320.05077.rjw@sisk.pl> <200909140053.05779.rjw@sisk.pl>
-	<20090913225518.GA31787@srcf.ucam.org>
-	<200909210226.10671.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] CPUidle: always return with interrupts
+	enabled
+Date: Tue, 6 Oct 2009 13:34:56 -0700
+Message-ID: <20091006133456.5177a32a.akpm@linux-foundation.org>
+References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+	<200909302321.33088.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200909210226.10671.rjw@sisk.pl>
+In-Reply-To: <200909302321.33088.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,56 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, ACPI@smtp1.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Sep 2009 02:26:10 +0200
+On Wed, 30 Sep 2009 23:21:33 +0200
 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Monday 14 September 2009, Matthew Garrett wrote:
-> > On Mon, Sep 14, 2009 at 12:53:05AM +0200, Rafael J. Wysocki wrote:
-> > > On Monday 14 September 2009, Matthew Garrett wrote:
-> > > > On Sun, Sep 13, 2009 at 11:24:03PM +0200, Rafael J. Wysocki
-> > > > wrote:
-> > > > > +	} else if (!dev->wakeup.flags.run_wake) {
-> > > > > +		acpi_set_gpe_type(dev->wakeup.gpe_device,
-> > > > > +
-> > > > > dev->wakeup.gpe_number,
-> > > > > +					ACPI_GPE_TYPE_WAKE);
-> > > > 
-> > > > Is this going to work for cases where we have multiple devices
-> > > > attached to the same GPE? The common one is EHCI, where both
-> > > > EHCI HCDs will be one a single GPE. If we wake one, that'll
-> > > > then disable the GPE for the other. Further wakeup events will
-> > > > then be lost.
-> > > 
-> > > You're right, I overlooked that.  Some kind of refcounting is
-> > > needed here.
+> On Wednesday 30 September 2009, Kevin Hilman wrote:
+> > In the case where cpuidle_idle_call() returns before changing state
+> > due to a need_resched(), it was returning with IRQs disabled.
 > > 
-> > I've sent patches to implement this at the GPE level, which also
-> > change the API for requesting them. I'm waiting on feedback from
-> > Bob Moore.
+> > This patch ensures IRQs are (re)enabled before returning.
 > 
-> In the meantime I realized there's one more thing we need to take
-> care of. Namely, if a wake-up GPE is shared between multiple devices,
-> it need not be necessary to install notify handlers for all of them.
-> For example, if one of these devices is the root bridge, we will walk
-> all of the hierarchy under it looking for devices that have PME set,
-> so we need not install notify handlers for any devices that share the
-> wake-up GPE with the root bridge.  Similarly, there's no need to
-> install a notify handler for a device that shares the wake-up GPE
-> with a bridge (non-root) it is under.
-> 
-> Taking that into account I have prepared another version of the
-> @subject patch which is appended below.  It also takes the PM vs
-> hotplug issue into account.  The idea is pretty straightforward,
-> everything should be clear from the changelog and the comments within
-> the patch.
-> 
+> Venki, any comments on this?
 
-What's the latest on this set?  Is this the final version?  Anyone have
-issues with this version?
+Rigor mortis is setting in on this one.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Venki's most recent linux-acpi email was on July 31.
+
+> > Reported-by: Hemanth V <hemanthv@ti.com>
+> > Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+> > ---
+> >  drivers/cpuidle/cpuidle.c |    5 ++++-
+> >  1 files changed, 4 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index ad41f19..12fdd39 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
+> >  #endif
+> >  	/* ask the governor for the next state */
+> >  	next_state = cpuidle_curr_governor->select(dev);
+> > -	if (need_resched())
+> > +	if (need_resched()) {
+> > +		local_irq_enable();
+> >  		return;
+> > +	}
+> > +
+> >  	target_state = &dev->states[next_state];
+> >  
+> >  	/* enter the state and update stats */
+
+The patch seems correct to me.  The code is hopelessly poorly
+documented as per usual, but other paths in that function, including
+the call to target_state->enter() (which devolves to default_idle) also
+enable interrupts.
+
+Kevin, the changelog is not good.  It tells us what was wrong with the
+code but does not describe the user-visible effects of the bug.
+
+I'm unable to find any bug report from Hemanth so I'm all in the dark.
+
+Your cc to linux-omap makes me suspect that <whatever the problem was>
+was exhibited on a non-x86 platform, under some circumstances.  Perhaps
+that explains (for unknown reasons) why <whatever the problem was> was
+not observed on x86.  But I'm totally in the dark and grasping for
+clues and have no way of determining (for example) whether we should
+backport the fix to earlier kernels.
+
+
+Please send along the additional information?
