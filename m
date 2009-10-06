@@ -1,16 +1,16 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Massive ext4 filesystem corruption after a failed
- s2disk/ram cycle
-Date: Tue, 6 Oct 2009 19:53:29 -0300
-Message-ID: <20091006225329.GA27646@khazad-dum.debian.net>
+	s2disk/ram cycle
+Date: Wed, 7 Oct 2009 01:02:47 +0200
+Message-ID: <200910070102.47293.rjw@sisk.pl>
 References: <1254863215.11577.23.camel@maxim-laptop>
 	<200910062358.32417.rjw@sisk.pl>
+	<20091006225329.GA27646@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200910062358.32417.rjw@sisk.pl>
+In-Reply-To: <20091006225329.GA27646@khazad-dum.debian.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +20,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 06 Oct 2009, Rafael J. Wysocki wrote:
-> > You do sync file-systems before entering the hibernation, don't you?
+On Wednesday 07 October 2009, Henrique de Moraes Holschuh wrote:
+> On Tue, 06 Oct 2009, Rafael J. Wysocki wrote:
+> > > You do sync file-systems before entering the hibernation, don't you?
+> > 
+> > Yes, a sync is there, but it is not effective on some filesystems.
 > 
-> Yes, a sync is there, but it is not effective on some filesystems.
+> Which ones?
 
-Which ones?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+XFS for one example.
